@@ -1,0 +1,4 @@
+adb shell am force-stop com.example.rex4
+adb forward tcp:59900 tcp:59900
+adb uninstall com.example.rex4
+	
