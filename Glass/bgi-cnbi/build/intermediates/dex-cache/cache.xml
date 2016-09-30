@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<items version="2" >
+
+    <item
+        jar="D:\work\pycnbi\Glass\bgi-cnbi\app\build\intermediates\exploded-aar\com.android.support\appcompat-v7\20.0.0\classes.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="f21927d22fe31889ecce94dd697a2e75b137e0ef">
+        <dex dex="D:\work\pycnbi\Glass\bgi-cnbi\app\build\intermediates\pre-dexed\debug\classes-c65373c79b698a9657f7fa7eb2664f26e3f355ee.jar" />
+    </item>
+    <item
+        jar="D:\work\pycnbi\Glass\bgi-cnbi\app\build\intermediates\exploded-aar\com.android.support\support-v4\20.0.0\classes.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="8694693636ab36910c8100ce527c258ff3ebece0">
+        <dex dex="D:\work\pycnbi\Glass\bgi-cnbi\app\build\intermediates\pre-dexed\debug\classes-72e29d25f7f63ea5ab4a23f973ac2697455a825a.jar" />
+    </item>
+    <item
+        jar="D:\work\pycnbi\Glass\bgi-cnbi\app\build\intermediates\exploded-aar\com.android.support\support-v4\20.0.0\libs\internal_impl-20.0.0.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="e40b3078e3fbd353c9f44da8df25a8fc0078209d">
+        <dex dex="D:\work\pycnbi\Glass\bgi-cnbi\app\build\intermediates\pre-dexed\debug\internal_impl-20.0.0-da32f959a45357341b38dad6dc6eddf658c54562.jar" />
+    </item>
+    <item
+        jar="C:\Users\rex\AppData\Local\Android\sdk\extras\android\m2repository\com\android\support\support-annotations\20.0.0\support-annotations-20.0.0.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="9d9013e9ff35fc3756411e62873c363c70c638fa">
+        <dex dex="D:\work\pycnbi\Glass\bgi-cnbi\app\build\intermediates\pre-dexed\debug\support-annotations-20.0.0-c16ad38541d63de8b62f21991c40a3b79d5b551c.jar" />
+    </item>
+
+</items>
