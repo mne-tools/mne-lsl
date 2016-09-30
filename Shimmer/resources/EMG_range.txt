@@ -1,0 +1,19 @@
+Shimmer2r: What is the input range for the EMG Module?
+
+The default Shimmer EMG daughter board design has a theoretical peak-to-peak max of 4.4mV but 4mV is a conservative value reflecting real-world tolerances. If the customer prefers a different range, 2nd stage gain can be adjusted accordingly.
+
+For other values, it is best to request factory customization at time of order. Alternatively, gain can be adjusted by replacing or paralleling the following 0603 SMD 1% resistors: R8, R10, R20, R21. The default value for these resistors is 150k. A smaller value will decrease gain and increase peak signal level before saturation. A larger value will increase gain and lower peak signal level before saturation. The value can be computed using the following equations with consideration of standard resistor values:
+
+    ResNew = GainNew * 150,000 / 640
+    GainNew = ResNew * 640 / 150,000
+
+Example calculation
+
+    Select new resistor value to allow 11mV max signal
+    11mV / 4.4mV = 2.5
+    GainNew needs to be 640 /2.5 = 256
+    Using (i), ResNew = 256 * 150,000/640
+    ResNew should be 60,000
+    An appropriate 1% resistor is 56,000 Ohms.
+    Actual gain can be calculated using (ii), GainNew = 56,000 * 640/ 150,000 = 238.93
+
