@@ -1,0 +1,25 @@
+To run the IMU acquisition:
+
+	cd ~/Desktop/cnbi_shimmer
+
+then, run the acquisition program:
+
+	python cnbi-shimmer.py
+
+The program scans the bluetooth devices looking for known Shimmer nodes. Messages in the terminal shows the detected nodes and their status. Once the nodes start streaming data a new window will display the data (acc_x,acc_z) from the first node.
+
+To stop the acquisition: 
+
+	press 'ctrl+c' on the terminal window. 
+
+
+NOTES:
+- DATA is stored in directory 'DATA'. with filenames IMU_[YYYYMMDDHHMM].{log,dat}. #.log files osts the used sensors, and *.dat contain the data in json format. You can look at the script  read_jsonIMU.m to see how to convert it to MATLAB format.
+
+
+-For safety reasons, always wait a few seconds after the end of the protocol before stopping the shimmer acquisition.* This will ensure that all data has been already dumped into the file. (I'll fix this in a newer version).
+
+-Current implementation is not optimized. Depending on the hardware the visualization may be delayed (up to a few seconds)
+
+- If one of the nodes fails during the acquisition, the visualization will freeze for some time (i.e., the timeout for reading that node's buffer). Then it will print a warning on the terminal and resume visualization. No data is lost and samples from the failing node will be replaced by zeros.
+
