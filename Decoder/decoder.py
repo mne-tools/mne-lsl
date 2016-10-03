@@ -421,7 +421,8 @@ if __name__ == '__main__':
 	from triggerdef_16 import TriggerDef
 	import pylsl
 
-	model_file= r'D:\data\MI\q5\train\classifier\classifier-64bit.pkl'
+	model_file= r'D:\data\MI\rx1\classifier\gait-ULR\classifier-64bit.pkl'
+
 	eeg_only= False
 
 	if len(sys.argv) == 2:
@@ -437,10 +438,10 @@ if __name__ == '__main__':
 
 
 	# run on background
-	#decoder= BCIDecoderDaemon(model_file, buffer_size=1.0, fake=False, amp_name=amp_name, amp_serial=amp_serial)
+	decoder= BCIDecoderDaemon(model_file, buffer_size=1.0, fake=False, amp_name=amp_name, amp_serial=amp_serial)
 
 	# run on foreground (for debugging)
-	decoder= BCIDecoder(model_file, buffer_size=1.0, amp_name=amp_name, amp_serial=amp_serial)
+	#decoder= BCIDecoder(model_file, buffer_size=1.0, amp_name=amp_name, amp_serial=amp_serial)
 
 	# run with a fake classifier
 	#decoder= BCIDecoderDaemon(fake=True)
@@ -453,6 +454,8 @@ if __name__ == '__main__':
 	probs=[0.5] * len(labels) # integrator
 	tm= qc.Timer(autoreset=True)
 	tm_cls= qc.Timer()
+
+	raw_input('\nPress Enter to start.\n')
 
 	while True:
 		if isinstance(decoder, BCIDecoderDaemon):
