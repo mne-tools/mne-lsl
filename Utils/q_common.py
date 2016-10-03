@@ -16,6 +16,7 @@ import pdb, traceback
 import numpy as np
 try:
 	import cPickle as pickle # Python 2 (cPickle = C version of pickle)
+	from future.utils import raise_
 except ImportError:
 	import pickle # Python 3 (C version is the default)
 
@@ -91,7 +92,7 @@ def confusion_matrix(Y_true, Y_pred):
 	elif len(Y_pred) < len(Y_true):
 		Y_true = Y_true[:len(Y_pred)]
 
-	cm = sklearn.metrics.confusion_matrix(Y_pred, Y_true, Y_labels)
+	cm = sklearn.metrics.confusion_matrix(Y_true, Y_pred, Y_labels)
 
 	# compute confusion matrix
 	cm_rate = cm.copy().astype('float')
