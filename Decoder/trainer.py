@@ -559,6 +559,9 @@ def run_trainer(cfg, ftrain, interactive=False, cv_file=None, feat_file=None):
 		if cfg.EXCLUDES is not None:
 			for c in cfg.EXCLUDES:
 				if type(c)==str:
+					if c not in raw.ch_names:
+						qc.print_c('Warning: Exclusion channel %s does not exist. Ignored.'%c, 'Y')
+						continue
 					c_int= raw.ch_names.index(c)
 				elif type(c)==int:
 					c_int= c

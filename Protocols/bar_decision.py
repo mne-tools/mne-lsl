@@ -164,15 +164,17 @@ class BarDecision:
 							newsum= sum(probs)
 							probs= [p/newsum for p in probs]
 
-						# move bar
+						# determine the direction
 						max_pidx= qc.get_index_max(probs)
 						max_label= bar_dirs[ max_pidx ]
 
 						if self.cfg.POSITIVE_FEEDBACK is False or (self.cfg.POSITIVE_FEEDBACK and true_label==max_label):
 							dx= probs[max_pidx]
+							'''
 							for i in range(len(probs)):
 								if i==max_pidx: continue
 								dx -= probs[i]
+							'''
 
 							dx *= self.bar_step
 
@@ -181,6 +183,7 @@ class BarDecision:
 								bar_score += dx
 							else:
 								bar_score -= dx
+								# change of direction
 								if bar_score < 0:
 									bar_score= -bar_score
 									bar_label= max_label
