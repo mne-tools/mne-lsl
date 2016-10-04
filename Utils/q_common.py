@@ -60,7 +60,7 @@ def average_every_n(arr, n):
 	return np.mean(arr[:end].reshape(-1, n), 1)
 
 
-def confusion_matrix(Y_true, Y_pred):
+def confusion_matrix(Y_true, Y_pred, label_len=6):
 	"""
 	Generate confusion matrix in a string format
 
@@ -68,6 +68,7 @@ def confusion_matrix(Y_true, Y_pred):
 	-----
 		Y_true: true labels
 		Y_pred: test labels
+		label_len: maximum label text length (minimum length: 6)
 
 	Output
 	------
@@ -85,6 +86,11 @@ def confusion_matrix(Y_true, Y_pred):
 		Y_labels = np.unique(Y_true)
 	else:
 		Y_labels = [x for x in set(Y_true)]
+	if label_len < 6:
+		label_len= 6
+		qc.print_c('Warning: label_len < 6. Setting to 6.')
+	label_tpl= '%' + '-%ds'% label_len
+	col_tpl= '%' + '-%d.2f'% label_len
 
 	# sanity check
 	if len(Y_pred) > len(Y_true):
@@ -96,18 +102,20 @@ def confusion_matrix(Y_true, Y_pred):
 
 	# compute confusion matrix
 	cm_rate = cm.copy().astype('float')
-	cm_sum = np.sum(cm, axis=1)
 	# cm_rate= cm.astype('float') / cm.sum(axis=1)[:, np.newaxis] # this can have NaN
+	cm_sum = np.sum(cm, axis=1)
+	
 	for r, s in zip(cm_rate, cm_sum):
 		if s > 0:
 			r /= s
-	cm_txt = ''
+	cm_txt = label_tpl% 'gt\dt'
 	for l in Y_labels:
-		cm_txt += '%-6s' % l
+		cm_txt += label_tpl% l[:label_len]
 	cm_txt += '\n'
-	for r in cm_rate:
+	for l, r in zip(Y_labels, cm_rate):
+		cm_txt += label_tpl% l[:label_len]
 		for c in r:
-			cm_txt += '%-6.2f' % c
+			cm_txt += col_tpl% c
 		cm_txt += '\n'
 
 	# compute accuracy
@@ -327,7 +335,7 @@ def detect_delim(filename, allowSingleCol=True):
  File I/O
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""'''
 
-def get_file_list( path, fullpath=False, recursive=False ):
+def get_file_list( path, fullpath=True, recursive=False ):
 	"""
 	Get files with or without full path.
 	"""
