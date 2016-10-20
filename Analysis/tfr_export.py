@@ -60,7 +60,7 @@ def get_tfr(cfg):
 	if max(picks) > len(raw.info['ch_names']):
 		msg= 'ERROR: "picks" has a channel index %d while there are only %d channels.'%\
 			( max(picks),len(raw.info['ch_names']) )
-		raise RuntimeError, msg
+		raise RuntimeError(msg)
 
 	# Apply filters
 	pu.preprocess(raw, spatial=cfg.SP_FILTER, spatial_ch=spchannels, spectral=cfg.TP_FILTER,

@@ -116,7 +116,7 @@ class BCIDecoder:
 			# Stream Receiver
 			self.sr= StreamReceiver(window_size=self.w_seconds, amp_name=self.amp_name, amp_serial=self.amp_serial)
 			if self.sfreq != self.sr.sample_rate:
-				raise RuntimeError, 'Amplifier sampling rate (%.1f) != model sampling rate (%.1f). Stop.'% (self.sr.sample_rate, self.sfreq)
+				raise RuntimeError('Amplifier sampling rate (%.1f) != model sampling rate (%.1f). Stop.'% (self.sr.sample_rate, self.sfreq))
 
 			# Map channel indices based on channel names of the streaming server
 			self.spatial_ch= model['spatial_ch']
@@ -282,7 +282,7 @@ class BCIDecoderDaemon:
 			from triggerdef_16 import TriggerDef
 			tdef= TriggerDef()
 			if type(fake_dirs) is not list:
-				raise RuntimeError, 'Decoder(): wrong argument type for fake_dirs.'
+				raise RuntimeError('Decoder(): wrong argument type for fake_dirs.')
 			self.labels= [ tdef.by_key[t] for t in fake_dirs ]
 			self.startmsg= 'FAKE ' + self.startmsg
 			self.stopmsg= 'FAKE ' + self.stopmsg
