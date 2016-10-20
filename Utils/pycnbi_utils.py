@@ -315,7 +315,7 @@ def rereference(raw, ref_new, ref_old=None):
 	# Re-reference and recover the original reference channel values if possible
 	if type(raw) == np.ndarray:
 		if raw_ch_old is not None:
-			raise RuntimeError, 'Recovering original reference channel is not yet supported for numpy arrays.'
+			raise RuntimeError('Recovering original reference channel is not yet supported for numpy arrays.')
 		assert type(raw_ch_new[0]) is int, 'Channels must be integer values for numpy arrays'
 		raw -= np.mean( raw[ ref_new ], axis=0 )
 	else:
@@ -419,7 +419,7 @@ def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, sp
 		data[spatial_ch_i] -= np.mean( data[spatial_ch_i], axis=0 )
 	elif spatial=='laplacian':
 		if type(spatial_ch) is not dict:
-			raise RuntimeError, 'For Lapcacian, spatial_ch must be of form {CHANNEL:[NEIGHBORS], ...}'
+			raise RuntimeError('For Lapcacian, spatial_ch must be of form {CHANNEL:[NEIGHBORS], ...}')
 		if type( spatial_ch.keys()[0] )==str:
 			spatial_ch_i= {}
 			for c in spatial_ch:
@@ -432,7 +432,7 @@ def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, sp
 			nei= spatial_ch[src]
 			data[src]= rawcopy[src] - np.mean( rawcopy[nei], axis=0 )
 	else:
-		raise RuntimeError, 'Unknown spatial filter %s'% spatial
+		raise RuntimeError('Unknown spatial filter %s'% spatial)
 
 	# Apply spectral filter
 	if spectral is not None:
@@ -527,7 +527,7 @@ def load_multi(flist, spfilter=None, spchannels=None, multiplier=1):
 	"""
 
 	if len(flist) == 0:
-		raise RuntimeError, 'The file list is empty.'
+		raise RuntimeError('The file list is empty.')
 	elif len(flist)==1:
 		return load_raw(flist[0], spfilter=spfilter, spchannels=spchannels, multiplier=multiplier)
 
@@ -670,9 +670,9 @@ def channel_names_to_index(raw, channel_names=None):
 				picks.append(c)
 			elif type(c)==str:
 				if c not in raw.ch_names:
-					raise IndexError, 'Channel %s not found in raw.ch_names'%c
+					raise IndexError('Channel %s not found in raw.ch_names'%c)
 				picks.append( raw.ch_names.index(c) )
 			else:
-				raise RuntimeError, 'channel_names is unknown format.\nchannel_names=%s'% channel_names
+				raise RuntimeError('channel_names is unknown format.\nchannel_names=%s'% channel_names)
 
 	return picks

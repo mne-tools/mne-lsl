@@ -11,18 +11,19 @@ See triggerdef_gait.py for event definition
 Kyuhwa Lee, 2015
 """
 
-EEG_IN= 'D:/work/ecog-gait/data/04OVGf/all/trial3_04OVGf_12-raw-withevents.fif'
+EEG_IN= r'D:\data\MI\rx1\train\20160905-115002-raw.fif'
 
 # LTE, RTE, others
-EVENTS= {'OTHERS':['LO', 'RO', 'LT', 'RT', 'LOS', 'ROS']}
-EEG_OUT= 'D:/work/ecog-gait/data/04OVGf/trial3_04OVGf_12-raw-lte-rte-others.fif'
+EVENTS= {'DOWN_GO':['LEFT_GO', 'RIGHT_GO']}
+EEG_OUT= r'D:\data\MI\rx1\train\20160905-115002-U-vs-LR-raw.fif'
 
 
 import pycnbi_config
 import math, mne, csv
 import numpy as np
 import q_common as qc
-from triggerdef_gait import TriggerDef
+#from triggerdef_gait import TriggerDef
+from triggerdef_16 import TriggerDef
 
 tdef= TriggerDef()
 raw, eve= pu.load_raw( EEG_IN )
@@ -48,7 +49,7 @@ assert max( eve[:,2] ) <= max( tdef.by_value.keys() )
 # reset trigger channel
 raw._data[0] *= 0
 raw.add_events( eve, 'TRIGGER' )
-raw.save(EEG_OUT)
+raw.save(EEG_OUT, overwrite=True)
 
 print('\nResulting events')
 for key in np.unique(eve[:,2]):

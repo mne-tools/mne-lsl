@@ -18,7 +18,7 @@ import numpy as np
 class rLDA:
 	def __init__(self, reg_cov=None):
 		if reg_cov > 1:
-			raise RuntimeError, 'reg_cov > 1'
+			raise RuntimeError('reg_cov > 1')
 		self.lambdaStar= reg_cov
 
 	def fit(self, X, Y):
@@ -41,9 +41,9 @@ class rLDA:
 		"""
 		labels= np.unique(Y)
 		if X.ndim != 2:
-			raise RuntimeError, 'X must be 2 dimensional.'
+			raise RuntimeError('X must be 2 dimensional.')
 		if len(labels) != 2 or labels[0]==labels[1]:
-			raise RuntimeError, 'Exactly two different labels required.'
+			raise RuntimeError('Exactly two different labels required.')
 
 		index1= np.where(Y == labels[0])[0]
 		index2= np.where(Y == labels[1])[0]
@@ -105,4 +105,4 @@ class rLDA:
 		return self.labels
 
 	def score(self, X, true_labels):
-		raise RuntimeError, 'SORRY: FUNCTION IS NOT IMPLEMENTED YET.'
+		raise RuntimeError('SORRY: FUNCTION IS NOT IMPLEMENTED YET.')
