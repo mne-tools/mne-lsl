@@ -413,8 +413,18 @@ def load_obj(fname):
 	"""
 	Read python object from a file
 	"""
-	with open(fname, 'rb') as fin:
-		return pickle.load(fin)
+	try:
+		with open(fname, 'rb') as f:
+			return pickle.load(f)
+	# usually happens when trying to load Python 2 pickle object from Python 3
+	except UnicodeDecodeError:
+		with open(fname, 'rb') as f:
+			return pickle.load(f, encoding='latin1') 
+	except:
+		msg= 'load_obj(): Cannot load pickled object file "%s". The error was:\n%s\n%s'% \
+			(fname,sys.exc_info()[0],sys.exc_info()[1])
+		print_error(msg)
+		sys.exit(-1)
 
 def loadtxt_fast(filename, delimiter=',', skiprows=0, dtype=float):
 	"""
