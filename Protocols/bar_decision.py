@@ -103,7 +103,7 @@ class BarDecision:
 				elif true_label=='B': # both hands
 					self.trigger.signal(self.tdef.BOTH_READY)
 				else:
-					raise RuntimeError, 'Unknown direction %s' % true_label
+					raise RuntimeError('Unknown direction %s' % true_label)
 
 				self.tm_trigger.reset()
 
@@ -130,7 +130,7 @@ class BarDecision:
 				elif true_label=='B': # both
 					self.trigger.signal(self.tdef.BOTH_GO)
 				else:
-					raise RuntimeError, 'Unknown truedirection %s' % true_label
+					raise RuntimeError('Unknown truedirection %s' % true_label)
 
 				self.tm_watchdog.reset()
 				self.tm_trigger.reset()

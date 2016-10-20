@@ -35,7 +35,7 @@ if __name__=='__main__':
 		if f[-4:]=='.fif':
 			rawlist.append(f)
 	if len(rawlist)==0:
-		raise RuntimeError, 'No fif files found in the path.'
+		raise RuntimeError('No fif files found in the path.')
 
 	raw, events= pu.load_multi(rawlist, multiplier=MULTIPLIER)
 	raw.pick_types(meg=False, eeg=True, stim=False)

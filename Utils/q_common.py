@@ -16,7 +16,6 @@ import pdb, traceback
 import numpy as np
 try:
 	import cPickle as pickle # Python 2 (cPickle = C version of pickle)
-	from future.utils import raise_
 except ImportError:
 	import pickle # Python 3 (C version is the default)
 
@@ -94,7 +93,7 @@ def confusion_matrix(Y_true, Y_pred, label_len=6):
 
 	# sanity check
 	if len(Y_pred) > len(Y_true):
-		raise RuntimeError, 'Y_pred has more items than Y_true'
+		raise RuntimeError('Y_pred has more items than Y_true')
 	elif len(Y_pred) < len(Y_true):
 		Y_true = Y_true[:len(Y_pred)]
 
@@ -225,9 +224,9 @@ try:
 
 		"""
 		if type(msg) not in [str, unicode]:
-			raise RuntimeError, 'msg parameter must be a string. Recevied type %s'% type(msg)
+			raise RuntimeError('msg parameter must be a string. Recevied type %s'% type(msg))
 		if type(color) not in [str, unicode] and len(color) != 1:
-			raise RuntimeError, 'color parameter must be a single color code. Received type %s'% type(color)
+			raise RuntimeError('color parameter must be a single color code. Received type %s'% type(color))
 
 		if color.upper()=='B':
 			c= colorama.Fore.BLUE

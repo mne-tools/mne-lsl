@@ -7,7 +7,7 @@ Kyuhwa Lee (kyu.lee@epfl.ch)
 Swiss Federal Institute of Technology of Lausanne (EPFL)
 """
 
-LOG_DIR= r'D:\data\MI\rx1\classifier\gait\L-vs-R'
+LOG_DIR= r'D:\data\MI\rx1\classifier\gait-ULR-250ms'
 
 import pycnbi_config
 import q_common as qc

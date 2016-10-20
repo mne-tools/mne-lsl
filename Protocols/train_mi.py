@@ -116,7 +116,7 @@ if __name__=='__main__':
 				bar.move( 'R', 100, overlay=True )
 				trigger.signal(tdef.BOTH_READY)
 			else:
-				raise RuntimeError, 'Unknown direction %d' % dir
+				raise RuntimeError('Unknown direction %d' % dir)
 			timer_trigger.reset()
 		elif event=='dir_r' and timer_trigger.sec() > cfg.T_DIR_READY:
 			bar.fill()
@@ -135,7 +135,7 @@ if __name__=='__main__':
 			elif dir=='B': # both
 				trigger.signal(tdef.BOTH_GO)
 			else:
-				raise RuntimeError, 'Unknown direction %d' % dir
+				raise RuntimeError('Unknown direction %d' % dir)
 		elif event=='dir' and timer_trigger.sec() > cfg.T_DIR:
 			event= 'gap_s'
 			bar.fill()

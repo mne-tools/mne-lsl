@@ -85,7 +85,7 @@ def check_cfg(cfg):
 
 	for v in critical_vars['COMMON']:
 		if not hasattr(cfg, v):
-			raise RuntimeError, '%s not defined in config.'% v
+			raise RuntimeError('%s not defined in config.'% v)
 
 	for key in optional_vars:
 		if not hasattr(cfg, key):
@@ -95,28 +95,28 @@ def check_cfg(cfg):
 	# classifier parameters check
 	if cfg.CLASSIFIER=='RF':
 		if not hasattr(cfg, 'RF'):
-			raise RuntimeError, '"RF" not defined in config.'
+			raise RuntimeError('"RF" not defined in config.')
 		for v in critical_vars['RF']:
 			if v not in cfg.RF:
-				raise RuntimeError, '%s not defined in config.'% v
+				raise RuntimeError('%s not defined in config.'% v)
 	elif cfg.CLASSIFIER=='GB':
 		if not hasattr(cfg, 'GB'):
-			raise RuntimeError, '"GB" not defined in config.'
+			raise RuntimeError('"GB" not defined in config.')
 		for v in critical_vars['GB']:
 			if v not in cfg.GB:
-				raise RuntimeError, '%s not defined in config.'% v
+				raise RuntimeError('%s not defined in config.'% v)
 	elif cfg.CLASSIFIER=='rLDA' and not hasattr(cfg, 'RLDA_REGULARIZE_COEFF'):
-		raise RuntimeError, '"RLDA_REGULARIZE_COEFF" not defined in config.'
+		raise RuntimeError('"RLDA_REGULARIZE_COEFF" not defined in config.')
 
 	if cfg.CV_PERFORM is not None:
 		if not hasattr(cfg, 'CV_RANDOM_SEED'):
 			cfg.CV_RANDOM_SEED= None
 			qc.print_c( 'check_cfg(): Setting undefined parameter CV_RANDOM_SEED=%s'% (cfg.CV_RANDOM_SEED), 'Y' )
 		if not hasattr(cfg, 'CV_FOLDS'):
-			raise RuntimeError, '"CV_FOLDS" not defined in config.'
+			raise RuntimeError('"CV_FOLDS" not defined in config.')
 
 		if cfg.CV_PERFORM == 'StratifiedShuffleSplit' and not hasattr(cfg, 'CV_TEST_RATIO'):
-			raise RuntimeError, '"CV_TEST_RATIO" not defined in config.'
+			raise RuntimeError('"CV_TEST_RATIO" not defined in config.')
 	
 	if cfg.N_JOBS is None:
 		cfg.N_JOBS= mp.cpu_count()
@@ -417,7 +417,7 @@ def cva_features(datadir):
 
 
 def load_psd():
-	raise RunetimeError, 'SORRY, CODE NOT FINISHED.'
+	raise RunetimeError('SORRY, CODE NOT FINISHED.')
 	labels= np.array( [] )
 	X_data= None
 	Y_data= None
@@ -439,7 +439,7 @@ def load_psd():
 				print('MULTI-SEGMENT EPOCH IS NOT SUPPORTED YET.')
 				sys.exit(-1)
 			if cfg.EPOCH[0] < tmin or cfg.EPOCH[1] > tmax:
-				raise RuntimeError, '\n*** Epoch time range is out of data range.'
+				raise RuntimeError('\n*** Epoch time range is out of data range.')
 			ts= int( (cfg.EPOCH[0] - tmin) * sfreq / data['wstep'] )
 			te= int( (cfg.EPOCH[1] - tmin) * sfreq / data['wstep'] )
 
@@ -523,7 +523,7 @@ def run_trainer(cfg, ftrain, interactive=False, cv_file=None, feat_file=None):
 	elif cfg.CLASSIFIER == 'rLDA':
 		cls = rLDA(cfg.RLDA_REGULARIZE_COEFF)
 	else:
-		raise RuntimeError, '*** Unknown classifier %s' % cfg.CLASSIFIER
+		raise RuntimeError('*** Unknown classifier %s' % cfg.CLASSIFIER)
 
 
 	# preprocessing, epoching and PSD computation
@@ -532,7 +532,7 @@ def run_trainer(cfg, ftrain, interactive=False, cv_file=None, feat_file=None):
 		load_psd()
 	else:
 		if len(ftrain) > 1 and cfg.CHANNEL_PICKS is not None and type( cfg.CHANNEL_PICKS[0] ) == int:
-			raise RuntimeError, 'When loading multiple EEG files, CHANNEL_PICKS must be list of string, not integers because they may have different channel order.'
+			raise RuntimeError('When loading multiple EEG files, CHANNEL_PICKS must be list of string, not integers because they may have different channel order.')
 		raw, events= pu.load_multi(ftrain)
 		if cfg.REF_CH_NEW is not None:
 			pu.rereference(raw, ref_new=cfg.REF_CH_NEW, ref_old=cfg.REF_CH_OLD)
@@ -554,7 +554,7 @@ def run_trainer(cfg, ftrain, interactive=False, cv_file=None, feat_file=None):
 			elif type(c)==str:
 				picks.append( raw.ch_names.index(c) )
 			else:
-				raise RuntimeError, 'CHANNEL_PICKS has a value of unknown type %s.\nCHANNEL_PICKS=%s'% (type(c), cfg.CHANNEL_PICKS)
+				raise RuntimeError('CHANNEL_PICKS has a value of unknown type %s.\nCHANNEL_PICKS=%s'% (type(c), cfg.CHANNEL_PICKS))
 
 		if cfg.EXCLUDES is not None:
 			for c in cfg.EXCLUDES:
@@ -566,7 +566,7 @@ def run_trainer(cfg, ftrain, interactive=False, cv_file=None, feat_file=None):
 				elif type(c)==int:
 					c_int= c
 				else:
-					raise RuntimeError, 'EXCLUDES has a value of unknown type %s.\nEXCLUDES=%s'% (type(c), cfg.EXCLUDES)
+					raise RuntimeError('EXCLUDES has a value of unknown type %s.\nEXCLUDES=%s'% (type(c), cfg.EXCLUDES))
 				if c_int in picks:				
 					del picks[ picks.index(c_int) ]
 
@@ -585,7 +585,7 @@ def run_trainer(cfg, ftrain, interactive=False, cv_file=None, feat_file=None):
 				elif type(c)==str:
 					spatial_ch.append( raw.ch_names.index(c) )
 				else:
-					raise RuntimeError, 'SP_CHANNELS is unknown format.\nSP_CHANNELS=%s'% cfg.SP_CHANNELS
+					raise RuntimeError('SP_CHANNELS is unknown format.\nSP_CHANNELS=%s'% cfg.SP_CHANNELS)
 
 		# Read epochs
 		try:
@@ -633,15 +633,15 @@ def run_trainer(cfg, ftrain, interactive=False, cv_file=None, feat_file=None):
 			'''
 			TODO: Implement multiple epochs for timelag feature
 			'''
-			raise RuntimeError, 'MULTIPLE EPOCHS NOT IMPLEMENTED YET FOR TIMELAG FEATURE.'
+			raise RuntimeError('MULTIPLE EPOCHS NOT IMPLEMENTED YET FOR TIMELAG FEATURE.')
 
 		elif cfg.FEATURES=='WAVELET':
 			'''
 			TODO: Implement multiple epochs for wavelet feature
 			'''
-			raise RuntimeError, 'MULTIPLE EPOCHS NOT IMPLEMENTED YET FOR WAVELET FEATURE.'
+			raise RuntimeError('MULTIPLE EPOCHS NOT IMPLEMENTED YET FOR WAVELET FEATURE.')
 		else:
-			raise RuntimeError, '>> ERROR: %s is not supported.'% cfg.FEATURES
+			raise RuntimeError('>> ERROR: %s is not supported.'% cfg.FEATURES)
 
 		for ev in triggers:
 			n_epochs[ev]= len( np.where(events[:,-1]==triggers[ev])[0] )
@@ -688,7 +688,7 @@ def run_trainer(cfg, ftrain, interactive=False, cv_file=None, feat_file=None):
 				txt += 'Window size: %.1f sec\n'% (w)
 				txt += 'Epoch range: %s sec\n'% (cfg.EPOCH[i])
 		else:
-			txt += 'Window size: %.1f sec\n'% (psdparams['wlen'])
+			txt += 'Window size: %.3f sec\n'% (psdparams['wlen'])
 			txt += 'Epoch range: %s sec\n'% (cfg.EPOCH)
 
 		#chance= 1.0 / len(np.unique(Y_data))

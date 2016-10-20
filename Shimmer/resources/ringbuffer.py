@@ -20,7 +20,7 @@ class RingBuffer:
 
 class RingBufferFull:
 	def __init__(self,n):
-		raise "you should use RingBuffer"
+		raise RuntimeError("you should use RingBuffer")
 	def append(self,x):		
 		self.data[self.cur]=x
 		self.cur=(self.cur+1) % self.max
