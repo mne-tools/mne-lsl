@@ -205,7 +205,8 @@ def print_error(msg):
 	callerName= inspect.stack()[1][3]
 	print_c('\n>> Error in "%s()":\n%s\n'% (callerName,msg), 'R' )
 
-# print_c: print texts in color
+
+# print_c definition: print texts in color
 try:
 	import colorama
 	colorama.init()
@@ -223,9 +224,9 @@ try:
 			Make it using *args and **kwargs to support fully featured print().
 
 		"""
-		if type(msg) not in [str, unicode]:
-			raise RuntimeError('msg parameter must be a string. Recevied type %s'% type(msg))
-		if type(color) not in [str, unicode] and len(color) != 1:
+
+		color= str(color)
+		if len(color) != 1:
 			raise RuntimeError('color parameter must be a single color code. Received type %s'% type(color))
 
 		if color.upper()=='B':
@@ -242,7 +243,7 @@ try:
 			c= colorama.Fore.CYAN
 		else:
 			assert False, 'pu.print_color(): Wrong color code.'
-		print( colorama.Style.BRIGHT + c + msg + colorama.Style.RESET_ALL, end=end )
+		print( colorama.Style.BRIGHT + c + str(msg) + colorama.Style.RESET_ALL, end=end )
 except ImportError:
 	print('\n\n*** WARNING: colorama module not found. print_c() will ignore color codes. ***\n')
 	def print_c(msg, color, end='\n'):
