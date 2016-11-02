@@ -76,9 +76,11 @@ if __name__=='__main__':
 	# events and triggers
 	tdefmod= importlib.import_module( cfg.TRIGGER_DEF )
 	tdef= tdefmod.TriggerDef()
+	if cfg.TRIGGER_DEVICE == None:
+		raw_input('\n** Warning: No trigger device set. Press Ctrl+C to stop or Enter to continue.')
 	trigger= pyLptControl.Trigger(cfg.TRIGGER_DEVICE)
 	if trigger.init(50)==False:
-		qc.print_c('\nError connecting to USB2LPT device. Use a mock trigger instead?', 'R')
+		qc.print_c('\n** Error connecting to USB2LPT device. Use a mock trigger instead?', 'R')
 		raw_input('Press Ctrl+C to stop or Enter to continue.')
 		trigger= pyLptControl.MockTrigger()
 		trigger.init(50)
@@ -119,6 +121,7 @@ if __name__=='__main__':
 		dir_detected.append(pred_label)
 
 		if cfg.WITH_REX is True and pred_label==true_label:
+		#if cfg.WITH_REX is True:
 			if pred_label=='U':
 				rex_dir= 'N'
 			elif pred_label=='L':
@@ -162,5 +165,3 @@ if __name__=='__main__':
 		decoder.stop()
 
 	print('Finished.')
-
-
