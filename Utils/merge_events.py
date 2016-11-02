@@ -11,11 +11,11 @@ See triggerdef_gait.py for event definition
 Kyuhwa Lee, 2015
 """
 
-EEG_IN= r'D:\data\MI\rx1\train\20160905-115002-raw.fif'
+EEG_IN= r'D:\data\MI\rx1\train\20161031-110045-raw.fif'
 
 # LTE, RTE, others
 EVENTS= {'DOWN_GO':['LEFT_GO', 'RIGHT_GO']}
-EEG_OUT= r'D:\data\MI\rx1\train\20160905-115002-U-vs-LR-raw.fif'
+EEG_OUT= r'D:\data\MI\rx1\train\20161031-110045-D-raw.fif'
 
 
 import pycnbi_config
