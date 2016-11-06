@@ -464,7 +464,7 @@ def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, sp
 		else:
 			notch_ch_i= notch_ch
 
-		mne.filter.notch_filter(data, Fs=sfreq, freqs=notch, notch_widths=None,
+		mne.filter.notch_filter(data, Fs=sfreq, freqs=notch, notch_widths=3,
 			picks=notch_ch, method='fft', n_jobs=mp.cpu_count(), copy=False)
 
 	return True
