@@ -7,10 +7,10 @@ data_dir= r'D:\data\MI\rx1\offline\gait-pulling\20161104\test'
 channel_picks= None
 tmin= 0.0
 tmax= 3.0
-fmin=1
-fmax=40
-w_len=0.5
-w_step=16
+fmin= 1
+fmax= 40
+w_len= 0.5
+w_step= 16
 from triggerdef_16 import TriggerDef as tdef
 events= {'left':tdef.LEFT_GO, 'right':tdef.RIGHT_GO}
 
