@@ -78,7 +78,7 @@ def get_tfr(cfg):
 		assert len(classes) > 0
 
 		epochs_all= mne.Epochs(raw, events, classes, tmin=cfg.EPOCH[0]-0.5, tmax=cfg.EPOCH[1]+0.5,
-			proj=False, picks=picks, baseline=None, preload=True, add_eeg_ref=False)
+			proj=False, reject=None, picks=picks, baseline=None, preload=True, add_eeg_ref=False)
 	except:
 		import pdb, traceback
 		print('\n*** (tfr_export) ERROR OCCURRED WHILE EPOCHING ***')
