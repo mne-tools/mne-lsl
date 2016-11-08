@@ -182,7 +182,9 @@ class BCIDecoder:
 		"""
 		tm= qc.Timer()
 		if self.fake:
-			probs= [ random.uniform(0.2, 0.8) ] # biased fake probs
+			# fake deocder: biased likelihood for the first class
+			probs= [ random.uniform(0.3, 0.8) ]
+			# others class likelihoods are just set to equal
 			p_others= (1 - probs[0]) / ( len(self.labels) - 1 )
 			for x in range(1, len(self.labels)):
 				probs.append( p_others )
@@ -251,6 +253,8 @@ class BCIDecoderDaemon:
 		fake:
 			False= Connect to an amplifier LSL server and decode
 			True=  Create a mock decoder (fake probabilities biased to 1.0)
+		fake_dirs:
+			example: ['LEFT_GO', 'RIGHT_GO']
 	"""
 
 	def __init__(self, classifier=None, buffer_size=1.0, fake=False, amp_serial=None, amp_name=None, fake_dirs=None):
@@ -282,9 +286,9 @@ class BCIDecoderDaemon:
 			from triggerdef_16 import TriggerDef
 			tdef= TriggerDef()
 			if type(fake_dirs) is not list:
-				raise RuntimeError('Decoder(): wrong argument type for fake_dirs.')
+				raise RuntimeError('Decoder(): wrong argument type of fake_dirs: %s.'% type(fake_dirs))
 			self.labels= [ tdef.by_key[t] for t in fake_dirs ]
-			self.startmsg= 'FAKE ' + self.startmsg
+			self.startmsg= '** WARNING: FAKE ' + self.startmsg
 			self.stopmsg= 'FAKE ' + self.stopmsg
 
 		self.psdlock= mp.Lock()
@@ -417,11 +421,12 @@ class BCIDecoderDaemon:
 		return self.running.value
 
 
+# sample decoding code
 if __name__ == '__main__':
 	from triggerdef_16 import TriggerDef
 	import pylsl
 
-	model_file= r'D:\data\MI\rx1\classifier\gait-ULR\classifier-64bit.pkl'
+	model_file= r'D:\data\MI\rx1\classifier\gait\500ms-good\classifier-64bit.pkl'
 
 	eeg_only= False
 
@@ -438,10 +443,10 @@ if __name__ == '__main__':
 
 
 	# run on background
-	decoder= BCIDecoderDaemon(model_file, buffer_size=1.0, fake=False, amp_name=amp_name, amp_serial=amp_serial)
+	#decoder= BCIDecoderDaemon(model_file, buffer_size=1.0, fake=False, amp_name=amp_name, amp_serial=amp_serial)
 
 	# run on foreground (for debugging)
-	#decoder= BCIDecoder(model_file, buffer_size=1.0, amp_name=amp_name, amp_serial=amp_serial)
+	decoder= BCIDecoder(model_file, buffer_size=1.0, amp_name=amp_name, amp_serial=amp_serial)
 
 	# run with a fake classifier
 	#decoder= BCIDecoderDaemon(fake=True)
@@ -455,13 +460,8 @@ if __name__ == '__main__':
 	tm= qc.Timer(autoreset=True)
 	tm_cls= qc.Timer()
 
-	raw_input('\nPress Enter to start.\n')
-
 	while True:
-		if isinstance(decoder, BCIDecoderDaemon):
-			praw= decoder.get_prob_unread()
-		else:
-			praw= decoder.get_prob()
+		praw= decoder.get_prob_unread()
 
 		if praw==None:
 			# watch dog

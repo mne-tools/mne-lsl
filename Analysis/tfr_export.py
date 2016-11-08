@@ -9,7 +9,7 @@ Kyuhwa Lee, 2015
 
 import pycnbi_config
 import pycnbi_utils as pu
-import sys, os, mne
+import sys, os, mne, scipy
 import multiprocessing as mp
 import numpy as np
 import q_common as qc
@@ -78,7 +78,12 @@ def get_tfr(cfg):
 		assert len(classes) > 0
 
 		epochs_all= mne.Epochs(raw, events, classes, tmin=cfg.EPOCH[0]-0.5, tmax=cfg.EPOCH[1]+0.5,
-			proj=False, reject=None, picks=picks, baseline=None, preload=True, add_eeg_ref=False)
+			proj=False, picks=picks, baseline=None, preload=True, add_eeg_ref=False)
+		if epochs_all.drop_log_stats() > 0:
+			print('\n** Bad epochs found. Dropping into a Python shell.')
+			print( epochs_all.drop_log )
+			print('\nType exit to continue.\n')
+			embed()
 	except:
 		import pdb, traceback
 		print('\n*** (tfr_export) ERROR OCCURRED WHILE EPOCHING ***')
@@ -95,38 +100,48 @@ def get_tfr(cfg):
 		if cfg.POWER_AVERAGED:
 			epochs= epochs_all[evname][:]
 			power[evname]= tfr(epochs, freqs=freqs, n_cycles=n_cycles, use_fft=False,
-				return_itc=False, decim=8, n_jobs=mp.cpu_count() )
+				return_itc=False, decim=1, n_jobs=mp.cpu_count() )
 			power[evname]= power[evname].crop(tmin=cfg.EPOCH[0], tmax=cfg.EPOCH[1])
 
-			# Inspect power for each channel
-			for ch in np.arange(len(picks)):
-				chname= raw.ch_names[picks[ch]]
-				title= 'Peri-event %s - Channel %s'% (evname,chname)
-
-				# mode= None | 'logratio' | 'ratio' | 'zscore' | 'mean' | 'percent'
-				fig= power[evname].plot( [ch], baseline=cfg.BS_TIMES, mode='logratio', show=False,
-					colorbar=True, title=title, vmin=cfg.VMIN, vmax=cfg.VMAX, dB=False )
-				fout= '%s/%s-%s-%s-%s.jpg'% (export_dir, file_prefix, cfg.SP_FILTER, evname, chname)
-				print('Exporting to %s'% fout)
-				fig.savefig(fout)
-		else:
-			for ep in range(len(epochs_all[evname])):
-				epochs= epochs_all[evname][ep]
-				power[evname]= tfr(epochs, freqs=freqs, n_cycles=n_cycles, use_fft=False,
-					return_itc=False, decim=8, n_jobs=mp.cpu_count() )
-				power[evname]= power[evname].crop(tmin=cfg.EPOCH[0], tmax=cfg.EPOCH[1])
-
+			if cfg.EXPORT_MATLAB is True:
+				# MATLAB export
+				mout= '%s/%s-%s-%s-ep%02d.jpg'% (export_dir, file_prefix, cfg.SP_FILTER, evname, ep+1)
+				scipy.io.savemat( mout, { 'tfr':power[evname].data, 'chs':power[evname].ch_names } )
+			else:
 				# Inspect power for each channel
 				for ch in np.arange(len(picks)):
 					chname= raw.ch_names[picks[ch]]
-					title= 'Peri-event %s - Channel %s, Trial %d'% (evname,chname,ep+1)
+					title= 'Peri-event %s - Channel %s'% (evname,chname)
 
 					# mode= None | 'logratio' | 'ratio' | 'zscore' | 'mean' | 'percent'
 					fig= power[evname].plot( [ch], baseline=cfg.BS_TIMES, mode='logratio', show=False,
 						colorbar=True, title=title, vmin=cfg.VMIN, vmax=cfg.VMAX, dB=False )
-					fout= '%s/%s-%s-%s-%s-ep%02d.jpg'% (export_dir, file_prefix, cfg.SP_FILTER, evname, chname, ep+1)
+					fout= '%s/%s-%s-%s-%s.jpg'% (export_dir, file_prefix, cfg.SP_FILTER, evname, chname)
+					print('Exporting to %s'% fout)
 					fig.savefig(fout)
-					print('Exported %s'% fout)
+		else:
+			for ep in range(len(epochs_all[evname])):
+				epochs= epochs_all[evname][ep]
+				power[evname]= tfr(epochs, freqs=freqs, n_cycles=n_cycles, use_fft=False,
+					return_itc=False, decim=1, n_jobs=mp.cpu_count() )
+				power[evname]= power[evname].crop(tmin=cfg.EPOCH[0], tmax=cfg.EPOCH[1])
+
+				if cfg.EXPORT_MATLAB is True:
+					# MATLAB export
+					mout= '%s/%s-%s-%s-ep%02d.jpg'% (export_dir, file_prefix, cfg.SP_FILTER, evname, ep+1)
+					scipy.io.savemat( mout, { 'tfr':power[evname].data, 'chs':power[evname].ch_names } )
+				else:
+					# Inspect power for each channel
+					for ch in np.arange(len(picks)):
+						chname= raw.ch_names[picks[ch]]
+						title= 'Peri-event %s - Channel %s, Trial %d'% (evname,chname,ep+1)
+
+						# mode= None | 'logratio' | 'ratio' | 'zscore' | 'mean' | 'percent'
+						fig= power[evname].plot( [ch], baseline=cfg.BS_TIMES, mode='logratio', show=False,
+							colorbar=True, title=title, vmin=cfg.VMIN, vmax=cfg.VMAX, dB=False )
+						fout= '%s/%s-%s-%s-%s-ep%02d.jpg'% (export_dir, file_prefix, cfg.SP_FILTER, evname, chname, ep+1)
+						fig.savefig(fout)
+						print('Exported %s'% fout)
 
 	if hasattr(cfg, 'POWER_DIFF'):
 		export_dir= '%s/diff'% outpath
