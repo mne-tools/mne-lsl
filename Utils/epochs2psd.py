@@ -15,7 +15,7 @@ import numpy as np
 import q_common as qc
 from multiprocessing import cpu_count
 
-def epochs2psd(rawfile, channel_picks, event_id, tmin, tmax, fmin, fmax, w_len, w_step):
+def epochs2psd(rawfile, channel_picks, event_id, tmin, tmax, fmin, fmax, w_len, w_step, excludes=None):
 	"""
 	Compute PSD features over a sliding window in epochs
 	
@@ -42,7 +42,7 @@ def epochs2psd(rawfile, channel_picks, event_id, tmin, tmax, fmin, fmax, w_len, 
 	sfreq= raw.info['sfreq']
 
 	if channel_picks == None:
-		picks= mne.pick_types(raw.info, meg=False, eeg=True, stim=False, eog=False, exclude='bads')
+		picks= mne.pick_types(raw.info, meg=False, eeg=True, stim=False, eog=False, exclude=excludes)
 	else:
 		picks= channel_picks
 
