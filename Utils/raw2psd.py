@@ -13,7 +13,6 @@ import pycnbi_config
 import pycnbi_utils as pu
 import numpy as np
 import q_common as qc
-import multiprocessing as mp
 import mne
 from IPython import embed # for debugging
 
@@ -49,7 +48,7 @@ def raw2psd(rawfile, fmin=1, fmax=40, wlen=0.5, wstep=1, tmin=0.0, tmax=None, ch
 	psde= mne.decoding.PSDEstimator(sfreq, fmin=fmin, fmax=fmax, n_jobs=1, adaptive=False)
 	psd_all= None
 	times= []
-	
+
 	for t in range( wframes, tmax, wstep ):
 		window= rawdata[:, t-wframes:t]
 		psd= psde.transform( window.reshape( (1, window.shape[0], window.shape[1]) ) )
@@ -65,9 +64,29 @@ def raw2psd(rawfile, fmin=1, fmax=40, wlen=0.5, wstep=1, tmin=0.0, tmax=None, ch
 	qc.save_obj(fout, dataout )
 	print('Exported to %s'% fout)
 
+
+"""
+Example
+"""
 if __name__=='__main__':
 	DATA_DIR= r'D:\data\MI\rx1\offline\gait-pulling\20161104'
-	for rawfile in qc.get_file_list( DATA_DIR ):
-		if rawfile[-8:] != '-raw.fif': continue
-		raw2psd(rawfile, fmin=1, fmax=40, wlen=0.5, wstep=1, tmin=0.0, tmax=None)
+	N_JOBS= 8
 
+	if N_JOBS > 1:
+		import multiprocessing as mp
+		pool= mp.Pool(N_JOBS)
+		procs= []
+		for rawfile in qc.get_file_list( DATA_DIR ):
+			if rawfile[-8:] != '-raw.fif': continue
+			cmd= [rawfile, 1, 40, 0.5, 1, 0.0, None]
+			procs.append( pool.apply_async( raw2psd, cmd ) )
+		for proc in procs:
+			proc.get()
+		pool.close()
+		pool.join()
+	else:
+		for rawfile in qc.get_file_list( DATA_DIR ):
+			if rawfile[-8:] != '-raw.fif': continue
+			raw2psd(rawfile, fmin=1, fmax=40, wlen=0.5, wstep=1, tmin=0.0, tmax=None)
+
+	print('Done.')
