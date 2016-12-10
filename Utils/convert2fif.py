@@ -232,7 +232,7 @@ def eeg2fif(filename, interactive=False, outdir=None):
 	raw.save(fiffile, verbose=False, overwrite=True, fmt='double')
 	print('Saved to', fiffile)
 
-def gdf2fif(filename, interactive=False, outdir=None):
+def gdf2fif(filename, interactive=False, outdir=None, ch_name_file=None):
 	"""
 	g.Tec gdf format
 
@@ -275,7 +275,15 @@ def gdf2fif(filename, interactive=False, outdir=None):
 	signals[0] *= 0 # init the event channel
 
 	# Note: gdf might have a software event channel
-	ch_names= ['TRIGGER'] + ['CH%d'% x for x in range(1,nch)]
+	if ch_name_file is None:
+		ch_names= ['TRIGGER'] + ['CH%d'% x for x in range(1,nch)]
+	else:
+		ch_names_raw= []
+		for l in open(ch_name_file):
+			ch_names_raw.append( l.strip() )
+		if ch_names_raw[-1] != 'TRIGGER':
+			raw_input('Warning: Trigger channel is assumed to be the last channel. Press Ctrl+C if this is not the case.')
+		ch_names= ['TRIGGER'] + ch_names_raw[:-1]
 	ch_info= ['stim'] + ['eeg'] * (nch-1)
 	info= mne.create_info( ch_names, sample_rate, ch_info )
 
@@ -392,7 +400,7 @@ def bdf2fif_matlab(filename, interactive=False, outdir=None):
 	raw.save(fiffile, verbose=False, overwrite=True, fmt='double')
 	print('Saved to', fiffile)
 
-def any2fif(filename, interactive=False, outdir=None):
+def any2fif(filename, interactive=False, outdir=None, ch_name_file=None):
 	"""
 	Generic file format converter
 	"""
@@ -407,24 +415,27 @@ def any2fif(filename, interactive=False, outdir=None):
 	elif fext in ['edf','bdf']:
 		bdf2fif(filename, interactive=interactive, outdir=outdir)
 	elif fext == 'gdf':
-		gdf2fif(filename, interactive=interactive, outdir=outdir)
+		gdf2fif(filename, interactive=interactive, outdir=outdir, ch_name_file=ch_name_file)
 	else: # unknown format
 		qc.print_c('WARNING: Ignored unrecognized file extension %s. It should be [.pcl | .eeg | .gdf | .bdf]'% fext, 'r')
 
 if __name__=='__main__':
 	if len( sys.argv ) == 1:
-		input_dirs= [raw_input('Input directory? ')]
+		input_dir= [raw_input('Input directory? ')]
 	else:
-		input_dirs= sys.argv[1:]
+		input_dir= sys.argv[1]
+		if len( sys.argv ) >= 3:
+			ch_name_file= sys.argv[2]
+		else:
+			ch_name_file= None
 
 	count= 0
-	for d in input_dirs:
-		for f in qc.get_file_list(d, fullpath=True, recursive=True):
-			fdir, fname, fext= qc.parse_path(f)
-			outdir = fdir + 'fif/'
-			if fext in ['pcl','bdf','edf','gdf','eeg']:
-				print('Converting %s'% f)
-				any2fif(f, interactive=True, outdir=outdir)
-				count += 1
+	for f in qc.get_file_list(input_dir, fullpath=True, recursive=True):
+		fdir, fname, fext= qc.parse_path(f)
+		outdir = fdir + 'fif/'
+		if fext in ['pcl','bdf','edf','gdf','eeg']:
+			print('Converting %s'% f)
+			any2fif(f, interactive=True, outdir=outdir, ch_name_file=ch_name_file)
+			count += 1
 
 	print('\n>> %d files converted.'% count)
