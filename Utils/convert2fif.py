@@ -1,4 +1,4 @@
-from __future__ import print_function, division
+from __future__ import print_function, division, unicode_literals
 
 """
 Convert known file format to FIF.
@@ -245,22 +245,15 @@ def gdf2fif(filename, interactive=False, outdir=None):
 		outdir += '/'
 
 	fiffile= outdir + fname + '.fif'
-	matfile= outdir + fname +'.mat'
+	matfile= fdir + fname +'.mat'
 
-	convert2mat( outdir + fname + '.gdf', matfile )
+	convert2mat( fdir + fname + '.gdf', matfile )
 	mat= scipy.io.loadmat(matfile)
 	os.remove( matfile )
 	sample_rate= int( mat['header']['SampleRate'] )
 	nch= mat['sig'].shape[1]
 
 	# read events from header
-	'''
-	Important:
-		event position may have the same frame number for two consecutive events
-		It might be due to the CNBI software trigger bug
-	Example:
-		f1.20121220.102907.offline.mi.mi_rhlh.gdf (Two 10201's in evpos)
-	'''
 	evtype= mat['header']['EVENT'][0][0][0]['TYP'][0]
 	evpos= mat['header']['EVENT'][0][0][0]['POS'][0]
 	events= []
@@ -270,23 +263,21 @@ def gdf2fif(filename, interactive=False, outdir=None):
 
 	signals_raw= mat['sig'].T # -> channels x samples
 
+	''' it seems they fixed the bug now
 	# Note: Biosig's sload() sometimes returns bogus event values so we use the following for events
 	raw= mne.io.read_raw_edf(filename, preload=True)
 	events= mne.find_events(raw, stim_channel='TRIGGER', shortest_event=1, consecutive=True)
 	#signals_raw[-1][:]= raw._data[-1][:] # overwrite with the correct event values
+	'''
 
 	# Move the event channel to 0 (for consistency)
 	signals= np.concatenate( (signals_raw[-1,:].reshape(1,-1), signals_raw[:-1,:]) )
 	signals[0] *= 0 # init the event channel
 
 	# Note: gdf might have a software event channel
-	if nch == 17:
-		ch_names= CAP['GTEC_16']
-		ch_info= CAP['GTEC_16_INFO'][:nch]
-	else:
-		ch_names= ['TRIGGER'] + ['ch%d'% x for x in range(1,nch)]
-		ch_info= ['stim'] + ['eeg'] * (nch-1)
-	info= mne.create_info( ch_names, sample_rate, ch_info, montage='standard_1005' )
+	ch_names= ['TRIGGER'] + ['CH%d'% x for x in range(1,nch)]
+	ch_info= ['stim'] + ['eeg'] * (nch-1)
+	info= mne.create_info( ch_names, sample_rate, ch_info )
 
 	# create Raw object
 	raw= mne.io.RawArray( signals, info )
