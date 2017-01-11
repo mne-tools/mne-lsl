@@ -170,13 +170,13 @@ class BarDecision:
 
 						if self.cfg.POSITIVE_FEEDBACK is False or (self.cfg.POSITIVE_FEEDBACK and true_label==max_label):
 							dx= probs[max_pidx]
-							'''
-							for i in range(len(probs)):
-								if i==max_pidx: continue
-								dx -= probs[i]
-							'''
-
 							dx *= self.bar_step
+
+							'''
+							# DEBUG: apply different speed on one direction
+							if max_label=='R':
+								dx *= 2.0
+							'''
 
 							# add likelihoods
 							if max_label==bar_label:
@@ -196,12 +196,14 @@ class BarDecision:
 
 						if self.cfg.DEBUG_PROBS:
 							if self.bar_bias is not None:
-								biastxt= '[BIAS:%s%.1f]  '% (self.bar_bias[0],self.bar_bias[1])
+								biastxt= '[BIAS:%s%.3f]  '% (self.bar_bias[0],self.bar_bias[1])
 							else:
 								biastxt= ''
+							'''
 							print('%s%s  raw %s   acc %s   bar %s%d  (%.1f ms)'% ( biastxt, bar_dirs,
 								qc.list2string(probs_new, '%.2f'), qc.list2string(probs, '%.2f'),
 								bar_label, bar_score, tm_classify.msec() ) )
+							'''
 							tm_classify.reset()
 
 			elif state=='feedback' and self.tm_trigger.sec() > self.cfg.T_FEEDBACK:
@@ -216,4 +218,10 @@ class BarDecision:
 
 			if key==keys['esc']:
 				return None
-
+			if key==keys['space']:
+				dx= 0
+				bar_score= 0
+				probs= [1.0/len(bar_dirs)] * len(bar_dirs)
+				self.bar.move( bar_dirs[0], bar_score, overlay=False )
+				self.bar.update()
+				print('RESET', probs, dx)
