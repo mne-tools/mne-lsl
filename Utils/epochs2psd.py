@@ -33,8 +33,8 @@ def epochs2psd(rawfile, channel_picks, event_id, tmin, tmax, fmin, fmax, w_len, 
 	w_len: sliding window length for computing PSD
 	w_step: sliding window step in time samples
 	export: file name to be saved. It can have .mat or .pkl extension.
-	- pkl extension exports in pickled Python numpy format.
-	- mat extension exports in MATLAB format.
+	        .pkl exports data in pickled Python numpy format.
+	        .mat exports data in MATLAB format.
 	"""
 
 	rawfile= rawfile.replace('\\','/')
@@ -48,6 +48,7 @@ def epochs2psd(rawfile, channel_picks, event_id, tmin, tmax, fmin, fmax, w_len, 
 
 	# Epoching
 	epochs= mne.Epochs(raw, events, event_id, tmin=tmin, tmax=tmax, proj=False, picks=picks, baseline=(tmin,tmax), preload=True, add_eeg_ref=False)
+	#from IPython import embed; embed()
 
 	# Compute psd vectors over a sliding window between tmin and tmax
 	w_len= int(sfreq * w_len) # window length
