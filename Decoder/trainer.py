@@ -80,7 +80,8 @@ def check_cfg(cfg):
 		'REF_CH_OLD':None,
 		'REF_CH_NEW':None,
 		'N_JOBS':None,
-		'EXCLUDES':None
+		'EXCLUDES':None,
+		'CV_DECISION_THRES':None
 	}
 
 	for v in critical_vars['COMMON']:
@@ -336,7 +337,7 @@ def balance_samples(X, Y, balance_type, verbose=False):
 	return X_balanced, Y_balanced
 
 
-def crossval_epochs(cv, epochs_data, labels, cls, label_names=None, do_balance=False, n_jobs=None):
+def crossval_epochs(cv, epochs_data, labels, cls, label_names=None, do_balance=False, n_jobs=None, decision_thres=None):
 	"""
 	Epoch (trial) based cross-validation
 
@@ -374,9 +375,9 @@ def crossval_epochs(cv, epochs_data, labels, cls, label_names=None, do_balance=F
 			X_test, Y_test= balance_samples(X_test, Y_test, do_balance)
 
 		if n_jobs > 1:
-			results.append( pool.apply_async( fit_predict, [ cls, X_train, Y_train, X_test, Y_test, cnum, label_set ] ) )
+			results.append( pool.apply_async( fit_predict_thres, [ cls, X_train, Y_train, X_test, Y_test, cnum, label_set, decision_thres ] ) )
 		else:
-			score, cm= fit_predict( cls, X_train, Y_train, X_test, Y_test, cnum, label_set )
+			score, cm= fit_predict_thres( cls, X_train, Y_train, X_test, Y_test, cnum, label_set, decision_thres )
 			scores.append(score)
 			cm_sum += cm
 		cnum += 1
@@ -391,10 +392,32 @@ def crossval_epochs(cv, epochs_data, labels, cls, label_names=None, do_balance=F
 			cm_sum += cm
 
 	# confusion matrix
-	cm_rate= cm_sum.astype('float') / cm_sum.sum(axis=1)[:, np.newaxis]
+	cm_sum= cm_sum.astype('float')
+	if cm_sum.shape[0] != cm_sum.shape[1]:
+		# we have decision thresholding condition
+		assert cm_sum.shape[0] < cm_sum.shape[1]
+		cm_sum_all= cm_sum
+		cm_sum= cm_sum[ :, :cm_sum.shape[0] ]
+		underthres= np.array( [ r[-1] / sum(r) for r in cm_sum_all ] )
+	else:
+		underthres= None
+	
+	cm_rate= np.zeros( cm_sum.shape )
+	for r_in, r_out in zip(cm_sum, cm_rate):
+		rs= sum(r_in)
+		if rs > 0:
+			r_out[:] = r_in / rs
+		else:
+			assert min(r) == max(r) == 0
+	if underthres is not None:
+		cm_rate= np.concatenate( ( cm_rate, underthres[:,np.newaxis] ), axis=1 )
+		
+	#cm_rate= cm_sum.astype('float') / cm_sum.sum(axis=1)[:, np.newaxis]
 	cm_txt= '\nY: ground-truth, X: predicted\n'
 	for l in label_set:
 		cm_txt += '%-5s\t'% label_names[l][:5]
+	if underthres is not None:
+		cm_txt += 'Ignored\t'
 	cm_txt += '\n'
 	for r in cm_rate:
 		for c in r:
@@ -468,13 +491,46 @@ def load_psd():
 	for ev in data['classes']:
 		n_epochs[ev]= len( np.where( Y_data[:,0] == data['classes'][ev] )[0] )
 
-
-def fit_predict(cls, X_train, Y_train, X_test, Y_test, cnum, label_set):
+'''
+def fit_predict(cls, X_train, Y_train, X_test, Y_test, cnum, label_list):
 	timer= qc.Timer()
 	cls.fit( X_train, Y_train )
 	Y_pred= cls.predict( X_test )
 	score= skmetrics.accuracy_score(Y_test, Y_pred)
-	cm= skmetrics.confusion_matrix(Y_test, Y_pred, label_set)
+	cm= skmetrics.confusion_matrix(Y_test, Y_pred, label_list)
+	print('Cross-validation %d (%.3f) - %.1f sec'% (cnum, score, timer.sec()) )
+	return score, cm
+'''
+
+def fit_predict_thres(cls, X_train, Y_train, X_test, Y_test, cnum, label_list, decision_thres=None):
+	"""
+	Any likelihood lower than a threshold is not counted as classification score
+
+	if decision_thres is not None or larger than 0, likelihood values lower than decision_thres
+	will be ignored while computing confusion matrix.
+
+	"""
+	timer= qc.Timer()
+	cls.fit( X_train, Y_train )
+	assert decision_thres is None or decision_thres >= 0
+	if decision_thres is None or decision_thres == 0:
+		Y_pred= cls.predict( X_test )
+		score= skmetrics.accuracy_score(Y_test, Y_pred)
+		cm= skmetrics.confusion_matrix(Y_test, Y_pred, label_list)
+	else:
+		Y_pred= cls.predict_proba( X_test )
+		Y_pred_labels= np.argmax( Y_pred, axis=1 )
+		Y_pred_maxes= np.array( [ x[i] for i, x in zip(Y_pred_labels, Y_pred) ] )
+		Y_index_overthres= np.where( Y_pred_maxes >= decision_thres )[0]
+		Y_index_underthres= np.where( Y_pred_maxes < decision_thres )[0]
+		Y_pred_overthres= np.array( [ cls.classes_[x] for x in Y_pred_labels[Y_index_overthres] ] )
+		Y_pred_underthres= np.array( [ cls.classes_[x] for x in Y_pred_labels[Y_index_underthres] ] )
+		Y_pred_underthres_count= np.array( [ np.count_nonzero(Y_pred_underthres==c) for c in label_list ] )
+		Y_test_overthres= Y_test[ Y_index_overthres ]
+		score= skmetrics.accuracy_score(Y_test_overthres, Y_pred_overthres)
+		cm= skmetrics.confusion_matrix(Y_test_overthres, Y_pred_overthres, label_list)
+		cm= np.concatenate( (cm, Y_pred_underthres_count[:, np.newaxis]), axis=1 )
+	
 	print('Cross-validation %d (%.3f) - %.1f sec'% (cnum, score, timer.sec()) )
 	return score, cm
 
@@ -666,7 +722,7 @@ def run_trainer(cfg, ftrain, interactive=False, cv_file=None, feat_file=None):
 		print('%d trials, %d samples per trial, %d feature dimension'% (ntrials, nsamples, fsize) )
 
 		# Do it!
-		scores, cm_txt= crossval_epochs(cv, X_data, Y_data, cls, cfg.tdef.by_value, do_balance, n_jobs=cfg.N_JOBS)
+		scores, cm_txt= crossval_epochs(cv, X_data, Y_data, cls, cfg.tdef.by_value, do_balance, n_jobs=cfg.N_JOBS, decision_thres=cfg.CV_DECISION_THRES)
 
 		# Results
 		txt= '\n>> Class information\n'
@@ -703,6 +759,8 @@ def run_trainer(cfg, ftrain, interactive=False, cv_file=None, feat_file=None):
 			txt += '            %d trees, %s max depth, %s learing_rate, random state %s\n'% (cfg.GB['trees'], cfg.GB['max_depth'], cfg.GB['learning_rate'], cfg.GB['seed'])
 		elif cfg.CLASSIFIER=='rLDA':
 			txt += '            regularization coefficient %.2f\n'% cfg.RLDA_REGULARIZE_COEFF
+		if cfg.CV_DECISION_THRES is not None:
+			txt += 'Decision threshold: %.2f\n'% cfg.CV_DECISION_THRES
 		txt += '\n' + cm_txt
 
 		print(txt)
