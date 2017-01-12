@@ -105,7 +105,7 @@ def get_tfr(cfg):
 
 			if cfg.EXPORT_MATLAB is True:
 				# MATLAB export
-				mout= '%s/%s-%s-%s.jpg'% (export_dir, file_prefix, cfg.SP_FILTER, evname)
+				mout= '%s/%s-%s-%s.mat'% (export_dir, file_prefix, cfg.SP_FILTER, evname)
 				scipy.io.savemat( mout, { 'tfr':power[evname].data, 'chs':power[evname].ch_names } )
 			else:
 				# Inspect power for each channel
@@ -128,7 +128,7 @@ def get_tfr(cfg):
 
 				if cfg.EXPORT_MATLAB is True:
 					# MATLAB export
-					mout= '%s/%s-%s-%s-ep%02d.jpg'% (export_dir, file_prefix, cfg.SP_FILTER, evname, ep+1)
+					mout= '%s/%s-%s-%s-ep%02d.mat'% (export_dir, file_prefix, cfg.SP_FILTER, evname, ep+1)
 					scipy.io.savemat( mout, { 'tfr':power[evname].data, 'chs':power[evname].ch_names } )
 				else:
 					# Inspect power for each channel
