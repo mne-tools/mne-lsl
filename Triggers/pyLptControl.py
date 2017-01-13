@@ -44,6 +44,8 @@ Swiss Federal Institute of Technology Lausanne (EPFL)
 """
 
 import threading, os, sys, ctypes, time
+import pycnbi_config
+import pylsl
 
 class Trigger:
 	def __init__(self, lpttype='USB2LPT', portaddr=None, verbose=True):
@@ -110,7 +112,6 @@ class Trigger:
 
 		elif self.lpttype=='SOFTWARE':
 			import cnbi_lsl
-			import pylsl
 			self.print('Using software trigger')
 			# get data file location
 			LSL_SERVER= 'StreamRecorderInfo'
@@ -194,7 +195,7 @@ class Trigger:
 			return True
 		else:
 			if self.offtimer.is_alive():
-				self.print('Warning: You are sending a new signal before the end of the last signal. Signal ignored.')
+				self.print('Warning: You are sending a new signal before the end of the last signal. Signal %d ignored.'% value)
 				self.print('self.delay=%.1f'% self.delay)
 				return False
 			self.set_data(value)
