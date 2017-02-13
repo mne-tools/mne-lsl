@@ -15,7 +15,7 @@ REF_CH_NEW = None  # ['M1','M2']  # re-reference to the average of these channel
 CHANNEL_PICKS = None  # [ x for x in range(1,65) if x not in [13,19,32] ]
 MULTIPLIER = 1
 
-EPOCHS = {'READY': 6, 'LEGS': 5}
+EPOCHS = {'READY':6, 'LEGS':5}
 TMIN = 0.0
 TMAX = 2.0
 

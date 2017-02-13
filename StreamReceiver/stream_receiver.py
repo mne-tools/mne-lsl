@@ -111,7 +111,7 @@ class StreamReceiver(object):
                         continue
 
                     if 'USBamp' in amp_name:
-                        self.print('Found USBamp streaming server %s (type %s, amp_serial %s) @ %s.' \
+                        self.print('Found USBamp streaming server %s (type %s, amp_serial %s) @ %s.'\
                                    % (amp_name, si.type(), amp_serial, si.hostname()))
                         self.lsl_tr_channel = 16
                         channels += si.channel_count()
@@ -120,7 +120,7 @@ class StreamReceiver(object):
                         server_found = True
                         break
                     elif 'BioSemi' in amp_name:
-                        self.print('Found BioSemi streaming server %s (type %s, amp_serial %s) @ %s.' \
+                        self.print('Found BioSemi streaming server %s (type %s, amp_serial %s) @ %s.'\
                                    % (amp_name, si.type(), amp_serial, si.hostname()))
                         self.lsl_tr_channel = 0  # or subtract -6684927? (value when trigger==0)
                         channels += si.channel_count()
@@ -129,7 +129,7 @@ class StreamReceiver(object):
                         server_found = True
                         break
                     elif 'SmartBCI' in amp_name:
-                        self.print('Found SmartBCI streaming server %s (type %s, amp_serial %s) @ %s.' \
+                        self.print('Found SmartBCI streaming server %s (type %s, amp_serial %s) @ %s.'\
                                    % (amp_name, si.type(), amp_serial, si.hostname()))
                         self.lsl_tr_channel = 23
                         channels += si.channel_count()
@@ -138,7 +138,7 @@ class StreamReceiver(object):
                         server_found = True
                         break
                     elif 'StreamPlayer' in amp_name:
-                        self.print('Found StreamPlayer streaming server %s (type %s, amp_serial %s) @ %s.' \
+                        self.print('Found StreamPlayer streaming server %s (type %s, amp_serial %s) @ %s.'\
                                    % (amp_name, si.type(), amp_serial, si.hostname()))
                         self.lsl_tr_channel = 0
                         channels += si.channel_count()
@@ -147,7 +147,7 @@ class StreamReceiver(object):
                         server_found = True
                         break
                     elif 'openvibeSignal' in amp_name:
-                        self.print('Found an Openvibe signal streaming server %s (type %s, amp_serial %s) @ %s.' \
+                        self.print('Found an Openvibe signal streaming server %s (type %s, amp_serial %s) @ %s.'\
                                    % (amp_name, si.type(), amp_serial, si.hostname()))
                         ch_list = pu.lsl_channel_list(inlet)
                         if 'TRIGGER' in ch_list:
@@ -160,7 +160,7 @@ class StreamReceiver(object):
                         self.multiplier = 10 ** 6
                         break
                     elif 'openvibeMarkers' in amp_name:
-                        self.print('Found an Openvibe markers server %s (type %s, amp_serial %s) @ %s.' \
+                        self.print('Found an Openvibe markers server %s (type %s, amp_serial %s) @ %s.'\
                                    % (amp_name, si.type(), amp_serial, si.hostname()))
                         ch_list = pu.lsl_channel_list(inlet)
                         if 'TRIGGER' in ch_list:
@@ -173,7 +173,7 @@ class StreamReceiver(object):
                         # self.multiplier= 10**6
                         break
                     elif find_any:
-                        self.print('Found a streaming server %s (type %s, amp_serial %s) @ %s.' \
+                        self.print('Found a streaming server %s (type %s, amp_serial %s) @ %s.'\
                                    % (amp_name, si.type(), amp_serial, si.hostname()))
                         self.lsl_tr_channel = 0  # needs to be changed
                         channels += si.channel_count()
@@ -440,7 +440,7 @@ if __name__ == '__main__':
     trg_ch = sr.get_trigger_channel()
     qc.print_c('Trigger channel: %d' % trg_ch, 'G')
 
-    psde = mne.decoding.PSDEstimator(sfreq=sfreq, fmin=1, fmax=50, bandwidth=None, \
+    psde = mne.decoding.PSDEstimator(sfreq=sfreq, fmin=1, fmax=50, bandwidth=None,\
                                      adaptive=False, low_bias=True, n_jobs=1, normalization='length', verbose=None)
 
     last_ts = 0

@@ -147,7 +147,7 @@ class Scope(QtGui.QMainWindow, form_class):
     #
     def init_scope_GUI(self):
 
-        self.bool_parser = {True: '1', False: '0'}
+        self.bool_parser = {True:'1', False:'0'}
 
         # PyQTGraph plot initialization
         self.win = pg.GraphicsWindow()
@@ -303,11 +303,11 @@ class Scope(QtGui.QMainWindow, form_class):
         # 12 unsigned ints (4 bytes)
         data = struct.unpack("<12I", self.fin.read(4 * 12))
 
-        self.config = {'id': data[0], 'sf': data[1], 'labels': data[2], 'samples': data[3], 'eeg_channels': data[4],
-                       'exg_channels': data[5],
-                       'tri_channels': data[6], 'eeg_type': data[8], 'exg_type': data[9], 'tri_type': data[10],
-                       'lbl_type': data[11],
-                       'tim_size': 1, 'idx_size': 1}
+        self.config = {'id':data[0], 'sf':data[1], 'labels':data[2], 'samples':data[3], 'eeg_channels':data[4],
+                       'exg_channels':data[5],
+                       'tri_channels':data[6], 'eeg_type':data[8], 'exg_type':data[9], 'tri_type':data[10],
+                       'lbl_type':data[11],
+                       'tim_size':1, 'idx_size':1}
 
         self.tri = np.zeros(self.config['samples'])
         self.eeg = np.zeros((self.config['samples'], self.config['eeg_channels']), dtype=np.float)
@@ -333,11 +333,11 @@ class Scope(QtGui.QMainWindow, form_class):
                 None, None, None, None]
         qc.print_c('Trigger channel is %d' % self.sr.get_trigger_channel(), 'G')
 
-        self.config = {'id': data[0], 'sf': data[1], 'labels': data[2], 'samples': data[3], 'eeg_channels': data[4],
-                       'exg_channels': data[5],
-                       'tri_channels': data[6], 'eeg_type': data[8], 'exg_type': data[9], 'tri_type': data[10],
-                       'lbl_type': data[11],
-                       'tim_size': 1, 'idx_size': 1}
+        self.config = {'id':data[0], 'sf':data[1], 'labels':data[2], 'samples':data[3], 'eeg_channels':data[4],
+                       'exg_channels':data[5],
+                       'tri_channels':data[6], 'eeg_type':data[8], 'exg_type':data[9], 'tri_type':data[10],
+                       'lbl_type':data[11],
+                       'tim_size':1, 'idx_size':1}
 
         self.tri = np.zeros(self.config['samples'])
         self.last_tri = 0
@@ -427,9 +427,9 @@ class Scope(QtGui.QMainWindow, form_class):
                     traceback.print_exc()
                     self.print('Error! self.tri =', self.tri)
 
-                # Read exg. self.config.samples*self.config.exg_ch, type float
-                # bexg = np.random.rand( 1, self.config['samples'] * self.config['exg_channels'] )
-                # self.exg = np.reshape(list(bexg), (self.config['samples'],self.config['exg_channels']))
+                    # Read exg. self.config.samples*self.config.exg_ch, type float
+                    # bexg = np.random.rand( 1, self.config['samples'] * self.config['exg_channels'] )
+                    # self.exg = np.reshape(list(bexg), (self.config['samples'],self.config['exg_channels']))
         except exceptions.WindowsError:
             # print('**** Access violation in read_eeg():\n%s\n%s'% (sys.exc_info()[0], sys.exc_info()[1]))
             pass
@@ -552,7 +552,7 @@ class Scope(QtGui.QMainWindow, form_class):
         for x in xrange(0, len(self.events_detected), 2):
             xh = int(x / 2)
             self.events_curves[xh].setData(
-                x=np.array([self.x_ticks[self.events_detected[x]], self.x_ticks[self.events_detected[x]]]), \
+                x=np.array([self.x_ticks[self.events_detected[x]], self.x_ticks[self.events_detected[x]]]),\
                 y=np.array([+1.5 * self.scale, -0.5 * self.scale - self.scale * self.config['eeg_channels']]))
             self.events_text[xh].setPos(self.x_ticks[self.events_detected[x]], self.scale)
 
@@ -701,7 +701,7 @@ class Scope(QtGui.QMainWindow, form_class):
                                             ', BP: ' + self.bool_parser[self.apply_bandpass] + ' [' + str(
                                                 self.doubleSpinBox_hp.value()) + '-' + str(
                                                 self.doubleSpinBox_lp.value()) + '] Hz')
-        # ', BP: ' + self.bool_parser[self.apply_bandpass] + (' [' + str(self.doubleSpinBox_hp.value()) + '-' + str(self.doubleSpinBox_lp.value()) + '] Hz' if self.apply_bandpass else ''))
+            # ', BP: ' + self.bool_parser[self.apply_bandpass] + (' [' + str(self.doubleSpinBox_hp.value()) + '-' + str(self.doubleSpinBox_lp.value()) + '] Hz' if self.apply_bandpass else ''))
 
     #
     #	Shows / hide help in the scope window
@@ -857,9 +857,9 @@ class Scope(QtGui.QMainWindow, form_class):
         if ((key >= QtCore.Qt.Key_0) and (key <= QtCore.Qt.Key_9)):
             if (self.show_Key_events) and (not self.stop_plot):
                 self.addEventPlot("KEY", 990 + key - QtCore.Qt.Key_0)
-            # self.bci.id_msg_bus.SetEvent(990 + key - QtCore.Qt.Key_0)
-            # self.bci.iDsock_bus.sendall(self.bci.id_serializer_bus.Serialize());
-            # 666
+                # self.bci.id_msg_bus.SetEvent(990 + key - QtCore.Qt.Key_0)
+                # self.bci.iDsock_bus.sendall(self.bci.id_serializer_bus.Serialize());
+                # 666
 
     #
     #	Function called when a closing event was triggered.
@@ -880,9 +880,9 @@ class Scope(QtGui.QMainWindow, form_class):
         # quit()
         app.quit()
 
-    # ----------------------------------------------------------------------------------------------------
-    # 		END OF EVENT HANDLERS
-    # ----------------------------------------------------------------------------------------------------
+        # ----------------------------------------------------------------------------------------------------
+        # 		END OF EVENT HANDLERS
+        # ----------------------------------------------------------------------------------------------------
 
 
 if __name__ == '__main__':

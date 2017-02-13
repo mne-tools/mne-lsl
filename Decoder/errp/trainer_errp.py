@@ -50,8 +50,8 @@ def plot_grand_avg(epochs, outdir, picks=None):
         epavg = epochs[ev].average(picks)
         for chidx in range(len(epavg.ch_names)):
             ch = epavg.ch_names[chidx]
-            epavg.plot(picks=[chidx], unit=True, ylim=dict(eeg=[-10, 10]), titles='%s-%s' % (ch, ev), \
-                       show=False, scalings={'eeg': 1}).savefig(outdir + '/%s-%s.png' % (ch, ev))
+            epavg.plot(picks=[chidx], unit=True, ylim=dict(eeg=[-10, 10]), titles='%s-%s' % (ch, ev),\
+                       show=False, scalings={'eeg':1}).savefig(outdir + '/%s-%s.png' % (ch, ev))
 
 
 # compute features for the classifier
@@ -271,7 +271,7 @@ if __name__ == '__main__':
         cls.n_jobs = 1  # n_jobs should be 1 for online decoding
         print('Trained a Random Forest classifer with %d trees and %d maxdepth' % (RF['trees'], RF['maxdepth']))
         ch_names = [raw.info['ch_names'][c] for c in picks_feat]
-        data = dict(sfreq=raw.info['sfreq'], ch_names=ch_names, picks=picks_feat, \
+        data = dict(sfreq=raw.info['sfreq'], ch_names=ch_names, picks=picks_feat,\
                     cls=cls, l_freq=l_freq, h_freq=h_freq, decim_factor=decim_factor)
         outdir = DATADIR + '/errp_classifier'
         qc.make_dirs(outdir)

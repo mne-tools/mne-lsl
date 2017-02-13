@@ -207,18 +207,18 @@ def normalizeAcrossEpoch(epoch_data, method, givenShiftFactor=0, givenScaleFacto
     return (new_epochs_data, shiftFactor, scaleFactor)
 
 
-def preprocess(loadedraw, events, \
-               APPLY_CAR, \
-               l_freq, \
-               h_freq, \
-               filter_method, \
-               tmin, \
-               tmax, \
-               tlow, \
-               thigh, \
-               n_jobs, \
-               picks_feat, \
-               baselineRange, \
+def preprocess(loadedraw, events,\
+               APPLY_CAR,\
+               l_freq,\
+               h_freq,\
+               filter_method,\
+               tmin,\
+               tmax,\
+               tlow,\
+               thigh,\
+               n_jobs,\
+               picks_feat,\
+               baselineRange,\
                verbose=False):
     # Load raw, apply bandpass (if applicable), epoch
     raw = loadedraw.copy()
@@ -244,11 +244,11 @@ def preprocess(loadedraw, events, \
         for x in range(1, raw._data.shape[0]):  # range starting from 1 because channel 0 is trigger
             # raw._data[x,:] = lfilter(b, a, raw._data[x,:])
             raw._data[x, :], zi[:, x - 1] = lfilter(b, a, raw._data[x, :], -1, zi[:, x - 1])
-        # self.eeg[:,x], self.zi[:,x] = lfilter(b, a, self.eeg[:,x], -1,zi[:,x])
+            # self.eeg[:,x], self.zi[:,x] = lfilter(b, a, self.eeg[:,x], -1,zi[:,x])
 
-        # %% Epoching and baselining
-        #	 = tmin-paddingLength
-        #	t_upper = tmax+paddingLength
+            # %% Epoching and baselining
+            #	 = tmin-paddingLength
+            #	t_upper = tmax+paddingLength
     t_lower = 0
     t_upper = thigh
 
@@ -268,37 +268,37 @@ def preprocess(loadedraw, events, \
     return tdef, sfreq, event_id, b, a, zi, t_lower, t_upper, epochs, total_wframes
 
 
-def processCV(loadedraw, \
-              events, \
-              tmin, \
-              tmax, \
-              tlow, \
-              thigh, \
-              regcoeff, \
-              useLeaveOneOut, \
-              APPLY_CAR, \
-              APPLY_PCA, \
-              l_freq, \
-              h_freq, \
-              MAX_FPR, \
-              picks_feat, \
-              baselineRange, \
-              decim_factor, \
-              cv_container, \
-              FILTER_METHOD, \
+def processCV(loadedraw,\
+              events,\
+              tmin,\
+              tmax,\
+              tlow,\
+              thigh,\
+              regcoeff,\
+              useLeaveOneOut,\
+              APPLY_CAR,\
+              APPLY_PCA,\
+              l_freq,\
+              h_freq,\
+              MAX_FPR,\
+              picks_feat,\
+              baselineRange,\
+              decim_factor,\
+              cv_container,\
+              FILTER_METHOD,\
               verbose=False):
-    tdef, sfreq, event_id, b, a, zi, t_lower, t_upper, epochs, wframes = preprocess(loadedraw=loadedraw, \
-                                                                                    events=events, \
-                                                                                    APPLY_CAR=True, \
-                                                                                    l_freq=l_freq, \
-                                                                                    h_freq=h_freq, \
-                                                                                    filter_method=FILTER_METHOD, \
-                                                                                    tmin=tmin, \
-                                                                                    tmax=tmax, \
-                                                                                    tlow=tlow, \
-                                                                                    thigh=thigh, \
-                                                                                    n_jobs=n_jobs, \
-                                                                                    picks_feat=picks_feat, \
+    tdef, sfreq, event_id, b, a, zi, t_lower, t_upper, epochs, wframes = preprocess(loadedraw=loadedraw,\
+                                                                                    events=events,\
+                                                                                    APPLY_CAR=True,\
+                                                                                    l_freq=l_freq,\
+                                                                                    h_freq=h_freq,\
+                                                                                    filter_method=FILTER_METHOD,\
+                                                                                    tmin=tmin,\
+                                                                                    tmax=tmax,\
+                                                                                    tlow=tlow,\
+                                                                                    thigh=thigh,\
+                                                                                    n_jobs=n_jobs,\
+                                                                                    picks_feat=picks_feat,\
                                                                                     baselineRange=baselineRange,
                                                                                     verbose=False)
 
@@ -334,36 +334,36 @@ def processCV(loadedraw, \
             test_label = label[test]
 
             ## Test data processing ##
-            train_pcaed, pca, trainShiftFactor, trainScaleFactor = compute_features(signals=train_data, \
-                                                                                    dataset_type='train', \
-                                                                                    sfreq=sfreq, \
-                                                                                    l_freq=l_freq, \
-                                                                                    h_freq=h_freq, \
-                                                                                    decim_factor=decim_factor, \
-                                                                                    shiftFactor=None, \
-                                                                                    scaleFactor=None, \
-                                                                                    pca=None, \
-                                                                                    tmin=tmin, \
-                                                                                    tmax=tmax, \
-                                                                                    tlow=tlow, \
-                                                                                    thigh=thigh, \
+            train_pcaed, pca, trainShiftFactor, trainScaleFactor = compute_features(signals=train_data,\
+                                                                                    dataset_type='train',\
+                                                                                    sfreq=sfreq,\
+                                                                                    l_freq=l_freq,\
+                                                                                    h_freq=h_freq,\
+                                                                                    decim_factor=decim_factor,\
+                                                                                    shiftFactor=None,\
+                                                                                    scaleFactor=None,\
+                                                                                    pca=None,\
+                                                                                    tmin=tmin,\
+                                                                                    tmax=tmax,\
+                                                                                    tlow=tlow,\
+                                                                                    thigh=thigh,\
                                                                                     filter_method=FILTER_METHOD)
 
             # Compute_feature does the same steps as for train, but requires a computed PCA (that we got from train)
             # (bandpass, norm, ds, and merge channel and time)
-            test_pcaed, pca_test_unused, _, _ = compute_features(signals=test_data, \
-                                                                 dataset_type='test', \
-                                                                 sfreq=sfreq, \
-                                                                 l_freq=l_freq, \
-                                                                 h_freq=h_freq, \
-                                                                 decim_factor=decim_factor, \
-                                                                 shiftFactor=trainShiftFactor, \
-                                                                 scaleFactor=trainScaleFactor, \
-                                                                 pca=pca, \
-                                                                 tmin=tmin, \
-                                                                 tmax=tmax, \
-                                                                 tlow=tlow, \
-                                                                 thigh=thigh, \
+            test_pcaed, pca_test_unused, _, _ = compute_features(signals=test_data,\
+                                                                 dataset_type='test',\
+                                                                 sfreq=sfreq,\
+                                                                 l_freq=l_freq,\
+                                                                 h_freq=h_freq,\
+                                                                 decim_factor=decim_factor,\
+                                                                 shiftFactor=trainShiftFactor,\
+                                                                 scaleFactor=trainScaleFactor,\
+                                                                 pca=pca,\
+                                                                 tmin=tmin,\
+                                                                 tmax=tmax,\
+                                                                 tlow=tlow,\
+                                                                 thigh=thigh,\
                                                                  filter_method=FILTER_METHOD)
             ## Test ##
             train_x = train_pcaed
@@ -487,53 +487,53 @@ def processCV(loadedraw, \
     return (biglist_auc, best_threshold, best_cm, best_tpr_below_maxfpr, best_associated_fpr, cv_container, biglist_cms)
 
 
-def createClassifier(loadedraw, \
-                     events, \
-                     tmin, \
-                     tmax, \
-                     tlow, \
-                     thigh, \
-                     regcoeff, \
-                     useLeaveOneOut, \
-                     APPLY_CAR, \
-                     APPLY_PCA, \
-                     l_freq, \
-                     h_freq, \
-                     MAX_FPR, \
-                     picks_feat, \
-                     baselineRange, \
-                     decim_factor, \
-                     cv_container, \
-                     FILTER_METHOD, \
-                     best_threshold, \
+def createClassifier(loadedraw,\
+                     events,\
+                     tmin,\
+                     tmax,\
+                     tlow,\
+                     thigh,\
+                     regcoeff,\
+                     useLeaveOneOut,\
+                     APPLY_CAR,\
+                     APPLY_PCA,\
+                     l_freq,\
+                     h_freq,\
+                     MAX_FPR,\
+                     picks_feat,\
+                     baselineRange,\
+                     decim_factor,\
+                     cv_container,\
+                     FILTER_METHOD,\
+                     best_threshold,\
                      verbose=False):
-    tdef, sfreq, event_id, b, a, zi, t_lower, t_upper, epochs, wframes = preprocess(loadedraw=loadedraw, \
-                                                                                    events=events, \
-                                                                                    APPLY_CAR=APPLY_CAR, \
-                                                                                    l_freq=l_freq, \
-                                                                                    h_freq=h_freq, \
-                                                                                    filter_method=FILTER_METHOD, \
-                                                                                    tmin=tmin, \
-                                                                                    tmax=tmax, \
-                                                                                    tlow=tlow, \
-                                                                                    thigh=thigh, \
-                                                                                    n_jobs=n_jobs, \
-                                                                                    picks_feat=picks_feat, \
+    tdef, sfreq, event_id, b, a, zi, t_lower, t_upper, epochs, wframes = preprocess(loadedraw=loadedraw,\
+                                                                                    events=events,\
+                                                                                    APPLY_CAR=APPLY_CAR,\
+                                                                                    l_freq=l_freq,\
+                                                                                    h_freq=h_freq,\
+                                                                                    filter_method=FILTER_METHOD,\
+                                                                                    tmin=tmin,\
+                                                                                    tmax=tmax,\
+                                                                                    tlow=tlow,\
+                                                                                    thigh=thigh,\
+                                                                                    n_jobs=n_jobs,\
+                                                                                    picks_feat=picks_feat,\
                                                                                     baselineRange=baselineRange,
                                                                                     verbose=False)
-    train_pcaed, pca, trainShiftFactor, trainScaleFactor = compute_features(signals=epochs._data, \
-                                                                            dataset_type='train', \
-                                                                            sfreq=sfreq, \
-                                                                            l_freq=l_freq, \
-                                                                            h_freq=h_freq, \
-                                                                            decim_factor=decim_factor, \
-                                                                            shiftFactor=None, \
-                                                                            scaleFactor=None, \
-                                                                            pca=None, \
-                                                                            tmin=tmin, \
-                                                                            tmax=tmax, \
-                                                                            tlow=tlow, \
-                                                                            thigh=thigh, \
+    train_pcaed, pca, trainShiftFactor, trainScaleFactor = compute_features(signals=epochs._data,\
+                                                                            dataset_type='train',\
+                                                                            sfreq=sfreq,\
+                                                                            l_freq=l_freq,\
+                                                                            h_freq=h_freq,\
+                                                                            decim_factor=decim_factor,\
+                                                                            shiftFactor=None,\
+                                                                            scaleFactor=None,\
+                                                                            pca=None,\
+                                                                            tmin=tmin,\
+                                                                            tmax=tmax,\
+                                                                            tlow=tlow,\
+                                                                            thigh=thigh,\
                                                                             filter_method=FILTER_METHOD)
 
     cls = rLDA(regcoeff)
@@ -541,23 +541,23 @@ def createClassifier(loadedraw, \
     cls.fit(train_pcaed, label)
     ch_names = [loadedraw.info['ch_names'][c] for c in picks_feat]
     data = dict(apply_car=APPLY_CAR,
-                sfreq=loadedraw.info['sfreq'], \
-                picks=picks_feat, \
-                decim_factor=decim_factor, \
-                ch_names=ch_names, \
-                tmin=tmin, \
-                tmax=tmax, \
-                tlow=tlow, \
-                thigh=thigh, \
-                l_freq=l_freq, \
-                h_freq=h_freq, \
-                baselineRange=baselineRange, \
-                shiftFactor=trainShiftFactor, \
-                scaleFactor=trainScaleFactor, \
-                cls=cls, \
-                pca=pca, \
-                threshold=best_threshold[0], \
-                filter_method=FILTER_METHOD, \
+                sfreq=loadedraw.info['sfreq'],\
+                picks=picks_feat,\
+                decim_factor=decim_factor,\
+                ch_names=ch_names,\
+                tmin=tmin,\
+                tmax=tmax,\
+                tlow=tlow,\
+                thigh=thigh,\
+                l_freq=l_freq,\
+                h_freq=h_freq,\
+                baselineRange=baselineRange,\
+                shiftFactor=trainShiftFactor,\
+                scaleFactor=trainScaleFactor,\
+                cls=cls,\
+                pca=pca,\
+                threshold=best_threshold[0],\
+                filter_method=FILTER_METHOD,\
                 wframes=wframes)
     outdir = DATADIR + '/errp_classifier'
     qc.make_dirs(outdir)
@@ -649,24 +649,24 @@ if __name__ == '__main__':
         thigh = tmax + var_padding
         for var_regcoeff in var_regcoeff_range:
             print('Testing [tmax=' + str(var_padding) + ', regcoeff=' + str(var_regcoeff) + ']')
-            auc_result, threshold, cm, tpr, fpr, cv_container, biglist_cms = processCV(loadedraw, \
-                                                                                       events, \
-                                                                                       tmin=COMMON_TMIN, \
-                                                                                       tmax=COMMON_TMAX, \
-                                                                                       tlow=tlow, \
-                                                                                       thigh=thigh, \
-                                                                                       regcoeff=var_regcoeff, \
-                                                                                       useLeaveOneOut=COMMON_USELEAVEONEOUT, \
-                                                                                       APPLY_CAR=COMMON_APPLY_CAR, \
-                                                                                       APPLY_PCA=COMMON_APPLY_PCA, \
-                                                                                       l_freq=COMMON_L_FREQ, \
-                                                                                       h_freq=COMMON_H_FREQ, \
-                                                                                       MAX_FPR=DAMAXFPR, \
-                                                                                       picks_feat=COMMON_CHANNELPICK, \
-                                                                                       baselineRange=COMMON_BASELINERANGE, \
-                                                                                       decim_factor=COMMON_DECIMFACTOR, \
-                                                                                       cv_container=cv_container, \
-                                                                                       FILTER_METHOD=THATFILTERMETHOD, \
+            auc_result, threshold, cm, tpr, fpr, cv_container, biglist_cms = processCV(loadedraw,\
+                                                                                       events,\
+                                                                                       tmin=COMMON_TMIN,\
+                                                                                       tmax=COMMON_TMAX,\
+                                                                                       tlow=tlow,\
+                                                                                       thigh=thigh,\
+                                                                                       regcoeff=var_regcoeff,\
+                                                                                       useLeaveOneOut=COMMON_USELEAVEONEOUT,\
+                                                                                       APPLY_CAR=COMMON_APPLY_CAR,\
+                                                                                       APPLY_PCA=COMMON_APPLY_PCA,\
+                                                                                       l_freq=COMMON_L_FREQ,\
+                                                                                       h_freq=COMMON_H_FREQ,\
+                                                                                       MAX_FPR=DAMAXFPR,\
+                                                                                       picks_feat=COMMON_CHANNELPICK,\
+                                                                                       baselineRange=COMMON_BASELINERANGE,\
+                                                                                       decim_factor=COMMON_DECIMFACTOR,\
+                                                                                       cv_container=cv_container,\
+                                                                                       FILTER_METHOD=THATFILTERMETHOD,\
                                                                                        verbose=False)
             aucs_regcoeff.append(auc_result)
             param_regcoeff.append([var_padding, var_regcoeff])
@@ -774,45 +774,45 @@ if __name__ == '__main__':
 
     if OUTPUT_PCL:
         # [createMagic]
-        createClassifier(loadedraw, \
-                         events=events, \
-                         tmin=COMMON_TMIN, \
-                         tmax=COMMON_TMAX, \
-                         tlow=COMMON_TMIN - best_auc_param[0], \
-                         thigh=COMMON_TMAX + best_auc_param[0], \
-                         regcoeff=best_auc_param[1], \
-                         best_threshold=best_auc_threhold, \
-                         useLeaveOneOut=COMMON_USELEAVEONEOUT, \
-                         APPLY_CAR=COMMON_APPLY_CAR, \
-                         APPLY_PCA=COMMON_APPLY_PCA, \
-                         l_freq=COMMON_L_FREQ, \
-                         h_freq=COMMON_H_FREQ, \
-                         MAX_FPR=DAMAXFPR, \
-                         picks_feat=COMMON_CHANNELPICK, \
-                         baselineRange=COMMON_BASELINERANGE, \
-                         decim_factor=COMMON_DECIMFACTOR, \
-                         cv_container=None, \
-                         FILTER_METHOD=THATFILTERMETHOD, \
+        createClassifier(loadedraw,\
+                         events=events,\
+                         tmin=COMMON_TMIN,\
+                         tmax=COMMON_TMAX,\
+                         tlow=COMMON_TMIN - best_auc_param[0],\
+                         thigh=COMMON_TMAX + best_auc_param[0],\
+                         regcoeff=best_auc_param[1],\
+                         best_threshold=best_auc_threhold,\
+                         useLeaveOneOut=COMMON_USELEAVEONEOUT,\
+                         APPLY_CAR=COMMON_APPLY_CAR,\
+                         APPLY_PCA=COMMON_APPLY_PCA,\
+                         l_freq=COMMON_L_FREQ,\
+                         h_freq=COMMON_H_FREQ,\
+                         MAX_FPR=DAMAXFPR,\
+                         picks_feat=COMMON_CHANNELPICK,\
+                         baselineRange=COMMON_BASELINERANGE,\
+                         decim_factor=COMMON_DECIMFACTOR,\
+                         cv_container=None,\
+                         FILTER_METHOD=THATFILTERMETHOD,\
                          verbose=False)
-        createClassifier(loadedraw, \
-                         events=events, \
-                         tmin=COMMON_TMIN, \
-                         tmax=COMMON_TMAX, \
-                         tlow=COMMON_TMIN - best_tprs_param[0], \
-                         thigh=COMMON_TMAX + best_tprs_param[0], \
-                         regcoeff=best_tprs_param[1], \
-                         best_threshold=best_tprs_threhold, \
-                         useLeaveOneOut=COMMON_USELEAVEONEOUT, \
-                         APPLY_CAR=COMMON_APPLY_CAR, \
-                         APPLY_PCA=COMMON_APPLY_PCA, \
-                         l_freq=COMMON_L_FREQ, \
-                         h_freq=COMMON_H_FREQ, \
-                         MAX_FPR=DAMAXFPR, \
-                         picks_feat=COMMON_CHANNELPICK, \
-                         baselineRange=COMMON_BASELINERANGE, \
-                         decim_factor=COMMON_DECIMFACTOR, \
-                         cv_container=None, \
-                         FILTER_METHOD=THATFILTERMETHOD, \
+        createClassifier(loadedraw,\
+                         events=events,\
+                         tmin=COMMON_TMIN,\
+                         tmax=COMMON_TMAX,\
+                         tlow=COMMON_TMIN - best_tprs_param[0],\
+                         thigh=COMMON_TMAX + best_tprs_param[0],\
+                         regcoeff=best_tprs_param[1],\
+                         best_threshold=best_tprs_threhold,\
+                         useLeaveOneOut=COMMON_USELEAVEONEOUT,\
+                         APPLY_CAR=COMMON_APPLY_CAR,\
+                         APPLY_PCA=COMMON_APPLY_PCA,\
+                         l_freq=COMMON_L_FREQ,\
+                         h_freq=COMMON_H_FREQ,\
+                         MAX_FPR=DAMAXFPR,\
+                         picks_feat=COMMON_CHANNELPICK,\
+                         baselineRange=COMMON_BASELINERANGE,\
+                         decim_factor=COMMON_DECIMFACTOR,\
+                         cv_container=None,\
+                         FILTER_METHOD=THATFILTERMETHOD,\
                          verbose=False)
         print('Created a best-TP based classifier')
 

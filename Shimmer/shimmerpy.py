@@ -76,7 +76,7 @@ class shimmer_node(object):
             self.framesize = 11
             self.senscfg_hi = 0x88
             self.senscfg_lo = 0x00
-        #		  self.pack_str = 'HHHHH'
+        # self.pack_str = 'HHHHH'
         else:
             # Packet type (1), TimeStamp (2), 3xAccel (3x2), 3xGyro (3x2), 3xMag (3x2)
             self.framesize = 21

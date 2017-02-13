@@ -96,7 +96,7 @@ except ImportError:
         kbhit always returns immediately.
         """
         import sys, select
-        (read_ready, write_ready, except_ready) = \
+        (read_ready, write_ready, except_ready) =\
             select.select([sys.stdin], [], [], 0.0)
         if read_ready:
             return 1

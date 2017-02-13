@@ -55,7 +55,7 @@ def epochs2psd(rawfile, channel_picks, event_id, tmin, tmax, fmin, fmax, w_len, 
     # Compute psd vectors over a sliding window between tmin and tmax
     w_len = int(sfreq * w_len)  # window length
     psde = mne.decoding.PSDEstimator(sfreq, fmin=fmin, fmax=fmax, n_jobs=cpu_count(), adaptive=False)
-    epochmat = {e: epochs[e]._data for e in event_id}
+    epochmat = {e:epochs[e]._data for e in event_id}
     psdmat = {}
     for e in event_id:
         # psd = [epochs] x [windows] x [channels] x [freqs]
@@ -63,7 +63,7 @@ def epochs2psd(rawfile, channel_picks, event_id, tmin, tmax, fmin, fmax, w_len, 
         psdmat[e] = psd
     # psdmat[e]= np.mean(psd, 3) # for freq-averaged
 
-    data = dict(epochs=epochmat, psds=psdmat, tmin=tmin, tmax=tmax, sfreq=epochs.info['sfreq'], \
+    data = dict(epochs=epochmat, psds=psdmat, tmin=tmin, tmax=tmax, sfreq=epochs.info['sfreq'],\
                 fmin=fmin, fmax=fmax, w_step=w_step, w_len=w_len, labels=epochs.event_id.keys())
 
     # Export
