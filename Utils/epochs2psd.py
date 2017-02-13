@@ -15,61 +15,62 @@ import numpy as np
 import q_common as qc
 from multiprocessing import cpu_count
 
+
 def epochs2psd(rawfile, channel_picks, event_id, tmin, tmax, fmin, fmax, w_len, w_step, excludes=None):
-	"""
-	Compute PSD features over a sliding window in epochs
-	
-	Exported data is 4D: [epochs] x [times] x [channels] x [freqs]
+    """
+    Compute PSD features over a sliding window in epochs
 
-	Input
-	=====
-	rawfile: fif-format raw file
-	channel_picks: None or list of channel indices
-	event_id: { label(str) : event_id(int) }
-	tmin: start time of the PSD window relative to the event onset
-	tmax: end time of the PSD window relative to the event onset
-	fmin: minimum PSD frequency
-	fmax: maximum PSD frequency
-	w_len: sliding window length for computing PSD
-	w_step: sliding window step in time samples
-	export: file name to be saved. It can have .mat or .pkl extension.
-	        .pkl exports data in pickled Python numpy format.
-	        .mat exports data in MATLAB format.
-	"""
+    Exported data is 4D: [epochs] x [times] x [channels] x [freqs]
 
-	rawfile= rawfile.replace('\\','/')
-	raw, events= pu.load_raw(rawfile)
-	sfreq= raw.info['sfreq']
+    Input
+    =====
+    rawfile: fif-format raw file
+    channel_picks: None or list of channel indices
+    event_id: { label(str) : event_id(int) }
+    tmin: start time of the PSD window relative to the event onset
+    tmax: end time of the PSD window relative to the event onset
+    fmin: minimum PSD frequency
+    fmax: maximum PSD frequency
+    w_len: sliding window length for computing PSD
+    w_step: sliding window step in time samples
+    export: file name to be saved. It can have .mat or .pkl extension.
+            .pkl exports data in pickled Python numpy format.
+            .mat exports data in MATLAB format.
+    """
 
-	if channel_picks == None:
-		picks= mne.pick_types(raw.info, meg=False, eeg=True, stim=False, eog=False, exclude=excludes)
-	else:
-		picks= channel_picks
+    rawfile = rawfile.replace('\\', '/')
+    raw, events = pu.load_raw(rawfile)
+    sfreq = raw.info['sfreq']
 
-	# Epoching
-	epochs= mne.Epochs(raw, events, event_id, tmin=tmin, tmax=tmax, proj=False, picks=picks, baseline=(tmin,tmax), preload=True, add_eeg_ref=False)
-	#from IPython import embed; embed()
+    if channel_picks == None:
+        picks = mne.pick_types(raw.info, meg=False, eeg=True, stim=False, eog=False, exclude=excludes)
+    else:
+        picks = channel_picks
 
-	# Compute psd vectors over a sliding window between tmin and tmax
-	w_len= int(sfreq * w_len) # window length
-	psde= mne.decoding.PSDEstimator(sfreq, fmin=fmin, fmax=fmax, n_jobs=cpu_count(), adaptive=False)
-	epochmat= { e:epochs[e]._data for e in event_id }
-	psdmat= {}
-	for e in event_id:
-		# psd = [epochs] x [windows] x [channels] x [freqs]
-		psd, _= pu.get_psd(epochs[e], psde, w_len, w_step, flatten=False)
-		psdmat[e]= psd
-		#psdmat[e]= np.mean(psd, 3) # for freq-averaged
-	
-	data= dict(epochs=epochmat, psds=psdmat, tmin=tmin, tmax=tmax, sfreq=epochs.info['sfreq'],\
-		fmin= fmin, fmax= fmax, w_step=w_step, w_len=w_len, labels=epochs.event_id.keys())
+    # Epoching
+    epochs = mne.Epochs(raw, events, event_id, tmin=tmin, tmax=tmax, proj=False, picks=picks, baseline=(tmin, tmax),
+                        preload=True, add_eeg_ref=False)
+    # from IPython import embed; embed()
 
-	# Export
-	[basedir, fname, fext]= qc.parse_path(rawfile)
-	matfile= '%s/psd-%s.mat'% (basedir, fname)
-	pklfile= '%s/psd-%s.pkl'% (basedir, fname)
-	scipy.io.savemat( matfile, data )
-	qc.save_obj( pklfile, data )
-	print('Exported to %s'% matfile)
-	print('Exported to %s'% pklfile)
+    # Compute psd vectors over a sliding window between tmin and tmax
+    w_len = int(sfreq * w_len)  # window length
+    psde = mne.decoding.PSDEstimator(sfreq, fmin=fmin, fmax=fmax, n_jobs=cpu_count(), adaptive=False)
+    epochmat = {e: epochs[e]._data for e in event_id}
+    psdmat = {}
+    for e in event_id:
+        # psd = [epochs] x [windows] x [channels] x [freqs]
+        psd, _ = pu.get_psd(epochs[e], psde, w_len, w_step, flatten=False)
+        psdmat[e] = psd
+    # psdmat[e]= np.mean(psd, 3) # for freq-averaged
 
+    data = dict(epochs=epochmat, psds=psdmat, tmin=tmin, tmax=tmax, sfreq=epochs.info['sfreq'], \
+                fmin=fmin, fmax=fmax, w_step=w_step, w_len=w_len, labels=epochs.event_id.keys())
+
+    # Export
+    [basedir, fname, fext] = qc.parse_path(rawfile)
+    matfile = '%s/psd-%s.mat' % (basedir, fname)
+    pklfile = '%s/psd-%s.pkl' % (basedir, fname)
+    scipy.io.savemat(matfile, data)
+    qc.save_obj(pklfile, data)
+    print('Exported to %s' % matfile)
+    print('Exported to %s' % pklfile)

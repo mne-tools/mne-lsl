@@ -7,27 +7,27 @@ Kyuhwa Lee (kyu.lee@epfl.ch)
 Swiss Federal Institute of Technology of Lausanne (EPFL)
 """
 
-LOG_DIR= r'D:\data\MI\rx1\classifier\gait-ULR-250ms'
+LOG_DIR = r'D:\data\MI\rx1\classifier\gait-ULR-250ms'
 
 import pycnbi_config
 import q_common as qc
 
-dtlist= []
-gtlist= []
+dtlist = []
+gtlist = []
 for f in qc.get_file_list(LOG_DIR):
-	[basedir, fname, fext]= qc.parse_path(f)
-	if 'online' not in fname or fext != 'txt':
-		continue
-	print(f)
+    [basedir, fname, fext] = qc.parse_path(f)
+    if 'online' not in fname or fext != 'txt':
+        continue
+    print(f)
 
-	for l in open(f):
-		if len( l.strip() )==0: break
-		gt, dt= l.strip().split(',')
-		gtlist.append(gt)
-		dtlist.append(dt)
+    for l in open(f):
+        if len(l.strip()) == 0: break
+        gt, dt = l.strip().split(',')
+        gtlist.append(gt)
+        dtlist.append(dt)
 
-print('Ground-truth: %s'% ''.join(gtlist) )
-print('Detected as : %s'% ''.join(dtlist) )
-cfmat, acc= qc.confusion_matrix(gtlist, dtlist)
-print('\nAverage accuracy: %.3f'% acc)
+print('Ground-truth: %s' % ''.join(gtlist))
+print('Detected as : %s' % ''.join(dtlist))
+cfmat, acc = qc.confusion_matrix(gtlist, dtlist)
+print('\nAverage accuracy: %.3f' % acc)
 print(cfmat)

@@ -38,9 +38,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-OUT_DIR= 'D:/data/Records' # give absolute path
+OUT_DIR = 'D:/data/Records'  # give absolute path
 
-import pycnbi_config # load from global common folder
+import pycnbi_config  # load from global common folder
 import time, os, sys, datetime
 import q_common as qc
 import stream_receiver as receiver
@@ -50,84 +50,86 @@ import sys
 import pylsl
 import numpy as np
 
+
 # record start
 def record(state, amp_name, amp_serial, eeg_only=False):
-	# set data file name
-	filename= time.strftime( OUT_DIR+"/%Y%m%d-%H%M%S-raw.pcl", time.localtime() )
-	qc.print_c('\n>> Output file: %s'% (filename), 'W' )
+    # set data file name
+    filename = time.strftime(OUT_DIR + "/%Y%m%d-%H%M%S-raw.pcl", time.localtime())
+    qc.print_c('\n>> Output file: %s' % (filename), 'W')
 
-	# test writability
-	try:
-		qc.make_dirs(OUT_DIR)
-		open(filename, 'w').write('The data will written when the recording is finished.')
-	except:
-		qc.print_c('\n*** ERROR: There was a problem writing file %s\n'% filename, 'W')
-		sys.exit(-1)
+    # test writability
+    try:
+        qc.make_dirs(OUT_DIR)
+        open(filename, 'w').write('The data will written when the recording is finished.')
+    except:
+        qc.print_c('\n*** ERROR: There was a problem writing file %s\n' % filename, 'W')
+        sys.exit(-1)
 
-	# start a server for sending out data filename for software trigger
-	outlet= cnbi_lsl.start_server('StreamRecorderInfo', channel_format='string', source_id=filename, stype='Markers')
+    # start a server for sending out data filename for software trigger
+    outlet = cnbi_lsl.start_server('StreamRecorderInfo', channel_format='string', source_id=filename, stype='Markers')
 
-	# connect to EEG stream server
-	sr= receiver.StreamReceiver(amp_name=amp_name, amp_serial=amp_serial, eeg_only=eeg_only)
+    # connect to EEG stream server
+    sr = receiver.StreamReceiver(amp_name=amp_name, amp_serial=amp_serial, eeg_only=eeg_only)
 
-	# record start
-	qc.print_c('\n>> Recording started (PID %d).' % os.getpid(), 'W' )
-	qc.print_c('\n>> Press Enter to stop recording', 'G')
-	tm= qc.Timer(autoreset=True)
-	next_sec= 1
-	while state.value==1:
-		sr.acquire()
-		if sr.get_buflen() > next_sec:
-			duration= str( datetime.timedelta(seconds=int(sr.get_buflen())) )
-			print('RECORDING %s'%duration )
-			next_sec += 1
-		tm.sleep_atleast(0.01)
+    # record start
+    qc.print_c('\n>> Recording started (PID %d).' % os.getpid(), 'W')
+    qc.print_c('\n>> Press Enter to stop recording', 'G')
+    tm = qc.Timer(autoreset=True)
+    next_sec = 1
+    while state.value == 1:
+        sr.acquire()
+        if sr.get_buflen() > next_sec:
+            duration = str(datetime.timedelta(seconds=int(sr.get_buflen())))
+            print('RECORDING %s' % duration)
+            next_sec += 1
+        tm.sleep_atleast(0.01)
 
-	# record stop
-	qc.print_c('>> Stop requested. Copying buffer', 'G')
-	buffers, times= sr.get_buffer()
-	signals= buffers
-	events= None
+    # record stop
+    qc.print_c('>> Stop requested. Copying buffer', 'G')
+    buffers, times = sr.get_buffer()
+    signals = buffers
+    events = None
 
-	# channels = total channels from amp, including trigger channel
-	data= {'signals':signals, 'timestamps':times, 'events':events,
-		'sample_rate':sr.get_sample_rate(), 'channels':sr.get_num_channels(),
-		'ch_names':sr.get_channel_names() }
-	qc.print_c('Saving data ...', 'W')
-	qc.save_obj( filename, data )
-	print('Saved to %s'% filename)
+    # channels = total channels from amp, including trigger channel
+    data = {'signals': signals, 'timestamps': times, 'events': events,
+            'sample_rate': sr.get_sample_rate(), 'channels': sr.get_num_channels(),
+            'ch_names': sr.get_channel_names()}
+    qc.print_c('Saving data ...', 'W')
+    qc.save_obj(filename, data)
+    print('Saved to %s' % filename)
 
-	import convert2fif as cf
-	cf.pcl2fif(filename)
-	qc.print_c('File saved and converted to fif format.', 'W')
+    import convert2fif as cf
+    cf.pcl2fif(filename)
+    qc.print_c('File saved and converted to fif format.', 'W')
+
 
 if __name__ == '__main__':
-	eeg_only= False
+    eeg_only = False
 
-	if len(sys.argv) == 2:
-		amp_name= sys.argv[1]
-		amp_serial= None
-	elif len(sys.argv) == 3:
-		amp_name, amp_serial= sys.argv[1:3]
-	else:
-		amp_name, amp_serial= pu.search_lsl(ignore_markers=True)
-	if amp_name=='None':
-		amp_name=None
-	qc.print_c('Connecting to a server %s (Serial %s)'% (amp_name, amp_serial), 'W' )
+    if len(sys.argv) == 2:
+        amp_name = sys.argv[1]
+        amp_serial = None
+    elif len(sys.argv) == 3:
+        amp_name, amp_serial = sys.argv[1:3]
+    else:
+        amp_name, amp_serial = pu.search_lsl(ignore_markers=True)
+    if amp_name == 'None':
+        amp_name = None
+    qc.print_c('Connecting to a server %s (Serial %s)' % (amp_name, amp_serial), 'W')
 
-	qc.print_c('\n>> Press Enter to start recording.', 'G')
-	key= raw_input()
-	state= mp.Value('i', 1)
-	proc= mp.Process( target= record, args= [state, amp_name, amp_serial, eeg_only] )
-	proc.start()
+    qc.print_c('\n>> Press Enter to start recording.', 'G')
+    key = raw_input()
+    state = mp.Value('i', 1)
+    proc = mp.Process(target=record, args=[state, amp_name, amp_serial, eeg_only])
+    proc.start()
 
-	raw_input('')
-	state.value= 0
-	qc.print_c('(main) Waiting for recorder process to finish.', 'W')
-	proc.join(10)
-	if proc.is_alive():
-		qc.print_c('>> ERROR: Recorder process not finihsing. Are you running from Spyder?', 'R')
-		qc.shell()
+    raw_input('')
+    state.value = 0
+    qc.print_c('(main) Waiting for recorder process to finish.', 'W')
+    proc.join(10)
+    if proc.is_alive():
+        qc.print_c('>> ERROR: Recorder process not finihsing. Are you running from Spyder?', 'R')
+        qc.shell()
 
-	sys.stdout.flush()
-	print('>> Done.')
+    sys.stdout.flush()
+    print('>> Done.')

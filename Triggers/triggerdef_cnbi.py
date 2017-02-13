@@ -28,44 +28,46 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from triggerdef_template import TriggerDefTemplate
 
-class TriggerDef(TriggerDefTemplate):
-	INIT= 1 # start of the trial
-	FIXATION= 786
-	LEFT_READY= 769
-	RIGHT_READY= 770
-	FEET_READY= 771
-	#REST_READY= 772
-	GO= 781 # left bar started moving
-	MISS= 898
-	HIT= 897
 
-	def __init__(self):
-		for attr in dir(self):
-			if hasattr(self, 'keys')==False:
-				self.keys= {}
-				self.values= {}
-			if not callable(getattr(self,attr)) and not attr.startswith("__"):
-				#print(attr, getattr(TriggerDef,attr))
-				self.keys[attr]= getattr(TriggerDef,attr)
-				self.values[getattr(TriggerDef,attr)]= attr
+class TriggerDef(TriggerDefTemplate):
+    INIT = 1  # start of the trial
+    FIXATION = 786
+    LEFT_READY = 769
+    RIGHT_READY = 770
+    FEET_READY = 771
+    # REST_READY= 772
+    GO = 781  # left bar started moving
+    MISS = 898
+    HIT = 897
+
+    def __init__(self):
+        for attr in dir(self):
+            if hasattr(self, 'keys') == False:
+                self.keys = {}
+                self.values = {}
+            if not callable(getattr(self, attr)) and not attr.startswith("__"):
+                # print(attr, getattr(TriggerDef,attr))
+                self.keys[attr] = getattr(TriggerDef, attr)
+                self.values[getattr(TriggerDef, attr)] = attr
+
 
 # sample code
-if __name__=='__main__':
-	tdef= TriggerDef()
+if __name__ == '__main__':
+    tdef = TriggerDef()
 
-	# accessing a trigger value as a member variable
-	print( tdef.INIT )
+    # accessing a trigger value as a member variable
+    print(tdef.INIT)
 
-	# check whether the trigger name is defined
-	print( 'INIT' in tdef.keys )
+    # check whether the trigger name is defined
+    print('INIT' in tdef.keys)
 
-	# check whether the trigger value is defined
-	print( 786 in tdef.values )
+    # check whether the trigger value is defined
+    print(786 in tdef.values)
 
-	# print all trigger names and associated values
-	print( tdef.keys )
-	print()
+    # print all trigger names and associated values
+    print(tdef.keys)
+    print()
 
-	# print all trigger values and associated names
-	print( tdef.values )
-	print()
+    # print all trigger values and associated names
+    print(tdef.values)
+    print()
