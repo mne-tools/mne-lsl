@@ -118,7 +118,7 @@ if __name__ == '__main__':
 
     # bar visual object
     bar = Bars(cfg.GLASS_USE, screen_pos=cfg.SCREEN_POS, screen_size=cfg.SCREEN_SIZE)
-    bar.putText('Waiting to start')
+    bar.put_text('Waiting to start')
     bd = BarDecision(cfg, bar, tdef, trigger)
 
     # start

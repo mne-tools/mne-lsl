@@ -34,8 +34,8 @@ import mne.io, mne.viz
 import q_common as qc
 import bgi_client
 from decoder import BCIDecoderDaemon, BCIDecoder
-from viz_bars import Bars
-from bar_decision import BarDecision
+from viz_human import BodyFeedback
+from bar_decision_human import BarDecision
 from IPython import embed
 
 # visualization
@@ -105,7 +105,7 @@ if __name__ == '__main__':
         time.sleep(0.01)
 
     # bar visual object
-    bar = Bars(cfg.GLASS_USE, screen_pos=cfg.SCREEN_POS, screen_size=cfg.SCREEN_SIZE)
+    bar = BodyFeedback(cfg.GLASS_USE, screen_pos=cfg.SCREEN_POS, screen_size=cfg.SCREEN_SIZE)
     bar.put_text('Waiting to start')
     bd = BarDecision(cfg, bar, tdef, trigger)
 
@@ -137,6 +137,10 @@ if __name__ == '__main__':
                 qc.print_c('Warning: Rex cannot execute undefined action %s' % pred_label, 'W')
                 rex_dir = None
             if rex_dir is not None:
+                ########################################
+                print('FUNCTION NOT IMPLEMENTED YET')
+                sys.exit(-1)
+                ########################################
                 bar.move(pred_label, 100, overlay=False, barcolor='B')
                 bar.update()
                 qc.print_c('Executing Rex action %s' % rex_dir, 'W')
