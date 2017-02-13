@@ -49,6 +49,6 @@ time_template = 'Time = %.1f s'  # prints running simulation time
 time_text = ax.text(0.05, 0.9, '', transform=ax.transAxes)
 ## Now call the animation package: (simData is the user function
 ## serving as the argument for simPoints):
-ani = animation.FuncAnimation(fig, simPoints, simData, blit=False, \
+ani = animation.FuncAnimation(fig, simPoints, simData, blit=False,\
                               interval=10, repeat=True)
 plt.show()

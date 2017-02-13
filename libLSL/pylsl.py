@@ -19,7 +19,7 @@ pylsl has been tested with Python 2.7 and 3.4.
 import os
 import platform
 import struct
-from ctypes import CDLL, util, byref, c_char_p, c_void_p, c_double, c_int, \
+from ctypes import CDLL, util, byref, c_char_p, c_void_p, c_double, c_int,\
     c_long, c_float, c_short, c_byte, c_longlong
 
 __all__ = ['IRREGULAR_RATE', 'DEDUCED_TIMESTAMP', 'FOREVER', 'cf_float32',
@@ -1214,9 +1214,9 @@ except:
           "version.")
 
 # set up some type maps
-string2fmt = {'float32': cf_float32, 'double64': cf_double64,
-              'string': cf_string, 'int32': cf_int32, 'int16': cf_int16,
-              'int8': cf_int8, 'int64': cf_int64}
+string2fmt = {'float32':cf_float32, 'double64':cf_double64,
+              'string':cf_string, 'int32':cf_int32, 'int16':cf_int16,
+              'int8':cf_int8, 'int64':cf_int64}
 fmt2string = ['undefined', 'float32', 'double64', 'string', 'int32', 'int16',
               'int8', 'int64']
 fmt2type = [[], c_float, c_double, c_char_p, c_int, c_short, c_byte, c_longlong]

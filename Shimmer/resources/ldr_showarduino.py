@@ -64,7 +64,7 @@ class AnalogPlot:
         self.ser.flush()
         self.ser.close()
 
-    # main() function
+        # main() function
 
 
 def main():

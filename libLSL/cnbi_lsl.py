@@ -60,7 +60,7 @@ def start_server(server_name, n_channels=1, channel_format='string', nominal_sra
     """
     if source_id == None:
         source_id = server_name
-    sinfo = lsl.StreamInfo(server_name, channel_count=n_channels, channel_format=channel_format, \
+    sinfo = lsl.StreamInfo(server_name, channel_count=n_channels, channel_format=channel_format,\
                            nominal_srate=nominal_srate, type=stype, source_id=source_id)
     return lsl.StreamOutlet(sinfo)
 

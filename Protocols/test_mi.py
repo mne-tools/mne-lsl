@@ -39,9 +39,9 @@ from bar_decision import BarDecision
 from IPython import embed
 
 # visualization
-keys = {'left': 81, 'right': 83, 'up': 82, 'down': 84, 'pgup': 85, 'pgdn': 86, 'home': 80, 'end': 87, 'space': 32,
-        'esc': 27 \
-    , ',': 44, '.': 46, 's': 115, 'c': 99, '[': 91, ']': 93, '1': 49, '!': 33, '2': 50, '@': 64, '3': 51, '#': 35}
+keys = {'left':81, 'right':83, 'up':82, 'down':84, 'pgup':85, 'pgdn':86, 'home':80, 'end':87, 'space':32,
+        'esc':27\
+    , ',':44, '.':46, 's':115, 'c':99, '[':91, ']':93, '1':49, '!':33, '2':50, '@':64, '3':51, '#':35}
 color = dict(G=(20, 140, 0), B=(210, 0, 0), R=(0, 50, 200), Y=(0, 215, 235), K=(0, 0, 0), W=(255, 255, 255),
              w=(200, 200, 200))
 
@@ -92,7 +92,7 @@ if __name__ == '__main__':
     decoder = BCIDecoderDaemon(cfg.CLS_MI, buffer_size=10.0, fake=(cfg.FAKE_CLS is not None),
                                amp_name=amp_name, amp_serial=amp_serial, fake_dirs=fake_dirs)
     labels = [tdef.by_value[x] for x in decoder.get_labels()]
-    bar_def = {label: dir for dir, label in cfg.DIRECTIONS}
+    bar_def = {label:dir for dir, label in cfg.DIRECTIONS}
     bar_dirs = [bar_def[l] for l in labels]
     dir_seq = []
     for x in range(cfg.TRIALS_EACH):

@@ -91,9 +91,9 @@ def record(state, amp_name, amp_serial, eeg_only=False):
     events = None
 
     # channels = total channels from amp, including trigger channel
-    data = {'signals': signals, 'timestamps': times, 'events': events,
-            'sample_rate': sr.get_sample_rate(), 'channels': sr.get_num_channels(),
-            'ch_names': sr.get_channel_names()}
+    data = {'signals':signals, 'timestamps':times, 'events':events,
+            'sample_rate':sr.get_sample_rate(), 'channels':sr.get_num_channels(),
+            'ch_names':sr.get_channel_names()}
     qc.print_c('Saving data ...', 'W')
     qc.save_obj(filename, data)
     print('Saved to %s' % filename)

@@ -91,8 +91,8 @@ def raw2psd(rawfile, fmin=1, fmax=40, wlen=0.5, wstep=1, tmin=0.0, tmax=None, ch
         [basedir, fname, fext] = qc.parse_path(rawfile)
         fout_header = '%s/psd-%s-header.pkl' % (basedir, fname)
         fout_psd = '%s/psd-%s-data.npy' % (basedir, fname)
-        header = {'psdfile': fout_psd, 'times': np.array(times), 'sfreq': sfreq,
-                  'channels': raw_eeg.ch_names, 'wframes': wframes, 'events': evelist}
+        header = {'psdfile':fout_psd, 'times':np.array(times), 'sfreq':sfreq,
+                  'channels':raw_eeg.ch_names, 'wframes':wframes, 'events':evelist}
         print('Exporting to:\n%s\n%s' % (fout_header, fout_psd))
         qc.save_obj(fout_header, header)
         np.save(fout_psd, psd_all)

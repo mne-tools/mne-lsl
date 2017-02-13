@@ -13,7 +13,7 @@ w_len = 0.5
 w_step = 16
 from triggerdef_16 import TriggerDef as tdef
 
-events = {'left': tdef.LEFT_GO, 'right': tdef.RIGHT_GO}
+events = {'left':tdef.LEFT_GO, 'right':tdef.RIGHT_GO}
 
 if __name__ == '__main__':
     for f in qc.get_file_list(data_dir):

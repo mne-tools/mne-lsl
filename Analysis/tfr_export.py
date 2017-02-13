@@ -60,7 +60,7 @@ def get_tfr(cfg):
     spchannels = pu.channel_names_to_index(raw, cfg.SP_CHANNELS)
 
     if max(picks) > len(raw.info['ch_names']):
-        msg = 'ERROR: "picks" has a channel index %d while there are only %d channels.' % \
+        msg = 'ERROR: "picks" has a channel index %d while there are only %d channels.' %\
               (max(picks), len(raw.info['ch_names']))
         raise RuntimeError(msg)
 
@@ -107,8 +107,8 @@ def get_tfr(cfg):
 
             if cfg.EXPORT_MATLAB is True:
                 # MATLAB export
-                mout = '%s/%s-%s-%s.jpg' % (export_dir, file_prefix, cfg.SP_FILTER, evname)
-                scipy.io.savemat(mout, {'tfr': power[evname].data, 'chs': power[evname].ch_names})
+                mout = '%s/%s-%s-%s.mat' % (export_dir, file_prefix, cfg.SP_FILTER, evname)
+                scipy.io.savemat(mout, {'tfr':power[evname].data, 'chs':power[evname].ch_names})
             else:
                 # Inspect power for each channel
                 for ch in np.arange(len(picks)):
@@ -130,8 +130,8 @@ def get_tfr(cfg):
 
                 if cfg.EXPORT_MATLAB is True:
                     # MATLAB export
-                    mout = '%s/%s-%s-%s-ep%02d.jpg' % (export_dir, file_prefix, cfg.SP_FILTER, evname, ep + 1)
-                    scipy.io.savemat(mout, {'tfr': power[evname].data, 'chs': power[evname].ch_names})
+                    mout = '%s/%s-%s-%s-ep%02d.mat' % (export_dir, file_prefix, cfg.SP_FILTER, evname, ep + 1)
+                    scipy.io.savemat(mout, {'tfr':power[evname].data, 'chs':power[evname].ch_names})
                 else:
                     # Inspect power for each channel
                     for ch in np.arange(len(picks)):
@@ -142,7 +142,7 @@ def get_tfr(cfg):
                         fig = power[evname].plot([ch], baseline=cfg.BS_TIMES, mode='logratio', show=False,
                                                  colorbar=True, title=title, vmin=cfg.VMIN, vmax=cfg.VMAX, dB=False)
                         fout = '%s/%s-%s-%s-%s-ep%02d.jpg' % (
-                        export_dir, file_prefix, cfg.SP_FILTER, evname, chname, ep + 1)
+                            export_dir, file_prefix, cfg.SP_FILTER, evname, chname, ep + 1)
                         fig.savefig(fout)
                         print('Exported %s' % fout)
 

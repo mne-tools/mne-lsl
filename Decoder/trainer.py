@@ -50,7 +50,7 @@ from IPython import embed  # for debugging
 
 def check_cfg(cfg):
     critical_vars = {
-        'COMMON': [
+        'COMMON':[
             'tdef',
             'TRIGGER_DEF',
             'EPOCH',
@@ -64,24 +64,24 @@ def check_cfg(cfg):
             'FEATURES',
             'CLASSIFIER',
             'CV_PERFORM'],
-        'RF': ['trees', 'max_depth', 'seed'],
-        'GB': ['trees', 'learning_rate', 'max_depth', 'seed']
+        'RF':['trees', 'max_depth', 'seed'],
+        'GB':['trees', 'learning_rate', 'max_depth', 'seed']
     }
 
     # optional variables with default values
     optional_vars = {
-        'LOAD_PSD': False,
-        'MULTIPLIER': 1,
-        'EXPORT_GOOD_FEATURES': False,
-        'FEAT_TOPN': 20,
-        'EXPORT_CLS': False,
-        'USE_LOG': False,
-        'USE_CVA': False,
-        'REF_CH_OLD': None,
-        'REF_CH_NEW': None,
-        'N_JOBS': None,
-        'EXCLUDES': None,
-        'CV_DECISION_THRES': None
+        'LOAD_PSD':False,
+        'MULTIPLIER':1,
+        'EXPORT_GOOD_FEATURES':False,
+        'FEAT_TOPN':20,
+        'EXPORT_CLS':False,
+        'USE_LOG':False,
+        'USE_CVA':False,
+        'REF_CH_OLD':None,
+        'REF_CH_NEW':None,
+        'N_JOBS':None,
+        'EXCLUDES':None,
+        'CV_DECISION_THRES':None
     }
 
     for v in critical_vars['COMMON']:
@@ -169,8 +169,8 @@ def get_psd_feature(epochs_train, window, psdparam, feat_picks=None):
             psdparam['wlen'] = wlen
         w_frames = int(sfreq * psdparam['wlen'])  # window length
 
-    psde = mne.decoding.PSDEstimator(sfreq=sfreq, fmin=psdparam['fmin'], \
-                                     fmax=psdparam['fmax'], bandwidth=None, adaptive=False, low_bias=True, \
+    psde = mne.decoding.PSDEstimator(sfreq=sfreq, fmin=psdparam['fmin'],\
+                                     fmax=psdparam['fmax'], bandwidth=None, adaptive=False, low_bias=True,\
                                      n_jobs=1, normalization='length', verbose=None)
 
     print('\n>> Computing PSD for training set')
@@ -358,7 +358,7 @@ def crossval_epochs(cv, epochs_data, labels, cls, label_names=None, do_balance=F
     label_set = np.unique(labels)
     num_labels = len(label_set)
     if label_names == None:
-        label_names = {l: '%s' % l for l in label_set}
+        label_names = {l:'%s' % l for l in label_set}
 
     if n_jobs is None:
         n_jobs = mp.cpu_count()
@@ -487,7 +487,7 @@ def load_psd():
     if 'classes' in data:
         triggers = data['classes']
     else:
-        triggers = {c: cfg.tdef.by_value[c] for c in set(labels)}
+        triggers = {c:cfg.tdef.by_value[c] for c in set(labels)}
 
     spatial = data['spatial']
     spatial_ch = data['spatial_ch']
@@ -601,7 +601,7 @@ def run_trainer(cfg, ftrain, interactive=False, cv_file=None, feat_file=None):
         if cfg.LOAD_EVENTS_FILE is not None:
             events = mne.read_events(cfg.LOAD_EVENTS_FILE)
 
-        triggers = {cfg.tdef.by_value[c]: c for c in set(cfg.TRIGGER_DEF)}
+        triggers = {cfg.tdef.by_value[c]:c for c in set(cfg.TRIGGER_DEF)}
 
         # Pick channels
         if cfg.CHANNEL_PICKS is None:
@@ -635,7 +635,7 @@ def run_trainer(cfg, ftrain, interactive=False, cv_file=None, feat_file=None):
                     del picks[picks.index(c_int)]
 
         if max(picks) > len(raw.info['ch_names']):
-            print('ERROR: "picks" has a channel index %d while there are only %d channels.' % \
+            print('ERROR: "picks" has a channel index %d while there are only %d channels.' %\
                   (max(picks), len(raw.info['ch_names'])))
             sys.exit(-1)
 
@@ -664,7 +664,7 @@ def run_trainer(cfg, ftrain, interactive=False, cv_file=None, feat_file=None):
                                   multiplier=multiplier)
                     epochs_train.append(epoch)
             else:
-                epochs_train = Epochs(raw, events, triggers, tmin=cfg.EPOCH[0], tmax=cfg.EPOCH[1], proj=False, \
+                epochs_train = Epochs(raw, events, triggers, tmin=cfg.EPOCH[0], tmax=cfg.EPOCH[1], proj=False,\
                                       picks=picks, baseline=None, preload=True, add_eeg_ref=False, verbose=False,
                                       detrend=None)
                 pu.preprocess(epochs_train, spatial=cfg.SP_FILTER, spatial_ch=None,
@@ -765,10 +765,10 @@ def run_trainer(cfg, ftrain, interactive=False, cv_file=None, feat_file=None):
         txt += 'Classifier: %s\n' % cfg.CLASSIFIER
         if cfg.CLASSIFIER == 'RF':
             txt += '            %d trees, %s max depth, random state %s\n' % (
-            cfg.RF['trees'], cfg.RF['max_depth'], cfg.RF['seed'])
+                cfg.RF['trees'], cfg.RF['max_depth'], cfg.RF['seed'])
         elif cfg.CLASSIFIER == 'GB':
             txt += '            %d trees, %s max depth, %s learing_rate, random state %s\n' % (
-            cfg.GB['trees'], cfg.GB['max_depth'], cfg.GB['learning_rate'], cfg.GB['seed'])
+                cfg.GB['trees'], cfg.GB['max_depth'], cfg.GB['learning_rate'], cfg.GB['seed'])
         elif cfg.CLASSIFIER == 'rLDA':
             txt += '            regularization coefficient %.2f\n' % cfg.RLDA_REGULARIZE_COEFF
         if cfg.CV_DECISION_THRES is not None:
@@ -806,13 +806,13 @@ def run_trainer(cfg, ftrain, interactive=False, cv_file=None, feat_file=None):
 
         cls.n_jobs = cfg.N_JOBS
         cls.fit(X_data_merged, Y_data_merged)
-        print('Trained %d samples x %d dimension in %.1f sec' % \
+        print('Trained %d samples x %d dimension in %.1f sec' %\
               (X_data_merged.shape[0], X_data_merged.shape[1], timer.sec()))
 
         # Set n_jobs = 1 for testing!
         cls.n_jobs = 1
 
-        classes = {c: cfg.tdef.by_value[c] for c in np.unique(Y_data)}
+        classes = {c:cfg.tdef.by_value[c] for c in np.unique(Y_data)}
         if cfg.FEATURES == 'PSD':
             data = dict(cls=cls, ch_names=raw.ch_names, psde=psde, sfreq=sfreq, picks=picks,
                         classes=classes, epochs=cfg.EPOCH, w_frames=w_frames, w_seconds=psdparams['wlen'],
@@ -870,7 +870,7 @@ def run_trainer(cfg, ftrain, interactive=False, cv_file=None, feat_file=None):
             for i, (ch, hz) in enumerate(zip(chlist, hzlist)):
                 if i >= cfg.FEAT_TOPN:
                     break
-                txt = '%-3s %5.1f Hz  normalized importance %-6s  raw importance %-6s  feature %-5d' % \
+                txt = '%-3s %5.1f Hz  normalized importance %-6s  raw importance %-6s  feature %-5d' %\
                       (ch, hz, '%.2f%%' % valnorm[i], '%.2f%%' % (values[i] * 100.0), keys[i])
                 print(txt)
                 if cfg.EXPORT_GOOD_FEATURES:
