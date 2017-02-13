@@ -31,7 +31,7 @@ import q_common as qc
 
 class Bars(object):
     # Default setting
-    color = dict(G=(20, 140, 0), B=(210, 0, 0), R=(0, 50, 200), Y=(0, 215, 235), K=(0, 0, 0), \
+    color = dict(G=(20, 140, 0), B=(210, 0, 0), R=(0, 50, 200), Y=(0, 215, 235), K=(0, 0, 0),\
                  W=(255, 255, 255), w=(200, 200, 200))
     barwidth = 100
     textlimit = 20  # maximum number of characters to show
@@ -165,7 +165,7 @@ class Bars(object):
             qc.print_c('(viz_bars.py) ERROR: Unknown direction %s' % dir, 'r')
 
     def putText(self, txt, color='W'):
-        cv2.putText(self.img, txt[:self.textlimit].center(self.textlimit, ' '), (self.text_x, self.text_y), \
+        cv2.putText(self.img, txt[:self.textlimit].center(self.textlimit, ' '), (self.text_x, self.text_y),\
                     cv2.FONT_HERSHEY_SIMPLEX, self.text_size, self.color[color], 2)
 
     def update(self):

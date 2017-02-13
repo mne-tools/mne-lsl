@@ -110,6 +110,7 @@ class Trigger(object):
                 self.print('Warning: COM port %d is unusual.' % portaddr)
 
         elif self.lpttype == 'SOFTWARE':
+            import pycnbi_config
             import cnbi_lsl
             import pylsl
             self.print('Using software trigger')

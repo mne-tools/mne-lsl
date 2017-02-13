@@ -344,7 +344,7 @@ if __name__ == '__main__':
         train_pcaed = pca.transform(train_reshaped)
         w, b = trainLDA(train_pcaed, label, 0.3)
 
-        data = dict(sfreq=raw.info['sfreq'], ch_names=ch_names, picks=picks_feat, \
+        data = dict(sfreq=raw.info['sfreq'], ch_names=ch_names, picks=picks_feat,\
                     w=w, b=b, l_freq=l_freq, h_freq=h_freq, decim_factor=decim_factor, pca=pca,
                     shiftFactor=trainShiftFactor, scaleFactor=trainScaleFactor)
         outdir = DATADIR + '/errp_classifier'

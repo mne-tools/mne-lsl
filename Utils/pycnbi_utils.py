@@ -209,7 +209,7 @@ def find_event_channel(raw):
 
     if ech is None:
         for c in range(signals.shape[0]):
-            if (signals[c].astype(int) == signals[c]).all() \
+            if (signals[c].astype(int) == signals[c]).all()\
                     and max(signals[c]) < 256 and min(signals[c]) == 0:
                 ech = c
                 break
@@ -222,7 +222,7 @@ def raw2mat(infile, outfile):
     Convert raw data file to MATLAB file
     '''
     raw, events = load_raw(infile)
-    header = dict(bads=raw.info['bads'], ch_names=raw.info['ch_names'], \
+    header = dict(bads=raw.info['bads'], ch_names=raw.info['ch_names'],\
                   sfreq=raw.info['sfreq'], events=events)
     scipy.io.savemat(outfile, dict(signals=raw._data, header=header))
     print('\n>> Exported to %s' % outfile)
@@ -277,7 +277,7 @@ def export_morlet(epochs, filename):
     n_cycles = freqs / 2.  # different number of cycle per frequency
     power, itc = mne.time_frequency.tfr_morlet(epochs, freqs=freqs,
                                                n_cycles=n_cycles, use_fft=False, return_itc=True, n_jobs=mp.cpu_count())
-    scipy.io.savemat(filename, dict(power=power.data, itc=itc.data, freqs=freqs, \
+    scipy.io.savemat(filename, dict(power=power.data, itc=itc.data, freqs=freqs,\
                                     channels=epochs.ch_names, sfreq=epochs.info['sfreq'], onset=-epochs.tmin))
 
 
@@ -308,10 +308,10 @@ def event_timestamps_to_indices(sigfile, eventfile):
             next_index = np.searchsorted(ts, event_ts)
             if next_index >= len(ts):
                 qc.print_c('** WARNING: Event %d at time %.3f is out of time range (%.3f - %.3f).' % (
-                event_value, event_ts, ts_min, ts_max), 'y')
+                    event_value, event_ts, ts_min, ts_max), 'y')
             else:
                 events.append([next_index, 0, event_value])
-            # print(events[-1])
+                # print(events[-1])
 
     return events
 

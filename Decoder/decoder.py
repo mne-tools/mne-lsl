@@ -67,7 +67,7 @@ def get_decoder_info(classifier):
     psd_shape = psd_temp.shape
     psd_size = psd_temp.size
 
-    info = dict(labels=labels, cls=cls, psde=psde, w_seconds=w_seconds, w_frames=w_frames, \
+    info = dict(labels=labels, cls=cls, psde=psde, w_seconds=w_seconds, w_frames=w_frames,\
                 wstep=wstep, sfreq=sfreq, psd_shape=psd_shape, psd_size=psd_size)
     return info
 
@@ -120,7 +120,7 @@ class BCIDecoder(object):
             self.sr = StreamReceiver(window_size=self.w_seconds, amp_name=self.amp_name, amp_serial=self.amp_serial)
             if self.sfreq != self.sr.sample_rate:
                 raise RuntimeError('Amplifier sampling rate (%.1f) != model sampling rate (%.1f). Stop.' % (
-                self.sr.sample_rate, self.sfreq))
+                    self.sr.sample_rate, self.sfreq))
 
             # Map channel indices based on channel names of the streaming server
             self.spatial_ch = model['spatial_ch']
@@ -327,7 +327,7 @@ class BCIDecoderDaemon(object):
         self.running = mp.Value('i', 0)
         self.return_psd = mp.Value('i', 0)
         mp.freeze_support()
-        self.proc = mp.Process(target=self.daemon, args= \
+        self.proc = mp.Process(target=self.daemon, args=\
             [self.classifier, self.probs, self.pread, self.running, self.return_psd, psd_ctypes, self.psdlock])
 
     def daemon(self, classifier, probs, pread, running, return_psd, psd_ctypes, lock):
@@ -337,7 +337,7 @@ class BCIDecoderDaemon(object):
         """
         from numpy import ctypeslib
 
-        decoder = BCIDecoder(classifier, buffer_size=self.buffer_sec, \
+        decoder = BCIDecoder(classifier, buffer_size=self.buffer_sec,\
                              fake=self.fake, amp_serial=self.amp_serial, amp_name=self.amp_name)
         if self.fake == False:
             psd = ctypeslib.as_array(psd_ctypes)

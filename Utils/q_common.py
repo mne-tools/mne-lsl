@@ -438,7 +438,7 @@ def load_obj(fname):
         with open(fname, 'rb') as f:
             return pickle.load(f, encoding='latin1')
     except:
-        msg = 'load_obj(): Cannot load pickled object file "%s". The error was:\n%s\n%s' % \
+        msg = 'load_obj(): Cannot load pickled object file "%s". The error was:\n%s\n%s' %\
               (fname, sys.exc_info()[0], sys.exc_info()[1])
         print_error(msg)
         sys.exit(-1)

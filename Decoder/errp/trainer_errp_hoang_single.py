@@ -195,7 +195,7 @@ if __name__ == '__main__':
         for x in range(1, raw._data.shape[0]):  # range starting from 1 because channel 0 is trigger
             # raw._data[x,:] = lfilter(b, a, raw._data[x,:])
             raw._data[x, :], zi[:, x - 1] = lfilter(b, a, raw._data[x, :], -1, zi[:, x - 1])
-        # self.eeg[:,x], self.zi[:,x] = lfilter(b, a, self.eeg[:,x], -1,zi[:,x])
+            # self.eeg[:,x], self.zi[:,x] = lfilter(b, a, self.eeg[:,x], -1,zi[:,x])
 
     # %% Epoching and baselining
     # epochs = mne.Epochs(raw, events=events, event_id=event_id, tmin=tmin, tmax=tmax, baseline=baselineRange, picks=picks_feat, preload=True)
@@ -470,8 +470,8 @@ if __name__ == '__main__':
         # t_upper = tmax+paddingLength
 
         ##########################################################################
-        data = dict(cls=cls, sfreq=raw.info['sfreq'], ch_names=ch_names, picks=picks_feat, \
-                    l_freq=l_freq, h_freq=h_freq, decim_factor=decim_factor, \
+        data = dict(cls=cls, sfreq=raw.info['sfreq'], ch_names=ch_names, picks=picks_feat,\
+                    l_freq=l_freq, h_freq=h_freq, decim_factor=decim_factor,\
                     shiftFactor=trainShiftFactor, scaleFactor=trainScaleFactor, pca=pca, threshold=best_threshold[0],
                     tmin=tmin, tmax=tmax, paddingIdx=paddingIdx, iir_params=dict(a=a, b=b))
         outdir = DATADIR + '/errp_classifier'

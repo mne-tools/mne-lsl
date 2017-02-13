@@ -325,7 +325,7 @@ if __name__ == '__main__':
                     confusion_matrixes_percent.append(cm_normalized)
                     avg_confusion_matrixes = np.mean(confusion_matrixes_percent, axis=0)
 
-                #				print('CV #'+str(count))
+                # print('CV #'+str(count))
                 #				print('Prediction: '+str(prediction))
                 #				print('    Actual: '+str(test_label))
 
@@ -367,7 +367,7 @@ if __name__ == '__main__':
                 ## One CV done, go to the next one
                 count += 1
 
-            #		if useLeaveOneOut is not True:
+            # if useLeaveOneOut is not True:
             #			my_fpr_cont_np = np.array(my_fpr_cont)
             #			my_tpr_cont_np = np.array(my_tpr_cont)
             #
@@ -591,8 +591,8 @@ if __name__ == '__main__':
             print('testing [' + str(var_tmax) + ',' + str(var_regcoeff) + ']')
             tmax = var_tmax
             regcoeff = var_regcoeff
-            biglist_auc, biglist_cms, best_threshold, besttpr = getperf(APPLY_CAR, APPLY_PCA, APPLY_OVERSAMPLING, DO_CV, \
-                                                                        l_freq, h_freq, picks_feat, offset, tmin, tmax, \
+            biglist_auc, biglist_cms, best_threshold, besttpr = getperf(APPLY_CAR, APPLY_PCA, APPLY_OVERSAMPLING, DO_CV,\
+                                                                        l_freq, h_freq, picks_feat, offset, tmin, tmax,\
                                                                         baselineRange, reg_coeff=regcoeff,
                                                                         verbose=False)
             results_regcoeff.append(biglist_auc)

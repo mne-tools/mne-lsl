@@ -58,10 +58,10 @@ def event_timestamps_to_indices(sigfile, eventfile):
             next_index = np.searchsorted(ts, event_ts)
             if next_index >= len(ts):
                 qc.print_c('** WARNING: Event %d at time %.3f is out of time range (%.3f - %.3f).' % (
-                event_value, event_ts, ts_min, ts_max), 'y')
+                    event_value, event_ts, ts_min, ts_max), 'y')
             else:
                 events.append([next_index, 0, event_value])
-            # print(events[-1])
+                # print(events[-1])
 
     return events
 
