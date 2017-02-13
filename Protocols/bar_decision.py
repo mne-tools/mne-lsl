@@ -28,200 +28,204 @@ import q_common as qc
 from IPython import embed
 
 # visualization
-keys= {'left':81,'right':83,'up':82,'down':84,'pgup':85,'pgdn':86,'home':80,'end':87,'space':32,'esc':27\
-	,',':44,'.':46,'s':115,'c':99,'[':91,']':93,'1':49,'!':33,'2':50,'@':64,'3':51,'#':35}
-color= dict(G=(20,140,0), B=(210,0,0), R=(0,50,200), Y=(0,215,235), K=(0,0,0), W=(255,255,255), w=(200,200,200))
-
-class BarDecision:
-	"""
-	Perform a classification with visual feedback
-
-	"""
-	def __init__(self, cfg, bar, tdef, trigger):
-		self.cfg= cfg
-		self.tdef= tdef
-		self.alpha1= self.cfg.PROB_ACC_ALPHA
-		self.alpha2= 1.0 - self.cfg.PROB_ACC_ALPHA
-		self.trigger= trigger
-
-		self.bar= bar
-		self.bar.fill()
-		self.refresh_delay= 1.0 / self.cfg.REFRESH_RATE
-		self.bar_step= self.cfg.BAR_STEP
-		self.bar_bias= self.cfg.BAR_BIAS
-
-		if hasattr(self.cfg, 'BAR_REACH_FINISH') and self.cfg.BAR_REACH_FINISH==True:
-			self.premature_end= True
-		else:
-			self.premature_end= False
-
-		self.tm_trigger= qc.Timer()
-		self.tm_display= qc.Timer()
-		self.tm_watchdog= qc.Timer()
+keys = {'left': 81, 'right': 83, 'up': 82, 'down': 84, 'pgup': 85, 'pgdn': 86, 'home': 80, 'end': 87, 'space': 32,
+        'esc': 27 \
+    , ',': 44, '.': 46, 's': 115, 'c': 99, '[': 91, ']': 93, '1': 49, '!': 33, '2': 50, '@': 64, '3': 51, '#': 35}
+color = dict(G=(20, 140, 0), B=(210, 0, 0), R=(0, 50, 200), Y=(0, 215, 235), K=(0, 0, 0), W=(255, 255, 255),
+             w=(200, 200, 200))
 
 
-	def classify(self, decoder, true_label, title_text, bar_dirs, state='start'):
-		self.tm_trigger.reset()
-		if self.bar_bias is not None:
-			bias_idx= bar_dirs.index( self.bar_bias[0] )
+class BarDecision(object):
+    """
+    Perform a classification with visual feedback
 
-		tm_classify= qc.Timer()
-		while True:
-			self.tm_display.sleep_atleast(self.refresh_delay)
-			self.tm_display.reset()
-			if state=='start' and self.tm_trigger.sec() > self.cfg.T_INIT:
-				state= 'gap_s'
-				self.bar.fill()
-				self.tm_trigger.reset()
-				self.trigger.signal(self.tdef.INIT)
+    """
 
-			elif state=='gap_s':
-				self.bar.putText(title_text)
-				state= 'gap'
-				self.tm_trigger.reset()
+    def __init__(self, cfg, bar, tdef, trigger):
+        self.cfg = cfg
+        self.tdef = tdef
+        self.alpha1 = self.cfg.PROB_ACC_ALPHA
+        self.alpha2 = 1.0 - self.cfg.PROB_ACC_ALPHA
+        self.trigger = trigger
 
-			elif state=='gap' and self.tm_trigger.sec() > self.cfg.T_GAP:
-				state= 'cue'
-				self.bar.fill()
-				self.bar.draw_cue()
-				self.bar.glass_draw_cue()
-				self.trigger.signal(self.tdef.CUE)
-				self.tm_trigger.reset()
+        self.bar = bar
+        self.bar.fill()
+        self.refresh_delay = 1.0 / self.cfg.REFRESH_RATE
+        self.bar_step = self.cfg.BAR_STEP
+        self.bar_bias = self.cfg.BAR_BIAS
 
-			elif state=='cue' and self.tm_trigger.sec() > self.cfg.T_READY:
-				state= 'dir_r'
+        if hasattr(self.cfg, 'BAR_REACH_FINISH') and self.cfg.BAR_REACH_FINISH == True:
+            self.premature_end = True
+        else:
+            self.premature_end = False
 
-				self.bar.move( true_label, 100, overlay=False, barcolor='G' )
-				if true_label=='L': # left
-					self.trigger.signal(self.tdef.LEFT_READY)
-				elif true_label=='R': # right
-					self.trigger.signal(self.tdef.RIGHT_READY)
-				elif true_label=='U': # up
-					self.trigger.signal(self.tdef.UP_READY)
-				elif true_label=='D': # down
-					self.trigger.signal(self.tdef.DOWN_READY)
-				elif true_label=='B': # both hands
-					self.trigger.signal(self.tdef.BOTH_READY)
-				else:
-					raise RuntimeError('Unknown direction %s' % true_label)
+        self.tm_trigger = qc.Timer()
+        self.tm_display = qc.Timer()
+        self.tm_watchdog = qc.Timer()
 
-				self.tm_trigger.reset()
+    def classify(self, decoder, true_label, title_text, bar_dirs, state='start'):
+        self.tm_trigger.reset()
+        if self.bar_bias is not None:
+            bias_idx = bar_dirs.index(self.bar_bias[0])
 
-			elif state=='dir_r' and self.tm_trigger.sec() > self.cfg.T_DIR_CUE:
-				self.bar.fill()
-				self.bar.draw_cue()
-				self.bar.glass_draw_cue()
-				state= 'dir'
+        tm_classify = qc.Timer()
+        while True:
+            self.tm_display.sleep_atleast(self.refresh_delay)
+            self.tm_display.reset()
+            if state == 'start' and self.tm_trigger.sec() > self.cfg.T_INIT:
+                state = 'gap_s'
+                self.bar.fill()
+                self.tm_trigger.reset()
+                self.trigger.signal(self.tdef.INIT)
 
-				# initialize bar scores
-				bar_label= bar_dirs[0]
-				bar_score= 0
-				probs= [1.0/len(bar_dirs)] * len(bar_dirs)
-				self.bar.move( bar_label, bar_score, overlay=False )
+            elif state == 'gap_s':
+                self.bar.putText(title_text)
+                state = 'gap'
+                self.tm_trigger.reset()
 
-				if true_label=='L': # left
-					self.trigger.signal(self.tdef.LEFT_GO)
-				elif true_label=='R': # right
-					self.trigger.signal(self.tdef.RIGHT_GO)
-				elif true_label=='U': # up
-					self.trigger.signal(self.tdef.UP_GO)
-				elif true_label=='D': # down
-					self.trigger.signal(self.tdef.DOWN_GO)
-				elif true_label=='B': # both
-					self.trigger.signal(self.tdef.BOTH_GO)
-				else:
-					raise RuntimeError('Unknown truedirection %s' % true_label)
+            elif state == 'gap' and self.tm_trigger.sec() > self.cfg.T_GAP:
+                state = 'cue'
+                self.bar.fill()
+                self.bar.draw_cue()
+                self.bar.glass_draw_cue()
+                self.trigger.signal(self.tdef.CUE)
+                self.tm_trigger.reset()
 
-				self.tm_watchdog.reset()
-				self.tm_trigger.reset()
+            elif state == 'cue' and self.tm_trigger.sec() > self.cfg.T_READY:
+                state = 'dir_r'
 
-			elif state=='dir':
+                self.bar.move(true_label, 100, overlay=False, barcolor='G')
+                if true_label == 'L':  # left
+                    self.trigger.signal(self.tdef.LEFT_READY)
+                elif true_label == 'R':  # right
+                    self.trigger.signal(self.tdef.RIGHT_READY)
+                elif true_label == 'U':  # up
+                    self.trigger.signal(self.tdef.UP_READY)
+                elif true_label == 'D':  # down
+                    self.trigger.signal(self.tdef.DOWN_READY)
+                elif true_label == 'B':  # both hands
+                    self.trigger.signal(self.tdef.BOTH_READY)
+                else:
+                    raise RuntimeError('Unknown direction %s' % true_label)
 
-				if self.tm_trigger.sec() > self.cfg.T_CLASSIFY or (self.premature_end and bar_score >= 100):
-					self.bar.move(bar_label, 100, overlay=False, barcolor='Y' )
-					self.trigger.signal(self.tdef.FEEDBACK)
+                self.tm_trigger.reset()
 
-					# end of trial
-					state= 'feedback'
-					self.tm_trigger.reset()
-				else:
-					# classify
-					probs_new= decoder.get_prob_unread()
-					if probs_new is None:
-						if self.tm_watchdog.sec() > 3:
-							qc.print_c('WARNING: No classification being done. Are you receiving data streams?', 'Y')
-							self.tm_watchdog.reset()
-					else:
-						self.tm_watchdog.reset()
+            elif state == 'dir_r' and self.tm_trigger.sec() > self.cfg.T_DIR_CUE:
+                self.bar.fill()
+                self.bar.draw_cue()
+                self.bar.glass_draw_cue()
+                state = 'dir'
 
-						# accumulate probs
-						for i in range( len(probs_new) ):
-							probs[i]= probs[i] * self.alpha1 + probs_new[i] * self.alpha2
+                # initialize bar scores
+                bar_label = bar_dirs[0]
+                bar_score = 0
+                probs = [1.0 / len(bar_dirs)] * len(bar_dirs)
+                self.bar.move(bar_label, bar_score, overlay=False)
 
-						# bias bar
-						if self.bar_bias is not None:
-							probs[bias_idx] += self.bar_bias[1]
-							newsum= sum(probs)
-							probs= [p/newsum for p in probs]
+                if true_label == 'L':  # left
+                    self.trigger.signal(self.tdef.LEFT_GO)
+                elif true_label == 'R':  # right
+                    self.trigger.signal(self.tdef.RIGHT_GO)
+                elif true_label == 'U':  # up
+                    self.trigger.signal(self.tdef.UP_GO)
+                elif true_label == 'D':  # down
+                    self.trigger.signal(self.tdef.DOWN_GO)
+                elif true_label == 'B':  # both
+                    self.trigger.signal(self.tdef.BOTH_GO)
+                else:
+                    raise RuntimeError('Unknown truedirection %s' % true_label)
 
-						# determine the direction
-						max_pidx= qc.get_index_max(probs)
-						max_label= bar_dirs[ max_pidx ]
+                self.tm_watchdog.reset()
+                self.tm_trigger.reset()
 
-						if self.cfg.POSITIVE_FEEDBACK is False or (self.cfg.POSITIVE_FEEDBACK and true_label==max_label):
-							dx= probs[max_pidx]
-							dx *= self.bar_step
+            elif state == 'dir':
 
-							'''
-							# DEBUG: apply different speed on one direction
-							if max_label=='R':
-								dx *= 2.0
-							'''
+                if self.tm_trigger.sec() > self.cfg.T_CLASSIFY or (self.premature_end and bar_score >= 100):
+                    self.bar.move(bar_label, 100, overlay=False, barcolor='Y')
+                    self.trigger.signal(self.tdef.FEEDBACK)
 
-							# add likelihoods
-							if max_label==bar_label:
-								bar_score += dx
-							else:
-								bar_score -= dx
-								# change of direction
-								if bar_score < 0:
-									bar_score= -bar_score
-									bar_label= max_label
+                    # end of trial
+                    state = 'feedback'
+                    self.tm_trigger.reset()
+                else:
+                    # classify
+                    probs_new = decoder.get_prob_unread()
+                    if probs_new is None:
+                        if self.tm_watchdog.sec() > 3:
+                            qc.print_c('WARNING: No classification being done. Are you receiving data streams?', 'Y')
+                            self.tm_watchdog.reset()
+                    else:
+                        self.tm_watchdog.reset()
 
-							bar_score= int(bar_score)
-							if bar_score > 100:
-								bar_score= 100
+                        # accumulate probs
+                        for i in range(len(probs_new)):
+                            probs[i] = probs[i] * self.alpha1 + probs_new[i] * self.alpha2
 
-							self.bar.move( bar_label, bar_score, overlay=False )
+                        # bias bar
+                        if self.bar_bias is not None:
+                            probs[bias_idx] += self.bar_bias[1]
+                            newsum = sum(probs)
+                            probs = [p / newsum for p in probs]
 
-						if self.cfg.DEBUG_PROBS:
-							if self.bar_bias is not None:
-								biastxt= '[BIAS:%s%.3f]  '% (self.bar_bias[0],self.bar_bias[1])
-							else:
-								biastxt= ''
-							'''
-							print('%s%s  raw %s   acc %s   bar %s%d  (%.1f ms)'% ( biastxt, bar_dirs,
-								qc.list2string(probs_new, '%.2f'), qc.list2string(probs, '%.2f'),
-								bar_label, bar_score, tm_classify.msec() ) )
-							'''
-							tm_classify.reset()
+                        # determine the direction
+                        max_pidx = qc.get_index_max(probs)
+                        max_label = bar_dirs[max_pidx]
 
-			elif state=='feedback' and self.tm_trigger.sec() > self.cfg.T_FEEDBACK:
-				state= 'gap_s'
-				self.bar.fill()
-				self.bar.update()
-				self.trigger.signal(self.tdef.BLANK)
-				return bar_label
+                        if self.cfg.POSITIVE_FEEDBACK is False or (
+                            self.cfg.POSITIVE_FEEDBACK and true_label == max_label):
+                            dx = probs[max_pidx]
+                            dx *= self.bar_step
 
-			self.bar.update()
-			key= 0xFF & cv2.waitKey(1)
+                            '''
+                            # DEBUG: apply different speed on one direction
+                            if max_label=='R':
+                                dx *= 2.0
+                            '''
 
-			if key==keys['esc']:
-				return None
-			if key==keys['space']:
-				dx= 0
-				bar_score= 0
-				probs= [1.0/len(bar_dirs)] * len(bar_dirs)
-				self.bar.move( bar_dirs[0], bar_score, overlay=False )
-				self.bar.update()
-				print('RESET', probs, dx)
+                            # add likelihoods
+                            if max_label == bar_label:
+                                bar_score += dx
+                            else:
+                                bar_score -= dx
+                                # change of direction
+                                if bar_score < 0:
+                                    bar_score = -bar_score
+                                    bar_label = max_label
+
+                            bar_score = int(bar_score)
+                            if bar_score > 100:
+                                bar_score = 100
+
+                            self.bar.move(bar_label, bar_score, overlay=False)
+
+                        if self.cfg.DEBUG_PROBS:
+                            if self.bar_bias is not None:
+                                biastxt = '[BIAS:%s%.3f]  ' % (self.bar_bias[0], self.bar_bias[1])
+                            else:
+                                biastxt = ''
+                            '''
+                            print('%s%s  raw %s   acc %s   bar %s%d  (%.1f ms)'% ( biastxt, bar_dirs,
+                                qc.list2string(probs_new, '%.2f'), qc.list2string(probs, '%.2f'),
+                                bar_label, bar_score, tm_classify.msec() ) )
+                            '''
+                            tm_classify.reset()
+
+            elif state == 'feedback' and self.tm_trigger.sec() > self.cfg.T_FEEDBACK:
+                state = 'gap_s'
+                self.bar.fill()
+                self.bar.update()
+                self.trigger.signal(self.tdef.BLANK)
+                return bar_label
+
+            self.bar.update()
+            key = 0xFF & cv2.waitKey(1)
+
+            if key == keys['esc']:
+                return None
+            if key == keys['space']:
+                dx = 0
+                bar_score = 0
+                probs = [1.0 / len(bar_dirs)] * len(bar_dirs)
+                self.bar.move(bar_dirs[0], bar_score, overlay=False)
+                self.bar.update()
+                print('RESET', probs, dx)
