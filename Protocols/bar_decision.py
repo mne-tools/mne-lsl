@@ -28,9 +28,9 @@ import q_common as qc
 from IPython import embed
 
 # visualization
-keys = {'left': 81, 'right': 83, 'up': 82, 'down': 84, 'pgup': 85, 'pgdn': 86, 'home': 80, 'end': 87, 'space': 32,
-        'esc': 27 \
-    , ',': 44, '.': 46, 's': 115, 'c': 99, '[': 91, ']': 93, '1': 49, '!': 33, '2': 50, '@': 64, '3': 51, '#': 35}
+keys = {'left':81, 'right':83, 'up':82, 'down':84, 'pgup':85, 'pgdn':86, 'home':80, 'end':87, 'space':32,
+        'esc':27\
+    , ',':44, '.':46, 's':115, 'c':99, '[':91, ']':93, '1':49, '!':33, '2':50, '@':64, '3':51, '#':35}
 color = dict(G=(20, 140, 0), B=(210, 0, 0), R=(0, 50, 200), Y=(0, 215, 235), K=(0, 0, 0), W=(255, 255, 255),
              w=(200, 200, 200))
 
@@ -172,7 +172,7 @@ class BarDecision(object):
                         max_label = bar_dirs[max_pidx]
 
                         if self.cfg.POSITIVE_FEEDBACK is False or (
-                            self.cfg.POSITIVE_FEEDBACK and true_label == max_label):
+                                    self.cfg.POSITIVE_FEEDBACK and true_label == max_label):
                             dx = probs[max_pidx]
                             dx *= self.bar_step
 

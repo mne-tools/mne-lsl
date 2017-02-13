@@ -10,7 +10,7 @@ Swiss Federal Institute of Technology (EPFL)
 
 DATA_DIR = r'C:\data\BCI_COURSE\raw_corrected\Session1\rx4'
 CHANNEL_PICKS = None  # [5,9,11,12,13,14,15,16]
-EVENT_ID = {'stand': 240, 'sit': 238}
+EVENT_ID = {'stand':240, 'sit':238}
 TMIN = -2.0
 TMAX = 4.0
 

@@ -145,7 +145,7 @@ def plot_grand_average(epochs, singleWindow=True, title='', alpha=0.05, correcti
 
         # Show legend (multi window)
         if singleWindow is False:
-            plt.legend(handles=legendsList, loc=2, prop={'size': 10})
+            plt.legend(handles=legendsList, loc=2, prop={'size':10})
         if save is True:
             plt.savefig(str(ch))
 

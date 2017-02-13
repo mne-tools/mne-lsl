@@ -39,9 +39,9 @@ from bar_decision import BarDecision
 from IPython import embed
 
 # visualization
-keys = {'left': 81, 'right': 83, 'up': 82, 'down': 84, 'pgup': 85, 'pgdn': 86, 'home': 80, 'end': 87, 'space': 32,
-        'esc': 27 \
-    , ',': 44, '.': 46, 's': 115, 'c': 99, '[': 91, ']': 93, '1': 49, '!': 33, '2': 50, '@': 64, '3': 51, '#': 35}
+keys = {'left':81, 'right':83, 'up':82, 'down':84, 'pgup':85, 'pgdn':86, 'home':80, 'end':87, 'space':32,
+        'esc':27\
+    , ',':44, '.':46, 's':115, 'c':99, '[':91, ']':93, '1':49, '!':33, '2':50, '@':64, '3':51, '#':35}
 color = dict(G=(20, 140, 0), B=(210, 0, 0), R=(0, 50, 200), Y=(0, 215, 235), K=(0, 0, 0), W=(255, 255, 255),
              w=(200, 200, 200))
 
@@ -95,7 +95,7 @@ if __name__ == '__main__':
                             amp_name=amp_name, amp_serial=amp_serial, fake_dirs=fake_dirs)
     labels = [tdef.by_value[x] for x in decoder_UD.get_labels()]
     assert 'UP' in labels and 'DOWN' in labels
-    bar_def_UD = {label: dir for dir, label in cfg.DIRECTIONS}
+    bar_def_UD = {label:dir for dir, label in cfg.DIRECTIONS}
     bar_dirs_UD = [bar_def[l] for l in labels]
     while decoder_UD.is_running() is 0:
         time.sleep(0.01)
@@ -104,7 +104,7 @@ if __name__ == '__main__':
                             amp_name=amp_name, amp_serial=amp_serial, fake_dirs=fake_dirs)
     labels = [tdef.by_value[x] for x in decoder_LR.get_labels()]
     assert 'LEFT' in labels and 'RIGHT' in labels
-    bar_def_LR = {label: dir for dir, label in cfg.DIRECTIONS}
+    bar_def_LR = {label:dir for dir, label in cfg.DIRECTIONS}
     bar_dirs_LR = [bar_def[l] for l in labels]
     while decoder_LR.is_running() is 0:
         time.sleep(0.01)
