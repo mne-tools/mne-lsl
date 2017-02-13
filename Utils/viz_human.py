@@ -22,6 +22,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
+IMG_PATH_L = r'D:\Down\Leg Lift\png\front\left'
+IMG_PATH_R = r'D:\Down\Leg Lift\png\front\right'
+
 import cv2, sys
 import numpy as np
 import pycnbi_config
@@ -29,10 +32,22 @@ import bgi_client
 import q_common as qc
 
 
-class Bars(object):
+def read_images(img_path):
+    pnglist = []
+    for f in qc.get_file_list(img_path):
+        if f[-4:] != '.png':
+            continue
+        img = cv2.imread(f)
+        imgcrop = img[100: 970, 450:1000]
+        # pnglist.append( imgcrop )
+        pnglist.append(img)
+    return pnglist
+
+
+class BodyFeedback(object):
     # Default setting
-    color = dict(G=(20, 140, 0), B=(210, 0, 0), R=(0, 50, 200),
-        Y=(0, 215, 235), K=(0, 0, 0), W=(255, 255, 255), w=(200, 200, 200))
+    color = dict(G=(20, 140, 0), B=(210, 0, 0), R=(0, 50, 200), Y=(0, 215, 235), K=(0, 0, 0),\
+                 W=(255, 255, 255), w=(200, 200, 200))
     barwidth = 100
     textlimit = 20  # maximum number of characters to show
 
@@ -62,13 +77,9 @@ class Bars(object):
         else:
             screen_x, screen_y = screen_pos
 
-        self.text_x = int(screen_width / 4)
-        self.text_y = int(screen_height / 2)
+        self.text_x = int(screen_width / 4) - 20
+        self.text_y = 80
         self.text_size = 2
-        cv2.namedWindow("img", cv2.WND_PROP_FULLSCREEN)
-        cv2.moveWindow("img", screen_x, screen_y)
-        cv2.setWindowProperty("img", cv2.WND_PROP_FULLSCREEN, cv2.cv.CV_WINDOW_FULLSCREEN);
-
         self.img = np.zeros((screen_height, screen_width, 3), np.uint8)
         self.glass = bgi_client.GlassControl(mock=not use_glass)
         self.glass.connect('127.0.0.1', 59900)
@@ -88,6 +99,13 @@ class Bars(object):
         self.yl2 = self.yl1 - self.barwidth
         self.yr1 = self.cy + hw
         self.yr2 = self.yr1 + self.barwidth
+        print('Reading images from %s' % IMG_PATH_L)
+        self.left_images = read_images(IMG_PATH_L)
+        print('Reading images from %s' % IMG_PATH_R)
+        self.right_images = read_images(IMG_PATH_R)
+        cv2.namedWindow("img", cv2.WND_PROP_FULLSCREEN)
+        cv2.moveWindow("img", screen_x, screen_y)
+        cv2.setWindowProperty("img", cv2.WND_PROP_FULLSCREEN, cv2.cv.CV_WINDOW_FULLSCREEN)
 
     def finish(self):
         self.glass.disconnect()
@@ -104,26 +122,16 @@ class Bars(object):
 
     def fill(self, fillcolor='K'):
         self.glass.fill(fillcolor)
-        cv2.rectangle(self.img, (0, 0), (self.width, self.height), self.color[fillcolor], -1)
+        self.img = self.left_images[0]
+        self.update()
 
     # draw cue with custom colors
     def draw_cue(self):
-        cv2.rectangle(self.img, (self.xl2, self.yl1), (self.xr2, self.yr1), self.color['w'], -1)
-        cv2.rectangle(self.img, (self.xl1, self.yl2), (self.xr1, self.yr2), self.color['w'], -1)
-        cv2.rectangle(self.img, (self.xl1, self.yl1), (self.xr1, self.yr1), self.boxcol, -1)
-
-        # cross
-        # cv2.rectangle( self.img, (self.cx-3,self.cy), (self.cx+3,self.cy), self.crosscol, -1 )
-        # cv2.rectangle( self.img, (self.cx,self.cy-3), (self.cx,self.cy+3), self.crosscol, -1 )
-
-        # circle
-        cv2.circle(self.img, (self.cx, self.cy), 3, self.color['R'], -1)
+        self.img = self.left_images[0]
+        self.update()
 
     # paints the new bar on top of the current image
     def move(self, dir, dx, overlay=False, barcolor=None):
-        if not overlay:
-            self.draw_cue()
-
         if barcolor is None:
             if dx == self.xl2:
                 c = 'G'
@@ -137,36 +145,23 @@ class Bars(object):
 
         if dir == 'L':
             if self.pc_feedback:
-                cv2.rectangle(self.img, (self.xl1 - dx, self.yl1), (self.xl1, self.yr1), color, -1)
-            if self.glass_feedback:
-                self.glass.move_bar(dir, dx, overlay)
-        elif dir == 'U':
-            if self.pc_feedback:
-                cv2.rectangle(self.img, (self.xl1, self.yl1 - dx), (self.xr1, self.yl1), color, -1)
+                self.img = self.left_images[dx]
             if self.glass_feedback:
                 self.glass.move_bar(dir, dx, overlay)
         elif dir == 'R':
             if self.pc_feedback:
-                cv2.rectangle(self.img, (self.xr1, self.yl1), (self.xr1 + dx, self.yr1), color, -1)
+                self.img = self.right_images[dx]
             if self.glass_feedback:
                 self.glass.move_bar(dir, dx, overlay)
-        elif dir == 'D':
-            if self.pc_feedback:
-                cv2.rectangle(self.img, (self.xl1, self.yr1), (self.xr1, self.yr1 + dx), color, -1)
-            if self.glass_feedback:
-                self.glass.move_bar(dir, dx, overlay)
-        elif dir == 'B':
-            if self.pc_feedback:
-                cv2.rectangle(self.img, (self.xl1 - dx, self.yl1), (self.xl1, self.yr1), color, -1)
-                cv2.rectangle(self.img, (self.xr1, self.yl1), (self.xr1 + dx, self.yr1), color, -1)
-            if self.glass_feedback:
-                self.glass.move_bar('S', dx, overlay)
         else:
             qc.print_c('(viz_bars.py) ERROR: Unknown direction %s' % dir, 'r')
+        self.update()
 
     def put_text(self, txt, color='W'):
+        self.img = self.img.copy()
         cv2.putText(self.img, txt[:self.textlimit].center(self.textlimit, ' '), (self.text_x, self.text_y),\
                     cv2.FONT_HERSHEY_DUPLEX, self.text_size, self.color[color], 2, cv2.CV_AA)
+        self.update()
 
     def update(self):
         cv2.imshow("img", self.img)
