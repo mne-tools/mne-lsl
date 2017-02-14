@@ -70,7 +70,7 @@ if __name__ == '__main__':
         trigger = pyLptControl.MockTrigger()
         trigger.init(50)
 
-    bar = BodyFeedback(cfg.GLASS_USE, screen_pos=cfg.SCREEN_POS, screen_size=cfg.SCREEN_SIZE)
+    bar = BodyFeedback(cfg.IMAGE_PATH, cfg.GLASS_USE, screen_pos=cfg.SCREEN_POS, screen_size=cfg.SCREEN_SIZE)
     bar.fill()
     bar.glass_draw_cue()
     bar.put_text('Waiting to start')

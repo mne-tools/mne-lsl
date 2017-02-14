@@ -198,7 +198,6 @@ class BarDecision(object):
                                 bar_score = 100
 
                             self.bar.move(bar_label, bar_score, overlay=False)
-                            print(bar_label, bar_score)
 
                         if self.cfg.DEBUG_PROBS:
                             if self.bar_bias is not None:
