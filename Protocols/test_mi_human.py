@@ -90,7 +90,7 @@ if __name__ == '__main__':
 
     # init classification
     decoder = BCIDecoderDaemon(cfg.CLS_MI, buffer_size=10.0, fake=(cfg.FAKE_CLS is not None),
-                               amp_name=amp_name, amp_serial=amp_serial, fake_dirs=fake_dirs)
+        amp_name=amp_name, amp_serial=amp_serial, fake_dirs=fake_dirs)
     labels = [tdef.by_value[x] for x in decoder.get_labels()]
     bar_def = {label:dir for dir, label in cfg.DIRECTIONS}
     bar_dirs = [bar_def[l] for l in labels]
@@ -105,7 +105,7 @@ if __name__ == '__main__':
         time.sleep(0.01)
 
     # bar visual object
-    bar = BodyFeedback(cfg.GLASS_USE, screen_pos=cfg.SCREEN_POS, screen_size=cfg.SCREEN_SIZE)
+    bar = BodyFeedback(cfg.IMAGE_PATH, cfg.GLASS_USE, screen_pos=cfg.SCREEN_POS, screen_size=cfg.SCREEN_SIZE)
     bar.put_text('Waiting to start')
     bd = BarDecision(cfg, bar, tdef, trigger)
 
@@ -154,7 +154,7 @@ if __name__ == '__main__':
         print('Trial %d: %s (%s -> %s)' % (trial, msg, true_label, pred_label))
         trial += 1
 
-    if len(dir_detected) > 0:
+    if len(dir_detected) > 0 and cfg.FAKE_CLS is None:
         # write performance
         fdir, _, _ = qc.parse_path(cfg.CLS_MI)
         logfile = time.strftime(fdir + "/online-%Y%m%d-%H%M%S.txt", time.localtime())
