@@ -24,14 +24,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 '''
 
-class TriggerDefTemplate:
-	def __init__(self):
-		for attr in dir(self):
-			if hasattr(self, 'by_value')==False:
-				self.by_key= {}
-				self.by_value= {}
-			if not callable(getattr(self,attr)) and not attr.startswith("__"):
-				#print(attr, getattr(self,attr))
-				self.by_key[attr]= getattr(self,attr)
-				self.by_value[getattr(self,attr)]= attr
 
+class TriggerDefTemplate(object):
+    def __init__(self):
+        for attr in dir(self):
+            if hasattr(self, 'by_value') == False:
+                self.by_key = {}
+                self.by_value = {}
+            if not callable(getattr(self, attr)) and not attr.startswith("__"):
+                # print(attr, getattr(self,attr))
+                self.by_key[attr] = getattr(self, attr)
+                self.by_value[getattr(self, attr)] = attr
