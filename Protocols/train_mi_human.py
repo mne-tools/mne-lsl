@@ -33,7 +33,7 @@ import scipy, scipy.signal
 import mne.io, mne.viz
 import q_common as qc
 import bgi_client
-from viz_bars import Bars
+from viz_human import BodyFeedback
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
@@ -49,7 +49,7 @@ if __name__ == '__main__':
         'home':80, 'end':87, 'space':32, 'esc':27, ',':44, '.':46, 's':115, 'c':99,
         '[':91, ']':93, '1':49, '!':33, '2':50, '@':64, '3':51, '#':35}
     color = dict(G=(20, 140, 0), B=(210, 0, 0), R=(0, 50, 200), Y=(0, 215, 235),
-        K=(0, 0, 0), w=(200, 200, 200))
+        K=(0, 0, 0), W=(255, 255, 255))
 
     dir_sequence = []
     for x in range(cfg.TRIALS_EACH):
@@ -70,14 +70,14 @@ if __name__ == '__main__':
         trigger = pyLptControl.MockTrigger()
         trigger.init(50)
 
-    timer_trigger = qc.Timer()
-    timer_dir = qc.Timer()
-    timer_refresh = qc.Timer()
-    tdef = tdefmod.TriggerDef()
-
-    bar = Bars(cfg.GLASS_USE, screen_pos=cfg.SCREEN_POS, screen_size=cfg.SCREEN_SIZE)
+    bar = BodyFeedback(cfg.IMAGE_PATH, cfg.GLASS_USE, screen_pos=cfg.SCREEN_POS, screen_size=cfg.SCREEN_SIZE)
     bar.fill()
     bar.glass_draw_cue()
+    bar.put_text('Waiting to start')
+
+    timer_trigger = qc.Timer()
+    timer_refresh = qc.Timer()
+    tdef = tdefmod.TriggerDef()
 
     # start
     while trial <= num_trials:
@@ -87,7 +87,7 @@ if __name__ == '__main__':
         # segment= { 'cue':(s,e), 'dir':(s,e), 'label':0-4 } (zero-based)
         if event == 'start' and timer_trigger.sec() > cfg.T_INIT:
             event = 'gap_s'
-            bar.fill()
+            bar.draw_cue()
             timer_trigger.reset()
             trigger.signal(tdef.INIT)
         elif event == 'gap_s':
@@ -95,7 +95,6 @@ if __name__ == '__main__':
             event = 'gap'
         elif event == 'gap' and timer_trigger.sec() > cfg.T_GAP:
             event = 'cue'
-            bar.fill()
             bar.draw_cue()
             trigger.signal(tdef.CUE)
             timer_trigger.reset()
@@ -103,30 +102,27 @@ if __name__ == '__main__':
             event = 'dir_r'
             dir = dir_sequence[trial - 1]
             if dir == 'L':  # left
-                bar.move('L', 100, overlay=True)
+                bar.put_text('LEFT')
                 trigger.signal(tdef.LEFT_READY)
             elif dir == 'R':  # right
-                bar.move('R', 100, overlay=True)
+                bar.put_text('RIGHT')
                 trigger.signal(tdef.RIGHT_READY)
             elif dir == 'U':  # up
-                bar.move('U', 100, overlay=True)
+                bar.put_text('UP')
                 trigger.signal(tdef.UP_READY)
             elif dir == 'D':  # down
-                bar.move('D', 100, overlay=True)
+                bar.put_text('DOWN')
                 trigger.signal(tdef.DOWN_READY)
             elif dir == 'B':  # both hands
-                bar.move('L', 100, overlay=True)
-                bar.move('R', 100, overlay=True)
+                bar.put_text('BOTH')
                 trigger.signal(tdef.BOTH_READY)
             else:
                 raise RuntimeError('Unknown direction %d' % dir)
             timer_trigger.reset()
         elif event == 'dir_r' and timer_trigger.sec() > cfg.T_DIR_READY:
-            bar.fill()
             bar.draw_cue()
             event = 'dir'
             timer_trigger.reset()
-            timer_dir.reset()
             if dir == 'L':  # left
                 trigger.signal(tdef.LEFT_GO)
             elif dir == 'R':  # right
@@ -140,8 +136,12 @@ if __name__ == '__main__':
             else:
                 raise RuntimeError('Unknown direction %d' % dir)
         elif event == 'dir' and timer_trigger.sec() > cfg.T_DIR:
+            trigger.signal(tdef.FEEDBACK)
+            event = 'return'
+            timer_trigger.reset()
+        elif event == 'return' and timer_trigger.sec() > 1:
             event = 'gap_s'
-            bar.fill()
+            bar.draw_cue()
             trial += 1
             print('trial ' + str(trial - 1) + ' done')
             trigger.signal(tdef.BLANK)
@@ -149,7 +149,7 @@ if __name__ == '__main__':
 
         # protocol
         if event == 'dir':
-            dx = min(100, int(100.0 * timer_dir.sec() / cfg.T_DIR) + 1)
+            dx = min(100, int(100.0 * timer_trigger.sec() / cfg.T_DIR) + 1)
             if dir == 'L':  # L
                 bar.move('L', dx, overlay=True)
             elif dir == 'R':  # R
@@ -162,11 +162,21 @@ if __name__ == '__main__':
                 bar.move('L', dx, overlay=True)
                 bar.move('R', dx, overlay=True)
 
-        # wait for start
-        if event == 'start':
-            bar.put_text('Waiting to start')
+        # return the legs to standing position
+        if event == 'return':
+            dx = max( 0, int( 100.0 * (1 - timer_trigger.sec()) ) )
+            if dir == 'L':  # L
+                bar.move('L', dx, overlay=True)
+            elif dir == 'R':  # R
+                bar.move('R', dx, overlay=True)
+            elif dir == 'U':  # U
+                bar.move('U', dx, overlay=True)
+            elif dir == 'D':  # D
+                bar.move('D', dx, overlay=True)
+            elif dir == 'B':  # Both
+                bar.move('L', dx, overlay=True)
+                bar.move('R', dx, overlay=True)
 
-        bar.update()
         key = 0xFF & cv2.waitKey(1)
 
         if key == keys['esc']:

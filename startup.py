@@ -12,4 +12,5 @@ print('\nLoading startup modules... ', end='')
 import pycnbi_config
 import q_common as qc
 import numpy as np
+
 print('Done.')
