@@ -176,6 +176,7 @@ class StreamReceiver:
 							% (amp_name, si.type(), amp_serial, si.hostname()) )
 						self.lsl_tr_channel= 0 # needs to be changed
 						channels += si.channel_count()
+						from IPython import embed; embed()
 						ch_list= pu.lsl_channel_list(inlet)
 						amps.append(si)
 						server_found= True
