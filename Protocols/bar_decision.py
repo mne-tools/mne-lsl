@@ -154,6 +154,30 @@ class BarDecision:
 					else:
 						self.tm_watchdog.reset()
 
+						###################################
+						# bias and accumulate
+						if self.bar_bias is not None:
+							#print('BEFORE: %.3f %.3f'% (probs_new[0], probs_new[1]) )
+							probs_new[bias_idx] += self.bar_bias[1]
+							newsum= sum(probs_new)
+							probs_new= [p/newsum for p in probs_new]
+							#print('AFTER: %.3f %.3f'% (probs_new[0], probs_new[1]) )
+						
+						for i in range( len(probs_new) ):
+							probs[i]= probs[i] * self.alpha1 + probs_new[i] * self.alpha2
+						'''
+						# decision thresholding (confidence based)
+						max_p= max( probs_new )
+						if max_p < 0.52: ####################
+							print('Sample ignored: %.2f'% max_p )
+						else:
+							for i in range( len(probs_new) ):
+								probs[i]= probs[i] * self.alpha1 + probs_new[i] * self.alpha2
+						'''
+						###################################
+
+
+						''' Original: accumulate and bias
 						# accumulate probs
 						for i in range( len(probs_new) ):
 							probs[i]= probs[i] * self.alpha1 + probs_new[i] * self.alpha2
@@ -163,6 +187,7 @@ class BarDecision:
 							probs[bias_idx] += self.bar_bias[1]
 							newsum= sum(probs)
 							probs= [p/newsum for p in probs]
+						'''
 
 						# determine the direction
 						max_pidx= qc.get_index_max(probs)
@@ -172,11 +197,15 @@ class BarDecision:
 							dx= probs[max_pidx]
 							dx *= self.bar_step
 
-							'''
+							#################################################
+							#################################################
+							#'''
 							# DEBUG: apply different speed on one direction
 							if max_label=='R':
-								dx *= 2.0
-							'''
+								dx *= 1.5
+							#'''
+							#################################################
+							#################################################
 
 							# add likelihoods
 							if max_label==bar_label:
@@ -196,14 +225,14 @@ class BarDecision:
 
 						if self.cfg.DEBUG_PROBS:
 							if self.bar_bias is not None:
-								biastxt= '[BIAS:%s%.3f]  '% (self.bar_bias[0],self.bar_bias[1])
+								biastxt= '[Bias=%s%.3f]  '% (self.bar_bias[0],self.bar_bias[1])
 							else:
 								biastxt= ''
-							'''
+							
 							print('%s%s  raw %s   acc %s   bar %s%d  (%.1f ms)'% ( biastxt, bar_dirs,
 								qc.list2string(probs_new, '%.2f'), qc.list2string(probs, '%.2f'),
 								bar_label, bar_score, tm_classify.msec() ) )
-							'''
+							
 							tm_classify.reset()
 
 			elif state=='feedback' and self.tm_trigger.sec() > self.cfg.T_FEEDBACK:
