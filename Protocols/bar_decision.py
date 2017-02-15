@@ -76,7 +76,7 @@ class BarDecision:
 				self.trigger.signal(self.tdef.INIT)
 
 			elif state=='gap_s':
-				self.bar.putText(title_text)
+				self.bar.put_text(title_text)
 				state= 'gap'
 				self.tm_trigger.reset()
 
@@ -202,7 +202,7 @@ class BarDecision:
 							#'''
 							# DEBUG: apply different speed on one direction
 							if max_label=='R':
-								dx *= 1.5
+								dx *= 1.2
 							#'''
 							#################################################
 							#################################################
