@@ -28,16 +28,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from triggerdef_template import TriggerDefTemplate
 
+
 # Trigger values up to 15
 class TriggerDef(TriggerDefTemplate):
-	"""
-	Trigger definition class
+    """
+    Trigger definition class
 
-	'by_key' and 'values' member variables are automatically created when instantiated.
+    'by_key' and 'values' member variables are automatically created when instantiated.
 
-	Usage: See the sample code
-	"""
-	PL= 100
-	LL= 101
-	PR= 102
-	RR= 103
+    Usage: See the sample code
+    """
+    PL = 100
+    LL = 101
+    PR = 102
+    RR = 103

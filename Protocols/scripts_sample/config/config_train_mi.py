@@ -1,26 +1,26 @@
 # Trigger device type ['ARDUINO', 'USB2LPT', 'SOFTWARE', 'DESKTOP', None]
-TRIGGER_DEVICE= None
-TRIGGER_DEF= 'triggerdef_16' # full list: (PYCNBI_ROOT)/Triggers/triggerdef_*.py
+TRIGGER_DEVICE = None
+TRIGGER_DEF = 'triggerdef_16'  # full list: (PYCNBI_ROOT)/Triggers/triggerdef_*.py
 
 # Screen property
-SCREEN_SIZE= (1680, 1050)
-SCREEN_POS= (1920, 0)
+SCREEN_SIZE = (1680, 1050)
+SCREEN_POS = (1920, 0)
 
 # Bar direction definition: L, R, U, D, B (both hands)
-DIRECTIONS= ['L','R']
+DIRECTIONS = ['L', 'R']
 
 # Number of trials for each action
-TRIALS_EACH= 20 
+TRIALS_EACH = 20
 
 # Timings
-T_INIT= 10 # initial waiting time
-T_GAP= 4 # show how many trials left
-T_CUE= 2 # no bar, only red dot
-T_DIR_READY= 2 # green bar
-T_DIR= 5 # blue bar
+T_INIT = 10  # initial waiting time
+T_GAP = 4  # show how many trials left
+T_CUE = 2  # no bar, only red dot
+T_DIR_READY = 2  # green bar
+T_DIR = 5  # blue bar
 
 # Use Google Glass?
-GLASS_USE= False
+GLASS_USE = False
 
 # Maximum refresh rate in Hz
-REFRESH_RATE= 30
+REFRESH_RATE = 30

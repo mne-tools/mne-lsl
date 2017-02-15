@@ -28,50 +28,51 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from triggerdef_template import TriggerDefTemplate
 
+
 class TriggerDef(TriggerDefTemplate):
-	"""
-	Trigger definition class
+    """
+    Trigger definition class
 
-	'by_key' and 'values' member variables are automatically created when instantiated.
+    'by_key' and 'values' member variables are automatically created when instantiated.
 
-	Usage: See the sample code
-	"""
-	INIT= 1 # start of a trial
-	END= 2 # end of a trial
-	LO= 10 # left foot off the ground
-	RO= 11 # right foot off the ground
-	LT= 12 # left foot touch the ground
-	RT= 13 # right foot touch the ground
-	LOS= 14 # initiate gait cycle with left foot
-	ROS= 15 # initiate gait cycle with right foot
-	LTE= 16 # terminate gait cycle with left foot
-	RTE= 17 # terminate gait cycle with right foot
-	OS= 18 # initiate gait cycle with any foot
-	TE= 19 # terminate gait cycle with any foot
-	O= 20 # any foot off the ground
-	T= 21 # any foot touch the ground
-	OTHERS= 255 # all other classes
+    Usage: See the sample code
+    """
+    INIT = 1  # start of a trial
+    END = 2  # end of a trial
+    LO = 10  # left foot off the ground
+    RO = 11  # right foot off the ground
+    LT = 12  # left foot touch the ground
+    RT = 13  # right foot touch the ground
+    LOS = 14  # initiate gait cycle with left foot
+    ROS = 15  # initiate gait cycle with right foot
+    LTE = 16  # terminate gait cycle with left foot
+    RTE = 17  # terminate gait cycle with right foot
+    OS = 18  # initiate gait cycle with any foot
+    TE = 19  # terminate gait cycle with any foot
+    O = 20  # any foot off the ground
+    T = 21  # any foot touch the ground
+    OTHERS = 255  # all other classes
 
 
 # sample code
-if __name__=='__main__':
-	tdef= TriggerDef()
+if __name__ == '__main__':
+    tdef = TriggerDef()
 
-	# accessing a trigger value as a member variable
-	print( 'INIT =', tdef.INIT )
+    # accessing a trigger value as a member variable
+    print('INIT =', tdef.INIT)
 
-	# check whether the trigger name is defined
-	print( '\nINIT in tdef.by_key?')
-	print( 'INIT' in tdef.by_key )
+    # check whether the trigger name is defined
+    print('\nINIT in tdef.by_key?')
+    print('INIT' in tdef.by_key)
 
-	# check whether the trigger value is defined
-	print( '\n255 in tdef.by_value?' )
-	print( 255 in tdef.by_value )
+    # check whether the trigger value is defined
+    print('\n255 in tdef.by_value?')
+    print(255 in tdef.by_value)
 
-	# print all trigger names and associated values
-	print( '\ntdef.by_key' )
-	print( tdef.by_key )
+    # print all trigger names and associated values
+    print('\ntdef.by_key')
+    print(tdef.by_key)
 
-	# print all trigger values and associated names
-	print( '\ntdef.by_value' )
-	print( tdef.by_value )
+    # print all trigger values and associated names
+    print('\ntdef.by_value')
+    print(tdef.by_value)

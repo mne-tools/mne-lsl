@@ -5,6 +5,7 @@
 
 import numpy as np
 
+
 class RingBuffer(object):
     def __init__(self, size_max, default_value=0.0, dtype=float):
         """initialization"""
@@ -18,23 +19,23 @@ class RingBuffer(object):
     def append(self, value):
         """append an element"""
         self._data = np.roll(self._data, 1)
-        self._data[0] = value 
+        self._data[0] = value
 
         self.size += 1
 
         if self.size == self.size_max:
-            self.__class__  = RingBufferFull
+            self.__class__ = RingBufferFull
 
     def get_all(self):
         """return a list of elements from the oldest to the newest"""
-        return(self._data)
+        return (self._data)
 
     def get_partial(self):
-        return(self.get_all()[0:self.size])
+        return (self.get_all()[0:self.size])
 
     def __getitem__(self, key):
         """get element"""
-        return(self._data[key])
+        return (self._data[key])
 
     def __repr__(self):
         """return string representation"""
@@ -42,7 +43,8 @@ class RingBuffer(object):
         s = s + '\t' + str(self.size)
         s = s + '\t' + self.get_all()[::-1].__repr__()
         s = s + '\t' + self.get_partial()[::-1].__repr__()
-        return(s)
+        return (s)
+
 
 class RingBufferFull(RingBuffer):
     def append(self, value):

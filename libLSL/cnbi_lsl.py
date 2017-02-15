@@ -26,77 +26,80 @@ import pylsl as lsl
 import q_common as qc
 import sys
 
-def start_server(server_name, n_channels=1, channel_format='string', nominal_srate=lsl.IRREGULAR_RATE, stype='EEG', source_id=None):
-	"""
-	Start a new LSL server
 
-	Params
-	------
-	server_name:
-		Name of the server
-	n_channels:
-		Number of channels
-	channel_format:
-		lsl.cf_string (or 'string')
-		lsl.cf_float32 (or 'float32')
-		lsl.cf_double64 (or 'double64')
-		lsl.cf_int8 (or 'int8')
-		lsl.cf_int16 (or 'int16')
-		lsl.cf_int32 (or 'int32')
-		lsl.cf_int64 (or 'int64')
-	nominal_srate:
-		Sampling rate in Hz. Defaults to irregular sampling rate.
-	stype:
-		Signal type in string format
-	source_id:
-		If None, set to server name
+def start_server(server_name, n_channels=1, channel_format='string', nominal_srate=lsl.IRREGULAR_RATE, stype='EEG',
+                 source_id=None):
+    """
+    Start a new LSL server
 
-	Returns
-	-------
-	outlet: LSL server object
+    Params
+    ------
+    server_name:
+        Name of the server
+    n_channels:
+        Number of channels
+    channel_format:
+        lsl.cf_string (or 'string')
+        lsl.cf_float32 (or 'float32')
+        lsl.cf_double64 (or 'double64')
+        lsl.cf_int8 (or 'int8')
+        lsl.cf_int16 (or 'int16')
+        lsl.cf_int32 (or 'int32')
+        lsl.cf_int64 (or 'int64')
+    nominal_srate:
+        Sampling rate in Hz. Defaults to irregular sampling rate.
+    stype:
+        Signal type in string format
+    source_id:
+        If None, set to server name
 
-	"""
-	if source_id==None:
-		source_id= server_name
-	sinfo= lsl.StreamInfo(server_name, channel_count=n_channels, channel_format=channel_format,\
-		nominal_srate=nominal_srate, type=stype, source_id=source_id)
-	return lsl.StreamOutlet(sinfo)
+    Returns
+    -------
+    outlet: LSL server object
+
+    """
+    if source_id == None:
+        source_id = server_name
+    sinfo = lsl.StreamInfo(server_name, channel_count=n_channels, channel_format=channel_format,\
+                           nominal_srate=nominal_srate, type=stype, source_id=source_id)
+    return lsl.StreamOutlet(sinfo)
+
 
 def start_client(server_name):
-	"""
-	Search and connect to an LSL server
+    """
+    Search and connect to an LSL server
 
-	Params
-	------
-	server_name:
-		Name of the server to search
+    Params
+    ------
+    server_name:
+        Name of the server to search
 
-	Returns
-	-------
-	inlet:
-		LSL client object
+    Returns
+    -------
+    inlet:
+        LSL client object
 
-	"""
-	print('Searching for LSL server %s'% server_name)
-	while True:
-		streamInfos= lsl.resolve_byprop("name", server_name)
-		for sinfo in streamInfos:
-			print('Found %s'% sinfo.name())
-		'''
-		if len(streamInfos) > 1:
-			print('>> Error: More than 1 server with the same name %s found. Stopping.'% server_name)
-			sys.exit(-1)
-		elif len(streamInfos)==1:
-			sinfo= streamInfos[0]
-			break
-		else:
-			print('[cnbi_lsl] No desired LSL server found. Keep searching...')
-			time.sleep(1.0)
-		'''
-		if len(streamInfos) == 0:
-			print('[cnbi_lsl] No desired LSL server found. Keep searching...')
-			time.sleep(1.0)
-		else:
-			sinfo= streamInfos[0]
-			break
-	return lsl.StreamInlet( sinfo )
+    """
+    print('Searching for LSL server %s' % server_name)
+    while True:
+        streamInfos = lsl.resolve_byprop("name", server_name)
+        for sinfo in streamInfos:
+            print('Found %s' % sinfo.name())
+        '''
+        if len(streamInfos) > 1:
+            print('>> Error: More than 1 server with the same name %s found. Stopping.'% server_name)
+            sys.exit(-1)
+        elif len(streamInfos)==1:
+            sinfo= streamInfos[0]
+            break
+        else:
+            print('[cnbi_lsl] No desired LSL server found. Keep searching...')
+            time.sleep(1.0)
+        '''
+        if len(streamInfos) == 0:
+            print('[cnbi_lsl] No desired LSL server found. Keep searching...')
+            time.sleep(1.0)
+        else:
+            sinfo = streamInfos[0]
+            break
+    return lsl.StreamInlet(sinfo)
