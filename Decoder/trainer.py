@@ -660,7 +660,7 @@ def run_trainer(cfg, ftrain, interactive=False, cv_file=None, feat_file=None):
                                    picks=picks, baseline=None, preload=True, add_eeg_ref=False,
                                    verbose=False, detrend=None)
                     pu.preprocess(epoch, spatial=cfg.SP_FILTER, spatial_ch=None,
-                                  spectral=cfg.TP_FILTER, spectral_ch=picks, notch=cfg.NOTCH_FILTER, notch_ch=picks,
+                                  spectral=cfg.TP_FILTER, spectral_ch=None, notch=cfg.NOTCH_FILTER, notch_ch=None,
                                   multiplier=multiplier)
                     epochs_train.append(epoch)
             else:
@@ -668,7 +668,7 @@ def run_trainer(cfg, ftrain, interactive=False, cv_file=None, feat_file=None):
                                       picks=picks, baseline=None, preload=True, add_eeg_ref=False, verbose=False,
                                       detrend=None)
                 pu.preprocess(epochs_train, spatial=cfg.SP_FILTER, spatial_ch=None,
-                              spectral=cfg.TP_FILTER, spectral_ch=picks, notch=cfg.NOTCH_FILTER, notch_ch=picks,
+                              spectral=cfg.TP_FILTER, spectral_ch=None, notch=cfg.NOTCH_FILTER, notch_ch=None,
                               multiplier=multiplier)
         except:
             print('\n*** (trainer.py) ERROR OCCURRED WHILE EPOCHING ***\n')
