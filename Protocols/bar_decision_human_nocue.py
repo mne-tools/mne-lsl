@@ -79,8 +79,6 @@ class BarDecision(object):
                 self.trigger.signal(self.tdef.INIT)
 
             elif state == 'gap_s':
-                if self.cfg.T_GAP > 0:
-                    self.bar.put_text(title_text)
                 state = 'gap'
                 self.tm_trigger.reset()
 
@@ -88,12 +86,15 @@ class BarDecision(object):
                 state = 'cue'
                 self.bar.draw_cue()
                 self.bar.glass_draw_cue()
+                if self.cfg.T_READY > 0:
+                    self.bar.put_text('DECIDE')
                 self.trigger.signal(self.tdef.CUE)
                 self.tm_trigger.reset()
 
             elif state == 'cue' and self.tm_trigger.sec() > self.cfg.T_READY:
                 state = 'dir_r'
                 if self.cfg.T_DIR_CUE > 0:
+                    '''
                     if true_label == 'L':  # left
                         self.bar.put_text('LEFT')
                         self.trigger.signal(self.tdef.LEFT_READY)
@@ -111,6 +112,8 @@ class BarDecision(object):
                         self.trigger.signal(self.tdef.BOTH_READY)
                     else:
                         raise RuntimeError('Unknown direction %s' % true_label)
+                    '''
+                    self.bar.draw_cue()
                     self.bar.put_text('GO')
                 self.tm_trigger.reset()
 
