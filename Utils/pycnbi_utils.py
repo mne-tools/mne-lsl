@@ -352,6 +352,7 @@ def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, sp
     Input
     ------
     raw: mne.io.RawArray | mne.Epochs | numpy.array (n_channels x n_samples)
+         numpy.array type assumes the data has only pure EEG channnels without event channels
 
     sfreq: required only if raw is numpy array.
 
@@ -400,18 +401,26 @@ def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, sp
         # Numpy array: assume we don't have event channel
         data = raw
         assert sfreq is not None and sfreq > 0, 'Wrong sfreq value.'
-        n_channels = data.shape[0]
+        assert 2 <= len(data.shape) <= 3, 'Unknown data shape. The dimension must be 2 or 3.'
+        if len(data.shape) == 3:
+            n_channels = data.shape[1]
+        elif len(data.shape) == 2:
+            n_channels = data.shape[0]
         eeg_channels = list(range(n_channels))
     else:
         # MNE Raw object: exclude event channel
         ch_names = raw.ch_names
         data = raw._data
         sfreq = raw.info['sfreq']
-        n_channels = data.shape[0]
+        assert 2 <= len(data.shape) <= 3, 'Unknown data shape. The dimension must be 2 or 3.'
+        if len(data.shape) == 3:
+            n_channels = data.shape[1]
+        elif len(data.shape) == 2:
+            n_channels = data.shape[0]
         eeg_channels = list(range(n_channels))
         tch = find_event_channel(raw)
         if tch is None:
-            qc.print_c('preprocess(): No trigger channel found. Ignoring.', 'W')
+            qc.print_c('preprocess(): No trigger channel found. Using all channels.', 'W')
         else:
             tch_name = ch_names[tch]
             eeg_channels.pop(tch)
