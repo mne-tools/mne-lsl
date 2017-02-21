@@ -33,7 +33,7 @@ import scipy, scipy.signal
 import mne.io, mne.viz
 import q_common as qc
 import bgi_client
-from viz_bars import Bars
+from viz_bars import BarVisual
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
@@ -75,7 +75,7 @@ if __name__ == '__main__':
     timer_refresh = qc.Timer()
     tdef = tdefmod.TriggerDef()
 
-    bar = Bars(cfg.GLASS_USE, screen_pos=cfg.SCREEN_POS, screen_size=cfg.SCREEN_SIZE)
+    bar = BarVisual(cfg.GLASS_USE, screen_pos=cfg.SCREEN_POS, screen_size=cfg.SCREEN_SIZE)
     bar.fill()
     bar.glass_draw_cue()
 

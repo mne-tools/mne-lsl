@@ -62,12 +62,13 @@ def read_images(img_path, screen_size=None):
             img_out[oy:oy+target_h, ox:ox+target_w, :] = img_res
         else:
             img_out = img
-        # pnglist.append( imgcrop )
         pnglist.append(img_out)
+        print('.', end='')
+    print('Done')
     return pnglist
 
 
-class BodyFeedback(object):
+class BodyVisual(object):
     # Default setting
     color = dict(G=(20, 140, 0), B=(210, 0, 0), R=(0, 50, 200), Y=(0, 215, 235), K=(0, 0, 0),\
                  W=(255, 255, 255), w=(200, 200, 200))

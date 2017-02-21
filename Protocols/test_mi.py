@@ -34,13 +34,11 @@ import mne.io, mne.viz
 import q_common as qc
 import bgi_client
 from decoder import BCIDecoderDaemon, BCIDecoder
-from viz_bars import Bars
-from bar_decision import BarDecision
 from IPython import embed
 
 # visualization
 keys = {'left':81, 'right':83, 'up':82, 'down':84, 'pgup':85, 'pgdn':86, 'home':80, 'end':87, 'space':32,
-        'esc':27\
+        'esc':27 \
     , ',':44, '.':46, 's':115, 'c':99, '[':91, ']':93, '1':49, '!':33, '2':50, '@':64, '3':51, '#':35}
 color = dict(G=(20, 140, 0), B=(210, 0, 0), R=(0, 50, 200), Y=(0, 215, 235), K=(0, 0, 0), W=(255, 255, 255),
              w=(200, 200, 200))
@@ -53,7 +51,13 @@ def check_cfg(cfg):
     if not hasattr(cfg, 'BAR_REACH_FINISH'):
         qc.print_c('Warning: BAR_REACH_FINISH undefined. Setting it to False.', 'Y')
         cfg.BAR_REACH_FINISH = False
-
+    if not hasattr(cfg, 'FEEDBACK_TYPE'):
+        qc.print_c('Warning: FEEDBACK_TYPE undefined. Setting it to BAR.', 'Y')
+        cfg.FEEDBACK_TYPE = 'BAR'
+    if (not hasattr(cfg, 'BAR_STEP_LEFT')) or (not hasattr(cfg, 'BAR_STEP_RIGHT')):
+        assert hasattr(cfg, 'BAR_STEP')
+        qc.print_c('Warning: BAR_STEP_LEFT and BAR_STEP_RIGHT undefined. Setting it to BAR_STEP(%d).' % cfg.BAR_STEP, 'Y')
+        cfg.BAR_STEP_LEFT = cfg.BAR_STEP_RIGHT = cfg.BAR_STEP
     return cfg
 
 
@@ -105,9 +109,18 @@ if __name__ == '__main__':
         time.sleep(0.01)
 
     # bar visual object
-    bar = Bars(cfg.GLASS_USE, screen_pos=cfg.SCREEN_POS, screen_size=cfg.SCREEN_SIZE)
-    bar.put_text('Waiting to start')
-    bd = BarDecision(cfg, bar, tdef, trigger)
+    from feedback import Feedback
+
+    if cfg.FEEDBACK_TYPE == 'BAR':
+        from viz_bars import BarVisual
+        visual = BarVisual(cfg.GLASS_USE, screen_pos=cfg.SCREEN_POS, screen_size=cfg.SCREEN_SIZE)
+    elif cfg.FEEDBACK_TYPE == 'BODY':
+        assert hasattr(cfg, 'IMAGE_PATH'), 'IMAGE_PATH is undefined in your config.'
+        from viz_human import BodyVisual
+        visual = BodyVisual(cfg.IMAGE_PATH, use_glass=cfg.GLASS_USE, screen_pos=cfg.SCREEN_POS,
+                            screen_size=cfg.SCREEN_SIZE)
+    visual.put_text('Waiting to start')
+    feedback = Feedback(cfg, visual, tdef, trigger)
 
     # start
     trial = 1
@@ -115,7 +128,7 @@ if __name__ == '__main__':
     while trial <= num_trials:
         title_text = 'Trial %d / %d' % (trial, num_trials)
         true_label = dir_seq[trial - 1]
-        result = bd.classify(decoder, true_label, title_text, bar_dirs)
+        result = feedback.classify(decoder, true_label, title_text, bar_dirs)
 
         if result is None:
             break
@@ -137,8 +150,8 @@ if __name__ == '__main__':
                 qc.print_c('Warning: Rex cannot execute undefined action %s' % pred_label, 'W')
                 rex_dir = None
             if rex_dir is not None:
-                bar.move(pred_label, 100, overlay=False, barcolor='B')
-                bar.update()
+                visual.move(pred_label, 100, overlay=False, barcolor='B')
+                visual.update()
                 qc.print_c('Executing Rex action %s' % rex_dir, 'W')
                 os.system('%s/Rex/RexControlSimple.exe %s %s' % (pycnbi_config.cnbiroot, cfg.REX_COMPORT, rex_dir))
                 time.sleep(8)
@@ -164,7 +177,7 @@ if __name__ == '__main__':
             print(cfmat)
         print('Log exported to %s' % logfile)
 
-    bar.finish()
+    visual.finish()
     if decoder:
         decoder.stop()
 
