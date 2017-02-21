@@ -29,7 +29,7 @@ import bgi_client
 import q_common as qc
 
 
-class Bars(object):
+class BarVisual(object):
     # Default setting
     color = dict(G=(20, 140, 0), B=(210, 0, 0), R=(0, 50, 200),
         Y=(0, 215, 235), K=(0, 0, 0), W=(255, 255, 255), w=(200, 200, 200))

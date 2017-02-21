@@ -1,7 +1,7 @@
 from __future__ import print_function, division
 
 """
-Human visualization with online decoding
+Visual feedback with online decoding
 
 Kyuhwa Lee
 Swiss Federal Institute of Technology Lausanne (EPFL)
@@ -28,30 +28,30 @@ import q_common as qc
 from IPython import embed
 
 # visualization
-keys = {'left':81, 'right':83, 'up':82, 'down':84, 'pgup':85, 'pgdn':86, 'home':80, 'end':87, 'space':32,
-        'esc':27\
+keys = {'left':81, 'right':83, 'up':82, 'down':84, 'pgup':85, 'pgdn':86, 'home':80, 'end':87, 'space':32, 'esc':27 \
     , ',':44, '.':46, 's':115, 'c':99, '[':91, ']':93, '1':49, '!':33, '2':50, '@':64, '3':51, '#':35}
 color = dict(G=(20, 140, 0), B=(210, 0, 0), R=(0, 50, 200), Y=(0, 215, 235), K=(0, 0, 0), W=(255, 255, 255),
              w=(200, 200, 200))
+dirs = {'L':'LEFT', 'R':'RIGHT', 'U':'UP', 'D':'DOWN', 'B':'BOTH'}
 
 
-class BarDecision(object):
+class Feedback:
     """
     Perform a classification with visual feedback
-
     """
 
     def __init__(self, cfg, bar, tdef, trigger):
         self.cfg = cfg
         self.tdef = tdef
         self.alpha1 = self.cfg.PROB_ACC_ALPHA
-        self.alpha2 = 1.0 - self.alpha1
+        self.alpha2 = 1.0 - self.cfg.PROB_ACC_ALPHA
         self.trigger = trigger
 
         self.bar = bar
         self.bar.fill()
         self.refresh_delay = 1.0 / self.cfg.REFRESH_RATE
-        self.bar_step = self.cfg.BAR_STEP
+        self.bar_step_left = self.cfg.BAR_STEP_LEFT
+        self.bar_step_right = self.cfg.BAR_STEP_RIGHT
         self.bar_bias = self.cfg.BAR_BIAS
 
         if hasattr(self.cfg, 'BAR_REACH_FINISH') and self.cfg.BAR_REACH_FINISH == True:
@@ -64,6 +64,9 @@ class BarDecision(object):
         self.tm_watchdog = qc.Timer()
 
     def classify(self, decoder, true_label, title_text, bar_dirs, state='start'):
+        """
+        Run a single trial
+        """
         self.tm_trigger.reset()
         if self.bar_bias is not None:
             bias_idx = bar_dirs.index(self.bar_bias[0])
@@ -79,13 +82,13 @@ class BarDecision(object):
                 self.trigger.signal(self.tdef.INIT)
 
             elif state == 'gap_s':
-                if self.cfg.T_GAP > 0:
-                    self.bar.put_text(title_text)
+                self.bar.put_text(title_text)
                 state = 'gap'
                 self.tm_trigger.reset()
 
             elif state == 'gap' and self.tm_trigger.sec() > self.cfg.T_GAP:
                 state = 'cue'
+                self.bar.fill()
                 self.bar.draw_cue()
                 self.bar.glass_draw_cue()
                 self.trigger.signal(self.tdef.CUE)
@@ -93,28 +96,30 @@ class BarDecision(object):
 
             elif state == 'cue' and self.tm_trigger.sec() > self.cfg.T_READY:
                 state = 'dir_r'
-                if self.cfg.T_DIR_CUE > 0:
-                    if true_label == 'L':  # left
-                        self.bar.put_text('LEFT')
-                        self.trigger.signal(self.tdef.LEFT_READY)
-                    elif true_label == 'R':  # right
-                        self.bar.put_text('RIGHT')
-                        self.trigger.signal(self.tdef.RIGHT_READY)
-                    elif true_label == 'U':  # up
-                        self.bar.put_text('UP')
-                        self.trigger.signal(self.tdef.UP_READY)
-                    elif true_label == 'D':  # down
-                        self.bar.put_text('DOWN')
-                        self.trigger.signal(self.tdef.DOWN_READY)
-                    elif true_label == 'B':  # both hands
-                        self.bar.put_text('BOTH')
-                        self.trigger.signal(self.tdef.BOTH_READY)
-                    else:
-                        raise RuntimeError('Unknown direction %s' % true_label)
-                    self.bar.put_text('GO')
+
+                if self.cfg.FEEDBACK_TYPE == 'BODY':
+                    self.bar.set_pc_feedback(False)
+                self.bar.move(true_label, 100, overlay=False, barcolor='G')
+                if self.cfg.FEEDBACK_TYPE == 'BODY':
+                    self.bar.set_pc_feedback(True)
+                    self.bar.put_text(dirs[true_label])
+
+                if true_label == 'L':  # left
+                    self.trigger.signal(self.tdef.LEFT_READY)
+                elif true_label == 'R':  # right
+                    self.trigger.signal(self.tdef.RIGHT_READY)
+                elif true_label == 'U':  # up
+                    self.trigger.signal(self.tdef.UP_READY)
+                elif true_label == 'D':  # down
+                    self.trigger.signal(self.tdef.DOWN_READY)
+                elif true_label == 'B':  # both hands
+                    self.trigger.signal(self.tdef.BOTH_READY)
+                else:
+                    raise RuntimeError('Unknown direction %s' % true_label)
                 self.tm_trigger.reset()
 
             elif state == 'dir_r' and self.tm_trigger.sec() > self.cfg.T_DIR_CUE:
+                self.bar.fill()
                 self.bar.draw_cue()
                 self.bar.glass_draw_cue()
                 state = 'dir'
@@ -136,20 +141,22 @@ class BarDecision(object):
                 elif true_label == 'B':  # both
                     self.trigger.signal(self.tdef.BOTH_GO)
                 else:
-                    raise RuntimeError('Unknown true direction %s' % true_label)
+                    raise RuntimeError('Unknown truedirection %s' % true_label)
 
                 self.tm_watchdog.reset()
                 self.tm_trigger.reset()
 
             elif state == 'dir':
-
-                if self.tm_trigger.sec() > self.cfg.T_CLASSIFY or \
-                    (self.premature_end and bar_score >= 100):
+                if self.tm_trigger.sec() > self.cfg.T_CLASSIFY or (self.premature_end and bar_score >= 100):
+                    if self.cfg.FEEDBACK_TYPE == 'BODY':
+                        self.bar.set_pc_feedback(False)
                     self.bar.move(bar_label, 100, overlay=False, barcolor='Y')
+                    if self.cfg.FEEDBACK_TYPE == 'BODY':
+                        self.bar.set_pc_feedback(True)
+                        self.bar.put_text(dirs[bar_label])
                     self.trigger.signal(self.tdef.FEEDBACK)
-
                     # end of trial
-                    state = 'return'
+                    state = 'feedback'
                     self.tm_trigger.reset()
                 else:
                     # classify
@@ -161,28 +168,57 @@ class BarDecision(object):
                     else:
                         self.tm_watchdog.reset()
 
-                        # accumulate probs
+                        ###################################
+                        # bias and accumulate
+                        if self.bar_bias is not None:
+                            # print('BEFORE: %.3f %.3f'% (probs_new[0], probs_new[1]) )
+                            probs_new[bias_idx] += self.bar_bias[1]
+                            newsum = sum(probs_new)
+                            probs_new = [p / newsum for p in probs_new]
+                        # print('AFTER: %.3f %.3f'% (probs_new[0], probs_new[1]) )
+
                         for i in range(len(probs_new)):
                             probs[i] = probs[i] * self.alpha1 + probs_new[i] * self.alpha2
+                        '''
+                        # decision thresholding (confidence based)
+                        max_p= max( probs_new )
+                        if max_p < 0.52: ####################
+                            print('Sample ignored: %.2f'% max_p )
+                        else:
+                            for i in range( len(probs_new) ):
+                                probs[i]= probs[i] * self.alpha1 + probs_new[i] * self.alpha2
+                        '''
+                        ###################################
+
+
+                        ''' Original: accumulate and bias
+                        # accumulate probs
+                        for i in range( len(probs_new) ):
+                            probs[i]= probs[i] * self.alpha1 + probs_new[i] * self.alpha2
 
                         # bias bar
                         if self.bar_bias is not None:
                             probs[bias_idx] += self.bar_bias[1]
-                            newsum = sum(probs)
-                            probs = [p / newsum for p in probs]
+                            newsum= sum(probs)
+                            probs= [p/newsum for p in probs]
+                        '''
 
                         # determine the direction
                         max_pidx = qc.get_index_max(probs)
                         max_label = bar_dirs[max_pidx]
 
-                        if self.cfg.POSITIVE_FEEDBACK is False or\
-                            (self.cfg.POSITIVE_FEEDBACK and true_label == max_label):
+                        if self.cfg.POSITIVE_FEEDBACK is False or \
+                                (self.cfg.POSITIVE_FEEDBACK and true_label == max_label):
                             dx = probs[max_pidx]
-                            dx *= self.bar_step
-
-                            # DEBUG: apply different speed on one direction
-                            if max_label=='R':
-                                dx *= 1.5
+                            if max_label == 'R':
+                                dx *= self.bar_step_right
+                            elif max_label == 'L':
+                                dx *= self.bar_step_left
+                            else:
+                                # For now, only left and right are considered for different stepping speeds.
+                                # For other directions, only BAR_STEP is assumed to be defined in the config.
+                                print('DEBUG: Direction %s using bar step %d' % (max_label, self.bar_step_left))
+                                dx *= self.bar_step_left
 
                             # add likelihoods
                             if max_label == bar_label:
@@ -202,36 +238,37 @@ class BarDecision(object):
 
                         if self.cfg.DEBUG_PROBS:
                             if self.bar_bias is not None:
-                                biastxt = '[BIAS:%s%.3f]  ' % (self.bar_bias[0], self.bar_bias[1])
+                                biastxt = '[Bias=%s%.3f]  ' % (self.bar_bias[0], self.bar_bias[1])
                             else:
                                 biastxt = ''
-                            '''
-                            print('%s%s  raw %s   acc %s   bar %s%d  (%.1f ms)'% ( biastxt, bar_dirs,
-                                qc.list2string(probs_new, '%.2f'), qc.list2string(probs, '%.2f'),
-                                bar_label, bar_score, tm_classify.msec() ) )
-                            '''
+                            print('%s%s  raw %s   acc %s   bar %s%d  (%.1f ms)' % \
+                                  (biastxt, bar_dirs, qc.list2string(probs_new, '%.2f'), qc.list2string(probs, '%.2f'),
+                                   bar_label, bar_score, tm_classify.msec()))
                             tm_classify.reset()
 
             elif state == 'feedback' and self.tm_trigger.sec() > self.cfg.T_FEEDBACK:
-                state = 'gap_s'
-                self.bar.fill()
                 self.trigger.signal(self.tdef.BLANK)
-                return bar_label
-
-            # return the legs to standing position
-            if state == 'return':
-                if self.tm_trigger.sec() > 1:
-                    state = 'feedback'
+                if self.cfg.FEEDBACK_TYPE == 'BODY':
+                    state = 'return'
                     self.tm_trigger.reset()
                 else:
-                    bar_score = max(0, int(100.0 * (1 - self.tm_trigger.sec())))
-                    if bar_label == 'L':  # L
-                        self.bar.move('L', bar_score, overlay=True)
-                    elif bar_label == 'R':  # R
-                        self.bar.move('R', bar_score, overlay=True)
-                    else:
-                        assert False, 'Unknown direction' % bar_label
+                    state = 'gap_s'
+                    self.bar.fill()
+                    self.bar.update()
+                    return bar_label
 
+            elif state == 'return':
+                self.bar.set_glass_feedback(False)
+                self.bar.move(bar_label, bar_score, overlay=False, barcolor='Y')
+                self.bar.set_glass_feedback(True)
+                bar_score -= 5
+                if bar_score <= 0:
+                    state = 'gap_s'
+                    self.bar.fill()
+                    self.bar.update()
+                    return bar_label
+
+            self.bar.update()
             key = 0xFF & cv2.waitKey(1)
 
             if key == keys['esc']:
@@ -241,4 +278,5 @@ class BarDecision(object):
                 bar_score = 0
                 probs = [1.0 / len(bar_dirs)] * len(bar_dirs)
                 self.bar.move(bar_dirs[0], bar_score, overlay=False)
+                self.bar.update()
                 print('RESET', probs, dx)

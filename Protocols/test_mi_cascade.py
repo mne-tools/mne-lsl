@@ -34,7 +34,7 @@ import mne.io, mne.viz
 import q_common as qc
 import bgi_client
 from decoder import BCIDecoderDaemon, BCIDecoder
-from viz_bars import Bars
+from viz_bars import BarVisual
 from bar_decision import BarDecision
 from IPython import embed
 
@@ -117,7 +117,7 @@ if __name__ == '__main__':
     num_trials = len(dir_seq)
 
     # bar visual object
-    bar = Bars(cfg.GLASS_USE, screen_pos=cfg.SCREEN_POS, screen_size=cfg.SCREEN_SIZE)
+    bar = BarVisual(cfg.GLASS_USE, screen_pos=cfg.SCREEN_POS, screen_size=cfg.SCREEN_SIZE)
     bar.put_text('Waiting to start')
     bd = BarDecision(cfg, bar, tdef, trigger)
 

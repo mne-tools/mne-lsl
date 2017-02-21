@@ -33,7 +33,7 @@ import scipy, scipy.signal
 import mne.io, mne.viz
 import q_common as qc
 import bgi_client
-from viz_human import BodyFeedback
+from viz_human import BodyVisual
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
@@ -70,7 +70,7 @@ if __name__ == '__main__':
         trigger = pyLptControl.MockTrigger()
         trigger.init(50)
 
-    bar = BodyFeedback(cfg.IMAGE_PATH, cfg.GLASS_USE, screen_pos=cfg.SCREEN_POS, screen_size=cfg.SCREEN_SIZE)
+    bar = BodyVisual(cfg.IMAGE_PATH, cfg.GLASS_USE, screen_pos=cfg.SCREEN_POS, screen_size=cfg.SCREEN_SIZE)
     bar.fill()
     bar.glass_draw_cue()
     bar.put_text('Waiting to start')
