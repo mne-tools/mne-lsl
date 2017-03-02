@@ -120,20 +120,15 @@ if __name__ == '__main__':
 
     # bar visual object
     from feedback import Feedback
-
     if cfg.FEEDBACK_TYPE == 'BAR':
         from viz_bars import BarVisual
-
         visual = BarVisual(cfg.GLASS_USE, screen_pos=cfg.SCREEN_POS,
-                           screen_size=cfg.SCREEN_SIZE)
+            screen_size=cfg.SCREEN_SIZE)
     elif cfg.FEEDBACK_TYPE == 'BODY':
-        assert hasattr(cfg,
-                       'IMAGE_PATH'), 'IMAGE_PATH is undefined in your config.'
+        assert hasattr(cfg, 'IMAGE_PATH'), 'IMAGE_PATH is undefined in your config.'
         from viz_human import BodyVisual
-
         visual = BodyVisual(cfg.IMAGE_PATH, use_glass=cfg.GLASS_USE,
-                            screen_pos=cfg.SCREEN_POS,
-                            screen_size=cfg.SCREEN_SIZE)
+            screen_pos=cfg.SCREEN_POS, screen_size=cfg.SCREEN_SIZE)
     visual.put_text('Waiting to start')
     feedback = Feedback(cfg, visual, tdef, trigger)
 
