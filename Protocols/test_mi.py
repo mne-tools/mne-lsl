@@ -37,26 +37,31 @@ from decoder import BCIDecoderDaemon, BCIDecoder
 from IPython import embed
 
 # visualization
-keys = {'left':81, 'right':83, 'up':82, 'down':84, 'pgup':85, 'pgdn':86, 'home':80, 'end':87, 'space':32,
-        'esc':27 \
-    , ',':44, '.':46, 's':115, 'c':99, '[':91, ']':93, '1':49, '!':33, '2':50, '@':64, '3':51, '#':35}
-color = dict(G=(20, 140, 0), B=(210, 0, 0), R=(0, 50, 200), Y=(0, 215, 235), K=(0, 0, 0), W=(255, 255, 255),
-             w=(200, 200, 200))
+keys = {'left':81, 'right':83, 'up':82, 'down':84, 'pgup':85, 'pgdn':86,
+        'home':80, 'end':87, 'space':32, 'esc':27, ',':44, '.':46, 's':115,
+        'c':99, '[':91, ']':93, '1':49, '!':33, '2':50, '@':64, '3':51, '#':35}
+color = dict(G=(20, 140, 0), B=(210, 0, 0), R=(0, 50, 200), Y=(0, 215, 235),
+             K=(0, 0, 0), W=(255, 255, 255), w=(200, 200, 200))
 
 
 def check_cfg(cfg):
     if not hasattr(cfg, 'POSITIVE_FEEDBACK'):
-        qc.print_c('Warning: POSITIVE_FEEDBACK undefined. Setting it to False.', 'Y')
+        qc.print_c('Warning: POSITIVE_FEEDBACK undefined. Setting it to False.',
+                   'Y')
         cfg.POSITIVE_FEEDBACK = False
     if not hasattr(cfg, 'BAR_REACH_FINISH'):
-        qc.print_c('Warning: BAR_REACH_FINISH undefined. Setting it to False.', 'Y')
+        qc.print_c('Warning: BAR_REACH_FINISH undefined. Setting it to False.',
+                   'Y')
         cfg.BAR_REACH_FINISH = False
     if not hasattr(cfg, 'FEEDBACK_TYPE'):
         qc.print_c('Warning: FEEDBACK_TYPE undefined. Setting it to BAR.', 'Y')
         cfg.FEEDBACK_TYPE = 'BAR'
-    if (not hasattr(cfg, 'BAR_STEP_LEFT')) or (not hasattr(cfg, 'BAR_STEP_RIGHT')):
+    if (not hasattr(cfg, 'BAR_STEP_LEFT')) or (
+    not hasattr(cfg, 'BAR_STEP_RIGHT')):
         assert hasattr(cfg, 'BAR_STEP')
-        qc.print_c('Warning: BAR_STEP_LEFT and BAR_STEP_RIGHT undefined. Setting it to BAR_STEP(%d).' % cfg.BAR_STEP, 'Y')
+        qc.print_c(
+            'Warning: BAR_STEP_LEFT and BAR_STEP_RIGHT undefined. Setting it to BAR_STEP(%d).' % cfg.BAR_STEP,
+            'Y')
         cfg.BAR_STEP_LEFT = cfg.BAR_STEP_RIGHT = cfg.BAR_STEP
     return cfg
 
@@ -84,17 +89,22 @@ if __name__ == '__main__':
     tdefmod = importlib.import_module(cfg.TRIGGER_DEF)
     tdef = tdefmod.TriggerDef()
     if cfg.TRIGGER_DEVICE == None:
-        raw_input('\n** Warning: No trigger device set. Press Ctrl+C to stop or Enter to continue.')
+        raw_input(
+            '\n** Warning: No trigger device set. Press Ctrl+C to stop or Enter to continue.')
     trigger = pyLptControl.Trigger(cfg.TRIGGER_DEVICE)
     if trigger.init(50) == False:
-        qc.print_c('\n** Error connecting to USB2LPT device. Use a mock trigger instead?', 'R')
+        qc.print_c(
+            '\n** Error connecting to USB2LPT device. Use a mock trigger instead?',
+            'R')
         raw_input('Press Ctrl+C to stop or Enter to continue.')
         trigger = pyLptControl.MockTrigger()
         trigger.init(50)
 
     # init classification
-    decoder = BCIDecoderDaemon(cfg.CLS_MI, buffer_size=10.0, fake=(cfg.FAKE_CLS is not None),
-                               amp_name=amp_name, amp_serial=amp_serial, fake_dirs=fake_dirs)
+    decoder = BCIDecoderDaemon(cfg.CLS_MI, buffer_size=10.0,
+                               fake=(cfg.FAKE_CLS is not None),
+                               amp_name=amp_name, amp_serial=amp_serial,
+                               fake_dirs=fake_dirs)
     labels = [tdef.by_value[x] for x in decoder.get_labels()]
     bar_def = {label:dir for dir, label in cfg.DIRECTIONS}
     bar_dirs = [bar_def[l] for l in labels]
@@ -113,11 +123,16 @@ if __name__ == '__main__':
 
     if cfg.FEEDBACK_TYPE == 'BAR':
         from viz_bars import BarVisual
-        visual = BarVisual(cfg.GLASS_USE, screen_pos=cfg.SCREEN_POS, screen_size=cfg.SCREEN_SIZE)
+
+        visual = BarVisual(cfg.GLASS_USE, screen_pos=cfg.SCREEN_POS,
+                           screen_size=cfg.SCREEN_SIZE)
     elif cfg.FEEDBACK_TYPE == 'BODY':
-        assert hasattr(cfg, 'IMAGE_PATH'), 'IMAGE_PATH is undefined in your config.'
+        assert hasattr(cfg,
+                       'IMAGE_PATH'), 'IMAGE_PATH is undefined in your config.'
         from viz_human import BodyVisual
-        visual = BodyVisual(cfg.IMAGE_PATH, use_glass=cfg.GLASS_USE, screen_pos=cfg.SCREEN_POS,
+
+        visual = BodyVisual(cfg.IMAGE_PATH, use_glass=cfg.GLASS_USE,
+                            screen_pos=cfg.SCREEN_POS,
                             screen_size=cfg.SCREEN_SIZE)
     visual.put_text('Waiting to start')
     feedback = Feedback(cfg, visual, tdef, trigger)
@@ -147,13 +162,16 @@ if __name__ == '__main__':
             elif pred_label == 'D':
                 rex_dir = 'S'
             else:
-                qc.print_c('Warning: Rex cannot execute undefined action %s' % pred_label, 'W')
+                qc.print_c(
+                    'Warning: Rex cannot execute undefined action %s' % pred_label,
+                    'W')
                 rex_dir = None
             if rex_dir is not None:
                 visual.move(pred_label, 100, overlay=False, barcolor='B')
                 visual.update()
                 qc.print_c('Executing Rex action %s' % rex_dir, 'W')
-                os.system('%s/Rex/RexControlSimple.exe %s %s' % (pycnbi_config.cnbiroot, cfg.REX_COMPORT, rex_dir))
+                os.system('%s/Rex/RexControlSimple.exe %s %s' % (
+                pycnbi_config.cnbiroot, cfg.REX_COMPORT, rex_dir))
                 time.sleep(8)
 
         if true_label == pred_label:
@@ -166,7 +184,8 @@ if __name__ == '__main__':
     if len(dir_detected) > 0:
         # write performance
         fdir, _, _ = qc.parse_path(cfg.CLS_MI)
-        logfile = time.strftime(fdir + "/online-%Y%m%d-%H%M%S.txt", time.localtime())
+        logfile = time.strftime(fdir + "/online-%Y%m%d-%H%M%S.txt",
+                                time.localtime())
         with open(logfile, 'w') as fout:
             for dt, gt in zip(dir_detected, dir_seq):
                 fout.write('%s,%s\n' % (gt, dt))

@@ -1,4 +1,5 @@
-from __future__ import print_function, division
+# -*- coding: utf-8 -*-
+from __future__ import print_function, division, unicode_literals
 
 """
  EEG Scope
@@ -98,21 +99,30 @@ class Scope(QtGui.QMainWindow, form_class):
         self.comboBox_scale.activated.connect(self.onActivated_combobox_scale)
         self.spinBox_time.valueChanged.connect(self.onValueChanged_spinbox_time)
         self.checkBox_car.stateChanged.connect(self.onActivated_checkbox_car)
-        self.checkBox_bandpass.stateChanged.connect(self.onActivated_checkbox_bandpass)
-        self.checkBox_showTID.stateChanged.connect(self.onActivated_checkbox_TID)
-        self.checkBox_showLPT.stateChanged.connect(self.onActivated_checkbox_LPT)
-        self.checkBox_showKey.stateChanged.connect(self.onActivated_checkbox_Key)
+        self.checkBox_bandpass.stateChanged.connect(
+            self.onActivated_checkbox_bandpass)
+        self.checkBox_showTID.stateChanged.connect(
+            self.onActivated_checkbox_TID)
+        self.checkBox_showLPT.stateChanged.connect(
+            self.onActivated_checkbox_LPT)
+        self.checkBox_showKey.stateChanged.connect(
+            self.onActivated_checkbox_Key)
         self.pushButton_bp.clicked.connect(self.onClicked_button_bp)
         self.pushButton_rec.clicked.connect(self.onClicked_button_rec)
         self.pushButton_stoprec.clicked.connect(self.onClicked_button_stoprec)
 
         self.pushButton_stoprec.setEnabled(False)
         self.comboBox_scale.setCurrentIndex(4)
-        self.checkBox_car.setChecked(int(self.scope_settings.get("filtering", "apply_car_filter")))
-        self.checkBox_bandpass.setChecked(int(self.scope_settings.get("filtering", "apply_bandpass_filter")))
-        self.checkBox_showTID.setChecked(int(self.scope_settings.get("plot", "show_TID_events")))
-        self.checkBox_showLPT.setChecked(int(self.scope_settings.get("plot", "show_LPT_events")))
-        self.checkBox_showKey.setChecked(int(self.scope_settings.get("plot", "show_KEY_events")))
+        self.checkBox_car.setChecked(
+            int(self.scope_settings.get("filtering", "apply_car_filter")))
+        self.checkBox_bandpass.setChecked(
+            int(self.scope_settings.get("filtering", "apply_bandpass_filter")))
+        self.checkBox_showTID.setChecked(
+            int(self.scope_settings.get("plot", "show_TID_events")))
+        self.checkBox_showLPT.setChecked(
+            int(self.scope_settings.get("plot", "show_LPT_events")))
+        self.checkBox_showKey.setChecked(
+            int(self.scope_settings.get("plot", "show_KEY_events")))
         self.statusBar.showMessage("[Not recording]")
 
         self.channels_to_show_idx = []
@@ -121,17 +131,22 @@ class Scope(QtGui.QMainWindow, form_class):
             for x in range(0, 16):
                 if (idx < self.config['eeg_channels']):
                     # self.table_channels.item(x,y).setTextAlignment(QtCore.Qt.AlignCenter)
-                    self.table_channels.setItemSelected(self.table_channels.item(x, y), True)
+                    self.table_channels.setItemSelected(
+                        self.table_channels.item(x, y), True)
                     self.channels_to_show_idx.append(idx)
                 else:
-                    self.table_channels.setItem(x, y, QtGui.QTableWidgetItem("N/A"))
-                    self.table_channels.item(x, y).setFlags(QtCore.Qt.NoItemFlags)
-                    self.table_channels.item(x, y).setTextAlignment(QtCore.Qt.AlignCenter)
+                    self.table_channels.setItem(x, y,
+                        QtGui.QTableWidgetItem("N/A"))
+                    self.table_channels.item(x, y).setFlags(
+                        QtCore.Qt.NoItemFlags)
+                    self.table_channels.item(x, y).setTextAlignment(
+                        QtCore.Qt.AlignCenter)
                 idx += 1
 
         self.table_channels.verticalHeader().setStretchLastSection(True)
         self.table_channels.horizontalHeader().setStretchLastSection(True)
-        self.table_channels.itemSelectionChanged.connect(self.onSelectionChanged_table)
+        self.table_channels.itemSelectionChanged.connect(
+            self.onSelectionChanged_table)
 
         self.screen_width = 522
         self.screen_height = 160
@@ -170,22 +185,22 @@ class Scope(QtGui.QMainWindow, form_class):
         # Y Tick labels. Use values from the config file.
         self.channel_labels = []
         values = []
-        # '''
+
+        ''' For non-LSL systems having no channel names
         for x in range(0, self.config['eeg_channels']):
             if (self.show_channel_names):
-                self.channel_labels.append("(" + str(x + 1) + ") " + self.scope_settings.get("internal",
-                                                                                             "channel_names_" + self.device_name + str(
-                                                                                                 self.config[
-                                                                                                     'eeg_channels'])).split(
-                    ', ')[x])
+                self.channel_labels.append("(" + str(x + 1) + ") " +
+                    self.scope_settings.get("internal",
+                    "channel_names_" + self.device_name + str(
+                    self.config['eeg_channels'])).split(', ')[x])
             else:
                 self.channel_labels.append('CH ' + str(x + 1))
-        # '''
-        # ch_names_all= np.array( self.sr.get_channel_names() )
-        # ch_names= ch_names_all[ self.sr.get_eeg_channels() ]
-
+        '''
+        ch_names = np.array( self.sr.get_channel_names() )
+        self.channel_labels = ch_names[ self.sr.get_eeg_channels() ]
         for x in range(0, len(self.channels_to_show_idx)):
-            values.append((-x * self.scale, self.channel_labels[self.channels_to_show_idx[x]]))
+            values.append((-x * self.scale,
+                self.channel_labels[self.channels_to_show_idx[x]]))
 
         values_axis = []
         values_axis.append(values)
@@ -196,17 +211,19 @@ class Scope(QtGui.QMainWindow, form_class):
         for y in range(0, 4):
             for x in range(0, 16):
                 if (idx < self.config['eeg_channels']):
-                    self.table_channels.item(x, y).setText(self.channel_labels[idx])
+                    self.table_channels.item(x, y).setText(
+                        self.channel_labels[idx])
                 idx += 1
 
         # Plot initialization
         self.main_plot_handler.getAxis('left').setTicks(values_axis)
-        self.main_plot_handler.setRange(xRange=[0, self.seconds_to_show], yRange=[+1.5 * self.scale,
-                                                                                  -0.5 * self.scale - self.scale *
-                                                                                  self.config['eeg_channels']])
+        self.main_plot_handler.setRange(xRange=[0, self.seconds_to_show],
+            yRange=[+1.5 * self.scale,
+                -0.5 * self.scale - self.scale * self.config['eeg_channels']])
         self.main_plot_handler.disableAutoRange()
         self.main_plot_handler.showGrid(y=True)
-        self.main_plot_handler.setLabel(axis='left', text='Scale (uV): ' + str(self.scale))
+        self.main_plot_handler.setLabel(axis='left',
+            text='Scale (uV): ' + str(self.scale))
         self.main_plot_handler.setLabel(axis='bottom', text='Time (s)')
 
         # X axis
@@ -215,21 +232,24 @@ class Scope(QtGui.QMainWindow, form_class):
             self.x_ticks[x] = (x * 1) / float(self.config['sf'])
 
         # Plotting colors. If channels > 16, colors will roll back to the beginning
-        self.colors = np.array([[255, 0, 0], [0, 255, 0], [0, 0, 255], [255, 255, 0], [0, 255, 255], [255, 0, 255],
-                                [128, 100, 100], [0, 128, 0], [0, 128, 128], [128, 128, 0], [255, 128, 128],
-                                [128, 0, 128],
-                                [128, 255, 0], [255, 128, 0], [0, 255, 128], [128, 0, 255]])
+        self.colors = np.array(
+            [[255, 0, 0], [0, 255, 0], [0, 0, 255], [255, 255, 0],
+            [0, 255, 255], [255, 0, 255], [128, 100, 100], [0, 128, 0],
+            [0, 128, 128], [128, 128, 0], [255, 128, 128], [128, 0, 128],
+            [128, 255, 0], [255, 128, 0], [0, 255, 128], [128, 0, 255]])
 
         # We want a lightweight scope, so we downsample the plotting to 64 Hz
         self.subsampling_value = self.config['sf'] / 64
 
         # EEG data for plotting
-        self.data_plot = np.zeros((self.config['sf'] * self.seconds_to_show, self.config['eeg_channels']))
+        self.data_plot = np.zeros((self.config['sf'] * self.seconds_to_show,
+        self.config['eeg_channels']))
         self.curve_eeg = []
         for x in range(0, len(self.channels_to_show_idx)):
-            self.curve_eeg.append(
-                self.main_plot_handler.plot(x=self.x_ticks, y=self.data_plot[:, self.channels_to_show_idx[x]],
-                                            pen=pg.mkColor(self.colors[self.channels_to_show_idx[x] % 16, :])))
+            self.curve_eeg.append(self.main_plot_handler.plot(x=self.x_ticks,
+                y=self.data_plot[:, self.channels_to_show_idx[x]],
+                pen=pg.mkColor(
+                    self.colors[self.channels_to_show_idx[x] % 16, :])))
         # self.curve_eeg[-1].setDownsampling(ds=self.subsampling_value, auto=False, method="mean")
 
 
@@ -239,25 +259,34 @@ class Scope(QtGui.QMainWindow, form_class):
         self.events_text = []
 
         # CAR initialization
-        self.apply_car = int(self.scope_settings.get("filtering", "apply_car_filter"))
-        self.matrix_car = np.zeros((self.config['eeg_channels'], self.config['eeg_channels']), dtype=float)
+        self.apply_car = int(
+            self.scope_settings.get("filtering", "apply_car_filter"))
+        self.matrix_car = np.zeros(
+            (self.config['eeg_channels'], self.config['eeg_channels']),
+            dtype=float)
         self.matrix_car[:, :] = -1 / float(self.config['eeg_channels'])
-        np.fill_diagonal(self.matrix_car, 1 - (1 / float(self.config['eeg_channels'])))
+        np.fill_diagonal(self.matrix_car,
+            1 - (1 / float(self.config['eeg_channels'])))
 
         # Laplacian initalization. TO BE DONE
-        self.matrix_lap = np.zeros((self.config['eeg_channels'], self.config['eeg_channels']), dtype=float)
+        self.matrix_lap = np.zeros(
+            (self.config['eeg_channels'], self.config['eeg_channels']),
+            dtype=float)
         np.fill_diagonal(self.matrix_lap, 1)
         self.matrix_lap[2, 0] = -1
         self.matrix_lap[0, 2] = -0.25
         self.matrix_lap[0, 2] = -0.25
 
         # BP initialization
-        self.apply_bandpass = int(self.scope_settings.get("filtering", "apply_bandpass_filter"))
+        self.apply_bandpass = int(
+            self.scope_settings.get("filtering", "apply_bandpass_filter"))
         if (self.apply_bandpass):
-            self.doubleSpinBox_hp.setValue(
-                float(self.scope_settings.get("filtering", "bandpass_cutoff_frequency").split(' ')[0]))
-            self.doubleSpinBox_lp.setValue(
-                float(self.scope_settings.get("filtering", "bandpass_cutoff_frequency").split(' ')[1]))
+            self.doubleSpinBox_hp.setValue(float(
+                self.scope_settings.get("filtering",
+                    "bandpass_cutoff_frequency").split(' ')[0]))
+            self.doubleSpinBox_lp.setValue(float(
+                self.scope_settings.get("filtering",
+                    "bandpass_cutoff_frequency").split(' ')[1]))
             self.pushButton_bp.click()
 
         self.checkBox_bandpass.setChecked(self.apply_car)
@@ -268,19 +297,9 @@ class Scope(QtGui.QMainWindow, form_class):
         # Help variables
         self.show_help = 0
         self.help = pg.TextItem(
-            "CNBI EEG Scope v0.3 \n" +
-            "----------------------------------------------------------------------------------\n" +
-            "C: De/activate CAR Filter\n" +
-            "B: De/activate Bandpass Filter (with current settings)\n" +
-            "T: Show/hide TiD events\n" +
-            "L: Show/hide LPT events\n" +
-            "K: Show/hide Key events. If not shown, they are NOT recorded!\n" +
-            "0-9: Add a user-specific Key event. Do not forget to write down why you marked it.\n" +
-            "Up, down arrow keys: Increase/decrease the scale, steps of 10 uV\n" +
-            "Left, right arrow keys: Increase/decrease the time to show, steps of 1 s\n" +
-            "Spacebar: Stop the scope plotting, whereas data acquisition keeps running (EXPERIMENTAL)\n" +
-            "Esc: Exits the scope",
-            anchor=(0, 0), border=(70, 70, 70), fill=pg.mkColor(20, 20, 20, 200), color=(255, 255, 255))
+            "CNBI EEG Scope v0.3 \n" + "----------------------------------------------------------------------------------\n" + "C: De/activate CAR Filter\n" + "B: De/activate Bandpass Filter (with current settings)\n" + "T: Show/hide TiD events\n" + "L: Show/hide LPT events\n" + "K: Show/hide Key events. If not shown, they are NOT recorded!\n" + "0-9: Add a user-specific Key event. Do not forget to write down why you marked it.\n" + "Up, down arrow keys: Increase/decrease the scale, steps of 10 uV\n" + "Left, right arrow keys: Increase/decrease the time to show, steps of 1 s\n" + "Spacebar: Stop the scope plotting, whereas data acquisition keeps running (EXPERIMENTAL)\n" + "Esc: Exits the scope",
+            anchor=(0, 0), border=(70, 70, 70),
+            fill=pg.mkColor(20, 20, 20, 200), color=(255, 255, 255))
 
         # Stop plot functionality
         self.stop_plot = 0
@@ -303,15 +322,19 @@ class Scope(QtGui.QMainWindow, form_class):
         # 12 unsigned ints (4 bytes)
         data = struct.unpack("<12I", self.fin.read(4 * 12))
 
-        self.config = {'id':data[0], 'sf':data[1], 'labels':data[2], 'samples':data[3], 'eeg_channels':data[4],
-                       'exg_channels':data[5],
-                       'tri_channels':data[6], 'eeg_type':data[8], 'exg_type':data[9], 'tri_type':data[10],
-                       'lbl_type':data[11],
-                       'tim_size':1, 'idx_size':1}
+        self.config = {'id':data[0], 'sf':data[1], 'labels':data[2],
+            'samples':data[3], 'eeg_channels':data[4], 'exg_channels':data[5],
+            'tri_channels':data[6], 'eeg_type':data[8], 'exg_type':data[9],
+            'tri_type':data[10], 'lbl_type':data[11], 'tim_size':1,
+            'idx_size':1}
 
         self.tri = np.zeros(self.config['samples'])
-        self.eeg = np.zeros((self.config['samples'], self.config['eeg_channels']), dtype=np.float)
-        self.exg = np.zeros((self.config['samples'], self.config['exg_channels']), dtype=np.float)
+        self.eeg = np.zeros(
+            (self.config['samples'], self.config['eeg_channels']),
+            dtype=np.float)
+        self.exg = np.zeros(
+            (self.config['samples'], self.config['exg_channels']),
+            dtype=np.float)
 
         # TID initialization
         self.bci = BCI.BciInterface()
@@ -323,26 +346,31 @@ class Scope(QtGui.QMainWindow, form_class):
 
         self.updating = False
 
-        self.sr = StreamReceiver(window_size=1, buffer_size=10, amp_serial=self.amp_serial, amp_name=self.amp_name)
+        self.sr = StreamReceiver(window_size=1, buffer_size=10,
+            amp_serial=self.amp_serial, amp_name=self.amp_name)
         srate = int(self.sr.sample_rate)
         # n_channels= self.sr.channels
 
         # 12 unsigned ints (4 bytes)
         ########## TODO: assumkng 32 samples chunk => make it read from LSL header
-        data = ['EEG', srate, ['L', 'R'], 32, len(self.sr.get_eeg_channels()), 0, self.sr.get_trigger_channel(), None,
-                None, None, None, None]
+        data = ['EEG', srate, ['L', 'R'], 32, len(self.sr.get_eeg_channels()),
+            0, self.sr.get_trigger_channel(), None, None, None, None, None]
         qc.print_c('Trigger channel is %d' % self.sr.get_trigger_channel(), 'G')
 
-        self.config = {'id':data[0], 'sf':data[1], 'labels':data[2], 'samples':data[3], 'eeg_channels':data[4],
-                       'exg_channels':data[5],
-                       'tri_channels':data[6], 'eeg_type':data[8], 'exg_type':data[9], 'tri_type':data[10],
-                       'lbl_type':data[11],
-                       'tim_size':1, 'idx_size':1}
+        self.config = {'id':data[0], 'sf':data[1], 'labels':data[2],
+            'samples':data[3], 'eeg_channels':data[4], 'exg_channels':data[5],
+            'tri_channels':data[6], 'eeg_type':data[8], 'exg_type':data[9],
+            'tri_type':data[10], 'lbl_type':data[11], 'tim_size':1,
+            'idx_size':1}
 
         self.tri = np.zeros(self.config['samples'])
         self.last_tri = 0
-        self.eeg = np.zeros((self.config['samples'], self.config['eeg_channels']), dtype=np.float)
-        self.exg = np.zeros((self.config['samples'], self.config['exg_channels']), dtype=np.float)
+        self.eeg = np.zeros(
+            (self.config['samples'], self.config['eeg_channels']),
+            dtype=np.float)
+        self.exg = np.zeros(
+            (self.config['samples'], self.config['exg_channels']),
+            dtype=np.float)
         self.ts_list = []
         self.ts_list_tri = []
 
@@ -415,7 +443,8 @@ class Scope(QtGui.QMainWindow, form_class):
             trg_ch = self.config['tri_channels']
             if trg_ch is not None:
                 self.tri = np.reshape(data[:, trg_ch], (-1, 1))  # samples x 1
-            self.eeg = np.reshape(data[:, self.sr.eeg_channels], (-1, n))  # samples x channels
+            self.eeg = np.reshape(data[:, self.sr.eeg_channels],
+                (-1, n))  # samples x channels
 
             if DEBUG_TRIGGER:
                 # show trigger value
@@ -450,18 +479,27 @@ class Scope(QtGui.QMainWindow, form_class):
         # Read index. 1 value, type uint64
         index = struct.unpack("<Q", self.fin.read(8 * 1))
         # Read labels. self.config.labels, type double
-        labels = struct.unpack("<" + str(self.config['labels']) + "I", self.fin.read(4 * self.config['labels']))
+        labels = struct.unpack("<" + str(self.config['labels']) + "I",
+            self.fin.read(4 * self.config['labels']))
         # Read eeg. self.config.samples*self.config.eeg_ch, type float
-        beeg = struct.unpack("<" + str(self.config['samples'] * self.config['eeg_channels']) + "f",
-                             self.fin.read(4 * self.config['samples'] * self.config['eeg_channels']))
-        self.eeg = np.reshape(list(beeg), (self.config['samples'], self.config['eeg_channels']))
+        beeg = struct.unpack("<" + str(
+            self.config['samples'] * self.config['eeg_channels']) + "f",
+            self.fin.read(
+                4 * self.config['samples'] * self.config['eeg_channels']))
+        self.eeg = np.reshape(list(beeg),
+            (self.config['samples'], self.config['eeg_channels']))
         # Read exg. self.config.samples*self.config.exg_ch, type float
-        bexg = struct.unpack("<" + str(self.config['samples'] * self.config['exg_channels']) + "f",
-                             self.fin.read(4 * self.config['samples'] * self.config['exg_channels']))
-        self.exg = np.reshape(list(bexg), (self.config['samples'], self.config['exg_channels']))
+        bexg = struct.unpack("<" + str(
+            self.config['samples'] * self.config['exg_channels']) + "f",
+            self.fin.read(
+                4 * self.config['samples'] * self.config['exg_channels']))
+        self.exg = np.reshape(list(bexg),
+            (self.config['samples'], self.config['exg_channels']))
         # Read tri. self.config.samples*self.config.tri_ch, type float
-        self.tri = struct.unpack("<" + str(self.config['samples'] * self.config['tri_channels']) + "i",
-                                 self.fin.read(4 * self.config['samples'] * self.config['tri_channels']))
+        self.tri = struct.unpack("<" + str(
+            self.config['samples'] * self.config['tri_channels']) + "i",
+            self.fin.read(
+                4 * self.config['samples'] * self.config['tri_channels']))
 
     #
     #	Bandpas + CAR filtering
@@ -470,7 +508,8 @@ class Scope(QtGui.QMainWindow, form_class):
 
         if (self.apply_bandpass):
             for x in range(0, self.eeg.shape[1]):
-                self.eeg[:, x], self.zi[:, x] = lfilter(self.b, self.a, self.eeg[:, x], -1, self.zi[:, x])
+                self.eeg[:, x], self.zi[:, x] = lfilter(self.b, self.a,
+                    self.eeg[:, x], -1, self.zi[:, x])
 
         # We only apply CAR if selected AND there are at least 2 channels. Otherwise it makes no sense
         if (self.apply_car) and (len(self.channels_to_show_idx) > 1):
@@ -498,9 +537,12 @@ class Scope(QtGui.QMainWindow, form_class):
                 self.events_curves[xh].clear()
                 self.main_plot_handler.removeItem(self.events_text[xh])
 
-        self.events_detected = [i for j, i in enumerate(self.events_detected) if j not in delete_indices_e]
-        self.events_curves = [i for j, i in enumerate(self.events_curves) if j not in delete_indices_c]
-        self.events_text = [i for j, i in enumerate(self.events_text) if j not in delete_indices_c]
+        self.events_detected = [i for j, i in enumerate(self.events_detected) if
+            j not in delete_indices_e]
+        self.events_curves = [i for j, i in enumerate(self.events_curves) if
+            j not in delete_indices_c]
+        self.events_text = [i for j, i in enumerate(self.events_text) if
+            j not in delete_indices_c]
 
         # Find LPT events and add them
         if (self.show_LPT_events) and (not self.stop_plot):
@@ -545,16 +587,21 @@ class Scope(QtGui.QMainWindow, form_class):
 
         # Update EEG channels
         for x in range(0, len(self.channels_to_show_idx)):
-            self.curve_eeg[x].setData(x=self.x_ticks,
-                                      y=self.data_plot[:, self.channels_to_show_idx[x]] - x * self.scale)
+            self.curve_eeg[x].setData(x=self.x_ticks, y=self.data_plot[:,
+                                                        self.channels_to_show_idx[
+                                                            x]] - x * self.scale)
 
         # Update events
         for x in xrange(0, len(self.events_detected), 2):
             xh = int(x / 2)
-            self.events_curves[xh].setData(
-                x=np.array([self.x_ticks[self.events_detected[x]], self.x_ticks[self.events_detected[x]]]),\
-                y=np.array([+1.5 * self.scale, -0.5 * self.scale - self.scale * self.config['eeg_channels']]))
-            self.events_text[xh].setPos(self.x_ticks[self.events_detected[x]], self.scale)
+            self.events_curves[xh].setData(x=np.array(
+                [self.x_ticks[self.events_detected[x]],
+                    self.x_ticks[self.events_detected[x]]]), y=np.array(
+                [+1.5 * self.scale,
+                    -0.5 * self.scale - self.scale * self.config[
+                        'eeg_channels']]))
+            self.events_text[xh].setPos(self.x_ticks[self.events_detected[x]],
+                self.scale)
 
     #
     #	Do necessary stuff when scale has changed
@@ -572,15 +619,18 @@ class Scope(QtGui.QMainWindow, form_class):
         # Y Tick labels
         values = []
         for x in range(0, len(self.channels_to_show_idx)):
-            values.append((-x * self.scale, self.channel_labels[self.channels_to_show_idx[x]]))
+            values.append((-x * self.scale,
+            self.channel_labels[self.channels_to_show_idx[x]]))
 
         values_axis = []
         values_axis.append(values)
         values_axis.append([])
 
         self.main_plot_handler.getAxis('left').setTicks(values_axis)
-        self.main_plot_handler.setRange(yRange=[+self.scale, -self.scale * len(self.channels_to_show_idx)])
-        self.main_plot_handler.setLabel(axis='left', text='Scale (uV): ' + str(self.scale))
+        self.main_plot_handler.setRange(
+            yRange=[+self.scale, -self.scale * len(self.channels_to_show_idx)])
+        self.main_plot_handler.setLabel(axis='left',
+            text='Scale (uV): ' + str(self.scale))
         self.trigger_help()
 
         # We force an immediate repaint to avoid "shakiness".
@@ -594,7 +644,8 @@ class Scope(QtGui.QMainWindow, form_class):
     def update_plot_seconds(self, new_seconds):
 
         # Do nothing unless...
-        if (new_seconds != self.seconds_to_show) and (new_seconds > 0) and (new_seconds < 100):
+        if (new_seconds != self.seconds_to_show) and (new_seconds > 0) and (
+                new_seconds < 100):
             self.spinBox_time.setValue(new_seconds)
             self.main_plot_handler.setRange(xRange=[0, new_seconds])
             self.x_ticks = np.zeros(self.config['sf'] * new_seconds);
@@ -602,16 +653,21 @@ class Scope(QtGui.QMainWindow, form_class):
                 self.x_ticks[x] = (x * 1) / float(self.config['sf'])
 
             if (new_seconds > self.seconds_to_show):
-                padded_signal = np.zeros((self.config['sf'] * new_seconds, self.config['eeg_channels']))
-                padded_signal[padded_signal.shape[0] - self.data_plot.shape[0]:, :] = self.data_plot
+                padded_signal = np.zeros((self.config['sf'] * new_seconds,
+                self.config['eeg_channels']))
+                padded_signal[padded_signal.shape[0] - self.data_plot.shape[0]:,
+                :] = self.data_plot
                 for x in xrange(0, len(self.events_detected), 2):
-                    self.events_detected[x] += padded_signal.shape[0] - self.data_plot.shape[0]
+                    self.events_detected[x] += padded_signal.shape[0] - \
+                                               self.data_plot.shape[0]
                 self.data_plot = padded_signal
 
             else:
                 for x in xrange(0, len(self.events_detected), 2):
-                    self.events_detected[x] -= self.data_plot.shape[0] - self.config['sf'] * new_seconds
-                self.data_plot = self.data_plot[self.data_plot.shape[0] - self.config['sf'] * new_seconds:, :]
+                    self.events_detected[x] -= self.data_plot.shape[0] - \
+                                               self.config['sf'] * new_seconds
+                self.data_plot = self.data_plot[
+                self.data_plot.shape[0] - self.config['sf'] * new_seconds:, :]
 
             self.seconds_to_show = new_seconds
             self.trigger_help()
@@ -649,7 +705,8 @@ class Scope(QtGui.QMainWindow, form_class):
                 MsgNum = self.bci.idStreamer_bus.Count("<tcstatus")
                 for i in range(1, MsgNum - 1):
                     # Extract most of these messages and trash them
-                    msg_useless = self.bci.idStreamer_bus.Extract("<tcstatus", "/>")
+                    msg_useless = self.bci.idStreamer_bus.Extract("<tcstatus",
+                        "/>")
 
     #
     # 	Add an event to the scope
@@ -666,11 +723,13 @@ class Scope(QtGui.QMainWindow, form_class):
 
         self.events_detected.append(self.data_plot.shape[0] - 1)
         self.events_detected.append(event_id)
-        self.events_curves.append(
-            self.main_plot_handler.plot(pen=color, x=np.array([self.x_ticks[-1], self.x_ticks[-1]]), y=np.array(
-                [+1.5 * self.scale, -1.5 * self.scale * self.config['eeg_channels']])))
+        self.events_curves.append(self.main_plot_handler.plot(pen=color,
+            x=np.array([self.x_ticks[-1], self.x_ticks[-1]]), y=np.array(
+                [+1.5 * self.scale,
+                    -1.5 * self.scale * self.config['eeg_channels']])))
         # text = pg.TextItem(event_name + "(" + str(self.events_detected[-1]) + ")", anchor=(1.1,0), fill=(0,0,0), color=color)
-        text = pg.TextItem(str(self.events_detected[-1]), anchor=(1.1, 0), fill=(0, 0, 0), color=color)
+        text = pg.TextItem(str(self.events_detected[-1]), anchor=(1.1, 0),
+            fill=(0, 0, 0), color=color)
         text.setPos(self.x_ticks[-1], self.scale)
         self.events_text.append(text)
         self.main_plot_handler.addItem(self.events_text[-1])
@@ -694,13 +753,14 @@ class Scope(QtGui.QMainWindow, form_class):
     #
     def update_title_scope(self):
         if (hasattr(self, 'main_plot_handler')):
-            self.main_plot_handler.setTitle(title=
-                                            'TLK: ' + self.bool_parser[self.show_TID_events] + self.bool_parser[
-                                                self.show_LPT_events] + self.bool_parser[self.show_Key_events] +
-                                            ', CAR: ' + self.bool_parser[self.apply_car] +
-                                            ', BP: ' + self.bool_parser[self.apply_bandpass] + ' [' + str(
-                                                self.doubleSpinBox_hp.value()) + '-' + str(
-                                                self.doubleSpinBox_lp.value()) + '] Hz')
+            self.main_plot_handler.setTitle(
+                title='TLK: ' + self.bool_parser[self.show_TID_events] +
+                      self.bool_parser[self.show_LPT_events] + self.bool_parser[
+                          self.show_Key_events] + ', CAR: ' + self.bool_parser[
+                          self.apply_car] + ', BP: ' + self.bool_parser[
+                          self.apply_bandpass] + ' [' + str(
+                    self.doubleSpinBox_hp.value()) + '-' + str(
+                    self.doubleSpinBox_lp.value()) + '] Hz')
             # ', BP: ' + self.bool_parser[self.apply_bandpass] + (' [' + str(self.doubleSpinBox_hp.value()) + '-' + str(self.doubleSpinBox_lp.value()) + '] Hz' if self.apply_bandpass else ''))
 
     #
@@ -727,15 +787,19 @@ class Scope(QtGui.QMainWindow, form_class):
                 self.pushButton_stoprec.setEnabled(True)
                 self.pushButton_rec.setEnabled(False)
                 # Popen is more efficient than os.open, since it is non-blocking
-                subprocess.Popen(["cl_rpc", "openxdf", str(self.lineEdit_recFilename.text()), "dummy_log", "dummy_log"],
-                                 close_fds=True)
-                self.statusBar.showMessage("Recording file " + str(self.lineEdit_recFilename.text()))
+                subprocess.Popen(
+                    ["cl_rpc", "openxdf", str(self.lineEdit_recFilename.text()),
+                        "dummy_log", "dummy_log"], close_fds=True)
+                self.statusBar.showMessage(
+                    "Recording file " + str(self.lineEdit_recFilename.text()))
             elif ".bdf" in self.lineEdit_recFilename.text():
                 self.pushButton_stoprec.setEnabled(True)
                 self.pushButton_rec.setEnabled(False)
-                subprocess.Popen(["cl_rpc", "openxdf", str(self.lineEdit_recFilename.text()), "dummy_log", "dummy_log"],
-                                 close_fds=True)
-                self.statusBar.showMessage("Recording file " + str(self.lineEdit_recFilename.text()))
+                subprocess.Popen(
+                    ["cl_rpc", "openxdf", str(self.lineEdit_recFilename.text()),
+                        "dummy_log", "dummy_log"], close_fds=True)
+                self.statusBar.showMessage(
+                    "Recording file " + str(self.lineEdit_recFilename.text()))
             else:
                 pass
 
@@ -772,13 +836,15 @@ class Scope(QtGui.QMainWindow, form_class):
         self.update_plot_seconds(self.spinBox_time.value())
 
     def onActivated_combobox_scale(self):
-        self.update_plot_scale(self.scales_range[self.comboBox_scale.currentIndex()])
+        self.update_plot_scale(
+            self.scales_range[self.comboBox_scale.currentIndex()])
 
     def onClicked_button_bp(self):
         if (self.doubleSpinBox_lp.value() > self.doubleSpinBox_hp.value()):
             self.apply_bandpass = True
-            self.b, self.a, self.zi = self.butter_bandpass(self.doubleSpinBox_hp.value(), self.doubleSpinBox_lp.value(),
-                                                           self.config['sf'], self.config['eeg_channels'])
+            self.b, self.a, self.zi = self.butter_bandpass(
+                self.doubleSpinBox_hp.value(), self.doubleSpinBox_lp.value(),
+                self.config['sf'], self.config['eeg_channels'])
         self.update_title_scope()
 
     def onSelectionChanged_table(self):
@@ -794,7 +860,8 @@ class Scope(QtGui.QMainWindow, form_class):
         for y in range(0, 4):
             for x in range(0, 16):
                 if (idx < self.config['eeg_channels']):
-                    if (self.table_channels.isItemSelected(self.table_channels.item(x, y))):
+                    if (self.table_channels.isItemSelected(
+                        self.table_channels.item(x, y))):
                         self.channels_to_show_idx.append(idx)
                     else:
                         self.channels_to_hide_idx.append(idx)
@@ -803,16 +870,20 @@ class Scope(QtGui.QMainWindow, form_class):
         # Add new plots
         self.curve_eeg = []
         for x in range(0, len(self.channels_to_show_idx)):
-            self.curve_eeg.append(
-                self.main_plot_handler.plot(x=self.x_ticks, y=self.data_plot[:, self.channels_to_show_idx[x]],
-                                            pen=self.colors[self.channels_to_show_idx[x] % 16, :]))
-            self.curve_eeg[-1].setDownsampling(ds=self.subsampling_value, auto=False, method="mean")
+            self.curve_eeg.append(self.main_plot_handler.plot(x=self.x_ticks,
+                y=self.data_plot[:, self.channels_to_show_idx[x]],
+                pen=self.colors[self.channels_to_show_idx[x] % 16, :]))
+            self.curve_eeg[-1].setDownsampling(ds=self.subsampling_value,
+                auto=False, method="mean")
 
         # Update CAR so it's computed based only on the shown channels
         if (len(self.channels_to_show_idx) > 1):
-            self.matrix_car = np.zeros((self.config['eeg_channels'], self.config['eeg_channels']), dtype=float)
+            self.matrix_car = np.zeros(
+                (self.config['eeg_channels'], self.config['eeg_channels']),
+                dtype=float)
             self.matrix_car[:, :] = -1 / float(len(self.channels_to_show_idx))
-            np.fill_diagonal(self.matrix_car, 1 - (1 / float(len(self.channels_to_show_idx))))
+            np.fill_diagonal(self.matrix_car,
+                1 - (1 / float(len(self.channels_to_show_idx))))
             for x in range(0, len(self.channels_to_hide_idx)):
                 self.matrix_car[self.channels_to_hide_idx[x], :] = 0
                 self.matrix_car[:, self.channels_to_hide_idx[x]] = 0
@@ -836,22 +907,27 @@ class Scope(QtGui.QMainWindow, form_class):
         if (key == QtCore.Qt.Key_Down):
             if self.scale >= 2:
                 # Python's log(x, 10) has a rounding bug. Use log10(x) instead.
-                new_scale = self.scale - max(1, 10 ** int(math.log10(self.scale - 1)))
+                new_scale = self.scale - max(1,
+                    10 ** int(math.log10(self.scale - 1)))
                 self.update_plot_scale(new_scale)
         if (key == QtCore.Qt.Key_Left):
             self.update_plot_seconds(self.seconds_to_show - 1)
         if (key == QtCore.Qt.Key_Right):
             self.update_plot_seconds(self.seconds_to_show + 1)
         if (key == QtCore.Qt.Key_L):
-            self.checkBox_showLPT.setChecked(not self.checkBox_showLPT.isChecked())
+            self.checkBox_showLPT.setChecked(
+                not self.checkBox_showLPT.isChecked())
         if (key == QtCore.Qt.Key_T):
-            self.checkBox_showTID.setChecked(not self.checkBox_showTID.isChecked())
+            self.checkBox_showTID.setChecked(
+                not self.checkBox_showTID.isChecked())
         if (key == QtCore.Qt.Key_K):
-            self.checkBox_showKey.setChecked(not self.checkBox_showKey.isChecked())
+            self.checkBox_showKey.setChecked(
+                not self.checkBox_showKey.isChecked())
         if (key == QtCore.Qt.Key_C):
             self.checkBox_car.setChecked(not self.checkBox_car.isChecked())
         if (key == QtCore.Qt.Key_B):
-            self.checkBox_bandpass.setChecked(not self.checkBox_bandpass.isChecked())
+            self.checkBox_bandpass.setChecked(
+                not self.checkBox_bandpass.isChecked())
             if self.checkBox_bandpass.isChecked():
                 self.pushButton_bp.click()
         if ((key >= QtCore.Qt.Key_0) and (key <= QtCore.Qt.Key_9)):
