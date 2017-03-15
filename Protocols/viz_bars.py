@@ -120,7 +120,7 @@ class BarVisual(object):
         cv2.circle(self.img, (self.cx, self.cy), 3, self.color['R'], -1)
 
     # paints the new bar on top of the current image
-    def move(self, dir, dx, overlay=False, barcolor=None):
+    def move(self, dir, dx, overlay=False, barcolor=None, caption='', caption_color='W'):
         if not overlay:
             self.draw_cue()
 
@@ -163,6 +163,7 @@ class BarVisual(object):
                 self.glass.move_bar('S', dx, overlay)
         else:
             qc.print_c('(viz_bars.py) ERROR: Unknown direction %s' % dir, 'r')
+        self.put_text(caption, caption_color)
 
     def put_text(self, txt, color='W'):
         cv2.putText(self.img, txt[:self.textlimit].center(self.textlimit, ' '), (self.text_x, self.text_y),\
