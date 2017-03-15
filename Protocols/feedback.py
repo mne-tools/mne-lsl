@@ -102,7 +102,7 @@ class Feedback:
                 self.bar.move(true_label, 100, overlay=False, barcolor='G')
                 if self.cfg.FEEDBACK_TYPE == 'BODY':
                     self.bar.set_pc_feedback(True)
-                    self.bar.put_text(dirs[true_label])
+                    self.bar.put_text(dirs[true_label], 'R')
 
                 if true_label == 'L':  # left
                     self.trigger.signal(self.tdef.LEFT_READY)
@@ -148,12 +148,11 @@ class Feedback:
 
             elif state == 'dir':
                 if self.tm_trigger.sec() > self.cfg.T_CLASSIFY or (self.premature_end and bar_score >= 100):
+                    # end of trial
                     if self.cfg.FEEDBACK_TYPE == 'BODY':
-                        self.bar.set_pc_feedback(False)
-                    self.bar.move(bar_label, 100, overlay=False, barcolor='Y')
-                    if self.cfg.FEEDBACK_TYPE == 'BODY':
-                        self.bar.set_pc_feedback(True)
-                        self.bar.put_text(dirs[bar_label])
+                        self.bar.move(bar_label, bar_score, overlay=False, barcolor='Y', caption=dirs[bar_label], caption_color='Y')
+                    else:
+                        self.bar.move(bar_label, 100, overlay=False, barcolor='Y')
                     self.trigger.signal(self.tdef.FEEDBACK)
                     # end of trial
                     state = 'feedback'
@@ -229,12 +228,13 @@ class Feedback:
                                 if bar_score < 0:
                                     bar_score = -bar_score
                                     bar_label = max_label
-
                             bar_score = int(bar_score)
                             if bar_score > 100:
                                 bar_score = 100
-
-                            self.bar.move(bar_label, bar_score, overlay=False)
+                            if self.cfg.FEEDBACK_TYPE == 'BODY':
+                                self.bar.move(bar_label, bar_score, overlay=False, caption=dirs[true_label], caption_color='G')
+                            else:
+                                self.bar.move(bar_label, bar_score, overlay=False)
 
                         if self.cfg.DEBUG_PROBS:
                             if self.bar_bias is not None:

@@ -22,7 +22,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import cv2, sys
+import sys
+import os
+import cv2
 import numpy as np
 import pycnbi_config
 import bgi_client
@@ -73,9 +75,9 @@ class BodyVisual(object):
     color = dict(G=(20, 140, 0), B=(210, 0, 0), R=(0, 50, 200), Y=(0, 215, 235), K=(0, 0, 0),\
                  W=(255, 255, 255), w=(200, 200, 200))
     barwidth = 100
-    textlimit = 20  # maximum number of characters to show
+    textlimit = 25  # maximum number of characters to show
 
-    def __init__(self, image_dir, use_glass=False, glass_feedback=True, pc_feedback=True, screen_pos=None, screen_size=None):
+    def __init__(self, image_path, use_glass=False, glass_feedback=True, pc_feedback=True, screen_pos=None, screen_size=None):
         """
         Input:
             use_glass: if False, mock Glass will be used
@@ -103,7 +105,7 @@ class BodyVisual(object):
             screen_x, screen_y = screen_pos
 
         self.text_x = int(screen_width / 4)
-        self.text_y = 80
+        self.text_y = int(screen_height / 2) - 100
         self.text_size = 2
         self.img = np.zeros((screen_height, screen_width, 3), np.uint8)
         self.glass = bgi_client.GlassControl(mock=not use_glass)
@@ -124,12 +126,26 @@ class BodyVisual(object):
         self.yl2 = self.yl1 - self.barwidth
         self.yr1 = self.cy + hw
         self.yr2 = self.yr1 + self.barwidth
-        left_image_path = '%s/left' % image_dir
-        right_image_path = '%s/right' % image_dir
-        print('Reading images from %s' % left_image_path )
-        self.left_images = read_images(left_image_path, screen_size)
-        print('Reading images from %s' % right_image_path)
-        self.right_images = read_images(right_image_path, screen_size)
+        if os.path.isdir(image_path):
+            left_image_path = '%s/left' % image_path
+            right_image_path = '%s/right' % image_path
+            print('Reading images from %s' % left_image_path )
+            self.left_images = read_images(left_image_path, screen_size)
+            print('Reading images from %s' % right_image_path)
+            self.right_images = read_images(right_image_path, screen_size)
+            savepkl = raw_input('You can save the images into a single binary file, which significantly decreases loading time. Save it? (y/n)')
+            if savepkl.upper() == 'Y':
+                outfile = '%s/BodyVisuals.pkl' % image_path
+                qc.save_obj(outfile , {'left_images':self.left_images,\
+                    'right_images':self.right_images})
+                print('Done. Please modify your IMAGE_PATH config to point to "%s".' % outfile)
+        else:
+            assert image_path[-4:] == '.pkl', 'The file must be of .pkl format'
+            print('Loading image binary file %s ...' % image_path, end=' ')
+            image_data = qc.load_obj(image_path)
+            self.left_images = image_data['left_images']
+            self.right_images = image_data['right_images']
+            print('Done.')
         cv2.namedWindow("img", cv2.WND_PROP_FULLSCREEN)
         cv2.moveWindow("img", screen_x, screen_y)
         cv2.setWindowProperty("img", cv2.WND_PROP_FULLSCREEN, cv2.cv.CV_WINDOW_FULLSCREEN)
@@ -158,7 +174,7 @@ class BodyVisual(object):
         self.update()
 
     # paints the new bar on top of the current image
-    def move(self, dir, dx, overlay=False, barcolor=None):
+    def move(self, dir, dx, overlay=False, barcolor=None, caption='', caption_color='W'):
         if barcolor is None:
             if dx == self.xl2:
                 c = 'G'
@@ -182,6 +198,7 @@ class BodyVisual(object):
                 self.glass.move_bar(dir, dx, overlay)
         else:
             qc.print_c('(viz_bars.py) ERROR: Unknown direction %s' % dir, 'r')
+        self.put_text(caption, caption_color)
         self.update()
 
     def put_text(self, txt, color='W'):
