@@ -49,20 +49,27 @@ def check_cfg(cfg):
         qc.print_c('Warning: POSITIVE_FEEDBACK undefined. Setting it to False.',
                    'Y')
         cfg.POSITIVE_FEEDBACK = False
+
     if not hasattr(cfg, 'BAR_REACH_FINISH'):
         qc.print_c('Warning: BAR_REACH_FINISH undefined. Setting it to False.',
                    'Y')
         cfg.BAR_REACH_FINISH = False
+    
     if not hasattr(cfg, 'FEEDBACK_TYPE'):
         qc.print_c('Warning: FEEDBACK_TYPE undefined. Setting it to BAR.', 'Y')
         cfg.FEEDBACK_TYPE = 'BAR'
-    if (not hasattr(cfg, 'BAR_STEP_LEFT')) or (
-    not hasattr(cfg, 'BAR_STEP_RIGHT')):
+    
+    if (not hasattr(cfg, 'BAR_STEP_LEFT')) or (not hasattr(cfg, 'BAR_STEP_RIGHT')):
         assert hasattr(cfg, 'BAR_STEP')
         qc.print_c(
             'Warning: BAR_STEP_LEFT and BAR_STEP_RIGHT undefined. Setting it to BAR_STEP(%d).' % cfg.BAR_STEP,
             'Y')
         cfg.BAR_STEP_LEFT = cfg.BAR_STEP_RIGHT = cfg.BAR_STEP
+
+    if not hasattr(cfg, 'SHOW_CUE'):
+        qc.print_c('Warning: SHOW_CUE undefined. Setting it to True.', 'Y')
+        cfg.SHOW_CUE = True
+    
     return cfg
 
 

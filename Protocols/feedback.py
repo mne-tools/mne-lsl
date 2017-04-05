@@ -100,6 +100,7 @@ class Feedback:
                 if self.cfg.FEEDBACK_TYPE == 'BODY':
                     self.bar.set_pc_feedback(False)
                 self.bar.move(true_label, 100, overlay=False, barcolor='G')
+                #if self.cfg.FEEDBACK_TYPE == 'BODY' and self.cfg.SHOW_CUE is True:
                 if self.cfg.FEEDBACK_TYPE == 'BODY':
                     self.bar.set_pc_feedback(True)
                     self.bar.put_text(dirs[true_label], 'R')
