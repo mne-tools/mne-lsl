@@ -175,8 +175,9 @@ if __name__=='__main__':
                 # return to standing position
                 trigger.signal(tdef.FEEDBACK)
                 timer_ret = qc.Timer()
-                while timer_ret.sec() < 1:
-                    dx = int(100 - timer_ret.sec() * 100)
+                TIME_LEG_RETURN = 2.0 # time of leg returning to neutral position
+                while timer_ret.sec() < TIME_LEG_RETURN: 
+                    dx = int(100 - timer_ret.sec() * (100.0/TIME_LEG_RETURN))
                     visual.move( dir, dx, overlay=True )
             if gait_steps < cfg.GAIT_STEPS:
                 gait_steps += 1

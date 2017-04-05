@@ -453,7 +453,7 @@ if __name__ == '__main__':
         # print event values
         tsnew= np.where( np.array(tslist) > last_ts )[0][0]
         trigger= np.unique(window[trg_ch, tsnew:])
-        trigger.dtype= np.int64
+        #trigger.dtype= np.int64
         #from IPython import embed; embed()
         if 0 in trigger:
             pass
@@ -480,4 +480,4 @@ if __name__ == '__main__':
                 print('%.1f'%p, end=' ')
 
         last_ts= tslist[-1]
-        tm.sleep_atleast(0.2)
+        tm.sleep_atleast(0.05)
