@@ -52,7 +52,9 @@ def raw2psd(rawfile, fmin=1, fmax=40, wlen=0.5, wstep=1, tmin=0.0, tmax=None, ch
     else:
         t_end = int(round(tmax * sfreq))
     t_start = int(round(tmin * sfreq)) + wframes
-    psde = mne.decoding.PSDEstimator(sfreq, fmin=fmin, fmax=fmax, n_jobs=1, adaptive=False)
+    psde = mne.decoding.PSDEstimator(sfreq, fmin=fmin, fmax=fmax, n_jobs=1,\
+        bandwidth=None, low_bias=True, adaptive=False, normalization='length',
+        verbose=None)
     print('[PID %d] %s' % (os.getpid(), rawfile))
     psd_all = []
     evelist = []
