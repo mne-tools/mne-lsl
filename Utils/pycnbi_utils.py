@@ -525,7 +525,7 @@ def load_raw(rawfile, spfilter=None, spchannels=None, events_ext=None, multiplie
 
     extension = rawfile.split('.')[-1]
     assert extension in ['fif', 'fiff'], 'only fif format is supported'
-    raw = mne.io.Raw(rawfile, preload=True, proj=False, verbose=verbose, add_eeg_ref=False)
+    raw = mne.io.Raw(rawfile, preload=True, verbose=verbose)
     preprocess(raw, spatial=spfilter, spatial_ch=spchannels, multiplier=multiplier)
 
     tch = find_event_channel(raw)
