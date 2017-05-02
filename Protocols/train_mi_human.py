@@ -1,4 +1,5 @@
-from __future__ import print_function, division
+from __future__ import print_function
+from __future__ import division
 
 """
 Motor imagery training
@@ -21,6 +22,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
+
+T_RETURN = 4.0
 
 import pycnbi_config
 import sys, os, math, random, time, datetime
@@ -139,7 +142,7 @@ if __name__ == '__main__':
             trigger.signal(tdef.FEEDBACK)
             event = 'return'
             timer_trigger.reset()
-        elif event == 'return' and timer_trigger.sec() > 1:
+        elif event == 'return' and timer_trigger.sec() > T_RETURN:
             event = 'gap_s'
             bar.draw_cue()
             trial += 1
@@ -164,7 +167,7 @@ if __name__ == '__main__':
 
         # return the legs to standing position
         if event == 'return':
-            dx = max( 0, int( 100.0 * (1 - timer_trigger.sec()) ) )
+            dx = max( 0, int( 100.0 * (T_RETURN - timer_trigger.sec()) ) )
             if dir == 'L':  # L
                 bar.move('L', dx, overlay=True)
             elif dir == 'R':  # R

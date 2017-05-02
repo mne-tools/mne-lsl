@@ -41,6 +41,9 @@ def check_cfg(cfg):
     if not hasattr(cfg, 'FEEDBACK_TYPE'):
         qc.print_c('Warning: FEEDBACK_TYPE undefined. Setting it to BAR.', 'Y')
         cfg.FEEDBACK_TYPE = 'BAR'
+    if not hasattr(cfg, 'T_LEG_RETURN'):
+        qc.print_c('Warning: T_LEG_RETURN undefined. Setting it to 2.', 'Y')
+        cfg.T_LEG_RETURN = 2
     return cfg
 
 
@@ -175,9 +178,8 @@ if __name__=='__main__':
                 # return to standing position
                 trigger.signal(tdef.FEEDBACK)
                 timer_ret = qc.Timer()
-                TIME_LEG_RETURN = 2.0 # time of leg returning to neutral position
-                while timer_ret.sec() < TIME_LEG_RETURN: 
-                    dx = int(100 - timer_ret.sec() * (100.0/TIME_LEG_RETURN))
+                while timer_ret.sec() < cfg.T_LEG_RETURN: 
+                    dx = int(100 - timer_ret.sec() * (100.0 / cfg.T_LEG_RETURN))
                     visual.move( dir, dx, overlay=True )
             if gait_steps < cfg.GAIT_STEPS:
                 gait_steps += 1
