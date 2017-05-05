@@ -95,7 +95,7 @@ if __name__=='__main__':
         from viz_human import BodyVisual
         visual = BodyVisual(cfg.IMAGE_PATH, use_glass=cfg.GLASS_USE,
             screen_pos=cfg.SCREEN_POS, screen_size=cfg.SCREEN_SIZE)
-    visual.put_text('Waiting to start')
+    visual.put_text('Waiting to start    ')
 
     # start
     while trial <= num_trials:
@@ -219,7 +219,7 @@ if __name__=='__main__':
 
         # wait for start
         if event=='start':
-            visual.put_text('Waiting to start')
+            visual.put_text('Waiting to start    ')
         
         visual.update()
         key= 0xFF & cv2.waitKey(1)
