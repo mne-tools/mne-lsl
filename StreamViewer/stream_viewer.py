@@ -16,6 +16,7 @@ from __future__ import print_function, division, unicode_literals
 """
 
 DEBUG_TRIGGER = False
+NUM_X_CHANNELS = 16
 
 import pycnbi_config
 import sys, os, time, math, string
@@ -128,7 +129,7 @@ class Scope(QtGui.QMainWindow, form_class):
         self.channels_to_show_idx = []
         idx = 0
         for y in range(0, 4):
-            for x in range(0, 16):
+            for x in range(0, NUM_X_CHANNELS):
                 if (idx < self.config['eeg_channels']):
                     # self.table_channels.item(x,y).setTextAlignment(QtCore.Qt.AlignCenter)
                     self.table_channels.setItemSelected(
@@ -209,7 +210,7 @@ class Scope(QtGui.QMainWindow, form_class):
         # Update table labels with current names
         idx = 0
         for y in range(0, 4):
-            for x in range(0, 16):
+            for x in range(0, NUM_X_CHANNELS):
                 if (idx < self.config['eeg_channels']):
                     self.table_channels.item(x, y).setText(
                         self.channel_labels[idx])
@@ -858,7 +859,7 @@ class Scope(QtGui.QMainWindow, form_class):
         self.channels_to_hide_idx = []
         idx = 0
         for y in range(0, 4):
-            for x in range(0, 16):
+            for x in range(0, NUM_X_CHANNELS):
                 if (idx < self.config['eeg_channels']):
                     if (self.table_channels.isItemSelected(
                         self.table_channels.item(x, y))):
@@ -872,7 +873,7 @@ class Scope(QtGui.QMainWindow, form_class):
         for x in range(0, len(self.channels_to_show_idx)):
             self.curve_eeg.append(self.main_plot_handler.plot(x=self.x_ticks,
                 y=self.data_plot[:, self.channels_to_show_idx[x]],
-                pen=self.colors[self.channels_to_show_idx[x] % 16, :]))
+                pen=self.colors[self.channels_to_show_idx[x] % NUM_X_CHANNELS, :]))
             self.curve_eeg[-1].setDownsampling(ds=self.subsampling_value,
                 auto=False, method="mean")
 
