@@ -656,16 +656,16 @@ def run_trainer(cfg, ftrain, interactive=False, cv_file=None, feat_file=None):
             if type(cfg.EPOCH[0]) is list:
                 epochs_train = []
                 for ep in cfg.EPOCH:
-                    epoch = Epochs(raw, events, triggers, tmin=ep[0], tmax=ep[1], proj=False,
-                                   picks=picks, baseline=None, preload=True, add_eeg_ref=False,
-                                   verbose=False, detrend=None)
+                    epoch = Epochs(raw, events, triggers, tmin=ep[0], tmax=ep[1],
+                        proj=False, picks=picks, baseline=None, preload=True,
+                        verbose=False, detrend=None)
                     pu.preprocess(epoch, spatial=cfg.SP_FILTER, spatial_ch=None,
                                   spectral=cfg.TP_FILTER, spectral_ch=None, notch=cfg.NOTCH_FILTER, notch_ch=None,
                                   multiplier=multiplier)
                     epochs_train.append(epoch)
             else:
                 epochs_train = Epochs(raw, events, triggers, tmin=cfg.EPOCH[0], tmax=cfg.EPOCH[1], proj=False,\
-                                      picks=picks, baseline=None, preload=True, add_eeg_ref=False, verbose=False,
+                                      picks=picks, baseline=None, preload=True, verbose=False,
                                       detrend=None)
                 pu.preprocess(epochs_train, spatial=cfg.SP_FILTER, spatial_ch=None,
                               spectral=cfg.TP_FILTER, spectral_ch=None, notch=cfg.NOTCH_FILTER, notch_ch=None,

@@ -6,7 +6,7 @@ Export fif data into mat files.
 """
 
 # path to fif file(s)
-DATADIR = r'D:\Down\3'
+DATADIR = r'D:\data\Records\fif'
 
 import pycnbi_config
 import pycnbi_utils as pu
@@ -19,7 +19,7 @@ if __name__ == '__main__':
         if rawfile[-4:] != '.fif': continue
         raw, events = pu.load_raw(rawfile)
         sfreq = raw.info['sfreq']
-        data = dict(signals=raw._data, events=events, sfreq=sfreq)
+        data = dict(signals=raw._data, events=events, sfreq=sfreq, ch_names=raw.ch_names)
         matfile = '.'.join(rawfile.split('.')[:-1]) + '.mat'
         scipy.io.savemat(matfile, data)
         print('\nExported to %s' % matfile)
