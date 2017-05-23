@@ -42,6 +42,17 @@ import pylsl
 import numpy as np
 import q_common as qc
 
+def find_trigger_channel(ch_list):
+    if 'TRIGGER' in ch_list:
+        return ch_list.index('TRIGGER')
+    elif 'TRG' in ch_list:
+        return ch_list.index('TRG')
+    else:
+        for i, chn in enumerate(self.ch_list):
+            # usually STI 014 for many trigger boxes
+            if 'STI ' in chn:
+                return i
+        return None
 
 class StreamReceiver:
     def __init__(self, window_size=1.0, buffer_size=0, amp_serial=None, eeg_only=False, amp_name=None):
@@ -151,10 +162,7 @@ class StreamReceiver:
                         self.print('Found an Openvibe signal streaming server %s (type %s, amp_serial %s) @ %s.' \
                                    % (amp_name, si.type(), amp_serial, si.hostname()))
                         ch_list = pu.lsl_channel_list(inlet)
-                        if 'TRIGGER' in ch_list:
-                            self._lsl_tr_channel = ch_list.index('TRIGGER')
-                        else:
-                            self._lsl_tr_channel = None
+                        self._lsl_tr_channel = find_trigger_channel(ch_list)
                         channels += si.channel_count()
                         amps.append(si)
                         server_found = True
@@ -163,10 +171,7 @@ class StreamReceiver:
                         self.print('Found an Openvibe markers server %s (type %s, amp_serial %s) @ %s.' \
                                    % (amp_name, si.type(), amp_serial, si.hostname()))
                         ch_list = pu.lsl_channel_list(inlet)
-                        if 'TRIGGER' in ch_list:
-                            self._lsl_tr_channel = ch_list.index('TRIGGER')
-                        else:
-                            self._lsl_tr_channel = None
+                        self._lsl_tr_channel = find_trigger_channel(ch_list)
                         channels += si.channel_count()
                         amps.append(si)
                         server_found = True
@@ -175,10 +180,7 @@ class StreamReceiver:
                         self.print('Found a streaming server %s (type %s, amp_serial %s) @ %s.' \
                                    % (amp_name, si.type(), amp_serial, si.hostname()))
                         ch_list = pu.lsl_channel_list(inlet)
-                        if 'TRIGGER' in ch_list:
-                            self._lsl_tr_channel = ch_list.index('TRIGGER')
-                        else:
-                            self._lsl_tr_channel = None
+                        self._lsl_tr_channel = find_trigger_channel(ch_list)
                         channels += si.channel_count()
                         amps.append(si)
                         server_found = True
@@ -192,7 +194,7 @@ class StreamReceiver:
         if self._lsl_tr_channel is None:
             self.print('Trigger channel not fonud. Adding an empty channel 0.', 'Y')
         else:
-            self.print('Assuming trigger channel to be %d' % self._lsl_tr_channel)
+            self.print('Trigger channel found at index %d. Moving to index 0.' % self._lsl_tr_channel, 'Y')
             self._lsl_eeg_channels.pop(self._lsl_tr_channel)
         self._lsl_eeg_channels = np.array(self._lsl_eeg_channels)
         self.tr_channel = 0  # trigger channel is always set to 0.
@@ -204,14 +206,6 @@ class StreamReceiver:
         for amp in amps:
             inlet = pylsl.StreamInlet(amp)
             inlets_master.append(inlet)
-            '''
-            if True==inlet.info().desc().child('amplifier').child('settings').child('is_slave').first_child().value():
-                self.print('Slave amp: %s.'% amp.name() )
-                inlets_slaves.append(inlet)
-            else:
-                self.print('Master amp: %s.'% amp.name() )
-                inlets_master.append(inlet)
-            '''
             self.buffers.append([])
             self.timestamps.append([])
 
@@ -234,7 +228,7 @@ class StreamReceiver:
             self.ch_list = ['TRIGGER'] + self.ch_list
         else:
             for i, chn in enumerate(self.ch_list):
-                if chn == 'TRIGGER' or 'STI ' in chn:
+                if chn == 'TRIGGER' or chn == 'TRG' or 'STI ' in chn:
                     self.ch_list.pop(i)
                     self.ch_list = ['TRIGGER'] + self.ch_list
                     break
@@ -391,10 +385,6 @@ class StreamReceiver:
         """
         Return buffer length in seconds
         """
-        # print('FN NOT IMPLEMENTED YET')
-        #########################################################
-        # CHANGE
-        #########################################################
         return (len(self.timestamps[0]) / self.sample_rate)
 
     def get_sample_rate(self):
@@ -438,8 +428,8 @@ class StreamReceiver:
 if __name__ == '__main__':
 
     # settings
-    CH_INDEX = [0]  # zero-baesd
-    TIME_INDEX = -1
+    CH_INDEX = [1]  # zero-baesd
+    TIME_INDEX = None # integer or None. None = average of current window
 
     import q_common as qc
     import mne
@@ -459,7 +449,6 @@ if __name__ == '__main__':
     last_ts = 0
 
     while True:
-        lsl_time = pylsl.local_clock()
         sr.acquire()
         window, tslist = sr.get_window()
         window = window.T
@@ -467,11 +456,6 @@ if __name__ == '__main__':
         # print event values
         tsnew = np.where(np.array(tslist) > last_ts)[0][0]
         trigger = np.unique(window[trg_ch, tsnew:])
-        # trigger.dtype= np.int64
-        # from IPython import embed; embed()
-        if 0 in trigger:
-            pass
-            # trigger.remove(0)
 
         # For Biosemi
         # if sr.amp_name=='BioSemi':
@@ -481,9 +465,14 @@ if __name__ == '__main__':
             qc.print_c('Triggers: %s' % np.array(trigger), 'G')
 
         print('[%.1f] Receiving data...' % watchdog.sec())
-        # print(window.shape) # window=[samples x channels]
-        datatxt = qc.list2string(window[CH_INDEX, TIME_INDEX], '%-15.1f')
-        print('[%.3f]' % tslist[TIME_INDEX] + ' data: %s' % datatxt)
+        
+        # window = [samples x channels]
+        if TIME_INDEX is None:
+            datatxt = qc.list2string(np.mean(window[CH_INDEX, :], axis=1), '%-15.1f')
+            print('[%.3f : %.3f]' % (tslist[0], tslist[1]) + ' data: %s' % datatxt)
+        else:
+            datatxt = qc.list2string(window[CH_INDEX, TIME_INDEX], '%-15.1f')
+            print('[%.3f]' % tslist[TIME_INDEX] + ' data: %s' % datatxt)
 
         # show PSD
         if False:
