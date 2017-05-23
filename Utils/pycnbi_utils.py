@@ -35,7 +35,6 @@ import multiprocessing as mp
 import q_common as qc
 from pycnbi_config import CAP, LAPLACIAN
 from scipy.signal import butter, lfilter, lfiltic, buttord
-from IPython import embed
 
 
 def slice_win(epochs_data, w_starts, w_length, psde, picks=None, epoch_id=None, flatten=True, verbose=False):
@@ -414,6 +413,7 @@ def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, sp
         sfreq = raw.info['sfreq']
         assert 2 <= len(data.shape) <= 3, 'Unknown data shape. The dimension must be 2 or 3.'
         if len(data.shape) == 3:
+            # assert type(raw) is mne.epochs.Epochs
             n_channels = data.shape[1]
         elif len(data.shape) == 2:
             n_channels = data.shape[0]
@@ -429,6 +429,10 @@ def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, sp
     if multiplier != 1:
         data[eeg_channels] *= multiplier
 
+
+    spatial = 'laplacian'
+    spatial_ch = {1:[0,2]}
+
     # Apply spatial filter
     if spatial is None:
         pass
@@ -440,10 +444,16 @@ def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, sp
             spatial_ch_i = [ch_names.index(c) for c in spatial_ch]
         else:
             spatial_ch_i = spatial_ch
-        data[spatial_ch_i] -= np.mean(data[spatial_ch_i], axis=0)
+        if len(data.shape) == 2:
+            data[spatial_ch_i] -= np.mean(data[spatial_ch_i], axis=0)
+        elif len(data.shape) == 3:
+            means = np.mean(data[:, spatial_ch_i, :], axis=1)
+            data[:, spatial_ch_i, :] -= means[:, np.newaxis, :]
+        else:
+            raise RuntimeError('preprocess(): Unknown data shape %s' % str(data.shape))
     elif spatial == 'laplacian':
         if type(spatial_ch) is not dict:
-            raise RuntimeError('For Lapcacian, spatial_ch must be of form {CHANNEL:[NEIGHBORS], ...}')
+            raise RuntimeError('preprocess(): For Lapcacian, spatial_ch must be of form {CHANNEL:[NEIGHBORS], ...}')
         if type(spatial_ch.keys()[0]) == str:
             spatial_ch_i = {}
             for c in spatial_ch:
@@ -454,9 +464,14 @@ def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, sp
         rawcopy = data.copy()
         for src in spatial_ch:
             nei = spatial_ch[src]
-            data[src] = rawcopy[src] - np.mean(rawcopy[nei], axis=0)
+            if len(data.shape) == 2:
+                data[src] = rawcopy[src] - np.mean(rawcopy[nei], axis=0)
+            elif len(data.shape) == 3:
+                data[:, src, :] = rawcopy[:, src, :] - np.mean(rawcopy[:, nei, :], axis=1)
+            else:
+                raise RuntimeError('preprocess(): Unknown data shape %s' % str(data.shape))
     else:
-        raise RuntimeError('Unknown spatial filter %s' % spatial)
+        raise RuntimeError('preprocess(): Unknown spatial filter %s' % spatial)
 
     # Apply spectral filter
     if spectral is not None:
@@ -527,13 +542,15 @@ def load_raw(rawfile, spfilter=None, spchannels=None, events_ext=None, multiplie
     assert extension in ['fif', 'fiff'], 'only fif format is supported'
     raw = mne.io.Raw(rawfile, preload=True, verbose=verbose)
     preprocess(raw, spatial=spfilter, spatial_ch=spchannels, multiplier=multiplier)
-
-    tch = find_event_channel(raw)
-    if tch is not None:
-        events = mne.find_events(raw, stim_channel=raw.ch_names[tch], shortest_event=1, uint_cast=True,
-                                 consecutive=True)
+    if events_ext is not None:
+        events = mne.read_events(events_ext)
     else:
-        events = []
+        tch = find_event_channel(raw)
+        if tch is not None:
+            events = mne.find_events(raw, stim_channel=raw.ch_names[tch], shortest_event=1, uint_cast=True,
+                                     consecutive=True)
+        else:
+            events = []
 
     return raw, events
 

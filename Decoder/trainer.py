@@ -58,7 +58,6 @@ def check_cfg(cfg):
             'PSD',
             'CHANNEL_PICKS',
             'SP_FILTER',
-            'SP_CHANNELS',
             'TP_FILTER',
             'NOTCH_FILTER',
             'FEATURES',
@@ -443,71 +442,6 @@ def cva_features(datadir):
         qc.matlab("cva_features('%s')" % fin)
 
 
-def load_psd():
-    raise RunetimeError('SORRY, CODE NOT FINISHED.')
-    labels = np.array([])
-    X_data = None
-    Y_data = None
-    sfreq = None
-    ts = None
-    te = None
-    for fpsd in qc.get_file_list(datadir, fullpath=True):
-        if fpsd[-4:] != '.psd': continue
-        data = qc.load_obj(fpsd)
-        labels = np.hstack((labels, data['Y'][:, 0]))
-        if X_data is None:
-            sfreq = data['sfreq']
-            tmin = data['tmin']
-            tmax = data['tmax']
-            '''
-            TODO: implement multi-segment epochs
-            '''
-            if type(cfg.EPOCH[0]) is list:
-                print('MULTI-SEGMENT EPOCH IS NOT SUPPORTED YET.')
-                sys.exit(-1)
-            if cfg.EPOCH[0] < tmin or cfg.EPOCH[1] > tmax:
-                raise RuntimeError('\n*** Epoch time range is out of data range.')
-            ts = int((cfg.EPOCH[0] - tmin) * sfreq / data['wstep'])
-            te = int((cfg.EPOCH[1] - tmin) * sfreq / data['wstep'])
-
-            # X: trials x channels x features
-            X_data = data['X'][:, ts:te, :]
-            Y_data = data['Y'][:, ts:te]
-        else:
-            X_data = np.vstack((X_data, data['X'][:, ts:te, :]))
-            Y_data = np.vstack((Y_data, data['Y'][:, ts:te]))
-    assert (len(labels) > 0)
-    psde = data['psde']
-    psd_tmin = data['tmin']
-    psd_tmax = data['tmax']
-    picks = data['picks']
-    w_frames = int(sfreq * data['wlen'])  # window length
-    psdparams = dict(fmin=data['fmin'], fmax=data['fmax'], wlen=data['wlen'], wstep=data['wstep'])
-
-    if 'classes' in data:
-        triggers = data['classes']
-    else:
-        triggers = {c:cfg.tdef.by_value[c] for c in set(labels)}
-
-    spatial = data['spatial']
-    spatial_ch = data['spatial_ch']
-    tpfilter = data['tpfilter']
-    for ev in data['classes']:
-        n_epochs[ev] = len(np.where(Y_data[:, 0] == data['classes'][ev])[0])
-
-
-'''
-def fit_predict(cls, X_train, Y_train, X_test, Y_test, cnum, label_list):
-	timer= qc.Timer()
-	cls.fit( X_train, Y_train )
-	Y_pred= cls.predict( X_test )
-	score= skmetrics.accuracy_score(Y_test, Y_pred)
-	cm= skmetrics.confusion_matrix(Y_test, Y_pred, label_list)
-	print('Cross-validation %d (%.3f) - %.1f sec'% (cnum, score, timer.sec()) )
-	return score, cm
-'''
-
-
 def fit_predict_thres(cls, X_train, Y_train, X_test, Y_test, cnum, label_list, decision_thres=None):
     """
     Any likelihood lower than a threshold is not counted as classification score
@@ -639,34 +573,33 @@ def run_trainer(cfg, ftrain, interactive=False, cv_file=None, feat_file=None):
                   (max(picks), len(raw.info['ch_names'])))
             sys.exit(-1)
 
-        if cfg.SP_CHANNELS is None:
-            spatial_ch = pick_types(raw.info, meg=False, eeg=True, stim=False, eog=False, exclude='bads')
-        else:
-            spatial_ch = []
-            for c in cfg.SP_CHANNELS:
-                if type(c) == int:
-                    spatial_ch.append(c)
-                elif type(c) == str:
-                    spatial_ch.append(raw.ch_names.index(c))
-                else:
-                    raise RuntimeError('SP_CHANNELS is unknown format.\nSP_CHANNELS=%s' % cfg.SP_CHANNELS)
+        if hasattr(cfg, 'SP_CHANNELS') and cfg.SP_CHANNELS is not None:
+            qc.print_c('Warning: SP_CHANNELS parameter is not supported yet. Will be set to CHANNEL_PICKS.', 'Y')
+        if hasattr(cfg, 'TP_CHANNELS') and cfg.TP_CHANNELS is not None:
+            qc.print_c('Warning: TP_CHANNELS parameter is not supported yet. Will be set to CHANNEL_PICKS.', 'Y')
+        if hasattr(cfg, 'NOTCH_CHANNELS') and cfg.NOTCH_CHANNELS is not None:
+            qc.print_c('Warning: NOTCH_CHANNELS parameter is not supported yet. Will be set to CHANNEL_PICKS.', 'Y')
 
         # Read epochs
         try:
+            # Experimental: multiple epoch ranges
             if type(cfg.EPOCH[0]) is list:
                 epochs_train = []
                 for ep in cfg.EPOCH:
                     epoch = Epochs(raw, events, triggers, tmin=ep[0], tmax=ep[1],
                         proj=False, picks=picks, baseline=None, preload=True,
                         verbose=False, detrend=None)
+                    # Channels are already selected by 'picks' param so use all channels.
                     pu.preprocess(epoch, spatial=cfg.SP_FILTER, spatial_ch=None,
-                                  spectral=cfg.TP_FILTER, spectral_ch=None, notch=cfg.NOTCH_FILTER, notch_ch=None,
-                                  multiplier=multiplier)
+                                  spectral=cfg.TP_FILTER, spectral_ch=None, notch=cfg.NOTCH_FILTER,
+                                  notch_ch=None, multiplier=multiplier)
                     epochs_train.append(epoch)
             else:
-                epochs_train = Epochs(raw, events, triggers, tmin=cfg.EPOCH[0], tmax=cfg.EPOCH[1], proj=False,\
-                                      picks=picks, baseline=None, preload=True, verbose=False,
-                                      detrend=None)
+                # Usual method: single epoch range
+                epochs_train = Epochs(raw, events, triggers, tmin=cfg.EPOCH[0],
+                    tmax=cfg.EPOCH[1], proj=False, picks=picks, baseline=None,
+                    preload=True, verbose=False, detrend=None)
+                # Channels are already selected by 'picks' param so use all channels.
                 pu.preprocess(epochs_train, spatial=cfg.SP_FILTER, spatial_ch=None,
                               spectral=cfg.TP_FILTER, spectral_ch=None, notch=cfg.NOTCH_FILTER, notch_ch=None,
                               multiplier=multiplier)
@@ -816,7 +749,7 @@ def run_trainer(cfg, ftrain, interactive=False, cv_file=None, feat_file=None):
         if cfg.FEATURES == 'PSD':
             data = dict(cls=cls, ch_names=raw.ch_names, psde=psde, sfreq=sfreq, picks=picks,
                         classes=classes, epochs=cfg.EPOCH, w_frames=w_frames, w_seconds=psdparams['wlen'],
-                        wstep=psdparams['wstep'], spatial=cfg.SP_FILTER, spatial_ch=spatial_ch,
+                        wstep=psdparams['wstep'], spatial=cfg.SP_FILTER, spatial_ch=picks,
                         spectral=cfg.TP_FILTER, spectral_ch=picks, notch=cfg.NOTCH_FILTER, notch_ch=picks,
                         multiplier=multiplier, triggers=cfg.tdef, ref_old=cfg.REF_CH_OLD, ref_new=cfg.REF_CH_NEW)
         elif cfg.FEATURES == 'TIMELAG':
