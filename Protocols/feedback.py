@@ -24,6 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import pycnbi_config
 import cv2
+import os
 import q_common as qc
 from IPython import embed
 
@@ -168,7 +169,6 @@ class Feedback:
                     else:
                         self.tm_watchdog.reset()
 
-                        ###################################
                         # bias and accumulate
                         if self.bar_bias is not None:
                             # print('BEFORE: %.3f %.3f'% (probs_new[0], probs_new[1]) )
@@ -179,17 +179,6 @@ class Feedback:
 
                         for i in range(len(probs_new)):
                             probs[i] = probs[i] * self.alpha1 + probs_new[i] * self.alpha2
-                        '''
-                        # decision thresholding (confidence based)
-                        max_p= max( probs_new )
-                        if max_p < 0.52: ####################
-                            print('Sample ignored: %.2f'% max_p )
-                        else:
-                            for i in range( len(probs_new) ):
-                                probs[i]= probs[i] * self.alpha1 + probs_new[i] * self.alpha2
-                        '''
-                        ###################################
-
 
                         ''' Original: accumulate and bias
                         # accumulate probs
