@@ -45,6 +45,12 @@ Swiss Federal Institute of Technology Lausanne (EPFL)
 
 import threading, os, sys, ctypes, time
 
+###################################################
+###################################################
+import pycnbi_config
+import pylsl
+###################################################
+###################################################
 
 class Trigger(object):
     def __init__(self, lpttype='USB2LPT', portaddr=None, verbose=True):
@@ -190,9 +196,11 @@ class Trigger(object):
     # sends data and turn off after delay
     def signal(self, value):
         if self.lpttype == 'SOFTWARE':
+            if self.verbose is True:
+                self.print('Sending software trigger', value)
             return self.write_event(value)
         elif self.lpttype == 'FAKE':
-            self.print('FAKE trigger signal', value)
+            self.print('Sending FAKE trigger signal', value)
             return True
         else:
             if self.offtimer.is_alive():
@@ -265,7 +273,7 @@ if __name__ == '__main__':
     import time
 
     # Arduino
-    trigger = Trigger('ARDUINO')
+    #trigger = Trigger('ARDUINO')
 
     # USB2LPT
     # trigger= Trigger('USB2LPT', 0x378)
@@ -274,7 +282,7 @@ if __name__ == '__main__':
     # trigger= Trigger('DESKTOP', 0x378)
 
     # Software
-    # trigger= Trigger('SOFTWARE')
+    trigger= Trigger('SOFTWARE')
 
     if not trigger.init(666):
         print('LPT port cannot be opened. Using mock trigger.')

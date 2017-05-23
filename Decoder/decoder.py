@@ -205,6 +205,8 @@ class BCIDecoder(object):
 
             # select the same channels used for training
             w = w[self.picks]
+
+            # debug: show max - min
             # c=1; print( '### %d: %.1f - %.1f = %.1f'% ( self.picks[c], max(w[c]), min(w[c]), max(w[c])-min(w[c]) ) )
 
             # psd = channels x freqs
