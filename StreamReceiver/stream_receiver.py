@@ -48,7 +48,9 @@ def find_trigger_channel(ch_list):
     elif 'TRG' in ch_list:
         return ch_list.index('TRG')
     else:
-        for i, chn in enumerate(self.ch_list):
+        for i, chn in enumerate(ch_list):
+            if chn is None:
+                continue
             # usually STI 014 for many trigger boxes
             if 'STI ' in chn:
                 return i
@@ -291,6 +293,12 @@ class StreamReceiver:
             data = np.concatenate((np.zeros((data.shape[0],1)),
                                    data[:, self._lsl_eeg_channels]), axis=1)
 
+        ########### TEST ###############
+        timestamp_offset = False
+        if len(self.timestamps[0]) == 0:
+            timestamp_offset = True
+        ########### TEST ###############
+
         # add data to buffer
         chunk = data.tolist()
         self.buffers[0].extend(chunk)
@@ -298,6 +306,16 @@ class StreamReceiver:
         if self.bufsize > 0 and len(self.timestamps) > self.bufsize:
             self.buffers[0] = self.buffers[0][-self.bufsize:]
             self.timestamps[0] = self.timestamps[0][-self.bufsize:]
+
+        ########### TEST ###############
+        if timestamp_offset is True:
+            timestamp_offset = False
+            print( 'LSL timestamp =', pylsl.local_clock() )
+            print( 'OV timestamp =', self.timestamps[0][0] )
+            self.lsl_time_offset = pylsl.local_clock() - self.timestamps[0][0]
+            print( 'Offset = %.1f' % (self.lsl_time_offset) )
+        ########### TEST ###############
+            
 
         # if we have multiple synchronized amps
         if len(self.inlets) > 1:

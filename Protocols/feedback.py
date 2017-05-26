@@ -53,6 +53,9 @@ class Feedback:
         self.refresh_delay = 1.0 / self.cfg.REFRESH_RATE
         self.bar_step_left = self.cfg.BAR_STEP_LEFT
         self.bar_step_right = self.cfg.BAR_STEP_RIGHT
+        self.bar_step_up = self.cfg.BAR_STEP_UP
+        self.bar_step_down = self.cfg.BAR_STEP_DOWN
+        self.bar_step_both = self.cfg.BAR_STEP_BOTH
         self.bar_bias = self.cfg.BAR_BIAS
 
         if hasattr(self.cfg, 'BAR_REACH_FINISH') and self.cfg.BAR_REACH_FINISH == True:
@@ -119,6 +122,15 @@ class Feedback:
                 else:
                     raise RuntimeError('Unknown direction %s' % true_label)
                 self.tm_trigger.reset()
+
+                ##################################################################
+                ##################################################################
+                ##################################################################
+                #qc.print_c('Executing Rex action %s' % 'N', 'W')
+                #os.system('%s/Rex/RexControlSimple.exe %s %s' % (pycnbi_config.cnbiroot, 'COM3', 'N'))
+                ##################################################################
+                ##################################################################
+                ##################################################################
 
             elif state == 'dir_r' and self.tm_trigger.sec() > self.cfg.T_DIR_CUE:
                 self.bar.fill()
@@ -203,9 +215,13 @@ class Feedback:
                                 dx *= self.bar_step_right
                             elif max_label == 'L':
                                 dx *= self.bar_step_left
+                            elif max_label == 'U':
+                                dx *= self.bar_step_up
+                            elif max_label == 'D':
+                                dx *= self.bar_step_down
+                            elif max_label == 'B':
+                                dx *= self.bar_step_both
                             else:
-                                # For now, only left and right are considered for different stepping speeds.
-                                # For other directions, only BAR_STEP is assumed to be defined in the config.
                                 print('DEBUG: Direction %s using bar step %d' % (max_label, self.bar_step_left))
                                 dx *= self.bar_step_left
 
