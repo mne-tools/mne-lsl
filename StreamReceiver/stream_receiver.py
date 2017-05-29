@@ -168,6 +168,8 @@ class StreamReceiver:
                         channels += si.channel_count()
                         amps.append(si)
                         server_found = True
+                        # OpenVibe standard unit is Volts, which is not ideal for some numerical computations
+                        self.multiplier = 10**6 # change to uV unit
                         break
                     elif 'openvibeMarkers' in amp_name:
                         self.print('Found an Openvibe markers server %s (type %s, amp_serial %s) @ %s.' \
