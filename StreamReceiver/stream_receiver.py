@@ -82,7 +82,7 @@ class StreamReceiver:
         self.buffers = []
         self.timestamps = []
         self.watchdog = qc.Timer()
-        self.multiplier = 1  # 10**6 for Volts unit (automatically updated for openvibe servers)
+        self.multiplier = 1  # 10**6 for uV unit (automatically updated for openvibe servers)
 
         self.connect()
 
@@ -442,12 +442,17 @@ class StreamReceiver:
         return self.ready
 
 
-# example
+"""
+Example code for printing out raw values
+
+"""
 if __name__ == '__main__':
 
     # settings
     CH_INDEX = [1]  # zero-baesd
-    TIME_INDEX = None # integer or None. None = average of current window
+    TIME_INDEX = None # integer or None. None = average of raw values of the current window
+    SHOW_PSD = False
+
 
     import q_common as qc
     import mne
@@ -455,27 +460,26 @@ if __name__ == '__main__':
     amp_name, amp_serial = pu.search_lsl()
     sr = StreamReceiver(window_size=1, buffer_size=1, amp_serial=amp_serial, eeg_only=False, amp_name=amp_name)
     sfreq = sr.get_sample_rate()
-
     watchdog = qc.Timer()
     tm = qc.Timer(autoreset=True)
     trg_ch = sr.get_trigger_channel()
+    last_ts = 0
     qc.print_c('Trigger channel: %d' % trg_ch, 'G')
 
-    psde = mne.decoding.PSDEstimator(sfreq=sfreq, fmin=1, fmax=50, bandwidth=None, \
-                                     adaptive=False, low_bias=True, n_jobs=1, normalization='length', verbose=None)
-
-    last_ts = 0
+    if SHOW_PSD:
+        psde = mne.decoding.PSDEstimator(sfreq=sfreq, fmin=1, fmax=50, bandwidth=None, \
+            adaptive=False, low_bias=True, n_jobs=1, normalization='length', verbose=None)
 
     while True:
         sr.acquire()
-        window, tslist = sr.get_window()
+        window, tslist = sr.get_window() # window = [samples x channels]
         window = window.T
 
         # print event values
         tsnew = np.where(np.array(tslist) > last_ts)[0][0]
         trigger = np.unique(window[trg_ch, tsnew:])
 
-        # For Biosemi
+        # for Biosemi
         # if sr.amp_name=='BioSemi':
         #    trigger= set( [255 & int(x-1) for x in trigger ] )
 
@@ -484,16 +488,15 @@ if __name__ == '__main__':
 
         print('[%.1f] Receiving data...' % watchdog.sec())
         
-        # window = [samples x channels]
         if TIME_INDEX is None:
-            datatxt = qc.list2string(np.mean(window[CH_INDEX, :], axis=1), '%-15.1f')
+            datatxt = qc.list2string(np.mean(window[CH_INDEX, :], axis=1), '%-15.6f')
             print('[%.3f : %.3f]' % (tslist[0], tslist[1]) + ' data: %s' % datatxt)
         else:
-            datatxt = qc.list2string(window[CH_INDEX, TIME_INDEX], '%-15.1f')
+            datatxt = qc.list2string(window[CH_INDEX, TIME_INDEX], '%-15.6f')
             print('[%.3f]' % tslist[TIME_INDEX] + ' data: %s' % datatxt)
 
         # show PSD
-        if False:
+        if SHOW_PSD:
             psd = psde.transform(window.reshape((1, window.shape[0], window.shape[1])))
             psd = psd.reshape((psd.shape[1], psd.shape[2]))
             psdmean = np.mean(psd, axis=1)
