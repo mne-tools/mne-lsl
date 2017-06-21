@@ -143,6 +143,7 @@ class Feedback:
                 bar_score = 0
                 probs = [1.0 / len(bar_dirs)] * len(bar_dirs)
                 self.bar.move(bar_label, bar_score, overlay=False)
+                probs_acc = np.zeros(len(probs))
 
                 if true_label == 'L':  # left
                     self.trigger.signal(self.tdef.LEFT_GO)
@@ -168,6 +169,9 @@ class Feedback:
                     else:
                         self.bar.move(bar_label, 100, overlay=False, barcolor='Y')
                     self.trigger.signal(self.tdef.FEEDBACK)
+                    prob_acc /= sum(probs_acc)
+                    if self.cfg.DEBUG_PROBS:
+                        print('DEBUG: Accumulated probabilities = %s' % qc.list2string(probs_acc, '%.2f'))
                     # end of trial
                     state = 'feedback'
                     self.tm_trigger.reset()
@@ -188,6 +192,8 @@ class Feedback:
                             newsum = sum(probs_new)
                             probs_new = [p / newsum for p in probs_new]
                         # print('AFTER: %.3f %.3f'% (probs_new[0], probs_new[1]) )
+
+                        probs_acc += np.array(probs_new)
 
                         for i in range(len(probs_new)):
                             probs[i] = probs[i] * self.alpha1 + probs_new[i] * self.alpha2

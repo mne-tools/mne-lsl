@@ -429,10 +429,6 @@ def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, sp
     if multiplier != 1:
         data[eeg_channels] *= multiplier
 
-
-    spatial = 'laplacian'
-    spatial_ch = {1:[0,2]}
-
     # Apply spatial filter
     if spatial is None:
         pass
