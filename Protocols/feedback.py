@@ -26,6 +26,7 @@ import pycnbi_config
 import cv2
 import os
 import q_common as qc
+import numpy as np
 from IPython import embed
 
 # visualization
@@ -169,9 +170,9 @@ class Feedback:
                     else:
                         self.bar.move(bar_label, 100, overlay=False, barcolor='Y')
                     self.trigger.signal(self.tdef.FEEDBACK)
-                    prob_acc /= sum(probs_acc)
-                    if self.cfg.DEBUG_PROBS:
-                        print('DEBUG: Accumulated probabilities = %s' % qc.list2string(probs_acc, '%.2f'))
+                    #prob_acc /= sum(probs_acc)
+                    #if self.cfg.DEBUG_PROBS:
+                    #    print('DEBUG: Accumulated probabilities = %s' % qc.list2string(probs_acc, '%.2f'))
                     # end of trial
                     state = 'feedback'
                     self.tm_trigger.reset()
