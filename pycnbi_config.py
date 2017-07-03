@@ -16,7 +16,7 @@ if __name__ == '__main__':
     sys.exit(-1)
 
 # set common paths
-cnbidirs = ['libLSL', 'Triggers', 'StreamReceiver', 'StreamRecorder', 'StreamViewer', 'Decoder', 'Utils', 'Glass']
+cnbidirs = ['libLSL', 'Triggers', 'StreamReceiver', 'StreamRecorder', 'StreamViewer', 'Decoder', 'Utils', 'Glass','Analysis']
 cnbiroot = os.path.dirname(os.path.realpath(__file__)) + '/'
 sys.path.append(cnbiroot)
 for d in cnbidirs:
