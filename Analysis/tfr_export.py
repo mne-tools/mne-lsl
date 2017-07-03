@@ -13,15 +13,12 @@ import sys, os, mne, scipy
 import multiprocessing as mp
 import numpy as np
 import q_common as qc
-from mne.time_frequency import tfr_morlet, tfr_multitaper
+import mne.time_frequency 
 from IPython import embed
 
 # which wavelet?
-tfr = tfr_multitaper
-
-
-# tfr= tfr_morlet
-
+tfr = mne.time_frequency.tfr_multitaper
+#tfr = mne.time_frequency.tfr_morlet
 
 def get_tfr(cfg):
     if hasattr(cfg, 'DATA_DIRS'):
@@ -80,7 +77,7 @@ def get_tfr(cfg):
         assert len(classes) > 0
 
         epochs_all = mne.Epochs(raw, events, classes, tmin=cfg.EPOCH[0] - 0.5, tmax=cfg.EPOCH[1] + 0.5,
-                                proj=False, picks=picks, baseline=None, preload=True, add_eeg_ref=False)
+                                proj=False, picks=picks, baseline=None, preload=True)
         if epochs_all.drop_log_stats() > 0:
             print('\n** Bad epochs found. Dropping into a Python shell.')
             print(epochs_all.drop_log)
@@ -102,7 +99,7 @@ def get_tfr(cfg):
         if cfg.POWER_AVERAGED:
             epochs = epochs_all[evname][:]
             power[evname] = tfr(epochs, freqs=freqs, n_cycles=n_cycles, use_fft=False,
-                                return_itc=False, decim=1, n_jobs=mp.cpu_count())
+                return_itc=False, decim=1, n_jobs=mp.cpu_count())
             power[evname] = power[evname].crop(tmin=cfg.EPOCH[0], tmax=cfg.EPOCH[1])
 
             if cfg.EXPORT_MATLAB is True:
@@ -117,7 +114,7 @@ def get_tfr(cfg):
 
                     # mode= None | 'logratio' | 'ratio' | 'zscore' | 'mean' | 'percent'
                     fig = power[evname].plot([ch], baseline=cfg.BS_TIMES, mode='logratio', show=False,
-                                             colorbar=True, title=title, vmin=cfg.VMIN, vmax=cfg.VMAX, dB=False)
+                        colorbar=True, title=title, vmin=cfg.VMIN, vmax=cfg.VMAX, dB=False)
                     fout = '%s/%s-%s-%s-%s.jpg' % (export_dir, file_prefix, cfg.SP_FILTER, evname, chname)
                     print('Exporting to %s' % fout)
                     fig.savefig(fout)
@@ -125,7 +122,7 @@ def get_tfr(cfg):
             for ep in range(len(epochs_all[evname])):
                 epochs = epochs_all[evname][ep]
                 power[evname] = tfr(epochs, freqs=freqs, n_cycles=n_cycles, use_fft=False,
-                                    return_itc=False, decim=1, n_jobs=mp.cpu_count())
+                    return_itc=False, decim=1, n_jobs=mp.cpu_count())
                 power[evname] = power[evname].crop(tmin=cfg.EPOCH[0], tmax=cfg.EPOCH[1])
 
                 if cfg.EXPORT_MATLAB is True:
@@ -140,7 +137,7 @@ def get_tfr(cfg):
 
                         # mode= None | 'logratio' | 'ratio' | 'zscore' | 'mean' | 'percent'
                         fig = power[evname].plot([ch], baseline=cfg.BS_TIMES, mode='logratio', show=False,
-                                                 colorbar=True, title=title, vmin=cfg.VMIN, vmax=cfg.VMAX, dB=False)
+                            colorbar=True, title=title, vmin=cfg.VMIN, vmax=cfg.VMAX, dB=False)
                         fout = '%s/%s-%s-%s-%s-ep%02d.jpg' % (
                             export_dir, file_prefix, cfg.SP_FILTER, evname, chname, ep + 1)
                         fig.savefig(fout)
