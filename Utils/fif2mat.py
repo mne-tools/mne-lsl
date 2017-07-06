@@ -6,7 +6,7 @@ Export fif data into mat files.
 """
 
 # path to fif file(s)
-DATADIR = r'D:\data\Records\fif'
+DATA_DIR = r'D:\data\Records\fif'
 
 import pycnbi_config
 import pycnbi_utils as pu
@@ -15,7 +15,7 @@ import numpy as np
 import q_common as qc
 
 if __name__ == '__main__':
-    for rawfile in qc.get_file_list(DATADIR, fullpath=True):
+    for rawfile in qc.get_file_list(DATA_DIR, fullpath=True):
         if rawfile[-4:] != '.fif': continue
         raw, events = pu.load_raw(rawfile)
         sfreq = raw.info['sfreq']
