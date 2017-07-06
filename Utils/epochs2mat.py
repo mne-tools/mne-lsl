@@ -36,7 +36,7 @@ if __name__ == '__main__':
             picks = CHANNEL_PICKS
 
         epochs = mne.Epochs(raw, events, EVENT_ID, tmin=TMIN, tmax=TMAX, proj=False, picks=picks, baseline=(TMIN, TMAX),
-                            preload=True, add_eeg_ref=False)
+                            preload=True)
 
         data = dict(tmin=TMIN, tmax=TMAX, sfreq=epochs.info['sfreq'], labels=EVENT_ID.keys(), ch_names=raw.ch_names)
         for eve in EVENT_ID:
