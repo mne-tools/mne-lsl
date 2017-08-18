@@ -26,11 +26,11 @@ for d in cnbidirs:
 import mne
 
 mne_ver = mne.__version__.split('.')
-if mne_ver[0] == '0' and float(mne_ver[1]) < 12:
+if mne_ver[0] == '0' and float(mne_ver[1]) < 14:
     import q_common as qc
 
     qc.print_c(
-        '\n\n*** WARNING: Your Python-MNE version is %s. Please upgrade to 0.12 or higher. ***\n' % mne.__version__,
+        '\n\n*** WARNING: Your Python-MNE version is %s. Please upgrade to 0.14 or higher. ***\n' % mne.__version__,
         'r')
 
 # channel names (trigger channel is index 0 so that eeg channels start from index 1)
