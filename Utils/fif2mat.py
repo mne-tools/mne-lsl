@@ -6,7 +6,7 @@ Export fif data into mat files.
 """
 
 # path to fif file(s)
-DATADIR = r'D:\data\Records\fif'
+DATADIR = r'D:\data\MI\rx1\online\201707-Clinical Trial'
 
 import pycnbi_config
 import pycnbi_utils as pu
