@@ -496,7 +496,7 @@ def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, sp
         '''
         # fir_design='firwin' is especially important for ICA analysis. See:
         # http://martinos.org/mne/dev/generated/mne.preprocessing.ICA.html?highlight=score_sources#mne.preprocessing.ICA.score_sources
-        mne.filter.filter_data(data, sfreq, spectral[0], spectral[1], picks=None,
+        mne.filter.filter_data(data, sfreq, spectral[0], spectral[1], picks=spectral_ch_i,
                                filter_length='auto', l_trans_bandwidth='auto', 
                                h_trans_bandwidth='auto', n_jobs=1, method='fir', 
                                iir_params=None, copy=False, phase='zero', 
