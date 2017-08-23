@@ -370,7 +370,8 @@ def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, sp
         Spectral filter.
         if l_freq is None: lowpass filter is applied.
         if h_freq is None: highpass filter is applied.
-        otherwise, bandpass filter is applied.
+        if l_freq < h_freq: bandpass filter is applied.
+        if l_freq > h_freq: band-stop filter is applied. 
 
     spectral_ch: None | list
         Channel picks for spectra filtering. May contain channel names.
@@ -434,12 +435,14 @@ def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, sp
         pass
     elif spatial == 'car':
         if spatial_ch is None:
-            spatial_ch_i = eeg_channels
-        elif type(spatial_ch[0]) == str:
+            spatial_ch = eeg_channels
+        
+        if type(spatial_ch[0]) == str:
             assert ch_names is not None, 'preprocess(): ch_names must not be None'
             spatial_ch_i = [ch_names.index(c) for c in spatial_ch]
         else:
             spatial_ch_i = spatial_ch
+        
         if len(data.shape) == 2:
             data[spatial_ch_i] -= np.mean(data[spatial_ch_i], axis=0)
         elif len(data.shape) == 3:
@@ -473,34 +476,45 @@ def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, sp
     if spectral is not None:
         if spectral_ch is None:
             spectral_ch = eeg_channels
-        elif type(spectral_ch[0]) == str:
+        
+        if type(spectral_ch[0]) == str:
             assert ch_names is not None, 'preprocess(): ch_names must not be None'
             spectral_ch_i = [ch_names.index(c) for c in spectral_ch]
         else:
             spectral_ch_i = spectral_ch
 
+        ''' DEPRECATED CODE
         if spectral[0] is None:
             mne.filter.low_pass_filter(data, Fs=sfreq, Fp=spectral[1],
-                                       picks=spectral_ch, method='fft', copy=False, verbose='ERROR')
+                                       picks=spectral_ch_i, method='fft', copy=False, verbose='ERROR')
         elif spectral[1] is None:
             mne.filter.high_pass_filter(data, Fs=sfreq, Fp=spectral[0],
-                                        picks=spectral_ch, method='fft', copy=False, verbose='ERROR')
+                                        picks=spectral_ch_i, method='fft', copy=False, verbose='ERROR')
         else:
             mne.filter.band_pass_filter(data, Fs=sfreq, Fp1=spectral[0], Fp2=spectral[1],
-                                        picks=spectral_ch, method='fft', copy=False, verbose='ERROR')
+                                        picks=spectral_ch_i, method='fft', copy=False, verbose='ERROR')
+        '''
+        # fir_design='firwin' is especially important for ICA analysis. See:
+        # http://martinos.org/mne/dev/generated/mne.preprocessing.ICA.html?highlight=score_sources#mne.preprocessing.ICA.score_sources
+        mne.filter.filter_data(data, sfreq, spectral[0], spectral[1], picks=None,
+                               filter_length='auto', l_trans_bandwidth='auto', 
+                               h_trans_bandwidth='auto', n_jobs=1, method='fir', 
+                               iir_params=None, copy=False, phase='zero', 
+                               fir_window='hamming', fir_design='firwin', verbose='ERROR')
 
     # Apply notch filter
     if notch is not None:
         if notch_ch is None:
             notch_ch = eeg_channels
-        elif type(notch_ch[0]) == str:
+
+        if type(notch_ch[0]) == str:
             assert ch_names is not None, 'preprocess(): ch_names must not be None'
             notch_ch_i = [ch_names.index(c) for c in notch_ch]
         else:
             notch_ch_i = notch_ch
 
         mne.filter.notch_filter(data, Fs=sfreq, freqs=notch, notch_widths=3,
-                                picks=notch_ch, method='fft', n_jobs=mp.cpu_count(), copy=False)
+                                picks=notch_ch_i, method='fft', n_jobs=mp.cpu_count(), copy=False)
 
     return True
 
