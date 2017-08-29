@@ -47,8 +47,8 @@ import threading, os, sys, ctypes, time
 
 ###################################################
 ###################################################
-import pycnbi_config
-import pylsl
+#import pycnbi_config
+#import pylsl
 ###################################################
 ###################################################
 
@@ -273,7 +273,7 @@ if __name__ == '__main__':
     import time
 
     # Arduino
-    #trigger = Trigger('ARDUINO')
+    trigger = Trigger('ARDUINO')
 
     # USB2LPT
     # trigger= Trigger('USB2LPT', 0x378)
@@ -282,7 +282,7 @@ if __name__ == '__main__':
     # trigger= Trigger('DESKTOP', 0x378)
 
     # Software
-    trigger= Trigger('SOFTWARE')
+    #trigger= Trigger('SOFTWARE')
 
     if not trigger.init(666):
         print('LPT port cannot be opened. Using mock trigger.')
@@ -292,6 +292,6 @@ if __name__ == '__main__':
         for x in range(8):
             val = 2 ** x
             trigger.signal(val)
-            # trigger.set_data(val)
+            #trigger.set_data(val)
             print(val)
             time.sleep(1)
