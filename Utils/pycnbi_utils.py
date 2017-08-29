@@ -371,7 +371,7 @@ def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, sp
         if l_freq is None: lowpass filter is applied.
         if h_freq is None: highpass filter is applied.
         if l_freq < h_freq: bandpass filter is applied.
-        if l_freq > h_freq: band-stop filter is applied. 
+        if l_freq > h_freq: band-stop filter is applied.
 
     spectral_ch: None | list
         Channel picks for spectra filtering. May contain channel names.
@@ -436,13 +436,13 @@ def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, sp
     elif spatial == 'car':
         if spatial_ch is None:
             spatial_ch = eeg_channels
-        
+
         if type(spatial_ch[0]) == str:
             assert ch_names is not None, 'preprocess(): ch_names must not be None'
             spatial_ch_i = [ch_names.index(c) for c in spatial_ch]
         else:
             spatial_ch_i = spatial_ch
-        
+
         if len(data.shape) == 2:
             data[spatial_ch_i] -= np.mean(data[spatial_ch_i], axis=0)
         elif len(data.shape) == 3:
@@ -476,7 +476,7 @@ def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, sp
     if spectral is not None:
         if spectral_ch is None:
             spectral_ch = eeg_channels
-        
+
         if type(spectral_ch[0]) == str:
             assert ch_names is not None, 'preprocess(): ch_names must not be None'
             spectral_ch_i = [ch_names.index(c) for c in spectral_ch]
@@ -497,9 +497,9 @@ def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, sp
         # fir_design='firwin' is especially important for ICA analysis. See:
         # http://martinos.org/mne/dev/generated/mne.preprocessing.ICA.html?highlight=score_sources#mne.preprocessing.ICA.score_sources
         mne.filter.filter_data(data, sfreq, spectral[0], spectral[1], picks=spectral_ch_i,
-                               filter_length='auto', l_trans_bandwidth='auto', 
-                               h_trans_bandwidth='auto', n_jobs=1, method='fir', 
-                               iir_params=None, copy=False, phase='zero', 
+                               filter_length='auto', l_trans_bandwidth='auto',
+                               h_trans_bandwidth='auto', n_jobs=1, method='fir',
+                               iir_params=None, copy=False, phase='zero',
                                fir_window='hamming', fir_design='firwin', verbose='ERROR')
 
     # Apply notch filter
@@ -588,6 +588,7 @@ def load_multi(flist, spfilter=None, spchannels=None, multiplier=1):
     signals = None
     chset = []
     for f in flist:
+        print('Loading %s' % f)
         raw, _ = load_raw(f, spfilter=spfilter, spchannels=spchannels, multiplier=multiplier)
         rawlist.append(raw)
         chset.append(set(raw.ch_names))

@@ -574,11 +574,11 @@ def run_trainer(cfg, ftrain, interactive=False, cv_file=None, feat_file=None):
             sys.exit(-1)
 
         if hasattr(cfg, 'SP_CHANNELS') and cfg.SP_CHANNELS is not None:
-            qc.print_c('Warning: SP_CHANNELS parameter is not supported yet. Will be set to CHANNEL_PICKS.', 'Y')
+            qc.print_c('run_trainer(): SP_CHANNELS parameter is not supported yet. Will be set to CHANNEL_PICKS.', 'Y')
         if hasattr(cfg, 'TP_CHANNELS') and cfg.TP_CHANNELS is not None:
-            qc.print_c('Warning: TP_CHANNELS parameter is not supported yet. Will be set to CHANNEL_PICKS.', 'Y')
+            qc.print_c('run_trainer(): TP_CHANNELS parameter is not supported yet. Will be set to CHANNEL_PICKS.', 'Y')
         if hasattr(cfg, 'NOTCH_CHANNELS') and cfg.NOTCH_CHANNELS is not None:
-            qc.print_c('Warning: NOTCH_CHANNELS parameter is not supported yet. Will be set to CHANNEL_PICKS.', 'Y')
+            qc.print_c('run_trainer(): NOTCH_CHANNELS parameter is not supported yet. Will be set to CHANNEL_PICKS.', 'Y')
 
         # Read epochs
         try:
