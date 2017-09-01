@@ -94,7 +94,7 @@ def slice_win(epochs_data, w_starts, w_length, psde, picks=None, epoch_id=None, 
     return X
 
 
-def get_psd(epochs, psde, wlen, wstep, picks=None, flatten=True):
+def get_psd(epochs, psde, wlen, wstep, picks=None, flatten=True, n_jobs=1):
     """
     Offline computation of multi-taper PSDs over a sliding window
 
@@ -119,11 +119,11 @@ def get_psd(epochs, psde, wlen, wstep, picks=None, flatten=True):
         Accept input as numpy array as well, in addition to Epochs object
     """
 
+    print('get_psd(): Opening a pool of %d workers' % n_jobs)
+    pool = mp.Pool(n_jobs)
+
     labels = epochs.events[:, -1]
     epochs_data = epochs.get_data()
-
-    print('Opening pool of workers')
-    pool = mp.Pool(mp.cpu_count())
 
     # sliding window
     w_starts = np.arange(0, epochs_data.shape[2] - wlen, wstep)
@@ -343,7 +343,7 @@ def rereference(raw, ref_new, ref_old=None):
 
 
 def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, spectral_ch=None,
-               notch=None, notch_ch=None, multiplier=1, ch_names=None):
+               notch=None, notch_ch=None, multiplier=1, ch_names=None, n_jobs=1):
     """
     Apply spatial, spectral, notch filters and convert unit.
     raw is modified in-place.
@@ -496,9 +496,10 @@ def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, sp
         '''
         # fir_design='firwin' is especially important for ICA analysis. See:
         # http://martinos.org/mne/dev/generated/mne.preprocessing.ICA.html?highlight=score_sources#mne.preprocessing.ICA.score_sources
+        print('*'*100, 'SPECTRAL')
         mne.filter.filter_data(data, sfreq, spectral[0], spectral[1], picks=spectral_ch_i,
                                filter_length='auto', l_trans_bandwidth='auto',
-                               h_trans_bandwidth='auto', n_jobs=1, method='fir',
+                               h_trans_bandwidth='auto', n_jobs=n_jobs, method='fir',
                                iir_params=None, copy=False, phase='zero',
                                fir_window='hamming', fir_design='firwin', verbose='ERROR')
 
@@ -514,7 +515,7 @@ def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, sp
             notch_ch_i = notch_ch
 
         mne.filter.notch_filter(data, Fs=sfreq, freqs=notch, notch_widths=3,
-                                picks=notch_ch_i, method='fft', n_jobs=mp.cpu_count(), copy=False)
+                                picks=notch_ch_i, method='fft', n_jobs=n_jobs, copy=False)
 
     return True
 
