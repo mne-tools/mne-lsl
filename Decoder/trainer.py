@@ -124,7 +124,7 @@ def check_cfg(cfg):
     return cfg
 
 
-def get_psd_feature(epochs_train, window, psdparam, feat_picks=None):
+def get_psd_feature(epochs_train, window, psdparam, feat_picks=None, n_jobs=1):
     """
     params:
       epochs_train: mne.Epochs object or list of mne.Epochs object.
@@ -176,7 +176,7 @@ def get_psd_feature(epochs_train, window, psdparam, feat_picks=None):
     if type(epochs_train) is list:
         X_all = []
         for i, ep in enumerate(epochs_train):
-            X, Y_data = pu.get_psd(ep, psde, w_frames[i], psdparam['wstep'], feat_picks)
+            X, Y_data = pu.get_psd(ep, psde, w_frames[i], psdparam['wstep'], feat_picks, n_jobs=cfg.N_JOBS)
             X_all.append(X)
         # concatenate along the feature dimension
         # feature index order: window block x channel block x frequency block
@@ -188,7 +188,7 @@ def get_psd_feature(epochs_train, window, psdparam, feat_picks=None):
         # feature index order: channel block x frequency block
         # feature vector = [channel1, channel2, ...]
         # where channelX = [freq1, freq2, ...]
-        X_data, Y_data = pu.get_psd(epochs_train, psde, w_frames, psdparam['wstep'], feat_picks)
+        X_data, Y_data = pu.get_psd(epochs_train, psde, w_frames, psdparam['wstep'], feat_picks, n_jobs=n_jobs)
 
     # return a class-like data structure
     return dict(X_data=X_data, Y_data=Y_data, wlen=wlen, w_frames=w_frames, psde=psde)
@@ -363,9 +363,11 @@ def crossval_epochs(cv, epochs_data, labels, cls, label_names=None, do_balance=F
         n_jobs = mp.cpu_count()
 
     if n_jobs > 1:
+        print('crossval_epochs(): Using %d cores' % n_jobs)
         pool = mp.Pool(n_jobs)
         results = []
 
+    # multiprocessing at the data group level is faster than the classifier level
     cls.n_jobs = 1
     for train, test in cv:
         X_train = np.concatenate(epochs_data[train])
@@ -592,7 +594,7 @@ def run_trainer(cfg, ftrain, interactive=False, cv_file=None, feat_file=None):
                     # Channels are already selected by 'picks' param so use all channels.
                     pu.preprocess(epoch, spatial=cfg.SP_FILTER, spatial_ch=None,
                                   spectral=cfg.TP_FILTER, spectral_ch=None, notch=cfg.NOTCH_FILTER,
-                                  notch_ch=None, multiplier=multiplier)
+                                  notch_ch=None, multiplier=multiplier, n_jobs=cfg.N_JOBS)
                     epochs_train.append(epoch)
             else:
                 # Usual method: single epoch range
@@ -602,7 +604,7 @@ def run_trainer(cfg, ftrain, interactive=False, cv_file=None, feat_file=None):
                 # Channels are already selected by 'picks' param so use all channels.
                 pu.preprocess(epochs_train, spatial=cfg.SP_FILTER, spatial_ch=None,
                               spectral=cfg.TP_FILTER, spectral_ch=None, notch=cfg.NOTCH_FILTER, notch_ch=None,
-                              multiplier=multiplier)
+                              multiplier=multiplier, n_jobs=cfg.N_JOBS)
         except:
             print('\n*** (trainer.py) ERROR OCCURRED WHILE EPOCHING ***\n')
             traceback.print_exc()
@@ -617,7 +619,7 @@ def run_trainer(cfg, ftrain, interactive=False, cv_file=None, feat_file=None):
         # Compute features
         if cfg.FEATURES == 'PSD':
             psdparams = cfg.PSD
-            res = get_psd_feature(epochs_train, cfg.EPOCH, cfg.PSD, feat_picks)
+            res = get_psd_feature(epochs_train, cfg.EPOCH, cfg.PSD, feat_picks, n_jobs=cfg.N_JOBS)
             X_data = res['X_data']
             Y_data = res['Y_data']
             wlen = res['wlen']
@@ -800,16 +802,19 @@ def run_trainer(cfg, ftrain, interactive=False, cv_file=None, feat_file=None):
             chlist, hzlist = feature2chz(keys, fqlist, ch_names=ch_names)
             valnorm = values[:cfg.FEAT_TOPN].copy()
             valnorm = valnorm / np.sum(valnorm) * 100.0
+            # print top-N features on screen
             for i, (ch, hz) in enumerate(zip(chlist, hzlist)):
                 if i >= cfg.FEAT_TOPN:
                     break
                 txt = '%-3s %5.1f Hz  normalized importance %-6s  raw importance %-6s  feature %-5d' %\
                       (ch, hz, '%.2f%%' % valnorm[i], '%.2f%%' % (values[i] * 100.0), keys[i])
                 print(txt)
-                if cfg.EXPORT_GOOD_FEATURES:
-                    gfout.write(txt + '\n')
 
             if cfg.EXPORT_GOOD_FEATURES:
+                gfout.write('Importance(%) Channel Frequency Index\n')
+                for i, (ch, hz) in enumerate(zip(chlist, hzlist)):
+                    #gfout.write('%10.3f   %5s    %7s    %d\n' % (values[i]*100.0, ch, hz, keys[i]))
+                    gfout.write('%.3f\t%s\t%s\t%d\n' % (values[i]*100.0, ch, hz, keys[i]))
                 gfout.close()
             print()
 
