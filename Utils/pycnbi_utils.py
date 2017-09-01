@@ -483,20 +483,8 @@ def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, sp
         else:
             spectral_ch_i = spectral_ch
 
-        ''' DEPRECATED CODE
-        if spectral[0] is None:
-            mne.filter.low_pass_filter(data, Fs=sfreq, Fp=spectral[1],
-                                       picks=spectral_ch_i, method='fft', copy=False, verbose='ERROR')
-        elif spectral[1] is None:
-            mne.filter.high_pass_filter(data, Fs=sfreq, Fp=spectral[0],
-                                        picks=spectral_ch_i, method='fft', copy=False, verbose='ERROR')
-        else:
-            mne.filter.band_pass_filter(data, Fs=sfreq, Fp1=spectral[0], Fp2=spectral[1],
-                                        picks=spectral_ch_i, method='fft', copy=False, verbose='ERROR')
-        '''
         # fir_design='firwin' is especially important for ICA analysis. See:
         # http://martinos.org/mne/dev/generated/mne.preprocessing.ICA.html?highlight=score_sources#mne.preprocessing.ICA.score_sources
-        print('*'*100, 'SPECTRAL')
         mne.filter.filter_data(data, sfreq, spectral[0], spectral[1], picks=spectral_ch_i,
                                filter_length='auto', l_trans_bandwidth='auto',
                                h_trans_bandwidth='auto', n_jobs=n_jobs, method='fir',
