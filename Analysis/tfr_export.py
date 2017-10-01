@@ -1,6 +1,10 @@
 from __future__ import print_function, division
 
 """
+TODO: get rid of file_prefix
+
+"""
+"""
 Time-frequency analysis using Morlet wavelets or multitapers
 
 Kyuhwa Lee, 2015
@@ -16,18 +20,41 @@ import q_common as qc
 import mne.time_frequency 
 from IPython import embed
 
-# which wavelet?
-tfr = mne.time_frequency.tfr_multitaper
-#tfr = mne.time_frequency.tfr_morlet
+def get_tfr(cfg, tfr_type='multitaper', recursive=False, export_path=None, n_jobs=1):
+    '''
+    @params:
+    tfr_type: 'multitaper' or 'morlet'
+    recursive: if True, load raw files in sub-dirs recursively
+    export_path: path to save plots
+    n_jobs: number of cores to run in parallel
+    '''
+    
+    if hasattr(cfg, 'N_JOBS'):
+        n_jobs = cfg.N_JOBS
+    else:
+        n_jobs = None
+    if n_jobs is None:
+        n_jobs = mp.cpu_count()
 
-def get_tfr(cfg):
+    if hasattr(cfg, 'T_BUFFER'):
+        t_buffer = cfg.T_BUFFER
+    else:
+        t_buffer = 1
+
+    if tfr_type == 'multitaper':
+        tfr = mne.time_frequency.tfr_multitaper
+    elif tfr_type == 'morlet':
+        tfr = mne.time_frequency.tfr_morlet
+    else:
+        raise ValueError('Wrong TFR type %s' % tfr_type)
+
     if hasattr(cfg, 'DATA_DIRS'):
         # concatenate multiple files
         for ddir in cfg.DATA_DIRS:
             ddir = ddir.replace('\\', '/')
             if ddir[-1] != '/': ddir += '/'
             flist = []
-            for f in qc.get_file_list(ddir, fullpath=True, recursive=True):
+            for f in qc.get_file_list(ddir, fullpath=True, recursive=recursive):
                 [fdir, fname, fext] = qc.parse_path(f)
                 if fext in ['fif', 'bdf', 'gdf']:
                     flist.append(f)
@@ -39,9 +66,10 @@ def get_tfr(cfg):
 
             sp = ddir.split('/')
             file_prefix = '-'.join(sp[-4:-1])
-            # outpath= '/'.join(sp[:-4])
-            outpath = ddir
-
+            if export_path is None:
+                outpath = ddir
+            else:
+                outpath = export_path
     else:
         print('Loading', cfg.DATA_FILE)
         raw, events = pu.load_raw(cfg.DATA_FILE)
@@ -50,7 +78,10 @@ def get_tfr(cfg):
         if hasattr(cfg, 'EVENT_FILE') and cfg.EVENT_FILE is not None:
             events = mne.read_events(cfg.EVENT_FILE)
 
-        [outpath, file_prefix, _] = qc.parse_path(cfg.DATA_FILE)
+        if export_path is None:
+            [outpath, file_prefix, _] = qc.parse_path(cfg.DATA_FILE)
+        else:
+            outpath = export_path
 
     # set channels of interest
     picks = pu.channel_names_to_index(raw, cfg.CHANNEL_PICKS)
@@ -63,7 +94,8 @@ def get_tfr(cfg):
 
     # Apply filters
     pu.preprocess(raw, spatial=cfg.SP_FILTER, spatial_ch=spchannels, spectral=cfg.TP_FILTER,
-                  spectral_ch=picks, notch=cfg.NOTCH_FILTER, notch_ch=picks, multiplier=cfg.MULTIPLIER)
+                  spectral_ch=picks, notch=cfg.NOTCH_FILTER, notch_ch=picks,
+                  multiplier=cfg.MULTIPLIER, n_jobs=n_jobs)
 
     # Read epochs
     try:
@@ -76,7 +108,7 @@ def get_tfr(cfg):
                     classes[str(t)] = t
         assert len(classes) > 0
 
-        epochs_all = mne.Epochs(raw, events, classes, tmin=cfg.EPOCH[0] - 0.5, tmax=cfg.EPOCH[1] + 0.5,
+        epochs_all = mne.Epochs(raw, events, classes, tmin=cfg.EPOCH[0] - t_buffer, tmax=cfg.EPOCH[1] + t_buffer,
                                 proj=False, picks=picks, baseline=None, preload=True)
         if epochs_all.drop_log_stats() > 0:
             print('\n** Bad epochs found. Dropping into a Python shell.')
@@ -99,7 +131,7 @@ def get_tfr(cfg):
         if cfg.POWER_AVERAGED:
             epochs = epochs_all[evname][:]
             power[evname] = tfr(epochs, freqs=freqs, n_cycles=n_cycles, use_fft=False,
-                return_itc=False, decim=1, n_jobs=mp.cpu_count())
+                return_itc=False, decim=1, n_jobs=n_jobs)
             power[evname] = power[evname].crop(tmin=cfg.EPOCH[0], tmax=cfg.EPOCH[1])
 
             if cfg.EXPORT_MATLAB is True:
@@ -115,14 +147,14 @@ def get_tfr(cfg):
                     # mode= None | 'logratio' | 'ratio' | 'zscore' | 'mean' | 'percent'
                     fig = power[evname].plot([ch], baseline=cfg.BS_TIMES, mode='logratio', show=False,
                         colorbar=True, title=title, vmin=cfg.VMIN, vmax=cfg.VMAX, dB=False)
-                    fout = '%s/%s-%s-%s-%s.jpg' % (export_dir, file_prefix, cfg.SP_FILTER, evname, chname)
+                    fout = '%s/%s-%s-%s-%s.png' % (export_dir, file_prefix, cfg.SP_FILTER, evname, chname)
                     print('Exporting to %s' % fout)
                     fig.savefig(fout)
         else:
             for ep in range(len(epochs_all[evname])):
                 epochs = epochs_all[evname][ep]
                 power[evname] = tfr(epochs, freqs=freqs, n_cycles=n_cycles, use_fft=False,
-                    return_itc=False, decim=1, n_jobs=mp.cpu_count())
+                    return_itc=False, decim=1, n_jobs=n_jobs)
                 power[evname] = power[evname].crop(tmin=cfg.EPOCH[0], tmax=cfg.EPOCH[1])
 
                 if cfg.EXPORT_MATLAB is True:
@@ -138,7 +170,7 @@ def get_tfr(cfg):
                         # mode= None | 'logratio' | 'ratio' | 'zscore' | 'mean' | 'percent'
                         fig = power[evname].plot([ch], baseline=cfg.BS_TIMES, mode='logratio', show=False,
                             colorbar=True, title=title, vmin=cfg.VMIN, vmax=cfg.VMAX, dB=False)
-                        fout = '%s/%s-%s-%s-%s-ep%02d.jpg' % (
+                        fout = '%s/%s-%s-%s-%s-ep%02d.png' % (
                             export_dir, file_prefix, cfg.SP_FILTER, evname, chname, ep + 1)
                         fig.savefig(fout)
                         print('Exported %s' % fout)
@@ -172,4 +204,4 @@ if __name__ == '__main__':
     else:
         cfg_module = sys.argv[1]
     cfg = imp.load_source(cfg_module, cfg_module)
-    get_tfr(cfg)
+    get_tfr(cfg, tfr_type=cfg.TFR_TYPE)
