@@ -27,6 +27,7 @@ import cv2
 import os
 import q_common as qc
 import numpy as np
+import time
 from IPython import embed
 
 # visualization
@@ -42,7 +43,7 @@ class Feedback:
     Perform a classification with visual feedback
     """
 
-    def __init__(self, cfg, bar, tdef, trigger):
+    def __init__(self, cfg, bar, tdef, trigger, logfile=None):
         self.cfg = cfg
         self.tdef = tdef
         self.alpha1 = self.cfg.PROB_ACC_ALPHA
@@ -67,6 +68,10 @@ class Feedback:
         self.tm_trigger = qc.Timer()
         self.tm_display = qc.Timer()
         self.tm_watchdog = qc.Timer()
+        if logfile is not None:
+            self.logf = open(logfile, 'w')
+        else:
+            self.logf = None
 
     def classify(self, decoder, true_label, title_text, bar_dirs, state='start'):
         """
@@ -75,6 +80,9 @@ class Feedback:
         self.tm_trigger.reset()
         if self.bar_bias is not None:
             bias_idx = bar_dirs.index(self.bar_bias[0])
+
+        if self.logf is not None:
+            self.logf.write('True label: %s\n' % true_label)
 
         tm_classify = qc.Timer()
         while True:
@@ -126,10 +134,8 @@ class Feedback:
 
                 ##################################################################
                 ##################################################################
-                ##################################################################
                 #qc.print_c('Executing Rex action %s' % 'N', 'W')
                 #os.system('%s/Rex/RexControlSimple.exe %s %s' % (pycnbi_config.cnbiroot, 'COM3', 'N'))
-                ##################################################################
                 ##################################################################
                 ##################################################################
 
@@ -164,15 +170,32 @@ class Feedback:
 
             elif state == 'dir':
                 if self.tm_trigger.sec() > self.cfg.T_CLASSIFY or (self.premature_end and bar_score >= 100):
-                    # end of trial
-                    if self.cfg.FEEDBACK_TYPE == 'BODY':
-                        self.bar.move(bar_label, bar_score, overlay=False, barcolor='Y', caption=dirs[bar_label], caption_color='Y')
+                    if not hasattr(self.cfg, 'SHOW_RESULT') or self.cfg.SHOW_RESULT is True:
+                        # show classfication result
+                        if self.cfg.FEEDBACK_TYPE == 'BODY':
+                            self.bar.move(bar_label, bar_score, overlay=False, barcolor='Y', caption=dirs[bar_label], caption_color='Y')
+                        else:
+                            self.bar.move(bar_label, 100, overlay=False, barcolor='Y')
                     else:
-                        self.bar.move(bar_label, 100, overlay=False, barcolor='Y')
+                        self.bar.move(bar_label, bar_score, overlay=False, barcolor='Y', caption='TRIAL END', caption_color='Y')
+                        ########################## TEST WITH BAR #############################
+                        '''
+                        if self.cfg.FEEDBACK_TYPE == 'BODY':
+                            self.bar.move(bar_label, bar_score, overlay=False, barcolor='Y', caption='TRIAL END', caption_color='Y')
+                        else:
+                            self.bar.move(bar_label, 0, overlay=False, barcolor='Y')
+                        '''
                     self.trigger.signal(self.tdef.FEEDBACK)
-                    #prob_acc /= sum(probs_acc)
-                    #if self.cfg.DEBUG_PROBS:
-                    #    print('DEBUG: Accumulated probabilities = %s' % qc.list2string(probs_acc, '%.2f'))
+                    probs_acc /= sum(probs_acc)
+                    if self.cfg.DEBUG_PROBS:
+                        msg = 'DEBUG: Accumulated probabilities = %s' % qc.list2string(probs_acc, '%.3f')
+                        print(msg)
+                        if self.logf is not None:
+                            self.logf.write(msg + '\n')
+                    if self.logf is not None:
+                        self.logf.write('%s detected as %s (%d)\n\n' % (true_label, bar_label, bar_score))
+                        self.logf.flush()
+                    
                     # end of trial
                     state = 'feedback'
                     self.tm_trigger.reset()
@@ -232,6 +255,14 @@ class Feedback:
                                 print('DEBUG: Direction %s using bar step %d' % (max_label, self.bar_step_left))
                                 dx *= self.bar_step_left
 
+                            ################################################
+                            ################################################
+                            # slower in the beginning
+                            if self.tm_trigger.sec() < 2.0:
+                                dx *= self.tm_trigger.sec() * 0.5
+                            ################################################
+                            ################################################
+
                             # add likelihoods
                             if max_label == bar_label:
                                 bar_score += dx
@@ -254,9 +285,12 @@ class Feedback:
                                 biastxt = '[Bias=%s%.3f]  ' % (self.bar_bias[0], self.bar_bias[1])
                             else:
                                 biastxt = ''
-                            print('%s%s  raw %s   acc %s   bar %s%d  (%.1f ms)' % \
+                            msg = '%s%s  raw %s   acc %s   bar %s%d  (%.1f ms)' % \
                                   (biastxt, bar_dirs, qc.list2string(probs_new, '%.2f'), qc.list2string(probs, '%.2f'),
-                                   bar_label, bar_score, tm_classify.msec()))
+                                   bar_label, bar_score, tm_classify.msec())
+                            print(msg)
+                            if self.logf is not None:
+                                self.logf.write(msg + '\n')
                             tm_classify.reset()
 
             elif state == 'feedback' and self.tm_trigger.sec() > self.cfg.T_FEEDBACK:

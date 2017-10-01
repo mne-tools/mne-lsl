@@ -150,7 +150,16 @@ if __name__ == '__main__':
         visual = BodyVisual(cfg.IMAGE_PATH, use_glass=cfg.GLASS_USE,
             screen_pos=cfg.SCREEN_POS, screen_size=cfg.SCREEN_SIZE)
     visual.put_text('Waiting to start')
-    feedback = Feedback(cfg, visual, tdef, trigger)
+    ##############################################################################
+    ##############################################################################
+    ##############################################################################
+    logfile = time.strftime("D:/Down/probs-%Y%m%d-%H%M%S.txt", time.localtime())
+    feedback = Feedback(cfg, visual, tdef, trigger, logfile)
+    ##############################################################################
+    ##############################################################################
+    ##############################################################################
+
+    #feedback = Feedback(cfg, visual, tdef, trigger)
 
     # start
     trial = 1
