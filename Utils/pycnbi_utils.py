@@ -94,7 +94,7 @@ def slice_win(epochs_data, w_starts, w_length, psde, picks=None, epoch_id=None, 
     return X
 
 
-def get_psd(epochs, psde, wlen, wstep, picks=None, flatten=True):
+def get_psd(epochs, psde, wlen, wstep, picks=None, flatten=True, n_jobs=1):
     """
     Offline computation of multi-taper PSDs over a sliding window
 
@@ -119,11 +119,11 @@ def get_psd(epochs, psde, wlen, wstep, picks=None, flatten=True):
         Accept input as numpy array as well, in addition to Epochs object
     """
 
+    print('get_psd(): Opening a pool of %d workers' % n_jobs)
+    pool = mp.Pool(n_jobs)
+
     labels = epochs.events[:, -1]
     epochs_data = epochs.get_data()
-
-    print('Opening pool of workers')
-    pool = mp.Pool(mp.cpu_count())
 
     # sliding window
     w_starts = np.arange(0, epochs_data.shape[2] - wlen, wstep)
@@ -343,7 +343,7 @@ def rereference(raw, ref_new, ref_old=None):
 
 
 def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, spectral_ch=None,
-               notch=None, notch_ch=None, multiplier=1, ch_names=None):
+               notch=None, notch_ch=None, multiplier=1, ch_names=None, n_jobs=1):
     """
     Apply spatial, spectral, notch filters and convert unit.
     raw is modified in-place.
@@ -370,7 +370,8 @@ def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, sp
         Spectral filter.
         if l_freq is None: lowpass filter is applied.
         if h_freq is None: highpass filter is applied.
-        otherwise, bandpass filter is applied.
+        if l_freq < h_freq: bandpass filter is applied.
+        if l_freq > h_freq: band-stop filter is applied.
 
     spectral_ch: None | list
         Channel picks for spectra filtering. May contain channel names.
@@ -434,12 +435,14 @@ def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, sp
         pass
     elif spatial == 'car':
         if spatial_ch is None:
-            spatial_ch_i = eeg_channels
-        elif type(spatial_ch[0]) == str:
+            spatial_ch = eeg_channels
+
+        if type(spatial_ch[0]) == str:
             assert ch_names is not None, 'preprocess(): ch_names must not be None'
             spatial_ch_i = [ch_names.index(c) for c in spatial_ch]
         else:
             spatial_ch_i = spatial_ch
+
         if len(data.shape) == 2:
             data[spatial_ch_i] -= np.mean(data[spatial_ch_i], axis=0)
         elif len(data.shape) == 3:
@@ -473,34 +476,34 @@ def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, sp
     if spectral is not None:
         if spectral_ch is None:
             spectral_ch = eeg_channels
-        elif type(spectral_ch[0]) == str:
+
+        if type(spectral_ch[0]) == str:
             assert ch_names is not None, 'preprocess(): ch_names must not be None'
             spectral_ch_i = [ch_names.index(c) for c in spectral_ch]
         else:
             spectral_ch_i = spectral_ch
 
-        if spectral[0] is None:
-            mne.filter.low_pass_filter(data, Fs=sfreq, Fp=spectral[1],
-                                       picks=spectral_ch, method='fft', copy=False, verbose='ERROR')
-        elif spectral[1] is None:
-            mne.filter.high_pass_filter(data, Fs=sfreq, Fp=spectral[0],
-                                        picks=spectral_ch, method='fft', copy=False, verbose='ERROR')
-        else:
-            mne.filter.band_pass_filter(data, Fs=sfreq, Fp1=spectral[0], Fp2=spectral[1],
-                                        picks=spectral_ch, method='fft', copy=False, verbose='ERROR')
+        # fir_design='firwin' is especially important for ICA analysis. See:
+        # http://martinos.org/mne/dev/generated/mne.preprocessing.ICA.html?highlight=score_sources#mne.preprocessing.ICA.score_sources
+        mne.filter.filter_data(data, sfreq, spectral[0], spectral[1], picks=spectral_ch_i,
+                               filter_length='auto', l_trans_bandwidth='auto',
+                               h_trans_bandwidth='auto', n_jobs=n_jobs, method='fir',
+                               iir_params=None, copy=False, phase='zero',
+                               fir_window='hamming', fir_design='firwin', verbose='ERROR')
 
     # Apply notch filter
     if notch is not None:
         if notch_ch is None:
             notch_ch = eeg_channels
-        elif type(notch_ch[0]) == str:
+
+        if type(notch_ch[0]) == str:
             assert ch_names is not None, 'preprocess(): ch_names must not be None'
             notch_ch_i = [ch_names.index(c) for c in notch_ch]
         else:
             notch_ch_i = notch_ch
 
         mne.filter.notch_filter(data, Fs=sfreq, freqs=notch, notch_widths=3,
-                                picks=notch_ch, method='fft', n_jobs=mp.cpu_count(), copy=False)
+                                picks=notch_ch_i, method='fft', n_jobs=n_jobs, copy=False)
 
     return True
 
@@ -574,6 +577,7 @@ def load_multi(flist, spfilter=None, spchannels=None, multiplier=1):
     signals = None
     chset = []
     for f in flist:
+        print('Loading %s' % f)
         raw, _ = load_raw(f, spfilter=spfilter, spchannels=spchannels, multiplier=multiplier)
         rawlist.append(raw)
         chset.append(set(raw.ch_names))
