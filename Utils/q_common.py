@@ -11,19 +11,25 @@ Swiss Federal Institute of Technology of Lausanne (EPFL)
 # set Q_VERBOSE= 0 to make it silent. 1:verbose, 2:extra verbose
 Q_VERBOSE = 0
 
-import sys, os, time, math, inspect, itertools
-import pdb, traceback
-import numpy as np
 
+import sys
+import os
+import time
+import math
+import inspect
+import pdb
+import traceback
+import itertools
+import numpy as np
 try:
     import cPickle as pickle  # Python 2 (cPickle = C version of pickle)
 except ImportError:
     import pickle  # Python 3 (C version is the default)
 
+
 '''"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
  Math
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""'''
-
 
 def dirichlet(n):
     """
@@ -133,7 +139,6 @@ def confusion_matrix(Y_true, Y_pred, label_len=6):
 '''"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
  Debugging
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""'''
-
 
 def auto_debug():
     """
@@ -257,10 +262,10 @@ except ImportError:
     def print_c(msg, color, end='\n'):
         print(msg, end=end)
 
+
 '''"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
  List/Dict related
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""'''
-
 
 def list2string(vec, fmt, sep=' '):
     """
@@ -345,7 +350,6 @@ def detect_delim(filename, allowSingleCol=True):
 '''"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
  File I/O
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""'''
-
 
 def get_file_list(path, fullpath=True, recursive=False):
     """
@@ -433,15 +437,14 @@ def load_obj(fname):
     try:
         with open(fname, 'rb') as f:
             return pickle.load(f)
-    # usually happens when trying to load Python 2 pickle object from Python 3
     except UnicodeDecodeError:
+        # usually happens when trying to load Python 2 pickle object from Python 3
         with open(fname, 'rb') as f:
             return pickle.load(f, encoding='latin1')
     except:
         msg = 'load_obj(): Cannot load pickled object file "%s". The error was:\n%s\n%s' %\
               (fname, sys.exc_info()[0], sys.exc_info()[1])
-        print_error(msg)
-        sys.exit(-1)
+        raise IOError(msg)
 
 
 def loadtxt_fast(filename, delimiter=',', skiprows=0, dtype=float):
@@ -492,7 +495,6 @@ def parse_path(path):
  Timer class
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""'''
 
-
 class Timer(object):
     """
     Timer class
@@ -530,7 +532,6 @@ class Timer(object):
 '''"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
  ETC
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""'''
-
 
 def matlab(codes):
     """ Execute Matlab snippets """
