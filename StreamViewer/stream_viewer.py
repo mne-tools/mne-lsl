@@ -139,7 +139,7 @@ class Scope(QtGui.QMainWindow, form_class):
                     self.table_channels.setItem(x, y,
 
                         QtGui.QTableWidgetItem("N/A"))
-                   self.table_channels.item(x, y).setFlags(
+                    self.table_channels.item(x, y).setFlags(
                         QtCore.Qt.NoItemFlags)
                     self.table_channels.item(x, y).setTextAlignment(
                         QtCore.Qt.AlignCenter)
