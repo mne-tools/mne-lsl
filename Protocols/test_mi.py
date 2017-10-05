@@ -78,7 +78,8 @@ def check_cfg(cfg):
         cfg.BAR_STEP_DOWN = 0
     if not hasattr(cfg, 'BAR_STEP_BOTH'):
         cfg.BAR_STEP_BOTH = 0
-
+    if not hasattr(cfg, 'LOG_PROBS'):
+        cfg.LOG_PROBS = False
     if not hasattr(cfg, 'SHOW_CUE'):
         qc.print_c('Warning: SHOW_CUE undefined. Setting it to True.', 'Y')
         cfg.SHOW_CUE = True
@@ -125,8 +126,20 @@ if __name__ == '__main__':
                                fake=(cfg.FAKE_CLS is not None),
                                amp_name=amp_name, amp_serial=amp_serial,
                                fake_dirs=fake_dirs)
-    labels = [tdef.by_value[x] for x in decoder.get_labels()]
-    bar_def = {label:dir for dir, label in cfg.DIRECTIONS}
+
+    # OLD: requires trigger values to be always defined
+    #labels = [tdef.by_value[x] for x in decoder.get_labels()]
+    # NEW: events can be mapped into integers:
+    labels = []
+    dirdata = set([d[1] for d in cfg.DIRECTIONS])
+    for x in decoder.get_labels():
+        if x not in dirdata:
+            labels.append(tdef.by_value[x])
+        else:
+            labels.append(x)
+    
+    # map class labels to bar directions
+    bar_def = {label:str(dir) for dir, label in cfg.DIRECTIONS}
     bar_dirs = [bar_def[l] for l in labels]
     dir_seq = []
     for x in range(cfg.TRIALS_EACH):
@@ -150,16 +163,12 @@ if __name__ == '__main__':
         visual = BodyVisual(cfg.IMAGE_PATH, use_glass=cfg.GLASS_USE,
             screen_pos=cfg.SCREEN_POS, screen_size=cfg.SCREEN_SIZE)
     visual.put_text('Waiting to start')
-    ##############################################################################
-    ##############################################################################
-    ##############################################################################
-    logfile = time.strftime("D:/Down/probs-%Y%m%d-%H%M%S.txt", time.localtime())
-    feedback = Feedback(cfg, visual, tdef, trigger, logfile)
-    ##############################################################################
-    ##############################################################################
-    ##############################################################################
-
-    #feedback = Feedback(cfg, visual, tdef, trigger)
+    if cfg.LOG_PROBS:
+        logdir = qc.parse_path(cfg.CLS_MI)[0]
+        probs_logfile = time.strftime(logdir + "probs-%Y%m%d-%H%M%S.txt", time.localtime())
+    else:
+        probs_logfile = None
+    feedback = Feedback(cfg, visual, tdef, trigger, probs_logfile)
 
     # start
     trial = 1
@@ -206,19 +215,18 @@ if __name__ == '__main__':
         trial += 1
 
     if len(dir_detected) > 0:
-        # write performance
+        # write performance and log results
         fdir, _, _ = qc.parse_path(cfg.CLS_MI)
-        logfile = time.strftime(fdir + "/online-%Y%m%d-%H%M%S.txt",
-                                time.localtime())
+        logfile = time.strftime(fdir + "/online-%Y%m%d-%H%M%S.txt", time.localtime())
         with open(logfile, 'w') as fout:
             for dt, gt in zip(dir_detected, dir_seq):
                 fout.write('%s,%s\n' % (gt, dt))
             cfmat, acc = qc.confusion_matrix(dir_seq, dir_detected)
             fout.write('\nAccuracy %.3f\nConfusion matrix\n' % acc)
             fout.write(cfmat)
-            print('\nAccuracy %.3f\nConfusion matrix\n' % acc)
-            print(cfmat)
-        print('Log exported to %s' % logfile)
+            print('Log exported to %s' % logfile)
+        print('\nAccuracy %.3f\nConfusion matrix\n' % acc)
+        print(cfmat)
 
     visual.finish()
     if decoder:

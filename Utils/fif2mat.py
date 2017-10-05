@@ -5,17 +5,13 @@ Export fif data into mat files.
 
 """
 
-# path to fif file(s)
-DATA_DIR = r'D:\data\Records\fif'
-
 import pycnbi_config
 import pycnbi_utils as pu
 import scipy.io, mne
-import numpy as np
 import q_common as qc
 
-if __name__ == '__main__':
-    for rawfile in qc.get_file_list(DATA_DIR, fullpath=True):
+def fif2mat(data_dir):
+    for rawfile in qc.get_file_list(data_dir, fullpath=True):
         if rawfile[-4:] != '.fif': continue
         raw, events = pu.load_raw(rawfile)
         sfreq = raw.info['sfreq']
@@ -24,3 +20,8 @@ if __name__ == '__main__':
         scipy.io.savemat(matfile, data)
         print('\nExported to %s' % matfile)
     print('\nDone.')
+
+if __name__ == '__main__':
+    # path to fif file(s)
+    data_dir = r'D:\data\Records\fif'
+    fif2mat(data_dir)

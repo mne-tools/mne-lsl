@@ -113,10 +113,11 @@ class Feedback:
                 if self.cfg.FEEDBACK_TYPE == 'BODY':
                     self.bar.set_pc_feedback(False)
                 self.bar.move(true_label, 100, overlay=False, barcolor='G')
-                #if self.cfg.FEEDBACK_TYPE == 'BODY' and self.cfg.SHOW_CUE is True:
+                
                 if self.cfg.FEEDBACK_TYPE == 'BODY':
                     self.bar.set_pc_feedback(True)
-                    self.bar.put_text(dirs[true_label], 'R')
+                    if self.cfg.SHOW_CUE is True:
+                        self.bar.put_text(dirs[true_label], 'R')
 
                 if true_label == 'L':  # left
                     self.trigger.signal(self.tdef.LEFT_READY)
@@ -276,7 +277,10 @@ class Feedback:
                             if bar_score > 100:
                                 bar_score = 100
                             if self.cfg.FEEDBACK_TYPE == 'BODY':
-                                self.bar.move(bar_label, bar_score, overlay=False, caption=dirs[true_label], caption_color='G')
+                                if self.cfg.SHOW_CUE:
+                                    self.bar.move(bar_label, bar_score, overlay=False, caption=dirs[true_label], caption_color='G')
+                                else:
+                                    self.bar.move(bar_label, bar_score, overlay=False)
                             else:
                                 self.bar.move(bar_label, bar_score, overlay=False)
 

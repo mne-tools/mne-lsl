@@ -1,58 +1,55 @@
 from __future__ import print_function, division
 
 """
-Send trigger events to a device
+Send trigger events to parallel port.
 
-Supported types:
-'Arduino': CNBI Arduino trigger
-'USB2LPT': Commercial USB2LPT adapter
-'DESKTOP': Desktop native LPT
-'SOFTWARE': Software trigger
-'FAKE': Mock trigger device for testing
-
-When using USB2LPT, the port number (e.g. 0x378) can be searched automatically.
-When using Desktop's LPT, the port number must be specified during initialization.
-
-Software trigger writes event information into a text file with LSL timestamps, which
-can be later added to fif. This file will be automatically saved and closed when Ctrl+C is
-pressed or terminal window is closed (or killed for whatever reason).
-
-The asynchronous function signal(x) sends 1-byte integer value x and returns immediately.
-It schedules to send the value 0 at the end of the signal length.
-
-To use with USB2LPT, download the driver from:
-https://www-user.tu-chemnitz.de/~heha/bastelecke/Rund%20um%20den%20PC/USB2LPT/index.en.htm
-
-I've made a C++ library to send commands to LPTx using standard Windows API.
-Use LptControl64.dll for 64 bit Python and LptControl32.dll for 32 bit Python.
-
-Some important functions:
-int init(duration)
-	Returns False if error, True if success.
-	Duration unit: msec
-
-void signal(value)
-	Sends the value to the parallel port and sets to 0 after a set period.
-	The value shuold be an integer in the range of 0-255.
-
-The sample code is at the end.
-
+See sample code at the end.
 
 Kyuhwa Lee, 2014
 Swiss Federal Institute of Technology Lausanne (EPFL)
 
 """
 
-import threading, os, sys, ctypes, time
-
-###################################################
-###################################################
-#import pycnbi_config
-#import pylsl
-###################################################
-###################################################
+import threading
+import os
+import sys
+import ctypes
+import time
 
 class Trigger(object):
+    """
+    Supported device types:
+     'Arduino': CNBI Arduino trigger
+     'USB2LPT': Commercial USB2LPT adapter
+     'DESKTOP': Desktop native LPT
+     'SOFTWARE': Software trigger
+     'FAKE': Mock trigger device for testing
+
+    When using USB2LPT, the port number (e.g. 0x378) can be searched automatically.
+    When using Desktop's LPT, the port number must be specified during initialization.
+
+    Software trigger writes event information into a text file with LSL timestamps, which
+    can be later added to fif. This file will be automatically saved and closed when Ctrl+C is
+    pressed or terminal window is closed (or killed for whatever reason).
+
+    The asynchronous function signal(x) sends 1-byte integer value x and returns immediately.
+    It schedules to send the value 0 at the end of the signal length.
+
+    To use with USB2LPT, download the driver from:
+    https://www-user.tu-chemnitz.de/~heha/bastelecke/Rund%20um%20den%20PC/USB2LPT/index.en.htm
+
+    I've made a C++ library to send commands to LPTx using standard Windows API.
+    Use LptControl64.dll for 64 bit Python and LptControl32.dll for 32 bit Python.
+
+    Some important functions:
+    int init(duration)
+        Returns False if error, True if success.
+        Duration unit: msec
+
+    void signal(value)
+        Sends the value to the parallel port and sets to 0 after a set period.
+        The value shuold be an integer in the range of 0-255.
+    """
     def __init__(self, lpttype='USB2LPT', portaddr=None, verbose=True):
         self.evefile = None
         self.lpttype = lpttype
@@ -268,30 +265,30 @@ class MockTrigger(object):
         return True
 
 
-# sample code
+# set 1 to each bit and rotate from bit 0 to bit 7
+def test_all_bits():
+    for x in range(8):
+        val = 2 ** x
+        trigger.signal(val)
+        #trigger.set_data(val)
+        print(val)
+        time.sleep(1)
+
+# sample test code
 if __name__ == '__main__':
-    import time
-
-    # Arduino
-    trigger = Trigger('ARDUINO')
-
-    # USB2LPT
-    # trigger= Trigger('USB2LPT', 0x378)
-
-    # Desktop's native LPT port
-    # trigger= Trigger('DESKTOP', 0x378)
-
-    # Software
-    #trigger= Trigger('SOFTWARE')
-
+    trigger = Trigger('ARDUINO') # Arduino trigger
     if not trigger.init(666):
         print('LPT port cannot be opened. Using mock trigger.')
         trigger = MockTrigger()
 
+    print('Type quit to finish.')
     while True:
-        for x in range(8):
-            val = 2 ** x
-            trigger.signal(val)
-            #trigger.set_data(val)
-            print(val)
-            time.sleep(1)
+        val = raw_input('Trigger value? ')
+        if val.strip() == '':
+            continue
+        if val == 'quit':
+            break
+        if 0 <= int(val) <= 255:
+            trigger.signal(int(val))
+        else:
+            print('Ignored %s' % val)
