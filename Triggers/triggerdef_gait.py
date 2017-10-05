@@ -51,6 +51,7 @@ class TriggerDef(TriggerDefTemplate):
     TE = 19  # terminate gait cycle with any foot
     O = 20  # any foot off the ground
     T = 21  # any foot touch the ground
+    VICON = 128  # all other classes
     OTHERS = 255  # all other classes
 
 

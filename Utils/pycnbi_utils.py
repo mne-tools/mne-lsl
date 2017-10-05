@@ -182,38 +182,37 @@ def find_events(events_raw):
     return events
 
 
-def find_event_channel(raw):
+def find_event_channel(raw, ch_names=None):
     """
     Find event channel using heuristics for pcl files.
 
     Disclaimer: Not guaranteed to work.
 
     Input:
-        raw: mne.io.RawArray object or numpy array (n_channels x n_samples)
+        raw: mne.io.RawArray-like object or numpy array (n_channels x n_samples)
 
     Output:
         channel index or None if not found.
     """
 
-    ech = None
     if type(raw) == np.ndarray:
-        signals = raw
+        if ch_names is not None:
+            for ch_name in ch_names:
+                if 'TRIGGER' in ch_name or 'STI ' in ch_name:
+                    return ch_names.index(ch_name)
+
+        # data range between 0 and 255 and all integers?
+        for ch in range(raw.shape[0]):
+            if (raw[ch].astype(int) == raw[ch]).all()\
+                    and max(raw[ch]) < 256 and min(raw[ch]) == 0:
+                return ch
     else:
         signals = raw._data
-        for ech_name in raw.ch_names:
-            if 'TRIGGER' in ech_name or 'STI ' in ech_name:
-                # find a value changing from zero to a non-zero value
-                ech = raw.ch_names.index(ech_name)
-                break
+        for ch_name in raw.ch_names:
+            if 'TRIGGER' in ch_name or 'STI ' in ch_name:
+                return raw.ch_names.index(ch_name)
 
-    if ech is None:
-        for c in range(signals.shape[0]):
-            if (signals[c].astype(int) == signals[c]).all()\
-                    and max(signals[c]) < 256 and min(signals[c]) == 0:
-                ech = c
-                break
-
-    return ech
+    return None
 
 
 def raw2mat(infile, outfile):
@@ -612,7 +611,8 @@ def load_multi(flist, spfilter=None, spchannels=None, multiplier=1):
         ch_types = ['eeg'] * len(ch_common)
     else:
         ch_types = ['stim'] + ['eeg'] * (len(ch_common) - 1)
-    info = mne.create_info(ch_common, raw.info['sfreq'], ch_types, montage='standard_1005')
+    #info = mne.create_info(ch_common, raw.info['sfreq'], ch_types, montage='standard_1005')
+    info = mne.create_info(ch_common, raw.info['sfreq'], ch_types)
     raws = mne.io.RawArray(signals, info)
 
     # re-calculate event positions

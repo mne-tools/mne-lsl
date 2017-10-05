@@ -1,11 +1,10 @@
 from __future__ import print_function, division
 
 """
+Time-frequency analysis using Morlet wavelets or multitapers
+
 TODO: get rid of file_prefix
 
-"""
-"""
-Time-frequency analysis using Morlet wavelets or multitapers
 
 Kyuhwa Lee, 2015
 
@@ -145,7 +144,7 @@ def get_tfr(cfg, tfr_type='multitaper', recursive=False, export_path=None, n_job
                     title = 'Peri-event %s - Channel %s' % (evname, chname)
 
                     # mode= None | 'logratio' | 'ratio' | 'zscore' | 'mean' | 'percent'
-                    fig = power[evname].plot([ch], baseline=cfg.BS_TIMES, mode='logratio', show=False,
+                    fig = power[evname].plot([ch], baseline=cfg.BS_TIMES, mode='mean', show=False,
                         colorbar=True, title=title, vmin=cfg.VMIN, vmax=cfg.VMAX, dB=False)
                     fout = '%s/%s-%s-%s-%s.png' % (export_dir, file_prefix, cfg.SP_FILTER, evname, chname)
                     print('Exporting to %s' % fout)
@@ -204,4 +203,6 @@ if __name__ == '__main__':
     else:
         cfg_module = sys.argv[1]
     cfg = imp.load_source(cfg_module, cfg_module)
+    if not hasattr(cfg, 'TFR_TYPE'):
+        cfg.TFR_TYPE = 'multitaper'
     get_tfr(cfg, tfr_type=cfg.TFR_TYPE)
