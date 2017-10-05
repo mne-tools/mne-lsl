@@ -141,7 +141,7 @@ def get_psd_feature(epochs_train, window, psdparam, feat_picks=None, n_jobs=1):
             sys.exit(-1)
 
             '''
-            TODO: implement multi-PSD for each epoch
+            TODO: implement multi-window PSD for each epoch
             '''
             assert len(psdparam) == len(window)
             for i, p in enumerate(psdparam):

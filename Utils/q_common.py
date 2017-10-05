@@ -476,12 +476,9 @@ def parse_path(path):
         base dir, file(or dir) name, extension (if file)
     """
 
-    path = path.replace('\\', '/')
-    if path[-1] == '/':
-        path = path[:-1]
-    s = path.split('/')
+    path_abs = os.path.abspath(path).replace('\\', '/')
+    s = path_abs.split('/')
     f = s[-1].split('.')
-
     basedir = '/'.join(s[:-1]) + '/'
     if len(f) == 1:
         name, ext = f[-1], ''

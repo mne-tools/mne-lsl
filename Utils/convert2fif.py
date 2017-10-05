@@ -108,7 +108,7 @@ def pcl2fif(filename, interactive=False, outdir=None, external_event=None):
         ch_names = data['ch_names']
 
     # search for event channel
-    trig_ch_guess = pu.find_event_channel(signals_raw)
+    trig_ch_guess = pu.find_event_channel(signals_raw, ch_names)
     if 'TRIGGER' in ch_names:
         trig_ch = ch_names.index('TRIGGER')
     elif 'STI ' in ch_names:
@@ -118,8 +118,11 @@ def pcl2fif(filename, interactive=False, outdir=None, external_event=None):
 
     # exception
     if trig_ch is not None and trig_ch_guess is None:
-        qc.print_c('Warning: Inferred event channel is None. If you are sure everything is alright, press Enter.', 'Y')
-        raw_input()
+        qc.print_c('Warning: Inferred event channel is None.', 'Y')
+        if interactive:
+            qc.print_c('If you are sure everything is alright, press Enter.', 'Y')
+            raw_input()
+
     # fix wrong event channel
     elif trig_ch_guess != trig_ch:
         qc.print_c('Warning: Specified event channel (%d) != inferred event channel (%d).' % (trig_ch, trig_ch_guess),
@@ -132,6 +135,7 @@ def pcl2fif(filename, interactive=False, outdir=None, external_event=None):
             qc.print_c('%s' % c, 'W')
         qc.print_c('Event channel is now set to %d' % trig_ch, 'G')
 
+    # move trigger channel to index 0
     if trig_ch is None:
         # assuming no event channel exists, add a event channel to index 0 for consistency.
         qc.print_c('*** No event channel was not found. Adding a blank event channel to index 0.', 'Y')
@@ -157,12 +161,12 @@ def pcl2fif(filename, interactive=False, outdir=None, external_event=None):
             qc.print_c('%s' % c, 'W')
 
     ch_info = ['stim'] + ['eeg'] * num_eeg_channels
-    info = mne.create_info(ch_names, sample_rate, ch_info, montage='standard_1005')
+    info = mne.create_info(ch_names, sample_rate, ch_info)
 
     # create Raw object
     raw = mne.io.RawArray(signals, info)
 
-    ########################## NO EFFECT ##########################
+    ########################## NO EFFECT ? ########################
     raw._times = data['timestamps']
     ###############################################################
 
@@ -176,6 +180,7 @@ def pcl2fif(filename, interactive=False, outdir=None, external_event=None):
 
     raw.save(fiffile, verbose=False, overwrite=True, fmt='double')
     print('Saved to', fiffile)
+    return True
 
 
 def eeg2fif(filename, interactive=False, outdir=None):
