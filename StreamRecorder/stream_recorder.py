@@ -96,11 +96,11 @@ def record(state, amp_name, amp_serial, eeg_only=False):
             'ch_names':sr.get_channel_names()}
     qc.print_c('Saving data ...', 'W')
     qc.save_obj(filename, data)
-    print('Saved to %s' % filename)
+    print('Saved to %s\n' % filename)
 
+    qc.print_c('Converting raw file into a fif format.', 'W')
     import convert2fif as cf
     cf.pcl2fif(filename)
-    qc.print_c('File saved and converted to fif format.', 'W')
 
 
 if __name__ == '__main__':

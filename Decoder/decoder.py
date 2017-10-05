@@ -150,13 +150,14 @@ class BCIDecoder(object):
             self.ts_buffer = []
 
         else:
+            # Fake decoder
             model = None
             self.psd_shape = None
             self.psd_size = None
             from triggerdef_16 import TriggerDef
             tdef = TriggerDef()
             # must be changed to non-specific labels
-            self.labels = [tdef.by_key['DOWN_GO'], tdef.by_key['UP_GO']]
+            self.labels = [tdef.by_key['LEFT_GO'], tdef.by_key['RIGHT_GO']]
 
     def print(self, *args):
         if len(args) > 0: print('[BCIDecoder] ', end='')
