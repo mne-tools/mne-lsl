@@ -295,11 +295,13 @@ class StreamReceiver:
             data = np.concatenate((np.zeros((data.shape[0],1)),
                                    data[:, self._lsl_eeg_channels]), axis=1)
 
-        ########### TEST ###############
+        '''
+        ########### DEBUG ###############
         timestamp_offset = False
         if len(self.timestamps[0]) == 0:
             timestamp_offset = True
-        ########### TEST ###############
+        ########### DEBUG ###############
+        '''
 
         # add data to buffer
         chunk = data.tolist()
@@ -309,15 +311,16 @@ class StreamReceiver:
             self.buffers[0] = self.buffers[0][-self.bufsize:]
             self.timestamps[0] = self.timestamps[0][-self.bufsize:]
 
-        ########### TEST ###############
+        '''
+        ########### DEBUG ###############
         if timestamp_offset is True:
             timestamp_offset = False
             print( 'LSL timestamp =', pylsl.local_clock() )
             print( 'OV timestamp =', self.timestamps[0][0] )
             self.lsl_time_offset = pylsl.local_clock() - self.timestamps[0][0]
             print( 'Offset = %.1f' % (self.lsl_time_offset) )
-        ########### TEST ###############
-            
+        ########### DEBUG ###############
+        '''
 
         # if we have multiple synchronized amps
         if len(self.inlets) > 1:
@@ -475,7 +478,8 @@ if __name__ == '__main__':
     while True:
         sr.acquire()
         window, tslist = sr.get_window() # window = [samples x channels]
-        window = window.T
+        window = window.T # chanel x samples
+        from IPython import embed; embed()
 
         # print event values
         tsnew = np.where(np.array(tslist) > last_ts)[0][0]
