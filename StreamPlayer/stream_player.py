@@ -60,11 +60,13 @@ def stream_player(server_name, fif_file, chunk_size, auto_restart=True):
     while True:
         idx_current = idx_chunk * chunk_size
         if idx_current < raw._data.shape[1] - chunk_size:
-            data = raw._data[:, idx_current:idx_current + chunk_size].tolist()
+            data = raw._data[:, idx_current:idx_current + chunk_size].transpose().tolist()
         else:
-            data = raw._data[:, idx_current:].tolist()
+            data = raw._data[:, idx_current:].transpose().tolist()
             finished = True
-        time.sleep(idx_chunk * t_chunk - tm.sec())
+        t_wait = idx_chunk * t_chunk - tm.sec()
+        if t_wait > 0:
+            time.sleep(t_wait)
         outlet.push_chunk(data)
         print('[%8.3fs] sent %d samples' % (tm.sec(), len(data[0])))
         idx_chunk += 1
