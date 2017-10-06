@@ -4,9 +4,9 @@ from __future__ import print_function, division, unicode_literals
 """
  EEG Scope
  Iñaki Iturrate, Kyuhwa Lee
- 2015
+ 2017
 
- V0.4
+ V1.0
  TODO
 	- Should move to VisPY: http://vispy.org/plot.html#module-vispy.plot but still under development
 	- The scope should be a class itself
@@ -145,7 +145,6 @@ class Scope(QtGui.QMainWindow, form_class):
                     self.channels_to_show_idx.append(idx)
                 else:
                     self.table_channels.setItem(x, y,
-
                         QtGui.QTableWidgetItem("N/A"))
                     self.table_channels.item(x, y).setFlags(
                         QtCore.Qt.NoItemFlags)
