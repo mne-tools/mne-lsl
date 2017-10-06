@@ -18,6 +18,23 @@ import numpy as np
 import q_common as qc
 import mne.time_frequency 
 from IPython import embed
+try:
+    input = raw_input
+except NameError:
+    pass
+
+def check_cfg(cfg_src):
+    if not hasattr(cfg, 'N_JOBS'):
+        cfg.N_JOBS = None
+    if not hasattr(cfg, 'T_BUFFER'):
+        cfg.T_BUFFER = 1
+    if not hasattr(cfg, 'BS_MODE'):
+        cfg.BS_MODE = 'logratio'
+    if not hasattr(cfg, 'EXPORT_PNG'):
+        cfg.EXPORT_PNG = False
+    if not hasattr(cfg, 'EXPORT_MATLAB'):
+        cfg.MATLAB = False
+    return cfg
 
 def get_tfr(cfg, tfr_type='multitaper', recursive=False, export_path=None, n_jobs=1):
     '''
@@ -27,25 +44,19 @@ def get_tfr(cfg, tfr_type='multitaper', recursive=False, export_path=None, n_job
     export_path: path to save plots
     n_jobs: number of cores to run in parallel
     '''
-    
-    if hasattr(cfg, 'N_JOBS'):
-        n_jobs = cfg.N_JOBS
-    else:
-        n_jobs = None
-    if n_jobs is None:
-        n_jobs = mp.cpu_count()
 
-    if hasattr(cfg, 'T_BUFFER'):
-        t_buffer = cfg.T_BUFFER
-    else:
-        t_buffer = 1
+    cfg = check_cfg(cfg)
 
+    t_buffer = cfg.T_BUFFER
     if tfr_type == 'multitaper':
         tfr = mne.time_frequency.tfr_multitaper
     elif tfr_type == 'morlet':
         tfr = mne.time_frequency.tfr_morlet
     else:
         raise ValueError('Wrong TFR type %s' % tfr_type)
+    n_jobs = cfg.N_JOBS
+    if n_jobs is None:
+        n_jobs = mp.cpu_count()
 
     if hasattr(cfg, 'DATA_DIRS'):
         # concatenate multiple files
@@ -122,7 +133,7 @@ def get_tfr(cfg, tfr_type='multitaper', recursive=False, export_path=None, n_job
 
     power = {}
     for evname in classes:
-        export_dir = '%s/%s' % (outpath, evname)
+        export_dir = '%s/plot_%s' % (outpath, evname)
         qc.make_dirs(export_dir)
         print('\n>> Processing %s' % evname)
         freqs = cfg.FREQ_RANGE  # define frequencies of interest
@@ -134,43 +145,40 @@ def get_tfr(cfg, tfr_type='multitaper', recursive=False, export_path=None, n_job
             power[evname] = power[evname].crop(tmin=cfg.EPOCH[0], tmax=cfg.EPOCH[1])
 
             if cfg.EXPORT_MATLAB is True:
-                # MATLAB export
+                # export all channels to MATLAB
                 mout = '%s/%s-%s-%s.mat' % (export_dir, file_prefix, cfg.SP_FILTER, evname)
                 scipy.io.savemat(mout, {'tfr':power[evname].data, 'chs':power[evname].ch_names})
-            else:
+            if cfg.EXPORT_PNG is True:
                 # Inspect power for each channel
                 for ch in np.arange(len(picks)):
                     chname = raw.ch_names[picks[ch]]
                     title = 'Peri-event %s - Channel %s' % (evname, chname)
 
                     # mode= None | 'logratio' | 'ratio' | 'zscore' | 'mean' | 'percent'
-                    fig = power[evname].plot([ch], baseline=cfg.BS_TIMES, mode='mean', show=False,
+                    fig = power[evname].plot([ch], baseline=cfg.BS_TIMES, mode=cfg.BS_MODE, show=False,
                         colorbar=True, title=title, vmin=cfg.VMIN, vmax=cfg.VMAX, dB=False)
                     fout = '%s/%s-%s-%s-%s.png' % (export_dir, file_prefix, cfg.SP_FILTER, evname, chname)
-                    print('Exporting to %s' % fout)
                     fig.savefig(fout)
+                    print('Exported to %s' % fout)
         else:
             for ep in range(len(epochs_all[evname])):
                 epochs = epochs_all[evname][ep]
                 power[evname] = tfr(epochs, freqs=freqs, n_cycles=n_cycles, use_fft=False,
                     return_itc=False, decim=1, n_jobs=n_jobs)
                 power[evname] = power[evname].crop(tmin=cfg.EPOCH[0], tmax=cfg.EPOCH[1])
-
                 if cfg.EXPORT_MATLAB is True:
-                    # MATLAB export
+                    # export all channels to MATLAB
                     mout = '%s/%s-%s-%s-ep%02d.mat' % (export_dir, file_prefix, cfg.SP_FILTER, evname, ep + 1)
                     scipy.io.savemat(mout, {'tfr':power[evname].data, 'chs':power[evname].ch_names})
-                else:
+                if cfg.EXPORT_PNG is True:
                     # Inspect power for each channel
                     for ch in np.arange(len(picks)):
                         chname = raw.ch_names[picks[ch]]
                         title = 'Peri-event %s - Channel %s, Trial %d' % (evname, chname, ep + 1)
-
                         # mode= None | 'logratio' | 'ratio' | 'zscore' | 'mean' | 'percent'
                         fig = power[evname].plot([ch], baseline=cfg.BS_TIMES, mode='logratio', show=False,
                             colorbar=True, title=title, vmin=cfg.VMIN, vmax=cfg.VMAX, dB=False)
-                        fout = '%s/%s-%s-%s-%s-ep%02d.png' % (
-                            export_dir, file_prefix, cfg.SP_FILTER, evname, chname, ep + 1)
+                        fout = '%s/%s-%s-%s-%s-ep%02d.png' % (xport_dir, file_prefix, cfg.SP_FILTER, evname, chname, ep + 1)
                         fig.savefig(fout)
                         print('Exported %s' % fout)
 
@@ -199,7 +207,7 @@ if __name__ == '__main__':
     import imp
 
     if len(sys.argv) < 2:
-        cfg_module = raw_input('Config file name? ')
+        cfg_module = input('Config file name? ')
     else:
         cfg_module = sys.argv[1]
     cfg = imp.load_source(cfg_module, cfg_module)

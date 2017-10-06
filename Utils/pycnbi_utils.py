@@ -492,6 +492,7 @@ def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, sp
 
     # Apply notch filter
     if notch is not None:
+        assert False
         if notch_ch is None:
             notch_ch = eeg_channels
 
