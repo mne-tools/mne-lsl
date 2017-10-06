@@ -1,6 +1,7 @@
 Glass/bgi-cnbi/app/build/*
 TEMP/*
 obj/*
+*.asv
 .DS_Store
 .idea
 *.pyc
