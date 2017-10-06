@@ -19,9 +19,13 @@ DEBUG_TRIGGER = False
 NUM_X_CHANNELS = 16
 
 import pycnbi_config
-import sys, os, time, math, string
-import exceptions, pdb, traceback
-import ConfigParser
+import pycnbi_utils as pu
+import sys
+import os
+import time
+import math
+import pdb
+import traceback
 import struct
 import pyqtgraph as pg
 from pyqtgraph.Qt import QtCore, QtGui, uic
@@ -31,6 +35,10 @@ import subprocess
 import pylsl
 from stream_receiver import StreamReceiver
 import q_common as qc
+try:
+    import ConfigParser as configparser
+except ImportError:
+    import configparser
 
 path = "./"
 
@@ -63,7 +71,7 @@ class Scope(QtGui.QMainWindow, form_class):
     #	Initializes config file
     #
     def init_config_file(self):
-        self.scope_settings = ConfigParser.RawConfigParser(allow_no_value=True)
+        self.scope_settings = configparser.RawConfigParser(allow_no_value=True)
         # if (not os.path.isfile(os.getenv("HOME") + "/.scope_settings.ini")):
         #	subprocess.Popen(["cp", path + "/.scope_settings.ini", os.getenv("HOME") + "/.scope_settings.ini"], close_fds=True)
 
@@ -461,7 +469,7 @@ class Scope(QtGui.QMainWindow, form_class):
                     # Read exg. self.config.samples*self.config.exg_ch, type float
                     # bexg = np.random.rand( 1, self.config['samples'] * self.config['exg_channels'] )
                     # self.exg = np.reshape(list(bexg), (self.config['samples'],self.config['exg_channels']))
-        except exceptions.WindowsError:
+        except WindowsError:
             # print('**** Access violation in read_eeg():\n%s\n%s'% (sys.exc_info()[0], sys.exc_info()[1]))
             pass
         except:
