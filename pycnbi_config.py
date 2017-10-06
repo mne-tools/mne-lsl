@@ -9,14 +9,20 @@ Kyuhwa Lee, 2014
 
 from __future__ import print_function, division
 
-import sys, os
+import sys
+import os
+try:
+    input = raw_input
+except NameError:
+    pass
 
 if __name__ == '__main__':
     print('This module is intended to be called from another module. Stop.')
     sys.exit(-1)
 
 # set common paths
-cnbidirs = ['libLSL', 'Triggers', 'StreamReceiver', 'StreamRecorder', 'StreamViewer', 'Decoder', 'Utils', 'Glass','Analysis']
+cnbidirs = ['libLSL', 'Triggers', 'StreamReceiver', 'StreamRecorder', 'StreamViewer', 'StreamPlayer',\
+    'Decoder', 'Utils', 'Glass','Analysis']
 cnbiroot = os.path.dirname(os.path.realpath(__file__)) + '/'
 sys.path.append(cnbiroot)
 for d in cnbidirs:
