@@ -479,7 +479,6 @@ if __name__ == '__main__':
         sr.acquire()
         window, tslist = sr.get_window() # window = [samples x channels]
         window = window.T # chanel x samples
-        from IPython import embed; embed()
 
         # print event values
         tsnew = np.where(np.array(tslist) > last_ts)[0][0]

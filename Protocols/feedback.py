@@ -218,9 +218,9 @@ class Feedback:
                             probs_new = [p / newsum for p in probs_new]
                         # print('AFTER: %.3f %.3f'% (probs_new[0], probs_new[1]) )
 
-                        #probs_acc += np.array(probs_new)
-                        #for i in range(len(probs_new)):
-                        #    probs[i] = probs[i] * self.alpha1 + probs_new[i] * self.alpha2
+                        probs_acc += np.array(probs_new)
+                        for i in range(len(probs_new)):
+                            probs[i] = probs[i] * self.alpha1 + probs_new[i] * self.alpha2
 
                         ################ TEST ################    
                         ################ TEST ################    
