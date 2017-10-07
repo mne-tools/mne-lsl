@@ -52,7 +52,22 @@ class TriggerDef(TriggerDefTemplate):
     INIT = 101  # start of a trial
     END = 102  # end of a trial
     VICON = 128  # Vicon sync event
-    OTHERS = 255  # undefined
+
+    LEFT_GO = 201  # left bar started moving
+    LEFT_READY = 202  # left bar shown
+    RIGHT_GO = 203  # right started moving
+    RIGHT_READY = 204  # right bar shown
+    UP_READY = 205  # up bar shown
+    UP_GO = 206  # up started moving
+    DOWN_READY = 207  # down bar shown
+    DOWN_GO = 208  # down started moving
+    BOTH_READY = 209  # left+right
+    BOTH_GO = 210  # left+right
+    INIT = 211  # start of the trial
+    CUE = 212  # cue shown
+    BLANK = 213  # screen turned into blank
+    FEEDBACK = 214  # feedback shown
+    GO = 215  # generic go signal
 
 
 # sample code
