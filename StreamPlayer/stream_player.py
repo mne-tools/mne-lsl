@@ -17,7 +17,6 @@ import pycnbi_utils as pu
 import numpy as np
 import pylsl as lsl
 import q_common as qc
-import cnbi_lsl
 import time
 # Python 2/3 compatibility
 try:
@@ -34,6 +33,7 @@ def stream_player(server_name, fif_file, chunk_size, auto_restart=True):
         print('Server name: %s' % server_name)
         print('Sampling frequency %.1f Hz' % sfreq)
         print('Number of channels : %d' % n_channels)
+        print('Chunk size : %d' % chunk_size)
         for i, ch in enumerate(raw.ch_names):
             print(i, ch)
     else:
@@ -68,7 +68,7 @@ def stream_player(server_name, fif_file, chunk_size, auto_restart=True):
         if t_wait > 0:
             time.sleep(t_wait)
         outlet.push_chunk(data)
-        print('[%8.3fs] sent %d samples' % (tm.sec(), len(data[0])))
+        print('[%8.3fs] sent %d samples' % (tm.sec(), len(data)))
         idx_chunk += 1
 
         if finished:
@@ -84,5 +84,5 @@ def stream_player(server_name, fif_file, chunk_size, auto_restart=True):
 if __name__ == '__main__':
     server_name = 'StreamPlayer'
     chunk_size = 32  # chunk streaming frequency in Hz
-    fif_file = r'D:\data\CHUV\ECoG17\20171005\20171005-103303-raw_T1.fif'
+    fif_file = r'D:\data\CHUV\ECoG17\20171005\fif\20171005-T1.fif'
     stream_player(server_name, fif_file, chunk_size)
