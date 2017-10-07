@@ -218,10 +218,38 @@ class Feedback:
                             probs_new = [p / newsum for p in probs_new]
                         # print('AFTER: %.3f %.3f'% (probs_new[0], probs_new[1]) )
 
-                        probs_acc += np.array(probs_new)
+                        #probs_acc += np.array(probs_new)
+                        #for i in range(len(probs_new)):
+                        #    probs[i] = probs[i] * self.alpha1 + probs_new[i] * self.alpha2
 
-                        for i in range(len(probs_new)):
-                            probs[i] = probs[i] * self.alpha1 + probs_new[i] * self.alpha2
+                        ################ TEST ################    
+                        ################ TEST ################    
+                        ################ TEST ################    
+                        ################ TEST ################    
+                        ################ TEST ################    
+                        ################ TEST ################    
+                        ################ TEST ################    
+                        ################ TEST ################    
+                        ################ TEST ################    
+                        ################ TEST ################    
+                        ################ TEST ################    
+                        ################ TEST ################    
+                        ################ TEST ################    
+                        #probs = probs_new
+                        ################ TEST ################    
+                        ################ TEST ################    
+                        ################ TEST ################    
+                        ################ TEST ################    
+                        ################ TEST ################    
+                        ################ TEST ################    
+                        ################ TEST ################    
+                        ################ TEST ################    
+                        ################ TEST ################    
+                        ################ TEST ################    
+                        ################ TEST ################    
+                        ################ TEST ################    
+                        ################ TEST ################    
+
 
                         ''' Original: accumulate and bias
                         # accumulate probs
@@ -236,6 +264,7 @@ class Feedback:
                         '''
 
                         # determine the direction
+                        # TODO: np.argmax(probs)
                         max_pidx = qc.get_index_max(probs)
                         max_label = bar_dirs[max_pidx]
 
