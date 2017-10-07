@@ -189,7 +189,7 @@ class BCIDecoder(object):
         tm = qc.Timer()
         if self.fake:
             # fake deocder: biased likelihood for the first class
-            probs = [random.uniform(0.3, 0.8)]
+            probs = [random.uniform(0.0, 1.0)]
             # others class likelihoods are just set to equal
             p_others = (1 - probs[0]) / (len(self.labels) - 1)
             for x in range(1, len(self.labels)):
@@ -457,7 +457,7 @@ if __name__ == '__main__':
     decoder = BCIDecoder(model_file, buffer_size=1.0, amp_name=amp_name, amp_serial=amp_serial)
 
     # run with a fake classifier
-    # decoder= BCIDecoderDaemon(fake=True)
+    # decoder= BCIDecoderDaemon(fake=True, fake_dirs=['L','R'])
 
 
     # load trigger definitions for labeling
