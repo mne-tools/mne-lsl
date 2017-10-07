@@ -3,10 +3,10 @@ from __future__ import print_function, division
 """
 Time-frequency analysis using Morlet wavelets or multitapers
 
-TODO: get rid of file_prefix
+Python 2/3 compatible.
 
 
-Kyuhwa Lee, 2015
+Kyuhwa Lee, 2017
 
 """
 
@@ -178,7 +178,7 @@ def get_tfr(cfg, tfr_type='multitaper', recursive=False, export_path=None, n_job
                         # mode= None | 'logratio' | 'ratio' | 'zscore' | 'mean' | 'percent'
                         fig = power[evname].plot([ch], baseline=cfg.BS_TIMES, mode='logratio', show=False,
                             colorbar=True, title=title, vmin=cfg.VMIN, vmax=cfg.VMAX, dB=False)
-                        fout = '%s/%s-%s-%s-%s-ep%02d.png' % (xport_dir, file_prefix, cfg.SP_FILTER, evname, chname, ep + 1)
+                        fout = '%s/%s-%s-%s-%s-ep%02d.png' % (export_dir, file_prefix, cfg.SP_FILTER, evname, chname, ep + 1)
                         fig.savefig(fout)
                         print('Exported %s' % fout)
 

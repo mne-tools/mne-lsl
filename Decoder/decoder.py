@@ -109,7 +109,8 @@ class BCIDecoder(object):
             self.w_frames = model['w_frames']
             self.wstep = model['wstep']
             self.sfreq = model['sfreq']
-            assert int(self.sfreq * self.w_seconds) == self.w_frames
+            if not int(self.sfreq * self.w_seconds) == self.w_frames:
+                raise RuntimeError('sfreq * w_sec %d != w_frames %d' % (int(self.sfreq * self.w_seconds), self.w_frames))
 
             if 'multiplier' in model:
                 self.multiplier = model['multiplier']
