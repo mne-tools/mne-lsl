@@ -226,33 +226,6 @@ def raw2mat(infile, outfile):
     print('\n>> Exported to %s' % outfile)
 
 
-def pcl2mat_old(fpcl):
-    """
-    For old format data only
-    """
-    raw = qc.load_obj(fpcl)
-    assert type(raw['signals']) == type(list())
-    signals = np.array(raw['signals'][0])  # samples x channels
-    ts = raw['timestamps'][0]
-    srate = raw['sample_rate']
-    n_ch = raw['channels']
-    if n_ch > 17:  # BioSemi
-        ev16 = signals[:, 0] - 1  # first channel is event channel
-        events_raw = 0xFF & ev16.astype(int)  # keep only the low 8 bits
-        events = find_events(events_raw)
-    else:
-        events = find_events(signals[:, -1])
-
-    print('Signal dimension:', signals.shape)
-    print('Timestamp dimension:', len(ts))
-    print('Sampling rate:', srate)
-    print('No. channels:', n_ch)
-    data = dict(signals=signals, timestamps=ts, events=events, sample_rate=srate, n_channels=n_ch)
-    fmat = fpcl[:-4] + '.mat'
-    scipy.io.savemat(fmat, data)
-    print('Saved data as', fmat)
-
-
 def add_events_raw(rawfile, outfile, eventfile, overwrite=True):
     """
     Add events from a file and save
@@ -442,16 +415,17 @@ def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, sp
         else:
             spatial_ch_i = spatial_ch
 
-        if len(data.shape) == 2:
-            data[spatial_ch_i] -= np.mean(data[spatial_ch_i], axis=0)
-        elif len(data.shape) == 3:
-            means = np.mean(data[:, spatial_ch_i, :], axis=1)
-            data[:, spatial_ch_i, :] -= means[:, np.newaxis, :]
-        else:
-            raise RuntimeError('preprocess(): Unknown data shape %s' % str(data.shape))
+        if len(spatial_ch_i) > 1:
+            if len(data.shape) == 2:
+                data[spatial_ch_i] -= np.mean(data[spatial_ch_i], axis=0)
+            elif len(data.shape) == 3:
+                means = np.mean(data[:, spatial_ch_i, :], axis=1)
+                data[:, spatial_ch_i, :] -= means[:, np.newaxis, :]
+            else:
+                raise ValueError('preprocess(): Unknown data shape %s' % str(data.shape))
     elif spatial == 'laplacian':
         if type(spatial_ch) is not dict:
-            raise RuntimeError('preprocess(): For Lapcacian, spatial_ch must be of form {CHANNEL:[NEIGHBORS], ...}')
+            raise TypeError('preprocess(): For Lapcacian, spatial_ch must be of form {CHANNEL:[NEIGHBORS], ...}')
         if type(spatial_ch.keys()[0]) == str:
             spatial_ch_i = {}
             for c in spatial_ch:
@@ -459,17 +433,19 @@ def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, sp
                 spatial_ch_i[ref_ch] = [ch_names.index(n) for n in spatial_ch[c]]
         else:
             spatial_ch_i = spatial_ch
-        rawcopy = data.copy()
-        for src in spatial_ch:
-            nei = spatial_ch[src]
-            if len(data.shape) == 2:
-                data[src] = rawcopy[src] - np.mean(rawcopy[nei], axis=0)
-            elif len(data.shape) == 3:
-                data[:, src, :] = rawcopy[:, src, :] - np.mean(rawcopy[:, nei, :], axis=1)
-            else:
-                raise RuntimeError('preprocess(): Unknown data shape %s' % str(data.shape))
+        
+        if len(spatial_ch_i) > 1:
+            rawcopy = data.copy()
+            for src in spatial_ch:
+                nei = spatial_ch[src]
+                if len(data.shape) == 2:
+                    data[src] = rawcopy[src] - np.mean(rawcopy[nei], axis=0)
+                elif len(data.shape) == 3:
+                    data[:, src, :] = rawcopy[:, src, :] - np.mean(rawcopy[:, nei, :], axis=1)
+                else:
+                    raise ValueError('preprocess(): Unknown data shape %s' % str(data.shape))
     else:
-        raise RuntimeError('preprocess(): Unknown spatial filter %s' % spatial)
+        raise ValueError('preprocess(): Unknown spatial filter %s' % spatial)
 
     # Apply spectral filter
     if spectral is not None:
@@ -534,8 +510,7 @@ def load_raw(rawfile, spfilter=None, spchannels=None, events_ext=None, multiplie
     """
 
     if not os.path.exists(rawfile):
-        qc.print_c('# ERROR: File %s not found' % rawfile, 'r')
-        sys.exit(-1)
+        raise IOError('File %s not found' % rawfile)
 
     extension = rawfile.split('.')[-1]
     assert extension in ['fif', 'fiff'], 'only fif format is supported'
@@ -554,21 +529,38 @@ def load_raw(rawfile, spfilter=None, spchannels=None, events_ext=None, multiplie
     return raw, events
 
 
-def load_multi(flist, spfilter=None, spchannels=None, multiplier=1):
+def load_multi(src, spfilter=None, spchannels=None, multiplier=1):
     """
     Load multiple data files and concatenate them into a single series
 
-    - Assumes same sampling rate.
+    - Assumes all files have the same sampling rate.
     - Event locations are updated accordingly with new offset.
     - SUpports different number of channels across recordings. In this case, only
     channels common to all recordings will be kept.
 
-    See load_raw() for more details.
+    @params:
+        src: directory or list of files
+        spfilter: apply spatial filter while loading
+        spchannels: list of channel names to apply spatial filter
+
+    See load_raw() for more low-level details.
 
     """
 
+    if type(src) == str:
+        if not os.path.isdir(src):
+            raise IOError('%s is not a directory or does not exist.' % src)
+        flist = []
+        for f in qc.get_file_list(src):
+            if qc.parse_path(f)[2] == 'fif':
+                flist.append(f)
+    elif type(src) in [list, tuple]:
+        flist = src
+    else:
+        raise TypeError('Unknown input type %s' % type(src))
+
     if len(flist) == 0:
-        raise RuntimeError('The file list is empty.')
+        raise RuntimeError('load_multi(): The file list is empty.')
     elif len(flist) == 1:
         return load_raw(flist[0], spfilter=spfilter, spchannels=spchannels, multiplier=multiplier)
 
@@ -628,7 +620,7 @@ def butter_bandpass(highcut, lowcut, fs, num_ch):
     Order is computed automatically.
     Note that if filter is unstable this function crashes.
 
-    TODO: handle problems
+    TODO: handle exceptions
     """
 
     low = lowcut / (0.5 * fs)
@@ -722,6 +714,6 @@ def channel_names_to_index(raw, channel_names=None):
                     raise IndexError('Channel %s not found in raw.ch_names' % c)
                 picks.append(raw.ch_names.index(c))
             else:
-                raise RuntimeError('channel_names is unknown format.\nchannel_names=%s' % channel_names)
+                raise TypeError('channel_names is unknown format.\nchannel_names=%s' % channel_names)
 
     return picks
