@@ -1,9 +1,15 @@
-Glass/bgi-cnbi/app/build/*
-TEMP/*
-obj/*
+pycnbi/glass/bgi-cnbi/app/build
+pycnbi/glass/bgi-cnbi/build
+pycnbi/build
+build
+obj
+__pycache__
+*.egg-info
 *.asv
 .DS_Store
 .idea
+pycnbi_project.wpr
+pycnbi_project.wpu
 *.pyc
 *.pyo
 *~
@@ -22,4 +28,3 @@ obj/*
 *.hdf5
 *.gdf
 *.bdf
-
