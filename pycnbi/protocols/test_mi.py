@@ -94,7 +94,7 @@ def check_cfg(cfg):
 
 def config_run(cfg_module):
     if not (os.path.exists(cfg_module) and os.path.isfile(cfg_module)):
-        raise IOError('%s cannot be loaded.' % os.path.abspath(cfg_module))
+        raise IOError('%s cannot be loaded.' % os.path.realpath(cfg_module))
     cfg = check_cfg(imp.load_source(cfg_module, cfg_module))
     if cfg.FAKE_CLS is None:
         # chooose amp
