@@ -136,7 +136,7 @@ class Feedback:
                 ##################################################################
                 ##################################################################
                 #qc.print_c('Executing Rex action %s' % 'N', 'W')
-                #os.system('%s/Rex/RexControlSimple.exe %s %s' % (pycnbi.pycnbi_config.cnbiroot, 'COM3', 'N'))
+                #os.system('%s/Rex/RexControlSimple.exe %s %s' % (pycnbi.ROOT, 'COM3', 'N'))
                 ##################################################################
                 ##################################################################
 

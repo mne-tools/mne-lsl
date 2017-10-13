@@ -206,7 +206,7 @@ def config_run(cfg_module):
                 visual.update()
                 qc.print_c('Executing Rex action %s' % rex_dir, 'W')
                 os.system('%s/Rex/RexControlSimple.exe %s %s' % (
-                pycnbi.pycnbi_config.cnbiroot, cfg.REX_COMPORT, rex_dir))
+                pycnbi.ROOT, cfg.REX_COMPORT, rex_dir))
                 time.sleep(8)
 
         if true_label == pred_label:
