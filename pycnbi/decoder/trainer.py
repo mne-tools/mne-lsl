@@ -46,7 +46,12 @@ import pycnbi.utils.q_common as qc
 import pycnbi.utils.pycnbi_utils as pu
 import imp
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
-from sklearn.cross_validation import StratifiedShuffleSplit, LeaveOneOut
+try:
+    from sklearn.model_selection import StratifiedShuffleSplit, LeaveOneOut
+    SKLEARN_OLD = False
+except ImportError:
+    from sklearn.cross_validation import StratifiedShuffleSplit, LeaveOneOut
+    SKLEARN_OLD = True
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from mne import Epochs, pick_types
 from pycnbi.decoder.rlda import rLDA
@@ -375,7 +380,12 @@ def crossval_epochs(cv, epochs_data, labels, cls, label_names=None, do_balance=F
 
     # multiprocessing at the data group level is faster than the classifier level
     cls.n_jobs = 1
-    for train, test in cv:
+    
+    if SKLEARN_OLD:
+        splits = cv
+    else:
+        splits = cv.split(epochs_data, labels[:, 0])
+    for train, test in splits:
         X_train = np.concatenate(epochs_data[train])
         X_test = np.concatenate(epochs_data[test])
         Y_train = np.concatenate(labels[train])
@@ -660,12 +670,18 @@ def run_trainer(cfg, ftrain, interactive=False, cv_file=None, feat_file=None):
         cv_seed = None
         if cfg.CV_PERFORM == 'LeaveOneOut':
             print('\n>> %d-fold leave-one-out cross-validation' % ntrials)
-            cv = LeaveOneOut(len(Y_data))
+            if SKLEARN_OLD:
+                cv = LeaveOneOut(len(Y_data))
+            else:
+                cv = LeaveOneOut()
         elif cfg.CV_PERFORM == 'StratifiedShuffleSplit':
             print(
                 '\n>> %d-fold stratified cross-validation with test set ratio %.2f' % (cfg.CV_FOLDS, cfg.CV_TEST_RATIO))
             cv_seed = cfg.CV_RANDOM_SEED
-            cv = StratifiedShuffleSplit(Y_data[:, 0], cfg.CV_FOLDS, test_size=cfg.CV_TEST_RATIO, random_state=cv_seed)
+            if SKLEARN_OLD:
+                cv = StratifiedShuffleSplit(Y_data[:, 0], cfg.CV_FOLDS, test_size=cfg.CV_TEST_RATIO, random_state=cv_seed)
+            else:
+                cv = StratifiedShuffleSplit(n_splits=cfg.CV_FOLDS, test_size=cfg.CV_TEST_RATIO, random_state=cv_seed)
         else:
             print('>> ERROR: Unsupported CV method yet.')
             sys.exit(-1)

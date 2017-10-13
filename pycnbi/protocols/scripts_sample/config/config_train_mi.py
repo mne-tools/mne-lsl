@@ -1,6 +1,6 @@
 # Trigger device type ['ARDUINO', 'USB2LPT', 'SOFTWARE', 'DESKTOP', None]
 TRIGGER_DEVICE = None
-TRIGGER_DEF = 'triggerdef_16'  # full list: (PYCNBI_ROOT)/Triggers/triggerdef_*.py
+TRIGGER_DEF = 'triggerdef_16'  # full list: pycnbi.ROOT/Triggers/*.ini
 
 # Screen property
 SCREEN_SIZE = (1680, 1050)
