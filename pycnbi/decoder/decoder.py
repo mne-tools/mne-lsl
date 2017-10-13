@@ -10,22 +10,9 @@ TODO:
 Use Pathos to simplify daemon class.
 (Should be free from non-picklable limitation.)
 
+Auhtor:
 Kyuhwa Lee
 Swiss Federal Institute of Technology Lausanne (EPFL)
-
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
@@ -468,7 +455,7 @@ def check_speed(model_file, amp_name=None, amp_serial=None, max_count=float('inf
             t = tm.sec()
             ms = 1000*t/count
             # show time per classification and its reciprocal
-            print('%.0f ms/c   %.1f c/s' % (ms, count/t))
+            print('%.0f ms/c   %.1f Hz' % (ms, count/t))
             mslist.append(ms)
             count = 0
             tm.reset()
@@ -482,7 +469,7 @@ def sample_decoding(model_file, buffer_size=1.0, amp_name=None, amp_serial=None)
     # run on foreground
     decoder = BCIDecoder(model_file, buffer_size=1.0, amp_name=amp_name, amp_serial=amp_serial)
 
-    # run with a fake classifier
+    # run a fake classifier on background
     # decoder= BCIDecoderDaemon(fake=True, fake_dirs=['L','R'])
 
 
