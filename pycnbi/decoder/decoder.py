@@ -29,18 +29,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import pycnbi  # from global common folder
+import pycnbi.pycnbi_config  # from global common folder
 import pycnbi.utils.pycnbi_utils as pu
-import time
-import os
-import sys
-import random
-import pdb
+import time, os, sys, random, pdb
 import pycnbi.utils.q_common as qc
 import numpy as np
 import multiprocessing as mp
 from multiprocessing import sharedctypes
-from pycnbi.triggers.trigger_def import trigger_def
 
 
 def get_decoder_info(classifier):
@@ -57,7 +52,7 @@ def get_decoder_info(classifier):
     """
 
     model = qc.load_obj(classifier)
-    if model is None:
+    if model == None:
         print('>> Error loading %s' % model)
         sys.exit(-1)
 
@@ -72,7 +67,7 @@ def get_decoder_info(classifier):
     psd_shape = psd_temp.shape
     psd_size = psd_temp.size
 
-    info = dict(labels=labels, cls=cls, psde=psde, w_seconds=w_seconds, w_frames=w_frames, \
+    info = dict(labels=labels, cls=cls, psde=psde, w_seconds=w_seconds, w_frames=w_frames,\
                 wstep=wstep, sfreq=sfreq, psd_shape=psd_shape, psd_size=psd_size)
     return info
 
@@ -80,6 +75,9 @@ def get_decoder_info(classifier):
 class BCIDecoder(object):
     """
     Decoder class
+
+    The label order of self.labels and self.label_names match likelihood orders computed by get_prob()
+
     """
 
     def __init__(self, classifier=None, buffer_size=1.0, fake=False, amp_serial=None, amp_name=None):
@@ -101,12 +99,13 @@ class BCIDecoder(object):
 
         if self.fake == False:
             model = qc.load_obj(self.classifier)
-            if model is None:
+            if model == None:
                 self.print('Error loading %s' % model)
                 sys.exit(-1)
             self.cls = model['cls']
             self.psde = model['psde']
             self.labels = list(self.cls.classes_)
+            self.label_names = [model['classes'][k] for k in self.labels]
             self.spatial = model['spatial']
             self.spectral = model['spectral']
             self.notch = model['notch']
@@ -115,8 +114,7 @@ class BCIDecoder(object):
             self.wstep = model['wstep']
             self.sfreq = model['sfreq']
             if not int(self.sfreq * self.w_seconds) == self.w_frames:
-                raise RuntimeError(
-                    'sfreq * w_sec %d != w_frames %d' % (int(self.sfreq * self.w_seconds), self.w_frames))
+                raise RuntimeError('sfreq * w_sec %d != w_frames %d' % (int(self.sfreq * self.w_seconds), self.w_frames))
 
             if 'multiplier' in model:
                 self.multiplier = model['multiplier']
@@ -157,13 +155,14 @@ class BCIDecoder(object):
             self.ts_buffer = []
 
         else:
-            # Fake decoder
+            # Fake left-right decoder
             model = None
             self.psd_shape = None
             self.psd_size = None
-            tdef = trigger_def('triggerdef_16.ini')
-            # must be changed to non-specific labels
-            self.labels = [tdef.by_key['LEFT_GO'], tdef.by_key['RIGHT_GO']]
+            from pycnbi.triggers.trigger_def import trigger_def
+            # TODO: parameterize directions using fake_dirs
+            self.labels = [11, 9]
+            self.label_names = {'LEFT_GO':11, 'RIGHT_GO':9}
 
     def print(self, *args):
         if len(args) > 0: print('[BCIDecoder] ', end='')
@@ -173,9 +172,17 @@ class BCIDecoder(object):
         """
         Returns
         -------
-            Class labels.
+            Class labels numbers in the same order as the likelihoods returned by get_prob()
         """
         return self.labels
+
+    def get_label_names(self):
+        """
+        Returns
+        -------
+            Class label names in the same order as get_labels()
+        """
+        return self.label_names
 
     def start(self):
         pass
@@ -289,18 +296,20 @@ class BCIDecoderDaemon(object):
 
         if fake == False or fake is None:
             self.model = qc.load_obj(self.classifier)
-            if self.model is None:
-                self.print('Error loading %s' % self.model)
-                sys.exit(-1)
+            if self.model == None:
+                raise IOError('Error loading %s' % self.model)
             else:
                 self.labels = self.model['cls'].classes_
+                self.label_names = {self.model['classes'][k]:k for k in self.model['cls'].classes_}
         else:
             # create a fake decoder with LEFT/RIGHT classes
             self.model = None
+            from pycnbi.triggers.trigger_def import trigger_def
             tdef = trigger_def('triggerdef_16.ini')
             if type(fake_dirs) is not list:
                 raise RuntimeError('Decoder(): wrong argument type of fake_dirs: %s.' % type(fake_dirs))
             self.labels = [tdef.by_key[t] for t in fake_dirs]
+            self.label_names = [tdef.by_value[v] for v in self.labels]
             self.startmsg = '** WARNING: FAKE ' + self.startmsg
             self.stopmsg = 'FAKE ' + self.stopmsg
 
@@ -335,7 +344,7 @@ class BCIDecoderDaemon(object):
         self.running = mp.Value('i', 0)
         self.return_psd = mp.Value('i', 0)
         mp.freeze_support()
-        self.proc = mp.Process(target=self.daemon, args= \
+        self.proc = mp.Process(target=self.daemon, args=\
             [self.classifier, self.probs, self.pread, self.running, self.return_psd, psd_ctypes, self.psdlock])
 
     def daemon(self, classifier, probs, pread, running, return_psd, psd_ctypes, lock):
@@ -345,7 +354,7 @@ class BCIDecoderDaemon(object):
         """
         from numpy import ctypeslib
 
-        decoder = BCIDecoder(classifier, buffer_size=self.buffer_sec, \
+        decoder = BCIDecoder(classifier, buffer_size=self.buffer_sec,\
                              fake=self.fake, amp_serial=self.amp_serial, amp_name=self.amp_name)
         if self.fake == False:
             psd = ctypeslib.as_array(psd_ctypes)
@@ -394,9 +403,17 @@ class BCIDecoderDaemon(object):
         """
         Returns
         -------
-            Classifier labels.
+            Class labels numbers in the same order as the likelihoods returned by get_prob()
         """
         return self.labels
+
+    def get_label_names(self):
+        """
+        Returns
+        -------
+            Class label names in the same order as get_labels()
+        """
+        return self.label_names
 
     def get_prob(self):
         """
@@ -436,12 +453,7 @@ class BCIDecoderDaemon(object):
 
 # sample decoding code
 if __name__ == '__main__':
-    tdef = trigger_def('triggerdef_16.ini')
-
-    import pylsl
-
-    model_file = r'D:\data\CHUV\ECoG17\20171005\fif_corrected\stepblocks\classifier\classifier-64bit.pkl'
-
+    model_file = r'D:\data\CHUV\ECoG17\20171005\fif_raw\step_events\classifier\classifier-64bit.pkl'
     eeg_only = False
 
     if len(sys.argv) == 2:
@@ -458,7 +470,7 @@ if __name__ == '__main__':
     # run on background
     # decoder= BCIDecoderDaemon(model_file, buffer_size=1.0, fake=False, amp_name=amp_name, amp_serial=amp_serial)
 
-    # run on foreground (for debugging)
+    # run on foreground
     decoder = BCIDecoder(model_file, buffer_size=1.0, amp_name=amp_name, amp_serial=amp_serial)
 
     # run with a fake classifier
@@ -466,29 +478,25 @@ if __name__ == '__main__':
 
 
     # load trigger definitions for labeling
-    labels = [tdef.by_value[x] for x in decoder.get_labels()]
-
+    labels = decoder.get_label_names()
     probs = [0.5] * len(labels)  # integrator
-    tm = qc.Timer(autoreset=True)
-    tm_cls = qc.Timer()
 
+    tm_watchdog = qc.Timer(autoreset=True)
+    tm_cls = qc.Timer()
     while True:
         praw = decoder.get_prob_unread()
-
         if praw is None:
             # watch dog
             if tm_cls.sec() > 5:
-                print(
-                    '[%.1fs] WARNING: No classification being done. Are you receiving data streams?' % pylsl.local_clock())
+                print('WARNING: No classification was done in the last 5 seconds. Are you receiving data streams?')
                 tm_cls.reset()
-            tm.sleep_atleast(0.001)  # 1 ms
+            tm_watchdog.sleep_atleast(0.001)
             continue
 
-        print('[%8.1f msec]' % (tm_cls.sec() * 1000.0), end='')
+        print('[%8.1f msec]' % (tm_cls.msec()), end='')
         for i in range(len(labels)):
             probs[i] = probs[i] * 0.8 + praw[i] * 0.2
             print('   %s %.3f (raw %.3f)' % (labels[i], probs[i], praw[i]), end='')
         maxi = qc.get_index_max(probs)
         print('   ', labels[maxi])
-
         tm_cls.reset()

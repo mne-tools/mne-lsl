@@ -759,7 +759,7 @@ def run_trainer(cfg, ftrain, interactive=False, cv_file=None, feat_file=None):
                         classes=classes, epochs=cfg.EPOCH, w_frames=w_frames, w_seconds=psdparams['wlen'],
                         wstep=psdparams['wstep'], spatial=cfg.SP_FILTER, spatial_ch=picks,
                         spectral=cfg.TP_FILTER, spectral_ch=picks, notch=cfg.NOTCH_FILTER, notch_ch=picks,
-                        multiplier=multiplier, triggers=cfg.tdef, ref_old=cfg.REF_CH_OLD, ref_new=cfg.REF_CH_NEW)
+                        multiplier=multiplier, ref_old=cfg.REF_CH_OLD, ref_new=cfg.REF_CH_NEW)
         elif cfg.FEATURES == 'TIMELAG':
             data = dict(cls=cls, parameters=cfg.TIMELAG)
 
