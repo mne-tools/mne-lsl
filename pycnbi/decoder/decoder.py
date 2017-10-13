@@ -200,7 +200,6 @@ class BCIDecoder(object):
         -------
             The likelihood P(X|C), where X=window, C=model
         """
-        tm = qc.Timer()
         if self.fake:
             # fake deocder: biased likelihood for the first class
             probs = [random.uniform(0.0, 1.0)]
@@ -452,38 +451,31 @@ class BCIDecoderDaemon(object):
     def is_running(self):
         return self.running.value
 
-def check_speed(model_file, amp_name=None, amp_serial=None):
+# test decoding speed
+def check_speed(model_file, amp_name=None, amp_serial=None, max_count=float('inf')):
     decoder = BCIDecoder(model_file, buffer_size=1.0, amp_name=amp_name, amp_serial=amp_serial)
     tm = qc.Timer()
     count = 0
+    count_total = 0
+    mslist = []
     while True:
-        prob = decoder.get_prob()
+        if count_total >= max_count:
+            break
+        decoder.get_prob()
         count += 1
+        count_total += 1
         if tm.sec() > 1:
             t = tm.sec()
+            ms = 1000*t/count
             # show time per classification and its reciprocal
-            print('%.0f ms/c   %.1f c/s' % (1000*t/count, count/t))
+            print('%.0f ms/c   %.1f c/s' % (ms, count/t))
+            mslist.append(ms)
             count = 0
             tm.reset()
+    print('mean = %.1f ms' % np.mean(mslist))
 
 # sample decoding code
-if __name__ == '__main__':
-    model_file = r'D:\data\CHUV\ECoG17\20171005\fif_corrected\stepblocks\classifier_steps_0.17\classifier-64bit.pkl'
-
-    if len(sys.argv) == 2:
-        amp_name = sys.argv[1]
-        amp_serial = None
-    elif len(sys.argv) == 3:
-        amp_name, amp_serial = sys.argv[1:3]
-    else:
-        amp_name, amp_serial = pu.search_lsl(ignore_markers=True)
-    if amp_name == 'None':
-        amp_name = None
-    print('Connecting to a server %s (Serial %s).' % (amp_name, amp_serial))
-
-    # check decoding speed
-    check_speed(model_file, amp_name, amp_serial)
-
+def sample_decoding(model_file, buffer_size=1.0, amp_name=None, amp_serial=None):
     # run on background
     # decoder= BCIDecoderDaemon(model_file, buffer_size=1.0, fake=False, amp_name=amp_name, amp_serial=amp_serial)
 
@@ -517,3 +509,21 @@ if __name__ == '__main__':
         maxi = qc.get_index_max(probs)
         print('   ', labels[maxi])
         tm_cls.reset()
+
+# sample code
+if __name__ == '__main__':
+    model_file = r'D:\data\CHUV\ECoG17\20171005\fif_corrected\stepblocks\classifier_steps\classifier-64bit.pkl'
+
+    if len(sys.argv) == 2:
+        amp_name = sys.argv[1]
+        amp_serial = None
+    elif len(sys.argv) == 3:
+        amp_name, amp_serial = sys.argv[1:3]
+    else:
+        amp_name, amp_serial = pu.search_lsl(ignore_markers=True)
+    if amp_name == 'None':
+        amp_name = None
+    print('Connecting to a server %s (Serial %s).' % (amp_name, amp_serial))
+
+    check_speed(model_file, amp_name, amp_serial, 1000)
+    #sample_decoding(model_file, amp_name=amp_name, amp_serial=amp_serial)
