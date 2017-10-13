@@ -29,13 +29,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import pycnbi.pycnbi_config  # from global common folder
 import pycnbi.utils.pycnbi_utils as pu
-import time, os, sys, random, pdb
 import pycnbi.utils.q_common as qc
+import time
+import os
+import sys
+import random
+import pdb
 import numpy as np
 import multiprocessing as mp
-from multiprocessing import sharedctypes
 
 
 def get_decoder_info(classifier):
@@ -450,11 +452,23 @@ class BCIDecoderDaemon(object):
     def is_running(self):
         return self.running.value
 
+def check_speed(model_file, amp_name=None, amp_serial=None):
+    decoder = BCIDecoder(model_file, buffer_size=1.0, amp_name=amp_name, amp_serial=amp_serial)
+    tm = qc.Timer()
+    count = 0
+    while True:
+        prob = decoder.get_prob()
+        count += 1
+        if tm.sec() > 1:
+            t = tm.sec()
+            # show time per classification and its reciprocal
+            print('%.0f ms/c   %.1f c/s' % (1000*t/count, count/t))
+            count = 0
+            tm.reset()
 
 # sample decoding code
 if __name__ == '__main__':
-    model_file = r'D:\data\CHUV\ECoG17\20171005\fif_raw\step_events\classifier\classifier-64bit.pkl'
-    eeg_only = False
+    model_file = r'D:\data\CHUV\ECoG17\20171005\fif_corrected\stepblocks\classifier_steps_0.17\classifier-64bit.pkl'
 
     if len(sys.argv) == 2:
         amp_name = sys.argv[1]
@@ -466,6 +480,9 @@ if __name__ == '__main__':
     if amp_name == 'None':
         amp_name = None
     print('Connecting to a server %s (Serial %s).' % (amp_name, amp_serial))
+
+    # check decoding speed
+    check_speed(model_file, amp_name, amp_serial)
 
     # run on background
     # decoder= BCIDecoderDaemon(model_file, buffer_size=1.0, fake=False, amp_name=amp_name, amp_serial=amp_serial)
