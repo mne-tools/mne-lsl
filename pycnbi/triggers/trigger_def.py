@@ -1,5 +1,12 @@
-from __future__ import print_function, division
+"""
+Reads trigger info and creates a class object with the follwing attributes:
+- self.event_id = event_value
+- self.by_key() = {key:value, ...}
+- self.by_value() = {value:key, ...}
 
+"""
+
+from __future__ import print_function, division
 import sys
 import os
 import pycnbi.utils.q_common as qc
@@ -8,25 +15,25 @@ try:
 except NameError:
     pass
 
-class TriggerDef(object):
-    def __init__(self, items):
-        self.by_key = {}
-        self.by_value = {}
-        for key, value in items:
-            value = int(value)
-            setattr(self, key, value)
-            self.by_key[key] = value
-            self.by_value[value] = key
-
-        '''
-        # check data
-        print('Attributes of the final class')
-        for attr in dir(self):
-            if not callable(getattr(self, attr)) and not attr.startswith("__"):
-                print(attr, getattr(self, attr))
-        '''
-
 def trigger_def(ini_file):
+    class TriggerDef(object):
+        def __init__(self, items):
+            self.by_key = {}
+            self.by_value = {}
+            for key, value in items:
+                value = int(value)
+                setattr(self, key, value)
+                self.by_key[key] = value
+                self.by_value[value] = key
+
+            '''
+            # check data
+            print('Attributes of the final class')
+            for attr in dir(self):
+                if not callable(getattr(self, attr)) and not attr.startswith("__"):
+                    print(attr, getattr(self, attr))
+            '''
+
     if not os.path.exists(ini_file):
         search_path = []
         path_ini = qc.parse_path(ini_file)
@@ -36,7 +43,7 @@ def trigger_def(ini_file):
         search_path.append('%s/%s.ini' % (path_self.dir, path_ini.name))
         for ini_file in search_path:
             if os.path.exists(ini_file):
-                print('Found %s' % ini_file)
+                print('>> Found %s' % ini_file)
                 break
         else:
             raise IOError('Trigger event definition file %s not found' % ini_file)

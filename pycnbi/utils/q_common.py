@@ -478,10 +478,10 @@ def parse_path(file_path):
 
     class path_info:
         def __init__(self, path):
-            path_abs = os.path.abspath(path).replace('\\', '/')
+            path_abs = os.path.realpath(path).replace('\\', '/')
             s = path_abs.split('/')
             f = s[-1].split('.')
-            basedir = '/'.join(s[:-1]) + '/'
+            basedir = '/'.join(s[:-1])
             if len(f) == 1:
                 name, ext = f[-1], ''
             else:
@@ -506,7 +506,7 @@ def parse_path_list(path):
         base dir, file(or dir) name, extension (if file)
     """
 
-    path_abs = os.path.abspath(path).replace('\\', '/')
+    path_abs = os.path.realpath(path).replace('\\', '/')
     s = path_abs.split('/')
     f = s[-1].split('.')
     basedir = '/'.join(s[:-1]) + '/'
