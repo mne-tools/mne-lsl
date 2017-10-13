@@ -4,12 +4,13 @@ pycnbi/build
 build
 obj
 __pycache__
-*.egg-info
-*.asv
 .DS_Store
 .idea
 pycnbi_project.wpr
 pycnbi_project.wpu
+*.egg-info
+*.egg
+*.asv
 *.pyc
 *.pyo
 *~
