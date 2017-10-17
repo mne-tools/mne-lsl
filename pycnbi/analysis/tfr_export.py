@@ -24,7 +24,7 @@ import imp
 from builtins import input
 from IPython import embed
 
-def check_cfg(cfg_src):
+def check_cfg(cfg):
     if not hasattr(cfg, 'N_JOBS'):
         cfg.N_JOBS = None
     if not hasattr(cfg, 'T_BUFFER'):
