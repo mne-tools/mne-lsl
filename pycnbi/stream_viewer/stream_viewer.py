@@ -35,10 +35,7 @@ import subprocess
 from pycnbi.stream_receiver.stream_receiver import StreamReceiver
 import pycnbi.utils.q_common as qc
 from builtins import input
-try:
-    import ConfigParser as configparser
-except ImportError:
-    import configparser
+from configparser import RawConfigParser
 
 path = "./"
 
@@ -71,7 +68,7 @@ class Scope(QtGui.QMainWindow, form_class):
     #	Initializes config file
     #
     def init_config_file(self):
-        self.scope_settings = configparser.RawConfigParser(allow_no_value=True)
+        self.scope_settings = RawConfigParser(allow_no_value=True, inline_comment_prefixes=('#', ';'))
         # if (not os.path.isfile(os.getenv("HOME") + "/.scope_settings.ini")):
         #	subprocess.Popen(["cp", path + "/.scope_settings.ini", os.getenv("HOME") + "/.scope_settings.ini"], close_fds=True)
 
