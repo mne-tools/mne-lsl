@@ -10,10 +10,7 @@ from __future__ import print_function, division
 import sys
 import os
 import pycnbi.utils.q_common as qc
-try:
-    import ConfigParser as configparser
-except NameError:
-    pass
+from configparser import ConfigParser
 
 def trigger_def(ini_file):
     class TriggerDef(object):
@@ -47,7 +44,7 @@ def trigger_def(ini_file):
                 break
         else:
             raise IOError('Trigger event definition file %s not found' % ini_file)
-    config = configparser.ConfigParser()
+    config = ConfigParser(inline_comment_prefixes=('#', ';'))
     config.optionxform = str
     config.read(ini_file)
     return TriggerDef(config.items('events'))
