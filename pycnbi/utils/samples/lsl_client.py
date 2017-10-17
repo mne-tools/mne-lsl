@@ -1,7 +1,6 @@
 from __future__ import print_function, division
 
 import pycnbi
-import pylsl as lsl
 import pycnbi.utils.cnbi_lsl as cnbi_lsl
 import time
 
