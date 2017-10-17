@@ -25,7 +25,7 @@ import random
 import pdb
 import numpy as np
 import multiprocessing as mp
-
+import multiprocessing.sharedctypes as sharedctypes
 
 def get_decoder_info(classifier):
     """
@@ -324,7 +324,7 @@ class BCIDecoderDaemon(object):
             info = get_decoder_info(self.classifier)
             psd_size = info['psd_size']
             psd_shape = info['psd_shape'][1:]  # we get only the last window
-            psd_ctypes = mp.sharedctypes.RawArray('d', np.zeros(psd_size))
+            psd_ctypes = sharedctypes.RawArray('d', np.zeros(psd_size))
             self.psd = np.frombuffer(psd_ctypes, dtype=np.float64, count=psd_size)
 
         self.probs = mp.Array('d', [1.0 / len(self.labels)] * len(self.labels))
