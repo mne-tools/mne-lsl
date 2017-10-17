@@ -22,12 +22,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import pylsl as lsl
+import pylsl
 import pycnbi.utils.q_common as qc
 import sys
 
 
-def start_server(server_name, n_channels=1, channel_format='string', nominal_srate=lsl.IRREGULAR_RATE, stype='EEG',
+def start_server(server_name, n_channels=1, channel_format='string', nominal_srate=pylsl.IRREGULAR_RATE, stype='EEG',
                  source_id=None):
     """
     Start a new LSL server
@@ -39,13 +39,13 @@ def start_server(server_name, n_channels=1, channel_format='string', nominal_sra
     n_channels:
         Number of channels
     channel_format:
-        lsl.cf_string (or 'string')
-        lsl.cf_float32 (or 'float32')
-        lsl.cf_double64 (or 'double64')
-        lsl.cf_int8 (or 'int8')
-        lsl.cf_int16 (or 'int16')
-        lsl.cf_int32 (or 'int32')
-        lsl.cf_int64 (or 'int64')
+        pylsl.cf_string (or 'string')
+        pylsl.cf_float32 (or 'float32')
+        pylsl.cf_double64 (or 'double64')
+        pylsl.cf_int8 (or 'int8')
+        pylsl.cf_int16 (or 'int16')
+        pylsl.cf_int32 (or 'int32')
+        pylsl.cf_int64 (or 'int64')
     nominal_srate:
         Sampling rate in Hz. Defaults to irregular sampling rate.
     stype:
@@ -60,9 +60,9 @@ def start_server(server_name, n_channels=1, channel_format='string', nominal_sra
     """
     if source_id is None:
         source_id = server_name
-    sinfo = lsl.StreamInfo(server_name, channel_count=n_channels, channel_format=channel_format,\
+    sinfo = pylsl.StreamInfo(server_name, channel_count=n_channels, channel_format=channel_format,\
                            nominal_srate=nominal_srate, type=stype, source_id=source_id)
-    return lsl.StreamOutlet(sinfo)
+    return pylsl.StreamOutlet(sinfo)
 
 
 def start_client(server_name):
@@ -82,7 +82,7 @@ def start_client(server_name):
     """
     print('Searching for LSL server %s' % server_name)
     while True:
-        streamInfos = lsl.resolve_byprop("name", server_name)
+        streamInfos = pylsl.resolve_byprop("name", server_name)
         for sinfo in streamInfos:
             print('Found %s' % sinfo.name())
         '''
@@ -102,4 +102,4 @@ def start_client(server_name):
         else:
             sinfo = streamInfos[0]
             break
-    return lsl.StreamInlet(sinfo)
+    return pylsl.StreamInlet(sinfo)

@@ -38,7 +38,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import pycnbi  # from global common folder
 import pycnbi.utils.pycnbi_utils as pu
 import time, sys
-#import pycnbi.libLSL.pylsl as pylsl
 import pylsl
 import numpy as np
 import pycnbi.utils.q_common as qc
@@ -195,7 +194,7 @@ class StreamReceiver:
         self.amp_name = amp_name
 
         # define EEG channel indices
-        self._lsl_eeg_channels = range(channels)
+        self._lsl_eeg_channels = list(range(channels))
         if self._lsl_tr_channel is None:
             self.print('Trigger channel not fonud. Adding an empty channel 0.', 'Y')
         else:
@@ -384,26 +383,31 @@ class StreamReceiver:
     def get_buffer_list(self):
         """
         Get entire buffer
-        Returns the raw list: [amps][samples][channels]
+        Returns the raw list: amps x samples x channels
         """
         self.check_connect()
         return self.buffers, self.timestamps
 
     def get_buffer(self):
         """
-        Get entire buffer in numpy format: samples x channels
+        Returns the entire buffer: samples x channels
+
+        If multiple amps, signals are concatenated along the channel axis.
         """
         self.check_connect()
         try:
             if len(self.timestamps[0]) > 0:
-                w = np.array(zip(*self.buffers))
-                t = np.array(zip(*self.timestamps))
-                return w.reshape((w.shape[0], w.shape[1] * w.shape[2])), t
+                w = np.concatenate(self.buffers, axis=1) # samples x channels
+                t = np.array(self.timestamps).reshape(-1, 1) # samples x 1
+                return w, t
             else:
                 return np.array([]), np.array([])
         except:
+            import pdb, traceback
             self.print('Sorry! Unexpected error occurred in get_buffer(). Dropping into a shell.')
-            qc.shell()
+            traceback.print_exc()
+            import pdb
+            pdb.pm()
 
     def get_buflen(self):
         """

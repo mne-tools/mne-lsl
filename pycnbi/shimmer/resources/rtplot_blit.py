@@ -16,7 +16,7 @@ def randomwalk(dims=(256, 256), n=20, sigma=5, alpha=0.95, seed=1):
 
         delta = (1. - alpha) * gen.randn(2, n) * sigma + alpha * old_delta
         pos += delta
-        for ii in xrange(n):
+        for ii in range(n):
             if not (0. <= pos[0, ii] < r): pos[0, ii] = abs(pos[0, ii] % r)
             if not (0. <= pos[1, ii] < c): pos[1, ii] = abs(pos[1, ii] % c)
         old_delta = delta
@@ -25,7 +25,7 @@ def randomwalk(dims=(256, 256), n=20, sigma=5, alpha=0.95, seed=1):
 
 def run(niter=1000, doblit=False):
     """
-    Visualise the simulation using matplotlib, using blit for 
+    Visualise the simulation using matplotlib, using blit for
     improved speed
     """
 
@@ -46,7 +46,7 @@ def run(niter=1000, doblit=False):
     plt = ax.plot(x, y, 'o')[0]
     tic = time.time()
 
-    for ii in xrange(niter):
+    for ii in range(niter):
 
         # update the xy data
         x, y = rw.next()
