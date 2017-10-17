@@ -41,13 +41,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 OUT_DIR = 'D:/data/Records'  # give absolute path
 
 import pycnbi  # load from global common folder
-import time, os, sys, datetime
+import time
+import os
+import sys
+import datetime
 import pycnbi.utils.q_common as qc
+import pycnbi.utils.pycnbi_utils as pu
 import pycnbi.stream_receiver.stream_receiver as receiver
 import multiprocessing as mp
 import pycnbi.utils.cnbi_lsl as cnbi_lsl
 import sys
-import pylsl
 import numpy as np
 from builtins import input
 
@@ -100,7 +103,7 @@ def record(state, amp_name, amp_serial, eeg_only=False):
     print('Saved to %s\n' % filename)
 
     qc.print_c('Converting raw file into a fif format.', 'W')
-    import convert2fif as cf
+    import pycnbi.utils.convert2fif as cf
     cf.pcl2fif(filename)
 
 
@@ -124,12 +127,12 @@ if __name__ == '__main__':
     proc = mp.Process(target=record, args=[state, amp_name, amp_serial, eeg_only])
     proc.start()
 
-    input('')
+    input()
     state.value = 0
     qc.print_c('(main) Waiting for recorder process to finish.', 'W')
     proc.join(10)
     if proc.is_alive():
-        qc.print_c('>> ERROR: Recorder process not finihsing. Are you running from Spyder?', 'R')
+        qc.print_c('>> ERROR: Recorder process not finishing. Are you running from Spyder?', 'R')
         qc.shell()
 
     sys.stdout.flush()

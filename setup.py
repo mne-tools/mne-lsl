@@ -11,6 +11,6 @@ setup(
     description='Real-time brain-machine interface',
     long_description=open('README.txt').read(),
     packages=find_packages(),
-    install_requires=['mne>=0.14', 'pylsl', 'scipy', 'numpy', 'opencv-python>=3.3',\
-        'future', 'xmltodict', 'pyqtgraph'],
+    install_requires=['mne>=0.14', 'scipy', 'numpy', 'opencv-python>=3.3',\
+        'future', 'pyqtgraph'],
 )

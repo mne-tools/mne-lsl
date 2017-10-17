@@ -27,8 +27,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import os, sys
+import os
+import sys
 import scipy.io
+import pylsl
 import mne
 import numpy as np
 import multiprocessing as mp
@@ -633,8 +635,6 @@ def butter_bandpass(highcut, lowcut, fs, num_ch):
 
 
 def search_lsl(ignore_markers=False):
-    #import pycnbi.libLSL.pylsl as pylsl
-    import pylsl
     import time
 
     # look for LSL servers
@@ -644,8 +644,8 @@ def search_lsl(ignore_markers=False):
         streamInfos = pylsl.resolve_streams()
         if len(streamInfos) > 0:
             for index, si in enumerate(streamInfos):
-                amp_serial = pylsl.StreamInlet(si).info().desc().child('acquisition').child_value(
-                    'serial_number').strip()
+                desc = pylsl.StreamInlet(si).info().desc()
+                amp_serial = desc.child('acquisition').child_value('serial_number').strip()
                 amp_name = si.name()
                 if 'Markers' in amp_name:
                     amp_list_backup.append((index, amp_name, amp_serial))
@@ -689,15 +689,16 @@ def lsl_channel_list(inlet):
     Returns:
         ch_list: [ name1, name2, ... ]
     """
+    # for some reason type(inlet) returns 'instance' type in Python 2.
+    #if not type(inlet) is pylsl.StreamInlet:
+    #    raise TypeError('lsl_channel_list(): wrong input type %s' % type(inlet))
+    ch = inlet.info().desc().child('channels').first_child()
     ch_list = []
-
-    import xmltodict
-    xml = inlet.info().as_xml()
-    doc = xmltodict.parse(xml)
-    channels = doc['info']['desc']['channels']['channel']
-    for ch in channels:
-        ch_list.append(ch['label'])
-
+    for k in range(inlet.info().channel_count()):
+        ch_name = ch.child_value('label')
+        print(ch_name)
+        ch_list.append(ch_name)
+        ch = ch.next_sibling()
     return ch_list
 
 

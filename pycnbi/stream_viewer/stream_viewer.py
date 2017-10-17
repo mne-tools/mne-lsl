@@ -32,7 +32,6 @@ from pyqtgraph.Qt import QtCore, QtGui, uic
 import numpy as np
 from scipy.signal import butter, lfilter, lfiltic, buttord
 import subprocess
-import pylsl
 from pycnbi.stream_receiver.stream_receiver import StreamReceiver
 import pycnbi.utils.q_common as qc
 from builtins import input
@@ -537,7 +536,7 @@ class Scope(QtGui.QMainWindow, form_class):
         # We have to remove those indexes that reached time = 0
         delete_indices_e = []
         delete_indices_c = []
-        for x in xrange(0, len(self.events_detected), 2):
+        for x in range(0, len(self.events_detected), 2):
             xh = int(x / 2)
             self.events_detected[x] -= len(self.ts_list)  # leeq
             if (self.events_detected[x] < 0) and (not self.stop_plot):
@@ -602,7 +601,7 @@ class Scope(QtGui.QMainWindow, form_class):
                                                             x]] - x * self.scale)
 
         # Update events
-        for x in xrange(0, len(self.events_detected), 2):
+        for x in range(0, len(self.events_detected), 2):
             xh = int(x / 2)
             self.events_curves[xh].setData(x=np.array(
                 [self.x_ticks[self.events_detected[x]],
@@ -667,13 +666,13 @@ class Scope(QtGui.QMainWindow, form_class):
                 self.config['eeg_channels']))
                 padded_signal[padded_signal.shape[0] - self.data_plot.shape[0]:,
                 :] = self.data_plot
-                for x in xrange(0, len(self.events_detected), 2):
+                for x in range(0, len(self.events_detected), 2):
                     self.events_detected[x] += padded_signal.shape[0] - \
                                                self.data_plot.shape[0]
                 self.data_plot = padded_signal
 
             else:
-                for x in xrange(0, len(self.events_detected), 2):
+                for x in range(0, len(self.events_detected), 2):
                     self.events_detected[x] -= self.data_plot.shape[0] - \
                                                self.config['sf'] * new_seconds
                 self.data_plot = self.data_plot[
