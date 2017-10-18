@@ -3,9 +3,6 @@ from __future__ import print_function, division
 """
 Time-frequency analysis using Morlet wavelets or multitapers
 
-Python 2/3 compatible.
-
-
 Kyuhwa Lee, 2017
 
 """
@@ -210,8 +207,6 @@ def config_run(cfg_module):
     get_tfr(cfg, tfr_type=cfg.TFR_TYPE)
 
 if __name__ == '__main__':
-    import imp
-
     if len(sys.argv) < 2:
         cfg_module = input('Config file name? ')
     else:
