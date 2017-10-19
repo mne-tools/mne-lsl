@@ -5,10 +5,10 @@ Export fif data into mat files.
 
 """
 
-import pycnbi
 import pycnbi.utils.pycnbi_utils as pu
-import scipy.io, mne
 import pycnbi.utils.q_common as qc
+import scipy.io
+import mne
 
 def fif2mat(data_dir):
     for rawfile in qc.get_file_list(data_dir, fullpath=True):

@@ -39,6 +39,7 @@ import pycnbi.utils.q_common as qc
 import pycnbi.glass.bgi_client as bgi_client
 from pycnbi.decoder.decoder import BCIDecoderDaemon, BCIDecoder
 from pycnbi.triggers.trigger_def import trigger_def
+import pycnbi.utils.pycnbi_utils as pu
 from builtins import input
 from IPython import embed
 

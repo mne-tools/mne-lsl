@@ -238,7 +238,7 @@ try:
 
         color = str(color)
         if len(color) != 1:
-            raise RuntimeError('color parameter must be a single color code. Received type %s' % type(color))
+            raise RuntimeError('Color parameter must be a single color code. Received type %s' % type(color))
 
         if color.upper() == 'B':
             c = colorama.Fore.BLUE

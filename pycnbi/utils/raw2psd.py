@@ -9,12 +9,11 @@ Swiss Federal Institute of Technology (EPFL)
 """
 
 # start
-import pycnbi
 import pycnbi.utils.pycnbi_utils as pu
-import numpy as np
 import pycnbi.utils.q_common as qc
-import os, mne
-from IPython import embed  # for debugging
+import numpy as np
+import os
+import mne
 
 
 def raw2psd(rawfile, fmin=1, fmax=40, wlen=0.5, wstep=1, tmin=0.0, tmax=None, channel_picks=None, excludes=None,
@@ -100,6 +99,9 @@ def raw2psd(rawfile, fmin=1, fmax=40, wlen=0.5, wstep=1, tmin=0.0, tmax=None, ch
         np.save(fout_psd, psd_all)
         print('Exported.')
     except:
-        print('(%s) Unexpected error occurred while saving. Dropping you into a shell for recovery.' % os.path.basename(
-            __file__))
+        import traceback
+        print('(%s) Unexpected error occurred while saving. Dropping you into a shell for recovery.' %\
+            os.path.basename(__file__))
+        traceback.print_exc()
+        from IPython import embed
         embed()
