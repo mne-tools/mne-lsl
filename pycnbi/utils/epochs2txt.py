@@ -21,11 +21,11 @@ TMIN = 0.0
 TMAX = 2.0
 
 
-import pycnbi
 import pycnbi.utils.pycnbi_utils as pu
-import scipy.io, mne
-import numpy as np
 import pycnbi.utils.q_common as qc
+import scipy.io
+import mne
+import numpy as np
 import trainer
 from multiprocessing import cpu_count
 from IPython import embed
