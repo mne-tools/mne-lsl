@@ -10,6 +10,8 @@ Swiss Federal Institute of Technology Lausanne (EPFL)
 
 """
 
+import pycnbi.utils.cnbi_lsl as cnbi_lsl
+import pylsl
 import threading
 import os
 import sys
@@ -114,9 +116,6 @@ class Trigger(object):
                 self.print('Warning: COM port %d is unusual.' % portaddr)
 
         elif self.lpttype == 'SOFTWARE':
-            import pycnbi
-            import pycnbi.utils.cnbi_lsl as cnbi_lsl
-            import pylsl
             self.print('Using software trigger')
             # get data file location
             LSL_SERVER = 'StreamRecorderInfo'
@@ -127,7 +126,7 @@ class Trigger(object):
                 sys.exit(-1)
             evefile = fname[:-8] + '-eve.txt'
             self.print('Event file is: %s' % evefile)
-            self.evefile = open(evefile, 'a', 0)  # unbuffered writing
+            self.evefile = open(evefile, 'a')  # unbuffered writing
 
         elif self.lpttype == 'FAKE' or self.lpttype is None or self.lpttype is False:
             self.print('WARNING: Using a fake trigger.')
