@@ -16,24 +16,23 @@ Note:
   most commonly occurring value, which usually corresponds to zero value.
   It only works when 0's are majority.
 
+- Some LSL servers, especially OpenVibe-based servers, send wrong LSL timestamps.
+  In such case, set DEBUG_TIME_OFFSET = True to see the offset. Most of the time,
+  it's not needed but when you use software trigger, you will need this offset to
+  synchronize the event timings.
 
-Kyuhwa Lee, 2014
+TODO:
+   Restrict buffer size.
+
+Kyuhwa Lee, 2017
 Swiss Federal Institute of Technology Lausanne (EPFL)
 
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 """
+
+# Warn if an LSL server sends wrong LSL timestamps. Some OpenVibe servers
+# send app's own running time starting from 0 instead of calling LSL API.
+DEBUG_TIME_OFFSET = True
+
 
 import pycnbi  # from global common folder
 import pycnbi.utils.pycnbi_utils as pu
@@ -169,7 +168,8 @@ class StreamReceiver:
                         amps.append(si)
                         server_found = True
                         # OpenVibe standard unit is Volts, which is not ideal for some numerical computations
-                        self.multiplier = 10**6 # change V -> uV unit for OpenVibe sources
+                        #self.multiplier = 10**6 # change V -> uV unit for OpenVibe sources
+                        self.multiplier = 1
                         break
                     elif 'openvibeMarkers' in amp_name:
                         self.print('Found an Openvibe markers server %s (type %s, amp_serial %s) @ %s.' \
@@ -295,13 +295,10 @@ class StreamReceiver:
             data = np.concatenate((np.zeros((data.shape[0],1)),
                                    data[:, self._lsl_eeg_channels]), axis=1)
 
-        '''
-        ########### DEBUG ###############
-        timestamp_offset = False
-        if len(self.timestamps[0]) == 0:
-            timestamp_offset = True
-        ########### DEBUG ###############
-        '''
+        if DEBUG_TIME_OFFSET:
+            timestamp_offset = False
+            if len(self.timestamps[0]) == 0:
+                timestamp_offset = True
 
         # add data to buffer
         chunk = data.tolist()
@@ -311,16 +308,17 @@ class StreamReceiver:
             self.buffers[0] = self.buffers[0][-self.bufsize:]
             self.timestamps[0] = self.timestamps[0][-self.bufsize:]
 
-        '''
-        ########### DEBUG ###############
-        if timestamp_offset is True:
-            timestamp_offset = False
-            print( 'LSL timestamp =', pylsl.local_clock() )
-            print( 'OV timestamp =', self.timestamps[0][0] )
-            self.lsl_time_offset = pylsl.local_clock() - self.timestamps[0][0]
-            print( 'Offset = %.1f' % (self.lsl_time_offset) )
-        ########### DEBUG ###############
-        '''
+        if DEBUG_TIME_OFFSET:
+            if timestamp_offset is True:
+                timestamp_offset = False
+                print('LSL timestamp =', pylsl.local_clock())
+                print('Server timestamp =', self.timestamps[-1][-1])
+                self.lsl_time_offset = pylsl.local_clock() - self.timestamps[-1][-1]
+                print('Offset = %.3f ' % (self.lsl_time_offset), end='')
+                if self.lsl_time_offset > 0.1:
+                    print('*** possibly sending wrong time stamps ***')
+                else:
+                    print('(synchronized)')
 
         # if we have multiple synchronized amps
         if len(self.inlets) > 1:
