@@ -9,13 +9,14 @@ Kyuhwa Lee, 2015
 """
 
 EEG_IN = r'D:\data\MI\rx1\train\20161031-110045-raw.fif'
-EVENTS = {'DOWN_GO':['LEFT_GO', 'RIGHT_GO']}
 EEG_OUT = r'D:\data\MI\rx1\train\20161031-110045-D-raw.fif'
 TRIGGER_DEF = 'triggerdef_gait.ini'
+EVENTS = {'DOWN_GO':['LEFT_GO', 'RIGHT_GO']}
 
 
-import pycnbi
-import math, mne, csv
+import math
+import mne
+import csv
 import numpy as np
 import pycnbi.utils.q_common as qc
 from pycnbi.triggers.trigger_def import trigger_def
