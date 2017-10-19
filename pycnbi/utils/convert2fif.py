@@ -22,23 +22,26 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import os, sys, pdb
-import scipy.io, mne
+import os
+import sys
+import pdb
+import scipy.io
+import mne
 import numpy as np
-import pycnbi.utils.q_common as qc
-import pycnbi
 import pycnbi.utils.pycnbi_utils as pu
+import pycnbi.utils.q_common as qc
 from pycnbi.pycnbi_config import CAP, LAPLACIAN
 from builtins import input
 
 
-def event_timestamps_to_indices(sigfile, eventfile):
+def event_timestamps_to_indices(sigfile, eventfile, offset=0):
     """
     Convert LSL timestamps to sample indices for separetely recorded events.
 
     Parameters:
     sigfile: raw signal file (Python Pickle) recorded with stream_recorder.py.
     eventfile: event file where events are indexed with LSL timestamps.
+    offset: if the LSL server's timestamp is shifted, correct with offset value in seconds.
 
     Returns:
     events list, which can be used as an input to mne.io.RawArray.add_events().
@@ -53,7 +56,7 @@ def event_timestamps_to_indices(sigfile, eventfile):
     with open(eventfile) as f:
         for l in f:
             data = l.strip().split('\t')
-            event_ts = float(data[0])
+            event_ts = float(data[0]) + offset
             event_value = int(data[2])
             # find the first index not smaller than ts
             next_index = np.searchsorted(ts, event_ts)
@@ -83,7 +86,7 @@ def convert2mat(filename, matfile):
             sys.exit()
 
 
-def pcl2fif(filename, interactive=False, outdir=None, external_event=None):
+def pcl2fif(filename, interactive=False, outdir=None, external_event=None, offset=0):
     """
     PyCNBI Python pickle file
 
@@ -173,7 +176,7 @@ def pcl2fif(filename, interactive=False, outdir=None, external_event=None):
 
     if external_event is not None:
         raw._data[0] = 0  # erase current events
-        events_index = event_timestamps_to_indices(filename, external_event)
+        events_index = event_timestamps_to_indices(filename, external_event, offset)
         raw.add_events(events_index, stim_channel='TRIGGER')
 
     qc.make_dirs(outdir)
