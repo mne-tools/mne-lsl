@@ -67,7 +67,7 @@ class BarVisual(object):
         self.text_size = 2
         cv2.namedWindow("img", cv2.WINDOW_AUTOSIZE)
         cv2.moveWindow("img", screen_x, screen_y)
-        cv2.setWindowProperty("img", cv2.WND_PROP_FULLSCREEN, cv2.CV_WINDOW_FULLSCREEN);
+        cv2.setWindowProperty("img", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN);
 
         self.img = np.zeros((screen_height, screen_width, 3), np.uint8)
         self.glass = bgi_client.GlassControl(mock=not use_glass)
