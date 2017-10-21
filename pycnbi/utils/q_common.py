@@ -31,6 +31,12 @@ except ImportError:
  Math
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""'''
 
+def sigmoid(x):
+    return 1 / (1 + math.exp(-x))
+
+def sigmoid_array(x):
+    return 1 / (1 + np.exp(-x))
+
 def dirichlet(n):
     """
     Uniform Dirichlet distribution with sigma(alpha)=1.0

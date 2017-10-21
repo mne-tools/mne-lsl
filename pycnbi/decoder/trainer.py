@@ -380,7 +380,7 @@ def crossval_epochs(cv, epochs_data, labels, cls, label_names=None, do_balance=F
 
     # multiprocessing at the data group level is faster than the classifier level
     cls.n_jobs = 1
-    
+
     if SKLEARN_OLD:
         splits = cv
     else:
