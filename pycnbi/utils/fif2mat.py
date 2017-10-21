@@ -14,6 +14,7 @@ def fif2mat(data_dir):
     for rawfile in qc.get_file_list(data_dir, fullpath=True):
         if rawfile[-4:] != '.fif': continue
         raw, events = pu.load_raw(rawfile)
+        events[:,0] += 1 # MATLAB uses 1-based indexing
         sfreq = raw.info['sfreq']
         data = dict(signals=raw._data, events=events, sfreq=sfreq, ch_names=raw.ch_names)
         matfile = '.'.join(rawfile.split('.')[:-1]) + '.mat'
