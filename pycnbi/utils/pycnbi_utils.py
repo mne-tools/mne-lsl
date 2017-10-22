@@ -500,8 +500,10 @@ def load_raw(rawfile, spfilter=None, spchannels=None, events_ext=None, multiplie
 
     if not os.path.exists(rawfile):
         raise IOError('File %s not found' % rawfile)
+    if not os.path.isfile(rawfile):
+        raise IOError('%s is not a file' % rawfile)
 
-    extension = rawfile.split('.')[-1]
+    extension = qc.parse_path(rawfile).ext
     assert extension in ['fif', 'fiff'], 'only fif format is supported'
     raw = mne.io.Raw(rawfile, preload=True, verbose=verbose)
     preprocess(raw, spatial=spfilter, spatial_ch=spchannels, multiplier=multiplier)
