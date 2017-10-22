@@ -16,16 +16,16 @@ import os
 import mne
 
 
-def raw2psd(rawfile, fmin=1, fmax=40, wlen=0.5, wstep=1, tmin=0.0, tmax=None, channel_picks=None, excludes=None,
-            n_jobs=1):
+def raw2psd(rawfile=None, fmin=1, fmax=40, wlen=0.5, wstep=1, tmin=0.0, tmax=None,
+            channel_picks=None, excludes=[], n_jobs=1):
     """
     Compute PSD features over a sliding window on the entire raw file.
-    Leading edge of the window is the time reference.
+    Leading edge of the window is the time reference, i.e. do not use future data.
 
     Input
     =====
-    rawfile: fif-format raw file
-    channel_picks: None or list of channel indices
+    rawfile: fif file.
+    channel_picks: None or list of channel names
     tmin (sec): start time of the PSD window relative to the event onset.
     tmax (sec): end time of the PSD window relative to the event onset. None = until the end.
     fmin (Hz): minimum PSD frequency
@@ -42,9 +42,10 @@ def raw2psd(rawfile, fmin=1, fmax=40, wlen=0.5, wstep=1, tmin=0.0, tmax=None, ch
     if channel_picks is None:
         rawdata = raw_eeg._data
     else:
-        # because indexing is messed up if excludes is not None
-        raise (RuntimeError, 'channel_picks not supported yet')
-        rawdata = raw_eeg._data[channel_picks]
+        chlist = []
+        for ch in channel_picks:
+            chlist.append(raw.ch_names.index(ch))
+        rawdata = raw_eeg._data[np.array(chlist)]
 
     if tmax is None:
         t_end = rawdata.shape[1]
@@ -59,7 +60,6 @@ def raw2psd(rawfile, fmin=1, fmax=40, wlen=0.5, wstep=1, tmin=0.0, tmax=None, ch
     evelist = []
     times = []
     t_len = t_end - t_start
-    last_perc = 0
     last_eve = 0
     y_i = 0
     t_last = t_start
@@ -78,15 +78,15 @@ def raw2psd(rawfile, fmin=1, fmax=40, wlen=0.5, wstep=1, tmin=0.0, tmax=None, ch
             y_i += 1
         evelist.append(last_eve)
 
-        perc = 1000.0 * (t - t_start) / t_len
-        if int(perc) > last_perc:
-            last_perc = int(perc)
-            est = (1000 - last_perc) * tm.sec()
-            fps = (t - t_last) / tm.sec()
-            print('[PID %d] %.1f%% (%.1f FPS, %ds left)' % (os.getpid(), last_perc / 10.0, fps, est))
+        if tm.sec() >= 1:
+            perc = (t - t_start) / t_len
+            fps = (t - t_last) / wstep
+            est = (t_end - t) / wstep / fps
+            print('[PID %d] %.1f%% (%.1f FPS, %ds left)' % (os.getpid(), perc * 100.0, fps, est))
             t_last = t
             tm.reset()
 
+    # export data
     try:
         psd_all = np.array(psd_all)
         [basedir, fname, fext] = qc.parse_path_list(rawfile)
@@ -94,13 +94,12 @@ def raw2psd(rawfile, fmin=1, fmax=40, wlen=0.5, wstep=1, tmin=0.0, tmax=None, ch
         fout_psd = '%s/psd-%s-data.npy' % (basedir, fname)
         header = {'psdfile':fout_psd, 'times':np.array(times), 'sfreq':sfreq,
                   'channels':raw_eeg.ch_names, 'wframes':wframes, 'events':evelist}
-        print('Exporting to:\n%s\n%s' % (fout_header, fout_psd))
         qc.save_obj(fout_header, header)
         np.save(fout_psd, psd_all)
-        print('Exported.')
+        print('Exported to:\n(header) %s\n(numpy array) %s' % (fout_header, fout_psd))
     except:
         import traceback
-        print('(%s) Unexpected error occurred while saving. Dropping you into a shell for recovery.' %\
+        print('(%s) Unexpected error occurred while exporting data. Dropping you into a shell for recovery.' %\
             os.path.basename(__file__))
         traceback.print_exc()
         from IPython import embed
