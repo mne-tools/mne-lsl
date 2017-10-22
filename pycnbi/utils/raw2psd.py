@@ -41,6 +41,7 @@ def raw2psd(rawfile=None, fmin=1, fmax=40, wlen=0.5, wstep=1, tmin=0.0, tmax=Non
     raw_eeg = raw.pick_types(meg=False, eeg=True, stim=False, exclude=excludes)
     if channel_picks is None:
         rawdata = raw_eeg._data
+        chlist = raw.ch_names
     else:
         chlist = []
         for ch in channel_picks:
@@ -85,15 +86,17 @@ def raw2psd(rawfile=None, fmin=1, fmax=40, wlen=0.5, wstep=1, tmin=0.0, tmax=Non
             print('[PID %d] %.1f%% (%.1f FPS, %ds left)' % (os.getpid(), perc * 100.0, fps, est))
             t_last = t
             tm.reset()
-
+    print('Finished.')
+    
     # export data
     try:
+        chnames = [raw.ch_names[ch] for ch in chlist]
         psd_all = np.array(psd_all)
         [basedir, fname, fext] = qc.parse_path_list(rawfile)
         fout_header = '%s/psd-%s-header.pkl' % (basedir, fname)
         fout_psd = '%s/psd-%s-data.npy' % (basedir, fname)
         header = {'psdfile':fout_psd, 'times':np.array(times), 'sfreq':sfreq,
-                  'channels':raw_eeg.ch_names, 'wframes':wframes, 'events':evelist}
+                  'channels':chnames, 'wframes':wframes, 'events':evelist}
         qc.save_obj(fout_header, header)
         np.save(fout_psd, psd_all)
         print('Exported to:\n(header) %s\n(numpy array) %s' % (fout_header, fout_psd))
