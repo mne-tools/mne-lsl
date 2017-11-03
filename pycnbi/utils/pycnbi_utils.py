@@ -658,7 +658,10 @@ def search_lsl(ignore_markers=False):
         index = 0
     else:
         index = input('Amp index? Hit enter without index to select the first server.\n>> ')
-        index = int(index.strip())
+        if index.strip() == '':
+            index = 0
+        else:
+            index = int(index.strip())
     amp_index, amp_name, amp_serial = amp_list[index]
     si = streamInfos[amp_index]
     assert amp_name == si.name()

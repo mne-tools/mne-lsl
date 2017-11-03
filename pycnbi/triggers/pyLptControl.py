@@ -17,7 +17,7 @@ import os
 import sys
 import ctypes
 import time
-from builtins import input
+from builtins import input, bytes
 
 class Trigger(object):
     """
@@ -186,7 +186,7 @@ class Trigger(object):
             elif self.lpttype == 'DESKTOP':
                 self.lpt.setdata(self.portaddr, value)
             elif self.lpttype == 'ARDUINO':
-                self.ser.write(chr(value))
+                self.ser.write(bytes([value]))
             else:
                 raise RuntimeError('Wrong trigger device')
 
@@ -266,7 +266,7 @@ class MockTrigger(object):
 
 
 # set 1 to each bit and rotate from bit 0 to bit 7
-def test_all_bits():
+def test_all_bits(trigger):
     for x in range(8):
         val = 2 ** x
         trigger.signal(val)
@@ -277,11 +277,14 @@ def test_all_bits():
 # sample test code
 if __name__ == '__main__':
     trigger = Trigger('ARDUINO') # Arduino trigger
-    if not trigger.init(666):
+    if not trigger.init(20):
         print('LPT port cannot be opened. Using mock trigger.')
         trigger = MockTrigger()
 
-    print('Type quit to finish.')
+    # Christmas tree mode (set 1 bit-by-bit)
+    #test_all_bits(trigger)
+
+    print('Type quit or Ctrl+C to finish.')
     while True:
         val = input('Trigger value? ')
         if val.strip() == '':
@@ -290,5 +293,6 @@ if __name__ == '__main__':
             break
         if 0 <= int(val) <= 255:
             trigger.signal(int(val))
+            print('Sent %d' % int(val))
         else:
             print('Ignored %s' % val)

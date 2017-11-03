@@ -168,8 +168,7 @@ class StreamReceiver:
                         amps.append(si)
                         server_found = True
                         # OpenVibe standard unit is Volts, which is not ideal for some numerical computations
-                        #self.multiplier = 10**6 # change V -> uV unit for OpenVibe sources
-                        self.multiplier = 1
+                        self.multiplier = 10**6 # change V -> uV unit for OpenVibe sources
                         break
                     elif 'openvibeMarkers' in amp_name:
                         self.print('Found an Openvibe markers server %s (type %s, amp_serial %s) @ %s.' \
@@ -316,9 +315,9 @@ class StreamReceiver:
                 self.lsl_time_offset = pylsl.local_clock() - self.timestamps[-1][-1]
                 print('Offset = %.3f ' % (self.lsl_time_offset), end='')
                 if self.lsl_time_offset > 0.1:
-                    print('*** possibly sending wrong time stamps ***')
+                    qc.print_c('\n*** WARNING: The server seems to be sending wrong time stamps ***\n\n', 'r')
                 else:
-                    print('(synchronized)')
+                    qc.print_c('(Synchronized)', 'g')
 
         # if we have multiple synchronized amps
         if len(self.inlets) > 1:

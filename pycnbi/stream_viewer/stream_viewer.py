@@ -361,7 +361,7 @@ class Scope(QtGui.QMainWindow, form_class):
         ########## TODO: assumkng 32 samples chunk => make it read from LSL header
         data = ['EEG', srate, ['L', 'R'], 32, len(self.sr.get_eeg_channels()),
             0, self.sr.get_trigger_channel(), None, None, None, None, None]
-        qc.print_c('Trigger channel is %d' % self.sr.get_trigger_channel(), 'G')
+        qc.print_c('Trigger channel is %d' % self.sr.get_trigger_channel(), 'w')
 
         self.config = {'id':data[0], 'sf':data[1], 'labels':data[2],
             'samples':data[3], 'eeg_channels':data[4], 'exg_channels':data[5],
@@ -552,12 +552,12 @@ class Scope(QtGui.QMainWindow, form_class):
 
         # Find LPT events and add them
         if (self.show_LPT_events) and (not self.stop_plot):
-            tm = qc.Timer()
             for x in range(len(self.tri)):
-                if self.tri[x] != 0 and (self.tri[x] != self.last_tri):
-                    self.last_tri = int(self.tri[x])
-                    self.addEventPlot("LPT", self.last_tri)
-                    self.print('Trigger %d received' % self.last_tri)
+                tri = int(self.tri[x])
+                if tri != 0 and (tri != self.last_tri):
+                    self.addEventPlot("LPT", tri)
+                    self.print('Trigger %d received' % tri)
+                self.last_tri = tri
 
     #
     #	Called by repaint()
@@ -593,9 +593,7 @@ class Scope(QtGui.QMainWindow, form_class):
 
         # Update EEG channels
         for x in range(0, len(self.channels_to_show_idx)):
-            self.curve_eeg[x].setData(x=self.x_ticks, y=self.data_plot[:,
-                                                        self.channels_to_show_idx[
-                                                            x]] - x * self.scale)
+            self.curve_eeg[x].setData(x=self.x_ticks, y=self.data_plot[:,self.channels_to_show_idx[x]] - x * self.scale)
 
         # Update events
         for x in range(0, len(self.events_detected), 2):
