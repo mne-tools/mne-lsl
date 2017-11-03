@@ -177,6 +177,10 @@ def pcl2fif(filename, interactive=False, outdir=None, external_event=None, offse
     if external_event is not None:
         raw._data[0] = 0  # erase current events
         events_index = event_timestamps_to_indices(filename, external_event, offset)
+        if len(events_index) == 0:
+            qc.print_c('** WARNING: no events were found in the event file')
+        else:
+            print('Found %d events' % len(events_index))
         raw.add_events(events_index, stim_channel='TRIGGER')
 
     qc.make_dirs(outdir)
