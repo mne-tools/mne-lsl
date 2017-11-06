@@ -11,6 +11,8 @@ Swiss Federal Institute of Technology Lausanne (EPFL)
 """
 
 import pycnbi.utils.cnbi_lsl as cnbi_lsl
+import pycnbi.utils.pycnbi_utils as pu
+import pycnbi.utils.q_common as qc
 import pylsl
 import threading
 import os
@@ -116,7 +118,9 @@ class Trigger(object):
                 self.print('Warning: COM port %d is unusual.' % portaddr)
 
         elif self.lpttype == 'SOFTWARE':
+            from pycnbi.stream_receiver.stream_receiver import StreamReceiver
             self.print('Using software trigger')
+
             # get data file location
             LSL_SERVER = 'StreamRecorderInfo'
             inlet = cnbi_lsl.start_client(LSL_SERVER)
@@ -125,8 +129,20 @@ class Trigger(object):
                 self.print('ERROR: Received wrong record file name format %s' % fname)
                 sys.exit(-1)
             evefile = fname[:-8] + '-eve.txt'
+            eveoffset_file = fname[:-8] + '-eve-offset.txt'
             self.print('Event file is: %s' % evefile)
-            self.evefile = open(evefile, 'a')  # unbuffered writing
+            self.evefile = open(evefile, 'a')
+
+            # check server LSL time server integrity
+            self.print("Checking LSL server's timestamp integrity for logging software triggers.", color='y')
+            amp_name, amp_serial = pu.search_lsl()
+            sr = StreamReceiver(window_size=1, buffer_size=1, amp_serial=amp_serial, eeg_only=False, amp_name=amp_name)
+            local_time = pylsl.local_clock()
+            server_time = sr.get_window_list()[1][-1]
+            lsl_time_offset = local_time - server_time
+            with open(eveoffset_file, 'a') as f:
+                f.write('Local time: %.6f, Server time: %.6f, Offset: %.6f\n' % (local_time, server_time, lsl_time_offset))
+            self.print('LSL timestamp offset (%.3f) saved to %s' % (lsl_time_offset, eveoffset_file), color='w')
 
         elif self.lpttype == 'FAKE' or self.lpttype is None or self.lpttype is False:
             self.print('WARNING: Using a fake trigger.')
@@ -143,9 +159,9 @@ class Trigger(object):
             self.print('Event file saved.')
             sys.stdout.flush()
 
-    def print(self, *args):
-        print('[pyLptControl] ', end='')
-        print(*args)
+    def print(self, *args, color=None):
+        qc.print_c('[pyLptControl] ', end='', color=color)
+        qc.print_c(*args, color=color)
 
     def init(self, duration):
         if self.lpttype == 'SOFTWARE':
