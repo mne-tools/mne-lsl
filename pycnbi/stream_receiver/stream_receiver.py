@@ -258,6 +258,11 @@ class StreamReceiver:
 
         TODO: add a parameter to set to non-blocking mode.
         """
+        if DEBUG_TIME_OFFSET:
+            timestamp_offset = False
+            if len(self.timestamps[0]) == 0:
+                timestamp_offset = True
+
         self.watchdog.reset()
         tslist = []
         while self.watchdog.sec() < 5:
@@ -267,6 +272,8 @@ class StreamReceiver:
                 if blocking == False and len(tslist) == 0:
                     return np.zeros((0, len(self.ch_list))), []
             if len(tslist) > 0:
+                if DEBUG_TIME_OFFSET and timestamp_offset is True:
+                    lsl_clock = pylsl.local_clock()
                 break
             time.sleep(0.001)
         else:
@@ -278,8 +285,7 @@ class StreamReceiver:
         # import pdb; pdb.set_trace()
         if self.amp_name == 'BioSemi' and self._lsl_tr_channel is not None:
             datatype = data.dtype
-            data[:, self._lsl_tr_channel] = (np.bitwise_and(255, data[:, self._lsl_tr_channel].astype(int)) - 1).astype(
-                datatype)
+            data[:, self._lsl_tr_channel] = (np.bitwise_and(255, data[:, self._lsl_tr_channel].astype(int)) - 1).astype(datatype)
 
         # multiply values (to change unit)
         if self.multiplier != 1:
@@ -294,11 +300,6 @@ class StreamReceiver:
             data = np.concatenate((np.zeros((data.shape[0],1)),
                                    data[:, self._lsl_eeg_channels]), axis=1)
 
-        if DEBUG_TIME_OFFSET:
-            timestamp_offset = False
-            if len(self.timestamps[0]) == 0:
-                timestamp_offset = True
-
         # add data to buffer
         chunk = data.tolist()
         self.buffers[0].extend(chunk)
@@ -307,17 +308,16 @@ class StreamReceiver:
             self.buffers[0] = self.buffers[0][-self.bufsize:]
             self.timestamps[0] = self.timestamps[0][-self.bufsize:]
 
-        if DEBUG_TIME_OFFSET:
-            if timestamp_offset is True:
-                timestamp_offset = False
-                print('LSL timestamp =', pylsl.local_clock())
-                print('Server timestamp =', self.timestamps[-1][-1])
-                self.lsl_time_offset = pylsl.local_clock() - self.timestamps[-1][-1]
-                print('Offset = %.3f ' % (self.lsl_time_offset), end='')
-                if self.lsl_time_offset > 0.1:
-                    qc.print_c('\n*** WARNING: The server seems to be sending wrong time stamps ***\n\n', 'r')
-                else:
-                    qc.print_c('(Synchronized)', 'g')
+        if DEBUG_TIME_OFFSET and timestamp_offset is True:
+            timestamp_offset = False
+            print('LSL timestamp =', lsl_clock)
+            print('Server timestamp =', self.timestamps[-1][-1])
+            self.lsl_time_offset = lsl_clock - self.timestamps[-1][-1]
+            print('Offset = %.3f ' % (self.lsl_time_offset), end='')
+            if self.lsl_time_offset > 0.1:
+                qc.print_c('\n*** WARNING: The server seems to be sending wrong time stamps ***\n\n', 'r')
+            else:
+                qc.print_c('(Synchronized)', 'g')
 
         # if we have multiple synchronized amps
         if len(self.inlets) > 1:
