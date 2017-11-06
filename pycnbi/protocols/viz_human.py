@@ -29,7 +29,12 @@ import numpy as np
 import pycnbi
 import pycnbi.glass.bgi_client as bgi_client
 import pycnbi.utils.q_common as qc
+import gzip
 from builtins import input
+try:
+    import cPickle as pickle  # Python 2 (cPickle = C version of pickle)
+except ImportError:
+    import pickle  # Python 3 (C version is the default)
 
 
 def read_images(img_path, screen_size=None):
@@ -137,13 +142,19 @@ class BodyVisual(object):
             savepkl = input('You can save the images into a single binary file, which significantly decreases loading time. Save it? (y/n)')
             if savepkl.upper() == 'Y':
                 outfile = '%s/BodyVisuals.pkl' % image_path
-                qc.save_obj(outfile , {'left_images':self.left_images,\
-                    'right_images':self.right_images})
+                img_data = {'left_images':self.left_images, 'right_images':self.right_images}
+                fp = gzip.open(outfile, 'wb')
+                pickle.dump(img_data, fp)
+                fp.close()
+                #qc.save_obj(outfile, img_data)
                 print('Done. Please modify your IMAGE_PATH config to point to "%s".' % outfile)
         else:
             assert image_path[-4:] == '.pkl', 'The file must be of .pkl format'
             print('Loading image binary file %s ...' % image_path, end=' ')
-            image_data = qc.load_obj(image_path)
+            fp = gzip.open(image_path,'rb') # This assumes that primes.data is already packed with gzip
+            image_data = pickle.load(fp)
+            fp.close()
+            #image_data = qc.load_obj(image_path)
             self.left_images = image_data['left_images']
             self.right_images = image_data['right_images']
             print('Done.')
