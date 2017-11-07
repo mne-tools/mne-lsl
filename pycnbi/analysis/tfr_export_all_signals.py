@@ -1,0 +1,129 @@
+from __future__ import print_function, division
+
+"""
+Time-frequency analysis using Morlet wavelets or multitapers
+TFR computed on each raw file, from the beginning until the end.
+
+Kyuhwa Lee, 2017
+
+"""
+
+import pycnbi
+import pycnbi.utils.pycnbi_utils as pu
+import sys
+import os
+import mne
+import scipy
+import multiprocessing as mp
+import numpy as np
+import pycnbi.utils.q_common as qc
+import mne.time_frequency
+import imp
+from builtins import input
+from IPython import embed
+
+def check_cfg(cfg):
+    if not hasattr(cfg, 'N_JOBS'):
+        cfg.N_JOBS = None
+    if not hasattr(cfg, 'T_BUFFER'):
+        cfg.T_BUFFER = 1
+    if not hasattr(cfg, 'BS_MODE'):
+        cfg.BS_MODE = 'logratio'
+    if not hasattr(cfg, 'EXPORT_PNG'):
+        cfg.EXPORT_PNG = False
+    if not hasattr(cfg, 'EXPORT_MATLAB'):
+        cfg.MATLAB = False
+    return cfg
+
+def get_tfr_all_signals(cfg, tfr_type='multitaper', recursive=False, export_path=None, n_jobs=1):
+    '''
+    @params:
+    tfr_type: 'multitaper' or 'morlet'
+    recursive: if True, load raw files in sub-dirs recursively
+    export_path: path to save plots
+    n_jobs: number of cores to run in parallel
+    '''
+
+    cfg = check_cfg(cfg)
+
+    t_buffer = cfg.T_BUFFER
+    if tfr_type == 'multitaper':
+        tfr = mne.time_frequency.tfr_multitaper
+    elif tfr_type == 'morlet':
+        tfr = mne.time_frequency.tfr_morlet
+    else:
+        raise ValueError('Wrong TFR type %s' % tfr_type)
+    n_jobs = cfg.N_JOBS
+    if n_jobs is None:
+        n_jobs = mp.cpu_count()
+
+    for f in qc.get_file_list(cfg.DATA_DIR, fullpath=True, recursive=recursive):
+        [fdir, fname, fext] = qc.parse_path_list(f)
+        if fext in ['fif', 'bdf', 'gdf']:
+            get_tfr(f, cfg, tfr, n_jobs=n_jobs)
+
+def get_tfr(f, cfg, tfr, n_jobs=1):
+    raw, events = pu.load_raw(f)
+    p = qc.parse_path(f)
+    fname = p.name
+    outpath = p.dir
+
+    export_dir = '%s/plot_%s' % (outpath, fname)
+    qc.make_dirs(export_dir)
+
+    # set channels of interest
+    picks = pu.channel_names_to_index(raw, cfg.CHANNEL_PICKS)
+    spchannels = pu.channel_names_to_index(raw, cfg.SP_CHANNELS)
+
+    if max(picks) > len(raw.info['ch_names']):
+        msg = 'ERROR: "picks" has a channel index %d while there are only %d channels.' %\
+              (max(picks), len(raw.info['ch_names']))
+        raise RuntimeError(msg)
+
+    # Apply filters
+    pu.preprocess(raw, spatial=cfg.SP_FILTER, spatial_ch=spchannels, spectral=cfg.TP_FILTER,
+                  spectral_ch=picks, notch=cfg.NOTCH_FILTER, notch_ch=picks,
+                  multiplier=cfg.MULTIPLIER, n_jobs=n_jobs)
+
+    # MNE TFR functions do not support Raw instances yet, so convert to Epoch
+    raw._data[0][0] = 999
+    tmax = (raw._data.shape[1] - 1) / raw.info['sfreq']
+    epochs_all = mne.Epochs(raw, np.array([[0, 0, 999]]), None, tmin=0, tmax=tmax,
+                    picks=picks, baseline=(None, None), preload=True)
+    print('\n>> Processing %s' % f)
+    freqs = cfg.FREQ_RANGE  # define frequencies of interest
+    n_cycles = freqs / 2.  # different number of cycle per frequency
+    power = tfr(epochs_all, freqs=freqs, n_cycles=n_cycles, use_fft=False,
+        return_itc=False, decim=1, n_jobs=n_jobs)
+
+    if cfg.EXPORT_MATLAB is True:
+        # export all channels to MATLAB
+        mout = '%s/%s-%s.mat' % (export_dir, fname, cfg.SP_FILTER)
+        scipy.io.savemat(mout, {'tfr':power.data, 'chs':power.ch_names, 'events':events, 'sfreq':raw.info['sfreq'], 'freqs':cfg.FREQ_RANGE})
+
+    if cfg.EXPORT_PNG is True:
+        # Plot power of each channel
+        for ch in np.arange(len(picks)):
+            ch_name = raw.ch_names[picks[ch]]
+            title = 'Channel %s' % (ch_name)
+            # mode= None | 'logratio' | 'ratio' | 'zscore' | 'mean' | 'percent'
+            fig = power.plot([ch], baseline=(None, None), mode='logratio', show=False,
+                colorbar=True, title=title, vmin=cfg.VMIN, vmax=cfg.VMAX, dB=False)
+            fout = '%s/%s-%s-%s.png' % (export_dir, fname, cfg.SP_FILTER, ch_name)
+            fig.savefig(fout)
+            print('Exported %s' % fout)
+
+    print('Finished !')
+
+def config_run(cfg_module):
+    cfg = imp.load_source(cfg_module, cfg_module)
+    if not hasattr(cfg, 'TFR_TYPE'):
+        cfg.TFR_TYPE = 'multitaper'
+    get_tfr_all_signals(cfg, tfr_type=cfg.TFR_TYPE)
+
+if __name__ == '__main__':
+    if len(sys.argv) < 2:
+        cfg_module = input('Config file name? ')
+    else:
+        cfg_module = sys.argv[1]
+    config_run(cfg_module)
