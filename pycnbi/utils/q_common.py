@@ -227,7 +227,7 @@ try:
     colorama.init()
 
 
-    def print_c(msg, color, end='\n'):
+    def print_c(msg, color=None, end='\n'):
         """
         Colored print using colorama.
 
@@ -242,10 +242,13 @@ try:
 
         """
 
+        if color is None:
+            print(str(msg), end=end)
+            return
+
         color = str(color)
         if len(color) != 1:
             raise RuntimeError('Color parameter must be a single color code. Received type %s' % type(color))
-
         if color.upper() == 'B':
             c = colorama.Fore.BLUE
         elif color.upper() == 'R':
@@ -261,10 +264,9 @@ try:
         else:
             assert False, 'pu.print_color(): Wrong color code.'
         print(colorama.Style.BRIGHT + c + str(msg) + colorama.Style.RESET_ALL, end=end)
+
 except ImportError:
     print('\n\n*** WARNING: colorama module not found. print_c() will ignore color codes. ***\n')
-
-
     def print_c(msg, color, end='\n'):
         print(msg, end=end)
 
