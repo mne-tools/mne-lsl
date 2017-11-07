@@ -479,7 +479,9 @@ def parse_path(file_path):
     Input:
         full path
     Returns:
-        base dir, file(or dir) name, extension (if file)
+        self.dir = base directory of the file
+        self.name = file name without extension
+        self.ext = file extension
     """
 
     class path_info:
