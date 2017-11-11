@@ -8,12 +8,10 @@ Kyuhwa Lee
 
 """
 
-amp_name = None
+amp_name = 'openvibeSignal'
 amp_serial = None
 
 # screen
-screen_width = 1680
-screen_height = 1050
 screen_offset_x = 100
 screen_offset_y = 100
 
