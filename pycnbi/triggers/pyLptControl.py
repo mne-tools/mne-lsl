@@ -134,7 +134,7 @@ class Trigger(object):
             self.evefile = open(evefile, 'a')
 
             # check server LSL time server integrity
-            self.print("Checking LSL server's timestamp integrity for logging software triggers.", color='y')
+            self.print("Checking LSL server's timestamp integrity for logging software triggers.")
             amp_name, amp_serial = pu.search_lsl()
             sr = StreamReceiver(window_size=1, buffer_size=1, amp_serial=amp_serial, eeg_only=False, amp_name=amp_name)
             local_time = pylsl.local_clock()
@@ -142,7 +142,7 @@ class Trigger(object):
             lsl_time_offset = local_time - server_time
             with open(eveoffset_file, 'a') as f:
                 f.write('Local time: %.6f, Server time: %.6f, Offset: %.6f\n' % (local_time, server_time, lsl_time_offset))
-            self.print('LSL timestamp offset (%.3f) saved to %s' % (lsl_time_offset, eveoffset_file), color='w')
+            self.print('LSL timestamp offset (%.3f) saved to %s' % (lsl_time_offset, eveoffset_file))
 
         elif self.lpttype == 'FAKE' or self.lpttype is None or self.lpttype is False:
             self.print('WARNING: Using a fake trigger.')
@@ -159,9 +159,9 @@ class Trigger(object):
             self.print('Event file saved.')
             sys.stdout.flush()
 
-    def print(self, *args, color=None):
-        qc.print_c('[pyLptControl] ', end='', color=color)
-        qc.print_c(*args, color=color)
+    def print(self, *args):
+        qc.print_c('[pyLptControl] ', color='w', end='')
+        print(*args)
 
     def init(self, duration):
         if self.lpttype == 'SOFTWARE':
