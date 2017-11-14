@@ -73,6 +73,19 @@ class Feedback:
         else:
             self.logf = None
 
+        # STIMO only
+        if self.cfg.WITH_STIMO is True:
+            print('Opening STIMO serial port (%s / %d bps)' % (self.cfg.STIMO_COMPORT, self.cfg.STIMO_BAUDRATE))
+            import serial
+            self.ser = serial.Serial(self.cfg.STIMO_COMPORT, self.cfg.STIMO_BAUDRATE)
+            print('STIMO serial port %s is_open = %s' % (self.cfg.STIMO_COMPORT, self.ser.is_open))
+
+    def __del__(self):
+        # STIMO only
+        if self.cfg.WITH_STIMO is True:
+            self.ser.close()
+            print('Closed STIMO serial port %s' % self.cfg.STIMO_COMPORT)
+
     def classify(self, decoder, true_label, title_text, bar_dirs, state='start'):
         """
         Run a single trial
@@ -178,15 +191,22 @@ class Feedback:
                         else:
                             self.bar.move(bar_label, 100, overlay=False, barcolor='Y')
                     else:
-                        self.bar.move(bar_label, bar_score, overlay=False, barcolor='Y', caption='TRIAL END', caption_color='Y')
-                        ########################## TEST WITH BAR #############################
-                        '''
                         if self.cfg.FEEDBACK_TYPE == 'BODY':
                             self.bar.move(bar_label, bar_score, overlay=False, barcolor='Y', caption='TRIAL END', caption_color='Y')
                         else:
                             self.bar.move(bar_label, 0, overlay=False, barcolor='Y')
-                        '''
                     self.trigger.signal(self.tdef.FEEDBACK)
+
+                    # STIMO code
+                    #if self.cfg.WITH_STIMO is True and pred_label == true_label:
+                    if self.cfg.WITH_STIMO is True:
+                        if bar_label == 'L':
+                            self.ser.write(b'1')
+                            qc.print_c('STIMO: Sent 1', 'g')
+                        elif bar_label == 'R':
+                            self.ser.write(b'2')
+                            qc.print_c('STIMO: Sent 2', 'g')
+
                     probs_acc /= sum(probs_acc)
                     if self.cfg.DEBUG_PROBS:
                         msg = 'DEBUG: Accumulated probabilities = %s' % qc.list2string(probs_acc, '%.3f')
@@ -221,35 +241,6 @@ class Feedback:
                         probs_acc += np.array(probs_new)
                         for i in range(len(probs_new)):
                             probs[i] = probs[i] * self.alpha1 + probs_new[i] * self.alpha2
-
-                        ################ TEST ################
-                        ################ TEST ################
-                        ################ TEST ################
-                        ################ TEST ################
-                        ################ TEST ################
-                        ################ TEST ################
-                        ################ TEST ################
-                        ################ TEST ################
-                        ################ TEST ################
-                        ################ TEST ################
-                        ################ TEST ################
-                        ################ TEST ################
-                        ################ TEST ################
-                        #probs = probs_new
-                        ################ TEST ################
-                        ################ TEST ################
-                        ################ TEST ################
-                        ################ TEST ################
-                        ################ TEST ################
-                        ################ TEST ################
-                        ################ TEST ################
-                        ################ TEST ################
-                        ################ TEST ################
-                        ################ TEST ################
-                        ################ TEST ################
-                        ################ TEST ################
-                        ################ TEST ################
-
 
                         ''' Original: accumulate and bias
                         # accumulate probs
@@ -287,7 +278,7 @@ class Feedback:
 
                             ################################################
                             ################################################
-                            # slower in the beginning
+                            # slower in the beginning?
                             if self.tm_trigger.sec() < 2.0:
                                 dx *= self.tm_trigger.sec() * 0.5
                             ################################################
