@@ -292,7 +292,8 @@ def test_all_bits(trigger):
 
 # sample test code
 if __name__ == '__main__':
-    trigger = Trigger('ARDUINO') # Arduino trigger
+    #trigger = Trigger('ARDUINO') # Arduino trigger
+    trigger = Trigger('COM7') # Arduino trigger
     if not trigger.init(20):
         print('LPT port cannot be opened. Using mock trigger.')
         trigger = MockTrigger()

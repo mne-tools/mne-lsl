@@ -90,6 +90,8 @@ def check_cfg(cfg):
     if not hasattr(cfg, 'SHOW_CUE'):
         qc.print_c('Warning: SHOW_CUE undefined. Setting it to True.', 'Y')
         cfg.SHOW_CUE = True
+    if not hasattr(cfg, 'WITH_STIMO'):
+        cfg.WITH_STIMO = False
 
     return cfg
 
