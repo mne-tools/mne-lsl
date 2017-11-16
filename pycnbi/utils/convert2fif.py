@@ -252,7 +252,7 @@ def eeg2fif(filename, interactive=False, outdir=None):
     print('Saved to', fiffile)
 
 
-def gdf2fif(filename, interactive=False, outdir=None, ch_name_file=None):
+def gdf2fif(filename, interactive=False, outdir=None, channel_file=None):
     """
     g.Tec gdf format
 
@@ -295,11 +295,11 @@ def gdf2fif(filename, interactive=False, outdir=None, ch_name_file=None):
     signals[0] *= 0  # init the event channel
 
     # Note: gdf might have a software event channel
-    if ch_name_file is None:
+    if channel_file is None:
         ch_names = ['TRIGGER'] + ['CH%d' % x for x in range(1, nch)]
     else:
         ch_names_raw = []
-        for l in open(ch_name_file):
+        for l in open(channel_file):
             ch_names_raw.append(l.strip())
         if ch_names_raw[-1] != 'TRIGGER':
             input(
@@ -425,7 +425,7 @@ def bdf2fif_matlab(filename, interactive=False, outdir=None):
     print('Saved to', fiffile)
 
 
-def any2fif(filename, interactive=False, outdir=None, ch_name_file=None):
+def any2fif(filename, interactive=False, outdir=None, channel_file=None):
     """
     Generic file format converter
     """
@@ -440,7 +440,7 @@ def any2fif(filename, interactive=False, outdir=None, ch_name_file=None):
     elif fext in ['edf', 'bdf']:
         bdf2fif(filename, interactive=interactive, outdir=outdir)
     elif fext == 'gdf':
-        gdf2fif(filename, interactive=interactive, outdir=outdir, ch_name_file=ch_name_file)
+        gdf2fif(filename, interactive=interactive, outdir=outdir, channel_file=channel_file)
     else:  # unknown format
         qc.print_c('WARNING: Ignored unrecognized file extension %s. It should be [.pcl | .eeg | .gdf | .bdf]' % fext,
                    'r')
@@ -452,17 +452,19 @@ if __name__ == '__main__':
     else:
         input_dir = sys.argv[1]
         if len(sys.argv) >= 3:
-            ch_name_file = sys.argv[2]
+            channel_file = sys.argv[2]
         else:
-            ch_name_file = None
+            channel_file = None
+    main(input_dir, channel_file)
 
+def main(input_dir, channel_file=None):
     count = 0
     for f in qc.get_file_list(input_dir, fullpath=True, recursive=True):
         fdir, fname, fext = qc.parse_path_list(f)
         outdir = fdir + 'fif/'
         if fext in ['pcl', 'bdf', 'edf', 'gdf', 'eeg']:
             print('Converting %s' % f)
-            any2fif(f, interactive=True, outdir=outdir, ch_name_file=ch_name_file)
+            any2fif(f, interactive=True, outdir=outdir, channel_file=channel_file)
             count += 1
 
     print('\n>> %d files converted.' % count)
