@@ -197,6 +197,16 @@ class Feedback:
                             self.bar.move(bar_label, 0, overlay=False, barcolor='Y')
                     self.trigger.signal(self.tdef.FEEDBACK)
 
+                    # STIMO code
+                    #if self.cfg.WITH_STIMO is True and pred_label == true_label:
+                    if self.cfg.WITH_STIMO is True:
+                        if bar_label == 'L':
+                            self.ser.write(b'1')
+                            qc.print_c('STIMO: Sent 1', 'g')
+                        elif bar_label == 'R':
+                            self.ser.write(b'2')
+                            qc.print_c('STIMO: Sent 2', 'g')
+
                     probs_acc /= sum(probs_acc)
                     if self.cfg.DEBUG_PROBS:
                         msg = 'DEBUG: Accumulated probabilities = %s' % qc.list2string(probs_acc, '%.3f')
@@ -269,8 +279,8 @@ class Feedback:
                             ################################################
                             ################################################
                             # slower in the beginning?
-                            #if self.tm_trigger.sec() < 2.0:
-                            #    dx *= self.tm_trigger.sec() * 0.5
+                            if self.tm_trigger.sec() < 2.0:
+                                dx *= self.tm_trigger.sec() * 0.5
                             ################################################
                             ################################################
 
@@ -306,26 +316,6 @@ class Feedback:
                             if self.logf is not None:
                                 self.logf.write(msg + '\n')
                             tm_classify.reset()
-
-                            if self.cfg.WITH_STIMO is True:
-                                if bar_score >= 100:
-                                    if bar_label == 'L':
-                                        self.ser.write(b'1')
-                                        qc.print_c('STIMO: Sent 1', 'g')
-                                    elif bar_label == 'R':
-                                        self.ser.write(b'2')
-                                        qc.print_c('STIMO: Sent 2', 'g')
-                                    while bar_score > 0:
-                                        self.bar.move(bar_label, bar_score, overlay=False, barcolor='Y')
-                                        self.bar.update()
-                                        bar_score -= 5
-                                        time.sleep(self.refresh_delay)
-                                    bar_score = 0
-                                    probs = [1.0 / len(bar_dirs)] * len(bar_dirs)
-                                    probs_acc = np.zeros(len(probs))
-                                else:
-                                    self.ser.write(b'0')
-                                    qc.print_c('STIMO: Sent 0', 'g')
 
             elif state == 'feedback' and self.tm_trigger.sec() > self.cfg.T_FEEDBACK:
                 self.trigger.signal(self.tdef.BLANK)
