@@ -132,31 +132,36 @@ class BodyVisual(object):
         self.yl2 = self.yl1 - self.barwidth
         self.yr1 = self.cy + hw
         self.yr2 = self.yr1 + self.barwidth
+
         if os.path.isdir(image_path):
+            # load images
             left_image_path = '%s/left' % image_path
             right_image_path = '%s/right' % image_path
+            tm = qc.Timer()
             print('Reading images from %s' % left_image_path )
             self.left_images = read_images(left_image_path, screen_size)
             print('Reading images from %s' % right_image_path)
             self.right_images = read_images(right_image_path, screen_size)
-            savepkl = input('You can save the images into a single binary file, which significantly decreases loading time. Save it? (y/n)')
+            print('Took %.1f s' % tm.sec())
+            savepkl = input('You can save images into a single binary file to reduce the loading time. Save? (y/n)')
             if savepkl.upper() == 'Y':
                 outfile = '%s/BodyVisuals.pkl' % image_path
                 img_data = {'left_images':self.left_images, 'right_images':self.right_images}
-                fp = gzip.open(outfile, 'wb')
-                pickle.dump(img_data, fp)
-                fp.close()
-                #qc.save_obj(outfile, img_data)
-                print('Done. Please modify your IMAGE_PATH config to point to "%s".' % outfile)
+                with gzip.open(outfile, 'wb') as fp:
+                    pickle.dump(img_data, fp)
+                print('Exported to %s' % outfile)
+                print('Please modify your IMAGE_PATH to point to the above file.')
         else:
+            # load pickled images
+            # note: this is painfully slow in Pytohn 2 even with cPickle (3s vs 27s)
             assert image_path[-4:] == '.pkl', 'The file must be of .pkl format'
             print('Loading image binary file %s ...' % image_path, end=' ')
-            fp = gzip.open(image_path,'rb') # This assumes that primes.data is already packed with gzip
-            image_data = pickle.load(fp)
-            fp.close()
-            #image_data = qc.load_obj(image_path)
+            tm = qc.Timer()
+            with gzip.open(image_path, 'rb') as fp:
+                image_data = pickle.load(fp)
             self.left_images = image_data['left_images']
             self.right_images = image_data['right_images']
+            print('Took %.1f s' % tm.sec())
             print('Done.')
         cv2.namedWindow("img", cv2.WINDOW_AUTOSIZE)
         cv2.moveWindow("img", screen_x, screen_y)
