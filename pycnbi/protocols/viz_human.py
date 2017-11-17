@@ -143,14 +143,16 @@ class BodyVisual(object):
             print('Reading images from %s' % right_image_path)
             self.right_images = read_images(right_image_path, screen_size)
             print('Took %.1f s' % tm.sec())
-            savepkl = input('You can save images into a single binary file to reduce the loading time. Save? (y/n)')
-            if savepkl.upper() == 'Y':
-                outfile = '%s/BodyVisuals.pkl' % image_path
-                img_data = {'left_images':self.left_images, 'right_images':self.right_images}
-                with gzip.open(outfile, 'wb') as fp:
-                    pickle.dump(img_data, fp)
-                print('Exported to %s' % outfile)
-                print('Please modify your IMAGE_PATH to point to the above file.')
+            # it will be much slower in Python even with cPickle
+            if pickle.HIGHEST_PROTOCOL >= 4:
+                savepkl = input('You can save images into a single binary file to reduce the loading time. Save? (y/n)')
+                if savepkl.upper() == 'Y':
+                    outfile = '%s/BodyVisuals.pkl' % image_path
+                    img_data = {'left_images':self.left_images, 'right_images':self.right_images}
+                    with gzip.open(outfile, 'wb') as fp:
+                        pickle.dump(img_data, fp)
+                    print('Exported to %s' % outfile)
+                    print('Please modify your IMAGE_PATH to point to the above file.')
         else:
             # load pickled images
             # note: this is painfully slow in Pytohn 2 even with cPickle (3s vs 27s)
