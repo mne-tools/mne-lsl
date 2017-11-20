@@ -28,7 +28,8 @@ CAP = {
     'ANTNEURO_MI15':['TRIGGER'] + ['Fz', 'FC1', 'FC2', 'C3', 'Cz', 'C4', 'CP1', 'CP2', 'FC3',
                                    'FCz', 'FC4', 'C1', 'C2', 'CP3', 'CP4'],
     'ANTNEURO_MI15_INFO':['stim'] + ['eeg'] * 15,
-    'ANTNEURO_64':['Fp1','Fpz','Fp2','F7','F3','Fz','F4','F8','FC5','FC1','FC2','FC6','T7','C3','Cz','C4','T8','CP5','CP1','CP2','CP6','P7','P3','Pz','P4','P8','POz','O1','O2','AF7','AF3','AF4','AF8','F5','F1','F2','F6','FC3','FCz','FC4','C5','C1','C2','C6','CP3','CP4','P5','P1','P2','P6','PO5','PO3','PO4','PO6','FT7','FT8','TP7','TP8','PO7','PO8','Oz']
+    'ANTNEURO_64':['Fp1','Fpz','Fp2','F7','F3','Fz','F4','F8','FC5','FC1','FC2','FC6','T7','C3','Cz','C4','T8','CP5','CP1','CP2','CP6','P7','P3','Pz','P4','P8','POz','O1','O2','AF7','AF3','AF4','AF8','F5','F1','F2','F6','FC3','FCz','FC4','C5','C1','C2','C6','CP3','CP4','P5','P1','P2','P6','PO5','PO3','PO4','PO6','FT7','FT8','TP7','TP8','PO7','PO8','Oz'],
+    'ANTNEURO_64_NO_PERIPHERAL':['Fp1','Fpz','Fp2','F3','Fz','F4','FC5','FC1','FC2','FC6','C3','Cz','C4','CP5','CP1','CP2','CP6','P3','Pz','P4','POz','O1','O2','AF3','AF4','F5','F1','F2','F6','FC3','FCz','FC4','C5','C1','C2','C6','CP3','CP4','P5','P1','P2','P6','PO5','PO3','PO4','PO6','Oz']
 }
 
 # spatial laplacian channel definitions

@@ -51,7 +51,9 @@ color = dict(G=(20, 140, 0), B=(210, 0, 0), R=(0, 50, 200), Y=(0, 215, 235),
              K=(0, 0, 0), W=(255, 255, 255), w=(200, 200, 200))
 
 
-def check_cfg(cfg):
+def load_cfg(cfg_module):
+    cfg = imp.load_source(cfg_module, cfg_module)
+    
     if not hasattr(cfg, 'POSITIVE_FEEDBACK'):
         qc.print_c('Warning: POSITIVE_FEEDBACK undefined. Setting it to False.',
                    'Y')
@@ -92,13 +94,15 @@ def check_cfg(cfg):
         cfg.SHOW_CUE = True
     if not hasattr(cfg, 'WITH_STIMO'):
         cfg.WITH_STIMO = False
+    if not hasattr(cfg, 'FEEDBACK_SLOW_START'):
+        cfg.FEEDBACK_SLOW_START = False
 
     return cfg
 
 def config_run(cfg_module):
     if not (os.path.exists(cfg_module) and os.path.isfile(cfg_module)):
         raise IOError('%s cannot be loaded.' % os.path.realpath(cfg_module))
-    cfg = check_cfg(imp.load_source(cfg_module, cfg_module))
+    cfg = load_cfg(cfg_module)
     if cfg.FAKE_CLS is None:
         # chooose amp
         if cfg.AMP_NAME is None and cfg.AMP_SERIAL is None:
