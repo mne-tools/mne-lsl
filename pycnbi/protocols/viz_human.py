@@ -124,10 +124,10 @@ class BodyVisual(object):
         hw = int(self.barwidth / 2)
         self.cx = int(self.width / 2)
         self.cy = int(self.height / 2)
-        self.xl1 = self.cx - hw  # 200
-        self.xl2 = self.xl1 - self.barwidth  # 100
-        self.xr1 = self.cx + hw  # 300
-        self.xr2 = self.xr1 + self.barwidth  # 400
+        self.xl1 = self.cx - hw
+        self.xl2 = self.xl1 - self.barwidth
+        self.xr1 = self.cx + hw
+        self.xr2 = self.xr1 + self.barwidth
         self.yl1 = self.cy - hw
         self.yl2 = self.yl1 - self.barwidth
         self.yr1 = self.cy + hw
