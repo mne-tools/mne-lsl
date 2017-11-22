@@ -138,6 +138,9 @@ def get_tfr(cfg, tfr_type='multitaper', recursive=False, export_path=None, n_job
         n_cycles = freqs / 2.  # different number of cycle per frequency
         if cfg.POWER_AVERAGED:
             epochs = epochs_all[evname][:]
+            if len(epochs) == 0:
+                print('No %s epochs. Skipping.' % evname)
+                continue
             power[evname] = tfr(epochs, freqs=freqs, n_cycles=n_cycles, use_fft=False,
                 return_itc=False, decim=1, n_jobs=n_jobs)
             power[evname] = power[evname].crop(tmin=cfg.EPOCH[0], tmax=cfg.EPOCH[1])
@@ -161,6 +164,9 @@ def get_tfr(cfg, tfr_type='multitaper', recursive=False, export_path=None, n_job
         else:
             for ep in range(len(epochs_all[evname])):
                 epochs = epochs_all[evname][ep]
+                if len(epochs) == 0:
+                    print('No %s epochs. Skipping.' % evname)
+                    continue
                 power[evname] = tfr(epochs, freqs=freqs, n_cycles=n_cycles, use_fft=False,
                     return_itc=False, decim=1, n_jobs=n_jobs)
                 power[evname] = power[evname].crop(tmin=cfg.EPOCH[0], tmax=cfg.EPOCH[1])
