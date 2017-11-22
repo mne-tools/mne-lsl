@@ -5,6 +5,9 @@ Kyuhwa Lee, 2014
 
 """
 
+import os
+PYCNBI_ROOT = os.path.dirname(os.path.realpath(__file__))
+
 # channel names (trigger channel is index 0 so that eeg channels start from index 1)
 CAP = {
     'GTEC_16':['TRIGGER', 'Fz', 'FC3', 'FC1', 'FCz', 'FC2', 'FC4',
