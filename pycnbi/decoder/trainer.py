@@ -841,6 +841,7 @@ def run_trainer(cfg, ftrain, interactive=False, cv_file=None, feat_file=None):
             print()
 
 def config_run(cfg_module):
+    cfg_module = qc.forward_slashify(cfg_module)
     cfg = imp.load_source(cfg_module, cfg_module)
 
     # get train list
