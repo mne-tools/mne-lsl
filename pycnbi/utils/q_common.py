@@ -528,6 +528,9 @@ def parse_path_list(path):
     return basedir, name, ext
 
 
+def forward_slashify(txt):
+    return txt.replace('\\\\', '/').replace('\\', '/')
+
 '''"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
  Timer class
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""'''
