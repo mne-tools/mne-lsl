@@ -39,6 +39,7 @@ import pycnbi.utils.q_common as qc
 import pycnbi.glass.bgi_client as bgi_client
 from pycnbi.decoder.decoder import BCIDecoderDaemon, BCIDecoder
 from pycnbi.triggers.trigger_def import trigger_def
+from pycnbi.protocols.feedback import Feedback
 import pycnbi.utils.pycnbi_utils as pu
 from builtins import input
 from IPython import embed
@@ -161,7 +162,6 @@ def config_run(cfg_module):
         time.sleep(0.01)
 
     # bar visual object
-    from pycnbi.protocols.feedback import Feedback
     if cfg.FEEDBACK_TYPE == 'BAR':
         from pycnbi.protocols.viz_bars import BarVisual
         visual = BarVisual(cfg.GLASS_USE, screen_pos=cfg.SCREEN_POS,
