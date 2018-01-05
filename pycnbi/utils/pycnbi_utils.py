@@ -633,8 +633,10 @@ def search_lsl(ignore_markers=False):
         streamInfos = pylsl.resolve_streams()
         if len(streamInfos) > 0:
             for index, si in enumerate(streamInfos):
-                desc = pylsl.StreamInlet(si).info().desc()
-                amp_serial = desc.child('acquisition').child_value('serial_number').strip()
+                # LSL XML parser has a bug which crashes so do not use for now
+                #desc = pylsl.StreamInlet(si).info().desc()
+                #amp_serial = desc.child('acquisition').child_value('serial_number').strip()
+                amp_serial = 'N/A' # serial number not supported yet
                 amp_name = si.name()
                 if 'Markers' in amp_name:
                     amp_list_backup.append((index, amp_name, amp_serial))
@@ -666,7 +668,8 @@ def search_lsl(ignore_markers=False):
     amp_index, amp_name, amp_serial = amp_list[index]
     si = streamInfos[amp_index]
     assert amp_name == si.name()
-    assert amp_serial == pylsl.StreamInlet(si).info().desc().child('acquisition').child_value('serial_number').strip()
+    # LSL XML parser has a bug which crashes so do not use for now
+    #assert amp_serial == pylsl.StreamInlet(si).info().desc().child('acquisition').child_value('serial_number').strip()
     print('Selected %s (Serial: %s)' % (amp_name, amp_serial))
 
     return amp_name, amp_serial
