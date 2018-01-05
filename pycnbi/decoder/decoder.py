@@ -499,7 +499,7 @@ def sample_decoding(model_file, buffer_size=1.0, amp_name=None, amp_serial=None)
 
 # sample code
 if __name__ == '__main__':
-    model_file = r'D:\data\CHUV\ECoG17\20171005\fif_corrected\stepblocks\classifier_steps\classifier-64bit.pkl'
+    model_file = r'D:\data\Records\fif\classifier_0.19\classifier-64bit.pkl'
 
     if len(sys.argv) == 2:
         amp_name = sys.argv[1]
@@ -512,5 +512,6 @@ if __name__ == '__main__':
         amp_name = None
     print('Connecting to a server %s (Serial %s).' % (amp_name, amp_serial))
 
-    check_speed(model_file, amp_name, amp_serial, 1000)
-    #sample_decoding(model_file, amp_name=amp_name, amp_serial=amp_serial)
+    #check_speed(model_file, amp_name, amp_serial, 1000)
+    
+    sample_decoding(model_file, amp_name=amp_name, amp_serial=amp_serial)

@@ -29,3 +29,5 @@ pycnbi_project.wpu
 *.hdf5
 *.gdf
 *.bdf
+*.wpr
+*.wpu
