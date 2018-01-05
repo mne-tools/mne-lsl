@@ -107,7 +107,9 @@ class StreamReceiver:
                 for si in streamInfos:
                     # is_slave= ('true'==pylsl.StreamInlet(si).info().desc().child('amplifier').child('settings').child('is_slave').first_child().value() )
                     inlet = pylsl.StreamInlet(si)
-                    amp_serial = inlet.info().desc().child('acquisition').child_value('serial_number')
+                    # LSL XML parser has a bug which crashes so do not use for now
+                    #amp_serial = inlet.info().desc().child('acquisition').child_value('serial_number')
+                    amp_serial = 'N/A'
                     amp_name = si.name()
                     # qc.print_c('Found %s (%s)'% (amp_name,amp_serial), 'G')
 
