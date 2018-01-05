@@ -20,6 +20,7 @@ import pylsl
 import mne
 import numpy as np
 import multiprocessing as mp
+import xml.etree.ElementTree as ET
 import pycnbi.utils.q_common as qc
 from pycnbi.pycnbi_config import CAP, LAPLACIAN
 from scipy.signal import butter, lfilter, lfiltic, buttord
@@ -680,16 +681,24 @@ def lsl_channel_list(inlet):
     Returns:
         ch_list: [ name1, name2, ... ]
     """
+    if not type(inlet) is pylsl.StreamInlet:
+        raise TypeError('lsl_channel_list(): wrong input type %s' % type(inlet))
+    root = ET.fromstring(inlet.info().as_xml())
+    desc = root.find('desc')
+    ch_list = []
+    for ch in desc.find('channels').getchildren():
+        ch_name = ch.find('label').text
+        ch_list.append(ch_name)
+
+    ''' This code may throw access violation error due to bug in pylsl.XMLElement
     # for some reason type(inlet) returns 'instance' type in Python 2.
-    #if not type(inlet) is pylsl.StreamInlet:
-    #    raise TypeError('lsl_channel_list(): wrong input type %s' % type(inlet))
     ch = inlet.info().desc().child('channels').first_child()
     ch_list = []
     for k in range(inlet.info().channel_count()):
         ch_name = ch.child_value('label')
-        print(ch_name)
         ch_list.append(ch_name)
         ch = ch.next_sibling()
+    '''
     return ch_list
 
 
