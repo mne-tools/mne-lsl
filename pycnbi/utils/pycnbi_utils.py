@@ -552,7 +552,7 @@ def load_multi(src, spfilter=None, spchannels=None, multiplier=1):
         raise TypeError('Unknown input type %s' % type(src))
 
     if len(flist) == 0:
-        raise RuntimeError('load_multi(): The file list is empty.')
+        raise RuntimeError('load_multi(): No fif files found in %s.' % src)
     elif len(flist) == 1:
         return load_raw(flist[0], spfilter=spfilter, spchannels=spchannels, multiplier=multiplier)
 
