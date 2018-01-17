@@ -7,7 +7,6 @@ Kyuhwa Lee, 2017
 
 """
 
-import pycnbi
 import pycnbi.utils.pycnbi_utils as pu
 import sys
 import os
@@ -29,21 +28,23 @@ def check_cfg(cfg):
     if not hasattr(cfg, 'BS_MODE'):
         cfg.BS_MODE = 'logratio'
     if not hasattr(cfg, 'EXPORT_PNG'):
-        cfg.EXPORT_PNG = False
+        cfg.EXPORT_PNG = True
     if not hasattr(cfg, 'EXPORT_MATLAB'):
-        cfg.MATLAB = False
+        cfg.MATLAB = True
+    if not hasattr(cfg, 'TFR_TYPE'):
+        cfg.TFR_TYPE = 'multitaper'
     return cfg
 
-def get_tfr(cfg, tfr_type='multitaper', recursive=False, export_path=None, n_jobs=1):
+def get_tfr(cfg, recursive=False, export_path=None):
     '''
     @params:
     tfr_type: 'multitaper' or 'morlet'
     recursive: if True, load raw files in sub-dirs recursively
     export_path: path to save plots
-    n_jobs: number of cores to run in parallel
     '''
 
     cfg = check_cfg(cfg)
+    tfr_type = cfg.TFR_TYPE
 
     t_buffer = cfg.T_BUFFER
     if tfr_type == 'multitaper':
@@ -136,7 +137,7 @@ def get_tfr(cfg, tfr_type='multitaper', recursive=False, export_path=None, n_job
         print('\n>> Processing %s' % evname)
         freqs = cfg.FREQ_RANGE  # define frequencies of interest
         n_cycles = freqs / 2.  # different number of cycle per frequency
-        if cfg.POWER_AVERAGED:
+        if cfg.POWER_AVERAGED: # averaged over epochs
             epochs = epochs_all[evname][:]
             if len(epochs) == 0:
                 print('No %s epochs. Skipping.' % evname)
@@ -161,7 +162,7 @@ def get_tfr(cfg, tfr_type='multitaper', recursive=False, export_path=None, n_job
                     fout = '%s/%s-%s-%s-%s.png' % (export_dir, file_prefix, cfg.SP_FILTER, evname, chname)
                     fig.savefig(fout)
                     print('Exported to %s' % fout)
-        else:
+        else: # per epoch
             for ep in range(len(epochs_all[evname])):
                 epochs = epochs_all[evname][ep]
                 if len(epochs) == 0:
@@ -208,9 +209,8 @@ def get_tfr(cfg, tfr_type='multitaper', recursive=False, export_path=None, n_job
 
 def config_run(cfg_module):
     cfg = imp.load_source(cfg_module, cfg_module)
-    if not hasattr(cfg, 'TFR_TYPE'):
-        cfg.TFR_TYPE = 'multitaper'
-    get_tfr(cfg, tfr_type=cfg.TFR_TYPE)
+    cfg = check_cfg(cfg)
+    get_tfr(cfg)
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
