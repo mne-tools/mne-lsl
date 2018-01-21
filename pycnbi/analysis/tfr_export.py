@@ -7,6 +7,7 @@ Kyuhwa Lee, 2017
 
 """
 
+import pycnbi
 import pycnbi.utils.pycnbi_utils as pu
 import sys
 import os
@@ -17,8 +18,9 @@ import numpy as np
 import pycnbi.utils.q_common as qc
 import mne.time_frequency
 import imp
+import pdb
+import traceback
 from builtins import input
-from IPython import embed
 
 def check_cfg(cfg):
     if not hasattr(cfg, 'N_JOBS'):
@@ -28,23 +30,21 @@ def check_cfg(cfg):
     if not hasattr(cfg, 'BS_MODE'):
         cfg.BS_MODE = 'logratio'
     if not hasattr(cfg, 'EXPORT_PNG'):
-        cfg.EXPORT_PNG = True
+        cfg.EXPORT_PNG = False
     if not hasattr(cfg, 'EXPORT_MATLAB'):
-        cfg.MATLAB = True
-    if not hasattr(cfg, 'TFR_TYPE'):
-        cfg.TFR_TYPE = 'multitaper'
+        cfg.MATLAB = False
     return cfg
 
-def get_tfr(cfg, recursive=False, export_path=None):
+def get_tfr(cfg, tfr_type='multitaper', recursive=False, export_path=None, n_jobs=1):
     '''
     @params:
     tfr_type: 'multitaper' or 'morlet'
     recursive: if True, load raw files in sub-dirs recursively
     export_path: path to save plots
+    n_jobs: number of cores to run in parallel
     '''
 
     cfg = check_cfg(cfg)
-    tfr_type = cfg.TFR_TYPE
 
     t_buffer = cfg.T_BUFFER
     if tfr_type == 'multitaper':
@@ -92,6 +92,8 @@ def get_tfr(cfg, recursive=False, export_path=None):
         else:
             outpath = export_path
 
+    sfreq = raw.info['sfreq']
+
     # set channels of interest
     picks = pu.channel_names_to_index(raw, cfg.CHANNEL_PICKS)
     spchannels = pu.channel_names_to_index(raw, cfg.SP_CHANNELS)
@@ -117,17 +119,38 @@ def get_tfr(cfg, recursive=False, export_path=None):
                     classes[str(t)] = t
         assert len(classes) > 0
 
-        epochs_all = mne.Epochs(raw, events, classes, tmin=cfg.EPOCH[0] - t_buffer, tmax=cfg.EPOCH[1] + t_buffer,
+        tmin = cfg.EPOCH[0]
+        tmin_buffer = tmin - t_buffer
+        raw_tmax = raw._data.shape[1] / sfreq - 0.1
+        if cfg.EPOCH[1] is None:
+            if cfg.POWER_AVERAGED:
+                raise ValueError('EPOCH value cannot have None for grand averaged TFR')
+            else:
+                if len(cfg.TRIGGERS) > 1:
+                    raise ValueError('If the end time of EPOCH is None, only a single event can be defined.')
+                t_ref = events[np.where(events[:,2] == list(cfg.TRIGGERS)[0])[0][0], 0] / sfreq
+                tmax = raw_tmax - t_ref - t_buffer
+        else:
+            tmax = cfg.EPOCH[1]
+        tmax_buffer = tmax + t_buffer
+        if tmax_buffer > raw_tmax:
+            raise ValueError('Epoch length with buffer (%.3f) is larger than signal length (%.3f)' % (tmax_buffer, raw_tmax))
+
+        #print('Epoch tmin = %.1f, tmax = %.1f, raw length = %.1f' % (tmin, tmax, raw_tmax))
+        epochs_all = mne.Epochs(raw, events, classes, tmin=tmin_buffer, tmax=tmax_buffer,
                                 proj=False, picks=picks, baseline=None, preload=True)
         if epochs_all.drop_log_stats() > 0:
             print('\n** Bad epochs found. Dropping into a Python shell.')
             print(epochs_all.drop_log)
+            print('tmin = %.1f, tmax = %.1f, tmin_buffer = %.1f, tmax_buffer = %.1f, raw length = %.1f' % \
+                (tmin, tmax, tmin_buffer, tmax_buffer, raw._data.shape[1] / sfreq))
             print('\nType exit to continue.\n')
-            embed()
+            pdb.set_trace()
     except:
-        import pdb, traceback
         print('\n*** (tfr_export) ERROR OCCURRED WHILE EPOCHING ***')
         traceback.print_exc()
+        print('tmin = %.1f, tmax = %.1f, tmin_buffer = %.1f, tmax_buffer = %.1f, raw length = %.1f' % \
+            (tmin, tmax, tmin_buffer, tmax_buffer, raw._data.shape[1] / sfreq))
         pdb.set_trace()
 
     power = {}
@@ -137,19 +160,20 @@ def get_tfr(cfg, recursive=False, export_path=None):
         print('\n>> Processing %s' % evname)
         freqs = cfg.FREQ_RANGE  # define frequencies of interest
         n_cycles = freqs / 2.  # different number of cycle per frequency
-        if cfg.POWER_AVERAGED: # averaged over epochs
+        if cfg.POWER_AVERAGED:
+            # grand-average TFR
             epochs = epochs_all[evname][:]
             if len(epochs) == 0:
                 print('No %s epochs. Skipping.' % evname)
                 continue
             power[evname] = tfr(epochs, freqs=freqs, n_cycles=n_cycles, use_fft=False,
                 return_itc=False, decim=1, n_jobs=n_jobs)
-            power[evname] = power[evname].crop(tmin=cfg.EPOCH[0], tmax=cfg.EPOCH[1])
+            power[evname] = power[evname].crop(tmin=tmin, tmax=tmax)
 
             if cfg.EXPORT_MATLAB is True:
                 # export all channels to MATLAB
                 mout = '%s/%s-%s-%s.mat' % (export_dir, file_prefix, cfg.SP_FILTER, evname)
-                scipy.io.savemat(mout, {'tfr':power[evname].data, 'chs':power[evname].ch_names, 'events':events, 'sfreq':raw.info['sfreq'], 'epochs':cfg.EPOCH, 'freqs':cfg.FREQ_RANGE})
+                scipy.io.savemat(mout, {'tfr':power[evname].data, 'chs':power[evname].ch_names, 'events':events, 'sfreq':sfreq, 'epochs':cfg.EPOCH, 'freqs':cfg.FREQ_RANGE})
             if cfg.EXPORT_PNG is True:
                 # Inspect power for each channel
                 for ch in np.arange(len(picks)):
@@ -162,7 +186,8 @@ def get_tfr(cfg, recursive=False, export_path=None):
                     fout = '%s/%s-%s-%s-%s.png' % (export_dir, file_prefix, cfg.SP_FILTER, evname, chname)
                     fig.savefig(fout)
                     print('Exported to %s' % fout)
-        else: # per epoch
+        else:
+            # TFR per event
             for ep in range(len(epochs_all[evname])):
                 epochs = epochs_all[evname][ep]
                 if len(epochs) == 0:
@@ -170,11 +195,11 @@ def get_tfr(cfg, recursive=False, export_path=None):
                     continue
                 power[evname] = tfr(epochs, freqs=freqs, n_cycles=n_cycles, use_fft=False,
                     return_itc=False, decim=1, n_jobs=n_jobs)
-                power[evname] = power[evname].crop(tmin=cfg.EPOCH[0], tmax=cfg.EPOCH[1])
+                power[evname] = power[evname].crop(tmin=tmin, tmax=tmax)
                 if cfg.EXPORT_MATLAB is True:
                     # export all channels to MATLAB
                     mout = '%s/%s-%s-%s-ep%02d.mat' % (export_dir, file_prefix, cfg.SP_FILTER, evname, ep + 1)
-                    scipy.io.savemat(mout, {'tfr':power[evname].data, 'chs':power[evname].ch_names, 'events':events, 'sfreq':raw.info['sfreq'], 'epochs':cfg.EPOCH, 'freqs':cfg.FREQ_RANGE})
+                    scipy.io.savemat(mout, {'tfr':power[evname].data, 'chs':power[evname].ch_names, 'events':events, 'sfreq':sfreq, 'tmin':tmin, 'tmax':tmax, 'freqs':cfg.FREQ_RANGE})
                 if cfg.EXPORT_PNG is True:
                     # Inspect power for each channel
                     for ch in np.arange(len(picks)):
@@ -209,8 +234,9 @@ def get_tfr(cfg, recursive=False, export_path=None):
 
 def config_run(cfg_module):
     cfg = imp.load_source(cfg_module, cfg_module)
-    cfg = check_cfg(cfg)
-    get_tfr(cfg)
+    if not hasattr(cfg, 'TFR_TYPE'):
+        cfg.TFR_TYPE = 'multitaper'
+    get_tfr(cfg, tfr_type=cfg.TFR_TYPE)
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
