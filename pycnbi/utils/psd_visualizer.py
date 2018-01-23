@@ -16,15 +16,15 @@ screen_offset_x = 100
 screen_offset_y = 100
 
 # channels
-channel_picks = ['FC1', 'FCz', 'FC2', 'C1', 'Cz', 'C2', 'CP1', 'CP2']
+channel_picks = ['L1', 'L2', 'L3', 'R1', 'R2', 'R3']
 
 # PSD
 w_seconds = 0.5
-fmin = 1
-fmax = 40
+fmin = 71
+fmax = 200
 
 # filters
-spatial = 'car'
+spatial = None #'car'
 spatial_ch = None
 spectral = None
 spectral_ch = None
@@ -75,7 +75,7 @@ if __name__ == '__main__':
         f += fq_res
     picks = [ch_names.index(ch) for ch in channel_picks]
     psd = get_psd(sr, psde, picks).T # freq x ch
-    assert len(hz_list) == psd.shape[0]
+    assert len(hz_list) == psd.shape[0], (len(hz_list), psd.shape[0])
     cv2.namedWindow("img", cv2.WINDOW_AUTOSIZE)
     cv2.moveWindow("img", screen_offset_x, screen_offset_y)
     #cv2.setWindowProperty("img", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN);
