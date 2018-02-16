@@ -43,7 +43,8 @@ def feature_importances(featfile, channels):
         else:
             data_hgamma[ch2index[ch]] += importance
         data_per_ch[ch2index[ch]] += importance
-    
+
+    print('>> Feature importance distribution')
     print('bands  ', qc.list2string(channels, '%6s'), '|', 'per band')
     print('-' * 66)
     print('delta  ', qc.list2string(data_delta, '%6.2f'), '| %6.2f' % np.sum(data_delta))
