@@ -10,9 +10,16 @@ Swiss Federal Institute of Technology Lausanne (EPFL)
 import pycnbi.utils.pycnbi_utils as pu
 import pycnbi.utils.q_common as qc
 import numpy as np
-from builtins import input
+import scipy.io
 
-def feature_importances(featfile, channels):
+def feature_importances(featfile, channels, matfile=None):
+    """
+    input
+    -----
+    featfile: feature analysis file
+    channels: channel names in list
+    matfile: export feature importance to Matlab file if not None
+    """
     # channel index lookup table
     ch2index = {ch:i for i, ch in enumerate(channels)}
     data_delta = np.zeros(len(channels))
@@ -22,6 +29,7 @@ def feature_importances(featfile, channels):
     data_lgamma = np.zeros(len(channels))
     data_hgamma = np.zeros(len(channels))
     data_per_ch = np.zeros(len(channels))
+    data_all = {ch:{} for ch in channels}
     
     f = open(featfile)
     f.readline()
@@ -30,6 +38,7 @@ def feature_importances(featfile, channels):
         importance = float(token[0])
         ch = token[1]
         fq = float(token[2])
+        data_all[ch][fq] = importance
         if fq <= 3:
             data_delta[ch2index[ch]] += importance
         elif fq <= 7:
@@ -44,6 +53,16 @@ def feature_importances(featfile, channels):
             data_hgamma[ch2index[ch]] += importance
         data_per_ch[ch2index[ch]] += importance
     
+    if matfile is not None:
+        # matvar = [fq] x [ch]
+        matvar = np.zeros([len(data_all[channels[0]]), len(channels)])
+        fqlist = sorted(list(data_all[channels[0]].keys()))
+        fq2index = {fq:i for i, fq in enumerate(fqlist)}
+        for ch in channels:
+            for fq in fqlist:
+                matvar[fq2index[fq]][ch2index[ch]] = data_all[ch][fq]
+        scipy.io.savemat(matfile, {'fid':matvar, 'channels':channels, 'frequencies':fqlist})
+
     print('bands  ', qc.list2string(channels, '%6s'), '|', 'per band')
     print('-' * 66)
     print('delta  ', qc.list2string(data_delta, '%6.2f'), '| %6.2f' % np.sum(data_delta))
@@ -54,7 +73,6 @@ def feature_importances(featfile, channels):
     print('hgamma ', qc.list2string(data_hgamma, '%6.2f'), '| %6.2f' % np.sum(data_hgamma))
     print('-' * 66)
     print('per_ch ', qc.list2string(data_per_ch, '%6.2f'), '| 100.00' )
-    input('Press Enter to finish.')
 
 if __name__ == '__main__':
     featfile = r'D:\data\MI\z2\LR\classifier\good_features.txt'
