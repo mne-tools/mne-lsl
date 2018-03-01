@@ -187,7 +187,7 @@ def get_psd_feature(epochs_train, window, psdparam, feat_picks=None, n_jobs=1):
     if type(epochs_train) is list:
         X_all = []
         for i, ep in enumerate(epochs_train):
-            X, Y_data = pu.get_psd(ep, psde, w_frames[i], psdparam['wstep'], feat_picks, n_jobs=cfg.N_JOBS)
+            X, Y_data = pu.get_psd(ep, psde, w_frames[i], psdparam['wstep'], feat_picks, n_jobs=n_jobs)
             X_all.append(X)
         # concatenate along the feature dimension
         # feature index order: window block x channel block x frequency block
