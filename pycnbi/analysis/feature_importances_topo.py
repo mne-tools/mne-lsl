@@ -16,7 +16,7 @@ def export_topo(data, pos, pngfile, xlabel='', vmin=None, vmax=None, chan_vis=No
     print('Exported %s' % pngfile)
     #plt.show()
 
-def feature_importances(featfile, topo_layout_file=None, channels=None, channel_name_show=None):
+def feature_importances_topo(featfile, topo_layout_file=None, channels=None, channel_name_show=None):
     """
     Compute feature importances across frequency bands and channels
 
@@ -78,7 +78,7 @@ def feature_importances(featfile, topo_layout_file=None, channels=None, channel_
         data_per_ch[ch2index[ch]] += importance
 
     hlen = 18 + len(channels) * 7
-    result = ''
+    result = '>> Feature importance distribution\n'
     result += 'bands   ' + qc.list2string(channels, '%6s') + ' | ' + 'per band\n'
     result += '-' * hlen + '\n'
     result += 'delta   ' + qc.list2string(data_delta, '%6.2f') + ' | %6.2f\n' % np.sum(data_delta)
