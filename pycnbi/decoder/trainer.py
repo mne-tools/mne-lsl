@@ -3,7 +3,7 @@ from __future__ import print_function, division
 """
 trainer.py
 
-Perform cross-validation and/or train a classifier.
+Perform cross-validation and train a classifier.
 
 
 TODO
@@ -496,6 +496,7 @@ def fit_predict_thres(cls, X_train, Y_train, X_test, Y_test, cnum, label_list, d
 def run_trainer(cfg, ftrain, interactive=False, cv_file=None, feat_file=None):
     '''
     TODO: Separate feature extraction, CV and training parts into functions
+    TODO: Clean up the code
     '''
 
     cfg = check_cfg(cfg)
@@ -693,6 +694,8 @@ def run_trainer(cfg, ftrain, interactive=False, cv_file=None, feat_file=None):
 
         # Results
         txt = '\n>> Class information\n'
+        txt += '%d epochs, %d samples per epoch, %d feature dimension (total %d samples)\n' %\
+            (ntrials, nsamples, fsize, ntrials * nsamples)
         for ev in np.unique(Y_data):
             txt += '%s: %d trials\n' % (cfg.tdef.by_value[ev], len(np.where(Y_data[:, 0] == ev)[0]))
         if do_balance:
@@ -708,10 +711,10 @@ def run_trainer(cfg, ftrain, interactive=False, cv_file=None, feat_file=None):
         txt += 'Reference channels: %s\n' % cfg.REF_CH_NEW
         if type(wlen) is list:
             for i, w in enumerate(wlen):
-                txt += 'Window size: %.1f sec\n' % (w)
+                txt += 'Window size: %.1f msec\n' % (w * 1000.0)
                 txt += 'Epoch range: %s sec\n' % (cfg.EPOCH[i])
         else:
-            txt += 'Window size: %.3f sec\n' % (psdparams['wlen'])
+            txt += 'Window size: %.1f msec\n' % (psdparams['wlen'] * 1000.0)
             txt += 'Epoch range: %s sec\n' % (cfg.EPOCH)
 
         # chance= 1.0 / len(np.unique(Y_data))
