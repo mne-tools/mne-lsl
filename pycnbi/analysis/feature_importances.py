@@ -52,7 +52,8 @@ def feature_importances(featfile, channels, matfile=None):
         else:
             data_hgamma[ch2index[ch]] += importance
         data_per_ch[ch2index[ch]] += importance
-    
+
+    print('>> Feature importance distribution')
     if matfile is not None:
         # matvar = [fq] x [ch]
         matvar = np.zeros([len(data_all[channels[0]]), len(channels)])
