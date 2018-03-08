@@ -30,7 +30,7 @@ def feature_importances(featfile, channels, matfile=None):
     data_hgamma = np.zeros(len(channels))
     data_per_ch = np.zeros(len(channels))
     data_all = {ch:{} for ch in channels}
-    
+
     f = open(featfile)
     f.readline()
     for l in f:

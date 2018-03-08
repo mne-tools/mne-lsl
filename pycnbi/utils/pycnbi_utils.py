@@ -237,9 +237,9 @@ def export_morlet(epochs, filename):
     freqs = np.array(DWT['freqs'])  # define frequencies of interest
     n_cycles = freqs / 2.  # different number of cycle per frequency
     power, itc = mne.time_frequency.tfr_morlet(epochs, freqs=freqs,
-                                               n_cycles=n_cycles, use_fft=False, return_itc=True, n_jobs=mp.cpu_count())
-    scipy.io.savemat(filename, dict(power=power.data, itc=itc.data, freqs=freqs,\
-                                    channels=epochs.ch_names, sfreq=epochs.info['sfreq'], onset=-epochs.tmin))
+        n_cycles=n_cycles, use_fft=False, return_itc=True, n_jobs=mp.cpu_count())
+    scipy.io.savemat(filename, dict(power=power.data, itc=itc.data, freqs=freqs,
+        channels=epochs.ch_names, sfreq=epochs.info['sfreq'], onset=-epochs.tmin))
 
 
 def event_timestamps_to_indices(sigfile, eventfile):

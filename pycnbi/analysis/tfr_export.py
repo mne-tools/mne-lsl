@@ -173,7 +173,8 @@ def get_tfr(cfg, tfr_type='multitaper', recursive=False, export_path=None, n_job
             if cfg.EXPORT_MATLAB is True:
                 # export all channels to MATLAB
                 mout = '%s/%s-%s-%s.mat' % (export_dir, file_prefix, cfg.SP_FILTER, evname)
-                scipy.io.savemat(mout, {'tfr':power[evname].data, 'chs':power[evname].ch_names, 'events':events, 'sfreq':sfreq, 'epochs':cfg.EPOCH, 'freqs':cfg.FREQ_RANGE})
+                scipy.io.savemat(mout, {'tfr':power[evname].data, 'chs':power[evname].ch_names,
+                    'events':events, 'sfreq':sfreq, 'epochs':cfg.EPOCH, 'freqs':cfg.FREQ_RANGE})
             if cfg.EXPORT_PNG is True:
                 # Inspect power for each channel
                 for ch in np.arange(len(picks)):
@@ -199,7 +200,8 @@ def get_tfr(cfg, tfr_type='multitaper', recursive=False, export_path=None, n_job
                 if cfg.EXPORT_MATLAB is True:
                     # export all channels to MATLAB
                     mout = '%s/%s-%s-%s-ep%02d.mat' % (export_dir, file_prefix, cfg.SP_FILTER, evname, ep + 1)
-                    scipy.io.savemat(mout, {'tfr':power[evname].data, 'chs':power[evname].ch_names, 'events':events, 'sfreq':sfreq, 'tmin':tmin, 'tmax':tmax, 'freqs':cfg.FREQ_RANGE})
+                    scipy.io.savemat(mout, {'tfr':power[evname].data, 'chs':power[evname].ch_names,
+                        'events':events, 'sfreq':sfreq, 'tmin':tmin, 'tmax':tmax, 'freqs':cfg.FREQ_RANGE})
                 if cfg.EXPORT_PNG is True:
                     # Inspect power for each channel
                     for ch in np.arange(len(picks)):
