@@ -4,7 +4,7 @@ from __future__ import print_function, division
 Time-frequency analysis using Morlet wavelets or multitapers
 TFR computed on each raw file, from the beginning until the end.
 
-Kyuhwa Lee, 2017
+Kyuhwa Lee, 2018
 
 """
 
@@ -20,7 +20,6 @@ import pycnbi.utils.q_common as qc
 import mne.time_frequency
 import imp
 from builtins import input
-from IPython import embed
 
 def check_cfg(cfg):
     if not hasattr(cfg, 'N_JOBS'):
@@ -33,9 +32,11 @@ def check_cfg(cfg):
         cfg.EXPORT_PNG = False
     if not hasattr(cfg, 'EXPORT_MATLAB'):
         cfg.MATLAB = False
+    if not hasattr(cfg, 'EVENT_START'):
+        cfg.EVENT_START = None
     return cfg
 
-def get_tfr_all_signals(cfg, tfr_type='multitaper', recursive=False, export_path=None, n_jobs=1):
+def get_tfr_each_file(cfg, tfr_type='multitaper', recursive=False, export_path=None, n_jobs=1):
     '''
     @params:
     tfr_type: 'multitaper' or 'morlet'
@@ -53,18 +54,16 @@ def get_tfr_all_signals(cfg, tfr_type='multitaper', recursive=False, export_path
         tfr = mne.time_frequency.tfr_morlet
     else:
         raise ValueError('Wrong TFR type %s' % tfr_type)
-    n_jobs = cfg.N_JOBS
-    if n_jobs is None:
-        n_jobs = mp.cpu_count()
 
-    for f in qc.get_file_list(cfg.DATA_DIR, fullpath=True, recursive=recursive):
-        [fdir, fname, fext] = qc.parse_path_list(f)
-        if fext in ['fif', 'bdf', 'gdf']:
-            get_tfr(f, cfg, tfr, n_jobs=n_jobs)
+    for fifdir in cfg.DATA_DIRS:
+        for f in qc.get_file_list(fifdir, fullpath=True, recursive=recursive):
+            [fdir, fname, fext] = qc.parse_path_list(f)
+            if fext in ['fif', 'bdf', 'gdf']:
+                get_tfr(f, cfg, tfr, cfg.N_JOBS)
 
-def get_tfr(f, cfg, tfr, n_jobs=1):
-    raw, events = pu.load_raw(f)
-    p = qc.parse_path(f)
+def get_tfr(fif_file, cfg, tfr, n_jobs=1):
+    raw, events = pu.load_raw(fif_file)
+    p = qc.parse_path(fif_file)
     fname = p.name
     outpath = p.dir
 
@@ -86,11 +85,16 @@ def get_tfr(f, cfg, tfr, n_jobs=1):
                   multiplier=cfg.MULTIPLIER, n_jobs=n_jobs)
 
     # MNE TFR functions do not support Raw instances yet, so convert to Epoch
-    raw._data[0][0] = 999
+    if cfg.EVENT_START is None:
+        raw._data[0][0] = 1
+        events = np.array([[0, 0, 1]])
+        classes = None
+    else:
+        classes = {'START':cfg.EVENT_START}
     tmax = (raw._data.shape[1] - 1) / raw.info['sfreq']
-    epochs_all = mne.Epochs(raw, np.array([[0, 0, 999]]), None, tmin=0, tmax=tmax,
+    epochs_all = mne.Epochs(raw, events, classes, tmin=0, tmax=tmax,
                     picks=picks, baseline=(None, None), preload=True)
-    print('\n>> Processing %s' % f)
+    print('\n>> Processing %s' % fif_file)
     freqs = cfg.FREQ_RANGE  # define frequencies of interest
     n_cycles = freqs / 2.  # different number of cycle per frequency
     power = tfr(epochs_all, freqs=freqs, n_cycles=n_cycles, use_fft=False,
@@ -99,7 +103,8 @@ def get_tfr(f, cfg, tfr, n_jobs=1):
     if cfg.EXPORT_MATLAB is True:
         # export all channels to MATLAB
         mout = '%s/%s-%s.mat' % (export_dir, fname, cfg.SP_FILTER)
-        scipy.io.savemat(mout, {'tfr':power.data, 'chs':power.ch_names, 'events':events, 'sfreq':raw.info['sfreq'], 'freqs':cfg.FREQ_RANGE})
+        scipy.io.savemat(mout, {'tfr':power.data, 'chs':power.ch_names, 'events':events,
+            'sfreq':raw.info['sfreq'], 'freqs':cfg.FREQ_RANGE})
 
     if cfg.EXPORT_PNG is True:
         # Plot power of each channel
@@ -119,7 +124,7 @@ def config_run(cfg_module):
     cfg = imp.load_source(cfg_module, cfg_module)
     if not hasattr(cfg, 'TFR_TYPE'):
         cfg.TFR_TYPE = 'multitaper'
-    get_tfr_all_signals(cfg, tfr_type=cfg.TFR_TYPE)
+    get_tfr_each_file(cfg, tfr_type=cfg.TFR_TYPE)
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
