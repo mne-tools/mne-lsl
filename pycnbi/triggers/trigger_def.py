@@ -12,7 +12,7 @@ import os
 import pycnbi.utils.q_common as qc
 from configparser import ConfigParser
 
-def trigger_def(ini_file):
+def trigger_def(ini_file, verbose=False):
     class TriggerDef(object):
         def __init__(self, items):
             self.by_key = {}
@@ -40,7 +40,8 @@ def trigger_def(ini_file):
         search_path.append('%s/%s.ini' % (path_self.dir, path_ini.name))
         for ini_file in search_path:
             if os.path.exists(ini_file):
-                print('>> Found %s' % ini_file)
+                if verbose:
+                    print('>> Found %s' % ini_file)
                 break
         else:
             raise IOError('Trigger event definition file %s not found' % ini_file)
