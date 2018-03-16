@@ -106,8 +106,11 @@ class Trigger(object):
                     sys.exit()
 
                 for i, a in enumerate(arduinos):
-                    print('Found %s' % a)
-                com_port = arduinos[0].device
+                    print('Found', a[0])
+                try:
+                    com_port = arduinos[0].device
+                except AttributeError: # depends on Python distribution
+                    com_port = arduinos[0][0]
             else:
                 com_port = portaddr
 
@@ -292,9 +295,9 @@ def test_all_bits(trigger):
 
 # sample test code
 if __name__ == '__main__':
-    #trigger = Trigger('ARDUINO') # Arduino trigger
-    trigger = Trigger('COM7') # Arduino trigger
-    if not trigger.init(20):
+    #trigger = Trigger('COM3') # Arduino trigger
+    trigger = Trigger('ARDUINO') # Arduino trigger
+    if not trigger.init(500):
         print('LPT port cannot be opened. Using mock trigger.')
         trigger = MockTrigger()
 
