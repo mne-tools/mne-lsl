@@ -137,8 +137,8 @@ class Scope(QtGui.QMainWindow, form_class):
             for x in range(0, NUM_X_CHANNELS):
                 if (idx < self.config['eeg_channels']):
                     # self.table_channels.item(x,y).setTextAlignment(QtCore.Qt.AlignCenter)
-                    self.table_channels.setItemSelected(
-                        self.table_channels.item(x, y), True)
+                    QtGui.QTableWidgetItem.setSelected(self.table_channels.item(x, y), True) # Qt5
+                    #self.table_channels.setItemSelected(self.table_channels.item(x, y), True) # Qt4 only
                     self.channels_to_show_idx.append(idx)
                 else:
                     self.table_channels.setItem(x, y,
@@ -864,7 +864,8 @@ class Scope(QtGui.QMainWindow, form_class):
         for y in range(0, 4):
             for x in range(0, NUM_X_CHANNELS):
                 if (idx < self.config['eeg_channels']):
-                    if (self.table_channels.isItemSelected(
+                    #if (self.table_channels.isItemSelected( # Qt4 only
+                    if (QtGui.QTableWidgetItem.isSelected( # Qt5
                         self.table_channels.item(x, y))):
                         self.channels_to_show_idx.append(idx)
                     else:
