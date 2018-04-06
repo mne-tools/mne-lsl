@@ -4,6 +4,8 @@ from __future__ import print_function, division
 """
 Measure multitaper computation speed.
 
+i7-8700K: 9.9 ms (101.0 Hz)
+
 @author: leeq
 """
 
@@ -34,7 +36,7 @@ def main():
             print('%d / %d' % (i, num_iterations))
     ms = np.mean(times)
     fps = 1000 / ms
-    print('Average = %d ms (%d Hz)' % (ms, fps))
+    print('Average = %.1f ms (%.1f Hz)' % (ms, fps))
 
 if __name__ == '__main__':
     main()
