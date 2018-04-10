@@ -513,5 +513,5 @@ if __name__ == '__main__':
     print('Connecting to a server %s (Serial %s).' % (amp_name, amp_serial))
 
     #check_speed(model_file, amp_name, amp_serial, 1000)
-    
+
     sample_decoding(model_file, amp_name=amp_name, amp_serial=amp_serial)
