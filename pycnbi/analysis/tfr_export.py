@@ -176,6 +176,7 @@ def get_tfr(cfg, tfr_type='multitaper', recursive=False, export_path=None, n_job
                 mout = '%s/%s-%s-%s.mat' % (export_dir, file_prefix, cfg.SP_FILTER, evname)
                 scipy.io.savemat(mout, {'tfr':power[evname].data, 'chs':power[evname].ch_names,
                     'events':events, 'sfreq':sfreq, 'epochs':cfg.EPOCH, 'freqs':cfg.FREQ_RANGE})
+                print('Exported %s' % mout)
             if cfg.EXPORT_PNG is True:
                 # Inspect power for each channel
                 for ch in np.arange(len(picks)):
@@ -187,6 +188,7 @@ def get_tfr(cfg, tfr_type='multitaper', recursive=False, export_path=None, n_job
                         colorbar=True, title=title, vmin=cfg.VMIN, vmax=cfg.VMAX, dB=False)
                     fout = '%s/%s-%s-%s-%s.png' % (export_dir, file_prefix, cfg.SP_FILTER, evname, chname)
                     fig.savefig(fout)
+                    fig.clf()
                     print('Exported to %s' % fout)
         else:
             # TFR per event
@@ -203,6 +205,7 @@ def get_tfr(cfg, tfr_type='multitaper', recursive=False, export_path=None, n_job
                     mout = '%s/%s-%s-%s-ep%02d.mat' % (export_dir, file_prefix, cfg.SP_FILTER, evname, ep + 1)
                     scipy.io.savemat(mout, {'tfr':power[evname].data, 'chs':power[evname].ch_names,
                         'events':events, 'sfreq':sfreq, 'tmin':tmin, 'tmax':tmax, 'freqs':cfg.FREQ_RANGE})
+                    print('Exported %s' % mout)
                 if cfg.EXPORT_PNG is True:
                     # Inspect power for each channel
                     for ch in np.arange(len(picks)):
@@ -213,6 +216,7 @@ def get_tfr(cfg, tfr_type='multitaper', recursive=False, export_path=None, n_job
                             colorbar=True, title=title, vmin=cfg.VMIN, vmax=cfg.VMAX, dB=False)
                         fout = '%s/%s-%s-%s-%s-ep%02d.png' % (export_dir, file_prefix, cfg.SP_FILTER, evname, chname, ep + 1)
                         fig.savefig(fout)
+                        fig.clf()
                         print('Exported %s' % fout)
 
     if hasattr(cfg, 'POWER_DIFF'):
@@ -220,7 +224,6 @@ def get_tfr(cfg, tfr_type='multitaper', recursive=False, export_path=None, n_job
         qc.make_dirs(export_dir)
         labels = classes.keys()
         df = power[labels[0]] - power[labels[1]]
-        # df.data= np.abs( df.data )
         df.data = np.log(np.abs(df.data))
         # Inspect power diff for each channel
         for ch in np.arange(len(picks)):
@@ -233,6 +236,7 @@ def get_tfr(cfg, tfr_type='multitaper', recursive=False, export_path=None, n_job
             fout = '%s/%s-%s-diff-%s-%s-%s.jpg' % (export_dir, file_prefix, cfg.SP_FILTER, labels[0], labels[1], chname)
             print('Exporting to %s' % fout)
             fig.savefig(fout)
+            fig.clf()
     print('Finished !')
 
 def config_run(cfg_module):
