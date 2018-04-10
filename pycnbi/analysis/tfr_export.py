@@ -109,16 +109,17 @@ def get_tfr(cfg, tfr_type='multitaper', recursive=False, export_path=None, n_job
                   multiplier=cfg.MULTIPLIER, n_jobs=n_jobs)
 
     # Read epochs
-    try:
-        classes = {}
-        for t in cfg.TRIGGERS:
-            if t in set(events[:, -1]):
-                if hasattr(cfg, 'tdef'):
-                    classes[cfg.tdef.by_value[t]] = t
-                else:
-                    classes[str(t)] = t
-        assert len(classes) > 0
+    classes = {}
+    for t in cfg.TRIGGERS:
+        if t in set(events[:, -1]):
+            if hasattr(cfg, 'tdef'):
+                classes[cfg.tdef.by_value[t]] = t
+            else:
+                classes[str(t)] = t
+    if len(classes) == 0:
+        raise ValueError('No desired event was found from the data.')
 
+    try:
         tmin = cfg.EPOCH[0]
         tmin_buffer = tmin - t_buffer
         raw_tmax = raw._data.shape[1] / sfreq - 0.1
