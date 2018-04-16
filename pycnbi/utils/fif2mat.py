@@ -11,13 +11,16 @@ import scipy.io
 import mne
 
 def fif2mat(data_dir):
+    out_dir = '%s/mat_files' % data_dir
+    qc.make_dirs(out_dir)
     for rawfile in qc.get_file_list(data_dir, fullpath=True):
         if rawfile[-4:] != '.fif': continue
         raw, events = pu.load_raw(rawfile)
         events[:,0] += 1 # MATLAB uses 1-based indexing
         sfreq = raw.info['sfreq']
         data = dict(signals=raw._data, events=events, sfreq=sfreq, ch_names=raw.ch_names)
-        matfile = '.'.join(rawfile.split('.')[:-1]) + '.mat'
+        fname = qc.parse_path(rawfile).name
+        matfile = '%s/%s.mat' % (out_dir, fname)
         scipy.io.savemat(matfile, data)
         print('\nExported to %s' % matfile)
     print('\nDone.')
