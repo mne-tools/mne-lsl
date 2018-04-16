@@ -122,14 +122,14 @@ def pcl2fif(filename, interactive=False, outdir=None, external_event=None, offse
 
     # exception
     if trig_ch is not None and trig_ch_guess is None:
-        qc.print_c('Warning: Inferred event channel is None.', 'Y')
+        qc.print_c('* Warning: Inferred event channel is None.', 'Y')
         if interactive:
             qc.print_c('If you are sure everything is alright, press Enter.', 'Y')
             input()
 
     # fix wrong event channel
     elif trig_ch_guess != trig_ch:
-        qc.print_c('Warning: Specified event channel (%d) != inferred event channel (%d).' % (trig_ch, trig_ch_guess),
+        qc.print_c('* Warning: Specified event channel (%d) != inferred event channel (%d).' % (trig_ch, trig_ch_guess),
                    'Y')
         if interactive: input('Press Enter to fix. Event channel will be set to %d.' % trig_ch_guess)
         ch_names.insert(trig_ch_guess, ch_names.pop(trig_ch))
@@ -142,10 +142,10 @@ def pcl2fif(filename, interactive=False, outdir=None, external_event=None, offse
     # move trigger channel to index 0
     if trig_ch is None:
         # assuming no event channel exists, add a event channel to index 0 for consistency.
-        qc.print_c('*** No event channel was not found. Adding a blank event channel to index 0.', 'Y')
+        qc.print_c('* No event channel was not found. Adding a blank event channel to index 0.', 'Y')
         eventch = np.zeros([1, signals_raw.shape[1]])
         signals = np.concatenate((eventch, signals_raw), axis=0)
-        num_eeg_channels = data['channels']
+        num_eeg_channels = signals_raw.shape[0] # data['channels'] is not reliable any more
         trig_ch = 0
         ch_names = ['TRIGGER'] + ['CH%d' % (x + 1) for x in range(num_eeg_channels)]
     elif trig_ch == 0:
@@ -153,7 +153,7 @@ def pcl2fif(filename, interactive=False, outdir=None, external_event=None, offse
         num_eeg_channels = data['channels'] - 1
     else:
         # move event channel to 0
-        qc.print_c('Moving event channel %d to 0.' % trig_ch, 'G')
+        qc.print_c('* Moving event channel %d to 0.' % trig_ch, 'G')
         signals = np.concatenate((signals_raw[[trig_ch]], signals_raw[:trig_ch], signals_raw[trig_ch + 1:]), axis=0)
         assert signals_raw.shape == signals.shape
         num_eeg_channels = data['channels'] - 1
