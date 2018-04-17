@@ -86,11 +86,15 @@ def convert2mat(filename, matfile):
             sys.exit()
 
 
-def pcl2fif(filename, interactive=False, outdir=None, external_event=None, offset=0):
+def pcl2fif(filename, interactive=False, outdir=None, external_event=None, offset=0, overwrite=False, precision='single'):
     """
     PyCNBI Python pickle file
 
-    if outdir is None, it will output to a subdir "fif" of the source dir.
+    Params
+    --------
+    outdir: If None, it will be the subdirectory of the fif file.
+    external_event: Event file in text format. Each row should be: "SAMPLE_INDEX 0 EVENT_TYPE"
+    precision: Data matrix format. 'single' improves backward compatability.
     """
     fdir, fname, fext = qc.parse_path_list(filename)
     if outdir is None:
@@ -169,11 +173,8 @@ def pcl2fif(filename, interactive=False, outdir=None, external_event=None, offse
 
     # create Raw object
     raw = mne.io.RawArray(signals, info)
-
-    ########################## NO EFFECT ? ########################
-    raw._times = data['timestamps']
-    ###############################################################
-
+    raw._times = data['timestamps'] # seems to have no effect
+ 
     if external_event is not None:
         raw._data[0] = 0  # erase current events
         events_index = event_timestamps_to_indices(filename, external_event, offset)
@@ -186,7 +187,7 @@ def pcl2fif(filename, interactive=False, outdir=None, external_event=None, offse
     qc.make_dirs(outdir)
     fiffile = outdir + fname + '.fif'
 
-    raw.save(fiffile, verbose=False, overwrite=True, fmt='double')
+    raw.save(fiffile, verbose=False, overwrite=overwrite, fmt=precision)
     print('Saved to', fiffile)
     return True
 
