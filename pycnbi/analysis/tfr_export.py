@@ -3,7 +3,8 @@ from __future__ import print_function, division
 """
 Time-frequency analysis using Morlet wavelets or multitapers
 
-Kyuhwa Lee, 2017
+Kyuhwa Lee
+EPFL, 2018
 
 """
 
@@ -58,27 +59,24 @@ def get_tfr(cfg, tfr_type='multitaper', recursive=False, export_path=None, n_job
         n_jobs = mp.cpu_count()
 
     if hasattr(cfg, 'DATA_DIRS'):
-        # concatenate multiple files
+        if export_path is None:
+            raise ValueError('For multiple directories, export_path cannot be None')
+        else:
+            outpath = export_path
+        # custom event file
+        if hasattr(cfg, 'EVENT_FILE') and cfg.EVENT_FILE is not None:
+            events = mne.read_events(cfg.EVENT_FILE)
+        file_prefix = 'grandavg'
+
+        # load and merge files from all directories
+        flist = []
         for ddir in cfg.DATA_DIRS:
             ddir = ddir.replace('\\', '/')
             if ddir[-1] != '/': ddir += '/'
-            flist = []
             for f in qc.get_file_list(ddir, fullpath=True, recursive=recursive):
-                [fdir, fname, fext] = qc.parse_path_list(f)
-                if fext in ['fif', 'bdf', 'gdf']:
+                if qc.parse_path(f).ext in ['fif', 'bdf', 'gdf']:
                     flist.append(f)
-            raw, events = pu.load_multi(flist)
-
-            # custom events
-            if hasattr(cfg, 'EVENT_FILE') and cfg.EVENT_FILE is not None:
-                events = mne.read_events(cfg.EVENT_FILE)
-
-            sp = ddir.split('/')
-            file_prefix = '-'.join(sp[-4:-1])
-            if export_path is None:
-                outpath = ddir
-            else:
-                outpath = export_path
+        raw, events = pu.load_multi(flist)
     else:
         print('Loading', cfg.DATA_FILE)
         raw, events = pu.load_raw(cfg.DATA_FILE)
