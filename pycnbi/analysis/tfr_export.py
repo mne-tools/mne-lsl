@@ -22,6 +22,9 @@ import imp
 import pdb
 import traceback
 from builtins import input
+from scipy.signal import lfilter
+from scipy.signal import butter
+from scipy.signal import hilbert
 
 def check_cfg(cfg):
     if not hasattr(cfg, 'N_JOBS'):
@@ -36,7 +39,14 @@ def check_cfg(cfg):
         cfg.MATLAB = False
     return cfg
 
-def get_tfr(cfg, tfr_type='multitaper', recursive=False, export_path=None, n_jobs=1):
+def butter_bandpass(lowcut, highcut, fs, order=5):
+    nyq = fs / 2.0
+    low = lowcut / nyq
+    high = highcut / nyq
+    b, a = butter(order, [low, high], btype='band')
+    return b, a
+
+def get_tfr(cfg, recursive=False, export_path=None, n_jobs=1):
     '''
     @params:
     tfr_type: 'multitaper' or 'morlet'
@@ -46,12 +56,18 @@ def get_tfr(cfg, tfr_type='multitaper', recursive=False, export_path=None, n_job
     '''
 
     cfg = check_cfg(cfg)
+    tfr_type = cfg.TFR_TYPE
 
     t_buffer = cfg.T_BUFFER
     if tfr_type == 'multitaper':
         tfr = mne.time_frequency.tfr_multitaper
     elif tfr_type == 'morlet':
         tfr = mne.time_frequency.tfr_morlet
+    elif tfr_type == 'butter':
+        butter_order = 4 # TODO: parameterize
+        tfr = lfilter
+    elif tfr_type == 'fir':
+        raise NotImplementedError
     else:
         raise ValueError('Wrong TFR type %s' % tfr_type)
     n_jobs = cfg.N_JOBS
@@ -154,7 +170,8 @@ def get_tfr(cfg, tfr_type='multitaper', recursive=False, export_path=None, n_job
 
     power = {}
     for evname in classes:
-        export_dir = '%s/plot_%s' % (outpath, evname)
+        #export_dir = '%s/plot_%s' % (outpath, evname)
+        export_dir = outpath
         qc.make_dirs(export_dir)
         print('\n>> Processing %s' % evname)
         freqs = cfg.FREQ_RANGE  # define frequencies of interest
@@ -165,14 +182,25 @@ def get_tfr(cfg, tfr_type='multitaper', recursive=False, export_path=None, n_job
             if len(epochs) == 0:
                 print('No %s epochs. Skipping.' % evname)
                 continue
-            power[evname] = tfr(epochs, freqs=freqs, n_cycles=n_cycles, use_fft=False,
-                return_itc=False, decim=1, n_jobs=n_jobs)
-            power[evname] = power[evname].crop(tmin=tmin, tmax=tmax)
+
+            if tfr_type == 'butter':
+                b, a = butter_bandpass(cfg.FREQ_RANGE[0], cfg.FREQ_RANGE[-1], sfreq, order=butter_order)
+                tfr_filtered = lfilter(b, a, epochs, axis=2)
+                tfr_hilbert = hilbert(tfr_filtered)
+                tfr_power = abs(tfr_hilbert)
+                tfr_data = np.mean(tfr_power, axis=0)
+            elif tfr_type == 'fir':
+                raise NotImplementedError
+            else:
+                power[evname] = tfr(epochs, freqs=freqs, n_cycles=n_cycles, use_fft=False,
+                    return_itc=False, decim=1, n_jobs=n_jobs)
+                power[evname] = power[evname].crop(tmin=tmin, tmax=tmax)
+                tfr_data = power[evname].data
 
             if cfg.EXPORT_MATLAB is True:
                 # export all channels to MATLAB
                 mout = '%s/%s-%s-%s.mat' % (export_dir, file_prefix, cfg.SP_FILTER, evname)
-                scipy.io.savemat(mout, {'tfr':power[evname].data, 'chs':power[evname].ch_names,
+                scipy.io.savemat(mout, {'tfr':tfr_data, 'chs':epochs.ch_names,
                     'events':events, 'sfreq':sfreq, 'epochs':cfg.EPOCH, 'freqs':cfg.FREQ_RANGE})
                 print('Exported %s' % mout)
             if cfg.EXPORT_PNG is True:

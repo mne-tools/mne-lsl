@@ -9,13 +9,11 @@ single mat file. Otherwise, export epochs of each raw file individually.
 Author: Kyuhwa Lee
 Swiss Federal Institute of Technology (EPFL)
 
-TODO: Get rid of global vars
-
 """
 
-import pycnbi.utils.pycnbi_utils as pu
 import scipy.io, mne
 import numpy as np
+import pycnbi.utils.pycnbi_utils as pu
 import pycnbi.utils.q_common as qc
 
 def save_mat(raw, events, picks, event_id, tmin, tmax, matfile):
@@ -42,7 +40,7 @@ def save_mat(raw, events, picks, event_id, tmin, tmax, matfile):
         data['epochs_%s' % eve] = epochs[eve].get_data()
     scipy.io.savemat(matfile, data)
 
-def epochs2mat(data_dir, channel_picks, event_id, tmin, tmax, merge_epochs=False):
+def epochs2mat(data_dir, channel_picks, event_id, tmin, tmax, merge_epochs=False, spfilter=None, spchannels=None):
     if merge_epochs:
         # load all raw files in the directory and merge epochs
         fiflist = []
@@ -50,7 +48,7 @@ def epochs2mat(data_dir, channel_picks, event_id, tmin, tmax, merge_epochs=False
             if data_file[-4:] != '.fif':
                 continue
             fiflist.append(data_file)
-        raw, events = pu.load_multi(fiflist, spfilter='car', spchannels=channel_picks)
+        raw, events = pu.load_multi(fiflist, spfilter=spfilter, spchannels=spchannels)
         matfile = data_dir + '/epochs_all.mat'
         save_mat(raw, events, channel_picks, event_id, tmin, tmax, matfile)
     else:
@@ -73,4 +71,5 @@ if __name__ == '__main__':
     tmin = -1.0
     tmax = 3.0
     merge_epochs = True
-    epochs2mat(data_dir, channel_picks, event_id, tmin, tmax, merge_epochs)
+    spfilter = 'car'
+    epochs2mat(data_dir, channel_picks, event_id, tmin, tmax, merge_epochs, spfilter=spfilter)
