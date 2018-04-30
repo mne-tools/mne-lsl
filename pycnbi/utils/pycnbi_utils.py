@@ -525,15 +525,14 @@ def load_multi(src, spfilter=None, spchannels=None, multiplier=1):
     """
     Load multiple data files and concatenate them into a single series
 
-    - Assumes all files have the same sampling rate.
+    - Assumes all files have the same sampling rate and channel order.
     - Event locations are updated accordingly with new offset.
-    - SUpports different number of channels across recordings. In this case, only
-    channels common to all recordings will be kept.
 
     @params:
-        src: directory or list of files
-        spfilter: apply spatial filter while loading
-        spchannels: list of channel names to apply spatial filter
+        src: directory or list of files.
+        spfilter: apply spatial filter while loading.
+        spchannels: list of channel names to apply spatial filter.
+        multiplier: to change units for better numerical stability.
 
     See load_raw() for more low-level details.
 
@@ -550,60 +549,40 @@ def load_multi(src, spfilter=None, spchannels=None, multiplier=1):
         flist = src
     else:
         raise TypeError('Unknown input type %s' % type(src))
-
+    
     if len(flist) == 0:
         raise RuntimeError('load_multi(): No fif files found in %s.' % src)
     elif len(flist) == 1:
         return load_raw(flist[0], spfilter=spfilter, spchannels=spchannels, multiplier=multiplier)
 
+    # load raw files
     rawlist = []
-    events = []
-    signals = None
-    chset = []
     for f in flist:
         print('Loading %s' % f)
         raw, _ = load_raw(f, spfilter=spfilter, spchannels=spchannels, multiplier=multiplier)
         rawlist.append(raw)
-        chset.append(set(raw.ch_names))
-
-    # find common channels
-    ch_common = chset[0]
-    for c in range(1, len(chset)):
-        ch_common -= chset[c] ^ ch_common
-
-    # move trigger channel to index 0
-    ch_common = list(ch_common)
-    for i, c in enumerate(ch_common):
-        if 'TRIGGER' in c or 'STI ' in c:
-            del ch_common[i]
-            ch_common.insert(0, 'TRIGGER')
-            trigch = 0
-            break
-    else:
-        trigch = None
 
     # concatenate signals
+    signals = None
     for raw in rawlist:
-        picks = [raw.ch_names.index(c) for c in ch_common]
         if signals is None:
-            signals = raw._data[picks]
+            signals = raw._data
         else:
-            signals = np.concatenate((signals, raw._data[picks]), axis=1)  # append samples
+            signals = np.concatenate((signals, raw._data), axis=1) # append samples
 
     # create a concatenated raw object and update channel names
     raw = rawlist[0]
-    if trigch is None:
-        ch_types = ['eeg'] * len(ch_common)
-    else:
-        ch_types = ['stim'] + ['eeg'] * (len(ch_common) - 1)
-    #info = mne.create_info(ch_common, raw.info['sfreq'], ch_types, montage='standard_1005')
-    info = mne.create_info(ch_common, raw.info['sfreq'], ch_types)
-    raws = mne.io.RawArray(signals, info)
+    trigch = find_event_channel(raw)
+    ch_types = ['eeg'] * len(raw.ch_names)
+    if trigch is not None:
+        ch_types[trigch] = 'stim'
+    info = mne.create_info(raw.ch_names, raw.info['sfreq'], ch_types)
+    raw_merged = mne.io.RawArray(signals, info)
 
     # re-calculate event positions
-    events = mne.find_events(raws, stim_channel='TRIGGER', shortest_event=1, consecutive=True)
+    events = mne.find_events(raw_merged, stim_channel='TRIGGER', shortest_event=1, consecutive=True)
 
-    return raws, events
+    return raw_merged, events
 
 
 def butter_bandpass(highcut, lowcut, fs, num_ch):
