@@ -1,3 +1,10 @@
+"""
+Export feature importance distribution using topography map
+
+TODO: merge with parse_features.py to use its API.
+
+"""
+
 from pycnbi.pycnbi_config import PYCNBI_ROOT
 import pycnbi.utils.pycnbi_utils as pu
 import pycnbi.utils.q_common as qc
