@@ -29,6 +29,7 @@ def get_feature_scores(featfile, channels=None, freq_ranges=None, matfile=None):
               e.g. 66.6\tCz\t18
     channels: List of channel names. If None, all channels in featfile will be used.
     freq_ranges: Per-band frequency range. {band_name:[fq_low, fq_high]}
+                 As Python convention, fq_high is not inclusive in the range.
                  if None, predefined bands will be used.
 
     Output
@@ -41,14 +42,13 @@ def get_feature_scores(featfile, channels=None, freq_ranges=None, matfile=None):
     # default ranges
     if freq_ranges is None:
         freq_ranges = dict(
-            delta=[1, 3],
-            theta=[4, 7],
+            delta=[1, 4],
+            theta=[4, 8],
             alpha=[8, 13],
-            beta=[14, 30],
-            beta1=[14, 18],
-            beta2=[19, 24],
-            beta3=[25, 28],
-            gamma=[31, 40])
+            beta1=[13, 18],
+            beta2=[18, 24],
+            beta3=[24, 30],
+            gamma=[30, 49])
 
     # find all channels first if needed
     if channels is None:
@@ -64,7 +64,7 @@ def get_feature_scores(featfile, channels=None, freq_ranges=None, matfile=None):
     ch2index = {ch:i for i, ch in enumerate(channels)}
 
     # initialise data structure
-    data = {'channel':np.zeros(len(channels)),
+    data = {'channel':np.zeros(len(channels)), 'ch_names':channels,
         'raw':{ch:{} for ch in channels}, 'freq_ranges':freq_ranges}
     for band in freq_ranges:
         data[band] = np.zeros(len(channels))
@@ -81,7 +81,7 @@ def get_feature_scores(featfile, channels=None, freq_ranges=None, matfile=None):
         fq = float(token[2])
         data['raw'][ch][fq] = importance
         for band in freq_ranges:
-            if freq_ranges[band][0] <= fq <= freq_ranges[band][1]:
+            if freq_ranges[band][0] <= fq < freq_ranges[band][1]:
                 data[band][ch2index[ch]] += importance
         data['channel'][ch2index[ch]] += importance
 
@@ -105,7 +105,7 @@ def print_feature_scores(data, num_cols=8):
 
     """
     print('-- Feature importance distribution --')
-    channels = sorted(data['raw'].keys())
+    channels = data['ch_names']
     channels_split = []
     for i in range(len(channels)):
         if i % num_cols == 0:
@@ -121,21 +121,21 @@ def print_feature_scores(data, num_cols=8):
         print(txt)
         print('-' * rowlen)
         for band in data:
-            if band in ['channel', 'raw', 'freq_ranges']:
+            if band in ['channel', 'raw', 'freq_ranges', 'ch_names']:
                 continue
             band_name = '%d-%d' % (data['freq_ranges'][band][0], data['freq_ranges'][band][1])
             band_scores = []
             for ch_i in chs:
-                band_scores.append('%6.2f' % data[band][ch_i])
+                band_scores.append('%6.3f' % data[band][ch_i])
             txt = '%-7s | %s' % (band_name, ' '.join(band_scores))
             if i == (len(channels_split) - 1):
-                txt += ' | %6.2f' % np.sum(data[band])
+                txt += ' | %6.3f' % np.sum(data[band])
             print(txt)
         txt = []
         for ch_i in chs:
-            txt.append('%6.2f' % data['channel'][ch_i])
+            txt.append('%6.3f' % data['channel'][ch_i])
         if i == (len(channels_split) - 1):
-            txt.append('| %6.2f' % sum(data['channel']))
+            txt.append('| %6.3f' % sum(data['channel']))
         print('-' * rowlen)
         print('per chan| %s' % ' '.join(txt))
 
@@ -160,11 +160,11 @@ if __name__ == '__main__':
     FEATFILE = r'D:\data\MI\z2\LR\classifier\good_features.txt'
     CHANNELS = ['C3', 'C4', 'Cz']
     FREQ_RANGES = dict(
-        delta=[1, 3],
-        theta=[4, 7],
+        delta=[1, 4],
+        theta=[4, 8],
         alpha=[8, 13],
-        beta=[14, 30],
-        lgamma=[31, 48])
+        beta=[13, 30],
+        lgamma=[30, 49])
     #MATFILE = '%s/good_features.mat' % qc.parse_path(FEATFILE).dir
     MATFILE = None
     feature_info(FEATFILE, CHANNELS, FREQ_RANGES, MATFILE)
