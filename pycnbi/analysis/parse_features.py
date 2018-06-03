@@ -93,7 +93,10 @@ def get_feature_scores(featfile, channels=None, freq_ranges=None, matfile=None):
         fq2index = {fq:i for i, fq in enumerate(fqlist)}
         for ch in channels:
             for fq in fqlist:
-                matvar[fq2index[fq]][ch2index[ch]] = data['raw'][ch][fq]
+                try:
+                    matvar[fq2index[fq]][ch2index[ch]] = data['raw'][ch][fq]
+                except KeyError:
+                    matvar[fq2index[fq]][ch2index[ch]] = 0
         scipy.io.savemat(matfile, {'scores':matvar, 'channels':channels, 'frequencies':fqlist})
         print('Data exported to %s\n' % matfile)
 
