@@ -3,6 +3,7 @@ from __future__ import print_function, division
 """
 Time-frequency analysis using Morlet wavelets or multitapers
 TFR computed on each raw file, from the beginning until the end.
+The result is the grand average of TFRs over all epochs.
 
 Kyuhwa Lee, 2018
 
@@ -28,6 +29,8 @@ def check_cfg(cfg):
         cfg.T_BUFFER = 1
     if not hasattr(cfg, 'BS_MODE'):
         cfg.BS_MODE = 'logratio'
+    if not hasattr(cfg, 'BS_TIMES'):
+        cfg.BS_TIMES = (None, 0)
     if not hasattr(cfg, 'EXPORT_PNG'):
         cfg.EXPORT_PNG = False
     if not hasattr(cfg, 'EXPORT_MATLAB'):
@@ -93,7 +96,7 @@ def get_tfr(fif_file, cfg, tfr, n_jobs=1):
         classes = {'START':cfg.EVENT_START}
     tmax = (raw._data.shape[1] - 1) / raw.info['sfreq']
     epochs_all = mne.Epochs(raw, events, classes, tmin=0, tmax=tmax,
-                    picks=picks, baseline=(None, None), preload=True)
+                    picks=picks, baseline=None, preload=True)
     print('\n>> Processing %s' % fif_file)
     freqs = cfg.FREQ_RANGE  # define frequencies of interest
     n_cycles = freqs / 2.  # different number of cycle per frequency
@@ -112,7 +115,7 @@ def get_tfr(fif_file, cfg, tfr, n_jobs=1):
             ch_name = raw.ch_names[picks[ch]]
             title = 'Channel %s' % (ch_name)
             # mode= None | 'logratio' | 'ratio' | 'zscore' | 'mean' | 'percent'
-            fig = power.plot([ch], baseline=(None, None), mode='logratio', show=False,
+            fig = power.plot([ch], baseline=cfg.BS_TIMES, mode=cfg.BS_MODE, show=False,
                 colorbar=True, title=title, vmin=cfg.VMIN, vmax=cfg.VMAX, dB=False)
             fout = '%s/%s-%s-%s.png' % (export_dir, fname, cfg.SP_FILTER, ch_name)
             fig.savefig(fout)

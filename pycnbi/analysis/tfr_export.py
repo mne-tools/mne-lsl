@@ -27,16 +27,22 @@ from scipy.signal import butter
 from scipy.signal import hilbert
 
 def check_cfg(cfg):
+    if not hasattr(cfg, 'TFR_TYPE'):
+        cfg.TFR_TYPE = 'multitaper'
     if not hasattr(cfg, 'N_JOBS'):
         cfg.N_JOBS = None
     if not hasattr(cfg, 'T_BUFFER'):
         cfg.T_BUFFER = 1
     if not hasattr(cfg, 'BS_MODE'):
         cfg.BS_MODE = 'logratio'
+    if not hasattr(cfg, 'BS_TIMES'):
+        cfg.BS_TIMES = (None, 0)
     if not hasattr(cfg, 'EXPORT_PNG'):
         cfg.EXPORT_PNG = False
     if not hasattr(cfg, 'EXPORT_MATLAB'):
         cfg.MATLAB = False
+    if not hasattr(cfg, 'EXPORT_PATH'):
+        cfg.EXPORT_PATH = None
     return cfg
 
 def butter_bandpass(lowcut, highcut, fs, order=5):
@@ -46,7 +52,7 @@ def butter_bandpass(lowcut, highcut, fs, order=5):
     b, a = butter(order, [low, high], btype='band')
     return b, a
 
-def get_tfr(cfg, recursive=False, export_path=None, n_jobs=1):
+def get_tfr(cfg, recursive=False, n_jobs=1):
     '''
     @params:
     tfr_type: 'multitaper' or 'morlet'
@@ -57,7 +63,7 @@ def get_tfr(cfg, recursive=False, export_path=None, n_jobs=1):
 
     cfg = check_cfg(cfg)
     tfr_type = cfg.TFR_TYPE
-
+    export_path = cfg.EXPORT_PATH
     t_buffer = cfg.T_BUFFER
     if tfr_type == 'multitaper':
         tfr = mne.time_frequency.tfr_multitaper
@@ -238,7 +244,7 @@ def get_tfr(cfg, recursive=False, export_path=None, n_jobs=1):
                         chname = raw.ch_names[picks[ch]]
                         title = 'Peri-event %s - Channel %s, Trial %d' % (evname, chname, ep + 1)
                         # mode= None | 'logratio' | 'ratio' | 'zscore' | 'mean' | 'percent'
-                        fig = power[evname].plot([ch], baseline=cfg.BS_TIMES, mode='logratio', show=False,
+                        fig = power[evname].plot([ch], baseline=cfg.BS_TIMES, mode=cfg.BS_MODE, show=False,
                             colorbar=True, title=title, vmin=cfg.VMIN, vmax=cfg.VMAX, dB=False)
                         fout = '%s/%s-%s-%s-%s-ep%02d.png' % (export_dir, file_prefix, cfg.SP_FILTER, evname, chname, ep + 1)
                         fig.savefig(fout)
@@ -257,7 +263,7 @@ def get_tfr(cfg, recursive=False, export_path=None, n_jobs=1):
             title = 'Peri-event %s-%s - Channel %s' % (labels[0], labels[1], chname)
 
             # mode= None | 'logratio' | 'ratio' | 'zscore' | 'mean' | 'percent'
-            fig = df.plot([ch], baseline=(None, 0), mode='mean', show=False,
+            fig = df.plot([ch], baseline=cfg.BS_TIMES, mode=cfg.BS_MODE, show=False,
                           colorbar=True, title=title, vmin=3.0, vmax=-3.0, dB=False)
             fout = '%s/%s-%s-diff-%s-%s-%s.jpg' % (export_dir, file_prefix, cfg.SP_FILTER, labels[0], labels[1], chname)
             print('Exporting to %s' % fout)
@@ -267,9 +273,7 @@ def get_tfr(cfg, recursive=False, export_path=None, n_jobs=1):
 
 def config_run(cfg_module):
     cfg = imp.load_source(cfg_module, cfg_module)
-    if not hasattr(cfg, 'TFR_TYPE'):
-        cfg.TFR_TYPE = 'multitaper'
-    get_tfr(cfg, tfr_type=cfg.TFR_TYPE)
+    get_tfr(cfg)
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
