@@ -44,11 +44,12 @@ def add_lsl_events(event_dir, offset=0, recursive=True):
                 print(f)
 
     input('\nPress Enter to start')
-    try:
-        for f in to_process:
-            pclfile = f.replace('-eve.txt', '-raw.pcl')
-            pcl2fif(pclfile, external_event=f, offset=offset)
-    except:
-        print('\n*** Error occurred. Fix yourself.')
-        import pdb
-        pdb.set_trace()
+    for f in to_process:
+        pclfile = f.replace('-eve.txt', '-raw.pcl')
+        pcl2fif(pclfile, external_event=f, offset=offset)
+
+# sample code
+if __name__ == '__main__':
+    event_dir = r'D:\data\Records'
+    offset = -0.093936
+    add_lsl_events(event_dir, offset=offset, recursive=False)
