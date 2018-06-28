@@ -110,7 +110,7 @@ class BodyVisual(object):
         else:
             screen_x, screen_y = screen_pos
 
-        self.text_x = int(screen_width / 3)
+        self.text_x = int(screen_width / 3) - 200
         self.text_y = int(screen_height / 2) - 100
         self.text_size = 2
         self.img = np.zeros((screen_height, screen_width, 3), np.uint8)
