@@ -465,6 +465,7 @@ if __name__ == '__main__':
 
     import pycnbi.utils.q_common as qc
     import mne
+    mne.set_log_level('ERROR')
 
     amp_name, amp_serial = pu.search_lsl()
     sr = StreamReceiver(window_size=1, buffer_size=1, amp_serial=amp_serial, eeg_only=False, amp_name=amp_name)
