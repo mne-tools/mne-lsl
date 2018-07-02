@@ -39,6 +39,9 @@ from pycnbi.stream_receiver.stream_receiver import StreamReceiver
 import pycnbi.utils.pycnbi_utils as pu
 import numpy as np
 import cv2
+import mne
+mne.set_log_level('WARNING')
+
 
 def get_psd(sr, psde, picks):
     sr.acquire()

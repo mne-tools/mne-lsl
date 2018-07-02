@@ -3,6 +3,10 @@ from __future__ import print_function, division
 """
 Online decoder using frequency features.
 
+Interleaved parallel decoding is supported to achieve high frequency decoding.
+For example, if a single decoder takes 32ms to compute the likelihoods of a single window,
+100 Hz decoding rate can be achieved reliably using 4 cpu cores.
+
 TODO:
 Allow self.ref_new to be a list.
 
@@ -19,13 +23,16 @@ Swiss Federal Institute of Technology Lausanne (EPFL)
 import pycnbi.utils.pycnbi_utils as pu
 import pycnbi.utils.q_common as qc
 import time
+import math
+import random
 import os
 import sys
-import random
-import pdb
 import numpy as np
 import multiprocessing as mp
 import multiprocessing.sharedctypes as sharedctypes
+from numpy import ctypeslib
+import mne
+mne.set_log_level('WARNING')
 
 def get_decoder_info(classifier):
     """
@@ -151,7 +158,7 @@ class BCIDecoder(object):
             from pycnbi.triggers.trigger_def import trigger_def
             # TODO: parameterize directions using fake_dirs
             self.labels = [11, 9]
-            self.label_names = {'LEFT_GO':11, 'RIGHT_GO':9}
+            self.label_names = ['LEFT_GO', 'RIGHT_GO']
 
     def print(self, *args):
         if len(args) > 0: print('[BCIDecoder] ', end='')
@@ -255,23 +262,29 @@ class BCIDecoderDaemon(object):
 
     Some codes are redundant because BCIDecoder class object cannot be pickled.
     BCIDecoder object must be created inside the child process.
+    Set parallel parameter to achieve high-frequency decoding using multiple cores.
 
-    Constructor params:
-        classifier: file name of the classifier
-        buffer_size: buffer window size in seconds
-        fake:
-            False= Connect to an amplifier LSL server and decode
-            True=  Create a mock decoder (fake probabilities biased to 1.0)
-        fake_dirs:
-            example: ['LEFT_GO', 'RIGHT_GO']
     """
 
-    def __init__(self, classifier=None, buffer_size=1.0, fake=False, amp_serial=None, amp_name=None, fake_dirs=None):
+    def __init__(self, classifier=None, buffer_size=1.0, fake=False, amp_serial=None,\
+                 amp_name=None, fake_dirs=None, parallel=None):
         """
         Params
         ------
-            classifier: classifier file.
-            buffer_size: buffer size in seconds.
+            classifier: file name of the classifier
+            buffer_size: buffer window size in seconds
+            fake:
+                False: Connect to an amplifier LSL server and decode
+                True: Create a mock decoder (fake probabilities biased to 1.0)
+            buffer_size: Buffer size in seconds.
+            parallel: dict(period, stride, num_strides)
+                period: Decoding period length for a single decoder in seconds.
+                stride: Time step between decoders in seconds.
+                num_strides: Number of decoders to run in parallel.
+
+            Example: If the decoder runs 32ms per cycle, we can set
+                     period=0.04, stride=0.01, num_strides=4
+                     to achieve 100 Hz decoding.
         """
 
         self.classifier = classifier
@@ -281,6 +294,7 @@ class BCIDecoderDaemon(object):
         self.fake = fake
         self.amp_serial = amp_serial
         self.amp_name = amp_name
+        self.parallel = parallel
 
         if fake == False or fake is None:
             self.model = qc.load_obj(self.classifier)
@@ -288,7 +302,7 @@ class BCIDecoderDaemon(object):
                 raise IOError('Error loading %s' % self.model)
             else:
                 self.labels = self.model['cls'].classes_
-                self.label_names = {self.model['classes'][k]:k for k in self.model['cls'].classes_}
+                self.label_names = [self.model['classes'][k] for k in self.labels]
         else:
             # create a fake decoder with LEFT/RIGHT classes
             self.model = None
@@ -306,7 +320,7 @@ class BCIDecoderDaemon(object):
         self.start()
 
     def print(self, *args):
-        if len(args) > 0: print('[BCIDecoderDaemon] ', end='')
+        if len(args) > 0: print('[DecoderDaemon] ', end='')
         print(*args)
 
     def reset(self):
@@ -331,16 +345,42 @@ class BCIDecoderDaemon(object):
         self.pread = mp.Value('i', 1)
         self.running = mp.Value('i', 0)
         self.return_psd = mp.Value('i', 0)
+        self.procs = []
         mp.freeze_support()
-        self.proc = mp.Process(target=self.daemon, args=\
-            [self.classifier, self.probs, self.pread, self.running, self.return_psd, psd_ctypes, self.psdlock])
 
-    def daemon(self, classifier, probs, pread, running, return_psd, psd_ctypes, lock):
+        if self.parallel:
+            num_strides = self.parallel['num_strides']
+            period = self.parallel['period']
+            if num_strides > 1:
+                stride = period / num_strides
+            else:
+                stride = 0
+            t_start = time.time()
+            for i in range(num_strides):
+                self.procs.append(mp.Process(target=self.daemon, args=\
+                    [self.classifier, self.probs, self.pread, self.running, self.return_psd,\
+                     psd_ctypes, self.psdlock, dict(t_start=(t_start+i*stride), period=period)]))
+        else:
+            self.procs = [mp.Process(target=self.daemon, args=\
+                [self.classifier, self.probs, self.pread, self.running, self.return_psd,\
+                 psd_ctypes, self.psdlock, None])]
+
+    def daemon(self, classifier, probs, pread, running, return_psd, psd_ctypes, lock, interleave=None):
         """
-        The whole decoder loop runs on a child process because
-        BCIDecoder object cannot be pickled.
+        Runs Decoder class as a daemon.
+
+        BCIDecoder object cannot be pickled but Pathos library may solve this problem and simplify the code.
+
+        input
+        -----
+        interleave: None or dict with the following keys:
+        - t_start:double (seconds, same as time.time() format)
+        - period:double (seconds)
+
         """
-        from numpy import ctypeslib
+
+        pid = os.getpid()
+        print('[DecodeWorker-%-6d] Decoder worker process started' % (pid))
 
         decoder = BCIDecoder(classifier, buffer_size=self.buffer_sec,\
                              fake=self.fake, amp_serial=self.amp_serial, amp_name=self.amp_name)
@@ -349,30 +389,68 @@ class BCIDecoderDaemon(object):
         else:
             psd = None
 
-        self.running.value = 1
-        while running.value == 1:
-            probs[:] = decoder.get_prob()
-            pread.value = 0
-
-            if self.fake == False:
-                '''
-                Copy back PSD values only when needed.
-                We don't need a lock (return_psd.value acts as a lock).
-                '''
-                if return_psd.value == 1:
-                    # lock.acquire()
+        if interleave is None:
+            running.value = 1
+            while running.value == 1:
+                probs[:] = decoder.get_prob()
+                pread.value = 0
+                if self.fake == False and return_psd.value == 1:
+                    '''
+                    Copy back PSD values only when requested
+                    '''
+                    # sharedctypes.RawArray requires a lock
+                    lock.acquire()
                     psd[:] = decoder.psd_buffer[-1].reshape((1, -1))
-                    # lock.release()
+                    lock.release()
                     return_psd.value = 0
+        else: # interleaved parallel decoding
+            t_start = interleave['t_start']
+            period = interleave['period']
+            running.value = 1
+            t_next = t_start + math.ceil(((time.time() - t_start) / period) + 1) * period
+            #while running.value == 1:
+            while True:
+                t_check = time.time()
+                
+                #########################################
+                probs = decoder.get_prob()
+                print('#### %.3f' % (time.time()-t_check))
+                continue
+
+                # mutex lock is checked by the shared object
+                #probs[:] = decoder.get_prob()
+                #pread.value = 0
+                if self.fake == False and return_psd.value == 1:
+                    '''
+                    Copy back PSD values only when requested
+                    '''
+                    # sharedctypes.RawArray requires a lock
+                    lock.acquire()
+                    psd[:] = decoder.psd_buffer[-1].reshape((1, -1))
+                    lock.release()
+                    return_psd.value = 0
+                if time.time() > t_next:
+                    print('[DecodeWorker-%-6d] Warning: CPU cannot catch up with the desired frequency. (%.1f ms)' %\
+                          (pid, (time.time() - t_next + period) * 1000))
+                    t_next = t_start + math.ceil(((time.time() - t_start) / period) + 1) * period
+                else:
+                    t_next = t_next + period
+                t_sleep = t_next - period - time.time()
+                if t_sleep > 0.001:
+                    time.sleep(t_sleep)
+                print('[DecodeWorker-%-6d] %.3f -> %.3f' % (pid, time.time(), t_next))
 
     def start(self):
         """
         Start the daemon
         """
         if self.running.value == 1:
-            self.print('ERROR: Cannot start. Daemon already running. (PID %d)' % self.proc.pid)
+            msg = 'ERROR: Cannot start. Daemon already running. (PID' +\
+                ', '.join(['%d' % proc.pid for proc in self.procs]) + ')'
+            self.print(msg)
             return
-        self.proc.start()
+        for proc in self.procs:
+            proc.start()
         self.print(self.startmsg)
 
     def stop(self):
@@ -383,7 +461,8 @@ class BCIDecoderDaemon(object):
             self.print('Warning: Decoder already stopped.')
             return
         self.running.value = 0
-        self.proc.join()
+        for proc in self.procs:
+            proc.join()
         self.reset()
         self.print(self.stopmsg)
 
@@ -439,8 +518,7 @@ class BCIDecoderDaemon(object):
         return self.running.value
 
 # test decoding speed
-def check_speed(model_file, amp_name=None, amp_serial=None, max_count=float('inf')):
-    decoder = BCIDecoder(model_file, buffer_size=1.0, amp_name=amp_name, amp_serial=amp_serial)
+def check_speed(decoder, max_count=float('inf')):
     tm = qc.Timer()
     count = 0
     count_total = 0
@@ -448,12 +526,15 @@ def check_speed(model_file, amp_name=None, amp_serial=None, max_count=float('inf
     while True:
         if count_total >= max_count:
             break
-        decoder.get_prob()
+        praw = decoder.get_prob_unread()
+        if praw is None:
+            time.sleep(0.001)
+            continue
         count += 1
         count_total += 1
         if tm.sec() > 1:
             t = tm.sec()
-            ms = 1000*t/count
+            ms = 1000.0 * t / count
             # show time per classification and its reciprocal
             print('%.0f ms/c   %.1f Hz' % (ms, count/t))
             mslist.append(ms)
@@ -461,22 +542,11 @@ def check_speed(model_file, amp_name=None, amp_serial=None, max_count=float('inf
             tm.reset()
     print('mean = %.1f ms' % np.mean(mslist))
 
-# sample decoding code
-def sample_decoding(model_file, buffer_size=1.0, amp_name=None, amp_serial=None):
-    # run on background
-    # decoder= BCIDecoderDaemon(model_file, buffer_size=1.0, fake=False, amp_name=amp_name, amp_serial=amp_serial)
-
-    # run on foreground
-    decoder = BCIDecoder(model_file, buffer_size=1.0, amp_name=amp_name, amp_serial=amp_serial)
-
-    # run a fake classifier on background
-    # decoder= BCIDecoderDaemon(fake=True, fake_dirs=['L','R'])
-
-
+# decoding example
+def sample_decoding(decoder):
     # load trigger definitions for labeling
     labels = decoder.get_label_names()
     probs = [0.5] * len(labels)  # integrator
-
     tm_watchdog = qc.Timer(autoreset=True)
     tm_cls = qc.Timer()
     while True:
@@ -489,17 +559,18 @@ def sample_decoding(model_file, buffer_size=1.0, amp_name=None, amp_serial=None)
             tm_watchdog.sleep_atleast(0.001)
             continue
 
-        print('[%8.1f msec]' % (tm_cls.msec()), end='')
-        for i in range(len(labels)):
+        txt = '[%8.1f msec]' % (tm_cls.msec())
+        for i, label in enumerate(labels):
             probs[i] = probs[i] * 0.8 + praw[i] * 0.2
-            print('   %s %.3f (raw %.3f)' % (labels[i], probs[i], praw[i]), end='')
+            txt += '   %s %.3f (raw %.3f)' % (label, probs[i], praw[i])
         maxi = qc.get_index_max(probs)
-        print('   ', labels[maxi])
+        txt += '   %s\n' % labels[maxi]
+        print(txt)
         tm_cls.reset()
 
 # sample code
 if __name__ == '__main__':
-    model_file = r'D:\data\Records\fif\classifier_0.19\classifier-64bit.pkl'
+    model_file = r'D:\data\CHUV\ECoG17\20171005\fif_corrected\ANKTOE_left_vs_right\classifier_70-150Hz\classifier-64bit.pkl'
 
     if len(sys.argv) == 2:
         amp_name = sys.argv[1]
@@ -512,6 +583,18 @@ if __name__ == '__main__':
         amp_name = None
     print('Connecting to a server %s (Serial %s).' % (amp_name, amp_serial))
 
-    #check_speed(model_file, amp_name, amp_serial, 1000)
+    # run on background
+    #parallel = None
+    parallel = dict(period=0.1, num_strides=2)
+    decoder= BCIDecoderDaemon(model_file, buffer_size=1.0, fake=False, amp_name=amp_name,\
+        amp_serial=amp_serial, parallel=parallel)
 
-    sample_decoding(model_file, amp_name=amp_name, amp_serial=amp_serial)
+    # run on foreground
+    #decoder = BCIDecoder(model_file, buffer_size=1.0, amp_name=amp_name, amp_serial=amp_serial)
+
+    # run a fake classifier on background
+    # decoder= BCIDecoderDaemon(fake=True, fake_dirs=['L','R'])
+
+    check_speed(decoder, 1000)
+
+    sample_decoding(decoder)
