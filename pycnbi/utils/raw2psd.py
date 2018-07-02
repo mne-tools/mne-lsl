@@ -1,3 +1,4 @@
+
 from __future__ import print_function, division
 
 """
@@ -14,6 +15,7 @@ import pycnbi.utils.q_common as qc
 import numpy as np
 import os
 import mne
+mne.set_log_level('ERROR')
 
 
 def raw2psd(rawfile=None, fmin=1, fmax=40, wlen=0.5, wstep=1, tmin=0.0, tmax=None,

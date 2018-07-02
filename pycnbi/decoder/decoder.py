@@ -32,7 +32,7 @@ import multiprocessing as mp
 import multiprocessing.sharedctypes as sharedctypes
 from numpy import ctypeslib
 import mne
-mne.set_log_level('WARNING')
+mne.set_log_level('ERROR')
 
 def get_decoder_info(classifier):
     """
@@ -343,6 +343,7 @@ class BCIDecoderDaemon(object):
 
         self.probs = mp.Array('d', [1.0 / len(self.labels)] * len(self.labels))
         self.pread = mp.Value('i', 1)
+        self.pwrite = mp.Value('d', 0)
         self.running = mp.Value('i', 0)
         self.return_psd = mp.Value('i', 0)
         self.procs = []
@@ -358,14 +359,14 @@ class BCIDecoderDaemon(object):
             t_start = time.time()
             for i in range(num_strides):
                 self.procs.append(mp.Process(target=self.daemon, args=\
-                    [self.classifier, self.probs, self.pread, self.running, self.return_psd,\
+                    [self.classifier, self.probs, self.pread, self.pwrite, self.running, self.return_psd,\
                      psd_ctypes, self.psdlock, dict(t_start=(t_start+i*stride), period=period)]))
         else:
             self.procs = [mp.Process(target=self.daemon, args=\
-                [self.classifier, self.probs, self.pread, self.running, self.return_psd,\
+                [self.classifier, self.probs, self.pread, self.pwrite, self.running, self.return_psd,\
                  psd_ctypes, self.psdlock, None])]
 
-    def daemon(self, classifier, probs, pread, running, return_psd, psd_ctypes, lock, interleave=None):
+    def daemon(self, classifier, probs, pread, pwrite, running, return_psd, psd_ctypes, lock, interleave=None):
         """
         Runs Decoder class as a daemon.
 
@@ -392,13 +393,11 @@ class BCIDecoderDaemon(object):
         if interleave is None:
             running.value = 1
             while running.value == 1:
+                # compute features and likelihoods
                 probs[:] = decoder.get_prob()
                 pread.value = 0
+                # copy back PSD values only when requested
                 if self.fake == False and return_psd.value == 1:
-                    '''
-                    Copy back PSD values only when requested
-                    '''
-                    # sharedctypes.RawArray requires a lock
                     lock.acquire()
                     psd[:] = decoder.psd_buffer[-1].reshape((1, -1))
                     lock.release()
@@ -408,37 +407,37 @@ class BCIDecoderDaemon(object):
             period = interleave['period']
             running.value = 1
             t_next = t_start + math.ceil(((time.time() - t_start) / period) + 1) * period
-            #while running.value == 1:
-            while True:
-                t_check = time.time()
-                
-                #########################################
-                probs = decoder.get_prob()
-                print('#### %.3f' % (time.time()-t_check))
-                continue
+            while running.value == 1:
+                # compute features and likelihoods
+                probs_local = decoder.get_prob()
+                t_prob = time.time()
+                lock.acquire()
+                if t_prob > pwrite.value:
+                    probs[:] = probs_local
+                    pread.value = 0
+                    pwrite.value = t_prob
+                lock.release()
 
-                # mutex lock is checked by the shared object
-                #probs[:] = decoder.get_prob()
-                #pread.value = 0
+                # copy back PSD values only when requested
                 if self.fake == False and return_psd.value == 1:
-                    '''
-                    Copy back PSD values only when requested
-                    '''
-                    # sharedctypes.RawArray requires a lock
                     lock.acquire()
                     psd[:] = decoder.psd_buffer[-1].reshape((1, -1))
                     lock.release()
                     return_psd.value = 0
+
+                # get the next time slot
                 if time.time() > t_next:
                     print('[DecodeWorker-%-6d] Warning: CPU cannot catch up with the desired frequency. (%.1f ms)' %\
                           (pid, (time.time() - t_next + period) * 1000))
                     t_next = t_start + math.ceil(((time.time() - t_start) / period) + 1) * period
                 else:
                     t_next = t_next + period
+
+                # sleep until the next time slot
                 t_sleep = t_next - period - time.time()
                 if t_sleep > 0.001:
                     time.sleep(t_sleep)
-                print('[DecodeWorker-%-6d] %.3f -> %.3f' % (pid, time.time(), t_next))
+                #print('[DecodeWorker-%-6d] %.3f' % (pid, time.time()))
 
     def start(self):
         """
@@ -584,8 +583,8 @@ if __name__ == '__main__':
     print('Connecting to a server %s (Serial %s).' % (amp_name, amp_serial))
 
     # run on background
-    #parallel = None
-    parallel = dict(period=0.1, num_strides=2)
+    #parallel = None # no process interleaving
+    parallel = dict(period=0.08, num_strides=4)
     decoder= BCIDecoderDaemon(model_file, buffer_size=1.0, fake=False, amp_name=amp_name,\
         amp_serial=amp_serial, parallel=parallel)
 
@@ -595,6 +594,6 @@ if __name__ == '__main__':
     # run a fake classifier on background
     # decoder= BCIDecoderDaemon(fake=True, fake_dirs=['L','R'])
 
-    check_speed(decoder, 1000)
+    #check_speed(decoder, 1000)
 
     sample_decoding(decoder)
