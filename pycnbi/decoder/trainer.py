@@ -45,19 +45,20 @@ import pycnbi
 import pycnbi.utils.q_common as qc
 import pycnbi.utils.pycnbi_utils as pu
 import imp
+from mne import Epochs, pick_types
+from pycnbi.decoder.rlda import rLDA
+from builtins import input
+from IPython import embed  # for debugging
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
+# scikit-learn old version compatibility
 try:
     from sklearn.model_selection import StratifiedShuffleSplit, LeaveOneOut
     SKLEARN_OLD = False
 except ImportError:
     from sklearn.cross_validation import StratifiedShuffleSplit, LeaveOneOut
     SKLEARN_OLD = True
-from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
-from mne import Epochs, pick_types
-from pycnbi.decoder.rlda import rLDA
-from builtins import input
-from IPython import embed  # for debugging
-
+mne.set_log_level('WARNING')
 
 def check_cfg(cfg):
     critical_vars = {
@@ -181,7 +182,7 @@ def get_psd_feature(epochs_train, window, psdparam, feat_picks=None, n_jobs=1):
 
     psde = mne.decoding.PSDEstimator(sfreq=sfreq, fmin=psdparam['fmin'],\
                                      fmax=psdparam['fmax'], bandwidth=None, adaptive=False, low_bias=True,\
-                                     n_jobs=1, normalization='length', verbose=None)
+                                     n_jobs=1, normalization='length', verbose='WARNING')
 
     print('\n>> Computing PSD for training set')
     if type(epochs_train) is list:

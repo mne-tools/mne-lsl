@@ -8,12 +8,13 @@ Swiss Federal Institute of Technology (EPFL)
 
 """
 
-import pycnbi
 import pycnbi.utils.pycnbi_utils as pu
-import scipy.io, mne
-import numpy as np
 import pycnbi.utils.q_common as qc
+import scipy.io
+import mne
+import numpy as np
 from multiprocessing import cpu_count
+mne.set_log_level('WARNING')
 
 
 def epochs2psd(rawfile, channel_picks, event_id, tmin, tmax, fmin, fmax, w_len, w_step, excludes=None):
