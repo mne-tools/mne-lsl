@@ -45,14 +45,14 @@ def stream_player(server_name, fif_file, chunk_size, auto_restart=True):
             .append_child_value('type','EEG').append_child_value('unit','microvolts')
     desc.append_child('amplifier').append_child('settings').append_child_value('is_slave', 'false')
     desc.append_child('acquisition').append_child_value('manufacturer', 'PyCNBI').append_child_value('serial_number', 'N/A')
-    outlet = pylsl.StreamOutlet(sinfo)
+    outlet = pylsl.StreamOutlet(sinfo, chunk_size=chunk_size)
 
     input('Press Enter to start streaming.')
 
     idx_chunk = 0
     t_chunk = chunk_size / sfreq
     finished = False
-    tm = qc.Timer()
+    t_start = time.perf_counter()
     while True:
         idx_current = idx_chunk * chunk_size
         if idx_current < raw._data.shape[1] - chunk_size:
@@ -60,11 +60,19 @@ def stream_player(server_name, fif_file, chunk_size, auto_restart=True):
         else:
             data = raw._data[:, idx_current:].transpose().tolist()
             finished = True
-        t_wait = idx_chunk * t_chunk - tm.sec()
-        if t_wait > 0:
-            time.sleep(t_wait)
+        
+        # time.sleep() is not accurate enough
+        #t_wait = idx_chunk * t_chunk - time.time()
+        #if t_wait > 0.001:
+            #time.sleep(t_wait)
+        
+        # although inefficient, this is the only working solution for now
+        t_sleep_until = idx_chunk * t_chunk
+        while time.perf_counter() < t_sleep_until:
+            pass
+        
         outlet.push_chunk(data)
-        print('[%8.3fs] sent %d samples' % (tm.sec(), len(data)))
+        print('[%8.3fs] sent %d samples' % (time.perf_counter(), len(data)))
         idx_chunk += 1
 
         if finished:
@@ -74,11 +82,11 @@ def stream_player(server_name, fif_file, chunk_size, auto_restart=True):
                 print('Reached the end of data. Restarting.')
             idx_chunk = 0
             finished = False
-            tm.reset()
+            t_start = time.perf_counter()
 
 # sample code
 if __name__ == '__main__':
     server_name = 'StreamPlayer'
-    chunk_size = 32  # chunk streaming frequency in Hz
-    fif_file = r'D:\data\CHUV\ECoG17\20171005\fif_corrected\20171005-T7.fif'
+    chunk_size = 8  # chunk streaming frequency in Hz
+    fif_file = r'D:\data\CHUV\ECoG17\20171008\fif_corrected\ANKTOE_left_vs_right\Oct08-08.fif'
     stream_player(server_name, fif_file, chunk_size)
