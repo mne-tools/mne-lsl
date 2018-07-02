@@ -25,6 +25,7 @@ import pycnbi.utils.q_common as qc
 from pycnbi.pycnbi_config import CAP, LAPLACIAN
 from scipy.signal import butter, lfilter, lfiltic, buttord
 from builtins import input
+mne.set_log_level('WARNING')
 
 
 def slice_win(epochs_data, w_starts, w_length, psde, picks=None, epoch_id=None, flatten=True, verbose=False):
