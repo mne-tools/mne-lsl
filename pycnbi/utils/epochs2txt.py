@@ -28,7 +28,7 @@ import mne
 import numpy as np
 import trainer
 from multiprocessing import cpu_count
-from IPython import embed
+mne.set_log_level('ERROR')
 
 if __name__ == '__main__':
     rawlist = []

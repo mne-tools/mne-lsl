@@ -14,7 +14,7 @@ import scipy.io
 import mne
 import numpy as np
 from multiprocessing import cpu_count
-mne.set_log_level('WARNING')
+mne.set_log_level('ERROR')
 
 
 def epochs2psd(rawfile, channel_picks, event_id, tmin, tmax, fmin, fmax, w_len, w_step, excludes=None):

@@ -58,7 +58,7 @@ try:
 except ImportError:
     from sklearn.cross_validation import StratifiedShuffleSplit, LeaveOneOut
     SKLEARN_OLD = True
-mne.set_log_level('WARNING')
+mne.set_log_level('ERROR')
 
 def check_cfg(cfg):
     critical_vars = {

@@ -12,7 +12,7 @@ Created on Mon Oct 05 10:02:22 2015
 
 import pycnbi.utils.pycnbi_utils as pu
 import pycnbi.utils.q_common as qc
-import scipy.io, mne
+import scipy.io
 import numpy as np
 import h5py
 import xml.etree.ElementTree as XET  # xml parser

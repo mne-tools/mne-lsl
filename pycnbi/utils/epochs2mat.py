@@ -11,10 +11,12 @@ Swiss Federal Institute of Technology (EPFL)
 
 """
 
-import scipy.io, mne
+import scipy.io
+import mne
 import numpy as np
 import pycnbi.utils.pycnbi_utils as pu
 import pycnbi.utils.q_common as qc
+mne.set_log_level('ERROR')
 
 def save_mat(raw, events, picks, event_id, tmin, tmax, matfile):
     sfreq = raw.info['sfreq']
