@@ -134,7 +134,7 @@ def config_run(cfg_module):
         trigger.init(50)
 
     # init classification
-    decoder = BCIDecoderDaemon(cfg.CLS_MI, buffer_size=10.0,
+    decoder = BCIDecoderDaemon(cfg.CLS_MI, buffer_size=1.0,
                                fake=(cfg.FAKE_CLS is not None),
                                amp_name=amp_name, amp_serial=amp_serial,
                                fake_dirs=fake_dirs, parallel=cfg.PARALLEL_DECODING)
