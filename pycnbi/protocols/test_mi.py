@@ -97,6 +97,8 @@ def load_cfg(cfg_module):
         cfg.WITH_STIMO = False
     if not hasattr(cfg, 'FEEDBACK_SLOW_START'):
         cfg.FEEDBACK_SLOW_START = False
+    if not hasattr(cfg, 'PARALLEL_DECODING'):
+        cfg.PARALLEL_DECODING = None
 
     return cfg
 
@@ -135,7 +137,7 @@ def config_run(cfg_module):
     decoder = BCIDecoderDaemon(cfg.CLS_MI, buffer_size=10.0,
                                fake=(cfg.FAKE_CLS is not None),
                                amp_name=amp_name, amp_serial=amp_serial,
-                               fake_dirs=fake_dirs)
+                               fake_dirs=fake_dirs, parallel=cfg.PARALLEL_DECODING)
 
     # OLD: requires trigger values to be always defined
     #labels = [tdef.by_value[x] for x in decoder.get_labels()]
