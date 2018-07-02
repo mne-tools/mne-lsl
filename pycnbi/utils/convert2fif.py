@@ -32,6 +32,7 @@ import pycnbi.utils.pycnbi_utils as pu
 import pycnbi.utils.q_common as qc
 from pycnbi.pycnbi_config import CAP, LAPLACIAN
 from builtins import input
+mne.set_log_level('ERROR')
 
 
 def event_timestamps_to_indices(sigfile, eventfile, offset=0):
