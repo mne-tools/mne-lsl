@@ -584,7 +584,7 @@ if __name__ == '__main__':
 
     # run on background
     #parallel = None # no process interleaving
-    parallel = dict(period=0.08, num_strides=4)
+    parallel = dict(period=0.08, num_strides=6)
     decoder= BCIDecoderDaemon(model_file, buffer_size=1.0, fake=False, amp_name=amp_name,\
         amp_serial=amp_serial, parallel=parallel)
 
@@ -594,6 +594,6 @@ if __name__ == '__main__':
     # run a fake classifier on background
     # decoder= BCIDecoderDaemon(fake=True, fake_dirs=['L','R'])
 
-    #check_speed(decoder, 1000)
+    check_speed(decoder, 5000)
 
     sample_decoding(decoder)
