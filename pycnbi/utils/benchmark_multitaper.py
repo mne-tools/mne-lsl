@@ -9,9 +9,11 @@ i7-8700K: 9.9 ms (101.0 Hz)
 @author: leeq
 """
 
+import os
 import mne
 import numpy as np
 import pycnbi.utils.q_common as qc
+os.environ['OMP_NUM_THREADS'] = '1' # actually improves performance for multitaper
 
 def main():
     fmin = 1

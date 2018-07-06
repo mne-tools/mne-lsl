@@ -33,6 +33,7 @@ import multiprocessing.sharedctypes as sharedctypes
 from numpy import ctypeslib
 import mne
 mne.set_log_level('ERROR')
+os.environ['OMP_NUM_THREADS'] = '1' # actually improves performance for multitaper
 
 def get_decoder_info(classifier):
     """

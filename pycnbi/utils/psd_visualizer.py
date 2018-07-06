@@ -40,7 +40,9 @@ import pycnbi.utils.pycnbi_utils as pu
 import numpy as np
 import cv2
 import mne
-mne.set_log_level('WARNING')
+import os
+mne.set_log_level('ERROR')
+os.environ['OMP_NUM_THREADS'] = '1' # actually improves performance for multitaper
 
 
 def get_psd(sr, psde, picks):

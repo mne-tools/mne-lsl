@@ -16,6 +16,7 @@ import numpy as np
 import os
 import mne
 mne.set_log_level('ERROR')
+os.environ['OMP_NUM_THREADS'] = '1' # actually improves performance for multitaper
 
 
 def raw2psd(rawfile=None, fmin=1, fmax=40, wlen=0.5, wstep=1, tmin=0.0, tmax=None,
