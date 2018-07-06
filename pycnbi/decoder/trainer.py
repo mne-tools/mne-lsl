@@ -59,6 +59,7 @@ except ImportError:
     from sklearn.cross_validation import StratifiedShuffleSplit, LeaveOneOut
     SKLEARN_OLD = True
 mne.set_log_level('ERROR')
+os.environ['OMP_NUM_THREADS'] = '1' # actually improves performance for multitaper
 
 def check_cfg(cfg):
     critical_vars = {

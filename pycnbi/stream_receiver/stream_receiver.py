@@ -36,7 +36,8 @@ DEBUG_TIME_OFFSET = True
 
 import pycnbi  # from global common folder
 import pycnbi.utils.pycnbi_utils as pu
-import time, sys
+import time
+import sys
 import pylsl
 import numpy as np
 import pycnbi.utils.q_common as qc
@@ -465,7 +466,9 @@ if __name__ == '__main__':
 
     import pycnbi.utils.q_common as qc
     import mne
+    import os
     mne.set_log_level('ERROR')
+    os.environ['OMP_NUM_THREADS'] = '1' # actually improves performance for multitaper
 
     amp_name, amp_serial = pu.search_lsl()
     sr = StreamReceiver(window_size=1, buffer_size=1, amp_serial=amp_serial, eeg_only=False, amp_name=amp_name)
