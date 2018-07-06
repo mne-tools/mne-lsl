@@ -26,6 +26,7 @@ from pycnbi.pycnbi_config import CAP, LAPLACIAN
 from scipy.signal import butter, lfilter, lfiltic, buttord
 from builtins import input
 mne.set_log_level('ERROR')
+os.environ['OMP_NUM_THREADS'] = '1' # actually improves performance for multitaper
 
 
 def slice_win(epochs_data, w_starts, w_length, psde, picks=None, epoch_id=None, flatten=True, verbose=False):
