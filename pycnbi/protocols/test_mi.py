@@ -1,7 +1,12 @@
 from __future__ import print_function, division
 
 """
-Motor imagery testing
+Motor imagery testing.
+
+After setting experimental parameters, it runs a trial with feedback
+by calling the classify() method of a Feedback class object.
+Trials are repeated until the set number of trials are achieved.
+
 
 Kyuhwa Lee, 2015
 Swiss Federal Institute of Technology (EPFL)
@@ -54,7 +59,7 @@ color = dict(G=(20, 140, 0), B=(210, 0, 0), R=(0, 50, 200), Y=(0, 215, 235),
 
 def load_cfg(cfg_module):
     cfg = imp.load_source(cfg_module, cfg_module)
-    
+
     if not hasattr(cfg, 'POSITIVE_FEEDBACK'):
         qc.print_c('Warning: POSITIVE_FEEDBACK undefined. Setting it to False.',
                    'Y')

@@ -104,14 +104,11 @@ class BodyVisual(object):
             screen_size = (screen_width, screen_height)
         else:
             screen_width, screen_height = screen_size
-
         if screen_pos is None:
             screen_x, screen_y = (0, 0)
         else:
             screen_x, screen_y = screen_pos
-
-        self.text_x = int(screen_width / 3) - 200
-        self.text_y = int(screen_height / 2) - 100
+        
         self.text_size = 2
         self.img = np.zeros((screen_height, screen_width, 3), np.uint8)
         self.glass = bgi_client.GlassControl(mock=not use_glass)
@@ -143,16 +140,6 @@ class BodyVisual(object):
             print('Reading images from %s' % right_image_path)
             self.right_images = read_images(right_image_path, screen_size)
             print('Took %.1f s' % tm.sec())
-            # it will be much slower in Python even with cPickle
-            if pickle.HIGHEST_PROTOCOL >= 4:
-                savepkl = input('You can save images into a single binary file to reduce the loading time. Save? (y/n)')
-                if savepkl.upper() == 'Y':
-                    outfile = '%s/BodyVisuals.pkl' % image_path
-                    img_data = {'left_images':self.left_images, 'right_images':self.right_images}
-                    with gzip.open(outfile, 'wb') as fp:
-                        pickle.dump(img_data, fp)
-                    print('Exported to %s' % outfile)
-                    print('Please modify your IMAGE_PATH to point to the above file.')
         else:
             # load pickled images
             # note: this is painfully slow in Pytohn 2 even with cPickle (3s vs 27s)
@@ -163,11 +150,32 @@ class BodyVisual(object):
                 image_data = pickle.load(fp)
             self.left_images = image_data['left_images']
             self.right_images = image_data['right_images']
+            feedback_w = self.left_images[0].shape[1] / 2
+            feedback_h = self.left_images[0].shape[0] / 2
+            loc_x = [int(self.cx - feedback_w), int(self.cx + feedback_w)]
+            loc_y = [int(self.cy - feedback_h), int(self.cy + feedback_h)]
+            print(feedback_w, feedback_h)
+            print(loc_x, loc_y)
+            print(screen_height, screen_width)
+            img_fit = np.zeros((screen_height, screen_width, 3), np.uint8)
+            print(img_fit.shape)
+            
+            # adjust to the current screen size
+            print('Fitting image into the current screen size')
+            for i, img in enumerate(self.left_images):
+                img_fit = np.zeros((screen_height, screen_width, 3), np.uint8)
+                img_fit[loc_y[0]:loc_y[1], loc_x[0]:loc_x[1]] = img
+                self.left_images[i] = img_fit
+            for i, img in enumerate(self.right_images):
+                img_fit = np.zeros((screen_height, screen_width, 3), np.uint8)
+                img_fit[loc_y[0]:loc_y[1], loc_x[0]:loc_x[1]] = img
+                self.right_images[i] = img_fit
+
             print('Took %.1f s' % tm.sec())
             print('Done.')
-        cv2.namedWindow("img", cv2.WINDOW_AUTOSIZE)
-        cv2.moveWindow("img", screen_x, screen_y)
-        cv2.setWindowProperty("img", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN);
+        cv2.namedWindow("Protocol", cv2.WND_PROP_FULLSCREEN)
+        cv2.moveWindow("Protocol", screen_x, screen_y)
+        cv2.setWindowProperty("Protocol", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN);
 
     def finish(self):
         self.glass.disconnect()
@@ -222,12 +230,14 @@ class BodyVisual(object):
 
     def put_text(self, txt, color='W'):
         self.img = self.img.copy()
-        cv2.putText(self.img, txt[:self.textlimit].center(self.textlimit, ' '), (self.text_x, self.text_y),\
+        size_wh, baseline = cv2.getTextSize(txt, cv2.FONT_HERSHEY_DUPLEX, self.text_size, 2)
+        pos = (int(self.cx - size_wh[0] / 2), int(self.cy - size_wh[1] / 2))
+        cv2.putText(self.img, txt[:self.textlimit], pos,
                     cv2.FONT_HERSHEY_DUPLEX, self.text_size, self.color[color], 2, cv2.LINE_AA)
         self.update()
 
     def update(self):
-        cv2.imshow("img", self.img)
+        cv2.imshow("Protocol", self.img)
         cv2.waitKey(1)  # at least 1 ms needed for CV to update window
 
     # Glass functions
