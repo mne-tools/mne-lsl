@@ -1,7 +1,10 @@
 from __future__ import print_function, division
 
 """
-Visual feedback with online decoding
+Visual feedback with online decoding.
+
+classify() of Feedback class runs one trial and returns the decoded result.
+
 
 Kyuhwa Lee
 Swiss Federal Institute of Technology Lausanne (EPFL)
@@ -306,6 +309,7 @@ class Feedback:
                                 self.logf.write(msg + '\n')
                             tm_classify.reset()
 
+                            # STIMO protocol
                             if self.cfg.WITH_STIMO is True:
                                 if bar_score >= 100:
                                     if bar_label != bar_label_last:
