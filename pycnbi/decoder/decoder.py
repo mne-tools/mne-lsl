@@ -12,7 +12,7 @@ Allow self.ref_new to be a list.
 
 TODO:
 Use Pathos to simplify daemon class.
-(Should be free from non-picklable limitation.)
+(Should get away with non-picklable limitations.)
 
 Auhtor:
 Kyuhwa Lee
