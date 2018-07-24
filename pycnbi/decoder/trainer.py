@@ -3,16 +3,11 @@ from __future__ import print_function, division
 """
 trainer.py
 
-Perform cross-validation and train a classifier.
+Compute features, perform cross-validation and train a classifier.
+See run_trainer() to see the flow.
 
 
-TODO
-----
-Make an option to run preprocess() after epoching.
-
-
-
-Kyuhwa Lee, 2014
+Kyuhwa Lee, 2018
 Swiss Federal Institute of Technology Lausanne (EPFL)
 
 This program is free software: you can redistribute it and/or modify
@@ -142,7 +137,8 @@ def load_cfg(cfg_file):
 
 def get_psd_feature(epochs_train, window, psdparam, feat_picks=None, n_jobs=1):
     """
-    params:
+    params
+    ======
       epochs_train: mne.Epochs object or list of mne.Epochs object.
       window: time window range for computing PSD. Can be [a,b] or [ [a1,b1], [a1,b2], ...]
     """
@@ -210,10 +206,13 @@ def get_psd_feature(epochs_train, window, psdparam, feat_picks=None, n_jobs=1):
 
 def get_timelags(epochs, wlen, wstep, downsample=1, picks=None):
     """
+    (DEPRECATED FUNCTION)
     Get concatenated timelag features
 
-    Parameters
-    ----------
+    TODO: Unit test.
+
+    Params
+    ======
     epochs: input signals
     wlen: window length (# time points) in downsampled data
     wstep: window step in downsampled data
@@ -221,7 +220,7 @@ def get_timelags(epochs, wlen, wstep, downsample=1, picks=None):
     picks: ignored for now
 
     Returns
-    -------
+    =======
     X: [epochs] x [windows] x [channels*freqs]
     y: [epochs] x [labels]
     """
@@ -268,14 +267,14 @@ def feature2chz(x, fqlist, ch_names):
     """
     Label channel, frequency pair for PSD feature indices
 
-    Input
-    ------
+    Params
+    ======
     x: feature index
     fqlist: list of frequency bands
     ch_names: list of complete channel names
 
-    Output
-    -------
+    Returns
+    =======
     (channel, frequency)
 
     """
@@ -354,14 +353,17 @@ def balance_samples(X, Y, balance_type, verbose=False):
 
 def crossval_epochs(cv, epochs_data, labels, cls, label_names=None, do_balance=False, n_jobs=None, decision_thres=None):
     """
-    Epoch (trial) based cross-validation
+    Epoch-based cross-validation used by cross_validate().
 
+    Params
+    ======
     cv: scikit-learn cross-validation object
     epochs_data: np.array of [epochs x samples x features]
     cls: classifier
     labels: vector of integer labels
     label_names: associated label names {0:'Left', 1:'Right', ...}
     do_balance: oversample or undersample to match the number of samples among classes
+
     """
 
     scores = []
@@ -452,6 +454,9 @@ def crossval_epochs(cv, epochs_data, labels, cls, label_names=None, do_balance=F
 
 
 def cva_features(datadir):
+    """
+    (DEPRECATED FUNCTION)
+    """
     for fin in qc.get_file_list(datadir, fullpath=True):
         if fin[-4:] != '.gdf': continue
         fout = fin + '.cva'
@@ -811,7 +816,7 @@ def train_decoder(cfg, featdata, feat_file=None):
         chlist, hzlist = feature2chz(keys, fqlist, ch_names=ch_names)
         valnorm = values[:cfg.FEAT_TOPN].copy()
         valnorm = valnorm / np.sum(valnorm) * 100.0
-        # print top-N features on screen
+        # Print top-N features on screen
         for i, (ch, hz) in enumerate(zip(chlist, hzlist)):
             if i >= cfg.FEAT_TOPN:
                 break
@@ -828,22 +833,17 @@ def train_decoder(cfg, featdata, feat_file=None):
         print()
 
 def run_trainer(cfg_file, interactive=False, cv_file=None, feat_file=None):
-    '''
-    TODO: Separate feature extraction, CV and training parts into functions
-    TODO: Clean up the code
-    '''
-
-    # check config module
+    # Check config module
     cfg = load_cfg(cfg_file)
 
-    # extract features
+    # Extract features
     featdata = compute_features(cfg)
 
-    # perform cross validation
+    # Perform cross validation
     if cfg.CV_PERFORM is not None:
         cross_validate(cfg, featdata, cv_file=cv_file)
 
-    # train a decoder
+    # Train a decoder
     if cfg.EXPORT_CLS is True:
         train_decoder(cfg, featdata, feat_file=feat_file)
 
@@ -851,7 +851,7 @@ def config_run(cfg_file):
     run_trainer(cfg_file, interactive=True)
 
 if __name__ == '__main__':
-    # load parameters
+    # Load parameters
     if len(sys.argv) < 2:
         cfg_file = input('Config file name? ')
     else:
