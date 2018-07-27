@@ -1,10 +1,7 @@
 from __future__ import print_function, division
 
 """
-Visual feedback with online decoding.
-
-classify() of Feedback class runs one trial and returns the decoded result.
-
+Visual feedback with online decoding
 
 Kyuhwa Lee
 Swiss Federal Institute of Technology Lausanne (EPFL)
@@ -163,7 +160,6 @@ class Feedback:
                 state = 'dir'
 
                 # initialize bar scores
-                bar_label_last = None
                 bar_label = bar_dirs[0]
                 bar_score = 0
                 probs = [1.0 / len(bar_dirs)] * len(bar_dirs)
@@ -200,6 +196,16 @@ class Feedback:
                         else:
                             self.bar.move(bar_label, 0, overlay=False, barcolor='Y')
                     self.trigger.signal(self.tdef.FEEDBACK)
+
+                    # STIMO code
+                    #if self.cfg.WITH_STIMO is True and pred_label == true_label:
+                    if self.cfg.WITH_STIMO is True:
+                        if bar_label == 'L':
+                            self.ser.write(b'1')
+                            qc.print_c('STIMO: Sent 1', 'g')
+                        elif bar_label == 'R':
+                            self.ser.write(b'2')
+                            qc.print_c('STIMO: Sent 2', 'g')
 
                     probs_acc /= sum(probs_acc)
                     if self.cfg.DEBUG_PROBS:
@@ -270,6 +276,14 @@ class Feedback:
                                 print('DEBUG: Direction %s using bar step %d' % (max_label, self.bar_step_left))
                                 dx *= self.bar_step_left
 
+                            ################################################
+                            ################################################
+                            # slower in the beginning?
+                            if self.tm_trigger.sec() < 2.0:
+                                dx *= self.tm_trigger.sec() * 0.5
+                            ################################################
+                            ################################################
+
                             # add likelihoods
                             if max_label == bar_label:
                                 bar_score += dx
@@ -279,12 +293,6 @@ class Feedback:
                                 if bar_score < 0:
                                     bar_score = -bar_score
                                     bar_label = max_label
-
-                            # feedback is initially "suppressed" linearly until the given time
-                            if hasattr(self.cfg, 'FEEDBACK_SLOW_START') and self.cfg.FEEDBACK_SLOW_START is not None:
-                                if self.tm_trigger.sec() < self.cfg.FEEDBACK_SLOW_START:
-                                    bar_score *= self.tm_trigger.sec() / self.cfg.FEEDBACK_SLOW_START
-
                             bar_score = int(bar_score)
                             if bar_score > 100:
                                 bar_score = 100
@@ -308,32 +316,6 @@ class Feedback:
                             if self.logf is not None:
                                 self.logf.write(msg + '\n')
                             tm_classify.reset()
-
-                            # STIMO protocol
-                            if self.cfg.WITH_STIMO is True:
-                                if bar_score >= 100:
-                                    if bar_label != bar_label_last:
-                                        if bar_label == 'L':
-                                            self.ser.write(b'1')
-                                            qc.print_c('STIMO: Sent 1', 'g')
-                                        elif bar_label == 'R':
-                                            self.ser.write(b'2')
-                                            qc.print_c('STIMO: Sent 2', 'g')
-                                    else:
-                                        qc.print_c('STIMO: Ignored', 'y')
-                                    while bar_score > 0:
-                                        self.bar.move(bar_label, bar_score, overlay=False, barcolor='Y')
-                                        self.bar.update()
-                                        bar_score -= 5
-                                        time.sleep(self.refresh_delay)
-                                    bar_score = 0
-                                    probs = [1.0 / len(bar_dirs)] * len(bar_dirs)
-                                    probs_acc = np.zeros(len(probs))
-                                    bar_label_last = bar_label
-                                    self.tm_trigger.reset()
-                                else:
-                                    self.ser.write(b'0')
-                                    qc.print_c('STIMO: Sent 0')
 
             elif state == 'feedback' and self.tm_trigger.sec() > self.cfg.T_FEEDBACK:
                 self.trigger.signal(self.tdef.BLANK)
