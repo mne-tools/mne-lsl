@@ -28,7 +28,8 @@ import os
 import pycnbi.utils.q_common as qc
 import numpy as np
 import time
-from IPython import embed
+import serial
+import serial.tools.list_ports
 
 # visualization
 keys = {'left':81, 'right':83, 'up':82, 'down':84, 'pgup':85, 'pgdn':86, 'home':80, 'end':87, 'space':32, 'esc':27 \
@@ -75,16 +76,26 @@ class Feedback:
 
         # STIMO only
         if self.cfg.WITH_STIMO is True:
-            print('Opening STIMO serial port (%s / %d bps)' % (self.cfg.STIMO_COMPORT, self.cfg.STIMO_BAUDRATE))
-            import serial
-            self.ser = serial.Serial(self.cfg.STIMO_COMPORT, self.cfg.STIMO_BAUDRATE)
-            print('STIMO serial port %s is_open = %s' % (self.cfg.STIMO_COMPORT, self.ser.is_open))
+            if self.cfg.STIMO_COMPORT is None:
+                atens = [x for x in serial.tools.list_ports.grep('ATEN')]
+                if len(atens) == 0:
+                    raise RuntimeError('No ATEN device found. Stop.')
+                for i, a in enumerate(atens):
+                    print('Found', a[0])
+                try:
+                    self.stimo_port = atens[0].device
+                except AttributeError: # depends on Python distribution
+                    self.stimo_port = atens[0][0]
+            else:
+                self.stimo_port = self.cfg.STIMO_COMPORT
+            self.ser = serial.Serial(self.stimo_port, self.cfg.STIMO_BAUDRATE)
+            print('STIMO serial port %s is_open = %s' % (self.stimo_port, self.ser.is_open))
 
     def __del__(self):
         # STIMO only
         if self.cfg.WITH_STIMO is True:
             self.ser.close()
-            print('Closed STIMO serial port %s' % self.cfg.STIMO_COMPORT)
+            print('Closed STIMO serial port %s' % self.stimo_port)
 
     def classify(self, decoder, true_label, title_text, bar_dirs, state='start'):
         """
@@ -108,7 +119,8 @@ class Feedback:
                 self.trigger.signal(self.tdef.INIT)
 
             elif state == 'gap_s':
-                self.bar.put_text(title_text)
+                if self.cfg.T_GAP > 0:
+                    self.bar.put_text(title_text)
                 state = 'gap'
                 self.tm_trigger.reset()
 
@@ -145,13 +157,6 @@ class Feedback:
                 else:
                     raise RuntimeError('Unknown direction %s' % true_label)
                 self.tm_trigger.reset()
-
-                ##################################################################
-                ##################################################################
-                #qc.print_c('Executing Rex action %s' % 'N', 'W')
-                #os.system('%s/Rex/RexControlSimple.exe %s %s' % (pycnbi.ROOT, 'COM3', 'N'))
-                ##################################################################
-                ##################################################################
 
             elif state == 'dir_r' and self.tm_trigger.sec() > self.cfg.T_DIR_CUE:
                 self.bar.fill()
@@ -197,7 +202,7 @@ class Feedback:
                             self.bar.move(bar_label, 0, overlay=False, barcolor='Y')
                     self.trigger.signal(self.tdef.FEEDBACK)
 
-                    # STIMO code
+                    # STIMO execute
                     #if self.cfg.WITH_STIMO is True and pred_label == true_label:
                     if self.cfg.WITH_STIMO is True:
                         if bar_label == 'L':
