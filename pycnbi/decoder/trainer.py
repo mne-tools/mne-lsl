@@ -87,6 +87,7 @@ def load_cfg(cfg_file):
         'REF_CH_NEW':None,
         'N_JOBS':None,
         'EXCLUDES':None,
+        'CV_IGNORE_THRES':None,
         'CV_DECISION_THRES':None,
         'BALANCE_SAMPLES':False
     }
@@ -351,7 +352,7 @@ def balance_samples(X, Y, balance_type, verbose=False):
     return X_balanced, Y_balanced
 
 
-def crossval_epochs(cv, epochs_data, labels, cls, label_names=None, do_balance=False, n_jobs=None, decision_thres=None):
+def crossval_epochs(cv, epochs_data, labels, cls, label_names=None, do_balance=False, n_jobs=None, ignore_thres=None, decision_thres=None):
     """
     Epoch-based cross-validation used by cross_validate().
 
@@ -382,7 +383,7 @@ def crossval_epochs(cv, epochs_data, labels, cls, label_names=None, do_balance=F
         pool = mp.Pool(n_jobs)
         results = []
 
-    # multiprocessing at the data group level is faster than the classifier level
+    # for classifier itself, single core is usually faster
     cls.n_jobs = 1
 
     if SKLEARN_OLD:
@@ -400,9 +401,9 @@ def crossval_epochs(cv, epochs_data, labels, cls, label_names=None, do_balance=F
 
         if n_jobs > 1:
             results.append(pool.apply_async(fit_predict_thres,
-                                            [cls, X_train, Y_train, X_test, Y_test, cnum, label_set, decision_thres]))
+                                            [cls, X_train, Y_train, X_test, Y_test, cnum, label_set, ignore_thres, decision_thres]))
         else:
-            score, cm = fit_predict_thres(cls, X_train, Y_train, X_test, Y_test, cnum, label_set, decision_thres)
+            score, cm = fit_predict_thres(cls, X_train, Y_train, X_test, Y_test, cnum, label_set, ignore_thres, decision_thres)
             scores.append(score)
             cm_sum += cm
         cnum += 1
@@ -453,6 +454,107 @@ def crossval_epochs(cv, epochs_data, labels, cls, label_names=None, do_balance=F
     return np.array(scores), cm_txt
 
 
+def balance_tpr(cfg, featdata):
+    """
+    Find the threshold of class index 0 that yields equal number of true positive samples of each class.
+    Currently only available for binary classes.
+
+    Params
+    ======
+    cfg: config module
+    feetdata: feature data computed using compute_features()
+    """
+
+    n_jobs = cfg.N_JOBS
+    if n_jobs is None:
+        n_jobs = mp.cpu_count()
+    if n_jobs > 1:
+        print('balance_tpr(): Using %d cores' % n_jobs)
+        pool = mp.Pool(n_jobs)
+        results = []
+
+    # Init a classifier
+    if cfg.CLASSIFIER == 'GB':
+        cls = GradientBoostingClassifier(loss='deviance', learning_rate=cfg.GB['learning_rate'],
+                                         n_estimators=cfg.GB['trees'], subsample=1.0, max_depth=cfg.GB['max_depth'],
+                                         random_state=cfg.GB['seed'], max_features='sqrt', verbose=0, warm_start=False,
+                                         presort='auto')
+    elif cfg.CLASSIFIER == 'RF':
+        cls = RandomForestClassifier(n_estimators=cfg.RF['trees'], max_features='auto',
+                                     max_depth=cfg.RF['max_depth'], n_jobs=cfg.N_JOBS, random_state=cfg.RF['seed'],
+                                     oob_score=True, class_weight='balanced_subsample')
+    elif cfg.CLASSIFIER == 'LDA':
+        cls = LDA()
+    elif cfg.CLASSIFIER == 'rLDA':
+        cls = rLDA(cfg.RLDA_REGULARIZE_COEFF)
+    else:
+        raise ValueError('Unknown classifier type %s' % cfg.CLASSIFIER)
+
+    # Setup features
+    X_data = featdata['X_data']
+    Y_data = featdata['Y_data']
+    wlen = featdata['wlen']
+    if cfg.PSD['wlen'] is None:
+        cfg.PSD['wlen'] = wlen
+
+    # Choose CV type
+    ntrials, nsamples, fsize = X_data.shape
+    if cfg.CV_PERFORM == 'LeaveOneOut':
+        print('\n>> %d-fold leave-one-out cross-validation' % ntrials)
+        if SKLEARN_OLD:
+            cv = LeaveOneOut(len(Y_data))
+        else:
+            cv = LeaveOneOut()
+    elif cfg.CV_PERFORM == 'StratifiedShuffleSplit':
+        print(
+            '\n>> %d-fold stratified cross-validation with test set ratio %.2f' % (cfg.CV_FOLDS, cfg.CV_TEST_RATIO))
+        if SKLEARN_OLD:
+            cv = StratifiedShuffleSplit(Y_data[:, 0], cfg.CV_FOLDS, test_size=cfg.CV_TEST_RATIO, random_state=cfg.CV_RANDOM_SEED)
+        else:
+            cv = StratifiedShuffleSplit(n_splits=cfg.CV_FOLDS, test_size=cfg.CV_TEST_RATIO, random_state=cfg.CV_RANDOM_SEED)
+    else:
+        raise NotImplementedError('%s is not supported yet. Sorry.' % cfg.CV_PERFORM)
+    print('%d trials, %d samples per trial, %d feature dimension' % (ntrials, nsamples, fsize))
+
+    # For classifier itself, single core is usually faster
+    cls.n_jobs = 1
+    Y_preds = []
+
+    if SKLEARN_OLD:
+        splits = cv
+    else:
+        splits = cv.split(X_data, Y_data[:, 0])
+    for cnum, (train, test) in enumerate(splits):
+        X_train = np.concatenate(X_data[train])
+        X_test = np.concatenate(X_data[test])
+        Y_train = np.concatenate(Y_data[train])
+        Y_test = np.concatenate(Y_data[test])
+        if n_jobs > 1:
+            results.append(pool.apply_async(get_predict_proba, [cls, X_train, Y_train, X_test, Y_test, cnum+1]))
+        else:
+            Y_preds.append(get_predict_proba(cls, X_train, Y_train, X_test, Y_test, cnum+1))
+        cnum += 1
+
+    # Aggregate predictions
+    if n_jobs > 1:
+        pool.close()
+        pool.join()
+        for r in results:
+            Y_preds.append(r.get())
+    Y_preds = np.concatenate(Y_preds, axis=0)
+
+    # Find threshold for class index 0
+    Y_preds = sorted(Y_preds)
+    mid_idx = int(len(Y_preds) / 2)
+    if len(Y_preds) == 1:
+        return 0.5 # should not reach here in normal conditions
+    elif len(Y_preds) % 2 == 0:
+        thres = Y_preds[mid_idx-1] + (Y_preds[mid_idx] - Y_preds[mid_idx-1]) / 2
+    else:
+        thres = Y_preds[mid_idx]
+    return thres
+
+
 def cva_features(datadir):
     """
     (DEPRECATED FUNCTION)
@@ -467,27 +569,45 @@ def cva_features(datadir):
         qc.matlab("cva_features('%s')" % fin)
 
 
-def fit_predict_thres(cls, X_train, Y_train, X_test, Y_test, cnum, label_list, decision_thres=None):
+def get_predict_proba(cls, X_train, Y_train, X_test, Y_test, cnum):
+    """
+    All likelihoods will be collected from every fold of a cross-validaiton. Based on these likelihoods,
+    a threshold will be computed that will balance the true positive rate of each class.
+    Available with binary classification scenario only.
+    """
+    timer = qc.Timer()
+    cls.fit(X_train, Y_train)
+    Y_pred = cls.predict_proba(X_test)
+    print('Cross-validation %d (%d tests) - %.1f sec' % (cnum, Y_pred.shape[0], timer.sec()))
+    return Y_pred[:,0]
+
+
+def fit_predict_thres(cls, X_train, Y_train, X_test, Y_test, cnum, label_list, ignore_thres=None, decision_thres=None):
     """
     Any likelihood lower than a threshold is not counted as classification score
 
-    if decision_thres is not None or larger than 0, likelihood values lower than decision_thres
-    will be ignored while computing confusion matrix.
+    Params
+    ======
+    ignore_thres:
+    if not None or larger than 0, likelihood values lower than ignore_thres will be ignored
+    while computing confusion matrix.
 
     """
     timer = qc.Timer()
     cls.fit(X_train, Y_train)
-    assert decision_thres is None or decision_thres >= 0
-    if decision_thres is None or decision_thres == 0:
+    assert ignore_thres is None or ignore_thres >= 0
+    if ignore_thres is None or ignore_thres == 0:
         Y_pred = cls.predict(X_test)
         score = skmetrics.accuracy_score(Y_test, Y_pred)
         cm = skmetrics.confusion_matrix(Y_test, Y_pred, label_list)
     else:
+        if decision_thres is not None:
+            raise ValueError('decision threshold and ignore_thres cannot be set at the same time.')
         Y_pred = cls.predict_proba(X_test)
         Y_pred_labels = np.argmax(Y_pred, axis=1)
         Y_pred_maxes = np.array([x[i] for i, x in zip(Y_pred_labels, Y_pred)])
-        Y_index_overthres = np.where(Y_pred_maxes >= decision_thres)[0]
-        Y_index_underthres = np.where(Y_pred_maxes < decision_thres)[0]
+        Y_index_overthres = np.where(Y_pred_maxes >= ignore_thres)[0]
+        Y_index_underthres = np.where(Y_pred_maxes < ignore_thres)[0]
         Y_pred_overthres = np.array([cls.classes_[x] for x in Y_pred_labels[Y_index_overthres]])
         Y_pred_underthres = np.array([cls.classes_[x] for x in Y_pred_labels[Y_index_underthres]])
         Y_pred_underthres_count = np.array([np.count_nonzero(Y_pred_underthres == c) for c in label_list])
@@ -498,6 +618,7 @@ def fit_predict_thres(cls, X_train, Y_train, X_test, Y_test, cnum, label_list, d
 
     print('Cross-validation %d (%.3f) - %.1f sec' % (cnum, score, timer.sec()))
     return score, cm
+
 
 def compute_features(cfg):
     # Load file list
@@ -609,6 +730,7 @@ def compute_features(cfg):
     featdata['ch_names'] = raw.ch_names
     return featdata
 
+
 def cross_validate(cfg, featdata, cv_file=None):
     """
     Perform cross validation
@@ -658,7 +780,7 @@ def cross_validate(cfg, featdata, cv_file=None):
 
     # Do it!
     scores, cm_txt = crossval_epochs(cv, X_data, Y_data, cls, cfg.tdef.by_value, cfg.BALANCE_SAMPLES, n_jobs=cfg.N_JOBS,
-                                     decision_thres=cfg.CV_DECISION_THRES)
+                                     ignore_thres=cfg.CV_IGNORE_THRES, decision_thres=cfg.CV_DECISION_THRES)
 
     # Export results
     txt = '\n>> Class information\n'
@@ -698,8 +820,8 @@ def cross_validate(cfg, featdata, cv_file=None):
             cfg.GB['trees'], cfg.GB['max_depth'], cfg.GB['learning_rate'], cfg.GB['seed'])
     elif cfg.CLASSIFIER == 'rLDA':
         txt += '            regularization coefficient %.2f\n' % cfg.RLDA_REGULARIZE_COEFF
-    if cfg.CV_DECISION_THRES is not None:
-        txt += 'Decision threshold: %.2f\n' % cfg.CV_DECISION_THRES
+    if cfg.CV_IGNORE_THRES is not None:
+        txt += 'Decision threshold: %.2f\n' % cfg.CV_IGNORE_THRES
     txt += '\n' + cm_txt
     print(txt)
 
@@ -715,6 +837,7 @@ def cross_validate(cfg, featdata, cv_file=None):
             fout = open(cv_file, 'w')
         fout.write(txt)
         fout.close()
+
 
 def train_decoder(cfg, featdata, feat_file=None):
     """
@@ -832,12 +955,16 @@ def train_decoder(cfg, featdata, feat_file=None):
             gfout.close()
         print()
 
+
 def run_trainer(cfg_file, interactive=False, cv_file=None, feat_file=None):
     # Check config module
     cfg = load_cfg(cfg_file)
 
     # Extract features
     featdata = compute_features(cfg)
+
+    # Find optimal threshold for TPR balancing
+    #balance_tpr(cfg, featdata)
 
     # Perform cross validation
     if cfg.CV_PERFORM is not None:
@@ -847,8 +974,10 @@ def run_trainer(cfg_file, interactive=False, cv_file=None, feat_file=None):
     if cfg.EXPORT_CLS is True:
         train_decoder(cfg, featdata, feat_file=feat_file)
 
+
 def config_run(cfg_file):
     run_trainer(cfg_file, interactive=True)
+
 
 if __name__ == '__main__':
     # Load parameters
