@@ -5,8 +5,8 @@ Stream Player
 
 Stream signals from a recorded file on LSL network.
 
-TODO:
-	Create XML header.
+For Windows users, make sure to use the provided time resolution
+tweak tool to set to 500us time resolution of the OS.
 
 Kyuhwa Lee, 2015
 
@@ -20,7 +20,18 @@ import pycnbi.utils.q_common as qc
 import time
 from builtins import input
 
-def stream_player(server_name, fif_file, chunk_size, auto_restart=True):
+def stream_player(server_name, fif_file, chunk_size, auto_restart=True, high_resolution=False):
+    """
+    Params
+    ======
+
+    server_name: LSL server name.
+    fif_file: fif file to replay.
+    chunk_size: number of samples to send at once (usually 16-32 is good enough).
+    auto_restart: play from beginning again after reaching the end.
+    high_resolution: use perf_counter() instead of sleep() for higher time resolution
+                     but uses much more cpu due to polling.
+    """
     raw, events = pu.load_raw(fif_file)
     sfreq = raw.info['sfreq']  # sampling frequency
     n_channels = len(raw.ch_names)  # number of channels
@@ -52,7 +63,10 @@ def stream_player(server_name, fif_file, chunk_size, auto_restart=True):
     idx_chunk = 0
     t_chunk = chunk_size / sfreq
     finished = False
-    t_start = time.perf_counter()
+    if high_resolution:
+        t_start = time.perf_counter()
+    else:
+        t_start = time.time()
     while True:
         idx_current = idx_chunk * chunk_size
         if idx_current < raw._data.shape[1] - chunk_size:
@@ -61,15 +75,16 @@ def stream_player(server_name, fif_file, chunk_size, auto_restart=True):
             data = raw._data[:, idx_current:].transpose().tolist()
             finished = True
         
-        # time.sleep() is not accurate enough
-        #t_wait = idx_chunk * t_chunk - time.time()
-        #if t_wait > 0.001:
-            #time.sleep(t_wait)
-        
-        # although inefficient, this is the only working solution for now
-        t_sleep_until = idx_chunk * t_chunk
-        while time.perf_counter() < t_sleep_until:
-            pass
+        if high_resolution:
+            # if a resolution over 2 KHz is needed
+            t_sleep_until = t_start + idx_chunk * t_chunk
+            while time.perf_counter() < t_sleep_until:
+                pass
+        else:
+            # time.sleep() can have 500 us resolution using the tweak tool provided.
+            t_wait = t_start + idx_chunk * t_chunk - time.time()
+            if t_wait > 0.001:
+                time.sleep(t_wait)
         
         outlet.push_chunk(data)
         print('[%8.3fs] sent %d samples' % (time.perf_counter(), len(data)))
