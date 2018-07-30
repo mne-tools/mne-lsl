@@ -60,20 +60,6 @@ color = dict(G=(20, 140, 0), B=(210, 0, 0), R=(0, 50, 200), Y=(0, 215, 235),
 def load_cfg(cfg_module):
     cfg = imp.load_source(cfg_module, cfg_module)
 
-    if not hasattr(cfg, 'POSITIVE_FEEDBACK'):
-        qc.print_c('Warning: POSITIVE_FEEDBACK undefined. Setting it to False.',
-                   'Y')
-        cfg.POSITIVE_FEEDBACK = False
-
-    if not hasattr(cfg, 'BAR_REACH_FINISH'):
-        qc.print_c('Warning: BAR_REACH_FINISH undefined. Setting it to False.',
-                   'Y')
-        cfg.BAR_REACH_FINISH = False
-
-    if not hasattr(cfg, 'FEEDBACK_TYPE'):
-        qc.print_c('Warning: FEEDBACK_TYPE undefined. Setting it to BAR.', 'Y')
-        cfg.FEEDBACK_TYPE = 'BAR'
-
     if not (hasattr(cfg, 'BAR_STEP_LEFT') or hasattr(cfg, 'BAR_STEP_RIGHT') or \
         hasattr(cfg, 'BAR_STEP_UP') or hasattr(cfg, 'BAR_STEP_DOWN') or \
         hasattr(cfg, 'BAR_STEP_BOTH')):
@@ -83,27 +69,49 @@ def load_cfg(cfg_module):
             'Y')
         cfg.BAR_STEP_LEFT = cfg.BAR_STEP_RIGHT = cfg.BAR_STEP
 
-    if not hasattr(cfg, 'BAR_STEP_LEFT'):
-        cfg.BAR_STEP_LEFT = 0
-    if not hasattr(cfg, 'BAR_STEP_RIGHT'):
-        cfg.BAR_STEP_RIGHT = 0
-    if not hasattr(cfg, 'BAR_STEP_UP'):
-        cfg.BAR_STEP_UP = 0
-    if not hasattr(cfg, 'BAR_STEP_DOWN'):
-        cfg.BAR_STEP_DOWN = 0
-    if not hasattr(cfg, 'BAR_STEP_BOTH'):
-        cfg.BAR_STEP_BOTH = 0
-    if not hasattr(cfg, 'LOG_PROBS'):
-        cfg.LOG_PROBS = False
-    if not hasattr(cfg, 'SHOW_CUE'):
-        qc.print_c('Warning: SHOW_CUE undefined. Setting it to True.', 'Y')
-        cfg.SHOW_CUE = True
-    if not hasattr(cfg, 'WITH_STIMO'):
-        cfg.WITH_STIMO = False
-    if not hasattr(cfg, 'FEEDBACK_SLOW_START'):
-        cfg.FEEDBACK_SLOW_START = False
-    if not hasattr(cfg, 'PARALLEL_DECODING'):
-        cfg.PARALLEL_DECODING = None
+    critical_vars = [
+        'CLS_MI',
+        'TRIGGER_DEVICE',
+        'TRIGGER_DEF',
+        'DIRECTIONS',
+        'TRIALS_EACH',
+        'PROB_ACC_ALPHA'
+    ]
+
+    optional_vars = {
+        'AMP_NAME':None,
+        'AMP_SERIAL':None,
+        'FAKE_CLS':None,
+        'FEEDBACK_SLOW_START':False,
+        'PARALLEL_DECODING':None,
+        'SHOW_TRIALS':True,
+        'FREE_STYLE':False,
+        'FEEDBACK_SLOW_START':0,
+        'REFRESH_RATE':30,
+        'BAR_BIAS':None,
+        'POSITIVE_FEEDBACK':False,
+        'BAR_REACH_FINISH':False,
+        'FEEDBACK_TYPE':'BAR',
+        'BAR_STEP_LEFT':6,
+        'BAR_STEP_RIGHT':6,
+        'BAR_STEP_UP':6,
+        'BAR_STEP_DOWN':6,
+        'BAR_STEP_BOTH':6,
+        'LOG_PROBS':False,
+        'SHOW_CUE':True,
+        'WITH_STIMO':False,
+        'SCREEN_SIZE':(1920, 1080),
+        'SCREEN_POS':(0, 0),
+        'WITH_REX':False,
+        'WITH_STIMO':False,
+        'DEBUG_PROBS':False,
+        'LOG_PROBS':False
+    }
+
+    for key in optional_vars:
+        if not hasattr(cfg, key):
+            setattr(cfg, key, optional_vars[key])
+            qc.print_c('load_cfg(): Setting undefined parameter %s=%s' % (key, getattr(cfg, key)), 'Y')
 
     return cfg
 
@@ -190,7 +198,10 @@ def config_run(cfg_module):
     trial = 1
     dir_detected = []
     while trial <= num_trials:
-        title_text = 'Trial %d / %d' % (trial, num_trials)
+        if cfg.SHOW_TRIALS:
+            title_text = 'Trial %d / %d' % (trial, num_trials)
+        else:
+            title_text = 'Ready'
         true_label = dir_seq[trial - 1]
         result = feedback.classify(decoder, true_label, title_text, bar_dirs)
 
