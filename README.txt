@@ -1,6 +1,4 @@
-PyCNBI provides an online brain signal decoding framework.
+PyCNBI provides a real-time brain signal decoding framework.
 
 Please see the following URL for installation:
-https://c4science.ch/source/pycnbi/
-
-Add "scripts" directory to PATH environment variable for convenient access to commonly used scripts.
+https://github.com/dbdq/pycnbi/wiki/Real--time-brain-machine-interface
