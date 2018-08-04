@@ -71,8 +71,10 @@ python setup.py develop
 Add "scripts" directory to PATH environment variable for convenient access to commonly used scripts.
 
 ## For Windows users, increase timer resolution
-The default timer resolution in some Windows versions is 16 ms, which can limit the precision of timings. It is strongly recommended to run this tool and set the resolution to 1 ms or lower.
+The default timer resolution in some Windows versions is 16 ms, which can limit the precision of timings. It is strongly recommended to run the following tool and set the resolution to 1 ms or lower:
+
 [https://vvvv.org/contribution/windows-system-timer-tool](https://vvvv.org/contribution/windows-system-timer-tool)
+
 
 ## Hardware triggering without legacy parallel port
 We have also developed an Arduino-based triggering system as we wanted to send triggers to a parallel port using standard USB ports. We achieved sub-millisecond extra latency compared to physical parallel port (150 +- 25 us). Experimental results using oscilloscope can be found in "doc" folder. The package can be downloaded by:
@@ -86,6 +88,7 @@ The following customized acquisition server is needed instead of default LSL app
 git clone https://github.com/dbdq/gUSBamp_pycnbi.git
 ```
 because the default gUSBamp LSL server do not stream event channel as part of the signal stream but as a separate server. The customized version supports simultaneous signal+event channel streaming. 
+
 
 ## For AntNeuro eego users
 Use the OpenVibe acquisition server and make sure to check "LSL output" in preference.  If you don't see "eego" from the device selection, it's probably because you didn't install the additional drivers when you installed OpenVibe.
