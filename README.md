@@ -14,7 +14,7 @@ The base module for acquiring signals used by other modules such as Decoder, Str
 Visualize signals in real time with spectral filtering, common average filtering options and real-time FFT.
 
 ### StreamRecorder
-Record signals into fif format, a standard format mainly used in [MNE EEG analysis library](http://martinos.org/mne/dev/index.html).
+Record signals into fif format, a standard format mainly used in [MNE EEG analysis library](http://martinos.org/mne/).
 
 ### StreamPlayer
 Replay the recorded signals in real time as if it was transmitted from a real acquisition server.
