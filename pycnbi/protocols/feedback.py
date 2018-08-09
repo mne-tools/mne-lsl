@@ -44,15 +44,15 @@ class Feedback:
     Perform a classification with visual feedback
     """
 
-    def __init__(self, cfg, bar, tdef, trigger, logfile=None):
+    def __init__(self, cfg, viz, tdef, trigger, logfile=None):
         self.cfg = cfg
         self.tdef = tdef
         self.alpha1 = self.cfg.PROB_ACC_ALPHA
         self.alpha2 = 1.0 - self.cfg.PROB_ACC_ALPHA
         self.trigger = trigger
 
-        self.bar = bar
-        self.bar.fill()
+        self.viz = viz
+        self.viz.fill()
         self.refresh_delay = 1.0 / self.cfg.REFRESH_RATE
         self.bar_step_left = self.cfg.BAR_STEP_LEFT
         self.bar_step_right = self.cfg.BAR_STEP_RIGHT
@@ -80,8 +80,8 @@ class Feedback:
                 atens = [x for x in serial.tools.list_ports.grep('ATEN')]
                 if len(atens) == 0:
                     raise RuntimeError('No ATEN device found. Stop.')
-                for i, a in enumerate(atens):
-                    print('Found', a[0])
+                #for i, a in enumerate(atens):
+                #    print('Found', a[0])
                 try:
                     self.stimo_port = atens[0].device
                 except AttributeError: # depends on Python distribution
@@ -114,21 +114,21 @@ class Feedback:
             self.tm_display.reset()
             if state == 'start' and self.tm_trigger.sec() > self.cfg.T_INIT:
                 state = 'gap_s'
-                self.bar.fill()
+                self.viz.fill()
                 self.tm_trigger.reset()
                 self.trigger.signal(self.tdef.INIT)
 
             elif state == 'gap_s':
                 if self.cfg.T_GAP > 0:
-                    self.bar.put_text(title_text)
+                    self.viz.put_text(title_text)
                 state = 'gap'
                 self.tm_trigger.reset()
 
             elif state == 'gap' and self.tm_trigger.sec() > self.cfg.T_GAP:
                 state = 'cue'
-                self.bar.fill()
-                self.bar.draw_cue()
-                self.bar.glass_draw_cue()
+                self.viz.fill()
+                self.viz.draw_cue()
+                self.viz.glass_draw_cue()
                 self.trigger.signal(self.tdef.CUE)
                 self.tm_trigger.reset()
 
@@ -136,13 +136,13 @@ class Feedback:
                 state = 'dir_r'
 
                 if self.cfg.FEEDBACK_TYPE == 'BODY':
-                    self.bar.set_pc_feedback(False)
-                self.bar.move(true_label, 100, overlay=False, barcolor='G')
+                    self.viz.set_pc_feedback(False)
+                self.viz.move(true_label, 100, overlay=False, barcolor='G')
 
                 if self.cfg.FEEDBACK_TYPE == 'BODY':
-                    self.bar.set_pc_feedback(True)
+                    self.viz.set_pc_feedback(True)
                     if self.cfg.SHOW_CUE is True:
-                        self.bar.put_text(dirs[true_label], 'R')
+                        self.viz.put_text(dirs[true_label], 'R')
 
                 if true_label == 'L':  # left
                     self.trigger.signal(self.tdef.LEFT_READY)
@@ -159,16 +159,16 @@ class Feedback:
                 self.tm_trigger.reset()
 
             elif state == 'dir_r' and self.tm_trigger.sec() > self.cfg.T_DIR_CUE:
-                self.bar.fill()
-                self.bar.draw_cue()
-                self.bar.glass_draw_cue()
+                self.viz.fill()
+                self.viz.draw_cue()
+                self.viz.glass_draw_cue()
                 state = 'dir'
 
                 # initialize bar scores
                 bar_label = bar_dirs[0]
                 bar_score = 0
                 probs = [1.0 / len(bar_dirs)] * len(bar_dirs)
-                self.bar.move(bar_label, bar_score, overlay=False)
+                self.viz.move(bar_label, bar_score, overlay=False)
                 probs_acc = np.zeros(len(probs))
 
                 if true_label == 'L':  # left
@@ -191,20 +191,26 @@ class Feedback:
                 if self.tm_trigger.sec() > self.cfg.T_CLASSIFY or (self.premature_end and bar_score >= 100):
                     if not hasattr(self.cfg, 'SHOW_RESULT') or self.cfg.SHOW_RESULT is True:
                         # show classfication result
-                        if self.cfg.FEEDBACK_TYPE == 'BODY':
-                            self.bar.move(bar_label, bar_score, overlay=False, barcolor='Y', caption=dirs[bar_label], caption_color='Y')
+                        if self.cfg.WITH_STIMO is True and \
+                            (self.cfg.TRIALS_RETRY is False or bar_label == true_label):
+                            res_color = 'B'
                         else:
-                            self.bar.move(bar_label, 100, overlay=False, barcolor='Y')
+                            res_color = 'Y'
+                        if self.cfg.FEEDBACK_TYPE == 'BODY':
+                            self.viz.move(bar_label, bar_score, overlay=False, barcolor=res_color, caption=dirs[bar_label], caption_color=res_color)
+                        else:
+                            self.viz.move(bar_label, 100, overlay=False, barcolor=res_color)
                     else:
                         if self.cfg.FEEDBACK_TYPE == 'BODY':
-                            self.bar.move(bar_label, bar_score, overlay=False, barcolor='Y', caption='TRIAL END', caption_color='Y')
+                            self.viz.move(bar_label, bar_score, overlay=False, barcolor=res_color, caption='TRIAL END', caption_color=res_color)
                         else:
-                            self.bar.move(bar_label, 0, overlay=False, barcolor='Y')
+                            self.viz.move(bar_label, 0, overlay=False, barcolor=res_color)
                     self.trigger.signal(self.tdef.FEEDBACK)
 
                     # STIMO execute
                     #if self.cfg.WITH_STIMO is True and pred_label == true_label:
-                    if self.cfg.WITH_STIMO is True:
+                    if self.cfg.WITH_STIMO is True and \
+                        (self.cfg.TRIALS_RETRY is False or bar_label == true_label):
                         if bar_label == 'L':
                             self.ser.write(b'1')
                             qc.print_c('STIMO: Sent 1', 'g')
@@ -303,11 +309,11 @@ class Feedback:
                                 bar_score = 100
                             if self.cfg.FEEDBACK_TYPE == 'BODY':
                                 if self.cfg.SHOW_CUE:
-                                    self.bar.move(bar_label, bar_score, overlay=False, caption=dirs[true_label], caption_color='G')
+                                    self.viz.move(bar_label, bar_score, overlay=False, caption=dirs[true_label], caption_color='G')
                                 else:
-                                    self.bar.move(bar_label, bar_score, overlay=False)
+                                    self.viz.move(bar_label, bar_score, overlay=False)
                             else:
-                                self.bar.move(bar_label, bar_score, overlay=False)
+                                self.viz.move(bar_label, bar_score, overlay=False)
 
                         if self.cfg.DEBUG_PROBS:
                             if self.bar_bias is not None:
@@ -329,22 +335,25 @@ class Feedback:
                     self.tm_trigger.reset()
                 else:
                     state = 'gap_s'
-                    self.bar.fill()
-                    self.bar.update()
+                    self.viz.fill()
+                    self.viz.update()
                     return bar_label
 
             elif state == 'return':
-                self.bar.set_glass_feedback(False)
-                self.bar.move(bar_label, bar_score, overlay=False, barcolor='Y')
-                self.bar.set_glass_feedback(True)
+                self.viz.set_glass_feedback(False)
+                if self.cfg.WITH_STIMO:
+                    self.viz.move(bar_label, bar_score, overlay=False, barcolor='B')
+                else:
+                    self.viz.move(bar_label, bar_score, overlay=False, barcolor='Y')
+                self.viz.set_glass_feedback(True)
                 bar_score -= 5
                 if bar_score <= 0:
                     state = 'gap_s'
-                    self.bar.fill()
-                    self.bar.update()
+                    self.viz.fill()
+                    self.viz.update()
                     return bar_label
 
-            self.bar.update()
+            self.viz.update()
             key = 0xFF & cv2.waitKey(1)
 
             if key == keys['esc']:
@@ -353,6 +362,6 @@ class Feedback:
                 dx = 0
                 bar_score = 0
                 probs = [1.0 / len(bar_dirs)] * len(bar_dirs)
-                self.bar.move(bar_dirs[0], bar_score, overlay=False)
-                self.bar.update()
+                self.viz.move(bar_dirs[0], bar_score, overlay=False)
+                self.viz.update()
                 print('RESET', probs, dx)
