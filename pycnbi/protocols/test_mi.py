@@ -82,6 +82,7 @@ def load_cfg(cfg_module):
         'AMP_NAME':None,
         'AMP_SERIAL':None,
         'FAKE_CLS':None,
+        'TRIALS_RANDOMIZE':True,
         'FEEDBACK_SLOW_START':False,
         'PARALLEL_DECODING':None,
         'SHOW_TRIALS':True,
@@ -103,7 +104,6 @@ def load_cfg(cfg_module):
         'SCREEN_SIZE':(1920, 1080),
         'SCREEN_POS':(0, 0),
         'WITH_REX':False,
-        'WITH_STIMO':False,
         'DEBUG_PROBS':False,
         'LOG_PROBS':False
     }
@@ -169,7 +169,10 @@ def config_run(cfg_module):
     dir_seq = []
     for x in range(cfg.TRIALS_EACH):
         dir_seq.extend(bar_dirs)
-    random.shuffle(dir_seq)
+    if cfg.TRIALS_RANDOMIZE:
+        random.shuffle(dir_seq)
+    else:
+        dir_seq = [d[0] for d in cfg.DIRECTIONS] * cfg.TRIALS_EACH
     num_trials = len(dir_seq)
 
     qc.print_c('Initializing decoder.', 'W')
@@ -238,8 +241,9 @@ def config_run(cfg_module):
             msg = 'Correct'
         else:
             msg = 'Wrong'
-        print('Trial %d: %s (%s -> %s)' % (trial, msg, true_label, pred_label))
-        trial += 1
+        if cfg.TRIALS_RETRY is False or true_label == pred_label:
+            print('Trial %d: %s (%s -> %s)' % (trial, msg, true_label, pred_label))
+            trial += 1
 
     if len(dir_detected) > 0:
         # write performance and log results
