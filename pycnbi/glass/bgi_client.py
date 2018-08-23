@@ -4,9 +4,11 @@ from __future__ import print_function, division
 Brain-Glass Interface
 
 Controls the visual feedback on Google Glass.
+When connected with USB cable, connect to the local loopback network (127.0.0.1).
+adb executable must be in the system's PATH environment variable.
 
 
-Kyuhwa Lee, 2015
+Kyuhwa Lee, 2018
 Swiss Federal Institute of Technology (EPFL)
 
 This program is free software: you can redistribute it and/or modify
@@ -42,7 +44,6 @@ class GlassControl(object):
 
     def __init__(self, mock=False):
         self.BUFFER_SIZE = 1024
-        self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.last_dir = 'L'
         self.timer = qc.Timer(autoreset=True)
         self.mock = mock
@@ -58,7 +59,7 @@ class GlassControl(object):
         self.ip = ip
         self.port = port
 
-        # networking via USB if IP=127.0.0.1
+        # Networking via USB if IP=127.0.0.1
         if ip == '127.0.0.1':
             exe = 'adb forward tcp:%d tcp:%d' % (port, port)
             self.print(exe)
@@ -66,18 +67,24 @@ class GlassControl(object):
             time.sleep(0.2)
         self.print('Connecting to %s:%d' % (ip, port))
         try:
-            self.s.connect((self.ip, self.port))
+            self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.socket.connect((self.ip, self.port))
         except:
-            self.print('**** ERROR connecting to Glass. The error was:')
+            self.print('* ERROR connecting to Glass. The error was:')
             self.print(sys.exc_info()[0], sys.exc_info()[1])
             sys.exit(-1)
 
     def disconnect(self):
         if self.mock: return
         self.print('Disconnecting from Glass')
-        self.s.close()
+        self.socket.close()
 
-    # '\n' is added to the msg
+    def send_byte(self, msg):
+        if sys.version_info.major >= 3:
+            self.socket.sendall(bytes(msg + '\n', "UTF-8"))
+        else:
+            self.socket.sendall(bytes(unicode(msg + '\n')))
+
     def send_msg(self, msg, wait=True):
         """
         Send a message to the Glass
@@ -87,33 +94,36 @@ class GlassControl(object):
         Set wait=False to force sending message, but the msg is likely to be ignored.
 
         """
-
         if wait:
-            # only wait if the time hasn't passed enough
+            # Wait only if the time hasn't passed enough
             self.timer.sleep_atleast(0.033)  # 30 Hz
-
-        if self.mock: return
-
+        if self.mock:
+            return
         try:
-            # self.s.sendall(bytes(msg, "UTF-8")) # for Python3
-            self.s.sendall(bytes(unicode(msg + '\n')))
-        except:
-            self.print('**** ERROR: Glass communication failed! Re-initiating the connection.')
+            self.send_byte(msg)
+        except Exception as e:
+            self.print('* ERROR: Glass communication failed! Attempting to reconnect again.')
             self.disconnect()
             time.sleep(2)
+            # Let's try again
             self.connect(self.ip, self.port)
+            try:
+                self.send_byte(msg)
+            except Exception as e:
+                self.print('Sorry, cannot fix the problem. I give up.')
+                raise Exception(e)
 
-    # show empty bars
+    # Show empty bars
     def clear(self):
         if self.mock: return
         self.send_msg('C')
 
-    # show empty bars
+    # Show empty bars
     def draw_cross(self):
         if self.mock: return
         self.clear()
 
-    # only one direction at a time
+    # Only one direction at a time
     def move_bar(self, new_dir, amount, overlay=False):
         if self.mock: return
         if overlay is False and self.last_dir != new_dir:
@@ -121,7 +131,7 @@ class GlassControl(object):
         self.send_msg('%s%d' % (new_dir, amount))
         self.last_dir = new_dir
 
-    # fill screen with a solid color (None, 'R','G','B')
+    # Fill screen with a solid color (None, 'R','G','B')
     def fill(self, color=None):
         if self.mock: return
         if color is None:
@@ -144,7 +154,7 @@ class GlassControl(object):
             self.send_msg(msg)
 
 
-# test code
+# Test code
 if __name__ == '__main__':
     step = 5
 

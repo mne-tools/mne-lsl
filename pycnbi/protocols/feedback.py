@@ -109,6 +109,7 @@ class Feedback:
             self.logf.write('True label: %s\n' % true_label)
 
         tm_classify = qc.Timer()
+        tt = qc.Timer()
         while True:
             self.tm_display.sleep_atleast(self.refresh_delay)
             self.tm_display.reset()
@@ -207,8 +208,7 @@ class Feedback:
                             self.viz.move(bar_label, 0, overlay=False, barcolor=res_color)
                     self.trigger.signal(self.tdef.FEEDBACK)
 
-                    # STIMO execute
-                    #if self.cfg.WITH_STIMO is True and pred_label == true_label:
+                    # STIMO
                     if self.cfg.WITH_STIMO is True and \
                         (self.cfg.TRIALS_RETRY is False or bar_label == true_label):
                         if bar_label == 'L':
@@ -355,6 +355,8 @@ class Feedback:
 
             self.viz.update()
             key = 0xFF & cv2.waitKey(1)
+            print(key, '%.1f' % (tt.sec() * 1000))
+            tt.reset()
 
             if key == keys['esc']:
                 return None
