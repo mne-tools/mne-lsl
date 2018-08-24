@@ -49,6 +49,7 @@ PyCNBI depends on following packages:
   - pyserial
   - future
   - configparser
+  - xgboost
 
 You can install these packages using pip.  For the usage of pip, have a look [here](https://packaging.python.org/installing/#use-pip-for-installing).
 
