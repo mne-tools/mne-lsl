@@ -202,7 +202,7 @@ class BCIDecoder(object):
             p_others = (1 - probs[0]) / (len(self.labels) - 1)
             for x in range(1, len(self.labels)):
                 probs.append(p_others)
-            time.sleep(0.0625)  # simulated delay for PSD + RF on Rex laptop
+            time.sleep(0.0625)  # simulated delay for PSD + RF
         else:
             self.sr.acquire()
             w, ts = self.sr.get_window()  # w = times x channels
@@ -235,8 +235,10 @@ class BCIDecoder(object):
 
             # make a feautre vector and classify
             feats = np.concatenate(psd[0]).reshape(1, -1)
-            probs = self.cls.predict_proba(feats)[0]
 
+            # compute likelihoods
+            probs = self.cls.predict_proba(feats)[0]
+            
         return probs
 
     def get_prob_unread(self):
@@ -570,7 +572,7 @@ def sample_decoding(decoder):
 
 # sample code
 if __name__ == '__main__':
-    model_file = r'D:\data\CHUV\ECoG17\20171005\fif_corrected\ANKTOE_left_vs_right\classifier_70-150Hz\classifier-64bit.pkl'
+    model_file = r'D:\data\STIMO_EEG\DM002\offline\all\classifier_GB\classifier-64bit.pkl'
 
     if len(sys.argv) == 2:
         amp_name = sys.argv[1]
@@ -584,8 +586,8 @@ if __name__ == '__main__':
     print('Connecting to a server %s (Serial %s).' % (amp_name, amp_serial))
 
     # run on background
-    #parallel = None # no process interleaving
-    parallel = dict(period=0.08, num_strides=6)
+    parallel = None # no process interleaving
+    #parallel = dict(period=0.08, num_strides=6)
     decoder= BCIDecoderDaemon(model_file, buffer_size=1.0, fake=False, amp_name=amp_name,\
         amp_serial=amp_serial, parallel=parallel)
 
