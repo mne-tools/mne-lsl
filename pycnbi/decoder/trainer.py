@@ -43,8 +43,9 @@ from mne import Epochs, pick_types
 from pycnbi.decoder.rlda import rLDA
 from builtins import input
 from IPython import embed  # for debugging
-from sklearn.ensemble import RandomForestClassifier#, GradientBoostingClassifier
-from xgboost import XGBClassifier as GradientBoostingClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import GradientBoostingClassifier
+from xgboost import XGBClassifier
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
 # scikit-learn old version compatibility
 try:
@@ -112,7 +113,7 @@ def load_cfg(cfg_file):
         for v in critical_vars['RF']:
             if v not in cfg.RF:
                 raise RuntimeError('%s not defined in config.' % v)
-    elif cfg.CLASSIFIER == 'GB':
+    elif cfg.CLASSIFIER == 'GB' or cfg.CLASSIFIER == 'XGB':
         if not hasattr(cfg, 'GB'):
             raise RuntimeError('"GB" not defined in config.')
         for v in critical_vars['GB']:
@@ -480,6 +481,11 @@ def balance_tpr(cfg, featdata):
                                          n_estimators=cfg.GB['trees'], subsample=1.0, max_depth=cfg.GB['max_depth'],
                                          random_state=cfg.GB['seed'], max_features='sqrt', verbose=0, warm_start=False,
                                          presort='auto')
+    elif cfg.CLASSIFIER == 'XGB':
+        cls = XGBClassifier(loss='deviance', learning_rate=cfg.GB['learning_rate'],
+                                         n_estimators=cfg.GB['trees'], subsample=1.0, max_depth=cfg.GB['max_depth'],
+                                         random_state=cfg.GB['seed'], max_features='sqrt', verbose=0, warm_start=False,
+                                         presort='auto')
     elif cfg.CLASSIFIER == 'RF':
         cls = RandomForestClassifier(n_estimators=cfg.RF['trees'], max_features='auto',
                                      max_depth=cfg.RF['max_depth'], n_jobs=cfg.N_JOBS, random_state=cfg.RF['seed'],
@@ -742,6 +748,11 @@ def cross_validate(cfg, featdata, cv_file=None):
                                          n_estimators=cfg.GB['trees'], subsample=1.0, max_depth=cfg.GB['max_depth'],
                                          random_state=cfg.GB['seed'], max_features='sqrt', verbose=0, warm_start=False,
                                          presort='auto')
+    elif cfg.CLASSIFIER == 'XGB':
+        cls = XGBClassifier(loss='deviance', learning_rate=cfg.GB['learning_rate'],
+                                         n_estimators=cfg.GB['trees'], subsample=1.0, max_depth=cfg.GB['max_depth'],
+                                         random_state=cfg.GB['seed'], max_features='sqrt', verbose=0, warm_start=False,
+                                         presort='auto')
     elif cfg.CLASSIFIER == 'RF':
         cls = RandomForestClassifier(n_estimators=cfg.RF['trees'], max_features='auto',
                                      max_depth=cfg.RF['max_depth'], n_jobs=cfg.N_JOBS, random_state=cfg.RF['seed'],
@@ -786,7 +797,7 @@ def cross_validate(cfg, featdata, cv_file=None):
     t_cv = timer_cv.sec()
 
     # Export results
-    txt = '>> Cross validation took %d seconds.\n' % t_cv
+    txt = '\n>> Cross validation took %d seconds.\n' % t_cv
     txt += '\n- Class information\n'
     txt += '%d epochs, %d samples per epoch, %d feature dimension (total %d samples)\n' %\
         (ntrials, nsamples, fsize, ntrials * nsamples)
@@ -819,7 +830,7 @@ def cross_validate(cfg, featdata, cv_file=None):
     if cfg.CLASSIFIER == 'RF':
         txt += '%d trees, %s max depth, random state %s\n' % (
             cfg.RF['trees'], cfg.RF['max_depth'], cfg.RF['seed'])
-    elif cfg.CLASSIFIER == 'GB':
+    elif cfg.CLASSIFIER == 'GB' or cfg.CLASSIFIER == 'XGB':
         txt += '%d trees, %s max depth, %s learing_rate, random state %s\n' % (
             cfg.GB['trees'], cfg.GB['max_depth'], cfg.GB['learning_rate'], cfg.GB['seed'])
     elif cfg.CLASSIFIER == 'rLDA':
@@ -850,6 +861,11 @@ def train_decoder(cfg, featdata, feat_file=None):
     # Init a classifier
     if cfg.CLASSIFIER == 'GB':
         cls = GradientBoostingClassifier(loss='deviance', learning_rate=cfg.GB['learning_rate'],
+                                         n_estimators=cfg.GB['trees'], subsample=1.0, max_depth=cfg.GB['max_depth'],
+                                         random_state=cfg.GB['seed'], max_features='sqrt', verbose=0, warm_start=False,
+                                         presort='auto')
+    elif cfg.CLASSIFIER == 'XGB':
+        cls = XGBClassifier(loss='deviance', learning_rate=cfg.GB['learning_rate'],
                                          n_estimators=cfg.GB['trees'], subsample=1.0, max_depth=cfg.GB['max_depth'],
                                          random_state=cfg.GB['seed'], max_features='sqrt', verbose=0, warm_start=False,
                                          presort='auto')
@@ -917,7 +933,7 @@ def train_decoder(cfg, featdata, feat_file=None):
     # Show top distinctive features
     if cfg.FEATURES == 'PSD':
         print('\n>> Good features ordered by importance')
-        if cfg.CLASSIFIER in ['RF', 'GB']:
+        if cfg.CLASSIFIER in ['RF', 'GB', 'XGB']:
             keys, values = qc.sort_by_value(list(cls.feature_importances_), rev=True)
         elif cfg.CLASSIFIER in ['LDA', 'rLDA']:
             # keys= np.argsort(cls.w)
