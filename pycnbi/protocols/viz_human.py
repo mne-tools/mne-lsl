@@ -24,12 +24,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys
 import os
+import gzip
+import time
 import cv2
 import numpy as np
 import pycnbi
 import pycnbi.glass.bgi_client as bgi_client
 import pycnbi.utils.q_common as qc
-import gzip
 from builtins import input
 try:
     import cPickle as pickle  # Python 2 (cPickle = C version of pickle)
@@ -78,7 +79,7 @@ def read_images(img_path, screen_size=None):
 
 class BodyVisual(object):
     # Default setting
-    color = dict(G=(20, 140, 0), B=(210, 0, 0), R=(0, 50, 200), Y=(0, 215, 235), K=(0, 0, 0),\
+    color = dict(G=(20, 140, 0), B=(255, 90, 0), R=(0, 50, 200), Y=(0, 215, 235), K=(0, 0, 0),\
                  W=(255, 255, 255), w=(200, 200, 200))
     barwidth = 100
     textlimit = 25  # maximum number of characters to show
@@ -154,11 +155,7 @@ class BodyVisual(object):
             feedback_h = self.left_images[0].shape[0] / 2
             loc_x = [int(self.cx - feedback_w), int(self.cx + feedback_w)]
             loc_y = [int(self.cy - feedback_h), int(self.cy + feedback_h)]
-            print(feedback_w, feedback_h)
-            print(loc_x, loc_y)
-            print(screen_height, screen_width)
             img_fit = np.zeros((screen_height, screen_width, 3), np.uint8)
-            print(img_fit.shape)
             
             # adjust to the current screen size
             print('Fitting image into the current screen size')
@@ -238,7 +235,8 @@ class BodyVisual(object):
 
     def update(self):
         cv2.imshow("Protocol", self.img)
-        cv2.waitKey(1)  # at least 1 ms needed for CV to update window
+        #cv2.waitKey(1)  # at least 1 ms needed for CV to update window
+        time.sleep(0.0005)
 
     # Glass functions
     def glass_draw_cue(self):

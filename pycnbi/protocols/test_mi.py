@@ -47,7 +47,6 @@ from pycnbi.triggers.trigger_def import trigger_def
 from pycnbi.protocols.feedback import Feedback
 import pycnbi.utils.pycnbi_utils as pu
 from builtins import input
-from IPython import embed
 
 # visualization
 keys = {'left':81, 'right':83, 'up':82, 'down':84, 'pgup':85, 'pgdn':86,
@@ -59,15 +58,6 @@ color = dict(G=(20, 140, 0), B=(210, 0, 0), R=(0, 50, 200), Y=(0, 215, 235),
 
 def load_cfg(cfg_module):
     cfg = imp.load_source(cfg_module, cfg_module)
-
-    if not (hasattr(cfg, 'BAR_STEP_LEFT') or hasattr(cfg, 'BAR_STEP_RIGHT') or \
-        hasattr(cfg, 'BAR_STEP_UP') or hasattr(cfg, 'BAR_STEP_DOWN') or \
-        hasattr(cfg, 'BAR_STEP_BOTH')):
-        assert hasattr(cfg, 'BAR_STEP')
-        qc.print_c(
-            'Warning: BAR_STEP_LEFT and BAR_STEP_RIGHT undefined. Setting it to BAR_STEP(%d).' % cfg.BAR_STEP,
-            'Y')
-        cfg.BAR_STEP_LEFT = cfg.BAR_STEP_RIGHT = cfg.BAR_STEP
 
     critical_vars = [
         'CLS_MI',
@@ -82,6 +72,7 @@ def load_cfg(cfg_module):
         'AMP_NAME':None,
         'AMP_SERIAL':None,
         'FAKE_CLS':None,
+        'TRIALS_RANDOMIZE':True,
         'FEEDBACK_SLOW_START':False,
         'PARALLEL_DECODING':None,
         'SHOW_TRIALS':True,
@@ -103,10 +94,18 @@ def load_cfg(cfg_module):
         'SCREEN_SIZE':(1920, 1080),
         'SCREEN_POS':(0, 0),
         'WITH_REX':False,
-        'WITH_STIMO':False,
         'DEBUG_PROBS':False,
         'LOG_PROBS':False
     }
+
+    if not (hasattr(cfg, 'BAR_STEP') or hasattr(cfg, 'BAR_STEP_LEFT') or\
+            hasattr(cfg, 'BAR_STEP_RIGHT') or hasattr(cfg, 'BAR_STEP_UP') or\
+            hasattr(cfg, 'BAR_STEP_DOWN') or hasattr(cfg, 'BAR_STEP_BOTH')):
+            raise RuntimeError('BAR_STEP or at least two of BAR_STEP_* must be defined.')
+
+    for key in critical_vars:
+        if not hasattr(cfg, key):
+            raise RuntimeError('%s not defined in config.' % key)
 
     for key in optional_vars:
         if not hasattr(cfg, key):
@@ -169,7 +168,10 @@ def config_run(cfg_module):
     dir_seq = []
     for x in range(cfg.TRIALS_EACH):
         dir_seq.extend(bar_dirs)
-    random.shuffle(dir_seq)
+    if cfg.TRIALS_RANDOMIZE:
+        random.shuffle(dir_seq)
+    else:
+        dir_seq = [d[0] for d in cfg.DIRECTIONS] * cfg.TRIALS_EACH
     num_trials = len(dir_seq)
 
     qc.print_c('Initializing decoder.', 'W')
@@ -238,15 +240,17 @@ def config_run(cfg_module):
             msg = 'Correct'
         else:
             msg = 'Wrong'
-        print('Trial %d: %s (%s -> %s)' % (trial, msg, true_label, pred_label))
-        trial += 1
+        if cfg.TRIALS_RETRY is False or true_label == pred_label:
+            print('Trial %d: %s (%s -> %s)' % (trial, msg, true_label, pred_label))
+            trial += 1
 
     if len(dir_detected) > 0:
         # write performance and log results
         fdir, _, _ = qc.parse_path_list(cfg.CLS_MI)
         logfile = time.strftime(fdir + "/online-%Y%m%d-%H%M%S.txt", time.localtime())
         with open(logfile, 'w') as fout:
-            for dt, gt in zip(dir_detected, dir_seq):
+            fout.write('Ground-truth,Prediction\n')
+            for gt, dt in zip(dir_seq, dir_detected):
                 fout.write('%s,%s\n' % (gt, dt))
             cfmat, acc = qc.confusion_matrix(dir_seq, dir_detected)
             fout.write('\nAccuracy %.3f\nConfusion matrix\n' % acc)
