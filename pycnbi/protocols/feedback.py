@@ -108,8 +108,7 @@ class Feedback:
         if self.logf is not None:
             self.logf.write('True label: %s\n' % true_label)
 
-        tm_classify = qc.Timer()
-        tt = qc.Timer()
+        tm_classify = qc.Timer(autoreset=True)
         while True:
             self.tm_display.sleep_atleast(self.refresh_delay)
             self.tm_display.reset()
@@ -136,6 +135,25 @@ class Feedback:
             elif state == 'cue' and self.tm_trigger.sec() > self.cfg.T_READY:
                 state = 'dir_r'
 
+                if self.cfg.SHOW_CUE is True:
+                    if self.cfg.FEEDBACK_TYPE == 'BAR':
+                        self.viz.move(true_label, 100, overlay=False, barcolor='G')
+                    elif self.cfg.FEEDBACK_TYPE == 'BODY':
+                        self.viz.put_text(dirs[true_label], 'R')
+                    if true_label == 'L':  # left
+                        self.trigger.signal(self.tdef.LEFT_READY)
+                    elif true_label == 'R':  # right
+                        self.trigger.signal(self.tdef.RIGHT_READY)
+                    elif true_label == 'U':  # up
+                        self.trigger.signal(self.tdef.UP_READY)
+                    elif true_label == 'D':  # down
+                        self.trigger.signal(self.tdef.DOWN_READY)
+                    elif true_label == 'B':  # both hands
+                        self.trigger.signal(self.tdef.BOTH_READY)
+                    else:
+                        raise RuntimeError('Unknown direction %s' % true_label)
+                self.tm_trigger.reset()
+                '''
                 if self.cfg.FEEDBACK_TYPE == 'BODY':
                     self.viz.set_pc_feedback(False)
                 self.viz.move(true_label, 100, overlay=False, barcolor='G')
@@ -158,7 +176,7 @@ class Feedback:
                 else:
                     raise RuntimeError('Unknown direction %s' % true_label)
                 self.tm_trigger.reset()
-
+                '''
             elif state == 'dir_r' and self.tm_trigger.sec() > self.cfg.T_DIR_CUE:
                 self.viz.fill()
                 self.viz.draw_cue()
@@ -326,7 +344,6 @@ class Feedback:
                             print(msg)
                             if self.logf is not None:
                                 self.logf.write(msg + '\n')
-                            tm_classify.reset()
 
             elif state == 'feedback' and self.tm_trigger.sec() > self.cfg.T_FEEDBACK:
                 self.trigger.signal(self.tdef.BLANK)
@@ -355,9 +372,6 @@ class Feedback:
 
             self.viz.update()
             key = 0xFF & cv2.waitKey(1)
-            print(key, '%.1f' % (tt.sec() * 1000))
-            tt.reset()
-
             if key == keys['esc']:
                 return None
             if key == keys['space']:
