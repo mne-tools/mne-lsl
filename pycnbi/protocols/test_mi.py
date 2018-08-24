@@ -205,7 +205,14 @@ def config_run(cfg_module):
         else:
             title_text = 'Ready'
         true_label = dir_seq[trial - 1]
+
+        # profiling feedback
+        #import cProfile
+        #pr = cProfile.Profile()
+        #pr.enable()
         result = feedback.classify(decoder, true_label, title_text, bar_dirs)
+        #pr.disable()
+        #pr.print_stats(sort='time')
 
         if result is None:
             break
