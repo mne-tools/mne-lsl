@@ -43,7 +43,8 @@ from mne import Epochs, pick_types
 from pycnbi.decoder.rlda import rLDA
 from builtins import input
 from IPython import embed  # for debugging
-from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
+from sklearn.ensemble import RandomForestClassifier #, GradientBoostingClassifier
+from xgboost import XGBClassifier as GradientBoostingClassifier
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
 # scikit-learn old version compatibility
 try:
