@@ -34,12 +34,11 @@ Swiss Federal Institute of Technology Lausanne (EPFL)
 DEBUG_TIME_OFFSET = True
 
 
-import pycnbi  # from global common folder
-import pycnbi.utils.pycnbi_utils as pu
 import time
 import sys
 import pylsl
 import numpy as np
+import pycnbi.utils.pycnbi_utils as pu
 import pycnbi.utils.q_common as qc
 
 def find_trigger_channel(ch_list):
@@ -250,7 +249,7 @@ class StreamReceiver:
 
     def acquire(self, blocking=True):
         """
-        Reads data into buffer. Itis a blocking function as default.
+        Reads data into buffer. It is a blocking function as default.
 
         Fills the buffer and return the current chunk of data and timestamps.
 

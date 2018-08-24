@@ -47,8 +47,8 @@ class Feedback:
     def __init__(self, cfg, viz, tdef, trigger, logfile=None):
         self.cfg = cfg
         self.tdef = tdef
-        self.alpha1 = self.cfg.PROB_ACC_ALPHA
-        self.alpha2 = 1.0 - self.cfg.PROB_ACC_ALPHA
+        self.alpha_old = self.cfg.PROB_ACC_ALPHA
+        self.alpha_new = 1.0 - self.cfg.PROB_ACC_ALPHA
         self.trigger = trigger
 
         self.viz = viz
@@ -236,7 +236,6 @@ class Feedback:
                             self.ser.write(b'2')
                             qc.print_c('STIMO: Sent 2', 'g')
 
-                    probs_acc /= sum(probs_acc)
                     if self.cfg.DEBUG_PROBS:
                         msg = 'DEBUG: Accumulated probabilities = %s' % qc.list2string(probs_acc, '%.3f')
                         print(msg)
@@ -258,29 +257,39 @@ class Feedback:
                             self.tm_watchdog.reset()
                     else:
                         self.tm_watchdog.reset()
+                        probs_acc += np.array(probs_new)
 
-                        # bias and accumulate
+                        '''
+                        New decoder: already smoothed by the decoder so bias after.
+                        '''
+                        probs = probs_new
+                        if self.bar_bias is not None:
+                            # print('BEFORE: %.3f %.3f'% (probs[0], probs[1]) )
+                            probs[bias_idx] += self.bar_bias[1]
+                            newsum = sum(probs)
+                            probs = [p / newsum for p in probs]
+
+                        '''
+                        # Method 2: bias and smoothen
                         if self.bar_bias is not None:
                             # print('BEFORE: %.3f %.3f'% (probs_new[0], probs_new[1]) )
                             probs_new[bias_idx] += self.bar_bias[1]
                             newsum = sum(probs_new)
                             probs_new = [p / newsum for p in probs_new]
                         # print('AFTER: %.3f %.3f'% (probs_new[0], probs_new[1]) )
-
-                        probs_acc += np.array(probs_new)
                         for i in range(len(probs_new)):
-                            probs[i] = probs[i] * self.alpha1 + probs_new[i] * self.alpha2
+                            probs[i] = probs[i] * self.alpha_old + probs_new[i] * self.alpha_new
+                        '''
 
-                        ''' Original: accumulate and bias
-                        # accumulate probs
+                        ''' Original method
+                        # Method 1: smoothen and bias
                         for i in range( len(probs_new) ):
-                            probs[i]= probs[i] * self.alpha1 + probs_new[i] * self.alpha2
-
+                            probs[i] = probs[i] * self.alpha_old + probs_new[i] * self.alpha_new
                         # bias bar
                         if self.bar_bias is not None:
                             probs[bias_idx] += self.bar_bias[1]
-                            newsum= sum(probs)
-                            probs= [p/newsum for p in probs]
+                            newsum = sum(probs)
+                            probs = [p/newsum for p in probs]
                         '''
 
                         # determine the direction
