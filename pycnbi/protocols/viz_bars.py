@@ -22,8 +22,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import cv2, sys
+import sys
 import numpy as np
+import time
+import cv2
 import pycnbi
 import pycnbi.glass.bgi_client as bgi_client
 import pycnbi.utils.q_common as qc
@@ -112,12 +114,12 @@ class BarVisual(object):
         cv2.rectangle(self.img, (self.xl1, self.yl2), (self.xr1, self.yr2), self.color['w'], -1)
         cv2.rectangle(self.img, (self.xl1, self.yl1), (self.xr1, self.yr1), self.boxcol, -1)
 
-        # cross
-        # cv2.rectangle( self.img, (self.cx-3,self.cy), (self.cx+3,self.cy), self.crosscol, -1 )
-        # cv2.rectangle( self.img, (self.cx,self.cy-3), (self.cx,self.cy+3), self.crosscol, -1 )
+        # cross fixation point
+        #cv2.rectangle( self.img, (self.cx-3,self.cy), (self.cx+3,self.cy), self.crosscol, -1 )
+        #cv2.rectangle( self.img, (self.cx,self.cy-3), (self.cx,self.cy+3), self.crosscol, -1 )
 
-        # circle
-        cv2.circle(self.img, (self.cx, self.cy), 3, self.color['R'], -1)
+        # circle fixation point
+        cv2.circle(self.img, (self.cx, self.cy), 3, self.color['W'], -1)
 
     # paints the new bar on top of the current image
     def move(self, dir, dx, overlay=False, barcolor=None, caption='', caption_color='W'):
@@ -171,7 +173,7 @@ class BarVisual(object):
 
     def update(self):
         cv2.imshow("img", self.img)
-        cv2.waitKey(1)  # at least 1 ms needed for CV to update window
+        #time.sleep(0.0005) # needed for CV to update window -> seems ok without this line
 
     # Glass functions
     def glass_draw_cue(self):
