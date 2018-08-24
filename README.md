@@ -73,7 +73,6 @@ Add "scripts" directory to PATH environment variable for convenient access to co
 
 ## For Windows users, increase timer resolution
 The default timer resolution in some Windows versions is 16 ms, which can limit the precision of timings. It is strongly recommended to run the following tool and set the resolution to 1 ms or lower:
-
 [https://vvvv.org/contribution/windows-system-timer-tool](https://vvvv.org/contribution/windows-system-timer-tool)
 
 
