@@ -278,7 +278,7 @@ class StreamReceiver:
                 if DEBUG_TIME_OFFSET and timestamp_offset is True:
                     lsl_clock = pylsl.local_clock()
                 break
-            time.sleep(0.001)
+            time.sleep(0.0005)
         else:
             self.print('Warning: Timeout occurred while acquiring data. Amp driver bug ?')
             return np.zeros((0, len(self.ch_list))), []
