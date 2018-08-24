@@ -43,7 +43,8 @@ from mne import Epochs, pick_types
 from pycnbi.decoder.rlda import rLDA
 from builtins import input
 from IPython import embed  # for debugging
-from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
+from sklearn.ensemble import RandomForestClassifier#, GradientBoostingClassifier
+from xgboost import XGBClassifier as GradientBoostingClassifier
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
 # scikit-learn old version compatibility
 try:
@@ -439,7 +440,7 @@ def crossval_epochs(cv, epochs_data, labels, cls, label_names=None, do_balance=F
         cm_rate = np.concatenate((cm_rate, underthres[:, np.newaxis]), axis=1)
 
     # cm_rate= cm_sum.astype('float') / cm_sum.sum(axis=1)[:, np.newaxis]
-    cm_txt = '\nY: ground-truth, X: predicted\n'
+    cm_txt = 'Y: ground-truth, X: predicted\n'
     for l in label_set:
         cm_txt += '%-5s\t' % label_names[l][:5]
     if underthres is not None:
@@ -779,18 +780,21 @@ def cross_validate(cfg, featdata, cv_file=None):
     print('%d trials, %d samples per trial, %d feature dimension' % (ntrials, nsamples, fsize))
 
     # Do it!
+    timer_cv = qc.Timer()
     scores, cm_txt = crossval_epochs(cv, X_data, Y_data, cls, cfg.tdef.by_value, cfg.BALANCE_SAMPLES, n_jobs=cfg.N_JOBS,
                                      ignore_thres=cfg.CV_IGNORE_THRES, decision_thres=cfg.CV_DECISION_THRES)
+    t_cv = timer_cv.sec()
 
     # Export results
-    txt = '\n>> Class information\n'
+    txt = '>> Cross validation took %d seconds.\n' % t_cv
+    txt += '\n- Class information\n'
     txt += '%d epochs, %d samples per epoch, %d feature dimension (total %d samples)\n' %\
         (ntrials, nsamples, fsize, ntrials * nsamples)
     for ev in np.unique(Y_data):
         txt += '%s: %d trials\n' % (cfg.tdef.by_value[ev], len(np.where(Y_data[:, 0] == ev)[0]))
     if cfg.BALANCE_SAMPLES:
         txt += 'The number of samples was balanced across classes. Method: %s\n' % cfg.BALANCE_SAMPLES
-    txt += '\n>> Experiment conditions\n'
+    txt += '\n- Experiment conditions\n'
     txt += 'Spatial filter: %s (channels: %s)\n' % (cfg.SP_FILTER, cfg.SP_FILTER)
     txt += 'Spectral filter: %s\n' % cfg.TP_FILTER
     txt += 'Notch filter: %s\n' % cfg.NOTCH_FILTER
@@ -808,21 +812,21 @@ def cross_validate(cfg, featdata, cv_file=None):
 
     # Compute stats
     cv_mean, cv_std = np.mean(scores), np.std(scores)
-    txt += '\n>> Average CV accuracy over %d epochs (random seed=%s)\n' % (ntrials, cfg.CV_RANDOM_SEED)
+    txt += '\n- Average CV accuracy over %d epochs (random seed=%s)\n' % (ntrials, cfg.CV_RANDOM_SEED)
     if cfg.CV_PERFORM in ['LeaveOneOut', 'StratifiedShuffleSplit']:
         txt += "mean %.3f, std: %.3f\n" % (cv_mean, cv_std)
-    txt += 'Classifier: %s\n' % cfg.CLASSIFIER
+    txt += 'Classifier: %s, ' % cfg.CLASSIFIER
     if cfg.CLASSIFIER == 'RF':
-        txt += '            %d trees, %s max depth, random state %s\n' % (
+        txt += '%d trees, %s max depth, random state %s\n' % (
             cfg.RF['trees'], cfg.RF['max_depth'], cfg.RF['seed'])
     elif cfg.CLASSIFIER == 'GB':
-        txt += '            %d trees, %s max depth, %s learing_rate, random state %s\n' % (
+        txt += '%d trees, %s max depth, %s learing_rate, random state %s\n' % (
             cfg.GB['trees'], cfg.GB['max_depth'], cfg.GB['learning_rate'], cfg.GB['seed'])
     elif cfg.CLASSIFIER == 'rLDA':
-        txt += '            regularization coefficient %.2f\n' % cfg.RLDA_REGULARIZE_COEFF
+        txt += 'regularization coefficient %.2f\n' % cfg.RLDA_REGULARIZE_COEFF
     if cfg.CV_IGNORE_THRES is not None:
         txt += 'Decision threshold: %.2f\n' % cfg.CV_IGNORE_THRES
-    txt += '\n' + cm_txt
+    txt += '\n- Confusion Matrix\n' + cm_txt
     print(txt)
 
     # Export to a file
