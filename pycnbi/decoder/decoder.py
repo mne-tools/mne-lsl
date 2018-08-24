@@ -11,8 +11,7 @@ TODO:
 Allow self.ref_new to be a list.
 
 TODO:
-Use Pathos to simplify daemon class.
-(Should get away with non-picklable limitations.)
+Use Pathos to overcome non-picklable class object limitations.
 
 Auhtor:
 Kyuhwa Lee
@@ -20,18 +19,20 @@ Swiss Federal Institute of Technology Lausanne (EPFL)
 
 """
 
-import pycnbi.utils.pycnbi_utils as pu
-import pycnbi.utils.q_common as qc
 import time
 import math
 import random
 import os
 import sys
+import pycnbi.utils.pycnbi_utils as pu
+import pycnbi.utils.q_common as qc
 import numpy as np
 import multiprocessing as mp
 import multiprocessing.sharedctypes as sharedctypes
-from numpy import ctypeslib
 import mne
+from pycnbi.stream_receiver.stream_receiver import StreamReceiver
+from pycnbi.triggers.trigger_def import trigger_def
+from numpy import ctypeslib
 mne.set_log_level('ERROR')
 os.environ['OMP_NUM_THREADS'] = '1' # actually improves performance for multitaper
 
@@ -81,12 +82,10 @@ class BCIDecoder(object):
         """
         Params
         ------
-            classifier: classifier file
-            spatial: spatial filter to use
-            buffer_size: length of the signal buffer in seconds
+        classifier: classifier file
+        spatial: spatial filter to use
+        buffer_size: length of the signal buffer in seconds
         """
-
-        from pycnbi.stream_receiver.stream_receiver import StreamReceiver
 
         self.classifier = classifier
         self.buffer_sec = buffer_size
@@ -156,7 +155,6 @@ class BCIDecoder(object):
             model = None
             self.psd_shape = None
             self.psd_size = None
-            from pycnbi.triggers.trigger_def import trigger_def
             # TODO: parameterize directions using fake_dirs
             self.labels = [11, 9]
             self.label_names = ['LEFT_GO', 'RIGHT_GO']
@@ -169,7 +167,7 @@ class BCIDecoder(object):
         """
         Returns
         -------
-            Class labels numbers in the same order as the likelihoods returned by get_prob()
+        Class labels numbers in the same order as the likelihoods returned by get_prob()
         """
         return self.labels
 
@@ -177,7 +175,7 @@ class BCIDecoder(object):
         """
         Returns
         -------
-            Class label names in the same order as get_labels()
+        Class label names in the same order as get_labels()
         """
         return self.label_names
 
@@ -193,7 +191,7 @@ class BCIDecoder(object):
 
         Returns
         -------
-            The likelihood P(X|C), where X=window, C=model
+        The likelihood P(X|C), where X=window, C=model
         """
         if self.fake:
             # fake deocder: biased likelihood for the first class
@@ -238,7 +236,7 @@ class BCIDecoder(object):
 
             # compute likelihoods
             probs = self.cls.predict_proba(feats)[0]
-            
+
         return probs
 
     def get_prob_unread(self):
@@ -248,7 +246,7 @@ class BCIDecoder(object):
         """
         Returns
         -------
-            The latest computed PSD
+        The latest computed PSD
         """
         return self.psd_buffer[-1].reshape((1, -1))
 
@@ -270,24 +268,26 @@ class BCIDecoderDaemon(object):
     """
 
     def __init__(self, classifier=None, buffer_size=1.0, fake=False, amp_serial=None,\
-                 amp_name=None, fake_dirs=None, parallel=None):
+                 amp_name=None, fake_dirs=None, parallel=None, alpha_new=None):
         """
         Params
         ------
-            classifier: file name of the classifier
-            buffer_size: buffer window size in seconds
-            fake:
-                False: Connect to an amplifier LSL server and decode
-                True: Create a mock decoder (fake probabilities biased to 1.0)
-            buffer_size: Buffer size in seconds.
-            parallel: dict(period, stride, num_strides)
-                period: Decoding period length for a single decoder in seconds.
-                stride: Time step between decoders in seconds.
-                num_strides: Number of decoders to run in parallel.
+        classifier: file name of the classifier
+        buffer_size: buffer window size in seconds
+        fake:
+            False: Connect to an amplifier LSL server and decode
+            True: Create a mock decoder (fake probabilities biased to 1.0)
+        buffer_size: Buffer size in seconds.
+        parallel: dict(period, stride, num_strides)
+            period: Decoding period length for a single decoder in seconds.
+            stride: Time step between decoders in seconds.
+            num_strides: Number of decoders to run in parallel.
+        alpha_new: exponential smoothing factor, real value in [0, 1].
+            p_new = p_new * alpha_new + p_old * (1 - alpha_new)
 
-            Example: If the decoder runs 32ms per cycle, we can set
-                     period=0.04, stride=0.01, num_strides=4
-                     to achieve 100 Hz decoding.
+        Example: If the decoder runs 32ms per cycle, we can set
+                 period=0.04, stride=0.01, num_strides=4
+                 to achieve 100 Hz decoding.
         """
 
         self.classifier = classifier
@@ -298,6 +298,12 @@ class BCIDecoderDaemon(object):
         self.amp_serial = amp_serial
         self.amp_name = amp_name
         self.parallel = parallel
+        if alpha_new is None:
+            alpha_new = 1
+        if not 0 <= alpha_new <= 1:
+            raise ValueError('alpha_new must be a real number between 0 and 1.')
+        self.alpha_new = alpha_new
+        self.alpha_old = 1 - alpha_new
 
         if fake == False or fake is None:
             self.model = qc.load_obj(self.classifier)
@@ -309,7 +315,6 @@ class BCIDecoderDaemon(object):
         else:
             # create a fake decoder with LEFT/RIGHT classes
             self.model = None
-            from pycnbi.triggers.trigger_def import trigger_def
             tdef = trigger_def('triggerdef_16.ini')
             if type(fake_dirs) is not list:
                 raise RuntimeError('Decoder(): wrong argument type of fake_dirs: %s.' % type(fake_dirs))
@@ -345,9 +350,9 @@ class BCIDecoderDaemon(object):
             self.psd = np.frombuffer(psd_ctypes, dtype=np.float64, count=psd_size)
 
         self.probs = mp.Array('d', [1.0 / len(self.labels)] * len(self.labels))
+        self.probs_smooth = mp.Array('d', [1.0 / len(self.labels)] * len(self.labels))
         self.pread = mp.Value('i', 1)
         self.pwrite = mp.Value('d', 0)
-        self.running = mp.Value('i', 0)
         self.return_psd = mp.Value('i', 0)
         self.procs = []
         mp.freeze_support()
@@ -355,6 +360,7 @@ class BCIDecoderDaemon(object):
         if self.parallel:
             num_strides = self.parallel['num_strides']
             period = self.parallel['period']
+            self.running = [mp.Value('i', 0)] * num_strides
             if num_strides > 1:
                 stride = period / num_strides
             else:
@@ -362,20 +368,22 @@ class BCIDecoderDaemon(object):
             t_start = time.time()
             for i in range(num_strides):
                 self.procs.append(mp.Process(target=self.daemon, args=\
-                    [self.classifier, self.probs, self.pread, self.pwrite, self.running, self.return_psd,\
-                     psd_ctypes, self.psdlock, dict(t_start=(t_start+i*stride), period=period)]))
+                    [self.classifier, self.probs, self.probs_smooth, self.pread, self.pwrite,\
+                     self.running[i], self.return_psd, psd_ctypes, self.psdlock,\
+                     dict(t_start=(t_start+i*stride), period=period)]))
         else:
+            self.running = [mp.Value('i', 0)]
             self.procs = [mp.Process(target=self.daemon, args=\
-                [self.classifier, self.probs, self.pread, self.pwrite, self.running, self.return_psd,\
-                 psd_ctypes, self.psdlock, None])]
+                [self.classifier, self.probs, self.probs_smooth, self.pread, self.pwrite,\
+                 self.running[0], self.return_psd, psd_ctypes, self.psdlock, None])]
 
-    def daemon(self, classifier, probs, pread, pwrite, running, return_psd, psd_ctypes, lock, interleave=None):
+    def daemon(self, classifier, probs, probs_smooth, pread, pwrite, running, return_psd, psd_ctypes, lock, interleave=None):
         """
         Runs Decoder class as a daemon.
 
         BCIDecoder object cannot be pickled but Pathos library may solve this problem and simplify the code.
 
-        input
+        Input
         -----
         interleave: None or dict with the following keys:
         - t_start:double (seconds, same as time.time() format)
@@ -385,19 +393,21 @@ class BCIDecoderDaemon(object):
 
         pid = os.getpid()
         print('[DecodeWorker-%-6d] Decoder worker process started' % (pid))
-
-        decoder = BCIDecoder(classifier, buffer_size=self.buffer_sec,\
-                             fake=self.fake, amp_serial=self.amp_serial, amp_name=self.amp_name)
+        decoder = BCIDecoder(classifier, buffer_size=self.buffer_sec, fake=self.fake,\
+                             amp_serial=self.amp_serial, amp_name=self.amp_name)
         if self.fake == False:
             psd = ctypeslib.as_array(psd_ctypes)
         else:
             psd = None
 
         if interleave is None:
+            # single-core decoding
             running.value = 1
             while running.value == 1:
                 # compute features and likelihoods
                 probs[:] = decoder.get_prob()
+                for i in range(len(probs_smooth)):
+                    probs_smooth[i] = probs_smooth[i] * self.alpha_old + probs[i] * self.alpha_new
                 pread.value = 0
                 # copy back PSD values only when requested
                 if self.fake == False and return_psd.value == 1:
@@ -405,21 +415,32 @@ class BCIDecoderDaemon(object):
                     psd[:] = decoder.psd_buffer[-1].reshape((1, -1))
                     lock.release()
                     return_psd.value = 0
-        else: # interleaved parallel decoding
+        else:
+            # interleaved parallel decoding
             t_start = interleave['t_start']
             period = interleave['period']
             running.value = 1
             t_next = t_start + math.ceil(((time.time() - t_start) / period) + 1) * period
             while running.value == 1:
                 # compute features and likelihoods
+                '''
                 probs_local = decoder.get_prob()
                 t_prob = time.time()
                 lock.acquire()
                 if t_prob > pwrite.value:
                     probs[:] = probs_local
+                    for i in range(len(probs_smooth)):
+                        probs_smooth[i] = probs_smooth[i] * self.alpha_old + probs[i] * self.alpha_new
                     pread.value = 0
                     pwrite.value = t_prob
                 lock.release()
+                '''
+                ################################
+                ################################
+                probs_local = decoder.get_prob()
+                pread.value = 0
+                ################################
+                ################################
 
                 # copy back PSD values only when requested
                 if self.fake == False and return_psd.value == 1:
@@ -446,23 +467,27 @@ class BCIDecoderDaemon(object):
         """
         Start the daemon
         """
-        if self.running.value == 1:
+        if self.is_running() > 0:
             msg = 'ERROR: Cannot start. Daemon already running. (PID' +\
                 ', '.join(['%d' % proc.pid for proc in self.procs]) + ')'
             self.print(msg)
             return
         for proc in self.procs:
             proc.start()
+        for running in self.running:
+            while running.value == 0:
+                time.sleep(0.001)
         self.print(self.startmsg)
 
     def stop(self):
         """
         Stop the daemon
         """
-        if self.running.value == 0:
+        if self.is_running() == 0:
             self.print('Warning: Decoder already stopped.')
             return
-        self.running.value = 0
+        for running in self.running:
+            running.value = 0
         for proc in self.procs:
             proc.join()
         self.reset()
@@ -472,7 +497,7 @@ class BCIDecoderDaemon(object):
         """
         Returns
         -------
-            Class labels numbers in the same order as the likelihoods returned by get_prob()
+        Class labels numbers in the same order as the likelihoods returned by get_prob()
         """
         return self.labels
 
@@ -480,7 +505,7 @@ class BCIDecoderDaemon(object):
         """
         Returns
         -------
-            Class label names in the same order as get_labels()
+        Class label names in the same order as get_labels()
         """
         return self.label_names
 
@@ -488,7 +513,7 @@ class BCIDecoderDaemon(object):
         """
         Returns
         -------
-            The last computed probability.
+        The last computed probability.
         """
         self.pread.value = 1
         return self.probs[:]
@@ -497,11 +522,32 @@ class BCIDecoderDaemon(object):
         """
         Returns
         -------
-            Probability if it's not read previously.
-            None otherwise.
+        Probability if it's not read previously.
+        None otherwise.
         """
         if self.pread.value == 0:
             return self.get_prob()
+        else:
+            return None
+
+    def get_prob_smooth(self):
+        """
+        Returns
+        -------
+        The last computed probability.
+        """
+        self.pread.value = 1
+        return self.probs_smooth[:]
+
+    def get_prob_smooth_unread(self):
+        """
+        Returns
+        -------
+        Probability if it's not read previously.
+        None otherwise.
+        """
+        if self.pread.value == 0:
+            return self.get_prob_smooth()
         else:
             return None
 
@@ -509,7 +555,7 @@ class BCIDecoderDaemon(object):
         """
         Returns
         -------
-            The latest computed PSD
+        The latest computed PSD
         """
         self.return_psd.value = 1
         while self.return_psd.value == 1:
@@ -517,7 +563,12 @@ class BCIDecoderDaemon(object):
         return self.psd
 
     def is_running(self):
-        return self.running.value
+        """
+        Returns
+        -------
+        The number of daemons running
+        """
+        return sum([v.value for v in self.running])
 
 # test decoding speed
 def check_speed(decoder, max_count=float('inf')):
@@ -548,11 +599,11 @@ def check_speed(decoder, max_count=float('inf')):
 def sample_decoding(decoder):
     # load trigger definitions for labeling
     labels = decoder.get_label_names()
-    probs = [0.5] * len(labels)  # integrator
     tm_watchdog = qc.Timer(autoreset=True)
     tm_cls = qc.Timer()
     while True:
         praw = decoder.get_prob_unread()
+        psmooth = decoder.get_prob_smooth()
         if praw is None:
             # watch dog
             if tm_cls.sec() > 5:
@@ -563,16 +614,15 @@ def sample_decoding(decoder):
 
         txt = '[%8.1f msec]' % (tm_cls.msec())
         for i, label in enumerate(labels):
-            probs[i] = probs[i] * 0.8 + praw[i] * 0.2
-            txt += '   %s %.3f (raw %.3f)' % (label, probs[i], praw[i])
-        maxi = qc.get_index_max(probs)
-        txt += '   %s\n' % labels[maxi]
+            txt += '   %s %.3f (raw %.3f)' % (label, psmooth[i], praw[i])
+        maxi = qc.get_index_max(psmooth)
+        txt += '   %s' % labels[maxi]
         print(txt)
         tm_cls.reset()
 
 # sample code
 if __name__ == '__main__':
-    model_file = r'D:\data\STIMO_EEG\DM002\offline\all\classifier_GB\classifier-64bit.pkl'
+    model_file = r'D:\data\STIMO_EEG\DM002\offline\all\classifier_XGB\classifier-64bit.pkl'
 
     if len(sys.argv) == 2:
         amp_name = sys.argv[1]
@@ -586,10 +636,10 @@ if __name__ == '__main__':
     print('Connecting to a server %s (Serial %s).' % (amp_name, amp_serial))
 
     # run on background
-    parallel = None # no process interleaving
-    #parallel = dict(period=0.08, num_strides=6)
-    decoder= BCIDecoderDaemon(model_file, buffer_size=1.0, fake=False, amp_name=amp_name,\
-        amp_serial=amp_serial, parallel=parallel)
+    #parallel = None # no process interleaving
+    parallel = dict(period=0.04, num_strides=4)
+    decoder = BCIDecoderDaemon(model_file, buffer_size=1.0, fake=False, amp_name=amp_name,\
+        amp_serial=amp_serial, parallel=parallel, alpha_new=0.1)
 
     # run on foreground
     #decoder = BCIDecoder(model_file, buffer_size=1.0, amp_name=amp_name, amp_serial=amp_serial)
@@ -597,6 +647,8 @@ if __name__ == '__main__':
     # run a fake classifier on background
     # decoder= BCIDecoderDaemon(fake=True, fake_dirs=['L','R'])
 
-    check_speed(decoder, 5000)
+    check_speed(decoder, 6000)
 
-    sample_decoding(decoder)
+    #sample_decoding(decoder)
+
+    decoder.stop()
