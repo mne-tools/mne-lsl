@@ -24,6 +24,7 @@ import math
 import random
 import os
 import sys
+import psutil
 import pycnbi.utils.pycnbi_utils as pu
 import pycnbi.utils.q_common as qc
 import numpy as np
@@ -352,7 +353,7 @@ class BCIDecoderDaemon(object):
         self.probs = mp.Array('d', [1.0 / len(self.labels)] * len(self.labels))
         self.probs_smooth = mp.Array('d', [1.0 / len(self.labels)] * len(self.labels))
         self.pread = mp.Value('i', 1)
-        self.pwrite = mp.Value('d', 0)
+        self.t_problast = mp.Value('d', 0)
         self.return_psd = mp.Value('i', 0)
         self.procs = []
         mp.freeze_support()
@@ -368,16 +369,16 @@ class BCIDecoderDaemon(object):
             t_start = time.time()
             for i in range(num_strides):
                 self.procs.append(mp.Process(target=self.daemon, args=\
-                    [self.classifier, self.probs, self.probs_smooth, self.pread, self.pwrite,\
+                    [self.classifier, self.probs, self.probs_smooth, self.pread, self.t_problast,\
                      self.running[i], self.return_psd, psd_ctypes, self.psdlock,\
                      dict(t_start=(t_start+i*stride), period=period)]))
         else:
             self.running = [mp.Value('i', 0)]
             self.procs = [mp.Process(target=self.daemon, args=\
-                [self.classifier, self.probs, self.probs_smooth, self.pread, self.pwrite,\
+                [self.classifier, self.probs, self.probs_smooth, self.pread, self.t_problast,\
                  self.running[0], self.return_psd, psd_ctypes, self.psdlock, None])]
 
-    def daemon(self, classifier, probs, probs_smooth, pread, pwrite, running, return_psd, psd_ctypes, lock, interleave=None):
+    def daemon(self, classifier, probs, probs_smooth, pread, t_problast, running, return_psd, psd_ctypes, lock, interleave=None):
         """
         Runs Decoder class as a daemon.
 
@@ -392,6 +393,8 @@ class BCIDecoderDaemon(object):
         """
 
         pid = os.getpid()
+        ps = psutil.Process(pid)
+        ps.nice(psutil.HIGH_PRIORITY_CLASS)
         print('[DecodeWorker-%-6d] Decoder worker process started' % (pid))
         decoder = BCIDecoder(classifier, buffer_size=self.buffer_sec, fake=self.fake,\
                              amp_serial=self.amp_serial, amp_name=self.amp_name)
@@ -420,28 +423,26 @@ class BCIDecoderDaemon(object):
             t_start = interleave['t_start']
             period = interleave['period']
             running.value = 1
-            t_next = t_start + math.ceil(((time.time() - t_start) / period) + 1) * period
+            t_next = t_start + math.ceil(((time.time() - t_start) / period)) * period
+
             while running.value == 1:
-                # compute features and likelihoods
-                '''
-                probs_local = decoder.get_prob()
+                # end of the current time slot
+                t_next += period
+
+                # compute likelihoods
                 t_prob = time.time()
-                lock.acquire()
-                if t_prob > pwrite.value:
+                probs_local = decoder.get_prob()
+                
+                # update the probs only if the current value is the latest
+                if t_prob > t_problast.value:
+                    lock.acquire()
                     probs[:] = probs_local
                     for i in range(len(probs_smooth)):
                         probs_smooth[i] = probs_smooth[i] * self.alpha_old + probs[i] * self.alpha_new
                     pread.value = 0
-                    pwrite.value = t_prob
-                lock.release()
-                '''
-                ################################
-                ################################
-                probs_local = decoder.get_prob()
-                pread.value = 0
-                ################################
-                ################################
-
+                    t_problast.value = t_prob
+                    lock.release()
+                
                 # copy back PSD values only when requested
                 if self.fake == False and return_psd.value == 1:
                     lock.acquire()
@@ -449,19 +450,18 @@ class BCIDecoderDaemon(object):
                     lock.release()
                     return_psd.value = 0
 
-                # get the next time slot
+                # get the next time slot if didn't finish in the current slot
                 if time.time() > t_next:
-                    print('[DecodeWorker-%-6d] Warning: CPU cannot catch up with the desired frequency. (%.1f ms)' %\
-                          (pid, (time.time() - t_next + period) * 1000))
-                    t_next = t_start + math.ceil(((time.time() - t_start) / period) + 1) * period
-                else:
-                    t_next = t_next + period
+                    t_next_new = t_start + math.ceil(((time.time() - t_start) / period)) * period
+                    print('[DecodeWorker-%-6d] High decoding delay (%.1f ms): t_next = %.3f -> %.3f' %\
+                          (pid, (time.time() - t_next + period) * 1000, t_next, t_next_new))
+                    t_next = t_next_new
 
                 # sleep until the next time slot
-                t_sleep = t_next - period - time.time()
+                t_sleep = t_next - time.time()
                 if t_sleep > 0.001:
                     time.sleep(t_sleep)
-                #print('[DecodeWorker-%-6d] %.3f' % (pid, time.time()))
+                #print('[DecodeWorker-%-6d] Woke up at %.3f' % (pid, time.time()))
 
     def start(self):
         """
@@ -574,17 +574,11 @@ class BCIDecoderDaemon(object):
 def check_speed(decoder, max_count=float('inf')):
     tm = qc.Timer()
     count = 0
-    count_total = 0
     mslist = []
-    while True:
-        if count_total >= max_count:
-            break
-        praw = decoder.get_prob_unread()
-        if praw is None:
-            time.sleep(0.001)
-            continue
+    while count < max_count:
+        while decoder.get_prob_unread() is None:
+            pass
         count += 1
-        count_total += 1
         if tm.sec() > 1:
             t = tm.sec()
             ms = 1000.0 * t / count
@@ -622,7 +616,7 @@ def sample_decoding(decoder):
 
 # sample code
 if __name__ == '__main__':
-    model_file = r'D:\data\STIMO_EEG\DM002\offline\all\classifier_XGB\classifier-64bit.pkl'
+    model_file = r'D:\data\STIMO_EEG\DM002\offline\all\classifier_GB\classifier-64bit.pkl'
 
     if len(sys.argv) == 2:
         amp_name = sys.argv[1]
@@ -637,7 +631,7 @@ if __name__ == '__main__':
 
     # run on background
     #parallel = None # no process interleaving
-    parallel = dict(period=0.04, num_strides=4)
+    parallel = dict(period=0.1, num_strides=5)
     decoder = BCIDecoderDaemon(model_file, buffer_size=1.0, fake=False, amp_name=amp_name,\
         amp_serial=amp_serial, parallel=parallel, alpha_new=0.1)
 
@@ -645,9 +639,9 @@ if __name__ == '__main__':
     #decoder = BCIDecoder(model_file, buffer_size=1.0, amp_name=amp_name, amp_serial=amp_serial)
 
     # run a fake classifier on background
-    # decoder= BCIDecoderDaemon(fake=True, fake_dirs=['L','R'])
+    #decoder= BCIDecoderDaemon(fake=True, fake_dirs=['L','R'])
 
-    check_speed(decoder, 6000)
+    check_speed(decoder, 5000)
 
     #sample_decoding(decoder)
 
