@@ -20,7 +20,7 @@ import pycnbi.utils.q_common as qc
 import time
 from builtins import input
 
-def stream_player(server_name, fif_file, chunk_size, auto_restart=True, high_resolution=False):
+def stream_player(server_name, fif_file, chunk_size, auto_restart=True, high_resolution=False, verbose=None):
     """
     Params
     ======
@@ -31,10 +31,17 @@ def stream_player(server_name, fif_file, chunk_size, auto_restart=True, high_res
     auto_restart: play from beginning again after reaching the end.
     high_resolution: use perf_counter() instead of sleep() for higher time resolution
                      but uses much more cpu due to polling.
+    verbose:
+        'timestamp': show timestamp each time data is pushed out
+        'events': show non-zero events whenever pushed out
     """
     raw, events = pu.load_raw(fif_file)
     sfreq = raw.info['sfreq']  # sampling frequency
     n_channels = len(raw.ch_names)  # number of channels
+    try:
+        event_ch = raw.ch_names.index('TRIGGER')
+    except ValueError:
+        event_ch = None
     if raw is not None:
         print('Successfully loaded %s\n' % fif_file)
         print('Server name: %s' % server_name)
@@ -43,6 +50,7 @@ def stream_player(server_name, fif_file, chunk_size, auto_restart=True, high_res
         print('Chunk size : %d' % chunk_size)
         for i, ch in enumerate(raw.ch_names):
             print(i, ch)
+        print('Trigger channel : %s' % event_ch)
     else:
         raise RuntimeError('Error while loading %s' % fif_file)
 
@@ -59,6 +67,7 @@ def stream_player(server_name, fif_file, chunk_size, auto_restart=True, high_res
     outlet = pylsl.StreamOutlet(sinfo, chunk_size=chunk_size)
 
     input('Press Enter to start streaming.')
+    print('Streaming started')
 
     idx_chunk = 0
     t_chunk = chunk_size / sfreq
@@ -67,14 +76,14 @@ def stream_player(server_name, fif_file, chunk_size, auto_restart=True, high_res
         t_start = time.perf_counter()
     else:
         t_start = time.time()
+    
+    # start streaming
     while True:
         idx_current = idx_chunk * chunk_size
-        if idx_current < raw._data.shape[1] - chunk_size:
-            data = raw._data[:, idx_current:idx_current + chunk_size].transpose().tolist()
-        else:
-            data = raw._data[:, idx_current:].transpose().tolist()
+        chunk = raw._data[:, idx_current:idx_current + chunk_size]
+        data = chunk.transpose().tolist()
+        if idx_current >= raw._data.shape[1] - chunk_size:
             finished = True
-        
         if high_resolution:
             # if a resolution over 2 KHz is needed
             t_sleep_until = t_start + idx_chunk * t_chunk
@@ -85,9 +94,13 @@ def stream_player(server_name, fif_file, chunk_size, auto_restart=True, high_res
             t_wait = t_start + idx_chunk * t_chunk - time.time()
             if t_wait > 0.001:
                 time.sleep(t_wait)
-        
         outlet.push_chunk(data)
-        print('[%8.3fs] sent %d samples' % (time.perf_counter(), len(data)))
+        if verbose == 'timestamp':
+            print('[%8.3fs] sent %d samples' % (time.perf_counter(), len(data)))
+        elif verbose == 'events' and event_ch is not None:
+            event_values = set(chunk[event_ch]) - set([0])
+            if len(event_values) > 0:
+                print('Events %s' % event_values)
         idx_chunk += 1
 
         if finished:
@@ -97,7 +110,10 @@ def stream_player(server_name, fif_file, chunk_size, auto_restart=True, high_res
                 print('Reached the end of data. Restarting.')
             idx_chunk = 0
             finished = False
-            t_start = time.perf_counter()
+            if high_resolution:
+                t_start = time.perf_counter()
+            else:
+                t_start = time.time()
 
 # sample code
 if __name__ == '__main__':

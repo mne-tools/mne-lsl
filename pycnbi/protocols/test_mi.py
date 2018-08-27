@@ -65,7 +65,7 @@ def load_cfg(cfg_module):
         'TRIGGER_DEF',
         'DIRECTIONS',
         'TRIALS_EACH',
-        'PROB_ACC_ALPHA'
+        'PROB_ALPHA_NEW'
     ]
 
     optional_vars = {
@@ -146,10 +146,9 @@ def config_run(cfg_module):
         trigger.init(50)
 
     # init classification
-    decoder = BCIDecoderDaemon(cfg.CLS_MI, buffer_size=1.0,
-                               fake=(cfg.FAKE_CLS is not None),
-                               amp_name=amp_name, amp_serial=amp_serial,
-                               fake_dirs=fake_dirs, parallel=cfg.PARALLEL_DECODING)
+    decoder = BCIDecoderDaemon(cfg.CLS_MI, buffer_size=1.0, fake=(cfg.FAKE_CLS is not None),
+                               amp_name=amp_name, amp_serial=amp_serial, fake_dirs=fake_dirs,
+                               parallel=cfg.PARALLEL_DECODING, alpha_new=cfg.PROB_ALPHA_NEW)
 
     # OLD: requires trigger values to be always defined
     #labels = [tdef.by_value[x] for x in decoder.get_labels()]
@@ -199,6 +198,7 @@ def config_run(cfg_module):
     # start
     trial = 1
     dir_detected = []
+    prob_history = {c:[] for c in bar_dirs}
     while trial <= num_trials:
         if cfg.SHOW_TRIALS:
             title_text = 'Trial %d / %d' % (trial, num_trials)
@@ -210,7 +210,7 @@ def config_run(cfg_module):
         #import cProfile
         #pr = cProfile.Profile()
         #pr.enable()
-        result = feedback.classify(decoder, true_label, title_text, bar_dirs)
+        result = feedback.classify(decoder, true_label, title_text, bar_dirs, prob_history=prob_history)
         #pr.disable()
         #pr.print_stats(sort='time')
 
@@ -269,6 +269,35 @@ def config_run(cfg_module):
     visual.finish()
     if decoder:
         decoder.stop()
+
+    # automatic thresholding
+    if prob_history and len(bar_dirs) == 2:
+        total = sum(len(prob_history[c]) for c in prob_history)
+        fout = open(probs_logfile, 'a')
+        msg = 'Automatic threshold optimization.\n'
+        max_acc = 0
+        max_bias = 0
+        for bias in np.arange(-0.99, 1.00, 0.01):
+            corrects = 0
+            for p in prob_history[bar_dirs[0]]:
+                p_biased = (p + bias) / (bias + 1) # new sum = (p+bias) + (1-p) = bias+1
+                if p_biased >= 0.5:
+                    corrects += 1
+            for p in prob_history[bar_dirs[1]]:
+                p_biased = (p + bias) / (bias + 1) # new sum = (p+bias) + (1-p) = bias+1
+                if p_biased < 0.5:
+                    corrects += 1
+            acc = corrects / total
+            msg += '%s%.2f: %.3f\n' % (bar_dirs[0], bias, acc)
+            if acc > max_acc:
+                max_acc = acc
+                max_bias = bias
+        msg += 'Max acc = %.3f at bias %.2f\n' % (max_acc, max_bias)
+        fout.write(msg)
+        fout.close()
+        print(msg)
+        #from IPython import embed
+        #embed()
 
     print('Finished.')
 

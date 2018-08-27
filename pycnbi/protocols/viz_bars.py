@@ -92,6 +92,7 @@ class BarVisual(object):
         self.yr2 = self.yr1 + self.barwidth
 
     def finish(self):
+        cv2.destroyAllWindows()
         self.glass.disconnect()
 
     def set_glass_feedback(self, fb):
