@@ -175,6 +175,7 @@ class BodyVisual(object):
         cv2.setWindowProperty("Protocol", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN);
 
     def finish(self):
+        cv2.destroyAllWindows()
         self.glass.disconnect()
 
     def set_glass_feedback(self, fb):
