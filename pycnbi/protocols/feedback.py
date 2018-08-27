@@ -47,10 +47,7 @@ class Feedback:
     def __init__(self, cfg, viz, tdef, trigger, logfile=None):
         self.cfg = cfg
         self.tdef = tdef
-        self.alpha_old = self.cfg.PROB_ACC_ALPHA
-        self.alpha_new = 1.0 - self.cfg.PROB_ACC_ALPHA
         self.trigger = trigger
-
         self.viz = viz
         self.viz.fill()
         self.refresh_delay = 1.0 / self.cfg.REFRESH_RATE
@@ -60,6 +57,10 @@ class Feedback:
         self.bar_step_down = self.cfg.BAR_STEP_DOWN
         self.bar_step_both = self.cfg.BAR_STEP_BOTH
         self.bar_bias = self.cfg.BAR_BIAS
+
+        # New decoder: already smoothed by the decoder so bias after.
+        #self.alpha_old = self.cfg.PROB_ACC_ALPHA
+        #self.alpha_new = 1.0 - self.cfg.PROB_ACC_ALPHA
 
         if hasattr(self.cfg, 'BAR_REACH_FINISH') and self.cfg.BAR_REACH_FINISH == True:
             self.premature_end = True
@@ -97,10 +98,11 @@ class Feedback:
             self.ser.close()
             print('Closed STIMO serial port %s' % self.stimo_port)
 
-    def classify(self, decoder, true_label, title_text, bar_dirs, state='start'):
+    def classify(self, decoder, true_label, title_text, bar_dirs, state='start', prob_history=None):
         """
         Run a single trial
         """
+        true_label_index = bar_dirs.index(true_label)
         self.tm_trigger.reset()
         if self.bar_bias is not None:
             bias_idx = bar_dirs.index(self.bar_bias[0])
@@ -212,7 +214,7 @@ class Feedback:
                         # show classfication result
                         if self.cfg.WITH_STIMO is True and \
                             (self.cfg.TRIALS_RETRY is False or bar_label == true_label):
-                            res_color = 'B'
+                            res_color = 'G'
                         else:
                             res_color = 'Y'
                         if self.cfg.FEEDBACK_TYPE == 'BODY':
@@ -257,6 +259,10 @@ class Feedback:
                             self.tm_watchdog.reset()
                     else:
                         self.tm_watchdog.reset()
+
+                        if prob_history is not None:
+                            prob_history[true_label].append(probs_new[true_label_index])
+
                         probs_acc += np.array(probs_new)
 
                         '''
