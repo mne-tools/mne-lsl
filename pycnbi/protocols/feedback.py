@@ -333,7 +333,7 @@ class Feedback:
                                 dx *= self.bar_step_left
 
                             # slow start
-                            if self.cfg.BAR_SLOW_START is not None and self.tm_trigger.sec() < self.cfg.BAR_SLOW_START:
+                            if self.cfg.BAR_SLOW_START and self.tm_trigger.sec() < self.cfg.BAR_SLOW_START:
                                 dx *= self.tm_trigger.sec() / self.cfg.BAR_SLOW_START
 
                             # add likelihoods
