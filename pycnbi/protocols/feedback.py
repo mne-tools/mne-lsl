@@ -312,7 +312,6 @@ class Feedback:
 
                         # determine the direction
                         # TODO: np.argmax(probs)
-                        print('***********', probs)
                         max_pidx = qc.get_index_max(probs)
                         max_label = bar_dirs[max_pidx]
 
