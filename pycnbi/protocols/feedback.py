@@ -212,9 +212,13 @@ class Feedback:
                 if self.tm_trigger.sec() > self.cfg.T_CLASSIFY or (self.premature_end and bar_score >= 100):
                     if not hasattr(self.cfg, 'SHOW_RESULT') or self.cfg.SHOW_RESULT is True:
                         # show classfication result
-                        if self.cfg.WITH_STIMO is True and \
-                            (self.cfg.TRIALS_RETRY is False or bar_label == true_label):
-                            res_color = 'G'
+                        if self.cfg.WITH_STIMO is True: 
+                            if self.cfg.STIMO_FULLGAIT_CYCLE is not None and bar_label == 'U':
+                                res_color = 'G'
+                            elif self.cfg.TRIALS_RETRY is False or bar_label == true_label:
+                                res_color = 'G'
+                            else:
+                                res_color = 'Y'
                         else:
                             res_color = 'Y'
                         if self.cfg.FEEDBACK_TYPE == 'BODY':
@@ -229,14 +233,22 @@ class Feedback:
                     self.trigger.signal(self.tdef.FEEDBACK)
 
                     # STIMO
-                    if self.cfg.WITH_STIMO is True and \
-                        (self.cfg.TRIALS_RETRY is False or bar_label == true_label):
-                        if bar_label == 'L':
-                            self.ser.write(b'1')
-                            qc.print_c('STIMO: Sent 1', 'g')
-                        elif bar_label == 'R':
-                            self.ser.write(b'2')
-                            qc.print_c('STIMO: Sent 2', 'g')
+                    if self.cfg.WITH_STIMO is True:
+                        if self.cfg.STIMO_FULLGAIT_CYCLE is not None:
+                            if bar_label == 'U':
+                                self.ser.write(b'1')
+                                qc.print_c('STIMO: Sent 1', 'g')
+                                time.sleep(self.cfg.STIMO_FULLGAIT_CYCLE)
+                                self.ser.write(b'2')
+                                qc.print_c('STIMO: Sent 2', 'g')
+                                time.sleep(self.cfg.STIMO_FULLGAIT_CYCLE)
+                        elif self.cfg.TRIALS_RETRY is False or bar_label == true_label:
+                            if bar_label == 'L':
+                                self.ser.write(b'1')
+                                qc.print_c('STIMO: Sent 1', 'g')
+                            elif bar_label == 'R':
+                                self.ser.write(b'2')
+                                qc.print_c('STIMO: Sent 2', 'g')
 
                     if self.cfg.DEBUG_PROBS:
                         msg = 'DEBUG: Accumulated probabilities = %s' % qc.list2string(probs_acc, '%.3f')
@@ -252,7 +264,7 @@ class Feedback:
                     self.tm_trigger.reset()
                 else:
                     # classify
-                    probs_new = decoder.get_prob_unread()
+                    probs_new = decoder.get_prob_smooth_unread()
                     if probs_new is None:
                         if self.tm_watchdog.sec() > 3:
                             qc.print_c('WARNING: No classification being done. Are you receiving data streams?', 'Y')
@@ -300,6 +312,7 @@ class Feedback:
 
                         # determine the direction
                         # TODO: np.argmax(probs)
+                        print('***********', probs)
                         max_pidx = qc.get_index_max(probs)
                         max_label = bar_dirs[max_pidx]
 
@@ -320,13 +333,9 @@ class Feedback:
                                 print('DEBUG: Direction %s using bar step %d' % (max_label, self.bar_step_left))
                                 dx *= self.bar_step_left
 
-                            ################################################
-                            ################################################
-                            # slower in the beginning?
-                            if self.tm_trigger.sec() < 2.0:
-                                dx *= self.tm_trigger.sec() * 0.5
-                            ################################################
-                            ################################################
+                            # slow start
+                            if self.cfg.BAR_SLOW_START is not None and self.tm_trigger.sec() < self.cfg.BAR_SLOW_START:
+                                dx *= self.tm_trigger.sec() / self.cfg.BAR_SLOW_START
 
                             # add likelihoods
                             if max_label == bar_label:

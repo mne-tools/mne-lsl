@@ -616,7 +616,7 @@ def sample_decoding(decoder):
 
 # sample code
 if __name__ == '__main__':
-    model_file = r'D:\data\STIMO_EEG\DM002\offline\all\classifier_GB\classifier-64bit.pkl'
+    model_file = r'D:\data\STIMO_EEG\DM002\offline\all\classifier_L_vs_Feedback\classifier-64bit.pkl'
 
     if len(sys.argv) == 2:
         amp_name = sys.argv[1]
@@ -631,7 +631,7 @@ if __name__ == '__main__':
 
     # run on background
     #parallel = None # no process interleaving
-    parallel = dict(period=0.1, num_strides=5)
+    parallel = dict(period=0.06, num_strides=3)
     decoder = BCIDecoderDaemon(model_file, buffer_size=1.0, fake=False, amp_name=amp_name,\
         amp_serial=amp_serial, parallel=parallel, alpha_new=0.1)
 
