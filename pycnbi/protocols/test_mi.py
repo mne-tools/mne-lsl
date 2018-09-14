@@ -269,6 +269,7 @@ def config_run(cfg_module):
     if decoder:
         decoder.stop()
 
+    '''
     # automatic thresholding
     if prob_history and len(bar_dirs) == 2:
         total = sum(len(prob_history[c]) for c in prob_history)
@@ -295,8 +296,7 @@ def config_run(cfg_module):
         fout.write(msg)
         fout.close()
         print(msg)
-        #from IPython import embed
-        #embed()
+    '''
 
     print('Finished.')
 
