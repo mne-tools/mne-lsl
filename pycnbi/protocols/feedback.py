@@ -31,13 +31,12 @@ import time
 import serial
 import serial.tools.list_ports
 
-# visualization
-keys = {'left':81, 'right':83, 'up':82, 'down':84, 'pgup':85, 'pgdn':86, 'home':80, 'end':87, 'space':32, 'esc':27 \
-    , ',':44, '.':46, 's':115, 'c':99, '[':91, ']':93, '1':49, '!':33, '2':50, '@':64, '3':51, '#':35}
-color = dict(G=(20, 140, 0), B=(210, 0, 0), R=(0, 50, 200), Y=(0, 215, 235), K=(0, 0, 0), W=(255, 255, 255),
-             w=(200, 200, 200))
-dirs = {'L':'LEFT', 'R':'RIGHT', 'U':'UP', 'D':'DOWN', 'B':'BOTH'}
-
+# global constants
+KEYS = {'right':2555904, 'up':2490368, 'left':2424832, 'down':2621440, 'pgup':85, 'pgdn':86, 'home':80, 'end':87, 'space':32, 'esc':27}
+ARROW_KEYS = {KEYS['left']:'L', KEYS['right']:'R', KEYS['up']:'U', KEYS['down']:'D'}
+COLORS = dict(G=(20, 140, 0), B=(210, 0, 0), R=(0, 50, 200), Y=(0, 215, 235), K=(0, 0, 0), W=(255, 255, 255), w=(200, 200, 200))
+DIRS = {'L':'LEFT', 'R':'RIGHT', 'U':'UP', 'D':'DOWN', 'B':'BOTH'}
+BIAS_INCREMENT = 0.025
 
 class Feedback:
     """
@@ -56,7 +55,10 @@ class Feedback:
         self.bar_step_up = self.cfg.BAR_STEP_UP
         self.bar_step_down = self.cfg.BAR_STEP_DOWN
         self.bar_step_both = self.cfg.BAR_STEP_BOTH
-        self.bar_bias = self.cfg.BAR_BIAS
+        if type(self.cfg.BAR_BIAS) is tuple:
+            self.bar_bias = list(self.cfg.BAR_BIAS)
+        else:
+            self.bar_bias = self.cfg.BAR_BIAS
 
         # New decoder: already smoothed by the decoder so bias after.
         #self.alpha_old = self.cfg.PROB_ACC_ALPHA
@@ -141,7 +143,7 @@ class Feedback:
                     if self.cfg.FEEDBACK_TYPE == 'BAR':
                         self.viz.move(true_label, 100, overlay=False, barcolor='G')
                     elif self.cfg.FEEDBACK_TYPE == 'BODY':
-                        self.viz.put_text(dirs[true_label], 'R')
+                        self.viz.put_text(DIRS[true_label], 'R')
                     if true_label == 'L':  # left
                         self.trigger.signal(self.tdef.LEFT_READY)
                     elif true_label == 'R':  # right
@@ -222,7 +224,7 @@ class Feedback:
                         else:
                             res_color = 'Y'
                         if self.cfg.FEEDBACK_TYPE == 'BODY':
-                            self.viz.move(bar_label, bar_score, overlay=False, barcolor=res_color, caption=dirs[bar_label], caption_color=res_color)
+                            self.viz.move(bar_label, bar_score, overlay=False, barcolor=res_color, caption=DIRS[bar_label], caption_color=res_color)
                         else:
                             self.viz.move(bar_label, 100, overlay=False, barcolor=res_color)
                     else:
@@ -236,10 +238,10 @@ class Feedback:
                     if self.cfg.WITH_STIMO is True:
                         if self.cfg.STIMO_FULLGAIT_CYCLE is not None:
                             if bar_label == 'U':
-                                self.ser.write(b'1')
+                                self.ser.write(self.cfg.STIMO_FULLGAIT_PATTERN[0])
                                 qc.print_c('STIMO: Sent 1', 'g')
                                 time.sleep(self.cfg.STIMO_FULLGAIT_CYCLE)
-                                self.ser.write(b'2')
+                                self.ser.write(self.cfg.STIMO_FULLGAIT_PATTERN[1])
                                 qc.print_c('STIMO: Sent 2', 'g')
                                 time.sleep(self.cfg.STIMO_FULLGAIT_CYCLE)
                         elif self.cfg.TRIALS_RETRY is False or bar_label == true_label:
@@ -350,7 +352,7 @@ class Feedback:
                                 bar_score = 100
                             if self.cfg.FEEDBACK_TYPE == 'BODY':
                                 if self.cfg.SHOW_CUE:
-                                    self.viz.move(bar_label, bar_score, overlay=False, caption=dirs[true_label], caption_color='G')
+                                    self.viz.move(bar_label, bar_score, overlay=False, caption=DIRS[true_label], caption_color='G')
                                 else:
                                     self.viz.move(bar_label, bar_score, overlay=False)
                             else:
@@ -394,13 +396,29 @@ class Feedback:
                     return bar_label
 
             self.viz.update()
-            key = 0xFF & cv2.waitKey(1)
-            if key == keys['esc']:
+            key = cv2.waitKeyEx(1)
+            if key == KEYS['esc']:
                 return None
-            if key == keys['space']:
+            elif key == KEYS['space']:
                 dx = 0
                 bar_score = 0
                 probs = [1.0 / len(bar_dirs)] * len(bar_dirs)
                 self.viz.move(bar_dirs[0], bar_score, overlay=False)
                 self.viz.update()
                 print('RESET', probs, dx)
+                self.tm_trigger.reset()
+            elif key in ARROW_KEYS and ARROW_KEYS[key] in bar_dirs:
+                # change bias on the fly
+                if self.bar_bias is None:
+                    self.bar_bias = [ARROW_KEYS[key], BIAS_INCREMENT]
+                else:
+                    if ARROW_KEYS[key] == self.bar_bias[0]:
+                        self.bar_bias[1] += BIAS_INCREMENT
+                    elif self.bar_bias[1] >= BIAS_INCREMENT:
+                        self.bar_bias[1] -= BIAS_INCREMENT
+                    else:
+                        self.bar_bias = [ARROW_KEYS[key], BIAS_INCREMENT]
+                if self.bar_bias[1] == 0:
+                    self.bar_bias = None
+                else:
+                    bias_idx = bar_dirs.index(self.bar_bias[0])
