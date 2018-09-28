@@ -82,7 +82,7 @@ def get_tfr(cfg, recursive=False, n_jobs=1):
 
     if hasattr(cfg, 'DATA_DIRS'):
         if export_path is None:
-            raise ValueError('For multiple directories, export_path cannot be None')
+            raise ValueError('For multiple directories, cfg.EXPORT_PATH cannot be None')
         else:
             outpath = export_path
         # custom event file
@@ -111,6 +111,10 @@ def get_tfr(cfg, recursive=False, n_jobs=1):
             [outpath, file_prefix, _] = qc.parse_path_list(cfg.DATA_FILE)
         else:
             outpath = export_path
+
+    # re-referencing
+    if cfg.REREFERENCE is not None:
+        pu.rereference(raw, cfg.REREFERENCE[1], cfg.REREFERENCE[0])
 
     sfreq = raw.info['sfreq']
 
