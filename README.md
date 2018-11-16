@@ -52,7 +52,10 @@ PyCNBI depends on following packages:
   - xgboost
   - psutil
 
-You can install these packages using pip.  For the usage of pip, have a look [here](https://packaging.python.org/installing/#use-pip-for-installing).
+You can install these using pip package manager. To install all at once, type:
+```
+pip install -U scipy numpy PyQt5 scikit-learn pylsl mne>=0.14 matplotlib>=2.1.0 pyqtgraph opencv-python pyserial future configparser xgboost psutil
+```
 
 Optional but strongly recommended:
   - [OpenVibe](http://openvibe.inria.fr/downloads)
