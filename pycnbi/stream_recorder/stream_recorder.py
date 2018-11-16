@@ -38,8 +38,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-OUT_DIR = 'D:/data/Records'  # give absolute path
-
 import pycnbi  # load from global common folder
 import time
 import os
@@ -56,26 +54,25 @@ from builtins import input
 
 
 # record start
-def record(state, amp_name, amp_serial, eeg_only=False):
+def record(state, amp_name, amp_serial, record_dir, eeg_only=False):
     # set data file name
-    filename = time.strftime(OUT_DIR + "/%Y%m%d-%H%M%S-raw.pcl", time.localtime())
+    filename = time.strftime(record_dir + "/%Y%m%d-%H%M%S-raw.pcl", time.localtime())
     qc.print_c('\n>> Output file: %s' % (filename), 'W')
 
     # test writability
     try:
-        qc.make_dirs(OUT_DIR)
+        qc.make_dirs(record_dir)
         open(filename, 'w').write('The data will written when the recording is finished.')
     except:
-        qc.print_c('\n*** ERROR: There was a problem writing file %s\n' % filename, 'W')
-        sys.exit(-1)
+        raise RuntimeError('Problem writing to %s. Check permission.' % filename)
 
-    # start a server for sending out data filename for software trigger
+    # start a server for sending out data filename when software trigger is used
     outlet = cnbi_lsl.start_server('StreamRecorderInfo', channel_format='string', source_id=filename, stype='Markers')
 
     # connect to EEG stream server
     sr = receiver.StreamReceiver(amp_name=amp_name, amp_serial=amp_serial, eeg_only=eeg_only)
 
-    # record start
+    # start recording
     qc.print_c('\n>> Recording started (PID %d).' % os.getpid(), 'W')
     qc.print_c('\n>> Press Enter to stop recording', 'G')
     tm = qc.Timer(autoreset=True)
@@ -106,10 +103,8 @@ def record(state, amp_name, amp_serial, eeg_only=False):
     import pycnbi.utils.convert2fif as cf
     cf.pcl2fif(filename)
 
-
-if __name__ == '__main__':
-    eeg_only = False
-
+def main(record_dir):
+    # configure LSL server name and device serial if available
     if len(sys.argv) == 2:
         amp_name = sys.argv[1]
         amp_serial = None
@@ -119,21 +114,28 @@ if __name__ == '__main__':
         amp_name, amp_serial = pu.search_lsl(ignore_markers=True)
     if amp_name == 'None':
         amp_name = None
-    qc.print_c('Connecting to a server %s (Serial %s)' % (amp_name, amp_serial), 'W')
+    qc.print_c('\nOutput directory: %s' % (record_dir), 'W')
 
+    # spawn the recorder as a child process
     qc.print_c('\n>> Press Enter to start recording.', 'G')
     key = input()
     state = mp.Value('i', 1)
-    proc = mp.Process(target=record, args=[state, amp_name, amp_serial, eeg_only])
+    proc = mp.Process(target=record, args=[state, amp_name, amp_serial, record_dir])
     proc.start()
 
+    # clean up
+    time.sleep(1) # required on some Python distribution
     input()
     state.value = 0
     qc.print_c('(main) Waiting for recorder process to finish.', 'W')
     proc.join(10)
     if proc.is_alive():
         qc.print_c('>> ERROR: Recorder process not finishing. Are you running from Spyder?', 'R')
+        qc.print_c('Dropping into a shell', 'R')
         qc.shell()
-
     sys.stdout.flush()
     print('>> Done.')
+
+# default sample recorder
+if __name__ == '__main__':
+    main(os.getcwd()+'/records')
