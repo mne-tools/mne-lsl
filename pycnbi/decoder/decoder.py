@@ -4,7 +4,7 @@ from __future__ import print_function, division
 Online decoder using frequency features.
 
 Interleaved parallel decoding is supported to achieve high frequency decoding.
-For example, if a single decoder takes 32ms to compute the likelihoods of a single window,
+For example, if a single decoder takes 40ms to compute the likelihoods of a single window,
 100 Hz decoding rate can be achieved reliably using 4 cpu cores.
 
 TODO:
