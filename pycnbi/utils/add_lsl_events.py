@@ -1,6 +1,6 @@
 from __future__ import print_function, division
 
-def add_lsl_events(event_dir, offset=0, recursive=True):
+def add_lsl_events(event_dir, offset=0, recursive=False):
     """
     Add events recorded with LSL timestamps to raw data files.
     Useful for software triggering.
