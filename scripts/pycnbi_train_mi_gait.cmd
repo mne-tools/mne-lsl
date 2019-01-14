@@ -1,7 +1,7 @@
-@ECHO OFF
-IF NOT "%1" == "" (
+@echo off
+if not "%1" == "" (
     python -c "if __name__ == '__main__': import pycnbi.protocols.train_mi_gait as m; m.config_run('%1')"
     pause
-) ELSE (
-    ECHO Usage: %0 [CONFIG_FILE]
+) else (
+    echo Usage: %0 {config_file}
 )

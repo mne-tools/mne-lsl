@@ -1,3 +1,3 @@
-@ECHO OFF
-python ../pycnbi/stream_recorder/stream_recorder.py openvibeSignal
+@echo off
+python ../pycnbi/stream_recorder/stream_recorder.py openvibesignal
 pause
