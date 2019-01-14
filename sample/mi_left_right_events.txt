@@ -1,0 +1,19 @@
+The subject was trained using two motor imagery (MI) tasks: left and right hand MI.
+RIGHT_GO (event 9) and LEFT_GO (event 11) denote the onset of MI, which lasts for about 5 seconds.
+
+[events]
+INIT = 15            ; start of the trial
+CUE = 14             ; cue shown
+BLANK = 13           ; screen turned into blank
+LEFT_READY = 12      ; left bar shown
+LEFT_GO = 11         ; left bar started moving
+RIGHT_READY = 10     ; right bar shown
+RIGHT_GO = 9         ; right started moving
+UP_READY = 8         ; up bar shown
+UP_GO = 7            ; up started moving
+DOWN_READY = 6       ; down bar shown
+DOWN_GO = 5          ; down started moving
+BOTH_READY = 4       ; left+right
+BOTH_GO = 3          ; left+right
+FEEDBACK = 2         ; feedback shown
+GO = 1               ; generic go signal
