@@ -1,4 +1,4 @@
-@ECHO OFF
+@echo off
 cd ../pycnbi/stream_viewer/
-python stream_viewer.py openvibeSignal
+python stream_viewer.py openvibesignal
 pause
