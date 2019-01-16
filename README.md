@@ -85,6 +85,8 @@ We have also developed an Arduino-based triggering system as we wanted to send t
 ```
 git clone https://github.com/dbdq/arduino-trigger.git
 ```
+The customized firmware should be installed on Arduino Micro and the circuit design included in the document folder should be printed to a circuit board.
+
 
 ## For g.USBamp users
 The following customized acquisition server is needed instead of default LSL app to receive the trigger channel as part of signal streaming channels:
@@ -96,8 +98,6 @@ because the default gUSBamp LSL server do not stream event channel as part of th
 
 ## For AntNeuro eego users
 Use the OpenVibe acquisition server and make sure to check "LSL output" in preference.  If you don't see "eego" from the device selection, it's probably because you didn't install the additional drivers when you installed OpenVibe.
-
-The customized firmware should be installed on Arduino Micro and the circuit design included in the document folder should be printed to a circuit board.
 
 
 # To do
