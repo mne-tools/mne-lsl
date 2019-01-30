@@ -117,8 +117,6 @@ class Trigger(object):
             self.ser = serial.Serial(com_port, BAUD_RATE)
             time.sleep(1)  # doesn't work without this delay. why?
             print('Connected to %s.' % com_port)
-            if com_port[:3] != 'COM':
-                self.print('Warning: COM port %d is unusual.' % portaddr)
 
         elif self.lpttype == 'SOFTWARE':
             from pycnbi.stream_receiver.stream_receiver import StreamReceiver
