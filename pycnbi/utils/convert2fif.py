@@ -175,7 +175,7 @@ def pcl2fif(filename, interactive=False, outdir=None, external_event=None, offse
     # create Raw object
     raw = mne.io.RawArray(signals, info)
     raw._times = data['timestamps'] # seems to have no effect
- 
+
     if external_event is not None:
         raw._data[0] = 0  # erase current events
         events_index = event_timestamps_to_indices(filename, external_event, offset)
@@ -421,6 +421,35 @@ def bdf2fif_matlab(filename, interactive=False, outdir=None):
 
     # add events
     raw.add_events(events, 'TRIGGER')
+
+    # save and close
+    raw.save(fiffile, verbose=False, overwrite=True, fmt='double')
+    print('Saved to', fiffile)
+
+
+def xdf2fif(filename, interactive=False, outdir=None):
+    """
+    Convert XDF format
+    """
+    fdir, fname, fext = qc.parse_path_list(filename)
+    if outdir is None:
+        outdir = fdir
+    elif outdir[-1] != '/':
+        outdir += '/'
+
+    fiffile = outdir + fname + '.fif'
+
+    # channel x times
+    raw_data = XDF_LOADING_FUNCTION(filename)
+    sfreq = XDF_SAMPLING_FREQUENCY
+    # TODO: check the event channel index and move to the 0-th index
+    # in LSL, usually the name is TRIG or STI 014.
+    #raw_data = np.concatenate((raw_data[-1, :].reshape(1, -1), raw_data[:-1, :]))
+    ch_names = XDF_CHANNEL_NAMES
+
+    # fif header creation
+    info = mne.create_info(ch_names, sample_rate, ch_info)
+    raw = mne.io.RawArray(signals, info)
 
     # save and close
     raw.save(fiffile, verbose=False, overwrite=True, fmt='double')
