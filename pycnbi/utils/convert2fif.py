@@ -431,6 +431,8 @@ def xdf2fif(filename, interactive=False, outdir=None):
     """
     Convert XDF format
     """
+    from xdf import xdf
+    
     fdir, fname, fext = qc.parse_path_list(filename)
     if outdir is None:
         outdir = fdir
@@ -440,12 +442,21 @@ def xdf2fif(filename, interactive=False, outdir=None):
     fiffile = outdir + fname + '.fif'
 
     # channel x times
-    raw_data = XDF_LOADING_FUNCTION(filename)
-    sfreq = XDF_SAMPLING_FREQUENCY
+    data = xdf.load_xdf(filename)
+    raw_data = data[0][0]['time_series'].T
+    signals = np.concatenate((raw_data[-1, :].reshape(1, -1), raw_data[:-1, :]))
+
+    sample_rate = int(data[0][0]['info']['nominal_srate'][0])
     # TODO: check the event channel index and move to the 0-th index
     # in LSL, usually the name is TRIG or STI 014.
-    #raw_data = np.concatenate((raw_data[-1, :].reshape(1, -1), raw_data[:-1, :]))
-    ch_names = XDF_CHANNEL_NAMES
+    ch_names = []
+    for ch in data[0][0]['info']['desc'][0]['channels'][0]['channel']:
+        ch_names.append(ch['label'][0])
+    trig_ch_guess = pu.find_event_channel(signals, ch_names)
+    if trig_ch_guess is None:
+        trig_ch_guess = 0
+    ch_names =[ch_names[trig_ch_guess]] + ch_names[:trig_ch_guess] + ch_names[trig_ch_guess+1:]
+    ch_info = ['stim'] + ['eeg'] * (len(ch_names)-1)
 
     # fif header creation
     info = mne.create_info(ch_names, sample_rate, ch_info)
@@ -477,6 +488,8 @@ def any2fif(filename, interactive=False, outdir=None, channel_file=None):
         bdf2fif(filename, interactive=interactive, outdir=outdir)
     elif p.ext == 'gdf':
         gdf2fif(filename, interactive=interactive, outdir=outdir, channel_file=channel_file)
+    elif p.ext == 'xdf':
+        xdf2fif(filename, interactive=interactive, outdir=outdir)
     else:  # unknown format
         qc.print_c('WARNING: Ignored unrecognized file extension %s. It should be [.pcl | .eeg | .gdf | .bdf]'\
             % p.ext, 'r')
@@ -486,7 +499,7 @@ def main(input_dir, channel_file=None):
     for f in qc.get_file_list(input_dir, fullpath=True, recursive=True):
         p = qc.parse_path(f)
         outdir = p.dir + '/fif/'
-        if p.ext in ['pcl', 'bdf', 'edf', 'gdf', 'eeg']:
+        if p.ext in ['pcl', 'bdf', 'edf', 'gdf', 'eeg', 'xdf']:
             print('Converting %s' % f)
             any2fif(f, interactive=True, outdir=outdir, channel_file=channel_file)
             count += 1
