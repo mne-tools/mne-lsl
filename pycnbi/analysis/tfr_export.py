@@ -115,6 +115,7 @@ def get_tfr(cfg, recursive=False, n_jobs=1):
     # re-referencing
     if cfg.REREFERENCE is not None:
         pu.rereference(raw, cfg.REREFERENCE[1], cfg.REREFERENCE[0])
+        assert cfg.REREFERENCE[0] in raw.ch_names
 
     sfreq = raw.info['sfreq']
 
