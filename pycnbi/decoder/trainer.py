@@ -639,7 +639,7 @@ def compute_features(cfg):
             'When loading multiple EEG files, CHANNEL_PICKS must be list of string, not integers because they may have different channel order.')
     raw, events = pu.load_multi(ftrain)
     if cfg.REF_CH is not None:
-        pu.rereference(raw, ref_new=cfg.REF_CH[0], ref_old=cfg.REF_CH[1])
+        pu.rereference(raw, cfg.REF_CH[1], cfg.REF_CH[0])
     if cfg.LOAD_EVENTS_FILE is not None:
         events = mne.read_events(cfg.LOAD_EVENTS_FILE)
     triggers = {cfg.tdef.by_value[c]:c for c in set(cfg.TRIGGER_DEF)}
