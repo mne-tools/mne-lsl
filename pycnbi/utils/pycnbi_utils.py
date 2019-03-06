@@ -283,11 +283,13 @@ def rereference(raw, ref_new, ref_old=None):
     """
     Reference to new channels. raw object is modified in-place for efficiency.
 
+    raw: mne.io.RawArray
+
     ref_new: None | list of str (RawArray) | list of int (numpy array)
         Reference to ref_new channels.
 
     ref_old: None | str
-        Recover the original reference channel values. Only mne.io.RawArray is supported for now.
+        Recover the original reference channel values. 
     """
 
     # Re-reference and recover the original reference channel values if possible
