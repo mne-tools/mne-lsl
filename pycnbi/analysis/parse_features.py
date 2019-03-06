@@ -48,7 +48,7 @@ def get_feature_scores(featfile, channels=None, freq_ranges=None, matfile=None):
             beta1=[13, 18],
             beta2=[18, 24],
             beta3=[24, 30],
-            gamma=[30, 49])
+            gamma=[31, 49])
 
     # find all channels first if needed
     if channels is None:
