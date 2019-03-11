@@ -55,7 +55,7 @@ class Trigger(object):
         Sends the value to the parallel port and sets to 0 after a set period.
         The value shuold be an integer in the range of 0-255.
     """
-    def __init__(self, lpttype='USB2LPT', portaddr=None, verbose=True):
+    def __init__(self, lpttype='USB2LPT', portaddr=None, verbose=True, check_lsl_offset=False):
         self.evefile = None
         self.lpttype = lpttype
         self.verbose = verbose
@@ -134,16 +134,17 @@ class Trigger(object):
             self.print('Event file is: %s' % evefile)
             self.evefile = open(evefile, 'a')
 
-            # check server LSL time server integrity
-            self.print("Checking LSL server's timestamp integrity for logging software triggers.")
-            amp_name, amp_serial = pu.search_lsl()
-            sr = StreamReceiver(window_size=1, buffer_size=1, amp_serial=amp_serial, eeg_only=False, amp_name=amp_name)
-            local_time = pylsl.local_clock()
-            server_time = sr.get_window_list()[1][-1]
-            lsl_time_offset = local_time - server_time
-            with open(eveoffset_file, 'a') as f:
-                f.write('Local time: %.6f, Server time: %.6f, Offset: %.6f\n' % (local_time, server_time, lsl_time_offset))
-            self.print('LSL timestamp offset (%.3f) saved to %s' % (lsl_time_offset, eveoffset_file))
+            if check_lsl_offset:
+                # check server LSL time server integrity
+                self.print("Checking LSL server's timestamp integrity for logging software triggers.")
+                amp_name, amp_serial = pu.search_lsl()
+                sr = StreamReceiver(window_size=1, buffer_size=1, amp_serial=amp_serial, eeg_only=False, amp_name=amp_name)
+                local_time = pylsl.local_clock()
+                server_time = sr.get_window_list()[1][-1]
+                lsl_time_offset = local_time - server_time
+                with open(eveoffset_file, 'a') as f:
+                    f.write('Local time: %.6f, Server time: %.6f, Offset: %.6f\n' % (local_time, server_time, lsl_time_offset))
+                self.print('LSL timestamp offset (%.3f) saved to %s' % (lsl_time_offset, eveoffset_file))
 
         elif self.lpttype == 'FAKE' or self.lpttype is None or self.lpttype is False:
             self.print('WARNING: Using a fake trigger.')

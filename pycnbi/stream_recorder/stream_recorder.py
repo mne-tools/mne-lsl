@@ -44,6 +44,7 @@ import time
 import datetime
 import numpy as np
 import multiprocessing as mp
+import pycnbi.utils.add_lsl_events
 import pycnbi.utils.q_common as qc
 import pycnbi.utils.pycnbi_utils as pu
 from pycnbi.utils.convert2fif import pcl2fif
@@ -53,19 +54,21 @@ from builtins import input
 
 def record(state, amp_name, amp_serial, record_dir, eeg_only):
     # set data file name
-    filename = time.strftime(record_dir + "/%Y%m%d-%H%M%S-raw.pcl", time.localtime())
-    qc.print_c('>> Output file: %s' % (filename), 'W')
+    timestamp = time.strftime('%Y%m%d-%H%M%S', time.localtime())
+    pcl_file = "%s/%s-raw.pcl" % (record_dir, timestamp)
+    eve_file = '%s/%s-eve.txt' % (record_dir, timestamp)
+    qc.print_c('>> Output file: %s' % (pcl_file), 'W')
 
     # test writability
     try:
         qc.make_dirs(record_dir)
-        open(filename, 'w').write('The data will written when the recording is finished.')
+        open(pcl_file, 'w').write('The data will written when the recording is finished.')
     except:
-        raise RuntimeError('Problem writing to %s. Check permission.' % filename)
+        raise RuntimeError('Problem writing to %s. Check permission.' % pcl_file)
 
-    # start a server for sending out data filename when software trigger is used
+    # start a server for sending out data pcl_file when software trigger is used
     outlet = start_server('StreamRecorderInfo', channel_format='string',\
-        source_id=filename, stype='Markers')
+        source_id=pcl_file, stype='Markers')
 
     # connect to EEG stream server
     sr = StreamReceiver(amp_name=amp_name, amp_serial=amp_serial, eeg_only=eeg_only)
@@ -94,11 +97,14 @@ def record(state, amp_name, amp_serial, record_dir, eeg_only):
             'sample_rate':sr.get_sample_rate(), 'channels':sr.get_num_channels(),
             'ch_names':sr.get_channel_names()}
     qc.print_c('Saving raw data ...', 'W')
-    qc.save_obj(filename, data)
-    print('Saved to %s\n' % filename)
+    qc.save_obj(pcl_file, data)
+    print('Saved to %s\n' % pcl_file)
 
-    qc.print_c('Converting raw file into a fif format.', 'W')
-    pcl2fif(filename)
+    if os.path.exists(eve_file):
+        pycnbi.utils.add_lsl_events.add_lsl_events(record_dir, interactive=False)
+    else:
+        qc.print_c('Converting raw file into a fif format.', 'W')
+        pcl2fif(pcl_file)
 
 def main(record_dir, eeg_only=False):
     # configure LSL server name and device serial if available

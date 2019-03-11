@@ -1,6 +1,6 @@
 from __future__ import print_function, division
 
-def add_lsl_events(event_dir, offset=0, recursive=False):
+def add_lsl_events(event_dir, offset=0, recursive=False, interactive=True):
     """
     Add events recorded with LSL timestamps to raw data files.
     Useful for software triggering.
@@ -43,7 +43,8 @@ def add_lsl_events(event_dir, offset=0, recursive=False):
                 to_process.append(f)
                 print(f)
 
-    input('\nPress Enter to start')
+    if interactive:
+        input('\nPress Enter to start')
     for f in to_process:
         pclfile = f.replace('-eve.txt', '-raw.pcl')
         pcl2fif(pclfile, external_event=f, offset=offset)
