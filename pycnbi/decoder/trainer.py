@@ -4,7 +4,7 @@ from __future__ import print_function, division
 trainer.py
 
 Compute features, perform cross-validation and train a classifier.
-See run_trainer() to see the flow.
+See run() to see the flow.
 
 
 Kyuhwa Lee, 2018
@@ -57,7 +57,7 @@ except ImportError:
 mne.set_log_level('ERROR')
 os.environ['OMP_NUM_THREADS'] = '1' # actually improves performance for multitaper
 
-def load_cfg(cfg_file):
+def check_config(cfg):
     critical_vars = {
         'COMMON':[
             'tdef',
@@ -93,9 +93,6 @@ def load_cfg(cfg_file):
         'BALANCE_SAMPLES':False
     }
 
-    cfg_file = qc.forward_slashify(cfg_file)
-    cfg = imp.load_source(cfg_file, cfg_file)
-
     for v in critical_vars['COMMON']:
         if not hasattr(cfg, v):
             raise RuntimeError('%s not defined in config.' % v)
@@ -103,7 +100,7 @@ def load_cfg(cfg_file):
     for key in optional_vars:
         if not hasattr(cfg, key):
             setattr(cfg, key, optional_vars[key])
-            qc.print_c('load_cfg(): Setting undefined parameter %s=%s' % (key, getattr(cfg, key)), 'Y')
+            qc.print_c('check_config(): Setting undefined parameter %s=%s' % (key, getattr(cfg, key)), 'Y')
 
     # classifier parameters check
     if cfg.CLASSIFIER == 'RF':
@@ -124,7 +121,7 @@ def load_cfg(cfg_file):
     if cfg.CV_PERFORM is not None:
         if not hasattr(cfg, 'CV_RANDOM_SEED'):
             cfg.CV_RANDOM_SEED = None
-            qc.print_c('load_cfg(): Setting undefined parameter CV_RANDOM_SEED=%s' % (cfg.CV_RANDOM_SEED), 'Y')
+            qc.print_c('check_config(): Setting undefined parameter CV_RANDOM_SEED=%s' % (cfg.CV_RANDOM_SEED), 'Y')
         if not hasattr(cfg, 'CV_FOLDS'):
             raise RuntimeError('"CV_FOLDS" not defined in config.')
 
@@ -974,10 +971,7 @@ def train_decoder(cfg, featdata, feat_file=None):
         print()
 
 
-def run_trainer(cfg, interactive=False, cv_file=None, feat_file=None):
-    # Check config module
-    #cfg = load_cfg(cfg_file)
-
+def run(cfg, interactive=False, cv_file=None, feat_file=None):
     # Extract features
     featdata = compute_features(cfg)
 
@@ -993,8 +987,18 @@ def run_trainer(cfg, interactive=False, cv_file=None, feat_file=None):
         train_decoder(cfg, featdata, feat_file=feat_file)
 
 
-def config_run(cfg_file):
-    run_trainer(cfg_file, interactive=True)
+def load_config(cfg_file):
+    cfg_file = qc.forward_slashify(cfg_file)
+    if not (os.path.exists(cfg_file) and os.path.isfile(cfg_file)):
+        raise IOError('%s cannot be loaded.' % os.path.realpath(cfg_file))
+    return imp.load_source(cfg_file, cfg_file)
+
+
+# for batch script
+def batch_run(cfg_file):
+    cfg = load_config(config_file)
+    cfg = check_config(cfg)
+    run(cfg, interactive=True)
 
 
 if __name__ == '__main__':
@@ -1003,6 +1007,6 @@ if __name__ == '__main__':
         cfg_file = input('Config file name? ')
     else:
         cfg_file = sys.argv[1]
-    config_run(cfg_file)
+    batch_run(cfg_file)
 
     print('Finished.')
