@@ -114,11 +114,15 @@ class MainWindow(QMainWindow):
         sys.path.append(cfg_path)
         cfg_module = import_module(cfg_file)
         
+        # Format the lib to fit the previous developed pycnbi code.
+        self.cfg = type('cfg', (cfg_module.Advanced, cfg_module.Basic), dict())
+
+        # Check the parameters integrity
+        self.cfg = self.m.check_config(self.cfg)
+        
         # Display parameters on the GUI
         self.disp_Params(cfg_module)
         
-        # Format the lib to fit the previous developed pycnbi code.
-        self.cfg = type('cfg', (cfg_module.Advanced, cfg_module.Basic), dict())
         
     #----------------------------------------------------------------------
     def on_click_Offline(self):
@@ -126,7 +130,6 @@ class MainWindow(QMainWindow):
         Loads the Offline parameters. 
         """
         import pycnbi.protocols.train_mi as m
-        
         self.m = m
         cfg_file = 'config_train_mi'
         self.load_Params(cfg_file)
@@ -138,8 +141,8 @@ class MainWindow(QMainWindow):
         Loads the Training parameters.
         """
         import pycnbi.decoder.trainer as m
-        
-        cfg_file = 'config_trainer_mi.py'
+        self.m = m
+        cfg_file = 'config_trainer_mi'
         self.load_Params(cfg_file)
         
         
@@ -149,8 +152,8 @@ class MainWindow(QMainWindow):
         Loads the Online parameters.
         """
         import pycnbi.protocols.test_mi as m
-        
-        cfg_file = 'config_test_mi.py'
+        self.m = m
+        cfg_file = 'config_test_mi'
         self.load_Params(cfg_file)
     
     
@@ -159,7 +162,7 @@ class MainWindow(QMainWindow):
         """
         Launch the selected protocol. It can be Offline, Train or Online. 
         """
-        self.m.config_run(self.cfg)    
+        self.m.run(self.cfg)    
         
     #----------------------------------------------------------------------
     def connect_Signals_To_Slots(self):
