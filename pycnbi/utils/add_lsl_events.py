@@ -47,7 +47,7 @@ def add_lsl_events(event_dir, offset=0, recursive=False, interactive=True):
         input('\nPress Enter to start')
     for f in to_process:
         pclfile = f.replace('-eve.txt', '-raw.pcl')
-        pcl2fif(pclfile, external_event=f, offset=offset)
+        pcl2fif(pclfile, external_event=f, offset=offset, overwrite=True)
 
 # sample code
 if __name__ == '__main__':

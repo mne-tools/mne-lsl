@@ -14,7 +14,7 @@ class Basic:
     DIR_RANDOMIZE = True
     
     # Trials
-    TRIALS_EACH = 5
+    TRIALS_EACH = 10
     
     # Timings
     T_INIT = 5 # initial waiting time

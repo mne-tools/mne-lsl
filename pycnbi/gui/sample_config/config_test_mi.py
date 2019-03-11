@@ -4,7 +4,7 @@ class Basic:
     Contains the basic parameters for the Online modality of Motor Imagery protocol
     """  
     # classifier type
-    CLS_MI = r'C:\Users\adesvachez\git\pycnbi_local\z2\records\fif\classifier\classifier-64bit.pkl'
+    CLS_MI = r'C:\LSL\pycnbi_local\z2\records\fif\classifier\classifier-64bit.pkl'
     DIRECTIONS = [ ('L', 'LEFT_GO'), ('R', 'RIGHT_GO') ]
 
     # trial properties
@@ -21,8 +21,8 @@ class Basic:
 
     # Bar behavior
     # BAR_BIAS: None or (dir, prob)
-    #BAR_BIAS = None
-    BAR_BIAS = ('L', 0.05)
+    BAR_BIAS = None
+    #BAR_BIAS = ('L', 0.05)
     # finish the trial if bar reaches the end
     BAR_REACH_FINISH = True
     # positive feedback only?
@@ -48,11 +48,11 @@ class Advanced:
     TRIGGER_DEF = 'triggerdef_16' # see full list: ROOT/Triggers/triggerdef_*.py
 
     # timings
-    T_INIT = 5 # initial waiting time before starting
+    T_INIT = 2 # initial waiting time before starting
     T_GAP = 1 # intertrial gap
-    T_READY = 2 # only cross is shown without any direction cue
+    T_READY = 1 # only cross is shown without any direction cue
     T_FEEDBACK = 0.5 # decision feedback shown
-    T_DIR_CUE = 0.5 # direction cue shown
+    T_DIR_CUE = 1 # direction cue shown
     T_CLASSIFY = 5 # imagery period
     SHOW_CUE = True
     SHOW_RESULT = True # show the classification result
