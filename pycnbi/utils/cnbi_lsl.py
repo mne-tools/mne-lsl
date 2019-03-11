@@ -80,9 +80,11 @@ def start_client(server_name):
         LSL client object
 
     """
-    print('Searching for LSL server %s' % server_name)
     while True:
-        streamInfos = pylsl.resolve_byprop("name", server_name)
+        print('Searching for LSL server %s ...' % server_name)
+        streamInfos = pylsl.resolve_byprop("name", server_name, timeout=1)
+        if not streamInfos:
+            continue
         for sinfo in streamInfos:
             print('Found %s' % sinfo.name())
         '''
