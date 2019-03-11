@@ -19,7 +19,7 @@ class Basic:
         DATA
     """""""""""""""""""""""""""'''
     # read all data files from this directory for training
-    DATADIR = r'C:\Users\adesvachez\git\pycnbi_local\z2\records\fif'
+    DATADIR = r'C:\LSL\pycnbi_local\z2\records\fif'
 
     # which trigger set?
     tdef = trigger_def('triggerdef_16.ini')
