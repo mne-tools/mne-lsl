@@ -37,8 +37,8 @@ from pycnbi.protocols.viz_bars import BarVisual
 from pycnbi.triggers.trigger_def import trigger_def
 from builtins import input
 
-def config_run(cfg_module):
-    cfg = imp.load_source(cfg_module, cfg_module)
+def config_run(cfg):
+    #cfg = imp.load_source(cfg_module, cfg_module)
     tdef = trigger_def(cfg.TRIGGER_DEF)
     refresh_delay = 1.0 / cfg.REFRESH_RATE
 
