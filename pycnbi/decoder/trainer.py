@@ -85,8 +85,7 @@ def load_cfg(cfg_file):
         'EXPORT_CLS':False,
         'USE_LOG':False,
         'USE_CVA':False,
-        'REF_CH_OLD':None,
-        'REF_CH_NEW':None,
+        'REF_CH':None,
         'N_JOBS':None,
         'EXCLUDES':None,
         'CV_IGNORE_THRES':None,
@@ -639,8 +638,8 @@ def compute_features(cfg):
         raise RuntimeError(
             'When loading multiple EEG files, CHANNEL_PICKS must be list of string, not integers because they may have different channel order.')
     raw, events = pu.load_multi(ftrain)
-    if cfg.REF_CH_NEW is not None:
-        pu.rereference(raw, ref_new=cfg.REF_CH_NEW, ref_old=cfg.REF_CH_OLD)
+    if cfg.REF_CH is not None:
+        pu.rereference(raw, cfg.REF_CH[1], cfg.REF_CH[0])
     if cfg.LOAD_EVENTS_FILE is not None:
         events = mne.read_events(cfg.LOAD_EVENTS_FILE)
     triggers = {cfg.tdef.by_value[c]:c for c in set(cfg.TRIGGER_DEF)}
@@ -812,7 +811,6 @@ def cross_validate(cfg, featdata, cv_file=None):
     txt += 'Channels: ' + ','.join([str(featdata['ch_names'][p]) for p in featdata['picks']]) + '\n'
     txt += 'PSD range: %.1f - %.1f Hz\n' % (cfg.PSD['fmin'], cfg.PSD['fmax'])
     txt += 'Window step: %.2f msec\n' % (1000.0 * cfg.PSD['wstep'] / featdata['sfreq'])
-    txt += 'Reference channels: %s\n' % cfg.REF_CH_NEW
     if type(wlen) is list:
         for i, w in enumerate(wlen):
             txt += 'Window size: %.1f msec\n' % (w * 1000.0)
@@ -910,7 +908,7 @@ def train_decoder(cfg, featdata, feat_file=None):
                     w_seconds=cfg.PSD['wlen'], wstep=cfg.PSD['wstep'], spatial=cfg.SP_FILTER,
                     spatial_ch=featdata['picks'], spectral=cfg.TP_FILTER, spectral_ch=featdata['picks'],
                     notch=cfg.NOTCH_FILTER, notch_ch=featdata['picks'], multiplier=cfg.MULTIPLIER,
-                    ref_old=cfg.REF_CH_OLD, ref_new=cfg.REF_CH_NEW)
+                    ref_ch=cfg.REF_CH)
     elif cfg.FEATURES == 'TIMELAG':
         data = dict(cls=cls, parameters=cfg.TIMELAG)
     clsfile = '%s/classifier/classifier-%s.pkl' % (cfg.DATADIR, platform.architecture()[0])

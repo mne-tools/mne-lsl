@@ -283,11 +283,14 @@ def rereference(raw, ref_new, ref_old=None):
     """
     Reference to new channels. raw object is modified in-place for efficiency.
 
+    raw: mne.io.RawArray
+
     ref_new: None | list of str (RawArray) | list of int (numpy array)
-        Reference to ref_new channels.
+        Channel(s) to re-reference, e.g. M1, M2.
+        Average of these channel values are substracted from all channel values.
 
     ref_old: None | str
-        Recover the original reference channel values. Only mne.io.RawArray is supported for now.
+        Channel to recover, assuming this channel was originally used as a reference.
     """
 
     # Re-reference and recover the original reference channel values if possible

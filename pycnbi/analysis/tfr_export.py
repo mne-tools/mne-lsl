@@ -4,23 +4,23 @@ from __future__ import print_function, division
 Time-frequency analysis using Morlet wavelets or multitapers
 
 Kyuhwa Lee
-EPFL, 2018
+EPFL, 2019
 
 """
 
-import pycnbi
-import pycnbi.utils.pycnbi_utils as pu
 import sys
 import os
 import mne
-import scipy
-import multiprocessing as mp
-import numpy as np
-import pycnbi.utils.q_common as qc
-import mne.time_frequency
 import imp
 import pdb
+import scipy
 import traceback
+import numpy as np
+import multiprocessing as mp
+import mne.time_frequency
+import matplotlib.pyplot as plt
+import pycnbi.utils.pycnbi_utils as pu
+import pycnbi.utils.q_common as qc
 from builtins import input
 from scipy.signal import lfilter
 from scipy.signal import butter
@@ -115,6 +115,7 @@ def get_tfr(cfg, recursive=False, n_jobs=1):
     # re-referencing
     if cfg.REREFERENCE is not None:
         pu.rereference(raw, cfg.REREFERENCE[1], cfg.REREFERENCE[0])
+        assert cfg.REREFERENCE[0] in raw.ch_names
 
     sfreq = raw.info['sfreq']
 
@@ -224,7 +225,7 @@ def get_tfr(cfg, recursive=False, n_jobs=1):
                         colorbar=True, title=title, vmin=cfg.VMIN, vmax=cfg.VMAX, dB=False)
                     fout = '%s/%s-%s-%s-%s.png' % (export_dir, file_prefix, cfg.SP_FILTER, evname, chname)
                     fig.savefig(fout)
-                    fig.clf()
+                    plt.close()
                     print('Exported to %s' % fout)
         else:
             # TFR per event
@@ -252,7 +253,7 @@ def get_tfr(cfg, recursive=False, n_jobs=1):
                             colorbar=True, title=title, vmin=cfg.VMIN, vmax=cfg.VMAX, dB=False)
                         fout = '%s/%s-%s-%s-%s-ep%02d.png' % (export_dir, file_prefix, cfg.SP_FILTER, evname, chname, ep + 1)
                         fig.savefig(fout)
-                        fig.clf()
+                        plt.close()
                         print('Exported %s' % fout)
 
     if hasattr(cfg, 'POWER_DIFF'):
@@ -272,7 +273,7 @@ def get_tfr(cfg, recursive=False, n_jobs=1):
             fout = '%s/%s-%s-diff-%s-%s-%s.jpg' % (export_dir, file_prefix, cfg.SP_FILTER, labels[0], labels[1], chname)
             print('Exporting to %s' % fout)
             fig.savefig(fout)
-            fig.clf()
+            plt.close()
     print('Finished !')
 
 def config_run(cfg_module):
