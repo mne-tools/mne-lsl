@@ -134,9 +134,8 @@ def run(cfg):
 
     # events and triggers
     tdef = trigger_def(cfg.TRIGGER_DEF)
-    if cfg.TRIGGER_DEVICE is None:
-        input(
-            '\n** Warning: No trigger device set. Press Ctrl+C to stop or Enter to continue.')
+    #if cfg.TRIGGER_DEVICE is None:
+    #    input('\n** Warning: No trigger device set. Press Ctrl+C to stop or Enter to continue.')
     trigger = pyLptControl.Trigger(cfg.TRIGGER_DEVICE)
     if trigger.init(50) == False:
         qc.print_c(
