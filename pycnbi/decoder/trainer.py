@@ -976,9 +976,9 @@ def train_decoder(cfg, featdata, feat_file=None):
         print()
 
 
-def run_trainer(cfg_file, interactive=False, cv_file=None, feat_file=None):
+def run_trainer(cfg, interactive=False, cv_file=None, feat_file=None):
     # Check config module
-    cfg = load_cfg(cfg_file)
+    #cfg = load_cfg(cfg_file)
 
     # Extract features
     featdata = compute_features(cfg)
