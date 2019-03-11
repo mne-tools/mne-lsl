@@ -128,8 +128,7 @@ class BCIDecoder(object):
             self.spatial_ch = model['spatial_ch']
             self.spectral_ch = model['spectral_ch']
             self.notch_ch = model['notch_ch']
-            self.ref_new = model['ref_new']
-            self.ref_old = model['ref_old']
+            self.ref_ch  = model['ref_ch']
             self.ch_names = self.sr.get_channel_names()
             mc = model['ch_names']
             self.picks = [self.ch_names.index(mc[p]) for p in model['picks']]
@@ -139,10 +138,6 @@ class BCIDecoder(object):
                 self.spectral_ch = [self.ch_names.index(mc[p]) for p in model['spectral_ch']]
             if self.notch_ch is not None:
                 self.notch_ch = [self.ch_names.index(mc[p]) for p in model['notch_ch']]
-            if self.ref_new is not None:
-                self.ref_new = self.ch_names.index(mc[model['ref_new']])
-            if self.ref_old is not None:
-                self.ref_old = self.ch_names.index(mc[model['ref_old']])
 
             # PSD buffer
             psd_temp = self.psde.transform(np.zeros((1, len(self.picks), self.w_frames)))
@@ -206,6 +201,9 @@ class BCIDecoder(object):
             self.sr.acquire()
             w, ts = self.sr.get_window()  # w = times x channels
             w = w.T  # -> channels x times
+            
+            # re-reference channels
+            # TODO: use self.ref_ch
 
             # apply filters. Important: maintain the original channel order at this point.
             pu.preprocess(w, sfreq=self.sfreq, spatial=self.spatial, spatial_ch=self.spatial_ch,

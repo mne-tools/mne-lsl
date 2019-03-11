@@ -56,9 +56,13 @@ color = dict(G=(20, 140, 0), B=(210, 0, 0), R=(0, 50, 200), Y=(0, 215, 235),
              K=(0, 0, 0), W=(255, 255, 255), w=(200, 200, 200))
 
 
-def load_cfg(cfg_module):
-    cfg = imp.load_source(cfg_module, cfg_module)
+def load_config(cfg_file):
+    cfg_file = qc.forward_slashify(cfg_file)
+    if not (os.path.exists(cfg_file) and os.path.isfile(cfg_file)):
+        raise IOError('%s cannot be loaded.' % os.path.realpath(cfg_file))
+    return imp.load_source(cfg_file, cfg_file)
 
+def check_config(cfg):
     critical_vars = [
         'CLS_MI',
         'TRIGGER_DEVICE',
@@ -113,10 +117,8 @@ def load_cfg(cfg_module):
 
     return cfg
 
-def config_run(cfg_module):
-    if not (os.path.exists(cfg_module) and os.path.isfile(cfg_module)):
-        raise IOError('%s cannot be loaded.' % os.path.realpath(cfg_module))
-    cfg = load_cfg(cfg_module)
+# for batch script
+def run(cfg):
     if cfg.FAKE_CLS is None:
         # chooose amp
         if cfg.AMP_NAME is None and cfg.AMP_SERIAL is None:
@@ -300,9 +302,15 @@ def config_run(cfg_module):
 
     print('Finished.')
 
+# for batch script
+def batch_run(cfg_file):
+    cfg = load_config(config_file)
+    cfg = check_config(cfg)
+    run(cfg)
+
 if __name__ == '__main__':
     if len(sys.argv) < 2:
-        cfg_module = input('Config file name? ')
+        cfg_file = input('Config file name? ')
     else:
-        cfg_module = sys.argv[1]
-    config_run(cfg_module)
+        cfg_file = sys.argv[1]
+    batch_run(cfg_file)

@@ -37,8 +37,23 @@ from pycnbi.protocols.viz_bars import BarVisual
 from pycnbi.triggers.trigger_def import trigger_def
 from builtins import input
 
-def config_run(cfg):
-    #cfg = imp.load_source(cfg_module, cfg_module)
+def load_config(cfg_file):
+    cfg_file = qc.forward_slashify(cfg_file)
+    if not (os.path.exists(cfg_file) and os.path.isfile(cfg_file)):
+        raise IOError('%s cannot be loaded.' % os.path.realpath(cfg_file))
+    return imp.load_source(cfg_file, cfg_file)
+
+def check_config(cfg):
+    # TODO: check parameter integrity
+    return cfg
+
+# for batch script
+def batch_run(cfg_file):
+    cfg = load_config(config_file)
+    cfg = check_config(cfg)
+    run(cfg)
+
+def run(cfg):
     tdef = trigger_def(cfg.TRIGGER_DEF)
     refresh_delay = 1.0 / cfg.REFRESH_RATE
 
@@ -171,7 +186,7 @@ def config_run(cfg):
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
-        cfg_module = input('Config file name? ')
+        cfg_file = input('Config file name? ')
     else:
-        cfg_module = sys.argv[1]
-    config_run(cfg_module)
+        cfg_file = sys.argv[1]
+    batch_run(cfg_file)
