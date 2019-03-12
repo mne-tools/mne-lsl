@@ -18,6 +18,8 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QAction, QLa
 from PyQt5.QtCore import pyqtSignal, pyqtSlot
 from PyQt5.QtGui import QColor, QTextCursor
 
+DEFAULT_PATH = r'C:/Users/adesvachez/git/pycnbi_local/z2'
+
 class OutLog:
     def __init__(self, edit, out=None, color=None):
         """(edit, out=None, color=None) -> can write stdout, stderr to a
@@ -54,6 +56,8 @@ class MainWindow(QMainWindow):
         self.load_UiFromFile()
         self.connect_Signals_To_Slots()
         
+        self.ui.lineEdit_pathSearch.insert('C:/Users/adesvachez/git/pycnbi_local/z2')
+
         # Redirect the stdout/stderr to the textEdit widget
         self.ui.textEdit_terminal.setReadOnly(1)
         #sys.stdout = OutLog(self.ui.textEdit_terminal, sys.stdout )
@@ -73,8 +77,8 @@ class MainWindow(QMainWindow):
         Opens the File dialog window when the search button is pressed.
         """
         #path_name = QFileDialog.getExistingDirectory(caption="Choose the subject's directory", directory=expanduser("~"))
-        path_name = QFileDialog.getExistingDirectory(caption="Choose the subject's directory", directory="C:/Users/adesvachez/git/pycnbi_local/z2")
-        self.ui.lineEdit_pathSearch.insert(path_name)
+        path_name = QFileDialog.getExistingDirectory(caption="Choose the subject's directory", directory=DEFAULT_PATH)
+        self.ui.lineEdit_pathSearch.insert(DEFAULT_PATH)
         
     #----------------------------------------------------------------------
     def disp_Params(self, cfg):
