@@ -53,6 +53,8 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__()
         self.load_UiFromFile()
         self.connect_Signals_To_Slots()
+
+        self.ui.lineEdit_pathSearch.insert("C:/LSL/pycnbi_local/z2")
         
         # Redirect the stdout/stderr to the textEdit widget
         self.ui.textEdit_terminal.setReadOnly(1)
@@ -73,7 +75,7 @@ class MainWindow(QMainWindow):
         Opens the File dialog window when the search button is pressed.
         """
         #path_name = QFileDialog.getExistingDirectory(caption="Choose the subject's directory", directory=expanduser("~"))
-        path_name = QFileDialog.getExistingDirectory(caption="Choose the subject's directory", directory="C:/Users/adesvachez/git/pycnbi_local/z2")
+        path_name = QFileDialog.getExistingDirectory(caption="Choose the subject's directory", directory="C:/LSL/pycnbi_local")
         self.ui.lineEdit_pathSearch.insert(path_name)
         
     #----------------------------------------------------------------------
@@ -84,6 +86,14 @@ class MainWindow(QMainWindow):
         """
         import inspect
         params = inspect.getmembers(cfg)
+        # Clear all previous widgets        
+        if self.ui.verticalLayout_Basic.count() > 0:
+            for i in reversed(range(self.ui.verticalLayout_Basic.count())):
+                self.ui.verticalLayout_Basic.itemAt(i).widget().setParent(None)
+
+        if self.ui.verticalLayout_Adv.count() > 0:
+            for i in reversed(range(self.ui.verticalLayout_Adv.count())): 
+                self.ui.verticalLayout_Adv.itemAt(i).widget().setParent(None)
         
         # Iterates over the classes            
         for par in params:
