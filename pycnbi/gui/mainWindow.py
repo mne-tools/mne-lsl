@@ -56,7 +56,7 @@ class MainWindow(QMainWindow):
         self.load_UiFromFile()
         self.connect_Signals_To_Slots()
         
-        self.ui.lineEdit_pathSearch.insert('C:/Users/adesvachez/git/pycnbi_local/z2')
+        self.ui.lineEdit_pathSearch.insert(DEFAULT_PATH)
 
         # Redirect the stdout/stderr to the textEdit widget
         self.ui.textEdit_terminal.setReadOnly(1)
