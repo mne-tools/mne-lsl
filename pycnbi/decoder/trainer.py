@@ -636,6 +636,7 @@ def compute_features(cfg):
             'When loading multiple EEG files, CHANNEL_PICKS must be list of string, not integers because they may have different channel order.')
     raw, events = pu.load_multi(ftrain)
     if cfg.REF_CH is not None:
+        raise NotImplementedError('Sorry! Channel re-referencing is under development!')
         pu.rereference(raw, cfg.REF_CH[1], cfg.REF_CH[0])
     if cfg.LOAD_EVENTS_FILE is not None:
         events = mne.read_events(cfg.LOAD_EVENTS_FILE)
@@ -996,7 +997,7 @@ def load_config(cfg_file):
 
 # for batch script
 def batch_run(cfg_file):
-    cfg = load_config(config_file)
+    cfg = load_config(cfg_file)
     cfg = check_config(cfg)
     run(cfg, interactive=True)
 
