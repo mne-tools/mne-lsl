@@ -57,7 +57,7 @@ def load_cfg(cfg_module):
                 'WITH_STIMO':False,
                 'GLASS_USE':False,
                 'REFRESH_RATE':30,
-                'RANDOMIZE_LENGTH':0
+                'T_DIR_RANDOMIZE':0
                 }
 
     cfg = imp.load_source(cfg_module, cfg_module)
@@ -185,7 +185,7 @@ def config_run(cfg_module):
             state = 'dir'
             timer_trigger.reset()
             timer_dir.reset()
-            t_step = cfg.T_DIR + random.random() * cfg.RANDOMIZE_LENGTH
+            t_step = cfg.T_DIR + random.random() * cfg.T_DIR_RANDOMIZE
             if dir == 'L':  # left
                 trigger.signal(tdef.LEFT_GO)
             elif dir == 'R':  # right
@@ -245,7 +245,7 @@ def config_run(cfg_module):
                         dir = 'L'
                         trigger.signal(tdef.LEFT_GO)
                     timer_dir.reset()
-                    t_step = cfg.T_DIR + random.random() * cfg.RANDOMIZE_LENGTH
+                    t_step = cfg.T_DIR + random.random() * cfg.T_DIR_RANDOMIZE
                 else:
                     state = 'gap_s'
                     visual.fill()
