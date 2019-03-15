@@ -113,6 +113,7 @@ class Feedback:
             self.logf.write('True label: %s\n' % true_label)
 
         tm_classify = qc.Timer(autoreset=True)
+        self.stimo_timer = qc.Timer()
         while True:
             self.tm_display.sleep_atleast(self.refresh_delay)
             self.tm_display.reset()
@@ -214,7 +215,7 @@ class Feedback:
                 if self.tm_trigger.sec() > self.cfg.T_CLASSIFY or (self.premature_end and bar_score >= 100):
                     if not hasattr(self.cfg, 'SHOW_RESULT') or self.cfg.SHOW_RESULT is True:
                         # show classfication result
-                        if self.cfg.WITH_STIMO is True: 
+                        if self.cfg.WITH_STIMO is True:
                             if self.cfg.STIMO_FULLGAIT_CYCLE is not None and bar_label == 'U':
                                 res_color = 'G'
                             elif self.cfg.TRIALS_RETRY is False or bar_label == true_label:
@@ -235,7 +236,7 @@ class Feedback:
                     self.trigger.signal(self.tdef.FEEDBACK)
 
                     # STIMO
-                    if self.cfg.WITH_STIMO is True:
+                    if self.cfg.WITH_STIMO is True and self.cfg.STIMO_CONTINUOUS is False:
                         if self.cfg.STIMO_FULLGAIT_CYCLE is not None:
                             if bar_label == 'U':
                                 self.ser.write(self.cfg.STIMO_FULLGAIT_PATTERN[0])
@@ -357,6 +358,17 @@ class Feedback:
                                     self.viz.move(bar_label, bar_score, overlay=False)
                             else:
                                 self.viz.move(bar_label, bar_score, overlay=False)
+
+                            # send the confidence value continuously
+                            if self.cfg.WITH_STIMO and self.cfg.STIMO_CONTINUOUS:
+                                if self.stimo_timer.sec() >= 0.2:
+                                    if bar_label == 'U':
+                                        stimo_code = bar_score
+                                    else:
+                                        stimo_code = 0
+                                    self.ser.write(bytes([stimo_code]))
+                                    qc.print_c('Sent STIMO code %d' % bar_score, 'b')
+                                    self.stimo_timer.reset()
 
                         if self.cfg.DEBUG_PROBS:
                             if self.bar_bias is not None:
