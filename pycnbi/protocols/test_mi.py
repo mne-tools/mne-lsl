@@ -303,7 +303,7 @@ def run(cfg):
 
 # for batch script
 def batch_run(cfg_file):
-    cfg = load_config(config_file)
+    cfg = load_config(cfg_file)
     cfg = check_config(cfg)
     run(cfg)
 
