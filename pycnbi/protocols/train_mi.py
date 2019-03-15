@@ -22,17 +22,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import pycnbi
-import sys, os, math, random, time, datetime
-import importlib, imp
-import pycnbi.triggers.pyLptControl as pyLptControl
-import cv2
-import numpy as np
-import scipy, scipy.signal
-import mne.io, mne.viz
-import pycnbi.utils.q_common as qc
-import pycnbi.glass.bgi_client as bgi_client
+import sys
+import os
+import time
 import imp
+import cv2
+import random
+import pycnbi.triggers.pyLptControl as pyLptControl
+import pycnbi.utils.q_common as qc
 from pycnbi.protocols.viz_bars import BarVisual
 from pycnbi.triggers.trigger_def import trigger_def
 from builtins import input
@@ -49,7 +46,7 @@ def check_config(cfg):
 
 # for batch script
 def batch_run(cfg_file):
-    cfg = load_config(config_file)
+    cfg = load_config(cfg_file)
     cfg = check_config(cfg)
     run(cfg)
 
@@ -83,9 +80,12 @@ def run(cfg):
         trigger = pyLptControl.MockTrigger()
         trigger.init(50)
 
+    # timers
     timer_trigger = qc.Timer()
     timer_dir = qc.Timer()
     timer_refresh = qc.Timer()
+    t_dir = cfg.T_DIR + random.uniform(-cfg.T_DIR_RANDOMIZE, cfg.T_DIR_RANDOMIZE)
+    t_dir_ready = cfg.T_DIR_READY + random.uniform(-cfg.T_DIR_READY_RANDOMIZE, cfg.T_DIR_READY_RANDOMIZE)
 
     bar = BarVisual(cfg.GLASS_USE, screen_pos=cfg.SCREEN_POS, screen_size=cfg.SCREEN_SIZE)
     bar.fill()
@@ -103,8 +103,14 @@ def run(cfg):
             timer_trigger.reset()
             trigger.signal(tdef.INIT)
         elif event == 'gap_s':
+            if cfg.TRIAL_PAUSE:
+                bar.put_text('Press any key')
+                bar.update()
+                cv2.waitKey()
+                bar.fill()
             bar.put_text('Trial %d / %d' % (trial, num_trials))
             event = 'gap'
+            timer_trigger.reset()
         elif event == 'gap' and timer_trigger.sec() > cfg.T_GAP:
             event = 'cue'
             bar.fill()
@@ -133,7 +139,7 @@ def run(cfg):
             else:
                 raise RuntimeError('Unknown direction %d' % dir)
             timer_trigger.reset()
-        elif event == 'dir_r' and timer_trigger.sec() > cfg.T_DIR_READY:
+        elif event == 'dir_r' and timer_trigger.sec() > t_dir_ready:
             bar.fill()
             bar.draw_cue()
             event = 'dir'
@@ -151,17 +157,19 @@ def run(cfg):
                 trigger.signal(tdef.BOTH_GO)
             else:
                 raise RuntimeError('Unknown direction %d' % dir)
-        elif event == 'dir' and timer_trigger.sec() > cfg.T_DIR:
+        elif event == 'dir' and timer_trigger.sec() > t_dir:
             event = 'gap_s'
             bar.fill()
             trial += 1
             print('trial ' + str(trial - 1) + ' done')
             trigger.signal(tdef.BLANK)
             timer_trigger.reset()
+            t_dir = cfg.T_DIR + random.uniform(-cfg.T_DIR_RANDOMIZE, cfg.T_DIR_RANDOMIZE)
+            t_dir_ready = cfg.T_DIR_READY + random.uniform(-cfg.T_DIR_READY_RANDOMIZE, cfg.T_DIR_READY_RANDOMIZE)
 
         # protocol
         if event == 'dir':
-            dx = min(100, int(100.0 * timer_dir.sec() / cfg.T_DIR) + 1)
+            dx = min(100, int(100.0 * timer_dir.sec() / t_dir) + 1)
             if dir == 'L':  # L
                 bar.move('L', dx, overlay=True)
             elif dir == 'R':  # R
