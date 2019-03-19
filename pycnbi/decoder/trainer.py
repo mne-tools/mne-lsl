@@ -81,7 +81,7 @@ def check_config(cfg):
         'LOAD_PSD':False,
         'MULTIPLIER':1,
         'EXPORT_GOOD_FEATURES':False,
-        'FEAT_TOPN':20,
+        'FEAT_TOPN':10,
         'EXPORT_CLS':False,
         'USE_LOG':False,
         'USE_CVA':False,
@@ -436,18 +436,20 @@ def crossval_epochs(cv, epochs_data, labels, cls, label_names=None, do_balance=F
     if underthres is not None:
         cm_rate = np.concatenate((cm_rate, underthres[:, np.newaxis]), axis=1)
 
-    # cm_rate= cm_sum.astype('float') / cm_sum.sum(axis=1)[:, np.newaxis]
     cm_txt = 'Y: ground-truth, X: predicted\n'
+    max_chars = 9
+    tpl_str = '%%-%ds ' % max_chars
+    tpl_float = '%%-%d.2f ' % max_chars
     for l in label_set:
-        cm_txt += '%-5s\t' % label_names[l][:5]
+        cm_txt += tpl_str % label_names[l][:max_chars]
     if underthres is not None:
-        cm_txt += 'Ignored\t'
+        cm_txt += tpl_str % 'Ignored'
     cm_txt += '\n'
     for r in cm_rate:
         for c in r:
-            cm_txt += '%-5.2f\t' % c
+            cm_txt += tpl_float % c
         cm_txt += '\n'
-    cm_txt += 'Average accuracy: %.3f' % np.mean(scores)
+    cm_txt += 'Average accuracy: %.2f' % np.mean(scores)
 
     return np.array(scores), cm_txt
 
@@ -932,9 +934,7 @@ def train_decoder(cfg, featdata, feat_file=None):
         if cfg.CLASSIFIER in ['RF', 'GB', 'XGB']:
             keys, values = qc.sort_by_value(list(cls.feature_importances_), rev=True)
         elif cfg.CLASSIFIER in ['LDA', 'rLDA']:
-            # keys= np.argsort(cls.w)
             keys, values = qc.sort_by_value(cls.w, rev=True)
-        # keys= np.flipud( np.array(keys) )
         keys = np.array(keys)
         values = np.array(values)
 
@@ -955,7 +955,8 @@ def train_decoder(cfg, featdata, feat_file=None):
         chlist, hzlist = feature2chz(keys, fqlist, ch_names=ch_names)
         valnorm = values[:cfg.FEAT_TOPN].copy()
         valnorm = valnorm / np.sum(valnorm) * 100.0
-        # Print top-N features on screen
+
+        # show top-N features
         for i, (ch, hz) in enumerate(zip(chlist, hzlist)):
             if i >= cfg.FEAT_TOPN:
                 break
@@ -966,7 +967,6 @@ def train_decoder(cfg, featdata, feat_file=None):
         if cfg.EXPORT_GOOD_FEATURES:
             gfout.write('Importance(%) Channel Frequency Index\n')
             for i, (ch, hz) in enumerate(zip(chlist, hzlist)):
-                #gfout.write('%10.3f   %5s    %7s    %d\n' % (values[i]*100.0, ch, hz, keys[i]))
                 gfout.write('%.3f\t%s\t%s\t%d\n' % (values[i]*100.0, ch, hz, keys[i]))
             gfout.close()
         print()
