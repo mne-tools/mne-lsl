@@ -431,7 +431,7 @@ def xdf2fif(filename, interactive=False, outdir=None):
     """
     Convert XDF format
     """
-    from xdf import xdf
+    from pyxdf import pyxdf
     
     fdir, fname, fext = qc.parse_path_list(filename)
     if outdir is None:
@@ -442,7 +442,7 @@ def xdf2fif(filename, interactive=False, outdir=None):
     fiffile = outdir + fname + '.fif'
 
     # channel x times
-    data = xdf.load_xdf(filename)
+    data = pyxdf.load_xdf(filename)
     raw_data = data[0][0]['time_series'].T
     signals = np.concatenate((raw_data[-1, :].reshape(1, -1), raw_data[:-1, :]))
 
