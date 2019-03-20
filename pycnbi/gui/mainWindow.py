@@ -18,7 +18,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QAction, QLa
 from PyQt5.QtCore import pyqtSignal, pyqtSlot
 from PyQt5.QtGui import QColor, QTextCursor
 
-DEFAULT_PATH = "C:/LSL/pycnbi_local/z2"
+DEFAULT_PATH = r'D:/work/pycnbi_local/z2'
 
 class OutLog:
     def __init__(self, edit, out=None, color=None):
