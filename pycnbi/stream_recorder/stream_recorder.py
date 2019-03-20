@@ -106,17 +106,7 @@ def record(state, amp_name, amp_serial, record_dir, eeg_only):
         qc.print_c('Converting raw file into a fif format.', 'W')
         pcl2fif(pcl_file)
 
-def main(record_dir, eeg_only=False):
-    # configure LSL server name and device serial if available
-    if len(sys.argv) == 2:
-        amp_name = sys.argv[1]
-        amp_serial = None
-    elif len(sys.argv) == 3:
-        amp_name, amp_serial = sys.argv[1:3]
-    else:
-        amp_name, amp_serial = pu.search_lsl(ignore_markers=True)
-    if amp_name == 'None':
-        amp_name = None
+def run(record_dir, amp_name, amp_serial, eeg_only=False):
     qc.print_c('\nOutput directory: %s' % (record_dir), 'W')
 
     # spawn the recorder as a child process
@@ -139,6 +129,24 @@ def main(record_dir, eeg_only=False):
     sys.stdout.flush()
     print('>> Done.')
 
+# for batch script
+def batch_run(record_dir=None, amp_name=None, amp_serial=None):
+    # configure LSL server name and device serial if available
+    if not record_dir:
+        record_dir = '%s/records' % os.getcwd()
+    if not amp_name:
+        amp_name, amp_serial = pu.search_lsl(ignore_markers=True)
+    run(record_dir, amp_name=amp_name, amp_serial=amp_serial)
+
 # default sample recorder
 if __name__ == '__main__':
-    main(os.getcwd() + '/records')
+    record_dir = None
+    amp_name = None
+    amp_serial = None
+    if len(sys.argv) > 3:
+        amp_serial = sys.argv[3]
+    if len(sys.argv) > 2:
+        amp_name = sys.argv[2]
+    if len(sys.argv) > 1:
+        record_dir = sys.argv[1]
+    batch_run(record_dir, amp_name, amp_serial)
