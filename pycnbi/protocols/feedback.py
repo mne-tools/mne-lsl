@@ -367,7 +367,7 @@ class Feedback:
                                     else:
                                         stimo_code = 0
                                     self.ser.write(bytes([stimo_code]))
-                                    qc.print_c('Sent STIMO code %d' % bar_score, 'b')
+                                    qc.print_c('Sent STIMO code %d' % stimo_code, 'b')
                                     self.stimo_timer.reset()
 
                         if self.cfg.DEBUG_PROBS:
