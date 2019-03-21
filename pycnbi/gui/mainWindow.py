@@ -19,7 +19,6 @@ from PyQt5.QtCore import pyqtSignal, pyqtSlot
 from PyQt5.QtGui import QColor, QTextCursor
 
 DEFAULT_PATH = "C:/LSL/pycnbi_local/z2"
-
 class OutLog:
     def __init__(self, edit, out=None, color=None):
         """(edit, out=None, color=None) -> can write stdout, stderr to a
@@ -114,7 +113,7 @@ class MainWindow(QMainWindow):
                     self.ui.verticalLayout_Basic.addWidget(QLabel(value2display))
                 elif par[0] == 'Advanced':
                     self.ui.verticalLayout_Adv.addWidget(QLabel(value2display))
-            
+                
     #----------------------------------------------------------------------
     def load_Params(self, cfg_file):
         """
