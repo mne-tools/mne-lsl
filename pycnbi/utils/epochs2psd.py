@@ -17,7 +17,7 @@ from multiprocessing import cpu_count
 mne.set_log_level('ERROR')
 
 
-def epochs2psd(raw, channel_picks, event_id, tmin, tmax, fmin, fmax, w_len, w_step, excludes=None, export_dir=None):
+def epochs2psd(raw, channel_picks, event_id, tmin, tmax, fmin, fmax, w_len, w_step, excludes='bads', export_dir=None):
     """
     Compute PSD features over a sliding window in epochs
 
