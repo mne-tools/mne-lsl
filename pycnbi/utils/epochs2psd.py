@@ -8,16 +8,16 @@ Swiss Federal Institute of Technology (EPFL)
 
 """
 
-import pycnbi.utils.pycnbi_utils as pu
-import pycnbi.utils.q_common as qc
-import scipy.io
 import mne
+import scipy.io
 import numpy as np
+import pycnbi.utils.q_common as qc
+import pycnbi.utils.pycnbi_utils as pu
 from multiprocessing import cpu_count
 mne.set_log_level('ERROR')
 
 
-def epochs2psd(raw, channel_picks, event_id, tmin, tmax, fmin, fmax, w_len, w_step, excludes='bads', export_dir=None):
+def epochs2psd(raw, channel_picks, event_id, tmin, tmax, fmin, fmax, w_len, w_step, excludes='bads', export_dir=None, n_jobs=None):
     """
     Compute PSD features over a sliding window in epochs
 
@@ -40,6 +40,9 @@ def epochs2psd(raw, channel_picks, event_id, tmin, tmax, fmin, fmax, w_len, w_st
     4-D numpy array: [epochs] x [times] x [channels] x [freqs]
 
     """
+
+    if n_jobs is None:
+        n_jobs = cpu_count()
 
     # load raw object or file
     if type(raw) == str:
@@ -68,12 +71,12 @@ def epochs2psd(raw, channel_picks, event_id, tmin, tmax, fmin, fmax, w_len, w_st
 
     # compute psd vectors over a sliding window between tmin and tmax
     w_len = int(sfreq * w_len)  # window length
-    psde = mne.decoding.PSDEstimator(sfreq, fmin=fmin, fmax=fmax, n_jobs=cpu_count(), adaptive=False)
+    psde = mne.decoding.PSDEstimator(sfreq, fmin=fmin, fmax=fmax, n_jobs=1, adaptive=False)
     epochmat = {e:epochs[e]._data for e in event_id}
     psdmat = {}
     for e in event_id:
         # psd = [epochs] x [windows] x [channels] x [freqs]
-        psd, _ = pu.get_psd(epochs[e], psde, w_len, w_step, flatten=False)
+        psd, _ = pu.get_psd(epochs[e], psde, w_len, w_step, flatten=False, n_jobs=n_jobs)
         psdmat[e] = psd
 
     # export data
