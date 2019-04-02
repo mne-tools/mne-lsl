@@ -357,9 +357,9 @@ def crossval_epochs(cv, epochs_data, labels, cls, label_names=None, do_balance=F
     Params
     ======
     cv: scikit-learn cross-validation object
-    epochs_data: np.array of [epochs x samples x features]
+    epochs_data: np.array of shape [epochs x samples x features]
+    labels: np.array of shape [epochs x samples]
     cls: classifier
-    labels: vector of integer labels
     label_names: associated label names {0:'Left', 1:'Right', ...}
     do_balance: oversample or undersample to match the number of samples among classes
 
