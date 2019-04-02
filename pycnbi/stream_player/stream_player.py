@@ -106,10 +106,11 @@ def stream_player(server_name, fif_file, chunk_size, auto_restart=True, high_res
                 if trigger_file is None:
                     print('Events: %s' % event_values)
                 else:
-                    print('Events:', end=' ')
                     for event in event_values:
-                        print('%s' % tdef.by_value[event], end=' ')
-                    print()
+                        if event in tdef.by_value:
+                            print('Events: %s (%s)' % (event, tdef.by_value[event]))
+                        else:
+                            print('Events: %s (Undefined event)' % event)
         idx_chunk += 1
 
         if finished:
