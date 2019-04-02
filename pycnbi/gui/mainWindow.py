@@ -12,6 +12,7 @@ import sys
 from importlib import import_module
 from os.path import expanduser
 from queue import Queue
+import os.environ
 
 from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QAction, QLabel
 from PyQt5.QtCore import pyqtSignal, pyqtSlot, QThread
@@ -41,7 +42,6 @@ class MainWindow(QMainWindow):
         font = QFont()
         font.setPointSize(6)
         self.ui.textEdit_terminal.setFont(font)
-        
         
         
     #----------------------------------------------------------------------
@@ -107,19 +107,30 @@ class MainWindow(QMainWindow):
                     self.ui.verticalLayout_Adv.addWidget(QLabel(value2display))
                 
     #----------------------------------------------------------------------
-    def load_Params(self, cfg_file):
-        """
-        Loads the parameters from source file and displays them.
-        """
-        cfg_path = self.ui.lineEdit_pathSearch.text()+'/python/'
-        
+    def load_Config(self, cfg_path):
+        """Dynamic loading of a config file"""
         # Dynamic loading
         sys.path.append(cfg_path)
         cfg_module = import_module(cfg_file)
         
         # Format the lib to fit the previous developed pycnbi code.
-        self.cfg = type('cfg', (cfg_module.Advanced, cfg_module.Basic), dict())
-
+        cfg = type('cfg', (cfg_module.Advanced, cfg_module.Basic), dict())
+        return cfg
+        
+    
+    #----------------------------------------------------------------------
+    def load_Params_Struct(self):
+        """Load the parameters' structure from file depending on the choosen protocol."""
+        cfg_path = environ.("PYCNBIPATH")
+        
+    
+    #----------------------------------------------------------------------
+    def load_Subject_Params(self, cfg_file):
+        """
+        Loads the subject specific parameters' values from file and displays them.
+        """
+        cfg_path = self.ui.lineEdit_pathSearch.text()+'/python/'
+    
         # Check the parameters integrity
         self.cfg = self.m.check_config(self.cfg)
         
