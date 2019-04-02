@@ -7,43 +7,21 @@
   Created: 2/22/2019
 """
 
-
 #import unittest
 import sys
 from importlib import import_module
 from os.path import expanduser
+from queue import Queue
+
+from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QAction, QLabel
+from PyQt5.QtCore import pyqtSignal, pyqtSlot, QThread
+from PyQt5.QtGui import QColor, QTextCursor, QFont
+
 
 from ui_mainwindow import Ui_MainWindow
-from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QAction, QLabel
-from PyQt5.QtCore import pyqtSignal, pyqtSlot
-from PyQt5.QtGui import QColor, QTextCursor
+from Streams import WriteStream, MyReceiver
 
-DEFAULT_PATH = "C:/LSL/pycnbi_local/z2"
-class OutLog:
-    def __init__(self, edit, out=None, color=None):
-        """(edit, out=None, color=None) -> can write stdout, stderr to a
-        QTextEdit.
-        edit = QTextEdit
-        out = alternate stream ( can be the original sys.stdout )
-        color = alternate color (i.e. color stderr a different color)
-        """
-        self.edit = edit
-        self.out = None
-        self.color = color
-
-    def write(self, m):
-        if self.color:
-            tc = self.edit.textColor()
-            self.edit.setTextColor(self.color)
-
-        #self.edit.moveCursor(QTextCursor.End)
-        self.edit.insertPlainText(m)
-        
-        if self.color:
-            self.edit.setTextColor(tc)
-
-        if self.out:
-            self.out.write(m)
+DEFAULT_PATH = "C:/Users/adesvachez/git/pycnbi_local/z2"
 
 class MainWindow(QMainWindow):    
     #----------------------------------------------------------------------
@@ -53,14 +31,36 @@ class MainWindow(QMainWindow):
         """
         super(MainWindow, self).__init__()
         self.load_UiFromFile()
+        self.redirect_StdOut()
         self.connect_Signals_To_Slots()
-
-        self.ui.lineEdit_pathSearch.insert(DEFAULT_PATH)
         
-        # Redirect the stdout/stderr to the textEdit widget
+        # Default path 
+        self.ui.lineEdit_pathSearch.insert(DEFAULT_PATH)
+        # Terminal
         self.ui.textEdit_terminal.setReadOnly(1)
-        #sys.stdout = OutLog(self.ui.textEdit_terminal, sys.stdout )
-        #sys.stderr = OutLog(self.ui.textEdit_terminal, sys.stderr, QColor(255,0,0) )        
+        font = QFont()
+        font.setPointSize(6)
+        self.ui.textEdit_terminal.setFont(font)
+        
+        
+        
+    #----------------------------------------------------------------------
+    def redirect_StdOut(self):
+        """
+        Create Queue and redirect sys.stdout to this queue.
+        Create thread that will listen on the other end of the queue, and send the text to the textedit_terminal.
+        """
+        queue = Queue()
+        sys.stdout = WriteStream(queue)
+        sys.stderr = WriteStream(queue)
+        
+        self.thread = QThread()
+        self.my_receiver = MyReceiver(queue)
+        self.my_receiver.mysignal.connect(self.on_terminal_append)
+        self.my_receiver.moveToThread(self.thread)
+        self.thread.started.connect(self.my_receiver.run)
+        self.thread.start()
+        
         
     #----------------------------------------------------------------------
     def load_UiFromFile(self):
@@ -70,14 +70,6 @@ class MainWindow(QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         
-    #----------------------------------------------------------------------
-    def on_click_pathSearch(self):
-        """
-        Opens the File dialog window when the search button is pressed.
-        """
-        #path_name = QFileDialog.getExistingDirectory(caption="Choose the subject's directory", directory=expanduser("~"))
-        path_name = QFileDialog.getExistingDirectory(caption="Choose the subject's directory", directory=DEFAULT_PATH)
-        self.ui.lineEdit_pathSearch.insert(path_name)
         
     #----------------------------------------------------------------------
     def disp_Params(self, cfg):
@@ -134,8 +126,19 @@ class MainWindow(QMainWindow):
         # Display parameters on the GUI
         self.disp_Params(cfg_module)
         
+    #----------------------------------------------------------------------
+    @pyqtSlot()
+    def on_click_pathSearch(self):
+        """
+        Opens the File dialog window when the search button is pressed.
+        """
+        #path_name = QFileDialog.getExistingDirectory(caption="Choose the subject's directory", directory=expanduser("~"))
+        path_name = QFileDialog.getExistingDirectory(caption="Choose the subject's directory", directory=DEFAULT_PATH)
+        self.ui.lineEdit_pathSearch.insert(path_name)
+        
         
     #----------------------------------------------------------------------
+    @pyqtSlot()
     def on_click_Offline(self):
         """ 
         Loads the Offline parameters. 
@@ -147,6 +150,7 @@ class MainWindow(QMainWindow):
         
         
     #----------------------------------------------------------------------
+    @pyqtSlot()
     def on_click_Train(self):
         """
         Loads the Training parameters.
@@ -158,6 +162,7 @@ class MainWindow(QMainWindow):
         
         
     #----------------------------------------------------------------------
+    @pyqtSlot()
     def on_click_Online(self):
         """
         Loads the Online parameters.
@@ -168,12 +173,23 @@ class MainWindow(QMainWindow):
         self.load_Params(cfg_file)
     
     
-    #----------------------------------------------------------------------
+    #----------------------------------------------------------------------v
+    @pyqtSlot()
     def on_click_Start(self):
         """
         Launch the selected protocol. It can be Offline, Train or Online. 
         """
-        self.m.run(self.cfg)    
+        self.m.run(self.cfg)
+        
+    #----------------------------------------------------------------------
+    @pyqtSlot(str)
+    def on_terminal_append(self, text):
+        """
+        Writes to the QtextEdit_terminal the redirected stdout.
+        """
+        self.ui.textEdit_terminal.moveCursor(QTextCursor.End)
+        self.ui.textEdit_terminal.insertPlainText(text)     
+
         
     #----------------------------------------------------------------------
     def connect_Signals_To_Slots(self):
