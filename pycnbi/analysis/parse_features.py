@@ -59,6 +59,7 @@ def get_feature_scores(featfile, channels=None, freq_ranges=None, matfile=None):
                 ch = l.strip().split('\t')[1]
                 if ch not in channels:
                     channels.append(ch)
+        channels.sort()
 
     # build channel index lookup table
     ch2index = {ch:i for i, ch in enumerate(channels)}
@@ -129,16 +130,16 @@ def print_feature_scores(data, num_cols=8):
             band_name = '%d-%d' % (data['freq_ranges'][band][0], data['freq_ranges'][band][1])
             band_scores = []
             for ch_i in chs:
-                band_scores.append('%6.3f' % data[band][ch_i])
+                band_scores.append('%6.2f' % data[band][ch_i])
             txt = '%-7s | %s' % (band_name, ' '.join(band_scores))
             if i == (len(channels_split) - 1):
-                txt += ' | %6.3f' % np.sum(data[band])
+                txt += ' | %6.2f' % np.sum(data[band])
             print(txt)
         txt = []
         for ch_i in chs:
-            txt.append('%6.3f' % data['channel'][ch_i])
+            txt.append('%6.2f' % data['channel'][ch_i])
         if i == (len(channels_split) - 1):
-            txt.append('| %6.3f' % sum(data['channel']))
+            txt.append('| %6.2f' % sum(data['channel']))
         print('-' * rowlen)
         print('per chan| %s' % ' '.join(txt))
 
