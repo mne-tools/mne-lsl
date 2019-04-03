@@ -106,7 +106,9 @@ def run(cfg):
             if cfg.TRIAL_PAUSE:
                 bar.put_text('Press any key')
                 bar.update()
-                cv2.waitKey()
+                key = cv2.waitKey()
+                if key == keys['esc']:
+                    break
                 bar.fill()
             bar.put_text('Trial %d / %d' % (trial, num_trials))
             event = 'gap'
@@ -188,7 +190,6 @@ def run(cfg):
 
         bar.update()
         key = 0xFF & cv2.waitKey(1)
-
         if key == keys['esc']:
             break
 
