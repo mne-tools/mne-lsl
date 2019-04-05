@@ -97,6 +97,7 @@ def get_psd(epochs, psde, wlen, wstep, picks=None, flatten=True, n_jobs=1):
     wstep: window step in frames
     picks: channel picks
     flatten: boolean, see Returns section
+    n_jobs: nubmer of cores to use, None = use all cores
 
     Returns
     -------
@@ -111,26 +112,32 @@ def get_psd(epochs, psde, wlen, wstep, picks=None, flatten=True, n_jobs=1):
         Accept input as numpy array as well, in addition to Epochs object
     """
 
-    print('get_psd(): Opening a pool of %d workers' % n_jobs)
-    pool = mp.Pool(n_jobs)
+    if n_jobs is None:
+        n_jobs = mp.cpu_count()
+    if n_jobs > 1:
+        print('get_psd(): Opening a pool of %d workers' % n_jobs)
+        pool = mp.Pool(n_jobs)
 
+    # compute PSD from sliding windows of each epoch
     labels = epochs.events[:, -1]
     epochs_data = epochs.get_data()
-
-    # sliding window
     w_starts = np.arange(0, epochs_data.shape[2] - wlen, wstep)
     X_data = None
     y_data = None
     results = []
     for ep in np.arange(len(labels)):
-        # for debugging (results not saved)
-        # slice_win(epochs_data, w_starts, wlen, psde, picks, ep)
-
-        # parallel psd computation
-        results.append(pool.apply_async(slice_win, [epochs_data[ep], w_starts, wlen, psde, picks, ep]))
+        if n_jobs == 1:
+            # no multiprocessing
+            results.append(slice_win(epochs_data[ep], w_starts, wlen, psde, picks, ep))
+        else:
+            # parallel psd computation
+            results.append(pool.apply_async(slice_win, [epochs_data[ep], w_starts, wlen, psde, picks, ep]))
 
     for ep in range(len(results)):
-        r = results[ep].get()  # windows x features
+        if n_jobs == 1:
+            r = results[ep]
+        else:
+            r = results[ep].get()  # windows x features
         X = r.reshape((1, r.shape[0], r.shape[1]))  # 1 x windows x features
         if X_data is None:
             X_data = X
@@ -144,9 +151,13 @@ def get_psd(epochs, psde, wlen, wstep, picks=None, flatten=True, n_jobs=1):
             y_data = y
         else:
             y_data = np.concatenate((y_data, y), axis=0)
-    pool.close()
-    pool.join()
+    
+    # close pool
+    if n_jobs > 1:
+        pool.close()
+        pool.join()
 
+    # flatten channel x frequency feature dimensions?
     if flatten:
         return X_data, y_data
     else:
