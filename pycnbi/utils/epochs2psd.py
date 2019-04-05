@@ -48,10 +48,12 @@ def epochs2psd(raw, channel_picks, event_id, tmin, tmax, fmin, fmax, w_len_sec, 
     if type(raw) == str:
         rawfile = raw.replace('\\', '/')
         raw, events = pu.load_raw(rawfile)
-        [export_dir, export_file, _] = qc.parse_path_list(rawfile)
+        [export_dir_raw, export_file, _] = qc.parse_path_list(rawfile)
+        if export_dir is None:
+            export_dir = export_dir_raw
     else:
         if export_dir is None:
-            raise ValueError('export_dir must be given if raw object is given as argument')
+            raise ValueError('export_dir must be given if a RawArray object is given as argument')
         export_file = 'raw'
         events = mne.find_events(raw, stim_channel='TRIGGER', shortest_event=1, uint_cast=True, consecutive=True)
     sfreq = raw.info['sfreq']
