@@ -95,6 +95,7 @@ def epochs2psd(raw, channel_picks, event_id, tmin, tmax, fmin, fmax, w_len_sec, 
         while t <= tmax:
             times[e].append(t)
             t += w_step_sec
+        times[e] = np.array(times[e])
         if len(times[e]) != psd.shape[1]:
             raise ValueError('Sorry, unexpected number of PSD vectors. Please debug me!')
 
