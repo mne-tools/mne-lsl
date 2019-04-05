@@ -80,7 +80,7 @@ def epochs2psd(raw, channel_picks, event_id, tmin, tmax, fmin, fmax, w_len, w_st
         psdmat[e] = psd
 
     # export data
-    data = dict(epochs=epochmat, psds=psdmat, tmin=tmin, tmax=tmax, sfreq=epochs.info['sfreq'],\
+    data = dict(psds=psdmat, tmin=tmin, tmax=tmax, sfreq=epochs.info['sfreq'],\
                 fmin=fmin, fmax=fmax, w_step=w_step, w_len=w_len, labels=list(epochs.event_id.keys()))
     matfile = '%s/psd-%s.mat' % (export_dir, export_file)
     pklfile = '%s/psd-%s.pkl' % (export_dir, export_file)
