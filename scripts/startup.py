@@ -10,8 +10,9 @@ to the Python enviornment variable PYTHONSTARTUP.
 
 print('\nLoading startup modules... ', end='')
 
-import pycnbi.utils.q_common as qc
-import pycnbi.utils.pycnbi_utils as pu
+import mne
 import numpy as np
+import pycnbi.utils.pycnbi_utils as pu
+import pycnbi.utils.q_common as qc
 
 print('Done.')

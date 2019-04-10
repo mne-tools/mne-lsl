@@ -31,6 +31,7 @@ import numpy as np
 import pycnbi
 import pycnbi.glass.bgi_client as bgi_client
 import pycnbi.utils.q_common as qc
+from pycnbi import logger
 from builtins import input
 try:
     import cPickle as pickle  # Python 2 (cPickle = C version of pickle)
@@ -73,7 +74,7 @@ def read_images(img_path, screen_size=None):
             img_out = img
         pnglist.append(img_out)
         print('.', end='')
-    print('Done')
+    logger.info('Done loading images.')
     return pnglist
 
 
@@ -109,7 +110,7 @@ class BodyVisual(object):
             screen_x, screen_y = (0, 0)
         else:
             screen_x, screen_y = screen_pos
-        
+
         self.text_size = 2
         self.img = np.zeros((screen_height, screen_width, 3), np.uint8)
         self.glass = bgi_client.GlassControl(mock=not use_glass)
@@ -136,16 +137,16 @@ class BodyVisual(object):
             left_image_path = '%s/left' % image_path
             right_image_path = '%s/right' % image_path
             tm = qc.Timer()
-            print('Reading images from %s' % left_image_path )
+            logger.info('Reading images from %s' % left_image_path )
             self.left_images = read_images(left_image_path, screen_size)
-            print('Reading images from %s' % right_image_path)
+            logger.info('Reading images from %s' % right_image_path)
             self.right_images = read_images(right_image_path, screen_size)
-            print('Took %.1f s' % tm.sec())
+            logger.info('Took %.1f s' % tm.sec())
         else:
             # load pickled images
             # note: this is painfully slow in Pytohn 2 even with cPickle (3s vs 27s)
             assert image_path[-4:] == '.pkl', 'The file must be of .pkl format'
-            print('Loading image binary file %s ...' % image_path, end=' ')
+            logger.info('Loading image binary file %s ...' % image_path)
             tm = qc.Timer()
             with gzip.open(image_path, 'rb') as fp:
                 image_data = pickle.load(fp)
@@ -156,9 +157,9 @@ class BodyVisual(object):
             loc_x = [int(self.cx - feedback_w), int(self.cx + feedback_w)]
             loc_y = [int(self.cy - feedback_h), int(self.cy + feedback_h)]
             img_fit = np.zeros((screen_height, screen_width, 3), np.uint8)
-            
+
             # adjust to the current screen size
-            print('Fitting image into the current screen size')
+            logger.info('Fitting images into the current screen size')
             for i, img in enumerate(self.left_images):
                 img_fit = np.zeros((screen_height, screen_width, 3), np.uint8)
                 img_fit[loc_y[0]:loc_y[1], loc_x[0]:loc_x[1]] = img
@@ -168,8 +169,8 @@ class BodyVisual(object):
                 img_fit[loc_y[0]:loc_y[1], loc_x[0]:loc_x[1]] = img
                 self.right_images[i] = img_fit
 
-            print('Took %.1f s' % tm.sec())
-            print('Done.')
+            logger.info('Took %.1f s' % tm.sec())
+            logger.info('Done.')
         cv2.namedWindow("Protocol", cv2.WND_PROP_FULLSCREEN)
         cv2.moveWindow("Protocol", screen_x, screen_y)
         cv2.setWindowProperty("Protocol", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN);
@@ -222,7 +223,7 @@ class BodyVisual(object):
             if self.glass_feedback:
                 self.glass.move_bar(dir, dx, overlay)
         else:
-            qc.print_c('(viz_bars.py) ERROR: Unknown direction %s' % dir, 'r')
+            logger.error('Unknown direction %s' % dir)
         self.put_text(caption, caption_color)
         self.update()
 

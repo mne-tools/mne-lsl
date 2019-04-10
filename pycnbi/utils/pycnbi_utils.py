@@ -15,16 +15,18 @@ Swiss Federal Institute of Technology Lausanne (EPFL)
 
 import os
 import sys
-import scipy.io
-import pylsl
 import mne
+import pylsl
+import scipy.io
 import numpy as np
 import multiprocessing as mp
 import xml.etree.ElementTree as ET
 import pycnbi.utils.q_common as qc
-from pycnbi.pycnbi_config import CAP, LAPLACIAN
 from scipy.signal import butter, lfilter, lfiltic, buttord
+from pycnbi.pycnbi_config import CAP, LAPLACIAN
+from pycnbi import logger
 from builtins import input
+
 mne.set_log_level('ERROR')
 os.environ['OMP_NUM_THREADS'] = '1' # actually improves performance for multitaper
 
@@ -56,9 +58,9 @@ def slice_win(epochs_data, w_starts, w_length, psde, picks=None, epoch_id=None, 
     w_length = int(w_length)
 
     if epoch_id is None:
-        print('[PID %d] Frames %d-%d' % (os.getpid(), w_starts[0], w_starts[-1] + w_length - 1))
+        logger.info('[PID %d] Frames %d-%d' % (os.getpid(), w_starts[0], w_starts[-1] + w_length - 1))
     else:
-        print('[PID %d] Epoch %d, Frames %d-%d' % (os.getpid(), epoch_id, w_starts[0], w_starts[-1] + w_length - 1))
+        logger.info('[PID %d] Epoch %d, Frames %d-%d' % (os.getpid(), epoch_id, w_starts[0], w_starts[-1] + w_length - 1))
 
     X = None
     for n in w_starts:
@@ -81,7 +83,7 @@ def slice_win(epochs_data, w_starts, w_length, psde, picks=None, epoch_id=None, 
             X = np.concatenate((X, psd), axis=0)
 
         if verbose == True:
-            print('[PID %d] processing frame %d / %d' % (os.getpid(), n, w_starts[-1]))
+            logger.info('[PID %d] processing frame %d / %d' % (os.getpid(), n, w_starts[-1]))
 
     return X
 
@@ -115,7 +117,7 @@ def get_psd(epochs, psde, wlen, wstep, picks=None, flatten=True, n_jobs=1):
     if n_jobs is None:
         n_jobs = mp.cpu_count()
     if n_jobs > 1:
-        print('get_psd(): Opening a pool of %d workers' % n_jobs)
+        logger.info('get_psd(): Opening a pool of %d workers' % n_jobs)
         pool = mp.Pool(n_jobs)
 
     # compute PSD from sliding windows of each epoch
@@ -151,7 +153,7 @@ def get_psd(epochs, psde, wlen, wstep, picks=None, flatten=True, n_jobs=1):
             y_data = y
         else:
             y_data = np.concatenate((y_data, y), axis=0)
-    
+
     # close pool
     if n_jobs > 1:
         pool.close()
@@ -226,7 +228,7 @@ def raw2mat(infile, outfile):
     header = dict(bads=raw.info['bads'], ch_names=raw.info['ch_names'],\
                   sfreq=raw.info['sfreq'], events=events)
     scipy.io.savemat(outfile, dict(signals=raw._data, header=header))
-    print('\n>> Exported to %s' % outfile)
+    logger.info('Exported to %s' % outfile)
 
 
 def add_events_raw(rawfile, outfile, eventfile, overwrite=True):
@@ -281,12 +283,9 @@ def event_timestamps_to_indices(sigfile, eventfile):
             # find the first index not smaller than ts
             next_index = np.searchsorted(ts, event_ts)
             if next_index >= len(ts):
-                qc.print_c('** WARNING: Event %d at time %.3f is out of time range (%.3f - %.3f).' % (
-                    event_value, event_ts, ts_min, ts_max), 'y')
+                logger.warning('Event %d at time %.3f is out of time range (%.3f - %.3f).' % (event_value, event_ts, ts_min, ts_max))
             else:
                 events.append([next_index, 0, event_value])
-                # print(events[-1])
-
     return events
 
 
@@ -307,8 +306,9 @@ def rereference(raw, ref_new, ref_old=None):
     # Re-reference and recover the original reference channel values if possible
     if type(raw) == np.ndarray:
         if raw_ch_old is not None:
-            raise RuntimeError('Recovering original reference channel is not yet supported for numpy arrays.')
-        assert type(raw_ch_new[0]) is int, 'Channels must be integer values for numpy arrays'
+            raise NotImplementedError('Recovering original reference channel is not yet supported for numpy arrays.')
+        if type(raw_ch_new[0]) is not int:
+            raise ValueError('Channels must be integer values for numpy arrays')
         raw -= np.mean(raw[ref_new], axis=0)
     else:
         if ref_old is not None:
@@ -399,7 +399,7 @@ def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, sp
         eeg_channels = list(range(n_channels))
         tch = find_event_channel(raw)
         if tch is None:
-            qc.print_c('preprocess(): No trigger channel found. Using all channels.', 'W')
+            logger.warning('No trigger channel found. Using all channels.')
         else:
             tch_name = ch_names[tch]
             eeg_channels.pop(tch)
@@ -565,7 +565,7 @@ def load_multi(src, spfilter=None, spchannels=None, multiplier=1):
         flist = src
     else:
         raise TypeError('Unknown input type %s' % type(src))
-    
+
     if len(flist) == 0:
         raise RuntimeError('load_multi(): No fif files found in %s.' % src)
     elif len(flist) == 1:
@@ -574,7 +574,7 @@ def load_multi(src, spfilter=None, spchannels=None, multiplier=1):
     # load raw files
     rawlist = []
     for f in flist:
-        print('Loading %s' % f)
+        logger.info('Loading %s' % f)
         raw, _ = load_raw(f, spfilter=spfilter, spchannels=spchannels, multiplier=multiplier)
         rawlist.append(raw)
 
@@ -638,19 +638,19 @@ def search_lsl(ignore_markers=False):
                 else:
                     amp_list.append((index, amp_name, amp_serial))
             break
-        print('No server available yet on the network...')
+        logger.info('No server available yet on the network...')
         time.sleep(1)
 
     if ignore_markers is False:
         amp_list += amp_list_backup
 
-    qc.print_c('-- List of servers --', 'W')
+    logger.info('-- List of servers --')
     for i, (index, amp_name, amp_serial) in enumerate(amp_list):
         if amp_serial == '':
             amp_ser = 'N/A'
         else:
             amp_ser = amp_serial
-        qc.print_c('%d: %s (Serial %s)' % (i, amp_name, amp_ser), 'W')
+        logger.info('%d: %s (Serial %s)' % (i, amp_name, amp_ser))
 
     if len(amp_list) == 1:
         index = 0
@@ -665,7 +665,7 @@ def search_lsl(ignore_markers=False):
     assert amp_name == si.name()
     # LSL XML parser has a bug which crashes so do not use for now
     #assert amp_serial == pylsl.StreamInlet(si).info().desc().child('acquisition').child_value('serial_number').strip()
-    print('Selected %s (Serial: %s)' % (amp_name, amp_serial))
+    logger.info('Selected %s (Serial: %s)' % (amp_name, amp_serial))
 
     return amp_name, amp_serial
 
