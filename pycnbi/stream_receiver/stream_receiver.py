@@ -34,12 +34,14 @@ Swiss Federal Institute of Technology Lausanne (EPFL)
 DEBUG_TIME_OFFSET = True
 
 
-import time
 import sys
+import pdb
+import time
 import pylsl
 import numpy as np
 import pycnbi.utils.pycnbi_utils as pu
 import pycnbi.utils.q_common as qc
+from pycnbi import logger
 
 def find_trigger_channel(ch_list):
     if 'TRIGGER' in ch_list:
@@ -85,9 +87,6 @@ class StreamReceiver:
 
         self.connect()
 
-    def print(self, msg, color='W'):
-        qc.print_c('[StreamReceiver] %s' % msg, color)
-
     def connect(self, find_any=True):
         """
         Run in child process
@@ -97,11 +96,10 @@ class StreamReceiver:
         channels = 0
         while server_found == False:
             if self.amp_name is None and self.amp_serial is None:
-                self.print("Looking for a streaming server...")
+                logger.info("Looking for a streaming server...")
             else:
-                self.print("Looking for %s (Serial %s) ..." % (self.amp_name, self.amp_serial))
+                logger.info("Looking for %s (Serial %s) ..." % (self.amp_name, self.amp_serial))
             streamInfos = pylsl.resolve_streams()
-            # print(streamInfos)
             if len(streamInfos) > 0:
                 # For now, only 1 amp is supported by a single StreamReceiver object.
                 for si in streamInfos:
@@ -111,7 +109,6 @@ class StreamReceiver:
                     #amp_serial = inlet.info().desc().child('acquisition').child_value('serial_number')
                     amp_serial = 'N/A'
                     amp_name = si.name()
-                    # qc.print_c('Found %s (%s)'% (amp_name,amp_serial), 'G')
 
                     # connect to a specific amp only?
                     if self.amp_serial is not None and self.amp_serial != amp_serial:
@@ -126,8 +123,7 @@ class StreamReceiver:
                         continue
 
                     if 'USBamp' in amp_name:
-                        self.print('Found USBamp streaming server %s (type %s, amp_serial %s) @ %s.' \
-                                   % (amp_name, si.type(), amp_serial, si.hostname()))
+                        logger.info('Found USBamp streaming server %s (type %s, amp_serial %s) @ %s.' % (amp_name, si.type(), amp_serial, si.hostname()))
                         self._lsl_tr_channel = 16
                         channels += si.channel_count()
                         ch_list = pu.lsl_channel_list(inlet)
@@ -135,8 +131,7 @@ class StreamReceiver:
                         server_found = True
                         break
                     elif 'BioSemi' in amp_name:
-                        self.print('Found BioSemi streaming server %s (type %s, amp_serial %s) @ %s.' \
-                                   % (amp_name, si.type(), amp_serial, si.hostname()))
+                        logger.info('Found BioSemi streaming server %s (type %s, amp_serial %s) @ %s.' % (amp_name, si.type(), amp_serial, si.hostname()))
                         self._lsl_tr_channel = 0  # or subtract -6684927? (value when trigger==0)
                         channels += si.channel_count()
                         ch_list = pu.lsl_channel_list(inlet)
@@ -144,8 +139,7 @@ class StreamReceiver:
                         server_found = True
                         break
                     elif 'SmartBCI' in amp_name:
-                        self.print('Found SmartBCI streaming server %s (type %s, amp_serial %s) @ %s.' \
-                                   % (amp_name, si.type(), amp_serial, si.hostname()))
+                        logger.info('Found SmartBCI streaming server %s (type %s, amp_serial %s) @ %s.' % (amp_name, si.type(), amp_serial, si.hostname()))
                         self._lsl_tr_channel = 23
                         channels += si.channel_count()
                         ch_list = pu.lsl_channel_list(inlet)
@@ -153,8 +147,7 @@ class StreamReceiver:
                         server_found = True
                         break
                     elif 'StreamPlayer' in amp_name:
-                        self.print('Found StreamPlayer streaming server %s (type %s, amp_serial %s) @ %s.' \
-                                   % (amp_name, si.type(), amp_serial, si.hostname()))
+                        logger.info('Found StreamPlayer streaming server %s (type %s, amp_serial %s) @ %s.' % (amp_name, si.type(), amp_serial, si.hostname()))
                         self._lsl_tr_channel = 0
                         channels += si.channel_count()
                         ch_list = pu.lsl_channel_list(inlet)
@@ -162,8 +155,7 @@ class StreamReceiver:
                         server_found = True
                         break
                     elif 'openvibeSignal' in amp_name:
-                        self.print('Found an Openvibe signal streaming server %s (type %s, amp_serial %s) @ %s.' \
-                                   % (amp_name, si.type(), amp_serial, si.hostname()))
+                        logger.info('Found an Openvibe signal streaming server %s (type %s, amp_serial %s) @ %s.' % (amp_name, si.type(), amp_serial, si.hostname()))
                         ch_list = pu.lsl_channel_list(inlet)
                         self._lsl_tr_channel = find_trigger_channel(ch_list)
                         channels += si.channel_count()
@@ -173,8 +165,7 @@ class StreamReceiver:
                         self.multiplier = 10**6 # change V -> uV unit for OpenVibe sources
                         break
                     elif 'openvibeMarkers' in amp_name:
-                        self.print('Found an Openvibe markers server %s (type %s, amp_serial %s) @ %s.' \
-                                   % (amp_name, si.type(), amp_serial, si.hostname()))
+                        logger.info('Found an Openvibe markers server %s (type %s, amp_serial %s) @ %s.' % (amp_name, si.type(), amp_serial, si.hostname()))
                         ch_list = pu.lsl_channel_list(inlet)
                         self._lsl_tr_channel = find_trigger_channel(ch_list)
                         channels += si.channel_count()
@@ -182,8 +173,7 @@ class StreamReceiver:
                         server_found = True
                         break
                     elif find_any:
-                        self.print('Found a streaming server %s (type %s, amp_serial %s) @ %s.' \
-                                   % (amp_name, si.type(), amp_serial, si.hostname()))
+                        logger.info('Found a streaming server %s (type %s, amp_serial %s) @ %s.' % (amp_name, si.type(), amp_serial, si.hostname()))
                         ch_list = pu.lsl_channel_list(inlet)
                         self._lsl_tr_channel = find_trigger_channel(ch_list)
                         channels += si.channel_count()
@@ -197,9 +187,9 @@ class StreamReceiver:
         # define EEG channel indices
         self._lsl_eeg_channels = list(range(channels))
         if self._lsl_tr_channel is None:
-            self.print('Trigger channel not fonud. Adding an empty channel 0.', 'Y')
+            logger.warning('Trigger channel not fonud. Adding an empty channel 0.')
         else:
-            self.print('Trigger channel found at index %d. Moving to index 0.' % self._lsl_tr_channel, 'Y')
+            logger.warning('Trigger channel found at index %d. Moving to index 0.' % self._lsl_tr_channel)
             self._lsl_eeg_channels.pop(self._lsl_tr_channel)
         self._lsl_eeg_channels = np.array(self._lsl_eeg_channels)
         self.tr_channel = 0  # trigger channel is always set to 0.
@@ -216,10 +206,10 @@ class StreamReceiver:
 
         inlets = inlets_master + inlets_slaves
         sample_rate = amps[0].nominal_srate()
-        self.print('Channels: %d' % channels)
-        self.print('LSL Protocol version: %s' % amps[0].version())
-        self.print('Source sampling rate: %.1f' % sample_rate)
-        self.print('Unit multiplier: %.1f' % self.multiplier)
+        logger.info('Channels: %d' % channels)
+        logger.info('LSL Protocol version: %s' % amps[0].version())
+        logger.info('Source sampling rate: %.1f' % sample_rate)
+        logger.info('Unit multiplier: %.1f' % self.multiplier)
 
         self.winsize = int(round(self.winsec * sample_rate))
         self.bufsize = int(round(self.bufsec * sample_rate))
@@ -237,15 +227,15 @@ class StreamReceiver:
                     self.ch_list.pop(i)
                     self.ch_list = ['TRIGGER'] + self.ch_list
                     break
-        qc.print_c('self.ch_list %s' % self.ch_list, 'Y')
+        logger.info('self.ch_list %s' % self.ch_list)
 
         # fill in initial buffer
-        self.print('Waiting to fill initial buffer of length %d' % (self.winsize))
+        logger.info('Waiting to fill initial buffer of length %d' % (self.winsize))
         while len(self.timestamps[0]) < self.winsize:
             self.acquire()
             time.sleep(0.1)
         self.ready = True
-        self.print('Start receiving stream data.')
+        logger.info('Start receiving stream data.')
 
     def acquire(self, blocking=True):
         """
@@ -279,7 +269,7 @@ class StreamReceiver:
                 break
             time.sleep(0.0005)
         else:
-            self.print('Warning: Timeout occurred while acquiring data. Amp driver bug ?')
+            logger.warning('Timeout occurred while acquiring data. Amp driver bug?')
             return np.zeros((0, len(self.ch_list))), []
         data = np.array(chunk)
 
@@ -312,14 +302,14 @@ class StreamReceiver:
 
         if DEBUG_TIME_OFFSET and timestamp_offset is True:
             timestamp_offset = False
-            print('LSL timestamp =', lsl_clock)
-            print('Server timestamp =', self.timestamps[-1][-1])
+            logger.info('LSL timestamp = %s' % lsl_clock)
+            logger.info('Server timestamp = %s' % self.timestamps[-1][-1])
             self.lsl_time_offset = lsl_clock - self.timestamps[-1][-1]
-            print('Offset = %.3f ' % (self.lsl_time_offset), end='')
+            logger.info('Offset = %.3f ' % (self.lsl_time_offset))
             if self.lsl_time_offset > 0.1:
-                qc.print_c('\n*** WARNING: The server seems to be sending wrong time stamps ***\n\n', 'r')
+                logger.warning('The server timestamps have high offset to LSL timestamps. Probably a bug in the acquisition server.')
             else:
-                qc.print_c('(Synchronized)', 'g')
+                logger.info('(LSL time synchronized)')
 
         # if we have multiple synchronized amps
         if len(self.inlets) > 1:
@@ -338,7 +328,7 @@ class StreamReceiver:
         Check connection and automatically connect if not connected
         """
         while not self.connected:
-            self.print('ERROR: LSL server not connected yet. Trying to connect automatically.')
+            logger.error('LSL server not connected yet. Trying to connect automatically.')
             self.connect()
             time.sleep(1)
 
@@ -402,10 +392,7 @@ class StreamReceiver:
             else:
                 return np.array([]), np.array([])
         except:
-            import pdb, traceback
-            self.print('Sorry! Unexpected error occurred in get_buffer(). Dropping into a shell.')
-            traceback.print_exc()
-            import pdb
+            logger.exception('Sorry! Unexpected error occurred in get_buffer(). Dropping into a shell for debugging.')
             pdb.pm()
 
     def get_buflen(self):
@@ -453,35 +440,32 @@ class StreamReceiver:
 
 """
 Example code for printing out raw values
-
 """
-if __name__ == '__main__':
-
-    # settings
-    CH_INDEX = [1]  # zero-baesd
-    TIME_INDEX = None # integer or None. None = average of raw values of the current window
-    SHOW_PSD = False
-
-
-    import pycnbi.utils.q_common as qc
+def test_receiver():
     import mne
     import os
+
+    CH_INDEX = [1] # channel to monitor
+    TIME_INDEX = None # integer or None. None = average of raw values of the current window
+    SHOW_PSD = False
     mne.set_log_level('ERROR')
     os.environ['OMP_NUM_THREADS'] = '1' # actually improves performance for multitaper
 
+    # connect to LSL server
     amp_name, amp_serial = pu.search_lsl()
     sr = StreamReceiver(window_size=1, buffer_size=1, amp_serial=amp_serial, eeg_only=False, amp_name=amp_name)
     sfreq = sr.get_sample_rate()
-    watchdog = qc.Timer()
-    tm = qc.Timer(autoreset=True)
     trg_ch = sr.get_trigger_channel()
-    last_ts = 0
-    qc.print_c('Trigger channel: %d' % trg_ch, 'G')
+    logger.info('Trigger channel = %d' % trg_ch)
 
+    # PSD init
     if SHOW_PSD:
         psde = mne.decoding.PSDEstimator(sfreq=sfreq, fmin=1, fmax=50, bandwidth=None, \
             adaptive=False, low_bias=True, n_jobs=1, normalization='length', verbose=None)
 
+    watchdog = qc.Timer()
+    tm = qc.Timer(autoreset=True)
+    last_ts = 0
     while True:
         sr.acquire()
         window, tslist = sr.get_window() # window = [samples x channels]
@@ -496,9 +480,9 @@ if __name__ == '__main__':
         #    trigger= set( [255 & int(x-1) for x in trigger ] )
 
         if len(trigger) > 0:
-            qc.print_c('Triggers: %s' % np.array(trigger), 'G')
+            logger.info('Triggers: %s' % np.array(trigger))
 
-        print('[%.1f] Receiving data...' % watchdog.sec())
+        logger.info('[%.1f] Receiving data...' % watchdog.sec())
 
         if TIME_INDEX is None:
             datatxt = qc.list2string(np.mean(window[CH_INDEX, :], axis=1), '%-15.6f')
@@ -517,3 +501,6 @@ if __name__ == '__main__':
 
         last_ts = tslist[-1]
         tm.sleep_atleast(0.05)
+
+if __name__ == '__main__':
+    test_receiver()

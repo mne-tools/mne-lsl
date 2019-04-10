@@ -14,6 +14,8 @@ import numpy as np
 import pycnbi.utils.q_common as qc
 import pycnbi.utils.pycnbi_utils as pu
 from multiprocessing import cpu_count
+from pycnbi import logger
+
 mne.set_log_level('ERROR')
 
 
@@ -58,7 +60,7 @@ def epochs2psd(raw, channel_picks, event_id, tmin, tmax, fmin, fmax, w_len_sec, 
             raise ValueError('export_dir must be given if a RawArray object is given as argument')
         export_name = 'raw'
         events = mne.find_events(raw, stim_channel='TRIGGER', shortest_event=1, uint_cast=True, consecutive=True)
-    
+
     # test writability
     qc.make_dirs(export_dir)
     pklfile = '%s/psd-%s.pkl' % (export_dir, export_name)
@@ -104,8 +106,8 @@ def epochs2psd(raw, channel_picks, event_id, tmin, tmax, fmin, fmax, w_len_sec, 
                 fmin=fmin, fmax=fmax, w_step=w_step, w_len_sec=w_len_sec,
                 times=times, labels=list(epochs.event_id.keys()))
     qc.save_obj(pklfile, data)
-    print('Exported to %s' % pklfile)
+    logger.info('Exported to %s' % pklfile)
     if save_matlab:
         matfile = '%s/psd-%s.mat' % (export_dir, export_name)
         scipy.io.savemat(matfile, data)
-        print('Exported to %s' % matfile)
+        logger.info('Exported to %s' % matfile)

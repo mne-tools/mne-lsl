@@ -30,6 +30,7 @@ import numpy as np
 import time
 import serial
 import serial.tools.list_ports
+from pycnbi import logger
 
 # global constants
 KEYS = {'right':2555904, 'up':2490368, 'left':2424832, 'down':2621440, 'pgup':85, 'pgdn':86, 'home':80, 'end':87, 'space':32, 'esc':27}
@@ -83,8 +84,6 @@ class Feedback:
                 atens = [x for x in serial.tools.list_ports.grep('ATEN')]
                 if len(atens) == 0:
                     raise RuntimeError('No ATEN device found. Stop.')
-                #for i, a in enumerate(atens):
-                #    print('Found', a[0])
                 try:
                     self.stimo_port = atens[0].device
                 except AttributeError: # depends on Python distribution
@@ -92,13 +91,13 @@ class Feedback:
             else:
                 self.stimo_port = self.cfg.STIMO_COMPORT
             self.ser = serial.Serial(self.stimo_port, self.cfg.STIMO_BAUDRATE)
-            print('STIMO serial port %s is_open = %s' % (self.stimo_port, self.ser.is_open))
+            logger.info('STIMO serial port %s is_open = %s' % (self.stimo_port, self.ser.is_open))
 
     def __del__(self):
         # STIMO only
         if self.cfg.WITH_STIMO is True:
             self.ser.close()
-            print('Closed STIMO serial port %s' % self.stimo_port)
+            logger.info('Closed STIMO serial port %s' % self.stimo_port)
 
     def classify(self, decoder, true_label, title_text, bar_dirs, state='start', prob_history=None):
         """
@@ -240,22 +239,22 @@ class Feedback:
                         if self.cfg.STIMO_FULLGAIT_CYCLE is not None:
                             if bar_label == 'U':
                                 self.ser.write(self.cfg.STIMO_FULLGAIT_PATTERN[0])
-                                qc.print_c('STIMO: Sent 1', 'g')
+                                logger.info('STIMO: Sent 1')
                                 time.sleep(self.cfg.STIMO_FULLGAIT_CYCLE)
                                 self.ser.write(self.cfg.STIMO_FULLGAIT_PATTERN[1])
-                                qc.print_c('STIMO: Sent 2', 'g')
+                                logger.info('STIMO: Sent 2')
                                 time.sleep(self.cfg.STIMO_FULLGAIT_CYCLE)
                         elif self.cfg.TRIALS_RETRY is False or bar_label == true_label:
                             if bar_label == 'L':
                                 self.ser.write(b'1')
-                                qc.print_c('STIMO: Sent 1', 'g')
+                                logger.info('STIMO: Sent 1')
                             elif bar_label == 'R':
                                 self.ser.write(b'2')
-                                qc.print_c('STIMO: Sent 2', 'g')
+                                logger.info('STIMO: Sent 2')
 
                     if self.cfg.DEBUG_PROBS:
                         msg = 'DEBUG: Accumulated probabilities = %s' % qc.list2string(probs_acc, '%.3f')
-                        print(msg)
+                        logger.info(msg)
                         if self.logf is not None:
                             self.logf.write(msg + '\n')
                     if self.logf is not None:
@@ -270,7 +269,7 @@ class Feedback:
                     probs_new = decoder.get_prob_smooth_unread()
                     if probs_new is None:
                         if self.tm_watchdog.sec() > 3:
-                            qc.print_c('WARNING: No classification being done. Are you receiving data streams?', 'Y')
+                            logger.warning('No classification being done. Are you receiving data streams?')
                             self.tm_watchdog.reset()
                     else:
                         self.tm_watchdog.reset()
@@ -285,7 +284,6 @@ class Feedback:
                         '''
                         probs = probs_new
                         if self.bar_bias is not None:
-                            # print('BEFORE: %.3f %.3f'% (probs[0], probs[1]) )
                             probs[bias_idx] += self.bar_bias[1]
                             newsum = sum(probs)
                             probs = [p / newsum for p in probs]
@@ -332,7 +330,7 @@ class Feedback:
                             elif max_label == 'B':
                                 dx *= self.bar_step_both
                             else:
-                                print('DEBUG: Direction %s using bar step %d' % (max_label, self.bar_step_left))
+                                logger.debug('Direction %s using bar step %d' % (max_label, self.bar_step_left))
                                 dx *= self.bar_step_left
 
                             # slow start
@@ -367,7 +365,7 @@ class Feedback:
                                     else:
                                         stimo_code = 0
                                     self.ser.write(bytes([stimo_code]))
-                                    qc.print_c('Sent STIMO code %d' % stimo_code, 'b')
+                                    logger.info('Sent STIMO code %d' % stimo_code)
                                     self.stimo_timer.reset()
 
                         if self.cfg.DEBUG_PROBS:
@@ -378,7 +376,7 @@ class Feedback:
                             msg = '%s%s  raw %s   acc %s   bar %s%d  (%.1f ms)' % \
                                   (biastxt, bar_dirs, qc.list2string(probs_new, '%.2f'), qc.list2string(probs, '%.2f'),
                                    bar_label, bar_score, tm_classify.msec())
-                            print(msg)
+                            logger.info(msg)
                             if self.logf is not None:
                                 self.logf.write(msg + '\n')
 
@@ -417,7 +415,7 @@ class Feedback:
                 probs = [1.0 / len(bar_dirs)] * len(bar_dirs)
                 self.viz.move(bar_dirs[0], bar_score, overlay=False)
                 self.viz.update()
-                print('RESET', probs, dx)
+                logger.info('probs and dx reset.')
                 self.tm_trigger.reset()
             elif key in ARROW_KEYS and ARROW_KEYS[key] in bar_dirs:
                 # change bias on the fly
