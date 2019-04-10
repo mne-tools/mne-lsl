@@ -21,6 +21,7 @@ import mne.time_frequency
 import matplotlib.pyplot as plt
 import pycnbi.utils.pycnbi_utils as pu
 import pycnbi.utils.q_common as qc
+from pycnbi import logger
 from builtins import input
 from scipy.signal import lfilter
 from scipy.signal import butter
@@ -100,7 +101,7 @@ def get_tfr(cfg, recursive=False, n_jobs=1):
                     flist.append(f)
         raw, events = pu.load_multi(flist)
     else:
-        print('Loading', cfg.DATA_FILE)
+        logger.info('Loading', cfg.DATA_FILE)
         raw, events = pu.load_raw(cfg.DATA_FILE)
 
         # custom events
@@ -161,37 +162,34 @@ def get_tfr(cfg, recursive=False, n_jobs=1):
         tmax_buffer = tmax + t_buffer
         if tmax_buffer > raw_tmax:
             raise ValueError('Epoch length with buffer (%.3f) is larger than signal length (%.3f)' % (tmax_buffer, raw_tmax))
-
-        #print('Epoch tmin = %.1f, tmax = %.1f, raw length = %.1f' % (tmin, tmax, raw_tmax))
         epochs_all = mne.Epochs(raw, events, classes, tmin=tmin_buffer, tmax=tmax_buffer,
                                 proj=False, picks=picks, baseline=None, preload=True)
         if epochs_all.drop_log_stats() > 0:
-            print('\n** Bad epochs found. Dropping into a Python shell.')
-            print(epochs_all.drop_log)
-            print('tmin = %.1f, tmax = %.1f, tmin_buffer = %.1f, tmax_buffer = %.1f, raw length = %.1f' % \
+            logger.error('\n** Bad epochs found. Dropping into a Python shell.')
+            logger.error(epochs_all.drop_log)
+            logger.error('tmin = %.1f, tmax = %.1f, tmin_buffer = %.1f, tmax_buffer = %.1f, raw length = %.1f' % \
                 (tmin, tmax, tmin_buffer, tmax_buffer, raw._data.shape[1] / sfreq))
-            print('\nType exit to continue.\n')
+            logger.error('\nType exit to continue.\n')
             pdb.set_trace()
     except:
-        print('\n*** (tfr_export) ERROR OCCURRED WHILE EPOCHING ***')
-        traceback.print_exc()
-        print('tmin = %.1f, tmax = %.1f, tmin_buffer = %.1f, tmax_buffer = %.1f, raw length = %.1f' % \
+        logger.critical('\n*** (tfr_export) Unknown error occurred while epoching ***')
+        logging.error("Exception occurred", exc_info=True)
+        logger.critical('tmin = %.1f, tmax = %.1f, tmin_buffer = %.1f, tmax_buffer = %.1f, raw length = %.1f' % \
             (tmin, tmax, tmin_buffer, tmax_buffer, raw._data.shape[1] / sfreq))
         pdb.set_trace()
 
     power = {}
     for evname in classes:
-        #export_dir = '%s/plot_%s' % (outpath, evname)
         export_dir = outpath
         qc.make_dirs(export_dir)
-        print('\n>> Processing %s' % evname)
+        logger.info('>> Processing %s' % evname)
         freqs = cfg.FREQ_RANGE  # define frequencies of interest
         n_cycles = freqs / 2.  # different number of cycle per frequency
         if cfg.POWER_AVERAGED:
             # grand-average TFR
             epochs = epochs_all[evname][:]
             if len(epochs) == 0:
-                print('No %s epochs. Skipping.' % evname)
+                logger.WARNING('No %s epochs. Skipping.' % evname)
                 continue
 
             if tfr_type == 'butter':
@@ -213,7 +211,7 @@ def get_tfr(cfg, recursive=False, n_jobs=1):
                 mout = '%s/%s-%s-%s.mat' % (export_dir, file_prefix, cfg.SP_FILTER, evname)
                 scipy.io.savemat(mout, {'tfr':tfr_data, 'chs':epochs.ch_names,
                     'events':events, 'sfreq':sfreq, 'epochs':cfg.EPOCH, 'freqs':cfg.FREQ_RANGE})
-                print('Exported %s' % mout)
+                logger.info('Exported %s' % mout)
             if cfg.EXPORT_PNG is True:
                 # Inspect power for each channel
                 for ch in np.arange(len(picks)):
@@ -226,13 +224,13 @@ def get_tfr(cfg, recursive=False, n_jobs=1):
                     fout = '%s/%s-%s-%s-%s.png' % (export_dir, file_prefix, cfg.SP_FILTER, evname, chname)
                     fig.savefig(fout)
                     plt.close()
-                    print('Exported to %s' % fout)
+                    logger.info('Exported to %s' % fout)
         else:
             # TFR per event
             for ep in range(len(epochs_all[evname])):
                 epochs = epochs_all[evname][ep]
                 if len(epochs) == 0:
-                    print('No %s epochs. Skipping.' % evname)
+                    logger.WARNING('No %s epochs. Skipping.' % evname)
                     continue
                 power[evname] = tfr(epochs, freqs=freqs, n_cycles=n_cycles, use_fft=False,
                     return_itc=False, decim=1, n_jobs=n_jobs)
@@ -242,7 +240,7 @@ def get_tfr(cfg, recursive=False, n_jobs=1):
                     mout = '%s/%s-%s-%s-ep%02d.mat' % (export_dir, file_prefix, cfg.SP_FILTER, evname, ep + 1)
                     scipy.io.savemat(mout, {'tfr':power[evname].data, 'chs':power[evname].ch_names,
                         'events':events, 'sfreq':sfreq, 'tmin':tmin, 'tmax':tmax, 'freqs':cfg.FREQ_RANGE})
-                    print('Exported %s' % mout)
+                    logger.info('Exported %s' % mout)
                 if cfg.EXPORT_PNG is True:
                     # Inspect power for each channel
                     for ch in np.arange(len(picks)):
@@ -254,7 +252,7 @@ def get_tfr(cfg, recursive=False, n_jobs=1):
                         fout = '%s/%s-%s-%s-%s-ep%02d.png' % (export_dir, file_prefix, cfg.SP_FILTER, evname, chname, ep + 1)
                         fig.savefig(fout)
                         plt.close()
-                        print('Exported %s' % fout)
+                        logger.info('Exported %s' % fout)
 
     if hasattr(cfg, 'POWER_DIFF'):
         export_dir = '%s/diff' % outpath
@@ -271,10 +269,10 @@ def get_tfr(cfg, recursive=False, n_jobs=1):
             fig = df.plot([ch], baseline=cfg.BS_TIMES, mode=cfg.BS_MODE, show=False,
                           colorbar=True, title=title, vmin=3.0, vmax=-3.0, dB=False)
             fout = '%s/%s-%s-diff-%s-%s-%s.jpg' % (export_dir, file_prefix, cfg.SP_FILTER, labels[0], labels[1], chname)
-            print('Exporting to %s' % fout)
+            logger.info('Exporting to %s' % fout)
             fig.savefig(fout)
             plt.close()
-    print('Finished !')
+    logger.info('Finished !')
 
 def load_config(cfg_file):
     cfg_file = qc.forward_slashify(cfg_file)

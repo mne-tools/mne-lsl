@@ -10,11 +10,14 @@ Swiss Federal Institute of Technology (EPFL)
 """
 
 # start
-import pycnbi.utils.pycnbi_utils as pu
-import pycnbi.utils.q_common as qc
-import numpy as np
 import os
 import mne
+import numpy as np
+import pycnbi.utils.pycnbi_utils as pu
+import pycnbi.utils.q_common as qc
+from pycnbi import logger
+from IPython import embed
+
 mne.set_log_level('ERROR')
 os.environ['OMP_NUM_THREADS'] = '1' # actually improves performance for multitaper
 
@@ -86,11 +89,11 @@ def raw2psd(rawfile=None, fmin=1, fmax=40, wlen=0.5, wstep=1, tmin=0.0, tmax=Non
             perc = (t - t_start) / t_len
             fps = (t - t_last) / wstep
             est = (t_end - t) / wstep / fps
-            print('[PID %d] %.1f%% (%.1f FPS, %ds left)' % (os.getpid(), perc * 100.0, fps, est))
+            logger.info('[PID %d] %.1f%% (%.1f FPS, %ds left)' % (os.getpid(), perc * 100.0, fps, est))
             t_last = t
             tm.reset()
-    print('Finished.')
-    
+    logger.info('Finished.')
+
     # export data
     try:
         chnames = [raw.ch_names[ch] for ch in chlist]
@@ -102,11 +105,8 @@ def raw2psd(rawfile=None, fmin=1, fmax=40, wlen=0.5, wstep=1, tmin=0.0, tmax=Non
                   'channels':chnames, 'wframes':wframes, 'events':evelist}
         qc.save_obj(fout_header, header)
         np.save(fout_psd, psd_all)
-        print('Exported to:\n(header) %s\n(numpy array) %s' % (fout_header, fout_psd))
+        logger.info('Exported to:\n(header) %s\n(numpy array) %s' % (fout_header, fout_psd))
     except:
-        import traceback
-        print('(%s) Unexpected error occurred while exporting data. Dropping you into a shell for recovery.' %\
+        logger.exception('(%s) Unexpected error occurred while exporting data. Dropping you into a shell for recovery.' %\
             os.path.basename(__file__))
-        traceback.print_exc()
-        from IPython import embed
         embed()

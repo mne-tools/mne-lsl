@@ -10,17 +10,18 @@ Kyuhwa Lee, 2015
 """
 
 import numpy as np
-import pycnbi.utils.pycnbi_utils as pu
 import pycnbi.utils.q_common as qc
+import pycnbi.utils.pycnbi_utils as pu
 from pycnbi.triggers.trigger_def import trigger_def
+from pycnbi import logger
 
 def merge_events(trigger_file, events, eeg_in, eeg_out):
     tdef = trigger_def(trigger_file)
     raw, eve = pu.load_raw(eeg_in)
 
-    print('\nEvents before merging')
+    logger.info('\nEvents before merging')
     for key in np.unique(eve[:, 2]):
-        print('%s: %d' % (tdef.by_value[key], len(np.where(eve[:, 2] == key)[0])))
+        logger.info('%s: %d' % (tdef.by_value[key], len(np.where(eve[:, 2] == key)[0])))
 
     for key in events:
         ev_src = events[key]
@@ -40,9 +41,9 @@ def merge_events(trigger_file, events, eeg_in, eeg_out):
     raw.add_events(eve, 'TRIGGER')
     raw.save(eeg_out, overwrite=True)
 
-    print('\nResulting events')
+    logger.info('\nResulting events')
     for key in np.unique(eve[:, 2]):
-        print('%s: %d' % (tdef.by_value[key], len(np.where(eve[:, 2] == key)[0])))
+        logger.info('%s: %d' % (tdef.by_value[key], len(np.where(eve[:, 2] == key)[0])))
 
 if __name__ == '__main__':
     fif_dir = r'D:\data\STIMO\GO004\offline\all'

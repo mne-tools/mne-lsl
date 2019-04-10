@@ -1,6 +1,8 @@
 from __future__ import print_function, division
+
 import pycnbi.utils.pycnbi_utils as pu
 import pycnbi.utils.q_common as qc
+from pycnbi import logger
 
 def fix_channel_names(fif_dir, new_channel_names):
     '''
@@ -26,7 +28,7 @@ def fix_channel_names(fif_dir, new_channel_names):
     if len(flist) > 0:
         qc.make_dirs('%s/corrected' % fif_dir)
         for f in qc.get_file_list(fif_dir):
-            print('\nLoading %s' % f)
+            logger.info('\nLoading %s' % f)
             p = qc.parse_path(f)
             if p.ext == 'fif':
                 raw, eve = pu.load_raw(f)
@@ -36,7 +38,7 @@ def fix_channel_names(fif_dir, new_channel_names):
                 for ch, new_ch in zip(raw.info['chs'], new_channel_names):
                     ch['ch_name'] = new_ch
                 out_fif = '%s/corrected/%s.fif' % (p.dir, p.name)
-                print('Exporting to', out_fif)
+                logger.info('Exporting to %s' % out_fif)
                 raw.save(out_fif)
     else:
-        print('Warning: no fif files found in %s' % fif_dir)
+        logger.warning('No fif files found in %s' % fif_dir)

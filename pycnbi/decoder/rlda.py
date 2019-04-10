@@ -15,7 +15,7 @@ Swiss Federal Institute of Technology Lausanne (EPFL)
 import sys
 import math
 import numpy as np
-
+from pycnbi import logger
 
 class rLDA(object):
     def __init__(self, reg_cov=None):
