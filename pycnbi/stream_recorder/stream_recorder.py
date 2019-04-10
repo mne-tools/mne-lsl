@@ -50,6 +50,7 @@ import pycnbi.utils.pycnbi_utils as pu
 from pycnbi.utils.convert2fif import pcl2fif
 from pycnbi.utils.cnbi_lsl import start_server
 from pycnbi.stream_receiver.stream_receiver import StreamReceiver
+from pycnbi import logger
 from builtins import input
 
 def record(state, amp_name, amp_serial, record_dir, eeg_only):
@@ -57,7 +58,7 @@ def record(state, amp_name, amp_serial, record_dir, eeg_only):
     timestamp = time.strftime('%Y%m%d-%H%M%S', time.localtime())
     pcl_file = "%s/%s-raw.pcl" % (record_dir, timestamp)
     eve_file = '%s/%s-eve.txt' % (record_dir, timestamp)
-    qc.print_c('>> Output file: %s' % (pcl_file), 'W')
+    logger.info('>> Output file: %s' % (pcl_file))
 
     # test writability
     try:
@@ -74,7 +75,7 @@ def record(state, amp_name, amp_serial, record_dir, eeg_only):
     sr = StreamReceiver(amp_name=amp_name, amp_serial=amp_serial, eeg_only=eeg_only)
 
     # start recording
-    qc.print_c('\n>> Recording started (PID %d).' % os.getpid(), 'W')
+    logger.info('\n>> Recording started (PID %d).' % os.getpid())
     qc.print_c('\n>> Press Enter to stop recording', 'G')
     tm = qc.Timer(autoreset=True)
     next_sec = 1
@@ -87,7 +88,7 @@ def record(state, amp_name, amp_serial, record_dir, eeg_only):
         tm.sleep_atleast(0.01)
 
     # record stop
-    qc.print_c('>> Stop requested. Copying buffer', 'G')
+    logger.info('>> Stop requested. Copying buffer')
     buffers, times = sr.get_buffer()
     signals = buffers
     events = None
@@ -96,21 +97,21 @@ def record(state, amp_name, amp_serial, record_dir, eeg_only):
     data = {'signals':signals, 'timestamps':times, 'events':events,
             'sample_rate':sr.get_sample_rate(), 'channels':sr.get_num_channels(),
             'ch_names':sr.get_channel_names()}
-    qc.print_c('Saving raw data ...', 'W')
+    logger.info('Saving raw data ...')
     qc.save_obj(pcl_file, data)
-    print('Saved to %s\n' % pcl_file)
+    logger.info('Saved to %s\n' % pcl_file)
 
     if os.path.exists(eve_file):
         pycnbi.utils.add_lsl_events.add_lsl_events(record_dir, interactive=False)
     else:
-        qc.print_c('Converting raw file into a fif format.', 'W')
+        logger.info('Converting raw file into a fif format.')
         pcl2fif(pcl_file)
 
 def run(record_dir, amp_name, amp_serial, eeg_only=False):
-    qc.print_c('\nOutput directory: %s' % (record_dir), 'W')
+    logger.info('\nOutput directory: %s' % (record_dir))
 
     # spawn the recorder as a child process
-    qc.print_c('\n>> Press Enter to start recording.', 'G')
+    logger.info('\n>> Press Enter to start recording.')
     key = input()
     state = mp.Value('i', 1)
     proc = mp.Process(target=record, args=[state, amp_name, amp_serial, record_dir, eeg_only])
@@ -120,14 +121,14 @@ def run(record_dir, amp_name, amp_serial, eeg_only=False):
     time.sleep(1) # required on some Python distribution
     input()
     state.value = 0
-    qc.print_c('(main) Waiting for recorder process to finish.', 'W')
+    logger.info('(main) Waiting for recorder process to finish.')
     proc.join(10)
     if proc.is_alive():
-        qc.print_c('>> ERROR: Recorder process not finishing. Are you running from Spyder?', 'R')
-        qc.print_c('Dropping into a shell', 'R')
+        logger.error('Recorder process not finishing. Are you running from Spyder?')
+        logger.error('Dropping into a shell')
         qc.shell()
     sys.stdout.flush()
-    print('>> Done.')
+    logger.info('Recording finished.')
 
 # for batch script
 def batch_run(record_dir=None, amp_name=None, amp_serial=None):

@@ -25,21 +25,22 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-# start
 import os
 import sys
-import timeit
-import platform
-import numpy as np
-import traceback
-import multiprocessing as mp
-import sklearn.metrics as skmetrics
+import imp
 import mne
 import mne.io
+import pycnbi
+import timeit
+import platform
+import traceback
+import numpy as np
+import multiprocessing as mp
+import sklearn.metrics as skmetrics
 import pycnbi.utils.q_common as qc
 import pycnbi.utils.pycnbi_utils as pu
-import imp
 from mne import Epochs, pick_types
+from pycnbi import logger
 from pycnbi.decoder.rlda import rLDA
 from builtins import input
 from IPython import embed  # for debugging
@@ -47,6 +48,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import GradientBoostingClassifier
 from xgboost import XGBClassifier
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
+
 # scikit-learn old version compatibility
 try:
     from sklearn.model_selection import StratifiedShuffleSplit, LeaveOneOut
@@ -56,6 +58,7 @@ except ImportError:
     SKLEARN_OLD = True
 mne.set_log_level('ERROR')
 os.environ['OMP_NUM_THREADS'] = '1' # actually improves performance for multitaper
+
 
 def check_config(cfg):
     critical_vars = {
@@ -100,7 +103,7 @@ def check_config(cfg):
     for key in optional_vars:
         if not hasattr(cfg, key):
             setattr(cfg, key, optional_vars[key])
-            qc.print_c('check_config(): Setting undefined parameter %s=%s' % (key, getattr(cfg, key)), 'Y')
+            logger.warning('Setting undefined parameter %s=%s' % (key, getattr(cfg, key)))
 
     # classifier parameters check
     if cfg.CLASSIFIER == 'RF':
@@ -121,10 +124,9 @@ def check_config(cfg):
     if cfg.CV_PERFORM is not None:
         if not hasattr(cfg, 'CV_RANDOM_SEED'):
             cfg.CV_RANDOM_SEED = None
-            qc.print_c('check_config(): Setting undefined parameter CV_RANDOM_SEED=%s' % (cfg.CV_RANDOM_SEED), 'Y')
+            logger.warning('Setting undefined parameter CV_RANDOM_SEED=%s' % (cfg.CV_RANDOM_SEED))
         if not hasattr(cfg, 'CV_FOLDS'):
             raise RuntimeError('"CV_FOLDS" not defined in config.')
-
         if cfg.CV_PERFORM == 'StratifiedShuffleSplit' and not hasattr(cfg, 'CV_TEST_RATIO'):
             raise RuntimeError('"CV_TEST_RATIO" not defined in config.')
 
@@ -181,7 +183,7 @@ def get_psd_feature(epochs_train, window, psdparam, feat_picks=None, n_jobs=1):
                                      fmax=psdparam['fmax'], bandwidth=None, adaptive=False, low_bias=True,\
                                      n_jobs=1, normalization='length', verbose='WARNING')
 
-    print('\n>> Computing PSD for training set')
+    logger.info('\n>> Computing PSD for training set')
     if type(epochs_train) is list:
         X_all = []
         for i, ep in enumerate(epochs_train):
@@ -340,12 +342,12 @@ def balance_samples(X, Y, balance_type, verbose=False):
         raise ValueError('Unknown balancing type ' % balance_type)
 
     if verbose is True:
-        print('\n>> Number of trials BEFORE balancing')
+        logger.info('\n>> Number of trials BEFORE balancing')
         for c in label_set:
-            print('%s: %d' % (cfg.tdef.by_value[c], len(np.where(Y == c)[0])))
-        print('\n>> Number of trials AFTER balancing')
+            logger.info('%s: %d' % (cfg.tdef.by_value[c], len(np.where(Y == c)[0])))
+        logger.info('\n>> Number of trials AFTER balancing')
         for c in label_set:
-            print('%s: %d' % (cfg.tdef.by_value[c], len(np.where(Y_balanced == c)[0])))
+            logger.info('%s: %d' % (cfg.tdef.by_value[c], len(np.where(Y_balanced == c)[0])))
 
     return X_balanced, Y_balanced
 
@@ -377,7 +379,7 @@ def crossval_epochs(cv, epochs_data, labels, cls, label_names=None, do_balance=F
         n_jobs = mp.cpu_count()
 
     if n_jobs > 1:
-        print('crossval_epochs(): Using %d cores' % n_jobs)
+        logger.info('crossval_epochs(): Using %d cores' % n_jobs)
         pool = mp.Pool(n_jobs)
         results = []
 
@@ -469,7 +471,7 @@ def balance_tpr(cfg, featdata):
     if n_jobs is None:
         n_jobs = mp.cpu_count()
     if n_jobs > 1:
-        print('balance_tpr(): Using %d cores' % n_jobs)
+        logger.info('balance_tpr(): Using %d cores' % n_jobs)
         pool = mp.Pool(n_jobs)
         results = []
 
@@ -505,21 +507,20 @@ def balance_tpr(cfg, featdata):
     # Choose CV type
     ntrials, nsamples, fsize = X_data.shape
     if cfg.CV_PERFORM == 'LeaveOneOut':
-        print('\n>> %d-fold leave-one-out cross-validation' % ntrials)
+        logger.info('\n>> %d-fold leave-one-out cross-validation' % ntrials)
         if SKLEARN_OLD:
             cv = LeaveOneOut(len(Y_data))
         else:
             cv = LeaveOneOut()
     elif cfg.CV_PERFORM == 'StratifiedShuffleSplit':
-        print(
-            '\n>> %d-fold stratified cross-validation with test set ratio %.2f' % (cfg.CV_FOLDS, cfg.CV_TEST_RATIO))
+        logger.info('\n>> %d-fold stratified cross-validation with test set ratio %.2f' % (cfg.CV_FOLDS, cfg.CV_TEST_RATIO))
         if SKLEARN_OLD:
             cv = StratifiedShuffleSplit(Y_data[:, 0], cfg.CV_FOLDS, test_size=cfg.CV_TEST_RATIO, random_state=cfg.CV_RANDOM_SEED)
         else:
             cv = StratifiedShuffleSplit(n_splits=cfg.CV_FOLDS, test_size=cfg.CV_TEST_RATIO, random_state=cfg.CV_RANDOM_SEED)
     else:
         raise NotImplementedError('%s is not supported yet. Sorry.' % cfg.CV_PERFORM)
-    print('%d trials, %d samples per trial, %d feature dimension' % (ntrials, nsamples, fsize))
+    logger.info('%d trials, %d samples per trial, %d feature dimension' % (ntrials, nsamples, fsize))
 
     # For classifier itself, single core is usually faster
     cls.n_jobs = 1
@@ -568,9 +569,9 @@ def cva_features(datadir):
         if fin[-4:] != '.gdf': continue
         fout = fin + '.cva'
         if os.path.exists(fout):
-            print('Skipping', fout)
+            logger.info('Skipping', fout)
             continue
-        print("cva_features('%s')" % fin)
+        logger.info("cva_features('%s')" % fin)
         qc.matlab("cva_features('%s')" % fin)
 
 
@@ -583,7 +584,7 @@ def get_predict_proba(cls, X_train, Y_train, X_test, Y_test, cnum):
     timer = qc.Timer()
     cls.fit(X_train, Y_train)
     Y_pred = cls.predict_proba(X_test)
-    print('Cross-validation %d (%d tests) - %.1f sec' % (cnum, Y_pred.shape[0], timer.sec()))
+    logger.info('Cross-validation %d (%d tests) - %.1f sec' % (cnum, Y_pred.shape[0], timer.sec()))
     return Y_pred[:,0]
 
 
@@ -621,7 +622,7 @@ def fit_predict_thres(cls, X_train, Y_train, X_test, Y_test, cnum, label_list, i
         cm = skmetrics.confusion_matrix(Y_test_overthres, Y_pred_overthres, label_list)
         cm = np.concatenate((cm, Y_pred_underthres_count[:, np.newaxis]), axis=1)
 
-    print('Cross-validation %d (%.3f) - %.1f sec' % (cnum, score, timer.sec()))
+    logger.info('Cross-validation %d (%.3f) - %.1f sec' % (cnum, score, timer.sec()))
     return score, cm
 
 
@@ -662,7 +663,7 @@ def compute_features(cfg):
         for c in cfg.EXCLUDES:
             if type(c) == str:
                 if c not in raw.ch_names:
-                    qc.print_c('Warning: Exclusion channel %s does not exist. Ignored.' % c, 'Y')
+                    logger.warning('Exclusion channel %s does not exist. Ignored.' % c)
                     continue
                 c_int = raw.ch_names.index(c)
             elif type(c) == int:
@@ -675,11 +676,11 @@ def compute_features(cfg):
     if max(picks) > len(raw.ch_names):
         raise ValueError('"picks" has a channel index %d while there are only %d channels.' % (max(picks), len(raw.ch_names)))
     if hasattr(cfg, 'SP_CHANNELS') and cfg.SP_CHANNELS is not None:
-        qc.print_c('compute_features(): SP_CHANNELS parameter is not supported yet. Will be set to CHANNEL_PICKS.', 'Y')
+        logger.warning('SP_CHANNELS parameter is not supported yet. Will be set to CHANNEL_PICKS.')
     if hasattr(cfg, 'TP_CHANNELS') and cfg.TP_CHANNELS is not None:
-        qc.print_c('compute_features(): TP_CHANNELS parameter is not supported yet. Will be set to CHANNEL_PICKS.', 'Y')
+        logger.warning('TP_CHANNELS parameter is not supported yet. Will be set to CHANNEL_PICKS.')
     if hasattr(cfg, 'NOTCH_CHANNELS') and cfg.NOTCH_CHANNELS is not None:
-        qc.print_c('compute_features(): NOTCH_CHANNELS parameter is not supported yet. Will be set to CHANNEL_PICKS.', 'Y')
+        logger.warning('NOTCH_CHANNELS parameter is not supported yet. Will be set to CHANNEL_PICKS.')
 
     # Read epochs
     try:
@@ -705,11 +706,9 @@ def compute_features(cfg):
                           spectral=cfg.TP_FILTER, spectral_ch=None, notch=cfg.NOTCH_FILTER, notch_ch=None,
                           multiplier=cfg.MULTIPLIER, n_jobs=cfg.N_JOBS)
     except:
-        qc.print_c('\n*** (trainer.py) ERROR OCCURRED WHILE EPOCHING ***\n', 'R')
-        # Catch and throw errors from child processes
-        traceback.print_exc()
+        logger.exception('Problem while epoching.')
         if interactive:
-            print('Dropping into a shell.\n')
+            print('Dropping to a shell.\n')
             embed()
         raise RuntimeError
 
@@ -743,15 +742,13 @@ def cross_validate(cfg, featdata, cv_file=None):
     """
     # Init a classifier
     if cfg.CLASSIFIER == 'GB':
-        cls = GradientBoostingClassifier(loss='deviance', learning_rate=cfg.GB['learning_rate'],
+        cls = GradientBoostingClassifier(loss='deviance', learning_rate=cfg.GB['learning_rate'], presort='auto',
                                          n_estimators=cfg.GB['trees'], subsample=1.0, max_depth=cfg.GB['max_depth'],
-                                         random_state=cfg.GB['seed'], max_features='sqrt', verbose=0, warm_start=False,
-                                         presort='auto')
+                                         random_state=cfg.GB['seed'], max_features='sqrt', verbose=0, warm_start=False)
     elif cfg.CLASSIFIER == 'XGB':
-        cls = XGBClassifier(loss='deviance', learning_rate=cfg.GB['learning_rate'],
+        cls = XGBClassifier(loss='deviance', learning_rate=cfg.GB['learning_rate'], presort='auto',
                                          n_estimators=cfg.GB['trees'], subsample=1.0, max_depth=cfg.GB['max_depth'],
-                                         random_state=cfg.GB['seed'], max_features='sqrt', verbose=0, warm_start=False,
-                                         presort='auto')
+                                         random_state=cfg.GB['seed'], max_features='sqrt', verbose=0, warm_start=False)
     elif cfg.CLASSIFIER == 'RF':
         cls = RandomForestClassifier(n_estimators=cfg.RF['trees'], max_features='auto',
                                      max_depth=cfg.RF['max_depth'], n_jobs=cfg.N_JOBS, random_state=cfg.RF['seed'],
@@ -773,21 +770,20 @@ def cross_validate(cfg, featdata, cv_file=None):
     # Choose CV type
     ntrials, nsamples, fsize = X_data.shape
     if cfg.CV_PERFORM == 'LeaveOneOut':
-        print('\n>> %d-fold leave-one-out cross-validation' % ntrials)
+        logger.info('\n>> %d-fold leave-one-out cross-validation' % ntrials)
         if SKLEARN_OLD:
             cv = LeaveOneOut(len(Y_data))
         else:
             cv = LeaveOneOut()
     elif cfg.CV_PERFORM == 'StratifiedShuffleSplit':
-        print(
-            '\n>> %d-fold stratified cross-validation with test set ratio %.2f' % (cfg.CV_FOLDS, cfg.CV_TEST_RATIO))
+        logger.info('\n>> %d-fold stratified cross-validation with test set ratio %.2f' % (cfg.CV_FOLDS, cfg.CV_TEST_RATIO))
         if SKLEARN_OLD:
             cv = StratifiedShuffleSplit(Y_data[:, 0], cfg.CV_FOLDS, test_size=cfg.CV_TEST_RATIO, random_state=cfg.CV_RANDOM_SEED)
         else:
             cv = StratifiedShuffleSplit(n_splits=cfg.CV_FOLDS, test_size=cfg.CV_TEST_RATIO, random_state=cfg.CV_RANDOM_SEED)
     else:
         raise NotImplementedError('%s is not supported yet. Sorry.' % cfg.CV_PERFORM)
-    print('%d trials, %d samples per trial, %d feature dimension' % (ntrials, nsamples, fsize))
+    logger.info('%d trials, %d samples per trial, %d feature dimension' % (ntrials, nsamples, fsize))
 
     # Do it!
     timer_cv = qc.Timer()
@@ -836,7 +832,7 @@ def cross_validate(cfg, featdata, cv_file=None):
     if cfg.CV_IGNORE_THRES is not None:
         txt += 'Decision threshold: %.2f\n' % cfg.CV_IGNORE_THRES
     txt += '\n- Confusion Matrix\n' + cm_txt
-    print(txt)
+    logger.info(txt)
 
     # Export to a file
     if hasattr(cfg, 'CV_EXPORT_RESULT') and cfg.CV_EXPORT_RESULT is True and cfg.CV_PERFORM is not None:
@@ -892,11 +888,11 @@ def train_decoder(cfg, featdata, feat_file=None):
         X_data_merged, Y_data_merged = balance_samples(X_data_merged, Y_data_merged, cfg.BALANCE_SAMPLES, verbose=True)
 
     # Start training the decoder
-    print('\n>> Training the decoder')
+    logger.info('\n>> Training the decoder')
     timer = qc.Timer()
     cls.n_jobs = cfg.N_JOBS
     cls.fit(X_data_merged, Y_data_merged)
-    print('Trained %d samples x %d dimension in %.1f sec' %\
+    logger.info('Trained %d samples x %d dimension in %.1f sec' %\
           (X_data_merged.shape[0], X_data_merged.shape[1], timer.sec()))
     cls.n_jobs = 1 # always set n_jobs=1 for testing
 
@@ -914,7 +910,7 @@ def train_decoder(cfg, featdata, feat_file=None):
     clsfile = '%s/classifier/classifier-%s.pkl' % (cfg.DATADIR, platform.architecture()[0])
     qc.make_dirs('%s/classifier' % cfg.DATADIR)
     qc.save_obj(clsfile, data)
-    print('Decoder saved to %s' % clsfile)
+    logger.info('Decoder saved to %s' % clsfile)
 
     # Reverse-lookup frequency from FFT
     fq = 0
@@ -930,7 +926,7 @@ def train_decoder(cfg, featdata, feat_file=None):
 
     # Show top distinctive features
     if cfg.FEATURES == 'PSD':
-        print('\n>> Good features ordered by importance')
+        logger.info('\n>> Good features ordered by importance')
         if cfg.CLASSIFIER in ['RF', 'GB', 'XGB']:
             keys, values = qc.sort_by_value(list(cls.feature_importances_), rev=True)
         elif cfg.CLASSIFIER in ['LDA', 'rLDA']:
@@ -962,7 +958,7 @@ def train_decoder(cfg, featdata, feat_file=None):
                 break
             txt = '%-3s %5.1f Hz  normalized importance %-6s  raw importance %-6s  feature %-5d' %\
                   (ch, hz, '%.2f%%' % valnorm[i], '%.2f%%' % (values[i] * 100.0), keys[i])
-            print(txt)
+            logger.info(txt)
 
         if cfg.EXPORT_GOOD_FEATURES:
             gfout.write('Importance(%) Channel Frequency Index\n')
@@ -1010,4 +1006,4 @@ if __name__ == '__main__':
         cfg_file = sys.argv[1]
     batch_run(cfg_file)
 
-    print('Finished.')
+    logger.info('Finished.')

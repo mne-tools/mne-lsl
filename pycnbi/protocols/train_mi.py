@@ -32,6 +32,7 @@ import pycnbi.triggers.pyLptControl as pyLptControl
 import pycnbi.utils.q_common as qc
 from pycnbi.protocols.viz_bars import BarVisual
 from pycnbi.triggers.trigger_def import trigger_def
+from pycnbi import logger
 from builtins import input
 
 def load_config(cfg_file):
@@ -75,7 +76,7 @@ def run(cfg):
         input('\n** Warning: No trigger device set. Press Ctrl+C to stop or Enter to continue.')
     trigger = pyLptControl.Trigger(cfg.TRIGGER_DEVICE)
     if trigger.init(50) == False:
-        print('\n** Error connecting to USB2LPT device. Use a mock trigger instead?')
+        logger.error('\n** Error connecting to USB2LPT device. Use a mock trigger instead?')
         input('Press Ctrl+C to stop or Enter to continue.')
         trigger = pyLptControl.MockTrigger()
         trigger.init(50)
@@ -163,7 +164,7 @@ def run(cfg):
             event = 'gap_s'
             bar.fill()
             trial += 1
-            print('trial ' + str(trial - 1) + ' done')
+            logger.info('trial ' + str(trial - 1) + ' done')
             trigger.signal(tdef.BLANK)
             timer_trigger.reset()
             t_dir = cfg.T_DIR + random.uniform(-cfg.T_DIR_RANDOMIZE, cfg.T_DIR_RANDOMIZE)
@@ -194,6 +195,7 @@ def run(cfg):
             break
 
 if __name__ == '__main__':
+    logger.info('YES!')
     if len(sys.argv) < 2:
         cfg_file = input('Config file name? ')
     else:
