@@ -439,7 +439,7 @@ def crossval_epochs(cv, epochs_data, labels, cls, label_names=None, do_balance=F
         cm_rate = np.concatenate((cm_rate, underthres[:, np.newaxis]), axis=1)
 
     cm_txt = 'Y: ground-truth, X: predicted\n'
-    max_chars = 9
+    max_chars = 12
     tpl_str = '%%-%ds ' % max_chars
     tpl_float = '%%-%d.2f ' % max_chars
     for l in label_set:
