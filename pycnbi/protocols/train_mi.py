@@ -77,7 +77,7 @@ def run(cfg):
         #input()
     trigger = pyLptControl.Trigger(cfg.TRIGGER_DEVICE)
     if trigger.init(50) == False:
-        logger.error('Error connecting to USB2LPT device. Use a mock trigger instead?')
+        logger.error('\n** Error connecting to USB2LPT device. Use a mock trigger instead?')
         input('Press Ctrl+C to stop or Enter to continue.')
         trigger = pyLptControl.MockTrigger()
         trigger.init(50)
@@ -194,6 +194,9 @@ def run(cfg):
         key = 0xFF & cv2.waitKey(1)
         if key == keys['esc']:
             break
+
+    bar.finish()
+   
 
 if __name__ == '__main__':
     logger.info('YES!')
