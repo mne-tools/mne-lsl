@@ -73,10 +73,11 @@ def run(cfg):
 
     # Hardware trigger
     if cfg.TRIGGER_DEVICE is None:
-        input('\n** Warning: No trigger device set. Press Ctrl+C to stop or Enter to continue.')
+        logger.warning('No trigger device set. Press Ctrl+C to stop or Enter to continue.')
+        #input()
     trigger = pyLptControl.Trigger(cfg.TRIGGER_DEVICE)
     if trigger.init(50) == False:
-        logger.error('\n** Error connecting to USB2LPT device. Use a mock trigger instead?')
+        logger.error('Error connecting to USB2LPT device. Use a mock trigger instead?')
         input('Press Ctrl+C to stop or Enter to continue.')
         trigger = pyLptControl.MockTrigger()
         trigger.init(50)
