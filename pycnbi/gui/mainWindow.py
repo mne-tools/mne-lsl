@@ -301,7 +301,7 @@ class MainWindow(QMainWindow):
         """
         Launch the selected protocol. It can be Offline, Train or Online. 
         """
-        self.m.run(self.cfg)
+        self.m.run(self.cfg_subject)
         
     #----------------------------------------------------------------------
     @pyqtSlot(str)
