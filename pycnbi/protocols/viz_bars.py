@@ -29,6 +29,7 @@ import cv2
 import pycnbi
 import pycnbi.glass.bgi_client as bgi_client
 import pycnbi.utils.q_common as qc
+from pycnbi import logger
 
 
 class BarVisual(object):
@@ -165,7 +166,7 @@ class BarVisual(object):
             if self.glass_feedback:
                 self.glass.move_bar('S', dx, overlay)
         else:
-            qc.print_c('(viz_bars.py) ERROR: Unknown direction %s' % dir, 'r')
+            logger.error('Unknown direction %s' % dir)
         self.put_text(caption, caption_color)
 
     def put_text(self, txt, color='W'):

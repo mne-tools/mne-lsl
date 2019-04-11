@@ -36,6 +36,7 @@ from pycnbi.decoder.decoder import BCIDecoderDaemon, BCIDecoder
 from pycnbi.protocols.viz_bars import BarVisual
 from bar_decision import BarDecision
 from pycnbi.triggers.trigger_def import trigger_def
+from pycnbi import logger
 from builtins import input
 from IPython import embed
 
@@ -49,10 +50,10 @@ color = dict(G=(20, 140, 0), B=(210, 0, 0), R=(0, 50, 200), Y=(0, 215, 235), K=(
 
 def check_cfg(cfg):
     if not hasattr(cfg, 'POSITIVE_FEEDBACK'):
-        qc.print_c('Warning: POSITIVE_FEEDBACK undefined. Setting it to False.', 'Y')
+        logger.warning('Warning: POSITIVE_FEEDBACK undefined. Setting it to False.')
         cfg.POSITIVE_FEEDBACK = False
     if not hasattr(cfg, 'BAR_REACH_FINISH'):
-        qc.print_c('Warning: BAR_REACH_FINISH undefined. Setting it to False.', 'Y')
+        logger.warning('Warning: BAR_REACH_FINISH undefined. Setting it to False.')
         cfg.BAR_REACH_FINISH = False
 
     return cfg
@@ -84,13 +85,13 @@ if __name__ == '__main__':
         input('\n** Warning: No trigger device set. Press Ctrl+C to stop or Enter to continue.')
     trigger = pyLptControl.Trigger(cfg.TRIGGER_DEVICE)
     if trigger.init(50) == False:
-        qc.print_c('\n** Error connecting to USB2LPT device. Use a mock trigger instead?', 'R')
+        logger.error('Cannot connect to USB2LPT device. Use a mock trigger instead?')
         input('Press Ctrl+C to stop or Enter to continue.')
         trigger = pyLptControl.MockTrigger()
         trigger.init(50)
 
     # init classification
-    qc.print_c('Initializing decoder.', 'W')
+    logger.info('Initializing decoder')
 
     decoder_UD = BCIDecoder(cfg.CLS_MI, buffer_size=10.0, fake=(cfg.FAKE_CLS is not None),
                             amp_name=amp_name, amp_serial=amp_serial, fake_dirs=fake_dirs)
@@ -150,12 +151,12 @@ if __name__ == '__main__':
                 elif pred_label == 'D':
                     rex_dir = 'S'
                 else:
-                    qc.print_c('Warning: Rex cannot execute undefined action %s' % pred_label, 'W')
+                    logger.warning('Rex cannot execute undefined action %s' % pred_label)
                     rex_dir = None
                 if rex_dir is not None:
                     bar.move(pred_label, 100, overlay=False, barcolor='B')
                     bar.update()
-                    qc.print_c('Executing Rex action %s' % rex_dir, 'W')
+                    logger.warning('Executing Rex action %s' % rex_dir)
                     os.system('%s/Rex/RexControlSimple.exe %s %s' % (pycnbi.ROOT, cfg.REX_COMPORT, rex_dir))
                     time.sleep(8)
 
@@ -163,7 +164,7 @@ if __name__ == '__main__':
                 msg = 'Correct'
             else:
                 msg = 'Wrong'
-            print('Trial %d: %s (%s -> %s)' % (trial, msg, true_label, pred_label))
+            logger.info('Trial %d: %s (%s -> %s)' % (trial, msg, true_label, pred_label))
             trial += 1
 
     # write performance
@@ -177,10 +178,10 @@ if __name__ == '__main__':
         fout.write(cfmat)
         print('\nAccuracy %.3f\nConfusion matrix\n' % acc)
         print(cfmat)
-    print('Log exported to %s' % logfile)
+    logger.info('Log exported to %s' % logfile)
 
     bar.finish()
     if decoder_UD:
         decoder_UD.stop()
 
-    print('Finished.')
+    logger.info('Finished.')

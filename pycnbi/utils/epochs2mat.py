@@ -11,11 +11,13 @@ Swiss Federal Institute of Technology (EPFL)
 
 """
 
-import scipy.io
 import mne
+import scipy.io
 import numpy as np
 import pycnbi.utils.pycnbi_utils as pu
 import pycnbi.utils.q_common as qc
+from pycnbi import logger
+
 mne.set_log_level('ERROR')
 
 def save_mat(raw, events, picks, event_id, tmin, tmax, matfile):
@@ -63,7 +65,7 @@ def epochs2mat(data_dir, channel_picks, event_id, tmin, tmax, merge_epochs=False
             raw, events = pu.load_raw(data_file)
             save_mat(raw, events, channel_picks, event_id, tmin, tmax, matfile)
 
-    print('\nExported to %s' % matfile)
+    logger.info('Exported to %s' % matfile)
 
 # sample code
 if __name__ == '__main__':

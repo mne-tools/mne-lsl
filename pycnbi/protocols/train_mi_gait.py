@@ -31,6 +31,7 @@ import pycnbi.triggers.pyLptControl as pyLptControl
 import pycnbi.utils.q_common as qc
 from pycnbi.protocols.viz_human import BodyVisual
 from pycnbi.triggers.trigger_def import trigger_def
+from pycnbi import logger
 from builtins import input
 
 
@@ -66,7 +67,7 @@ def load_cfg(cfg_module):
             raise ValueError('%s is a required parameter' % key)
     for key in optional:
         if not hasattr(cfg, key):
-            qc.print_c('Warning: Setting undefined %s=%s' % (key, optional[key]))
+            logger.warning('Setting undefined %s=%s' % (key, optional[key]))
     return cfg
 
 def config_run(cfg_module):
@@ -90,17 +91,17 @@ def config_run(cfg_module):
 
     # STIMO protocol
     if cfg.WITH_STIMO is True:
-            print('Opening STIMO serial port (%s / %d bps)' % (cfg.STIMO_COMPORT, cfg.STIMO_BAUDRATE))
-            import serial
-            ser = serial.Serial(cfg.STIMO_COMPORT, cfg.STIMO_BAUDRATE)
-            print('STIMO serial port %s is_open = %s' % (cfg.STIMO_COMPORT, ser.is_open))
+        import serial
+        logger.info('Opening STIMO serial port (%s / %d bps)' % (cfg.STIMO_COMPORT, cfg.STIMO_BAUDRATE))
+        ser = serial.Serial(cfg.STIMO_COMPORT, cfg.STIMO_BAUDRATE)
+        logger.info('STIMO serial port %s is_open = %s' % (cfg.STIMO_COMPORT, ser.is_open))
 
     # init trigger
     if cfg.TRIGGER_DEVICE is None:
         input('\n** Warning: No trigger device set. Press Ctrl+C to stop or Enter to continue.')
     trigger = pyLptControl.Trigger(cfg.TRIGGER_DEVICE)
     if trigger.init(50) == False:
-        print('\n# Error connecting to USB2LPT device. Use a mock trigger instead?')
+        logger.error('Cannot connect to USB2LPT device. Use a mock trigger instead?')
         input('Press Ctrl+C to stop or Enter to continue.')
         trigger = pyLptControl.MockTrigger()
         trigger.init(50)
@@ -204,11 +205,11 @@ def config_run(cfg_module):
                     if cfg.WITH_STIMO is True:
                         if dir == 'L':  # left
                             ser.write(b'1')
-                            qc.print_c('STIMO: Sent 1', 'g')
+                            logger.info('STIMO: Sent 1')
                             trigger.signal(tdef.LEFT_STIMO)
                         elif dir == 'R':  # right
                             ser.write(b'2')
-                            qc.print_c('STIMO: Sent 2', 'g')
+                            logger.info('STIMO: Sent 2')
                             trigger.signal(tdef.RIGHT_STIMO)
                     else:
                         if dir == 'L':  # left
@@ -250,7 +251,7 @@ def config_run(cfg_module):
                     state = 'gap_s'
                     visual.fill()
                     trial += 1
-                    print('trial '+str(trial-1)+' done')
+                    logger.info('Trial ' + str(trial-1) + ' done.')
                     trigger.signal(tdef.BLANK)
                 timer_trigger.reset()
             else:
@@ -280,7 +281,7 @@ def config_run(cfg_module):
     # STIMO protocol
     if cfg.WITH_STIMO is True:
         ser.close()
-        print('Closed STIMO serial port %s' % cfg.STIMO_COMPORT)
+        logger.info('Closed STIMO serial port %s' % cfg.STIMO_COMPORT)
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:

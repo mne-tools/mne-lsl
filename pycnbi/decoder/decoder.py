@@ -19,21 +19,22 @@ Swiss Federal Institute of Technology Lausanne (EPFL)
 
 """
 
+import os
+import sys
+import mne
 import time
 import math
 import random
-import os
-import sys
 import psutil
+import numpy as np
 import pycnbi.utils.pycnbi_utils as pu
 import pycnbi.utils.q_common as qc
-import numpy as np
 import multiprocessing as mp
 import multiprocessing.sharedctypes as sharedctypes
-import mne
-from pycnbi.stream_receiver.stream_receiver import StreamReceiver
-from pycnbi.triggers.trigger_def import trigger_def
 from numpy import ctypeslib
+from pycnbi import logger
+from pycnbi.triggers.trigger_def import trigger_def
+from pycnbi.stream_receiver.stream_receiver import StreamReceiver
 mne.set_log_level('ERROR')
 os.environ['OMP_NUM_THREADS'] = '1' # actually improves performance for multitaper
 
@@ -51,9 +52,9 @@ def get_decoder_info(classifier):
     """
 
     model = qc.load_obj(classifier)
-    if model == None:
-        print('>> Error loading %s' % model)
-        sys.exit(-1)
+    if model is None:
+        logger.error('>> Error loading %s' % model)
+        raise ValueError
 
     cls = model['cls']
     psde = model['psde']
@@ -96,9 +97,9 @@ class BCIDecoder(object):
 
         if self.fake == False:
             model = qc.load_obj(self.classifier)
-            if model == None:
-                self.print('Error loading %s' % model)
-                sys.exit(-1)
+            if model is None:
+                logger.error('Classifier model is None.')
+                raise ValueError
             self.cls = model['cls']
             self.psde = model['psde']
             self.labels = list(self.cls.classes_)
@@ -155,10 +156,6 @@ class BCIDecoder(object):
             self.labels = [11, 9]
             self.label_names = ['LEFT_GO', 'RIGHT_GO']
 
-    def print(self, *args):
-        if len(args) > 0: print('[BCIDecoder] ', end='')
-        print(*args)
-
     def get_labels(self):
         """
         Returns
@@ -201,7 +198,7 @@ class BCIDecoder(object):
             self.sr.acquire()
             w, ts = self.sr.get_window()  # w = times x channels
             w = w.T  # -> channels x times
-            
+
             # re-reference channels
             # TODO: use self.ref_ch
 
@@ -326,10 +323,6 @@ class BCIDecoderDaemon(object):
         self.reset()
         self.start()
 
-    def print(self, *args):
-        if len(args) > 0: print('[DecoderDaemon] ', end='')
-        print(*args)
-
     def reset(self):
         """
         Reset classifier to the initial state
@@ -393,7 +386,7 @@ class BCIDecoderDaemon(object):
         pid = os.getpid()
         ps = psutil.Process(pid)
         ps.nice(psutil.HIGH_PRIORITY_CLASS)
-        print('[DecodeWorker-%-6d] Decoder worker process started' % (pid))
+        logger.debug('[DecodeWorker-%-6d] Decoder worker process started' % (pid))
         decoder = BCIDecoder(classifier, buffer_size=self.buffer_sec, fake=self.fake,\
                              amp_serial=self.amp_serial, amp_name=self.amp_name)
         if self.fake == False:
@@ -430,7 +423,7 @@ class BCIDecoderDaemon(object):
                 # compute likelihoods
                 t_prob = time.time()
                 probs_local = decoder.get_prob()
-                
+
                 # update the probs only if the current value is the latest
                 if t_prob > t_problast.value:
                     lock.acquire()
@@ -440,7 +433,7 @@ class BCIDecoderDaemon(object):
                     pread.value = 0
                     t_problast.value = t_prob
                     lock.release()
-                
+
                 # copy back PSD values only when requested
                 if self.fake == False and return_psd.value == 1:
                     lock.acquire()
@@ -451,7 +444,7 @@ class BCIDecoderDaemon(object):
                 # get the next time slot if didn't finish in the current slot
                 if time.time() > t_next:
                     t_next_new = t_start + math.ceil(((time.time() - t_start) / period)) * period
-                    print('[DecodeWorker-%-6d] High decoding delay (%.1f ms): t_next = %.3f -> %.3f' %\
+                    logger.warning('[DecodeWorker-%-6d] High decoding delay (%.1f ms): t_next = %.3f -> %.3f' %\
                           (pid, (time.time() - t_next + period) * 1000, t_next, t_next_new))
                     t_next = t_next_new
 
@@ -459,37 +452,36 @@ class BCIDecoderDaemon(object):
                 t_sleep = t_next - time.time()
                 if t_sleep > 0.001:
                     time.sleep(t_sleep)
-                #print('[DecodeWorker-%-6d] Woke up at %.3f' % (pid, time.time()))
+                logger.debug('[DecodeWorker-%-6d] Woke up at %.3f' % (pid, time.time()))
 
     def start(self):
         """
         Start the daemon
         """
         if self.is_running() > 0:
-            msg = 'ERROR: Cannot start. Daemon already running. (PID' +\
-                ', '.join(['%d' % proc.pid for proc in self.procs]) + ')'
-            self.print(msg)
+            msg = 'Cannot start. Daemon already running. (PID' + ', '.join(['%d' % proc.pid for proc in self.procs]) + ')'
+            logger.error(msg)
             return
         for proc in self.procs:
             proc.start()
         for running in self.running:
             while running.value == 0:
                 time.sleep(0.001)
-        self.print(self.startmsg)
+        logger.info(self.startmsg)
 
     def stop(self):
         """
         Stop the daemon
         """
         if self.is_running() == 0:
-            self.print('Warning: Decoder already stopped.')
+            logger.warning('Decoder already stopped.')
             return
         for running in self.running:
             running.value = 0
         for proc in self.procs:
             proc.join()
         self.reset()
-        self.print(self.stopmsg)
+        logger.info(self.stopmsg)
 
     def get_labels(self):
         """
@@ -599,7 +591,7 @@ def sample_decoding(decoder):
         if praw is None:
             # watch dog
             if tm_cls.sec() > 5:
-                print('WARNING: No classification was done in the last 5 seconds. Are you receiving data streams?')
+                logger.warning('No classification was done in the last 5 seconds. Are you receiving data streams?')
                 tm_cls.reset()
             tm_watchdog.sleep_atleast(0.001)
             continue
@@ -625,7 +617,7 @@ if __name__ == '__main__':
         amp_name, amp_serial = pu.search_lsl(ignore_markers=True)
     if amp_name == 'None':
         amp_name = None
-    print('Connecting to a server %s (Serial %s).' % (amp_name, amp_serial))
+    logger.info('Connecting to a server %s (Serial %s).' % (amp_name, amp_serial))
 
     # run on background
     #parallel = None # no process interleaving
