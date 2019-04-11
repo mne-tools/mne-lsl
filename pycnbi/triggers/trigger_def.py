@@ -1,3 +1,5 @@
+from __future__ import print_function, division
+
 """
 Reads trigger info and creates a class object with the follwing attributes:
 - self.event_id = event_value
@@ -6,11 +8,11 @@ Reads trigger info and creates a class object with the follwing attributes:
 
 """
 
-from __future__ import print_function, division
 import sys
 import os
 import pycnbi.utils.q_common as qc
 from configparser import ConfigParser
+from pycnbi import logger
 
 def trigger_def(ini_file, verbose=False):
     class TriggerDef(object):
@@ -23,13 +25,12 @@ def trigger_def(ini_file, verbose=False):
                 self.by_key[key] = value
                 self.by_value[value] = key
 
-            '''
-            # check data
+        # show all possible trigger values
+        def check_data():
             print('Attributes of the final class')
             for attr in dir(self):
                 if not callable(getattr(self, attr)) and not attr.startswith("__"):
                     print(attr, getattr(self, attr))
-            '''
 
     if not os.path.exists(ini_file):
         search_path = []
@@ -41,7 +42,7 @@ def trigger_def(ini_file, verbose=False):
         for ini_file in search_path:
             if os.path.exists(ini_file):
                 if verbose:
-                    print('>> Found %s' % ini_file)
+                    logger.info('Found trigger definition file %s' % ini_file)
                 break
         else:
             raise IOError('Trigger event definition file %s not found' % ini_file)

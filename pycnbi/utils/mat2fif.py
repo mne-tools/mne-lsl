@@ -22,8 +22,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import scipy.io
 import numpy as np
-import pycnbi
 import pycnbi.utils.q_common as qc
+from pycnbi import logger
 import mne
 
 def mat2fif(mat_file, sample_rate, data_field, event_field):
@@ -46,7 +46,7 @@ def mat2fif(mat_file, sample_rate, data_field, event_field):
     [basedir, fname, fext] = qc.parse_path_list(MAT_FILE)
     fifname = '%s/%s.fif' % (basedir, fname)
     raw.save(fifname, verbose=False, overwrite=True)
-    print('Saved to %s.' % fifname)
+    logger.info('Saved to %s.' % fifname)
 
 if __name__ == '__main__':
     MAT_FILE = r'D:\data\Phoneme\data.mat'

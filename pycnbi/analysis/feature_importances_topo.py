@@ -5,23 +5,24 @@ TODO: merge with parse_features.py to use its API.
 
 """
 
-from pycnbi.pycnbi_config import PYCNBI_ROOT
+import os
+import sys
+import mne
+import pycnbi
+import numpy as np
 import pycnbi.utils.pycnbi_utils as pu
 import pycnbi.utils.q_common as qc
 import matplotlib.pyplot as plt
+from pycnbi.pycnbi_config import PYCNBI_ROOT
+from pycnbi import logger
 from matplotlib.figure import Figure
-import numpy as np
-import mne
-import sys
-import os
 from builtins import input
 
 def export_topo(data, pos, pngfile, xlabel='', vmin=None, vmax=None, chan_vis=None, res=64, contours=0):
     mne.viz.plot_topomap(data, pos, names=chan_vis, show_names=True, res=res, contours=contours, show=False)
     plt.suptitle(xlabel)
     plt.savefig(pngfile)
-    print('Exported %s' % pngfile)
-    #plt.show()
+    logger.info('Exported %s' % pngfile)
 
 def feature_importances_topo(featfile, topo_layout_file=None, channels=None, channel_name_show=None):
     """
@@ -32,7 +33,7 @@ def feature_importances_topo(featfile, topo_layout_file=None, channels=None, cha
     channel_name_show: list of channel names to show on topography map.
 
     """
-    print('Loading %s' % featfile)
+    logger.info('Loading %s' % featfile)
 
     if channels is None:
         channel_set = set()
@@ -56,7 +57,7 @@ def feature_importances_topo(featfile, topo_layout_file=None, channels=None, cha
     data_lgamma = np.zeros(len(channels))
     data_hgamma = np.zeros(len(channels))
     data_per_ch = np.zeros(len(channels))
-    
+
     f = open(featfile)
     f.readline()
     for l in f:
@@ -109,7 +110,7 @@ def feature_importances_topo(featfile, topo_layout_file=None, channels=None, cha
         res = 64
         contours = 6
 
-        # select channel names to show    
+        # select channel names to show
         if channel_name_show is None:
             channel_name_show = channels
         chan_vis = [''] * len(channels)
@@ -122,7 +123,7 @@ def feature_importances_topo(featfile, topo_layout_file=None, channels=None, cha
             topo_layout_file = PYCNBI_ROOT + '/layout/' + topo_layout_file
             if not os.path.exists(topo_layout_file):
                 raise FileNotFoundError('Layout file %s not found.' % topo_layout_file)
-        print('Using layout %s' % topo_layout_file)
+        logger.info('Using layout %s' % topo_layout_file)
         for l in open(topo_layout_file):
             token = l.strip().split('\t')
             ch = token[5]
@@ -159,7 +160,7 @@ def config_run(featfile=None, topo_layout_file=None):
     if featfile is None or len(featfile.strip()) == 0:
         if os.path.exists('good_features.txt'):
             featfile = os.path.realpath('good_features.txt').replace('\\', '/')
-            print('Found %s in the current folder.' % featfile)
+            logger.info('Found %s in the current folder.' % featfile)
         else:
             featfile = input('Feature file path? ')
 
