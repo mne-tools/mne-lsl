@@ -73,7 +73,8 @@ def run(cfg):
 
     # Hardware trigger
     if cfg.TRIGGER_DEVICE is None:
-        input('\n** Warning: No trigger device set. Press Ctrl+C to stop or Enter to continue.')
+        logger.warning('No trigger device set. Press Ctrl+C to stop or Enter to continue.')
+        #input()
     trigger = pyLptControl.Trigger(cfg.TRIGGER_DEVICE)
     if trigger.init(50) == False:
         logger.error('\n** Error connecting to USB2LPT device. Use a mock trigger instead?')
@@ -193,6 +194,9 @@ def run(cfg):
         key = 0xFF & cv2.waitKey(1)
         if key == keys['esc']:
             break
+
+    bar.finish()
+   
 
 if __name__ == '__main__':
     logger.info('YES!')
