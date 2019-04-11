@@ -112,10 +112,10 @@ def config_run(cfg_module):
         visual = BarVisual(cfg.GLASS_USE, screen_pos=cfg.SCREEN_POS,
                            screen_size=cfg.SCREEN_SIZE)
     elif cfg.FEEDBACK_TYPE == 'BODY':
-        if not hasattr(cfg, 'IMAGE_PATH'):
-            raise ValueError('IMAGE_PATH is undefined in your config.')
+        if not hasattr(cfg, 'FEEDBACK_IMAGE_PATH'):
+            raise ValueError('FEEDBACK_IMAGE_PATH is undefined in your config.')
         from pycnbi.protocols.viz_human import BodyVisual
-        visual = BodyVisual(cfg.IMAGE_PATH, use_glass=cfg.GLASS_USE,
+        visual = BodyVisual(cfg.FEEDBACK_IMAGE_PATH, use_glass=cfg.GLASS_USE,
                             screen_pos=cfg.SCREEN_POS, screen_size=cfg.SCREEN_SIZE)
     visual.put_text('Waiting to start    ')
 
