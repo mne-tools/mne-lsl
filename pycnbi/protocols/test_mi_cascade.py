@@ -79,7 +79,7 @@ if __name__ == '__main__':
         fake_dirs = [v for (k, v) in cfg.DIRECTIONS]
 
     # events and triggers
-    tdef = trigger_def(cfg.TRIGGER_DEF)
+    tdef = trigger_def(cfg.TRIGGER_FILE)
 
     if cfg.TRIGGER_DEVICE is None:
         input('\n** Warning: No trigger device set. Press Ctrl+C to stop or Enter to continue.')
