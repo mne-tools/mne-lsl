@@ -3,13 +3,12 @@ class Basic:
     """
     Contains the basic parameters for the training modality of Motor Imagery protocol
     """  
-    
-    # Bar directions 
+
+    # Data 
     params1 = dict()
-    params1.update({'DIRECTIONS': [None, 'L', 'R', 'U', 'D', 'B']})
-    params1.update({'DIR_RANDOMIZE': [False, True]})
+    params1.update({DATADIR: 'C:/Users/adesvachez/git/pycnbi_data/demo/fif'}) # read all data files from this directory for training
     
-    # feedback type
+    # Events
     params2 = dict()
     params2.update({'FEEDBACK_TYPE': ['BAR', 'BODY']})
     params2.update({'FEEDBACK_IMAGE_PATH': None})
@@ -26,6 +25,7 @@ class Basic:
     params4.update({'SCREEN_SIZE': [[1920, 1080], [1600, 1200], [1680, 1050], [1280, 1024], [1024, 768]]})
     params4.update({'SCREEN_POS': [[1920, 0], [1920, 1080]]}) # TO CHANGE: add a check box second monitor and auto display on it. 
     
+
 
 ########################################################################
 class Advanced:
