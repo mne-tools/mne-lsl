@@ -28,6 +28,8 @@ import mne
 import numpy as np
 import trainer
 from multiprocessing import cpu_count
+from pycnbi import logger
+
 mne.set_log_level('ERROR')
 
 if __name__ == '__main__':
@@ -68,4 +70,4 @@ if __name__ == '__main__':
             with open(fout, 'w') as f:
                 for t in range(ep_data.shape[1]):
                     f.write(qc.list2string(ep_data[:, t], '%.6f') + '\n')
-            print('Exported %s' % fout)
+            logger.info('Exported %s' % fout)

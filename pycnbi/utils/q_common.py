@@ -12,15 +12,30 @@ Swiss Federal Institute of Technology of Lausanne (EPFL)
 Q_VERBOSE = 0
 
 
-import sys
 import os
+import sys
+import pdb
+import code
 import time
 import math
+import logging
+import shutil
 import inspect
-import pdb
 import traceback
 import itertools
 import numpy as np
+import sklearn.metrics
+import multiprocessing as mp
+
+# logger
+try:
+    from pycnbi import logger
+except ImportError:
+    logging.basicConfig(format='%(msg)s', level='DEBUG')
+    logger = logging.getLogger(__name__)
+    logger.propagate = False
+
+# pickle
 try:
     import cPickle as pickle  # Python 2 (cPickle = C version of pickle)
 except ImportError:
@@ -90,8 +105,6 @@ def confusion_matrix(Y_true, Y_pred, label_len=6):
         acc: accuracy (float)
     """
 
-    import sklearn.metrics
-
     # find labels
     if type(Y_true) == np.ndarray:
         Y_labels = np.unique(Y_true)
@@ -99,7 +112,7 @@ def confusion_matrix(Y_true, Y_pred, label_len=6):
         Y_labels = [x for x in set(Y_true)]
     if label_len < 6:
         label_len = 6
-        qc.print_c('Warning: label_len < 6. Setting to 6.')
+        logger.warning('label_len < 6. Setting to 6.')
     label_tpl = '%' + '-%ds' % label_len
     col_tpl = '%' + '-%d.2f' % label_len
 
@@ -153,20 +166,14 @@ def auto_debug():
     Snippet from:
       stackoverflow.com/questions/242485/starting-python-debugger-automatically-on-error
     """
-
     def debug_info(type, value, tb):
-        # if hasattr(sys, 'ps1') or not sys.stderr.isatty() or type != AssertionError:
         if hasattr(sys, 'ps1') or not sys.stderr.isatty() or type == KeyboardInterrupt:
-            # we are in interactive mode or we don't have a tty-like
-            # device, so we call the default hook
+            # interactive mode or no tty-like device
             sys.__excepthook__(type, value, tb)
         else:
-            # we are NOT in interactive mode, print the exception...
-            traceback.print_exc()
-            print
-            # ...then start the debugger in post-mortem mode.
+            # non-interactive mode
+            logger.exception()
             pdb.pm()
-
     sys.excepthook = debug_info
 
 
@@ -175,11 +182,12 @@ def shell():
     """
     Enter interactive shell within the caller's scope
     """
-    print('\n*** Entering interactive shell. Ctrl+D to return. ***\n')
-    import code
+    logger.info('*** Entering interactive shell. Ctrl+D to return. ***')
     stack = inspect.stack()
     try:  # globals are first loaded, then overwritten by locals
-        globals_ = dict(stack[1][0].f_globals.items() + stack[1][0].f_locals.items())
+        globals_ = {}
+        globals_.update({key:value for key, value in stack[1][0].f_globals.items()})
+        globals_.update({key:value for key, value in stack[1][0].f_locals.items()})
     finally:
         del stack
     code.InteractiveConsole(globals_).interact()
@@ -193,39 +201,23 @@ def run_multi(cmd_list, cores=0, quiet=False):
     cores: number of cores to use (use all cores if 0)
     Logging tip: "command args > log.txt 2>&1"
     """
-
-    import multiprocessing as mp
-
     if cores == 0: cores = mp.cpu_count()
     pool = mp.Pool(cores)
     processes = []
-
     for c in cmd_list:
-        if not quiet: print(cmd)
+        if not quiet:
+            logger.info(cmd)
         processes.append(pool.apply_async(os.system, [cmd]))
-
     for proc in processes:
         proc.get()
-
     pool.close()
     pool.join()
-
-
-def print_error(msg):
-    """
-    Print message with the caller's name
-    """
-    import inspect
-    callerName = inspect.stack()[1][3]
-    print_c('\n>> Error in "%s()":\n%s\n' % (callerName, msg), 'R')
 
 
 # print_c definition: print texts in color
 try:
     import colorama
-
     colorama.init()
-
 
     def print_c(msg, color=None, end='\n'):
         """
@@ -241,14 +233,12 @@ try:
             Make it using *args and **kwargs to support fully featured print().
 
         """
-
         if color is None:
             print(str(msg), end=end)
             return
-
         color = str(color)
         if len(color) != 1:
-            raise RuntimeError('Color parameter must be a single color code. Received type %s' % type(color))
+            raise ValueError('Color parameter must be a single color code, not %s' % type(color))
         if color.upper() == 'B':
             c = colorama.Fore.BLUE
         elif color.upper() == 'R':
@@ -262,11 +252,12 @@ try:
         elif color.upper() == 'C':
             c = colorama.Fore.CYAN
         else:
-            assert False, 'pu.print_color(): Wrong color code.'
+            logger.error('print_c(): Unknown color code %s' % color)
+            raise ValueError
         print(colorama.Style.BRIGHT + c + str(msg) + colorama.Style.RESET_ALL, end=end)
 
 except ImportError:
-    print('\n\n*** WARNING: colorama module not found. print_c() will ignore color codes. ***\n')
+    logger.warning('colorama module not found. print_c() will ignore color codes.')
     def print_c(msg, color, end='\n'):
         print(msg, end=end)
 
@@ -296,7 +287,7 @@ def get_index_min(seq):
     elif type(seq) == dict:
         return min(seq, key=seq.__getitem__)
     else:
-        print_error('Unsupported input %s' % type(seq))
+        logger.error('Unsupported input %s' % type(seq))
         return None
 
 
@@ -309,7 +300,7 @@ def get_index_max(seq):
     elif type(seq) == dict:
         return max(seq, key=seq.__getitem__)
     else:
-        print_error('Unsupported input %s' % type(seq))
+        logger.error('Unsupported input %s' % type(seq))
         return None
 
 
@@ -318,17 +309,12 @@ def sort_by_value(s, rev=False):
     Sort dictionary or list by value and return a sorted list of keys and values.
     Values must be hashable and unique.
     """
-
     assert type(s) == dict or type(s) == list, 'Input must be a dictionary or list.'
     if type(s) == list:
         s = dict(enumerate(s))
-    # if Q_VERBOSE > 1 and not len(set(s.values()))==len(s.values()):
-    #	print('>> Warning: %d overlapping values. Length will be shorter.'% \
-    #		(len(s.values())-len(set(s.values()))+1))
-
     s_rev = dict((v, k) for k, v in s.items())
     if Q_VERBOSE > 0 and not len(s_rev) == len(s):
-        print('** WARNING sort_by_value(): %d identical values' % (len(s.values()) - len(set(s.values())) + 1))
+        logger.warning('sort_by_value(): %d identical values' % (len(s.values()) - len(set(s.values())) + 1))
     values = sorted(s_rev, reverse=rev)
     keys = [s_rev[x] for x in values]
     return keys, values
@@ -419,12 +405,11 @@ def make_dirs(dirname, delete=False):
     Recusively create directories.
     if delete=true, directory will be deleted first if exists.
     """
-    import shutil
     if os.path.exists(dirname) and delete == True:
         try:
             shutil.rmtree(dirname)
         except OSError:
-            print_error('Directory was not completely removed. (Perhaps a Dropbox folder?). Continuing.')
+            logger.error('Directory was not completely removed. (Perhaps a Dropbox folder?). Continuing.')
     if not os.path.exists(dirname):
         os.makedirs(dirname)
 
@@ -460,7 +445,6 @@ def loadtxt_fast(filename, delimiter=',', skiprows=0, dtype=float):
     Much faster matrix loading than numpy's loadtxt
     http://stackoverflow.com/a/8964779
     """
-
     def iter_func():
         with open(filename, 'r') as infile:
             for _ in range(skiprows):
@@ -485,7 +469,6 @@ def parse_path(file_path):
         self.name = file name without extension
         self.ext = file extension
     """
-
     class path_info:
         def __init__(self, path):
             path_abs = os.path.realpath(path).replace('\\', '/')
@@ -540,9 +523,7 @@ class Timer(object):
     Timer class
 
     if autoreset=True, timer is reset after any member function call
-
     """
-
     def __init__(self, autoreset=False):
         self.autoreset = autoreset
         self.reset()
