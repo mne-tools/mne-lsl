@@ -643,7 +643,7 @@ def compute_features(cfg):
         pu.rereference(raw, cfg.REF_CH[1], cfg.REF_CH[0])
     if cfg.LOAD_EVENTS_FILE is not None:
         events = mne.read_events(cfg.LOAD_EVENTS_FILE)
-    triggers = {cfg.tdef.by_value[c]:c for c in set(cfg.TRIGGER_FILE)}
+    triggers = {cfg.tdef.by_value[c]:c for c in set(cfg.TRIGGER_DEF)}
 
     # Pick channels
     if cfg.CHANNEL_PICKS is None:
