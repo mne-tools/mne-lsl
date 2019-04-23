@@ -101,7 +101,7 @@ Use the OpenVibe acquisition server and make sure to check "LSL output" in prefe
 
 
 # To do
-  - GUI-based setting tools (in progress)
+  - GUI (in progress)
   - Tutorial 
   - More cpu-efficient decoder class
   - Numba optimization
