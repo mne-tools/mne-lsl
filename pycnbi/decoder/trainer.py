@@ -623,7 +623,7 @@ def fit_predict_thres(cls, X_train, Y_train, X_test, Y_test, cnum, label_list, i
     return score, cm
 
 
-def compute_features(cfg):
+def compute_features(cfg, interactive=False):
     # Load file list
     ftrain = []
     for f in qc.get_file_list(cfg.DATADIR, fullpath=True):
@@ -638,6 +638,7 @@ def compute_features(cfg):
     if cfg.REF_CH is not None:
         raise NotImplementedError('Sorry! Channel re-referencing is under development!')
         pu.rereference(raw, cfg.REF_CH[1], cfg.REF_CH[0])
+    triggers = {cfg.tdef.by_value[c]:c for c in set(cfg.TRIGGER_DEF)}
 
     # Pick channels
     if cfg.CHANNEL_PICKS is None:
