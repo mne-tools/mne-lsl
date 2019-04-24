@@ -451,7 +451,7 @@ def crossval_epochs(cv, epochs_data, labels, cls, label_names=None, do_balance=F
         for c in r:
             cm_txt += tpl_float % c
         cm_txt += '\n'
-    cm_txt += 'Average accuracy: %.2f' % np.mean(scores)
+    cm_txt += 'Average accuracy: %.2f\n' % np.mean(scores)
 
     return np.array(scores), cm_txt
 
