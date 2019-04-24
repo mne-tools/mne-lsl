@@ -118,6 +118,10 @@ class Feedback:
             self.tm_display.reset()
             if state == 'start' and self.tm_trigger.sec() > self.cfg.T_INIT:
                 state = 'gap_s'
+                if self.cfg.TRIAL_PAUSE:
+                    self.viz.put_text('Press any key')
+                    self.viz.update()
+                    key = cv2.waitKey()
                 self.viz.fill()
                 self.tm_trigger.reset()
                 self.trigger.signal(self.tdef.INIT)
@@ -282,7 +286,7 @@ class Feedback:
                         '''
                         New decoder: already smoothed by the decoder so bias after.
                         '''
-                        probs = probs_new
+                        probs = list(probs_new)
                         if self.bar_bias is not None:
                             probs[bias_idx] += self.bar_bias[1]
                             newsum = sum(probs)
@@ -359,7 +363,7 @@ class Feedback:
 
                             # send the confidence value continuously
                             if self.cfg.WITH_STIMO and self.cfg.STIMO_CONTINUOUS:
-                                if self.stimo_timer.sec() >= 0.2:
+                                if self.stimo_timer.sec() >= self.cfg.STIMO_COOLOFF:
                                     if bar_label == 'U':
                                         stimo_code = bar_score
                                     else:
@@ -373,7 +377,7 @@ class Feedback:
                                 biastxt = '[Bias=%s%.3f]  ' % (self.bar_bias[0], self.bar_bias[1])
                             else:
                                 biastxt = ''
-                            msg = '%s%s  raw %s   acc %s   bar %s%d  (%.1f ms)' % \
+                            msg = '%s%s  prob %s   acc %s   bar %s%d  (%.1f ms)' % \
                                   (biastxt, bar_dirs, qc.list2string(probs_new, '%.2f'), qc.list2string(probs, '%.2f'),
                                    bar_label, bar_score, tm_classify.msec())
                             logger.info(msg)

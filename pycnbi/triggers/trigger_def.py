@@ -26,7 +26,7 @@ def trigger_def(ini_file, verbose=False):
                 self.by_value[value] = key
 
         # show all possible trigger values
-        def check_data():
+        def check_data(self):
             print('Attributes of the final class')
             for attr in dir(self):
                 if not callable(getattr(self, attr)) and not attr.startswith("__"):
