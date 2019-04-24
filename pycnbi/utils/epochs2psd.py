@@ -22,6 +22,8 @@ mne.set_log_level('ERROR')
 def epochs2psd(raw, channel_picks, event_id, tmin, tmax, fmin, fmax, w_len_sec, w_step, excludes='bads', export_dir=None, n_jobs=None, save_matlab=False):
     """
     Compute PSD features over a sliding window in epochs
+    
+    Do not forget to call preprocess() before running this function.
 
     Input
     =====
@@ -77,7 +79,7 @@ def epochs2psd(raw, channel_picks, event_id, tmin, tmax, fmin, fmax, w_len_sec, 
         picks = channel_picks
     else:
         raise ValueError('Unknown data type (%s) in channel_picks' % type(channel_picks[0]))
-    epochs = mne.Epochs(raw, events, event_id, tmin=tmin, tmax=tmax, proj=False, picks=picks, baseline=(tmin, tmax), preload=True)
+    epochs = mne.Epochs(raw, events, event_id, tmin=tmin, tmax=tmax, proj=False, picks=picks, baseline=None, preload=True, detrend=None)
 
     # compute psd vectors over a sliding window between tmin and tmax
     sfreq = raw.info['sfreq']

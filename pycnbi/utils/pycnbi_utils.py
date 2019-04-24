@@ -117,7 +117,7 @@ def get_psd(epochs, psde, wlen, wstep, picks=None, flatten=True, n_jobs=1):
     if n_jobs is None:
         n_jobs = mp.cpu_count()
     if n_jobs > 1:
-        logger.info('get_psd(): Opening a pool of %d workers' % n_jobs)
+        logger.info('Opening a pool of %d workers' % n_jobs)
         pool = mp.Pool(n_jobs)
 
     # compute PSD from sliding windows of each epoch
