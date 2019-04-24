@@ -81,13 +81,10 @@ def check_config(cfg):
 
     # optional variables with default values
     optional_vars = {
-        'LOAD_PSD':False,
         'MULTIPLIER':1,
         'EXPORT_GOOD_FEATURES':False,
         'FEAT_TOPN':10,
         'EXPORT_CLS':False,
-        'USE_LOG':False,
-        'USE_CVA':False,
         'REF_CH':None,
         'N_JOBS':None,
         'EXCLUDES':None,
@@ -641,9 +638,7 @@ def compute_features(cfg):
     if cfg.REF_CH is not None:
         raise NotImplementedError('Sorry! Channel re-referencing is under development!')
         pu.rereference(raw, cfg.REF_CH[1], cfg.REF_CH[0])
-    if cfg.LOAD_EVENTS_FILE is not None:
-        events = mne.read_events(cfg.LOAD_EVENTS_FILE)
-    triggers = {cfg.tdef.by_value[c]:c for c in set(cfg.TRIGGER_FILE)}
+    triggers = {cfg.tdef.by_value[c]:c for c in set(cfg.TRIGGER_DEF)}
 
     # Pick channels
     if cfg.CHANNEL_PICKS is None:
@@ -717,16 +712,6 @@ def compute_features(cfg):
     # Compute features
     if cfg.FEATURES == 'PSD':
         featdata = get_psd_feature(epochs_train, cfg.EPOCH, cfg.PSD, feat_picks=None, n_jobs=cfg.N_JOBS)
-    elif cfg.FEATURES == 'TIMELAG':
-        '''
-        TODO: Implement multiple epochs for timelag feature
-        '''
-        raise NotImplementedError('MULTIPLE EPOCHS NOT IMPLEMENTED YET FOR TIMELAG FEATURE.')
-    elif cfg.FEATURES == 'WAVELET':
-        '''
-        TODO: Implement multiple epochs for wavelet feature
-        '''
-        raise NotImplementedError('MULTIPLE EPOCHS NOT IMPLEMENTED YET FOR WAVELET FEATURE.')
     else:
         raise NotImplementedError('%s feature type is not supported.' % cfg.FEATURES)
 
@@ -905,8 +890,6 @@ def train_decoder(cfg, featdata, feat_file=None):
                     spatial_ch=featdata['picks'], spectral=cfg.TP_FILTER, spectral_ch=featdata['picks'],
                     notch=cfg.NOTCH_FILTER, notch_ch=featdata['picks'], multiplier=cfg.MULTIPLIER,
                     ref_ch=cfg.REF_CH)
-    elif cfg.FEATURES == 'TIMELAG':
-        data = dict(cls=cls, parameters=cfg.TIMELAG)
     clsfile = '%s/classifier/classifier-%s.pkl' % (cfg.DATADIR, platform.architecture()[0])
     qc.make_dirs('%s/classifier' % cfg.DATADIR)
     qc.save_obj(clsfile, data)
