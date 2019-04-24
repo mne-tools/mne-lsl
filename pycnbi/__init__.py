@@ -79,7 +79,8 @@ for d in qc.get_dir_list(ROOT):
         exe_package = 'import pycnbi.%s' % d.replace(ROOT + '/', '')
         exec(exe_package)
 
-# pycnbi logger
+# set loggers
+logging.getLogger('matplotlib').setLevel(logging.ERROR)
 logger = logging.getLogger('pycnbi')
 logger.propagate = False
 init_logger()
