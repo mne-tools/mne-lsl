@@ -108,25 +108,25 @@ def slice_win(epochs_data, w_starts, w_length, psde, picks=None, epoch_id=None, 
 
 def get_psd(epochs, psde, wlen, wstep, picks=None, flatten=True, n_jobs=1):
     """
-    Offline computation of multi-taper PSDs over a sliding window
-
-    Params
+    Compute multi-taper PSDs over a sliding window
+    
+    Input
+    =====
     epochs: MNE Epochs object
     psde: MNE PSDEstimator object
     wlen: window length in frames
     wstep: window step in frames
-    picks: channel picks
+    picks: channels to be used; use all if None
     flatten: boolean, see Returns section
     n_jobs: nubmer of cores to use, None = use all cores
 
-    Returns
-    -------
+    Output
+    ======
     if flatten==True:
         X_data: [epochs] x [windows] x [channels*freqs]
     else:
         X_data: [epochs] x [windows] x [channels] x [freqs]
     y_data: [epochs] x [windows]
-    picks: feature indices to be used; use all if None
 
     TODO:
         Accept input as numpy array as well, in addition to Epochs object
@@ -188,7 +188,9 @@ def get_psd(epochs, psde, wlen, wstep, picks=None, flatten=True, n_jobs=1):
 
 def get_psd_feature(epochs_train, window, psdparam, picks=None, n_jobs=1):
     """
-    input
+    Wrapper for get_psd() adding meta information.
+    
+    Input
     =====
     epochs_train: mne.Epochs object or list of mne.Epochs object.
     window: [t_start, t_end]. Time window range for computing PSD.
@@ -196,7 +198,7 @@ def get_psd_feature(epochs_train, window, psdparam, picks=None, n_jobs=1):
               fmin, fmax in Hz, wlen in seconds, wstep in number of samples.
     picks: Channels to compute features from.
     
-    output
+    Output
     ======
     dict object containing computed features.
     """
@@ -271,16 +273,16 @@ def get_timelags(epochs, wlen, wstep, downsample=1, picks=None):
 
     TODO: Unit test.
 
-    Params
-    ======
+    Input
+    =====
     epochs: input signals
     wlen: window length (# time points) in downsampled data
     wstep: window step in downsampled data
     downsample: downsample signal to be 1/downsample length
     picks: ignored for now
 
-    Returns
-    =======
+    Output
+    ======
     X: [epochs] x [windows] x [channels*freqs]
     y: [epochs] x [labels]
     """
@@ -327,14 +329,14 @@ def feature2chz(x, fqlist, ch_names):
     """
     Label channel, frequency pair for PSD feature indices
 
-    Params
-    ======
+    Input
+    =====
     x: feature index
     fqlist: list of frequency bands
     ch_names: list of complete channel names
 
-    Returns
-    =======
+    Output
+    ======
     (channel, frequency)
 
     """
@@ -367,6 +369,16 @@ def cva_features(datadir):
 def compute_features(cfg):
     '''
     Compute features using config specification.
+    
+    Performs preprocessing, epcoching and feature computation.
+    
+    Input
+    =====
+    Config file object
+    
+    Output
+    ======
+    Feature data in dictionary format    
     '''
     # Preprocessing, epoching and PSD computation
     ftrain = []
@@ -378,8 +390,8 @@ def compute_features(cfg):
             'When loading multiple EEG files, CHANNEL_PICKS must be list of string, not integers because they may have different channel order.')
     raw, events = pu.load_multi(ftrain)
     if cfg.REF_CH is not None:
+        #pu.rereference(raw, cfg.REF_CH[1], cfg.REF_CH[0])
         raise NotImplementedError('Sorry! Channel re-referencing is under development!')
-        pu.rereference(raw, cfg.REF_CH[1], cfg.REF_CH[0])
     if cfg.LOAD_EVENTS_FILE is not None:
         events = mne.read_events(cfg.LOAD_EVENTS_FILE)
     triggers = {cfg.tdef.by_value[c]:c for c in set(cfg.TRIGGER_DEF)}
