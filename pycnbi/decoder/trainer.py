@@ -3,7 +3,7 @@ from __future__ import print_function, division
 """
 trainer.py
 
-Compute features, perform cross-validation and train a classifier.
+Perform cross-validation and train a classifier.
 See run() to see the flow.
 
 
@@ -39,6 +39,7 @@ import multiprocessing as mp
 import sklearn.metrics as skmetrics
 import pycnbi.utils.q_common as qc
 import pycnbi.utils.pycnbi_utils as pu
+import pycnbi.decoder.features as features
 from mne import Epochs, pick_types
 from pycnbi import logger
 from pycnbi.decoder.rlda import rLDA
@@ -134,161 +135,6 @@ def check_config(cfg):
         cfg.N_JOBS = mp.cpu_count()
 
     return cfg
-
-
-def get_psd_feature(epochs_train, window, psdparam, feat_picks=None, n_jobs=1):
-    """
-    params
-    ======
-      epochs_train: mne.Epochs object or list of mne.Epochs object.
-      window: time window range for computing PSD. Can be [a,b] or [ [a1,b1], [a1,b2], ...]
-    """
-
-    if type(window[0]) is list:
-        sfreq = epochs_train[0].info['sfreq']
-        wlen = []
-        w_frames = []
-        # multiple PSD estimators, defined for each epoch
-        if type(psdparam) is list:
-            '''
-            TODO: implement multi-window PSD for each epoch
-            assert len(psdparam) == len(window)
-            for i, p in enumerate(psdparam):
-                if p['wlen'] is None:
-                    wl = window[i][1] - window[i][0]
-                else:
-                    wl = p['wlen']
-                wlen.append(wl)
-                w_frames.append(int(sfreq * wl))
-            '''
-            raise NotImplementedError('Multiple psd function not implemented yet.')
-        # same PSD estimator for all epochs
-        else:
-            for i, e in enumerate(window):
-                if psdparam['wlen'] is None:
-                    wl = window[i][1] - window[i][0]
-                else:
-                    wl = psdparam['wlen']
-                assert wl > 0
-                wlen.append(wl)
-                w_frames.append(int(sfreq * wl))
-    else:
-        sfreq = epochs_train.info['sfreq']
-        wlen = window[1] - window[0]
-        if psdparam['wlen'] is None:
-            psdparam['wlen'] = wlen
-        w_frames = int(sfreq * psdparam['wlen'])  # window length
-
-    psde = mne.decoding.PSDEstimator(sfreq=sfreq, fmin=psdparam['fmin'],\
-                                     fmax=psdparam['fmax'], bandwidth=None, adaptive=False, low_bias=True,\
-                                     n_jobs=1, normalization='length', verbose='WARNING')
-
-    logger.info('\n>> Computing PSD for training set')
-    if type(epochs_train) is list:
-        X_all = []
-        for i, ep in enumerate(epochs_train):
-            X, Y_data = pu.get_psd(ep, psde, w_frames[i], psdparam['wstep'], feat_picks, n_jobs=n_jobs)
-            X_all.append(X)
-        # concatenate along the feature dimension
-        # feature index order: window block x channel block x frequency block
-        # feature vector = [window1, window2, ...]
-        # where windowX = [channel1, channel2, ...]
-        # where channelX = [freq1, freq2, ...]
-        X_data = np.concatenate(X_all, axis=2)
-    else:
-        # feature index order: channel block x frequency block
-        # feature vector = [channel1, channel2, ...]
-        # where channelX = [freq1, freq2, ...]
-        X_data, Y_data = pu.get_psd(epochs_train, psde, w_frames, psdparam['wstep'], feat_picks, n_jobs=n_jobs)
-
-    # return a class-like data structure
-    return dict(X_data=X_data, Y_data=Y_data, wlen=wlen, w_frames=w_frames, psde=psde)
-
-
-def get_timelags(epochs, wlen, wstep, downsample=1, picks=None):
-    """
-    (DEPRECATED FUNCTION)
-    Get concatenated timelag features
-
-    TODO: Unit test.
-
-    Params
-    ======
-    epochs: input signals
-    wlen: window length (# time points) in downsampled data
-    wstep: window step in downsampled data
-    downsample: downsample signal to be 1/downsample length
-    picks: ignored for now
-
-    Returns
-    =======
-    X: [epochs] x [windows] x [channels*freqs]
-    y: [epochs] x [labels]
-    """
-
-    wlen = int(wlen)
-    wstep = int(wstep)
-    downsample = int(downsample)
-    X_data = None
-    y_data = None
-    labels = epochs.events[:, -1]  # every epoch must have event id
-    epochs_data = epochs.get_data()
-    n_channels = epochs_data.shape[1]
-    # trim to the nearest divisible length
-    epoch_ds_len = int(epochs_data.shape[2] / downsample)
-    epoch_len = downsample * epoch_ds_len
-    range_epochs = np.arange(epochs_data.shape[0])
-    range_channels = np.arange(epochs_data.shape[1])
-    range_windows = np.arange(epoch_ds_len - wlen, 0, -wstep)
-    X_data = np.zeros((len(range_epochs), len(range_windows), wlen * n_channels))
-
-    # for each epoch
-    for ep in range_epochs:
-        epoch = epochs_data[ep, :, :epoch_len]
-        ds = qc.average_every_n(epoch.reshape(-1), downsample)  # flatten to 1-D, then downsample
-        epoch_ds = ds.reshape(n_channels, -1)  # recover structure to channel x samples
-        # for each window over all channels
-        for i in range(len(range_windows)):
-            w = range_windows[i]
-            X = epoch_ds[:, w:w + wlen].reshape(1, -1)  # our feature vector
-            X_data[ep, i, :] = X
-
-        # fill labels
-        y = np.empty((1, len(range_windows)))  # 1 x windows
-        y.fill(labels[ep])
-        if y_data is None:
-            y_data = y
-        else:
-            y_data = np.concatenate((y_data, y), axis=0)
-
-    return X_data, y_data
-
-
-def feature2chz(x, fqlist, ch_names):
-    """
-    Label channel, frequency pair for PSD feature indices
-
-    Params
-    ======
-    x: feature index
-    fqlist: list of frequency bands
-    ch_names: list of complete channel names
-
-    Returns
-    =======
-    (channel, frequency)
-
-    """
-
-    x = np.array(x).astype('int64').reshape(-1)
-    fqlist = np.array(fqlist).astype('float64')
-    ch_names = np.array(ch_names)
-
-    n_fq = len(fqlist)
-    hz = fqlist[x % n_fq]
-    ch = (x / n_fq).astype('int64')  # 0-based indexing
-
-    return ch_names[ch], hz
 
 
 def balance_samples(X, Y, balance_type, verbose=False):
@@ -626,116 +472,6 @@ def fit_predict_thres(cls, X_train, Y_train, X_test, Y_test, cnum, label_list, i
     return score, cm
 
 
-def compute_features(cfg):
-    # Load file list
-    ftrain = []
-    for f in qc.get_file_list(cfg.DATADIR, fullpath=True):
-        if f[-4:] in ['.fif', '.fiff']:
-            ftrain.append(f)
-
-    # Preprocessing, epoching and PSD computation
-    if len(ftrain) > 1 and cfg.CHANNEL_PICKS is not None and type(cfg.CHANNEL_PICKS[0]) == int:
-        raise RuntimeError(
-            'When loading multiple EEG files, CHANNEL_PICKS must be list of string, not integers because they may have different channel order.')
-    raw, events = pu.load_multi(ftrain)
-    if cfg.REF_CH is not None:
-        raise NotImplementedError('Sorry! Channel re-referencing is under development!')
-        pu.rereference(raw, cfg.REF_CH[1], cfg.REF_CH[0])
-    if cfg.LOAD_EVENTS_FILE is not None:
-        events = mne.read_events(cfg.LOAD_EVENTS_FILE)
-    triggers = {cfg.tdef.by_value[c]:c for c in set(cfg.TRIGGER_DEF)}
-
-    # Pick channels
-    if cfg.CHANNEL_PICKS is None:
-        chlist = [int(x) for x in pick_types(raw.info, stim=False, eeg=True)]
-    else:
-        chlist = cfg.CHANNEL_PICKS
-    picks = []
-    for c in chlist:
-        if type(c) == int:
-            picks.append(c)
-        elif type(c) == str:
-            picks.append(raw.ch_names.index(c))
-        else:
-            raise RuntimeError(
-                'CHANNEL_PICKS has a value of unknown type %s.\nCHANNEL_PICKS=%s' % (type(c), cfg.CHANNEL_PICKS))
-    if cfg.EXCLUDES is not None:
-        for c in cfg.EXCLUDES:
-            if type(c) == str:
-                if c not in raw.ch_names:
-                    logger.warning('Exclusion channel %s does not exist. Ignored.' % c)
-                    continue
-                c_int = raw.ch_names.index(c)
-            elif type(c) == int:
-                c_int = c
-            else:
-                raise RuntimeError(
-                    'EXCLUDES has a value of unknown type %s.\nEXCLUDES=%s' % (type(c), cfg.EXCLUDES))
-            if c_int in picks:
-                del picks[picks.index(c_int)]
-    if max(picks) > len(raw.ch_names):
-        raise ValueError('"picks" has a channel index %d while there are only %d channels.' % (max(picks), len(raw.ch_names)))
-    if hasattr(cfg, 'SP_CHANNELS') and cfg.SP_CHANNELS is not None:
-        logger.warning('SP_CHANNELS parameter is not supported yet. Will be set to CHANNEL_PICKS.')
-    if hasattr(cfg, 'TP_CHANNELS') and cfg.TP_CHANNELS is not None:
-        logger.warning('TP_CHANNELS parameter is not supported yet. Will be set to CHANNEL_PICKS.')
-    if hasattr(cfg, 'NOTCH_CHANNELS') and cfg.NOTCH_CHANNELS is not None:
-        logger.warning('NOTCH_CHANNELS parameter is not supported yet. Will be set to CHANNEL_PICKS.')
-
-    # Read epochs
-    try:
-        # Experimental: multiple epoch ranges
-        if type(cfg.EPOCH[0]) is list:
-            epochs_train = []
-            for ep in cfg.EPOCH:
-                epoch = Epochs(raw, events, triggers, tmin=ep[0], tmax=ep[1],
-                    proj=False, picks=picks, baseline=None, preload=True,
-                    verbose=False, detrend=None)
-                # Channels are already selected by 'picks' param so use all channels.
-                pu.preprocess(epoch, spatial=cfg.SP_FILTER, spatial_ch=None,
-                              spectral=cfg.TP_FILTER, spectral_ch=None, notch=cfg.NOTCH_FILTER,
-                              notch_ch=None, multiplier=cfg.MULTIPLIER, n_jobs=cfg.N_JOBS)
-                epochs_train.append(epoch)
-        else:
-            # Usual method: single epoch range
-            epochs_train = Epochs(raw, events, triggers, tmin=cfg.EPOCH[0],
-                tmax=cfg.EPOCH[1], proj=False, picks=picks, baseline=None,
-                preload=True, verbose=False, detrend=None)
-            # Channels are already selected by 'picks' param so use all channels.
-            pu.preprocess(epochs_train, spatial=cfg.SP_FILTER, spatial_ch=None,
-                          spectral=cfg.TP_FILTER, spectral_ch=None, notch=cfg.NOTCH_FILTER, notch_ch=None,
-                          multiplier=cfg.MULTIPLIER, n_jobs=cfg.N_JOBS)
-    except:
-        logger.exception('Problem while epoching.')
-        if interactive:
-            print('Dropping to a shell.\n')
-            embed()
-        raise RuntimeError
-
-    label_set = np.unique(triggers.values())
-
-    # Compute features
-    if cfg.FEATURES == 'PSD':
-        featdata = get_psd_feature(epochs_train, cfg.EPOCH, cfg.PSD, feat_picks=None, n_jobs=cfg.N_JOBS)
-    elif cfg.FEATURES == 'TIMELAG':
-        '''
-        TODO: Implement multiple epochs for timelag feature
-        '''
-        raise NotImplementedError('MULTIPLE EPOCHS NOT IMPLEMENTED YET FOR TIMELAG FEATURE.')
-    elif cfg.FEATURES == 'WAVELET':
-        '''
-        TODO: Implement multiple epochs for wavelet feature
-        '''
-        raise NotImplementedError('MULTIPLE EPOCHS NOT IMPLEMENTED YET FOR WAVELET FEATURE.')
-    else:
-        raise NotImplementedError('%s feature type is not supported.' % cfg.FEATURES)
-
-    featdata['picks'] = picks
-    featdata['sfreq'] = raw.info['sfreq']
-    featdata['ch_names'] = raw.ch_names
-    return featdata
-
-
 def cross_validate(cfg, featdata, cv_file=None):
     """
     Perform cross validation
@@ -948,7 +684,7 @@ def train_decoder(cfg, featdata, feat_file=None):
                 for c in featdata['picks']:
                     ch_names.append('w%d-%s' % (w, ch_names[c]))
 
-        chlist, hzlist = feature2chz(keys, fqlist, ch_names=ch_names)
+        chlist, hzlist = features.feature2chz(keys, fqlist, ch_names=ch_names)
         valnorm = values[:cfg.FEAT_TOPN].copy()
         valnorm = valnorm / np.sum(valnorm) * 100.0
 
@@ -970,7 +706,7 @@ def train_decoder(cfg, featdata, feat_file=None):
 
 def run(cfg, interactive=False, cv_file=None, feat_file=None):
     # Extract features
-    featdata = compute_features(cfg)
+    featdata = features.compute_features(cfg)
 
     # Find optimal threshold for TPR balancing
     #balance_tpr(cfg, featdata)
@@ -991,7 +727,7 @@ def load_config(cfg_file):
     return imp.load_source(cfg_file, cfg_file)
 
 
-# for batch script
+# for batch scripts
 def batch_run(cfg_file):
     cfg = load_config(cfg_file)
     cfg = check_config(cfg)
