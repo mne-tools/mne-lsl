@@ -506,7 +506,7 @@ class BCIDecoderDaemon(object):
         The last computed probability.
         """
         self.pread.value = 1
-        return self.probs[:]
+        return list(self.probs[:])
 
     def get_prob_unread(self):
         """
@@ -527,7 +527,7 @@ class BCIDecoderDaemon(object):
         The last computed probability.
         """
         self.pread.value = 1
-        return self.probs_smooth[:]
+        return list(self.probs_smooth[:])
 
     def get_prob_smooth_unread(self):
         """
