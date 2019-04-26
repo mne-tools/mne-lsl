@@ -314,7 +314,7 @@ class BCIDecoderDaemon(object):
             tdef = trigger_def('triggerdef_16.ini')
             if type(fake_dirs) is not list:
                 raise RuntimeError('Decoder(): wrong argument type of fake_dirs: %s.' % type(fake_dirs))
-            self.labels = [tdef.by_key[t] for t in fake_dirs]
+            self.labels = [tdef.by_name[t] for t in fake_dirs]
             self.label_names = [tdef.by_value[v] for v in self.labels]
             self.startmsg = '** WARNING: FAKE ' + self.startmsg
             self.stopmsg = 'FAKE ' + self.stopmsg
