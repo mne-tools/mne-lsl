@@ -15,11 +15,11 @@ import pycnbi.utils.pycnbi_utils as pu
 from pycnbi.triggers.trigger_def import trigger_def
 from pycnbi import logger
 
-def merge_events(trigger_file, events, eeg_in, eeg_out):
+def merge_events(trigger_file, events, rawfile_in, rawfile_out):
     tdef = trigger_def(trigger_file)
-    raw, eve = pu.load_raw(eeg_in)
+    raw, eve = pu.load_raw(rawfile_in)
 
-    logger.info('\nEvents before merging')
+    logger.info('\n\nBefore merging')
     for key in np.unique(eve[:, 2]):
         logger.info('%s: %d' % (tdef.by_value[key], len(np.where(eve[:, 2] == key)[0])))
 
@@ -39,24 +39,23 @@ def merge_events(trigger_file, events, eeg_in, eeg_out):
     # reset trigger channel
     raw._data[0] *= 0
     raw.add_events(eve, 'TRIGGER')
-    raw.save(eeg_out, overwrite=True)
+    raw.save(rawfile_out, overwrite=True)
 
-    logger.info('\nResulting events')
+    logger.info('\nAfter merging')
     for key in np.unique(eve[:, 2]):
         logger.info('%s: %d' % (tdef.by_value[key], len(np.where(eve[:, 2] == key)[0])))
 
+# sample code
 if __name__ == '__main__':
     fif_dir = r'D:\data\STIMO\GO004\offline\all'
     trigger_file = 'triggerdef_gait_chuv.ini'
     events = {'BOTH_GO':['LEFT_GO', 'RIGHT_GO']}
 
-    fiflist = []
     out_dir = fif_dir + '/merged'
     qc.make_dirs(out_dir)
-    for f in qc.get_file_list(fif_dir):
-        p = qc.parse_path(f)
+    for rawfile_in in qc.get_file_list(fif_dir):
+        p = qc.parse_path(rawfile_in)
         if p.ext != 'fif':
             continue
-        eeg_in = f
-        eeg_out = '%s/%s.%s' % (out_dir, p.name, p.ext)
-        merge_events(trigger_file, events, eeg_in, eeg_out)
+        rawfile_out = '%s/%s.%s' % (out_dir, p.name, p.ext)
+        merge_events(trigger_file, events, rawfile_in, rawfile_out)
