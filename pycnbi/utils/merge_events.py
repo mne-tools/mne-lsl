@@ -25,10 +25,10 @@ def merge_events(trigger_file, events, eeg_in, eeg_out):
 
     for key in events:
         ev_src = events[key]
-        ev_out = tdef.by_key[key]
+        ev_out = tdef.by_name[key]
         x = []
         for e in ev_src:
-            x.append(np.where(eve[:, 2] == tdef.by_key[e])[0])
+            x.append(np.where(eve[:, 2] == tdef.by_name[e])[0])
         eve[np.concatenate(x), 2] = ev_out
 
     # sanity check
