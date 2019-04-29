@@ -70,8 +70,7 @@ def slice_win(epochs_data, w_starts, w_length, psde, picks=None, epoch_id=None, 
 
     # raise error for wrong indexing
     def WrongIndexError(Exception):
-        sys.stderr.write('\nERROR: %s\n' % Exception)
-        sys.exit(-1)
+        logger.error('%s' % Exception)
 
     w_length = int(w_length)
 
@@ -84,8 +83,7 @@ def slice_win(epochs_data, w_starts, w_length, psde, picks=None, epoch_id=None, 
     for n in w_starts:
         n = int(n)
         if n >= epochs_data.shape[1]:
-            raise WrongIndexError(
-                'w_starts has an out-of-bounds index %d for epoch length %d.' % (n, epochs_data.shape[1]))
+            raise WrongIndexError('w_starts has an out-of-bounds index %d for epoch length %d.' % (n, epochs_data.shape[1]))
         window = epochs_data[:, n:(n + w_length)]
 
         # dimension: psde.transform( [epochs x channels x times] )
@@ -177,13 +175,12 @@ def get_psd(epochs, psde, wlen, wstep, picks=None, flatten=True, n_jobs=1):
         pool.close()
         pool.join()
 
-    # flatten channel x frequency feature dimensions?
     if flatten:
-        return X_data, y_data
+        return X_data, y_data.astype(np.int)
     else:
         xs = X_data.shape
         nch = len(epochs.ch_names)
-        return X_data.reshape(xs[0], xs[1], nch, int(xs[2] / nch)), y_data
+        return X_data.reshape(xs[0], xs[1], nch, int(xs[2] / nch)), y_data.astype(np.int)
 
 
 def get_psd_feature(epochs_train, window, psdparam, picks=None, n_jobs=1):
@@ -378,7 +375,16 @@ def compute_features(cfg):
     
     Output
     ======
-    Feature data in dictionary format    
+    Feature data in dictionary
+    - X_data: feature vectors
+    - Y_data: feature labels
+    - wlen: window length in seconds
+    - w_frames: window length in frames
+    - psde: MNE PSD estimator object
+    - picks: channels used for feature computation
+    - sfreq: sampling frequency
+    - ch_names: channel names
+    - times: feature timestamp (leading edge of a window)
     '''
     # Preprocessing, epoching and PSD computation
     ftrain = []
@@ -449,9 +455,8 @@ def compute_features(cfg):
                 epochs_train.append(epoch)
         else:
             # Usual method: single epoch range
-            epochs_train = Epochs(raw, events, triggers, tmin=cfg.EPOCH[0],
-                tmax=cfg.EPOCH[1], proj=False, picks=picks, baseline=None,
-                preload=True, verbose=False, detrend=None)
+            epochs_train = Epochs(raw, events, triggers, tmin=cfg.EPOCH[0], tmax=cfg.EPOCH[1], proj=False,
+                picks=picks, baseline=None, preload=True, verbose=False, detrend=None, on_missing='warning')
             # Channels are already selected by 'picks' param so use all channels.
             pu.preprocess(epochs_train, spatial=cfg.SP_FILTER, spatial_ch=None,
                           spectral=cfg.TP_FILTER, spectral_ch=None, notch=cfg.NOTCH_FILTER, notch_ch=None,
