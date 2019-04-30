@@ -65,6 +65,10 @@ def add_coloring_to_emit_windows(fn):
             color = FOREGROUND_RED | FOREGROUND_INTENSITY
         elif(levelno>=30):
             color = FOREGROUND_YELLOW | FOREGROUND_INTENSITY
+        elif(levelno>=26):
+            color = FOREGROUND_BLUE | FOREGROUND_INTENSITY
+        elif(levelno>=23):
+            color = FOREGROUND_GREEN | FOREGROUND_INTENSITY
         elif(levelno>=20):
             color = FOREGROUND_WHITE | FOREGROUND_INTENSITY
         elif(levelno>=10):

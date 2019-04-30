@@ -14,10 +14,12 @@ import logging
 import pycnbi.colorer
 from pycnbi.utils import q_common as qc
 
-# log level options
+# log level options provided by pycnbi
 LOG_LEVELS = {
     'DEBUG':logging.DEBUG,
     'INFO':logging.INFO,
+    'INFO_GREEN':23,
+    'INFO_BLUE':26,
     'WARNING':logging.WARNING,
     'ERROR':logging.ERROR
 }
@@ -32,19 +34,35 @@ class PycnbiFormatter(logging.Formatter):
         logging.Formatter.__init__(self, fmt)
 
     def format(self, record):
-        if record.levelno == logging.DEBUG:
+        if record.levelno == LOG_LEVELS['DEBUG']:
             self._fmt = self.fmt_debug
-        elif record.levelno == logging.INFO:
+        elif record.levelno == LOG_LEVELS['INFO']:
             self._fmt = self.fmt_info
-        elif record.levelno == logging.WARNING:
+        elif record.levelno == LOG_LEVELS['INFO_GREEN']:
+            self._fmt = self.fmt_info
+        elif record.levelno == LOG_LEVELS['INFO_BLUE']:
+            self._fmt = self.fmt_info
+        elif record.levelno == LOG_LEVELS['WARNING']:
             self._fmt = self.fmt_warning
-        elif record.levelno >= logging.ERROR:
+        elif record.levelno >= LOG_LEVELS['ERROR']:
             self._fmt = self.fmt_error
         self._style = logging.PercentStyle(self._fmt)
         return logging.Formatter.format(self, record)
 
 def init_logger(verbose_console='INFO', verbose_file=None):
     if not logger.hasHandlers():
+        # add custom log levels
+        logging.addLevelName(LOG_LEVELS['INFO_GREEN'], 'INFO_GREEN')
+        def __log_info_green(self, message, *args, **kwargs):
+            if self.isEnabledFor(LOG_LEVELS['INFO_GREEN']):
+                self._log(LOG_LEVELS['INFO_GREEN'], message, args, **kwargs)
+        logging.Logger.info_green = __log_info_green
+        logging.addLevelName(LOG_LEVELS['INFO_BLUE'], 'INFO_BLUE')
+        def __log_info_blue(self, message, *args, **kwargs):
+            if self.isEnabledFor(LOG_LEVELS['INFO_BLUE']):
+                self._log(LOG_LEVELS['INFO_BLUE'], message, args, **kwargs)
+        logging.Logger.info_blue = __log_info_blue
+
         # console logger handler
         c_handler = logging.StreamHandler(sys.stdout)
         c_handler.setFormatter(PycnbiFormatter())
