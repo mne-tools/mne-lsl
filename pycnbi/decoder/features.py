@@ -49,18 +49,18 @@ from xgboost import XGBClassifier
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
 
 
-def slice_win(epochs_data, w_starts, w_length, psde, picks=None, epoch_id=None, flatten=True, verbose=False):
+def slice_win(epochs_data, w_starts, w_length, psde, picks=None, title=None, flatten=True, verbose=False):
     '''
     Compute PSD values of a sliding window
 
     Params
-        epochs_data: [channels] x [samples]
-        w_starts: starting indices of sample segments
-        w_length: window length in number of samples
+        epochs_data ([channels]x[samples]): raw epoch data
+        w_starts (list): starting indices of sample segments
+        w_length (int): window length in number of samples
         psde: MNE PSDEstimator object
-        picks: subset of channels within epochs_data
-        epochs_id: just to print out epoch ID associated with PID
-        flatten: generate concatenated feature vectors
+        picks (list): subset of channels within epochs_data
+        title (string): print out the title associated with PID
+        flatten (boolean): generate concatenated feature vectors
             If True: X = [windows] x [channels x freqs]
             If False: X = [windows] x [channels] x [freqs]
 
@@ -74,10 +74,10 @@ def slice_win(epochs_data, w_starts, w_length, psde, picks=None, epoch_id=None, 
 
     w_length = int(w_length)
 
-    if epoch_id is None:
+    if title is None:
         logger.info('[PID %d] Frames %d-%d' % (os.getpid(), w_starts[0], w_starts[-1] + w_length - 1))
     else:
-        logger.info('[PID %d] Epoch %d, Frames %d-%d' % (os.getpid(), epoch_id, w_starts[0], w_starts[-1] + w_length - 1))
+        logger.info('[PID %d] %s' % (os.getpid(), title))
 
     X = None
     for n in w_starts:
@@ -107,7 +107,7 @@ def slice_win(epochs_data, w_starts, w_length, psde, picks=None, epoch_id=None, 
 def get_psd(epochs, psde, wlen, wstep, picks=None, flatten=True, n_jobs=1):
     """
     Compute multi-taper PSDs over a sliding window
-    
+
     Input
     =====
     epochs: MNE Epochs object
@@ -144,12 +144,13 @@ def get_psd(epochs, psde, wlen, wstep, picks=None, flatten=True, n_jobs=1):
     y_data = None
     results = []
     for ep in np.arange(len(labels)):
+        title = 'Epoch %d / %d, Frames %d-%d' % (ep, len(labels), w_starts[0], w_starts[-1] + wlen - 1)
         if n_jobs == 1:
             # no multiprocessing
-            results.append(slice_win(epochs_data[ep], w_starts, wlen, psde, picks, ep))
+            results.append(slice_win(epochs_data[ep], w_starts, wlen, psde, picks, title))
         else:
             # parallel psd computation
-            results.append(pool.apply_async(slice_win, [epochs_data[ep], w_starts, wlen, psde, picks, ep]))
+            results.append(pool.apply_async(slice_win, [epochs_data[ep], w_starts, wlen, psde, picks, title]))
 
     for ep in range(len(results)):
         if n_jobs == 1:
@@ -186,7 +187,7 @@ def get_psd(epochs, psde, wlen, wstep, picks=None, flatten=True, n_jobs=1):
 def get_psd_feature(epochs_train, window, psdparam, picks=None, n_jobs=1):
     """
     Wrapper for get_psd() adding meta information.
-    
+
     Input
     =====
     epochs_train: mne.Epochs object or list of mne.Epochs object.
@@ -194,7 +195,7 @@ def get_psd_feature(epochs_train, window, psdparam, picks=None, n_jobs=1):
     psdparam: {fmin:float, fmax:float, wlen:float, wstep:int}.
               fmin, fmax in Hz, wlen in seconds, wstep in number of samples.
     picks: Channels to compute features from.
-    
+
     Output
     ======
     dict object containing computed features.
@@ -366,13 +367,13 @@ def cva_features(datadir):
 def compute_features(cfg):
     '''
     Compute features using config specification.
-    
+
     Performs preprocessing, epcoching and feature computation.
-    
+
     Input
     =====
     Config file object
-    
+
     Output
     ======
     Feature data in dictionary
