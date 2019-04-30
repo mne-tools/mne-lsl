@@ -332,7 +332,7 @@ def balance_tpr(cfg, featdata):
     elif cfg.CLASSIFIER == 'RF':
         cls = RandomForestClassifier(n_estimators=cfg.RF['trees'], max_features='auto',
                                      max_depth=cfg.RF['max_depth'], n_jobs=cfg.N_JOBS, random_state=cfg.RF['seed'],
-                                     oob_score=True, class_weight='balanced_subsample')
+                                     oob_score=False, class_weight='balanced_subsample')
     elif cfg.CLASSIFIER == 'LDA':
         cls = LDA()
     elif cfg.CLASSIFIER == 'rLDA':
@@ -485,7 +485,7 @@ def cross_validate(cfg, featdata, cv_file=None):
     elif cfg.CLASSIFIER == 'RF':
         cls = RandomForestClassifier(n_estimators=cfg.RF['trees'], max_features='auto',
                                      max_depth=cfg.RF['max_depth'], n_jobs=cfg.N_JOBS, random_state=cfg.RF['seed'],
-                                     oob_score=True, class_weight='balanced_subsample')
+                                     oob_score=False, class_weight='balanced_subsample')
     elif cfg.CLASSIFIER == 'LDA':
         cls = LDA()
     elif cfg.CLASSIFIER == 'rLDA':
@@ -599,7 +599,7 @@ def train_decoder(cfg, featdata, feat_file=None):
     elif cfg.CLASSIFIER == 'RF':
         cls = RandomForestClassifier(n_estimators=cfg.RF['trees'], max_features='auto',
                                      max_depth=cfg.RF['max_depth'], n_jobs=cfg.N_JOBS, random_state=cfg.RF['seed'],
-                                     oob_score=True, class_weight='balanced_subsample')
+                                     oob_score=False, class_weight='balanced_subsample')
     elif cfg.CLASSIFIER == 'LDA':
         cls = LDA()
     elif cfg.CLASSIFIER == 'rLDA':
