@@ -96,13 +96,13 @@ def record(state, amp_name, amp_serial, record_dir, eeg_only):
     # channels = total channels from amp, including trigger channel
     data = {'signals':signals, 'timestamps':times, 'events':events,
             'sample_rate':sr.get_sample_rate(), 'channels':sr.get_num_channels(),
-            'ch_names':sr.get_channel_names()}
+            'ch_names':sr.get_channel_names(), 'lsl_time_offset':sr.lsl_time_offset}
     logger.info('Saving raw data ...')
     qc.save_obj(pcl_file, data)
     logger.info('Saved to %s\n' % pcl_file)
 
     if os.path.exists(eve_file):
-        pycnbi.utils.add_lsl_events.add_lsl_events(record_dir, interactive=False)
+        pycnbi.utils.add_lsl_events.add_lsl_events(record_dir, offset=sr.lsl_time_offset, interactive=False)
     else:
         logger.info('Converting raw file into a fif format.')
         pcl2fif(pcl_file)

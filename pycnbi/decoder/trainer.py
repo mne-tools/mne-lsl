@@ -102,6 +102,8 @@ def check_config(cfg):
         if not hasattr(cfg, key):
             setattr(cfg, key, optional_vars[key])
             logger.warning('Setting undefined parameter %s=%s' % (key, getattr(cfg, key)))
+    if 'decim' not in cfg.PSD:
+        cfg.PSD['decim'] = 1
 
     # classifier parameters check
     if cfg.CLASSIFIER == 'RF':
@@ -185,10 +187,10 @@ def balance_samples(X, Y, balance_type, verbose=False):
         raise ValueError('Unknown balancing type ' % balance_type)
 
     if verbose is True:
-        logger.info('\n>> Number of trials BEFORE balancing')
+        logger.info('\nNumber of trials BEFORE balancing')
         for c in label_set:
             logger.info('%s: %d' % (cfg.tdef.by_value[c], len(np.where(Y == c)[0])))
-        logger.info('\n>> Number of trials AFTER balancing')
+        logger.info('\nNumber of trials AFTER balancing')
         for c in label_set:
             logger.info('%s: %d' % (cfg.tdef.by_value[c], len(np.where(Y_balanced == c)[0])))
 
@@ -350,13 +352,13 @@ def balance_tpr(cfg, featdata):
     # Choose CV type
     ntrials, nsamples, fsize = X_data.shape
     if cfg.CV_PERFORM == 'LeaveOneOut':
-        logger.info('\n>> %d-fold leave-one-out cross-validation' % ntrials)
+        logger.info_green('\n%d-fold leave-one-out cross-validation' % ntrials)
         if SKLEARN_OLD:
             cv = LeaveOneOut(len(Y_data))
         else:
             cv = LeaveOneOut()
     elif cfg.CV_PERFORM == 'StratifiedShuffleSplit':
-        logger.info('\n>> %d-fold stratified cross-validation with test set ratio %.2f' % (cfg.CV_FOLDS, cfg.CV_TEST_RATIO))
+        logger.info_green('\n%d-fold stratified cross-validation with test set ratio %.2f' % (cfg.CV_FOLDS, cfg.CV_TEST_RATIO))
         if SKLEARN_OLD:
             cv = StratifiedShuffleSplit(Y_data[:, 0], cfg.CV_FOLDS, test_size=cfg.CV_TEST_RATIO, random_state=cfg.CV_RANDOM_SEED)
         else:
@@ -503,13 +505,13 @@ def cross_validate(cfg, featdata, cv_file=None):
     # Choose CV type
     ntrials, nsamples, fsize = X_data.shape
     if cfg.CV_PERFORM == 'LeaveOneOut':
-        logger.info('\n>> %d-fold leave-one-out cross-validation' % ntrials)
+        logger.info_green('%d-fold leave-one-out cross-validation' % ntrials)
         if SKLEARN_OLD:
             cv = LeaveOneOut(len(Y_data))
         else:
             cv = LeaveOneOut()
     elif cfg.CV_PERFORM == 'StratifiedShuffleSplit':
-        logger.info('\n>> %d-fold stratified cross-validation with test set ratio %.2f' % (cfg.CV_FOLDS, cfg.CV_TEST_RATIO))
+        logger.info_green('%d-fold stratified cross-validation with test set ratio %.2f' % (cfg.CV_FOLDS, cfg.CV_TEST_RATIO))
         if SKLEARN_OLD:
             cv = StratifiedShuffleSplit(Y_data[:, 0], cfg.CV_FOLDS, test_size=cfg.CV_TEST_RATIO, random_state=cfg.CV_RANDOM_SEED)
         else:
@@ -525,7 +527,7 @@ def cross_validate(cfg, featdata, cv_file=None):
     t_cv = timer_cv.sec()
 
     # Export results
-    txt = '\n>> Cross validation took %d seconds.\n' % t_cv
+    txt = 'Cross validation took %d seconds.\n' % t_cv
     txt += '\n- Class information\n'
     txt += '%d epochs, %d samples per epoch, %d feature dimension (total %d samples)\n' %\
         (ntrials, nsamples, fsize, ntrials * nsamples)
@@ -533,7 +535,8 @@ def cross_validate(cfg, featdata, cv_file=None):
         txt += '%s: %d trials\n' % (cfg.tdef.by_value[ev], len(np.where(Y_data[:, 0] == ev)[0]))
     if cfg.BALANCE_SAMPLES:
         txt += 'The number of samples was balanced across classes. Method: %s\n' % cfg.BALANCE_SAMPLES
-    txt += '\n- Experiment conditions\n'
+    txt += '\n- Experiment condition\n'
+    txt += 'Sampling frequency: %.3f Hz\n' % featdata['sfreq']
     txt += 'Spatial filter: %s (channels: %s)\n' % (cfg.SP_FILTER, cfg.SP_FILTER)
     txt += 'Spectral filter: %s\n' % cfg.TP_FILTER
     txt += 'Notch filter: %s\n' % cfg.NOTCH_FILTER
@@ -547,6 +550,7 @@ def cross_validate(cfg, featdata, cv_file=None):
     else:
         txt += 'Window size: %.1f msec\n' % (cfg.PSD['wlen'] * 1000.0)
         txt += 'Epoch range: %s sec\n' % (cfg.EPOCH)
+    txt += 'Decimation factor: %d\n' % cfg.PSD['decim']
 
     # Compute stats
     cv_mean, cv_std = np.mean(scores), np.std(scores)
@@ -621,7 +625,7 @@ def train_decoder(cfg, featdata, feat_file=None):
         X_data_merged, Y_data_merged = balance_samples(X_data_merged, Y_data_merged, cfg.BALANCE_SAMPLES, verbose=True)
 
     # Start training the decoder
-    logger.info('\n>> Training the decoder')
+    logger.info_green('Training the decoder')
     timer = qc.Timer()
     cls.n_jobs = cfg.N_JOBS
     cls.fit(X_data_merged, Y_data_merged)
@@ -637,7 +641,7 @@ def train_decoder(cfg, featdata, feat_file=None):
                     w_seconds=cfg.PSD['wlen'], wstep=cfg.PSD['wstep'], spatial=cfg.SP_FILTER,
                     spatial_ch=featdata['picks'], spectral=cfg.TP_FILTER, spectral_ch=featdata['picks'],
                     notch=cfg.NOTCH_FILTER, notch_ch=featdata['picks'], multiplier=cfg.MULTIPLIER,
-                    ref_ch=cfg.REF_CH)
+                    ref_ch=cfg.REF_CH, decim=cfg.PSD['decim'])
     clsfile = '%s/classifier/classifier-%s.pkl' % (cfg.DATADIR, platform.architecture()[0])
     qc.make_dirs('%s/classifier' % cfg.DATADIR)
     qc.save_obj(clsfile, data)
@@ -657,7 +661,7 @@ def train_decoder(cfg, featdata, feat_file=None):
 
     # Show top distinctive features
     if cfg.FEATURES == 'PSD':
-        logger.info('\n>> Good features ordered by importance')
+        logger.info_green('Good features ordered by importance')
         if cfg.CLASSIFIER in ['RF', 'GB', 'XGB']:
             keys, values = qc.sort_by_value(list(cls.feature_importances_), rev=True)
         elif cfg.CLASSIFIER in ['LDA', 'rLDA']:
@@ -681,7 +685,10 @@ def train_decoder(cfg, featdata, feat_file=None):
 
         chlist, hzlist = features.feature2chz(keys, fqlist, ch_names=ch_names)
         valnorm = values[:cfg.FEAT_TOPN].copy()
-        valnorm = valnorm / np.sum(valnorm) * 100.0
+        valsum = np.sum(valnorm)
+        if valsum == 0:
+            valsum = 1
+        valnorm = valnorm / valsum * 100.0
 
         # show top-N features
         for i, (ch, hz) in enumerate(zip(chlist, hzlist)):
