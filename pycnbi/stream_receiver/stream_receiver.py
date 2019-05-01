@@ -17,22 +17,16 @@ Note:
   It only works when 0's are majority.
 
 - Some LSL servers, especially OpenVibe-based servers, send wrong LSL timestamps.
-  In such case, set DEBUG_TIME_OFFSET = True to see the offset. Most of the time,
-  it's not needed but when you use software trigger, you will need this offset to
-  synchronize the event timings.
+  Most of the time, it does not matter but when you use software trigger, you will
+  need this offset to synchronize the event timings.
 
 TODO:
    Restrict buffer size.
 
-Kyuhwa Lee, 2017
+Kyuhwa Lee, 2019
 Swiss Federal Institute of Technology Lausanne (EPFL)
 
 """
-
-# Warn if an LSL server sends wrong LSL timestamps. Some OpenVibe servers
-# send app's own running time starting from 0 instead of calling LSL API.
-DEBUG_TIME_OFFSET = True
-
 
 import sys
 import pdb
@@ -250,10 +244,9 @@ class StreamReceiver:
 
         TODO: add a parameter to set to non-blocking mode.
         """
-        if DEBUG_TIME_OFFSET:
-            timestamp_offset = False
-            if len(self.timestamps[0]) == 0:
-                timestamp_offset = True
+        timestamp_offset = False
+        if len(self.timestamps[0]) == 0:
+            timestamp_offset = True
 
         self.watchdog.reset()
         tslist = []
@@ -264,7 +257,7 @@ class StreamReceiver:
                 if blocking == False and len(tslist) == 0:
                     return np.zeros((0, len(self.ch_list))), []
             if len(tslist) > 0:
-                if DEBUG_TIME_OFFSET and timestamp_offset is True:
+                if timestamp_offset is True:
                     lsl_clock = pylsl.local_clock()
                 break
             time.sleep(0.0005)
@@ -300,11 +293,11 @@ class StreamReceiver:
             self.buffers[0] = self.buffers[0][-self.bufsize:]
             self.timestamps[0] = self.timestamps[0][-self.bufsize:]
 
-        if DEBUG_TIME_OFFSET and timestamp_offset is True:
+        if timestamp_offset is True:
             timestamp_offset = False
             logger.info('LSL timestamp = %s' % lsl_clock)
             logger.info('Server timestamp = %s' % self.timestamps[-1][-1])
-            self.lsl_time_offset = lsl_clock - self.timestamps[-1][-1]
+            self.lsl_time_offset = self.timestamps[-1][-1] - lsl_clock
             logger.info('Offset = %.3f ' % (self.lsl_time_offset))
             if self.lsl_time_offset > 0.1:
                 logger.warning('The server timestamps have high offset to LSL timestamps. Probably a bug in the acquisition server.')
