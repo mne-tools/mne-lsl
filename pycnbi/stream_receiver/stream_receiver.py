@@ -299,10 +299,10 @@ class StreamReceiver:
             logger.info('Server timestamp = %s' % self.timestamps[-1][-1])
             self.lsl_time_offset = self.timestamps[-1][-1] - lsl_clock
             logger.info('Offset = %.3f ' % (self.lsl_time_offset))
-            if self.lsl_time_offset > 0.1:
+            if abs(self.lsl_time_offset) > 0.1:
                 logger.warning('The server timestamps have high offset to LSL timestamps. Probably a bug in the acquisition server.')
             else:
-                logger.info('(LSL time synchronized)')
+                logger.info_green('LSL time server synchronized')
 
         # if we have multiple synchronized amps
         if len(self.inlets) > 1:
@@ -348,17 +348,21 @@ class StreamReceiver:
         timestamps = self.timestamps[0][-self.winsize:]
         return window, timestamps
 
-    def get_window(self):
+    def get_window(self, decim=1):
         """
         Get the latest window and timestamps in numpy format
+
+        input
+        -----
+        decim (int): decimation factor
         """
         self.check_connect()
         window, timestamps = self.get_window_list()
 
         if len(timestamps) > 0:
             # window= array[[samples_ch1],[samples_ch2]...]
-            # return (samples x channels, samples)
-            return np.array(window), np.array(timestamps)
+            # return [samples x channels], [samples]
+            return np.array(window)[::decim], np.array(timestamps)[::decim]
         else:
             return np.array([]), np.array([])
 

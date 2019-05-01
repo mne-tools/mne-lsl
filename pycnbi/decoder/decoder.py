@@ -111,6 +111,9 @@ class BCIDecoder(object):
             self.w_frames = model['w_frames']
             self.wstep = model['wstep']
             self.sfreq = model['sfreq']
+            if 'decim' not in model:
+                model['decim'] = 1
+            self.decim = model['decim']
             if not int(self.sfreq * self.w_seconds) == self.w_frames:
                 raise RuntimeError('sfreq * w_sec %d != w_frames %d' % (int(self.sfreq * self.w_seconds), self.w_frames))
 
@@ -129,7 +132,7 @@ class BCIDecoder(object):
             self.spatial_ch = model['spatial_ch']
             self.spectral_ch = model['spectral_ch']
             self.notch_ch = model['notch_ch']
-            self.ref_ch  = model['ref_ch']
+            #self.ref_ch = model['ref_ch'] # not supported yet
             self.ch_names = self.sr.get_channel_names()
             mc = model['ch_names']
             self.picks = [self.ch_names.index(mc[p]) for p in model['picks']]
@@ -141,12 +144,13 @@ class BCIDecoder(object):
                 self.notch_ch = [self.ch_names.index(mc[p]) for p in model['notch_ch']]
 
             # PSD buffer
-            psd_temp = self.psde.transform(np.zeros((1, len(self.picks), self.w_frames)))
+            psd_temp = self.psde.transform(np.zeros((1, len(self.picks), self.w_frames // self.decim)))
             self.psd_shape = psd_temp.shape
             self.psd_size = psd_temp.size
             self.psd_buffer = np.zeros((0, self.psd_shape[1], self.psd_shape[2]))
             self.ts_buffer = []
 
+            logger.info_green('Loaded classifier %s (sfreq=%.1f, decim=%d)' % (' vs '.join(self.label_names), self.sfreq, self.decim))
         else:
             # Fake left-right decoder
             model = None
@@ -196,7 +200,7 @@ class BCIDecoder(object):
             time.sleep(0.0625)  # simulated delay for PSD + RF
         else:
             self.sr.acquire()
-            w, ts = self.sr.get_window()  # w = times x channels
+            w, ts = self.sr.get_window(decim=self.decim)  # w = times x channels
             w = w.T  # -> channels x times
 
             # re-reference channels

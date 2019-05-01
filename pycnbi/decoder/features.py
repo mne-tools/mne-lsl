@@ -49,7 +49,7 @@ from xgboost import XGBClassifier
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
 
 
-def slice_win(epochs_data, w_starts, w_length, psde, picks=None, title=None, flatten=True, verbose=False):
+def slice_win(epochs_data, w_starts, w_length, psde, picks=None, title=None, decim=1, flatten=True, verbose=False):
     '''
     Compute PSD values of a sliding window
 
@@ -84,7 +84,7 @@ def slice_win(epochs_data, w_starts, w_length, psde, picks=None, title=None, fla
         n = int(n)
         if n >= epochs_data.shape[1]:
             raise WrongIndexError('w_starts has an out-of-bounds index %d for epoch length %d.' % (n, epochs_data.shape[1]))
-        window = epochs_data[:, n:(n + w_length)]
+        window = epochs_data[:, n:(n + w_length):decim]
 
         # dimension: psde.transform( [epochs x channels x times] )
         psd = psde.transform(window.reshape((1, window.shape[0], window.shape[1])))
@@ -104,7 +104,7 @@ def slice_win(epochs_data, w_starts, w_length, psde, picks=None, title=None, fla
     return X
 
 
-def get_psd(epochs, psde, wlen, wstep, picks=None, flatten=True, n_jobs=1):
+def get_psd(epochs, psde, wlen, wstep, picks=None, flatten=True, n_jobs=1, decim=1):
     """
     Compute multi-taper PSDs over a sliding window
 
@@ -117,6 +117,7 @@ def get_psd(epochs, psde, wlen, wstep, picks=None, flatten=True, n_jobs=1):
     picks: channels to be used; use all if None
     flatten: boolean, see Returns section
     n_jobs: nubmer of cores to use, None = use all cores
+    decim: decimation factor
 
     Output
     ======
@@ -129,6 +130,8 @@ def get_psd(epochs, psde, wlen, wstep, picks=None, flatten=True, n_jobs=1):
     TODO:
         Accept input as numpy array as well, in addition to Epochs object
     """
+
+    tm = qc.Timer()
 
     if n_jobs is None:
         n_jobs = mp.cpu_count()
@@ -147,10 +150,10 @@ def get_psd(epochs, psde, wlen, wstep, picks=None, flatten=True, n_jobs=1):
         title = 'Epoch %d / %d, Frames %d-%d' % (ep, len(labels), w_starts[0], w_starts[-1] + wlen - 1)
         if n_jobs == 1:
             # no multiprocessing
-            results.append(slice_win(epochs_data[ep], w_starts, wlen, psde, picks, title))
+            results.append(slice_win(epochs_data[ep], w_starts, wlen, psde, picks, title, decim))
         else:
             # parallel psd computation
-            results.append(pool.apply_async(slice_win, [epochs_data[ep], w_starts, wlen, psde, picks, title]))
+            results.append(pool.apply_async(slice_win, [epochs_data[ep], w_starts, wlen, psde, picks, title, decim]))
 
     for ep in range(len(results)):
         if n_jobs == 1:
@@ -176,6 +179,8 @@ def get_psd(epochs, psde, wlen, wstep, picks=None, flatten=True, n_jobs=1):
         pool.close()
         pool.join()
 
+    logger.info('Feature computation took %d seconds.' % tm.sec())
+
     if flatten:
         return X_data, y_data.astype(np.int)
     else:
@@ -192,7 +197,7 @@ def get_psd_feature(epochs_train, window, psdparam, picks=None, n_jobs=1):
     =====
     epochs_train: mne.Epochs object or list of mne.Epochs object.
     window: [t_start, t_end]. Time window range for computing PSD.
-    psdparam: {fmin:float, fmax:float, wlen:float, wstep:int}.
+    psdparam: {fmin:float, fmax:float, wlen:float, wstep:int, decim:int}.
               fmin, fmax in Hz, wlen in seconds, wstep in number of samples.
     picks: Channels to compute features from.
 
@@ -235,16 +240,19 @@ def get_psd_feature(epochs_train, window, psdparam, picks=None, n_jobs=1):
         if psdparam['wlen'] is None:
             psdparam['wlen'] = wlen
         w_frames = int(sfreq * psdparam['wlen'])  # window length in number of samples(frames)
+    if 'decim' not in psdparam:
+        psdparam['decim'] = 1
+    decim = psdparam['decim']
 
-    psde = mne.decoding.PSDEstimator(sfreq=sfreq, fmin=psdparam['fmin'],\
+    psde = mne.decoding.PSDEstimator(sfreq=sfreq / decim, fmin=psdparam['fmin'],\
                                      fmax=psdparam['fmax'], bandwidth=None, adaptive=False, low_bias=True,\
                                      n_jobs=1, normalization='length', verbose='WARNING')
 
-    logger.info('\n>> Computing PSD for training set')
+    logger.info_green('PSD computation')
     if type(epochs_train) is list:
         X_all = []
         for i, ep in enumerate(epochs_train):
-            X, Y_data = get_psd(ep, psde, w_frames[i], psdparam['wstep'], picks, n_jobs=n_jobs)
+            X, Y_data = get_psd(ep, psde, w_frames[i], psdparam['wstep'], picks, n_jobs=n_jobs, decim=decim)
             X_all.append(X)
         # concatenate along the feature dimension
         # feature index order: window block x channel block x frequency block
@@ -256,12 +264,12 @@ def get_psd_feature(epochs_train, window, psdparam, picks=None, n_jobs=1):
         # feature index order: channel block x frequency block
         # feature vector = [channel1, channel2, ...]
         # where channelX = [freq1, freq2, ...]
-        X_data, Y_data = get_psd(epochs_train, psde, w_frames, psdparam['wstep'], picks, n_jobs=n_jobs)
+        X_data, Y_data = get_psd(epochs_train, psde, w_frames, psdparam['wstep'], picks, n_jobs=n_jobs, decim=decim)
 
     # assign relative timestamps for each feature. time reference is the leading edge of a window.
     w_starts = np.arange(0, epochs_train.get_data().shape[2] - w_frames, psdparam['wstep'])
     t_features = w_starts / sfreq + psdparam['wlen'] + window[0]
-    return dict(X_data=X_data, Y_data=Y_data, wlen=wlen, w_frames=w_frames, psde=psde, times=t_features)
+    return dict(X_data=X_data, Y_data=Y_data, wlen=wlen, w_frames=w_frames, psde=psde, times=t_features, decim=decim)
 
 
 def get_timelags(epochs, wlen, wstep, downsample=1, picks=None):
