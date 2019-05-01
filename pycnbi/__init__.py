@@ -18,8 +18,9 @@ from pycnbi.utils import q_common as qc
 LOG_LEVELS = {
     'DEBUG':logging.DEBUG,
     'INFO':logging.INFO,
-    'INFO_GREEN':23,
-    'INFO_BLUE':26,
+    'INFO_GREEN':22,
+    'INFO_BLUE':24,
+    'INFO_YELLOW':26,
     'WARNING':logging.WARNING,
     'ERROR':logging.ERROR
 }
@@ -42,6 +43,8 @@ class PycnbiFormatter(logging.Formatter):
             self._fmt = self.fmt_info
         elif record.levelno == LOG_LEVELS['INFO_BLUE']:
             self._fmt = self.fmt_info
+        elif record.levelno == LOG_LEVELS['INFO_YELLOW']:
+            self._fmt = self.fmt_info
         elif record.levelno == LOG_LEVELS['WARNING']:
             self._fmt = self.fmt_warning
         elif record.levelno >= LOG_LEVELS['ERROR']:
@@ -57,11 +60,18 @@ def init_logger(verbose_console='INFO', verbose_file=None):
             if self.isEnabledFor(LOG_LEVELS['INFO_GREEN']):
                 self._log(LOG_LEVELS['INFO_GREEN'], message, args, **kwargs)
         logging.Logger.info_green = __log_info_green
+
         logging.addLevelName(LOG_LEVELS['INFO_BLUE'], 'INFO_BLUE')
         def __log_info_blue(self, message, *args, **kwargs):
             if self.isEnabledFor(LOG_LEVELS['INFO_BLUE']):
                 self._log(LOG_LEVELS['INFO_BLUE'], message, args, **kwargs)
         logging.Logger.info_blue = __log_info_blue
+
+        logging.addLevelName(LOG_LEVELS['INFO_YELLOW'], 'INFO_YELLOW')
+        def __log_info_yellow(self, message, *args, **kwargs):
+            if self.isEnabledFor(LOG_LEVELS['INFO_YELLOW']):
+                self._log(LOG_LEVELS['INFO_YELLOW'], message, args, **kwargs)
+        logging.Logger.info_yellow = __log_info_yellow
 
         # console logger handler
         c_handler = logging.StreamHandler(sys.stdout)

@@ -32,6 +32,9 @@ def add_lsl_events(event_dir, offset=0, recursive=False, interactive=True):
     from pycnbi.utils.convert2fif import pcl2fif
     from builtins import input
 
+    offset = float(offset)
+    if offset != 0:
+        logger.info_yellow('Time offset = %.3f' % offset)
     to_process = []
     logger.info('Files to be processed')
     if recursive:
