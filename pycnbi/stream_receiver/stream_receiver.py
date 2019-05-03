@@ -250,20 +250,23 @@ class StreamReceiver:
 
         self.watchdog.reset()
         tslist = []
-        while self.watchdog.sec() < 5:
-            # retrieve chunk in [frame][ch]
-            if len(tslist) == 0:
-                chunk, tslist = self.inlets[0].pull_chunk()  # [frames][channels]
-                if blocking == False and len(tslist) == 0:
-                    return np.zeros((0, len(self.ch_list))), []
-            if len(tslist) > 0:
-                if timestamp_offset is True:
-                    lsl_clock = pylsl.local_clock()
-                break
-            time.sleep(0.0005)
-        else:
-            logger.warning('Timeout occurred while acquiring data. Amp driver bug?')
-            return np.zeros((0, len(self.ch_list))), []
+        received = False
+        while not received:
+            while self.watchdog.sec() < 5:
+                # retrieve chunk in [frame][ch]
+                if len(tslist) == 0:
+                    chunk, tslist = self.inlets[0].pull_chunk()  # [frames][channels]
+                    if blocking == False and len(tslist) == 0:
+                        return np.zeros((0, len(self.ch_list))), []
+                if len(tslist) > 0:
+                    if timestamp_offset is True:
+                        lsl_clock = pylsl.local_clock()
+                    received = True
+                    break
+                time.sleep(0.0005)
+            else:
+                logger.warning('Timeout occurred while acquiring data. Amp driver bug?')
+                self.watchdog.reset()
         data = np.array(chunk)
 
         # BioSemi has pull-up resistor instead of pull-down
@@ -355,13 +358,16 @@ class StreamReceiver:
         input
         -----
         decim (int): decimation factor
+
+        output
+        ------
+        [samples x channels], [samples]
         """
         self.check_connect()
         window, timestamps = self.get_window_list()
 
         if len(timestamps) > 0:
-            # window= array[[samples_ch1],[samples_ch2]...]
-            # return [samples x channels], [samples]
+            # window = array[[samples_ch1],[samples_ch2]...]
             return np.array(window)[::decim], np.array(timestamps)[::decim]
         else:
             return np.array([]), np.array([])
@@ -483,7 +489,7 @@ def test_receiver():
 
         if TIME_INDEX is None:
             datatxt = qc.list2string(np.mean(window[CH_INDEX, :], axis=1), '%-15.6f')
-            print('[%.3f : %.3f]' % (tslist[0], tslist[1]) + ' data: %s' % datatxt)
+            print('[%.3f : %.3f]' % (tslist[0], tslist[-1]) + ' data: %s' % datatxt)
         else:
             datatxt = qc.list2string(window[CH_INDEX, TIME_INDEX], '%-15.6f')
             print('[%.3f]' % tslist[TIME_INDEX] + ' data: %s' % datatxt)
