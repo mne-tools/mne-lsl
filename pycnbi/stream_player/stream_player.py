@@ -47,9 +47,9 @@ def stream_player(server_name, fif_file, chunk_size, auto_restart=True, high_res
     except ValueError:
         event_ch = None
     if raw is not None:
-        logger.info('Successfully loaded %s\n' % fif_file)
+        logger.info_green('Successfully loaded %s' % fif_file)
         logger.info('Server name: %s' % server_name)
-        logger.info('Sampling frequency %.1f Hz' % sfreq)
+        logger.info('Sampling frequency %.3f Hz' % sfreq)
         logger.info('Number of channels : %d' % n_channels)
         logger.info('Chunk size : %d' % chunk_size)
         for i, ch in enumerate(raw.ch_names):
