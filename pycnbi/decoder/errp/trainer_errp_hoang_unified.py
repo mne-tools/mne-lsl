@@ -243,7 +243,7 @@ def preprocess(loadedraw, events,\
     # %% Properties initialization
     tdef = trigger_def('triggerdef_errp.ini')
     sfreq = raw.info['sfreq']
-    event_id = dict(correct=tdef.by_key['FEEDBACK_CORRECT'], wrong=tdef.by_key['FEEDBACK_WRONG'])
+    event_id = dict(correct=tdef.by_name['FEEDBACK_CORRECT'], wrong=tdef.by_name['FEEDBACK_WRONG'])
     # %% Bandpass temporal filtering
     b, a, zi = pu.butter_bandpass(h_freq, l_freq, sfreq,
                                   raw._data.shape[0] - 1)  # raw._data.shape[0]- 1 because  channel 0 is trigger

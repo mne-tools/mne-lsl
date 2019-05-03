@@ -3,7 +3,7 @@ from __future__ import print_function, division
 """
 Reads trigger info and creates a class object with the follwing attributes:
 - self.event_id = event_value
-- self.by_key() = {key:value, ...}
+- self.by_name() = {key:value, ...}
 - self.by_value() = {value:key, ...}
 
 """
@@ -17,12 +17,12 @@ from pycnbi import logger
 def trigger_def(ini_file, verbose=False):
     class TriggerDef(object):
         def __init__(self, items):
-            self.by_key = {}
+            self.by_name = {}
             self.by_value = {}
             for key, value in items:
                 value = int(value)
                 setattr(self, key, value)
-                self.by_key[key] = value
+                self.by_name[key] = value
                 self.by_value[value] = key
 
         # show all possible trigger values
@@ -60,8 +60,8 @@ if __name__ == '__main__':
     print('INIT =', tdef.INIT)
 
     # check whether the trigger name is defined
-    print('\nINIT in tdef.by_key?')
-    print('INIT' in tdef.by_key)
+    print('\nINIT in tdef.by_name?')
+    print('INIT' in tdef.by_name)
 
     # check whether the trigger value is defined
     print('\n255 in tdef.by_value?')
@@ -70,8 +70,8 @@ if __name__ == '__main__':
     print(1 in tdef.by_value)
 
     # print all trigger names and associated values
-    print('\ntdef.by_key')
-    print(tdef.by_key)
+    print('\ntdef.by_name')
+    print(tdef.by_name)
 
     # print all trigger values and associated names
     print('\ntdef.by_value')

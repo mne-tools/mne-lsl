@@ -181,7 +181,7 @@ def pcl2fif(filename, interactive=False, outdir=None, external_event=None, offse
             logger.warning('No events were found in the event file')
         else:
             logger.info('Found %d events' % len(events_index))
-        raw.add_events(events_index, stim_channel='TRIGGER')
+            raw.add_events(events_index, stim_channel='TRIGGER')
 
     qc.make_dirs(outdir)
     fiffile = outdir + fname + '.fif'

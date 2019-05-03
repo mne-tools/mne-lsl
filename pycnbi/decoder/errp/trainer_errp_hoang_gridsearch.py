@@ -160,7 +160,7 @@ if __name__ == '__main__':
 
         tdef = trigger_def('triggerdef_errp.ini')
         sfreq = raw.info['sfreq']
-        event_id = dict(correct=tdef.by_key['FEEDBACK_CORRECT'], wrong=tdef.by_key['FEEDBACK_WRONG'])
+        event_id = dict(correct=tdef.by_name['FEEDBACK_CORRECT'], wrong=tdef.by_name['FEEDBACK_WRONG'])
         # %% simu online
         SIMULATE_ONLINE = False
 

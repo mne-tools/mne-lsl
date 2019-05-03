@@ -68,7 +68,7 @@ def check_config(cfg):
     critical_vars = [
         'CLS_MI',
         'TRIGGER_DEVICE',
-        'TRIGGER_DEF',
+        'TRIGGER_FILE',
         'DIRECTIONS',
         'TRIALS_EACH',
         'PROB_ALPHA_NEW'
@@ -100,7 +100,8 @@ def check_config(cfg):
         'SCREEN_POS':(0, 0),
         'WITH_REX':False,
         'DEBUG_PROBS':False,
-        'LOG_PROBS':False
+        'LOG_PROBS':False,
+        'TRIAL_PAUSE':False
     }
 
     if not (hasattr(cfg, 'BAR_STEP') or hasattr(cfg, 'BAR_STEP_LEFT') or\
