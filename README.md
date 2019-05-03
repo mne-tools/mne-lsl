@@ -101,12 +101,10 @@ Use the OpenVibe acquisition server and make sure to check "LSL output" in prefe
 
 
 # To do
+  - GUI (in progress)
   - Tutorial 
-  - GUI-based setting tools.
-  - Use .ini files instead of .py files for settings.
-  - More cpu-efficient decoder class.
-  - Use a logger.
-  - Try Numba optimization.
+  - More cpu-efficient decoder class
+  - Numba optimization
 
 There are still plenty of possibilities to optimize the speed in many parts of the code. Any contribution is welcome. Please contact lee.kyuh@gmail.com for any comment / feedback.
 

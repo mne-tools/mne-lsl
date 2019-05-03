@@ -144,7 +144,7 @@ if __name__ == '__main__':
     # epoching
     tmin = 0
     tmax = 1
-    event_id = dict(correct=tdef.by_key['FEEDBACK_CORRECT'], wrong=tdef.by_key['FEEDBACK_WRONG'])
+    event_id = dict(correct=tdef.by_name['FEEDBACK_CORRECT'], wrong=tdef.by_name['FEEDBACK_WRONG'])
 
     # export plots: apply offline spectral filter
     if EXPORT_PLOTS == True:
