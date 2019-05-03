@@ -21,7 +21,7 @@ from pycnbi.triggers.trigger_def import trigger_def
 from pycnbi import logger
 from builtins import input
 
-def stream_player(server_name, fif_file, chunk_size, auto_restart=True, high_resolution=False, verbose=None, trigger_file=None):
+def stream_player(server_name, fif_file, chunk_size, auto_restart=True, wait_start=True, repeat=np.float('inf'), high_resolution=False, verbose=None, trigger_file=None):
     """
     Params
     ======
@@ -30,6 +30,8 @@ def stream_player(server_name, fif_file, chunk_size, auto_restart=True, high_res
     fif_file: fif file to replay.
     chunk_size: number of samples to send at once (usually 16-32 is good enough).
     auto_restart: play from beginning again after reaching the end.
+    wait_start: wait for user to start in the beginning.
+    repeat: number of loops to play.
     high_resolution: use perf_counter() instead of sleep() for higher time resolution
                      but uses much more cpu due to polling.
     trigger_file: used to convert event numbers into event strings for readability.
@@ -70,7 +72,8 @@ def stream_player(server_name, fif_file, chunk_size, auto_restart=True, high_res
     desc.append_child('acquisition').append_child_value('manufacturer', 'PyCNBI').append_child_value('serial_number', 'N/A')
     outlet = pylsl.StreamOutlet(sinfo, chunk_size=chunk_size)
 
-    input('Press Enter to start streaming.')
+    if wait_start:
+        input('Press Enter to start streaming.')
     logger.info('Streaming started')
 
     idx_chunk = 0
@@ -82,7 +85,8 @@ def stream_player(server_name, fif_file, chunk_size, auto_restart=True, high_res
         t_start = time.time()
 
     # start streaming
-    while True:
+    played = 1
+    while played < repeat:
         idx_current = idx_chunk * chunk_size
         chunk = raw._data[:, idx_current:idx_current + chunk_size]
         data = chunk.transpose().tolist()
@@ -125,6 +129,7 @@ def stream_player(server_name, fif_file, chunk_size, auto_restart=True, high_res
                 t_start = time.perf_counter()
             else:
                 t_start = time.time()
+            played += 1
 
 # sample code
 if __name__ == '__main__':
