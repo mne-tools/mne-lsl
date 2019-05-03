@@ -182,7 +182,7 @@ if __name__ == '__main__':
     tdef = trigger_def('triggerdef_errp.ini')
     sfreq = raw.info['sfreq']
     paddingIdx = int(paddingLength * sfreq)
-    event_id = dict(correct=tdef.by_key['FEEDBACK_CORRECT'], wrong=tdef.by_key['FEEDBACK_WRONG'])
+    event_id = dict(correct=tdef.by_name['FEEDBACK_CORRECT'], wrong=tdef.by_name['FEEDBACK_WRONG'])
 
     # %% Dataset wide processing
     # Bandpass temporal filtering
