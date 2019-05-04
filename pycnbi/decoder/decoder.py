@@ -38,6 +38,14 @@ from pycnbi.stream_receiver.stream_receiver import StreamReceiver
 mne.set_log_level('ERROR')
 os.environ['OMP_NUM_THREADS'] = '1' # actually improves performance for multitaper
 
+#######################
+#######################
+#######################
+import scipy.signal
+#######################
+#######################
+#######################
+
 def get_decoder_info(classifier):
     """
     Get only the classifier information without connecting to a server
@@ -115,7 +123,8 @@ class BCIDecoder(object):
                 model['decim'] = 1
             self.decim = model['decim']
             if not int(self.sfreq * self.w_seconds) == self.w_frames:
-                raise RuntimeError('sfreq * w_sec %d != w_frames %d' % (int(self.sfreq * self.w_seconds), self.w_frames))
+                logger.error('sfreq * w_sec %d != w_frames %d' % (int(self.sfreq * self.w_seconds), self.w_frames))
+                raise RuntimeError
 
             if 'multiplier' in model:
                 self.multiplier = model['multiplier']
@@ -125,8 +134,8 @@ class BCIDecoder(object):
             # Stream Receiver
             self.sr = StreamReceiver(window_size=self.w_seconds, amp_name=self.amp_name, amp_serial=self.amp_serial)
             if self.sfreq != self.sr.sample_rate:
-                raise RuntimeError('Amplifier sampling rate (%.1f) != model sampling rate (%.1f). Stop.' % (
-                    self.sr.sample_rate, self.sfreq))
+                logger.error('Amplifier sampling rate (%.1f) != model sampling rate (%.1f). Stop.' % (self.sr.sample_rate, self.sfreq))
+                raise RuntimeError
 
             # Map channel indices based on channel names of the streaming server
             self.spatial_ch = model['spatial_ch']
@@ -144,10 +153,12 @@ class BCIDecoder(object):
                 self.notch_ch = [self.ch_names.index(mc[p]) for p in model['notch_ch']]
 
             # PSD buffer
-            psd_temp = self.psde.transform(np.zeros((1, len(self.picks), self.w_frames // self.decim)))
-            self.psd_shape = psd_temp.shape
-            self.psd_size = psd_temp.size
-            self.psd_buffer = np.zeros((0, self.psd_shape[1], self.psd_shape[2]))
+            #psd_temp = self.psde.transform(np.zeros((1, len(self.picks), self.w_frames // self.decim)))
+            #self.psd_shape = psd_temp.shape
+            #self.psd_size = psd_temp.size
+            #self.psd_buffer = np.zeros((0, self.psd_shape[1], self.psd_shape[2]))
+            self.psd_buffer = None
+
             self.ts_buffer = []
 
             logger.info_green('Loaded classifier %s (sfreq=%.1f, decim=%d)' % (' vs '.join(self.label_names), self.sfreq, self.decim))
@@ -200,16 +211,16 @@ class BCIDecoder(object):
             time.sleep(0.0625)  # simulated delay for PSD + RF
         else:
             self.sr.acquire()
-            w, ts = self.sr.get_window(decim=self.decim)  # w = times x channels
+            w, ts = self.sr.get_window()  # w = times x channels
             w = w.T  # -> channels x times
 
             # re-reference channels
-            # TODO: use self.ref_ch
+            # TODO: add re-referencing function to preprocess()
 
             # apply filters. Important: maintain the original channel order at this point.
             pu.preprocess(w, sfreq=self.sfreq, spatial=self.spatial, spatial_ch=self.spatial_ch,
                           spectral=self.spectral, spectral_ch=self.spectral_ch, notch=self.notch,
-                          notch_ch=self.notch_ch, multiplier=self.multiplier)
+                          notch_ch=self.notch_ch, multiplier=self.multiplier, decim=self.decim)
 
             # select the same channels used for training
             w = w[self.picks]
@@ -221,7 +232,10 @@ class BCIDecoder(object):
             psd = self.psde.transform(w.reshape((1, w.shape[0], w.shape[1])))
 
             # update psd buffer ( < 1 msec overhead )
-            self.psd_buffer = np.concatenate((self.psd_buffer, psd), axis=0)
+            if self.psd_buffer is None:
+                self.psd_buffer = psd
+            else:
+                self.psd_buffer = np.concatenate((self.psd_buffer, psd), axis=0)
             self.ts_buffer.append(ts[0])
             if ts[0] - self.ts_buffer[0] > self.buffer_sec:
                 # search speed comparison for ordered arrays:
@@ -301,14 +315,16 @@ class BCIDecoderDaemon(object):
         if alpha_new is None:
             alpha_new = 1
         if not 0 <= alpha_new <= 1:
-            raise ValueError('alpha_new must be a real number between 0 and 1.')
+            logger.error('alpha_new must be a real number between 0 and 1.')
+            raise ValueError
         self.alpha_new = alpha_new
         self.alpha_old = 1 - alpha_new
 
         if fake == False or fake is None:
             self.model = qc.load_obj(self.classifier)
             if self.model == None:
-                raise IOError('Error loading %s' % self.model)
+                logger.error('Error loading %s' % self.model)
+                raise IOError
             else:
                 self.labels = self.model['cls'].classes_
                 self.label_names = [self.model['classes'][k] for k in self.labels]
@@ -317,7 +333,8 @@ class BCIDecoderDaemon(object):
             self.model = None
             tdef = trigger_def('triggerdef_16.ini')
             if type(fake_dirs) is not list:
-                raise RuntimeError('Decoder(): wrong argument type of fake_dirs: %s.' % type(fake_dirs))
+                logger.error('Decoder(): wrong argument type of fake_dirs: %s.' % type(fake_dirs))
+                raise RuntimeError
             self.labels = [tdef.by_name[t] for t in fake_dirs]
             self.label_names = [tdef.by_value[v] for v in self.labels]
             self.startmsg = '** WARNING: FAKE ' + self.startmsg
@@ -404,8 +421,14 @@ class BCIDecoderDaemon(object):
             while running.value == 1:
                 # compute features and likelihoods
                 probs[:] = decoder.get_prob()
+                #for i in range(len(probs_smooth)):
+                #    probs_smooth[i] = probs_smooth[i] * self.alpha_old + probs[i] * self.alpha_new
+                probs_smooth_sum = 0
                 for i in range(len(probs_smooth)):
                     probs_smooth[i] = probs_smooth[i] * self.alpha_old + probs[i] * self.alpha_new
+                    probs_smooth_sum += probs_smooth[i]
+                for i in range(len(probs_smooth)):
+                    probs_smooth[i] /= probs_smooth_sum
                 pread.value = 0
                 # copy back PSD values only when requested
                 if self.fake == False and return_psd.value == 1:
