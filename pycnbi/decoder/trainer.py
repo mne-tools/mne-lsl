@@ -96,7 +96,8 @@ def check_config(cfg):
 
     for v in critical_vars['COMMON']:
         if not hasattr(cfg, v):
-            raise RuntimeError('%s not defined in config.' % v)
+            logger.error('%s not defined in config.' % v)
+            raise RuntimeError
 
     for key in optional_vars:
         if not hasattr(cfg, key):
@@ -108,27 +109,34 @@ def check_config(cfg):
     # classifier parameters check
     if cfg.CLASSIFIER == 'RF':
         if not hasattr(cfg, 'RF'):
-            raise RuntimeError('"RF" not defined in config.')
+            logger.error('"RF" not defined in config.')
+            raise RuntimeError
         for v in critical_vars['RF']:
             if v not in cfg.RF:
-                raise RuntimeError('%s not defined in config.' % v)
+                logger.error('%s not defined in config.' % v)
+                raise RuntimeError
     elif cfg.CLASSIFIER == 'GB' or cfg.CLASSIFIER == 'XGB':
         if not hasattr(cfg, 'GB'):
-            raise RuntimeError('"GB" not defined in config.')
+            logger.error('"GB" not defined in config.')
+            raise RuntimeError
         for v in critical_vars['GB']:
             if v not in cfg.GB:
-                raise RuntimeError('%s not defined in config.' % v)
+                logger.error('%s not defined in config.' % v)
+                raise RuntimeError
     elif cfg.CLASSIFIER == 'rLDA' and not hasattr(cfg, 'RLDA_REGULARIZE_COEFF'):
-        raise RuntimeError('"RLDA_REGULARIZE_COEFF" not defined in config.')
+        logger.error('"RLDA_REGULARIZE_COEFF" not defined in config.')
+        raise RuntimeError
 
     if cfg.CV_PERFORM is not None:
         if not hasattr(cfg, 'CV_RANDOM_SEED'):
             cfg.CV_RANDOM_SEED = None
             logger.warning('Setting undefined parameter CV_RANDOM_SEED=%s' % (cfg.CV_RANDOM_SEED))
         if not hasattr(cfg, 'CV_FOLDS'):
-            raise RuntimeError('"CV_FOLDS" not defined in config.')
+            logger.error('"CV_FOLDS" not defined in config.')
+            raise RuntimeError
         if cfg.CV_PERFORM == 'StratifiedShuffleSplit' and not hasattr(cfg, 'CV_TEST_RATIO'):
-            raise RuntimeError('"CV_TEST_RATIO" not defined in config.')
+            logger.error('"CV_TEST_RATIO" not defined in config.')
+            raise RuntimeError
 
     if cfg.N_JOBS is None:
         cfg.N_JOBS = mp.cpu_count()
@@ -184,7 +192,8 @@ def balance_samples(X, Y, balance_type, verbose=False):
             X_balanced = np.append(X_balanced, X[reduced_idx], axis=0)
             Y_balanced = np.append(Y_balanced, Y[reduced_idx], axis=0)
     else:
-        raise ValueError('Unknown balancing type ' % balance_type)
+        logger.error('Unknown balancing type ' % balance_type)
+        raise ValueError
 
     if verbose is True:
         logger.info('\nNumber of trials BEFORE balancing')
@@ -340,7 +349,8 @@ def balance_tpr(cfg, featdata):
     elif cfg.CLASSIFIER == 'rLDA':
         cls = rLDA(cfg.RLDA_REGULARIZE_COEFF)
     else:
-        raise ValueError('Unknown classifier type %s' % cfg.CLASSIFIER)
+        logger.error('Unknown classifier type %s' % cfg.CLASSIFIER)
+        raise ValueError
 
     # Setup features
     X_data = featdata['X_data']
@@ -364,7 +374,8 @@ def balance_tpr(cfg, featdata):
         else:
             cv = StratifiedShuffleSplit(n_splits=cfg.CV_FOLDS, test_size=cfg.CV_TEST_RATIO, random_state=cfg.CV_RANDOM_SEED)
     else:
-        raise NotImplementedError('%s is not supported yet. Sorry.' % cfg.CV_PERFORM)
+        logger.error('%s is not supported yet. Sorry.' % cfg.CV_PERFORM)
+        raise NotImplementedError
     logger.info('%d trials, %d samples per trial, %d feature dimension' % (ntrials, nsamples, fsize))
 
     # For classifier itself, single core is usually faster
@@ -453,7 +464,8 @@ def fit_predict_thres(cls, X_train, Y_train, X_test, Y_test, cnum, label_list, i
         cm = skmetrics.confusion_matrix(Y_test, Y_pred, label_list)
     else:
         if decision_thres is not None:
-            raise ValueError('decision threshold and ignore_thres cannot be set at the same time.')
+            logger.error('decision threshold and ignore_thres cannot be set at the same time.')
+            raise ValueError
         Y_pred = cls.predict_proba(X_test)
         Y_pred_labels = np.argmax(Y_pred, axis=1)
         Y_pred_maxes = np.array([x[i] for i, x in zip(Y_pred_labels, Y_pred)])
@@ -493,7 +505,8 @@ def cross_validate(cfg, featdata, cv_file=None):
     elif cfg.CLASSIFIER == 'rLDA':
         cls = rLDA(cfg.RLDA_REGULARIZE_COEFF)
     else:
-        raise ValueError('Unknown classifier type %s' % cfg.CLASSIFIER)
+        logger.error('Unknown classifier type %s' % cfg.CLASSIFIER)
+        raise ValueError
 
     # Setup features
     X_data = featdata['X_data']
@@ -517,7 +530,8 @@ def cross_validate(cfg, featdata, cv_file=None):
         else:
             cv = StratifiedShuffleSplit(n_splits=cfg.CV_FOLDS, test_size=cfg.CV_TEST_RATIO, random_state=cfg.CV_RANDOM_SEED)
     else:
-        raise NotImplementedError('%s is not supported yet. Sorry.' % cfg.CV_PERFORM)
+        logger.error('%s is not supported yet. Sorry.' % cfg.CV_PERFORM)
+        raise NotImplementedError
     logger.info('%d trials, %d samples per trial, %d feature dimension' % (ntrials, nsamples, fsize))
 
     # Do it!
@@ -609,7 +623,8 @@ def train_decoder(cfg, featdata, feat_file=None):
     elif cfg.CLASSIFIER == 'rLDA':
         cls = rLDA(cfg.RLDA_REGULARIZE_COEFF)
     else:
-        raise ValueError('Unknown classifier %s' % cfg.CLASSIFIER)
+        logger.error('Unknown classifier %s' % cfg.CLASSIFIER)
+        raise ValueError
 
     # Setup features
     X_data = featdata['X_data']
@@ -725,7 +740,8 @@ def run(cfg, interactive=False, cv_file=None, feat_file=None):
 def load_config(cfg_file):
     cfg_file = qc.forward_slashify(cfg_file)
     if not (os.path.exists(cfg_file) and os.path.isfile(cfg_file)):
-        raise IOError('%s cannot be loaded.' % os.path.realpath(cfg_file))
+        logger.error('%s cannot be loaded.' % os.path.realpath(cfg_file))
+        raise IOError
     return imp.load_source(cfg_file, cfg_file)
 
 
