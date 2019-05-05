@@ -168,7 +168,7 @@ def get_psd(epochs, psde, wlen, wstep, picks=None, flatten=True, preprocess=None
     y_data = None
     results = []
     for ep in np.arange(len(labels)):
-        title = 'Epoch %d / %d, Frames %d-%d' % (ep, len(labels), w_starts[0], w_starts[-1] + wlen - 1)
+        title = 'Epoch %d / %d, Frames %d-%d' % (ep+1, len(labels), w_starts[0], w_starts[-1] + wlen - 1)
         if n_jobs == 1:
             # no multiprocessing
             results.append(slice_win(epochs_data[ep], w_starts, wlen, psde, picks, title, True, preprocess))
