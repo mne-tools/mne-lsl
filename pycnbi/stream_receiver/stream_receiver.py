@@ -205,8 +205,10 @@ class StreamReceiver:
         logger.info('Source sampling rate: %.1f' % sample_rate)
         logger.info('Unit multiplier: %.1f' % self.multiplier)
 
-        self.winsize = int(round(self.winsec * sample_rate))
-        self.bufsize = int(round(self.bufsec * sample_rate))
+        self.winsize = int(self.winsec * sample_rate)
+        self.bufsize = int(self.bufsec * sample_rate)
+        #self.winsize = int(round(self.winsec * sample_rate))
+        #self.bufsize = int(round(self.bufsec * sample_rate))
         self.sample_rate = sample_rate
         self.connected = True
         self.inlets = inlets  # NOTE: not picklable!
@@ -333,7 +335,8 @@ class StreamReceiver:
         Set window size (in seconds)
         """
         self.check_connect()
-        self.winsize = int(round(window_size * self.sample_rate)) + 1
+        self.winsize = int(window_size * self.sample_rate) + 1
+        #self.winsize = int(round(window_size * self.sample_rate)) + 1
 
     def get_channel_names(self):
         """
@@ -351,13 +354,9 @@ class StreamReceiver:
         timestamps = self.timestamps[0][-self.winsize:]
         return window, timestamps
 
-    def get_window(self, decim=1):
+    def get_window(self):
         """
         Get the latest window and timestamps in numpy format
-
-        input
-        -----
-        decim (int): decimation factor
 
         output
         ------
@@ -368,7 +367,7 @@ class StreamReceiver:
 
         if len(timestamps) > 0:
             # window = array[[samples_ch1],[samples_ch2]...]
-            return np.array(window)[::decim], np.array(timestamps)[::decim]
+            return np.array(window), np.array(timestamps)
         else:
             return np.array([]), np.array([])
 
