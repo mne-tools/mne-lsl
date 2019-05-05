@@ -193,7 +193,7 @@ def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, sp
 
     Input
     ------
-    raw: mne.io.RawArray | mne.Epochs | numpy.array (n_channels x n_samples)
+    raw: mne.io.Raw | mne.io.RawArray | mne.Epochs | numpy.array (n_channels x n_samples)
          numpy.array type assumes the data has only pure EEG channnels without event channels
 
     sfreq: required only if raw is numpy array.
@@ -235,12 +235,14 @@ def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, sp
     rereference: Not supported yet.
 
     decim: None | int
-        Apply low-pass filter and decimate (downsample). sfreq must be given.
+        Apply low-pass filter and decimate (downsample). sfreq must be given. Ignored if 1.
 
     Output
     ------
-    True if no error.
+    Same input data structure.
 
+    Note: To save computation time, input data may be modified in-place.
+    TODO: Add an option to disable in-place modification.
     """
 
     # Check datatype
@@ -254,7 +256,7 @@ def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, sp
         elif len(data.shape) == 2:
             n_channels = data.shape[0]
         eeg_channels = list(range(n_channels))
-        if decim is not None:
+        if decim is not None and decim != 1:
             if sfreq is None:
                 logger.error('Decimation cannot be applied if sfreq is None.')
                 raise ValueError
@@ -337,13 +339,13 @@ def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, sp
 
     # Downsample
     if decim is not None and decim != 1:
-        raise NotImplementedError('decim not implemented yet.')
-        '''
-        data[:] = mne.filter.resample(data, down=decim, npad='auto', window='boxcar', n_jobs=1, pad='reflect_limited')
-        if type(raw) != np.ndarray:
-            raw.info['sfreq'] /= decim
+        if type(raw) == np.ndarray:
+            data = mne.filter.resample(data, down=decim, npad='auto', window='boxcar', n_jobs=1)
+        else:
+            # resample() of Raw* and Epochs object internally calls mne.filter.resample()
+            raw = raw.resample(raw.info['sfreq'] / decim, npad='auto', window='boxcar', n_jobs=1)
+            data = raw._data
         sfreq /= decim
-        '''
 
     # Apply spectral filter
     if spectral is not None:
@@ -379,7 +381,9 @@ def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, sp
         mne.filter.notch_filter(data, Fs=sfreq, freqs=notch, notch_widths=3,
                                 picks=notch_ch_i, method='fft', n_jobs=n_jobs, copy=False)
 
-    return True
+    if type(raw) == np.ndarray:
+        raw = data
+    return raw
 
 
 def load_raw(rawfile, spfilter=None, spchannels=None, events_ext=None, multiplier=1, verbose='ERROR'):
@@ -417,7 +421,8 @@ def load_raw(rawfile, spfilter=None, spchannels=None, events_ext=None, multiplie
     extension = qc.parse_path(rawfile).ext
     assert extension in ['fif', 'fiff'], 'only fif format is supported'
     raw = mne.io.Raw(rawfile, preload=True, verbose=verbose)
-    preprocess(raw, spatial=spfilter, spatial_ch=spchannels, multiplier=multiplier)
+    if spfilter is not None or multiplier is not 1:
+        preprocess(raw, spatial=spfilter, spatial_ch=spchannels, multiplier=multiplier)
     if events_ext is not None:
         events = mne.read_events(events_ext)
     else:

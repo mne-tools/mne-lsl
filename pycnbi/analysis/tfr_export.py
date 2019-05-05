@@ -130,7 +130,7 @@ def get_tfr(cfg, recursive=False, n_jobs=1):
         raise RuntimeError(msg)
 
     # Apply filters
-    pu.preprocess(raw, spatial=cfg.SP_FILTER, spatial_ch=spchannels, spectral=cfg.TP_FILTER,
+    raw = pu.preprocess(raw, spatial=cfg.SP_FILTER, spatial_ch=spchannels, spectral=cfg.TP_FILTER,
                   spectral_ch=picks, notch=cfg.NOTCH_FILTER, notch_ch=picks,
                   multiplier=cfg.MULTIPLIER, n_jobs=n_jobs)
 
