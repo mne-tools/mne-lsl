@@ -51,7 +51,7 @@ def get_psd(sr, psde, picks):
     w = w.T  # -> channels x times
 
     # apply filters. Important: maintain the original channel order at this point.
-    pu.preprocess(w, sfreq=sfreq, spatial=spatial, spatial_ch=spatial_ch,
+    w = pu.preprocess(w, sfreq=sfreq, spatial=spatial, spatial_ch=spatial_ch,
                       spectral=spectral, spectral_ch=spectral_ch, notch=notch,
                               notch_ch=notch_ch, multiplier=multiplier)
 
