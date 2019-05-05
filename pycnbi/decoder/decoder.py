@@ -218,7 +218,7 @@ class BCIDecoder(object):
             # TODO: add re-referencing function to preprocess()
 
             # apply filters. Important: maintain the original channel order at this point.
-            pu.preprocess(w, sfreq=self.sfreq, spatial=self.spatial, spatial_ch=self.spatial_ch,
+            w = pu.preprocess(w, sfreq=self.sfreq, spatial=self.spatial, spatial_ch=self.spatial_ch,
                           spectral=self.spectral, spectral_ch=self.spectral_ch, notch=self.notch,
                           notch_ch=self.notch_ch, multiplier=self.multiplier, decim=self.decim)
 
