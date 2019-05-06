@@ -51,16 +51,28 @@ def find_trigger_channel(ch_list):
         return None
 
 class StreamReceiver:
-    def __init__(self, window_size=1.0, buffer_size=1.0, amp_serial=None, eeg_only=False, amp_name=None):
+    def __init__(self, window_size=1, buffer_size=1, amp_serial=None, eeg_only=False, amp_name=None):
         """
         Params:
             window_size (in seconds): keep the latest window_size seconds of the buffer.
-            buffer_size (in seconds): keep everything if buffer_size=0.
+            buffer_size (in seconds): 1-day is the maximum size. Large buffer may lead to a delay if not pulled frequently.
             amp_name: connect to a server named 'amp_name'. None: no constraint.
             amp_serial: connect to a server with serial number 'amp_serial'. None: no constraint.
             eeg_only: ignore non-EEG servers
         """
+        _MAX_BUFFER_SIZE = 6000 # in seconds (100 minutes)
+
+        if window_size <= 0:
+            window_size = 1
         self.winsec = window_size
+        if buffer_size == 0:
+            buffer_size = _MAX_BUFFER_SIZE
+        elif buffer_size < 0 or buffer_size > _MAX_BUFFER_SIZE:
+            logger.warning('Improper buffer size %.1f. Set to %d.' % (buffer_size, _MAX_BUFFER_SIZE))
+            buffer_size = _MAX_BUFFER_SIZE
+        elif buffer_size <= self.winsec:
+            logger.warning('Buffer size %.1f is smaller than window size. Set to %.1f.' % (buffer_size, self.winsec))
+            buffer_size = self.winsec
         self.bufsec = buffer_size
         self.amp_serial = amp_serial
         self.eeg_only = eeg_only
@@ -193,7 +205,7 @@ class StreamReceiver:
         inlets_master = []
         inlets_slaves = []
         for amp in amps:
-            inlet = pylsl.StreamInlet(amp, max_buflen=int(math.ceil(self.bufsec)))
+            inlet = pylsl.StreamInlet(amp, max_buflen=int(math.ceil(self.bufsec)), max_chunklen=int(math.ceil(self.bufsec)))
             inlets_master.append(inlet)
             self.buffers.append([])
             self.timestamps.append([])
