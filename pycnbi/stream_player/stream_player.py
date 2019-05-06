@@ -21,11 +21,10 @@ from pycnbi.triggers.trigger_def import trigger_def
 from pycnbi import logger
 from builtins import input
 
-def stream_player(server_name, fif_file, chunk_size, auto_restart=True, wait_start=True, repeat=np.float('inf'), high_resolution=False, verbose=None, trigger_file=None):
+def stream_player(server_name, fif_file, chunk_size, auto_restart=True, wait_start=True, repeat=np.float('inf'), high_resolution=False, trigger_file=None):
     """
-    Params
-    ======
-
+    Input
+    =====
     server_name: LSL server name.
     fif_file: fif file to replay.
     chunk_size: number of samples to send at once (usually 16-32 is good enough).
@@ -35,9 +34,9 @@ def stream_player(server_name, fif_file, chunk_size, auto_restart=True, wait_sta
     high_resolution: use perf_counter() instead of sleep() for higher time resolution
                      but uses much more cpu due to polling.
     trigger_file: used to convert event numbers into event strings for readability.
-    verbose:
-        'timestamp': show timestamp each time data is pushed out
-        'events': show non-zero events whenever pushed out
+    
+    Note: Run pycnbi.set_log_level('DEBUG') to print out the relative time stamps since started.
+    
     """
     raw, events = pu.load_raw(fif_file)
     sfreq = raw.info['sfreq']  # sampling frequency
@@ -103,9 +102,8 @@ def stream_player(server_name, fif_file, chunk_size, auto_restart=True, wait_sta
             if t_wait > 0.001:
                 time.sleep(t_wait)
         outlet.push_chunk(data)
-        if verbose == 'timestamp':
-            logger.info('[%8.3fs] sent %d samples' % (time.perf_counter(), len(data)))
-        elif verbose == 'events' and event_ch is not None:
+        logger.debug('[%8.3fs] sent %d samples (LSL %8.3f)' % (time.perf_counter(), len(data), pylsl.local_clock()))
+        if event_ch is not None:
             event_values = set(chunk[event_ch]) - set([0])
             if len(event_values) > 0:
                 if trigger_file is None:
