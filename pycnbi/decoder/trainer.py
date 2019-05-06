@@ -159,7 +159,6 @@ def balance_samples(X, Y, balance_type, verbose=False):
             yl = np.where(Y == c)[0]
             if len(max_set) == 0 or len(yl) > max_set[1]:
                 max_set = [c, len(yl)]
-
         for c in label_set:
             if c == max_set[0]: continue
             yl = np.where(Y == c)[0]
@@ -167,7 +166,6 @@ def balance_samples(X, Y, balance_type, verbose=False):
             extra_idx = np.random.choice(yl, extra_samples)
             X_balanced = np.append(X_balanced, X[extra_idx], axis=0)
             Y_balanced = np.append(Y_balanced, Y[extra_idx], axis=0)
-
     elif balance_type == 'UNDER':
         """
         Undersample from classes that are excessive
@@ -180,11 +178,9 @@ def balance_samples(X, Y, balance_type, verbose=False):
             yl = np.where(Y == c)[0]
             if len(min_set) == 0 or len(yl) < min_set[1]:
                 min_set = [c, len(yl)]
-
         yl = np.where(Y == min_set[0])[0]
         X_balanced = np.array(X[yl])
         Y_balanced = np.array(Y[yl])
-
         for c in label_set:
             if c == min_set[0]: continue
             yl = np.where(Y == c)[0]
@@ -195,13 +191,9 @@ def balance_samples(X, Y, balance_type, verbose=False):
         logger.error('Unknown balancing type ' % balance_type)
         raise ValueError
 
-    if verbose is True:
-        logger.info('\nNumber of trials BEFORE balancing')
-        for c in label_set:
-            logger.info('%s: %d' % (cfg.tdef.by_value[c], len(np.where(Y == c)[0])))
-        logger.info('\nNumber of trials AFTER balancing')
-        for c in label_set:
-            logger.info('%s: %d' % (cfg.tdef.by_value[c], len(np.where(Y_balanced == c)[0])))
+    logger.info_green('\nNumber of samples after %ssampling' % balance_type.lower())
+    for c in label_set:
+        logger.info('%s: %d -> %d' % (c, len(np.where(Y == c)[0]), len(np.where(Y_balanced == c)[0])))
 
     return X_balanced, Y_balanced
 
@@ -548,7 +540,7 @@ def cross_validate(cfg, featdata, cv_file=None):
     for ev in np.unique(Y_data):
         txt += '%s: %d trials\n' % (cfg.tdef.by_value[ev], len(np.where(Y_data[:, 0] == ev)[0]))
     if cfg.BALANCE_SAMPLES:
-        txt += 'The number of samples was balanced across classes. Method: %s\n' % cfg.BALANCE_SAMPLES
+        txt += 'The number of samples was balanced using %ssampling.\n' % cfg.BALANCE_SAMPLES.lower()
     txt += '\n- Experiment condition\n'
     txt += 'Sampling frequency: %.3f Hz\n' % featdata['sfreq']
     txt += 'Spatial filter: %s (channels: %s)\n' % (cfg.SP_FILTER, cfg.SP_FILTER)
