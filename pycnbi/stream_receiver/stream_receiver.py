@@ -491,9 +491,15 @@ def test_receiver():
         window, tslist = sr.get_window() # window = [samples x channels]
         window = window.T # chanel x samples
 
+        qc.print_c('LSL Diff = %.3f' % (pylsl.local_clock() - tslist[-1]), 'G')
+
         # print event values
-        tsnew = np.where(np.array(tslist) > last_ts)[0][0]
-        trigger = np.unique(window[trg_ch, tsnew:])
+        tsnew = np.where(np.array(tslist) > last_ts)[0]
+        if len(tsnew) == 0:
+            logger.warning('There seems to be delay in receiving data.')
+            time.sleep(1)
+            continue
+        trigger = np.unique(window[trg_ch, tsnew[0]:])
 
         # for Biosemi
         # if sr.amp_name=='BioSemi':
