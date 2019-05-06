@@ -20,8 +20,6 @@ Note:
   Most of the time, it does not matter but when you use software trigger, you will
   need this offset to synchronize the event timings.
 
-TODO:
-   Restrict buffer size.
 
 Kyuhwa Lee, 2019
 Swiss Federal Institute of Technology Lausanne (EPFL)
@@ -30,6 +28,7 @@ Swiss Federal Institute of Technology Lausanne (EPFL)
 
 import sys
 import pdb
+import math
 import time
 import pylsl
 import numpy as np
@@ -52,7 +51,7 @@ def find_trigger_channel(ch_list):
         return None
 
 class StreamReceiver:
-    def __init__(self, window_size=1.0, buffer_size=0, amp_serial=None, eeg_only=False, amp_name=None):
+    def __init__(self, window_size=1.0, buffer_size=1.0, amp_serial=None, eeg_only=False, amp_name=None):
         """
         Params:
             window_size (in seconds): keep the latest window_size seconds of the buffer.
@@ -194,7 +193,7 @@ class StreamReceiver:
         inlets_master = []
         inlets_slaves = []
         for amp in amps:
-            inlet = pylsl.StreamInlet(amp)
+            inlet = pylsl.StreamInlet(amp, max_buflen=int(math.ceil(self.bufsec)))
             inlets_master.append(inlet)
             self.buffers.append([])
             self.timestamps.append([])
@@ -255,9 +254,9 @@ class StreamReceiver:
         chunk = None
         while not received:
             while self.watchdog.sec() < 5:
-                # retrieve chunk in [frame][ch]
+                # chunk = [frames]x[ch], tslist = [frames]
                 if len(tslist) == 0:
-                    chunk, tslist = self.inlets[0].pull_chunk(self.winsize)  # [frames][channels]
+                    chunk, tslist = self.inlets[0].pull_chunk(max_samples=self.bufsize)
                     if blocking == False and len(tslist) == 0:
                         return np.empty((0, len(self.ch_list))), []
                 if len(tslist) > 0:
@@ -273,7 +272,6 @@ class StreamReceiver:
         data = np.array(chunk)
 
         # BioSemi has pull-up resistor instead of pull-down
-        # import pdb; pdb.set_trace()
         if self.amp_name == 'BioSemi' and self._lsl_tr_channel is not None:
             datatype = data.dtype
             data[:, self._lsl_tr_channel] = (np.bitwise_and(255, data[:, self._lsl_tr_channel].astype(int)) - 1).astype(datatype)
@@ -313,7 +311,7 @@ class StreamReceiver:
         # if we have multiple synchronized amps
         if len(self.inlets) > 1:
             for i in range(1, len(self.inlets)):
-                chunk, tslist = self.inlets[i].pull_chunk(max_samples=len(tslist))  # [frames][channels]
+                chunk, tslist = self.inlets[i].pull_chunk(max_samples=self.bufsize)  # [frames][channels]
                 self.buffers[i].extend(chunk)
                 self.timestamps[i].extend(tslist)
                 if self.bufsize > 0 and len(self.buffers[i]) > self.bufsize:
@@ -428,6 +426,13 @@ class StreamReceiver:
         """
         return self.tr_channel
 
+    def get_lsl_offset(self):
+        """
+        Return time difference of acquisition server's time and LSL time
+
+        OpenVibe servers often have a bug of sending its own running time instead of LSL time.
+        """
+        return self.lsl_time_offset
     def reset_buffer(self):
         """
         Clear buffers
