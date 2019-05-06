@@ -190,7 +190,7 @@ class BCIDecoder(object):
     def get_prob(self, timestamp=False):
         """
         Read the latest window
-        
+
         Input
         -----
         timestamp: If True, returns LSL timestamp of the leading edge of the window used for decoding.
@@ -441,7 +441,7 @@ class BCIDecoderDaemon(object):
                     probs_smooth[i] /= probs_smooth_sum
                 pread.value = 0
                 t_problast.value = t_prob
-                
+
                 # copy back PSD values only when requested
                 if self.fake == False and return_psd.value == 1:
                     lock.acquire()
@@ -617,28 +617,32 @@ class BCIDecoderDaemon(object):
 
 
 
-def log_decoding_helper(state, event_queue, amp_name=None, amp_serial=None):
+def log_decoding_helper(state, event_queue, amp_name=None, amp_serial=None, autostop=True):
     """
     Helper function to run StreamReceiver object in background
     """
+    logger.info('Event acquisition subprocess started.')
+
     # acquire event values and returns event times and event values
     sr = StreamReceiver(buffer_size=0, amp_name=amp_name, amp_serial=amp_serial)
     tm = qc.Timer(autoreset=True)
+
     while state.value == 1:
         sr.acquire()
         tm.sleep_atleast(0.001)
+    logger.info('Event acquisition subprocess finishing up ...')
+
     buffers, times = sr.get_buffer()
-    events = buffers.T[0, :]
+    events = buffers[:, 0] # first channel is the trigger channel
     event_index = np.where(events != 0)[0]
-    logger.info('Event acquisition process finishing up ...')
     event_times = times[event_index].reshape(-1).tolist()
     event_values = events[event_index].tolist()
     event_queue.put((event_times, event_values))
-    
+
 def log_decoding(decoder, logfile, amp_name=None, amp_serial=None, matfile=False, autostop=True):
     """
     Decode online and write results with event timestamps
-    
+
     input
     -----
     decoder: Decoder or DecoderDaemon class object.
@@ -647,10 +651,10 @@ def log_decoding(decoder, logfile, amp_name=None, amp_serial=None, matfile=False
     amp_serial: LSL server serial number (if known).
     matfile: Export results to Matlab .mat file if True.
     """
-    
+
     import cv2
     import scipy
-    
+
     labels = decoder.get_label_names()
     probs = []
     prob_times = []
@@ -658,10 +662,11 @@ def log_decoding(decoder, logfile, amp_name=None, amp_serial=None, matfile=False
     # run event acquisition process in the background
     state = mp.Value('i', 1)
     event_queue = mp.Queue()
-    proc = mp.Process(target=log_decoding_helper, args=[state, event_queue, amp_name, amp_serial])
+    log_decoding_helper(state, event_queue, amp_name, amp_serial, autostop)
+    proc = mp.Process(target=log_decoding_helper, args=[state, event_queue, amp_name, amp_serial, autostop])
     proc.start()
     logger.info_green('Spawned event acquisition process.')
-    
+
     # simple controller UI
     cv2.namedWindow("Decoding", cv2.WINDOW_AUTOSIZE)
     cv2.moveWindow("Decoding", 1400, 50)
@@ -672,16 +677,17 @@ def log_decoding(decoder, logfile, amp_name=None, amp_serial=None, matfile=False
     img *= 0
     cv2.putText(img, 'Press ESC to stop', (40, 60), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 2, cv2.LINE_AA)
     cv2.imshow("Decoding", img)
-    
+
     started = False
     key = 0
     tm_cls = qc.Timer()
     tm_watchdog = qc.Timer(autoreset=True)
     while key != 27:
-        praw, prob_time = decoder.get_prob_unread(True)
-        #psmooth = decoder.get_prob_smooth()
+        prob, prob_time = decoder.get_prob_unread(True)
+        #prob, prob_time = decoder.get_prob_smooth_unread(True)
+        #t_lsl = pylsl.local_clock()
         key = cv2.waitKeyEx(1)
-        if praw is None:
+        if prob is None:
             # watch dog
             if tm_cls.sec() > 5:
                 if started:
@@ -691,24 +697,23 @@ def log_decoding(decoder, logfile, amp_name=None, amp_serial=None, matfile=False
                 tm_cls.reset()
             tm_watchdog.sleep_atleast(0.001)
             continue
-        probs.append(praw)
-        #prob_time = pylsl.local_clock()
+        probs.append(prob)
         prob_times.append(prob_time)
-        txt = ', '.join(['%s: %.2f' % (l, p) for l, p in zip(labels, praw)] + ['%d ms' % tm_cls.msec()])
-        logger.info('LSL %.3f   ts %.3f' % (pylsl.local_clock(), prob_time))
-        logger.debug(txt)
+        txt = '[%.3f] ' % prob_time + ', '.join(['%s: %.2f' % (l, p) for l, p in zip(labels, prob)] + ['%d ms' % tm_cls.msec()])
+        #logger.info('Difference with LSL = %.3f' % (t_lsl - prob_time))
+        logger.info(txt)
         if not started:
             started = True
         tm_cls.reset()
-    
+
     # finish up processes
-    cv2.destroyAllWindows()    
+    cv2.destroyAllWindows()
     logger.info('Cleaning up event acquisition process.')
     state.value = 0
     decoder.stop()
     event_times, event_values = event_queue.get()
     proc.join()
-    
+
     # save values
     if len(prob_times) == 0:
         logger.error('No decoding result. Please debug.')
