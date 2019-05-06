@@ -74,11 +74,11 @@ def slice_win(epochs_data, w_starts, w_length, psde, picks=None, title=None, fla
     def WrongIndexError(Exception):
         logger.error('%s' % Exception)
 
-    w_length = int(w_length)
-
-
+    if type(w_length) is not int:
+        logger.warning('w_length type is %s. Converting to int.' % type(w_length))
+        w_length = int(w_length)
     if title is None:
-        title = '[PID %d] Frames %d-%d' % (os.getpid(), w_starts[0], w_starts[-1] + w_length - 1)
+        title = '[PID %d] Frames %d-%d' % (os.getpid(), w_starts[0], w_starts[-1]+w_length-1)
     else:
         title = '[PID %d] %s' % (os.getpid(), title)
     if preprocess is not None and preprocess['decim'] != 1:
@@ -87,7 +87,7 @@ def slice_win(epochs_data, w_starts, w_length, psde, picks=None, title=None, fla
 
     X = None
     for n in w_starts:
-        n = int(n)
+        n = int(round(n))
         if n >= epochs_data.shape[1]:
             logger.error('w_starts has an out-of-bounds index %d for epoch length %d.' % (n, epochs_data.shape[1]))
             raise WrongIndexError
@@ -255,13 +255,13 @@ def get_psd_feature(epochs_train, window, psdparam, picks=None, preprocess=None,
                     wl = psdparam['wlen']
                 assert wl > 0
                 wlen.append(wl)
-                w_frames.append(int(sfreq * wl))
+                w_frames.append(int(round(sfreq * wl)))
     else:
         sfreq = epochs_train.info['sfreq']
         wlen = window[1] - window[0]
         if psdparam['wlen'] is None:
             psdparam['wlen'] = wlen
-        w_frames = int(sfreq * psdparam['wlen'])  # window length in number of samples(frames)
+        w_frames = int(round(sfreq * psdparam['wlen']))  # window length in number of samples(frames)
     if 'decim' not in psdparam or psdparam['decim'] is None:
         psdparam['decim'] = 1
 
@@ -313,7 +313,8 @@ def get_timelags(epochs, wlen, wstep, downsample=1, picks=None):
     X: [epochs] x [windows] x [channels*freqs]
     y: [epochs] x [labels]
     """
-
+    
+    '''
     wlen = int(wlen)
     wstep = int(wstep)
     downsample = int(downsample)
@@ -350,7 +351,9 @@ def get_timelags(epochs, wlen, wstep, downsample=1, picks=None):
             y_data = np.concatenate((y_data, y), axis=0)
 
     return X_data, y_data
-
+    '''
+    logger.error('This function is deprecated.')
+    raise NotImplementedError
 
 def feature2chz(x, fqlist, ch_names):
     """
