@@ -122,8 +122,8 @@ class BCIDecoder(object):
             if 'decim' not in model:
                 model['decim'] = 1
             self.decim = model['decim']
-            if not int(self.sfreq * self.w_seconds) == self.w_frames:
-                logger.error('sfreq * w_sec %d != w_frames %d' % (int(self.sfreq * self.w_seconds), self.w_frames))
+            if not int(round(self.sfreq * self.w_seconds)) == self.w_frames:
+                logger.error('sfreq * w_sec %d != w_frames %d' % (int(round(self.sfreq * self.w_seconds)), self.w_frames))
                 raise RuntimeError
 
             if 'multiplier' in model:
