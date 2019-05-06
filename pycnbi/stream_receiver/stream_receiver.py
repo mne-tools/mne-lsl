@@ -183,7 +183,8 @@ class StreamReceiver:
         if self._lsl_tr_channel is None:
             logger.warning('Trigger channel not fonud. Adding an empty channel 0.')
         else:
-            logger.warning('Trigger channel found at index %d. Moving to index 0.' % self._lsl_tr_channel)
+            if self._lsl_tr_channel != 0:
+                logger.warning('Trigger channel found at index %d. Moving to index 0.' % self._lsl_tr_channel)
             self._lsl_eeg_channels.pop(self._lsl_tr_channel)
         self._lsl_eeg_channels = np.array(self._lsl_eeg_channels)
         self.tr_channel = 0  # trigger channel is always set to 0.
@@ -211,7 +212,7 @@ class StreamReceiver:
         self.bufsize = int(round(self.bufsec * sample_rate))
         self.sample_rate = sample_rate
         self.connected = True
-        self.inlets = inlets  # NOTE: not picklable!
+        self.inlets = inlets  # Note: not picklable!
         self.ch_list = ch_list
 
         # create channel info
@@ -240,9 +241,7 @@ class StreamReceiver:
         Fills the buffer and return the current chunk of data and timestamps.
 
         Returns:
-            (data, timestamps) where
-            data: [samples, channels]
-            timestamps: [samples]
+            data [samples x channels], timestamps [samples]
 
         TODO: add a parameter to set to non-blocking mode.
         """
@@ -253,13 +252,14 @@ class StreamReceiver:
         self.watchdog.reset()
         tslist = []
         received = False
+        chunk = None
         while not received:
             while self.watchdog.sec() < 5:
                 # retrieve chunk in [frame][ch]
                 if len(tslist) == 0:
-                    chunk, tslist = self.inlets[0].pull_chunk()  # [frames][channels]
+                    chunk, tslist = self.inlets[0].pull_chunk(self.winsize)  # [frames][channels]
                     if blocking == False and len(tslist) == 0:
-                        return np.zeros((0, len(self.ch_list))), []
+                        return np.empty((0, len(self.ch_list))), []
                 if len(tslist) > 0:
                     if timestamp_offset is True:
                         lsl_clock = pylsl.local_clock()
@@ -268,7 +268,8 @@ class StreamReceiver:
                 time.sleep(0.0005)
             else:
                 logger.warning('Timeout occurred while acquiring data. Amp driver bug?')
-                self.watchdog.reset()
+                # give up and return empty values to avoid deadlock
+                return np.empty((0, len(self.ch_list))), []
         data = np.array(chunk)
 
         # BioSemi has pull-up resistor instead of pull-down

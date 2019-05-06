@@ -121,7 +121,9 @@ class Feedback:
                 if self.cfg.TRIAL_PAUSE:
                     self.viz.put_text('Press any key')
                     self.viz.update()
-                    key = cv2.waitKey()
+                    key = cv2.waitKeyEx()
+                    if key == KEYS['esc']:
+                        return
                 self.viz.fill()
                 self.tm_trigger.reset()
                 self.trigger.signal(self.tdef.INIT)
@@ -412,7 +414,7 @@ class Feedback:
             self.viz.update()
             key = cv2.waitKeyEx(1)
             if key == KEYS['esc']:
-                return None
+                return
             elif key == KEYS['space']:
                 dx = 0
                 bar_score = 0
