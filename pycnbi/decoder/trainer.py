@@ -187,8 +187,10 @@ def balance_samples(X, Y, balance_type, verbose=False):
             reduced_idx = np.random.choice(yl, min_set[1])
             X_balanced = np.append(X_balanced, X[reduced_idx], axis=0)
             Y_balanced = np.append(Y_balanced, Y[reduced_idx], axis=0)
+    elif balance_type is None or balance_type is False:
+        return X, Y
     else:
-        logger.error('Unknown balancing type ' % balance_type)
+        logger.error('Unknown balancing type %s' % balance_type)
         raise ValueError
 
     logger.info_green('\nNumber of samples after %ssampling' % balance_type.lower())
@@ -198,7 +200,7 @@ def balance_samples(X, Y, balance_type, verbose=False):
     return X_balanced, Y_balanced
 
 
-def crossval_epochs(cv, epochs_data, labels, cls, label_names=None, do_balance=False, n_jobs=None, ignore_thres=None, decision_thres=None):
+def crossval_epochs(cv, epochs_data, labels, cls, label_names=None, do_balance=None, n_jobs=None, ignore_thres=None, decision_thres=None):
     """
     Epoch-based cross-validation used by cross_validate().
 
@@ -241,7 +243,7 @@ def crossval_epochs(cv, epochs_data, labels, cls, label_names=None, do_balance=F
         X_test = np.concatenate(epochs_data[test])
         Y_train = np.concatenate(labels[train])
         Y_test = np.concatenate(labels[test])
-        if do_balance != False:
+        if do_balance:
             X_train, Y_train = balance_samples(X_train, Y_train, do_balance)
             X_test, Y_test = balance_samples(X_test, Y_test, do_balance)
 
