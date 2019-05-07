@@ -63,11 +63,11 @@ os.environ['OMP_NUM_THREADS'] = '1' # actually improves performance for multitap
 
 def check_config(cfg):
     critical_vars = {
-        'COMMON':[
-            'tdef',
+        'COMMON': [
+            # 'tdef',
             'TRIGGER_DEF',
             'EPOCH',
-            'DATADIR',
+            'DATA_PATH',
             'PSD',
             'CHANNEL_PICKS',
             'SP_FILTER',
@@ -76,22 +76,22 @@ def check_config(cfg):
             'FEATURES',
             'CLASSIFIER',
             'CV_PERFORM'],
-        'RF':['trees', 'max_depth', 'seed'],
-        'GB':['trees', 'learning_rate', 'max_depth', 'seed']
+        'RF': ['trees', 'max_depth', 'seed'],
+        'GB': ['trees', 'learning_rate', 'max_depth', 'seed']
     }
 
     # optional variables with default values
     optional_vars = {
-        'MULTIPLIER':1,
-        'EXPORT_GOOD_FEATURES':False,
-        'FEAT_TOPN':10,
-        'EXPORT_CLS':False,
-        'REF_CH':None,
-        'N_JOBS':None,
-        'EXCLUDES':None,
-        'CV_IGNORE_THRES':None,
-        'CV_DECISION_THRES':None,
-        'BALANCE_SAMPLES':False
+        'MULTIPLIER': 1,
+        'EXPORT_GOOD_FEATURES': False,
+        'FEAT_TOPN': 10,
+        'EXPORT_CLS': False,
+        'REF_CH': None,
+        'N_JOBS': None,
+        'EXCLUDES': None,
+        'CV_IGNORE_THRES': None,
+        'CV_DECISION_THRES': None,
+        'BALANCE_SAMPLES': False
     }
 
     for v in critical_vars['COMMON']:
@@ -575,10 +575,10 @@ def cross_validate(cfg, featdata, cv_file=None):
     if hasattr(cfg, 'CV_EXPORT_RESULT') and cfg.CV_EXPORT_RESULT is True and cfg.CV_PERFORM is not None:
         if cv_file is None:
             if cfg.EXPORT_CLS is True:
-                qc.make_dirs('%s/classifier' % cfg.DATADIR)
-                fout = open('%s/classifier/cv_result.txt' % cfg.DATADIR, 'w')
+                qc.make_dirs('%s/classifier' % cfg.DATA_PATH)
+                fout = open('%s/classifier/cv_result.txt' % cfg.DATA_PATH, 'w')
             else:
-                fout = open('%s/cv_result.txt' % cfg.DATADIR, 'w')
+                fout = open('%s/cv_result.txt' % cfg.DATA_PATH, 'w')
         else:
             fout = open(cv_file, 'w')
         fout.write(txt)
@@ -642,8 +642,8 @@ def train_decoder(cfg, featdata, feat_file=None):
                     spatial_ch=featdata['picks'], spectral=cfg.TP_FILTER, spectral_ch=featdata['picks'],
                     notch=cfg.NOTCH_FILTER, notch_ch=featdata['picks'], multiplier=cfg.MULTIPLIER,
                     ref_ch=cfg.REF_CH, decim=cfg.PSD['decim'])
-    clsfile = '%s/classifier/classifier-%s.pkl' % (cfg.DATADIR, platform.architecture()[0])
-    qc.make_dirs('%s/classifier' % cfg.DATADIR)
+    clsfile = '%s/classifier/classifier-%s.pkl' % (cfg.DATA_PATH, platform.architecture()[0])
+    qc.make_dirs('%s/classifier' % cfg.DATA_PATH)
     qc.save_obj(clsfile, data)
     logger.info('Decoder saved to %s' % clsfile)
 
@@ -671,7 +671,7 @@ def train_decoder(cfg, featdata, feat_file=None):
 
         if cfg.EXPORT_GOOD_FEATURES:
             if feat_file is None:
-                gfout = open('%s/classifier/good_features.txt' % cfg.DATADIR, 'w')
+                gfout = open('%s/classifier/good_features.txt' % cfg.DATA_PATH, 'w')
             else:
                 gfout = open(feat_file, 'w')
 
