@@ -651,7 +651,7 @@ def log_decoding_helper(state, event_queue, amp_name=None, amp_serial=None, auto
     assert len(event_times) == len(event_values)
     event_queue.put((event_times, event_values))
 
-def log_decoding(decoder, logfile, amp_name=None, amp_serial=None, matfile=False, autostop=True, prob_smooth=False):
+def log_decoding(decoder, logfile, amp_name=None, amp_serial=None, matfile=False, autostop=False, prob_smooth=False):
     """
     Decode online and write results with event timestamps
 
