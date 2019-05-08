@@ -617,18 +617,29 @@ class BCIDecoderDaemon(object):
 
 
 
-def log_decoding_helper(state, event_queue, amp_name=None, amp_serial=None, autostop=True):
+def log_decoding_helper(state, event_queue, amp_name=None, amp_serial=None, autostop=False):
     """
     Helper function to run StreamReceiver object in background
     """
     logger.info('Event acquisition subprocess started.')
 
+    # wait for the start signal
+    while state.value == 0:
+        time.sleep(0.01)
+    
     # acquire event values and returns event times and event values
     sr = StreamReceiver(buffer_size=0, amp_name=amp_name, amp_serial=amp_serial)
     tm = qc.Timer(autoreset=True)
-
+    started = False
     while state.value == 1:
-        sr.acquire()
+        chunk, ts_list = sr.acquire()
+        if autostop:
+            if started is True:
+                if len(ts_list) == 0:
+                    state.value = 0
+                    break
+            elif len(ts_list) > 0:
+                started = True
         tm.sleep_atleast(0.001)
     logger.info('Event acquisition subprocess finishing up ...')
 
@@ -637,9 +648,10 @@ def log_decoding_helper(state, event_queue, amp_name=None, amp_serial=None, auto
     event_index = np.where(events != 0)[0]
     event_times = times[event_index].reshape(-1).tolist()
     event_values = events[event_index].tolist()
+    assert len(event_times) == len(event_values)
     event_queue.put((event_times, event_values))
 
-def log_decoding(decoder, logfile, amp_name=None, amp_serial=None, matfile=False, autostop=True):
+def log_decoding(decoder, logfile, amp_name=None, amp_serial=None, matfile=False, autostop=True, prob_smooth=False):
     """
     Decode online and write results with event timestamps
 
@@ -655,18 +667,22 @@ def log_decoding(decoder, logfile, amp_name=None, amp_serial=None, matfile=False
     import cv2
     import scipy
 
-    labels = decoder.get_label_names()
-    probs = []
-    prob_times = []
-
     # run event acquisition process in the background
     state = mp.Value('i', 1)
     event_queue = mp.Queue()
-    log_decoding_helper(state, event_queue, amp_name, amp_serial, autostop)
     proc = mp.Process(target=log_decoding_helper, args=[state, event_queue, amp_name, amp_serial, autostop])
     proc.start()
     logger.info_green('Spawned event acquisition process.')
 
+    # init variables and choose decoding function
+    labels = decoder.get_label_names()
+    probs = []
+    prob_times = []
+    if prob_smooth:
+        decode_fn = decoder.get_prob_smooth_unread
+    else:
+        decode_fn = decoder.get_prob_unread
+        
     # simple controller UI
     cv2.namedWindow("Decoding", cv2.WINDOW_AUTOSIZE)
     cv2.moveWindow("Decoding", 1400, 50)
@@ -678,29 +694,28 @@ def log_decoding(decoder, logfile, amp_name=None, amp_serial=None, matfile=False
     cv2.putText(img, 'Press ESC to stop', (40, 60), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 2, cv2.LINE_AA)
     cv2.imshow("Decoding", img)
 
-    started = False
     key = 0
-    tm_cls = qc.Timer()
+    started = False
     tm_watchdog = qc.Timer(autoreset=True)
+    tm_cls = qc.Timer()
     while key != 27:
-        prob, prob_time = decoder.get_prob_unread(True)
-        #prob, prob_time = decoder.get_prob_smooth_unread(True)
-        #t_lsl = pylsl.local_clock()
+        prob, prob_time = decode_fn(True)
+        t_lsl = pylsl.local_clock()
         key = cv2.waitKeyEx(1)
         if prob is None:
             # watch dog
             if tm_cls.sec() > 5:
-                if started:
+                if autostop and started:
                     logger.info('No more streaming data. Finishing.')
                     break
-                logger.warning('No classification was done in the last 5 seconds. Are you receiving data streams?')
                 tm_cls.reset()
             tm_watchdog.sleep_atleast(0.001)
             continue
         probs.append(prob)
         prob_times.append(prob_time)
-        txt = '[%.3f] ' % prob_time + ', '.join(['%s: %.2f' % (l, p) for l, p in zip(labels, prob)] + ['%d ms' % tm_cls.msec()])
-        #logger.info('Difference with LSL = %.3f' % (t_lsl - prob_time))
+        txt = '[%.3f] ' % prob_time
+        txt += ', '.join(['%s: %.2f' % (l, p) for l, p in zip(labels, prob)])
+        txt += ' (%d ms, LSL Diff = %.3f)' % (tm_cls.msec(), (t_lsl-prob_time))
         logger.info(txt)
         if not started:
             started = True
