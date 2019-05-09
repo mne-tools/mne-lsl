@@ -744,8 +744,9 @@ def log_decoding(decoder, logfile, amp_name=None, amp_serial=None, pklfile=True,
     prob_times = np.array(prob_times) - t_start
     event_values = np.array(event_values)
     data = dict(probs=probs, prob_times=prob_times, event_times=event_times, event_values=event_values, labels=labels)
-    qc.save_obj(logfile, data)
-    logger.info('Saved to %s' % logfile)
+    if pklfile:
+        qc.save_obj(logfile, data)
+        logger.info('Saved to %s' % logfile)
     if matfile:
         pp = qc.parse_path(logfile)
         matout = '%s/%s.mat' % (pp.dir, pp.name)
