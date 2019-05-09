@@ -651,7 +651,7 @@ def log_decoding_helper(state, event_queue, amp_name=None, amp_serial=None, auto
     assert len(event_times) == len(event_values)
     event_queue.put((event_times, event_values))
 
-def log_decoding(decoder, logfile, amp_name=None, amp_serial=None, matfile=False, autostop=False, prob_smooth=False):
+def log_decoding(decoder, logfile, amp_name=None, amp_serial=None, pklfile=True, matfile=False, autostop=False, prob_smooth=False):
     """
     Decode online and write results with event timestamps
 
@@ -661,7 +661,10 @@ def log_decoding(decoder, logfile, amp_name=None, amp_serial=None, matfile=False
     logfile: File name to contain the result in Python pickle format.
     amp_name: LSL server name (if known).
     amp_serial: LSL server serial number (if known).
+    pklfile: Export results to Python pickle format.
     matfile: Export results to Matlab .mat file if True.
+    autostop: Automatically finish when no more data is received.
+    prob_smooth: Use smoothed probability values according to decoder's smoothing parameter.
     """
 
     import cv2
