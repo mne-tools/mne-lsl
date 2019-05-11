@@ -565,7 +565,7 @@ class Scope(QtGui.QMainWindow, form_class):
         # Just in case, there's a flag to force a repaint even when we shouldn't repaint
         sender = self.sender()
         if 'force_repaint' not in self.__dict__.keys():
-            logger.warning('#' * 10, 'force_repaint is not set! Is it a bug?', '#' * 10)
+            logger.warning('force_repaint is not set! Is it a Qt bug?')
             self.force_repaint = 0
         if (sender is None) and (not self.force_repaint):
             pass
