@@ -321,8 +321,6 @@ class StreamReceiver:
                     self.buffers[i] = self.buffers[i][-self.bufsize:]
             '''
 
-        # data= array[samples, channels], tslist=[samples]
-
         if timestamp_offset is True:
             timestamp_offset = False
             logger.info('LSL timestamp = %s' % lsl_clock)
