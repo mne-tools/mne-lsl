@@ -428,10 +428,11 @@ def load_raw(rawfile, spfilter=None, spchannels=None, events_ext=None, multiplie
     else:
         tch = find_event_channel(raw)
         if tch is not None:
-            events = mne.find_events(raw, stim_channel=raw.ch_names[tch], shortest_event=1, uint_cast=True,
-                                     consecutive=True)
+            events = mne.find_events(raw, stim_channel=raw.ch_names[tch], shortest_event=1, uint_cast=True, consecutive=True)
+            # MNE's annoying hidden cockroach: first_samp
+            events[:, 0] -= raw.first_samp
         else:
-            events = []
+            events = np.array([], dtype=np.int64)
 
     return raw, events
 
@@ -622,3 +623,21 @@ def channel_names_to_index(raw, channel_names=None):
                 raise TypeError('channel_names is unknown format.\nchannel_names=%s' % channel_names)
 
     return picks
+
+
+def raw_crop(raw, tmin, tmax):
+    """
+    Perform a real cropping of a Raw object
+    
+    mne.Raw.crop() updates a very confusing variable "first_samp", which reuslts
+    in the mismatch of real event indices when run with mne.find_events().
+    """
+    trigch = find_event_channel(raw)
+    ch_types = ['eeg'] * len(raw.ch_names)
+    if trigch is not None:
+        ch_types[trigch] = 'stim'
+    info = mne.create_info(raw.ch_names, raw.info['sfreq'], ch_types)
+    tmin_index = int(round(raw.info['sfreq'] * tmin))
+    tmax_index = int(round(raw.info['sfreq'] * tmax))
+    return mne.io.RawArray(raw._data[:, tmin_index:tmax_index], info)
+   
