@@ -70,7 +70,7 @@ class StreamReceiver:
         elif buffer_size < 0 or buffer_size > _MAX_BUFFER_SIZE:
             logger.warning('Improper buffer size %.1f. Set to %d.' % (buffer_size, _MAX_BUFFER_SIZE))
             buffer_size = _MAX_BUFFER_SIZE
-        elif buffer_size <= self.winsec:
+        elif buffer_size < self.winsec:
             logger.warning('Buffer size %.1f is smaller than window size. Set to %.1f.' % (buffer_size, self.winsec))
             buffer_size = self.winsec
         self.bufsec = buffer_size
@@ -195,7 +195,7 @@ class StreamReceiver:
             logger.warning('Trigger channel not fonud. Adding an empty channel 0.')
         else:
             if self._lsl_tr_channel != 0:
-                logger.warning('Trigger channel found at index %d. Moving to index 0.' % self._lsl_tr_channel)
+                logger.info_yellow('Trigger channel found at index %d. Moving to index 0.' % self._lsl_tr_channel)
             self._lsl_eeg_channels.pop(self._lsl_tr_channel)
         self._lsl_eeg_channels = np.array(self._lsl_eeg_channels)
         self.tr_channel = 0  # trigger channel is always set to 0.
@@ -305,9 +305,23 @@ class StreamReceiver:
         chunk = data.tolist()
         self.buffers[0].extend(chunk)
         self.timestamps[0].extend(tslist)
-        if self.bufsize > 0 and len(self.timestamps) > self.bufsize:
+        if self.bufsize > 0 and len(self.timestamps[0]) > self.bufsize:
             self.buffers[0] = self.buffers[0][-self.bufsize:]
             self.timestamps[0] = self.timestamps[0][-self.bufsize:]
+
+        # if we have multiple synchronized amps
+        if len(self.inlets) > 1:
+            logger.error('Merging of multiple acquisition servers is not supported yet.')
+            '''
+            for i in range(1, len(self.inlets)):
+                chunk, tslist = self.inlets[i].pull_chunk(max_samples=self.bufsize)  # [frames][channels]
+                self.buffers[i].extend(chunk)
+                self.timestamps[i].extend(tslist)
+                if self.bufsize > 0 and len(self.buffers[i]) > self.bufsize:
+                    self.buffers[i] = self.buffers[i][-self.bufsize:]
+            '''
+
+        # data= array[samples, channels], tslist=[samples]
 
         if timestamp_offset is True:
             timestamp_offset = False
@@ -316,20 +330,9 @@ class StreamReceiver:
             self.lsl_time_offset = self.timestamps[-1][-1] - lsl_clock
             logger.info('Offset = %.3f ' % (self.lsl_time_offset))
             if abs(self.lsl_time_offset) > 0.1:
-                logger.warning('The server timestamps have high offset to LSL timestamps. Probably a bug in the acquisition server.')
+                logger.warning('LSL server has a high timestamp offset.')
             else:
                 logger.info_green('LSL time server synchronized')
-
-        # if we have multiple synchronized amps
-        if len(self.inlets) > 1:
-            for i in range(1, len(self.inlets)):
-                chunk, tslist = self.inlets[i].pull_chunk(max_samples=self.bufsize)  # [frames][channels]
-                self.buffers[i].extend(chunk)
-                self.timestamps[i].extend(tslist)
-                if self.bufsize > 0 and len(self.buffers[i]) > self.bufsize:
-                    self.buffers[i] = self.buffers[i][-self.bufsize:]
-
-        # data= array[samples, channels], tslist=[samples]
         return (data, tslist)
 
     def check_connect(self):
