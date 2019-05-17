@@ -66,7 +66,7 @@ def find_event_channel(raw, ch_names=None):
     if type(raw) == np.ndarray:
         if ch_names is not None:
             for ch_name in ch_names:
-                if 'TRIGGER' in ch_name or 'STI ' in ch_name:
+                if 'TRIGGER' in ch_name or 'STI ' in ch_name or 'TRG' in ch_name:
                     return ch_names.index(ch_name)
 
         # data range between 0 and 255 and all integers?
@@ -77,7 +77,7 @@ def find_event_channel(raw, ch_names=None):
     else:
         signals = raw._data
         for ch_name in raw.ch_names:
-            if 'TRIGGER' in ch_name or 'STI ' in ch_name:
+            if 'TRIGGER' in ch_name or 'STI ' in ch_name or 'TRG' in ch_name:
                 return raw.ch_names.index(ch_name)
 
     return None
@@ -393,7 +393,7 @@ def load_raw(rawfile, spfilter=None, spchannels=None, events_ext=None, multiplie
         tch = find_event_channel(raw)
         if tch is not None:
             events = mne.find_events(raw, stim_channel=raw.ch_names[tch], shortest_event=1, uint_cast=True,
-                                     consecutive=True)
+                                     consecutive='increasing')
         else:
             events = []
 
