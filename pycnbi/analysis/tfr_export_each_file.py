@@ -17,7 +17,6 @@ import scipy
 import numpy as np
 import mne.time_frequency
 import multiprocessing as mp
-import pycnbi
 import pycnbi.utils.pycnbi_utils as pu
 import pycnbi.utils.q_common as qc
 from pycnbi import logger
@@ -84,7 +83,7 @@ def get_tfr(fif_file, cfg, tfr, n_jobs=1):
         raise RuntimeError(msg)
 
     # Apply filters
-    pu.preprocess(raw, spatial=cfg.SP_FILTER, spatial_ch=spchannels, spectral=cfg.TP_FILTER,
+    raw = pu.preprocess(raw, spatial=cfg.SP_FILTER, spatial_ch=spchannels, spectral=cfg.TP_FILTER,
                   spectral_ch=picks, notch=cfg.NOTCH_FILTER, notch_ch=picks,
                   multiplier=cfg.MULTIPLIER, n_jobs=n_jobs)
 
