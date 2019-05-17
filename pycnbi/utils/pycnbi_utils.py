@@ -169,9 +169,11 @@ def rereference(raw, ref_new, ref_old=None):
     # Re-reference and recover the original reference channel values if possible
     if type(raw) == np.ndarray:
         if raw_ch_old is not None:
-            raise NotImplementedError('Recovering original reference channel is not yet supported for numpy arrays.')
+            logger.error('Recovering original reference channel is not yet supported for numpy arrays.')
+            raise NotImplementedError
         if type(raw_ch_new[0]) is not int:
-            raise ValueError('Channels must be integer values for numpy arrays')
+            logger.error('Channels must be integer values for numpy arrays')
+            raise ValueError
         raw -= np.mean(raw[ref_new], axis=0)
     else:
         if ref_old is not None:
@@ -184,14 +186,14 @@ def rereference(raw, ref_new, ref_old=None):
 
 
 def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, spectral_ch=None,
-               notch=None, notch_ch=None, multiplier=1, ch_names=None, n_jobs=1):
+               notch=None, notch_ch=None, multiplier=1, ch_names=None, rereference=None, decim=None, n_jobs=1):
     """
     Apply spatial, spectral, notch filters and convert unit.
     raw is modified in-place.
 
     Input
     ------
-    raw: mne.io.RawArray | mne.Epochs | numpy.array (n_channels x n_samples)
+    raw: mne.io.Raw | mne.io.RawArray | mne.Epochs | numpy.array (n_channels x n_samples)
          numpy.array type assumes the data has only pure EEG channnels without event channels
 
     sfreq: required only if raw is numpy array.
@@ -230,11 +232,17 @@ def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, sp
         If raw is numpy array and channel picks are list of strings, ch_names will
         be used as a look-up table to convert channel picks to channel numbers.
 
+    rereference: Not supported yet.
+
+    decim: None | int
+        Apply low-pass filter and decimate (downsample). sfreq must be given. Ignored if 1.
 
     Output
     ------
-    True if no error.
+    Same input data structure.
 
+    Note: To save computation time, input data may be modified in-place.
+    TODO: Add an option to disable in-place modification.
     """
 
     # Check datatype
@@ -248,6 +256,10 @@ def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, sp
         elif len(data.shape) == 2:
             n_channels = data.shape[0]
         eeg_channels = list(range(n_channels))
+        if decim is not None and decim != 1:
+            if sfreq is None:
+                logger.error('Decimation cannot be applied if sfreq is None.')
+                raise ValueError
     else:
         # MNE Raw object: exclude event channel
         ch_names = raw.ch_names
@@ -266,6 +278,11 @@ def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, sp
         else:
             tch_name = ch_names[tch]
             eeg_channels.pop(tch)
+
+    # Re-reference channels
+    if rereference is not None:
+        logger.error('re-referencing not implemented yet. Sorry.')
+        raise NotImplementedError
 
     # Do unit conversion
     if multiplier != 1:
@@ -291,10 +308,12 @@ def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, sp
                 means = np.mean(data[:, spatial_ch_i, :], axis=1)
                 data[:, spatial_ch_i, :] -= means[:, np.newaxis, :]
             else:
-                raise ValueError('preprocess(): Unknown data shape %s' % str(data.shape))
+                logger.error('Unknown data shape %s' % str(data.shape))
+                raise ValueError
     elif spatial == 'laplacian':
         if type(spatial_ch) is not dict:
-            raise TypeError('preprocess(): For Lapcacian, spatial_ch must be of form {CHANNEL:[NEIGHBORS], ...}')
+            logger.error('preprocess(): For Lapcacian, spatial_ch must be of form {CHANNEL:[NEIGHBORS], ...}')
+            raise TypeError
         if type(spatial_ch.keys()[0]) == str:
             spatial_ch_i = {}
             for c in spatial_ch:
@@ -312,9 +331,21 @@ def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, sp
                 elif len(data.shape) == 3:
                     data[:, src, :] = rawcopy[:, src, :] - np.mean(rawcopy[:, nei, :], axis=1)
                 else:
-                    raise ValueError('preprocess(): Unknown data shape %s' % str(data.shape))
+                    logger.error('preprocess(): Unknown data shape %s' % str(data.shape))
+                    raise ValueError
     else:
-        raise ValueError('preprocess(): Unknown spatial filter %s' % spatial)
+        logger.error('preprocess(): Unknown spatial filter %s' % spatial)
+        raise ValueError
+
+    # Downsample
+    if decim is not None and decim != 1:
+        if type(raw) == np.ndarray:
+            data = mne.filter.resample(data, down=decim, npad='auto', window='boxcar', n_jobs=1)
+        else:
+            # resample() of Raw* and Epochs object internally calls mne.filter.resample()
+            raw = raw.resample(raw.info['sfreq'] / decim, npad='auto', window='boxcar', n_jobs=1)
+            data = raw._data
+        sfreq /= decim
 
     # Apply spectral filter
     if spectral is not None:
@@ -350,7 +381,9 @@ def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, sp
         mne.filter.notch_filter(data, Fs=sfreq, freqs=notch, notch_widths=3,
                                 picks=notch_ch_i, method='fft', n_jobs=n_jobs, copy=False)
 
-    return True
+    if type(raw) == np.ndarray:
+        raw = data
+    return raw
 
 
 def load_raw(rawfile, spfilter=None, spchannels=None, events_ext=None, multiplier=1, verbose='ERROR'):
@@ -379,23 +412,27 @@ def load_raw(rawfile, spfilter=None, spchannels=None, events_ext=None, multiplie
     """
 
     if not os.path.exists(rawfile):
-        raise IOError('File %s not found' % rawfile)
+        logger.error('File %s not found' % rawfile)
+        raise IOError
     if not os.path.isfile(rawfile):
-        raise IOError('%s is not a file' % rawfile)
+        logger.error('%s is not a file' % rawfile)
+        raise IOError
 
     extension = qc.parse_path(rawfile).ext
     assert extension in ['fif', 'fiff'], 'only fif format is supported'
     raw = mne.io.Raw(rawfile, preload=True, verbose=verbose)
-    preprocess(raw, spatial=spfilter, spatial_ch=spchannels, multiplier=multiplier)
+    if spfilter is not None or multiplier is not 1:
+        preprocess(raw, spatial=spfilter, spatial_ch=spchannels, multiplier=multiplier)
     if events_ext is not None:
         events = mne.read_events(events_ext)
     else:
         tch = find_event_channel(raw)
         if tch is not None:
-            events = mne.find_events(raw, stim_channel=raw.ch_names[tch], shortest_event=1, uint_cast=True,
-                                     consecutive='increasing')
+            events = mne.find_events(raw, stim_channel=raw.ch_names[tch], shortest_event=1, uint_cast=True, consecutive='increasing')
+            # MNE's annoying hidden cockroach: first_samp
+            events[:, 0] -= raw.first_samp
         else:
-            events = []
+            events = np.array([], dtype=np.int64)
 
     return raw, events
 
@@ -419,7 +456,8 @@ def load_multi(src, spfilter=None, spchannels=None, multiplier=1):
 
     if type(src) == str:
         if not os.path.isdir(src):
-            raise IOError('%s is not a directory or does not exist.' % src)
+            logger.error('%s is not a directory or does not exist.' % src)
+            raise IOError
         flist = []
         for f in qc.get_file_list(src):
             if qc.parse_path_list(f)[2] == 'fif':
@@ -427,10 +465,12 @@ def load_multi(src, spfilter=None, spchannels=None, multiplier=1):
     elif type(src) in [list, tuple]:
         flist = src
     else:
-        raise TypeError('Unknown input type %s' % type(src))
+        logger.error('Unknown input type %s' % type(src))
+        raise TypeError
 
     if len(flist) == 0:
-        raise RuntimeError('load_multi(): No fif files found in %s.' % src)
+        logger.error('load_multi(): No fif files found in %s.' % src)
+        raise RuntimeError
     elif len(flist) == 1:
         return load_raw(flist[0], spfilter=spfilter, spchannels=spchannels, multiplier=multiplier)
 
@@ -543,7 +583,8 @@ def lsl_channel_list(inlet):
         ch_list: [ name1, name2, ... ]
     """
     if not type(inlet) is pylsl.StreamInlet:
-        raise TypeError('lsl_channel_list(): wrong input type %s' % type(inlet))
+        logger.error('lsl_channel_list(): wrong input type %s' % type(inlet))
+        raise TypeError
     root = ET.fromstring(inlet.info().as_xml())
     desc = root.find('desc')
     ch_list = []
@@ -582,3 +623,21 @@ def channel_names_to_index(raw, channel_names=None):
                 raise TypeError('channel_names is unknown format.\nchannel_names=%s' % channel_names)
 
     return picks
+
+
+def raw_crop(raw, tmin, tmax):
+    """
+    Perform a real cropping of a Raw object
+    
+    mne.Raw.crop() updates a very confusing variable "first_samp", which reuslts
+    in the mismatch of real event indices when run with mne.find_events().
+    """
+    trigch = find_event_channel(raw)
+    ch_types = ['eeg'] * len(raw.ch_names)
+    if trigch is not None:
+        ch_types[trigch] = 'stim'
+    info = mne.create_info(raw.ch_names, raw.info['sfreq'], ch_types)
+    tmin_index = int(round(raw.info['sfreq'] * tmin))
+    tmax_index = int(round(raw.info['sfreq'] * tmax))
+    return mne.io.RawArray(raw._data[:, tmin_index:tmax_index], info)
+   

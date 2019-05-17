@@ -49,7 +49,7 @@ from xgboost import XGBClassifier
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
 
 
-def slice_win(epochs_data, w_starts, w_length, psde, picks=None, title=None, decim=1, flatten=True, verbose=False):
+def slice_win(epochs_data, w_starts, w_length, psde, picks=None, title=None, flatten=True, preprocess=None, verbose=False):
     '''
     Compute PSD values of a sliding window
 
@@ -63,7 +63,9 @@ def slice_win(epochs_data, w_starts, w_length, psde, picks=None, title=None, dec
         flatten (boolean): generate concatenated feature vectors
             If True: X = [windows] x [channels x freqs]
             If False: X = [windows] x [channels] x [freqs]
-
+        preprocess (dict): None or parameters for pycnbi_utils.preprocess() with the following keys:
+            sfreq, spatial, spatial_ch, spectral, spectral_ch, notch, notch_ch,
+            multiplier, ch_names, rereference, decim, n_jobs
     Returns:
         [windows] x [channels*freqs] or [windows] x [channels] x [freqs]
     '''
@@ -72,19 +74,39 @@ def slice_win(epochs_data, w_starts, w_length, psde, picks=None, title=None, dec
     def WrongIndexError(Exception):
         logger.error('%s' % Exception)
 
-    w_length = int(w_length)
-
+    if type(w_length) is not int:
+        logger.warning('w_length type is %s. Converting to int.' % type(w_length))
+        w_length = int(w_length)
     if title is None:
-        logger.info('[PID %d] Frames %d-%d' % (os.getpid(), w_starts[0], w_starts[-1] + w_length - 1))
+        title = '[PID %d] Frames %d-%d' % (os.getpid(), w_starts[0], w_starts[-1]+w_length-1)
     else:
-        logger.info('[PID %d] %s' % (os.getpid(), title))
+        title = '[PID %d] %s' % (os.getpid(), title)
+    if preprocess is not None and preprocess['decim'] != 1:
+        title += ' (decim factor %d)' % preprocess['decim']
+    logger.info(title)
 
     X = None
     for n in w_starts:
-        n = int(n)
+        n = int(round(n))
         if n >= epochs_data.shape[1]:
-            raise WrongIndexError('w_starts has an out-of-bounds index %d for epoch length %d.' % (n, epochs_data.shape[1]))
-        window = epochs_data[:, n:(n + w_length):decim]
+            logger.error('w_starts has an out-of-bounds index %d for epoch length %d.' % (n, epochs_data.shape[1]))
+            raise WrongIndexError
+        window = epochs_data[:, n:(n + w_length)]
+
+        if preprocess is not None:
+            window = pu.preprocess(window,
+                sfreq=preprocess['sfreq'],
+                spatial=preprocess['spatial'],
+                spatial_ch=preprocess['spatial_ch'],
+                spectral=preprocess['spectral'],
+                spectral_ch=preprocess['spectral_ch'],
+                notch=preprocess['notch'],
+                notch_ch=preprocess['notch_ch'],
+                multiplier=preprocess['multiplier'],
+                ch_names=preprocess['ch_names'],
+                rereference=preprocess['rereference'],
+                decim=preprocess['decim'],
+                n_jobs=preprocess['n_jobs'])
 
         # dimension: psde.transform( [epochs x channels x times] )
         psd = psde.transform(window.reshape((1, window.shape[0], window.shape[1])))
@@ -104,7 +126,7 @@ def slice_win(epochs_data, w_starts, w_length, psde, picks=None, title=None, dec
     return X
 
 
-def get_psd(epochs, psde, wlen, wstep, picks=None, flatten=True, n_jobs=1, decim=1):
+def get_psd(epochs, psde, wlen, wstep, picks=None, flatten=True, preprocess=None, decim=1, n_jobs=1):
     """
     Compute multi-taper PSDs over a sliding window
 
@@ -117,7 +139,6 @@ def get_psd(epochs, psde, wlen, wstep, picks=None, flatten=True, n_jobs=1, decim
     picks: channels to be used; use all if None
     flatten: boolean, see Returns section
     n_jobs: nubmer of cores to use, None = use all cores
-    decim: decimation factor
 
     Output
     ======
@@ -147,13 +168,13 @@ def get_psd(epochs, psde, wlen, wstep, picks=None, flatten=True, n_jobs=1, decim
     y_data = None
     results = []
     for ep in np.arange(len(labels)):
-        title = 'Epoch %d / %d, Frames %d-%d' % (ep, len(labels), w_starts[0], w_starts[-1] + wlen - 1)
+        title = 'Epoch %d / %d, Frames %d-%d' % (ep+1, len(labels), w_starts[0], w_starts[-1] + wlen - 1)
         if n_jobs == 1:
             # no multiprocessing
-            results.append(slice_win(epochs_data[ep], w_starts, wlen, psde, picks, title, decim))
+            results.append(slice_win(epochs_data[ep], w_starts, wlen, psde, picks, title, True, preprocess))
         else:
             # parallel psd computation
-            results.append(pool.apply_async(slice_win, [epochs_data[ep], w_starts, wlen, psde, picks, title, decim]))
+            results.append(pool.apply_async(slice_win, [epochs_data[ep], w_starts, wlen, psde, picks, title, True, preprocess]))
 
     for ep in range(len(results)):
         if n_jobs == 1:
@@ -189,7 +210,7 @@ def get_psd(epochs, psde, wlen, wstep, picks=None, flatten=True, n_jobs=1, decim
         return X_data.reshape(xs[0], xs[1], nch, int(xs[2] / nch)), y_data.astype(np.int)
 
 
-def get_psd_feature(epochs_train, window, psdparam, picks=None, n_jobs=1):
+def get_psd_feature(epochs_train, window, psdparam, picks=None, preprocess=None, n_jobs=1):
     """
     Wrapper for get_psd() adding meta information.
 
@@ -223,7 +244,8 @@ def get_psd_feature(epochs_train, window, psdparam, picks=None, n_jobs=1):
                 wlen.append(wl)
                 w_frames.append(int(sfreq * wl))
             '''
-            raise NotImplementedError('Multiple psd function not implemented yet.')
+            logger.error('Multiple psd function not implemented yet.')
+            raise NotImplementedError
         # same PSD estimator for all epochs
         else:
             for i, e in enumerate(window):
@@ -233,26 +255,25 @@ def get_psd_feature(epochs_train, window, psdparam, picks=None, n_jobs=1):
                     wl = psdparam['wlen']
                 assert wl > 0
                 wlen.append(wl)
-                w_frames.append(int(sfreq * wl))
+                w_frames.append(int(round(sfreq * wl)))
     else:
         sfreq = epochs_train.info['sfreq']
         wlen = window[1] - window[0]
         if psdparam['wlen'] is None:
             psdparam['wlen'] = wlen
-        w_frames = int(sfreq * psdparam['wlen'])  # window length in number of samples(frames)
-    if 'decim' not in psdparam:
+        w_frames = int(round(sfreq * psdparam['wlen']))  # window length in number of samples(frames)
+    if 'decim' not in psdparam or psdparam['decim'] is None:
         psdparam['decim'] = 1
-    decim = psdparam['decim']
 
-    psde = mne.decoding.PSDEstimator(sfreq=sfreq / decim, fmin=psdparam['fmin'],\
-                                     fmax=psdparam['fmax'], bandwidth=None, adaptive=False, low_bias=True,\
-                                     n_jobs=1, normalization='length', verbose='WARNING')
+    psde_sfreq = sfreq / psdparam['decim']
+    psde = mne.decoding.PSDEstimator(sfreq=psde_sfreq, fmin=psdparam['fmin'], fmax=psdparam['fmax'],
+        bandwidth=None, adaptive=False, low_bias=True, n_jobs=1, normalization='length', verbose='WARNING')
 
     logger.info_green('PSD computation')
     if type(epochs_train) is list:
         X_all = []
         for i, ep in enumerate(epochs_train):
-            X, Y_data = get_psd(ep, psde, w_frames[i], psdparam['wstep'], picks, n_jobs=n_jobs, decim=decim)
+            X, Y_data = get_psd(ep, psde, w_frames[i], psdparam['wstep'], picks, n_jobs=n_jobs, preprocess=preprocess, decim=psdparam['decim'])
             X_all.append(X)
         # concatenate along the feature dimension
         # feature index order: window block x channel block x frequency block
@@ -264,12 +285,12 @@ def get_psd_feature(epochs_train, window, psdparam, picks=None, n_jobs=1):
         # feature index order: channel block x frequency block
         # feature vector = [channel1, channel2, ...]
         # where channelX = [freq1, freq2, ...]
-        X_data, Y_data = get_psd(epochs_train, psde, w_frames, psdparam['wstep'], picks, n_jobs=n_jobs, decim=decim)
+        X_data, Y_data = get_psd(epochs_train, psde, w_frames, psdparam['wstep'], picks, n_jobs=n_jobs, preprocess=preprocess, decim=psdparam['decim'])
 
     # assign relative timestamps for each feature. time reference is the leading edge of a window.
     w_starts = np.arange(0, epochs_train.get_data().shape[2] - w_frames, psdparam['wstep'])
     t_features = w_starts / sfreq + psdparam['wlen'] + window[0]
-    return dict(X_data=X_data, Y_data=Y_data, wlen=wlen, w_frames=w_frames, psde=psde, times=t_features, decim=decim)
+    return dict(X_data=X_data, Y_data=Y_data, wlen=wlen, w_frames=w_frames, psde=psde, times=t_features, decim=psdparam['decim'])
 
 
 def get_timelags(epochs, wlen, wstep, downsample=1, picks=None):
@@ -292,7 +313,8 @@ def get_timelags(epochs, wlen, wstep, downsample=1, picks=None):
     X: [epochs] x [windows] x [channels*freqs]
     y: [epochs] x [labels]
     """
-
+    
+    '''
     wlen = int(wlen)
     wstep = int(wstep)
     downsample = int(downsample)
@@ -329,7 +351,9 @@ def get_timelags(epochs, wlen, wstep, downsample=1, picks=None):
             y_data = np.concatenate((y_data, y), axis=0)
 
     return X_data, y_data
-
+    '''
+    logger.error('This function is deprecated.')
+    raise NotImplementedError
 
 def feature2chz(x, fqlist, ch_names):
     """
@@ -401,12 +425,13 @@ def compute_features(cfg):
         if f[-4:] in ['.fif', '.fiff']:
             ftrain.append(f)
     if len(ftrain) > 1 and cfg.CHANNEL_PICKS is not None and type(cfg.CHANNEL_PICKS[0]) == int:
-        raise RuntimeError(
-            'When loading multiple EEG files, CHANNEL_PICKS must be list of string, not integers because they may have different channel order.')
+        logger.error('When loading multiple EEG files, CHANNEL_PICKS must be list of string, not integers because they may have different channel order.')
+        raise RuntimeError
     raw, events = pu.load_multi(ftrain)
     if cfg.REF_CH is not None:
         #pu.rereference(raw, cfg.REF_CH[1], cfg.REF_CH[0])
-        raise NotImplementedError('Sorry! Channel re-referencing is under development!')
+        logger.error('Sorry! Channel re-referencing is under development.')
+        raise NotImplementedError
     if cfg.LOAD_EVENTS_FILE is not None:
         events = mne.read_events(cfg.LOAD_EVENTS_FILE)
     triggers = {cfg.tdef.by_value[c]:c for c in set(cfg.TRIGGER_DEF)}
@@ -423,8 +448,8 @@ def compute_features(cfg):
         elif type(c) == str:
             picks.append(raw.ch_names.index(c))
         else:
-            raise RuntimeError(
-                'CHANNEL_PICKS has a value of unknown type %s.\nCHANNEL_PICKS=%s' % (type(c), cfg.CHANNEL_PICKS))
+            logger.error('CHANNEL_PICKS has a value of unknown type %s.\nCHANNEL_PICKS=%s' % (type(c), cfg.CHANNEL_PICKS))
+            raise RuntimeError
     if cfg.EXCLUDES is not None:
         for c in cfg.EXCLUDES:
             if type(c) == str:
@@ -435,18 +460,22 @@ def compute_features(cfg):
             elif type(c) == int:
                 c_int = c
             else:
-                raise RuntimeError(
-                    'EXCLUDES has a value of unknown type %s.\nEXCLUDES=%s' % (type(c), cfg.EXCLUDES))
+                logger.error('EXCLUDES has a value of unknown type %s.\nEXCLUDES=%s' % (type(c), cfg.EXCLUDES))
+                raise RuntimeError
             if c_int in picks:
                 del picks[picks.index(c_int)]
     if max(picks) > len(raw.ch_names):
-        raise ValueError('"picks" has a channel index %d while there are only %d channels.' % (max(picks), len(raw.ch_names)))
+        logger.error('"picks" has a channel index %d while there are only %d channels.' % (max(picks), len(raw.ch_names)))
+        raise ValueError
     if hasattr(cfg, 'SP_CHANNELS') and cfg.SP_CHANNELS is not None:
         logger.warning('SP_CHANNELS parameter is not supported yet. Will be set to CHANNEL_PICKS.')
     if hasattr(cfg, 'TP_CHANNELS') and cfg.TP_CHANNELS is not None:
         logger.warning('TP_CHANNELS parameter is not supported yet. Will be set to CHANNEL_PICKS.')
     if hasattr(cfg, 'NOTCH_CHANNELS') and cfg.NOTCH_CHANNELS is not None:
         logger.warning('NOTCH_CHANNELS parameter is not supported yet. Will be set to CHANNEL_PICKS.')
+    if 'decim' not in cfg.PSD:
+        cfg.PSD['decim'] = 1
+        logger.warning('PSD["decim"] undefined. Set to 1.')
 
     # Read epochs
     try:
@@ -458,42 +487,57 @@ def compute_features(cfg):
                     proj=False, picks=picks, baseline=None, preload=True,
                     verbose=False, detrend=None)
                 # Channels are already selected by 'picks' param so use all channels.
-                pu.preprocess(epoch, spatial=cfg.SP_FILTER, spatial_ch=None,
-                              spectral=cfg.TP_FILTER, spectral_ch=None, notch=cfg.NOTCH_FILTER,
-                              notch_ch=None, multiplier=cfg.MULTIPLIER, n_jobs=cfg.N_JOBS)
+                '''
+                epoch = pu.preprocess(epoch, spatial=cfg.SP_FILTER, spatial_ch=None, spectral=cfg.TP_FILTER, spectral_ch=None,
+                    notch=cfg.NOTCH_FILTER, notch_ch=None, multiplier=cfg.MULTIPLIER, n_jobs=cfg.N_JOBS, decim=cfg.PSD['decim'])
+                '''
                 epochs_train.append(epoch)
         else:
             # Usual method: single epoch range
             epochs_train = Epochs(raw, events, triggers, tmin=cfg.EPOCH[0], tmax=cfg.EPOCH[1], proj=False,
                 picks=picks, baseline=None, preload=True, verbose=False, detrend=None, on_missing='warning')
             # Channels are already selected by 'picks' param so use all channels.
-            pu.preprocess(epochs_train, spatial=cfg.SP_FILTER, spatial_ch=None,
-                          spectral=cfg.TP_FILTER, spectral_ch=None, notch=cfg.NOTCH_FILTER, notch_ch=None,
-                          multiplier=cfg.MULTIPLIER, n_jobs=cfg.N_JOBS)
+            '''
+            epochs_train = pu.preprocess(epochs_train, spatial=cfg.SP_FILTER, spatial_ch=None, spectral=cfg.TP_FILTER, spectral_ch=None,
+                notch=cfg.NOTCH_FILTER, notch_ch=None, multiplier=cfg.MULTIPLIER, n_jobs=cfg.N_JOBS, decim=cfg.PSD['decim'])
+            '''
     except:
         logger.exception('Problem while epoching.')
-        if interactive:
-            print('Dropping to a shell.\n')
-            embed()
         raise RuntimeError
 
     label_set = np.unique(triggers.values())
 
     # Compute features
     if cfg.FEATURES == 'PSD':
-        featdata = get_psd_feature(epochs_train, cfg.EPOCH, cfg.PSD, picks=None, n_jobs=cfg.N_JOBS)
+        preprocess = dict(sfreq=epochs_train.info['sfreq'],
+            spatial=cfg.SP_FILTER,
+            spatial_ch=None,
+            spectral=cfg.TP_FILTER,
+            spectral_ch=None,
+            notch=cfg.NOTCH_FILTER,
+            notch_ch=None,
+            multiplier=cfg.MULTIPLIER,
+            ch_names=None,
+            rereference=None,
+            decim=cfg.PSD['decim'],
+            n_jobs=cfg.N_JOBS
+        )
+        featdata = get_psd_feature(epochs_train, cfg.EPOCH, cfg.PSD, picks=None, preprocess=preprocess, n_jobs=cfg.N_JOBS)
     elif cfg.FEATURES == 'TIMELAG':
         '''
         TODO: Implement multiple epochs for timelag feature
         '''
-        raise NotImplementedError('MULTIPLE EPOCHS NOT IMPLEMENTED YET FOR TIMELAG FEATURE.')
+        logger.error('MULTIPLE EPOCHS NOT IMPLEMENTED YET FOR TIMELAG FEATURE.')
+        raise NotImplementedError
     elif cfg.FEATURES == 'WAVELET':
         '''
         TODO: Implement multiple epochs for wavelet feature
         '''
-        raise NotImplementedError('MULTIPLE EPOCHS NOT IMPLEMENTED YET FOR WAVELET FEATURE.')
+        logger.error('MULTIPLE EPOCHS NOT IMPLEMENTED YET FOR WAVELET FEATURE.')
+        raise NotImplementedError
     else:
-        raise NotImplementedError('%s feature type is not supported.' % cfg.FEATURES)
+        logger.error('%s feature type is not supported.' % cfg.FEATURES)
+        raise NotImplementedError
 
     featdata['picks'] = picks
     featdata['sfreq'] = raw.info['sfreq']
