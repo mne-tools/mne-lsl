@@ -33,6 +33,7 @@ import pycnbi.utils.pycnbi_utils as pu
 from pycnbi.pycnbi_config import CAP, LAPLACIAN
 from pycnbi import logger
 from builtins import input
+from pathlib import Path
 
 mne.set_log_level('ERROR')
 
@@ -188,6 +189,9 @@ def pcl2fif(filename, interactive=False, outdir=None, external_event=None, offse
 
     raw.save(fiffile, verbose=False, overwrite=overwrite, fmt=precision)
     logger.info('Saved to %s' % fiffile)
+
+    saveChannels2txt(filename, ch_names)
+    
     return True
 
 
@@ -250,6 +254,8 @@ def eeg2fif(filename, interactive=False, outdir=None):
     # save and close
     raw.save(fiffile, verbose=False, overwrite=True, fmt='double')
     logger.info('Saved to %s' % fiffile)
+
+    saveChannels2txt(filename, ch_names)
 
 
 def gdf2fif(filename, interactive=False, outdir=None, channel_file=None):
@@ -318,6 +324,8 @@ def gdf2fif(filename, interactive=False, outdir=None, channel_file=None):
     raw.save(fiffile, verbose=False, overwrite=True, fmt='double')
     logger.info('Saved to %s' % fiffile)
 
+    saveChannels2txt(filename, ch_names)
+
 
 def bdf2fif(filename, interactive=False, outdir=None):
     """
@@ -352,6 +360,8 @@ def bdf2fif(filename, interactive=False, outdir=None):
     # save and close
     raw.save(fiffile, verbose=False, overwrite=True, fmt='double')
     logger.info('Saved to %s' % fiffile)
+
+    saveChannels2txt(filename, ch_names)
 
 
 def bdf2fif_matlab(filename, interactive=False, outdir=None):
@@ -423,12 +433,14 @@ def bdf2fif_matlab(filename, interactive=False, outdir=None):
     raw.save(fiffile, verbose=False, overwrite=True, fmt='double')
     logger.info('Saved to %s' % fiffile)
 
+    saveChannels2txt(filename, ch_names)
+
 
 def xdf2fif(filename, interactive=False, outdir=None):
     """
     Convert XDF format
     """
-    from xdf import xdf
+    from pyxdf import pyxdf
 
     fdir, fname, fext = qc.parse_path_list(filename)
     if outdir is None:
@@ -439,7 +451,7 @@ def xdf2fif(filename, interactive=False, outdir=None):
     fiffile = outdir + fname + '.fif'
 
     # channel x times
-    data = xdf.load_xdf(filename)
+    data = pyxdf.load_xdf(filename)
     raw_data = data[0][0]['time_series'].T
     signals = np.concatenate((raw_data[-1, :].reshape(1, -1), raw_data[:-1, :]))
 
@@ -452,7 +464,7 @@ def xdf2fif(filename, interactive=False, outdir=None):
     trig_ch_guess = pu.find_event_channel(signals, ch_names)
     if trig_ch_guess is None:
         trig_ch_guess = 0
-    ch_names =[ch_names[trig_ch_guess]] + ch_names[:trig_ch_guess] + ch_names[trig_ch_guess+1:]
+    ch_names =['TRIGGER'] + ch_names[:trig_ch_guess] + ch_names[trig_ch_guess+1:]
     ch_info = ['stim'] + ['eeg'] * (len(ch_names)-1)
 
     # fif header creation
@@ -462,6 +474,9 @@ def xdf2fif(filename, interactive=False, outdir=None):
     # save and close
     raw.save(fiffile, verbose=False, overwrite=True, fmt='double')
     logger.info('Saved to %s' % fiffile)
+
+    saveChannels2txt(filename, ch_names)
+
 
 
 def any2fif(filename, interactive=False, outdir=None, channel_file=None):
@@ -489,6 +504,21 @@ def any2fif(filename, interactive=False, outdir=None, channel_file=None):
         xdf2fif(filename, interactive=interactive, outdir=outdir)
     else:  # unknown format
         logger.error('Ignored unrecognized file extension %s. It should be [.pcl | .eeg | .gdf | .bdf]' % p.ext)
+
+
+def saveChannels2txt(outdir, ch_names):
+    """
+    Save the channels list to a txt file for the GUI
+    """
+    filename = outdir + "channelsList.txt"
+    config = Path(filename)
+    
+    if config.is_file() is False:
+        file = open(filename, "w")    
+        for x in range(len(ch_names)):
+            file.write(ch_names[x] + "\n")
+        file.close()
+
 
 def main(input_dir, channel_file=None):
     count = 0
