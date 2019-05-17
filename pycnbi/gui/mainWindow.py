@@ -16,15 +16,17 @@ import inspect
 
 from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QAction, QLabel, QVBoxLayout, QHBoxLayout, QComboBox, QLineEdit, QFormLayout, QWidget, QPushButton, QFrame, QSizePolicy
 from PyQt5.QtCore import pyqtSignal, pyqtSlot, QThread, QLine
-from PyQt5.QtGui import QColor, QTextCursor, QFont
+from PyQt5.QtGui import QTextCursor, QFont
 
 from ui_mainwindow import Ui_MainWindow
-from pathFinders import PathFolderFinder, PathFileFinder
 from streams import WriteStream, MyReceiver
+from connectClass import PathFolderFinder, PathFileFinder, Connect_Directions, Connect_ComboBox, Connect_LineEdit, Connect_SpinBox, Connect_DoubleSpinBox, Connect_Modifiable_List, Connect_Modifiable_Dict
+from pickedChannelsDialog import PickChannelsDialog, Channel_Select
 
 from pycnbi.triggers.trigger_def import trigger_def
 
 DEFAULT_PATH = os.environ['PYCNBI_SCRIPTS']
+
 
 ########################################################################
 class MainWindow(QMainWindow):
@@ -42,9 +44,9 @@ class MainWindow(QMainWindow):
         self.cfg_subject = None     # loaded module containing subject specific values
         self.paramsWidgets = {}     # dict of all the created parameters widgets
 
-        self.load_UiFromFile()
-        self.redirect_StdOut()
-        self.connect_Signals_To_Slots()
+        self.load_ui_from_file()
+        self.redirect_stdout()
+        self.connect_signals_to_slots()
 
         # Terminal
         self.ui.textEdit_terminal.setReadOnly(1)
@@ -53,7 +55,7 @@ class MainWindow(QMainWindow):
         self.ui.textEdit_terminal.setFont(font)
 
     # ----------------------------------------------------------------------
-    def redirect_StdOut(self):
+    def redirect_stdout(self):
         """
         Create Queue and redirect sys.stdout to this queue.
         Create thread that will listen on the other end of the queue, and send the text to the textedit_terminal.
@@ -71,7 +73,7 @@ class MainWindow(QMainWindow):
         
         
     #----------------------------------------------------------------------
-    def load_UiFromFile(self):
+    def load_ui_from_file(self):
         """
         Loads the UI interface from file.
         """
@@ -80,83 +82,62 @@ class MainWindow(QMainWindow):
         
         
     #----------------------------------------------------------------------
-    def clear_Params(self):
+    def clear_params(self):
         """
         Clear all previously loaded params widgets.
         """
         
         if self.ui.scrollAreaWidgetContents_Basics.layout() != None:
-            QWidget().setLayout(self.ui.scrollAreaWidgetContents_2_Adv.layout())
+            QWidget().setLayout(self.ui.scrollAreaWidgetContents_Adv.layout())
             QWidget().setLayout(self.ui.scrollAreaWidgetContents_Basics.layout())
-            
 
-    #----------------------------------------------------------------------
-    def add_To_ComboBox(self, values, chosenValue):
-        """
-        Add the possibles values found in the structure file to a QComboBox and
-        add it to a QFormLayout. Highlight the subject's specific value.
-        values = list of values.
-        chosenValue = subject's specific value.
-        """
-        templateChoices = QComboBox()
-        
-        # Iterates over the possible choices
-        for val in values:
-            templateChoices.addItem(str(val))
-            if val == chosenValue:
-                templateChoices.setCurrentText(str(val))
-        
-        return templateChoices
-    
-    #----------------------------------------------------------------------
-    def extractValue_FromModule(self, key, values):
+            
+    # ----------------------------------------------------------------------
+    def extract_value_from_module(self, key, values):
         """
         Extracts the subject's specific value associated with key.
         key = parameter name.
         values = list of all the parameters values. 
-        """        
+        """
         for v in values:
             if v[0] == key:
                 return v[1]
-            
-    # ----------------------------------------------------------------------
-    def add_Directions(self, chosen_value, all_Values, nb_directions):
-        """
-        Creates nb_directions directions, list the possible values and select the chosen_value.
-        chosen_value = the subject's specific parameter value.
-        all_Values = list of all possible values for a parameter
-        nb_directions = number of directions to add.
-        """
-        l = QHBoxLayout()                        
-
-        for i in range(len(chosen_value)):
-            l.addWidget(self.add_To_ComboBox(all_Values, chosen_value[i]))
-
-        for i in range(nb_directions - len(chosen_value)):
-            l.addWidget(self.add_To_ComboBox(all_Values, None))
-
-        return l
 
     # ----------------------------------------------------------------------
-    def disp_Params(self, cfg_template_module, cfg_module):
+    def load_channels_from_txt(self):
+        """
+        Loads the channels list from a txt file.
+        """
+        filePath = self.ui.lineEdit_pathSearch.text()
+        file = open(filePath + "/channelsList.txt")
+        channels = file.read().splitlines()
+        file.close()
+        
+        return channels
+
+    # ----------------------------------------------------------------------
+    def disp_params(self, cfg_template_module, cfg_module):
         """
         Displays the parameters in the corresponding UI scrollArea.
         cfg = config module
         """
-        
-        self.clear_Params()
+
+        self.clear_params()
         # Extract the parameters and their possible values from the template modules.
         params = inspect.getmembers(cfg_template_module)
-        
+
         # Extract the chosen values from the subject's specific module.
         all_chosen_values = inspect.getmembers(cfg_module)
-               
-        # Iterates over the classes            
+
+        # Load channels
+        self.channels = self.load_channels_from_txt()
+
+        # Iterates over the classes
         for par in range(2):
-            param = inspect.getmembers(params[par][1])            
+            param = inspect.getmembers(params[par][1])
             # Create layouts            
             layout = QFormLayout()
-            
+
             # Iterates over the list
             for p in param:
                 # Remove useless attributes
@@ -165,48 +146,93 @@ class MainWindow(QMainWindow):
                 
                 # Iterates over the dict
                 for key, values in p[1].items():
-                    chosen_value = self.extractValue_FromModule(key, all_chosen_values)
+                    chosen_value = self.extract_value_from_module(key, all_chosen_values)
 
                     # For the feedback directions [offline and online].
                     if 'DIRECTIONS' in key:
                         nb_directions = 4
-                        l = self.add_Directions(chosen_value, values, nb_directions)
-                        self.paramsWidgets.update({key: l})
-                        layout.addRow(key, l)
+                        directions = Connect_Directions(key, chosen_value, values, nb_directions)
+                        directions.signal_paramChanged.connect(self.on_guichanges)
+                        self.paramsWidgets.update({key: directions})
+                        layout.addRow(key, directions.l)
 
                     # For providing a folder path.
                     elif 'PATH' in key:
                         pathfolderfinder = PathFolderFinder(key, DEFAULT_PATH, chosen_value)
-                        pathfolderfinder.signal_pathChanged.connect(self.on_GuiChanges)
+                        pathfolderfinder.signal_pathChanged.connect(self.on_guichanges)
                         self.paramsWidgets.update({key: pathfolderfinder})
-                        layout.addRow(key, self.paramsWidgets[key].layout)
+                        layout.addRow(key, pathfolderfinder.layout)
+                        continue
 
                     # For providing a file path.
                     elif 'FILE' in key:
-                        self.paramsWidgets.update({key: PathFileFinder(chosen_value)})
-                        layout.addRow(key, self.paramsWidgets[key].layout)
+                        pathfilefinder = PathFileFinder(key, chosen_value)
+                        pathfilefinder.signal_pathChanged.connect(self.on_guichanges)
+                        self.paramsWidgets.update({key: pathfilefinder})
+                        layout.addRow(key, pathfilefinder.layout)
+                        continue
 
-                    # For the special case of choosing the trigger classes to train on [trainer]
+                    # For the special case of choosing the trigger classes to train on [trainer only]
                     elif 'TRIGGER_DEF' in key:
-                        trigger_file = self.extractValue_FromModule('TRIGGER_FILE', all_chosen_values)
+                        trigger_file = self.extract_value_from_module('TRIGGER_FILE', all_chosen_values)
                         tdef = trigger_def(trigger_file)
                         nb_directions = 4
-                        l = self.add_Directions(chosen_value, list(tdef.by_key), nb_directions)
-                        self.paramsWidgets.update({key: l})
-                        layout.addRow(key, l)
+                        directions = Connect_Directions(key, chosen_value, list(tdef.by_name), nb_directions)
+                        directions.signal_paramChanged.connect(self.on_guichanges)
+                        self.paramsWidgets.update({key: directions})
+                        layout.addRow(key, directions.l)
+                        continue
+
+                    # To select specific electrodes
+                    elif '_CHANNELS' in key or 'CHANNELS_' in key:
+                        ch_select = Channel_Select(key, self.channels, chosen_value)
+                        ch_select.signal_paramChanged.connect(self.on_guichanges)
+                        self.paramsWidgets.update({key: ch_select})
+                        layout.addRow(key, ch_select.layout)
+
+                    # For all the int values.
+                    elif values is int:
+                        spinBox = Connect_SpinBox(key, chosen_value)
+                        spinBox.signal_paramChanged.connect(self.on_guichanges)
+                        self.paramsWidgets.update({key: spinBox})
+                        layout.addRow(key, spinBox.w)
+                        continue
 
                     # For all the float values.
-                    elif values == None:
-                        lineEdit = QLineEdit(str(chosen_value))
-                        lineEdit.textChanged.connect(self.on_lineEdit_Changed)
-                        self.paramsWidgets.update({key: lineEdit})
-                        layout.addRow(key, lineEdit)
+                    elif values is float:
+                        doublespinBox = Connect_DoubleSpinBox(key, chosen_value)
+                        doublespinBox.signal_paramChanged.connect(self.on_guichanges)
+                        self.paramsWidgets.update({key: doublespinBox})
+                        layout.addRow(key, doublespinBox.w)
+                        continue
+
+                    # For parameters with multiple non-fixed values in a list (user can modify them)
+                    elif values is list:
+                        modifiable_list = Connect_Modifiable_List(key, chosen_value, values)
+                        modifiable_list.signal_paramChanged[str, list].connect(self.on_guichanges)
+                        self.paramsWidgets.update({key: modifiable_list})
+                        layout.addRow(key, modifiable_list.hlayout)
+                        continue
 
                     # For parameters with multiple fixed values.
-                    else:
-                        templateChoices = self.add_To_ComboBox(values, chosen_value)
-                        self.paramsWidgets.update({key: templateChoices})
-                        layout.addRow(key, templateChoices)
+                    elif type(values) is tuple:
+                        comboParams = Connect_ComboBox(key, chosen_value, values)
+                        comboParams.signal_paramChanged[str, bool].connect(self.on_guichanges)
+                        comboParams.signal_paramChanged[str, list].connect(self.on_guichanges)
+                        comboParams.signal_paramChanged[str, str].connect(self.on_guichanges)
+                        comboParams.signal_paramChanged[str, type(None)].connect(self.on_guichanges)
+                        self.paramsWidgets.update({key: comboParams})
+                        layout.addRow(key, comboParams.templateChoices)
+                        continue
+                    
+                    # For parameters with multiple non-fixed values in a dict (user can modify them)
+                    elif type(values) is dict:
+                        modifiable_dict = Connect_Modifiable_Dict(key, chosen_value, values)
+                        modifiable_dict.signal_paramChanged[str, dict].connect(self.on_guichanges)
+                        self.paramsWidgets.update({key: modifiable_dict})
+                        layout.addRow(key, modifiable_dict.layout)
+                        continue
+
 
                 # Add a horizontal line to separate parameters' type.
                 if p != param[-1]:
@@ -214,16 +240,16 @@ class MainWindow(QMainWindow):
                     separator.setFrameShape(QFrame.HLine)
                     separator.setFrameShadow(QFrame.Sunken)
                     layout.addRow(separator)
-                   
+
                 # Display the parameters according to their types.
                 if params[par][0] == 'Basic':
                     self.ui.scrollAreaWidgetContents_Basics.setLayout(layout)
                 elif params[par][0] == 'Advanced':
-                    self.ui.scrollAreaWidgetContents_2_Adv.setLayout(layout)
+                    self.ui.scrollAreaWidgetContents_Adv.setLayout(layout)
 
 
     # ----------------------------------------------------------------------
-    def load_Config(self, cfg_path, cfg_file, subj_file):
+    def load_config(self, cfg_path, cfg_file, subj_file):
         """
         Dynamic loading of a config file.
         Format the lib to fit the previous developed pycnbi code if subject specific file (not for the templates).
@@ -240,11 +266,11 @@ class MainWindow(QMainWindow):
         # Format the lib to fit the previous developed pycnbi code if subject specific file.
         # if subj_file:
             # self.cfg = type('cfg', (cfg_module.Advanced, cfg_module.Basic), dict())
-        
+
         return cfg_module
         
     #----------------------------------------------------------------------
-    def load_AllParams(self, cfg_template ,cfg_file):
+    def load_all_params(self, cfg_template, cfg_file):
         """
         Loads the params structure and assign the subject/s specific value.
         It also checks the sanity of the loaded params according to the protocol.
@@ -252,70 +278,58 @@ class MainWindow(QMainWindow):
         
         # Loads the template
         if self.cfg_struct == None or cfg_template not in self.cfg_struct.__file__:
-            self.cfg_struct = self.load_Struct_Params(cfg_template)
+            self.cfg_struct = self.load_struct_params(cfg_template)
         
         # Loads the subject's specific values
-        self.cfg_subject = self.load_Subject_Params(cfg_file)
+        self.cfg_subject = self.load_subject_params(cfg_file)
         
         # Check the parameters integrity
         self.cfg_subject = self.m.check_config(self.cfg_subject)
         
         # Display parameters on the GUI
-        self.disp_Params(self.cfg_struct, self.cfg_subject)
-            
-    
-    #----------------------------------------------------------------------
-    def load_Struct_Params(self, cfg_template):
+        self.disp_params(self.cfg_struct, self.cfg_subject)
+        self.cfg_struct
+
+    # ----------------------------------------------------------------------
+    def load_struct_params(self, cfg_template):
         """
         Load the parameters' structure from file depending on the choosen protocol.
         """
         cfg_template_path = os.environ['PYCNBI_ROOT']+'\pycnbi\config_files'
-        cfg_template_module  = self.load_Config(cfg_template_path, cfg_template, False) 
+        cfg_template_module  = self.load_config(cfg_template_path, cfg_template, False) 
         return cfg_template_module
         
     
     #----------------------------------------------------------------------
-    def load_Subject_Params(self, cfg_file):
+    def load_subject_params(self, cfg_file):
         """
         Loads the subject specific parameters' values from file and displays them.
         cfg_file: config file to load.
         """
         cfg_path = self.ui.lineEdit_pathSearch.text()+'/python'
-        cfg_module  = self.load_Config(cfg_path, cfg_file, True)               
-        return cfg_module 
+        cfg_module  = self.load_config(cfg_path, cfg_file, True)               
+        return cfg_module
 
 
     @pyqtSlot(str, str)
+    @pyqtSlot(str, bool)
+    @pyqtSlot(str, list)
+    @pyqtSlot(str, float)
+    @pyqtSlot(str, int)
+    @pyqtSlot(str, dict)
+    @pyqtSlot(str, type(None))
     # ----------------------------------------------------------------------
-    def on_GuiChanges(self, name, new_Value):
+    def on_guichanges(self, name, new_Value):
         """
         Apply the modification to the corresponding param of the cfg module
+        
         name = parameter name
-        new_value = new value to to change in the module 
+        new_value = new str value to to change in the module 
         """
-        setattr(self.cfg_subject, name, new_value)
-
-    
-    @pyqtSlot(str)
-    # ----------------------------------------------------------------------
-    def on_QComboBox_GuiChanges(self, new_Value):
-        """
-        Apply the modification done on a QComboBox to the corresponding param
-        of the cfg module
-        """
+        setattr(self.cfg_subject, name, new_Value)
+        print(getattr(self.cfg_subject, name))
 
 
-
-    #----------------------------------------------------------------------
-    @pyqtSlot()
-    def on_lineEdit_Changed(self):
-        """
-        Changes the module according to the new value written in the corresponding 
-        lineEdit
-        """
-        print("BROU")
-
-    
     # ----------------------------------------------------------------------
     @pyqtSlot()
     def on_click_pathSearch(self):
@@ -325,10 +339,10 @@ class MainWindow(QMainWindow):
         path_name = QFileDialog.getExistingDirectory(caption="Choose the subject's directory", directory=DEFAULT_PATH)
         self.ui.lineEdit_pathSearch.insert(path_name)
 
-        
-    #----------------------------------------------------------------------
+
+    # ----------------------------------------------------------------------
     @pyqtSlot()
-    def on_click_Offline(self):
+    def on_click_offline(self):
         """ 
         Loads the Offline parameters. 
         """
@@ -336,12 +350,12 @@ class MainWindow(QMainWindow):
         self.m = m
         cfg_template = 'config_structure_train_mi'
         cfg_file = 'config_train_mi'
-        self.load_AllParams(cfg_template, cfg_file)
+        self.load_all_params(cfg_template, cfg_file)
 
 
     #----------------------------------------------------------------------
     @pyqtSlot()
-    def on_click_Train(self):
+    def on_click_train(self):
         """
         Loads the Training parameters.
         """
@@ -349,24 +363,25 @@ class MainWindow(QMainWindow):
         self.m = m
         cfg_template = 'config_structure_trainer_mi'
         cfg_file = 'config_trainer_mi'
-        self.load_AllParams(cfg_template, cfg_file)
+        self.load_all_params(cfg_template, cfg_file)
         
         
     #----------------------------------------------------------------------
     @pyqtSlot()
-    def on_click_Online(self):
+    def on_click_online(self):
         """
         Loads the Online parameters.
         """
         import pycnbi.protocols.test_mi as m
         self.m = m
+        cfg_template = 'config_structure_test_mi'
         cfg_file = 'config_test_mi'
-        #self.load_AllParams(cfg_file)
+        self.load_all_params(cfg_template, cfg_file)
     
     
     #----------------------------------------------------------------------v
     @pyqtSlot()
-    def on_click_Start(self):
+    def on_click_start(self):
         """
         Launch the selected protocol. It can be Offline, Train or Online. 
         """
@@ -379,22 +394,22 @@ class MainWindow(QMainWindow):
         Writes to the QtextEdit_terminal the redirected stdout.
         """
         self.ui.textEdit_terminal.moveCursor(QTextCursor.End)
-        self.ui.textEdit_terminal.insertPlainText(text)   
+        self.ui.textEdit_terminal.insertPlainText(text)
 
         
     #----------------------------------------------------------------------
-    def connect_Signals_To_Slots(self):
+    def connect_signals_to_slots(self):
         """Connects the signals to the slots"""
         # Search  folder button
         self.ui.pushButton_Search.clicked.connect(self.on_click_pathSearch)
         # Offline button
-        self.ui.pushButton_Offline.clicked.connect(self.on_click_Offline)
+        self.ui.pushButton_Offline.clicked.connect(self.on_click_offline)
         # Train button
-        self.ui.pushButton_Train.clicked.connect(self.on_click_Train)
+        self.ui.pushButton_Train.clicked.connect(self.on_click_train)
         # Online button
-        self.ui.pushButton_Online.clicked.connect(self.on_click_Online)
+        self.ui.pushButton_Online.clicked.connect(self.on_click_online)
         # Start button
-        self.ui.pushButton_Start.clicked.connect(self.on_click_Start)
+        self.ui.pushButton_Start.clicked.connect(self.on_click_start)
         
 def main():    
     #unittest.main()
