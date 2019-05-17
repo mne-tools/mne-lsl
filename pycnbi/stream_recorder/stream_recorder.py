@@ -72,7 +72,7 @@ def record(state, amp_name, amp_serial, record_dir, eeg_only):
         source_id=pcl_file, stype='Markers')
 
     # connect to EEG stream server
-    sr = StreamReceiver(amp_name=amp_name, amp_serial=amp_serial, eeg_only=eeg_only)
+    sr = StreamReceiver(buffer_size=0, amp_name=amp_name, amp_serial=amp_serial, eeg_only=eeg_only)
 
     # start recording
     logger.info('\n>> Recording started (PID %d).' % os.getpid())
@@ -85,7 +85,7 @@ def record(state, amp_name, amp_serial, record_dir, eeg_only):
             duration = str(datetime.timedelta(seconds=int(sr.get_buflen())))
             print('RECORDING %s' % duration)
             next_sec += 1
-        tm.sleep_atleast(0.01)
+        tm.sleep_atleast(0.001)
 
     # record stop
     logger.info('>> Stop requested. Copying buffer')

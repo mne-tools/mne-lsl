@@ -96,7 +96,8 @@ def check_config(cfg):
 
     for v in critical_vars['COMMON']:
         if not hasattr(cfg, v):
-            raise RuntimeError('%s not defined in config.' % v)
+            logger.error('%s not defined in config.' % v)
+            raise RuntimeError
 
     for key in optional_vars:
         if not hasattr(cfg, key):
@@ -108,27 +109,34 @@ def check_config(cfg):
     # classifier parameters check
     if cfg.CLASSIFIER == 'RF':
         if not hasattr(cfg, 'RF'):
-            raise RuntimeError('"RF" not defined in config.')
+            logger.error('"RF" not defined in config.')
+            raise RuntimeError
         for v in critical_vars['RF']:
             if v not in cfg.RF:
-                raise RuntimeError('%s not defined in config.' % v)
+                logger.error('%s not defined in config.' % v)
+                raise RuntimeError
     elif cfg.CLASSIFIER == 'GB' or cfg.CLASSIFIER == 'XGB':
         if not hasattr(cfg, 'GB'):
-            raise RuntimeError('"GB" not defined in config.')
+            logger.error('"GB" not defined in config.')
+            raise RuntimeError
         for v in critical_vars['GB']:
             if v not in cfg.GB:
-                raise RuntimeError('%s not defined in config.' % v)
+                logger.error('%s not defined in config.' % v)
+                raise RuntimeError
     elif cfg.CLASSIFIER == 'rLDA' and not hasattr(cfg, 'RLDA_REGULARIZE_COEFF'):
-        raise RuntimeError('"RLDA_REGULARIZE_COEFF" not defined in config.')
+        logger.error('"RLDA_REGULARIZE_COEFF" not defined in config.')
+        raise RuntimeError
 
     if cfg.CV_PERFORM is not None:
         if not hasattr(cfg, 'CV_RANDOM_SEED'):
             cfg.CV_RANDOM_SEED = None
             logger.warning('Setting undefined parameter CV_RANDOM_SEED=%s' % (cfg.CV_RANDOM_SEED))
         if not hasattr(cfg, 'CV_FOLDS'):
-            raise RuntimeError('"CV_FOLDS" not defined in config.')
+            logger.error('"CV_FOLDS" not defined in config.')
+            raise RuntimeError
         if cfg.CV_PERFORM == 'StratifiedShuffleSplit' and not hasattr(cfg, 'CV_TEST_RATIO'):
-            raise RuntimeError('"CV_TEST_RATIO" not defined in config.')
+            logger.error('"CV_TEST_RATIO" not defined in config.')
+            raise RuntimeError
 
     if cfg.N_JOBS is None:
         cfg.N_JOBS = mp.cpu_count()
@@ -151,7 +159,6 @@ def balance_samples(X, Y, balance_type, verbose=False):
             yl = np.where(Y == c)[0]
             if len(max_set) == 0 or len(yl) > max_set[1]:
                 max_set = [c, len(yl)]
-
         for c in label_set:
             if c == max_set[0]: continue
             yl = np.where(Y == c)[0]
@@ -159,7 +166,6 @@ def balance_samples(X, Y, balance_type, verbose=False):
             extra_idx = np.random.choice(yl, extra_samples)
             X_balanced = np.append(X_balanced, X[extra_idx], axis=0)
             Y_balanced = np.append(Y_balanced, Y[extra_idx], axis=0)
-
     elif balance_type == 'UNDER':
         """
         Undersample from classes that are excessive
@@ -172,32 +178,29 @@ def balance_samples(X, Y, balance_type, verbose=False):
             yl = np.where(Y == c)[0]
             if len(min_set) == 0 or len(yl) < min_set[1]:
                 min_set = [c, len(yl)]
-
         yl = np.where(Y == min_set[0])[0]
         X_balanced = np.array(X[yl])
         Y_balanced = np.array(Y[yl])
-
         for c in label_set:
             if c == min_set[0]: continue
             yl = np.where(Y == c)[0]
             reduced_idx = np.random.choice(yl, min_set[1])
             X_balanced = np.append(X_balanced, X[reduced_idx], axis=0)
             Y_balanced = np.append(Y_balanced, Y[reduced_idx], axis=0)
+    elif balance_type is None or balance_type is False:
+        return X, Y
     else:
-        raise ValueError('Unknown balancing type ' % balance_type)
+        logger.error('Unknown balancing type %s' % balance_type)
+        raise ValueError
 
-    if verbose is True:
-        logger.info('\nNumber of trials BEFORE balancing')
-        for c in label_set:
-            logger.info('%s: %d' % (cfg.tdef.by_value[c], len(np.where(Y == c)[0])))
-        logger.info('\nNumber of trials AFTER balancing')
-        for c in label_set:
-            logger.info('%s: %d' % (cfg.tdef.by_value[c], len(np.where(Y_balanced == c)[0])))
+    logger.info_green('\nNumber of samples after %ssampling' % balance_type.lower())
+    for c in label_set:
+        logger.info('%s: %d -> %d' % (c, len(np.where(Y == c)[0]), len(np.where(Y_balanced == c)[0])))
 
     return X_balanced, Y_balanced
 
 
-def crossval_epochs(cv, epochs_data, labels, cls, label_names=None, do_balance=False, n_jobs=None, ignore_thres=None, decision_thres=None):
+def crossval_epochs(cv, epochs_data, labels, cls, label_names=None, do_balance=None, n_jobs=None, ignore_thres=None, decision_thres=None):
     """
     Epoch-based cross-validation used by cross_validate().
 
@@ -240,7 +243,7 @@ def crossval_epochs(cv, epochs_data, labels, cls, label_names=None, do_balance=F
         X_test = np.concatenate(epochs_data[test])
         Y_train = np.concatenate(labels[train])
         Y_test = np.concatenate(labels[test])
-        if do_balance != False:
+        if do_balance:
             X_train, Y_train = balance_samples(X_train, Y_train, do_balance)
             X_test, Y_test = balance_samples(X_test, Y_test, do_balance)
 
@@ -340,7 +343,8 @@ def balance_tpr(cfg, featdata):
     elif cfg.CLASSIFIER == 'rLDA':
         cls = rLDA(cfg.RLDA_REGULARIZE_COEFF)
     else:
-        raise ValueError('Unknown classifier type %s' % cfg.CLASSIFIER)
+        logger.error('Unknown classifier type %s' % cfg.CLASSIFIER)
+        raise ValueError
 
     # Setup features
     X_data = featdata['X_data']
@@ -364,7 +368,8 @@ def balance_tpr(cfg, featdata):
         else:
             cv = StratifiedShuffleSplit(n_splits=cfg.CV_FOLDS, test_size=cfg.CV_TEST_RATIO, random_state=cfg.CV_RANDOM_SEED)
     else:
-        raise NotImplementedError('%s is not supported yet. Sorry.' % cfg.CV_PERFORM)
+        logger.error('%s is not supported yet. Sorry.' % cfg.CV_PERFORM)
+        raise NotImplementedError
     logger.info('%d trials, %d samples per trial, %d feature dimension' % (ntrials, nsamples, fsize))
 
     # For classifier itself, single core is usually faster
@@ -453,7 +458,8 @@ def fit_predict_thres(cls, X_train, Y_train, X_test, Y_test, cnum, label_list, i
         cm = skmetrics.confusion_matrix(Y_test, Y_pred, label_list)
     else:
         if decision_thres is not None:
-            raise ValueError('decision threshold and ignore_thres cannot be set at the same time.')
+            logger.error('decision threshold and ignore_thres cannot be set at the same time.')
+            raise ValueError
         Y_pred = cls.predict_proba(X_test)
         Y_pred_labels = np.argmax(Y_pred, axis=1)
         Y_pred_maxes = np.array([x[i] for i, x in zip(Y_pred_labels, Y_pred)])
@@ -493,7 +499,8 @@ def cross_validate(cfg, featdata, cv_file=None):
     elif cfg.CLASSIFIER == 'rLDA':
         cls = rLDA(cfg.RLDA_REGULARIZE_COEFF)
     else:
-        raise ValueError('Unknown classifier type %s' % cfg.CLASSIFIER)
+        logger.error('Unknown classifier type %s' % cfg.CLASSIFIER)
+        raise ValueError
 
     # Setup features
     X_data = featdata['X_data']
@@ -517,7 +524,8 @@ def cross_validate(cfg, featdata, cv_file=None):
         else:
             cv = StratifiedShuffleSplit(n_splits=cfg.CV_FOLDS, test_size=cfg.CV_TEST_RATIO, random_state=cfg.CV_RANDOM_SEED)
     else:
-        raise NotImplementedError('%s is not supported yet. Sorry.' % cfg.CV_PERFORM)
+        logger.error('%s is not supported yet. Sorry.' % cfg.CV_PERFORM)
+        raise NotImplementedError
     logger.info('%d trials, %d samples per trial, %d feature dimension' % (ntrials, nsamples, fsize))
 
     # Do it!
@@ -534,7 +542,7 @@ def cross_validate(cfg, featdata, cv_file=None):
     for ev in np.unique(Y_data):
         txt += '%s: %d trials\n' % (cfg.tdef.by_value[ev], len(np.where(Y_data[:, 0] == ev)[0]))
     if cfg.BALANCE_SAMPLES:
-        txt += 'The number of samples was balanced across classes. Method: %s\n' % cfg.BALANCE_SAMPLES
+        txt += 'The number of samples was balanced using %ssampling.\n' % cfg.BALANCE_SAMPLES.lower()
     txt += '\n- Experiment condition\n'
     txt += 'Sampling frequency: %.3f Hz\n' % featdata['sfreq']
     txt += 'Spatial filter: %s (channels: %s)\n' % (cfg.SP_FILTER, cfg.SP_FILTER)
@@ -609,7 +617,8 @@ def train_decoder(cfg, featdata, feat_file=None):
     elif cfg.CLASSIFIER == 'rLDA':
         cls = rLDA(cfg.RLDA_REGULARIZE_COEFF)
     else:
-        raise ValueError('Unknown classifier %s' % cfg.CLASSIFIER)
+        logger.error('Unknown classifier %s' % cfg.CLASSIFIER)
+        raise ValueError
 
     # Setup features
     X_data = featdata['X_data']
@@ -725,7 +734,8 @@ def run(cfg, interactive=False, cv_file=None, feat_file=None):
 def load_config(cfg_file):
     cfg_file = qc.forward_slashify(cfg_file)
     if not (os.path.exists(cfg_file) and os.path.isfile(cfg_file)):
-        raise IOError('%s cannot be loaded.' % os.path.realpath(cfg_file))
+        logger.error('%s cannot be loaded.' % os.path.realpath(cfg_file))
+        raise IOError
     return imp.load_source(cfg_file, cfg_file)
 
 
