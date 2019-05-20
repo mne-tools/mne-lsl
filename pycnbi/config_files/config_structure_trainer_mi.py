@@ -99,9 +99,9 @@ class Advanced:
 
     params6 = dict()
     params6.update({'CLASSIFIER': ('GB', 'XGB', 'RF', 'rLDA', 'LDA')})
-    params6.update({'EXPORT_CLS': (False, True)})
     params6.update({'GB': dict(trees=int, learning_rate=float, max_depth=int, seed=int)})
     params6.update({'RF': dict(trees=int, max_depth=int, seed=int)})
+    params6.update({'EXPORT_CLS': (False, True)})
     params6.update({'RLDA_REGULARIZE_COEFF': float})
 
     #-------------------------------------------
