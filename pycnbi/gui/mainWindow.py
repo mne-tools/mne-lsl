@@ -7,21 +7,22 @@
   Created: 2/22/2019
 """
 
+import os
 import sys
-from importlib import import_module, reload
-from os.path import expanduser
-from queue import Queue
-import os 
 import inspect
+# from queue import Queue
+from os.path import expanduser
+from multiprocessing import Process, Queue
+from importlib import import_module
 
-from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QAction, QLabel, QVBoxLayout, QHBoxLayout, QComboBox, QLineEdit, QFormLayout, QWidget, QPushButton, QFrame, QSizePolicy
-from PyQt5.QtCore import pyqtSignal, pyqtSlot, QThread, QLine
 from PyQt5.QtGui import QTextCursor, QFont
+from PyQt5.QtCore import pyqtSignal, pyqtSlot, QThread, QLine
+from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QAction, QLabel, QVBoxLayout, QHBoxLayout, QComboBox, QLineEdit, QFormLayout, QWidget, QPushButton, QFrame, QSizePolicy
 
 from ui_mainwindow import Ui_MainWindow
 from streams import WriteStream, MyReceiver
-from connectClass import PathFolderFinder, PathFileFinder, Connect_Directions, Connect_ComboBox, Connect_LineEdit, Connect_SpinBox, Connect_DoubleSpinBox, Connect_Modifiable_List, Connect_Modifiable_Dict
 from pickedChannelsDialog import PickChannelsDialog, Channel_Select
+from connectClass import PathFolderFinder, PathFileFinder, Connect_Directions, Connect_ComboBox, Connect_LineEdit, Connect_SpinBox, Connect_DoubleSpinBox, Connect_Modifiable_List, Connect_Modifiable_Dict
 
 from pycnbi.triggers.trigger_def import trigger_def
 
@@ -353,7 +354,7 @@ class MainWindow(QMainWindow):
         self.load_all_params(cfg_template, cfg_file)
 
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     @pyqtSlot()
     def on_click_train(self):
         """
