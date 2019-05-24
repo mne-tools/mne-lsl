@@ -64,12 +64,12 @@ os.environ['OMP_NUM_THREADS'] = '1' # actually improves performance for multitap
 def check_config(cfg):
     critical_vars = {
         'COMMON': [
-            'tdef',
+            # 'tdef',
             'TRIGGER_DEF',
             'EPOCH',
-            'DATADIR',
+            'DATA_PATH',
             'PSD',
-            'CHANNEL_PICKS',
+            'PICKED_CHANNELS',
             'SP_FILTER',
             'TP_FILTER',
             'NOTCH_FILTER',
@@ -88,7 +88,7 @@ def check_config(cfg):
         'EXPORT_CLS': False,
         'REF_CH': None,
         'N_JOBS': None,
-        'EXCLUDES': None,
+        'EXCLUDED_CHANNELS': None,
         'CV_IGNORE_THRES': None,
         'CV_DECISION_THRES': None,
         'BALANCE_SAMPLES': False
