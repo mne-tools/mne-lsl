@@ -23,6 +23,7 @@ from ui_mainwindow import Ui_MainWindow
 from streams import WriteStream, MyReceiver
 from pickedChannelsDialog import PickChannelsDialog, Channel_Select
 from connectClass import PathFolderFinder, PathFileFinder, Connect_Directions, Connect_ComboBox, Connect_LineEdit, Connect_SpinBox, Connect_DoubleSpinBox, Connect_Modifiable_List, Connect_Modifiable_Dict
+from readWriteTxt import read_params_from_txt
 
 from pycnbi.triggers.trigger_def import trigger_def
 
@@ -105,16 +106,16 @@ class MainWindow(QMainWindow):
                 return v[1]
 
     # ----------------------------------------------------------------------
-    def load_channels_from_txt(self):
+    def read_params_from_txt(self, txtFile):
         """
-        Loads the channels list from a txt file.
+        Loads the parameters from a txt file.
         """
-        filePath = self.ui.lineEdit_pathSearch.text()
-        file = open(filePath + "/channelsList.txt")
-        channels = file.read().splitlines()
+        folderPath = self.ui.lineEdit_pathSearch.text()
+        file = open(folderPath + '/' + txtFile)
+        params = file.read().splitlines()
         file.close()
         
-        return channels
+        return params
 
     # ----------------------------------------------------------------------
     def disp_params(self, cfg_template_module, cfg_module):
@@ -131,7 +132,8 @@ class MainWindow(QMainWindow):
         all_chosen_values = inspect.getmembers(cfg_module)
 
         # Load channels
-        self.channels = self.load_channels_from_txt()
+        filePath = self.ui.lineEdit_pathSearch.text()
+        self.channels = read_params_from_txt(filePath, 'channelsList.txt')
 
         # Iterates over the classes
         for par in range(2):
