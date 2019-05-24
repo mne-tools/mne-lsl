@@ -551,7 +551,7 @@ class Scope(QtGui.QMainWindow, form_class):
         if (self.show_LPT_events) and (not self.stop_plot):
             for x in range(len(self.tri)):
                 tri = int(self.tri[x])
-                if tri != 0 and (tri != self.last_tri):
+                if tri != 0 and (tri > self.last_tri):
                     self.addEventPlot("LPT", tri)
                     logger.info('Trigger %d received' % tri)
                 self.last_tri = tri
