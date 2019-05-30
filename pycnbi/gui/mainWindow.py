@@ -10,10 +10,10 @@
 import os
 import sys
 import inspect
-# from queue import Queue
+from queue import Queue
 from os.path import expanduser
-from multiprocessing import Process, Queue
 from importlib import import_module
+from pathos.multiprocessing import ProcessingPool
 
 from PyQt5.QtGui import QTextCursor, QFont
 from PyQt5.QtCore import pyqtSignal, pyqtSlot, QThread, QLine
@@ -22,9 +22,10 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QAction, QLa
 from ui_mainwindow import Ui_MainWindow
 from streams import WriteStream, MyReceiver
 from pickedChannelsDialog import PickChannelsDialog, Channel_Select
-from connectClass import PathFolderFinder, PathFileFinder, Connect_Directions, Connect_ComboBox, Connect_LineEdit, Connect_SpinBox, Connect_DoubleSpinBox, Connect_Modifiable_List, Connect_Modifiable_Dict
+from connectClass import PathFolderFinder, PathFileFinder, Connect_Directions, Connect_ComboBox, Connect_LineEdit, Connect_SpinBox, Connect_DoubleSpinBox, Connect_Modifiable_List, Connect_Modifiable_Dict,  Connect_Directions_Online, Connect_Bias
 from readWriteTxt import read_params_from_txt
 
+from pycnbi.utils import q_common as qc
 from pycnbi.triggers.trigger_def import trigger_def
 
 DEFAULT_PATH = os.environ['PYCNBI_SCRIPTS']
@@ -55,6 +56,9 @@ class MainWindow(QMainWindow):
         font = QFont()
         font.setPointSize(10)
         self.ui.textEdit_terminal.setFont(font)
+
+        # Define in which modality we are
+        self.modality = None
 
     # ----------------------------------------------------------------------
     def redirect_stdout(self):
@@ -134,7 +138,8 @@ class MainWindow(QMainWindow):
         # Load channels
         filePath = self.ui.lineEdit_pathSearch.text()
         self.channels = read_params_from_txt(filePath, 'channelsList.txt')
-
+        self.directions = ()
+        
         # Iterates over the classes
         for par in range(2):
             param = inspect.getmembers(params[par][1])
@@ -153,12 +158,36 @@ class MainWindow(QMainWindow):
 
                     # For the feedback directions [offline and online].
                     if 'DIRECTIONS' in key:
-                        nb_directions = 4
-                        directions = Connect_Directions(key, chosen_value, values, nb_directions)
+                        self.directions = values
+                        
+                        if self.modality is 'offline':
+                            nb_directions = 4
+                            directions = Connect_Directions(key, chosen_value, values, nb_directions)
+                        
+                        elif self.modality is 'online':
+                            cls_path = self.paramsWidgets['DECODER_FILE'].lineEdit_pathSearch.text()
+                            cls = qc.load_obj(cls_path)
+                            events = cls['cls'].classes_        # Finds the events on which the decoder has been trained on
+                            events = list(map(int, events))
+                            nb_directions = len(events)
+                            chosen_events = [event[1] for event in chosen_value]
+                            chosen_value = [val[0] for val in chosen_value]
+                            
+                            # Need tdef to convert int to str trigger values
+                            try:
+                                [tdef.by_value(i) for i in events]
+                            except:
+                                trigger_file = self.extract_value_from_module('TRIGGER_FILE', all_chosen_values)
+                                tdef = trigger_def(trigger_file)
+                                events = [tdef.by_value[i] for i in events]
+                            
+                            directions = Connect_Directions_Online(key, chosen_value, values, nb_directions, chosen_events, events)
+                            
                         directions.signal_paramChanged.connect(self.on_guichanges)
                         self.paramsWidgets.update({key: directions})
-                        layout.addRow(key, directions.l)
-
+                        layout.addRow(key, directions.l)                            
+                            
+                            
                     # For providing a folder path.
                     elif 'PATH' in key:
                         pathfolderfinder = PathFolderFinder(key, DEFAULT_PATH, chosen_value)
@@ -175,12 +204,14 @@ class MainWindow(QMainWindow):
                         layout.addRow(key, pathfilefinder.layout)
                         continue
 
-                    # For the special case of choosing the trigger classes to train on [trainer only]
+                    # For the special case of choosing the trigger classes to train on 
                     elif 'TRIGGER_DEF' in key:
                         trigger_file = self.extract_value_from_module('TRIGGER_FILE', all_chosen_values)
                         tdef = trigger_def(trigger_file)
                         nb_directions = 4
-                        directions = Connect_Directions(key, chosen_value, list(tdef.by_name), nb_directions)
+                        #  Convert 'None' to real None (real None is removed when selected in the GUI)
+                        tdef_values = [ None if i == 'None' else i for i in list(tdef.by_name) ]
+                        directions = Connect_Directions(key, chosen_value, tdef_values, nb_directions)
                         directions.signal_paramChanged.connect(self.on_guichanges)
                         self.paramsWidgets.update({key: directions})
                         layout.addRow(key, directions.l)
@@ -192,7 +223,16 @@ class MainWindow(QMainWindow):
                         ch_select.signal_paramChanged.connect(self.on_guichanges)
                         self.paramsWidgets.update({key: ch_select})
                         layout.addRow(key, ch_select.layout)
-
+                        
+                    elif 'BIAS' in key:
+                        #  Add None to the list in case of no bias wanted
+                        self.directions = tuple([None] + list(self.directions))
+                        bias = Connect_Bias(key, self.directions, chosen_value)
+                        # bias.signal_paramChanged[str, tuple].connect(self.on_guichanges)
+                        bias.signal_paramChanged[str, object].connect(self.on_guichanges)
+                        self.paramsWidgets.update({key: bias})
+                        layout.addRow(key, bias.l)                        
+                        
                     # For all the int values.
                     elif values is int:
                         spinBox = Connect_SpinBox(key, chosen_value)
@@ -220,8 +260,8 @@ class MainWindow(QMainWindow):
                     # For parameters with multiple fixed values.
                     elif type(values) is tuple:
                         comboParams = Connect_ComboBox(key, chosen_value, values)
-                        comboParams.signal_paramChanged[str, bool].connect(self.on_guichanges)
                         comboParams.signal_paramChanged[str, list].connect(self.on_guichanges)
+                        comboParams.signal_paramChanged[str, bool].connect(self.on_guichanges)
                         comboParams.signal_paramChanged[str, str].connect(self.on_guichanges)
                         comboParams.signal_paramChanged[str, type(None)].connect(self.on_guichanges)
                         self.paramsWidgets.update({key: comboParams})
@@ -235,7 +275,6 @@ class MainWindow(QMainWindow):
                         self.paramsWidgets.update({key: modifiable_dict})
                         layout.addRow(key, modifiable_dict.layout)
                         continue
-
 
                 # Add a horizontal line to separate parameters' type.
                 if p != param[-1]:
@@ -320,6 +359,7 @@ class MainWindow(QMainWindow):
     @pyqtSlot(str, float)
     @pyqtSlot(str, int)
     @pyqtSlot(str, dict)
+    @pyqtSlot(str, tuple)
     @pyqtSlot(str, type(None))
     # ----------------------------------------------------------------------
     def on_guichanges(self, name, new_Value):
@@ -331,6 +371,7 @@ class MainWindow(QMainWindow):
         """
         setattr(self.cfg_subject, name, new_Value)
         print(getattr(self.cfg_subject, name))
+        print(type(getattr(self.cfg_subject, name)))
 
 
     # ----------------------------------------------------------------------
@@ -350,10 +391,14 @@ class MainWindow(QMainWindow):
         Loads the Offline parameters. 
         """
         import pycnbi.protocols.train_mi as m
+        
         self.m = m
+        
+        self.modality = 'offline'
         cfg_template = 'config_structure_train_mi'
         cfg_file = 'config_train_mi'
-        self.load_all_params(cfg_template, cfg_file)
+        
+        self.load_all_params(cfg_template, cfg_file)        
 
 
     # ----------------------------------------------------------------------
@@ -363,9 +408,13 @@ class MainWindow(QMainWindow):
         Loads the Training parameters.
         """
         import pycnbi.decoder.trainer as m
+        
         self.m = m
+
+        self.modality = 'train'
         cfg_template = 'config_structure_trainer_mi'
         cfg_file = 'config_trainer_mi'
+
         self.load_all_params(cfg_template, cfg_file)
         
         
@@ -376,9 +425,13 @@ class MainWindow(QMainWindow):
         Loads the Online parameters.
         """
         import pycnbi.protocols.test_mi as m
+        
         self.m = m
+        
+        self.modality = 'online'
         cfg_template = 'config_structure_test_mi'
         cfg_file = 'config_test_mi'
+        
         self.load_all_params(cfg_template, cfg_file)
     
     
@@ -388,8 +441,25 @@ class MainWindow(QMainWindow):
         """
         Launch the selected protocol. It can be Offline, Train or Online. 
         """
-        self.m.run(self.cfg_subject)
+        try:
+            self.process.restart()
+            self.process.apipe(self.m.run, self.cfg_subject)
+        except:                
+            # Create protocol process and start it
+            self.process = ProcessingPool()
+            self.process.apipe(self.m.run, self.cfg_subject)
         
+    
+    #----------------------------------------------------------------------
+    @pyqtSlot()
+    def on_click_stop(self):
+        """
+        Stop the protocol process
+        """
+        self.process.terminate()
+        self.process.join()
+        
+                
     #----------------------------------------------------------------------
     @pyqtSlot(str)
     def on_terminal_append(self, text):
@@ -413,6 +483,8 @@ class MainWindow(QMainWindow):
         self.ui.pushButton_Online.clicked.connect(self.on_click_online)
         # Start button
         self.ui.pushButton_Start.clicked.connect(self.on_click_start)
+        # Stop button
+        self.ui.pushButton_Stop.clicked.connect(self.on_click_stop)
         
 def main():    
     #unittest.main()
