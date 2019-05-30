@@ -19,7 +19,7 @@ class QComboBox_Directions(QComboBox):
     list
     """
 
-    signal_paramChanged = pyqtSignal([int, str])
+    signal_paramChanged = pyqtSignal([int, object])
 
     #----------------------------------------------------------------------
     def __init__(self, pos):
@@ -30,17 +30,18 @@ class QComboBox_Directions(QComboBox):
         """
         super().__init__()
         self.pos = pos
-        self.currentIndexChanged[str].connect(self.on_modify)
+        self.currentIndexChanged[int].connect(self.on_modify)
 
 
     # ----------------------------------------------------------------------
-    @pyqtSlot(str)
-    def on_modify(self, new_Value):
+    @pyqtSlot(int)
+    def on_modify(self, index):
         """
         Slot connected to comboBox param value change. Emits the pos and
         new value.
         """
-        self.signal_paramChanged.emit(self.pos, new_Value)
+        val = self.itemData(index)
+        self.signal_paramChanged.emit(self.pos, val)
 
 
 ########################################################################
@@ -67,12 +68,22 @@ class Connect_Directions(QObject):
         self.paramName = paramName
         self.l = QHBoxLayout()
         self.chosen_value = chosen_value
- 
-        for i in range(len(chosen_value)):
+        
+        nb_val = range(len(chosen_value)) 
+        for i in nb_val:
             self.l.addWidget(self.add_To_ComboBox(all_Values, chosen_value[i], i))
-
-        for i in range(len(chosen_value), nb_directions):
+            
+            # Add a vertical separator
+            if i != nb_directions:
+                add_v_separator(self.l)            
+        
+        nb_val = range(len(chosen_value), nb_directions) 
+        for i in nb_val:
             self.l.addWidget(self.add_To_ComboBox(all_Values, None, i))
+            
+            # Add a vertical separator
+            if i != nb_val[-1]:
+                add_v_separator(self.l)                        
 
 
     # ----------------------------------------------------------------------
@@ -88,7 +99,7 @@ class Connect_Directions(QObject):
 
         # Iterates over the possible choices
         for val in values:
-            templateChoices.addItem(val)
+            templateChoices.addItem(str(val), val)
             if val == chosenValue:
                 templateChoices.setCurrentText(val)
 
@@ -97,7 +108,7 @@ class Connect_Directions(QObject):
         return templateChoices
 
         
-    @pyqtSlot(int, str)
+    @pyqtSlot(int, object)
     # ----------------------------------------------------------------------
     def on_modify(self, pos, new_Value):
         """
@@ -106,14 +117,72 @@ class Connect_Directions(QObject):
         pos = QComboBox position in the directions list
         new_value = direction new_value
         """
-
         if pos >= len(self.chosen_value):
             self.chosen_value.append(new_Value)
         else:
             self.chosen_value[pos] = (new_Value)
-            
+        
+        try:
+            self.chosen_value.remove(None)
+        except:
+            pass
+        
         self.signal_paramChanged.emit(self.paramName, self.chosen_value)
 
+########################################################################
+class Connect_Directions_Online(QObject):
+    """
+    This class is used to connect the directions modifications in case of the online
+    modality. It modifies the module according to the newly selected
+    parameter value.
+    """
+
+    signal_paramChanged = pyqtSignal(str, list)
+    
+    #----------------------------------------------------------------------
+    def __init__(self, paramName, chosen_value, all_Values, nb_directions, chosen_events, events):
+        """Constructor
+        
+        paramName = Name of the parameter corresponding to the widget to create 
+        chosen_value = the subject's specific parameter directions.
+        all_Values = list of all possible directions
+        nb_directions = number of directions to add.
+        chosen_events = the subject's specific parameter events linked to the corresponding direction.
+        events = events 
+        """
+        super().__init__()
+        
+        self.directions = Connect_Directions(paramName, chosen_value, all_Values, nb_directions)
+        self.directions.signal_paramChanged.connect(self.on_modify)
+        
+        self.events = Connect_Directions('DIR_EVENTS', chosen_events, events, nb_directions)
+        self.events.signal_paramChanged.connect(self.on_modify)
+        
+        # self.selected = chosen_value
+        
+        self.l = QVBoxLayout()
+        self.l.addLayout(self.directions.l)
+        self.l.addLayout(self.events.l)
+    
+    # @pyqtSlot(str, list)
+    #----------------------------------------------------------------------
+    def on_modify(self, paramName, new_Values):
+        """
+        Slot connected to the changes in the directions.
+        """
+        updatedList = []
+        # self.selected = new_Values
+        
+        if paramName == self.directions.paramName:
+            for i in range(len(new_Values)):
+                updatedList.append((new_Values[i], self.events.chosen_value[i]))
+                
+        elif paramName == self.events.paramName:
+            for i in range(len(new_Values)):
+                updatedList.append((self.directions.chosen_value[i], new_Values[i]))
+                
+        self.signal_paramChanged.emit(self.directions.paramName, updatedList)
+    
 
 ########################################################################
 class Connect_ComboBox(QObject):
@@ -155,6 +224,7 @@ class Connect_ComboBox(QObject):
         # Iterates over the possible choices
         for val in values:
             templateChoices.addItem(str(val), val)
+            
             if val == chosenValue:
                 index = templateChoices.findData(chosenValue)
                 if index != -1:
@@ -174,6 +244,67 @@ class Connect_ComboBox(QObject):
         val = self.templateChoices.itemData(index)
         self.signal_paramChanged[str, type(val)].emit(self.paramName, val)
 
+
+########################################################################
+class Connect_Bias(QObject):
+    """
+    This class is used for the feedback bias toward one classes.
+    It modifies the module according to the newly parameter value.
+    """
+    
+    signal_paramChanged = pyqtSignal([str, object])
+    
+    #----------------------------------------------------------------------
+    def __init__(self, paramName, directions, chosen_value):
+        """
+        Constructor
+        
+        directions = directions on which one can apply the bias. Directions
+        correspond to the classifier's classes.
+        """
+        super().__init__()
+        
+        self.paramName = paramName
+        self.selected_direction = chosen_value[0]
+        self.l = QHBoxLayout()
+        
+        if chosen_value[0] is not None:
+            self.directions = Connect_ComboBox('direction', chosen_value[0], directions)
+            self.spinBox = Connect_DoubleSpinBox('value', chosen_value[1])
+        else:
+            self.directions = Connect_ComboBox('direction', chosen_value, directions)
+            self.spinBox = Connect_DoubleSpinBox('value', 0.0)
+            self.spinBox.w.setDisabled(True)
+    
+        self.l.addWidget(self.directions.templateChoices)
+        self.l.addWidget(self.spinBox.w)
+        
+        self.directions.signal_paramChanged[str, str].connect(self.on_modify)
+        self.directions.signal_paramChanged[str, type(None)].connect(self.on_modify)
+        
+        self.spinBox.signal_paramChanged[str, float].connect(self.on_modify)
+
+        
+    @pyqtSlot(str, str)
+    @pyqtSlot(str, float)
+    @pyqtSlot(str, type(None))
+    #----------------------------------------------------------------------
+    def on_modify(self, paramName, new_Value):
+        """
+        Slot connected to the bias's direction or bias's value change
+        """
+        if 'direction' in paramName:
+            self.selected_direction = new_Value
+            if new_Value is None:
+                self.spinBox.w.setValue(0.0)
+                self.spinBox.w.setDisabled(True)
+                self.signal_paramChanged[str, type(None)].emit(self.paramName, new_Value)
+            else:
+                self.spinBox.w.setDisabled(False)
+        
+        elif 'value' in paramName:
+            self.signal_paramChanged[str, tuple].emit(self.paramName, (self.selected_direction, new_Value))
+    
 
 ########################################################################
 class Connect_SpinBox(QObject):
@@ -475,7 +606,7 @@ class Connect_Modifiable_Dict(QObject):
                 self.layout.addWidget(label)
                 self.layout.addWidget(lineEdit.w)
 
-            # Add a horizontal line to separate parameters' type.
+            # Add a vertical line
             if key == list(content_dict.items())[-1][0]:
                 add_v_separator(self.layout)
 
