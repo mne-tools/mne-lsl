@@ -66,7 +66,7 @@ def load_config(cfg_file):
 
 def check_config(cfg):
     critical_vars = [
-        'CLS_MI',
+        'DECODER_FILE',
         'TRIGGER_DEVICE',
         'TRIGGER_FILE',
         'DIRECTIONS',
@@ -147,7 +147,7 @@ def run(cfg):
         trigger.init(50)
 
     # init classification
-    decoder = BCIDecoderDaemon(cfg.CLS_MI, buffer_size=1.0, fake=(cfg.FAKE_CLS is not None),
+    decoder = BCIDecoderDaemon(cfg.DECODER_FILE, buffer_size=1.0, fake=(cfg.FAKE_CLS is not None),
                                amp_name=amp_name, amp_serial=amp_serial, fake_dirs=fake_dirs,
                                parallel=cfg.PARALLEL_DECODING, alpha_new=cfg.PROB_ALPHA_NEW)
 
@@ -190,7 +190,7 @@ def run(cfg):
             screen_pos=cfg.SCREEN_POS, screen_size=cfg.SCREEN_SIZE)
     visual.put_text('Waiting to start')
     if cfg.LOG_PROBS:
-        logdir = qc.parse_path_list(cfg.CLS_MI)[0]
+        logdir = qc.parse_path_list(cfg.DECODER_FILE)[0]
         probs_logfile = time.strftime(logdir + "probs-%Y%m%d-%H%M%S.txt", time.localtime())
     else:
         probs_logfile = None
@@ -251,7 +251,7 @@ def run(cfg):
 
     if len(dir_detected) > 0:
         # write performance and log results
-        fdir, _, _ = qc.parse_path_list(cfg.CLS_MI)
+        fdir, _, _ = qc.parse_path_list(cfg.DECODER_FILE)
         logfile = time.strftime(fdir + "/online-%Y%m%d-%H%M%S.txt", time.localtime())
         with open(logfile, 'w') as fout:
             fout.write('Ground-truth,Prediction\n')
