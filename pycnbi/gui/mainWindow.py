@@ -10,10 +10,10 @@
 import os
 import sys
 import inspect
-from queue import Queue
 from os.path import expanduser
 from importlib import import_module
 from pathos.multiprocessing import ProcessingPool
+from pathos.helpers import mp as pathos_multiprocess
 
 from PyQt5.QtGui import QTextCursor, QFont
 from PyQt5.QtCore import pyqtSignal, pyqtSlot, QThread, QLine
@@ -66,9 +66,11 @@ class MainWindow(QMainWindow):
         Create Queue and redirect sys.stdout to this queue.
         Create thread that will listen on the other end of the queue, and send the text to the textedit_terminal.
         """
-        queue = Queue()
-        sys.stdout = WriteStream(queue)
-        sys.stderr = WriteStream(queue)
+        self.manager = pathos_multiprocess.Manager()
+        queue = self.manager.Queue()
+        
+        # sys.stdout = WriteStream(queue)
+        # sys.stderr = WriteStream(queue)
         
         self.thread = QThread()
         self.my_receiver = MyReceiver(queue)
@@ -443,11 +445,11 @@ class MainWindow(QMainWindow):
         """
         try:
             self.process.restart()
-            self.process.apipe(self.m.run, self.cfg_subject)
+            self.process.apipe(self.m.run, self.cfg_subject, self.my_receiver.queue)
         except:                
             # Create protocol process and start it
             self.process = ProcessingPool()
-            self.process.apipe(self.m.run, self.cfg_subject)
+            self.process.apipe(self.m.run, self.cfg_subject, self.my_receiver.queue)
         
     
     #----------------------------------------------------------------------
