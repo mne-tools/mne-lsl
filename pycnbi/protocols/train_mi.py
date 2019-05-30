@@ -32,8 +32,10 @@ import pycnbi.triggers.pyLptControl as pyLptControl
 import pycnbi.utils.q_common as qc
 from pycnbi.protocols.viz_bars import BarVisual
 from pycnbi.triggers.trigger_def import trigger_def
-from pycnbi import logger
+from pycnbi import logger, init_logger
 from builtins import input
+
+from pycnbi.gui.streams import WriteStream
 
 def load_config(cfg_file):
     cfg_file = qc.forward_slashify(cfg_file)
@@ -51,7 +53,13 @@ def batch_run(cfg_file):
     cfg = check_config(cfg)
     run(cfg)
 
-def run(cfg):
+def run(cfg, queue):
+    
+    # Redirect stdout and stderr to the GUI
+    sys.stdout = WriteStream(queue)
+    sys.stderr = WriteStream(queue)
+    init_logger(sys.stdout)
+    
     tdef = trigger_def(cfg.TRIGGER_FILE)
     refresh_delay = 1.0 / cfg.REFRESH_RATE
 
