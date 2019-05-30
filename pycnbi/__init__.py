@@ -52,7 +52,7 @@ class PycnbiFormatter(logging.Formatter):
         self._style = logging.PercentStyle(self._fmt)
         return logging.Formatter.format(self, record)
 
-def init_logger(verbose_console='INFO', verbose_file=None):
+def init_logger(streamHandler, verbose_console='INFO', verbose_file=None):
     if not logger.hasHandlers():
         # add custom log levels
         logging.addLevelName(LOG_LEVELS['INFO_GREEN'], 'INFO_GREEN')
@@ -74,7 +74,7 @@ def init_logger(verbose_console='INFO', verbose_file=None):
         logging.Logger.info_yellow = __log_info_yellow
 
         # console logger handler
-        c_handler = logging.StreamHandler(sys.stdout)
+        c_handler = logging.StreamHandler(streamHandler)
         c_handler.setFormatter(PycnbiFormatter())
         logger.addHandler(c_handler)
 
@@ -111,4 +111,3 @@ for d in qc.get_dir_list(ROOT):
 logging.getLogger('matplotlib').setLevel(logging.ERROR)
 logger = logging.getLogger('pycnbi')
 logger.propagate = False
-init_logger()
