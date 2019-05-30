@@ -1,5 +1,4 @@
 import sys
-from queue import Queue
 from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
 
 ########################################################################
@@ -9,7 +8,7 @@ class WriteStream():
     It puts data in a queue!
     """
     #----------------------------------------------------------------------
-    def __init__(self,queue):
+    def __init__(self, queue):
         self.queue = queue
 
     #----------------------------------------------------------------------
@@ -24,9 +23,9 @@ class MyReceiver(QObject):
     """
     mysignal = pyqtSignal(str)
     
-    #----------------------------------------------------------------------v
-    def __init__(self,queue,*args,**kwargs):
-        QObject.__init__(self,*args,**kwargs)
+    #----------------------------------------------------------------------
+    def __init__(self, queue, *args, **kwargs):
+        QObject.__init__(self, *args, **kwargs)
         self.queue = queue
 
     #----------------------------------------------------------------------
