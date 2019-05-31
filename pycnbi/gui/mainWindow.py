@@ -69,13 +69,12 @@ class MainWindow(QMainWindow):
         self.manager = pathos_multiprocess.Manager()
         queue = self.manager.Queue()
         
-        # sys.stdout = WriteStream(queue)
-        # sys.stderr = WriteStream(queue)
-        
         self.thread = QThread()
+        
         self.my_receiver = MyReceiver(queue)
         self.my_receiver.mysignal.connect(self.on_terminal_append)
         self.my_receiver.moveToThread(self.thread)
+        
         self.thread.started.connect(self.my_receiver.run)
         self.thread.start()
         
