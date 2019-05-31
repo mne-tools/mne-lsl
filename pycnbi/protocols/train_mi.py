@@ -53,12 +53,16 @@ def batch_run(cfg_file):
     cfg = check_config(cfg)
     run(cfg)
 
-def run(cfg, queue):
+def run(cfg, *queue):
     
-    # Redirect stdout and stderr to the GUI
-    sys.stdout = WriteStream(queue)
-    sys.stderr = WriteStream(queue)
-    init_logger(sys.stdout)
+    try:   
+        # Redirect stdout and stderr in case of GUI
+        sys.stdout = WriteStream(queue[0])
+        sys.stderr = WriteStream(queue[0])
+        init_logger(sys.stdout)
+    except:
+        # In case of batch
+        init_logger(sys.stdout)
     
     tdef = trigger_def(cfg.TRIGGER_FILE)
     refresh_delay = 1.0 / cfg.REFRESH_RATE
