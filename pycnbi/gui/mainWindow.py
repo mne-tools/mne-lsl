@@ -266,7 +266,13 @@ class MainWindow(QMainWindow):
                         comboParams.signal_paramChanged[str, str].connect(self.on_guichanges)
                         comboParams.signal_paramChanged[str, type(None)].connect(self.on_guichanges)
                         self.paramsWidgets.update({key: comboParams})
+                        
                         layout.addRow(key, comboParams.templateChoices)
+
+                        if comboParams.additionalParams is not None:
+                            for p in comboParams.additionalParams:
+                                layout.addRow(p.paramName, p)
+                        
                         continue
                     
                     # For parameters with multiple non-fixed values in a dict (user can modify them)
@@ -274,7 +280,7 @@ class MainWindow(QMainWindow):
                         modifiable_dict = Connect_Modifiable_Dict(key, chosen_value, values)
                         modifiable_dict.signal_paramChanged[str, dict].connect(self.on_guichanges)
                         self.paramsWidgets.update({key: modifiable_dict})
-                        layout.addRow(key, modifiable_dict.layout)
+                        layout.addRow(key, modifiable_dict.layout())
                         continue
 
                 # Add a horizontal line to separate parameters' type.
