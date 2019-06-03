@@ -98,7 +98,8 @@ class Advanced:
     #-------------------------------------------
     # Parallel decoding
     #-------------------------------------------
-    params3.update({'PARALLEL_DECODING': (None, dict(period=0.06, num_strides=3))})
+    params3.update({'PARALLEL_DECODING': (None, {'True':{'period': float, 'num_strides': int}})})
+    #params3.update({'PARALLEL_DECODING': (None, dict(period=0.06, num_strides=3))})
 
 
 
