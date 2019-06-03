@@ -199,13 +199,13 @@ class Connect_ComboBox(QObject):
         """Constructor
         
         paramName = Name of the parameter corresponding to the widget to create 
-        chosen_value = the subject's specific parameter value.
+        chosenValue = the subject's specific parameter value.
         all_Values = list of all possible values for a parameter
         """
         super().__init__()
 
         self.paramName = paramName
-        self.templateChoices = self.add_To_ComboBox(all_values, chosenValue)
+        self.templateChoices, self.additionalParams = self.add_To_ComboBox(all_values, chosenValue)
         
         
     # ----------------------------------------------------------------------
@@ -218,12 +218,22 @@ class Connect_ComboBox(QObject):
         chosenValue = subject's specific value.
         """
         templateChoices = QComboBox()
-        # templateChoices.setEditable(True)
-        # templateChoices.setInsertPolicy(3)
+        additionalParams = list()
 
         # Iterates over the possible choices
         for val in values:
-            templateChoices.addItem(str(val), val)
+            
+            # In case the val contains a dict with additional parameters to modify
+            if type(val) is dict:
+                    key = list(val)[0]
+                    content_dict = val[key]
+                    chosen_additionalParams = chosenValue[key]
+                    additionalParams.append(Connect_Modifiable_Dict(key, chosen_additionalParams, content_dict))
+                    templateChoices.addItem(str(key), key)
+                    val = key
+                    chosenValue = list(chosenValue.keys())[0]
+            else:    
+                templateChoices.addItem(str(val), val)
             
             if val == chosenValue:
                 index = templateChoices.findData(chosenValue)
@@ -232,7 +242,7 @@ class Connect_ComboBox(QObject):
 
         templateChoices.currentIndexChanged[int].connect(self.on_modify)
 
-        return templateChoices
+        return templateChoices, additionalParams;
     
     
     @pyqtSlot(int)
@@ -241,8 +251,16 @@ class Connect_ComboBox(QObject):
         """
         Slot connected to comboBox param value change
         """
+        
+        
         val = self.templateChoices.itemData(index)
         self.signal_paramChanged[str, type(val)].emit(self.paramName, val)
+        
+        for p in self.additionalParams:
+            if p.paramName == val:
+                p.show()
+            else:
+                p.hide()
 
 
 ########################################################################
@@ -545,7 +563,7 @@ class tempWidget_for_Modifiable_List(QWidget):
 
 
 ########################################################################
-class Connect_Modifiable_Dict(QObject):
+class Connect_Modifiable_Dict(QWidget):
     """
     This class is used in case of dicts containing modifiable contents.
     It modifies the module according to the newly parameter value.
@@ -566,12 +584,12 @@ class Connect_Modifiable_Dict(QObject):
         super().__init__()
         self.paramName = paramName
         self.chosen_value = chosen_value
-        self.layout = QHBoxLayout()
+        layout = QHBoxLayout()
 
         for key, value in content_dict.items():
 
             # Add a horizontal line to separate parameters' type.
-            add_v_separator(self.layout)
+            add_v_separator(layout)
 
             if value is int:
                 spinBox = Connect_SpinBox(key, chosen_value[key])
@@ -581,8 +599,8 @@ class Connect_Modifiable_Dict(QObject):
                 label.setFixedWidth(80)
                 label.setAlignment(Qt.AlignCenter)
                 spinBox.w.setFixedWidth(80)
-                self.layout.addWidget(label)
-                self.layout.addWidget(spinBox.w)
+                layout.addWidget(label)
+                layout.addWidget(spinBox.w)
 
             elif value is float:
                 doublespinBox = Connect_DoubleSpinBox(key, chosen_value[key])
@@ -592,8 +610,8 @@ class Connect_Modifiable_Dict(QObject):
                 label.setFixedWidth(80)
                 label.setAlignment(Qt.AlignCenter)
                 doublespinBox.w.setFixedWidth(80)
-                self.layout.addWidget(label)
-                self.layout.addWidget(doublespinBox.w)
+                layout.addWidget(label)
+                layout.addWidget(doublespinBox.w)
 
             elif value is str:
                 lineEdit = Connect_LineEdit(key, chosen_value[key])
@@ -603,14 +621,15 @@ class Connect_Modifiable_Dict(QObject):
                 label.setFixedWidth(80)
                 label.setAlignment(Qt.AlignCenter)
                 lineEdit.w.setFixedWidth(80)
-                self.layout.addWidget(label)
-                self.layout.addWidget(lineEdit.w)
+                layout.addWidget(label)
+                layout.addWidget(lineEdit.w)
 
             # Add a vertical line
             if key == list(content_dict.items())[-1][0]:
-                add_v_separator(self.layout)
+                add_v_separator(layout)
 
-        self.layout.addStretch(1)
+        layout.addStretch(1)
+        self.setLayout(layout)
 
 
     @pyqtSlot(str, int)
