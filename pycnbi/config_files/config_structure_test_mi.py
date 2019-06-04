@@ -86,19 +86,19 @@ class Advanced:
     #-------------------------------------------
     # Google Glass
     #-------------------------------------------
-    params3 = dict()
-    params3.update({'GLASS_USE': (False, True)})
+    params4 = dict()
+    params4.update({'GLASS_USE': (False, True)})
 
     #-------------------------------------------
     # Debug
     #-------------------------------------------
-    params3.update({'DEBUG_PROBS': (False, True)})    
-    params3.update({'LOG_PROBS': (False, True)})
+    params4.update({'DEBUG_PROBS': (False, True)})    
+    params4.update({'LOG_PROBS': (False, True)})
 
     #-------------------------------------------
     # Parallel decoding
     #-------------------------------------------
-    params3.update({'PARALLEL_DECODING': (None, {'True':{'period': float, 'num_strides': int}})})
+    params4.update({'PARALLEL_DECODING': (None, {'True':{'period': float, 'num_strides': int}})})
     #params3.update({'PARALLEL_DECODING': (None, dict(period=0.06, num_strides=3))})
 
 
