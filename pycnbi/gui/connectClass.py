@@ -421,7 +421,7 @@ class Connect_LineEdit(QObject):
     parameter value.
     """
 
-    signal_paramChanged = pyqtSignal(str, str)
+    signal_paramChanged = pyqtSignal([str, str], [str, type(None)])
 
     #----------------------------------------------------------------------
     def __init__(self, paramName, chosen_value):
@@ -442,7 +442,10 @@ class Connect_LineEdit(QObject):
         """
         Changes the module according to the new value written in the lineEdit
         """
-        self.signal_paramChanged.emit(self.paramName, self.w.text())
+        text = self.w.text()
+        if text == 'None':
+            text = None
+        self.signal_paramChanged[str, type(text)].emit(self.paramName, text)
 
     
 ########################################################################
