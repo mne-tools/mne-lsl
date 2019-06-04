@@ -257,7 +257,15 @@ class MainWindow(QMainWindow):
                         self.paramsWidgets.update({key: modifiable_list})
                         layout.addRow(key, modifiable_list.hlayout)
                         continue
-
+                    
+                    #  For parameters containing a string to modify
+                    elif values is str:
+                        lineEdit = Connect_LineEdit(key, chosen_value)
+                        lineEdit.signal_paramChanged[str, str].connect(self.on_guichanges)
+                        lineEdit.signal_paramChanged[str, type(None)].connect(self.on_guichanges)
+                        self.paramsWidgets.update({key: lineEdit})
+                        layout.addRow(key, lineEdit.w)                        
+                        
                     # For parameters with multiple fixed values.
                     elif type(values) is tuple:
                         comboParams = Connect_ComboBox(key, chosen_value, values)
@@ -268,7 +276,6 @@ class MainWindow(QMainWindow):
                         comboParams.signal_additionalParamChanged[str, dict].connect(self.on_guichanges)
                         self.paramsWidgets.update({key: comboParams})                       
                         layout.addRow(key, comboParams.layout)
-
                         continue
                     
                     # For parameters with multiple non-fixed values in a dict (user can modify them)
