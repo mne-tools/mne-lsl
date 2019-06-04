@@ -265,14 +265,10 @@ class MainWindow(QMainWindow):
                         comboParams.signal_paramChanged[str, bool].connect(self.on_guichanges)
                         comboParams.signal_paramChanged[str, str].connect(self.on_guichanges)
                         comboParams.signal_paramChanged[str, type(None)].connect(self.on_guichanges)
-                        self.paramsWidgets.update({key: comboParams})
-                        
-                        layout.addRow(key, comboParams.templateChoices)
+                        comboParams.signal_additionalParamChanged[str, dict].connect(self.on_guichanges)
+                        self.paramsWidgets.update({key: comboParams})                       
+                        layout.addRow(key, comboParams.layout)
 
-                        if comboParams.additionalParams is not None:
-                            for p in comboParams.additionalParams:
-                                layout.addRow(p.paramName, p)
-                        
                         continue
                     
                     # For parameters with multiple non-fixed values in a dict (user can modify them)
