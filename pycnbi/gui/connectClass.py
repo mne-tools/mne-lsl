@@ -193,6 +193,7 @@ class Connect_ComboBox(QObject):
     """
 
     signal_paramChanged = pyqtSignal([str, str], [str, list], [str, bool], [str, type(None)])
+    signal_additionalParamChanged = pyqtSignal([str, dict])
 
     # ----------------------------------------------------------------------
     def __init__(self, paramName, chosenValue, all_values):
@@ -207,7 +208,6 @@ class Connect_ComboBox(QObject):
         self.paramName = paramName
         self.templateChoices, self.additionalParams = self.add_To_ComboBox(all_values, chosenValue)
         
-        
     # ----------------------------------------------------------------------
     def add_To_ComboBox(self, values, chosenValue):
         """
@@ -219,6 +219,7 @@ class Connect_ComboBox(QObject):
         """
         templateChoices = QComboBox()
         additionalParams = list()
+        self.layout = QHBoxLayout()
 
         # Iterates over the possible choices
         for val in values:
@@ -228,7 +229,11 @@ class Connect_ComboBox(QObject):
                     key = list(val)[0]
                     content_dict = val[key]
                     chosen_additionalParams = chosenValue[key]
-                    additionalParams.append(Connect_Modifiable_Dict(key, chosen_additionalParams, content_dict))
+                    
+                    p = Connect_Modifiable_Dict(key, chosen_additionalParams, content_dict)
+                    p.signal_paramChanged[str, dict].connect(self.on_modify)
+                    additionalParams.append(p)
+                    
                     templateChoices.addItem(str(key), key)
                     val = key
                     chosenValue = list(chosenValue.keys())[0]
@@ -240,27 +245,41 @@ class Connect_ComboBox(QObject):
                 if index != -1:
                     templateChoices.setCurrentIndex(index)
 
-        templateChoices.currentIndexChanged[int].connect(self.on_modify)
+        templateChoices.currentIndexChanged[int].connect(self.on_select)
 
+        self.layout.addWidget(templateChoices)
+        for p in additionalParams:
+            self.layout.addWidget(p)        
+        
         return templateChoices, additionalParams;
     
     
     @pyqtSlot(int)
     # ----------------------------------------------------------------------
-    def on_modify(self, index):
+    def on_select(self, index):
         """
-        Slot connected to comboBox param value change
-        """
-        
-        
+        Slot connected to comboBox param change
+        """       
         val = self.templateChoices.itemData(index)
-        self.signal_paramChanged[str, type(val)].emit(self.paramName, val)
-        
+        if val is None:
+            self.signal_paramChanged[str, type(None)].emit(self.paramName, val)
+            
         for p in self.additionalParams:
             if p.paramName == val:
                 p.show()
             else:
                 p.hide()
+
+
+    @pyqtSlot(str, dict)
+    #----------------------------------------------------------------------
+    def on_modify(self, key, p):
+        """
+        Slot connected on the additional parameters changes
+        """
+        self.signal_additionalParamChanged[str, dict].emit(self.paramName, {key: p})
+        
+        
 
 
 ########################################################################
