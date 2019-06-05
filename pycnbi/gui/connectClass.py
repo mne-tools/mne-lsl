@@ -273,12 +273,12 @@ class Connect_ComboBox(QObject):
         Slot connected to comboBox param change
         """       
         val = self.templateChoices.itemData(index)
-        self.signal_paramChanged[str, type(val)].emit(self.paramName, val)
+        self.signal_paramChanged.emit(self.paramName, val)
             
         for p in self.additionalParams:
             if p.paramName == val:
                 p.show()
-                self.signal_additionalParamChanged[str, dict].emit(self.paramName, {p.paramName: p.chosen_value})
+                self.signal_additionalParamChanged.emit(self.paramName, {p.paramName: p.chosen_value})
             else:
                 p.hide()
 
@@ -328,10 +328,10 @@ class Connect_Bias(QObject):
         self.l.addWidget(self.directions.templateChoices)
         self.l.addWidget(self.spinBox.w)
         
-        self.directions.signal_paramChanged[str, str].connect(self.on_modify)
-        self.directions.signal_paramChanged[str, type(None)].connect(self.on_modify)
+        self.directions.signal_paramChanged.connect(self.on_modify)
+        self.directions.signal_paramChanged.connect(self.on_modify)
         
-        self.spinBox.signal_paramChanged[str, float].connect(self.on_modify)
+        self.spinBox.signal_paramChanged.connect(self.on_modify)
 
         
     @pyqtSlot(str, str)
