@@ -11,7 +11,7 @@ import os
 import sys
 import inspect
 from os.path import expanduser
-from importlib import import_module
+from importlib import import_module, reload
 from pathos.multiprocessing import ProcessingPool
 from pathos.helpers import mp as pathos_multiprocess
 
@@ -277,13 +277,26 @@ class MainWindow(QMainWindow):
                         self.paramsWidgets.update({key: comboParams})                       
                         layout.addRow(key, comboParams.layout)
                         continue
-                    
+
                     # For parameters with multiple non-fixed values in a dict (user can modify them)
                     elif type(values) is dict:
-                        modifiable_dict = Connect_Modifiable_Dict(key, chosen_value, values)
-                        modifiable_dict.signal_paramChanged[str, dict].connect(self.on_guichanges)
-                        self.paramsWidgets.update({key: modifiable_dict})
-                        layout.addRow(key, modifiable_dict.layout())
+                        
+                        try:
+                            selection = chosen_value['selected']
+                            comboParams = Connect_ComboBox(key, chosen_value, values)
+                            comboParams.signal_paramChanged[str, list].connect(self.on_guichanges)
+                            comboParams.signal_paramChanged[str, bool].connect(self.on_guichanges)
+                            comboParams.signal_paramChanged[str, str].connect(self.on_guichanges)
+                            comboParams.signal_paramChanged[str, type(None)].connect(self.on_guichanges)
+                            comboParams.signal_additionalParamChanged[str, dict].connect(self.on_guichanges)
+                            self.paramsWidgets.update({key: comboParams})
+                            layout.addRow(key, comboParams.layout)
+                            
+                        except:                            
+                            modifiable_dict = Connect_Modifiable_Dict(key, chosen_value, values)
+                            modifiable_dict.signal_paramChanged[str, dict].connect(self.on_guichanges)
+                            self.paramsWidgets.update({key: modifiable_dict})
+                            layout.addRow(key, modifiable_dict.layout())
                         continue
 
                 # Add a horizontal line to separate parameters' type.
