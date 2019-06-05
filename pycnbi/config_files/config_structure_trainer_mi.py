@@ -80,17 +80,11 @@ class Advanced:
     # Feature types
     #-------------------------------------------
     params3 = dict()
-    params3.update({'FEATURES': ('PSD')})
+     # wlen: window length in seconds
+    # wstep: window step in absolute samples (32 is enough for 512 Hz, or 256 for 2KHz)
+    params3.update({'FEATURES': {'PSD':dict(fmin=int, fmax=int, wlen=float, wstep=int)}})
     params3.update({'EXPORT_GOOD_FEATURES': (False, True)})
     params3.update({'FEAT_TOPN': int})                             # show only the top N features
-
-    #-------------------------------------------
-    # PSD 
-    #-------------------------------------------
-    # wlen: window length in seconds
-    # wstep: window step in absolute samples (32 is enough for 512 Hz, or 256 for 2KHz)
-    params5 = dict()
-    params5.update({'PSD': dict(fmin=int, fmax=int, wlen=float, wstep=int)})
 
     #-------------------------------------------
     # Classifier
