@@ -192,7 +192,7 @@ class Connect_ComboBox(QObject):
     parameter value.
     """
 
-    signal_paramChanged = pyqtSignal([str, str], [str, list], [str, bool], [str, type(None)])
+    signal_paramChanged = pyqtSignal([str, str], [str, list], [str, tuple], [str, bool], [str, type(None)])
     signal_additionalParamChanged = pyqtSignal([str, dict])
 
     # ----------------------------------------------------------------------
@@ -220,20 +220,19 @@ class Connect_ComboBox(QObject):
         templateChoices = QComboBox()
         additionalParams = list()
         self.layout = QHBoxLayout()
-               
+
         # Special case of a dict 
         if type(values) is dict:
             dict_values = values
             values = tuple(values)
-            selected = chosenValue['selected']
+            
 
         # Iterates over the possible choices
         for val in values:
             
             try:
-                key_val = val
                 val = dict_values[val]
-                pass
+                key_val = val
             except:
                 pass
             
@@ -246,28 +245,14 @@ class Connect_ComboBox(QObject):
                 p.signal_paramChanged[str, dict].connect(self.on_modify)
                 additionalParams.append(p)
                 templateChoices.addItem(str(key), key)                
-            
-            # In case the val contains a dict with additional parameters to modify
-            #if type(val) is dict:
-                    #key = list(val)[0]
-                    #content_dict = val[key]
-                    #chosen_additionalParams = chosenValue[key]
-                    
-                    #p = Connect_Modifiable_Dict(key, chosen_additionalParams, content_dict)
-                    #p.signal_paramChanged[str, dict].connect(self.on_modify)
-                    #additionalParams.append(p)
-                    
-                    #templateChoices.addItem(str(key), key)
-                    #val = key
-                    #chosenValue = list(chosenValue.keys())[0]
-            else:    
+            else: 
                 templateChoices.addItem(str(val), val)
             
             # if val == chosenValue:
         if type(chosenValue) is dict:
             chosenValue = chosenValue['selected']
             
-        index = templateChoices.findData(chosenValue)
+        index = templateChoices.findText(str(chosenValue))
         if index != -1:
             templateChoices.setCurrentIndex(index)
 
