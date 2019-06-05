@@ -192,7 +192,7 @@ class Connect_ComboBox(QObject):
     parameter value.
     """
 
-    signal_paramChanged = pyqtSignal([str, str], [str, list], [str, bool], [str, type(None)])
+    signal_paramChanged = pyqtSignal([str, str], [str, list], [str, bool], [str, tuple], [str, type(None)])
     signal_additionalParamChanged = pyqtSignal([str, dict])
 
     # ----------------------------------------------------------------------
