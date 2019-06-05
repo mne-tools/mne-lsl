@@ -412,7 +412,7 @@ class Connect_DoubleSpinBox(QObject):
 
         self.paramName = paramName
         self.w = QDoubleSpinBox()
-        self.w.setSingleStep(0.1)
+        self.w.setSingleStep(0.05)
         self.w.setValue(chosen_value)
         self.w.editingFinished.connect(self.on_modify)
 
