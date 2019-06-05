@@ -229,7 +229,7 @@ class MainWindow(QMainWindow):
                         #  Add None to the list in case of no bias wanted
                         self.directions = tuple([None] + list(self.directions))
                         bias = Connect_Bias(key, self.directions, chosen_value)
-                        bias.signal_paramChanged[str, object].connect(self.on_guichanges)
+                        bias.signal_paramChanged.connect(self.on_guichanges)
                         self.paramsWidgets.update({key: bias})
                         layout.addRow(key, bias.l)                        
                         
@@ -252,7 +252,7 @@ class MainWindow(QMainWindow):
                     # For parameters with multiple non-fixed values in a list (user can modify them)
                     elif values is list:
                         modifiable_list = Connect_Modifiable_List(key, chosen_value, values)
-                        modifiable_list.signal_paramChanged[str, list].connect(self.on_guichanges)
+                        modifiable_list.signal_paramChanged.connect(self.on_guichanges)
                         self.paramsWidgets.update({key: modifiable_list})
                         layout.addRow(key, modifiable_list.hlayout)
                         continue
@@ -268,8 +268,8 @@ class MainWindow(QMainWindow):
                     # For parameters with multiple fixed values.
                     elif type(values) is tuple:
                         comboParams = Connect_ComboBox(key, chosen_value, values)
-                        comboParams.signal_paramChanged[str, object].connect(self.on_guichanges)
-                        comboParams.signal_additionalParamChanged[str, dict].connect(self.on_guichanges)
+                        comboParams.signal_paramChanged.connect(self.on_guichanges)
+                        comboParams.signal_additionalParamChanged.connect(self.on_guichanges)
                         self.paramsWidgets.update({key: comboParams})                       
                         layout.addRow(key, comboParams.layout)
                         continue
@@ -280,14 +280,14 @@ class MainWindow(QMainWindow):
                         try:
                             selection = chosen_value['selected']
                             comboParams = Connect_ComboBox(key, chosen_value, values)
-                            comboParams.signal_paramChanged[str, object].connect(self.on_guichanges)
-                            comboParams.signal_additionalParamChanged[str, dict].connect(self.on_guichanges)
+                            comboParams.signal_paramChanged.connect(self.on_guichanges)
+                            comboParams.signal_additionalParamChanged.connect(self.on_guichanges)
                             self.paramsWidgets.update({key: comboParams})
                             layout.addRow(key, comboParams.layout)
                             
                         except:                            
                             modifiable_dict = Connect_Modifiable_Dict(key, chosen_value, values)
-                            modifiable_dict.signal_paramChanged[str, dict].connect(self.on_guichanges)
+                            modifiable_dict.signal_paramChanged.connect(self.on_guichanges)
                             self.paramsWidgets.update({key: modifiable_dict})
                             layout.addRow(key, modifiable_dict.layout())
                         continue
