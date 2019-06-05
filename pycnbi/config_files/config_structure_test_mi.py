@@ -44,8 +44,8 @@ class Basic:
     # Screen property
     #-------------------------------------------
     params4 = dict()
-    params4.update({'SCREEN_SIZE': ((1920, 1080), (1600, 1200), (1680, 1050), (1280, 1024), (1024, 768))})
-    params4.update({'SCREEN_POS': ((0, 0), (1920, 0))}) # TO CHANGE: add a check box second monitor and auto display on it. 
+    params4.update({'SCREEN_SIZE': ([1920, 1080], [1600, 1200], [1680, 1050], [1280, 1024], [1024, 768])})
+    params4.update({'SCREEN_POS': ([1920, 0], [1920, 1080])})
 
 
 ########################################################################
