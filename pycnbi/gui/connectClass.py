@@ -247,27 +247,13 @@ class Connect_ComboBox(QObject):
                 additionalParams.append(p)
                 templateChoices.addItem(str(key), key)                
             
-            # In case the val contains a dict with additional parameters to modify
-            #if type(val) is dict:
-                    #key = list(val)[0]
-                    #content_dict = val[key]
-                    #chosen_additionalParams = chosenValue[key]
-                    
-                    #p = Connect_Modifiable_Dict(key, chosen_additionalParams, content_dict)
-                    #p.signal_paramChanged[str, dict].connect(self.on_modify)
-                    #additionalParams.append(p)
-                    
-                    #templateChoices.addItem(str(key), key)
-                    #val = key
-                    #chosenValue = list(chosenValue.keys())[0]
             else:    
                 templateChoices.addItem(str(val), val)
             
-            # if val == chosenValue:
         if type(chosenValue) is dict:
             chosenValue = chosenValue['selected']
             
-        index = templateChoices.findData(chosenValue)
+        index = templateChoices.findText(str(chosenValue))
         if index != -1:
             templateChoices.setCurrentIndex(index)
 
