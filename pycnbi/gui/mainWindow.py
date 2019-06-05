@@ -229,7 +229,6 @@ class MainWindow(QMainWindow):
                         #  Add None to the list in case of no bias wanted
                         self.directions = tuple([None] + list(self.directions))
                         bias = Connect_Bias(key, self.directions, chosen_value)
-                        # bias.signal_paramChanged[str, tuple].connect(self.on_guichanges)
                         bias.signal_paramChanged[str, object].connect(self.on_guichanges)
                         self.paramsWidgets.update({key: bias})
                         layout.addRow(key, bias.l)                        
@@ -269,10 +268,7 @@ class MainWindow(QMainWindow):
                     # For parameters with multiple fixed values.
                     elif type(values) is tuple:
                         comboParams = Connect_ComboBox(key, chosen_value, values)
-                        comboParams.signal_paramChanged[str, list].connect(self.on_guichanges)
-                        comboParams.signal_paramChanged[str, bool].connect(self.on_guichanges)
-                        comboParams.signal_paramChanged[str, str].connect(self.on_guichanges)
-                        comboParams.signal_paramChanged[str, type(None)].connect(self.on_guichanges)
+                        comboParams.signal_paramChanged[str, object].connect(self.on_guichanges)
                         comboParams.signal_additionalParamChanged[str, dict].connect(self.on_guichanges)
                         self.paramsWidgets.update({key: comboParams})                       
                         layout.addRow(key, comboParams.layout)
@@ -284,10 +280,7 @@ class MainWindow(QMainWindow):
                         try:
                             selection = chosen_value['selected']
                             comboParams = Connect_ComboBox(key, chosen_value, values)
-                            comboParams.signal_paramChanged[str, list].connect(self.on_guichanges)
-                            comboParams.signal_paramChanged[str, bool].connect(self.on_guichanges)
-                            comboParams.signal_paramChanged[str, str].connect(self.on_guichanges)
-                            comboParams.signal_paramChanged[str, type(None)].connect(self.on_guichanges)
+                            comboParams.signal_paramChanged[str, object].connect(self.on_guichanges)
                             comboParams.signal_additionalParamChanged[str, dict].connect(self.on_guichanges)
                             self.paramsWidgets.update({key: comboParams})
                             layout.addRow(key, comboParams.layout)
