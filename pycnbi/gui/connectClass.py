@@ -220,30 +220,56 @@ class Connect_ComboBox(QObject):
         templateChoices = QComboBox()
         additionalParams = list()
         self.layout = QHBoxLayout()
+               
+        # Special case of a dict 
+        if type(values) is dict:
+            dict_values = values
+            values = tuple(values)
+            selected = chosenValue['selected']
 
         # Iterates over the possible choices
         for val in values:
             
+            try:
+                key_val = val
+                val = dict_values[val]
+                pass
+            except:
+                pass
+            
             # In case the val contains a dict with additional parameters to modify
             if type(val) is dict:
-                    key = list(val)[0]
-                    content_dict = val[key]
-                    chosen_additionalParams = chosenValue[key]
+                key = key_val
+                content_dict = val
+                chosen_additionalParams = chosenValue[key]
+                p = Connect_Modifiable_Dict(key, chosen_additionalParams, content_dict)
+                p.signal_paramChanged[str, dict].connect(self.on_modify)
+                additionalParams.append(p)
+                templateChoices.addItem(str(key), key)                
+            
+            # In case the val contains a dict with additional parameters to modify
+            #if type(val) is dict:
+                    #key = list(val)[0]
+                    #content_dict = val[key]
+                    #chosen_additionalParams = chosenValue[key]
                     
-                    p = Connect_Modifiable_Dict(key, chosen_additionalParams, content_dict)
-                    p.signal_paramChanged[str, dict].connect(self.on_modify)
-                    additionalParams.append(p)
+                    #p = Connect_Modifiable_Dict(key, chosen_additionalParams, content_dict)
+                    #p.signal_paramChanged[str, dict].connect(self.on_modify)
+                    #additionalParams.append(p)
                     
-                    templateChoices.addItem(str(key), key)
-                    val = key
-                    chosenValue = list(chosenValue.keys())[0]
+                    #templateChoices.addItem(str(key), key)
+                    #val = key
+                    #chosenValue = list(chosenValue.keys())[0]
             else:    
                 templateChoices.addItem(str(val), val)
             
-            if val == chosenValue:
-                index = templateChoices.findData(chosenValue)
-                if index != -1:
-                    templateChoices.setCurrentIndex(index)
+            # if val == chosenValue:
+        if type(chosenValue) is dict:
+            chosenValue = chosenValue['selected']
+            
+        index = templateChoices.findData(chosenValue)
+        if index != -1:
+            templateChoices.setCurrentIndex(index)
 
         templateChoices.currentIndexChanged[int].connect(self.on_select)
 
@@ -261,12 +287,12 @@ class Connect_ComboBox(QObject):
         Slot connected to comboBox param change
         """       
         val = self.templateChoices.itemData(index)
-        if val is None:
-            self.signal_paramChanged[str, type(None)].emit(self.paramName, val)
+        self.signal_paramChanged[str, type(val)].emit(self.paramName, val)
             
         for p in self.additionalParams:
             if p.paramName == val:
                 p.show()
+                self.signal_additionalParamChanged[str, dict].emit(self.paramName, {p.paramName: p.chosen_value})
             else:
                 p.hide()
 
