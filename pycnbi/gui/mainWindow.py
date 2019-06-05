@@ -393,8 +393,8 @@ class MainWindow(QMainWindow):
         new_value = new str value to to change in the module 
         """
         setattr(self.cfg_subject, name, new_Value)
-        print(getattr(self.cfg_subject, name))
-        print(type(getattr(self.cfg_subject, name)))
+        print("The parameter %s is %s" % (name, getattr(self.cfg_subject, name)))
+        print("It's type is: %s \n" % type(getattr(self.cfg_subject, name)))
 
 
     # ----------------------------------------------------------------------
