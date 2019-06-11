@@ -180,6 +180,7 @@ class MainWindow(QMainWindow):
                             except:
                                 trigger_file = self.extract_value_from_module('TRIGGER_FILE', all_chosen_values)
                                 tdef = trigger_def(trigger_file)
+                                self.on_guichanges('tdef', tdef)
                                 events = [tdef.by_value[i] for i in events]
                             
                             directions = Connect_Directions_Online(key, chosen_value, values, nb_directions, chosen_events, events)
@@ -209,6 +210,7 @@ class MainWindow(QMainWindow):
                     elif 'TRIGGER_DEF' in key:
                         trigger_file = self.extract_value_from_module('TRIGGER_FILE', all_chosen_values)
                         tdef = trigger_def(trigger_file)
+                        self.on_guichanges('tdef', tdef)
                         nb_directions = 4
                         #  Convert 'None' to real None (real None is removed when selected in the GUI)
                         tdef_values = [ None if i == 'None' else i for i in list(tdef.by_name) ]
@@ -251,10 +253,10 @@ class MainWindow(QMainWindow):
 
                     # For parameters with multiple non-fixed values in a list (user can modify them)
                     elif values is list:
-                        modifiable_list = Connect_Modifiable_List(key, chosen_value, values)
+                        modifiable_list = Connect_Modifiable_List(key, chosen_value)
                         modifiable_list.signal_paramChanged.connect(self.on_guichanges)
                         self.paramsWidgets.update({key: modifiable_list})
-                        layout.addRow(key, modifiable_list.hlayout)
+                        layout.addRow(key, modifiable_list.frame)
                         continue
                     
                     #  For parameters containing a string to modify
@@ -263,7 +265,8 @@ class MainWindow(QMainWindow):
                         lineEdit.signal_paramChanged[str, str].connect(self.on_guichanges)
                         lineEdit.signal_paramChanged[str, type(None)].connect(self.on_guichanges)
                         self.paramsWidgets.update({key: lineEdit})
-                        layout.addRow(key, lineEdit.w)                        
+                        layout.addRow(key, lineEdit.w)
+                        continue
                         
                     # For parameters with multiple fixed values.
                     elif type(values) is tuple:
@@ -285,11 +288,11 @@ class MainWindow(QMainWindow):
                             self.paramsWidgets.update({key: comboParams})
                             layout.addRow(key, comboParams.layout)
                             
-                        except:                            
+                        except:
                             modifiable_dict = Connect_Modifiable_Dict(key, chosen_value, values)
                             modifiable_dict.signal_paramChanged.connect(self.on_guichanges)
                             self.paramsWidgets.update({key: modifiable_dict})
-                            layout.addRow(key, modifiable_dict.layout())
+                            layout.addRow(key, modifiable_dict.frame)
                         continue
 
                 # Add a horizontal line to separate parameters' type.
@@ -321,9 +324,6 @@ class MainWindow(QMainWindow):
             cfg_module = import_module(cfg_file)
         else:
             cfg_module = reload(self.cfg_subject)
-        # Format the lib to fit the previous developed pycnbi code if subject specific file.
-        # if subj_file:
-            # self.cfg = type('cfg', (cfg_module.Advanced, cfg_module.Basic), dict())
 
         return cfg_module
         
