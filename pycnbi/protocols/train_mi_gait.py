@@ -31,7 +31,7 @@ import pycnbi.triggers.pyLptControl as pyLptControl
 import pycnbi.utils.q_common as qc
 from pycnbi.protocols.viz_human import BodyVisual
 from pycnbi.triggers.trigger_def import trigger_def
-from pycnbi import logger
+from pycnbi import logger, init_logger
 from builtins import input
 
 def load_config(cfg_file):
@@ -41,21 +41,21 @@ def load_config(cfg_file):
     return imp.load_source(cfg_file, cfg_file)
 
 def check_config(cfg_module):
-    mandatory = {'TRIGGER_DEVICE':'Arduino',
-                 'TRIGGER_DEF':'triggerdef_16.ini',
-                 'SCREEN_SIZE':(1680,1050),
-                 'SCREEN_POS':(0, 0),
-                 'DIRECTIONS':['L','R'],
-                 'DIR_RANDOMIZE':False,
-                 'TRIALS_EACH':10,
-                 'GAIT_STEPS':1,
-                 'T_INIT':5,
-                 'T_GAP':5,
-                 'T_CUE':0.1,
-                 'T_DIR_READY':2,
-                 'T_DIR':2.5,
-                 'T_RETURN':1,
-                 'T_STOP':3,
+    mandatory = {'TRIGGER_DEVICE',
+                 'TRIGGER_DEF',
+                 'SCREEN_SIZE',
+                 'SCREEN_POS',
+                 'DIRECTIONS',
+                 'DIR_RANDOMIZE',
+                 'TRIALS_EACH',
+                 'GAIT_STEPS',
+                 'T_INIT',
+                 'T_GAP',
+                 'T_CUE',
+                 'T_DIR_READY',
+                 'T_DIR',
+                 'T_RETURN',
+                 'T_STOP',
                  }
     optional = {'FEEDBACK_TYPE':'BAR',
                 'T_RETURN':2,
