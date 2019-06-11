@@ -421,7 +421,7 @@ def compute_features(cfg):
     '''
     # Preprocessing, epoching and PSD computation
     ftrain = []
-    for f in qc.get_file_list(cfg.DATADIR, fullpath=True):
+    for f in qc.get_file_list(cfg.DATA_PATH, fullpath=True):
         if f[-4:] in ['.fif', '.fiff']:
             ftrain.append(f)
     if len(ftrain) > 1 and cfg.CHANNEL_PICKS is not None and type(cfg.CHANNEL_PICKS[0]) == int:
