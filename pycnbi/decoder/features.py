@@ -428,7 +428,7 @@ def compute_features(cfg):
         logger.error('When loading multiple EEG files, PICKED_CHANNELS must be list of string, not integers because they may have different channel order.')
         raise RuntimeError
     raw, events = pu.load_multi(ftrain)
-    if cfg.REF_CH is not None:
+    if not cfg.REF_CHANNELS_OLD and not REF_CHANNELS_NEW:
         #pu.rereference(raw, cfg.REF_CH[1], cfg.REF_CH[0])
         logger.error('Sorry! Channel re-referencing is under development.')
         raise NotImplementedError
