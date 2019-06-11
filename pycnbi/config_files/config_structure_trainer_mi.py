@@ -100,5 +100,5 @@ class Advanced:
     #-------------------------------------------
     params7 = dict()
     params7.update({'CV_PERFORM':   {'False':None, \
-                                    'StratifiedShuffleSplit': dict(CV_TEST_RATIO=float, CV_TEST_RATIO=int, CV_RANDOM_SEED=int, CV_EXPORT_RESULT=tuple()), \
+                                    'StratifiedShuffleSplit': dict(CV_TEST_RATIO=float, CV_FOLDS=int, CV_RANDOM_SEED=int, CV_EXPORT_RESULT=tuple()), \
                                     'LeaveOneOut': dict(CV_EXPORT_RESULT=tuple())}})
