@@ -158,20 +158,17 @@ class Connect_Directions_Online(QObject):
         self.events = Connect_Directions('DIR_EVENTS', chosen_events, events, nb_directions)
         self.events.signal_paramChanged.connect(self.on_modify)
         
-        # self.selected = chosen_value
-        
         self.l = QVBoxLayout()
         self.l.addLayout(self.directions.l)
         self.l.addLayout(self.events.l)
     
-    # @pyqtSlot(str, list)
+    @pyqtSlot(str, list)
     #----------------------------------------------------------------------
     def on_modify(self, paramName, new_Values):
         """
         Slot connected to the changes in the directions.
         """
         updatedList = []
-        # self.selected = new_Values
         
         if paramName == self.directions.paramName:
             for i in range(len(new_Values)):
@@ -206,7 +203,8 @@ class Connect_ComboBox(QObject):
         super().__init__()
 
         self.paramName = paramName
-        self.templateChoices, self.additionalParams = self.add_To_ComboBox(all_values, chosenValue)
+        self.add_To_ComboBox(all_values, chosenValue)
+        
         
     # ----------------------------------------------------------------------
     def add_To_ComboBox(self, values, chosenValue):
@@ -217,16 +215,15 @@ class Connect_ComboBox(QObject):
         values = list of values.
         chosenValue = subject's specific value.
         """
-        templateChoices = QComboBox()
-        additionalParams = list()
+        self.templateChoices = QComboBox()
+        self.additionalParams = list()
         self.layout = QHBoxLayout()
-               
+                     
         # Special case of a dict 
         if type(values) is dict:
             dict_values = values
             values = tuple(values)
-            selected = chosenValue['selected']
-
+                        
         # Iterates over the possible choices
         for val in values:
             
@@ -237,34 +234,39 @@ class Connect_ComboBox(QObject):
             except:
                 pass
             
-            # In case the val contains a dict with additional parameters to modify
-            if type(val) is dict:
-                key = key_val
+            # additional parameters to modify
+            if type(val) is dict:              
                 content_dict = val
-                chosen_additionalParams = chosenValue[key]
-                p = Connect_Modifiable_Dict(key, chosen_additionalParams, content_dict)
-                p.signal_paramChanged[str, dict].connect(self.on_modify)
-                additionalParams.append(p)
-                templateChoices.addItem(str(key), key)                
+                chosen_additionalParams = chosenValue[key_val]
+                p = Connect_Modifiable_Dict(key_val, chosen_additionalParams, content_dict)
+                p.signal_paramChanged.connect(self.on_modify)
+                self.additionalParams.append(p)
+                self.templateChoices.addItem(str(key_val), key_val)
+                
+            elif val is list:
+                chosen_additionalParams = chosenValue[key_val]
+                p = Connect_Modifiable_List(key_val, chosen_additionalParams)
+                p.signal_paramChanged.connect(self.on_modify)
+                self.additionalParams.append(p)
+                self.templateChoices.addItem(str(key_val), key_val)
             
-            else:    
-                templateChoices.addItem(str(val), val)
+            else:
+                self.templateChoices.addItem(str(key_val), val)
             
         if type(chosenValue) is dict:
             chosenValue = chosenValue['selected']
-            
-        index = templateChoices.findText(str(chosenValue))
-        if index != -1:
-            templateChoices.setCurrentIndex(index)
 
-        templateChoices.currentIndexChanged[int].connect(self.on_select)
-
-        self.layout.addWidget(templateChoices)
-        for p in additionalParams:
-            self.layout.addWidget(p)        
+        self.layout.addWidget(self.templateChoices)      
+        for p in self.additionalParams:
+            self.layout.addWidget(p.frame)
+            # self.layout.addLayout(p.layout)
         
-        return templateChoices, additionalParams;
-    
+        index = self.templateChoices.findText(str(chosenValue))        
+        if index != -1:
+            self.templateChoices.setCurrentIndex(index)
+            self.on_select(index)
+
+        self.templateChoices.currentIndexChanged[int].connect(self.on_select)
     
     @pyqtSlot(int)
     # ----------------------------------------------------------------------
@@ -273,17 +275,31 @@ class Connect_ComboBox(QObject):
         Slot connected to comboBox param change
         """       
         val = self.templateChoices.itemData(index)
-        self.signal_paramChanged.emit(self.paramName, val)
-            
+        self.signal_paramChanged.emit(self.paramName, val)       
+                
         for p in self.additionalParams:
             if p.paramName == val:
-                p.show()
+                p.frame.show()
                 self.signal_additionalParamChanged.emit(self.paramName, {p.paramName: p.chosen_value})
             else:
-                p.hide()
+                p.frame.hide()
+                pass
+            
+            #for i in range(p.layout.count()):
+                #item = p.layout.itemAt(i).widget()
+                
+                #if p.paramName == val:
+                    #item.show()
+                    ## p.show()
+                    #self.signal_additionalParamChanged.emit(self.paramName, {p.paramName: p.chosen_value})
+                #else:
+                    #item.hide()
+                    ## p.hide()
+                    #pass
 
 
     @pyqtSlot(str, dict)
+    @pyqtSlot(str, list)
     #----------------------------------------------------------------------
     def on_modify(self, key, p):
         """
@@ -292,8 +308,6 @@ class Connect_ComboBox(QObject):
         self.signal_additionalParamChanged[str, dict].emit(self.paramName, {key: p})
         
         
-
-
 ########################################################################
 class Connect_Bias(QObject):
     """
@@ -471,20 +485,21 @@ class Connect_Modifiable_List(QObject):
     paramWidgets = []
 
     # ----------------------------------------------------------------------
-    def __init__(self, paramName, chosen_value, content_list):
+    def __init__(self, paramName, chosen_value):
         """Constructor
         
         paramName = Name of the parameter corresponding to the widget to create 
         chosen_value = the subject's specific parameter value.
-        content_list = list of values.
         """
 
         super().__init__()
         self.paramName = paramName
         self.chosen_value = chosen_value
-        self.hlayout = QHBoxLayout()
+        layout = QHBoxLayout()
         self.tempWidgets = []
-
+        self.frame = QFrame()
+        self.frame.setStyleSheet("margin:0; padding:0")
+        
         # first list
         for k in range(len(chosen_value)):
             vLayout = QVBoxLayout()
@@ -501,14 +516,14 @@ class Connect_Modifiable_List(QObject):
                     self.tempWidgets.append(tempWidget)
                     vLayout.addWidget(tempWidget.w.w)
 
-                self.hlayout.addLayout(vLayout)
+                layout.addLayout(vLayout)
 
-                # Add a horizontal line to separate parameters' type.
+                # Add a vertical line to separate parameters' type.
                 if chosen_value[k] != chosen_value[-1]:
                     separator = QFrame()
                     separator.setFrameShape(QFrame.VLine)
                     separator.setFrameShadow(QFrame.Sunken)
-                    self.hlayout.addWidget(separator)
+                    layout.addWidget(separator)
 
             else:
                 tempWidget = tempWidget_for_Modifiable_List(chosen_value[k], k, None)
@@ -516,8 +531,10 @@ class Connect_Modifiable_List(QObject):
                 tempWidget.signal_paramChanged[list, float].connect(self.on_modify)
                 tempWidget.signal_paramChanged[list, str].connect(self.on_modify)
                 self.tempWidgets.append(tempWidget)
-                self.hlayout.addWidget(tempWidget.w.w)
-
+                layout.addWidget(tempWidget.w.w)
+        
+        self.frame.setLayout(layout)
+        # self.layout = layout
 
     @pyqtSlot(list, int)
     @pyqtSlot(list, float)
@@ -536,7 +553,7 @@ class Connect_Modifiable_List(QObject):
 
 
 ########################################################################
-class tempWidget_for_Modifiable_List(QWidget):
+class tempWidget_for_Modifiable_List(QObject):
     """
     This class is used by the Connect_Modifiable_List because of the possible
     subList structure. One needs to know in which inner list to change properly
@@ -597,7 +614,7 @@ class tempWidget_for_Modifiable_List(QWidget):
 
 
 ########################################################################
-class Connect_Modifiable_Dict(QWidget):
+class Connect_Modifiable_Dict(QObject):
     """
     This class is used in case of dicts containing modifiable contents.
     It modifies the module according to the newly parameter value.
@@ -619,7 +636,10 @@ class Connect_Modifiable_Dict(QWidget):
         self.paramName = paramName
         self.chosen_value = chosen_value
         layout = QHBoxLayout()
-
+        self.frame = QFrame()
+        # self.frame.setStyleSheet("margin:0; padding:0")
+        self.frame.setContentsMargins(0, 0, 0, 0);
+                
         for key, value in content_dict.items():
 
             # Add a horizontal line to separate parameters' type.
@@ -663,7 +683,9 @@ class Connect_Modifiable_Dict(QWidget):
                 add_v_separator(layout)
 
         layout.addStretch(1)
-        self.setLayout(layout)
+        # self.setLayout(layout)
+        # self.layout = layout
+        self.frame.setLayout(layout)
 
 
     @pyqtSlot(str, int)
