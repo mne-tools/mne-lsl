@@ -424,8 +424,8 @@ def compute_features(cfg):
     for f in qc.get_file_list(cfg.DATADIR, fullpath=True):
         if f[-4:] in ['.fif', '.fiff']:
             ftrain.append(f)
-    if len(ftrain) > 1 and cfg.CHANNEL_PICKS is not None and type(cfg.CHANNEL_PICKS[0]) == int:
-        logger.error('When loading multiple EEG files, CHANNEL_PICKS must be list of string, not integers because they may have different channel order.')
+    if len(ftrain) > 1 and cfg.PICKED_CHANNELS is not None and type(cfg.PICKED_CHANNELS[0]) == int:
+        logger.error('When loading multiple EEG files, PICKED_CHANNELS must be list of string, not integers because they may have different channel order.')
         raise RuntimeError
     raw, events = pu.load_multi(ftrain)
     if cfg.REF_CH is not None:
@@ -437,10 +437,10 @@ def compute_features(cfg):
     triggers = {cfg.tdef.by_value[c]:c for c in set(cfg.TRIGGER_DEF)}
 
     # Pick channels
-    if cfg.CHANNEL_PICKS is None:
+    if cfg.PICKED_CHANNELS is None:
         chlist = [int(x) for x in pick_types(raw.info, stim=False, eeg=True)]
     else:
-        chlist = cfg.CHANNEL_PICKS
+        chlist = cfg.PICKED_CHANNELS
     picks = []
     for c in chlist:
         if type(c) == int:
@@ -448,10 +448,10 @@ def compute_features(cfg):
         elif type(c) == str:
             picks.append(raw.ch_names.index(c))
         else:
-            logger.error('CHANNEL_PICKS has a value of unknown type %s.\nCHANNEL_PICKS=%s' % (type(c), cfg.CHANNEL_PICKS))
+            logger.error('PICKED_CHANNELS has a value of unknown type %s.\nPICKED_CHANNELS=%s' % (type(c), cfg.PICKED_CHANNELS))
             raise RuntimeError
-    if cfg.EXCLUDES is not None:
-        for c in cfg.EXCLUDES:
+    if cfg.EXCLUDED_CHANNELS is not None:
+        for c in cfg.EXCLUDED_CHANNELS:
             if type(c) == str:
                 if c not in raw.ch_names:
                     logger.warning('Exclusion channel %s does not exist. Ignored.' % c)
@@ -460,7 +460,7 @@ def compute_features(cfg):
             elif type(c) == int:
                 c_int = c
             else:
-                logger.error('EXCLUDES has a value of unknown type %s.\nEXCLUDES=%s' % (type(c), cfg.EXCLUDES))
+                logger.error('EXCLUDED_CHANNELS has a value of unknown type %s.\nEXCLUDED_CHANNELS=%s' % (type(c), cfg.EXCLUDED_CHANNELS))
                 raise RuntimeError
             if c_int in picks:
                 del picks[picks.index(c_int)]
@@ -468,11 +468,11 @@ def compute_features(cfg):
         logger.error('"picks" has a channel index %d while there are only %d channels.' % (max(picks), len(raw.ch_names)))
         raise ValueError
     if hasattr(cfg, 'SP_CHANNELS') and cfg.SP_CHANNELS is not None:
-        logger.warning('SP_CHANNELS parameter is not supported yet. Will be set to CHANNEL_PICKS.')
+        logger.warning('SP_CHANNELS parameter is not supported yet. Will be set to PICKED_CHANNELS.')
     if hasattr(cfg, 'TP_CHANNELS') and cfg.TP_CHANNELS is not None:
-        logger.warning('TP_CHANNELS parameter is not supported yet. Will be set to CHANNEL_PICKS.')
+        logger.warning('TP_CHANNELS parameter is not supported yet. Will be set to PICKED_CHANNELS.')
     if hasattr(cfg, 'NOTCH_CHANNELS') and cfg.NOTCH_CHANNELS is not None:
-        logger.warning('NOTCH_CHANNELS parameter is not supported yet. Will be set to CHANNEL_PICKS.')
+        logger.warning('NOTCH_CHANNELS parameter is not supported yet. Will be set to PICKED_CHANNELS.')
     if 'decim' not in cfg.PSD:
         cfg.PSD['decim'] = 1
         logger.warning('PSD["decim"] undefined. Set to 1.')
