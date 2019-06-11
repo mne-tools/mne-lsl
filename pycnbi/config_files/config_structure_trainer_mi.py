@@ -37,7 +37,7 @@ class Basic:
         # if lfreq > hfreq: bandstop
         # if lfreq == None: highpass
         # if hfreq == None: lowpass
-    params5.update({'TP_FILTER': list})                                     # None or [lfreq, hfreq]
+    params5.update({'TP_FILTER': {'False':None, 'True':list}})                                     # None or [lfreq, hfreq]
     params5.update({'NOTCH_FILTER': {'False':None, 'True':list}})         # None or list of values
 
     # example
