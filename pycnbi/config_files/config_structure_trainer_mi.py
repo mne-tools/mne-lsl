@@ -8,18 +8,13 @@ class Basic:
     # Data 
     #-------------------------------------------
     params1 = dict()
-    params1.update({'DATA_PATH': str})                               # read all data files from this directory to train on
+    params1.update({'DATA_PATH': str})                                      # read all data files from this directory to train on
     
     #-------------------------------------------
     # Events
     #-------------------------------------------
     params2 = dict()
-    # Issue: Think about it, maybe split in 2
     params2.update({'EPOCH': list})
-
-    # example
-    #params2.update({'EPOCH1':{'range':[0, 3]}})
-    #params2.update({'EPOCH2':{'range':[0, 3]}})
  
     #-------------------------------------------
     # Channels specification
@@ -27,23 +22,23 @@ class Basic:
     params3 = dict()
     params3.update({'PICKED_CHANNELS': list})                               # Pick a subset of channels for PSD.
     params3.update({'EXCLUDED_CHANNELS': list})                             # Overwrite the CHANNEL_PICKS
-    params3.update({'REF_CHANNELS_OLD': list})                            # Recover this channel which was used as reference channel.
-    params3.update({'REF_CHANNELS_NEW': list})                            # Re-reference to this set of channels, averaged if more than 1.
+    params3.update({'REF_CHANNELS_OLD': list})                              # Recover this channel which was used as reference channel.
+    params3.update({'REF_CHANNELS_NEW': list})                              # Re-reference to this set of channels, averaged if more than 1.
 
     #-------------------------------------------
     # Filters
     #-------------------------------------------
     params5 = dict()
-    params5.update({'SP_FILTER': (None, 'car', 'laplacian')})      # apply spatial filter immediately after loading data
-    params5.update({'SP_CHANNELS': list})                             # only consider the following channels while computing
+    params5.update({'SP_FILTER': (None, 'car', 'laplacian')})               # apply spatial filter immediately after loading data
+    params5.update({'SP_CHANNELS': list})                                   # only consider the following channels while computing
     # apply spectrial filter immediately after applying SP_FILTER
     # Can be either overlap-add FIR or forward-backward IIR via filtfilt
         # if lfreq < hfreq: bandpass
         # if lfreq > hfreq: bandstop
         # if lfreq == None: highpass
         # if hfreq == None: lowpass
-    params5.update({'TP_FILTER': list})                            # None or [lfreq, hfreq]
-    params5.update({'NOTCH_FILTER': list})                         # None or list of values
+    params5.update({'TP_FILTER': list})                                     # None or [lfreq, hfreq]
+    params5.update({'NOTCH_FILTER': {'False':None, 'True':list}})         # None or list of values
 
     # example
     #params5.update({'TP_FILTER': {'None':[None, None], 'lowpass',[None, 30], 'bandpass':[1, 40], 'highpass':[8, None]}})
