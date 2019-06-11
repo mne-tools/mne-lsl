@@ -99,8 +99,6 @@ class Advanced:
     # Cross-Validation & testing
     #-------------------------------------------
     params7 = dict()
-    params7.update({'CV_PERFORM': (None, 'StratifiedShuffleSplit', 'LeaveOneOut')})
-    params7.update({'CV_TEST_RATIO': float})                         # StratifiedShuffleSplit only
-    params7.update({'CV_FOLDS': int })                             # StratifiedShuffleSplit only
-    params7.update({'CV_RANDOM_SEED': int})                        # StratifiedShuffleSplit only
-    params7.update({'CV_EXPORT_RESULT': (False, True)})             # Common
+    params7.update({'CV_PERFORM':   {'False':None, \
+                                    'StratifiedShuffleSplit': dict(CV_TEST_RATIO=float, CV_TEST_RATIO=int, CV_RANDOM_SEED=int, CV_EXPORT_RESULT=tuple()), \
+                                    'LeaveOneOut': dict(CV_EXPORT_RESULT=tuple())}})
