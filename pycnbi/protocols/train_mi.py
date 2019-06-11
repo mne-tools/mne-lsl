@@ -44,7 +44,34 @@ def load_config(cfg_file):
     return imp.load_source(cfg_file, cfg_file)
 
 def check_config(cfg):
-    # TODO: check parameter integrity
+    mandatory = {'TRIGGER_DEVICE':'Arduino',
+                 'TRIGGER_DEF':'triggerdef_16.ini',
+                 'SCREEN_SIZE':(1680,1050),
+                 'SCREEN_POS':(0, 0),
+                 'DIRECTIONS':['L','R'],
+                 'DIR_RANDOMIZE':False,
+                 'TRIALS_EACH':10,
+                 'GAIT_STEPS':1,
+                 'T_INIT':5,
+                 'T_GAP':5,
+                 'T_CUE':0.1,
+                 'T_DIR_READY':2,
+                 'T_DIR':2.5,
+                 'T_RETURN':1,
+                 'T_STOP':3,
+                 }
+    optional = {'DIR_RANDOMIZE':True,
+                'GLASS_USE':False,
+                'REFRESH_RATE':30,
+                'T_DIR_RANDOMIZE':0
+                }
+
+    for key in mandatory:
+        if not hasattr(cfg, key):
+            raise ValueError('%s is a required parameter' % key)
+    for key in optional:
+        if not hasattr(cfg, key):
+            logger.warning('Setting undefined %s=%s' % (key, optional[key]))
     return cfg
 
 # for batch script
@@ -55,6 +82,7 @@ def batch_run(cfg_file):
 
 def run(cfg, *queue):
     
+    # ----------------------------------------------------------------------------------
     try:   
         # Redirect stdout and stderr in case of GUI
         sys.stdout = WriteStream(queue[0])
@@ -62,7 +90,8 @@ def run(cfg, *queue):
         init_logger(sys.stdout)
     except:
         # In case of batch
-        init_logger(sys.stdout)
+        init_logger(sys.stdout)  
+    # ----------------------------------------------------------------------------------
     
     tdef = trigger_def(cfg.TRIGGER_FILE)
     refresh_delay = 1.0 / cfg.REFRESH_RATE
