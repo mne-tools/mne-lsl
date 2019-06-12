@@ -54,7 +54,7 @@ def check_config(cfg):
                    'TRIALS_EACH'], 
         'TIMINGS': ['INIT', 'GAP', 'CUE', 'READY', 'READY_RANDOMIZE', 'DIR', 'DIR_RANDOMIZE'],
                  }
-    optional = {'DIR_RANDOM':True,
+    optional_vars = {'DIR_RANDOM':True,
                 'GLASS_USE':False,
                 'TRIAL_PAUSE': False,
                 'REFRESH_RATE':30,
