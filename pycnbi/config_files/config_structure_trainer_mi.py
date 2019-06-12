@@ -24,7 +24,7 @@ class Basic:
     params3.update({'EXCLUDED_CHANNELS': list})                             # Overwrite the CHANNEL_PICKS
     params3.update({'REREFERENCE': {'selected':'False', \
                                     'False':None, \
-                                    'True':dict(ref_old=[], ref_new=[])}
+                                    'True':dict(ref_old=[], ref_new=[])}})
 
     #-------------------------------------------
     # Filters
