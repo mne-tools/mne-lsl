@@ -61,6 +61,13 @@ mne.set_log_level('ERROR')
 os.environ['OMP_NUM_THREADS'] = '1' # actually improves performance for multitaper
 
 
+def load_config(cfg_file):
+    cfg_file = qc.forward_slashify(cfg_file)
+    if not (os.path.exists(cfg_file) and os.path.isfile(cfg_file)):
+        logger.error('%s cannot be loaded.' % os.path.realpath(cfg_file))
+        raise IOError
+    return imp.load_source(cfg_file, cfg_file)
+
 def check_config(cfg):
     critical_vars = {
         'COMMON': [
@@ -740,6 +747,12 @@ def train_decoder(cfg, featdata, feat_file=None):
             gfout.close()
         print()
 
+        
+# for batch scripts
+def batch_run(cfg_file):
+    cfg = load_config(cfg_file)
+    cfg = check_config(cfg)
+    run(cfg, interactive=True)
 
 def run(cfg, interactive=False, cv_file=None, feat_file=None):
     # Extract features
@@ -756,20 +769,6 @@ def run(cfg, interactive=False, cv_file=None, feat_file=None):
     if cfg.EXPORT_CLS is True:
         train_decoder(cfg, featdata, feat_file=feat_file)
 
-
-def load_config(cfg_file):
-    cfg_file = qc.forward_slashify(cfg_file)
-    if not (os.path.exists(cfg_file) and os.path.isfile(cfg_file)):
-        logger.error('%s cannot be loaded.' % os.path.realpath(cfg_file))
-        raise IOError
-    return imp.load_source(cfg_file, cfg_file)
-
-
-# for batch scripts
-def batch_run(cfg_file):
-    cfg = load_config(cfg_file)
-    cfg = check_config(cfg)
-    run(cfg, interactive=True)
 
 
 if __name__ == '__main__':
