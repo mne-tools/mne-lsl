@@ -32,10 +32,7 @@ class Basic:
     params3 = dict()
     params3.update({'PROB_ALPHA_NEW': float})
     params3.update({'BAR_BIAS': None})
-    params3.update({'BAR_STEP_LEFT': int})
-    params3.update({'BAR_STEP_RIGHT': int})
-    params3.update({'BAR_STEP_UP': int})
-    params3.update({'BAR_STEP_DOWN': int})
+    params3.update({'BAR_STEP': dict('left':int, 'right':int, 'up':int, 'down':int)})
     params3.update({'BAR_SLOW_START': int})             # BAR_SLOW_START: None or in seconds
     params3.update({'BAR_REACH_FINISH': (False, True)})
     params3.update({'POSTIVE_FEEDBACK': (False, True)})
