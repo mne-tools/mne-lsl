@@ -44,34 +44,36 @@ def load_config(cfg_file):
     return imp.load_source(cfg_file, cfg_file)
 
 def check_config(cfg):
-    mandatory = {'TRIGGER_DEVICE',
-                 'TRIGGER_FILE', 
-                 'SCREEN_SIZE',
-                 'SCREEN_POS',
-                 'DIRECTIONS',
-                 'DIR_RANDOMIZE',
-                 'TRIALS_EACH',
-                 'GAIT_STEPS',
-                 'T_INIT',
-                 'T_GAP',
-                 'T_CUE',
-                 'T_DIR_READY',
-                 'T_DIR',
-                 'T_RETURN',
-                 'T_STOP',
+    critical_vars = {
+        'COMMON': ['TRIGGER_DEVICE',
+                   'TRIGGER_FILE', 
+                   'SCREEN_SIZE',
+                   'SCREEN_POS',
+                   'DIRECTIONS',
+                   'DIR_RANDOM',
+                   'TRIALS_EACH'], 
+        'TIMINGS': ['INIT', 'GAP', 'CUE', 'READY', 'READY_RANDOMIZE', 'DIR', 'DIR_RANDOMIZE'],
                  }
-    optional = {'DIR_RANDOMIZE':True,
+    optional = {'DIR_RANDOM':True,
                 'GLASS_USE':False,
+                'TRIAL_PAUSE': False,
                 'REFRESH_RATE':30,
-                'T_DIR_RANDOMIZE':0
                 }
 
-    for key in mandatory:
+    for key in critical_vars['COMMON']:
         if not hasattr(cfg, key):
             raise ValueError('%s is a required parameter' % key)
-    for key in optional:
+    for key in optional_vars:
         if not hasattr(cfg, key):
             logger.warning('Setting undefined %s=%s' % (key, optional[key]))
+            
+    if not hasattr(cfg, 'TIMINGS'):
+        logger.error('"TIMINGS" not defined in config.')
+        raise RuntimeError
+    for v in critical_vars['TIMINGS']:
+        if v not in cfg.TIMINGS:
+            logger.error('%s not defined in config.' % v)
+            raise RuntimeError            
     return cfg
 
 # for batch script
@@ -127,8 +129,8 @@ def run(cfg, *queue):
     timer_trigger = qc.Timer()
     timer_dir = qc.Timer()
     timer_refresh = qc.Timer()
-    t_dir = cfg.T_DIR + random.uniform(-cfg.T_DIR_RANDOMIZE, cfg.T_DIR_RANDOMIZE)
-    t_dir_ready = cfg.T_DIR_READY + random.uniform(-cfg.T_DIR_READY_RANDOMIZE, cfg.T_DIR_READY_RANDOMIZE)
+    t_dir = cfg.TIMINGS['DIR'] + random.uniform(-cfg.TIMINGS['DIR_RANDOMIZE'], cfg.TIMINGS['DIR_RANDOMIZE'])
+    t_dir_ready = cfg.TIMINGS['READY'] + random.uniform(-cfg.TIMINGS['READY_RANDOMIZE'], cfg.TIMINGS['READY_RANDOMIZE'])
 
     bar = BarVisual(cfg.GLASS_USE, screen_pos=cfg.SCREEN_POS, screen_size=cfg.SCREEN_SIZE)
     bar.fill()
@@ -140,7 +142,7 @@ def run(cfg, *queue):
         timer_refresh.reset()
 
         # segment= { 'cue':(s,e), 'dir':(s,e), 'label':0-4 } (zero-based)
-        if event == 'start' and timer_trigger.sec() > cfg.T_INIT:
+        if event == 'start' and timer_trigger.sec() > cfg.TIMINGS['INIT']:
             event = 'gap_s'
             bar.fill()
             timer_trigger.reset()
@@ -156,13 +158,13 @@ def run(cfg, *queue):
             bar.put_text('Trial %d / %d' % (trial, num_trials))
             event = 'gap'
             timer_trigger.reset()
-        elif event == 'gap' and timer_trigger.sec() > cfg.T_GAP:
+        elif event == 'gap' and timer_trigger.sec() > cfg.TIMINGS['GAP']:
             event = 'cue'
             bar.fill()
             bar.draw_cue()
             trigger.signal(tdef.CUE)
             timer_trigger.reset()
-        elif event == 'cue' and timer_trigger.sec() > cfg.T_CUE:
+        elif event == 'cue' and timer_trigger.sec() > cfg.TIMINGS['CUE']:
             event = 'dir_r'
             dir = dir_sequence[trial - 1]
             if dir == 'L':  # left
@@ -209,8 +211,8 @@ def run(cfg, *queue):
             logger.info('trial ' + str(trial - 1) + ' done')
             trigger.signal(tdef.BLANK)
             timer_trigger.reset()
-            t_dir = cfg.T_DIR + random.uniform(-cfg.T_DIR_RANDOMIZE, cfg.T_DIR_RANDOMIZE)
-            t_dir_ready = cfg.T_DIR_READY + random.uniform(-cfg.T_DIR_READY_RANDOMIZE, cfg.T_DIR_READY_RANDOMIZE)
+            t_dir = cfg.TIMINGS['DIR'] + random.uniform(-cfg.TIMINGS['DIR_RANDOMIZE'], cfg.TIMINGS['DIR_RANDOMIZE'])
+            t_dir_ready = cfg.TIMINGS['READY'] + random.uniform(-cfg.TIMINGS['READY_RANDOMIZE'], cfg.TIMINGS['READY_RANDOMIZE'])
 
         # protocol
         if event == 'dir':
