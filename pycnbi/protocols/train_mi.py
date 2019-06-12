@@ -65,6 +65,7 @@ def check_config(cfg):
             raise ValueError('%s is a required parameter' % key)
     for key in optional_vars:
         if not hasattr(cfg, key):
+            setattr(cfg, key, optional_vars[key])
             logger.warning('Setting undefined %s=%s' % (key, optional[key]))
             
     if not hasattr(cfg, 'TIMINGS'):
