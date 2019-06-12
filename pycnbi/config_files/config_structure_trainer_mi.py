@@ -22,8 +22,9 @@ class Basic:
     params3 = dict()
     params3.update({'PICKED_CHANNELS': list})                               # Pick a subset of channels for PSD.
     params3.update({'EXCLUDED_CHANNELS': list})                             # Overwrite the CHANNEL_PICKS
-    params3.update({'REF_CHANNELS_OLD': list})                              # Recover this channel which was used as reference channel.
-    params3.update({'REF_CHANNELS_NEW': list})                              # Re-reference to this set of channels, averaged if more than 1.
+    params3.update({'REREFERENCE': {'selected':'False', \
+                                    'False':None, \
+                                    'True':dict(ref_old=[], ref_new=[])}
 
     #-------------------------------------------
     # Filters
@@ -77,7 +78,7 @@ class Advanced:
     params3 = dict()
      # wlen: window length in seconds
     # wstep: window step in absolute samples (32 is enough for 512 Hz, or 256 for 2KHz)
-    params3.update({'FEATURES': {'PSD':dict(fmin=int, fmax=int, wlen=float, wstep=int)}})
+    params3.update({'FEATURES': {'PSD':dict(fmin=int, fmax=int, wlen=float, wstep=int, decim=int)}})
     params3.update({'EXPORT_GOOD_FEATURES': (False, True)})
     params3.update({'FEAT_TOPN': int})                             # show only the top N features
 
@@ -89,7 +90,7 @@ class Advanced:
     params6 = dict()
     params6.update({'CLASSIFIER':   {'GB': dict(trees=int, learning_rate=float, max_depth=int, seed=int), \
                                     'RF': dict(trees=int, max_depth=int, seed=int), \
-                                    'rLDA': dict(rlda_regularize_coeff=float), \
+                                    'rLDA': dict(r_coeff=float), \
                                     'LDA': dict()}})
 
     params6.update({'EXPORT_CLS': (False, True)})
