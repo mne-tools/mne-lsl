@@ -428,8 +428,10 @@ def compute_features(cfg):
         logger.error('When loading multiple EEG files, PICKED_CHANNELS must be list of string, not integers because they may have different channel order.')
         raise RuntimeError
     raw, events = pu.load_multi(ftrain)
-    if not cfg.REF_CHANNELS_OLD and not REF_CHANNELS_NEW:
-        #pu.rereference(raw, cfg.REF_CH[1], cfg.REF_CH[0])
+    
+    reref = cfg.REREFERENCE[cfg.REREFERENCE['selected']]
+    if reref is not None:
+        #pu.rereference(raw, reref['new'], reref['old'])
         logger.error('Sorry! Channel re-referencing is under development.')
         raise NotImplementedError
     if cfg.LOAD_EVENTS_FILE is not None:
@@ -473,8 +475,8 @@ def compute_features(cfg):
         logger.warning('TP_CHANNELS parameter is not supported yet. Will be set to PICKED_CHANNELS.')
     if hasattr(cfg, 'NOTCH_CHANNELS') and cfg.NOTCH_CHANNELS is not None:
         logger.warning('NOTCH_CHANNELS parameter is not supported yet. Will be set to PICKED_CHANNELS.')
-    if 'decim' not in cfg.PSD:
-        cfg.PSD['decim'] = 1
+    if 'decim' not in cfg.FEATURES['PSD']:
+        cfg.FEATURES['PSD']['decim'] = 1
         logger.warning('PSD["decim"] undefined. Set to 1.')
 
     # Read epochs
@@ -489,7 +491,7 @@ def compute_features(cfg):
                 # Channels are already selected by 'picks' param so use all channels.
                 '''
                 epoch = pu.preprocess(epoch, spatial=cfg.SP_FILTER, spatial_ch=None, spectral=cfg.TP_FILTER, spectral_ch=None,
-                    notch=cfg.NOTCH_FILTER, notch_ch=None, multiplier=cfg.MULTIPLIER, n_jobs=cfg.N_JOBS, decim=cfg.PSD['decim'])
+                    notch=cfg.NOTCH_FILTER, notch_ch=None, multiplier=cfg.MULTIPLIER, n_jobs=cfg.N_JOBS, decim=cfg.FEATURES['PSD']['decim'])
                 '''
                 epochs_train.append(epoch)
         else:
@@ -499,7 +501,7 @@ def compute_features(cfg):
             # Channels are already selected by 'picks' param so use all channels.
             '''
             epochs_train = pu.preprocess(epochs_train, spatial=cfg.SP_FILTER, spatial_ch=None, spectral=cfg.TP_FILTER, spectral_ch=None,
-                notch=cfg.NOTCH_FILTER, notch_ch=None, multiplier=cfg.MULTIPLIER, n_jobs=cfg.N_JOBS, decim=cfg.PSD['decim'])
+                notch=cfg.NOTCH_FILTER, notch_ch=None, multiplier=cfg.MULTIPLIER, n_jobs=cfg.N_JOBS, decim=cfg.FEATURES['PSD']['decim'])
             '''
     except:
         logger.exception('Problem while epoching.')
@@ -508,21 +510,21 @@ def compute_features(cfg):
     label_set = np.unique(triggers.values())
 
     # Compute features
-    if cfg.FEATURES == 'PSD':
+    if cfg.FEATURES['selected'] == 'PSD':
         preprocess = dict(sfreq=epochs_train.info['sfreq'],
             spatial=cfg.SP_FILTER,
             spatial_ch=None,
-            spectral=cfg.TP_FILTER,
+            spectral=cfg.TP_FILTER[cfg.TP_FILTER['selected']],
             spectral_ch=None,
-            notch=cfg.NOTCH_FILTER,
+            notch=cfg.NOTCH_FILTER[cfg.NOTCH_FILTER['selected']],
             notch_ch=None,
             multiplier=cfg.MULTIPLIER,
             ch_names=None,
             rereference=None,
-            decim=cfg.PSD['decim'],
+            decim=cfg.FEATURES['PSD']['decim'],
             n_jobs=cfg.N_JOBS
         )
-        featdata = get_psd_feature(epochs_train, cfg.EPOCH, cfg.PSD, picks=None, preprocess=preprocess, n_jobs=cfg.N_JOBS)
+        featdata = get_psd_feature(epochs_train, cfg.EPOCH, cfg.FEATURES['PSD'], picks=None, preprocess=preprocess, n_jobs=cfg.N_JOBS)
     elif cfg.FEATURES == 'TIMELAG':
         '''
         TODO: Implement multiple epochs for timelag feature
