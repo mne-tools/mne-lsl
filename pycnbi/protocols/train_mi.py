@@ -62,11 +62,7 @@ def check_config(cfg):
 
     for key in critical_vars['COMMON']:
         if not hasattr(cfg, key):
-            raise ValueError('%s is a required parameter' % key)
-    for key in optional_vars:
-        if not hasattr(cfg, key):
-            setattr(cfg, key, optional_vars[key])
-            logger.warning('Setting undefined %s=%s' % (key, optional[key]))
+            raise RuntimeError('%s is a required parameter' % key)
             
     if not hasattr(cfg, 'TIMINGS'):
         logger.error('"TIMINGS" not defined in config.')
@@ -75,6 +71,12 @@ def check_config(cfg):
         if v not in cfg.TIMINGS:
             logger.error('%s not defined in config.' % v)
             raise RuntimeError            
+
+    for key in optional_vars:
+        if not hasattr(cfg, key):
+            setattr(cfg, key, optional_vars[key])
+            logger.warning('Setting undefined %s=%s' % (key, optional[key]))
+
     return cfg
 
 # for batch script
