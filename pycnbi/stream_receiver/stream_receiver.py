@@ -20,6 +20,8 @@ Note:
   Most of the time, it does not matter but when you use software trigger, you will
   need this offset to synchronize the event timings.
 
+TODO:
+   Restrict buffer size.
 
 Kyuhwa Lee, 2019
 Swiss Federal Institute of Technology Lausanne (EPFL)
@@ -60,20 +62,25 @@ class StreamReceiver:
             amp_serial: connect to a server with serial number 'amp_serial'. None: no constraint.
             eeg_only: ignore non-EEG servers
         """
-        _MAX_BUFFER_SIZE = 6000 # in seconds (100 minutes)
+        _MAX_BUFFER_SIZE = 86400 # max buffer size allowed by StreamReceiver (24 hours)
+        _MAX_PYLSL_STREAM_BUFSIZE = 360 # max buffer size for pylsl.StreamInlet
 
         if window_size <= 0:
-            window_size = 1
+            logger.error('Wrong window_size %d.' % window_size)
+            raise ValueError()
         self.winsec = window_size
         if buffer_size == 0:
             buffer_size = _MAX_BUFFER_SIZE
         elif buffer_size < 0 or buffer_size > _MAX_BUFFER_SIZE:
-            logger.warning('Improper buffer size %.1f. Set to %d.' % (buffer_size, _MAX_BUFFER_SIZE))
+            logger.error('Improper buffer size %.1f. Setting to %d.' % (buffer_size, _MAX_BUFFER_SIZE))
             buffer_size = _MAX_BUFFER_SIZE
         elif buffer_size < self.winsec:
-            logger.warning('Buffer size %.1f is smaller than window size. Set to %.1f.' % (buffer_size, self.winsec))
+            logger.error('Buffer size %.1f is smaller than window size. Setting to %.1f.' % (buffer_size, self.winsec))
             buffer_size = self.winsec
         self.bufsec = buffer_size
+        self.bufsize = 0 # to be calculated using sampling rate
+        self.stream_bufsec = int(math.ceil(min(_MAX_PYLSL_STREAM_BUFSIZE, self.bufsec)))
+        self.stream_bufsize = 0 # to be calculated using sampling rate
         self.amp_serial = amp_serial
         self.eeg_only = eeg_only
         self.amp_name = amp_name
@@ -82,8 +89,6 @@ class StreamReceiver:
         self._lsl_tr_channel = None  # raw trigger indx in pylsl.pull_chunk()
         self._lsl_eeg_channels = []  # raw signal indx in pylsl.pull_chunk()
         self.ready = False  # False until the buffer is filled for the first time
-
-        self.bufsize = 0  # to be calculated using sampling rate
         self.connected = False
         self.buffers = []
         self.timestamps = []
@@ -205,7 +210,8 @@ class StreamReceiver:
         inlets_master = []
         inlets_slaves = []
         for amp in amps:
-            inlet = pylsl.StreamInlet(amp, max_buflen=int(math.ceil(self.bufsec)), max_chunklen=int(math.ceil(self.bufsec)))
+            # data type of the 2nd argument (max_buflen) is int according to LSL C++ specification!
+            inlet = pylsl.StreamInlet(amp, max_buflen=self.stream_bufsec)
             inlets_master.append(inlet)
             self.buffers.append([])
             self.timestamps.append([])
@@ -221,10 +227,23 @@ class StreamReceiver:
         #self.bufsize = int(self.bufsec * sample_rate)
         self.winsize = int(round(self.winsec * sample_rate))
         self.bufsize = int(round(self.bufsec * sample_rate))
+        self.stream_bufsize = int(round(self.stream_bufsec * sample_rate))
         self.sample_rate = sample_rate
         self.connected = True
-        self.inlets = inlets  # Note: not picklable!
         self.ch_list = ch_list
+        self.inlets = inlets  # Note: not picklable!
+
+        # TODO: check if there's any problem with multiple inlets
+        if len(self.inlets) > 1:
+            logger.warning('Merging of multiple acquisition servers is not supported yet. Only %s will be used.' % amps[0].name())
+            '''
+            for i in range(1, len(self.inlets)):
+                chunk, tslist = self.inlets[i].pull_chunk(max_samples=self.stream_bufsize)
+                self.buffers[i].extend(chunk)
+                self.timestamps[i].extend(tslist)
+                if self.bufsize > 0 and len(self.buffers[i]) > self.bufsize:
+                    self.buffers[i] = self.buffers[i][-self.bufsize:]
+            '''
 
         # create channel info
         if self._lsl_tr_channel is None:
@@ -253,8 +272,6 @@ class StreamReceiver:
 
         Returns:
             data [samples x channels], timestamps [samples]
-
-        TODO: add a parameter to set to non-blocking mode.
         """
         timestamp_offset = False
         if len(self.timestamps[0]) == 0:
@@ -268,7 +285,7 @@ class StreamReceiver:
             while self.watchdog.sec() < 5:
                 # chunk = [frames]x[ch], tslist = [frames]
                 if len(tslist) == 0:
-                    chunk, tslist = self.inlets[0].pull_chunk(max_samples=self.bufsize)
+                    chunk, tslist = self.inlets[0].pull_chunk(max_samples=self.stream_bufsize)
                     if blocking == False and len(tslist) == 0:
                         return np.empty((0, len(self.ch_list))), []
                 if len(tslist) > 0:
@@ -309,18 +326,6 @@ class StreamReceiver:
             self.buffers[0] = self.buffers[0][-self.bufsize:]
             self.timestamps[0] = self.timestamps[0][-self.bufsize:]
 
-        # if we have multiple synchronized amps
-        if len(self.inlets) > 1:
-            logger.error('Merging of multiple acquisition servers is not supported yet.')
-            '''
-            for i in range(1, len(self.inlets)):
-                chunk, tslist = self.inlets[i].pull_chunk(max_samples=self.bufsize)  # [frames][channels]
-                self.buffers[i].extend(chunk)
-                self.timestamps[i].extend(tslist)
-                if self.bufsize > 0 and len(self.buffers[i]) > self.bufsize:
-                    self.buffers[i] = self.buffers[i][-self.bufsize:]
-            '''
-
         if timestamp_offset is True:
             timestamp_offset = False
             logger.info('LSL timestamp = %s' % lsl_clock)
@@ -331,6 +336,19 @@ class StreamReceiver:
                 logger.warning('LSL server has a high timestamp offset.')
             else:
                 logger.info_green('LSL time server synchronized')
+
+        ''' TODO: test the merging of multiple streams
+        # if we have multiple synchronized amps
+        if len(self.inlets) > 1:
+            for i in range(1, len(self.inlets)):
+                chunk, tslist = self.inlets[i].pull_chunk(max_samples=len(tslist))  # [frames][channels]
+                self.buffers[i].extend(chunk)
+                self.timestamps[i].extend(tslist)
+                if self.bufsize > 0 and len(self.buffers[i]) > self.bufsize:
+                    self.buffers[i] = self.buffers[i][-self.bufsize:]
+        '''
+
+        # data= array[samples, channels], tslist=[samples]
         return (data, tslist)
 
     def check_connect(self):
@@ -366,9 +384,13 @@ class StreamReceiver:
         timestamps = self.timestamps[0][-self.winsize:]
         return window, timestamps
 
-    def get_window(self):
+    def get_window(self, decim=1):
         """
         Get the latest window and timestamps in numpy format
+
+        input
+        -----
+        decim (int): decimation factor
 
         output
         ------
@@ -446,6 +468,7 @@ class StreamReceiver:
         OpenVibe servers often have a bug of sending its own running time instead of LSL time.
         """
         return self.lsl_time_offset
+
     def reset_buffer(self):
         """
         Clear buffers

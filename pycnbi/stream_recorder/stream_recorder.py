@@ -101,11 +101,13 @@ def record(state, amp_name, amp_serial, record_dir, eeg_only):
     qc.save_obj(pcl_file, data)
     logger.info('Saved to %s\n' % pcl_file)
 
+    # automatically convert to fif and use event file if it exists (software trigger)
     if os.path.exists(eve_file):
-        pycnbi.utils.add_lsl_events.add_lsl_events(record_dir, offset=sr.lsl_time_offset, interactive=False)
+        logger.info('Found matching event file, adding events.')
     else:
-        logger.info('Converting raw file into a fif format.')
-        pcl2fif(pcl_file)
+        eve_file = None
+    logger.info('Converting raw file into fif.')
+    pcl2fif(pcl_file, eve_file)
 
 def run(record_dir, amp_name, amp_serial, eeg_only=False):
     logger.info('\nOutput directory: %s' % (record_dir))
