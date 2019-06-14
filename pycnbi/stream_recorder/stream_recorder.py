@@ -2,40 +2,30 @@ from __future__ import print_function, division
 
 """
 stream_receiver.py
-
 Acquires signals from LSL server and save into buffer.
-
 Command-line arguments:
   #1: AMP_NAME
   #2: AMP_SERIAL (can be omitted if no serial number available)
   If no argument is supplied, you will be prompted to select one
   from a list of available LSL servers.
-
 Example:
   python stream_recorder.py openvibeSignals
-
 TODO:
 - Support HDF output.
 - Write simulatenously while receivng data.
 - Support multiple amps.
-
-
 Kyuhwa Lee, 2014
 Swiss Federal Institute of Technology Lausanne (EPFL)
-
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
-
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
-
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 """
 
 import os
@@ -101,11 +91,13 @@ def record(state, amp_name, amp_serial, record_dir, eeg_only):
     qc.save_obj(pcl_file, data)
     logger.info('Saved to %s\n' % pcl_file)
 
+    # automatically convert to fif and use event file if it exists (software trigger)
     if os.path.exists(eve_file):
-        pycnbi.utils.add_lsl_events.add_lsl_events(record_dir, offset=sr.lsl_time_offset, interactive=False)
+        logger.info('Found matching event file, adding events.')
     else:
-        logger.info('Converting raw file into a fif format.')
-        pcl2fif(pcl_file)
+        eve_file = None
+    logger.info('Converting raw file into fif.')
+    pcl2fif(pcl_file, eve_file)
 
 def run(record_dir, amp_name, amp_serial, eeg_only=False):
     logger.info('\nOutput directory: %s' % (record_dir))
