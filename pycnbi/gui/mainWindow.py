@@ -341,12 +341,13 @@ class MainWindow(QMainWindow):
         # Loads the subject's specific values
         self.cfg_subject = self.load_subject_params(cfg_file)
         
+        # Display parameters on the GUI
+        self.disp_params(self.cfg_struct, self.cfg_subject)
+
         # Check the parameters integrity
         self.cfg_subject = self.m.check_config(self.cfg_subject)
         
-        # Display parameters on the GUI
-        self.disp_params(self.cfg_struct, self.cfg_subject)
-        self.cfg_struct
+
 
     # ----------------------------------------------------------------------
     def load_struct_params(self, cfg_template):
@@ -383,7 +384,7 @@ class MainWindow(QMainWindow):
         Apply the modification to the corresponding param of the cfg module
         
         name = parameter name
-        new_value = new str value to to change in the module 
+        new_value = new str value to to change in the module
         """
         setattr(self.cfg_subject, name, new_Value)
         print("The parameter %s is %s" % (name, getattr(self.cfg_subject, name)))
@@ -459,11 +460,14 @@ class MainWindow(QMainWindow):
         """
         try:
             self.process.restart()
-            self.process.apipe(self.m.run, self.cfg_subject, self.my_receiver.queue)
         except:                
-            # Create protocol process and start it
+            # Create protocol process
             self.process = ProcessingPool()
-            self.process.apipe(self.m.run, self.cfg_subject, self.my_receiver.queue)
+        
+        # Start the process
+        self.process.apipe(self.m.run, self.cfg_subject, self.my_receiver.queue)
+        # self.process.join()
+        # self.m.run(self.cfg_subject, self.my_receiver.queue)
         
     
     #----------------------------------------------------------------------
