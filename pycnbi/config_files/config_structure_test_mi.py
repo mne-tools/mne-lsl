@@ -9,6 +9,7 @@ class Basic:
     params1 = dict()
     params1.update({'DECODER_FILE': str})
     params1.update({'DIRECTIONS': ('L', 'R', 'U', 'D', 'B')})
+    params1.update({'FAKE_CLS': (None, True)})
 
     #-------------------------------------------
     # feedback type
@@ -23,8 +24,9 @@ class Basic:
     #-------------------------------------------
     params3 = dict()
     params3.update({'TRIALS_EACH': int})
-    params3.update({'TRIALS_RANDOMIZE': [False, True]})
-    params3.update({'TRIALS_RETRY': [False, True]})
+    params3.update({'TRIALS_RANDOMIZE': (False, True)})
+    params3.update({'TRIALS_RETRY': (False, True)})
+    params3.update({'TRIALS_PAUSE': (False, True)})
 
     #-------------------------------------------
     # Bar behavior
@@ -32,8 +34,8 @@ class Basic:
     params3 = dict()
     params3.update({'PROB_ALPHA_NEW': float})
     params3.update({'BAR_BIAS': None})
-    params3.update({'BAR_STEP': dict('left':int, 'right':int, 'up':int, 'down':int)})
-    params3.update({'BAR_SLOW_START': int})             # BAR_SLOW_START: None or in seconds
+    params3.update({'BAR_STEP': dict(left=int, right=int, up=int, down=int, both=int)})
+    params3.update({'BAR_SLOW_START': {'False':None, 'True':float}})             # BAR_SLOW_START: None or in seconds
     params3.update({'BAR_REACH_FINISH': (False, True)})
     params3.update({'POSTIVE_FEEDBACK': (False, True)})
 
@@ -69,34 +71,30 @@ class Advanced:
     # Timings
     #-------------------------------------------
     params3 = dict()
-    params3.update({'T_INIT': int})                  # initial waiting time
-    params3.update({'T_GAP': int})                   # intertrial gap
-    params3.update({'T_READY': int})                 # no direction, only dot cue
-    params3.update({'T_FEEDBACK': int})              # decision feedback shown
-    params3.update({'T_DIR_CUE': int})               # direction cue shown
-    params3.update({'T_CLASSIFY': int})              # imagery period
-    params3.update({'SHOW_CUE': (False, True)})
-    params3.update({'SHOW_RESULT': (False, True)})   # show the classification result
-    params3.update({'SHOW_TRIALS': (False, True)})
 
+    params3.update({'TIMINGS':dict(INIT=float, GAP=float, READY=float, FEEDBACK=float, DIR_CUE=float, CLASSIFY=float)})
+
+    params4 = dict()    
+    params4.update({'SHOW_CUE': (False, True)})
+    params4.update({'SHOW_RESULT': (False, True)})   # show the classification result
+    params4.update({'SHOW_TRIALS': (False, True)})
 
     #-------------------------------------------
     # Google Glass
     #-------------------------------------------
-    params4 = dict()
-    params4.update({'GLASS_USE': (False, True)})
+    params5 = dict()
+    params5.update({'GLASS_USE': (False, True)})
 
     #-------------------------------------------
     # Debug
     #-------------------------------------------
-    params4.update({'DEBUG_PROBS': (False, True)})    
-    params4.update({'LOG_PROBS': (False, True)})
+    params5.update({'DEBUG_PROBS': (False, True)})    
+    params5.update({'LOG_PROBS': (False, True)})
 
     #-------------------------------------------
     # Parallel decoding
     #-------------------------------------------
-    params4.update({'PARALLEL_DECODING': {'False':None, 'True':{'period': float, 'num_strides': int}}})
-    #params3.update({'PARALLEL_DECODING': (None, dict(period=0.06, num_strides=3))})
+    params5.update({'PARALLEL_DECODING': {'False':None, 'True':{'period': float, 'num_strides': int}}})
 
 
 

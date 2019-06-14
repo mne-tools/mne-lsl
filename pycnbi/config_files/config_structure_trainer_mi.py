@@ -22,9 +22,8 @@ class Basic:
     params3 = dict()
     params3.update({'PICKED_CHANNELS': list})                               # Pick a subset of channels for PSD.
     params3.update({'EXCLUDED_CHANNELS': list})                             # Overwrite the CHANNEL_PICKS
-    params3.update({'REREFERENCE': {'selected':'False', \
-                                    'False':None, \
-                                    'True':dict(ref_old=[], ref_new=[])}})
+    params3.update({'REREFERENCE': {'False':None, \
+                                    'True':dict(ref_old=list, ref_new=list)}})
 
     #-------------------------------------------
     # Filters
