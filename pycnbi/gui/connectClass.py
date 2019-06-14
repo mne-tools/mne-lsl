@@ -249,6 +249,14 @@ class Connect_ComboBox(QObject):
                 p.signal_paramChanged.connect(self.on_modify)
                 self.additionalParams.append(p)
                 self.templateChoices.addItem(str(key_val), key_val)
+                
+            elif val is str:
+                chosen_additionalParams = chosenValue[key_val]
+                lineEdit = Connect_LineEdit(key, chosen_additionalParams)
+                lineEdit.signal_paramChanged[str, str].connect(self.on_guichanges)
+                lineEdit.signal_paramChanged[str, type(None)].connect(self.on_guichanges)
+                self.additionalParams.append(p)
+                self.templateChoices.addItem(str(key_val), key_val)
             
             else:
                 self.templateChoices.addItem(str(key_val), val)
