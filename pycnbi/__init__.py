@@ -49,8 +49,24 @@ class PycnbiFormatter(logging.Formatter):
         self._style = logging.PercentStyle(self._fmt)
         return logging.Formatter.format(self, record)
 
-def init_logger(stream, verbose_console='INFO', verbose_file=None):
-    #if not logger.hasHandlers():
+def init_logger(verbose_console='INFO'):
+    '''
+    Add the first logger as sys.stdout. Handler will be added only once.
+    '''
+    if not logger.hasHandlers():
+        add_logger_handler(sys.stdout, verbosity=verbose_console)
+    
+    '''
+    TODO: add file handler
+    # file logger handler
+    f_handler = logging.FileHandler('pycnbi.log', mode='a')
+    f_handler.setLevel(loglevels[verbose_file])
+    f_format = logging.Formatter('%(levelname)s %(asctime)s %(funcName)s:%(lineno)d: %(message)s')
+    f_handler.setFormatter(f_format)
+    logger.addHandler(f_handler)
+    '''
+
+def add_logger_handler(stream, verbosity='INFO'):
     # add custom log levels
     logging.addLevelName(LOG_LEVELS['INFO_GREEN'], 'INFO_GREEN')
     def __log_info_green(self, message, *args, **kwargs):
@@ -75,27 +91,18 @@ def init_logger(stream, verbose_console='INFO', verbose_file=None):
     c_handler.setFormatter(PycnbiFormatter())
     logger.addHandler(c_handler)
 
-    '''
-    # file logger handler
-    f_handler = logging.FileHandler('pycnbi.log', mode='a')
-    f_handler.setLevel(loglevels[verbose_file])
-    f_format = logging.Formatter('%(levelname)s %(asctime)s %(funcName)s:%(lineno)d: %(message)s')
-    f_handler.setFormatter(f_format)
-    logger.addHandler(f_handler)
-    '''
-
     # minimum possible level of all handlers
     logger.setLevel(logging.DEBUG)
 
-    set_log_level(verbose_console, verbose_file)
+    logger.handlers[-1].level = LOG_LEVELS[verbosity]
+    set_log_level(verbosity)
     return logger
 
-def set_log_level(verbose_console, verbose_file=None):
-    logger.handlers[0].level = LOG_LEVELS[verbose_console]
-    if verbose_file is not None:
-        # logger.handlers[1].level = verbose_file
-        raise NotImplementedError("Sorry, file logging is not supported yet because I don't know how to use with multiprcocessing.")
-
+def set_log_level(verbosity, handler_id=0):
+    '''
+    hander ID 0 is always stdout, followed by user-defined handlers.
+    '''
+    logger.handlers[handler_id].level = LOG_LEVELS[verbosity]
 
 # init scripts
 ROOT = qc.parse_path(os.path.realpath(__file__)).dir
@@ -108,4 +115,4 @@ for d in qc.get_dir_list(ROOT):
 logging.getLogger('matplotlib').setLevel(logging.ERROR)
 logger = logging.getLogger('pycnbi')
 logger.propagate = False
-init_logger(sys.stdout)
+init_logger()
