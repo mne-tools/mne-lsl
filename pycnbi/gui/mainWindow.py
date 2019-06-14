@@ -462,7 +462,7 @@ class MainWindow(QMainWindow):
             self.process.restart()
         except:                
             # Create protocol process
-            self.process = ProcessingPool()
+            self.process = ProcessingPool(nodes=1)
         
         # Start the process
         self.process.apipe(self.m.run, self.cfg_subject, self.my_receiver.queue)
