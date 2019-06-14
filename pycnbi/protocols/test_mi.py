@@ -47,7 +47,7 @@ import pycnbi.triggers.pyLptControl as pyLptControl
 from pycnbi.decoder.decoder import BCIDecoderDaemon, BCIDecoder
 from pycnbi.triggers.trigger_def import trigger_def
 from pycnbi.protocols.feedback import Feedback
-from pycnbi import logger
+from pycnbi import logger, init_logger
 from builtins import input
 
 # visualization
@@ -65,63 +65,82 @@ def load_config(cfg_file):
     return imp.load_source(cfg_file, cfg_file)
 
 def check_config(cfg):
-    critical_vars = [
-        'DECODER_FILE',
-        'TRIGGER_DEVICE',
-        'TRIGGER_FILE',
-        'DIRECTIONS',
-        'TRIALS_EACH',
-        'PROB_ALPHA_NEW'
-    ]
+    critical_vars = {
+        'COMMON': ['DECODER_FILE',
+                   'TRIGGER_DEVICE',
+                   'TRIGGER_FILE',
+                   'DIRECTIONS',
+                   'TRIALS_EACH',
+                   'PROB_ALPHA_NEW'], 
+        'TIMINGS': ['INIT', 'GAP', 'READY', 'FEEDBACK', 'DIR_CUE', 'CLASSIFY'], 
+        'BAR_STEP': ['left', 'right', 'up', 'down', 'both']
+        }
 
     optional_vars = {
         'AMP_NAME':None,
         'AMP_SERIAL':None,
         'FAKE_CLS':None,
         'TRIALS_RANDOMIZE':True,
-        'BAR_SLOW_START':None,
-        'PARALLEL_DECODING':None,
+        'BAR_SLOW_START':{'selected':'False', 'False':None, 'True':1.0}, 
+        'PARALLEL_DECODING':{'selected':'False', 'False':None, 'True':{'period':0.06, 'num_strides':3}},
         'SHOW_TRIALS':True,
         'FREE_STYLE':False,
         'REFRESH_RATE':30,
         'BAR_BIAS':None,
-        'POSITIVE_FEEDBACK':False,
         'BAR_REACH_FINISH':False,
         'FEEDBACK_TYPE':'BAR',
-        'BAR_STEP_LEFT':6,
-        'BAR_STEP_RIGHT':6,
-        'BAR_STEP_UP':6,
-        'BAR_STEP_DOWN':6,
-        'BAR_STEP_BOTH':6,
         'LOG_PROBS':False,
         'SHOW_CUE':True,
-        'WITH_STIMO':False,
         'SCREEN_SIZE':(1920, 1080),
         'SCREEN_POS':(0, 0),
-        'WITH_REX':False,
         'DEBUG_PROBS':False,
         'LOG_PROBS':False,
-        'TRIAL_PAUSE':False
+        'WITH_REX': False,
+        'WITH_STIMO': False,
     }
 
-    if not (hasattr(cfg, 'BAR_STEP') or hasattr(cfg, 'BAR_STEP_LEFT') or\
-            hasattr(cfg, 'BAR_STEP_RIGHT') or hasattr(cfg, 'BAR_STEP_UP') or\
-            hasattr(cfg, 'BAR_STEP_DOWN') or hasattr(cfg, 'BAR_STEP_BOTH')):
-            raise RuntimeError('BAR_STEP or at least two of BAR_STEP_* must be defined.')
-
-    for key in critical_vars:
+    for key in critical_vars['COMMON']:
         if not hasattr(cfg, key):
-            raise RuntimeError('%s not defined in config.' % key)
-
+            logger.error('%s is a required parameter' % key)
+            raise RuntimeError
+        
+    if not hasattr(cfg, 'TIMINGS'):
+        logger.error('"TIMINGS" not defined in config.')
+        raise RuntimeError
+    for v in critical_vars['TIMINGS']:
+        if v not in cfg.TIMINGS:
+            logger.error('%s not defined in config.' % v)
+            raise RuntimeError
+        
+    if not hasattr(cfg, 'BAR_STEP'):
+        logger.error('"BAR_STEP" not defined in config.')
+        raise RuntimeError
+    for v in critical_vars['BAR_STEP']:
+        if v not in cfg.BAR_STEP:
+            logger.error('%s not defined in config.' % v)
+            raise RuntimeError            
+    
     for key in optional_vars:
         if not hasattr(cfg, key):
             setattr(cfg, key, optional_vars[key])
-            logger.warning('load_cfg(): Setting undefined parameter %s=%s' % (key, getattr(cfg, key)))
+            logger.warning('Setting undefined parameter %s=%s' % (key, getattr(cfg, key)))
 
     return cfg
 
 # for batch script
-def run(cfg):
+def run(cfg, *queue):
+    
+    # ----------------------------------------------------------------------------------
+    try:   
+        # Redirect stdout and stderr in case of GUI
+        sys.stdout = WriteStream(queue[0])
+        sys.stderr = WriteStream(queue[0])
+        init_logger(sys.stdout)
+    except:
+        # In case of batch
+        init_logger(sys.stdout)  
+    # ----------------------------------------------------------------------------------    
+    
     if cfg.FAKE_CLS is None:
         # chooose amp
         if cfg.AMP_NAME is None and cfg.AMP_SERIAL is None:
@@ -149,7 +168,7 @@ def run(cfg):
     # init classification
     decoder = BCIDecoderDaemon(cfg.DECODER_FILE, buffer_size=1.0, fake=(cfg.FAKE_CLS is not None),
                                amp_name=amp_name, amp_serial=amp_serial, fake_dirs=fake_dirs,
-                               parallel=cfg.PARALLEL_DECODING, alpha_new=cfg.PROB_ALPHA_NEW)
+                               parallel=cfg.PARALLEL_DECODING[cfg.PARALLEL_DECODING['selected']], alpha_new=cfg.PROB_ALPHA_NEW)
 
     # OLD: requires trigger values to be always defined
     #labels = [tdef.by_value[x] for x in decoder.get_labels()]
