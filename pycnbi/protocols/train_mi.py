@@ -32,7 +32,7 @@ import pycnbi.triggers.pyLptControl as pyLptControl
 import pycnbi.utils.q_common as qc
 from pycnbi.protocols.viz_bars import BarVisual
 from pycnbi.triggers.trigger_def import trigger_def
-from pycnbi import logger, init_logger
+from pycnbi import logger, add_logger_handler
 from builtins import input
 
 from pycnbi.gui.streams import WriteStream
@@ -48,17 +48,19 @@ def check_config(cfg):
         'COMMON': ['TRIGGER_DEVICE',
                    'TRIGGER_FILE', 
                    'SCREEN_SIZE',
-                   'SCREEN_POS',
                    'DIRECTIONS',
                    'DIR_RANDOM',
                    'TRIALS_EACH'], 
-        'TIMINGS': ['INIT', 'GAP', 'CUE', 'READY', 'READY_RANDOMIZE', 'DIR', 'DIR_RANDOMIZE'],
-                 }
-    optional_vars = {'DIR_RANDOM':True,
-                'GLASS_USE':False,
-                'TRIAL_PAUSE': False,
-                'REFRESH_RATE':30,
-                }
+        'TIMINGS': ['INIT', 'GAP', 'CUE', 'READY', 'READY_RANDOMIZE', 'DIR', 'DIR_RANDOMIZE']
+    }
+    optional_vars = {'FEEDBACK_TYPE': 'BAR',
+                     'FEEDBACK_IMAGE_PATH': None,
+                     'SCREEN_POS': (0, 0),
+                    'DIR_RANDOM':True,
+                    'GLASS_USE':False,
+                    'TRIAL_PAUSE': False,
+                    'REFRESH_RATE':30
+    }
 
     for key in critical_vars['COMMON']:
         if not hasattr(cfg, key):
@@ -86,24 +88,25 @@ def batch_run(cfg_file):
     run(cfg)
 
 def run(cfg, *queue):
-    
+   
     # ----------------------------------------------------------------------------------
     try:   
         # Redirect stdout and stderr in case of GUI
         sys.stdout = WriteStream(queue[0])
         sys.stderr = WriteStream(queue[0])
-        init_logger(sys.stdout)
+        add_logger_handler(sys.stdout)  
     except:
-        # In case of batch
-        init_logger(sys.stdout)  
+        # In case of running directly from terminal
+        pass
     # ----------------------------------------------------------------------------------
+    logger.info('***** Running PID %d' % os.getpid())
     
     tdef = trigger_def(cfg.TRIGGER_FILE)
     refresh_delay = 1.0 / cfg.REFRESH_RATE
 
     # visualizer
     keys = {'left':81, 'right':83, 'up':82, 'down':84, 'pgup':85, 'pgdn':86,
-        'home':80, 'end':87, 'space':32, 'esc':27, ',':44, '.':46, 's':115, 'c':99,
+        'home':80, 'end':87, 'space':32, 'esc':27, ',':44, '.':46, 's':115, 'c':99, 
         '[':91, ']':93, '1':49, '!':33, '2':50, '@':64, '3':51, '#':35}
     color = dict(G=(20, 140, 0), B=(210, 0, 0), R=(0, 50, 200), Y=(0, 215, 235),
         K=(0, 0, 0), w=(200, 200, 200))
