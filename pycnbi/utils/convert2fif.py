@@ -190,7 +190,7 @@ def pcl2fif(filename, interactive=False, outdir=None, external_event=None, offse
     raw.save(fiffile, verbose=False, overwrite=overwrite, fmt=precision)
     logger.info('Saved to %s' % fiffile)
 
-    saveChannels2txt(filename, ch_names)
+    saveChannels2txt(outdir, ch_names)
     
     return True
 
@@ -255,7 +255,7 @@ def eeg2fif(filename, interactive=False, outdir=None):
     raw.save(fiffile, verbose=False, overwrite=True, fmt='double')
     logger.info('Saved to %s' % fiffile)
 
-    saveChannels2txt(filename, ch_names)
+    saveChannels2txt(outdir, ch_names)
 
 
 def gdf2fif(filename, interactive=False, outdir=None, channel_file=None):
@@ -324,7 +324,7 @@ def gdf2fif(filename, interactive=False, outdir=None, channel_file=None):
     raw.save(fiffile, verbose=False, overwrite=True, fmt='double')
     logger.info('Saved to %s' % fiffile)
 
-    saveChannels2txt(filename, ch_names)
+    saveChannels2txt(outdir, ch_names)
 
 
 def bdf2fif(filename, interactive=False, outdir=None):
@@ -361,7 +361,7 @@ def bdf2fif(filename, interactive=False, outdir=None):
     raw.save(fiffile, verbose=False, overwrite=True, fmt='double')
     logger.info('Saved to %s' % fiffile)
 
-    saveChannels2txt(filename, ch_names)
+    saveChannels2txt(outdir, ch_names)
 
 
 def bdf2fif_matlab(filename, interactive=False, outdir=None):
@@ -433,7 +433,7 @@ def bdf2fif_matlab(filename, interactive=False, outdir=None):
     raw.save(fiffile, verbose=False, overwrite=True, fmt='double')
     logger.info('Saved to %s' % fiffile)
 
-    saveChannels2txt(filename, ch_names)
+    saveChannels2txt(outdir, ch_names)
 
 
 def xdf2fif(filename, interactive=False, outdir=None):
@@ -475,7 +475,7 @@ def xdf2fif(filename, interactive=False, outdir=None):
     raw.save(fiffile, verbose=False, overwrite=True, fmt='double')
     logger.info('Saved to %s' % fiffile)
 
-    saveChannels2txt(filename, ch_names)
+    saveChannels2txt(outdir, ch_names)
 
 
 
@@ -510,6 +510,7 @@ def saveChannels2txt(outdir, ch_names):
     """
     Save the channels list to a txt file for the GUI
     """
+
     filename = outdir + "channelsList.txt"
     config = Path(filename)
     
