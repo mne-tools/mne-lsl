@@ -421,7 +421,7 @@ def compute_features(cfg):
     '''
     # Preprocessing, epoching and PSD computation
     ftrain = []
-    for f in qc.get_file_list(cfg.DATADIR, fullpath=True):
+    for f in qc.get_file_list(cfg.DATA_PATH, fullpath=True):
         if f[-4:] in ['.fif', '.fiff']:
             ftrain.append(f)
     if len(ftrain) > 1 and cfg.PICKED_CHANNELS is not None and type(cfg.PICKED_CHANNELS[0]) == int:
@@ -434,9 +434,14 @@ def compute_features(cfg):
         #pu.rereference(raw, reref['new'], reref['old'])
         logger.error('Sorry! Channel re-referencing is under development.')
         raise NotImplementedError
-    if cfg.LOAD_EVENTS_FILE is not None:
-        events = mne.read_events(cfg.LOAD_EVENTS_FILE)
-    triggers = {cfg.tdef.by_value[c]:c for c in set(cfg.TRIGGER_DEF)}
+    
+    if cfg.LOAD_EVENTS[cfg.LOAD_EVENTS['selected']] is not None:
+        events = mne.read_events(cfg.LOAD_EVENTS[cfg.LOAD_EVENTS['selected']])
+    
+    trigger_def_int = set()
+    for a in cfg.TRIGGER_DEF:
+        trigger_def_int.add(getattr(cfg.tdef, a))
+    triggers = {cfg.tdef.by_value[c]:c for c in trigger_def_int}
 
     # Pick channels
     if cfg.PICKED_CHANNELS is None:
