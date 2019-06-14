@@ -9,11 +9,27 @@ class WriteStream():
     """
     #----------------------------------------------------------------------
     def __init__(self, queue):
+        """
+        Constructor
+        """
         self.queue = queue
 
     #----------------------------------------------------------------------
     def write(self, text):
+        """
+        Overload sys.stdout write function
+        """
         self.queue.put(text)
+    
+    #----------------------------------------------------------------------
+    def flush(self):
+        """
+        Overload sys.stdout flush function
+        """
+        #if self.queue.empty() is False:
+            #tmp = self.queue.get()
+        pass
+        
 
 ########################################################################
 class MyReceiver(QObject):
