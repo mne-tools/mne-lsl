@@ -36,21 +36,8 @@ import pylsl
 import numpy as np
 import pycnbi.utils.pycnbi_utils as pu
 import pycnbi.utils.q_common as qc
+from pycnbi.utils.pycnbi_utils import find_event_channel
 from pycnbi import logger
-
-def find_trigger_channel(ch_list):
-    if 'TRIGGER' in ch_list:
-        return ch_list.index('TRIGGER')
-    elif 'TRG' in ch_list:
-        return ch_list.index('TRG')
-    else:
-        for i, chn in enumerate(ch_list):
-            if chn is None:
-                continue
-            # usually STI 014 for many trigger boxes
-            if 'STI ' in chn:
-                return i
-        return None
 
 class StreamReceiver:
     def __init__(self, window_size=1, buffer_size=1, amp_serial=None, eeg_only=False, amp_name=None):
@@ -167,7 +154,7 @@ class StreamReceiver:
                     elif 'openvibeSignal' in amp_name:
                         logger.info('Found an Openvibe signal streaming server %s (type %s, amp_serial %s) @ %s.' % (amp_name, si.type(), amp_serial, si.hostname()))
                         ch_list = pu.lsl_channel_list(inlet)
-                        self._lsl_tr_channel = find_trigger_channel(ch_list)
+                        self._lsl_tr_channel = find_event_channel(ch_list)
                         channels += si.channel_count()
                         amps.append(si)
                         server_found = True
@@ -177,7 +164,7 @@ class StreamReceiver:
                     elif 'openvibeMarkers' in amp_name:
                         logger.info('Found an Openvibe markers server %s (type %s, amp_serial %s) @ %s.' % (amp_name, si.type(), amp_serial, si.hostname()))
                         ch_list = pu.lsl_channel_list(inlet)
-                        self._lsl_tr_channel = find_trigger_channel(ch_list)
+                        self._lsl_tr_channel = find_event_channel(ch_list)
                         channels += si.channel_count()
                         amps.append(si)
                         server_found = True
@@ -185,7 +172,7 @@ class StreamReceiver:
                     elif find_any:
                         logger.info('Found a streaming server %s (type %s, amp_serial %s) @ %s.' % (amp_name, si.type(), amp_serial, si.hostname()))
                         ch_list = pu.lsl_channel_list(inlet)
-                        self._lsl_tr_channel = find_trigger_channel(ch_list)
+                        self._lsl_tr_channel = find_event_channel(ch_list)
                         channels += si.channel_count()
                         amps.append(si)
                         server_found = True
