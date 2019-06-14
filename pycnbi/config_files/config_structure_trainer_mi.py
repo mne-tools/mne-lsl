@@ -64,6 +64,7 @@ class Advanced:
     params1 = dict()                            
     params1.update({'TRIGGER_FILE': str})                            # which trigger file template
     params1.update({'TRIGGER_DEF': str})                             # which trigger set?
+    params1.update({'LOAD_EVENTS': {'False':None, 'True':str}})
     
    
     #-------------------------------------------
@@ -101,5 +102,5 @@ class Advanced:
     #-------------------------------------------
     params7 = dict()
     params7.update({'CV_PERFORM':   {'False':None, \
-                                    'StratifiedShuffleSplit': dict(CV_TEST_RATIO=float, CV_FOLDS=int, CV_RANDOM_SEED=int, CV_EXPORT_RESULT=tuple()), \
-                                    'LeaveOneOut': dict(CV_EXPORT_RESULT=tuple())}})
+                                    'StratifiedShuffleSplit': dict(test_ratio=float, folds=int, seed=int, export_result=tuple()), \
+                                    'LeaveOneOut': dict(export_result=tuple())}})
