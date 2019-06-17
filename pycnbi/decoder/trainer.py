@@ -87,8 +87,8 @@ def check_config(cfg):
             'FEATURES',
             'CLASSIFIER',
             'CV_PERFORM'],
-        'RF': ['trees', 'max_depth', 'seed'],
-        'GB': ['trees', 'learning_rate', 'max_depth', 'seed'], 
+        'RF': ['trees', 'depth', 'seed'],
+        'GB': ['trees', 'learning_rate', 'depth', 'seed'], 
         'LDA': [],
         'rLDA': ['r_coeff'], 
         'StratifiedShuffleSplit': ['test_ratio', 'folds', 'seed', 'export_result'],
@@ -360,17 +360,17 @@ def balance_tpr(cfg, featdata):
     selected_classifier = cfg.CLASSIFIER[cfg.CLASSIFIER['selected']]
     if selected_classifier == 'GB':
         cls = GradientBoostingClassifier(loss='deviance', learning_rate=cfg.CLASSIFIER['GB']['learning_rate'],
-                                         n_estimators=cfg.CLASSIFIER['GB']['trees'], subsample=1.0, max_depth=cfg.CLASSIFIER['GB']['max_depth'],
+                                         n_estimators=cfg.CLASSIFIER['GB']['trees'], subsample=1.0, max_depth=cfg.CLASSIFIER['GB']['depth'],
                                          random_state=cfg.CLASSIFIER[selected_classifier]['seed'], max_features='sqrt', verbose=0, warm_start=False,
                                          presort='auto')
     elif selected_classifier == 'XGB':
         cls = XGBClassifier(loss='deviance', learning_rate=cfg.CLASSIFIER['XGB']['learning_rate'],
-                                         n_estimators=cfg.CLASSIFIER['XGB']['trees'], subsample=1.0, max_depth=cfg.CLASSIFIER['XGB']['max_depth'],
+                                         n_estimators=cfg.CLASSIFIER['XGB']['trees'], subsample=1.0, max_depth=cfg.CLASSIFIER['XGB']['depth'],
                                          random_state=cfg.CLASSIFIER['XGB']['seed'], max_features='sqrt', verbose=0, warm_start=False,
                                          presort='auto')
     elif selected_classifier == 'RF':
         cls = RandomForestClassifier(n_estimators=cfg.CLASSIFIER['RF']['trees'], max_features='auto',
-                                     max_depth=cfg.CLASSIFIER['RF']['max_depth'], n_jobs=cfg.N_JOBS, random_state=cfg.CLASSIFIER['RF']['seed'],
+                                     max_depth=cfg.CLASSIFIER['RF']['depth'], n_jobs=cfg.N_JOBS, random_state=cfg.CLASSIFIER['RF']['seed'],
                                      oob_score=False, class_weight='balanced_subsample')
     elif selected_classifier == 'LDA':
         cls = LDA()
@@ -520,15 +520,15 @@ def cross_validate(cfg, featdata, cv_file=None):
     selected_classifier = cfg.CLASSIFIER['selected']
     if selected_classifier == 'GB':
         cls = GradientBoostingClassifier(loss='deviance', learning_rate=cfg.CLASSIFIER['GB']['learning_rate'], presort='auto',
-                                         n_estimators=cfg.CLASSIFIER['GB']['trees'], subsample=1.0, max_depth=cfg.CLASSIFIER['GB']['max_depth'],
+                                         n_estimators=cfg.CLASSIFIER['GB']['trees'], subsample=1.0, max_depth=cfg.CLASSIFIER['GB']['depth'],
                                          random_state=cfg.CLASSIFIER['GB']['seed'], max_features='sqrt', verbose=0, warm_start=False)
     elif selected_classifier == 'XGB':
         cls = XGBClassifier(loss='deviance', learning_rate=cfg.CLASSIFIER['XGB']['learning_rate'], presort='auto',
-                                         n_estimators=cfg.CLASSIFIER['XGB']['trees'], subsample=1.0, max_depth=cfg.CLASSIFIER['XGB']['max_depth'],
+                                         n_estimators=cfg.CLASSIFIER['XGB']['trees'], subsample=1.0, max_depth=cfg.CLASSIFIER['XGB']['depth'],
                                          random_state=cfg.CLASSIFIER['XGB'], max_features='sqrt', verbose=0, warm_start=False)
     elif selected_classifier == 'RF':
         cls = RandomForestClassifier(n_estimators=cfg.CLASSIFIER['RF']['trees'], max_features='auto',
-                                     max_depth=cfg.CLASSIFIER['RF']['max_depth'], n_jobs=cfg.N_JOBS, random_state=cfg.CLASSIFIER['RF']['seed'],
+                                     max_depth=cfg.CLASSIFIER['RF']['depth'], n_jobs=cfg.N_JOBS, random_state=cfg.CLASSIFIER['RF']['seed'],
                                      oob_score=False, class_weight='balanced_subsample')
     elif selected_classifier == 'LDA':
         cls = LDA()
@@ -605,10 +605,10 @@ def cross_validate(cfg, featdata, cv_file=None):
     txt += 'Classifier: %s, ' % selected_classifier
     if selected_classifier == 'RF':
         txt += '%d trees, %s max depth, random state %s\n' % (
-            cfg.CLASSIFIER['RF']['trees'], cfg.CLASSIFIER['RF']['max_depth'], cfg.CLASSIFIER['RF']['seed'])
+            cfg.CLASSIFIER['RF']['trees'], cfg.CLASSIFIER['RF']['depth'], cfg.CLASSIFIER['RF']['seed'])
     elif selected_classifier == 'GB' or selected_classifier == 'XGB':
         txt += '%d trees, %s max depth, %s learing_rate, random state %s\n' % (
-            cfg.CLASSIFIER['GB']['trees'], cfg.CLASSIFIER['GB']['max_depth'], cfg.CLASSIFIER['GB']['learning_rate'], cfg.CLASSIFIER['GB']['seed'])
+            cfg.CLASSIFIER['GB']['trees'], cfg.CLASSIFIER['GB']['depth'], cfg.CLASSIFIER['GB']['learning_rate'], cfg.CLASSIFIER['GB']['seed'])
     elif selected_classifier == 'rLDA':
         txt += 'regularization coefficient %.2f\n' % cfg.CLASSIFIER['rLDA']['r_coeff']
     if cfg.CV['IGNORE_THRES'] is not None:
@@ -638,17 +638,17 @@ def train_decoder(cfg, featdata, feat_file=None):
     selected_classifier = cfg.CLASSIFIER['selected']
     if selected_classifier == 'GB':
         cls = GradientBoostingClassifier(loss='deviance', learning_rate=cfg.CLASSIFIER[selected_classifier]['learning_rate'],
-                                         n_estimators=cfg.CLASSIFIER[selected_classifier]['trees'], subsample=1.0, max_depth=cfg.CLASSIFIER[selected_classifier]['max_depth'],
+                                         n_estimators=cfg.CLASSIFIER[selected_classifier]['trees'], subsample=1.0, max_depth=cfg.CLASSIFIER[selected_classifier]['depth'],
                                          random_state=cfg.CLASSIFIER[selected_classifier]['seed'], max_features='sqrt', verbose=0, warm_start=False,
                                          presort='auto')
     elif selected_classifier == 'XGB':
         cls = XGBClassifier(loss='deviance', learning_rate=cfg.CLASSIFIER[selected_classifier]['learning_rate'],
-                                         n_estimators=cfg.CLASSIFIER[selected_classifier]['trees'], subsample=1.0, max_depth=cfg.CLASSIFIER[selected_classifier]['max_depth'],
+                                         n_estimators=cfg.CLASSIFIER[selected_classifier]['trees'], subsample=1.0, max_depth=cfg.CLASSIFIER[selected_classifier]['depth'],
                                          random_state=cfg.GB['seed'], max_features='sqrt', verbose=0, warm_start=False,
                                          presort='auto')
     elif selected_classifier == 'RF':
         cls = RandomForestClassifier(n_estimators=cfg.CLASSIFIER[selected_classifier]['trees'], max_features='auto',
-                                     max_depth=cfg.CLASSIFIER[selected_classifier]['max_depth'], n_jobs=cfg.N_JOBS, random_state=cfg.CLASSIFIER[selected_classifier]['seed'],
+                                     max_depth=cfg.CLASSIFIER[selected_classifier]['depth'], n_jobs=cfg.N_JOBS, random_state=cfg.CLASSIFIER[selected_classifier]['seed'],
                                      oob_score=False, class_weight='balanced_subsample')
     elif selected_classifier == 'LDA':
         cls = LDA()
