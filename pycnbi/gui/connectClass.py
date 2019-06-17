@@ -252,9 +252,9 @@ class Connect_ComboBox(QObject):
                 
             elif val is str:
                 chosen_additionalParams = chosenValue[key_val]
-                lineEdit = Connect_LineEdit(key, chosen_additionalParams)
-                lineEdit.signal_paramChanged[str, str].connect(self.on_guichanges)
-                lineEdit.signal_paramChanged[str, type(None)].connect(self.on_guichanges)
+                p = Connect_LineEdit(key_val, chosen_additionalParams)
+                p.signal_paramChanged[str, str].connect(self.on_modify)
+                # lineEdit.signal_paramChanged[str, type(None)].connect(self.on_guichanges)
                 self.additionalParams.append(p)
                 self.templateChoices.addItem(str(key_val), key_val)
             
@@ -266,8 +266,7 @@ class Connect_ComboBox(QObject):
 
         self.layout.addWidget(self.templateChoices)      
         for p in self.additionalParams:
-            self.layout.addWidget(p.frame)
-            # self.layout.addLayout(p.layout)
+            self.layout.addWidget(p.frame)  
         
         index = self.templateChoices.findText(str(chosenValue))        
         if index != -1:
@@ -308,6 +307,7 @@ class Connect_ComboBox(QObject):
 
     @pyqtSlot(str, dict)
     @pyqtSlot(str, list)
+    @pyqtSlot(str, str)
     #----------------------------------------------------------------------
     def on_modify(self, key, p):
         """
@@ -469,6 +469,10 @@ class Connect_LineEdit(QObject):
         self.paramName = paramName
         self.w = QLineEdit(str(chosen_value))
         self.w.editingFinished.connect(self.on_modify)
+        self.chosen_value = chosen_value
+        
+        #  To fit the disp_params function of mainWindow. 
+        self.frame = self.w
 
     @pyqtSlot()
     # ----------------------------------------------------------------------
