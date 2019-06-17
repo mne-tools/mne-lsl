@@ -40,10 +40,6 @@ class Basic:
     params5.update({'TP_FILTER': {'False':None, 'True':list}})                                     # None or [lfreq, hfreq]
     params5.update({'NOTCH_FILTER': {'False':None, 'True':list}})         # None or list of values
 
-    # example
-    #params5.update({'TP_FILTER': {'None':[None, None], 'lowpass',[None, 30], 'bandpass':[1, 40], 'highpass':[8, None]}})
-
-
     #-------------------------------------------
     # Parallel processing
     #-------------------------------------------
@@ -85,11 +81,10 @@ class Advanced:
     #-------------------------------------------
     # Classifier
     #-------------------------------------------
-    #{'CLASSIFIER': {'GB':dict(trees=1000, learning_rate=0.01, max_depth=3, seed=666)}, 'RF':dict()}}
 
     params6 = dict()
-    params6.update({'CLASSIFIER':   {'GB': dict(trees=int, learning_rate=float, max_depth=int, seed=int), \
-                                    'RF': dict(trees=int, max_depth=int, seed=int), \
+    params6.update({'CLASSIFIER':   {'GB': dict(trees=int, learning_rate=float, depth=int, seed=int), \
+                                    'RF': dict(trees=int, depth=int, seed=int), \
                                     'rLDA': dict(r_coeff=float), \
                                     'LDA': dict()}})
 
