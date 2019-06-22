@@ -47,8 +47,10 @@ import pycnbi.triggers.pyLptControl as pyLptControl
 from pycnbi.decoder.decoder import BCIDecoderDaemon, BCIDecoder
 from pycnbi.triggers.trigger_def import trigger_def
 from pycnbi.protocols.feedback import Feedback
-from pycnbi import logger, init_logger
+from pycnbi.gui.streams import redirect_stdout_to_queue
+from pycnbi import logger
 from builtins import input
+
 
 # visualization
 keys = {'left':81, 'right':83, 'up':82, 'down':84, 'pgup':85, 'pgdn':86,
@@ -128,19 +130,10 @@ def check_config(cfg):
     return cfg
 
 # for batch script
-def run(cfg, *queue):
-    
-    # ----------------------------------------------------------------------------------
-    try:   
-        # Redirect stdout and stderr in case of GUI
-        sys.stdout = WriteStream(queue[0])
-        sys.stderr = WriteStream(queue[0])
-        init_logger(sys.stdout)
-    except:
-        # In case of batch
-        init_logger(sys.stdout)  
-    # ----------------------------------------------------------------------------------    
-    
+def run(cfg, queue=None):
+
+    redirect_stdout_to_queue(queue)
+
     if cfg.FAKE_CLS is None:
         # chooose amp
         if cfg.AMP_NAME is None and cfg.AMP_SERIAL is None:
@@ -155,7 +148,7 @@ def run(cfg, *queue):
         fake_dirs = [v for (k, v) in cfg.DIRECTIONS]
 
     # events and triggers
-    tdef = trigger_def(cfg.TRIGGER_FILE)
+    cfg.tdef = trigger_def(cfg.TRIGGER_FILE)
     #if cfg.TRIGGER_DEVICE is None:
     #    input('\n** Warning: No trigger device set. Press Ctrl+C to stop or Enter to continue.')
     trigger = pyLptControl.Trigger(cfg.TRIGGER_DEVICE)
