@@ -37,6 +37,9 @@ import traceback
 import numpy as np
 import multiprocessing as mp
 import sklearn.metrics as skmetrics
+import pycnbi.utils.q_common as qc
+import pycnbi.utils.pycnbi_utils as pu
+import pycnbi.decoder.features as features
 from mne import Epochs, pick_types
 from builtins import input
 from IPython import embed  # for debugging
@@ -44,14 +47,10 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import GradientBoostingClassifier
 from xgboost import XGBClassifier
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
-
-from pycnbi import logger, init_logger
+from pycnbi import logger, add_logger_handler
 from pycnbi.decoder.rlda import rLDA
-from pycnbi.gui.streams import WriteStream
-
-import pycnbi.utils.q_common as qc
-import pycnbi.utils.pycnbi_utils as pu
-import pycnbi.decoder.features as features
+from pycnbi.triggers.trigger_def import trigger_def
+from pycnbi.gui.streams import redirect_stdout_to_queue
 
 # scikit-learn old version compatibility
 try:
@@ -73,26 +72,24 @@ def load_config(cfg_file):
 
 def check_config(cfg):
     critical_vars = {
-        'COMMON': [
-            'tdef',
-            'TRIGGER_FILE', 
-            'TRIGGER_DEF',
-            'EPOCH',
-            'DATA_PATH',
-            'PICKED_CHANNELS',
-            'SP_FILTER',
-            'SP_CHANNELS', 
-            'TP_FILTER',
-            'NOTCH_FILTER',
-            'FEATURES',
-            'CLASSIFIER',
-            'CV_PERFORM'],
-        'RF': ['trees', 'depth', 'seed'],
-        'GB': ['trees', 'learning_rate', 'depth', 'seed'], 
-        'LDA': [],
-        'rLDA': ['r_coeff'], 
-        'StratifiedShuffleSplit': ['test_ratio', 'folds', 'seed', 'export_result'],
-        'LeaveOneOut': ['export_result']
+        'COMMON': ['TRIGGER_FILE', 
+                    'TRIGGER_DEF',
+                    'EPOCH',
+                    'DATA_PATH',
+                    'PICKED_CHANNELS',
+                    'SP_FILTER',
+                    'SP_CHANNELS', 
+                    'TP_FILTER',
+                    'NOTCH_FILTER',
+                    'FEATURES',
+                    'CLASSIFIER',
+                    'CV_PERFORM'],
+                    'RF': ['trees', 'depth', 'seed'],
+                    'GB': ['trees', 'learning_rate', 'depth', 'seed'], 
+                    'LDA': [],
+                    'rLDA': ['r_coeff'], 
+                    'StratifiedShuffleSplit': ['test_ratio', 'folds', 'seed', 'export_result'],
+                    'LeaveOneOut': ['export_result']
     }
 
     # optional variables with default values
@@ -760,16 +757,9 @@ def batch_run(cfg_file):
 
 def run(cfg, queue=None, interactive=False, cv_file=None, feat_file=None):
     
-    # ----------------------------------------------------------------------------------
-    if queue is not None:
-        # Redirect stdout and stderr in case of GUI
-        sys.stdout = WriteStream(queue)
-        sys.stderr = WriteStream(queue)
-        init_logger(sys.stdout)
-    else:
-        # In case of batch
-        init_logger(sys.stdout)  
-    # ----------------------------------------------------------------------------------    
+    redirect_stdout_to_queue(queue)
+    
+    cfg.tdef = trigger_def(cfg.TRIGGER_FILE)
     
     # Extract features
     featdata = features.compute_features(cfg)

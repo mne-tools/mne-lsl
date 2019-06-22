@@ -12,24 +12,30 @@ import sys
 import inspect
 from os.path import expanduser
 from importlib import import_module, reload
-from pathos.multiprocessing import ProcessingPool
-from pathos.helpers import mp as pathos_multiprocess
+import multiprocessing as mp
 
 from PyQt5.QtGui import QTextCursor, QFont
 from PyQt5.QtCore import pyqtSignal, pyqtSlot, QThread, QLine
 from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QAction, QLabel, QVBoxLayout, QHBoxLayout, QComboBox, QLineEdit, QFormLayout, QWidget, QPushButton, QFrame, QSizePolicy
 
 from ui_mainwindow import Ui_MainWindow
-from streams import WriteStream, MyReceiver
+from streams import WriteStream, MyReceiver, redirect_stdout_to_queue
+from readWriteTxt import read_params_from_txt
 from pickedChannelsDialog import PickChannelsDialog, Channel_Select
 from connectClass import PathFolderFinder, PathFileFinder, Connect_Directions, Connect_ComboBox, Connect_LineEdit, Connect_SpinBox, Connect_DoubleSpinBox, Connect_Modifiable_List, Connect_Modifiable_Dict,  Connect_Directions_Online, Connect_Bias
-from readWriteTxt import read_params_from_txt
 
 from pycnbi.utils import q_common as qc
 from pycnbi.triggers.trigger_def import trigger_def
 
 DEFAULT_PATH = os.environ['PYCNBI_SCRIPTS']
 
+
+class cfg_class:
+    def __init__(self, cfg):                
+        for key in dir(cfg):
+            if key[0] == '_':
+                continue
+            setattr(self, key, getattr(cfg, key))
 
 ########################################################################
 class MainWindow(QMainWindow):
@@ -48,7 +54,9 @@ class MainWindow(QMainWindow):
         self.paramsWidgets = {}     # dict of all the created parameters widgets
 
         self.load_ui_from_file()
+        
         self.redirect_stdout()
+        
         self.connect_signals_to_slots()
 
         # Terminal
@@ -66,8 +74,7 @@ class MainWindow(QMainWindow):
         Create Queue and redirect sys.stdout to this queue.
         Create thread that will listen on the other end of the queue, and send the text to the textedit_terminal.
         """
-        self.manager = pathos_multiprocess.Manager()
-        queue = self.manager.Queue()
+        queue = mp.Queue()
         
         self.thread = QThread()
         
@@ -77,6 +84,8 @@ class MainWindow(QMainWindow):
         
         self.thread.started.connect(self.my_receiver.run)
         self.thread.start()
+        
+        redirect_stdout_to_queue(self.my_receiver.queue)
         
         
     #----------------------------------------------------------------------
@@ -180,7 +189,7 @@ class MainWindow(QMainWindow):
                             except:
                                 trigger_file = self.extract_value_from_module('TRIGGER_FILE', all_chosen_values)
                                 tdef = trigger_def(trigger_file)
-                                self.on_guichanges('tdef', tdef)
+                                # self.on_guichanges('tdef', tdef)
                                 events = [tdef.by_value[i] for i in events]
                             
                             directions = Connect_Directions_Online(key, chosen_value, values, nb_directions, chosen_events, events)
@@ -210,7 +219,7 @@ class MainWindow(QMainWindow):
                     elif 'TRIGGER_DEF' in key:
                         trigger_file = self.extract_value_from_module('TRIGGER_FILE', all_chosen_values)
                         tdef = trigger_def(trigger_file)
-                        self.on_guichanges('tdef', tdef)
+                        # self.on_guichanges('tdef', tdef)
                         nb_directions = 4
                         #  Convert 'None' to real None (real None is removed when selected in the GUI)
                         tdef_values = [ None if i == 'None' else i for i in list(tdef.by_name) ]
@@ -272,7 +281,7 @@ class MainWindow(QMainWindow):
                     elif type(values) is tuple:
                         comboParams = Connect_ComboBox(key, chosen_value, values)
                         comboParams.signal_paramChanged.connect(self.on_guichanges)
-                        comboParams.signal_additionalParamChanged.connect(self.on_guichanges)
+                        # comboParams.signal_additionalParamChanged.connect(self.on_guichanges)
                         self.paramsWidgets.update({key: comboParams})                       
                         layout.addRow(key, comboParams.layout)
                         continue
@@ -342,7 +351,7 @@ class MainWindow(QMainWindow):
         self.cfg_subject = self.load_subject_params(cfg_file)
         
         # Display parameters on the GUI
-        self.disp_params(self.cfg_struct, self.cfg_subject)
+        self.disp_params(self.cfg_struct, self.cfg_subject)     
 
         # Check the parameters integrity
         self.cfg_subject = self.m.check_config(self.cfg_subject)
@@ -415,7 +424,7 @@ class MainWindow(QMainWindow):
         cfg_template = 'config_structure_train_mi'
         cfg_file = 'config_train_mi'
         
-        self.load_all_params(cfg_template, cfg_file)        
+        self.load_all_params(cfg_template, cfg_file)     
 
 
     # ----------------------------------------------------------------------
@@ -457,17 +466,10 @@ class MainWindow(QMainWindow):
     def on_click_start(self):
         """
         Launch the selected protocol. It can be Offline, Train or Online. 
-        """
-        try:
-            self.process.restart()
-        except:                
-            # Create protocol process
-            self.process = ProcessingPool(nodes=1)
-        
-        # Start the process
-        self.process.apipe(self.m.run, self.cfg_subject, self.my_receiver.queue)
-        # self.process.join()
-        # self.m.run(self.cfg_subject, self.my_receiver.queue)
+        """     
+        ccfg = cfg_class(self.cfg_subject)        
+        self.process = mp.Process(target=self.m.run, args=[ccfg, self.my_receiver.queue])
+        self.process.start()
         
     
     #----------------------------------------------------------------------
