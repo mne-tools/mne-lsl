@@ -203,6 +203,9 @@ class Connect_ComboBox(QObject):
         super().__init__()
 
         self.paramName = paramName
+        self.frame = QFrame()
+        self.chosen_value = chosenValue
+        
         self.add_To_ComboBox(all_values, chosenValue)
         
         
@@ -243,6 +246,16 @@ class Connect_ComboBox(QObject):
                 self.additionalParams.append(p)
                 self.templateChoices.addItem(str(key_val), key_val)
                 
+            elif type(val) is tuple:
+                content_dict = val
+                chosen_additionalParams = chosenValue
+                p = Connect_ComboBox(key_val, chosen_additionalParams, content_dict)
+                p.signal_paramChanged.connect(self.on_modify)
+                self.additionalParams.append(p)
+                self.templateChoices.addItem(str(key_val), key_val)
+                self.frame = QFrame()
+                self.frame = p
+                
             elif val is list:
                 chosen_additionalParams = chosenValue[key_val]
                 p = Connect_Modifiable_List(key_val, chosen_additionalParams)
@@ -266,7 +279,7 @@ class Connect_ComboBox(QObject):
 
         self.layout.addWidget(self.templateChoices)      
         for p in self.additionalParams:
-            self.layout.addWidget(p.frame)  
+            self.layout.addWidget(p.frame)
         
         index = self.templateChoices.findText(str(chosenValue))        
         if index != -1:
@@ -313,7 +326,7 @@ class Connect_ComboBox(QObject):
         """
         Slot connected on the additional parameters changes
         """
-        self.signal_additionalParamChanged[str, dict].emit(self.paramName, {key: p})
+        self.signal_additionalParamChanged[str, dict].emit(self.paramName, {'selected': p.paramName, key: p})
         
         
 ########################################################################
@@ -662,9 +675,9 @@ class Connect_Modifiable_Dict(QObject):
                 spinBox.signal_paramChanged.connect(self.on_modify)
                 self.paramWidgets.append(spinBox)
                 label = QLabel(key)
-                label.setFixedWidth(80)
+                # label.setFixedWidth(80)
                 label.setAlignment(Qt.AlignCenter)
-                spinBox.w.setFixedWidth(80)
+                # spinBox.w.setFixedWidth(50)
                 layout.addWidget(label)
                 layout.addWidget(spinBox.w)
 
@@ -673,9 +686,9 @@ class Connect_Modifiable_Dict(QObject):
                 self.paramWidgets.append(doublespinBox)
                 doublespinBox.signal_paramChanged.connect(self.on_modify)
                 label = QLabel(key)
-                label.setFixedWidth(80)
+                # label.setFixedWidth(80)
                 label.setAlignment(Qt.AlignCenter)
-                doublespinBox.w.setFixedWidth(80)
+                # doublespinBox.w.setFixedWidth(50)
                 layout.addWidget(label)
                 layout.addWidget(doublespinBox.w)
 
@@ -684,9 +697,9 @@ class Connect_Modifiable_Dict(QObject):
                 lineEdit.signal_paramChanged.connect(self.on_modify)
                 self.paramWidgets.append(lineEdit)
                 label = QLabel(key)
-                label.setFixedWidth(80)
+                # label.setFixedWidth(80)
                 label.setAlignment(Qt.AlignCenter)
-                lineEdit.w.setFixedWidth(80)
+                # lineEdit.w.setFixedWidth(50)
                 layout.addWidget(label)
                 layout.addWidget(lineEdit.w)
 
