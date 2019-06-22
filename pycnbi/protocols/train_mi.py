@@ -32,10 +32,10 @@ import pycnbi.triggers.pyLptControl as pyLptControl
 import pycnbi.utils.q_common as qc
 from pycnbi.protocols.viz_bars import BarVisual
 from pycnbi.triggers.trigger_def import trigger_def
-from pycnbi import logger, add_logger_handler
+from pycnbi import logger
 from builtins import input
 
-from pycnbi.gui.streams import WriteStream
+from pycnbi.gui.streams import redirect_stdout_to_queue
 
 def load_config(cfg_file):
     cfg_file = qc.forward_slashify(cfg_file)
@@ -87,22 +87,12 @@ def batch_run(cfg_file):
     cfg = check_config(cfg)
     run(cfg)
 
-def run(cfg, *queue):
-   
-    # ----------------------------------------------------------------------------------
-    try:   
-        # Redirect stdout and stderr in case of GUI
-        sys.stdout = WriteStream(queue[0])
-        sys.stderr = WriteStream(queue[0])
-        add_logger_handler(sys.stdout)  
-    except:
-        # In case of running directly from terminal
-        pass
-    # ----------------------------------------------------------------------------------
-    logger.info('***** Running PID %d' % os.getpid())
+def run(cfg, queue=None):
     
-    tdef = trigger_def(cfg.TRIGGER_FILE)
+    # redirect_stdout_to_queue(queue)    
     refresh_delay = 1.0 / cfg.REFRESH_RATE
+    
+    cfg.tdef = trigger_def(cfg.TRIGGER_FILE)
 
     # visualizer
     keys = {'left':81, 'right':83, 'up':82, 'down':84, 'pgup':85, 'pgdn':86,
@@ -152,7 +142,7 @@ def run(cfg, *queue):
             event = 'gap_s'
             bar.fill()
             timer_trigger.reset()
-            trigger.signal(tdef.INIT)
+            trigger.signal(cfg.tdef.INIT)
         elif event == 'gap_s':
             if cfg.TRIAL_PAUSE:
                 bar.put_text('Press any key')
@@ -168,27 +158,27 @@ def run(cfg, *queue):
             event = 'cue'
             bar.fill()
             bar.draw_cue()
-            trigger.signal(tdef.CUE)
+            trigger.signal(cfg.tdef.CUE)
             timer_trigger.reset()
         elif event == 'cue' and timer_trigger.sec() > cfg.TIMINGS['CUE']:
             event = 'dir_r'
             dir = dir_sequence[trial - 1]
             if dir == 'L':  # left
                 bar.move('L', 100, overlay=True)
-                trigger.signal(tdef.LEFT_READY)
+                trigger.signal(cfg.tdef.LEFT_READY)
             elif dir == 'R':  # right
                 bar.move('R', 100, overlay=True)
-                trigger.signal(tdef.RIGHT_READY)
+                trigger.signal(cfg.tdef.RIGHT_READY)
             elif dir == 'U':  # up
                 bar.move('U', 100, overlay=True)
-                trigger.signal(tdef.UP_READY)
+                trigger.signal(cfg.tdef.UP_READY)
             elif dir == 'D':  # down
                 bar.move('D', 100, overlay=True)
-                trigger.signal(tdef.DOWN_READY)
+                trigger.signal(cfg.tdef.DOWN_READY)
             elif dir == 'B':  # both hands
                 bar.move('L', 100, overlay=True)
                 bar.move('R', 100, overlay=True)
-                trigger.signal(tdef.BOTH_READY)
+                trigger.signal(cfg.tdef.BOTH_READY)
             else:
                 raise RuntimeError('Unknown direction %d' % dir)
             timer_trigger.reset()
@@ -199,15 +189,15 @@ def run(cfg, *queue):
             timer_trigger.reset()
             timer_dir.reset()
             if dir == 'L':  # left
-                trigger.signal(tdef.LEFT_GO)
+                trigger.signal(cfg.tdef.LEFT_GO)
             elif dir == 'R':  # right
-                trigger.signal(tdef.RIGHT_GO)
+                trigger.signal(cfg.tdef.RIGHT_GO)
             elif dir == 'U':  # up
-                trigger.signal(tdef.UP_GO)
+                trigger.signal(cfg.tdef.UP_GO)
             elif dir == 'D':  # down
-                trigger.signal(tdef.DOWN_GO)
+                trigger.signal(cfg.tdef.DOWN_GO)
             elif dir == 'B':  # both
-                trigger.signal(tdef.BOTH_GO)
+                trigger.signal(cfg.tdef.BOTH_GO)
             else:
                 raise RuntimeError('Unknown direction %d' % dir)
         elif event == 'dir' and timer_trigger.sec() > t_dir:
@@ -215,7 +205,7 @@ def run(cfg, *queue):
             bar.fill()
             trial += 1
             logger.info('trial ' + str(trial - 1) + ' done')
-            trigger.signal(tdef.BLANK)
+            trigger.signal(cfg.tdef.BLANK)
             timer_trigger.reset()
             t_dir = cfg.TIMINGS['DIR'] + random.uniform(-cfg.TIMINGS['DIR_RANDOMIZE'], cfg.TIMINGS['DIR_RANDOMIZE'])
             t_dir_ready = cfg.TIMINGS['READY'] + random.uniform(-cfg.TIMINGS['READY_RANDOMIZE'], cfg.TIMINGS['READY_RANDOMIZE'])
@@ -248,7 +238,6 @@ def run(cfg, *queue):
    
 
 if __name__ == '__main__':
-    logger.info('YES!')
     if len(sys.argv) < 2:
         cfg_file = input('Config file name? ')
     else:
