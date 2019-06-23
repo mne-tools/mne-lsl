@@ -216,6 +216,7 @@ def crossval_epochs(cv, epochs_data, labels, cls, label_names=None, do_balance=N
     """
 
     scores = []
+    f1s = []
     cnum = 1
     cm_sum = 0
     label_set = np.unique(labels)
@@ -251,8 +252,9 @@ def crossval_epochs(cv, epochs_data, labels, cls, label_names=None, do_balance=N
             results.append(pool.apply_async(fit_predict_thres,
                                             [cls, X_train, Y_train, X_test, Y_test, cnum, label_set, ignore_thres, decision_thres]))
         else:
-            score, cm = fit_predict_thres(cls, X_train, Y_train, X_test, Y_test, cnum, label_set, ignore_thres, decision_thres)
+            score, cm, f1 = fit_predict_thres(cls, X_train, Y_train, X_test, Y_test, cnum, label_set, ignore_thres, decision_thres)
             scores.append(score)
+            f1s.append(f1)
             cm_sum += cm
         cnum += 1
 
@@ -261,8 +263,9 @@ def crossval_epochs(cv, epochs_data, labels, cls, label_names=None, do_balance=N
         pool.join()
 
         for r in results:
-            score, cm = r.get()
+            score, cm, f1 = r.get()
             scores.append(score)
+            f1s.append(f1)
             cm_sum += cm
 
     # confusion matrix
@@ -300,6 +303,7 @@ def crossval_epochs(cv, epochs_data, labels, cls, label_names=None, do_balance=N
             cm_txt += tpl_float % c
         cm_txt += '\n'
     cm_txt += 'Average accuracy: %.2f\n' % np.mean(scores)
+    cm_txt += 'Average F1 score: %.2f\n' % np.mean(f1s)
 
     return np.array(scores), cm_txt
 
@@ -442,6 +446,7 @@ def fit_predict_thres(cls, X_train, Y_train, X_test, Y_test, cnum, label_list, i
         Y_pred = cls.predict(X_test)
         score = skmetrics.accuracy_score(Y_test, Y_pred)
         cm = skmetrics.confusion_matrix(Y_test, Y_pred, label_list)
+        f1 = skmetrics.f1_score(Y_test, Y_pred, average='weighted')
     else:
         if decision_thres is not None:
             logger.error('decision threshold and ignore_thres cannot be set at the same time.')
@@ -458,9 +463,10 @@ def fit_predict_thres(cls, X_train, Y_train, X_test, Y_test, cnum, label_list, i
         score = skmetrics.accuracy_score(Y_test_overthres, Y_pred_overthres)
         cm = skmetrics.confusion_matrix(Y_test_overthres, Y_pred_overthres, label_list)
         cm = np.concatenate((cm, Y_pred_underthres_count[:, np.newaxis]), axis=1)
+        f1 = skmetrics.f1_score(Y_test_overthres, Y_pred_overthres, average='weighted')
 
     logger.info('Cross-validation %d (%.3f) - %.1f sec' % (cnum, score, timer.sec()))
-    return score, cm
+    return score, cm, f1
 
 
 def cross_validate(cfg, featdata, cv_file=None):
