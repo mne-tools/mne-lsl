@@ -81,7 +81,7 @@ def get_tfr(cfg, recursive=False, n_jobs=1):
     if n_jobs is None:
         n_jobs = mp.cpu_count()
 
-    if hasattr(cfg, 'DATA_DIRS'):
+    if hasattr(cfg, 'DATA_PATHS'):
         if export_path is None:
             raise ValueError('For multiple directories, cfg.EXPORT_PATH cannot be None')
         else:
@@ -93,7 +93,7 @@ def get_tfr(cfg, recursive=False, n_jobs=1):
 
         # load and merge files from all directories
         flist = []
-        for ddir in cfg.DATA_DIRS:
+        for ddir in cfg.DATA_PATHS:
             ddir = ddir.replace('\\', '/')
             if ddir[-1] != '/': ddir += '/'
             for f in qc.get_file_list(ddir, fullpath=True, recursive=recursive):
@@ -101,7 +101,7 @@ def get_tfr(cfg, recursive=False, n_jobs=1):
                     flist.append(f)
         raw, events = pu.load_multi(flist)
     else:
-        logger.info('Loading', cfg.DATA_FILE)
+        logger.info('Loading %s' % cfg.DATA_FILE)
         raw, events = pu.load_raw(cfg.DATA_FILE)
 
         # custom events
@@ -111,6 +111,7 @@ def get_tfr(cfg, recursive=False, n_jobs=1):
         if export_path is None:
             [outpath, file_prefix, _] = qc.parse_path_list(cfg.DATA_FILE)
         else:
+            file_prefix = qc.parse_path(cfg.DATA_FILE).name
             outpath = export_path
 
     # re-referencing
@@ -173,7 +174,6 @@ def get_tfr(cfg, recursive=False, n_jobs=1):
             pdb.set_trace()
     except:
         logger.critical('\n*** (tfr_export) Unknown error occurred while epoching ***')
-        logging.error("Exception occurred", exc_info=True)
         logger.critical('tmin = %.1f, tmax = %.1f, tmin_buffer = %.1f, tmax_buffer = %.1f, raw length = %.1f' % \
             (tmin, tmax, tmin_buffer, tmax_buffer, raw._data.shape[1] / sfreq))
         pdb.set_trace()
