@@ -417,7 +417,7 @@ class MainWindow(QMainWindow):
         Loads the Offline parameters. 
         """
         import pycnbi.protocols.train_mi as m
-        
+    
         self.m = m
         
         self.modality = 'offline'

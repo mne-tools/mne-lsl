@@ -148,7 +148,7 @@ def run(cfg, queue=None):
         fake_dirs = [v for (k, v) in cfg.DIRECTIONS]
 
     # events and triggers
-    cfg.tdef = trigger_def(cfg.TRIGGER_FILE)
+    tdef = trigger_def(cfg.TRIGGER_FILE)
     #if cfg.TRIGGER_DEVICE is None:
     #    input('\n** Warning: No trigger device set. Press Ctrl+C to stop or Enter to continue.')
     trigger = pyLptControl.Trigger(cfg.TRIGGER_DEVICE)
