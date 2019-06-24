@@ -101,7 +101,7 @@ def get_tfr(cfg, recursive=False, n_jobs=1):
                     flist.append(f)
         raw, events = pu.load_multi(flist)
     else:
-        logger.info('Loading', cfg.DATA_FILE)
+        logger.info('Loading %s' % cfg.DATA_FILE)
         raw, events = pu.load_raw(cfg.DATA_FILE)
 
         # custom events
@@ -112,6 +112,7 @@ def get_tfr(cfg, recursive=False, n_jobs=1):
             [outpath, file_prefix, _] = qc.parse_path_list(cfg.DATA_FILE)
         else:
             outpath = export_path
+            file_prefix = qc.parse_path(cfg.DATA_FILE).name
 
     # re-referencing
     if cfg.REREFERENCE is not None:
@@ -173,7 +174,6 @@ def get_tfr(cfg, recursive=False, n_jobs=1):
             pdb.set_trace()
     except:
         logger.critical('\n*** (tfr_export) Unknown error occurred while epoching ***')
-        logging.error("Exception occurred", exc_info=True)
         logger.critical('tmin = %.1f, tmax = %.1f, tmin_buffer = %.1f, tmax_buffer = %.1f, raw length = %.1f' % \
             (tmin, tmax, tmin_buffer, tmax_buffer, raw._data.shape[1] / sfreq))
         pdb.set_trace()
@@ -220,7 +220,7 @@ def get_tfr(cfg, recursive=False, n_jobs=1):
 
                     # mode= None | 'logratio' | 'ratio' | 'zscore' | 'mean' | 'percent'
                     fig = power[evname].plot([ch], baseline=cfg.BS_TIMES, mode=cfg.BS_MODE, show=False,
-                        colorbar=True, title=title, vmin=cfg.VMIN, vmax=cfg.VMAX, dB=False)
+                        colorbar=True, title=title, vmin=cfg.VMIN, VMAXx=cfg.VMAX, dB=False)
                     fout = '%s/%s-%s-%s-%s.png' % (export_dir, file_prefix, cfg.SP_FILTER, evname, chname)
                     fig.savefig(fout)
                     plt.close()
