@@ -17,56 +17,57 @@ Note:
   It only works when 0's are majority.
 
 - Some LSL servers, especially OpenVibe-based servers, send wrong LSL timestamps.
-  In such case, set DEBUG_TIME_OFFSET = True to see the offset. Most of the time,
-  it's not needed but when you use software trigger, you will need this offset to
-  synchronize the event timings.
+  Most of the time, it does not matter but when you use software trigger, you will
+  need this offset to synchronize the event timings.
 
 TODO:
    Restrict buffer size.
 
-Kyuhwa Lee, 2017
+Kyuhwa Lee, 2019
 Swiss Federal Institute of Technology Lausanne (EPFL)
 
 """
 
-# Warn if an LSL server sends wrong LSL timestamps. Some OpenVibe servers
-# send app's own running time starting from 0 instead of calling LSL API.
-DEBUG_TIME_OFFSET = True
-
-
-import time
 import sys
+import pdb
+import math
+import time
 import pylsl
 import numpy as np
 import pycnbi.utils.pycnbi_utils as pu
 import pycnbi.utils.q_common as qc
-
-def find_trigger_channel(ch_list):
-    if 'TRIGGER' in ch_list:
-        return ch_list.index('TRIGGER')
-    elif 'TRG' in ch_list:
-        return ch_list.index('TRG')
-    else:
-        for i, chn in enumerate(ch_list):
-            if chn is None:
-                continue
-            # usually STI 014 for many trigger boxes
-            if 'STI ' in chn:
-                return i
-        return None
+from pycnbi.utils.pycnbi_utils import find_event_channel
+from pycnbi import logger
 
 class StreamReceiver:
-    def __init__(self, window_size=1.0, buffer_size=0, amp_serial=None, eeg_only=False, amp_name=None):
+    def __init__(self, window_size=1, buffer_size=1, amp_serial=None, eeg_only=False, amp_name=None):
         """
         Params:
             window_size (in seconds): keep the latest window_size seconds of the buffer.
-            buffer_size (in seconds): keep everything if buffer_size=0.
+            buffer_size (in seconds): 1-day is the maximum size. Large buffer may lead to a delay if not pulled frequently.
             amp_name: connect to a server named 'amp_name'. None: no constraint.
             amp_serial: connect to a server with serial number 'amp_serial'. None: no constraint.
             eeg_only: ignore non-EEG servers
         """
+        _MAX_BUFFER_SIZE = 86400 # max buffer size allowed by StreamReceiver (24 hours)
+        _MAX_PYLSL_STREAM_BUFSIZE = 360 # max buffer size for pylsl.StreamInlet
+
+        if window_size <= 0:
+            logger.error('Wrong window_size %d.' % window_size)
+            raise ValueError()
         self.winsec = window_size
+        if buffer_size == 0:
+            buffer_size = _MAX_BUFFER_SIZE
+        elif buffer_size < 0 or buffer_size > _MAX_BUFFER_SIZE:
+            logger.error('Improper buffer size %.1f. Setting to %d.' % (buffer_size, _MAX_BUFFER_SIZE))
+            buffer_size = _MAX_BUFFER_SIZE
+        elif buffer_size < self.winsec:
+            logger.error('Buffer size %.1f is smaller than window size. Setting to %.1f.' % (buffer_size, self.winsec))
+            buffer_size = self.winsec
         self.bufsec = buffer_size
+        self.bufsize = 0 # to be calculated using sampling rate
+        self.stream_bufsec = int(math.ceil(min(_MAX_PYLSL_STREAM_BUFSIZE, self.bufsec)))
+        self.stream_bufsize = 0 # to be calculated using sampling rate
         self.amp_serial = amp_serial
         self.eeg_only = eeg_only
         self.amp_name = amp_name
@@ -75,8 +76,6 @@ class StreamReceiver:
         self._lsl_tr_channel = None  # raw trigger indx in pylsl.pull_chunk()
         self._lsl_eeg_channels = []  # raw signal indx in pylsl.pull_chunk()
         self.ready = False  # False until the buffer is filled for the first time
-
-        self.bufsize = 0  # to be calculated using sampling rate
         self.connected = False
         self.buffers = []
         self.timestamps = []
@@ -84,9 +83,6 @@ class StreamReceiver:
         self.multiplier = 1  # 10**6 for uV unit (automatically updated for openvibe servers)
 
         self.connect()
-
-    def print(self, msg, color='W'):
-        qc.print_c('[StreamReceiver] %s' % msg, color)
 
     def connect(self, find_any=True):
         """
@@ -97,11 +93,10 @@ class StreamReceiver:
         channels = 0
         while server_found == False:
             if self.amp_name is None and self.amp_serial is None:
-                self.print("Looking for a streaming server...")
+                logger.info("Looking for a streaming server...")
             else:
-                self.print("Looking for %s (Serial %s) ..." % (self.amp_name, self.amp_serial))
+                logger.info("Looking for %s (Serial %s) ..." % (self.amp_name, self.amp_serial))
             streamInfos = pylsl.resolve_streams()
-            # print(streamInfos)
             if len(streamInfos) > 0:
                 # For now, only 1 amp is supported by a single StreamReceiver object.
                 for si in streamInfos:
@@ -111,7 +106,6 @@ class StreamReceiver:
                     #amp_serial = inlet.info().desc().child('acquisition').child_value('serial_number')
                     amp_serial = 'N/A'
                     amp_name = si.name()
-                    # qc.print_c('Found %s (%s)'% (amp_name,amp_serial), 'G')
 
                     # connect to a specific amp only?
                     if self.amp_serial is not None and self.amp_serial != amp_serial:
@@ -126,8 +120,7 @@ class StreamReceiver:
                         continue
 
                     if 'USBamp' in amp_name:
-                        self.print('Found USBamp streaming server %s (type %s, amp_serial %s) @ %s.' \
-                                   % (amp_name, si.type(), amp_serial, si.hostname()))
+                        logger.info('Found USBamp streaming server %s (type %s, amp_serial %s) @ %s.' % (amp_name, si.type(), amp_serial, si.hostname()))
                         self._lsl_tr_channel = 16
                         channels += si.channel_count()
                         ch_list = pu.lsl_channel_list(inlet)
@@ -135,8 +128,7 @@ class StreamReceiver:
                         server_found = True
                         break
                     elif 'BioSemi' in amp_name:
-                        self.print('Found BioSemi streaming server %s (type %s, amp_serial %s) @ %s.' \
-                                   % (amp_name, si.type(), amp_serial, si.hostname()))
+                        logger.info('Found BioSemi streaming server %s (type %s, amp_serial %s) @ %s.' % (amp_name, si.type(), amp_serial, si.hostname()))
                         self._lsl_tr_channel = 0  # or subtract -6684927? (value when trigger==0)
                         channels += si.channel_count()
                         ch_list = pu.lsl_channel_list(inlet)
@@ -144,8 +136,7 @@ class StreamReceiver:
                         server_found = True
                         break
                     elif 'SmartBCI' in amp_name:
-                        self.print('Found SmartBCI streaming server %s (type %s, amp_serial %s) @ %s.' \
-                                   % (amp_name, si.type(), amp_serial, si.hostname()))
+                        logger.info('Found SmartBCI streaming server %s (type %s, amp_serial %s) @ %s.' % (amp_name, si.type(), amp_serial, si.hostname()))
                         self._lsl_tr_channel = 23
                         channels += si.channel_count()
                         ch_list = pu.lsl_channel_list(inlet)
@@ -153,8 +144,7 @@ class StreamReceiver:
                         server_found = True
                         break
                     elif 'StreamPlayer' in amp_name:
-                        self.print('Found StreamPlayer streaming server %s (type %s, amp_serial %s) @ %s.' \
-                                   % (amp_name, si.type(), amp_serial, si.hostname()))
+                        logger.info('Found StreamPlayer streaming server %s (type %s, amp_serial %s) @ %s.' % (amp_name, si.type(), amp_serial, si.hostname()))
                         self._lsl_tr_channel = 0
                         channels += si.channel_count()
                         ch_list = pu.lsl_channel_list(inlet)
@@ -162,10 +152,9 @@ class StreamReceiver:
                         server_found = True
                         break
                     elif 'openvibeSignal' in amp_name:
-                        self.print('Found an Openvibe signal streaming server %s (type %s, amp_serial %s) @ %s.' \
-                                   % (amp_name, si.type(), amp_serial, si.hostname()))
+                        logger.info('Found an Openvibe signal streaming server %s (type %s, amp_serial %s) @ %s.' % (amp_name, si.type(), amp_serial, si.hostname()))
                         ch_list = pu.lsl_channel_list(inlet)
-                        self._lsl_tr_channel = find_trigger_channel(ch_list)
+                        self._lsl_tr_channel = find_event_channel(ch_list)
                         channels += si.channel_count()
                         amps.append(si)
                         server_found = True
@@ -173,19 +162,17 @@ class StreamReceiver:
                         self.multiplier = 10**6 # change V -> uV unit for OpenVibe sources
                         break
                     elif 'openvibeMarkers' in amp_name:
-                        self.print('Found an Openvibe markers server %s (type %s, amp_serial %s) @ %s.' \
-                                   % (amp_name, si.type(), amp_serial, si.hostname()))
+                        logger.info('Found an Openvibe markers server %s (type %s, amp_serial %s) @ %s.' % (amp_name, si.type(), amp_serial, si.hostname()))
                         ch_list = pu.lsl_channel_list(inlet)
-                        self._lsl_tr_channel = find_trigger_channel(ch_list)
+                        self._lsl_tr_channel = find_event_channel(ch_list)
                         channels += si.channel_count()
                         amps.append(si)
                         server_found = True
                         break
                     elif find_any:
-                        self.print('Found a streaming server %s (type %s, amp_serial %s) @ %s.' \
-                                   % (amp_name, si.type(), amp_serial, si.hostname()))
+                        logger.info('Found a streaming server %s (type %s, amp_serial %s) @ %s.' % (amp_name, si.type(), amp_serial, si.hostname()))
                         ch_list = pu.lsl_channel_list(inlet)
-                        self._lsl_tr_channel = find_trigger_channel(ch_list)
+                        self._lsl_tr_channel = find_event_channel(ch_list)
                         channels += si.channel_count()
                         amps.append(si)
                         server_found = True
@@ -197,9 +184,10 @@ class StreamReceiver:
         # define EEG channel indices
         self._lsl_eeg_channels = list(range(channels))
         if self._lsl_tr_channel is None:
-            self.print('Trigger channel not fonud. Adding an empty channel 0.', 'Y')
+            logger.warning('Trigger channel not fonud. Adding an empty channel 0.')
         else:
-            self.print('Trigger channel found at index %d. Moving to index 0.' % self._lsl_tr_channel, 'Y')
+            if self._lsl_tr_channel != 0:
+                logger.info_yellow('Trigger channel found at index %d. Moving to index 0.' % self._lsl_tr_channel)
             self._lsl_eeg_channels.pop(self._lsl_tr_channel)
         self._lsl_eeg_channels = np.array(self._lsl_eeg_channels)
         self.tr_channel = 0  # trigger channel is always set to 0.
@@ -209,24 +197,40 @@ class StreamReceiver:
         inlets_master = []
         inlets_slaves = []
         for amp in amps:
-            inlet = pylsl.StreamInlet(amp)
+            # data type of the 2nd argument (max_buflen) is int according to LSL C++ specification!
+            inlet = pylsl.StreamInlet(amp, max_buflen=self.stream_bufsec)
             inlets_master.append(inlet)
             self.buffers.append([])
             self.timestamps.append([])
 
         inlets = inlets_master + inlets_slaves
         sample_rate = amps[0].nominal_srate()
-        self.print('Channels: %d' % channels)
-        self.print('LSL Protocol version: %s' % amps[0].version())
-        self.print('Source sampling rate: %.1f' % sample_rate)
-        self.print('Unit multiplier: %.1f' % self.multiplier)
+        logger.info('Channels: %d' % channels)
+        logger.info('LSL Protocol version: %s' % amps[0].version())
+        logger.info('Source sampling rate: %.1f' % sample_rate)
+        logger.info('Unit multiplier: %.1f' % self.multiplier)
 
+        #self.winsize = int(self.winsec * sample_rate)
+        #self.bufsize = int(self.bufsec * sample_rate)
         self.winsize = int(round(self.winsec * sample_rate))
         self.bufsize = int(round(self.bufsec * sample_rate))
+        self.stream_bufsize = int(round(self.stream_bufsec * sample_rate))
         self.sample_rate = sample_rate
         self.connected = True
-        self.inlets = inlets  # NOTE: not picklable!
         self.ch_list = ch_list
+        self.inlets = inlets  # Note: not picklable!
+
+        # TODO: check if there's any problem with multiple inlets
+        if len(self.inlets) > 1:
+            logger.warning('Merging of multiple acquisition servers is not supported yet. Only %s will be used.' % amps[0].name())
+            '''
+            for i in range(1, len(self.inlets)):
+                chunk, tslist = self.inlets[i].pull_chunk(max_samples=self.stream_bufsize)
+                self.buffers[i].extend(chunk)
+                self.timestamps[i].extend(tslist)
+                if self.bufsize > 0 and len(self.buffers[i]) > self.bufsize:
+                    self.buffers[i] = self.buffers[i][-self.bufsize:]
+            '''
 
         # create channel info
         if self._lsl_tr_channel is None:
@@ -237,15 +241,15 @@ class StreamReceiver:
                     self.ch_list.pop(i)
                     self.ch_list = ['TRIGGER'] + self.ch_list
                     break
-        qc.print_c('self.ch_list %s' % self.ch_list, 'Y')
+        logger.info('self.ch_list %s' % self.ch_list)
 
         # fill in initial buffer
-        self.print('Waiting to fill initial buffer of length %d' % (self.winsize))
+        logger.info('Waiting to fill initial buffer of length %d' % (self.winsize))
         while len(self.timestamps[0]) < self.winsize:
             self.acquire()
             time.sleep(0.1)
         self.ready = True
-        self.print('Start receiving stream data.')
+        logger.info('Start receiving stream data.')
 
     def acquire(self, blocking=True):
         """
@@ -254,37 +258,36 @@ class StreamReceiver:
         Fills the buffer and return the current chunk of data and timestamps.
 
         Returns:
-            (data, timestamps) where
-            data: [samples, channels]
-            timestamps: [samples]
-
-        TODO: add a parameter to set to non-blocking mode.
+            data [samples x channels], timestamps [samples]
         """
-        if DEBUG_TIME_OFFSET:
-            timestamp_offset = False
-            if len(self.timestamps[0]) == 0:
-                timestamp_offset = True
+        timestamp_offset = False
+        if len(self.timestamps[0]) == 0:
+            timestamp_offset = True
 
         self.watchdog.reset()
         tslist = []
-        while self.watchdog.sec() < 5:
-            # retrieve chunk in [frame][ch]
-            if len(tslist) == 0:
-                chunk, tslist = self.inlets[0].pull_chunk()  # [frames][channels]
-                if blocking == False and len(tslist) == 0:
-                    return np.zeros((0, len(self.ch_list))), []
-            if len(tslist) > 0:
-                if DEBUG_TIME_OFFSET and timestamp_offset is True:
-                    lsl_clock = pylsl.local_clock()
-                break
-            time.sleep(0.0005)
-        else:
-            self.print('Warning: Timeout occurred while acquiring data. Amp driver bug ?')
-            return np.zeros((0, len(self.ch_list))), []
+        received = False
+        chunk = None
+        while not received:
+            while self.watchdog.sec() < 5:
+                # chunk = [frames]x[ch], tslist = [frames]
+                if len(tslist) == 0:
+                    chunk, tslist = self.inlets[0].pull_chunk(max_samples=self.stream_bufsize)
+                    if blocking == False and len(tslist) == 0:
+                        return np.empty((0, len(self.ch_list))), []
+                if len(tslist) > 0:
+                    if timestamp_offset is True:
+                        lsl_clock = pylsl.local_clock()
+                    received = True
+                    break
+                time.sleep(0.0005)
+            else:
+                logger.warning('Timeout occurred while acquiring data. Amp driver bug?')
+                # give up and return empty values to avoid deadlock
+                return np.empty((0, len(self.ch_list))), []
         data = np.array(chunk)
 
         # BioSemi has pull-up resistor instead of pull-down
-        # import pdb; pdb.set_trace()
         if self.amp_name == 'BioSemi' and self._lsl_tr_channel is not None:
             datatype = data.dtype
             data[:, self._lsl_tr_channel] = (np.bitwise_and(255, data[:, self._lsl_tr_channel].astype(int)) - 1).astype(datatype)
@@ -306,21 +309,22 @@ class StreamReceiver:
         chunk = data.tolist()
         self.buffers[0].extend(chunk)
         self.timestamps[0].extend(tslist)
-        if self.bufsize > 0 and len(self.timestamps) > self.bufsize:
+        if self.bufsize > 0 and len(self.timestamps[0]) > self.bufsize:
             self.buffers[0] = self.buffers[0][-self.bufsize:]
             self.timestamps[0] = self.timestamps[0][-self.bufsize:]
 
-        if DEBUG_TIME_OFFSET and timestamp_offset is True:
+        if timestamp_offset is True:
             timestamp_offset = False
-            print('LSL timestamp =', lsl_clock)
-            print('Server timestamp =', self.timestamps[-1][-1])
-            self.lsl_time_offset = lsl_clock - self.timestamps[-1][-1]
-            print('Offset = %.3f ' % (self.lsl_time_offset), end='')
-            if self.lsl_time_offset > 0.1:
-                qc.print_c('\n*** WARNING: The server seems to be sending wrong time stamps ***\n\n', 'r')
+            logger.info('LSL timestamp = %s' % lsl_clock)
+            logger.info('Server timestamp = %s' % self.timestamps[-1][-1])
+            self.lsl_time_offset = self.timestamps[-1][-1] - lsl_clock
+            logger.info('Offset = %.3f ' % (self.lsl_time_offset))
+            if abs(self.lsl_time_offset) > 0.1:
+                logger.warning('LSL server has a high timestamp offset.')
             else:
-                qc.print_c('(Synchronized)', 'g')
+                logger.info_green('LSL time server synchronized')
 
+        ''' TODO: test the merging of multiple streams
         # if we have multiple synchronized amps
         if len(self.inlets) > 1:
             for i in range(1, len(self.inlets)):
@@ -329,6 +333,7 @@ class StreamReceiver:
                 self.timestamps[i].extend(tslist)
                 if self.bufsize > 0 and len(self.buffers[i]) > self.bufsize:
                     self.buffers[i] = self.buffers[i][-self.bufsize:]
+        '''
 
         # data= array[samples, channels], tslist=[samples]
         return (data, tslist)
@@ -338,7 +343,7 @@ class StreamReceiver:
         Check connection and automatically connect if not connected
         """
         while not self.connected:
-            self.print('ERROR: LSL server not connected yet. Trying to connect automatically.')
+            logger.error('LSL server not connected yet. Trying to connect automatically.')
             self.connect()
             time.sleep(1)
 
@@ -347,6 +352,7 @@ class StreamReceiver:
         Set window size (in seconds)
         """
         self.check_connect()
+        #self.winsize = int(window_size * self.sample_rate) + 1
         self.winsize = int(round(window_size * self.sample_rate)) + 1
 
     def get_channel_names(self):
@@ -365,16 +371,23 @@ class StreamReceiver:
         timestamps = self.timestamps[0][-self.winsize:]
         return window, timestamps
 
-    def get_window(self):
+    def get_window(self, decim=1):
         """
         Get the latest window and timestamps in numpy format
+
+        input
+        -----
+        decim (int): decimation factor
+
+        output
+        ------
+        [samples x channels], [samples]
         """
         self.check_connect()
         window, timestamps = self.get_window_list()
 
         if len(timestamps) > 0:
-            # window= array[[samples_ch1],[samples_ch2]...]
-            # return (samples x channels, samples)
+            # window = array[[samples_ch1],[samples_ch2]...]
             return np.array(window), np.array(timestamps)
         else:
             return np.array([]), np.array([])
@@ -402,10 +415,7 @@ class StreamReceiver:
             else:
                 return np.array([]), np.array([])
         except:
-            import pdb, traceback
-            self.print('Sorry! Unexpected error occurred in get_buffer(). Dropping into a shell.')
-            traceback.print_exc()
-            import pdb
+            logger.exception('Sorry! Unexpected error occurred in get_buffer(). Dropping into a shell for debugging.')
             pdb.pm()
 
     def get_buflen(self):
@@ -438,6 +448,14 @@ class StreamReceiver:
         """
         return self.tr_channel
 
+    def get_lsl_offset(self):
+        """
+        Return time difference of acquisition server's time and LSL time
+
+        OpenVibe servers often have a bug of sending its own running time instead of LSL time.
+        """
+        return self.lsl_time_offset
+
     def reset_buffer(self):
         """
         Clear buffers
@@ -453,56 +471,59 @@ class StreamReceiver:
 
 """
 Example code for printing out raw values
-
 """
-if __name__ == '__main__':
-
-    # settings
-    CH_INDEX = [1]  # zero-baesd
-    TIME_INDEX = None # integer or None. None = average of raw values of the current window
-    SHOW_PSD = False
-
-
-    import pycnbi.utils.q_common as qc
+def test_receiver():
     import mne
     import os
+
+    CH_INDEX = [1] # channel to monitor
+    TIME_INDEX = None # integer or None. None = average of raw values of the current window
+    SHOW_PSD = False
     mne.set_log_level('ERROR')
     os.environ['OMP_NUM_THREADS'] = '1' # actually improves performance for multitaper
 
+    # connect to LSL server
     amp_name, amp_serial = pu.search_lsl()
     sr = StreamReceiver(window_size=1, buffer_size=1, amp_serial=amp_serial, eeg_only=False, amp_name=amp_name)
     sfreq = sr.get_sample_rate()
-    watchdog = qc.Timer()
-    tm = qc.Timer(autoreset=True)
     trg_ch = sr.get_trigger_channel()
-    last_ts = 0
-    qc.print_c('Trigger channel: %d' % trg_ch, 'G')
+    logger.info('Trigger channel = %d' % trg_ch)
 
+    # PSD init
     if SHOW_PSD:
         psde = mne.decoding.PSDEstimator(sfreq=sfreq, fmin=1, fmax=50, bandwidth=None, \
             adaptive=False, low_bias=True, n_jobs=1, normalization='length', verbose=None)
 
+    watchdog = qc.Timer()
+    tm = qc.Timer(autoreset=True)
+    last_ts = 0
     while True:
         sr.acquire()
         window, tslist = sr.get_window() # window = [samples x channels]
         window = window.T # chanel x samples
 
+        qc.print_c('LSL Diff = %.3f' % (pylsl.local_clock() - tslist[-1]), 'G')
+
         # print event values
-        tsnew = np.where(np.array(tslist) > last_ts)[0][0]
-        trigger = np.unique(window[trg_ch, tsnew:])
+        tsnew = np.where(np.array(tslist) > last_ts)[0]
+        if len(tsnew) == 0:
+            logger.warning('There seems to be delay in receiving data.')
+            time.sleep(1)
+            continue
+        trigger = np.unique(window[trg_ch, tsnew[0]:])
 
         # for Biosemi
         # if sr.amp_name=='BioSemi':
         #    trigger= set( [255 & int(x-1) for x in trigger ] )
 
         if len(trigger) > 0:
-            qc.print_c('Triggers: %s' % np.array(trigger), 'G')
+            logger.info('Triggers: %s' % np.array(trigger))
 
-        print('[%.1f] Receiving data...' % watchdog.sec())
+        logger.info('[%.1f] Receiving data...' % watchdog.sec())
 
         if TIME_INDEX is None:
             datatxt = qc.list2string(np.mean(window[CH_INDEX, :], axis=1), '%-15.6f')
-            print('[%.3f : %.3f]' % (tslist[0], tslist[1]) + ' data: %s' % datatxt)
+            print('[%.3f : %.3f]' % (tslist[0], tslist[-1]) + ' data: %s' % datatxt)
         else:
             datatxt = qc.list2string(window[CH_INDEX, TIME_INDEX], '%-15.6f')
             print('[%.3f]' % tslist[TIME_INDEX] + ' data: %s' % datatxt)
@@ -517,3 +538,6 @@ if __name__ == '__main__':
 
         last_ts = tslist[-1]
         tm.sleep_atleast(0.05)
+
+if __name__ == '__main__':
+    test_receiver()

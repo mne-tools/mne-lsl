@@ -9,17 +9,17 @@ Kyuhwa Lee, 2018
 
 """
 
-import pycnbi
-import pycnbi.utils.pycnbi_utils as pu
 import sys
 import os
+import imp
 import mne
 import scipy
-import multiprocessing as mp
 import numpy as np
-import pycnbi.utils.q_common as qc
 import mne.time_frequency
-import imp
+import multiprocessing as mp
+import pycnbi.utils.pycnbi_utils as pu
+import pycnbi.utils.q_common as qc
+from pycnbi import logger
 from builtins import input
 
 def check_cfg(cfg):
@@ -83,7 +83,7 @@ def get_tfr(fif_file, cfg, tfr, n_jobs=1):
         raise RuntimeError(msg)
 
     # Apply filters
-    pu.preprocess(raw, spatial=cfg.SP_FILTER, spatial_ch=spchannels, spectral=cfg.TP_FILTER,
+    raw = pu.preprocess(raw, spatial=cfg.SP_FILTER, spatial_ch=spchannels, spectral=cfg.TP_FILTER,
                   spectral_ch=picks, notch=cfg.NOTCH_FILTER, notch_ch=picks,
                   multiplier=cfg.MULTIPLIER, n_jobs=n_jobs)
 
@@ -97,7 +97,7 @@ def get_tfr(fif_file, cfg, tfr, n_jobs=1):
     tmax = (raw._data.shape[1] - 1) / raw.info['sfreq']
     epochs_all = mne.Epochs(raw, events, classes, tmin=0, tmax=tmax,
                     picks=picks, baseline=None, preload=True)
-    print('\n>> Processing %s' % fif_file)
+    logger.info('\n>> Processing %s' % fif_file)
     freqs = cfg.FREQ_RANGE  # define frequencies of interest
     n_cycles = freqs / 2.  # different number of cycle per frequency
     power = tfr(epochs_all, freqs=freqs, n_cycles=n_cycles, use_fft=False,
@@ -119,9 +119,9 @@ def get_tfr(fif_file, cfg, tfr, n_jobs=1):
                 colorbar=True, title=title, vmin=cfg.VMIN, vmax=cfg.VMAX, dB=False)
             fout = '%s/%s-%s-%s.png' % (export_dir, fname, cfg.SP_FILTER, ch_name)
             fig.savefig(fout)
-            print('Exported %s' % fout)
+            logger.info('Exported %s' % fout)
 
-    print('Finished !')
+    logger.info('Finished !')
 
 def config_run(cfg_module):
     cfg = imp.load_source(cfg_module, cfg_module)

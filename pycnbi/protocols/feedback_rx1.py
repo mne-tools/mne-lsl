@@ -29,6 +29,7 @@ import pycnbi.utils.q_common as qc
 import numpy as np
 import time
 from IPython import embed
+from pycnbi import logger
 
 # visualization
 keys = {'left':81, 'right':83, 'up':82, 'down':84, 'pgup':85, 'pgdn':86, 'home':80, 'end':87, 'space':32, 'esc':27 \
@@ -190,7 +191,7 @@ class Feedback:
                     probs_acc /= sum(probs_acc)
                     if self.cfg.DEBUG_PROBS:
                         msg = 'DEBUG: Accumulated probabilities = %s' % qc.list2string(probs_acc, '%.3f')
-                        print(msg)
+                        logger.info(msg)
                         if self.logf is not None:
                             self.logf.write(msg + '\n')
                     if self.logf is not None:
@@ -205,18 +206,16 @@ class Feedback:
                     probs_new = decoder.get_prob_unread()
                     if probs_new is None:
                         if self.tm_watchdog.sec() > 3:
-                            qc.print_c('WARNING: No classification being done. Are you receiving data streams?', 'Y')
+                            logger.warning('No classification being done. Are you receiving data streams?')
                             self.tm_watchdog.reset()
                     else:
                         self.tm_watchdog.reset()
 
                         # bias and accumulate
                         if self.bar_bias is not None:
-                            # print('BEFORE: %.3f %.3f'% (probs_new[0], probs_new[1]) )
                             probs_new[bias_idx] += self.bar_bias[1]
                             newsum = sum(probs_new)
                             probs_new = [p / newsum for p in probs_new]
-                        # print('AFTER: %.3f %.3f'% (probs_new[0], probs_new[1]) )
 
                         probs_acc += np.array(probs_new)
 
@@ -253,7 +252,7 @@ class Feedback:
                             elif max_label == 'B':
                                 dx *= self.bar_step_both
                             else:
-                                print('DEBUG: Direction %s using bar step %d' % (max_label, self.bar_step_left))
+                                logger.debug('Direction %s using bar step %d' % (max_label, self.bar_step_left))
                                 dx *= self.bar_step_left
 
                             ################################################
@@ -292,7 +291,7 @@ class Feedback:
                             msg = '%s%s  raw %s   acc %s   bar %s%d  (%.1f ms)' % \
                                   (biastxt, bar_dirs, qc.list2string(probs_new, '%.2f'), qc.list2string(probs, '%.2f'),
                                    bar_label, bar_score, tm_classify.msec())
-                            print(msg)
+                            logger.info(msg)
                             if self.logf is not None:
                                 self.logf.write(msg + '\n')
                             tm_classify.reset()
@@ -330,4 +329,4 @@ class Feedback:
                 probs = [1.0 / len(bar_dirs)] * len(bar_dirs)
                 self.bar.move(bar_dirs[0], bar_score, overlay=False)
                 self.bar.update()
-                print('RESET', probs, dx)
+                logger.info('probs and dx reset.')

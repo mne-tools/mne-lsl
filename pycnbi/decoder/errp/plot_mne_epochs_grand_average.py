@@ -187,7 +187,7 @@ if __name__ == '__main__':
 
     ONLINE = False
 
-    event_id = dict(correct=tdef.by_key['FEEDBACK_CORRECT'], wrong=tdef.by_key['FEEDBACK_WRONG'])
+    event_id = dict(correct=tdef.by_name['FEEDBACK_CORRECT'], wrong=tdef.by_name['FEEDBACK_WRONG'])
     if ONLINE is False:
         raw.filter(l_freq=l_freq, h_freq=h_freq, n_jobs=n_jobs, picks=picks_feat, method='iir',
                    iir_params=None)  # method='iir'and irr_params=None -> filter with a 4th order Butterworth
@@ -229,7 +229,7 @@ if __name__ == '__main__':
         #
         #	ONLINE = False
         #
-        #	event_id= dict(correct=tdef.by_key['FEEDBACK_CORRECT'], wrong=tdef.by_key['FEEDBACK_WRONG'])
+        #	event_id= dict(correct=tdef.by_name['FEEDBACK_CORRECT'], wrong=tdef.by_name['FEEDBACK_WRONG'])
         #	if ONLINE is False:
         #		raw.filter(l_freq=l_freq, h_freq=h_freq, n_jobs=n_jobs, picks=picks_feat, method='iir', iir_params=None) # method='iir'and irr_params=None -> filter with a 4th order Butterworth
         #

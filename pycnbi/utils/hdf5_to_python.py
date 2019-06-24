@@ -10,12 +10,13 @@ Created on Mon Oct 05 10:02:22 2015
 @author: Hoang Pham, hoang.pham@epfl.ch
 """
 
-import pycnbi.utils.pycnbi_utils as pu
-import pycnbi.utils.q_common as qc
+import h5py
 import scipy.io
 import numpy as np
-import h5py
+import pycnbi.utils.q_common as qc
+import pycnbi.utils.pycnbi_utils as pu
 import xml.etree.ElementTree as XET  # xml parser
+from pycnbi import logger
 
 def hdf5_to_python(data_dir):
     for rawfile in qc.get_file_list(data_dir, fullpath=True):
@@ -80,12 +81,12 @@ def hdf5_to_python(data_dir):
 
         # triggerData and triggerIndexes are ready to be inputted to mne.create_event
 
-        print('\n%s\n%d events found. Event types: %s' % (rawfile, len(triggerIndexes), set(triggerData)))
+        logger.info('%s\n%d events found. Event types: %s' % (rawfile, len(triggerIndexes), set(triggerData)))
         merged = np.vstack((triggerIndexes, triggerData)).T
         matfile = rawfile.replace('.hdf5', '.mat')
         matdata = dict(events=merged)
         scipy.io.savemat(matfile, matdata)
-        print('Data exported to %s' % matfile)
+        logger.info('Data exported to %s' % matfile)
 
 if __name__ == '__main__':
     data_dir = r'D:\data\TriggerTest'

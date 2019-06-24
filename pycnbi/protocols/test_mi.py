@@ -27,25 +27,27 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import pycnbi
-import sys
 import os
-import math
-import random
-import time
-import datetime
-import imp
-import pycnbi.triggers.pyLptControl as pyLptControl
+import sys
 import cv2
+import imp
+import time
+import math
+import scipy
+import random
+import pycnbi
+import datetime
 import numpy as np
-import scipy, scipy.signal
+import scipy.signal
 import mne.io, mne.viz
 import pycnbi.utils.q_common as qc
+import pycnbi.utils.pycnbi_utils as pu
 import pycnbi.glass.bgi_client as bgi_client
+import pycnbi.triggers.pyLptControl as pyLptControl
 from pycnbi.decoder.decoder import BCIDecoderDaemon, BCIDecoder
 from pycnbi.triggers.trigger_def import trigger_def
 from pycnbi.protocols.feedback import Feedback
-import pycnbi.utils.pycnbi_utils as pu
+from pycnbi import logger
 from builtins import input
 
 # visualization
@@ -66,7 +68,7 @@ def check_config(cfg):
     critical_vars = [
         'CLS_MI',
         'TRIGGER_DEVICE',
-        'TRIGGER_DEF',
+        'TRIGGER_FILE',
         'DIRECTIONS',
         'TRIALS_EACH',
         'PROB_ALPHA_NEW'
@@ -98,7 +100,8 @@ def check_config(cfg):
         'SCREEN_POS':(0, 0),
         'WITH_REX':False,
         'DEBUG_PROBS':False,
-        'LOG_PROBS':False
+        'LOG_PROBS':False,
+        'TRIAL_PAUSE':False
     }
 
     if not (hasattr(cfg, 'BAR_STEP') or hasattr(cfg, 'BAR_STEP_LEFT') or\
@@ -113,7 +116,7 @@ def check_config(cfg):
     for key in optional_vars:
         if not hasattr(cfg, key):
             setattr(cfg, key, optional_vars[key])
-            qc.print_c('load_cfg(): Setting undefined parameter %s=%s' % (key, getattr(cfg, key)), 'Y')
+            logger.warning('load_cfg(): Setting undefined parameter %s=%s' % (key, getattr(cfg, key)))
 
     return cfg
 
@@ -133,14 +136,12 @@ def run(cfg):
         fake_dirs = [v for (k, v) in cfg.DIRECTIONS]
 
     # events and triggers
-    tdef = trigger_def(cfg.TRIGGER_DEF)
+    tdef = trigger_def(cfg.TRIGGER_FILE)
     #if cfg.TRIGGER_DEVICE is None:
     #    input('\n** Warning: No trigger device set. Press Ctrl+C to stop or Enter to continue.')
     trigger = pyLptControl.Trigger(cfg.TRIGGER_DEVICE)
     if trigger.init(50) == False:
-        qc.print_c(
-            '\n** Error connecting to USB2LPT device. Use a mock trigger instead?',
-            'R')
+        logger.error('Cannot connect to USB2LPT device. Use a mock trigger instead?')
         input('Press Ctrl+C to stop or Enter to continue.')
         trigger = pyLptControl.MockTrigger()
         trigger.init(50)
@@ -173,7 +174,7 @@ def run(cfg):
         dir_seq = [d[0] for d in cfg.DIRECTIONS] * cfg.TRIALS_EACH
     num_trials = len(dir_seq)
 
-    qc.print_c('Initializing decoder.', 'W')
+    logger.info('Initializing decoder.')
     while decoder.is_running() is 0:
         time.sleep(0.01)
 
@@ -183,9 +184,9 @@ def run(cfg):
         visual = BarVisual(cfg.GLASS_USE, screen_pos=cfg.SCREEN_POS,
             screen_size=cfg.SCREEN_SIZE)
     elif cfg.FEEDBACK_TYPE == 'BODY':
-        assert hasattr(cfg, 'IMAGE_PATH'), 'IMAGE_PATH is undefined in your config.'
+        assert hasattr(cfg, 'FEEDBACK_IMAGE_PATH'), 'FEEDBACK_IMAGE_PATH is undefined in your config.'
         from pycnbi.protocols.viz_human import BodyVisual
-        visual = BodyVisual(cfg.IMAGE_PATH, use_glass=cfg.GLASS_USE,
+        visual = BodyVisual(cfg.FEEDBACK_IMAGE_PATH, use_glass=cfg.GLASS_USE,
             screen_pos=cfg.SCREEN_POS, screen_size=cfg.SCREEN_SIZE)
     visual.put_text('Waiting to start')
     if cfg.LOG_PROBS:
@@ -231,16 +232,13 @@ def run(cfg):
             elif pred_label == 'D':
                 rex_dir = 'S'
             else:
-                qc.print_c(
-                    'Warning: Rex cannot execute undefined action %s' % pred_label,
-                    'W')
+                logger.warning('Rex cannot execute undefined action %s' % pred_label)
                 rex_dir = None
             if rex_dir is not None:
                 visual.move(pred_label, 100, overlay=False, barcolor='B')
                 visual.update()
-                qc.print_c('Executing Rex action %s' % rex_dir, 'W')
-                os.system('%s/Rex/RexControlSimple.exe %s %s' % (
-                pycnbi.ROOT, cfg.REX_COMPORT, rex_dir))
+                logger.info('Executing Rex action %s' % rex_dir)
+                os.system('%s/Rex/RexControlSimple.exe %s %s' % (pycnbi.ROOT, cfg.REX_COMPORT, rex_dir))
                 time.sleep(8)
 
         if true_label == pred_label:
@@ -248,7 +246,7 @@ def run(cfg):
         else:
             msg = 'Wrong'
         if cfg.TRIALS_RETRY is False or true_label == pred_label:
-            print('Trial %d: %s (%s -> %s)' % (trial, msg, true_label, pred_label))
+            logger.info('Trial %d: %s (%s -> %s)' % (trial, msg, true_label, pred_label))
             trial += 1
 
     if len(dir_detected) > 0:
@@ -262,7 +260,7 @@ def run(cfg):
             cfmat, acc = qc.confusion_matrix(dir_seq, dir_detected)
             fout.write('\nAccuracy %.3f\nConfusion matrix\n' % acc)
             fout.write(cfmat)
-            print('Log exported to %s' % logfile)
+            logger.info('Log exported to %s' % logfile)
         print('\nAccuracy %.3f\nConfusion matrix\n' % acc)
         print(cfmat)
 
@@ -299,7 +297,7 @@ def run(cfg):
         print(msg)
     '''
 
-    print('Finished.')
+    logger.info('Finished.')
 
 # for batch script
 def batch_run(cfg_file):

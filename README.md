@@ -1,6 +1,6 @@
 # Introduction
 
-PyCNBI provides a real-time brain signal decoding framework. It has been applied on a couple of online decoding projects based on EEG and ECoG and on various acquisition systems including AntNeuro eego, g.tec gUSBamp, BioSemi ActiveTwo, BrainProducts actiCHamp and Wearable Sensing. The decoding runs at approximately 15 classifications per second(cps) on a 3rd-gen i7 laptop with 64-channel setup at 512 Hz sampling rate. High-speed decoding up to 200 cps was achieved using process-interleaving technique on 8 cores. It has been tested on both Linux and Windows using Python 3.6.
+PyCNBI provides a real-time brain signal decoding framework. It has been applied on a couple of online decoding projects based on EEG and ECoG and on various acquisition systems including AntNeuro eego, g.tec gUSBamp, BioSemi ActiveTwo, BrainProducts actiCHamp and Wearable Sensing. The decoding runs at approximately 15 classifications per second(cps) on a 3rd-gen i7 laptop with 64-channel setup at 512 Hz sampling rate. High-speed decoding up to 200 cps was achieved using process-interleaving technique on 8 cores. It has been tested on both Linux and Windows using Python 3.6. Some parts of the code have been developed while participating [Microsoft Brain Signal Decoding competition](https://github.com/dbdq/microsoft_decoding).
 
 The underlying data communication is based on Lab Streaming Layer (LSL) which provides sub-millisecond time synchronization accuracy. Any signal acquisition system supported by native LSL or OpenVibe is also supported by PyCNBI. Since the data communication is based on TCP, signals can be also transmitted wirelessly. For more information about LSL, please visit:
 [https://github.com/sccn/labstreaminglayer](https://github.com/sccn/labstreaminglayer)
@@ -101,12 +101,10 @@ Use the OpenVibe acquisition server and make sure to check "LSL output" in prefe
 
 
 # To do
+  - GUI (in progress)
   - Tutorial 
-  - GUI-based setting tools.
-  - Use .ini files instead of .py files for settings.
-  - More cpu-efficient decoder class.
-  - Use a logger.
-  - Try Numba optimization.
+  - More cpu-efficient decoder class
+  - Numba optimization
 
 There are still plenty of possibilities to optimize the speed in many parts of the code. Any contribution is welcome. Please contact lee.kyuh@gmail.com for any comment / feedback.
 
