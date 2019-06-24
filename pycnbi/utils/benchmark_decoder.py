@@ -18,8 +18,8 @@ Results on i7-8700K machine:
 
 import pycnbi
 import numpy as np
-from pycnbi.decoder.decoder import BCIDecoder, BCIDecoderDaemon
 import pycnbi.utils.q_common as qc
+from pycnbi.decoder.decoder import BCIDecoder, BCIDecoderDaemon
 
 if __name__ == '__main__':
     decoder_file = 'PATH_TO_CLASSIFIER_FILE'

@@ -32,6 +32,7 @@ import pycnbi.triggers.pyLptControl as pyLptControl
 import pycnbi.utils.q_common as qc
 from pycnbi.protocols.viz_bars import BarVisual
 from pycnbi.triggers.trigger_def import trigger_def
+from pycnbi import logger
 from builtins import input
 
 def load_config(cfg_file):
@@ -51,7 +52,7 @@ def batch_run(cfg_file):
     run(cfg)
 
 def run(cfg):
-    tdef = trigger_def(cfg.TRIGGER_DEF)
+    tdef = trigger_def(cfg.TRIGGER_FILE)
     refresh_delay = 1.0 / cfg.REFRESH_RATE
 
     # visualizer
@@ -72,10 +73,11 @@ def run(cfg):
 
     # Hardware trigger
     if cfg.TRIGGER_DEVICE is None:
-        input('\n** Warning: No trigger device set. Press Ctrl+C to stop or Enter to continue.')
+        logger.warning('No trigger device set. Press Ctrl+C to stop or Enter to continue.')
+        #input()
     trigger = pyLptControl.Trigger(cfg.TRIGGER_DEVICE)
     if trigger.init(50) == False:
-        print('\n** Error connecting to USB2LPT device. Use a mock trigger instead?')
+        logger.error('\n** Error connecting to USB2LPT device. Use a mock trigger instead?')
         input('Press Ctrl+C to stop or Enter to continue.')
         trigger = pyLptControl.MockTrigger()
         trigger.init(50)
@@ -106,7 +108,9 @@ def run(cfg):
             if cfg.TRIAL_PAUSE:
                 bar.put_text('Press any key')
                 bar.update()
-                cv2.waitKey()
+                key = cv2.waitKey()
+                if key == keys['esc']:
+                    break
                 bar.fill()
             bar.put_text('Trial %d / %d' % (trial, num_trials))
             event = 'gap'
@@ -161,7 +165,7 @@ def run(cfg):
             event = 'gap_s'
             bar.fill()
             trial += 1
-            print('trial ' + str(trial - 1) + ' done')
+            logger.info('trial ' + str(trial - 1) + ' done')
             trigger.signal(tdef.BLANK)
             timer_trigger.reset()
             t_dir = cfg.T_DIR + random.uniform(-cfg.T_DIR_RANDOMIZE, cfg.T_DIR_RANDOMIZE)
@@ -188,11 +192,14 @@ def run(cfg):
 
         bar.update()
         key = 0xFF & cv2.waitKey(1)
-
         if key == keys['esc']:
             break
 
+    bar.finish()
+   
+
 if __name__ == '__main__':
+    logger.info('YES!')
     if len(sys.argv) < 2:
         cfg_file = input('Config file name? ')
     else:

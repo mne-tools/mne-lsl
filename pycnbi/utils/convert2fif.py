@@ -24,14 +24,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
 import sys
+import mne
 import pdb
 import scipy.io
-import mne
 import numpy as np
-import pycnbi.utils.pycnbi_utils as pu
 import pycnbi.utils.q_common as qc
+import pycnbi.utils.pycnbi_utils as pu
 from pycnbi.pycnbi_config import CAP, LAPLACIAN
+from pycnbi import logger
 from builtins import input
+from pathlib import Path
+
 mne.set_log_level('ERROR')
 
 
@@ -62,12 +65,9 @@ def event_timestamps_to_indices(sigfile, eventfile, offset=0):
             # find the first index not smaller than ts
             next_index = np.searchsorted(ts, event_ts)
             if next_index >= len(ts):
-                qc.print_c('** WARNING: Event %d at time %.3f is out of time range (%.3f - %.3f).' % (
-                    event_value, event_ts, ts_min, ts_max), 'y')
+                logger.warning('Event %d at time %.3f is out of time range (%.3f - %.3f).' % (event_value, event_ts, ts_min, ts_max))
             else:
                 events.append([next_index, 0, event_value])
-                # print(events[-1])
-
     return events
 
 
@@ -79,11 +79,11 @@ def convert2mat(filename, matfile):
     # extension= filename.split('.')[-1]
     matfile = basename + '.mat'
     if not os.path.exists(matfile):
-        print('>> Converting input to mat file')
+        logger.info('Converting input to mat file')
         run = "[sig,header]=sload('%s'); save('%s.mat','sig','header');" % (filename, basename)
         qc.matlab(run)
         if not os.path.exists(matfile):
-            qc.print_c('>> ERROR: mat file convertion error.', 'r')
+            logger.error('mat file convertion error.')
             sys.exit()
 
 
@@ -117,37 +117,32 @@ def pcl2fif(filename, interactive=False, outdir=None, external_event=None, offse
         ch_names = data['ch_names']
 
     # search for event channel
-    trig_ch_guess = pu.find_event_channel(signals_raw, ch_names)
-    if 'TRIGGER' in ch_names:
-        trig_ch = ch_names.index('TRIGGER')
-    elif 'STI ' in ch_names:
-        trig_ch = ch_names.index('STI ')
-    else:
-        trig_ch = trig_ch_guess
+    trig_ch = pu.find_event_channel(signals_raw, ch_names)
 
+    ''' TODO: REMOVE
     # exception
-    if trig_ch is not None and trig_ch_guess is None:
-        qc.print_c('* Warning: Inferred event channel is None.', 'Y')
+    if trig_ch is None:
+        logger.warning('Inferred event channel is None.')
         if interactive:
-            qc.print_c('If you are sure everything is alright, press Enter.', 'Y')
+            logger.warning('If you are sure everything is alright, press Enter.')
             input()
 
     # fix wrong event channel
     elif trig_ch_guess != trig_ch:
-        qc.print_c('* Warning: Specified event channel (%d) != inferred event channel (%d).' % (trig_ch, trig_ch_guess),
-                   'Y')
+        logger.warning('Specified event channel (%d) != inferred event channel (%d).' % (trig_ch, trig_ch_guess))
         if interactive: input('Press Enter to fix. Event channel will be set to %d.' % trig_ch_guess)
         ch_names.insert(trig_ch_guess, ch_names.pop(trig_ch))
         trig_ch = trig_ch_guess
-        qc.print_c('New channel list:', 'W')
+        logger.info('New channel list:')
         for c in ch_names:
-            qc.print_c('%s' % c, 'W')
-        qc.print_c('Event channel is now set to %d' % trig_ch, 'G')
+            logger.info('%s' % c)
+        logger.info('Event channel is now set to %d' % trig_ch)
+    '''
 
     # move trigger channel to index 0
     if trig_ch is None:
         # assuming no event channel exists, add a event channel to index 0 for consistency.
-        qc.print_c('* No event channel was not found. Adding a blank event channel to index 0.', 'Y')
+        logger.warning('No event channel was not found. Adding a blank event channel to index 0.')
         eventch = np.zeros([1, signals_raw.shape[1]])
         signals = np.concatenate((eventch, signals_raw), axis=0)
         num_eeg_channels = signals_raw.shape[0] # data['channels'] is not reliable any more
@@ -158,16 +153,16 @@ def pcl2fif(filename, interactive=False, outdir=None, external_event=None, offse
         num_eeg_channels = data['channels'] - 1
     else:
         # move event channel to 0
-        qc.print_c('* Moving event channel %d to 0.' % trig_ch, 'G')
+        logger.info('Moving event channel %d to 0.' % trig_ch)
         signals = np.concatenate((signals_raw[[trig_ch]], signals_raw[:trig_ch], signals_raw[trig_ch + 1:]), axis=0)
         assert signals_raw.shape == signals.shape
         num_eeg_channels = data['channels'] - 1
         ch_names.pop(trig_ch)
         trig_ch = 0
         ch_names.insert(trig_ch, 'TRIGGER')
-        qc.print_c('New channel list:', 'W')
+        logger.info('New channel list:')
         for c in ch_names:
-            qc.print_c('%s' % c, 'W')
+            logger.info('%s' % c)
 
     ch_info = ['stim'] + ['eeg'] * num_eeg_channels
     info = mne.create_info(ch_names, sample_rate, ch_info)
@@ -180,16 +175,19 @@ def pcl2fif(filename, interactive=False, outdir=None, external_event=None, offse
         raw._data[0] = 0  # erase current events
         events_index = event_timestamps_to_indices(filename, external_event, offset)
         if len(events_index) == 0:
-            qc.print_c('** WARNING: no events were found in the event file')
+            logger.warning('No events were found in the event file')
         else:
-            print('Found %d events' % len(events_index))
-        raw.add_events(events_index, stim_channel='TRIGGER')
+            logger.info('Found %d events' % len(events_index))
+            raw.add_events(events_index, stim_channel='TRIGGER')
 
     qc.make_dirs(outdir)
     fiffile = outdir + fname + '.fif'
 
     raw.save(fiffile, verbose=False, overwrite=overwrite, fmt=precision)
-    print('Saved to', fiffile)
+    logger.info('Saved to %s' % fiffile)
+
+    saveChannels2txt(filename, ch_names)
+    
     return True
 
 
@@ -210,14 +208,14 @@ def eeg2fif(filename, interactive=False, outdir=None):
 
     # convert to mat using MATLAB
     if not os.path.exists(matfile):
-        print('Converting input to mat file')
+        logger.info('Converting input to mat file')
         run = "[sig,header]=sload('%s'); save('%s','sig','header');" % (eegfile, matfile)
         qc.matlab(run)
         if not os.path.exists(matfile):
-            qc.print_c('>> ERROR: mat file convertion error.', 'r')
+            logger.error('mat file convertion error.')
             sys.exit()
     else:
-        print('MAT file already exists. Skipping conversion.')
+        logger.warning('MAT file already exists. Skipping conversion.')
 
     # extract events
     events = []
@@ -251,7 +249,9 @@ def eeg2fif(filename, interactive=False, outdir=None):
 
     # save and close
     raw.save(fiffile, verbose=False, overwrite=True, fmt='double')
-    print('Saved to', fiffile)
+    logger.info('Saved to %s' % fiffile)
+
+    saveChannels2txt(filename, ch_names)
 
 
 def gdf2fif(filename, interactive=False, outdir=None, channel_file=None):
@@ -318,7 +318,9 @@ def gdf2fif(filename, interactive=False, outdir=None, channel_file=None):
 
     # save and close
     raw.save(fiffile, verbose=False, overwrite=True, fmt='double')
-    print('Saved to', fiffile)
+    logger.info('Saved to %s' % fiffile)
+
+    saveChannels2txt(filename, ch_names)
 
 
 def bdf2fif(filename, interactive=False, outdir=None):
@@ -337,8 +339,7 @@ def bdf2fif(filename, interactive=False, outdir=None):
 
     # process event channel
     if raw.info['chs'][-1]['ch_name'] != 'STI 014':
-        qc.print_c("*** ERROR: The last channel (%s) doesn't seem to be an event channel. Entering debugging mode." %
-                   raw.info['chs'][-1]['ch_name'])
+        logger.error("The last channel (%s) doesn't seem to be an event channel. Entering debugging mode." % raw.info['chs'][-1]['ch_name'])
         pdb.set_trace()
     raw.info['chs'][-1]['ch_name'] = 'TRIGGER'
     events = mne.find_events(raw, stim_channel='TRIGGER', shortest_event=1, uint_cast=True, consecutive=True)
@@ -354,7 +355,9 @@ def bdf2fif(filename, interactive=False, outdir=None):
 
     # save and close
     raw.save(fiffile, verbose=False, overwrite=True, fmt='double')
-    print('Saved to', fiffile)
+    logger.info('Saved to %s' % fiffile)
+
+    saveChannels2txt(filename, ch_names)
 
 
 def bdf2fif_matlab(filename, interactive=False, outdir=None):
@@ -372,11 +375,11 @@ def bdf2fif_matlab(filename, interactive=False, outdir=None):
     matfile = outdir + fname + '.mat'
 
     if not os.path.exists(matfile):
-        print('>> Converting input to mat file')
+        logger.info('Converting input to mat file')
         run = "[sig,header]=sload('%s'); save('%s','sig','header');" % (filename, matfile)
         qc.matlab(run)
         if not os.path.exists(matfile):
-            qc.print_c('>> ERROR: mat file convertion error.', 'r')
+            logger.error('mat file convertion error.')
             sys.exit()
 
     mat = scipy.io.loadmat(matfile)
@@ -394,8 +397,8 @@ def bdf2fif_matlab(filename, interactive=False, outdir=None):
         ch_names = ch_names + extra_names
         ch_info = CAP['BIOSEMI_64_INFO'] + ['misc'] * extra_ch
     else:
-        qc.print_c('****** load_raw(): WARNING: Unrecognized number of channels (%d) ******' % nch, 'y')
-        qc.print_c('The last channel will be assumed to be trigger. Press Enter to continue, or Ctrl+C to break.', 'r')
+        logger.warning('Unrecognized number of channels (%d)' % nch)
+        logger.warning('The last channel will be assumed to be trigger. Press Enter to continue, or Ctrl+C to break.')
         if interactive:
             input()
 
@@ -424,7 +427,9 @@ def bdf2fif_matlab(filename, interactive=False, outdir=None):
 
     # save and close
     raw.save(fiffile, verbose=False, overwrite=True, fmt='double')
-    print('Saved to', fiffile)
+    logger.info('Saved to %s' % fiffile)
+
+    saveChannels2txt(filename, ch_names)
 
 
 def xdf2fif(filename, interactive=False, outdir=None):
@@ -455,7 +460,7 @@ def xdf2fif(filename, interactive=False, outdir=None):
     trig_ch_guess = pu.find_event_channel(signals, ch_names)
     if trig_ch_guess is None:
         trig_ch_guess = 0
-    ch_names =[ch_names[trig_ch_guess]] + ch_names[:trig_ch_guess] + ch_names[trig_ch_guess+1:]
+    ch_names =['TRIGGER'] + ch_names[:trig_ch_guess] + ch_names[trig_ch_guess+1:]
     ch_info = ['stim'] + ['eeg'] * (len(ch_names)-1)
 
     # fif header creation
@@ -464,7 +469,10 @@ def xdf2fif(filename, interactive=False, outdir=None):
 
     # save and close
     raw.save(fiffile, verbose=False, overwrite=True, fmt='double')
-    print('Saved to', fiffile)
+    logger.info('Saved to %s' % fiffile)
+
+    saveChannels2txt(filename, ch_names)
+
 
 
 def any2fif(filename, interactive=False, outdir=None, channel_file=None):
@@ -478,7 +486,7 @@ def any2fif(filename, interactive=False, outdir=None, channel_file=None):
     if p.ext == 'pcl':
         eve_file = '%s/%s.txt' % (p.dir, p.name.replace('raw', 'eve'))
         if os.path.exists(eve_file):
-            qc.print_c('Adding events from %s' % eve_file, 'G')
+            logger.info('Adding events from %s' % eve_file)
         else:
             eve_file = None
         pcl2fif(filename, interactive=interactive, outdir=outdir, external_event=eve_file)
@@ -491,8 +499,22 @@ def any2fif(filename, interactive=False, outdir=None, channel_file=None):
     elif p.ext == 'xdf':
         xdf2fif(filename, interactive=interactive, outdir=outdir)
     else:  # unknown format
-        qc.print_c('WARNING: Ignored unrecognized file extension %s. It should be [.pcl | .eeg | .gdf | .bdf]'\
-            % p.ext, 'r')
+        logger.error('Ignored unrecognized file extension %s. It should be [.pcl | .eeg | .gdf | .bdf]' % p.ext)
+
+
+def saveChannels2txt(outdir, ch_names):
+    """
+    Save the channels list to a txt file for the GUI
+    """
+    filename = outdir + "channelsList.txt"
+    config = Path(filename)
+    
+    if config.is_file() is False:
+        file = open(filename, "w")    
+        for x in range(len(ch_names)):
+            file.write(ch_names[x] + "\n")
+        file.close()
+
 
 def main(input_dir, channel_file=None):
     count = 0
@@ -500,11 +522,11 @@ def main(input_dir, channel_file=None):
         p = qc.parse_path(f)
         outdir = p.dir + '/fif/'
         if p.ext in ['pcl', 'bdf', 'edf', 'gdf', 'eeg', 'xdf']:
-            print('Converting %s' % f)
+            logger.info('Converting %s' % f)
             any2fif(f, interactive=True, outdir=outdir, channel_file=channel_file)
             count += 1
 
-    print('\n>> %d files converted.' % count)
+    logger.info('%d files converted.' % count)
 
 if __name__ == '__main__':
     if len(sys.argv) == 1:

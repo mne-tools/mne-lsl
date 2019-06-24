@@ -15,32 +15,32 @@ from __future__ import print_function, division, unicode_literals
 
 """
 
-DEBUG_TRIGGER = False
-NUM_X_CHANNELS = 16
+DEBUG_TRIGGER = False # TODO: parameterize
+NUM_X_CHANNELS = 16 # TODO: parameterize
 
-import pycnbi
-import pycnbi.utils.pycnbi_utils as pu
-import sys
+
 import os
+import sys
+import pdb
 import time
 import math
-import pdb
-import traceback
 import struct
-import pyqtgraph as pg
-from pyqtgraph.Qt import QtCore, QtGui, uic
-import numpy as np
-from scipy.signal import butter, lfilter, lfiltic, buttord
+import traceback
 import subprocess
-from pycnbi.stream_receiver.stream_receiver import StreamReceiver
+import numpy as np
+import pyqtgraph as pg
+import pycnbi
 import pycnbi.utils.q_common as qc
-from builtins import input
+import pycnbi.utils.pycnbi_utils as pu
+from scipy.signal import butter, lfilter, lfiltic, buttord
+from pycnbi.stream_receiver.stream_receiver import StreamReceiver
+from pycnbi import logger
+from pyqtgraph.Qt import QtCore, QtGui, uic
 from configparser import RawConfigParser
-
-path = "./"
+from builtins import input
 
 # Load GUI. Designed with QT Creator, feel free to change stuff
-form_class = uic.loadUiType(path + "mainwindow.ui")[0]
+form_class = uic.loadUiType("./mainwindow.ui")[0]
 
 
 class Scope(QtGui.QMainWindow, form_class):
@@ -69,9 +69,6 @@ class Scope(QtGui.QMainWindow, form_class):
     #
     def init_config_file(self):
         self.scope_settings = RawConfigParser(allow_no_value=True, inline_comment_prefixes=('#', ';'))
-        # if (not os.path.isfile(os.getenv("HOME") + "/.scope_settings.ini")):
-        #	subprocess.Popen(["cp", path + "/.scope_settings.ini", os.getenv("HOME") + "/.scope_settings.ini"], close_fds=True)
-
         if (len(sys.argv) == 1):
             self.show_channel_names = 0
             self.device_name = ""
@@ -361,7 +358,7 @@ class Scope(QtGui.QMainWindow, form_class):
         ########## TODO: assumkng 32 samples chunk => make it read from LSL header
         data = ['EEG', srate, ['L', 'R'], 32, len(self.sr.get_eeg_channels()),
             0, self.sr.get_trigger_channel(), None, None, None, None, None]
-        qc.print_c('Trigger channel is %d' % self.sr.get_trigger_channel(), 'w')
+        logger.info('Trigger channel is %d' % self.sr.get_trigger_channel())
 
         self.config = {'id':data[0], 'sf':data[1], 'labels':data[2],
             'samples':data[3], 'eeg_channels':data[4], 'exg_channels':data[5],
@@ -412,9 +409,7 @@ class Scope(QtGui.QMainWindow, form_class):
                 if (not self.stop_plot):
                     self.repaint()  # Call paint event
         except:
-            # exc_type, exc_obj, exc_tb= sys.exc_info()
-            # print('*** Line %d: Exception in update_loop(). %s\n%s'% (exc_tb.tb_lineno, exc_type, exc_obj))
-            traceback.print_exc()
+            logger.exception('Exception. Dropping into a shell.')
             pdb.set_trace()
         finally:
             # self.updating= False
@@ -433,6 +428,11 @@ class Scope(QtGui.QMainWindow, form_class):
         try:
             # data, self.ts_list= self.sr.inlets[0].pull_chunk(max_samples=self.config['sf']) # [frames][channels]
             data, self.ts_list = self.sr.acquire(blocking=False)
+            
+            # TODO: check and change to these two lines
+            #self.sr.acquire(blocking=False, decim=DECIM)
+            #data, self.ts_list = self.sr.get_window()
+
             if len(self.ts_list) == 0:
                 # self.eeg= None
                 # self.tri= None
@@ -457,10 +457,9 @@ class Scope(QtGui.QMainWindow, form_class):
                 try:
                     trg_value = max(self.tri)
                     if trg_value > 0:
-                        self.print('Received trigger', trg_value)
+                        logger.info('Received trigger %s' % trg_value)
                 except:
-                    traceback.print_exc()
-                    self.print('Error! self.tri =', self.tri)
+                    logger.exception('Error! self.tri = %s' % self.tri)
 
                     # Read exg. self.config.samples*self.config.exg_ch, type float
                     # bexg = np.random.rand( 1, self.config['samples'] * self.config['exg_channels'] )
@@ -469,9 +468,7 @@ class Scope(QtGui.QMainWindow, form_class):
             # print('**** Access violation in read_eeg():\n%s\n%s'% (sys.exc_info()[0], sys.exc_info()[1]))
             pass
         except:
-            traceback.print_exc()
-            # exc_type, exc_obj, exc_tb= sys.exc_info()
-            # print('**** Unexpected error in read_eeg(), Line %d:\n%s\n%s'% (exc_tb.tb_lineno, exc_type, exc_obj) )
+            logger.exception()
             pdb.set_trace()
 
     #
@@ -554,9 +551,9 @@ class Scope(QtGui.QMainWindow, form_class):
         if (self.show_LPT_events) and (not self.stop_plot):
             for x in range(len(self.tri)):
                 tri = int(self.tri[x])
-                if tri != 0 and (tri != self.last_tri):
+                if tri != 0 and (tri > self.last_tri):
                     self.addEventPlot("LPT", tri)
-                    self.print('Trigger %d received' % tri)
+                    logger.info('Trigger %d received' % tri)
                 self.last_tri = tri
 
     #
@@ -568,14 +565,8 @@ class Scope(QtGui.QMainWindow, form_class):
         # Just in case, there's a flag to force a repaint even when we shouldn't repaint
         sender = self.sender()
         if 'force_repaint' not in self.__dict__.keys():
-            print('#' * 10, 'force_repaint is not set! Bug?', '#' * 10)
+            logger.warning('force_repaint is not set! Is it a Qt bug?')
             self.force_repaint = 0
-
-        # global counter
-        # counter += 1
-        # print('paintEvent called %d times'% counter)
-        # print('sender: ', sender)
-
         if (sender is None) and (not self.force_repaint):
             pass
         else:
@@ -778,9 +769,6 @@ class Scope(QtGui.QMainWindow, form_class):
         else:
             self.main_plot_handler.removeItem(self.help)
 
-    def print(self, msg):
-        qc.print_c('[StreamViewer] %s' % msg, color='W')
-
     # ----------------------------------------------------------------------------------------------------
     # 			EVENT HANDLERS
     # ----------------------------------------------------------------------------------------------------
@@ -976,7 +964,7 @@ if __name__ == '__main__':
         amp_name, amp_serial = pu.search_lsl()
     if amp_name == 'None':
         amp_name = None
-    print('Connecting to a server %s (Serial %s).' % (amp_name, amp_serial))
+    logger.info('Connecting to a server %s (Serial %s).' % (amp_name, amp_serial))
 
     app = QtGui.QApplication(sys.argv)
     ex = Scope(amp_name, amp_serial)

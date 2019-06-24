@@ -22,9 +22,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
+import sys
 import pylsl
 import pycnbi.utils.q_common as qc
-import sys
+from pycnbi import logger
 
 
 def start_server(server_name, n_channels=1, channel_format='string', nominal_srate=pylsl.IRREGULAR_RATE, stype='EEG',
@@ -81,25 +82,14 @@ def start_client(server_name):
 
     """
     while True:
-        print('Searching for LSL server %s ...' % server_name)
+        logger.info('Searching for LSL server %s ...' % server_name)
         streamInfos = pylsl.resolve_byprop("name", server_name, timeout=1)
         if not streamInfos:
             continue
         for sinfo in streamInfos:
-            print('Found %s' % sinfo.name())
-        '''
-        if len(streamInfos) > 1:
-            print('>> Error: More than 1 server with the same name %s found. Stopping.'% server_name)
-            sys.exit(-1)
-        elif len(streamInfos)==1:
-            sinfo= streamInfos[0]
-            break
-        else:
-            print('[cnbi_lsl] No desired LSL server found. Keep searching...')
-            time.sleep(1.0)
-        '''
+            logger.info('Found %s' % sinfo.name())
         if len(streamInfos) == 0:
-            print('[cnbi_lsl] No desired LSL server found. Keep searching...')
+            logger.info('No desired LSL server found. Keep searching...')
             time.sleep(1.0)
         else:
             sinfo = streamInfos[0]
