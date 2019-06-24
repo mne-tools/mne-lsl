@@ -19,23 +19,26 @@ Swiss Federal Institute of Technology Lausanne (EPFL)
 
 """
 
-import time
-import math
-import random
 import os
 import sys
+import mne
+import time
+import math
+import pylsl
+import random
 import psutil
-import pycnbi.utils.pycnbi_utils as pu
-import pycnbi.utils.q_common as qc
 import numpy as np
 import multiprocessing as mp
 import multiprocessing.sharedctypes as sharedctypes
-import mne
-from pycnbi.stream_receiver.stream_receiver import StreamReceiver
-from pycnbi.triggers.trigger_def import trigger_def
+import pycnbi.utils.q_common as qc
+import pycnbi.utils.pycnbi_utils as pu
 from numpy import ctypeslib
+from pycnbi import logger
+from pycnbi.triggers.trigger_def import trigger_def
+from pycnbi.stream_receiver.stream_receiver import StreamReceiver
 mne.set_log_level('ERROR')
 os.environ['OMP_NUM_THREADS'] = '1' # actually improves performance for multitaper
+
 
 def get_decoder_info(classifier):
     """
@@ -51,9 +54,9 @@ def get_decoder_info(classifier):
     """
 
     model = qc.load_obj(classifier)
-    if model == None:
-        print('>> Error loading %s' % model)
-        sys.exit(-1)
+    if model is None:
+        logger.error('>> Error loading %s' % model)
+        raise ValueError
 
     cls = model['cls']
     psde = model['psde']
@@ -96,9 +99,9 @@ class BCIDecoder(object):
 
         if self.fake == False:
             model = qc.load_obj(self.classifier)
-            if model == None:
-                self.print('Error loading %s' % model)
-                sys.exit(-1)
+            if model is None:
+                logger.error('Classifier model is None.')
+                raise ValueError
             self.cls = model['cls']
             self.psde = model['psde']
             self.labels = list(self.cls.classes_)
@@ -110,8 +113,12 @@ class BCIDecoder(object):
             self.w_frames = model['w_frames']
             self.wstep = model['wstep']
             self.sfreq = model['sfreq']
-            if not int(self.sfreq * self.w_seconds) == self.w_frames:
-                raise RuntimeError('sfreq * w_sec %d != w_frames %d' % (int(self.sfreq * self.w_seconds), self.w_frames))
+            if 'decim' not in model:
+                model['decim'] = 1
+            self.decim = model['decim']
+            if not int(round(self.sfreq * self.w_seconds)) == self.w_frames:
+                logger.error('sfreq * w_sec %d != w_frames %d' % (int(round(self.sfreq * self.w_seconds)), self.w_frames))
+                raise RuntimeError
 
             if 'multiplier' in model:
                 self.multiplier = model['multiplier']
@@ -121,14 +128,14 @@ class BCIDecoder(object):
             # Stream Receiver
             self.sr = StreamReceiver(window_size=self.w_seconds, amp_name=self.amp_name, amp_serial=self.amp_serial)
             if self.sfreq != self.sr.sample_rate:
-                raise RuntimeError('Amplifier sampling rate (%.1f) != model sampling rate (%.1f). Stop.' % (
-                    self.sr.sample_rate, self.sfreq))
+                logger.error('Amplifier sampling rate (%.3f) != model sampling rate (%.3f). Stop.' % (self.sr.sample_rate, self.sfreq))
+                raise RuntimeError
 
             # Map channel indices based on channel names of the streaming server
             self.spatial_ch = model['spatial_ch']
             self.spectral_ch = model['spectral_ch']
             self.notch_ch = model['notch_ch']
-            self.ref_ch  = model['ref_ch']
+            #self.ref_ch = model['ref_ch'] # not supported yet
             self.ch_names = self.sr.get_channel_names()
             mc = model['ch_names']
             self.picks = [self.ch_names.index(mc[p]) for p in model['picks']]
@@ -140,12 +147,15 @@ class BCIDecoder(object):
                 self.notch_ch = [self.ch_names.index(mc[p]) for p in model['notch_ch']]
 
             # PSD buffer
-            psd_temp = self.psde.transform(np.zeros((1, len(self.picks), self.w_frames)))
-            self.psd_shape = psd_temp.shape
-            self.psd_size = psd_temp.size
-            self.psd_buffer = np.zeros((0, self.psd_shape[1], self.psd_shape[2]))
+            #psd_temp = self.psde.transform(np.zeros((1, len(self.picks), self.w_frames // self.decim)))
+            #self.psd_shape = psd_temp.shape
+            #self.psd_size = psd_temp.size
+            #self.psd_buffer = np.zeros((0, self.psd_shape[1], self.psd_shape[2]))
+            #self.psd_buffer = None
+
             self.ts_buffer = []
 
+            logger.info_green('Loaded classifier %s (sfreq=%.3f, decim=%d)' % (' vs '.join(self.label_names), self.sfreq, self.decim))
         else:
             # Fake left-right decoder
             model = None
@@ -154,10 +164,6 @@ class BCIDecoder(object):
             # TODO: parameterize directions using fake_dirs
             self.labels = [11, 9]
             self.label_names = ['LEFT_GO', 'RIGHT_GO']
-
-    def print(self, *args):
-        if len(args) > 0: print('[BCIDecoder] ', end='')
-        print(*args)
 
     def get_labels(self):
         """
@@ -181,9 +187,13 @@ class BCIDecoder(object):
     def stop(self):
         pass
 
-    def get_prob(self):
+    def get_prob(self, timestamp=False):
         """
         Read the latest window
+
+        Input
+        -----
+        timestamp: If True, returns LSL timestamp of the leading edge of the window used for decoding.
 
         Returns
         -------
@@ -196,19 +206,21 @@ class BCIDecoder(object):
             p_others = (1 - probs[0]) / (len(self.labels) - 1)
             for x in range(1, len(self.labels)):
                 probs.append(p_others)
-            time.sleep(0.0625)  # simulated delay for PSD + RF
+            time.sleep(0.0625)  # simulated delay
+            t_prob = pylsl.local_clock()
         else:
-            self.sr.acquire()
+            self.sr.acquire(blocking=True)
             w, ts = self.sr.get_window()  # w = times x channels
+            t_prob = ts[-1]
             w = w.T  # -> channels x times
-            
+
             # re-reference channels
-            # TODO: use self.ref_ch
+            # TODO: add re-referencing function to preprocess()
 
             # apply filters. Important: maintain the original channel order at this point.
-            pu.preprocess(w, sfreq=self.sfreq, spatial=self.spatial, spatial_ch=self.spatial_ch,
+            w = pu.preprocess(w, sfreq=self.sfreq, spatial=self.spatial, spatial_ch=self.spatial_ch,
                           spectral=self.spectral, spectral_ch=self.spectral_ch, notch=self.notch,
-                          notch_ch=self.notch_ch, multiplier=self.multiplier)
+                          notch_ch=self.notch_ch, multiplier=self.multiplier, decim=self.decim)
 
             # select the same channels used for training
             w = w[self.picks]
@@ -219,27 +231,37 @@ class BCIDecoder(object):
             # psd = channels x freqs
             psd = self.psde.transform(w.reshape((1, w.shape[0], w.shape[1])))
 
-            # update psd buffer ( < 1 msec overhead )
-            self.psd_buffer = np.concatenate((self.psd_buffer, psd), axis=0)
-            self.ts_buffer.append(ts[0])
-            if ts[0] - self.ts_buffer[0] > self.buffer_sec:
-                # search speed comparison for ordered arrays:
-                # http://stackoverflow.com/questions/16243955/numpy-first-occurence-of-value-greater-than-existing-value
-                t_index = np.searchsorted(self.ts_buffer, ts[0] - 1.0)
-                self.ts_buffer = self.ts_buffer[t_index:]
-                self.psd_buffer = self.psd_buffer[t_index:, :, :]  # numpy delete is slower
-            # assert ts[0] - self.ts_buffer[0] <= self.buffer_sec
-
             # make a feautre vector and classify
             feats = np.concatenate(psd[0]).reshape(1, -1)
 
             # compute likelihoods
             probs = self.cls.predict_proba(feats)[0]
 
-        return probs
+            # update psd buffer ( < 1 msec overhead )
+            '''
+            if self.psd_buffer is None:
+                self.psd_buffer = psd
+            else:
+                self.psd_buffer = np.concatenate((self.psd_buffer, psd), axis=0)
+                # TODO: CHECK THIS BLOCK
+                self.ts_buffer.append(ts[0])
+                if ts[0] - self.ts_buffer[0] > self.buffer_sec:
+                    # search speed comparison for ordered arrays:
+                    # http://stackoverflow.com/questions/16243955/numpy-first-occurence-of-value-greater-than-existing-value
+                    #t_index = np.searchsorted(self.ts_buffer, ts[0] - 1.0)
+                    t_index = np.searchsorted(self.ts_buffer, ts[0] - self.buffer_sec)
+                    self.ts_buffer = self.ts_buffer[t_index:]
+                    self.psd_buffer = self.psd_buffer[t_index:, :, :]  # numpy delete is slower
+                # assert ts[0] - self.ts_buffer[0] <= self.buffer_sec
+            '''
 
-    def get_prob_unread(self):
-        return self.get_prob()
+        if timestamp:
+            return probs, t_prob
+        else:
+            return probs
+
+    def get_prob_unread(self, timestamp=False):
+        return self.get_prob(timestamp)
 
     def get_psd(self):
         """
@@ -247,6 +269,7 @@ class BCIDecoder(object):
         -------
         The latest computed PSD
         """
+        raise NotImplementedError('Sorry! PSD buffer is under testing.')
         return self.psd_buffer[-1].reshape((1, -1))
 
     def is_ready(self):
@@ -267,7 +290,7 @@ class BCIDecoderDaemon(object):
     """
 
     def __init__(self, classifier=None, buffer_size=1.0, fake=False, amp_serial=None,\
-                 amp_name=None, fake_dirs=None, parallel=None, alpha_new=None):
+                 amp_name=None, fake_dirs=None, parallel=None, alpha_new=None, wait_init=True):
         """
         Params
         ------
@@ -283,6 +306,7 @@ class BCIDecoderDaemon(object):
             num_strides: Number of decoders to run in parallel.
         alpha_new: exponential smoothing factor, real value in [0, 1].
             p_new = p_new * alpha_new + p_old * (1 - alpha_new)
+        wait_init: If True, wait (block) until the initial buffer of the decoder is full.
 
         Example: If the decoder runs 32ms per cycle, we can set
                  period=0.04, stride=0.01, num_strides=4
@@ -297,17 +321,20 @@ class BCIDecoderDaemon(object):
         self.amp_serial = amp_serial
         self.amp_name = amp_name
         self.parallel = parallel
+        self.wait_init = wait_init
         if alpha_new is None:
             alpha_new = 1
         if not 0 <= alpha_new <= 1:
-            raise ValueError('alpha_new must be a real number between 0 and 1.')
+            logger.error('alpha_new must be a real number between 0 and 1.')
+            raise ValueError
         self.alpha_new = alpha_new
         self.alpha_old = 1 - alpha_new
 
         if fake == False or fake is None:
             self.model = qc.load_obj(self.classifier)
             if self.model == None:
-                raise IOError('Error loading %s' % self.model)
+                logger.error('Error loading %s' % self.model)
+                raise IOError
             else:
                 self.labels = self.model['cls'].classes_
                 self.label_names = [self.model['classes'][k] for k in self.labels]
@@ -316,8 +343,9 @@ class BCIDecoderDaemon(object):
             self.model = None
             tdef = trigger_def('triggerdef_16.ini')
             if type(fake_dirs) is not list:
-                raise RuntimeError('Decoder(): wrong argument type of fake_dirs: %s.' % type(fake_dirs))
-            self.labels = [tdef.by_key[t] for t in fake_dirs]
+                logger.error('Decoder(): wrong argument type of fake_dirs: %s.' % type(fake_dirs))
+                raise RuntimeError
+            self.labels = [tdef.by_name[t] for t in fake_dirs]
             self.label_names = [tdef.by_value[v] for v in self.labels]
             self.startmsg = '** WARNING: FAKE ' + self.startmsg
             self.stopmsg = 'FAKE ' + self.stopmsg
@@ -325,10 +353,6 @@ class BCIDecoderDaemon(object):
         self.psdlock = mp.Lock()
         self.reset()
         self.start()
-
-    def print(self, *args):
-        if len(args) > 0: print('[DecoderDaemon] ', end='')
-        print(*args)
 
     def reset(self):
         """
@@ -357,6 +381,8 @@ class BCIDecoderDaemon(object):
         mp.freeze_support()
 
         if self.parallel:
+            logger.error('Parallel decoding is under a rigorous test. Please do not use it for now.')
+            raise NotImplementedError
             num_strides = self.parallel['num_strides']
             period = self.parallel['period']
             self.running = [mp.Value('i', 0)] * num_strides
@@ -393,7 +419,7 @@ class BCIDecoderDaemon(object):
         pid = os.getpid()
         ps = psutil.Process(pid)
         ps.nice(psutil.HIGH_PRIORITY_CLASS)
-        print('[DecodeWorker-%-6d] Decoder worker process started' % (pid))
+        logger.debug('[DecodeWorker-%-6d] Decoder worker process started' % (pid))
         decoder = BCIDecoder(classifier, buffer_size=self.buffer_sec, fake=self.fake,\
                              amp_serial=self.amp_serial, amp_name=self.amp_name)
         if self.fake == False:
@@ -406,10 +432,16 @@ class BCIDecoderDaemon(object):
             running.value = 1
             while running.value == 1:
                 # compute features and likelihoods
-                probs[:] = decoder.get_prob()
+                probs[:], t_prob = decoder.get_prob(True)
+                probs_smooth_sum = 0
                 for i in range(len(probs_smooth)):
                     probs_smooth[i] = probs_smooth[i] * self.alpha_old + probs[i] * self.alpha_new
+                    probs_smooth_sum += probs_smooth[i]
+                for i in range(len(probs_smooth)):
+                    probs_smooth[i] /= probs_smooth_sum
                 pread.value = 0
+                t_problast.value = t_prob
+
                 # copy back PSD values only when requested
                 if self.fake == False and return_psd.value == 1:
                     lock.acquire()
@@ -428,19 +460,22 @@ class BCIDecoderDaemon(object):
                 t_next += period
 
                 # compute likelihoods
-                t_prob = time.time()
-                probs_local = decoder.get_prob()
-                
+                t_prob_wall = time.time()
+                probs_local, t_prob_lsl = decoder.get_prob(True)
+
                 # update the probs only if the current value is the latest
-                if t_prob > t_problast.value:
+                ##################################################################
+                # TODO: use timestamp to compare instead of time.time()
+                ##################################################################
+                if t_prob_wall > t_problast.value:
                     lock.acquire()
                     probs[:] = probs_local
                     for i in range(len(probs_smooth)):
                         probs_smooth[i] = probs_smooth[i] * self.alpha_old + probs[i] * self.alpha_new
                     pread.value = 0
-                    t_problast.value = t_prob
+                    t_problast.value = t_prob_wall
                     lock.release()
-                
+
                 # copy back PSD values only when requested
                 if self.fake == False and return_psd.value == 1:
                     lock.acquire()
@@ -451,7 +486,7 @@ class BCIDecoderDaemon(object):
                 # get the next time slot if didn't finish in the current slot
                 if time.time() > t_next:
                     t_next_new = t_start + math.ceil(((time.time() - t_start) / period)) * period
-                    print('[DecodeWorker-%-6d] High decoding delay (%.1f ms): t_next = %.3f -> %.3f' %\
+                    logger.warning('[DecodeWorker-%-6d] High decoding delay (%.1f ms): t_next = %.3f -> %.3f' %\
                           (pid, (time.time() - t_next + period) * 1000, t_next, t_next_new))
                     t_next = t_next_new
 
@@ -459,37 +494,39 @@ class BCIDecoderDaemon(object):
                 t_sleep = t_next - time.time()
                 if t_sleep > 0.001:
                     time.sleep(t_sleep)
-                #print('[DecodeWorker-%-6d] Woke up at %.3f' % (pid, time.time()))
+                logger.debug('[DecodeWorker-%-6d] Woke up at %.3f' % (pid, time.time()))
 
     def start(self):
         """
         Start the daemon
         """
         if self.is_running() > 0:
-            msg = 'ERROR: Cannot start. Daemon already running. (PID' +\
-                ', '.join(['%d' % proc.pid for proc in self.procs]) + ')'
-            self.print(msg)
+            msg = 'Cannot start. Daemon already running. (PID' + ', '.join(['%d' % proc.pid for proc in self.procs]) + ')'
+            logger.error(msg)
             return
         for proc in self.procs:
             proc.start()
-        for running in self.running:
-            while running.value == 0:
-                time.sleep(0.001)
-        self.print(self.startmsg)
+        if self.wait_init:
+            for running in self.running:
+                while running.value == 0:
+                    time.sleep(0.001)
+        logger.info(self.startmsg)
 
     def stop(self):
         """
         Stop the daemon
         """
         if self.is_running() == 0:
-            self.print('Warning: Decoder already stopped.')
+            logger.warning('Decoder already stopped.')
             return
         for running in self.running:
             running.value = 0
         for proc in self.procs:
-            proc.join()
+            proc.join(10)
+            if proc.is_alive():
+                logger.warning('Process %s did not die properly.' % proc.pid())
         self.reset()
-        self.print(self.stopmsg)
+        logger.info(self.stopmsg)
 
     def get_labels(self):
         """
@@ -507,16 +544,19 @@ class BCIDecoderDaemon(object):
         """
         return self.label_names
 
-    def get_prob(self):
+    def get_prob(self, timestamp=False):
         """
         Returns
         -------
         The last computed probability.
         """
         self.pread.value = 1
-        return self.probs[:]
+        if timestamp:
+            return list(self.probs[:]), self.t_problast.value
+        else:
+            return list(self.probs[:])
 
-    def get_prob_unread(self):
+    def get_prob_unread(self, timestamp=False):
         """
         Returns
         -------
@@ -524,20 +564,25 @@ class BCIDecoderDaemon(object):
         None otherwise.
         """
         if self.pread.value == 0:
-            return self.get_prob()
+            return self.get_prob(timestamp)
+        elif timestamp:
+            return None, None
         else:
             return None
 
-    def get_prob_smooth(self):
+    def get_prob_smooth(self, timestamp=False):
         """
         Returns
         -------
         The last computed probability.
         """
         self.pread.value = 1
-        return self.probs_smooth[:]
+        if timestamp:
+            return list(self.probs_smooth[:]), self.t_problast.value
+        else:
+            return list(self.probs_smooth[:])
 
-    def get_prob_smooth_unread(self):
+    def get_prob_smooth_unread(self, timestamp=False):
         """
         Returns
         -------
@@ -545,7 +590,9 @@ class BCIDecoderDaemon(object):
         None otherwise.
         """
         if self.pread.value == 0:
-            return self.get_prob_smooth()
+            return self.get_prob_smooth(timestamp)
+        elif timestamp:
+            return None, None
         else:
             return None
 
@@ -568,8 +615,148 @@ class BCIDecoderDaemon(object):
         """
         return sum([v.value for v in self.running])
 
-# test decoding speed
+
+
+def log_decoding_helper(state, event_queue, amp_name=None, amp_serial=None, autostop=False):
+    """
+    Helper function to run StreamReceiver object in background
+    """
+    logger.info('Event acquisition subprocess started.')
+
+    # wait for the start signal
+    while state.value == 0:
+        time.sleep(0.01)
+    
+    # acquire event values and returns event times and event values
+    sr = StreamReceiver(buffer_size=0, amp_name=amp_name, amp_serial=amp_serial)
+    tm = qc.Timer(autoreset=True)
+    started = False
+    while state.value == 1:
+        chunk, ts_list = sr.acquire()
+        if autostop:
+            if started is True:
+                if len(ts_list) == 0:
+                    state.value = 0
+                    break
+            elif len(ts_list) > 0:
+                started = True
+        tm.sleep_atleast(0.001)
+    logger.info('Event acquisition subprocess finishing up ...')
+
+    buffers, times = sr.get_buffer()
+    events = buffers[:, 0] # first channel is the trigger channel
+    event_index = np.where(events != 0)[0]
+    event_times = times[event_index].reshape(-1).tolist()
+    event_values = events[event_index].tolist()
+    assert len(event_times) == len(event_values)
+    event_queue.put((event_times, event_values))
+
+def log_decoding(decoder, logfile, amp_name=None, amp_serial=None, pklfile=True, matfile=False, autostop=False, prob_smooth=False):
+    """
+    Decode online and write results with event timestamps
+
+    input
+    -----
+    decoder: Decoder or DecoderDaemon class object.
+    logfile: File name to contain the result in Python pickle format.
+    amp_name: LSL server name (if known).
+    amp_serial: LSL server serial number (if known).
+    pklfile: Export results to Python pickle format.
+    matfile: Export results to Matlab .mat file if True.
+    autostop: Automatically finish when no more data is received.
+    prob_smooth: Use smoothed probability values according to decoder's smoothing parameter.
+    """
+
+    import cv2
+    import scipy
+
+    # run event acquisition process in the background
+    state = mp.Value('i', 1)
+    event_queue = mp.Queue()
+    proc = mp.Process(target=log_decoding_helper, args=[state, event_queue, amp_name, amp_serial, autostop])
+    proc.start()
+    logger.info_green('Spawned event acquisition process.')
+
+    # init variables and choose decoding function
+    labels = decoder.get_label_names()
+    probs = []
+    prob_times = []
+    if prob_smooth:
+        decode_fn = decoder.get_prob_smooth_unread
+    else:
+        decode_fn = decoder.get_prob_unread
+        
+    # simple controller UI
+    cv2.namedWindow("Decoding", cv2.WINDOW_AUTOSIZE)
+    cv2.moveWindow("Decoding", 1400, 50)
+    img = np.zeros([100, 400, 3], np.uint8)
+    cv2.putText(img, 'Press any key to start', (20, 60), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 2, cv2.LINE_AA)
+    cv2.imshow("Decoding", img)
+    cv2.waitKeyEx()
+    img *= 0
+    cv2.putText(img, 'Press ESC to stop', (40, 60), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 2, cv2.LINE_AA)
+    cv2.imshow("Decoding", img)
+
+    key = 0
+    started = False
+    tm_watchdog = qc.Timer(autoreset=True)
+    tm_cls = qc.Timer()
+    while key != 27:
+        prob, prob_time = decode_fn(True)
+        t_lsl = pylsl.local_clock()
+        key = cv2.waitKeyEx(1)
+        if prob is None:
+            # watch dog
+            if tm_cls.sec() > 5:
+                if autostop and started:
+                    logger.info('No more streaming data. Finishing.')
+                    break
+                tm_cls.reset()
+            tm_watchdog.sleep_atleast(0.001)
+            continue
+        probs.append(prob)
+        prob_times.append(prob_time)
+        txt = '[%.3f] ' % prob_time
+        txt += ', '.join(['%s: %.2f' % (l, p) for l, p in zip(labels, prob)])
+        txt += ' (%d ms, LSL Diff = %.3f)' % (tm_cls.msec(), (t_lsl-prob_time))
+        logger.info(txt)
+        if not started:
+            started = True
+        tm_cls.reset()
+
+    # finish up processes
+    cv2.destroyAllWindows()
+    logger.info('Cleaning up event acquisition process.')
+    state.value = 0
+    decoder.stop()
+    event_times, event_values = event_queue.get()
+    proc.join()
+
+    # save values
+    if len(prob_times) == 0:
+        logger.error('No decoding result. Please debug.')
+        import pdb
+        pdb.set_trace()
+    t_start = prob_times[0]
+    probs = np.vstack(probs)
+    event_times = np.array(event_times)
+    event_times = event_times[np.where(event_times >= t_start)[0]] - t_start
+    prob_times = np.array(prob_times) - t_start
+    event_values = np.array(event_values)
+    data = dict(probs=probs, prob_times=prob_times, event_times=event_times, event_values=event_values, labels=labels)
+    if pklfile:
+        qc.save_obj(logfile, data)
+        logger.info('Saved to %s' % logfile)
+    if matfile:
+        pp = qc.parse_path(logfile)
+        matout = '%s/%s.mat' % (pp.dir, pp.name)
+        scipy.io.savemat(matout, data)
+        logger.info('Saved to %s' % matout)
+
 def check_speed(decoder, max_count=float('inf')):
+    """
+    Test decoding speed
+    """
     tm = qc.Timer()
     count = 0
     mslist = []
@@ -587,8 +774,11 @@ def check_speed(decoder, max_count=float('inf')):
             tm.reset()
     print('mean = %.1f ms' % np.mean(mslist))
 
-# decoding example
+
 def sample_decoding(decoder):
+    """
+    Decoding example
+    """
     # load trigger definitions for labeling
     labels = decoder.get_label_names()
     tm_watchdog = qc.Timer(autoreset=True)
@@ -599,7 +789,7 @@ def sample_decoding(decoder):
         if praw is None:
             # watch dog
             if tm_cls.sec() > 5:
-                print('WARNING: No classification was done in the last 5 seconds. Are you receiving data streams?')
+                logger.warning('No classification was done in the last 5 seconds. Are you receiving data streams?')
                 tm_cls.reset()
             tm_watchdog.sleep_atleast(0.001)
             continue
@@ -625,11 +815,11 @@ if __name__ == '__main__':
         amp_name, amp_serial = pu.search_lsl(ignore_markers=True)
     if amp_name == 'None':
         amp_name = None
-    print('Connecting to a server %s (Serial %s).' % (amp_name, amp_serial))
+    logger.info('Connecting to a server %s (Serial %s).' % (amp_name, amp_serial))
 
     # run on background
-    #parallel = None # no process interleaving
-    parallel = dict(period=0.06, num_strides=3)
+    parallel = None # no process interleaving
+    #parallel = dict(period=0.06, num_strides=3)
     decoder = BCIDecoderDaemon(model_file, buffer_size=1.0, fake=False, amp_name=amp_name,\
         amp_serial=amp_serial, parallel=parallel, alpha_new=0.1)
 
