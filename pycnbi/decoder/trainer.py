@@ -539,8 +539,6 @@ def cross_validate(cfg, featdata, cv_file=None):
     X_data = featdata['X_data']
     Y_data = featdata['Y_data']
     wlen = featdata['wlen']
-    if cfg.CLASSIFIER[selected_classifier]['wlen'] is None:
-        cfg.CLASSIFIER[selected_classifier]['wlen'] = wlen
 
     # Choose CV type
     ntrials, nsamples, fsize = X_data.shape
