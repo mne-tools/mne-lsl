@@ -15,144 +15,20 @@ Swiss Federal Institute of Technology Lausanne (EPFL)
 
 import os
 import sys
-import scipy.io
-import pylsl
 import mne
+import pylsl
+import scipy.io
 import numpy as np
 import multiprocessing as mp
 import xml.etree.ElementTree as ET
 import pycnbi.utils.q_common as qc
-from pycnbi.pycnbi_config import CAP, LAPLACIAN
 from scipy.signal import butter, lfilter, lfiltic, buttord
+from pycnbi.pycnbi_config import CAP, LAPLACIAN
+from pycnbi import logger
 from builtins import input
+
 mne.set_log_level('ERROR')
 os.environ['OMP_NUM_THREADS'] = '1' # actually improves performance for multitaper
-
-
-def slice_win(epochs_data, w_starts, w_length, psde, picks=None, epoch_id=None, flatten=True, verbose=False):
-    '''
-    Compute PSD values of a sliding window
-
-    Params
-        epochs_data: [channels] x [samples]
-        w_starts: starting indices of sample segments
-        w_length: window length in number of samples
-        psde: MNE PSDEstimator object
-        picks: subset of channels within epochs_data
-        epochs_id: just to print out epoch ID associated with PID
-        flatten: generate concatenated feature vectors
-            If True: X = [windows] x [channels x freqs]
-            If False: X = [windows] x [channels] x [freqs]
-
-    Returns:
-        [windows] x [channels*freqs] or [windows] x [channels] x [freqs]
-    '''
-
-    # raise error for wrong indexing
-    def WrongIndexError(Exception):
-        sys.stderr.write('\nERROR: %s\n' % Exception)
-        sys.exit(-1)
-
-    w_length = int(w_length)
-
-    if epoch_id is None:
-        print('[PID %d] Frames %d-%d' % (os.getpid(), w_starts[0], w_starts[-1] + w_length - 1))
-    else:
-        print('[PID %d] Epoch %d, Frames %d-%d' % (os.getpid(), epoch_id, w_starts[0], w_starts[-1] + w_length - 1))
-
-    X = None
-    for n in w_starts:
-        n = int(n)
-        if n >= epochs_data.shape[1]:
-            raise WrongIndexError(
-                'w_starts has an out-of-bounds index %d for epoch length %d.' % (n, epochs_data.shape[1]))
-        window = epochs_data[:, n:(n + w_length)]
-
-        # dimension: psde.transform( [epochs x channels x times] )
-        psd = psde.transform(window.reshape((1, window.shape[0], window.shape[1])))
-        psd = psd.reshape((psd.shape[0], psd.shape[1] * psd.shape[2]))
-        if picks:
-            psd = psd[0][picks]
-            psd = psd.reshape((1, len(psd)))
-
-        if X is None:
-            X = psd
-        else:
-            X = np.concatenate((X, psd), axis=0)
-
-        if verbose == True:
-            print('[PID %d] processing frame %d / %d' % (os.getpid(), n, w_starts[-1]))
-
-    return X
-
-
-def get_psd(epochs, psde, wlen, wstep, picks=None, flatten=True, n_jobs=1):
-    """
-    Offline computation of multi-taper PSDs over a sliding window
-
-    Params
-    epochs: MNE Epochs object
-    psde: MNE PSDEstimator object
-    wlen: window length in frames
-    wstep: window step in frames
-    picks: channel picks
-    flatten: boolean, see Returns section
-
-    Returns
-    -------
-    if flatten==True:
-        X_data: [epochs] x [windows] x [channels*freqs]
-    else:
-        X_data: [epochs] x [windows] x [channels] x [freqs]
-    y_data: [epochs] x [windows]
-    picks: feature indices to be used; use all if None
-
-    TODO:
-        Accept input as numpy array as well, in addition to Epochs object
-    """
-
-    print('get_psd(): Opening a pool of %d workers' % n_jobs)
-    pool = mp.Pool(n_jobs)
-
-    labels = epochs.events[:, -1]
-    epochs_data = epochs.get_data()
-
-    # sliding window
-    w_starts = np.arange(0, epochs_data.shape[2] - wlen, wstep)
-    X_data = None
-    y_data = None
-    results = []
-    for ep in np.arange(len(labels)):
-        # for debugging (results not saved)
-        # slice_win(epochs_data, w_starts, wlen, psde, picks, ep)
-
-        # parallel psd computation
-        results.append(pool.apply_async(slice_win, [epochs_data[ep], w_starts, wlen, psde, picks, ep]))
-
-    for ep in range(len(results)):
-        r = results[ep].get()  # windows x features
-        X = r.reshape((1, r.shape[0], r.shape[1]))  # 1 x windows x features
-        if X_data is None:
-            X_data = X
-        else:
-            X_data = np.concatenate((X_data, X), axis=0)
-
-        # speed comparison: http://stackoverflow.com/questions/5891410/numpy-array-initialization-fill-with-identical-values
-        y = np.empty((1, r.shape[0]))  # 1 x windows
-        y.fill(labels[ep])
-        if y_data is None:
-            y_data = y
-        else:
-            y_data = np.concatenate((y_data, y), axis=0)
-    pool.close()
-    pool.join()
-
-    if flatten:
-        return X_data, y_data
-    else:
-        xs = X_data.shape
-        nch = len(epochs.ch_names)
-        return X_data.reshape(xs[0], xs[1], nch, int(xs[2] / nch)), y_data
 
 
 # note that MNE already has find_events function
@@ -190,7 +66,7 @@ def find_event_channel(raw, ch_names=None):
     if type(raw) == np.ndarray:
         if ch_names is not None:
             for ch_name in ch_names:
-                if 'TRIGGER' in ch_name or 'STI ' in ch_name:
+                if 'TRIGGER' in ch_name or 'STI ' in ch_name or 'TRG' in ch_name or 'CH_Event' in ch_name:
                     return ch_names.index(ch_name)
 
         # data range between 0 and 255 and all integers?
@@ -201,9 +77,8 @@ def find_event_channel(raw, ch_names=None):
     else:
         signals = raw._data
         for ch_name in raw.ch_names:
-            if 'TRIGGER' in ch_name or 'STI ' in ch_name:
+            if 'TRIGGER' in ch_name or 'STI ' in ch_name or 'TRG' in ch_name or 'CH_Event' in ch_name:
                 return raw.ch_names.index(ch_name)
-
     return None
 
 
@@ -215,7 +90,7 @@ def raw2mat(infile, outfile):
     header = dict(bads=raw.info['bads'], ch_names=raw.info['ch_names'],\
                   sfreq=raw.info['sfreq'], events=events)
     scipy.io.savemat(outfile, dict(signals=raw._data, header=header))
-    print('\n>> Exported to %s' % outfile)
+    logger.info('Exported to %s' % outfile)
 
 
 def add_events_raw(rawfile, outfile, eventfile, overwrite=True):
@@ -270,12 +145,9 @@ def event_timestamps_to_indices(sigfile, eventfile):
             # find the first index not smaller than ts
             next_index = np.searchsorted(ts, event_ts)
             if next_index >= len(ts):
-                qc.print_c('** WARNING: Event %d at time %.3f is out of time range (%.3f - %.3f).' % (
-                    event_value, event_ts, ts_min, ts_max), 'y')
+                logger.warning('Event %d at time %.3f is out of time range (%.3f - %.3f).' % (event_value, event_ts, ts_min, ts_max))
             else:
                 events.append([next_index, 0, event_value])
-                # print(events[-1])
-
     return events
 
 
@@ -296,8 +168,11 @@ def rereference(raw, ref_new, ref_old=None):
     # Re-reference and recover the original reference channel values if possible
     if type(raw) == np.ndarray:
         if raw_ch_old is not None:
-            raise RuntimeError('Recovering original reference channel is not yet supported for numpy arrays.')
-        assert type(raw_ch_new[0]) is int, 'Channels must be integer values for numpy arrays'
+            logger.error('Recovering original reference channel is not yet supported for numpy arrays.')
+            raise NotImplementedError
+        if type(raw_ch_new[0]) is not int:
+            logger.error('Channels must be integer values for numpy arrays')
+            raise ValueError
         raw -= np.mean(raw[ref_new], axis=0)
     else:
         if ref_old is not None:
@@ -310,14 +185,14 @@ def rereference(raw, ref_new, ref_old=None):
 
 
 def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, spectral_ch=None,
-               notch=None, notch_ch=None, multiplier=1, ch_names=None, n_jobs=1):
+               notch=None, notch_ch=None, multiplier=1, ch_names=None, rereference=None, decim=None, n_jobs=1):
     """
     Apply spatial, spectral, notch filters and convert unit.
     raw is modified in-place.
 
     Input
     ------
-    raw: mne.io.RawArray | mne.Epochs | numpy.array (n_channels x n_samples)
+    raw: mne.io.Raw | mne.io.RawArray | mne.Epochs | numpy.array (n_channels x n_samples)
          numpy.array type assumes the data has only pure EEG channnels without event channels
 
     sfreq: required only if raw is numpy array.
@@ -356,11 +231,17 @@ def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, sp
         If raw is numpy array and channel picks are list of strings, ch_names will
         be used as a look-up table to convert channel picks to channel numbers.
 
+    rereference: Not supported yet.
+
+    decim: None | int
+        Apply low-pass filter and decimate (downsample). sfreq must be given. Ignored if 1.
 
     Output
     ------
-    True if no error.
+    Same input data structure.
 
+    Note: To save computation time, input data may be modified in-place.
+    TODO: Add an option to disable in-place modification.
     """
 
     # Check datatype
@@ -374,6 +255,10 @@ def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, sp
         elif len(data.shape) == 2:
             n_channels = data.shape[0]
         eeg_channels = list(range(n_channels))
+        if decim is not None and decim != 1:
+            if sfreq is None:
+                logger.error('Decimation cannot be applied if sfreq is None.')
+                raise ValueError
     else:
         # MNE Raw object: exclude event channel
         ch_names = raw.ch_names
@@ -388,10 +273,15 @@ def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, sp
         eeg_channels = list(range(n_channels))
         tch = find_event_channel(raw)
         if tch is None:
-            qc.print_c('preprocess(): No trigger channel found. Using all channels.', 'W')
+            logger.warning('No trigger channel found. Using all channels.')
         else:
             tch_name = ch_names[tch]
             eeg_channels.pop(tch)
+
+    # Re-reference channels
+    if rereference is not None:
+        logger.error('re-referencing not implemented yet. Sorry.')
+        raise NotImplementedError
 
     # Do unit conversion
     if multiplier != 1:
@@ -417,10 +307,12 @@ def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, sp
                 means = np.mean(data[:, spatial_ch_i, :], axis=1)
                 data[:, spatial_ch_i, :] -= means[:, np.newaxis, :]
             else:
-                raise ValueError('preprocess(): Unknown data shape %s' % str(data.shape))
+                logger.error('Unknown data shape %s' % str(data.shape))
+                raise ValueError
     elif spatial == 'laplacian':
         if type(spatial_ch) is not dict:
-            raise TypeError('preprocess(): For Lapcacian, spatial_ch must be of form {CHANNEL:[NEIGHBORS], ...}')
+            logger.error('preprocess(): For Lapcacian, spatial_ch must be of form {CHANNEL:[NEIGHBORS], ...}')
+            raise TypeError
         if type(spatial_ch.keys()[0]) == str:
             spatial_ch_i = {}
             for c in spatial_ch:
@@ -438,9 +330,21 @@ def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, sp
                 elif len(data.shape) == 3:
                     data[:, src, :] = rawcopy[:, src, :] - np.mean(rawcopy[:, nei, :], axis=1)
                 else:
-                    raise ValueError('preprocess(): Unknown data shape %s' % str(data.shape))
+                    logger.error('preprocess(): Unknown data shape %s' % str(data.shape))
+                    raise ValueError
     else:
-        raise ValueError('preprocess(): Unknown spatial filter %s' % spatial)
+        logger.error('preprocess(): Unknown spatial filter %s' % spatial)
+        raise ValueError
+
+    # Downsample
+    if decim is not None and decim != 1:
+        if type(raw) == np.ndarray:
+            data = mne.filter.resample(data, down=decim, npad='auto', window='boxcar', n_jobs=1)
+        else:
+            # resample() of Raw* and Epochs object internally calls mne.filter.resample()
+            raw = raw.resample(raw.info['sfreq'] / decim, npad='auto', window='boxcar', n_jobs=1)
+            data = raw._data
+        sfreq /= decim
 
     # Apply spectral filter
     if spectral is not None:
@@ -476,7 +380,9 @@ def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, sp
         mne.filter.notch_filter(data, Fs=sfreq, freqs=notch, notch_widths=3,
                                 picks=notch_ch_i, method='fft', n_jobs=n_jobs, copy=False)
 
-    return True
+    if type(raw) == np.ndarray:
+        raw = data
+    return raw
 
 
 def load_raw(rawfile, spfilter=None, spchannels=None, events_ext=None, multiplier=1, verbose='ERROR'):
@@ -505,23 +411,27 @@ def load_raw(rawfile, spfilter=None, spchannels=None, events_ext=None, multiplie
     """
 
     if not os.path.exists(rawfile):
-        raise IOError('File %s not found' % rawfile)
+        logger.error('File %s not found' % rawfile)
+        raise IOError
     if not os.path.isfile(rawfile):
-        raise IOError('%s is not a file' % rawfile)
+        logger.error('%s is not a file' % rawfile)
+        raise IOError
 
     extension = qc.parse_path(rawfile).ext
     assert extension in ['fif', 'fiff'], 'only fif format is supported'
     raw = mne.io.Raw(rawfile, preload=True, verbose=verbose)
-    preprocess(raw, spatial=spfilter, spatial_ch=spchannels, multiplier=multiplier)
+    if spfilter is not None or multiplier is not 1:
+        preprocess(raw, spatial=spfilter, spatial_ch=spchannels, multiplier=multiplier)
     if events_ext is not None:
         events = mne.read_events(events_ext)
     else:
         tch = find_event_channel(raw)
         if tch is not None:
-            events = mne.find_events(raw, stim_channel=raw.ch_names[tch], shortest_event=1, uint_cast=True,
-                                     consecutive=True)
+            events = mne.find_events(raw, stim_channel=raw.ch_names[tch], shortest_event=1, uint_cast=True, consecutive='increasing')
+            # MNE's annoying hidden cockroach: first_samp
+            events[:, 0] -= raw.first_samp
         else:
-            events = []
+            events = np.array([], dtype=np.int64)
 
     return raw, events
 
@@ -545,7 +455,8 @@ def load_multi(src, spfilter=None, spchannels=None, multiplier=1):
 
     if type(src) == str:
         if not os.path.isdir(src):
-            raise IOError('%s is not a directory or does not exist.' % src)
+            logger.error('%s is not a directory or does not exist.' % src)
+            raise IOError
         flist = []
         for f in qc.get_file_list(src):
             if qc.parse_path_list(f)[2] == 'fif':
@@ -553,17 +464,19 @@ def load_multi(src, spfilter=None, spchannels=None, multiplier=1):
     elif type(src) in [list, tuple]:
         flist = src
     else:
-        raise TypeError('Unknown input type %s' % type(src))
-    
+        logger.error('Unknown input type %s' % type(src))
+        raise TypeError
+
     if len(flist) == 0:
-        raise RuntimeError('load_multi(): No fif files found in %s.' % src)
+        logger.error('load_multi(): No fif files found in %s.' % src)
+        raise RuntimeError
     elif len(flist) == 1:
         return load_raw(flist[0], spfilter=spfilter, spchannels=spchannels, multiplier=multiplier)
 
     # load raw files
     rawlist = []
     for f in flist:
-        print('Loading %s' % f)
+        logger.info('Loading %s' % f)
         raw, _ = load_raw(f, spfilter=spfilter, spchannels=spchannels, multiplier=multiplier)
         rawlist.append(raw)
 
@@ -627,19 +540,19 @@ def search_lsl(ignore_markers=False):
                 else:
                     amp_list.append((index, amp_name, amp_serial))
             break
-        print('No server available yet on the network...')
+        logger.info('No server available yet on the network...')
         time.sleep(1)
 
     if ignore_markers is False:
         amp_list += amp_list_backup
 
-    qc.print_c('-- List of servers --', 'W')
+    logger.info('-- List of servers --')
     for i, (index, amp_name, amp_serial) in enumerate(amp_list):
         if amp_serial == '':
             amp_ser = 'N/A'
         else:
             amp_ser = amp_serial
-        qc.print_c('%d: %s (Serial %s)' % (i, amp_name, amp_ser), 'W')
+        logger.info('%d: %s (Serial %s)' % (i, amp_name, amp_ser))
 
     if len(amp_list) == 1:
         index = 0
@@ -654,7 +567,7 @@ def search_lsl(ignore_markers=False):
     assert amp_name == si.name()
     # LSL XML parser has a bug which crashes so do not use for now
     #assert amp_serial == pylsl.StreamInlet(si).info().desc().child('acquisition').child_value('serial_number').strip()
-    print('Selected %s (Serial: %s)' % (amp_name, amp_serial))
+    logger.info('Selected %s (Serial: %s)' % (amp_name, amp_serial))
 
     return amp_name, amp_serial
 
@@ -669,7 +582,8 @@ def lsl_channel_list(inlet):
         ch_list: [ name1, name2, ... ]
     """
     if not type(inlet) is pylsl.StreamInlet:
-        raise TypeError('lsl_channel_list(): wrong input type %s' % type(inlet))
+        logger.error('lsl_channel_list(): wrong input type %s' % type(inlet))
+        raise TypeError
     root = ET.fromstring(inlet.info().as_xml())
     desc = root.find('desc')
     ch_list = []
@@ -708,3 +622,21 @@ def channel_names_to_index(raw, channel_names=None):
                 raise TypeError('channel_names is unknown format.\nchannel_names=%s' % channel_names)
 
     return picks
+
+
+def raw_crop(raw, tmin, tmax):
+    """
+    Perform a real cropping of a Raw object
+    
+    mne.Raw.crop() updates a very confusing variable "first_samp", which reuslts
+    in the mismatch of real event indices when run with mne.find_events().
+    """
+    trigch = find_event_channel(raw)
+    ch_types = ['eeg'] * len(raw.ch_names)
+    if trigch is not None:
+        ch_types[trigch] = 'stim'
+    info = mne.create_info(raw.ch_names, raw.info['sfreq'], ch_types)
+    tmin_index = int(round(raw.info['sfreq'] * tmin))
+    tmax_index = int(round(raw.info['sfreq'] * tmax))
+    return mne.io.RawArray(raw._data[:, tmin_index:tmax_index], info)
+   
