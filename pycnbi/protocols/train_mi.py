@@ -89,7 +89,7 @@ def batch_run(cfg_file):
 
 def run(cfg, queue=None):
     
-    # redirect_stdout_to_queue(queue)    
+    redirect_stdout_to_queue(queue)    
     refresh_delay = 1.0 / cfg.REFRESH_RATE
     
     cfg.tdef = trigger_def(cfg.TRIGGER_FILE)
