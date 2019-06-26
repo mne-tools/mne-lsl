@@ -81,7 +81,7 @@ def get_tfr(cfg, recursive=False, n_jobs=1):
     if n_jobs is None:
         n_jobs = mp.cpu_count()
 
-    if hasattr(cfg, 'DATA_DIRS'):
+    if hasattr(cfg, 'DATA_PATHS'):
         if export_path is None:
             raise ValueError('For multiple directories, cfg.EXPORT_PATH cannot be None')
         else:
@@ -93,7 +93,7 @@ def get_tfr(cfg, recursive=False, n_jobs=1):
 
         # load and merge files from all directories
         flist = []
-        for ddir in cfg.DATA_DIRS:
+        for ddir in cfg.DATA_PATHS:
             ddir = ddir.replace('\\', '/')
             if ddir[-1] != '/': ddir += '/'
             for f in qc.get_file_list(ddir, fullpath=True, recursive=recursive):
