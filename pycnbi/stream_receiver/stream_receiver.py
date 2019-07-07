@@ -154,7 +154,7 @@ class StreamReceiver:
                     elif 'openvibeSignal' in amp_name:
                         logger.info('Found an Openvibe signal streaming server %s (type %s, amp_serial %s) @ %s.' % (amp_name, si.type(), amp_serial, si.hostname()))
                         ch_list = pu.lsl_channel_list(inlet)
-                        self._lsl_tr_channel = find_event_channel(ch_list)
+                        self._lsl_tr_channel = find_event_channel(ch_names=ch_list)
                         channels += si.channel_count()
                         amps.append(si)
                         server_found = True
@@ -164,7 +164,7 @@ class StreamReceiver:
                     elif 'openvibeMarkers' in amp_name:
                         logger.info('Found an Openvibe markers server %s (type %s, amp_serial %s) @ %s.' % (amp_name, si.type(), amp_serial, si.hostname()))
                         ch_list = pu.lsl_channel_list(inlet)
-                        self._lsl_tr_channel = find_event_channel(ch_list)
+                        self._lsl_tr_channel = find_event_channel(ch_names=ch_list)
                         channels += si.channel_count()
                         amps.append(si)
                         server_found = True
@@ -172,7 +172,7 @@ class StreamReceiver:
                     elif find_any:
                         logger.info('Found a streaming server %s (type %s, amp_serial %s) @ %s.' % (amp_name, si.type(), amp_serial, si.hostname()))
                         ch_list = pu.lsl_channel_list(inlet)
-                        self._lsl_tr_channel = find_event_channel(ch_list)
+                        self._lsl_tr_channel = find_event_channel(ch_names=ch_list)
                         channels += si.channel_count()
                         amps.append(si)
                         server_found = True

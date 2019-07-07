@@ -50,14 +50,15 @@ def find_events(events_raw):
     return events
 
 
-def find_event_channel(raw, ch_names=None):
+def find_event_channel(raw=None, ch_names=None):
     """
     Find event channel using heuristics for pcl files.
 
-    Disclaimer: Not guaranteed to work.
+    Disclaimer: Not 100% guaranteed to find.
 
     Input:
         raw: mne.io.RawArray-like object or numpy array (n_channels x n_samples)
+        if raw is None, ch_names must be given.
 
     Output:
         channel index or None if not found.
@@ -74,11 +75,16 @@ def find_event_channel(raw, ch_names=None):
             if (raw[ch].astype(int) == raw[ch]).all()\
                     and max(raw[ch]) < 256 and min(raw[ch]) == 0:
                 return ch
-    else:
-        signals = raw._data
+    elif hasattr(raw, 'ch_names'):
         for ch_name in raw.ch_names:
             if 'TRIGGER' in ch_name or 'STI ' in ch_name or 'TRG' in ch_name or 'CH_Event' in ch_name:
                 return raw.ch_names.index(ch_name)
+    else:
+        if ch_names is None:
+            raise ValueError('ch_names cannot be None when raw is None.')
+        for ch_name in ch_names:
+            if 'TRIGGER' in ch_name or 'STI ' in ch_name or 'TRG' in ch_name or 'CH_Event' in ch_name:
+                return ch_names.index(ch_name)
     return None
 
 
