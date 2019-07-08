@@ -11,6 +11,7 @@ Swiss Federal Institute of Technology (EPFL)
 
 import sys
 import mne
+import numpy as np
 import pycnbi.utils.q_common as qc
 import pycnbi.utils.pycnbi_utils as pu
 from builtins import input
