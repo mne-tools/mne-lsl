@@ -153,7 +153,7 @@ class Trigger(object):
             self.lpt = None
 
         else:
-            logger.error('Unknown LPT port type %s' % lpttype)
+            logger.error('Unrecognized lpttype device name %s' % lpttype)
             sys.exit(-1)
 
     def __del__(self):
