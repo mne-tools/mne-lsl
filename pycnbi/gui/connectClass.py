@@ -253,8 +253,8 @@ class Connect_ComboBox(QObject):
                 p.signal_paramChanged.connect(self.on_modify)
                 self.additionalParams.append(p)
                 self.templateChoices.addItem(str(key_val), key_val)
-                self.frame = QFrame()
-                self.frame = p
+                # self.frame = QFrame()
+                # self.frame = p
                 
             elif val is list:
                 chosen_additionalParams = chosenValue[key_val]
@@ -267,7 +267,6 @@ class Connect_ComboBox(QObject):
                 chosen_additionalParams = chosenValue[key_val]
                 p = Connect_LineEdit(key_val, chosen_additionalParams)
                 p.signal_paramChanged[str, str].connect(self.on_modify)
-                # lineEdit.signal_paramChanged[str, type(None)].connect(self.on_guichanges)
                 self.additionalParams.append(p)
                 self.templateChoices.addItem(str(key_val), key_val)
             
@@ -295,28 +294,27 @@ class Connect_ComboBox(QObject):
         Slot connected to comboBox param change
         """       
         val = self.templateChoices.itemData(index)
-        self.signal_paramChanged.emit(self.paramName, val)       
-                
-        for p in self.additionalParams:
-            if p.paramName == val:
-                p.frame.show()
-                self.signal_additionalParamChanged.emit(self.paramName, {p.paramName: p.chosen_value})
-            else:
-                p.frame.hide()
-                pass
+        
+        # In case of a simple comboBox without additional params for all possible selections
+        if not self.additionalParams:
+            self.signal_paramChanged.emit(self.paramName, val)
+        
+        # In case of additional params for at least one selection
+        else:  
+            i = 0
+            for p in self.additionalParams:
+                if p.paramName == val:
+                    i = 1
+                    p.frame.show()
+                    self.signal_additionalParamChanged.emit(self.paramName, {'selected': p.paramName, p.paramName: p.chosen_value})
+                else:
+                    p.frame.hide()
+                    pass
             
-            #for i in range(p.layout.count()):
-                #item = p.layout.itemAt(i).widget()
-                
-                #if p.paramName == val:
-                    #item.show()
-                    ## p.show()
-                    #self.signal_additionalParamChanged.emit(self.paramName, {p.paramName: p.chosen_value})
-                #else:
-                    #item.hide()
-                    ## p.hide()
-                    #pass
-
+            #  In case of additional params but not for the selected one (e.g in case of None)
+            if i == 0:
+                self.signal_additionalParamChanged.emit(self.paramName, {'selected': self.paramName, self.paramName: val})
+                # self.signal_paramChanged.emit(self.paramName, val)
 
     @pyqtSlot(str, dict)
     @pyqtSlot(str, list)
@@ -326,7 +324,7 @@ class Connect_ComboBox(QObject):
         """
         Slot connected on the additional parameters changes
         """
-        self.signal_additionalParamChanged[str, dict].emit(self.paramName, {'selected': p.paramName, key: p})
+        self.signal_additionalParamChanged[str, dict].emit(self.paramName, {'selected': key, key: p})
         
         
 ########################################################################
@@ -702,7 +700,15 @@ class Connect_Modifiable_Dict(QObject):
                 # lineEdit.w.setFixedWidth(50)
                 layout.addWidget(label)
                 layout.addWidget(lineEdit.w)
-
+                
+            elif type(value) is tuple:
+                comboBox = Connect_ComboBox(key, chosen_value[key], value)
+                comboBox.signal_paramChanged.connect(self.on_modify)
+                self.paramWidgets.append(comboBox)
+                label = QLabel(key)
+                layout.addWidget(label)
+                layout.addWidget(comboBox.templateChoices)                
+                
             # Add a vertical line
             if key == list(content_dict.items())[-1][0]:
                 add_v_separator(layout)
@@ -716,6 +722,7 @@ class Connect_Modifiable_Dict(QObject):
     @pyqtSlot(str, int)
     @pyqtSlot(str, float)
     @pyqtSlot(str, str)
+    @pyqtSlot(str, tuple)
     # ----------------------------------------------------------------------
     def on_modify(self, key, val):
         """
