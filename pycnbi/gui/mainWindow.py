@@ -281,7 +281,7 @@ class MainWindow(QMainWindow):
                     elif type(values) is tuple:
                         comboParams = Connect_ComboBox(key, chosen_value, values)
                         comboParams.signal_paramChanged.connect(self.on_guichanges)
-                        # comboParams.signal_additionalParamChanged.connect(self.on_guichanges)
+                        comboParams.signal_additionalParamChanged.connect(self.on_guichanges)
                         self.paramsWidgets.update({key: comboParams})                       
                         layout.addRow(key, comboParams.layout)
                         continue
@@ -395,7 +395,17 @@ class MainWindow(QMainWindow):
         name = parameter name
         new_value = new str value to to change in the module
         """
-        setattr(self.cfg_subject, name, new_Value)
+        
+        # In case of a dict containing several option (contains 'selected')
+        try:
+            tmp = getattr(self.cfg_subject, name)
+            tmp['selected'] = new_Value['selected']
+            tmp[new_Value['selected']] = new_Value[new_Value['selected']]
+            setattr(self.cfg_subject, name, tmp)
+        # In case of simple data format
+        except:    
+            setattr(self.cfg_subject, name, new_Value)
+            
         print("The parameter %s is %s" % (name, getattr(self.cfg_subject, name)))
         print("It's type is: %s \n" % type(getattr(self.cfg_subject, name)))
 
