@@ -69,7 +69,7 @@ def record(state, amp_name, amp_serial, record_dir, eeg_only):
 
     # start a server for sending out data pcl_file when software trigger is used
     outlet = start_server('StreamRecorderInfo', channel_format='string',\
-        source_id=pcl_file, stype='Markers')
+        source_id=eve_file, stype='Markers')
 
     # connect to EEG stream server
     sr = StreamReceiver(buffer_size=0, amp_name=amp_name, amp_serial=amp_serial, eeg_only=eeg_only)
