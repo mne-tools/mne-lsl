@@ -165,7 +165,7 @@ class MainWindow(QMainWindow):
                 # Iterates over the dict
                 for key, values in p[1].items():
                     chosen_value = self.extract_value_from_module(key, all_chosen_values)
-
+                    
                     # For the feedback directions [offline and online].
                     if 'DIRECTIONS' in key:
                         self.directions = values
@@ -288,7 +288,6 @@ class MainWindow(QMainWindow):
 
                     # For parameters with multiple non-fixed values in a dict (user can modify them)
                     elif type(values) is dict:
-                        
                         try:
                             selection = chosen_value['selected']
                             comboParams = Connect_ComboBox(key, chosen_value, values)
