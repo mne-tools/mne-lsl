@@ -208,7 +208,6 @@ class Connect_ComboBox(QObject):
         
         self.add_To_ComboBox(all_values, chosenValue)
         
-        
     # ----------------------------------------------------------------------
     def add_To_ComboBox(self, values, chosenValue):
         """
@@ -245,17 +244,7 @@ class Connect_ComboBox(QObject):
                 p.signal_paramChanged.connect(self.on_modify)
                 self.additionalParams.append(p)
                 self.templateChoices.addItem(str(key_val), key_val)
-                
-            elif type(val) is tuple:
-                content_dict = val
-                chosen_additionalParams = chosenValue
-                p = Connect_ComboBox(key_val, chosen_additionalParams, content_dict)
-                p.signal_paramChanged.connect(self.on_modify)
-                self.additionalParams.append(p)
-                self.templateChoices.addItem(str(key_val), key_val)
-                # self.frame = QFrame()
-                # self.frame = p
-                
+
             elif val is list:
                 chosen_additionalParams = chosenValue[key_val]
                 p = Connect_Modifiable_List(key_val, chosen_additionalParams)
@@ -268,8 +257,8 @@ class Connect_ComboBox(QObject):
                 p = Connect_LineEdit(key_val, chosen_additionalParams)
                 p.signal_paramChanged[str, str].connect(self.on_modify)
                 self.additionalParams.append(p)
-                self.templateChoices.addItem(str(key_val), key_val)
-            
+                self.templateChoices.addItem(str(key_val), key_val)             
+                
             else:
                 self.templateChoices.addItem(str(key_val), val)
             
@@ -313,12 +302,13 @@ class Connect_ComboBox(QObject):
             
             #  In case of additional params but not for the selected one (e.g in case of None)
             if i == 0:
-                self.signal_additionalParamChanged.emit(self.paramName, {'selected': self.paramName, self.paramName: val})
-                # self.signal_paramChanged.emit(self.paramName, val)
+                self.signal_additionalParamChanged.emit(self.paramName, {'selected': self.templateChoices.itemText(index), self.templateChoices.itemText(index): val})
 
     @pyqtSlot(str, dict)
     @pyqtSlot(str, list)
     @pyqtSlot(str, str)
+    # @pyqtSlot(str, float)
+    # @pyqtSlot(str, int)
     #----------------------------------------------------------------------
     def on_modify(self, key, p):
         """
