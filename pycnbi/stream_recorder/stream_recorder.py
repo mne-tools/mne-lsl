@@ -59,7 +59,7 @@ def record(state, amp_name, amp_serial, record_dir, eeg_only):
 
     # start a server for sending out data pcl_file when software trigger is used
     outlet = start_server('StreamRecorderInfo', channel_format='string',\
-        source_id=pcl_file, stype='Markers')
+        source_id=eve_file, stype='Markers')
 
     # connect to EEG stream server
     sr = StreamReceiver(buffer_size=0, amp_name=amp_name, amp_serial=amp_serial, eeg_only=eeg_only)
@@ -97,7 +97,7 @@ def record(state, amp_name, amp_serial, record_dir, eeg_only):
     else:
         eve_file = None
     logger.info('Converting raw file into fif.')
-    pcl2fif(pcl_file, eve_file)
+    pcl2fif(pcl_file, external_event=eve_file)
 
 def run(record_dir, amp_name, amp_serial, eeg_only=False):
     logger.info('\nOutput directory: %s' % (record_dir))
