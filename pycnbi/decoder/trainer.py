@@ -72,22 +72,22 @@ def load_config(cfg_file):
 
 def check_config(cfg):
     critical_vars = {
-        'COMMON': ['TRIGGER_FILE', 
+        'COMMON': ['TRIGGER_FILE',
                     'TRIGGER_DEF',
                     'EPOCH',
                     'DATA_PATH',
                     'PICKED_CHANNELS',
                     'SP_FILTER',
-                    'SP_CHANNELS', 
+                    'SP_CHANNELS',
                     'TP_FILTER',
                     'NOTCH_FILTER',
                     'FEATURES',
                     'CLASSIFIER',
                     'CV_PERFORM'],
                     'RF': ['trees', 'depth', 'seed'],
-                    'GB': ['trees', 'learning_rate', 'depth', 'seed'], 
+                    'GB': ['trees', 'learning_rate', 'depth', 'seed'],
                     'LDA': [],
-                    'rLDA': ['r_coeff'], 
+                    'rLDA': ['r_coeff'],
                     'StratifiedShuffleSplit': ['test_ratio', 'folds', 'seed', 'export_result'],
                     'LeaveOneOut': ['export_result']
     }
@@ -120,7 +120,7 @@ def check_config(cfg):
 
     # classifier parameters check
     selected_classifier = cfg.CLASSIFIER[cfg.CLASSIFIER['selected']]
-    
+
     if selected_classifier == 'RF':
         if 'RF' not in cfg.CLASSIFIER:
             logger.error('"RF" not defined in config.')
@@ -129,7 +129,7 @@ def check_config(cfg):
             if v not in cfg.CLASSIFIER['RF']:
                 logger.error('%s not defined in config.' % v)
                 raise RuntimeError
-    
+
     elif selected_classifier == 'GB' or selected_classifier == 'XGB':
         if 'GB' not in cfg.CLASSIFIER:
             logger.error('"GB" not defined in config.')
@@ -138,35 +138,35 @@ def check_config(cfg):
             if v not in cfg.CLASSIFIER[selected_classifier]:
                 logger.error('%s not defined in config.' % v)
                 raise RuntimeError
-    
+
     elif selected_classifier == 'rLDA':
         if 'rLDA' not in cfg.CLASSIFIER:
             logger.error('"rLDA" not defined in config.')
-            raise RuntimeError        
+            raise RuntimeError
         for v in critical_vars['rLDA']:
             if v not in cfg.CLASSIFIER['rLDA']:
                 logger.error('%s not defined in config.' % v)
-                raise RuntimeError   
-    
+                raise RuntimeError
+
     cv_selected = cfg.CV_PERFORM['selected']
-    if cfg.CV_PERFORM[cv_selected] is not None:       
+    if cfg.CV_PERFORM[cv_selected] is not None:
         if cv_selected == 'StratifiedShuffleSplit':
             if 'StratifiedShuffleSplit' not in cfg.CV_PERFORM:
                 logger.error('"StratifiedShuffleSplit" not defined in config.')
-                raise RuntimeError        
+                raise RuntimeError
             for v in critical_vars['StratifiedShuffleSplit']:
                 if v not in cfg.CV_PERFORM[cv_selected]:
                     logger.error('%s not defined in config.' % v)
                     raise RuntimeError
-        
+
         elif cv_selected == 'LeaveOneOut':
             if 'LeaveOneOut' not in cfg.CV_PERFORM:
                 logger.error('"LeaveOneOut" not defined in config.')
-                raise RuntimeError        
+                raise RuntimeError
             for v in critical_vars['LeaveOneOut']:
                 if v not in cfg.CV_PERFORM[cv_selected]:
                     logger.error('%s not defined in config.' % v)
-                    raise RuntimeError    
+                    raise RuntimeError
 
     if cfg.N_JOBS is None:
         cfg.N_JOBS = mp.cpu_count()
@@ -246,6 +246,7 @@ def crossval_epochs(cv, epochs_data, labels, cls, label_names=None, do_balance=N
     """
 
     scores = []
+    f1s = []
     cnum = 1
     cm_sum = 0
     label_set = np.unique(labels)
@@ -281,8 +282,9 @@ def crossval_epochs(cv, epochs_data, labels, cls, label_names=None, do_balance=N
             results.append(pool.apply_async(fit_predict_thres,
                                             [cls, X_train, Y_train, X_test, Y_test, cnum, label_set, ignore_thres, decision_thres]))
         else:
-            score, cm = fit_predict_thres(cls, X_train, Y_train, X_test, Y_test, cnum, label_set, ignore_thres, decision_thres)
+            score, cm, f1 = fit_predict_thres(cls, X_train, Y_train, X_test, Y_test, cnum, label_set, ignore_thres, decision_thres)
             scores.append(score)
+            f1s.append(f1)
             cm_sum += cm
         cnum += 1
 
@@ -291,8 +293,9 @@ def crossval_epochs(cv, epochs_data, labels, cls, label_names=None, do_balance=N
         pool.join()
 
         for r in results:
-            score, cm = r.get()
+            score, cm, f1 = r.get()
             scores.append(score)
+            f1s.append(f1)
             cm_sum += cm
 
     # confusion matrix
@@ -330,6 +333,7 @@ def crossval_epochs(cv, epochs_data, labels, cls, label_names=None, do_balance=N
             cm_txt += tpl_float % c
         cm_txt += '\n'
     cm_txt += 'Average accuracy: %.2f\n' % np.mean(scores)
+    cm_txt += 'Average F1 score: %.2f\n' % np.mean(f1s)
 
     return np.array(scores), cm_txt
 
@@ -488,6 +492,7 @@ def fit_predict_thres(cls, X_train, Y_train, X_test, Y_test, cnum, label_list, i
         Y_pred = cls.predict(X_test)
         score = skmetrics.accuracy_score(Y_test, Y_pred)
         cm = skmetrics.confusion_matrix(Y_test, Y_pred, label_list)
+        f1 = skmetrics.f1_score(Y_test, Y_pred, average='weighted')
     else:
         if decision_thres is not None:
             logger.error('decision threshold and ignore_thres cannot be set at the same time.')
@@ -504,9 +509,10 @@ def fit_predict_thres(cls, X_train, Y_train, X_test, Y_test, cnum, label_list, i
         score = skmetrics.accuracy_score(Y_test_overthres, Y_pred_overthres)
         cm = skmetrics.confusion_matrix(Y_test_overthres, Y_pred_overthres, label_list)
         cm = np.concatenate((cm, Y_pred_underthres_count[:, np.newaxis]), axis=1)
+        f1 = skmetrics.f1_score(Y_test_overthres, Y_pred_overthres, average='weighted')
 
     logger.info('Cross-validation %d (%.3f) - %.1f sec' % (cnum, score, timer.sec()))
-    return score, cm
+    return score, cm, f1
 
 
 def cross_validate(cfg, featdata, cv_file=None):
@@ -612,7 +618,7 @@ def cross_validate(cfg, featdata, cv_file=None):
     logger.info(txt)
 
     # Export to a file
-    if 'export_result' in cfg.CV_PERFORM[selected_cv] and cfg.CV_PERFORM[selected_cv] is True:
+    if 'export_result' in cfg.CV_PERFORM[selected_cv] and cfg.CV_PERFORM[selected_cv]['export_result'] is True:
         if cv_file is None:
             if cfg.EXPORT_CLS is True:
                 qc.make_dirs('%s/classifier' % cfg.DATA_PATH)
@@ -746,7 +752,7 @@ def train_decoder(cfg, featdata, feat_file=None):
                 gfout.write('%.3f\t%s\t%s\t%d\n' % (values[i]*100.0, ch, hz, keys[i]))
             gfout.close()
 
-        
+
 # for batch scripts
 def batch_run(cfg_file):
     cfg = load_config(cfg_file)
@@ -754,11 +760,11 @@ def batch_run(cfg_file):
     run(cfg, interactive=True)
 
 def run(cfg, queue=None, interactive=False, cv_file=None, feat_file=None):
-    
+
     redirect_stdout_to_queue(queue)
-    
+
     cfg.tdef = trigger_def(cfg.TRIGGER_FILE)
-    
+
     # Extract features
     featdata = features.compute_features(cfg)
 

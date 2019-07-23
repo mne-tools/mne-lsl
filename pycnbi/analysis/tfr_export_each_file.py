@@ -58,7 +58,7 @@ def get_tfr_each_file(cfg, tfr_type='multitaper', recursive=False, export_path=N
     else:
         raise ValueError('Wrong TFR type %s' % tfr_type)
 
-    for fifdir in cfg.DATA_DIRS:
+    for fifdir in cfg.DATA_PATHS:
         for f in qc.get_file_list(fifdir, fullpath=True, recursive=recursive):
             [fdir, fname, fext] = qc.parse_path_list(f)
             if fext in ['fif', 'bdf', 'gdf']:
