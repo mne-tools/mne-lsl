@@ -431,9 +431,7 @@ def compute_features(cfg):
     
     reref = cfg.REREFERENCE[cfg.REREFERENCE['selected']]
     if reref is not None:
-        #pu.rereference(raw, reref['new'], reref['old'])
-        logger.error('Sorry! Channel re-referencing is under development.')
-        raise NotImplementedError
+        pu.rereference(raw, reref['New'], reref['Old'])
     
     if cfg.LOAD_EVENTS[cfg.LOAD_EVENTS['selected']] is not None:
         events = mne.read_events(cfg.LOAD_EVENTS[cfg.LOAD_EVENTS['selected']])
