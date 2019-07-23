@@ -2,23 +2,30 @@ from __future__ import print_function, division
 
 """
 stream_receiver.py
+
 Acquires signals from LSL server and save into buffer.
+
 Note:
 - Trigger channel is always 0 and EEG channels start from 1. When there is no
   known trigger channel, channel 0 is added with zero values for consistency.
+
 - BioSemi's Trigger values (Ch.0) should be taken with care because all
   trigger pins are pulled to 1 and the data is written with 32 bits. Since
   the usual parallel port supports only 8 bits, remove the highest 24 bits
   by masking to 0 and subtract 1. A quick and dirty way is to subtract the
   most commonly occurring value, which usually corresponds to zero value.
   It only works when 0's are majority.
+
 - Some LSL servers, especially OpenVibe-based servers, send wrong LSL timestamps.
   Most of the time, it does not matter but when you use software trigger, you will
   need this offset to synchronize the event timings.
+
 TODO:
    Restrict buffer size.
+
 Kyuhwa Lee, 2019
 Swiss Federal Institute of Technology Lausanne (EPFL)
+
 """
 
 import sys
@@ -29,21 +36,8 @@ import pylsl
 import numpy as np
 import pycnbi.utils.pycnbi_utils as pu
 import pycnbi.utils.q_common as qc
+from pycnbi.utils.pycnbi_utils import find_event_channel
 from pycnbi import logger
-
-def find_trigger_channel(ch_list):
-    if 'TRIGGER' in ch_list:
-        return ch_list.index('TRIGGER')
-    elif 'TRG' in ch_list:
-        return ch_list.index('TRG')
-    else:
-        for i, chn in enumerate(ch_list):
-            if chn is None:
-                continue
-            # usually STI 014 for many trigger boxes
-            if 'STI ' in chn:
-                return i
-        return None
 
 class StreamReceiver:
     def __init__(self, window_size=1, buffer_size=1, amp_serial=None, eeg_only=False, amp_name=None):
@@ -160,7 +154,7 @@ class StreamReceiver:
                     elif 'openvibeSignal' in amp_name:
                         logger.info('Found an Openvibe signal streaming server %s (type %s, amp_serial %s) @ %s.' % (amp_name, si.type(), amp_serial, si.hostname()))
                         ch_list = pu.lsl_channel_list(inlet)
-                        self._lsl_tr_channel = find_trigger_channel(ch_list)
+                        self._lsl_tr_channel = find_event_channel(ch_names=ch_list)
                         channels += si.channel_count()
                         amps.append(si)
                         server_found = True
@@ -170,7 +164,7 @@ class StreamReceiver:
                     elif 'openvibeMarkers' in amp_name:
                         logger.info('Found an Openvibe markers server %s (type %s, amp_serial %s) @ %s.' % (amp_name, si.type(), amp_serial, si.hostname()))
                         ch_list = pu.lsl_channel_list(inlet)
-                        self._lsl_tr_channel = find_trigger_channel(ch_list)
+                        self._lsl_tr_channel = find_event_channel(ch_names=ch_list)
                         channels += si.channel_count()
                         amps.append(si)
                         server_found = True
@@ -178,7 +172,7 @@ class StreamReceiver:
                     elif find_any:
                         logger.info('Found a streaming server %s (type %s, amp_serial %s) @ %s.' % (amp_name, si.type(), amp_serial, si.hostname()))
                         ch_list = pu.lsl_channel_list(inlet)
-                        self._lsl_tr_channel = find_trigger_channel(ch_list)
+                        self._lsl_tr_channel = find_event_channel(ch_names=ch_list)
                         channels += si.channel_count()
                         amps.append(si)
                         server_found = True
@@ -260,7 +254,9 @@ class StreamReceiver:
     def acquire(self, blocking=True):
         """
         Reads data into buffer. It is a blocking function as default.
+
         Fills the buffer and return the current chunk of data and timestamps.
+
         Returns:
             data [samples x channels], timestamps [samples]
         """
@@ -378,9 +374,11 @@ class StreamReceiver:
     def get_window(self, decim=1):
         """
         Get the latest window and timestamps in numpy format
+
         input
         -----
         decim (int): decimation factor
+
         output
         ------
         [samples x channels], [samples]
@@ -405,6 +403,7 @@ class StreamReceiver:
     def get_buffer(self):
         """
         Returns the entire buffer: samples x channels
+
         If multiple amps, signals are concatenated along the channel axis.
         """
         self.check_connect()
@@ -452,6 +451,7 @@ class StreamReceiver:
     def get_lsl_offset(self):
         """
         Return time difference of acquisition server's time and LSL time
+
         OpenVibe servers often have a bug of sending its own running time instead of LSL time.
         """
         return self.lsl_time_offset
