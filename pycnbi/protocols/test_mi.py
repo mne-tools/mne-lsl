@@ -83,7 +83,7 @@ def check_config(cfg):
         'AMP_SERIAL':None,
         'FAKE_CLS':None,
         'TRIALS_RANDOMIZE':True,
-        'BAR_SLOW_START':{'selected':'False', 'False':None, 'True':1.0}, 
+        'BAR_SLOW_START':{'selected':'False', 'False':None, 'True':[1.0]}, 
         'PARALLEL_DECODING':{'selected':'False', 'False':None, 'True':{'period':0.06, 'num_strides':3}},
         'SHOW_TRIALS':True,
         'FREE_STYLE':False,
