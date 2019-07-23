@@ -343,7 +343,7 @@ class Feedback:
                             # slow start
                             selected = self.cfg.BAR_SLOW_START['selected']
                             if self.cfg.BAR_SLOW_START[selected] and self.tm_trigger.sec() < self.cfg.BAR_SLOW_START[selected]:
-                                dx *= self.tm_trigger.sec() / self.cfg.BAR_SLOW_START[selected]
+                                dx *= self.tm_trigger.sec() / self.cfg.BAR_SLOW_START[selected][0]
 
                             # add likelihoods
                             if max_label == bar_label:
