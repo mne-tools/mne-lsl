@@ -117,16 +117,11 @@ def pcl2fif(filename, interactive=False, outdir=None, external_event=None, offse
         ch_names = data['ch_names']
 
     # search for event channel
-    trig_ch_guess = pu.find_event_channel(signals_raw, ch_names)
-    if 'TRIGGER' in ch_names:
-        trig_ch = ch_names.index('TRIGGER')
-    elif 'STI ' in ch_names:
-        trig_ch = ch_names.index('STI ')
-    else:
-        trig_ch = trig_ch_guess
+    trig_ch = pu.find_event_channel(signals_raw, ch_names)
 
+    ''' TODO: REMOVE
     # exception
-    if trig_ch is not None and trig_ch_guess is None:
+    if trig_ch is None:
         logger.warning('Inferred event channel is None.')
         if interactive:
             logger.warning('If you are sure everything is alright, press Enter.')
@@ -142,6 +137,7 @@ def pcl2fif(filename, interactive=False, outdir=None, external_event=None, offse
         for c in ch_names:
             logger.info('%s' % c)
         logger.info('Event channel is now set to %d' % trig_ch)
+    '''
 
     # move trigger channel to index 0
     if trig_ch is None:
@@ -191,7 +187,7 @@ def pcl2fif(filename, interactive=False, outdir=None, external_event=None, offse
     logger.info('Saved to %s' % fiffile)
 
     saveChannels2txt(outdir, ch_names)
-    
+
     return True
 
 
@@ -470,6 +466,7 @@ def xdf2fif(filename, interactive=False, outdir=None):
     # fif header creation
     info = mne.create_info(ch_names, sample_rate, ch_info)
     raw = mne.io.RawArray(signals, info)
+    #raw.add_events(events_index, stim_channel='TRIGGER')
 
     # save and close
     raw.save(fiffile, verbose=False, overwrite=True, fmt='double')
@@ -513,9 +510,9 @@ def saveChannels2txt(outdir, ch_names):
 
     filename = outdir + "channelsList.txt"
     config = Path(filename)
-    
+
     if config.is_file() is False:
-        file = open(filename, "w")    
+        file = open(filename, "w")
         for x in range(len(ch_names)):
             file.write(ch_names[x] + "\n")
         file.close()

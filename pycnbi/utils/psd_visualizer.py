@@ -75,7 +75,7 @@ if __name__ == '__main__':
     fq_res = 1 / w_seconds
     hz_list = []
     f = fmin
-    while f < fmax:
+    while f <= fmax:
         hz_list.append(f)
         f += fq_res
     picks = [ch_names.index(ch) for ch in channel_picks]
