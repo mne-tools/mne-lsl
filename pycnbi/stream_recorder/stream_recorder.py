@@ -97,7 +97,7 @@ def record(state, amp_name, amp_serial, record_dir, eeg_only):
     else:
         eve_file = None
     logger.info('Converting raw file into fif.')
-    pcl2fif(pcl_file, eve_file)
+    pcl2fif(pcl_file, external_event=eve_file)
 
 def run(record_dir, amp_name, amp_serial, eeg_only=False):
     logger.info('\nOutput directory: %s' % (record_dir))
