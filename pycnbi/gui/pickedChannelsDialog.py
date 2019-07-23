@@ -19,7 +19,7 @@ class PickChannelsDialog(QDialog):
         super().__init__()
 
         self.setWindowTitle(title)
-        self.initial_selection = selected
+        self.selection = selected
         vbox = QVBoxLayout(self)
         self.channels = QListWidget()
         self.channels.insertItems(0, channels)
@@ -50,7 +50,7 @@ class PickChannelsDialog(QDialog):
         """
         selected = [item.data(0) for item in self.channels.selectedItems()]
 
-        if selected != self.initial_selection:
+        if selected != self.selection:
             self.buttonbox.button(QDialogButtonBox.Ok).setEnabled(True)
             self.selected = selected
         else:
