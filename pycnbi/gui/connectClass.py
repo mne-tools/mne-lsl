@@ -690,7 +690,16 @@ class Connect_Modifiable_Dict(QObject):
                 # lineEdit.w.setFixedWidth(50)
                 layout.addWidget(label)
                 layout.addWidget(lineEdit.w)
-                
+
+            elif value is list:
+                p = Connect_Modifiable_List(key, chosen_value[key])
+                p.signal_paramChanged.connect(self.on_modify)
+                self.paramWidgets.append(p)
+                label = QLabel(key)
+                label.setAlignment(Qt.AlignCenter)
+                layout.addWidget(label)
+                layout.addWidget(p.frame)                
+
             elif type(value) is tuple:
                 comboBox = Connect_ComboBox(key, chosen_value[key], value)
                 comboBox.signal_paramChanged.connect(self.on_modify)
@@ -713,6 +722,7 @@ class Connect_Modifiable_Dict(QObject):
     @pyqtSlot(str, float)
     @pyqtSlot(str, str)
     @pyqtSlot(str, tuple)
+    @pyqtSlot(str, list)
     # ----------------------------------------------------------------------
     def on_modify(self, key, val):
         """
