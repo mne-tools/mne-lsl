@@ -416,6 +416,7 @@ class MainWindow(QMainWindow):
         Opens the File dialog window when the search button is pressed.
         """
         path_name = QFileDialog.getExistingDirectory(caption="Choose the subject's directory", directory=DEFAULT_PATH)
+        self.ui.lineEdit_pathSearch.clear()
         self.ui.lineEdit_pathSearch.insert(path_name)
 
 
