@@ -90,7 +90,7 @@ class Channel_Select(QObject):
         self.layout.addWidget(pushButton)
 
         self.lineEdit = QLineEdit(str(selected))
-        self.lineEdit.setReadOnly(True)
+        # self.lineEdit.setReadOnly(True)
         self.layout.addWidget(self.lineEdit)
 
         self.pickChannelsDialog = PickChannelsDialog(channels, selected)
