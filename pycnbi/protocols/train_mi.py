@@ -35,6 +35,8 @@ from pycnbi.triggers.trigger_def import trigger_def
 from pycnbi import logger
 from builtins import input
 
+from pycnbi.gui.streams import redirect_stdout_to_queue
+
 def load_config(cfg_file):
     cfg_file = qc.forward_slashify(cfg_file)
     if not (os.path.exists(cfg_file) and os.path.isfile(cfg_file)):
@@ -42,7 +44,41 @@ def load_config(cfg_file):
     return imp.load_source(cfg_file, cfg_file)
 
 def check_config(cfg):
-    # TODO: check parameter integrity
+    critical_vars = {
+        'COMMON': ['TRIGGER_DEVICE',
+                   'TRIGGER_FILE', 
+                   'SCREEN_SIZE',
+                   'DIRECTIONS',
+                   'DIR_RANDOM',
+                   'TRIALS_EACH'], 
+        'TIMINGS': ['INIT', 'GAP', 'CUE', 'READY', 'READY_RANDOMIZE', 'DIR', 'DIR_RANDOMIZE']
+    }
+    optional_vars = {'FEEDBACK_TYPE': 'BAR',
+                     'FEEDBACK_IMAGE_PATH': None,
+                     'SCREEN_POS': (0, 0),
+                    'DIR_RANDOM':True,
+                    'GLASS_USE':False,
+                    'TRIAL_PAUSE': False,
+                    'REFRESH_RATE':30
+    }
+
+    for key in critical_vars['COMMON']:
+        if not hasattr(cfg, key):
+            raise RuntimeError('%s is a required parameter' % key)
+            
+    if not hasattr(cfg, 'TIMINGS'):
+        logger.error('"TIMINGS" not defined in config.')
+        raise RuntimeError
+    for v in critical_vars['TIMINGS']:
+        if v not in cfg.TIMINGS:
+            logger.error('%s not defined in config.' % v)
+            raise RuntimeError            
+
+    for key in optional_vars:
+        if not hasattr(cfg, key):
+            setattr(cfg, key, optional_vars[key])
+            logger.warning('Setting undefined %s=%s' % (key, optional[key]))
+
     return cfg
 
 # for batch script
@@ -51,13 +87,16 @@ def batch_run(cfg_file):
     cfg = check_config(cfg)
     run(cfg)
 
-def run(cfg):
-    tdef = trigger_def(cfg.TRIGGER_FILE)
+def run(cfg, queue=None):
+    
+    redirect_stdout_to_queue(queue)    
     refresh_delay = 1.0 / cfg.REFRESH_RATE
+    
+    cfg.tdef = trigger_def(cfg.TRIGGER_FILE)
 
     # visualizer
     keys = {'left':81, 'right':83, 'up':82, 'down':84, 'pgup':85, 'pgdn':86,
-        'home':80, 'end':87, 'space':32, 'esc':27, ',':44, '.':46, 's':115, 'c':99,
+        'home':80, 'end':87, 'space':32, 'esc':27, ',':44, '.':46, 's':115, 'c':99, 
         '[':91, ']':93, '1':49, '!':33, '2':50, '@':64, '3':51, '#':35}
     color = dict(G=(20, 140, 0), B=(210, 0, 0), R=(0, 50, 200), Y=(0, 215, 235),
         K=(0, 0, 0), w=(200, 200, 200))
@@ -86,8 +125,8 @@ def run(cfg):
     timer_trigger = qc.Timer()
     timer_dir = qc.Timer()
     timer_refresh = qc.Timer()
-    t_dir = cfg.T_DIR + random.uniform(-cfg.T_DIR_RANDOMIZE, cfg.T_DIR_RANDOMIZE)
-    t_dir_ready = cfg.T_DIR_READY + random.uniform(-cfg.T_DIR_READY_RANDOMIZE, cfg.T_DIR_READY_RANDOMIZE)
+    t_dir = cfg.TIMINGS['DIR'] + random.uniform(-cfg.TIMINGS['DIR_RANDOMIZE'], cfg.TIMINGS['DIR_RANDOMIZE'])
+    t_dir_ready = cfg.TIMINGS['READY'] + random.uniform(-cfg.TIMINGS['READY_RANDOMIZE'], cfg.TIMINGS['READY_RANDOMIZE'])
 
     bar = BarVisual(cfg.GLASS_USE, screen_pos=cfg.SCREEN_POS, screen_size=cfg.SCREEN_SIZE)
     bar.fill()
@@ -99,11 +138,11 @@ def run(cfg):
         timer_refresh.reset()
 
         # segment= { 'cue':(s,e), 'dir':(s,e), 'label':0-4 } (zero-based)
-        if event == 'start' and timer_trigger.sec() > cfg.T_INIT:
+        if event == 'start' and timer_trigger.sec() > cfg.TIMINGS['INIT']:
             event = 'gap_s'
             bar.fill()
             timer_trigger.reset()
-            trigger.signal(tdef.INIT)
+            trigger.signal(cfg.tdef.INIT)
         elif event == 'gap_s':
             if cfg.TRIAL_PAUSE:
                 bar.put_text('Press any key')
@@ -115,31 +154,31 @@ def run(cfg):
             bar.put_text('Trial %d / %d' % (trial, num_trials))
             event = 'gap'
             timer_trigger.reset()
-        elif event == 'gap' and timer_trigger.sec() > cfg.T_GAP:
+        elif event == 'gap' and timer_trigger.sec() > cfg.TIMINGS['GAP']:
             event = 'cue'
             bar.fill()
             bar.draw_cue()
-            trigger.signal(tdef.CUE)
+            trigger.signal(cfg.tdef.CUE)
             timer_trigger.reset()
-        elif event == 'cue' and timer_trigger.sec() > cfg.T_CUE:
+        elif event == 'cue' and timer_trigger.sec() > cfg.TIMINGS['CUE']:
             event = 'dir_r'
             dir = dir_sequence[trial - 1]
             if dir == 'L':  # left
                 bar.move('L', 100, overlay=True)
-                trigger.signal(tdef.LEFT_READY)
+                trigger.signal(cfg.tdef.LEFT_READY)
             elif dir == 'R':  # right
                 bar.move('R', 100, overlay=True)
-                trigger.signal(tdef.RIGHT_READY)
+                trigger.signal(cfg.tdef.RIGHT_READY)
             elif dir == 'U':  # up
                 bar.move('U', 100, overlay=True)
-                trigger.signal(tdef.UP_READY)
+                trigger.signal(cfg.tdef.UP_READY)
             elif dir == 'D':  # down
                 bar.move('D', 100, overlay=True)
-                trigger.signal(tdef.DOWN_READY)
+                trigger.signal(cfg.tdef.DOWN_READY)
             elif dir == 'B':  # both hands
                 bar.move('L', 100, overlay=True)
                 bar.move('R', 100, overlay=True)
-                trigger.signal(tdef.BOTH_READY)
+                trigger.signal(cfg.tdef.BOTH_READY)
             else:
                 raise RuntimeError('Unknown direction %d' % dir)
             timer_trigger.reset()
@@ -150,15 +189,15 @@ def run(cfg):
             timer_trigger.reset()
             timer_dir.reset()
             if dir == 'L':  # left
-                trigger.signal(tdef.LEFT_GO)
+                trigger.signal(cfg.tdef.LEFT_GO)
             elif dir == 'R':  # right
-                trigger.signal(tdef.RIGHT_GO)
+                trigger.signal(cfg.tdef.RIGHT_GO)
             elif dir == 'U':  # up
-                trigger.signal(tdef.UP_GO)
+                trigger.signal(cfg.tdef.UP_GO)
             elif dir == 'D':  # down
-                trigger.signal(tdef.DOWN_GO)
+                trigger.signal(cfg.tdef.DOWN_GO)
             elif dir == 'B':  # both
-                trigger.signal(tdef.BOTH_GO)
+                trigger.signal(cfg.tdef.BOTH_GO)
             else:
                 raise RuntimeError('Unknown direction %d' % dir)
         elif event == 'dir' and timer_trigger.sec() > t_dir:
@@ -166,10 +205,10 @@ def run(cfg):
             bar.fill()
             trial += 1
             logger.info('trial ' + str(trial - 1) + ' done')
-            trigger.signal(tdef.BLANK)
+            trigger.signal(cfg.tdef.BLANK)
             timer_trigger.reset()
-            t_dir = cfg.T_DIR + random.uniform(-cfg.T_DIR_RANDOMIZE, cfg.T_DIR_RANDOMIZE)
-            t_dir_ready = cfg.T_DIR_READY + random.uniform(-cfg.T_DIR_READY_RANDOMIZE, cfg.T_DIR_READY_RANDOMIZE)
+            t_dir = cfg.TIMINGS['DIR'] + random.uniform(-cfg.TIMINGS['DIR_RANDOMIZE'], cfg.TIMINGS['DIR_RANDOMIZE'])
+            t_dir_ready = cfg.TIMINGS['READY'] + random.uniform(-cfg.TIMINGS['READY_RANDOMIZE'], cfg.TIMINGS['READY_RANDOMIZE'])
 
         # protocol
         if event == 'dir':
@@ -199,7 +238,6 @@ def run(cfg):
    
 
 if __name__ == '__main__':
-    logger.info('YES!')
     if len(sys.argv) < 2:
         cfg_file = input('Config file name? ')
     else:

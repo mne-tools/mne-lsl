@@ -424,23 +424,30 @@ def compute_features(cfg):
     for f in qc.get_file_list(cfg.DATA_PATH, fullpath=True):
         if f[-4:] in ['.fif', '.fiff']:
             ftrain.append(f)
-    if len(ftrain) > 1 and cfg.CHANNEL_PICKS is not None and type(cfg.CHANNEL_PICKS[0]) == int:
-        logger.error('When loading multiple EEG files, CHANNEL_PICKS must be list of string, not integers because they may have different channel order.')
+    if len(ftrain) > 1 and cfg.PICKED_CHANNELS is not None and type(cfg.PICKED_CHANNELS[0]) == int:
+        logger.error('When loading multiple EEG files, PICKED_CHANNELS must be list of string, not integers because they may have different channel order.')
         raise RuntimeError
     raw, events = pu.load_multi(ftrain)
-    if cfg.REF_CH is not None:
-        #pu.rereference(raw, cfg.REF_CH[1], cfg.REF_CH[0])
+    
+    reref = cfg.REREFERENCE[cfg.REREFERENCE['selected']]
+    if reref is not None:
+        #pu.rereference(raw, reref['new'], reref['old'])
         logger.error('Sorry! Channel re-referencing is under development.')
         raise NotImplementedError
-    if cfg.LOAD_EVENTS_FILE is not None:
-        events = mne.read_events(cfg.LOAD_EVENTS_FILE)
-    triggers = {cfg.tdef.by_value[c]:c for c in set(cfg.TRIGGER_DEF)}
+    
+    if cfg.LOAD_EVENTS[cfg.LOAD_EVENTS['selected']] is not None:
+        events = mne.read_events(cfg.LOAD_EVENTS[cfg.LOAD_EVENTS['selected']])
+    
+    trigger_def_int = set()
+    for a in cfg.TRIGGER_DEF:
+        trigger_def_int.add(getattr(cfg.tdef, a))
+    triggers = {cfg.tdef.by_value[c]:c for c in trigger_def_int}
 
     # Pick channels
-    if cfg.CHANNEL_PICKS is None:
+    if cfg.PICKED_CHANNELS is None:
         chlist = [int(x) for x in pick_types(raw.info, stim=False, eeg=True)]
     else:
-        chlist = cfg.CHANNEL_PICKS
+        chlist = cfg.PICKED_CHANNELS
     picks = []
     for c in chlist:
         if type(c) == int:
@@ -448,10 +455,10 @@ def compute_features(cfg):
         elif type(c) == str:
             picks.append(raw.ch_names.index(c))
         else:
-            logger.error('CHANNEL_PICKS has a value of unknown type %s.\nCHANNEL_PICKS=%s' % (type(c), cfg.CHANNEL_PICKS))
+            logger.error('PICKED_CHANNELS has a value of unknown type %s.\nPICKED_CHANNELS=%s' % (type(c), cfg.PICKED_CHANNELS))
             raise RuntimeError
-    if cfg.EXCLUDES is not None:
-        for c in cfg.EXCLUDES:
+    if cfg.EXCLUDED_CHANNELS is not None:
+        for c in cfg.EXCLUDED_CHANNELS:
             if type(c) == str:
                 if c not in raw.ch_names:
                     logger.warning('Exclusion channel %s does not exist. Ignored.' % c)
@@ -460,7 +467,7 @@ def compute_features(cfg):
             elif type(c) == int:
                 c_int = c
             else:
-                logger.error('EXCLUDES has a value of unknown type %s.\nEXCLUDES=%s' % (type(c), cfg.EXCLUDES))
+                logger.error('EXCLUDED_CHANNELS has a value of unknown type %s.\nEXCLUDED_CHANNELS=%s' % (type(c), cfg.EXCLUDED_CHANNELS))
                 raise RuntimeError
             if c_int in picks:
                 del picks[picks.index(c_int)]
@@ -468,13 +475,13 @@ def compute_features(cfg):
         logger.error('"picks" has a channel index %d while there are only %d channels.' % (max(picks), len(raw.ch_names)))
         raise ValueError
     if hasattr(cfg, 'SP_CHANNELS') and cfg.SP_CHANNELS is not None:
-        logger.warning('SP_CHANNELS parameter is not supported yet. Will be set to CHANNEL_PICKS.')
+        logger.warning('SP_CHANNELS parameter is not supported yet. Will be set to PICKED_CHANNELS.')
     if hasattr(cfg, 'TP_CHANNELS') and cfg.TP_CHANNELS is not None:
-        logger.warning('TP_CHANNELS parameter is not supported yet. Will be set to CHANNEL_PICKS.')
+        logger.warning('TP_CHANNELS parameter is not supported yet. Will be set to PICKED_CHANNELS.')
     if hasattr(cfg, 'NOTCH_CHANNELS') and cfg.NOTCH_CHANNELS is not None:
-        logger.warning('NOTCH_CHANNELS parameter is not supported yet. Will be set to CHANNEL_PICKS.')
-    if 'decim' not in cfg.PSD:
-        cfg.PSD['decim'] = 1
+        logger.warning('NOTCH_CHANNELS parameter is not supported yet. Will be set to PICKED_CHANNELS.')
+    if 'decim' not in cfg.FEATURES['PSD']:
+        cfg.FEATURES['PSD']['decim'] = 1
         logger.warning('PSD["decim"] undefined. Set to 1.')
 
     # Read epochs
@@ -489,7 +496,7 @@ def compute_features(cfg):
                 # Channels are already selected by 'picks' param so use all channels.
                 '''
                 epoch = pu.preprocess(epoch, spatial=cfg.SP_FILTER, spatial_ch=None, spectral=cfg.TP_FILTER, spectral_ch=None,
-                    notch=cfg.NOTCH_FILTER, notch_ch=None, multiplier=cfg.MULTIPLIER, n_jobs=cfg.N_JOBS, decim=cfg.PSD['decim'])
+                    notch=cfg.NOTCH_FILTER, notch_ch=None, multiplier=cfg.MULTIPLIER, n_jobs=cfg.N_JOBS, decim=cfg.FEATURES['PSD']['decim'])
                 '''
                 epochs_train.append(epoch)
         else:
@@ -499,7 +506,7 @@ def compute_features(cfg):
             # Channels are already selected by 'picks' param so use all channels.
             '''
             epochs_train = pu.preprocess(epochs_train, spatial=cfg.SP_FILTER, spatial_ch=None, spectral=cfg.TP_FILTER, spectral_ch=None,
-                notch=cfg.NOTCH_FILTER, notch_ch=None, multiplier=cfg.MULTIPLIER, n_jobs=cfg.N_JOBS, decim=cfg.PSD['decim'])
+                notch=cfg.NOTCH_FILTER, notch_ch=None, multiplier=cfg.MULTIPLIER, n_jobs=cfg.N_JOBS, decim=cfg.FEATURES['PSD']['decim'])
             '''
     except:
         logger.exception('Problem while epoching.')
@@ -508,21 +515,21 @@ def compute_features(cfg):
     label_set = np.unique(triggers.values())
 
     # Compute features
-    if cfg.FEATURES == 'PSD':
+    if cfg.FEATURES['selected'] == 'PSD':
         preprocess = dict(sfreq=epochs_train.info['sfreq'],
             spatial=cfg.SP_FILTER,
             spatial_ch=None,
-            spectral=cfg.TP_FILTER,
+            spectral=cfg.TP_FILTER[cfg.TP_FILTER['selected']],
             spectral_ch=None,
-            notch=cfg.NOTCH_FILTER,
+            notch=cfg.NOTCH_FILTER[cfg.NOTCH_FILTER['selected']],
             notch_ch=None,
             multiplier=cfg.MULTIPLIER,
             ch_names=None,
             rereference=None,
-            decim=cfg.PSD['decim'],
+            decim=cfg.FEATURES['PSD']['decim'],
             n_jobs=cfg.N_JOBS
         )
-        featdata = get_psd_feature(epochs_train, cfg.EPOCH, cfg.PSD, picks=None, preprocess=preprocess, n_jobs=cfg.N_JOBS)
+        featdata = get_psd_feature(epochs_train, cfg.EPOCH, cfg.FEATURES['PSD'], picks=None, preprocess=preprocess, n_jobs=cfg.N_JOBS)
     elif cfg.FEATURES == 'TIMELAG':
         '''
         TODO: Implement multiple epochs for timelag feature
