@@ -1,11 +1,8 @@
 '''
 Initialize PyCNBI logger and other settings
-
 TODO: support a process-safe file logging
-
 Kyuhwa Lee
 Swiss Federal Institute of Technology Lausanne (EPFL)
-
 '''
 
 import os
@@ -52,53 +49,60 @@ class PycnbiFormatter(logging.Formatter):
         self._style = logging.PercentStyle(self._fmt)
         return logging.Formatter.format(self, record)
 
-def init_logger(verbose_console='INFO', verbose_file=None):
+def init_logger(verbose_console='INFO'):
+    '''
+    Add the first logger as sys.stdout. Handler will be added only once.
+    '''
     if not logger.hasHandlers():
-        # add custom log levels
-        logging.addLevelName(LOG_LEVELS['INFO_GREEN'], 'INFO_GREEN')
-        def __log_info_green(self, message, *args, **kwargs):
-            if self.isEnabledFor(LOG_LEVELS['INFO_GREEN']):
-                self._log(LOG_LEVELS['INFO_GREEN'], message, args, **kwargs)
-        logging.Logger.info_green = __log_info_green
+        add_logger_handler(sys.stdout, verbosity=verbose_console)
+    
+    '''
+    TODO: add file handler
+    # file logger handler
+    f_handler = logging.FileHandler('pycnbi.log', mode='a')
+    f_handler.setLevel(loglevels[verbose_file])
+    f_format = logging.Formatter('%(levelname)s %(asctime)s %(funcName)s:%(lineno)d: %(message)s')
+    f_handler.setFormatter(f_format)
+    logger.addHandler(f_handler)
+    '''
 
-        logging.addLevelName(LOG_LEVELS['INFO_BLUE'], 'INFO_BLUE')
-        def __log_info_blue(self, message, *args, **kwargs):
-            if self.isEnabledFor(LOG_LEVELS['INFO_BLUE']):
-                self._log(LOG_LEVELS['INFO_BLUE'], message, args, **kwargs)
-        logging.Logger.info_blue = __log_info_blue
+def add_logger_handler(stream, verbosity='INFO'):
+    # add custom log levels
+    logging.addLevelName(LOG_LEVELS['INFO_GREEN'], 'INFO_GREEN')
+    def __log_info_green(self, message, *args, **kwargs):
+        if self.isEnabledFor(LOG_LEVELS['INFO_GREEN']):
+            self._log(LOG_LEVELS['INFO_GREEN'], message, args, **kwargs)
+    logging.Logger.info_green = __log_info_green
 
-        logging.addLevelName(LOG_LEVELS['INFO_YELLOW'], 'INFO_YELLOW')
-        def __log_info_yellow(self, message, *args, **kwargs):
-            if self.isEnabledFor(LOG_LEVELS['INFO_YELLOW']):
-                self._log(LOG_LEVELS['INFO_YELLOW'], message, args, **kwargs)
-        logging.Logger.info_yellow = __log_info_yellow
+    logging.addLevelName(LOG_LEVELS['INFO_BLUE'], 'INFO_BLUE')
+    def __log_info_blue(self, message, *args, **kwargs):
+        if self.isEnabledFor(LOG_LEVELS['INFO_BLUE']):
+            self._log(LOG_LEVELS['INFO_BLUE'], message, args, **kwargs)
+    logging.Logger.info_blue = __log_info_blue
 
-        # console logger handler
-        c_handler = logging.StreamHandler(sys.stdout)
-        c_handler.setFormatter(PycnbiFormatter())
-        logger.addHandler(c_handler)
+    logging.addLevelName(LOG_LEVELS['INFO_YELLOW'], 'INFO_YELLOW')
+    def __log_info_yellow(self, message, *args, **kwargs):
+        if self.isEnabledFor(LOG_LEVELS['INFO_YELLOW']):
+            self._log(LOG_LEVELS['INFO_YELLOW'], message, args, **kwargs)
+    logging.Logger.info_yellow = __log_info_yellow
 
-        '''
-        # file logger handler
-        f_handler = logging.FileHandler('pycnbi.log', mode='a')
-        f_handler.setLevel(loglevels[verbose_file])
-        f_format = logging.Formatter('%(levelname)s %(asctime)s %(funcName)s:%(lineno)d: %(message)s')
-        f_handler.setFormatter(f_format)
-        logger.addHandler(f_handler)
-        '''
+    # console logger handler
+    c_handler = logging.StreamHandler(stream)
+    c_handler.setFormatter(PycnbiFormatter())
+    logger.addHandler(c_handler)
 
-        # minimum possible level of all handlers
-        logger.setLevel(logging.DEBUG)
+    # minimum possible level of all handlers
+    logger.setLevel(logging.DEBUG)
 
-    set_log_level(verbose_console, verbose_file)
+    logger.handlers[-1].level = LOG_LEVELS[verbosity]
+    set_log_level(verbosity)
     return logger
 
-def set_log_level(verbose_console, verbose_file=None):
-    logger.handlers[0].level = LOG_LEVELS[verbose_console]
-    if verbose_file is not None:
-        # logger.handlers[1].level = verbose_file
-        raise NotImplementedError("Sorry, file logging is not supported yet because I don't know how to use with multiprcocessing.")
-
+def set_log_level(verbosity, handler_id=0):
+    '''
+    hander ID 0 is always stdout, followed by user-defined handlers.
+    '''
+    logger.handlers[handler_id].level = LOG_LEVELS[verbosity]
 
 # init scripts
 ROOT = qc.parse_path(os.path.realpath(__file__)).dir
