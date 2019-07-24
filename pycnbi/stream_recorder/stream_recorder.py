@@ -2,40 +2,30 @@ from __future__ import print_function, division
 
 """
 stream_receiver.py
-
 Acquires signals from LSL server and save into buffer.
-
 Command-line arguments:
   #1: AMP_NAME
   #2: AMP_SERIAL (can be omitted if no serial number available)
   If no argument is supplied, you will be prompted to select one
   from a list of available LSL servers.
-
 Example:
   python stream_recorder.py openvibeSignals
-
 TODO:
 - Support HDF output.
 - Write simulatenously while receivng data.
 - Support multiple amps.
-
-
 Kyuhwa Lee, 2014
 Swiss Federal Institute of Technology Lausanne (EPFL)
-
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
-
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
-
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 """
 
 import os
@@ -69,7 +59,7 @@ def record(state, amp_name, amp_serial, record_dir, eeg_only):
 
     # start a server for sending out data pcl_file when software trigger is used
     outlet = start_server('StreamRecorderInfo', channel_format='string',\
-        source_id=pcl_file, stype='Markers')
+        source_id=eve_file, stype='Markers')
 
     # connect to EEG stream server
     sr = StreamReceiver(buffer_size=0, amp_name=amp_name, amp_serial=amp_serial, eeg_only=eeg_only)
@@ -107,7 +97,7 @@ def record(state, amp_name, amp_serial, record_dir, eeg_only):
     else:
         eve_file = None
     logger.info('Converting raw file into fif.')
-    pcl2fif(pcl_file, eve_file)
+    pcl2fif(pcl_file, external_event=eve_file)
 
 def run(record_dir, amp_name, amp_serial, eeg_only=False):
     logger.info('\nOutput directory: %s' % (record_dir))

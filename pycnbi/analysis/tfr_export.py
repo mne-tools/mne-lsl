@@ -113,6 +113,7 @@ def get_tfr(cfg, recursive=False, n_jobs=1):
         else:
             file_prefix = qc.parse_path(cfg.DATA_FILE).name
             outpath = export_path
+            file_prefix = qc.parse_path(cfg.DATA_FILE).name
 
     # re-referencing
     if cfg.REREFERENCE is not None:
@@ -220,7 +221,7 @@ def get_tfr(cfg, recursive=False, n_jobs=1):
 
                     # mode= None | 'logratio' | 'ratio' | 'zscore' | 'mean' | 'percent'
                     fig = power[evname].plot([ch], baseline=cfg.BS_TIMES, mode=cfg.BS_MODE, show=False,
-                        colorbar=True, title=title, vmin=cfg.VMIN, vmax=cfg.VMAX, dB=False)
+                        colorbar=True, title=title, vmin=cfg.VMIN, VMAXx=cfg.VMAX, dB=False)
                     fout = '%s/%s-%s-%s-%s.png' % (export_dir, file_prefix, cfg.SP_FILTER, evname, chname)
                     fig.savefig(fout)
                     plt.close()

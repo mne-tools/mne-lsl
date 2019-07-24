@@ -126,12 +126,8 @@ class Trigger(object):
             # get data file location
             LSL_SERVER = 'StreamRecorderInfo'
             inlet = cnbi_lsl.start_client(LSL_SERVER)
-            fname = inlet.info().source_id()
-            if fname[-4:] != '.pcl':
-                logger.error('Received wrong record file name format %s' % fname)
-                sys.exit(-1)
-            evefile = fname[:-8] + '-eve.txt'
-            eveoffset_file = fname[:-8] + '-eve-offset.txt'
+            evefile = inlet.info().source_id()
+            eveoffset_file = evefile[:-4] + '-offset.txt'
             logger.info('Event file is: %s' % evefile)
             self.evefile = open(evefile, 'a')
 
@@ -159,8 +155,6 @@ class Trigger(object):
     def __del__(self):
         if self.evefile is not None and not self.evefile.closed:
             self.evefile.close()
-            logger.info('Event file saved.')
-            sys.stdout.flush()
 
     def init(self, duration):
         if self.lpttype == 'SOFTWARE':
@@ -285,7 +279,7 @@ def test_all_bits(trigger):
 # sample test code
 if __name__ == '__main__':
     #trigger = Trigger('COM3') # Arduino trigger
-    trigger = Trigger('ARDUINO') # Arduino trigger
+    trigger = Trigger('SOFTWARE') # Arduino trigger
     if not trigger.init(500):
         print('LPT port cannot be opened. Using mock trigger.')
         trigger = MockTrigger()

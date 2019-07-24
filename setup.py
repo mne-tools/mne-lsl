@@ -3,7 +3,7 @@ from setuptools import find_packages, setup
 setup(
     name='pycnbi',
     version='0.6dev',
-    author='Kyuhwa Lee',
+    author='Kyuhwa Lee', 'Arnaud Desvachez'
     author_email='lee.kyuh@gmail.com',
     license='The GNU General Public License',
     url='https://github.com/dbdq/pycnbi/',

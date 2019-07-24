@@ -51,11 +51,12 @@ class Feedback:
         self.viz = viz
         self.viz.fill()
         self.refresh_delay = 1.0 / self.cfg.REFRESH_RATE
-        self.bar_step_left = self.cfg.BAR_STEP_LEFT
-        self.bar_step_right = self.cfg.BAR_STEP_RIGHT
-        self.bar_step_up = self.cfg.BAR_STEP_UP
-        self.bar_step_down = self.cfg.BAR_STEP_DOWN
-        self.bar_step_both = self.cfg.BAR_STEP_BOTH
+        self.bar_step_left = self.cfg.BAR_STEP['left']
+        self.bar_step_right = self.cfg.BAR_STEP['right']
+        self.bar_step_up = self.cfg.BAR_STEP['up']
+        self.bar_step_down = self.cfg.BAR_STEP['down']
+        self.bar_step_both = self.cfg.BAR_STEP['both']
+        
         if type(self.cfg.BAR_BIAS) is tuple:
             self.bar_bias = list(self.cfg.BAR_BIAS)
         else:
@@ -116,9 +117,9 @@ class Feedback:
         while True:
             self.tm_display.sleep_atleast(self.refresh_delay)
             self.tm_display.reset()
-            if state == 'start' and self.tm_trigger.sec() > self.cfg.T_INIT:
+            if state == 'start' and self.tm_trigger.sec() > self.cfg.TIMINGS['INIT']:
                 state = 'gap_s'
-                if self.cfg.TRIAL_PAUSE:
+                if self.cfg.TRIALS_PAUSE:
                     self.viz.put_text('Press any key')
                     self.viz.update()
                     key = cv2.waitKeyEx()
@@ -129,12 +130,12 @@ class Feedback:
                 self.trigger.signal(self.tdef.INIT)
 
             elif state == 'gap_s':
-                if self.cfg.T_GAP > 0:
+                if self.cfg.TIMINGS['GAP'] > 0:
                     self.viz.put_text(title_text)
                 state = 'gap'
                 self.tm_trigger.reset()
 
-            elif state == 'gap' and self.tm_trigger.sec() > self.cfg.T_GAP:
+            elif state == 'gap' and self.tm_trigger.sec() > self.cfg.TIMINGS['GAP']:
                 state = 'cue'
                 self.viz.fill()
                 self.viz.draw_cue()
@@ -142,7 +143,7 @@ class Feedback:
                 self.trigger.signal(self.tdef.CUE)
                 self.tm_trigger.reset()
 
-            elif state == 'cue' and self.tm_trigger.sec() > self.cfg.T_READY:
+            elif state == 'cue' and self.tm_trigger.sec() > self.cfg.TIMINGS['READY']:
                 state = 'dir_r'
 
                 if self.cfg.SHOW_CUE is True:
@@ -174,7 +175,7 @@ class Feedback:
                         self.viz.put_text(dirs[true_label], 'R')
 
                 if true_label == 'L':  # left
-                    self.trigger.signal(self.tdef.LEFT_READY)
+                    self.trigger.signal(self.tdef.LEFREADY)
                 elif true_label == 'R':  # right
                     self.trigger.signal(self.tdef.RIGHT_READY)
                 elif true_label == 'U':  # up
@@ -187,7 +188,7 @@ class Feedback:
                     raise RuntimeError('Unknown direction %s' % true_label)
                 self.tm_trigger.reset()
                 '''
-            elif state == 'dir_r' and self.tm_trigger.sec() > self.cfg.T_DIR_CUE:
+            elif state == 'dir_r' and self.tm_trigger.sec() > self.cfg.TIMINGS['DIR_CUE']:
                 self.viz.fill()
                 self.viz.draw_cue()
                 self.viz.glass_draw_cue()
@@ -217,7 +218,7 @@ class Feedback:
                 self.tm_trigger.reset()
 
             elif state == 'dir':
-                if self.tm_trigger.sec() > self.cfg.T_CLASSIFY or (self.premature_end and bar_score >= 100):
+                if self.tm_trigger.sec() > self.cfg.TIMINGS['CLASSIFY'] or (self.premature_end and bar_score >= 100):
                     if not hasattr(self.cfg, 'SHOW_RESULT') or self.cfg.SHOW_RESULT is True:
                         # show classfication result
                         if self.cfg.WITH_STIMO is True:
@@ -341,8 +342,9 @@ class Feedback:
                                 dx *= self.bar_step_left
 
                             # slow start
-                            if self.cfg.BAR_SLOW_START and self.tm_trigger.sec() < self.cfg.BAR_SLOW_START:
-                                dx *= self.tm_trigger.sec() / self.cfg.BAR_SLOW_START
+                            selected = self.cfg.BAR_SLOW_START['selected']
+                            if self.cfg.BAR_SLOW_START[selected] and self.tm_trigger.sec() < self.cfg.BAR_SLOW_START[selected]:
+                                dx *= self.tm_trigger.sec() / self.cfg.BAR_SLOW_START[selected]
 
                             # add likelihoods
                             if max_label == bar_label:
@@ -387,7 +389,7 @@ class Feedback:
                             if self.logf is not None:
                                 self.logf.write(msg + '\n')
 
-            elif state == 'feedback' and self.tm_trigger.sec() > self.cfg.T_FEEDBACK:
+            elif state == 'feedback' and self.tm_trigger.sec() > self.cfg.TIMINGS['FEEDBACK']:
                 self.trigger.signal(self.tdef.BLANK)
                 if self.cfg.FEEDBACK_TYPE == 'BODY':
                     state = 'return'

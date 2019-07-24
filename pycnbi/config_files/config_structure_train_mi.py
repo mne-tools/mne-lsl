@@ -9,7 +9,7 @@ class Basic:
     #-------------------------------------------
     params1 = dict()
     params1.update({'DIRECTIONS': (None, 'L', 'R', 'U', 'D', 'B')})
-    params1.update({'DIR_RANDOMIZE': (False, True)})
+    params1.update({'DIR_RANDOM': (False, True)})
     
     #-------------------------------------------
     # feedback type
@@ -30,9 +30,9 @@ class Basic:
     # Screen property
     #-------------------------------------------
     params4 = dict()
-    params4.update({'SCREEN_SIZE': ([1920, 1080], [1600, 1200], [1680, 1050], [1280, 1024], [1024, 768])})
-    params4.update({'SCREEN_POS': ([1920, 0], [1920, 1080])}) # TO CHANGE: add a check box second monitor and auto display on it. 
-    
+    params4.update({'SCREEN_SIZE': ((1920, 1080), (1600, 1200), (1680, 1050), (1280, 1024), (1024, 768))})
+    params4.update({'SCREEN_POS': ((0, 0), (1920, 0))}) # TO CHANGE: add a check box second monitor and auto display on it. 
+
 
 ########################################################################
 class Advanced:
@@ -51,13 +51,7 @@ class Advanced:
     # Timings
     #-------------------------------------------
     params2 = dict()
-    params2.update({'T_INIT': int})                # initial waiting time
-    params2.update({'T_GAP': int})                 # show how many trials left
-    params2.update({'T_CUE': int})                 # no direction, only dot cue
-    params2.update({'T_DIR_READY': int})           # green bar
-    params2.update({'T_DIR_READY_RANDOMIZE': int}) # seconds
-    params2.update({'T_DIR': int})                 # blue bar
-    params2.update({'T_DIR_RANDOMIZE': int})       # seconds
+    params2.update({'TIMINGS':dict(INIT=float, GAP=float, CUE=float, READY=float, READY_RANDOMIZE=float, DIR=float, DIR_RANDOMIZE=float)})
 
     #-------------------------------------------
     # Google Glass
