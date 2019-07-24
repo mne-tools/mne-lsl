@@ -31,26 +31,31 @@ import pycnbi.triggers.pyLptControl as pyLptControl
 import pycnbi.utils.q_common as qc
 from pycnbi.protocols.viz_human import BodyVisual
 from pycnbi.triggers.trigger_def import trigger_def
-from pycnbi import logger
+from pycnbi import logger, init_logger
 from builtins import input
 
+def load_config(cfg_file):
+    cfg_file = qc.forward_slashify(cfg_file)
+    if not (os.path.exists(cfg_file) and os.path.isfile(cfg_file)):
+        raise IOError('%s cannot be loaded.' % os.path.realpath(cfg_file))
+    return imp.load_source(cfg_file, cfg_file)
 
-def load_cfg(cfg_module):
-    mandatory = {'TRIGGER_DEVICE':'Arduino',
-                 'TRIGGER_DEF':'triggerdef_16.ini',
-                 'SCREEN_SIZE':(1680,1050),
-                 'SCREEN_POS':(0, 0),
-                 'DIRECTIONS':['L','R'],
-                 'DIR_RANDOMIZE':False,
-                 'TRIALS_EACH':10,
-                 'GAIT_STEPS':1,
-                 'T_INIT':5,
-                 'T_GAP':5,
-                 'T_CUE':0.1,
-                 'T_DIR_READY':2,
-                 'T_DIR':2.5,
-                 'T_RETURN':1,
-                 'T_STOP':3,
+def check_config(cfg_module):
+    mandatory = {'TRIGGER_DEVICE',
+                 'TRIGGER_DEF',
+                 'SCREEN_SIZE',
+                 'SCREEN_POS',
+                 'DIRECTIONS',
+                 'DIR_RANDOMIZE',
+                 'TRIALS_EACH',
+                 'GAIT_STEPS',
+                 'T_INIT',
+                 'T_GAP',
+                 'T_CUE',
+                 'T_DIR_READY',
+                 'T_DIR',
+                 'T_RETURN',
+                 'T_STOP',
                  }
     optional = {'FEEDBACK_TYPE':'BAR',
                 'T_RETURN':2,
@@ -61,7 +66,6 @@ def load_cfg(cfg_module):
                 'T_DIR_RANDOMIZE':0
                 }
 
-    cfg = imp.load_source(cfg_module, cfg_module)
     for key in mandatory:
         if not hasattr(cfg, key):
             raise ValueError('%s is a required parameter' % key)
@@ -70,8 +74,27 @@ def load_cfg(cfg_module):
             logger.warning('Setting undefined %s=%s' % (key, optional[key]))
     return cfg
 
-def config_run(cfg_module):
-    cfg = load_cfg(cfg_module)
+# for batch script
+def batch_run(cfg_file):
+    cfg = load_config(cfg_file)
+    cfg = check_config(cfg)
+    run(cfg)
+
+def run(cfg, *queue):
+    
+    # ----------------------------------------------------------------------------------
+    try:   
+        # Redirect stdout and stderr in case of GUI
+        sys.stdout = WriteStream(queue[0])
+        sys.stderr = WriteStream(queue[0])
+        init_logger(sys.stdout)
+    except:
+        # In case of batch
+        init_logger(sys.stdout)  
+    # ----------------------------------------------------------------------------------
+
+    tdef = trigger_def(cfg.TRIGGER_FILE)
+    refresh_delay = 1.0 / cfg.REFRESH_RATE
 
     # visualizer
     keys = {'left': 81, 'right': 83, 'up': 82, 'down': 84, 'pgup': 85, 'pgdn': 86, 'home': 80, 'end': 87, 'space': 32,
@@ -84,8 +107,7 @@ def config_run(cfg_module):
         dir_sequence.extend(cfg.DIRECTIONS)
     random.shuffle(dir_sequence)
     num_trials = len(cfg.DIRECTIONS) * cfg.TRIALS_EACH
-    tdef = trigger_def(cfg.TRIGGER_FILE)
-    refresh_delay = 1.0 / cfg.REFRESH_RATE
+    
     state = 'start'
     trial = 1
 
