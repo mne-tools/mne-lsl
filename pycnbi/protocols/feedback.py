@@ -234,6 +234,7 @@ class Feedback:
                         else:
                             self.viz.move(bar_label, 100, overlay=False, barcolor=res_color)
                     else:
+                        res_color = 'Y'
                         if self.cfg.FEEDBACK_TYPE == 'BODY':
                             self.viz.move(bar_label, bar_score, overlay=False, barcolor=res_color, caption='TRIAL END', caption_color=res_color)
                         else:
