@@ -10,6 +10,9 @@
 import os
 import sys
 import inspect
+from pathlib import Path
+from glob import glob
+from shutil import copy2
 from os.path import expanduser
 from importlib import import_module, reload
 import multiprocessing as mp
@@ -124,8 +127,8 @@ class MainWindow(QMainWindow):
         """
         Loads the parameters from a txt file.
         """
-        folderPath = self.ui.lineEdit_pathSearch.text()
-        file = open(folderPath + '/' + txtFile)
+        folderPath = Path(self.ui.lineEdit_pathSearch.text())
+        file = open(folderPath / txtFile)
         params = file.read().splitlines()
         file.close()
 
@@ -149,7 +152,7 @@ class MainWindow(QMainWindow):
 
         # Load channels
         if self.modality == 'train':
-            subjectDataPath = '%s/%s/fif' % (os.environ['PYCNBI_DATA'], filePath.split('/')[-1])
+            subjectDataPath = Path('%s/%s/fif' % (os.environ['PYCNBI_DATA'], filePath.split('/')[-1]))
             self.channels = read_params_from_txt(subjectDataPath, 'channelsList.txt')
         self.directions = ()
 
@@ -330,7 +333,7 @@ class MainWindow(QMainWindow):
         """
         if self.cfg_subject == None or cfg_file not in self.cfg_subject.__file__:
             # Dynamic loading
-            sys.path.append(cfg_path)
+            sys.path.append(os.fspath(cfg_path))
             cfg_module = import_module(cfg_file)
         else:
             cfg_module = reload(self.cfg_subject)
@@ -363,8 +366,8 @@ class MainWindow(QMainWindow):
         """
         Load the parameters' structure from file depending on the choosen protocol.
         """
-        cfg_template_path = os.environ['PYCNBI_ROOT']+'\pycnbi\config_files'
-        cfg_template_module  = self.load_config(cfg_template_path, cfg_template, False)
+        cfg_template_path = Path(os.environ['PYCNBI_ROOT']) / 'pycnbi' / 'config_files'
+        cfg_template_module  = self.load_config(cfg_template_path, cfg_template)
         return cfg_template_module
 
 
@@ -374,8 +377,21 @@ class MainWindow(QMainWindow):
         Loads the subject specific parameters' values from file and displays them.
         cfg_file: config file to load.
         """
-        cfg_path = self.ui.lineEdit_pathSearch.text()
-        cfg_module  = self.load_config(cfg_path, cfg_file, True)
+        cfg_path = Path(self.ui.lineEdit_pathSearch.text())
+
+        # Check if cfg_file is in the subject folder
+        is_found = False
+        for f in glob(os.fspath(cfg_path / "*.py") , recursive=False):
+            if cfg_file+".py" == os.path.split(f)[-1]:
+                is_found = True
+                break
+        
+        # If not found, copy the subject template config file in the subject folder.
+        if is_found is False:
+            template = Path(os.environ['PYCNBI_ROOT']) / 'pycnbi' / 'config_files' / (cfg_file + '.py')
+            copy2(template, cfg_path)
+            
+        cfg_module  = self.load_config(cfg_path, cfg_file)
         return cfg_module
 
 
