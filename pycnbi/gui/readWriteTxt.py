@@ -1,3 +1,5 @@
+import os
+
 # ----------------------------------------------------------------------
 def read_params_from_txt(folderPath, txtFile):
     """
@@ -6,7 +8,7 @@ def read_params_from_txt(folderPath, txtFile):
     path = folder path 
     txtFile = file containing the params to load
     """
-    file = open(folderPath + '/' + txtFile)
+    file = open(os.fspath(folderPath / txtFile))
     params = file.read().splitlines()
     file.close()
     
