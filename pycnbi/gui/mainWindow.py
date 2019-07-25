@@ -321,13 +321,12 @@ class MainWindow(QMainWindow):
 
 
     # ----------------------------------------------------------------------
-    def load_config(self, cfg_path, cfg_file, subj_file):
+    def load_config(self, cfg_path, cfg_file):
         """
         Dynamic loading of a config file.
         Format the lib to fit the previous developed pycnbi code if subject specific file (not for the templates).
         cfg_path: path to the folder containing the config file.
         cfg_file: config file to load.
-        subj_file: true or false, if true it means it is the subject specific file. Format it.
         """
         if self.cfg_subject == None or cfg_file not in self.cfg_subject.__file__:
             # Dynamic loading
@@ -359,7 +358,6 @@ class MainWindow(QMainWindow):
         self.cfg_subject = self.m.check_config(self.cfg_subject)
 
 
-
     # ----------------------------------------------------------------------
     def load_struct_params(self, cfg_template):
         """
@@ -376,7 +374,7 @@ class MainWindow(QMainWindow):
         Loads the subject specific parameters' values from file and displays them.
         cfg_file: config file to load.
         """
-        cfg_path = self.ui.lineEdit_pathSearch.text()+'/python'
+        cfg_path = self.ui.lineEdit_pathSearch.text()
         cfg_module  = self.load_config(cfg_path, cfg_file, True)
         return cfg_module
 
