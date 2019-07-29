@@ -9,7 +9,9 @@
 """
 
 import os
-from PyQt5.QtWidgets import QPushButton, QHBoxLayout, QVBoxLayout, QFileDialog, QLineEdit, QComboBox, QSpinBox, QDoubleSpinBox, QLabel, QWidget, QFrame
+from pathlib import Path 
+from PyQt5.QtWidgets import QPushButton, QHBoxLayout, QVBoxLayout, QFileDialog, QLineEdit, QComboBox, QSpinBox, QDoubleSpinBox, QLabel, \
+     QWidget, QFrame, QDialog, QFormLayout
 from PyQt5.QtCore import pyqtSignal, QObject, pyqtSlot, Qt
 
 ########################################################################
@@ -89,8 +91,8 @@ class Connect_Directions(QObject):
     # ----------------------------------------------------------------------
     def add_To_ComboBox(self, values, chosenValue, pos):
         """
-        Add the possibles values found in the structure file to a QComboBox and
-        add it to a QFormLayout. Highlight the subject's specific value.
+        Add the possibles values found in the structure file to a QComboBox.
+        Highlight the subject's specific value.
         values = list of values.
         chosenValue = subject's specific value.
         pos = QComboBox position in the directions list
@@ -211,8 +213,8 @@ class Connect_ComboBox(QObject):
     # ----------------------------------------------------------------------
     def add_To_ComboBox(self, values, chosenValue):
         """
-        Add the possibles values found in the structure file to a QComboBox and
-        add it to a QFormLayout. Highlight the subject's specific value.
+        Add the possibles values found in the structure file to a QComboBox. H
+        ighlight the subject's specific value.
         
         values = list of values.
         chosenValue = subject's specific value.
@@ -821,6 +823,39 @@ class PathFileFinder(QObject):
         path_name = QFileDialog.getOpenFileName(caption="Choose the subject's directory", directory=self.defaultPath)
         self.lineEdit_pathSearch.setText(path_name[0])
         self.signal_pathChanged.emit(self.name, path_name[0])
+
+########################################################################
+class Connect_NewSubject(QDialog):
+    """
+    Allow to create a new subject folders in PYCNBI_SCRIPTS and PYCNBI_DATA when the
+    pushButton_new is pressed and its name is provided
+    """
+
+    #----------------------------------------------------------------------
+    def __init__(self, parent):
+        """Constructor"""
+        super().__init__(parent)
+        
+        l = QFormLayout(self)
+        lineEdit = QLineEdit()
+        l.addRow('Subject ID:', lineEdit)
+        
+        self.show()
+    
+    #----------------------------------------------------------------------
+    @pyqtSlot(str)
+    def create_subject(self, subject_id):
+        """
+        Create one folder in PYCNBI_SCRIPTS and one in PYCNBI_DATA
+        """
+        
+        # for PYCNBI_SCRIPTS
+        scripts_path = Path(os.environ['PYCNBI_SCRIPTS']) / subject_id
+        os.mkdir(scripts_path)
+        
+        # for PYCNBI_DATA
+        data_path = Path(os.environ['PYCNBI_SCRIPTS']) / subject_id
+        os.mkdir(data_path)
 
 #----------------------------------------------------------------------
 def add_v_separator(layout):
