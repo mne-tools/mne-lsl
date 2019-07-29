@@ -19,13 +19,17 @@ import multiprocessing as mp
 
 from PyQt5.QtGui import QTextCursor, QFont
 from PyQt5.QtCore import pyqtSignal, pyqtSlot, QThread, QLine
-from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QAction, QLabel, QVBoxLayout, QHBoxLayout, QComboBox, QLineEdit, QFormLayout, QWidget, QPushButton, QFrame, QSizePolicy
+from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QAction, QLabel, \
+     QVBoxLayout, QHBoxLayout, QComboBox, QLineEdit, QFormLayout, QWidget, QPushButton, \
+     QFrame, QSizePolicy
 
 from ui_mainwindow import Ui_MainWindow
 from streams import WriteStream, MyReceiver, redirect_stdout_to_queue
 from readWriteTxt import read_params_from_txt
 from pickedChannelsDialog import PickChannelsDialog, Channel_Select
-from connectClass import PathFolderFinder, PathFileFinder, Connect_Directions, Connect_ComboBox, Connect_LineEdit, Connect_SpinBox, Connect_DoubleSpinBox, Connect_Modifiable_List, Connect_Modifiable_Dict,  Connect_Directions_Online, Connect_Bias
+from connectClass import PathFolderFinder, PathFileFinder, Connect_Directions, Connect_ComboBox, \
+     Connect_LineEdit, Connect_SpinBox, Connect_DoubleSpinBox, Connect_Modifiable_List, \
+     Connect_Modifiable_Dict,  Connect_Directions_Online, Connect_Bias, Connect_NewSubject
 
 from pycnbi.utils import q_common as qc
 from pycnbi.triggers.trigger_def import trigger_def
@@ -517,12 +521,22 @@ class MainWindow(QMainWindow):
         """
         self.ui.textEdit_terminal.moveCursor(QTextCursor.End)
         self.ui.textEdit_terminal.insertPlainText(text)
-
+    
+    @pyqtSlot()
+    #----------------------------------------------------------------------
+    def on_click_newSubject(self):
+        """
+        Instance a Connect_NewSubject QDialog class
+        """
+        qdialog = Connect_NewSubject(self)
 
     #----------------------------------------------------------------------
     def connect_signals_to_slots(self):
         """Connects the signals to the slots"""
-        # Search  folder button
+        
+        # New subject button
+        self.ui.pushButton_NewSubject.clicked.connect(self.on_click_newSubject)
+        # Search folder button
         self.ui.pushButton_Search.clicked.connect(self.on_click_pathSearch)
         # Offline button
         self.ui.pushButton_Offline.clicked.connect(self.on_click_offline)
