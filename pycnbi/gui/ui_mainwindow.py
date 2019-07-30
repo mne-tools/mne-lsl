@@ -146,16 +146,16 @@ class Ui_MainWindow(object):
         self.horizontalLayout_5.setContentsMargins(10, -1, -1, -1)
         self.horizontalLayout_5.setSpacing(6)
         self.horizontalLayout_5.setObjectName("horizontalLayout_5")
-        self.radioButton_Record = QtWidgets.QRadioButton(self.groupBox_4)
-        self.radioButton_Record.setEnabled(True)
+        self.checkBox_Record = QtWidgets.QCheckBox(self.groupBox_4)
+        self.checkBox_Record.setEnabled(True)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.radioButton_Record.sizePolicy().hasHeightForWidth())
-        self.radioButton_Record.setSizePolicy(sizePolicy)
-        self.radioButton_Record.setMaximumSize(QtCore.QSize(80, 16777215))
-        self.radioButton_Record.setObjectName("radioButton_Record")
-        self.horizontalLayout_5.addWidget(self.radioButton_Record)
+        sizePolicy.setHeightForWidth(self.checkBox_Record.sizePolicy().hasHeightForWidth())
+        self.checkBox_Record.setSizePolicy(sizePolicy)
+        self.checkBox_Record.setMaximumSize(QtCore.QSize(80, 16777215))
+        self.checkBox_Record.setObjectName("checkBox_Record")
+        self.horizontalLayout_5.addWidget(self.checkBox_Record)
         self.pushButton_Start = QtWidgets.QPushButton(self.groupBox_4)
         self.pushButton_Start.setObjectName("pushButton_Start")
         self.horizontalLayout_5.addWidget(self.pushButton_Start)
@@ -198,18 +198,8 @@ class Ui_MainWindow(object):
         self.tabWidget_Params.setTabText(self.tabWidget_Params.indexOf(self.BasicsParams), _translate("MainWindow", "Basics"))
         self.tabWidget_Params.setTabText(self.tabWidget_Params.indexOf(self.AdvancedParams), _translate("MainWindow", "Advanced"))
         self.groupBox_4.setTitle(_translate("MainWindow", "Launch"))
-        self.radioButton_Record.setText(_translate("MainWindow", "Record"))
+        self.checkBox_Record.setText(_translate("MainWindow", "Record"))
         self.pushButton_Start.setText(_translate("MainWindow", "Start"))
         self.pushButton_Stop.setText(_translate("MainWindow", "Stop"))
 
 
-
-
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    MainWindow = QtWidgets.QMainWindow()
-    ui = Ui_MainWindow()
-    ui.setupUi(MainWindow)
-    MainWindow.show()
-    sys.exit(app.exec_())
