@@ -9,9 +9,11 @@
 """
 
 import os
+from glob import glob
 from pathlib import Path 
+from shutil import copy2
 from PyQt5.QtWidgets import QPushButton, QHBoxLayout, QVBoxLayout, QFileDialog, QLineEdit, QComboBox, QSpinBox, QDoubleSpinBox, QLabel, \
-     QWidget, QFrame, QDialog, QFormLayout
+     QWidget, QFrame, QDialog, QFormLayout, QDialogButtonBox
 from PyQt5.QtCore import pyqtSignal, QObject, pyqtSlot, Qt
 
 ########################################################################
@@ -836,26 +838,72 @@ class Connect_NewSubject(QDialog):
         """Constructor"""
         super().__init__(parent)
         
-        l = QFormLayout(self)
-        lineEdit = QLineEdit()
-        l.addRow('Subject ID:', lineEdit)
+        protocols_path = Path(os.environ['PYCNBI_ROOT']) / 'pycnbi' / 'config_files' 
+        protocols = self.find_protocols(os.fspath(protocols_path))
         
+        formLayout = QFormLayout()
+        lineEdit = QLineEdit()
+        formLayout.addRow('Subject ID:', lineEdit)        
+        formLayout.addRow('Protocol:', self.create_widgets(protocols))
+        
+        buttonBox = QDialogButtonBox()
+        buttonBox.addButton(QDialogButtonBox.Ok)
+        buttonBox.addButton(QDialogButtonBox.Cancel)
+        
+        l = QVBoxLayout()
+        l.addLayout(formLayout)
+        l.addWidget(buttonBox)
+        
+        self.setLayout(l)
+        
+        buttonBox.accepted.connect(self.create_subject_folders)
+        buttonBox.accepted.connect(self.accept)
+        buttonBox.rejected.connect(self.reject)
+               
         self.show()
+            
+    #----------------------------------------------------------------------
+    def find_protocols(self, path):
+        """
+        Find the possible protocols, defined in the config_files folder
+        """
+        folders = next(os.walk(path))[1]
+        
+        return [f for f in folders if '__' not in f] 
     
     #----------------------------------------------------------------------
-    @pyqtSlot(str)
-    def create_subject(self, subject_id):
+    def create_widgets(self, protocols):
+        """
+        Create an horizontal layout containing a QCheckBox per protocol
+        """
+        comboBox = QComboBox()
+        comboBox.addItems(protocols)
+        
+        return comboBox
+    
+    #----------------------------------------------------------------------
+    @pyqtSlot()
+    def create_subject_folders(self):
         """
         Create one folder in PYCNBI_SCRIPTS and one in PYCNBI_DATA
         """
+        subject_id = self.layout().itemAt(0).itemAt(1).widget().text()
+        protocol = self.layout().itemAt(0).itemAt(3).widget().currentText()
         
         # for PYCNBI_SCRIPTS
-        scripts_path = Path(os.environ['PYCNBI_SCRIPTS']) / subject_id
+        scripts_path = Path(os.environ['PYCNBI_SCRIPTS']) / (subject_id + '-' + protocol)
         os.mkdir(scripts_path)
         
         # for PYCNBI_DATA
-        data_path = Path(os.environ['PYCNBI_SCRIPTS']) / subject_id
+        data_path = Path(os.environ['PYCNBI_DATA']) / (subject_id + '-' + protocol)
         os.mkdir(data_path)
+        
+        # Copy the protocol config_files
+        files_path = Path(os.environ['PYCNBI_ROOT']) / 'pycnbi' / 'config_files' / protocol
+        files = glob(os.fspath(files_path / "*.py") , recursive=False)
+        config_files = [f for f in files if 'structure' not in f]
+        for f in config_files:
+            copy2(f, scripts_path)
 
 #----------------------------------------------------------------------
 def add_v_separator(layout):
