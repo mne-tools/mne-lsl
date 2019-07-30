@@ -34,9 +34,6 @@ from connectClass import PathFolderFinder, PathFileFinder, Connect_Directions, C
 from pycnbi.utils import q_common as qc
 from pycnbi.triggers.trigger_def import trigger_def
 
-DEFAULT_PATH = os.environ['PYCNBI_SCRIPTS']
-
-
 class cfg_class:
     def __init__(self, cfg):
         for key in dir(cfg):
@@ -211,7 +208,7 @@ class MainWindow(QMainWindow):
 
                     # For providing a folder path.
                     elif 'PATH' in key:
-                        pathfolderfinder = PathFolderFinder(key, DEFAULT_PATH, chosen_value)
+                        pathfolderfinder = PathFolderFinder(key, os.environ['ROOT'], chosen_value)
                         pathfolderfinder.signal_pathChanged.connect(self.on_guichanges)
                         self.paramsWidgets.update({key: pathfolderfinder})
                         layout.addRow(key, pathfolderfinder.layout)
@@ -436,7 +433,7 @@ class MainWindow(QMainWindow):
         """
         Opens the File dialog window when the search button is pressed.
         """
-        path_name = QFileDialog.getExistingDirectory(caption="Choose the subject's directory", directory=DEFAULT_PATH)
+        path_name = QFileDialog.getExistingDirectory(caption="Choose the subject's directory", directory=os.environ['PYCNBI_SCRIPTS'])
         self.ui.lineEdit_pathSearch.clear()
         self.ui.lineEdit_pathSearch.insert(path_name)
 
