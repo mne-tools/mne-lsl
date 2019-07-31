@@ -30,8 +30,8 @@ def get_feature_scores(featfile, channels=None, freq_ranges=None, matfile=None):
               Each line contains 3 columns separated by tab: Score Channel Frequency
               e.g. 66.6\tCz\t18
     channels: List of channel names. If None, all channels in featfile will be used.
-    freq_ranges: Per-band frequency range. {band_name:[fq_low, fq_high]}
-                 As Python convention, fq_high is not inclusive in the range.
+    freq_ranges: Per-band frequency range. dict:{band_name:[fq_low, fq_high]}
+                 fq_high is inclusive in the range.
                  if None, predefined bands will be used.
 
     Output
@@ -84,7 +84,7 @@ def get_feature_scores(featfile, channels=None, freq_ranges=None, matfile=None):
         fq = float(token[2])
         data['raw'][ch][fq] = importance
         for band in freq_ranges:
-            if freq_ranges[band][0] <= fq < freq_ranges[band][1]:
+            if freq_ranges[band][0] <= fq <= freq_ranges[band][1]:
                 data[band][ch2index[ch]] += importance
         data['channel'][ch2index[ch]] += importance
 
