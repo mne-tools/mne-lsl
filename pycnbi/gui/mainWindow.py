@@ -71,6 +71,9 @@ class MainWindow(QMainWindow):
 
         # Define in which modality we are
         self.modality = None
+        
+        # To display errors
+        self.error_dialog = QErrorMessage(self)
 
     # ----------------------------------------------------------------------
     def redirect_stdout(self):
@@ -539,7 +542,16 @@ class MainWindow(QMainWindow):
         Instance a Connect_NewSubject QDialog class
         """
         qdialog = Connect_NewSubject(self, self.ui.lineEdit_pathSearch)
-
+        qdialog.signal_error.connect(self.on_error)
+        
+    
+    #----------------------------------------------------------------------
+    def on_error(self, errorMsg):
+        """
+        Display the error message into a QErrorMessage
+        """
+        self.error_dialog.showMessage(errorMsg)
+        
     #----------------------------------------------------------------------
     def connect_signals_to_slots(self):
         """Connects the signals to the slots"""

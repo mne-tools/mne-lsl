@@ -13,7 +13,7 @@ from glob import glob
 from pathlib import Path 
 from shutil import copy2
 from PyQt5.QtWidgets import QPushButton, QHBoxLayout, QVBoxLayout, QFileDialog, QLineEdit, QComboBox, QSpinBox, QDoubleSpinBox, QLabel, \
-     QWidget, QFrame, QDialog, QFormLayout, QDialogButtonBox
+     QWidget, QFrame, QDialog, QFormLayout, QDialogButtonBox, QErrorMessage
 from PyQt5.QtCore import pyqtSignal, QObject, pyqtSlot, Qt
 
 ########################################################################
@@ -833,6 +833,8 @@ class Connect_NewSubject(QDialog):
     pushButton_new is pressed and its name is provided
     """
 
+    signal_error = pyqtSignal(str)
+    
     #----------------------------------------------------------------------
     def __init__(self, parent, lineEdit_pathSearch):
         """Constructor"""
@@ -893,23 +895,29 @@ class Connect_NewSubject(QDialog):
         subject_id = self.layout().itemAt(0).itemAt(1).widget().text()
         protocol = self.layout().itemAt(0).itemAt(3).widget().currentText()
         
-        # for PYCNBI_SCRIPTS
-        scripts_path = Path(os.environ['PYCNBI_SCRIPTS']) / (subject_id + '-' + protocol)
-        os.mkdir(scripts_path)
-        self.lineEdit_pathSearch.insert(os.fspath(scripts_path))
-        
-        # Add path to the lineEdit_pathSearch
-        
-        # for PYCNBI_DATA
-        data_path = Path(os.environ['PYCNBI_DATA']) / (subject_id + '-' + protocol)
-        os.mkdir(data_path)
-        
-        # Copy the protocol config_files
-        files_path = Path(os.environ['PYCNBI_ROOT']) / 'pycnbi' / 'config_files' / protocol / 'template_files'
-        files = glob(os.fspath(files_path / "*.py") , recursive=False)
-        config_files = [f for f in files if 'structure' not in f]
-        for f in config_files:
-            copy2(f, scripts_path)
+        try:
+            # for PYCNBI_SCRIPTS
+            scripts_path = Path(os.environ['PYCNBI_SCRIPTS']) / (subject_id + '-' + protocol)            
+            os.mkdir(scripts_path)
+              
+            # Add path to the lineEdit_pathSearch
+            self.lineEdit_pathSearch.insert(os.fspath(scripts_path))        
+            
+            # for PYCNBI_DATA
+            data_path = Path(os.environ['PYCNBI_DATA']) / (subject_id + '-' + protocol)
+            os.mkdir(data_path)            
+            
+            # Copy the protocol config_files
+            files_path = Path(os.environ['PYCNBI_ROOT']) / 'pycnbi' / 'config_files' / protocol / 'template_files'
+            files = glob(os.fspath(files_path / "*.py") , recursive=False)
+            config_files = [f for f in files if 'structure' not in f]
+            for f in config_files:
+                copy2(f, scripts_path)
+            
+        except Exception as e:
+            self.signal_error.emit(str(e))
+            #error_dialog = QErrorMessage(self)
+            #error_dialog.showMessage(str(e))                 
 
 #----------------------------------------------------------------------
 def add_v_separator(layout):
