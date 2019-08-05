@@ -2,7 +2,7 @@ TRIGGER_DEVICE = 'SOFTWARE'
 TRIGGER_FILE = r'C:\Users\adesvachez\git\pycnbi\pycnbi\triggers\triggerdef_16.ini'
 
 FEEDBACK_TYPE = 'BAR'
-FEEDBACK_IMAGE_PATH = None
+FEEDBACK_IMAGE_PATH = ''
 
 SCREEN_SIZE = (1920, 1080)
 SCREEN_POS = (0, 0)

@@ -21,7 +21,7 @@ from PyQt5.QtGui import QTextCursor, QFont
 from PyQt5.QtCore import pyqtSignal, pyqtSlot, QThread, QLine
 from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QAction, QLabel, \
      QVBoxLayout, QHBoxLayout, QComboBox, QLineEdit, QFormLayout, QWidget, QPushButton, \
-     QFrame, QSizePolicy
+     QFrame, QSizePolicy, QErrorMessage
 
 from ui_mainwindow import Ui_MainWindow
 from streams import WriteStream, MyReceiver, redirect_stdout_to_queue
@@ -208,7 +208,7 @@ class MainWindow(QMainWindow):
 
                     # For providing a folder path.
                     elif 'PATH' in key:
-                        pathfolderfinder = PathFolderFinder(key, os.environ['ROOT'], chosen_value)
+                        pathfolderfinder = PathFolderFinder(key, os.environ['PYCNBI_ROOT'], chosen_value)
                         pathfolderfinder.signal_pathChanged.connect(self.on_guichanges)
                         self.paramsWidgets.update({key: pathfolderfinder})
                         layout.addRow(key, pathfolderfinder.layout)
@@ -325,17 +325,17 @@ class MainWindow(QMainWindow):
 
 
     # ----------------------------------------------------------------------
-    def load_config(self, cfg_path, cfg_file):
+    def load_config(self, cfg_file):
         """
         Dynamic loading of a config file.
         Format the lib to fit the previous developed pycnbi code if subject specific file (not for the templates).
         cfg_path: path to the folder containing the config file.
         cfg_file: config file to load.
         """
-        if self.cfg_subject == None or cfg_file not in self.cfg_subject.__file__:
+        if self.cfg_subject == None or cfg_file[1] not in self.cfg_subject.__file__:
             # Dynamic loading
-            sys.path.append(os.fspath(cfg_path))
-            cfg_module = import_module(cfg_file)
+            sys.path.append(cfg_file[0])
+            cfg_module = import_module(cfg_file[1].split('.')[0])
         else:
             cfg_module = reload(self.cfg_subject)
 
@@ -347,53 +347,18 @@ class MainWindow(QMainWindow):
         Loads the params structure and assign the subject/s specific value.
         It also checks the sanity of the loaded params according to the protocol.
         """
+        # Loads the subject's specific values
+        self.cfg_subject = self.load_config(cfg_file)
 
         # Loads the template
-        if self.cfg_struct == None or cfg_template not in self.cfg_struct.__file__:
-            self.cfg_struct = self.load_struct_params(cfg_template)
-
-        # Loads the subject's specific values
-        self.cfg_subject = self.load_subject_params(cfg_file)
+        if self.cfg_struct == None or cfg_template[1] not in self.cfg_struct.__file__:
+            self.cfg_struct = self.load_config(cfg_template)
 
         # Display parameters on the GUI
         self.disp_params(self.cfg_struct, self.cfg_subject)
 
         # Check the parameters integrity
         self.cfg_subject = self.m.check_config(self.cfg_subject)
-
-
-    # ----------------------------------------------------------------------
-    def load_struct_params(self, cfg_template):
-        """
-        Load the parameters' structure from file depending on the choosen protocol.
-        """
-        cfg_template_path = Path(os.environ['PYCNBI_ROOT']) / 'pycnbi' / 'config_files'
-        cfg_template_module  = self.load_config(cfg_template_path, cfg_template)
-        return cfg_template_module
-
-
-    #----------------------------------------------------------------------
-    def load_subject_params(self, cfg_file):
-        """
-        Loads the subject specific parameters' values from file and displays them.
-        cfg_file: config file to load.
-        """
-        cfg_path = Path(self.ui.lineEdit_pathSearch.text())
-
-        # Check if cfg_file is in the subject folder
-        is_found = False
-        for f in glob(os.fspath(cfg_path / "*.py") , recursive=False):
-            if cfg_file+".py" == os.path.split(f)[-1]:
-                is_found = True
-                break
-        
-        # If not found, copy the subject template config file in the subject folder.
-        if is_found is False:
-            template = Path(os.environ['PYCNBI_ROOT']) / 'pycnbi' / 'config_files' / (cfg_file + '.py')
-            copy2(template, cfg_path)
-            
-        cfg_module  = self.load_config(cfg_path, cfg_file)
-        return cfg_module
 
 
     @pyqtSlot(str, str)
@@ -437,7 +402,63 @@ class MainWindow(QMainWindow):
         self.ui.lineEdit_pathSearch.clear()
         self.ui.lineEdit_pathSearch.insert(path_name)
 
+    # ----------------------------------------------------------------------
+    def look_for_subject_file(self, modality):
+        '''
+        Look if the subject config file is contained in the subject folder
+        
+        modality = offline, trainer or online
+        '''
+        is_found = False
+        cfg_file = None
+        cfg_path = Path(self.ui.lineEdit_pathSearch.text())
+        
+        for f in glob(os.fspath(cfg_path / "*.py") , recursive=False):
+            fileName =  os.path.split(f)[-1]
+            if modality in fileName and 'structure' not in fileName:
+                is_found = True
+                cfg_file = f
+                break
+        return is_found, cfg_file    
 
+    #----------------------------------------------------------------------
+    def find_structure_file(self, cfg_file, modality):
+        """
+        Find the structure config file associated with the subject config file
+        
+        cfg_file: subject specific config file
+        modality = offline, trainer or online
+        """
+        # Find the config template
+        tmp = cfg_file.split('.')[0]  # Remove the .py
+        tmp = tmp.split('_')[-1]    # Extract the protocol name
+        template_path = Path(os.environ['PYCNBI_ROOT']) / 'pycnbi' / 'config_files' / tmp / 'structure_files'
+        
+        for f in glob(os.fspath(template_path / "*.py") , recursive=False):
+            fileName =  os.path.split(f)[-1]
+            if modality in fileName and 'structure' in fileName:
+                
+                return f            
+    
+    #----------------------------------------------------------------------
+    def prepare_config_files(self, modality):
+        """
+        Find both the subject config file and the associated structure config
+        file paths
+        """
+        is_found, cfg_file = self.look_for_subject_file(modality)
+            
+        if is_found is False:
+            error_dialog = QErrorMessage(self)
+            error_dialog.showMessage('Config file missing: copy an ' + modality + ' config file to the subject folder or create a new subjet')
+            return None, None
+        else:
+            cfg_template = self.find_structure_file(cfg_file, modality)
+            cfg_file = os.path.split(cfg_file)
+            cfg_template = os.path.split(cfg_template)
+            
+            return cfg_file, cfg_template
+            
     # ----------------------------------------------------------------------
     @pyqtSlot()
     def on_click_offline(self):
@@ -447,13 +468,11 @@ class MainWindow(QMainWindow):
         import pycnbi.protocols.train_mi as m
 
         self.m = m
-
         self.modality = 'offline'
-        cfg_template = 'config_structure_train_mi'
-        cfg_file = 'config_train_mi'
-
-        self.load_all_params(cfg_template, cfg_file)
-
+        cfg_file, cfg_template = self.prepare_config_files(self.modality)
+        
+        if cfg_file and cfg_template:
+            self.load_all_params(cfg_template, cfg_file)            
 
     # ----------------------------------------------------------------------
     @pyqtSlot()
@@ -464,13 +483,10 @@ class MainWindow(QMainWindow):
         import pycnbi.decoder.trainer as m
 
         self.m = m
-
-        self.modality = 'train'
-        cfg_template = 'config_structure_trainer_mi'
-        cfg_file = 'config_trainer_mi'
-
-        self.load_all_params(cfg_template, cfg_file)
-
+        self.modality = 'trainer'
+        cfg_file, cfg_template = self.prepare_config_files(self.modality)
+        if cfg_file and cfg_template:
+            self.load_all_params(cfg_template, cfg_file)
 
     #----------------------------------------------------------------------
     @pyqtSlot()
@@ -481,13 +497,10 @@ class MainWindow(QMainWindow):
         import pycnbi.protocols.test_mi as m
 
         self.m = m
-
         self.modality = 'online'
-        cfg_template = 'config_structure_test_mi'
-        cfg_file = 'config_test_mi'
-
-        self.load_all_params(cfg_template, cfg_file)
-
+        cfg_file, cfg_template = self.prepare_config_files(self.modality)
+        if cfg_file and cfg_template:
+            self.load_all_params(cfg_template, cfg_file)
 
     #----------------------------------------------------------------------v
     @pyqtSlot()
@@ -525,7 +538,7 @@ class MainWindow(QMainWindow):
         """
         Instance a Connect_NewSubject QDialog class
         """
-        qdialog = Connect_NewSubject(self)
+        qdialog = Connect_NewSubject(self, self.ui.lineEdit_pathSearch)
 
     #----------------------------------------------------------------------
     def connect_signals_to_slots(self):
