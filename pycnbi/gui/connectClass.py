@@ -834,9 +834,12 @@ class Connect_NewSubject(QDialog):
     """
 
     #----------------------------------------------------------------------
-    def __init__(self, parent):
+    def __init__(self, parent, lineEdit_pathSearch):
         """Constructor"""
         super().__init__(parent)
+        
+        # Ui lineEdit where to write the selected path.
+        self.lineEdit_pathSearch = lineEdit_pathSearch
         
         protocols_path = Path(os.environ['PYCNBI_ROOT']) / 'pycnbi' / 'config_files' 
         protocols = self.find_protocols(os.fspath(protocols_path))
@@ -893,13 +896,16 @@ class Connect_NewSubject(QDialog):
         # for PYCNBI_SCRIPTS
         scripts_path = Path(os.environ['PYCNBI_SCRIPTS']) / (subject_id + '-' + protocol)
         os.mkdir(scripts_path)
+        self.lineEdit_pathSearch.insert(os.fspath(scripts_path))
+        
+        # Add path to the lineEdit_pathSearch
         
         # for PYCNBI_DATA
         data_path = Path(os.environ['PYCNBI_DATA']) / (subject_id + '-' + protocol)
         os.mkdir(data_path)
         
         # Copy the protocol config_files
-        files_path = Path(os.environ['PYCNBI_ROOT']) / 'pycnbi' / 'config_files' / protocol
+        files_path = Path(os.environ['PYCNBI_ROOT']) / 'pycnbi' / 'config_files' / protocol / 'template_files'
         files = glob(os.fspath(files_path / "*.py") , recursive=False)
         config_files = [f for f in files if 'structure' not in f]
         for f in config_files:
