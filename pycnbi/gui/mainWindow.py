@@ -12,21 +12,18 @@ import sys
 import inspect
 from pathlib import Path
 from glob import glob
-from shutil import copy2
-from os.path import expanduser
 from importlib import import_module, reload
 import multiprocessing as mp
 
 from PyQt5.QtGui import QTextCursor, QFont
-from PyQt5.QtCore import pyqtSignal, pyqtSlot, QThread, QLine
-from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QAction, QLabel, \
-     QVBoxLayout, QHBoxLayout, QComboBox, QLineEdit, QFormLayout, QWidget, QPushButton, \
-     QFrame, QSizePolicy, QErrorMessage
+from PyQt5.QtCore import pyqtSlot, QThread
+from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QFormLayout, QWidget, \
+     QFrame, QErrorMessage
 
 from ui_mainwindow import Ui_MainWindow
-from streams import WriteStream, MyReceiver, redirect_stdout_to_queue
+from streams import MyReceiver, redirect_stdout_to_queue
 from readWriteTxt import read_params_from_txt
-from pickedChannelsDialog import PickChannelsDialog, Channel_Select
+from pickedChannelsDialog import Channel_Select
 from connectClass import PathFolderFinder, PathFileFinder, Connect_Directions, Connect_ComboBox, \
      Connect_LineEdit, Connect_SpinBox, Connect_DoubleSpinBox, Connect_Modifiable_List, \
      Connect_Modifiable_Dict,  Connect_Directions_Online, Connect_Bias, Connect_NewSubject
@@ -155,7 +152,7 @@ class MainWindow(QMainWindow):
         filePath = self.ui.lineEdit_pathSearch.text()
 
         # Load channels
-        if self.modality == 'train':
+        if self.modality == 'trainer':
             subjectDataPath = Path('%s/%s/fif' % (os.environ['PYCNBI_DATA'], filePath.split('/')[-1]))
             self.channels = read_params_from_txt(subjectDataPath, 'channelsList.txt')
         self.directions = ()
@@ -175,7 +172,7 @@ class MainWindow(QMainWindow):
                 # Iterates over the dict
                 for key, values in p[1].items():
                     chosen_value = self.extract_value_from_module(key, all_chosen_values)
-
+                    
                     # For the feedback directions [offline and online].
                     if 'DIRECTIONS' in key:
                         self.directions = values
@@ -204,7 +201,7 @@ class MainWindow(QMainWindow):
 
                             directions = Connect_Directions_Online(key, chosen_value, values, nb_directions, chosen_events, events)
 
-                        directions.signal_paramChanged.connect(self.on_guichanges)
+                        directions.signal_paramChanged[str, list].connect(self.on_guichanges)
                         self.paramsWidgets.update({key: directions})
                         layout.addRow(key, directions.l)
 
@@ -212,7 +209,7 @@ class MainWindow(QMainWindow):
                     # For providing a folder path.
                     elif 'PATH' in key:
                         pathfolderfinder = PathFolderFinder(key, os.environ['PYCNBI_ROOT'], chosen_value)
-                        pathfolderfinder.signal_pathChanged.connect(self.on_guichanges)
+                        pathfolderfinder.signal_pathChanged[str, str].connect(self.on_guichanges)
                         self.paramsWidgets.update({key: pathfolderfinder})
                         layout.addRow(key, pathfolderfinder.layout)
                         continue
@@ -220,7 +217,7 @@ class MainWindow(QMainWindow):
                     # For providing a file path.
                     elif 'FILE' in key:
                         pathfilefinder = PathFileFinder(key, chosen_value)
-                        pathfilefinder.signal_pathChanged.connect(self.on_guichanges)
+                        pathfilefinder.signal_pathChanged[str, str].connect(self.on_guichanges)
                         self.paramsWidgets.update({key: pathfilefinder})
                         layout.addRow(key, pathfilefinder.layout)
                         continue
@@ -234,7 +231,7 @@ class MainWindow(QMainWindow):
                         #  Convert 'None' to real None (real None is removed when selected in the GUI)
                         tdef_values = [ None if i == 'None' else i for i in list(tdef.by_name) ]
                         directions = Connect_Directions(key, chosen_value, tdef_values, nb_directions)
-                        directions.signal_paramChanged.connect(self.on_guichanges)
+                        directions.signal_paramChanged[str, list].connect(self.on_guichanges)
                         self.paramsWidgets.update({key: directions})
                         layout.addRow(key, directions.l)
                         continue
@@ -242,7 +239,7 @@ class MainWindow(QMainWindow):
                     # To select specific electrodes
                     elif '_CHANNELS' in key or 'CHANNELS_' in key:
                         ch_select = Channel_Select(key, self.channels, chosen_value)
-                        ch_select.signal_paramChanged.connect(self.on_guichanges)
+                        ch_select.signal_paramChanged[str, list].connect(self.on_guichanges)
                         self.paramsWidgets.update({key: ch_select})
                         layout.addRow(key, ch_select.layout)
 
@@ -250,14 +247,14 @@ class MainWindow(QMainWindow):
                         #  Add None to the list in case of no bias wanted
                         self.directions = tuple([None] + list(self.directions))
                         bias = Connect_Bias(key, self.directions, chosen_value)
-                        bias.signal_paramChanged.connect(self.on_guichanges)
+                        bias.signal_paramChanged[str, object].connect(self.on_guichanges)
                         self.paramsWidgets.update({key: bias})
                         layout.addRow(key, bias.l)
 
                     # For all the int values.
                     elif values is int:
                         spinBox = Connect_SpinBox(key, chosen_value)
-                        spinBox.signal_paramChanged.connect(self.on_guichanges)
+                        spinBox.signal_paramChanged[str, int].connect(self.on_guichanges)
                         self.paramsWidgets.update({key: spinBox})
                         layout.addRow(key, spinBox.w)
                         continue
@@ -265,7 +262,7 @@ class MainWindow(QMainWindow):
                     # For all the float values.
                     elif values is float:
                         doublespinBox = Connect_DoubleSpinBox(key, chosen_value)
-                        doublespinBox.signal_paramChanged.connect(self.on_guichanges)
+                        doublespinBox.signal_paramChanged[str, float].connect(self.on_guichanges)
                         self.paramsWidgets.update({key: doublespinBox})
                         layout.addRow(key, doublespinBox.w)
                         continue
@@ -273,7 +270,7 @@ class MainWindow(QMainWindow):
                     # For parameters with multiple non-fixed values in a list (user can modify them)
                     elif values is list:
                         modifiable_list = Connect_Modifiable_List(key, chosen_value)
-                        modifiable_list.signal_paramChanged.connect(self.on_guichanges)
+                        modifiable_list.signal_paramChanged[str, list].connect(self.on_guichanges)
                         self.paramsWidgets.update({key: modifiable_list})
                         layout.addRow(key, modifiable_list.frame)
                         continue
@@ -290,8 +287,8 @@ class MainWindow(QMainWindow):
                     # For parameters with multiple fixed values.
                     elif type(values) is tuple:
                         comboParams = Connect_ComboBox(key, chosen_value, values)
-                        comboParams.signal_paramChanged.connect(self.on_guichanges)
-                        comboParams.signal_additionalParamChanged.connect(self.on_guichanges)
+                        comboParams.signal_paramChanged[str, object].connect(self.on_guichanges)
+                        comboParams.signal_additionalParamChanged[str, dict].connect(self.on_guichanges)
                         self.paramsWidgets.update({key: comboParams})
                         layout.addRow(key, comboParams.layout)
                         continue
@@ -301,14 +298,14 @@ class MainWindow(QMainWindow):
                         try:
                             selection = chosen_value['selected']
                             comboParams = Connect_ComboBox(key, chosen_value, values)
-                            comboParams.signal_paramChanged.connect(self.on_guichanges)
-                            comboParams.signal_additionalParamChanged.connect(self.on_guichanges)
+                            comboParams.signal_paramChanged[str, object].connect(self.on_guichanges)
+                            comboParams.signal_additionalParamChanged[str, dict].connect(self.on_guichanges)
                             self.paramsWidgets.update({key: comboParams})
                             layout.addRow(key, comboParams.layout)
 
                         except:
                             modifiable_dict = Connect_Modifiable_Dict(key, chosen_value, values)
-                            modifiable_dict.signal_paramChanged.connect(self.on_guichanges)
+                            modifiable_dict.signal_paramChanged[str, dict].connect(self.on_guichanges)
                             self.paramsWidgets.update({key: modifiable_dict})
                             layout.addRow(key, modifiable_dict.frame)
                         continue
@@ -542,7 +539,7 @@ class MainWindow(QMainWindow):
         Instance a Connect_NewSubject QDialog class
         """
         qdialog = Connect_NewSubject(self, self.ui.lineEdit_pathSearch)
-        qdialog.signal_error.connect(self.on_error)
+        qdialog.signal_error[str].connect(self.on_error)
         
     
     #----------------------------------------------------------------------
