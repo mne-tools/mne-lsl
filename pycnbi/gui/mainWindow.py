@@ -10,6 +10,7 @@
 import os
 import sys
 import inspect
+import time
 from pathlib import Path
 from glob import glob
 from importlib import import_module, reload
@@ -30,6 +31,7 @@ from connectClass import PathFolderFinder, PathFileFinder, Connect_Directions, C
 
 from pycnbi.utils import q_common as qc
 from pycnbi.triggers.trigger_def import trigger_def
+import pycnbi.stream_recorder.stream_recorder as recorder
 
 class cfg_class:
     def __init__(self, cfg):
@@ -471,6 +473,9 @@ class MainWindow(QMainWindow):
         self.modality = 'offline'
         cfg_file, cfg_template = self.prepare_config_files(self.modality)
         
+        self.ui.checkBox_Record.setChecked(True)
+        self.ui.checkBox_Record.setEnabled(False)
+        
         if cfg_file and cfg_template:
             self.load_all_params(cfg_template, cfg_file)            
 
@@ -485,6 +490,10 @@ class MainWindow(QMainWindow):
         self.m = m
         self.modality = 'trainer'
         cfg_file, cfg_template = self.prepare_config_files(self.modality)
+        
+        self.ui.checkBox_Record.setChecked(False)
+        self.ui.checkBox_Record.setEnabled(False)
+        
         if cfg_file and cfg_template:
             self.load_all_params(cfg_template, cfg_file)
 
@@ -499,19 +508,38 @@ class MainWindow(QMainWindow):
         self.m = m
         self.modality = 'online'
         cfg_file, cfg_template = self.prepare_config_files(self.modality)
+        
+        self.ui.checkBox_Record.setChecked(True)
+        self.ui.checkBox_Record.setEnabled(True)
+        
         if cfg_file and cfg_template:
             self.load_all_params(cfg_template, cfg_file)
 
+
+        
     #----------------------------------------------------------------------v
     @pyqtSlot()
     def on_click_start(self):
         """
         Launch the selected protocol. It can be Offline, Train or Online.
         """
-        ccfg = cfg_class(self.cfg_subject)
-        self.process = mp.Process(target=self.m.run, args=[ccfg, self.my_receiver.queue])
-        self.process.start()
+        self.record_dir = Path(os.environ['PYCNBI_DATA']) / os.path.split(Path(self.ui.lineEdit_pathSearch.text()))[-1]
+        
+        ccfg = cfg_class(self.cfg_subject)  #  because a module is not pickable
 
+        # Recording shared variable
+        if self.ui.checkBox_Record.isChecked():
+            self.record_state = mp.Value('i', 1)
+        else:
+            self.record_state = mp.Value('i', 0)
+            
+        # Protocol shared variable
+        self.protocol_state = mp.Value('i', 1)
+        
+        processesToLaunch = [('recording', recorder.run_gui, [self.record_state, self.record_dir, None, None]), ('protocol', self.m.run, [ccfg, self.protocol_state, self.my_receiver.queue])]
+        
+        launchedProcess = mp.Process(target=launching_subprocesses, args=processesToLaunch)
+        launchedProcess.start()
 
     #----------------------------------------------------------------------
     @pyqtSlot()
@@ -519,8 +547,8 @@ class MainWindow(QMainWindow):
         """
         Stop the protocol process
         """
-        self.process.terminate()
-        self.process.join()
+        with self.protocol_state.get_lock():
+            self.protocol_state.value = 0
 
 
     #----------------------------------------------------------------------
@@ -568,6 +596,31 @@ class MainWindow(QMainWindow):
         # Stop button
         self.ui.pushButton_Stop.clicked.connect(self.on_click_stop)
 
+
+#----------------------------------------------------------------------
+def launching_subprocesses(*args):
+    """
+    Launch subprocesses
+    
+    processesToLaunch = list of tuple containing the functions to launch
+    and their args
+    """
+    launchedProcesses = dict()
+    
+    for p in args:
+        launchedProcesses[p[0]] = mp.Process(target=p[1], args=p[2])
+        launchedProcesses[p[0]].start()
+        time.sleep(2)
+    
+    # Wait that the protocol is finished to stop recording
+    recordState = args[0][2][0]     #  Sharing variable
+    launchedProcesses['protocol'].join()
+    
+    with recordState.get_lock():
+        recordState.value = 0
+        
+    
+#----------------------------------------------------------------------    
 def main():
     #unittest.main()
     app = QApplication(sys.argv)

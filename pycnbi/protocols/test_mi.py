@@ -29,22 +29,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
 import sys
-import cv2
 import imp
 import time
-import math
-import scipy
 import random
 import pycnbi
-import datetime
-import numpy as np
-import scipy.signal
-import mne.io, mne.viz
+import multiprocessing as mp
 import pycnbi.utils.q_common as qc
 import pycnbi.utils.pycnbi_utils as pu
-import pycnbi.glass.bgi_client as bgi_client
 import pycnbi.triggers.pyLptControl as pyLptControl
-from pycnbi.decoder.decoder import BCIDecoderDaemon, BCIDecoder
+from pycnbi.decoder.decoder import BCIDecoderDaemon
 from pycnbi.triggers.trigger_def import trigger_def
 from pycnbi.protocols.feedback import Feedback
 from pycnbi.gui.streams import redirect_stdout_to_queue
@@ -130,14 +123,14 @@ def check_config(cfg):
     return cfg
 
 # for batch script
-def run(cfg, queue=None):
+def run(cfg, state, queue=None):
 
     redirect_stdout_to_queue(queue)
 
     if cfg.FAKE_CLS is None:
         # chooose amp
         if cfg.AMP_NAME is None and cfg.AMP_SERIAL is None:
-            amp_name, amp_serial = pu.search_lsl(ignore_markers=True)
+            amp_name, amp_serial = pu.search_lsl(state, ignore_markers=True)
         else:
             amp_name = cfg.AMP_NAME
             amp_serial = cfg.AMP_SERIAL
@@ -206,7 +199,7 @@ def run(cfg, queue=None):
         probs_logfile = time.strftime(logdir + "probs-%Y%m%d-%H%M%S.txt", time.localtime())
     else:
         probs_logfile = None
-    feedback = Feedback(cfg, visual, tdef, trigger, probs_logfile)
+    feedback = Feedback(cfg, state, visual, tdef, trigger, probs_logfile)
 
     # start
     trial = 1
@@ -315,7 +308,8 @@ def run(cfg, queue=None):
 def batch_run(cfg_file):
     cfg = load_config(cfg_file)
     cfg = check_config(cfg)
-    run(cfg)
+    state = mp.Value('i', 1)
+    run(cfg, state)
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
