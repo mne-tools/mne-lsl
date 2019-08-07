@@ -125,6 +125,9 @@ def check_config(cfg):
 # for batch script
 def run(cfg, state, queue=None):
 
+    while not state.value:
+        pass
+
     redirect_stdout_to_queue(queue)
 
     if cfg.FAKE_CLS is None:

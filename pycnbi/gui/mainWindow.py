@@ -10,7 +10,6 @@
 import os
 import sys
 import inspect
-import time
 from pathlib import Path
 from glob import glob
 from importlib import import_module, reload
@@ -534,9 +533,9 @@ class MainWindow(QMainWindow):
             self.record_state = mp.Value('i', 0)
             
         # Protocol shared variable
-        self.protocol_state = mp.Value('i', 1)
+        self.protocol_state = mp.Value('i', 0)
         
-        processesToLaunch = [('recording', recorder.run_gui, [self.record_state, self.record_dir, None, None]), ('protocol', self.m.run, [ccfg, self.protocol_state, self.my_receiver.queue])]
+        processesToLaunch = [('recording', recorder.run_gui, [self.record_state, self.protocol_state, self.record_dir, None, None]), ('protocol', self.m.run, [ccfg, self.protocol_state, self.my_receiver.queue])]
         
         launchedProcess = mp.Process(target=launching_subprocesses, args=processesToLaunch)
         launchedProcess.start()
@@ -610,7 +609,6 @@ def launching_subprocesses(*args):
     for p in args:
         launchedProcesses[p[0]] = mp.Process(target=p[1], args=p[2])
         launchedProcesses[p[0]].start()
-        time.sleep(2)
     
     # Wait that the protocol is finished to stop recording
     recordState = args[0][2][0]     #  Sharing variable
