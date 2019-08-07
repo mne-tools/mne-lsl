@@ -90,6 +90,9 @@ def batch_run(cfg_file):
     run(cfg, state)
 
 def run(cfg, state, queue=None):
+
+    while not state.value:
+        pass
     
     redirect_stdout_to_queue(queue)    
     refresh_delay = 1.0 / cfg.REFRESH_RATE
