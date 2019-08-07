@@ -43,7 +43,7 @@ from pycnbi.stream_receiver.stream_receiver import StreamReceiver
 from pycnbi import logger
 from builtins import input
 
-def record(state, amp_name, amp_serial, record_dir, eeg_only):
+def record(recordState, amp_name, amp_serial, record_dir, eeg_only):
     # set data file name
     timestamp = time.strftime('%Y%m%d-%H%M%S', time.localtime())
     pcl_file = "%s/%s-raw.pcl" % (record_dir, timestamp)
@@ -69,7 +69,7 @@ def record(state, amp_name, amp_serial, record_dir, eeg_only):
     qc.print_c('\n>> Press Enter to stop recording', 'G')
     tm = qc.Timer(autoreset=True)
     next_sec = 1
-    while state.value == 1:
+    while recordState.value == 1:
         sr.acquire()
         if sr.get_buflen() > next_sec:
             duration = str(datetime.timedelta(seconds=int(sr.get_buflen())))
@@ -99,19 +99,19 @@ def record(state, amp_name, amp_serial, record_dir, eeg_only):
     logger.info('Converting raw file into fif.')
     pcl2fif(pcl_file, external_event=eve_file)
 
-def run(state, record_dir, amp_name, amp_serial, eeg_only=False):
+def run(recordState, record_dir, amp_name, amp_serial, eeg_only=False):
     logger.info('\nOutput directory: %s' % (record_dir))
 
     # spawn the recorder as a child process
     logger.info('\n>> Press Enter to start recording.')
     key = input()
-    proc = mp.Process(target=record, args=[state, amp_name, amp_serial, record_dir, eeg_only])
+    proc = mp.Process(target=record, args=[recordState, amp_name, amp_serial, record_dir, eeg_only])
     proc.start()
 
     # clean up
     time.sleep(1) # required on some Python distribution
     input()
-    state.value = 0
+    recordState.value = 0
     logger.info('(main) Waiting for recorder process to finish.')
     proc.join(10)
     if proc.is_alive():
@@ -124,25 +124,30 @@ def run(state, record_dir, amp_name, amp_serial, eeg_only=False):
 # for batch script
 def batch_run(record_dir, amp_name=None, amp_serial=None):
     # configure LSL server name and device serial if available
-    state = mp.Value('i', 1)
+    recordState = mp.Value('i', 1)
+    protocolState = mp.Value('i', 0)
     if not amp_name:
-        amp_name, amp_serial = pu.search_lsl(state, ignore_markers=True)
-    run(state, record_dir, amp_name=amp_name, amp_serial=amp_serial)
+        amp_name, amp_serial = pu.search_lsl(recordState, ignore_markers=True)
+    run(recordState, protocolState, record_dir, amp_name=amp_name, amp_serial=amp_serial)
 
-def run_gui(state, record_dir, amp_name=None, amp_serial=None):
+def run_gui(recordState, protocolState, record_dir, amp_name=None, amp_serial=None):
     # configure LSL server name and device serial if available
     if not amp_name:
-        amp_name, amp_serial = pu.search_lsl(state, ignore_markers=True)
+        amp_name, amp_serial = pu.search_lsl(recordState, ignore_markers=True)
 
     logger.info('\nOutput directory: %s' % (record_dir))
 
     # spawn the recorder as a child process
     logger.info('\n>> Recording started.')
-    proc = mp.Process(target=record, args=[state, amp_name, amp_serial, record_dir, eeg_only])
+    proc = mp.Process(target=record, args=[recordState, amp_name, amp_serial, record_dir, eeg_only])
     proc.start()
 
+    # Launching the protocol (shared variable)
+    with protocolState.get_lock():
+        protocolState.value = 1
+
     # Continue recording until the shared variable changes to 0.
-    while state.value:
+    while recordState.value:
         pass
 
     logger.info('(main) Waiting for recorder process to finish.')
