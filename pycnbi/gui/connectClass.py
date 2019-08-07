@@ -268,7 +268,8 @@ class Connect_ComboBox(QObject):
             
         if type(chosenValue) is dict:
             chosenValue = chosenValue['selected']
-
+        
+        self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.addWidget(self.templateChoices)      
         for p in self.additionalParams:
             self.layout.addWidget(p.frame)
@@ -513,7 +514,7 @@ class Connect_Modifiable_List(QObject):
         layout = QHBoxLayout()
         self.tempWidgets = []
         self.frame = QFrame()
-        self.frame.setStyleSheet("margin:0; padding:0")
+        self.frame.setContentsMargins(0, 0, 0, 0)
         
         # first list
         for k in range(len(chosen_value)):
@@ -530,7 +531,8 @@ class Connect_Modifiable_List(QObject):
                     tempWidget.signal_paramChanged[list, str].connect(self.on_modify)
                     self.tempWidgets.append(tempWidget)
                     vLayout.addWidget(tempWidget.w.w)
-
+                
+                vLayout.setContentsMargins(0, 0, 0, 0)
                 layout.addLayout(vLayout)
 
                 # Add a vertical line to separate parameters' type.
@@ -549,7 +551,6 @@ class Connect_Modifiable_List(QObject):
                 layout.addWidget(tempWidget.w.w)
         
         self.frame.setLayout(layout)
-        # self.layout = layout
 
     @pyqtSlot(list, int)
     @pyqtSlot(list, float)
@@ -615,8 +616,7 @@ class tempWidget_for_Modifiable_List(QObject):
         elif type(listElements[pos2]) is float:
             self.w = Connect_DoubleSpinBox(str(pos2), listElements[pos2])
             self.w.signal_paramChanged[str, float].connect(self.on_modify)
-
-
+        
 
     @pyqtSlot(str, int)
     @pyqtSlot(str, float)
