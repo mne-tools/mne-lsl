@@ -1,7 +1,7 @@
 from __future__ import print_function, division
 
 """
-Merge different events
+Merge different events. Can be also used to simply change event values.
 
 EVENTS = dict(LABEL_MERGED:[LABEL1, LABEL2, ...])
 
@@ -19,9 +19,17 @@ def merge_events(trigger_file, events, rawfile_in, rawfile_out):
     tdef = trigger_def(trigger_file)
     raw, eve = pu.load_raw(rawfile_in)
 
-    logger.info('\n\nBefore merging')
+    logger.info('=== Before merging ===')
+    notfounds = []
     for key in np.unique(eve[:, 2]):
-        logger.info('%s: %d' % (tdef.by_value[key], len(np.where(eve[:, 2] == key)[0])))
+        if key in tdef.by_value:
+            logger.info('%s: %d events' % (tdef.by_value[key], len(np.where(eve[:, 2] == key)[0])))
+        else:
+            logger.info('%d: %d events' % (key, len(np.where(eve[:, 2] == key)[0])))
+            notfounds.append(key)
+    if notfounds:
+        for key in notfounds:
+            logger.warning('Key %d was not found in the definition file.' % key)
 
     for key in events:
         ev_src = events[key]
@@ -34,16 +42,18 @@ def merge_events(trigger_file, events, rawfile_in, rawfile_out):
     # sanity check
     dups = np.where(0 == np.diff(eve[:, 0]))[0]
     assert len(dups) == 0
-    assert max(eve[:, 2]) <= max(tdef.by_value.keys())
 
     # reset trigger channel
     raw._data[0] *= 0
     raw.add_events(eve, 'TRIGGER')
     raw.save(rawfile_out, overwrite=True)
 
-    logger.info('\nAfter merging')
+    logger.info('=== After merging ===')
     for key in np.unique(eve[:, 2]):
-        logger.info('%s: %d' % (tdef.by_value[key], len(np.where(eve[:, 2] == key)[0])))
+        if key in tdef.by_value:
+            logger.info('%s: %d events' % (tdef.by_value[key], len(np.where(eve[:, 2] == key)[0])))
+        else:
+            logger.info('%s: %d events' % (key, len(np.where(eve[:, 2] == key)[0])))
 
 # sample code
 if __name__ == '__main__':
