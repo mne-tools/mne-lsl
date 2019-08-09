@@ -526,7 +526,7 @@ def butter_bandpass(highcut, lowcut, fs, num_ch):
     return b, a, zi
 
 
-def search_lsl(state, ignore_markers=False):
+def search_lsl(state, logger, ignore_markers=False):
     import time
 
     # look for LSL servers
