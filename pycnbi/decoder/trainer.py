@@ -477,6 +477,7 @@ def get_predict_proba(cls, X_train, Y_train, X_test, Y_test, cnum):
 def fit_predict_thres(cls, X_train, Y_train, X_test, Y_test, cnum, label_list, ignore_thres=None, decision_thres=None):
     """
     Any likelihood lower than a threshold is not counted as classification score
+    Confusion matrix, accuracy and F1 score (macro average) are computed.
 
     Params
     ======
@@ -492,7 +493,7 @@ def fit_predict_thres(cls, X_train, Y_train, X_test, Y_test, cnum, label_list, i
         Y_pred = cls.predict(X_test)
         score = skmetrics.accuracy_score(Y_test, Y_pred)
         cm = skmetrics.confusion_matrix(Y_test, Y_pred, label_list)
-        f1 = skmetrics.f1_score(Y_test, Y_pred, average='weighted')
+        f1 = skmetrics.f1_score(Y_test, Y_pred, average='macro')
     else:
         if decision_thres is not None:
             logger.error('decision threshold and ignore_thres cannot be set at the same time.')
@@ -509,7 +510,7 @@ def fit_predict_thres(cls, X_train, Y_train, X_test, Y_test, cnum, label_list, i
         score = skmetrics.accuracy_score(Y_test_overthres, Y_pred_overthres)
         cm = skmetrics.confusion_matrix(Y_test_overthres, Y_pred_overthres, label_list)
         cm = np.concatenate((cm, Y_pred_underthres_count[:, np.newaxis]), axis=1)
-        f1 = skmetrics.f1_score(Y_test_overthres, Y_pred_overthres, average='weighted')
+        f1 = skmetrics.f1_score(Y_test_overthres, Y_pred_overthres, average='macro')
 
     logger.info('Cross-validation %d (%.3f) - %.1f sec' % (cnum, score, timer.sec()))
     return score, cm, f1
