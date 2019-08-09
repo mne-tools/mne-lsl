@@ -761,18 +761,25 @@ def run(cfg, state, queue=None, interactive=False, cv_file=None, feat_file=None)
     cfg.tdef = trigger_def(cfg.TRIGGER_FILE)
 
     # Extract features
-    if state:
-        featdata = features.compute_features(cfg)
+    if not state:
+        sys.exit(-1)
+    featdata = features.compute_features(cfg)
 
     # Find optimal threshold for TPR balancing
     #balance_tpr(cfg, featdata)
 
     # Perform cross validation
-    if cfg.CV_PERFORM[cfg.CV_PERFORM['selected']] is not None and state:
+    if not state:
+        sys.exit(-1)
+        
+    if cfg.CV_PERFORM[cfg.CV_PERFORM['selected']] is not None:
         cross_validate(cfg, featdata, cv_file=cv_file)
 
     # Train a decoder
-    if cfg.EXPORT_CLS is True and state:
+    if not state:
+        sys.exit(-1)
+        
+    if cfg.EXPORT_CLS is True:
         train_decoder(cfg, featdata, feat_file=feat_file)
 
 

@@ -9,25 +9,28 @@
 
 import os
 import sys
+import time
+import logging
 import inspect
-from pathlib import Path
-from glob import glob
-from importlib import import_module, reload
 import multiprocessing as mp
+from glob import glob
+from pathlib import Path
+from importlib import import_module, reload
 
 from PyQt5.QtGui import QTextCursor, QFont
-from PyQt5.QtCore import pyqtSlot, QThread
+from PyQt5.QtCore import pyqtSlot, QThread, pyqtSignal
 from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QFormLayout, QWidget, \
      QFrame, QErrorMessage
 
 from ui_mainwindow import Ui_MainWindow
-from streams import MyReceiver, redirect_stdout_to_queue
+from streams import MyReceiver, redirect_stdout_to_queue, GuiTerminal
 from readWriteTxt import read_params_from_txt
 from pickedChannelsDialog import Channel_Select
 from connectClass import PathFolderFinder, PathFileFinder, Connect_Directions, Connect_ComboBox, \
      Connect_LineEdit, Connect_SpinBox, Connect_DoubleSpinBox, Connect_Modifiable_List, \
      Connect_Modifiable_Dict,  Connect_Directions_Online, Connect_Bias, Connect_NewSubject
 
+from pycnbi import logger, recordLogger
 from pycnbi.utils import q_common as qc
 from pycnbi.triggers.trigger_def import trigger_def
 import pycnbi.stream_recorder.stream_recorder as recorder
@@ -44,6 +47,9 @@ class MainWindow(QMainWindow):
     """
     Defines the mainWindow class for the PyCNBI GUI.
     """
+    
+    hide_recordTerminal = pyqtSignal(bool)
+    
     #----------------------------------------------------------------------
     def __init__(self):
         """
@@ -61,7 +67,7 @@ class MainWindow(QMainWindow):
 
         self.connect_signals_to_slots()
 
-        # Terminal
+        # Protocol terminal
         self.ui.textEdit_terminal.setReadOnly(1)
         font = QFont()
         font.setPointSize(10)
@@ -70,8 +76,12 @@ class MainWindow(QMainWindow):
         # Define in which modality we are
         self.modality = None
         
+        # Terminal for recording process
+        self.record_terminal = None
+        
         # To display errors
         self.error_dialog = QErrorMessage(self)
+        
 
     # ----------------------------------------------------------------------
     def redirect_stdout(self):
@@ -90,7 +100,7 @@ class MainWindow(QMainWindow):
         self.thread.started.connect(self.my_receiver.run)
         self.thread.start()
 
-        redirect_stdout_to_queue(self.my_receiver.queue)
+        redirect_stdout_to_queue(logger, self.my_receiver.queue, 'INFO')
 
 
     #----------------------------------------------------------------------
@@ -526,19 +536,30 @@ class MainWindow(QMainWindow):
         
         ccfg = cfg_class(self.cfg_subject)  #  because a module is not pickable
 
-        # Recording shared variable
-        if self.ui.checkBox_Record.isChecked():
+        # Recording shared variable + recording terminal
+        if self.ui.checkBox_Record.isChecked() and not self.record_terminal:
             self.record_state = mp.Value('i', 1)
+            self.record_terminal = GuiTerminal(recordLogger, 'INFO', self.width())
+            self.hide_recordTerminal[bool].connect(self.record_terminal.setHidden)
+        
+        elif self.ui.checkBox_Record.isChecked() and self.record_terminal:
+            self.record_state = mp.Value('i', 1)
+            self.record_terminal.textEdit.clear()
+            self.record_terminal.textEdit.insertPlainText('Waiting for the recording to start...\n')
+            self.hide_recordTerminal[bool].emit(False)            
+        
         else:
             self.record_state = mp.Value('i', 0)
             
         # Protocol shared variable
-        self.protocol_state = mp.Value('i', 0)
+        self.protocol_state = mp.Value('i', 2)  #  0=stop, 1=start, 2=wait
         
-        processesToLaunch = [('recording', recorder.run_gui, [self.record_state, self.protocol_state, self.record_dir, None, None]), ('protocol', self.m.run, [ccfg, self.protocol_state, self.my_receiver.queue])]
+        processesToLaunch = [('recording', recorder.run_gui, [self.record_state, self.protocol_state, self.record_dir, None, None, False, self.record_terminal.my_receiver.queue]), \
+                             ('protocol', self.m.run, [ccfg, self.protocol_state, self.my_receiver.queue])]
         
         launchedProcess = mp.Process(target=launching_subprocesses, args=processesToLaunch)
         launchedProcess.start()
+        logger.info(self.modality + ' protocol starting...')
 
     #----------------------------------------------------------------------
     @pyqtSlot()
@@ -548,7 +569,9 @@ class MainWindow(QMainWindow):
         """
         with self.protocol_state.get_lock():
             self.protocol_state.value = 0
-
+        time.sleep(2)
+        self.ui.textEdit_terminal.clear()
+        self.hide_recordTerminal[bool].emit(True)
 
     #----------------------------------------------------------------------
     @pyqtSlot(str)
