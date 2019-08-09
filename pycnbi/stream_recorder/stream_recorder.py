@@ -132,7 +132,7 @@ def batch_run(record_dir, amp_name=None, amp_serial=None):
     recordState = mp.Value('i', 1)
     protocolState = mp.Value('i', 0)
     if not amp_name:
-        amp_name, amp_serial = pu.search_lsl(recordState, ignore_markers=True)
+        amp_name, amp_serial = pu.search_lsl(recordState, recordLogger, ignore_markers=True)
     run(recordState, protocolState, record_dir, amp_name=amp_name, amp_serial=amp_serial)
 
 def run_gui(recordState, protocolState, record_dir, amp_name=None, amp_serial=None, eeg_only=False, queue=None):
