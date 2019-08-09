@@ -91,10 +91,13 @@ def batch_run(cfg_file):
 
 def run(cfg, state, queue=None):
 
-    while not state.value:
+    redirect_stdout_to_queue(logger, queue, 'INFO')    
+
+    while state.value == 2: # 0: stop, 1:start, 2:wait
         pass
+    if not state.value:
+        sys.exit(-1)
     
-    redirect_stdout_to_queue(queue)    
     refresh_delay = 1.0 / cfg.REFRESH_RATE
     
     cfg.tdef = trigger_def(cfg.TRIGGER_FILE)
