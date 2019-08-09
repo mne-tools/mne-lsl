@@ -125,10 +125,12 @@ def check_config(cfg):
 # for batch script
 def run(cfg, state, queue=None):
 
-    while not state.value:
-        pass
-
     redirect_stdout_to_queue(queue)
+
+    while state.value == 2: # 0: stop, 1:start, 2:wait
+        pass
+    if not state.value:
+        sys.exit(-1)    
 
     if cfg.FAKE_CLS is None:
         # chooose amp

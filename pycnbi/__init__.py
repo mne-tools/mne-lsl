@@ -8,7 +8,6 @@ Swiss Federal Institute of Technology Lausanne (EPFL)
 import os
 import sys
 import logging
-import pycnbi.colorer
 from pycnbi.utils import q_common as qc
 
 # log level options provided by pycnbi
