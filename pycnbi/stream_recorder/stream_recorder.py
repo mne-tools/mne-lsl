@@ -39,16 +39,21 @@ import pycnbi.utils.q_common as qc
 import pycnbi.utils.pycnbi_utils as pu
 from pycnbi.utils.convert2fif import pcl2fif
 from pycnbi.utils.cnbi_lsl import start_server
+from pycnbi.gui.streams import redirect_stdout_to_queue
 from pycnbi.stream_receiver.stream_receiver import StreamReceiver
-from pycnbi import logger
+from pycnbi import recordLogger
 from builtins import input
 
-def record(recordState, amp_name, amp_serial, record_dir, eeg_only):
+
+def record(recordState, amp_name, amp_serial, record_dir, eeg_only, queue=None):
+    
+    redirect_stdout_to_queue(recordLogger, queue, 'INFO')
+    
     # set data file name
     timestamp = time.strftime('%Y%m%d-%H%M%S', time.localtime())
     pcl_file = "%s/%s-raw.pcl" % (record_dir, timestamp)
     eve_file = '%s/%s-eve.txt' % (record_dir, timestamp)
-    logger.info('>> Output file: %s' % (pcl_file))
+    recordLogger.info('>> Output file: %s' % (pcl_file))
 
     # test writability
     try:
@@ -65,7 +70,7 @@ def record(recordState, amp_name, amp_serial, record_dir, eeg_only):
     sr = StreamReceiver(buffer_size=0, amp_name=amp_name, amp_serial=amp_serial, eeg_only=eeg_only)
 
     # start recording
-    logger.info('\n>> Recording started (PID %d).' % os.getpid())
+    recordLogger.info('\n>> Recording started (PID %d).' % os.getpid())
     qc.print_c('\n>> Press Enter to stop recording', 'G')
     tm = qc.Timer(autoreset=True)
     next_sec = 1
@@ -73,12 +78,12 @@ def record(recordState, amp_name, amp_serial, record_dir, eeg_only):
         sr.acquire()
         if sr.get_buflen() > next_sec:
             duration = str(datetime.timedelta(seconds=int(sr.get_buflen())))
-            print('RECORDING %s' % duration)
+            recordLogger.info('RECORDING %s' % duration)
             next_sec += 1
         tm.sleep_atleast(0.001)
 
     # record stop
-    logger.info('>> Stop requested. Copying buffer')
+    recordLogger.info('>> Stop requested. Copying buffer')
     buffers, times = sr.get_buffer()
     signals = buffers
     events = None
@@ -87,23 +92,23 @@ def record(recordState, amp_name, amp_serial, record_dir, eeg_only):
     data = {'signals':signals, 'timestamps':times, 'events':events,
             'sample_rate':sr.get_sample_rate(), 'channels':sr.get_num_channels(),
             'ch_names':sr.get_channel_names(), 'lsl_time_offset':sr.lsl_time_offset}
-    logger.info('Saving raw data ...')
+    recordLogger.info('Saving raw data ...')
     qc.save_obj(pcl_file, data)
-    logger.info('Saved to %s\n' % pcl_file)
+    recordLogger.info('Saved to %s\n' % pcl_file)
 
     # automatically convert to fif and use event file if it exists (software trigger)
     if os.path.exists(eve_file):
-        logger.info('Found matching event file, adding events.')
+        recordLogger.info('Found matching event file, adding events.')
     else:
         eve_file = None
-    logger.info('Converting raw file into fif.')
+    recordLogger.info('Converting raw file into fif.')
     pcl2fif(pcl_file, external_event=eve_file)
 
-def run(recordState, record_dir, amp_name, amp_serial, eeg_only=False):
-    logger.info('\nOutput directory: %s' % (record_dir))
+def run(recordState, record_dir, amp_name, amp_serial, eeg_only=False, queue=None):
+    recordLogger.info('\nOutput directory: %s' % (record_dir))
 
     # spawn the recorder as a child process
-    logger.info('\n>> Press Enter to start recording.')
+    recordLogger.info('\n>> Press Enter to start recording.')
     key = input()
     proc = mp.Process(target=record, args=[recordState, amp_name, amp_serial, record_dir, eeg_only])
     proc.start()
@@ -112,14 +117,14 @@ def run(recordState, record_dir, amp_name, amp_serial, eeg_only=False):
     time.sleep(1) # required on some Python distribution
     input()
     recordState.value = 0
-    logger.info('(main) Waiting for recorder process to finish.')
+    recordLogger.info('(main) Waiting for recorder process to finish.')
     proc.join(10)
     if proc.is_alive():
-        logger.error('Recorder process not finishing. Are you running from Spyder?')
-        logger.error('Dropping into a shell')
+        recordLogger.error('Recorder process not finishing. Are you running from Spyder?')
+        recordLogger.error('Dropping into a shell')
         qc.shell()
     sys.stdout.flush()
-    logger.info('Recording finished.')
+    recordLogger.info('Recording finished.')
 
 # for batch script
 def batch_run(record_dir, amp_name=None, amp_serial=None):
@@ -130,16 +135,19 @@ def batch_run(record_dir, amp_name=None, amp_serial=None):
         amp_name, amp_serial = pu.search_lsl(recordState, ignore_markers=True)
     run(recordState, protocolState, record_dir, amp_name=amp_name, amp_serial=amp_serial)
 
-def run_gui(recordState, protocolState, record_dir, amp_name=None, amp_serial=None):
+def run_gui(recordState, protocolState, record_dir, amp_name=None, amp_serial=None, eeg_only=False, queue=None):
+    
+    redirect_stdout_to_queue(recordLogger, queue, 'INFO')
+    
     # configure LSL server name and device serial if available
     if not amp_name:
-        amp_name, amp_serial = pu.search_lsl(recordState, ignore_markers=True)
+        amp_name, amp_serial = pu.search_lsl(recordState, recordLogger, ignore_markers=True)
 
-    logger.info('\nOutput directory: %s' % (record_dir))
+    recordLogger.info('\nOutput directory: %s' % (record_dir))
 
     # spawn the recorder as a child process
-    logger.info('\n>> Recording started.')
-    proc = mp.Process(target=record, args=[recordState, amp_name, amp_serial, record_dir, eeg_only])
+    recordLogger.info('\n>> Recording started.')
+    proc = mp.Process(target=record, args=[recordState, amp_name, amp_serial, record_dir, eeg_only, queue])
     proc.start()
 
     # Launching the protocol (shared variable)
@@ -150,14 +158,14 @@ def run_gui(recordState, protocolState, record_dir, amp_name=None, amp_serial=No
     while recordState.value:
         pass
 
-    logger.info('(main) Waiting for recorder process to finish.')
+    recordLogger.info('(main) Waiting for recorder process to finish.')
     proc.join(10)
     if proc.is_alive():
-        logger.error('Recorder process not finishing. Are you running from Spyder?')
-        logger.error('Dropping into a shell')
+        recordLogger.error('Recorder process not finishing. Are you running from Spyder?')
+        recordLogger.error('Dropping into a shell')
         qc.shell()
     sys.stdout.flush()
-    logger.info('Recording finished.')
+    recordLogger.info('Recording finished.')
 
 
 # default sample recorder
