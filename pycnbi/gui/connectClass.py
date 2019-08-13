@@ -207,7 +207,7 @@ class Connect_ComboBox(QObject):
         super().__init__()
 
         self.paramName = paramName
-        self.frame = QFrame()
+        # self.frame = QFrame()
         self.chosen_value = chosenValue
         
         self.add_To_ComboBox(all_values, chosenValue)
@@ -224,6 +224,7 @@ class Connect_ComboBox(QObject):
         self.templateChoices = QComboBox()
         self.additionalParams = list()
         self.layout = QHBoxLayout()
+        self.layout.setContentsMargins(0, 0, 0, 0)
                      
         # Special case of a dict 
         if type(values) is dict:
@@ -269,7 +270,6 @@ class Connect_ComboBox(QObject):
         if type(chosenValue) is dict:
             chosenValue = chosenValue['selected']
         
-        self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.addWidget(self.templateChoices)      
         for p in self.additionalParams:
             self.layout.addWidget(p.frame)
@@ -515,6 +515,7 @@ class Connect_Modifiable_List(QObject):
         self.tempWidgets = []
         self.frame = QFrame()
         self.frame.setContentsMargins(0, 0, 0, 0)
+        layout.setContentsMargins(0, 0, 0, 0)
         
         # first list
         for k in range(len(chosen_value)):
@@ -655,7 +656,7 @@ class Connect_Modifiable_Dict(QObject):
         self.chosen_value = chosen_value
         layout = QHBoxLayout()
         self.frame = QFrame()
-        # self.frame.setStyleSheet("margin:0; padding:0")
+        layout.setContentsMargins(0, 0, 0, 0)
         self.frame.setContentsMargins(0, 0, 0, 0);
                 
         for key, value in content_dict.items():
