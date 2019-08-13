@@ -751,17 +751,16 @@ def train_decoder(cfg, featdata, feat_file=None):
 def batch_run(cfg_file):
     cfg = load_config(cfg_file)
     cfg = check_config(cfg)
-    state = mp.Value('i', 1)
-    run(cfg, state, interactive=True)
+    run(cfg, interactive=True)
 
-def run(cfg, state, queue=None, interactive=False, cv_file=None, feat_file=None):
+def run(cfg, state=mp.Value('i', 1), queue=None, interactive=False, cv_file=None, feat_file=None):
 
     redirect_stdout_to_queue(queue)
 
     cfg.tdef = trigger_def(cfg.TRIGGER_FILE)
 
     # Extract features
-    if not state:
+    if not state.value:
         sys.exit(-1)
     featdata = features.compute_features(cfg)
 
@@ -769,14 +768,14 @@ def run(cfg, state, queue=None, interactive=False, cv_file=None, feat_file=None)
     #balance_tpr(cfg, featdata)
 
     # Perform cross validation
-    if not state:
+    if not state.value:
         sys.exit(-1)
         
     if cfg.CV_PERFORM[cfg.CV_PERFORM['selected']] is not None:
         cross_validate(cfg, featdata, cv_file=cv_file)
 
     # Train a decoder
-    if not state:
+    if not state.value:
         sys.exit(-1)
         
     if cfg.EXPORT_CLS is True:
