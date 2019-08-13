@@ -16,9 +16,9 @@ import time
 import pylsl
 import ctypes
 import threading
+import multiprocessing as mp
 import pycnbi.utils.cnbi_lsl as cnbi_lsl
 import pycnbi.utils.pycnbi_utils as pu
-import pycnbi.utils.q_common as qc
 from pycnbi import logger
 from builtins import input, bytes
 
@@ -58,7 +58,7 @@ class Trigger(object):
         Sends the value to the parallel port and sets to 0 after a set period.
         The value shuold be an integer in the range of 0-255.
     """
-    def __init__(self, state, lpttype='USB2LPT', portaddr=None, verbose=True, check_lsl_offset=False):
+    def __init__(self, state=mp.Value('i', 1), lpttype='USB2LPT', portaddr=None, verbose=True, check_lsl_offset=False):
         self.evefile = None
         self.lpttype = lpttype
         self.verbose = verbose

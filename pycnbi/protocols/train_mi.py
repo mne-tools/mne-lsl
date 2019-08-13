@@ -86,15 +86,16 @@ def check_config(cfg):
 def batch_run(cfg_file):
     cfg = load_config(cfg_file)
     cfg = check_config(cfg)
-    state = mp.Value('i', 1)
-    run(cfg, state)
+    run(cfg)
 
-def run(cfg, state, queue=None):
+def run(cfg, state=mp.Value('i', 1), queue=None):
 
     redirect_stdout_to_queue(logger, queue, 'INFO')    
-
+    
+    # Wait the recording to start (GUI)
     while state.value == 2: # 0: stop, 1:start, 2:wait
         pass
+    #  Protocol start if equals to 1 
     if not state.value:
         sys.exit(-1)
     
