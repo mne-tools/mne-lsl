@@ -166,7 +166,8 @@ class MainWindow(QMainWindow):
         # Load channels
         if self.modality == 'trainer':
             subjectDataPath = Path('%s/%s/fif' % (os.environ['PYCNBI_DATA'], filePath.split('/')[-1]))
-            self.channels = read_params_from_file(subjectDataPath, 'channelsList.txt')
+            self.channels = read_params_from_file(subjectDataPath, 'channelsList.txt')    
+                
         self.directions = ()
 
         # Iterates over the classes
@@ -359,18 +360,22 @@ class MainWindow(QMainWindow):
         Loads the params structure and assign the subject/s specific value.
         It also checks the sanity of the loaded params according to the protocol.
         """
-        # Loads the subject's specific values
-        self.cfg_subject = self.load_config(cfg_file)
+        try:
+            # Loads the subject's specific values
+            self.cfg_subject = self.load_config(cfg_file)
 
-        # Loads the template
-        if self.cfg_struct == None or cfg_template[1] not in self.cfg_struct.__file__:
-            self.cfg_struct = self.load_config(cfg_template)
+            # Loads the template
+            if self.cfg_struct == None or cfg_template[1] not in self.cfg_struct.__file__:
+                self.cfg_struct = self.load_config(cfg_template)
 
-        # Display parameters on the GUI
-        self.disp_params(self.cfg_struct, self.cfg_subject)
-
-        # Check the parameters integrity
-        self.cfg_subject = self.m.check_config(self.cfg_subject)
+            # Display parameters on the GUI
+            self.disp_params(self.cfg_struct, self.cfg_subject)
+            
+            # Check the parameters integrity
+            self.cfg_subject = self.m.check_config(self.cfg_subject)
+        
+        except Exception as e:
+            self.signal_error[str].emit(str(e))
 
 
     @pyqtSlot(str, str)
