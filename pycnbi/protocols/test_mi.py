@@ -123,14 +123,16 @@ def check_config(cfg):
     return cfg
 
 # for batch script
-def run(cfg, state, queue=None):
+def run(cfg, state=mp.Value('i', 1), queue=None):
 
     redirect_stdout_to_queue(queue)
-
+    
+    # Wait the recording to start (GUI)
     while state.value == 2: # 0: stop, 1:start, 2:wait
         pass
+    #  Protocol start if equals to 1 
     if not state.value:
-        sys.exit(-1)    
+        sys.exit(-1)
 
     if cfg.FAKE_CLS is None:
         # chooose amp
@@ -313,8 +315,7 @@ def run(cfg, state, queue=None):
 def batch_run(cfg_file):
     cfg = load_config(cfg_file)
     cfg = check_config(cfg)
-    state = mp.Value('i', 1)
-    run(cfg, state)
+    run(cfg)
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:

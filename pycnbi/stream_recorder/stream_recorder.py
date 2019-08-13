@@ -104,12 +104,13 @@ def record(recordState, amp_name, amp_serial, record_dir, eeg_only, queue=None):
     recordLogger.info('Converting raw file into fif.')
     pcl2fif(pcl_file, external_event=eve_file)
 
-def run(recordState, record_dir, amp_name, amp_serial, eeg_only=False, queue=None):
+def run(record_dir, amp_name, amp_serial, eeg_only=False, queue=None):
     recordLogger.info('\nOutput directory: %s' % (record_dir))
 
     # spawn the recorder as a child process
     recordLogger.info('\n>> Press Enter to start recording.')
     key = input()
+    recordState = mp.Value('i', 1)
     proc = mp.Process(target=record, args=[recordState, amp_name, amp_serial, record_dir, eeg_only])
     proc.start()
 
@@ -127,13 +128,13 @@ def run(recordState, record_dir, amp_name, amp_serial, eeg_only=False, queue=Non
     recordLogger.info('Recording finished.')
 
 # for batch script
-def batch_run(record_dir, amp_name=None, amp_serial=None):
+def batch_run(record_dir=None, amp_name=None, amp_serial=None):
     # configure LSL server name and device serial if available
-    recordState = mp.Value('i', 1)
-    protocolState = mp.Value('i', 0)
+    if not record_dir:
+        record_dir = '%s/records' % os.getcwd()    
     if not amp_name:
-        amp_name, amp_serial = pu.search_lsl(recordState, recordLogger, ignore_markers=True)
-    run(recordState, protocolState, record_dir, amp_name=amp_name, amp_serial=amp_serial)
+        amp_name, amp_serial = pu.search_lsl(ignore_markers=True)
+    run(record_dir, amp_name=amp_name, amp_serial=amp_serial)
 
 def run_gui(recordState, protocolState, record_dir, amp_name=None, amp_serial=None, eeg_only=False, queue=None):
     
