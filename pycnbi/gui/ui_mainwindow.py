@@ -178,7 +178,15 @@ class Ui_MainWindow(object):
         self.menuBar = QtWidgets.QMenuBar(MainWindow)
         self.menuBar.setGeometry(QtCore.QRect(0, 0, 607, 20))
         self.menuBar.setObjectName("menuBar")
+        self.menuFile = QtWidgets.QMenu(self.menuBar)
+        self.menuFile.setObjectName("menuFile")
         MainWindow.setMenuBar(self.menuBar)
+        self.actionSave_config_file = QtWidgets.QAction(MainWindow)
+        self.actionSave_config_file.setObjectName("actionSave_config_file")
+        self.actionLoad_config_file = QtWidgets.QAction(MainWindow)
+        self.actionLoad_config_file.setObjectName("actionLoad_config_file")
+        self.menuFile.addAction(self.actionSave_config_file)
+        self.menuBar.addAction(self.menuFile.menuAction())
 
         self.retranslateUi(MainWindow)
         self.tabWidget_Params.setCurrentIndex(0)
@@ -201,5 +209,8 @@ class Ui_MainWindow(object):
         self.checkBox_Record.setText(_translate("MainWindow", "Record"))
         self.pushButton_Start.setText(_translate("MainWindow", "Start"))
         self.pushButton_Stop.setText(_translate("MainWindow", "Stop"))
+        self.menuFile.setTitle(_translate("MainWindow", "File"))
+        self.actionSave_config_file.setText(_translate("MainWindow", "Save config file"))
+        self.actionLoad_config_file.setText(_translate("MainWindow", "Load config file"))
 
 
