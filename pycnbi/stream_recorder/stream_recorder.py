@@ -156,7 +156,7 @@ def run_gui(recordState, protocolState, record_dir, amp_name=None, amp_serial=No
 
     # Continue recording until the shared variable changes to 0.
     while recordState.value:
-        pass
+        time.sleep(1)
 
     recordLogger.info('(main) Waiting for recorder process to finish.')
     proc.join(10)

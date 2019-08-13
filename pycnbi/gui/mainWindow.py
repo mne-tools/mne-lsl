@@ -10,9 +10,9 @@
 import os
 import sys
 import time
-import logging
 import inspect
 import multiprocessing as mp
+from datetime import datetime
 from glob import glob
 from pathlib import Path
 from importlib import import_module, reload
@@ -24,7 +24,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QFormLayout,
 
 from ui_mainwindow import Ui_MainWindow
 from streams import MyReceiver, redirect_stdout_to_queue, GuiTerminal
-from readWriteTxt import read_params_from_txt
+from readWriteFile import read_params_from_file, save_params_to_file
 from pickedChannelsDialog import Channel_Select
 from connectClass import PathFolderFinder, PathFileFinder, Connect_Directions, Connect_ComboBox, \
      Connect_LineEdit, Connect_SpinBox, Connect_DoubleSpinBox, Connect_Modifiable_List, \
@@ -49,6 +49,7 @@ class MainWindow(QMainWindow):
     """
     
     hide_recordTerminal = pyqtSignal(bool)
+    signal_error = pyqtSignal(str)
     
     #----------------------------------------------------------------------
     def __init__(self):
@@ -135,7 +136,7 @@ class MainWindow(QMainWindow):
                 return v[1]
 
     # ----------------------------------------------------------------------
-    def read_params_from_txt(self, txtFile):
+    def read_params_from_file(self, txtFile):
         """
         Loads the parameters from a txt file.
         """
@@ -165,7 +166,7 @@ class MainWindow(QMainWindow):
         # Load channels
         if self.modality == 'trainer':
             subjectDataPath = Path('%s/%s/fif' % (os.environ['PYCNBI_DATA'], filePath.split('/')[-1]))
-            self.channels = read_params_from_txt(subjectDataPath, 'channelsList.txt')
+            self.channels = read_params_from_file(subjectDataPath, 'channelsList.txt')
         self.directions = ()
 
         # Iterates over the classes
@@ -442,13 +443,12 @@ class MainWindow(QMainWindow):
         """
         # Find the config template
         tmp = cfg_file.split('.')[0]  # Remove the .py
-        tmp = tmp.split('_')[-1]    # Extract the protocol name
+        tmp = tmp.split('-')[-1]    # Extract the protocol name
         template_path = Path(os.environ['PYCNBI_ROOT']) / 'pycnbi' / 'config_files' / tmp / 'structure_files'
         
         for f in glob(os.fspath(template_path / "*.py") , recursive=False):
             fileName =  os.path.split(f)[-1]
             if modality in fileName and 'structure' in fileName:
-                
                 return f            
     
     #----------------------------------------------------------------------
@@ -460,8 +460,7 @@ class MainWindow(QMainWindow):
         is_found, cfg_file = self.look_for_subject_file(modality)
             
         if is_found is False:
-            error_dialog = QErrorMessage(self)
-            error_dialog.showMessage('Config file missing: copy an ' + modality + ' config file to the subject folder or create a new subjet')
+            self.error_dialog.showMessage('Config file missing: copy an ' + modality + ' config file to the subject folder or create a new subjet')
             return None, None
         else:
             cfg_template = self.find_structure_file(cfg_file, modality)
@@ -600,6 +599,23 @@ class MainWindow(QMainWindow):
         self.error_dialog.showMessage(errorMsg)
         
     #----------------------------------------------------------------------
+    def on_click_save_params_to_file(self):
+        """
+        Save the params to a config_file
+        """
+        filePath, fileName = os.path.split(self.cfg_subject.__file__)
+        fileName = fileName.split('.')[0]       # Remove the .py
+        # subjectProtocol = os.path.split(filePath)[1]    # format: subject-protocol
+        
+        file = self.cfg_subject.__file__.split('.')[0] + '_' + datetime.now().strftime('%m.%d.%d.%M') + '.py'
+        filePath = QFileDialog.getSaveFileName(self, 'Save config file', file, 'python(*.py)')
+        
+        if filePath[0]:
+            save_params_to_file(filePath[0], cfg_class(self.cfg_subject))
+        else:
+            self.signal_error[str].emit('Provide a correct path and file name to save the config parameters')
+        
+    #----------------------------------------------------------------------
     def connect_signals_to_slots(self):
         """Connects the signals to the slots"""
         
@@ -617,6 +633,10 @@ class MainWindow(QMainWindow):
         self.ui.pushButton_Start.clicked.connect(self.on_click_start)
         # Stop button
         self.ui.pushButton_Stop.clicked.connect(self.on_click_stop)
+        # Save conf file
+        self.ui.actionSave_config_file.triggered.connect(self.on_click_save_params_to_file)
+        # Error dialog
+        self.signal_error[str].connect(self.on_error)
 
 
 #----------------------------------------------------------------------

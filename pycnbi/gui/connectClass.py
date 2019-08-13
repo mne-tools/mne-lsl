@@ -13,7 +13,7 @@ from glob import glob
 from pathlib import Path 
 from shutil import copy2
 from PyQt5.QtWidgets import QPushButton, QHBoxLayout, QVBoxLayout, QFileDialog, QLineEdit, QComboBox, QSpinBox, QDoubleSpinBox, QLabel, \
-     QWidget, QFrame, QDialog, QFormLayout, QDialogButtonBox
+     QFrame, QDialog, QFormLayout, QDialogButtonBox
 from PyQt5.QtCore import pyqtSignal, QObject, pyqtSlot, Qt
 
 ########################################################################
@@ -914,7 +914,8 @@ class Connect_NewSubject(QDialog):
             files = glob(os.fspath(files_path / "*.py") , recursive=False)
             config_files = [f for f in files if 'structure' not in f]
             for f in config_files:
-                copy2(f, scripts_path)
+                fileName = os.path.split(f)[1].split('.')[0]
+                copy2(f, (os.fspath(scripts_path / fileName) + ('_' + subject_id + '-' + protocol +'.py')))
             
         except Exception as e:
             self.signal_error[str].emit(str(e))
