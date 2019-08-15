@@ -33,7 +33,9 @@ from connectClass import PathFolderFinder, PathFileFinder, Connect_Directions, C
 
 from pycnbi import logger, init_logger
 from pycnbi.utils import q_common as qc
+from pycnbi.utils import pycnbi_utils as pu
 from pycnbi.triggers.trigger_def import trigger_def
+import pycnbi.stream_viewer.stream_viewer as viewer
 import pycnbi.stream_recorder.stream_recorder as recorder
 
 class cfg_class:
@@ -69,11 +71,6 @@ class MainWindow(QMainWindow):
 
         self.connect_signals_to_slots()
 
-        # Protocol terminal
-        self.ui.textEdit_terminal.setReadOnly(1)
-        font = QFont()
-        font.setPointSize(10)
-        self.ui.textEdit_terminal.setFont(font)
 
         # Define in which modality we are
         self.modality = None
@@ -115,6 +112,12 @@ class MainWindow(QMainWindow):
         """
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
+        
+        # Protocol terminal
+        self.ui.textEdit_terminal.setReadOnly(1)
+        font = QFont()
+        font.setPointSize(10)
+        self.ui.textEdit_terminal.setFont(font)
 
 
     #----------------------------------------------------------------------
@@ -625,24 +628,34 @@ class MainWindow(QMainWindow):
             self.signal_error[str].emit('Provide a correct path and file name to save the config parameters')
     
     #----------------------------------------------------------------------
-    def on_click_startviewer(self):
+    def on_click_lsl_button(self):
+        """
+        Find the available lsl streams and display them in the comboBox_LSL
+        """
+        self.lsl_state = mp.Value('i', 1)
+        amp_list, streamInfos = pu.list_lsl_streams(state=self.lsl_state, logger=logger, ignore_markers=False)
+        
+        for amp in amp_list:
+            amp_formated = '{} ({})'.format(amp[1], amp[2])
+            self.ui.comboBox_LSL.addItem(amp_formated, {'name':amp[1], 'serial':amp[2]})
+    
+    #----------------------------------------------------------------------
+    def on_click_start_viewer(self):
         """
         Launch the viewer to check the signals in a seperate process 
         """
-        
-        def instantiate_scope():
-            amp_name, amp_serial = pu.search_lsl(logger)
-            logger.info('Connecting to a server %s (Serial %s).' % (amp_name, amp_serial))
-            ex = Scope(amp_name, amp_serial)
-                 
-        
-        
+        amp = self.ui.comboBox_LSL.currentData()
+        self.viewer_state = mp.Value('i', 1)
+        viewerprocess = mp.Process(target=instantiate_scope, args=[amp, self.viewer_state])
+        viewerprocess.start()
+    
     #----------------------------------------------------------------------
     def on_click_stopviewer(self):
         """
         Stop the viewer process
         """
-        
+        with self.viewer_state.get_lock():
+            self.viewer_state.value = 0
         
     #----------------------------------------------------------------------
     def connect_signals_to_slots(self):
@@ -667,10 +680,18 @@ class MainWindow(QMainWindow):
         # Error dialog
         self.signal_error[str].connect(self.on_error)
         # Start viewer button
-        self.ui.pushButton_StartViewer.clicked.connect(self.on_click_startviewer)
+        self.ui.pushButton_StartViewer.clicked.connect(self.on_click_start_viewer)
         # Stop viewer button
         self.ui.pushButton_StopViewer.clicked.connect(self.on_click_stopviewer)
+        # LSL button
+        self.ui.pushButton_LSL.clicked.connect(self.on_click_lsl_button)
 
+#----------------------------------------------------------------------
+def instantiate_scope(amp, state, logger=logger):
+    logger.info('Connecting to a %s (Serial %s).' % (amp['name'], amp['serial']))
+    app = QApplication(sys.argv)
+    ex = viewer.Scope(amp['name'], amp['serial'], state)
+    sys.exit(app.exec_())
 
 #----------------------------------------------------------------------
 def launching_subprocesses(*args):
