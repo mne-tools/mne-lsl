@@ -529,6 +529,10 @@ def butter_bandpass(highcut, lowcut, fs, num_ch):
 def search_lsl(state=None, logger=logger, ignore_markers=False):
     import time
     
+    #  GUI sharing variable to stop the process, 1 = start, 0 = stop
+    if not state:
+        state = mp.Value('i', 1)
+    
     # look for LSL servers
     amp_list = []
     amp_list_backup = []
