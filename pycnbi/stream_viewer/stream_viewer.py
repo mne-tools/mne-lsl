@@ -32,6 +32,8 @@ import pyqtgraph as pg
 import pycnbi
 import pycnbi.utils.q_common as qc
 import pycnbi.utils.pycnbi_utils as pu
+import multiprocessing as mp
+from pathlib import Path
 from scipy.signal import butter, lfilter, lfiltic, buttord
 from pycnbi.stream_receiver.stream_receiver import StreamReceiver
 from pycnbi import logger
@@ -40,14 +42,16 @@ from configparser import RawConfigParser
 from builtins import input
 
 # Load GUI. Designed with QT Creator, feel free to change stuff
-form_class = uic.loadUiType("./mainwindow.ui")[0]
+path2_viewerFolder = Path(os.environ['PYCNBI_ROOT'])/'pycnbi'/'stream_viewer'
+form_class = uic.loadUiType(str(path2_viewerFolder / 'mainwindow.ui'))[0]
 
 
 class Scope(QtGui.QMainWindow, form_class):
-    def __init__(self, amp_name, amp_serial):
+    def __init__(self, amp_name, amp_serial, state=mp.Value('i', 1)):
         super(Scope, self).__init__()
         self.amp_name = amp_name
         self.amp_serial = amp_serial
+        self.state = state
         self.init_scope()
 
     #
@@ -86,7 +90,7 @@ class Scope(QtGui.QMainWindow, form_class):
                 self.device_name = ""
                 self.show_channel_names = 0
         # self.scope_settings.read(os.getenv("HOME") + "/.scope_settings.ini")
-        self.scope_settings.read(".scope_settings.ini")
+        self.scope_settings.read(str(path2_viewerFolder/'.scope_settings.ini'))
 
     #
     # 	Initialize control panel parameter
@@ -397,6 +401,12 @@ class Scope(QtGui.QMainWindow, form_class):
     #	Main update function (connected to the timer)
     #
     def update_loop(self):
+        
+        #  Sharing variable to stop at the GUI level
+        if not self.state.value:
+            logger.info('Viewer stopped')
+            sys.exit()
+            
         try:
             # assert self.updating==False, 'thread destroyed?'
             # self.updating= True
@@ -946,8 +956,8 @@ class Scope(QtGui.QMainWindow, form_class):
         # leeq
         if (self.pushButton_stoprec.isEnabled()):
             subprocess.Popen(["cl_rpc", "closexdf"], close_fds=True)
-        # quit()
-        app.quit()
+        with self.state.get_lock():
+            self.state.value = 0
 
         # ----------------------------------------------------------------------------------------------------
         # 		END OF EVENT HANDLERS
