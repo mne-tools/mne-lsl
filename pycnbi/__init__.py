@@ -116,7 +116,3 @@ logging.getLogger('matplotlib').setLevel(logging.ERROR)
 logger = logging.getLogger('pycnbi')
 logger.propagate = False
 init_logger(logger)
-
-recordLogger = logging.getLogger('recorder')
-recordLogger.propagate = False
-init_logger(recordLogger)
