@@ -11,6 +11,7 @@ import os
 import sys
 import time
 import inspect
+import logging
 import multiprocessing as mp
 from datetime import datetime
 from glob import glob
@@ -30,7 +31,7 @@ from connectClass import PathFolderFinder, PathFileFinder, Connect_Directions, C
      Connect_LineEdit, Connect_SpinBox, Connect_DoubleSpinBox, Connect_Modifiable_List, \
      Connect_Modifiable_Dict,  Connect_Directions_Online, Connect_Bias, Connect_NewSubject
 
-from pycnbi import logger, recordLogger
+from pycnbi import logger, init_logger
 from pycnbi.utils import q_common as qc
 from pycnbi.triggers.trigger_def import trigger_def
 import pycnbi.stream_recorder.stream_recorder as recorder
@@ -77,8 +78,11 @@ class MainWindow(QMainWindow):
         # Define in which modality we are
         self.modality = None
         
-        # Terminal for recording process
+        # Recording process
         self.record_terminal = None
+        self.recordLogger = logging.getLogger('recorder')
+        self.recordLogger.propagate = False
+        init_logger(self.recordLogger)        
         
         # To display errors
         self.error_dialog = QErrorMessage(self)
@@ -543,7 +547,7 @@ class MainWindow(QMainWindow):
         # Recording shared variable + recording terminal
         if self.ui.checkBox_Record.isChecked() and not self.record_terminal:
             self.record_state = mp.Value('i', 1)
-            self.record_terminal = GuiTerminal(recordLogger, 'INFO', self.width())
+            self.record_terminal = GuiTerminal(self.recordLogger, 'INFO', self.width())
             self.hide_recordTerminal[bool].connect(self.record_terminal.setHidden)
         
         elif self.ui.checkBox_Record.isChecked() and self.record_terminal:
@@ -558,7 +562,7 @@ class MainWindow(QMainWindow):
         # Protocol shared variable
         self.protocol_state = mp.Value('i', 2)  #  0=stop, 1=start, 2=wait
         
-        processesToLaunch = [('recording', recorder.run_gui, [self.record_state, self.protocol_state, self.record_dir, None, None, False, self.record_terminal.my_receiver.queue]), \
+        processesToLaunch = [('recording', recorder.run_gui, [self.record_state, self.protocol_state, self.record_dir, self.recordLogger, None, None, False, self.record_terminal.my_receiver.queue]), \
                              ('protocol', self.m.run, [ccfg, self.protocol_state, self.my_receiver.queue])]
         
         launchedProcess = mp.Process(target=launching_subprocesses, args=processesToLaunch)
@@ -619,6 +623,26 @@ class MainWindow(QMainWindow):
             save_params_to_file(filePath[0], cfg_class(self.cfg_subject))
         else:
             self.signal_error[str].emit('Provide a correct path and file name to save the config parameters')
+    
+    #----------------------------------------------------------------------
+    def on_click_startviewer(self):
+        """
+        Launch the viewer to check the signals in a seperate process 
+        """
+        
+        def instantiate_scope():
+            amp_name, amp_serial = pu.search_lsl(logger)
+            logger.info('Connecting to a server %s (Serial %s).' % (amp_name, amp_serial))
+            ex = Scope(amp_name, amp_serial)
+                 
+        
+        
+    #----------------------------------------------------------------------
+    def on_click_stopviewer(self):
+        """
+        Stop the viewer process
+        """
+        
         
     #----------------------------------------------------------------------
     def connect_signals_to_slots(self):
@@ -642,6 +666,10 @@ class MainWindow(QMainWindow):
         self.ui.actionSave_config_file.triggered.connect(self.on_click_save_params_to_file)
         # Error dialog
         self.signal_error[str].connect(self.on_error)
+        # Start viewer button
+        self.ui.pushButton_StartViewer.clicked.connect(self.on_click_startviewer)
+        # Stop viewer button
+        self.ui.pushButton_StopViewer.clicked.connect(self.on_click_stopviewer)
 
 
 #----------------------------------------------------------------------

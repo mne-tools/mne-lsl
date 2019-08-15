@@ -41,11 +41,11 @@ from pycnbi.utils.convert2fif import pcl2fif
 from pycnbi.utils.cnbi_lsl import start_server
 from pycnbi.gui.streams import redirect_stdout_to_queue
 from pycnbi.stream_receiver.stream_receiver import StreamReceiver
-from pycnbi import recordLogger
+from pycnbi import logger
 from builtins import input
 
 
-def record(recordState, amp_name, amp_serial, record_dir, eeg_only, queue=None):
+def record(recordState, amp_name, amp_serial, record_dir, eeg_only, recordLogger=logger, queue=None):
     
     redirect_stdout_to_queue(recordLogger, queue, 'INFO')
     
@@ -104,7 +104,7 @@ def record(recordState, amp_name, amp_serial, record_dir, eeg_only, queue=None):
     recordLogger.info('Converting raw file into fif.')
     pcl2fif(pcl_file, external_event=eve_file)
 
-def run(record_dir, amp_name, amp_serial, eeg_only=False, queue=None):
+def run(record_dir, amp_name, amp_serial, recordLogger=logger, eeg_only=False, queue=None):
     recordLogger.info('\nOutput directory: %s' % (record_dir))
 
     # spawn the recorder as a child process
@@ -136,7 +136,7 @@ def batch_run(record_dir=None, amp_name=None, amp_serial=None):
         amp_name, amp_serial = pu.search_lsl(ignore_markers=True)
     run(record_dir, amp_name=amp_name, amp_serial=amp_serial)
 
-def run_gui(recordState, protocolState, record_dir, amp_name=None, amp_serial=None, eeg_only=False, queue=None):
+def run_gui(recordState, protocolState, record_dir, recordLogger=logger, amp_name=None, amp_serial=None, eeg_only=False, queue=None):
     
     redirect_stdout_to_queue(recordLogger, queue, 'INFO')
     
