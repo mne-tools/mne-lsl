@@ -24,7 +24,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QFormLayout,
      QFrame, QErrorMessage
 
 from ui_mainwindow import Ui_MainWindow
-from streams import MyReceiver, redirect_stdout_to_queue, GuiTerminal
+from streams import MyReceiver, redirect_stdout_to_queue, GuiTerminal, search_lsl_streams_thread
 from readWriteFile import read_params_from_file, save_params_to_file
 from pickedChannelsDialog import Channel_Select
 from connectClass import PathFolderFinder, PathFileFinder, Connect_Directions, Connect_ComboBox, \
@@ -84,6 +84,11 @@ class MainWindow(QMainWindow):
         # To display errors
         self.error_dialog = QErrorMessage(self)
         
+        # Mp sharing variables
+        self.record_state = mp.Value('i', 0)
+        self.protocol_state = mp.Value('i', 0)
+        self.lsl_state = mp.Value('i', 0)
+        
 
     # ----------------------------------------------------------------------
     def redirect_stdout(self):
@@ -142,17 +147,17 @@ class MainWindow(QMainWindow):
             if v[0] == key:
                 return v[1]
 
-    # ----------------------------------------------------------------------
-    def read_params_from_file(self, txtFile):
-        """
-        Loads the parameters from a txt file.
-        """
-        folderPath = Path(self.ui.lineEdit_pathSearch.text())
-        file = open(folderPath / txtFile)
-        params = file.read().splitlines()
-        file.close()
+    ## ----------------------------------------------------------------------
+    #def read_params_from_file(self, txtFile):
+        #"""
+        #Loads the parameters from a txt file.
+        #"""
+        #folderPath = Path(self.ui.lineEdit_pathSearch.text())
+        #file = open(folderPath / txtFile)
+        #params = file.read().splitlines()
+        #file.close()
 
-        return params
+        #return params
 
     # ----------------------------------------------------------------------
     def disp_params(self, cfg_template_module, cfg_module):
@@ -548,26 +553,36 @@ class MainWindow(QMainWindow):
         ccfg = cfg_class(self.cfg_subject)  #  because a module is not pickable
 
         # Recording shared variable + recording terminal
-        if self.ui.checkBox_Record.isChecked() and not self.record_terminal:
-            self.record_state = mp.Value('i', 1)
-            self.record_terminal = GuiTerminal(self.recordLogger, 'INFO', self.width())
-            self.hide_recordTerminal[bool].connect(self.record_terminal.setHidden)
-        
-        elif self.ui.checkBox_Record.isChecked() and self.record_terminal:
-            self.record_state = mp.Value('i', 1)
-            self.record_terminal.textEdit.clear()
-            self.record_terminal.textEdit.insertPlainText('Waiting for the recording to start...\n')
-            self.hide_recordTerminal[bool].emit(False)            
-        
-        else:
-            self.record_state = mp.Value('i', 0)
+        if self.ui.checkBox_Record.isChecked():
+            if not self.record_terminal:                
+                with self.record_state.get_lock():
+                    self.record_state.value = 1
+                self.record_terminal = GuiTerminal(self.recordLogger, 'INFO', self.width())
+                self.hide_recordTerminal[bool].connect(self.record_terminal.setHidden)
+            else:
+                self.record_terminal.textEdit.clear()
+                self.record_terminal.textEdit.insertPlainText('Waiting for the recording to start...\n')
+                self.hide_recordTerminal[bool].emit(False)
             
-        # Protocol shared variable
-        self.protocol_state = mp.Value('i', 2)  #  0=stop, 1=start, 2=wait
-        
-        processesToLaunch = [('recording', recorder.run_gui, [self.record_state, self.protocol_state, self.record_dir, self.recordLogger, None, None, False, self.record_terminal.my_receiver.queue]), \
-                             ('protocol', self.m.run, [ccfg, self.protocol_state, self.my_receiver.queue])]
-        
+            amp = self.ui.comboBox_LSL.currentData()
+            
+            # Protocol shared variable
+            with self.protocol_state.get_lock():
+                self.protocol_state.value = 2  #  0=stop, 1=start, 2=wait            
+            
+            processesToLaunch = [('recording', recorder.run_gui, [self.record_state, self.protocol_state, self.record_dir, self.recordLogger, amp['name'], amp['serial'], False, self.record_terminal.my_receiver.queue]), \
+                                 ('protocol', self.m.run, [ccfg, self.protocol_state, self.my_receiver.queue])]        
+                
+        else:
+            with self.record_state.get_lock():
+                self.record_state.value = 0
+                
+            # Protocol shared variable
+            with self.protocol_state.get_lock():
+                self.protocol_state.value = 1  #  0=stop, 1=start, 2=wait
+            
+            processesToLaunch = [('protocol', self.m.run, [ccfg, self.protocol_state, self.my_receiver.queue])]
+                  
         launchedProcess = mp.Process(target=launching_subprocesses, args=processesToLaunch)
         launchedProcess.start()
         logger.info(self.modality + ' protocol starting...')
@@ -601,7 +616,6 @@ class MainWindow(QMainWindow):
         """
         qdialog = Connect_NewSubject(self, self.ui.lineEdit_pathSearch)
         qdialog.signal_error[str].connect(self.on_error)
-        
     
     #----------------------------------------------------------------------
     def on_error(self, errorMsg):
@@ -627,17 +641,32 @@ class MainWindow(QMainWindow):
         else:
             self.signal_error[str].emit('Provide a correct path and file name to save the config parameters')
     
+    @pyqtSlot(list)
+    #----------------------------------------------------------------------
+    def fill_comboBox_lsl(self, amp_list):
+        """
+        Fill the comboBox with the available lsl streams
+        """
+        for amp in amp_list:
+            amp_formated = '{} ({})'.format(amp[1], amp[2])
+            self.ui.comboBox_LSL.addItem(amp_formated, {'name':amp[1], 'serial':amp[2]})
+        self.ui.pushButton_LSL.setText('Start')
+    
     #----------------------------------------------------------------------
     def on_click_lsl_button(self):
         """
         Find the available lsl streams and display them in the comboBox_LSL
         """
-        self.lsl_state = mp.Value('i', 1)
-        amp_list, streamInfos = pu.list_lsl_streams(state=self.lsl_state, logger=logger, ignore_markers=False)
-        
-        for amp in amp_list:
-            amp_formated = '{} ({})'.format(amp[1], amp[2])
-            self.ui.comboBox_LSL.addItem(amp_formated, {'name':amp[1], 'serial':amp[2]})
+        if self.lsl_state.value == 1:
+            self.lsl_state.value = 0
+            self.ui.pushButton_LSL.setText('Start')
+        else:
+            self.lsl_state.value = 1
+            self.ui.pushButton_LSL.setText('Stop')
+
+            self.lsl_thread = search_lsl_streams_thread(self.lsl_state, logger)
+            self.lsl_thread.signal_lsl_found[list].connect(self.fill_comboBox_lsl)
+            self.lsl_thread.start()
     
     #----------------------------------------------------------------------
     def on_click_start_viewer(self):
@@ -646,7 +675,7 @@ class MainWindow(QMainWindow):
         """
         amp = self.ui.comboBox_LSL.currentData()
         self.viewer_state = mp.Value('i', 1)
-        viewerprocess = mp.Process(target=instantiate_scope, args=[amp, self.viewer_state])
+        viewerprocess = mp.Process(target=instantiate_scope, args=[amp, self.viewer_state, logger, self.my_receiver.queue])
         viewerprocess.start()
     
     #----------------------------------------------------------------------
@@ -687,10 +716,10 @@ class MainWindow(QMainWindow):
         self.ui.pushButton_LSL.clicked.connect(self.on_click_lsl_button)
 
 #----------------------------------------------------------------------
-def instantiate_scope(amp, state, logger=logger):
+def instantiate_scope(amp, state, logger=logger, queue=None):
     logger.info('Connecting to a %s (Serial %s).' % (amp['name'], amp['serial']))
     app = QApplication(sys.argv)
-    ex = viewer.Scope(amp['name'], amp['serial'], state)
+    ex = viewer.Scope(amp['name'], amp['serial'], state, queue)
     sys.exit(app.exec_())
 
 #----------------------------------------------------------------------
@@ -708,11 +737,14 @@ def launching_subprocesses(*args):
         launchedProcesses[p[0]].start()
     
     # Wait that the protocol is finished to stop recording
-    recordState = args[0][2][0]     #  Sharing variable
     launchedProcesses['protocol'].join()
     
-    with recordState.get_lock():
-        recordState.value = 0
+    recordState = args[0][2][0]     #  Sharing variable
+    try:        
+        with recordState.get_lock():
+            recordState.value = 0
+    except:
+        pass
         
     
 #----------------------------------------------------------------------    

@@ -537,10 +537,11 @@ def list_lsl_streams(state=None, logger=logger, ignore_markers=False):
     # look for LSL servers
     amp_list = []
     amp_list_backup = []
+        
     while True:
         #  Stop if recording state (mp shared variable) is set to 0 from GUI
         if not state.value:
-            sys.exit(-1)
+            sys.exit()
         streamInfos = pylsl.resolve_streams()
         if len(streamInfos) > 0:
             for index, si in enumerate(streamInfos):

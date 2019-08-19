@@ -5,6 +5,7 @@ from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot, QThread
 from PyQt5.QtWidgets import QDialog, QVBoxLayout, QTextEdit
 
 from pycnbi import add_logger_handler
+from pycnbi.utils import pycnbi_utils as pu
 
 ########################################################################
 class WriteStream():
@@ -107,7 +108,29 @@ class GuiTerminal(QDialog):
         """
         self.textEdit.moveCursor(QTextCursor.End)
         self.textEdit.insertPlainText(text)
-        
+
+########################################################################
+class search_lsl_streams_thread(QThread):
+    """
+    Look for available lsl streams and emit the signal to share the list
+    """
+    
+    signal_lsl_found = pyqtSignal(list)
+    
+    #----------------------------------------------------------------------
+    def __init__(self, state, logger):
+        """
+        Constructor
+        """
+        super().__init__()
+        self.state = state
+        self.logger = logger
+    
+    #----------------------------------------------------------------------
+    def run(self):
+        amp_list, streamInfos = pu.list_lsl_streams(state=self.state, logger=self.logger, ignore_markers=False)
+        if amp_list:
+            self.signal_lsl_found[list].emit(amp_list)
 
 #----------------------------------------------------------------------
 def redirect_stdout_to_queue(logger, queue, verbosity):
