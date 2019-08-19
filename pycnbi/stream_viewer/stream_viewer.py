@@ -36,6 +36,7 @@ import multiprocessing as mp
 from pathlib import Path
 from scipy.signal import butter, lfilter, lfiltic, buttord
 from pycnbi.stream_receiver.stream_receiver import StreamReceiver
+from pycnbi.gui.streams import redirect_stdout_to_queue
 from pycnbi import logger
 from pyqtgraph.Qt import QtCore, QtGui, uic
 from configparser import RawConfigParser
@@ -47,11 +48,15 @@ form_class = uic.loadUiType(str(path2_viewerFolder / 'mainwindow.ui'))[0]
 
 
 class Scope(QtGui.QMainWindow, form_class):
-    def __init__(self, amp_name, amp_serial, state=mp.Value('i', 1)):
+    def __init__(self, amp_name, amp_serial, state=mp.Value('i', 1), queue=None):
         super(Scope, self).__init__()
+        
+        redirect_stdout_to_queue(logger, queue, 'INFO')
+        
         self.amp_name = amp_name
         self.amp_serial = amp_serial
         self.state = state
+        
         self.init_scope()
 
     #

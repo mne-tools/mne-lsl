@@ -125,7 +125,7 @@ def check_config(cfg):
 # for batch script
 def run(cfg, state=mp.Value('i', 1), queue=None):
 
-    redirect_stdout_to_queue(queue)
+    redirect_stdout_to_queue(logger, queue, 'INFO')
     
     # Wait the recording to start (GUI)
     while state.value == 2: # 0: stop, 1:start, 2:wait
@@ -151,7 +151,7 @@ def run(cfg, state=mp.Value('i', 1), queue=None):
     tdef = trigger_def(cfg.TRIGGER_FILE)
     #if cfg.TRIGGER_DEVICE is None:
     #    input('\n** Warning: No trigger device set. Press Ctrl+C to stop or Enter to continue.')
-    trigger = pyLptControl.Trigger(cfg.TRIGGER_DEVICE)
+    trigger = pyLptControl.Trigger(state, cfg.TRIGGER_DEVICE)
     if trigger.init(50) == False:
         logger.error('Cannot connect to USB2LPT device. Use a mock trigger instead?')
         input('Press Ctrl+C to stop or Enter to continue.')
