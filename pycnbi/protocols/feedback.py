@@ -56,7 +56,7 @@ class Feedback:
         self.bar_step_up = self.cfg.BAR_STEP['up']
         self.bar_step_down = self.cfg.BAR_STEP['down']
         self.bar_step_both = self.cfg.BAR_STEP['both']
-        self.state = state      # Shared variable to stop the protocol from the GUI
+        self.protocol_state = state      # Shared variable to stop the protocol from the GUI
         
         if type(self.cfg.BAR_BIAS) is tuple:
             self.bar_bias = list(self.cfg.BAR_BIAS)
@@ -124,7 +124,7 @@ class Feedback:
                     self.viz.put_text('Press any key')
                     self.viz.update()
                     key = cv2.waitKeyEx()
-                    if key == KEYS['esc'] or not self.state.value:
+                    if key == KEYS['esc'] or not self.protocol_state.value:
                         return
                 self.viz.fill()
                 self.tm_trigger.reset()
@@ -416,7 +416,7 @@ class Feedback:
 
             self.viz.update()
             key = cv2.waitKeyEx(1)
-            if key == KEYS['esc'] or not self.state.value:
+            if key == KEYS['esc'] or not self.protocol_state.value:
                 return
             elif key == KEYS['space']:
                 dx = 0

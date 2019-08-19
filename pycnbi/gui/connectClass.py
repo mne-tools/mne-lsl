@@ -807,7 +807,7 @@ class PathFileFinder(QObject):
         super().__init__()
 
         self.name = paramName
-        self.defaultPath = os.environ['PYCNBI_ROOT'] + '\pycnbi\\triggers'
+        self.defaultPath = os.environ['PYCNBI_ROOT']
         self.layout = QHBoxLayout()
 
         self.button = QPushButton('Search')

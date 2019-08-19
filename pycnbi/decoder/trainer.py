@@ -753,9 +753,9 @@ def batch_run(cfg_file):
     cfg = check_config(cfg)
     run(cfg, interactive=True)
 
-def run(cfg, state=mp.Value('i', 1), queue=None, interactive=False, cv_file=None, feat_file=None):
+def run(cfg, state=mp.Value('i', 1), queue=None, interactive=False, cv_file=None, feat_file=None, logger=logger):
 
-    redirect_stdout_to_queue(queue)
+    redirect_stdout_to_queue(logger, queue, 'INFO')
 
     cfg.tdef = trigger_def(cfg.TRIGGER_FILE)
 
