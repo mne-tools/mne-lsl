@@ -131,6 +131,7 @@ def check_config(cfg):
 
 # for batch script
 def run(cfg, queue=None):
+    qc.print_c('WITH_STIMO = %s' % cfg.WITH_STIMO, 'G')
 
     redirect_stdout_to_queue(queue)
 
