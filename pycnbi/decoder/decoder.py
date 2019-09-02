@@ -418,7 +418,14 @@ class BCIDecoderDaemon(object):
 
         pid = os.getpid()
         ps = psutil.Process(pid)
-        ps.nice(psutil.HIGH_PRIORITY_CLASS)
+        
+        if os.name == 'posix':
+            # Unix
+            ps.nice(0)      # A negative value increases priority but requires root privilages
+        else:
+            # Windows
+            ps.nice(psutil.HIGH_PRIORITY_CLASS)
+        
         logger.debug('[DecodeWorker-%-6d] Decoder worker process started' % (pid))
         decoder = BCIDecoder(classifier, buffer_size=self.buffer_sec, fake=self.fake,\
                              amp_serial=self.amp_serial, amp_name=self.amp_name)
