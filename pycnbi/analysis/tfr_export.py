@@ -211,7 +211,7 @@ def get_tfr(cfg, recursive=False, n_jobs=1):
                 # export all channels to MATLAB
                 mout = '%s/%s-%s-%s.mat' % (export_dir, file_prefix, cfg.SP_FILTER, evname)
                 scipy.io.savemat(mout, {'tfr':tfr_data, 'chs':epochs.ch_names,
-                    'events':events, 'sfreq':sfreq, 'epochs':cfg.EPOCH, 'freqs':cfg.FREQ_RANGE})
+                    'events':events, 'sfreq':sfreq, 'tmin':tmin, 'tmax':tmax, 'epochs':cfg.EPOCH, 'freqs':cfg.FREQ_RANGE})
                 logger.info('Exported %s' % mout)
             if cfg.EXPORT_PNG is True:
                 # Inspect power for each channel
@@ -240,7 +240,7 @@ def get_tfr(cfg, recursive=False, n_jobs=1):
                     # export all channels to MATLAB
                     mout = '%s/%s-%s-%s-ep%02d.mat' % (export_dir, file_prefix, cfg.SP_FILTER, evname, ep + 1)
                     scipy.io.savemat(mout, {'tfr':power[evname].data, 'chs':power[evname].ch_names,
-                        'events':events, 'sfreq':sfreq, 'tmin':tmin, 'tmax':tmax, 'freqs':cfg.FREQ_RANGE})
+                        'events':events, 'sfreq':sfreq, 'tmin':tmin, 'tmax':tmax, 'epochs':cfg.EPOCH, 'freqs':cfg.FREQ_RANGE})
                     logger.info('Exported %s' % mout)
                 if cfg.EXPORT_PNG is True:
                     # Inspect power for each channel
