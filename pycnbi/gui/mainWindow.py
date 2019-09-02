@@ -71,7 +71,6 @@ class MainWindow(QMainWindow):
 
         self.connect_signals_to_slots()
 
-
         # Define in which modality we are
         self.modality = None
         
@@ -659,14 +658,14 @@ class MainWindow(QMainWindow):
         """
         if self.lsl_state.value == 1:
             self.lsl_state.value = 0
-            self.ui.pushButton_LSL.setText('Start')
+            self.lsl_thread.terminate()
+            self.ui.pushButton_LSL.setText('Search')
         else:
             self.lsl_state.value = 1
-            self.ui.pushButton_LSL.setText('Stop')
-
             self.lsl_thread = search_lsl_streams_thread(self.lsl_state, logger)
             self.lsl_thread.signal_lsl_found[list].connect(self.fill_comboBox_lsl)
             self.lsl_thread.start()
+            self.ui.pushButton_LSL.setText('Stop')
     
     #----------------------------------------------------------------------
     def on_click_start_viewer(self):
