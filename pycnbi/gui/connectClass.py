@@ -35,7 +35,14 @@ class QComboBox_Directions(QComboBox):
         super().__init__()
         self.pos = pos
         self.currentIndexChanged[int].connect(self.on_modify)
-
+        self.setFocusPolicy(Qt.StrongFocus)
+    
+    # ----------------------------------------------------------------------
+    def wheelEvent(self, *args, **kwargs):
+        if self.hasFocus():
+            return QComboBox.wheelEvent(self, *args, **kwargs)
+        else:    
+            pass
 
     # ----------------------------------------------------------------------
     @pyqtSlot(int)
@@ -131,7 +138,7 @@ class Connect_Directions(QObject):
         except:
             pass
         
-        self.signal_paramChanged[int, object].emit(self.paramName, self.chosen_value)
+        self.signal_paramChanged[str, list].emit(self.paramName, self.chosen_value)
 
 ########################################################################
 class Connect_Directions_Online(QObject):
@@ -183,7 +190,25 @@ class Connect_Directions_Online(QObject):
                 updatedList.append((self.directions.chosen_value[i], new_Values[i]))
                 
         self.signal_paramChanged[str, list].emit(self.directions.paramName, updatedList)
+        
+########################################################################
+class ComboBox(QComboBox):
+    """
+    Overload of QCombobox to overwrite wheelEvent()
+    """
+
+    #----------------------------------------------------------------------
+    def __init__(self):
+        """Constructor"""
+        super().__init__()
+        self.setFocusPolicy(Qt.StrongFocus)
     
+    # ----------------------------------------------------------------------
+    def wheelEvent(self, *args, **kwargs):
+        if self.hasFocus():
+            return QComboBox.wheelEvent(self, *args, **kwargs)
+        else:    
+            pass 
 
 ########################################################################
 class Connect_ComboBox(QObject):
@@ -209,7 +234,7 @@ class Connect_ComboBox(QObject):
         self.paramName = paramName
         # self.frame = QFrame()
         self.chosen_value = chosenValue
-        
+       
         self.add_To_ComboBox(all_values, chosenValue)
         
     # ----------------------------------------------------------------------
@@ -221,7 +246,7 @@ class Connect_ComboBox(QObject):
         values = list of values.
         chosenValue = subject's specific value.
         """
-        self.templateChoices = QComboBox()
+        self.templateChoices = ComboBox()
         self.additionalParams = list()
         self.layout = QHBoxLayout()
         self.layout.setContentsMargins(0, 0, 0, 0)
@@ -272,7 +297,7 @@ class Connect_ComboBox(QObject):
         
         self.layout.addWidget(self.templateChoices)      
         for p in self.additionalParams:
-            self.layout.addWidget(p.frame)
+            self.layout.addWidget(p)
         
         index = self.templateChoices.findText(str(chosenValue))        
         if index != -1:
@@ -299,10 +324,10 @@ class Connect_ComboBox(QObject):
             for p in self.additionalParams:
                 if p.paramName == val:
                     i = 1
-                    p.frame.show()
+                    p.show()
                     self.signal_additionalParamChanged[str, dict].emit(self.paramName, {'selected': p.paramName, p.paramName: p.chosen_value})
                 else:
-                    p.frame.hide()
+                    p.hide()
                     pass
             
             #  In case of additional params but not for the selected one (e.g in case of None)
@@ -351,10 +376,10 @@ class Connect_Bias(QObject):
         else:
             self.directions = Connect_ComboBox('direction', chosen_value, directions)
             self.spinBox = Connect_DoubleSpinBox('value', 0.0)
-            self.spinBox.w.setDisabled(True)
+            self.spinBox.setDisabled(True)
     
         self.l.addWidget(self.directions.templateChoices)
-        self.l.addWidget(self.spinBox.w)
+        self.l.addWidget(self.spinBox)
         
         self.directions.signal_paramChanged[str, object].connect(self.on_modify)        
         self.spinBox.signal_paramChanged[str, float].connect(self.on_modify)
@@ -371,18 +396,18 @@ class Connect_Bias(QObject):
         if 'direction' in paramName:
             self.selected_direction = new_Value
             if new_Value is None:
-                self.spinBox.w.setValue(0.0)
-                self.spinBox.w.setDisabled(True)
+                self.setValue(0.0)
+                self.spinBox.setDisabled(True)
                 self.signal_paramChanged[str, type(None)].emit(self.paramName, new_Value)
             else:
-                self.spinBox.w.setDisabled(False)
+                self.spinBox.setDisabled(False)
         
         elif 'value' in paramName:
             self.signal_paramChanged[str, tuple].emit(self.paramName, (self.selected_direction, new_Value))
     
 
 ########################################################################
-class Connect_SpinBox(QObject):
+class Connect_SpinBox(QSpinBox):
     """
     This class is used to connect the SpinBox modifications at the
     GUI level. It modifies the module according to the newly 
@@ -401,24 +426,30 @@ class Connect_SpinBox(QObject):
         super().__init__()
 
         self.paramName = paramName
-        self.w = QSpinBox()
-        self.w.setMinimum(-1)
-        self.w.setMaximum(10000)
+        self.setMinimum(-1)
+        self.setMaximum(10000)
         
-        self.w.setValue(chosen_value)
-        self.w.editingFinished.connect(self.on_modify)
-
+        self.setValue(chosen_value)
+        self.editingFinished.connect(self.on_modify)
+        self.setFocusPolicy(Qt.StrongFocus)
+    
+    # ----------------------------------------------------------------------
+    def wheelEvent(self, *args, **kwargs):
+        if self.hasFocus():
+            return QComboBox.wheelEvent(self, *args, **kwargs)
+        else:    
+            pass
 
     # ----------------------------------------------------------------------
     def on_modify(self):
         """
         Changes the module according to the new value written in the SpinBox
         """
-        self.signal_paramChanged[str, int].emit(self.paramName, self.w.value())
+        self.signal_paramChanged[str, int].emit(self.paramName, self.value())
 
 
 ########################################################################
-class Connect_DoubleSpinBox(QObject):
+class Connect_DoubleSpinBox(QDoubleSpinBox):
     """
     This class is used to connect the doubleSpinBox modifications at the
     GUI level. It modifies the module according to the newly 
@@ -437,22 +468,28 @@ class Connect_DoubleSpinBox(QObject):
         super().__init__()
 
         self.paramName = paramName
-        self.w = QDoubleSpinBox()
-        self.w.setSingleStep(0.05)
-        self.w.setValue(chosen_value)
-        self.w.editingFinished.connect(self.on_modify)
-
-
+        self.setSingleStep(0.05)
+        self.setValue(chosen_value)
+        self.editingFinished.connect(self.on_modify)
+        self.setFocusPolicy(Qt.StrongFocus)
+    
+    # ----------------------------------------------------------------------
+    def wheelEvent(self, *args, **kwargs):
+        if self.hasFocus():
+            return QDoubleSpinBox.wheelEvent(self, *args, **kwargs)
+        else:    
+            pass
+        
     # ----------------------------------------------------------------------
     def on_modify(self):
         """
         Changes the module according to the new value written in the DoubleSpinBox
         """
-        self.signal_paramChanged[str, float].emit(self.paramName, self.w.value())
+        self.signal_paramChanged[str, float].emit(self.paramName, self.value())
 
 
 ########################################################################
-class Connect_LineEdit(QObject):
+class Connect_LineEdit(QLineEdit):
     """
     This class is used to connect the lineEdit modifications at the
     GUI level. It modifies the module according to the newly 
@@ -468,15 +505,13 @@ class Connect_LineEdit(QObject):
         paramName = Name of the parameter corresponding to the widget to create 
         chosen_value = the subject's specific parameter value.
         """
-        super().__init__()
+        super().__init__(str(chosen_value))
         
         self.paramName = paramName
-        self.w = QLineEdit(str(chosen_value))
-        self.w.editingFinished.connect(self.on_modify)
+
+        self.editingFinished.connect(self.on_modify)
         self.chosen_value = chosen_value
         
-        #  To fit the disp_params function of mainWindow. 
-        self.frame = self.w
 
     @pyqtSlot()
     # ----------------------------------------------------------------------
@@ -484,14 +519,14 @@ class Connect_LineEdit(QObject):
         """
         Changes the module according to the new value written in the lineEdit
         """
-        text = self.w.text()
+        text = self.text()
         if text == 'None' or text == '':
             text = None
         self.signal_paramChanged[str, type(text)].emit(self.paramName, text)
 
     
 ########################################################################
-class Connect_Modifiable_List(QObject):
+class Connect_Modifiable_List(QFrame):
     """
     This class is used in case of lists containing modifiable contents.
     It modifies the module according to the newly parameter value.
@@ -513,8 +548,7 @@ class Connect_Modifiable_List(QObject):
         self.chosen_value = chosen_value
         layout = QHBoxLayout()
         self.tempWidgets = []
-        self.frame = QFrame()
-        self.frame.setContentsMargins(0, 0, 0, 0)
+        self.setContentsMargins(0, 0, 0, 0)
         layout.setContentsMargins(0, 0, 0, 0)
         
         # first list
@@ -531,7 +565,7 @@ class Connect_Modifiable_List(QObject):
                     tempWidget.signal_paramChanged[list, float].connect(self.on_modify)
                     tempWidget.signal_paramChanged[list, str].connect(self.on_modify)
                     self.tempWidgets.append(tempWidget)
-                    vLayout.addWidget(tempWidget.w.w)
+                    vLayout.addWidget(tempWidget.w)
                 
                 vLayout.setContentsMargins(0, 0, 0, 0)
                 layout.addLayout(vLayout)
@@ -549,9 +583,9 @@ class Connect_Modifiable_List(QObject):
                 tempWidget.signal_paramChanged[list, float].connect(self.on_modify)
                 tempWidget.signal_paramChanged[list, str].connect(self.on_modify)
                 self.tempWidgets.append(tempWidget)
-                layout.addWidget(tempWidget.w.w)
+                layout.addWidget(tempWidget.w)
         
-        self.frame.setLayout(layout)
+        self.setLayout(layout)
 
     @pyqtSlot(list, int)
     @pyqtSlot(list, float)
@@ -633,7 +667,7 @@ class tempWidget_for_Modifiable_List(QObject):
 
 
 ########################################################################
-class Connect_Modifiable_Dict(QObject):
+class Connect_Modifiable_Dict(QFrame):
     """
     This class is used in case of dicts containing modifiable contents.
     It modifies the module according to the newly parameter value.
@@ -655,9 +689,8 @@ class Connect_Modifiable_Dict(QObject):
         self.paramName = paramName
         self.chosen_value = chosen_value
         layout = QHBoxLayout()
-        self.frame = QFrame()
         layout.setContentsMargins(0, 0, 0, 0)
-        self.frame.setContentsMargins(0, 0, 0, 0);
+        self.setContentsMargins(0, 0, 0, 0);
                 
         for key, value in content_dict.items():
 
@@ -673,7 +706,7 @@ class Connect_Modifiable_Dict(QObject):
                 label.setAlignment(Qt.AlignCenter)
                 # spinBox.w.setFixedWidth(50)
                 layout.addWidget(label)
-                layout.addWidget(spinBox.w)
+                layout.addWidget(spinBox)
 
             elif value is float:
                 doublespinBox = Connect_DoubleSpinBox(key, chosen_value[key])
@@ -684,7 +717,7 @@ class Connect_Modifiable_Dict(QObject):
                 label.setAlignment(Qt.AlignCenter)
                 # doublespinBox.w.setFixedWidth(50)
                 layout.addWidget(label)
-                layout.addWidget(doublespinBox.w)
+                layout.addWidget(doublespinBox)
 
             elif value is str:
                 lineEdit = Connect_LineEdit(key, chosen_value[key])
@@ -696,7 +729,7 @@ class Connect_Modifiable_Dict(QObject):
                 label.setAlignment(Qt.AlignCenter)
                 # lineEdit.w.setFixedWidth(50)
                 layout.addWidget(label)
-                layout.addWidget(lineEdit.w)
+                layout.addWidget(lineEdit)
 
             elif value is list:
                 p = Connect_Modifiable_List(key, chosen_value[key])
@@ -705,7 +738,7 @@ class Connect_Modifiable_Dict(QObject):
                 label = QLabel(key)
                 label.setAlignment(Qt.AlignCenter)
                 layout.addWidget(label)
-                layout.addWidget(p.frame)                
+                layout.addWidget(p)                
 
             elif type(value) is tuple:
                 comboBox = Connect_ComboBox(key, chosen_value[key], value)
@@ -722,7 +755,7 @@ class Connect_Modifiable_Dict(QObject):
         layout.addStretch(1)
         # self.setLayout(layout)
         # self.layout = layout
-        self.frame.setLayout(layout)
+        self.setLayout(layout)
 
 
     @pyqtSlot(str, int)
@@ -882,7 +915,7 @@ class Connect_NewSubject(QDialog):
     #----------------------------------------------------------------------
     def create_widgets(self, protocols):
         """
-        Create an horizontal layout containing a QCheckBox per protocol
+        Create an QComboBox containing the protocols
         """
         comboBox = QComboBox()
         comboBox.addItems(protocols)
