@@ -197,6 +197,7 @@ class MainWindow(QMainWindow):
                 for key, values in p[1].items():
                     chosen_value = self.extract_value_from_module(key, all_chosen_values)
                     
+            
                     # For the feedback directions [offline and online].
                     if 'DIRECTIONS' in key:
                         self.directions = values
@@ -280,7 +281,7 @@ class MainWindow(QMainWindow):
                         spinBox = Connect_SpinBox(key, chosen_value)
                         spinBox.signal_paramChanged[str, int].connect(self.on_guichanges)
                         self.paramsWidgets.update({key: spinBox})
-                        layout.addRow(key, spinBox.w)
+                        layout.addRow(key, spinBox)
                         continue
 
                     # For all the float values.
@@ -288,7 +289,7 @@ class MainWindow(QMainWindow):
                         doublespinBox = Connect_DoubleSpinBox(key, chosen_value)
                         doublespinBox.signal_paramChanged[str, float].connect(self.on_guichanges)
                         self.paramsWidgets.update({key: doublespinBox})
-                        layout.addRow(key, doublespinBox.w)
+                        layout.addRow(key, doublespinBox)
                         continue
 
                     # For parameters with multiple non-fixed values in a list (user can modify them)
@@ -296,7 +297,7 @@ class MainWindow(QMainWindow):
                         modifiable_list = Connect_Modifiable_List(key, chosen_value)
                         modifiable_list.signal_paramChanged[str, list].connect(self.on_guichanges)
                         self.paramsWidgets.update({key: modifiable_list})
-                        layout.addRow(key, modifiable_list.frame)
+                        layout.addRow(key, modifiable_list)
                         continue
 
                     #  For parameters containing a string to modify
@@ -305,7 +306,7 @@ class MainWindow(QMainWindow):
                         lineEdit.signal_paramChanged[str, str].connect(self.on_guichanges)
                         lineEdit.signal_paramChanged[str, type(None)].connect(self.on_guichanges)
                         self.paramsWidgets.update({key: lineEdit})
-                        layout.addRow(key, lineEdit.w)
+                        layout.addRow(key, lineEdit)
                         continue
 
                     # For parameters with multiple fixed values.
@@ -331,7 +332,7 @@ class MainWindow(QMainWindow):
                             modifiable_dict = Connect_Modifiable_Dict(key, chosen_value, values)
                             modifiable_dict.signal_paramChanged[str, dict].connect(self.on_guichanges)
                             self.paramsWidgets.update({key: modifiable_dict})
-                            layout.addRow(key, modifiable_dict.frame)
+                            layout.addRow(key, modifiable_dict)
                         continue
 
                 # Add a horizontal line to separate parameters' type.
