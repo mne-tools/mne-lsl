@@ -129,6 +129,10 @@ class search_lsl_streams_thread(QThread):
     #----------------------------------------------------------------------
     def run(self):
         amp_list, streamInfos = pu.list_lsl_streams(state=self.state, logger=self.logger, ignore_markers=False)
+        
+        with self.state.get_lock():
+            self.state.value = 0
+            
         if amp_list:
             self.signal_lsl_found[list].emit(amp_list)
 
