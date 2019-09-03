@@ -130,7 +130,8 @@ def run(cfg, state=mp.Value('i', 1), queue=None):
     # Wait the recording to start (GUI)
     while state.value == 2: # 0: stop, 1:start, 2:wait
         pass
-    #  Protocol start if equals to 1 
+    
+    #  Protocol runs if state equals to 1 
     if not state.value:
         sys.exit(-1)
 
@@ -277,6 +278,10 @@ def run(cfg, state=mp.Value('i', 1), queue=None):
         print(cfmat)
 
     visual.finish()
+    
+    with state.get_lock():
+        state.value = 0
+        
     if decoder:
         decoder.stop()
 

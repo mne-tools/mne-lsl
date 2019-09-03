@@ -97,7 +97,7 @@ def run(cfg, state=mp.Value('i', 1), queue=None):
         pass
     #  Protocol start if equals to 1 
     if not state.value:
-        sys.exit(-1)
+        sys.exit()
     
     refresh_delay = 1.0 / cfg.REFRESH_RATE
     
@@ -244,6 +244,9 @@ def run(cfg, state=mp.Value('i', 1), queue=None):
             break
 
     bar.finish()
+    
+    with state.get_lock():
+        state.value = 0
    
 
 if __name__ == '__main__':
