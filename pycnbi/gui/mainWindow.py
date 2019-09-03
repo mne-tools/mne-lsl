@@ -89,6 +89,10 @@ class MainWindow(QMainWindow):
         self.lsl_state = mp.Value('i', 0)
         self.viewer_state = mp.Value('i', 0)
         
+        # Disable widgets
+        self.ui.groupBox_Modality.setEnabled(False)
+        self.ui.groupBox_Launch.setEnabled(False)
+        
 
     # ----------------------------------------------------------------------
     def redirect_stdout(self):
@@ -419,9 +423,17 @@ class MainWindow(QMainWindow):
         """
         Opens the File dialog window when the search button is pressed.
         """
-        path_name = QFileDialog.getExistingDirectory(caption="Choose the subject's directory", directory=os.environ['PYCNBI_SCRIPTS'])
-        self.ui.lineEdit_pathSearch.clear()
-        self.ui.lineEdit_pathSearch.insert(path_name)
+        
+        buttonDisplayName = self.ui.pushButton_Search.text()
+        
+        if buttonDisplayName == 'Search':            
+            path_name = QFileDialog.getExistingDirectory(caption="Choose the subject's directory", directory=os.environ['PYCNBI_SCRIPTS'])
+            self.ui.lineEdit_pathSearch.clear()
+            self.ui.lineEdit_pathSearch.insert(path_name)
+            self.ui.pushButton_Search.setText('Accept')
+        else:
+            self.ui.pushButton_Search.setText('Search')
+            self.on_enable_modality()
 
     # ----------------------------------------------------------------------
     def look_for_subject_file(self, modality):
@@ -496,6 +508,7 @@ class MainWindow(QMainWindow):
         if cfg_file and cfg_template:
             self.load_all_params(cfg_template, cfg_file)            
 
+        self.ui.groupBox_Launch.setEnabled(True)
     # ----------------------------------------------------------------------
     @pyqtSlot()
     def on_click_train(self):
@@ -513,6 +526,8 @@ class MainWindow(QMainWindow):
         
         if cfg_file and cfg_template:
             self.load_all_params(cfg_template, cfg_file)
+            
+        self.ui.groupBox_Launch.setEnabled(True)
 
     #----------------------------------------------------------------------
     @pyqtSlot()
@@ -532,6 +547,7 @@ class MainWindow(QMainWindow):
         if cfg_file and cfg_template:
             self.load_all_params(cfg_template, cfg_file)
 
+        self.ui.groupBox_Launch.setEnabled(True)
 
         
     #----------------------------------------------------------------------v
@@ -545,8 +561,15 @@ class MainWindow(QMainWindow):
         ccfg = cfg_class(self.cfg_subject)  #  because a module is not pickable
         
         if not self.protocol_state.value:            
-            # Recording shared variable + recording terminal
+            self.ui.textEdit_terminal.clear()
+            
+            # Recording shared variable + recording terminal            
             if self.ui.checkBox_Record.isChecked():
+                
+                amp = self.ui.comboBox_LSL.currentData()
+                if not amp:   
+                    self.signal_error[str].emit('No LSL amplifier specified.')
+                    return                
                 
                 if not self.record_terminal:                
                     with self.record_state.get_lock():
@@ -559,15 +582,14 @@ class MainWindow(QMainWindow):
                     self.record_terminal.textEdit.insertPlainText('Waiting for the recording to start...\n')
                     self.hide_recordTerminal[bool].emit(False)
                 
-                amp = self.ui.comboBox_LSL.currentData()
                 
                 # Protocol shared variable
                 with self.protocol_state.get_lock():
-                    self.protocol_state.value = 2  #  0=stop, 1=start, 2=wait            
-                
-                processesToLaunch = [('recording', recorder.run_gui, [self.record_state, self.protocol_state, self.record_dir, self.recordLogger, amp['name'], amp['serial'], False, self.record_terminal.my_receiver.queue]), \
-                                     ('protocol', self.m.run, [ccfg, self.protocol_state, self.my_receiver.queue])]        
+                    self.protocol_state.value = 2  #  0=stop, 1=start, 2=wait
                     
+                processesToLaunch = [('recording', recorder.run_gui, [self.record_state, self.protocol_state, self.record_dir, self.recordLogger, amp['name'], amp['serial'], False, self.record_terminal.my_receiver.queue]), \
+                                 ('protocol', self.m.run, [ccfg, self.protocol_state, self.my_receiver.queue])]
+
             else:
                 with self.record_state.get_lock():
                     self.record_state.value = 0
@@ -581,14 +603,14 @@ class MainWindow(QMainWindow):
             launchedProcess = mp.Process(target=launching_subprocesses, args=processesToLaunch)
             launchedProcess.start()
             logger.info(self.modality + ' protocol starting...')
+            self.ui.pushButton_Start.setText('Stop')
             
         else:    
             with self.protocol_state.get_lock():
                 self.protocol_state.value = 0
             time.sleep(2)
-            
-            self.ui.textEdit_terminal.clear()
-            self.hide_recordTerminal[bool].emit(True)            
+            self.hide_recordTerminal[bool].emit(True)
+            self.ui.pushButton_Start.setText('Start')
 
 
     #----------------------------------------------------------------------
@@ -608,6 +630,7 @@ class MainWindow(QMainWindow):
         """
         qdialog = Connect_NewSubject(self, self.ui.lineEdit_pathSearch)
         qdialog.signal_error[str].connect(self.on_error)
+        self.ui.groupBox_Params.setEnabled(True)
     
     #----------------------------------------------------------------------
     def on_error(self, errorMsg):
@@ -698,6 +721,22 @@ class MainWindow(QMainWindow):
             self.ui.pushButton_Viewer.setEnabled(True)
             self.ui.pushButton_Viewer.setText('Viewer')
             
+    @pyqtSlot()
+    #----------------------------------------------------------------------
+    def on_enable_modality(self):
+        """
+        Enable the modalities groupBox if the provided path exists
+        """
+        subjectFolder = self.ui.lineEdit_pathSearch.text()
+
+        if subjectFolder:
+            exist = os.path.isdir(subjectFolder)
+            
+            if not exist:
+                self.signal_error[str].emit('The provided subject folder does not exists.')
+            else:
+                self.ui.groupBox_Modality.setEnabled(True)
+            
             
     #----------------------------------------------------------------------
     def connect_signals_to_slots(self):
@@ -705,22 +744,34 @@ class MainWindow(QMainWindow):
         
         # New subject button
         self.ui.pushButton_NewSubject.clicked.connect(self.on_click_newSubject)
-        # Search folder button
+        
+        # Search Subject folder Search button
         self.ui.pushButton_Search.clicked.connect(self.on_click_pathSearch)
+        
+        # Enable modality when subject folder path is given
+        self.ui.lineEdit_pathSearch.editingFinished.connect(self.on_enable_modality)
+        
         # Offline button
         self.ui.pushButton_Offline.clicked.connect(self.on_click_offline)
+        
         # Train button
         self.ui.pushButton_Train.clicked.connect(self.on_click_train)
+        
         # Online button
         self.ui.pushButton_Online.clicked.connect(self.on_click_online)
+        
         # Start button
         self.ui.pushButton_Start.clicked.connect(self.on_click_start)
+        
         # Save conf file
         self.ui.actionSave_config_file.triggered.connect(self.on_click_save_params_to_file)
+        
         # Error dialog
         self.signal_error[str].connect(self.on_error)
+        
         # Start viewer button
         self.ui.pushButton_Viewer.clicked.connect(self.on_click_start_viewer)
+        
         # LSL button
         self.ui.pushButton_LSL.clicked.connect(self.on_click_lsl_button)
 
