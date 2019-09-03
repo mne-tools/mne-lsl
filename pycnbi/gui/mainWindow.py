@@ -87,6 +87,7 @@ class MainWindow(QMainWindow):
         self.record_state = mp.Value('i', 0)
         self.protocol_state = mp.Value('i', 0)
         self.lsl_state = mp.Value('i', 0)
+        self.viewer_state = mp.Value('i', 0)
         
 
     # ----------------------------------------------------------------------
@@ -122,6 +123,8 @@ class MainWindow(QMainWindow):
         font = QFont()
         font.setPointSize(10)
         self.ui.textEdit_terminal.setFont(font)
+        
+        self.ui.pushButton_Viewer.setEnabled(False)
 
 
     #----------------------------------------------------------------------
@@ -145,18 +148,7 @@ class MainWindow(QMainWindow):
         for v in values:
             if v[0] == key:
                 return v[1]
-
-    ## ----------------------------------------------------------------------
-    #def read_params_from_file(self, txtFile):
-        #"""
-        #Loads the parameters from a txt file.
-        #"""
-        #folderPath = Path(self.ui.lineEdit_pathSearch.text())
-        #file = open(folderPath / txtFile)
-        #params = file.read().splitlines()
-        #file.close()
-
-        #return params
+            
 
     # ----------------------------------------------------------------------
     def disp_params(self, cfg_template_module, cfg_module):
@@ -551,53 +543,53 @@ class MainWindow(QMainWindow):
         self.record_dir = Path(os.environ['PYCNBI_DATA']) / os.path.split(Path(self.ui.lineEdit_pathSearch.text()))[-1]
         
         ccfg = cfg_class(self.cfg_subject)  #  because a module is not pickable
-
-        # Recording shared variable + recording terminal
-        if self.ui.checkBox_Record.isChecked():
-            if not self.record_terminal:                
-                with self.record_state.get_lock():
-                    self.record_state.value = 1
-                self.record_terminal = GuiTerminal(self.recordLogger, 'INFO', self.width())
-                self.hide_recordTerminal[bool].connect(self.record_terminal.setHidden)
+        
+        if not self.protocol_state.value:            
+            # Recording shared variable + recording terminal
+            if self.ui.checkBox_Record.isChecked():
+                
+                if not self.record_terminal:                
+                    with self.record_state.get_lock():
+                        self.record_state.value = 1
+                    self.record_terminal = GuiTerminal(self.recordLogger, 'INFO', self.width())
+                    self.hide_recordTerminal[bool].connect(self.record_terminal.setHidden)
+                
+                else:
+                    self.record_terminal.textEdit.clear()
+                    self.record_terminal.textEdit.insertPlainText('Waiting for the recording to start...\n')
+                    self.hide_recordTerminal[bool].emit(False)
+                
+                amp = self.ui.comboBox_LSL.currentData()
+                
+                # Protocol shared variable
+                with self.protocol_state.get_lock():
+                    self.protocol_state.value = 2  #  0=stop, 1=start, 2=wait            
+                
+                processesToLaunch = [('recording', recorder.run_gui, [self.record_state, self.protocol_state, self.record_dir, self.recordLogger, amp['name'], amp['serial'], False, self.record_terminal.my_receiver.queue]), \
+                                     ('protocol', self.m.run, [ccfg, self.protocol_state, self.my_receiver.queue])]        
+                    
             else:
-                self.record_terminal.textEdit.clear()
-                self.record_terminal.textEdit.insertPlainText('Waiting for the recording to start...\n')
-                self.hide_recordTerminal[bool].emit(False)
-            
-            amp = self.ui.comboBox_LSL.currentData()
-            
-            # Protocol shared variable
-            with self.protocol_state.get_lock():
-                self.protocol_state.value = 2  #  0=stop, 1=start, 2=wait            
-            
-            processesToLaunch = [('recording', recorder.run_gui, [self.record_state, self.protocol_state, self.record_dir, self.recordLogger, amp['name'], amp['serial'], False, self.record_terminal.my_receiver.queue]), \
-                                 ('protocol', self.m.run, [ccfg, self.protocol_state, self.my_receiver.queue])]        
+                with self.record_state.get_lock():
+                    self.record_state.value = 0
+                    
+                # Protocol shared variable
+                with self.protocol_state.get_lock():
+                    self.protocol_state.value = 1  #  0=stop, 1=start, 2=wait
                 
-        else:
-            with self.record_state.get_lock():
-                self.record_state.value = 0
-                
-            # Protocol shared variable
-            with self.protocol_state.get_lock():
-                self.protocol_state.value = 1  #  0=stop, 1=start, 2=wait
+                processesToLaunch = [('protocol', self.m.run, [ccfg, self.protocol_state, self.my_receiver.queue])]
+                      
+            launchedProcess = mp.Process(target=launching_subprocesses, args=processesToLaunch)
+            launchedProcess.start()
+            logger.info(self.modality + ' protocol starting...')
             
-            processesToLaunch = [('protocol', self.m.run, [ccfg, self.protocol_state, self.my_receiver.queue])]
-                  
-        launchedProcess = mp.Process(target=launching_subprocesses, args=processesToLaunch)
-        launchedProcess.start()
-        logger.info(self.modality + ' protocol starting...')
+        else:    
+            with self.protocol_state.get_lock():
+                self.protocol_state.value = 0
+            time.sleep(2)
+            
+            self.ui.textEdit_terminal.clear()
+            self.hide_recordTerminal[bool].emit(True)            
 
-    #----------------------------------------------------------------------
-    @pyqtSlot()
-    def on_click_stop(self):
-        """
-        Stop the protocol process
-        """
-        with self.protocol_state.get_lock():
-            self.protocol_state.value = 0
-        time.sleep(2)
-        self.ui.textEdit_terminal.clear()
-        self.hide_recordTerminal[bool].emit(True)
 
     #----------------------------------------------------------------------
     @pyqtSlot(str)
@@ -650,7 +642,8 @@ class MainWindow(QMainWindow):
         for amp in amp_list:
             amp_formated = '{} ({})'.format(amp[1], amp[2])
             self.ui.comboBox_LSL.addItem(amp_formated, {'name':amp[1], 'serial':amp[2]})
-        self.ui.pushButton_LSL.setText('Start')
+        self.ui.pushButton_LSL.setText('Search')
+        self.ui.pushButton_Viewer.setEnabled(True)
     
     #----------------------------------------------------------------------
     def on_click_lsl_button(self):
@@ -658,34 +651,54 @@ class MainWindow(QMainWindow):
         Find the available lsl streams and display them in the comboBox_LSL
         """
         if self.lsl_state.value == 1:
-            self.lsl_state.value = 0
+                      
+            with self.lsl_state.get_lock():
+                self.lsl_state.value = 0
+            
             self.lsl_thread.terminate()
+            self.lsl_thread.wait()
             self.ui.pushButton_LSL.setText('Search')
-        else:
-            self.lsl_state.value = 1
+        
+        else:      
+            self.ui.textEdit_terminal.clear()
+            
+            with self.lsl_state.get_lock():
+                self.lsl_state.value = 1
+            
             self.lsl_thread = search_lsl_streams_thread(self.lsl_state, logger)
             self.lsl_thread.signal_lsl_found[list].connect(self.fill_comboBox_lsl)
             self.lsl_thread.start()
+            
             self.ui.pushButton_LSL.setText('Stop')
-    
+        
+        
     #----------------------------------------------------------------------
     def on_click_start_viewer(self):
         """
         Launch the viewer to check the signals in a seperate process 
         """
-        amp = self.ui.comboBox_LSL.currentData()
-        self.viewer_state = mp.Value('i', 1)
-        viewerprocess = mp.Process(target=instantiate_scope, args=[amp, self.viewer_state, logger, self.my_receiver.queue])
-        viewerprocess.start()
-    
-    #----------------------------------------------------------------------
-    def on_click_stopviewer(self):
-        """
-        Stop the viewer process
-        """
-        with self.viewer_state.get_lock():
-            self.viewer_state.value = 0
-        
+        # Start Viewer
+        if not self.viewer_state.value:
+            self.ui.textEdit_terminal.clear()
+            
+            with self.viewer_state.get_lock():
+                self.viewer_state.value = 1
+            
+            amp = self.ui.comboBox_LSL.currentData()
+            viewerprocess = mp.Process(target=instantiate_scope, args=[amp, self.viewer_state, logger, self.my_receiver.queue])
+            viewerprocess.start()
+            
+            self.ui.pushButton_Viewer.setText('Stop')
+            
+        # Stop Viewer
+        else:    
+            with self.viewer_state.get_lock():
+                self.viewer_state.value = 0            
+            
+            self.ui.pushButton_Viewer.setEnabled(True)
+            self.ui.pushButton_Viewer.setText('Viewer')
+            
+            
     #----------------------------------------------------------------------
     def connect_signals_to_slots(self):
         """Connects the signals to the slots"""
@@ -702,16 +715,12 @@ class MainWindow(QMainWindow):
         self.ui.pushButton_Online.clicked.connect(self.on_click_online)
         # Start button
         self.ui.pushButton_Start.clicked.connect(self.on_click_start)
-        # Stop button
-        self.ui.pushButton_Stop.clicked.connect(self.on_click_stop)
         # Save conf file
         self.ui.actionSave_config_file.triggered.connect(self.on_click_save_params_to_file)
         # Error dialog
         self.signal_error[str].connect(self.on_error)
         # Start viewer button
-        self.ui.pushButton_StartViewer.clicked.connect(self.on_click_start_viewer)
-        # Stop viewer button
-        self.ui.pushButton_StopViewer.clicked.connect(self.on_click_stopviewer)
+        self.ui.pushButton_Viewer.clicked.connect(self.on_click_start_viewer)
         # LSL button
         self.ui.pushButton_LSL.clicked.connect(self.on_click_lsl_button)
 

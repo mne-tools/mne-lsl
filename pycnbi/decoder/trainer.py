@@ -780,6 +780,9 @@ def run(cfg, state=mp.Value('i', 1), queue=None, interactive=False, cv_file=None
         
     if cfg.EXPORT_CLS is True:
         train_decoder(cfg, featdata, feat_file=feat_file)
+        
+    with state.get_lock():
+        state.value = 0    
 
 
 

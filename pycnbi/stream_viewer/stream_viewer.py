@@ -43,7 +43,7 @@ from pycnbi.gui.streams import redirect_stdout_to_queue
 from pycnbi import logger
 from configparser import RawConfigParser
 from builtins import input
-from ui_mainwindow import Ui_MainWindow
+from pycnbi.stream_viewer.ui_mainwindow_Viewer import Ui_MainWindow
 
 
 # Load GUI. Designed with QT Creator, feel free to change stuff
@@ -56,8 +56,8 @@ class Scope(QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         
-        logger.info('Viewer launched')
         redirect_stdout_to_queue(logger, queue, 'INFO')
+        logger.info('Viewer launched')
         
         self.amp_name = amp_name
         self.amp_serial = amp_serial
