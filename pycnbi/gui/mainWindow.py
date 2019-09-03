@@ -128,6 +128,7 @@ class MainWindow(QMainWindow):
         font.setPointSize(10)
         self.ui.textEdit_terminal.setFont(font)
         
+        # Viewer button
         self.ui.pushButton_Viewer.setEnabled(False)
 
 

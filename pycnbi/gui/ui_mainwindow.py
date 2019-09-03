@@ -207,7 +207,7 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "PyCNBI"))
         self.groupBox_LSL.setTitle(_translate("MainWindow", "LSL"))
         self.pushButton_LSL.setText(_translate("MainWindow", "Search"))
         self.pushButton_Viewer.setText(_translate("MainWindow", "Viewer"))
