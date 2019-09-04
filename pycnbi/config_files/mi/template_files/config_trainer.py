@@ -1,6 +1,3 @@
-from pycnbi.pycnbi_config import CAP
-from pycnbi.triggers.trigger_def import trigger_def
-
 #-------------------------------------------
 # Data 
 #-------------------------------------------
