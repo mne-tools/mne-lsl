@@ -757,6 +757,7 @@ def run(cfg, state=mp.Value('i', 1), queue=None, interactive=False, cv_file=None
 
     redirect_stdout_to_queue(logger, queue, 'INFO')
 
+    # add tdef object
     cfg.tdef = trigger_def(cfg.TRIGGER_FILE)
 
     # Extract features

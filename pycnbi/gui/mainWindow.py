@@ -218,7 +218,6 @@ class MainWindow(QMainWindow):
                             except:
                                 trigger_file = self.extract_value_from_module('TRIGGER_FILE', all_chosen_values)
                                 tdef = trigger_def(trigger_file)
-                                # self.on_guichanges('tdef', tdef)
                                 events = [tdef.by_value[i] for i in events]
 
                             directions = Connect_Directions_Online(key, chosen_value, values, nb_directions, chosen_events, events)
@@ -248,7 +247,6 @@ class MainWindow(QMainWindow):
                     elif 'TRIGGER_DEF' in key:
                         trigger_file = self.extract_value_from_module('TRIGGER_FILE', all_chosen_values)
                         tdef = trigger_def(trigger_file)
-                        # self.on_guichanges('tdef', tdef)
                         nb_directions = 4
                         #  Convert 'None' to real None (real None is removed when selected in the GUI)
                         tdef_values = [ None if i == 'None' else i for i in list(tdef.by_name) ]
@@ -567,14 +565,15 @@ class MainWindow(QMainWindow):
             # Recording shared variable + recording terminal            
             if self.ui.checkBox_Record.isChecked():
                 
+                with self.record_state.get_lock():
+                    self.record_state.value = 1
+
                 amp = self.ui.comboBox_LSL.currentData()
                 if not amp:   
                     self.signal_error[str].emit('No LSL amplifier specified.')
                     return                
                 
                 if not self.record_terminal:                
-                    with self.record_state.get_lock():
-                        self.record_state.value = 1
                     self.record_terminal = GuiTerminal(self.recordLogger, 'INFO', self.width())
                     self.hide_recordTerminal[bool].connect(self.record_terminal.setHidden)
                 
