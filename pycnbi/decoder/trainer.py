@@ -165,9 +165,6 @@ def check_config(cfg):
     if cfg.N_JOBS is None:
         cfg.N_JOBS = mp.cpu_count()
 
-    # add tdef object
-    cfg.tdef = trigger_def(cfg.TRIGGER_FILE)
-
     return cfg
 
 
