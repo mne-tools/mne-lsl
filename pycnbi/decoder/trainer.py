@@ -165,6 +165,9 @@ def check_config(cfg):
     if cfg.N_JOBS is None:
         cfg.N_JOBS = mp.cpu_count()
 
+    # add tdef object
+    cfg.tdef = trigger_def(cfg.TRIGGER_FILE)
+
     return cfg
 
 
@@ -757,6 +760,7 @@ def run(cfg, state=mp.Value('i', 1), queue=None, interactive=False, cv_file=None
 
     redirect_stdout_to_queue(logger, queue, 'INFO')
 
+    # add tdef object
     cfg.tdef = trigger_def(cfg.TRIGGER_FILE)
 
     # Extract features
