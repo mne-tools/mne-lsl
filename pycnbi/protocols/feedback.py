@@ -44,7 +44,7 @@ class Feedback:
     Perform a classification with visual feedback
     """
 
-    def __init__(self, cfg, viz, tdef, trigger, logfile=None):
+    def __init__(self, cfg, state, viz, tdef, trigger, logfile=None):
         self.cfg = cfg
         self.tdef = tdef
         self.trigger = trigger
@@ -56,6 +56,7 @@ class Feedback:
         self.bar_step_up = self.cfg.BAR_STEP['up']
         self.bar_step_down = self.cfg.BAR_STEP['down']
         self.bar_step_both = self.cfg.BAR_STEP['both']
+        self.protocol_state = state      # Shared variable to stop the protocol from the GUI
         
         if type(self.cfg.BAR_BIAS) is tuple:
             self.bar_bias = list(self.cfg.BAR_BIAS)
@@ -123,7 +124,7 @@ class Feedback:
                     self.viz.put_text('Press any key')
                     self.viz.update()
                     key = cv2.waitKeyEx()
-                    if key == KEYS['esc']:
+                    if key == KEYS['esc'] or not self.protocol_state.value:
                         return
                 self.viz.fill()
                 self.tm_trigger.reset()
@@ -343,7 +344,7 @@ class Feedback:
                             # slow start
                             selected = self.cfg.BAR_SLOW_START['selected']
                             if self.cfg.BAR_SLOW_START[selected] and self.tm_trigger.sec() < self.cfg.BAR_SLOW_START[selected]:
-                                dx *= self.tm_trigger.sec() / self.cfg.BAR_SLOW_START[selected]
+                                dx *= self.tm_trigger.sec() / self.cfg.BAR_SLOW_START[selected][0]
 
                             # add likelihoods
                             if max_label == bar_label:
@@ -415,7 +416,7 @@ class Feedback:
 
             self.viz.update()
             key = cv2.waitKeyEx(1)
-            if key == KEYS['esc']:
+            if key == KEYS['esc'] or not self.protocol_state.value:
                 return
             elif key == KEYS['space']:
                 dx = 0
