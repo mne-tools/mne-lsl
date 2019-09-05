@@ -14,6 +14,7 @@ import os
 import imp
 import mne
 import scipy
+import importlib
 import numpy as np
 import mne.time_frequency
 import multiprocessing as mp
@@ -123,8 +124,12 @@ def get_tfr(fif_file, cfg, tfr, n_jobs=1):
 
     logger.info('Finished !')
 
-def config_run(cfg_module):
-    cfg = imp.load_source(cfg_module, cfg_module)
+def config_run(cfg_file):
+    cfg_file = qc.forward_slashify(cfg_file)
+    if not (os.path.exists(cfg_file) and os.path.isfile(cfg_file)):
+        raise IOError('%s cannot be loaded.' % os.path.realpath(cfg_file))
+    cfg = importlib.import_module(cfg_file)
+
     if not hasattr(cfg, 'TFR_TYPE'):
         cfg.TFR_TYPE = 'multitaper'
     get_tfr_each_file(cfg, tfr_type=cfg.TFR_TYPE)
