@@ -33,6 +33,7 @@ import imp
 import time
 import random
 import pycnbi
+import importlib
 import multiprocessing as mp
 import pycnbi.utils.q_common as qc
 import pycnbi.utils.pycnbi_utils as pu
@@ -57,7 +58,7 @@ def load_config(cfg_file):
     cfg_file = qc.forward_slashify(cfg_file)
     if not (os.path.exists(cfg_file) and os.path.isfile(cfg_file)):
         raise IOError('%s cannot be loaded.' % os.path.realpath(cfg_file))
-    return imp.load_source(cfg_file, cfg_file)
+    return importlib.import_module(cfg_file)
 
 def check_config(cfg):
     critical_vars = {
@@ -66,8 +67,8 @@ def check_config(cfg):
                    'TRIGGER_FILE',
                    'DIRECTIONS',
                    'TRIALS_EACH',
-                   'PROB_ALPHA_NEW'], 
-        'TIMINGS': ['INIT', 'GAP', 'READY', 'FEEDBACK', 'DIR_CUE', 'CLASSIFY'], 
+                   'PROB_ALPHA_NEW'],
+        'TIMINGS': ['INIT', 'GAP', 'READY', 'FEEDBACK', 'DIR_CUE', 'CLASSIFY'],
         'BAR_STEP': ['left', 'right', 'up', 'down', 'both']
         }
 
@@ -76,7 +77,7 @@ def check_config(cfg):
         'AMP_SERIAL':None,
         'FAKE_CLS':None,
         'TRIALS_RANDOMIZE':True,
-        'BAR_SLOW_START':{'selected':'False', 'False':None, 'True':[1.0]}, 
+        'BAR_SLOW_START':{'selected':'False', 'False':None, 'True':[1.0]},
         'PARALLEL_DECODING':{'selected':'False', 'False':None, 'True':{'period':0.06, 'num_strides':3}},
         'SHOW_TRIALS':True,
         'FREE_STYLE':False,
@@ -98,7 +99,7 @@ def check_config(cfg):
         if not hasattr(cfg, key):
             logger.error('%s is a required parameter' % key)
             raise RuntimeError
-        
+
     if not hasattr(cfg, 'TIMINGS'):
         logger.error('"TIMINGS" not defined in config.')
         raise RuntimeError
@@ -106,15 +107,15 @@ def check_config(cfg):
         if v not in cfg.TIMINGS:
             logger.error('%s not defined in config.' % v)
             raise RuntimeError
-        
+
     if not hasattr(cfg, 'BAR_STEP'):
         logger.error('"BAR_STEP" not defined in config.')
         raise RuntimeError
     for v in critical_vars['BAR_STEP']:
         if v not in cfg.BAR_STEP:
             logger.error('%s not defined in config.' % v)
-            raise RuntimeError            
-    
+            raise RuntimeError
+
     for key in optional_vars:
         if not hasattr(cfg, key):
             setattr(cfg, key, optional_vars[key])
@@ -126,12 +127,12 @@ def check_config(cfg):
 def run(cfg, state=mp.Value('i', 1), queue=None):
 
     redirect_stdout_to_queue(logger, queue, 'INFO')
-    
+
     # Wait the recording to start (GUI)
     while state.value == 2: # 0: stop, 1:start, 2:wait
         pass
-    
-    #  Protocol runs if state equals to 1 
+
+    #  Protocol runs if state equals to 1
     if not state.value:
         sys.exit(-1)
 
@@ -278,10 +279,10 @@ def run(cfg, state=mp.Value('i', 1), queue=None):
         print(cfmat)
 
     visual.finish()
-    
+
     with state.get_lock():
         state.value = 0
-        
+
     if decoder:
         decoder.stop()
 
