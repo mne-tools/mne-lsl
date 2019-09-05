@@ -36,7 +36,7 @@ def run(niter=1000, doblit=False):
     ax.set_ylim(0, 255)
     ax.hold(True)
     rw = randomwalk()
-    x, y = rw.next()
+    x, y = next(rw)
     fig.canvas.draw()
 
     if doblit:
@@ -49,7 +49,7 @@ def run(niter=1000, doblit=False):
     for ii in range(niter):
 
         # update the xy data
-        x, y = rw.next()
+        x, y = next(rw)
         plt.set_data(x, y)
 
         if doblit:
@@ -69,8 +69,8 @@ def run(niter=1000, doblit=False):
             fig.canvas.draw()
 
     close(fig)
-    print "Blit = %s, average FPS: %.2f" % (
-        str(doblit), niter / (time.time() - tic))
+    print("Blit = %s, average FPS: %.2f" % (
+        str(doblit), niter / (time.time() - tic)))
 
 
 if __name__ == '__main__':
