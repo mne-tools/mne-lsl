@@ -67,6 +67,9 @@ def check_config(cfg):
     for key in critical_vars['COMMON']:
         if not hasattr(cfg, key):
             raise RuntimeError('%s is a required parameter' % key)
+        
+    if getattr(cfg, 'TRIGGER_DEVICE') == None:
+        raise RuntimeError('The trigger device is set to None! No events will be saved.')
 
     if not hasattr(cfg, 'TIMINGS'):
         logger.error('"TIMINGS" not defined in config.')
