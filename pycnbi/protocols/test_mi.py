@@ -100,6 +100,9 @@ def check_config(cfg):
             logger.error('%s is a required parameter' % key)
             raise RuntimeError
 
+    if getattr(cfg, 'TRIGGER_DEVICE') == None:
+        raise RuntimeError('The trigger device is set to None! No events will be saved.')
+
     if not hasattr(cfg, 'TIMINGS'):
         logger.error('"TIMINGS" not defined in config.')
         raise RuntimeError
