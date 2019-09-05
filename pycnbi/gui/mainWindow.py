@@ -231,6 +231,7 @@ class MainWindow(QMainWindow):
                     elif 'PATH' in key:
                         pathfolderfinder = PathFolderFinder(key, os.environ['PYCNBI_ROOT'], chosen_value)
                         pathfolderfinder.signal_pathChanged[str, str].connect(self.on_guichanges)
+                        pathfolderfinder.signal_error[str].connect(self.on_error)
                         self.paramsWidgets.update({key: pathfolderfinder})
                         layout.addRow(key, pathfolderfinder.layout)
                         continue
@@ -239,6 +240,7 @@ class MainWindow(QMainWindow):
                     elif 'FILE' in key:
                         pathfilefinder = PathFileFinder(key, chosen_value)
                         pathfilefinder.signal_pathChanged[str, str].connect(self.on_guichanges)
+                        pathfilefinder.signal_error[str].connect(self.on_error)
                         self.paramsWidgets.update({key: pathfilefinder})
                         layout.addRow(key, pathfilefinder.layout)
                         continue
@@ -412,8 +414,8 @@ class MainWindow(QMainWindow):
         except:
             setattr(self.cfg_subject, name, new_Value)
 
-        print("The parameter %s is %s" % (name, getattr(self.cfg_subject, name)))
-        print("It's type is: %s \n" % type(getattr(self.cfg_subject, name)))
+        print("The parameter %s has been changed to %s" % (name, getattr(self.cfg_subject, name)))
+        # print("It's type is: %s \n" % type(getattr(self.cfg_subject, name)))
 
 
     # ----------------------------------------------------------------------
