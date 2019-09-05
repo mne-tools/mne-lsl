@@ -424,16 +424,16 @@ class MainWindow(QMainWindow):
         Opens the File dialog window when the search button is pressed.
         """
         
-        buttonDisplayName = self.ui.pushButton_Search.text()
+        buttonIcon = self.ui.pushButton_Search.text()
         
-        if buttonDisplayName == 'Search':            
+        if buttonIcon == 'Search':            
             path_name = QFileDialog.getExistingDirectory(caption="Choose the subject's directory", directory=os.environ['PYCNBI_SCRIPTS'])
-            self.ui.lineEdit_pathSearch.clear()
-            self.ui.lineEdit_pathSearch.insert(path_name)
-            self.ui.pushButton_Search.setText('Accept')
-            # self.ui.pushButton_Search.setAutoFillBackground(True)
-            self.ui.pushButton_Search.setStyleSheet("color: red;")
             
+            if path_name:
+                self.ui.lineEdit_pathSearch.clear()
+                self.ui.lineEdit_pathSearch.insert(path_name)
+                self.ui.pushButton_Search.setText('Accept')
+                self.ui.pushButton_Search.setStyleSheet("color: red;")            
         else:
             self.ui.pushButton_Search.setText('Search')
             self.ui.pushButton_Search.setStyleSheet("color: black;")
@@ -633,10 +633,19 @@ class MainWindow(QMainWindow):
         """
         Instance a Connect_NewSubject QDialog class
         """
-        qdialog = Connect_NewSubject(self, self.ui.lineEdit_pathSearch)
-        qdialog.signal_error[str].connect(self.on_error)
-        self.ui.groupBox_Params.setEnabled(True)
-    
+        buttonIcon = self.ui.pushButton_NewSubject.text()
+        
+        if buttonIcon == 'New':
+            qdialog = Connect_NewSubject(self, self.ui.lineEdit_pathSearch)
+            qdialog.signal_error[str].connect(self.on_error)
+            self.ui.pushButton_NewSubject.setText('Accept')
+            self.ui.pushButton_NewSubject.setStyleSheet("color: red;")
+        else:
+            self.ui.pushButton_NewSubject.setText('New')
+            self.ui.pushButton_NewSubject.setStyleSheet("color: black;")
+            self.on_enable_modality()
+
+
     #----------------------------------------------------------------------
     def on_error(self, errorMsg):
         """
