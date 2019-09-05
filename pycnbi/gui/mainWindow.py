@@ -82,6 +82,7 @@ class MainWindow(QMainWindow):
         
         # To display errors
         self.error_dialog = QErrorMessage(self)
+        self.error_dialog.setWindowTitle('Error')
         
         # Mp sharing variables
         self.record_state = mp.Value('i', 0)
@@ -660,16 +661,12 @@ class MainWindow(QMainWindow):
         """
         filePath, fileName = os.path.split(self.cfg_subject.__file__)
         fileName = fileName.split('.')[0]       # Remove the .py
-        # subjectProtocol = os.path.split(filePath)[1]    # format: subject-protocol
         
         file = self.cfg_subject.__file__.split('.')[0] + '_' + datetime.now().strftime('%m.%d.%d.%M') + '.py'
         filePath = QFileDialog.getSaveFileName(self, 'Save config file', file, 'python(*.py)')
-        
         if filePath[0]:
             save_params_to_file(filePath[0], cfg_class(self.cfg_subject))
-        else:
-            self.signal_error[str].emit('Provide a correct path and file name to save the config parameters')
-    
+        
     @pyqtSlot(list)
     #----------------------------------------------------------------------
     def fill_comboBox_lsl(self, amp_list):
