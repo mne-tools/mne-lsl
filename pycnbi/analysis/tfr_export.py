@@ -16,6 +16,7 @@ import pdb
 import scipy
 import traceback
 import numpy as np
+import importlib
 import multiprocessing as mp
 import mne.time_frequency
 import matplotlib.pyplot as plt
@@ -279,7 +280,7 @@ def load_config(cfg_file):
     cfg_file = qc.forward_slashify(cfg_file)
     if not (os.path.exists(cfg_file) and os.path.isfile(cfg_file)):
         raise IOError('%s cannot be loaded.' % os.path.realpath(cfg_file))
-    return imp.load_source(cfg_file, cfg_file)
+    return importlib.import_module(cfg_file)
 
 def batch_run(cfg_file):
     cfg = load_config(cfg_file)

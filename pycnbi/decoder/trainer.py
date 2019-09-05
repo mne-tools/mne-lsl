@@ -31,6 +31,7 @@ import imp
 import mne
 import mne.io
 import platform
+import importlib
 import numpy as np
 import multiprocessing as mp
 import sklearn.metrics as skmetrics
@@ -62,7 +63,7 @@ def load_config(cfg_file):
     if not (os.path.exists(cfg_file) and os.path.isfile(cfg_file)):
         logger.error('%s cannot be loaded.' % os.path.realpath(cfg_file))
         raise IOError
-    return imp.load_source(cfg_file, cfg_file)
+    return importlib.import_module(cfg_file)
 
 def check_config(cfg):
     critical_vars = {
@@ -771,19 +772,19 @@ def run(cfg, state=mp.Value('i', 1), queue=None, interactive=False, cv_file=None
     # Perform cross validation
     if not state.value:
         sys.exit(-1)
-        
+
     if cfg.CV_PERFORM[cfg.CV_PERFORM['selected']] is not None:
         cross_validate(cfg, featdata, cv_file=cv_file)
 
     # Train a decoder
     if not state.value:
         sys.exit(-1)
-        
+
     if cfg.EXPORT_CLS is True:
         train_decoder(cfg, featdata, feat_file=feat_file)
-        
+
     with state.get_lock():
-        state.value = 0    
+        state.value = 0
 
 
 
