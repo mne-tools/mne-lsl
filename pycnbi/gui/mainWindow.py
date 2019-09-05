@@ -82,7 +82,7 @@ class MainWindow(QMainWindow):
         
         # To display errors
         self.error_dialog = QErrorMessage(self)
-        self.error_dialog.setWindowTitle('Error')
+        self.error_dialog.setWindowTitle('Warning')
         
         # Mp sharing variables
         self.record_state = mp.Value('i', 0)
@@ -512,7 +512,7 @@ class MainWindow(QMainWindow):
         
         if cfg_file and cfg_template:
             self.load_all_params(cfg_template, cfg_file)            
-
+           
         self.ui.groupBox_Launch.setEnabled(True)
     # ----------------------------------------------------------------------
     @pyqtSlot()
