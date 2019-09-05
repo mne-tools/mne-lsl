@@ -525,14 +525,23 @@ def butter_bandpass(highcut, lowcut, fs, num_ch):
     zi = np.zeros([a.shape[0] - 1, num_ch])
     return b, a, zi
 
-
-def search_lsl(ignore_markers=False):
+#----------------------------------------------------------------------
+def list_lsl_streams(state=None, logger=logger, ignore_markers=False):
+    """
+    """
     import time
-
+    #  GUI sharing variable to stop the process, 1 = start, 0 = stop
+    if not state:
+        state = mp.Value('i', 1)
+        
     # look for LSL servers
     amp_list = []
     amp_list_backup = []
+        
     while True:
+        #  Stop if recording state (mp shared variable) is set to 0 from GUI
+        if not state.value:
+            sys.exit()
         streamInfos = pylsl.resolve_streams()
         if len(streamInfos) > 0:
             for index, si in enumerate(streamInfos):
@@ -559,7 +568,16 @@ def search_lsl(ignore_markers=False):
         else:
             amp_ser = amp_serial
         logger.info('%d: %s (Serial %s)' % (i, amp_name, amp_ser))
+    
+    return amp_list, streamInfos
+    
 
+
+def search_lsl(state=None, logger=logger, ignore_markers=False):
+    
+    #  List the avaiable LSL streams
+    amp_list, streamInfos = list_lsl_streams(state, logger, ignore_markers)
+    
     if len(amp_list) == 1:
         index = 0
     else:
@@ -576,7 +594,6 @@ def search_lsl(ignore_markers=False):
     logger.info('Selected %s (Serial: %s)' % (amp_name, amp_serial))
 
     return amp_name, amp_serial
-
 
 def lsl_channel_list(inlet):
     """

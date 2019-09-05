@@ -30,24 +30,19 @@ import sys
 import imp
 import mne
 import mne.io
-import pycnbi
-import timeit
 import platform
-import traceback
+import importlib
 import numpy as np
 import multiprocessing as mp
 import sklearn.metrics as skmetrics
 import pycnbi.utils.q_common as qc
-import pycnbi.utils.pycnbi_utils as pu
 import pycnbi.decoder.features as features
-from mne import Epochs, pick_types
 from builtins import input
-from IPython import embed  # for debugging
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import GradientBoostingClassifier
 from xgboost import XGBClassifier
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
-from pycnbi import logger, add_logger_handler
+from pycnbi import logger
 from pycnbi.decoder.rlda import rLDA
 from pycnbi.triggers.trigger_def import trigger_def
 from pycnbi.gui.streams import redirect_stdout_to_queue
@@ -68,7 +63,7 @@ def load_config(cfg_file):
     if not (os.path.exists(cfg_file) and os.path.isfile(cfg_file)):
         logger.error('%s cannot be loaded.' % os.path.realpath(cfg_file))
         raise IOError
-    return imp.load_source(cfg_file, cfg_file)
+    return importlib.import_module(cfg_file)
 
 def check_config(cfg):
     critical_vars = {
@@ -170,9 +165,6 @@ def check_config(cfg):
 
     if cfg.N_JOBS is None:
         cfg.N_JOBS = mp.cpu_count()
-
-    # add tdef object
-    cfg.tdef = trigger_def(cfg.TRIGGER_FILE)
 
     return cfg
 
@@ -763,26 +755,37 @@ def batch_run(cfg_file):
     cfg = check_config(cfg)
     run(cfg, interactive=True)
 
-def run(cfg, queue=None, interactive=False, cv_file=None, feat_file=None):
+def run(cfg, state=mp.Value('i', 1), queue=None, interactive=False, cv_file=None, feat_file=None, logger=logger):
 
-    redirect_stdout_to_queue(queue)
+    redirect_stdout_to_queue(logger, queue, 'INFO')
 
     # add tdef object
     cfg.tdef = trigger_def(cfg.TRIGGER_FILE)
 
     # Extract features
+    if not state.value:
+        sys.exit(-1)
     featdata = features.compute_features(cfg)
 
     # Find optimal threshold for TPR balancing
     #balance_tpr(cfg, featdata)
 
     # Perform cross validation
+    if not state.value:
+        sys.exit(-1)
+
     if cfg.CV_PERFORM[cfg.CV_PERFORM['selected']] is not None:
         cross_validate(cfg, featdata, cv_file=cv_file)
 
     # Train a decoder
+    if not state.value:
+        sys.exit(-1)
+
     if cfg.EXPORT_CLS is True:
         train_decoder(cfg, featdata, feat_file=feat_file)
+
+    with state.get_lock():
+        state.value = 0
 
 
 
