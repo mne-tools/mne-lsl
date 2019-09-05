@@ -415,8 +415,7 @@ class MainWindow(QMainWindow):
             setattr(self.cfg_subject, name, new_Value)
 
         print("The parameter %s has been changed to %s" % (name, getattr(self.cfg_subject, name)))
-        # print("It's type is: %s \n" % type(getattr(self.cfg_subject, name)))
-
+        
 
     # ----------------------------------------------------------------------
     @pyqtSlot()
@@ -432,8 +431,12 @@ class MainWindow(QMainWindow):
             self.ui.lineEdit_pathSearch.clear()
             self.ui.lineEdit_pathSearch.insert(path_name)
             self.ui.pushButton_Search.setText('Accept')
+            # self.ui.pushButton_Search.setAutoFillBackground(True)
+            self.ui.pushButton_Search.setStyleSheet("color: red;")
+            
         else:
             self.ui.pushButton_Search.setText('Search')
+            self.ui.pushButton_Search.setStyleSheet("color: black;")
             self.on_enable_modality()
 
     # ----------------------------------------------------------------------
