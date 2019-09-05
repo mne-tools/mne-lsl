@@ -28,6 +28,7 @@ import time
 import imp
 import cv2
 import random
+import importlib
 import multiprocessing as mp
 import pycnbi.utils.q_common as qc
 import pycnbi.triggers.pyLptControl as pyLptControl
@@ -42,16 +43,16 @@ def load_config(cfg_file):
     cfg_file = qc.forward_slashify(cfg_file)
     if not (os.path.exists(cfg_file) and os.path.isfile(cfg_file)):
         raise IOError('%s cannot be loaded.' % os.path.realpath(cfg_file))
-    return imp.load_source(cfg_file, cfg_file)
+    return importlib.import_module(cfg_file)
 
 def check_config(cfg):
     critical_vars = {
         'COMMON': ['TRIGGER_DEVICE',
-                   'TRIGGER_FILE', 
+                   'TRIGGER_FILE',
                    'SCREEN_SIZE',
                    'DIRECTIONS',
                    'DIR_RANDOM',
-                   'TRIALS_EACH'], 
+                   'TRIALS_EACH'],
         'TIMINGS': ['INIT', 'GAP', 'CUE', 'READY', 'READY_RANDOMIZE', 'DIR', 'DIR_RANDOMIZE']
     }
     optional_vars = {'FEEDBACK_TYPE': 'BAR',
@@ -66,14 +67,14 @@ def check_config(cfg):
     for key in critical_vars['COMMON']:
         if not hasattr(cfg, key):
             raise RuntimeError('%s is a required parameter' % key)
-            
+
     if not hasattr(cfg, 'TIMINGS'):
         logger.error('"TIMINGS" not defined in config.')
         raise RuntimeError
     for v in critical_vars['TIMINGS']:
         if v not in cfg.TIMINGS:
             logger.error('%s not defined in config.' % v)
-            raise RuntimeError            
+            raise RuntimeError
 
     for key in optional_vars:
         if not hasattr(cfg, key):
@@ -90,22 +91,22 @@ def batch_run(cfg_file):
 
 def run(cfg, state=mp.Value('i', 1), queue=None):
 
-    redirect_stdout_to_queue(logger, queue, 'INFO')    
-    
+    redirect_stdout_to_queue(logger, queue, 'INFO')
+
     # Wait the recording to start (GUI)
     while state.value == 2: # 0: stop, 1:start, 2:wait
         pass
-    #  Protocol start if equals to 1 
+    #  Protocol start if equals to 1
     if not state.value:
         sys.exit()
-    
+
     refresh_delay = 1.0 / cfg.REFRESH_RATE
-    
+
     cfg.tdef = trigger_def(cfg.TRIGGER_FILE)
 
     # visualizer
     keys = {'left':81, 'right':83, 'up':82, 'down':84, 'pgup':85, 'pgdn':86,
-        'home':80, 'end':87, 'space':32, 'esc':27, ',':44, '.':46, 's':115, 'c':99, 
+        'home':80, 'end':87, 'space':32, 'esc':27, ',':44, '.':46, 's':115, 'c':99,
         '[':91, ']':93, '1':49, '!':33, '2':50, '@':64, '3':51, '#':35}
     color = dict(G=(20, 140, 0), B=(210, 0, 0), R=(0, 50, 200), Y=(0, 215, 235),
         K=(0, 0, 0), w=(200, 200, 200))
@@ -244,10 +245,10 @@ def run(cfg, state=mp.Value('i', 1), queue=None):
             break
 
     bar.finish()
-    
+
     with state.get_lock():
         state.value = 0
-   
+
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
