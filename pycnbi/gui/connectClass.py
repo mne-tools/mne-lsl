@@ -782,6 +782,7 @@ class PathFolderFinder(QObject):
     """
 
     signal_pathChanged = pyqtSignal(str, str)
+    signal_error = pyqtSignal(str)
 
     # ----------------------------------------------------------------------
     def __init__(self, paramName, defaultPath, defaultValue):
@@ -806,6 +807,7 @@ class PathFolderFinder(QObject):
         self.layout.addWidget(self.lineEdit_pathSearch)
 
         self.button.clicked.connect(self.on_click_pathSearch)
+        self.lineEdit_pathSearch.editingFinished.connect(self.on_selected)
 
     @pyqtSlot()
     #----------------------------------------------------------------------
@@ -816,7 +818,22 @@ class PathFolderFinder(QObject):
         """
         path_name = QFileDialog.getExistingDirectory(caption="Choose the subject's directory", directory=self.defaultPath)
         self.lineEdit_pathSearch.setText(path_name)
-        self.signal_pathChanged[str, str].emit(self.name, path_name)
+    
+    @pyqtSlot()
+    #----------------------------------------------------------------------
+    def on_selected(self):
+        """
+        Emit the signal to modify the module with the new path
+        """
+        path_name = self.lineEdit_pathSearch.text()
+        
+        if path_name:
+            exist = os.path.isdir(path_name)
+            
+            if not exist:
+                self.signal_error[str].emit('The provided folder does not exists.')
+            else:
+                self.signal_pathChanged[str, str].emit(self.name, path_name)
         
         
 ########################################################################
@@ -827,6 +844,7 @@ class PathFileFinder(QObject):
     """
 
     signal_pathChanged = pyqtSignal(str, str)
+    signal_error = pyqtSignal(str)
     
     #----------------------------------------------------------------------
     def __init__(self, paramName, defaultValue):
@@ -850,6 +868,7 @@ class PathFileFinder(QObject):
         self.layout.addWidget(self.lineEdit_pathSearch)
 
         self.button.clicked.connect(self.on_click_pathSearch)
+        self.lineEdit_pathSearch.editingFinished.connect(self.on_selected)
 
     @pyqtSlot()
     # ----------------------------------------------------------------------
@@ -861,6 +880,23 @@ class PathFileFinder(QObject):
         path_name = QFileDialog.getOpenFileName(caption="Choose the subject's directory", directory=self.defaultPath)
         self.lineEdit_pathSearch.setText(path_name[0])
         self.signal_pathChanged[str, str].emit(self.name, path_name[0])
+        
+    @pyqtSlot()
+    #----------------------------------------------------------------------
+    def on_selected(self):
+        """
+        Emit the signal to modify the module with the new path
+        """
+        path_name = self.lineEdit_pathSearch.text()
+        
+        if path_name:
+            exist = os.path.isfile(path_name)
+            
+            if not exist:
+                self.signal_error[str].emit('The provided file does not exists.')
+            else:
+                self.signal_pathChanged[str, str].emit(self.name, path_name)
+                
 
 ########################################################################
 class Connect_NewSubject(QDialog):
