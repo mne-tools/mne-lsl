@@ -174,7 +174,7 @@ class MainWindow(QMainWindow):
 
         # Load channels
         if self.modality == 'trainer':
-            subjectDataPath = Path('%s/%s/fif' % (os.environ['PYCNBI_DATA'], filePath.split('/')[-1]))
+            subjectDataPath = Path('%s/%s/%s/fif' % (os.environ['PYCNBI_DATA'], filePath.split('/')[-2], filePath.split('/')[-1]))
             self.channels = read_params_from_file(subjectDataPath, 'channelsList.txt')    
                 
         self.directions = ()
@@ -230,11 +230,14 @@ class MainWindow(QMainWindow):
 
                     # For providing a folder path.
                     elif 'PATH' in key:
-                        pathfolderfinder = PathFolderFinder(key, os.environ['PYCNBI_ROOT'], chosen_value)
+                        pathfolderfinder = PathFolderFinder(key, os.environ['PYCNBI_DATA'], chosen_value)
                         pathfolderfinder.signal_pathChanged[str, str].connect(self.on_guichanges)
                         pathfolderfinder.signal_error[str].connect(self.on_error)
                         self.paramsWidgets.update({key: pathfolderfinder})
                         layout.addRow(key, pathfolderfinder.layout)
+                        
+                        if not chosen_value:
+                            self.signal_error[str].emit(key + ' is empty! Provide a path before starting.')
                         continue
 
                     # For providing a file path.
@@ -244,6 +247,9 @@ class MainWindow(QMainWindow):
                         pathfilefinder.signal_error[str].connect(self.on_error)
                         self.paramsWidgets.update({key: pathfilefinder})
                         layout.addRow(key, pathfilefinder.layout)
+                        
+                        if not chosen_value:
+                            self.signal_error[str].emit(key + ' is empty! Provide a file before starting.')                        
                         continue
 
                     # For the special case of choosing the trigger classes to train on
@@ -352,8 +358,7 @@ class MainWindow(QMainWindow):
         """
         Dynamic loading of a config file.
         Format the lib to fit the previous developed pycnbi code if subject specific file (not for the templates).
-        cfg_path: path to the folder containing the config file.
-        cfg_file: config file to load.
+        cfg_file: tuple containing the path and the config file name.
         """
         if self.cfg_subject == None or cfg_file[1] not in self.cfg_subject.__file__:
             # Dynamic loading
@@ -501,10 +506,12 @@ class MainWindow(QMainWindow):
         """
         Loads the Offline parameters.
         """
-        import pycnbi.protocols.train_mi as m
-
-        self.m = m
         self.modality = 'offline'
+        
+        path2protocol =  os.path.split(self.ui.lineEdit_pathSearch.text())[0]
+        sys.path.append(path2protocol)
+        self.m = import_module('train_mi')
+        
         cfg_file, cfg_template = self.prepare_config_files(self.modality)
         
         self.ui.checkBox_Record.setChecked(True)
@@ -514,6 +521,7 @@ class MainWindow(QMainWindow):
             self.load_all_params(cfg_template, cfg_file)            
            
         self.ui.groupBox_Launch.setEnabled(True)
+        
     # ----------------------------------------------------------------------
     @pyqtSlot()
     def on_click_train(self):
@@ -540,10 +548,12 @@ class MainWindow(QMainWindow):
         """
         Loads the Online parameters.
         """
-        import pycnbi.protocols.test_mi as m
-
-        self.m = m
         self.modality = 'online'
+        
+        path2protocol =  os.path.split(self.ui.lineEdit_pathSearch.text())[0]
+        sys.path.append(path2protocol)
+        self.m = import_module('test_mi')        
+        
         cfg_file, cfg_template = self.prepare_config_files(self.modality)
         
         self.ui.checkBox_Record.setChecked(True)
@@ -561,7 +571,7 @@ class MainWindow(QMainWindow):
         """
         Launch the selected protocol. It can be Offline, Train or Online.
         """
-        self.record_dir = Path(os.environ['PYCNBI_DATA']) / os.path.split(Path(self.ui.lineEdit_pathSearch.text()))[-1]
+        self.record_dir = Path(self.cfg_subject.DATA_PATH)
         
         ccfg = cfg_class(self.cfg_subject)  #  because a module is not pickable
         
@@ -594,7 +604,7 @@ class MainWindow(QMainWindow):
                     self.protocol_state.value = 2  #  0=stop, 1=start, 2=wait
                     
                 processesToLaunch = [('recording', recorder.run_gui, [self.record_state, self.protocol_state, self.record_dir, self.recordLogger, amp['name'], amp['serial'], False, self.record_terminal.my_receiver.queue]), \
-                                 ('protocol', self.m.run, [ccfg, self.protocol_state, self.my_receiver.queue])]
+                                     ('protocol', self.m.run, [ccfg, self.protocol_state, self.my_receiver.queue])]
 
             else:
                 with self.record_state.get_lock():

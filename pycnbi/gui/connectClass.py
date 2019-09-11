@@ -816,8 +816,11 @@ class PathFolderFinder(QObject):
         Slot connected to the button clicked signal. It opens a QFileDialog 
         and adds the selected path to the lineEdit.
         """
-        path_name = QFileDialog.getExistingDirectory(caption="Choose the subject's directory", directory=self.defaultPath)
-        self.lineEdit_pathSearch.setText(path_name)
+        path_name = QFileDialog.getExistingDirectory(caption="Choose the directory for " + self.name, directory=self.defaultPath)
+
+        if path_name:            
+            self.lineEdit_pathSearch.setText(path_name)
+            self.lineEdit_pathSearch.setFocus()
     
     @pyqtSlot()
     #----------------------------------------------------------------------
@@ -877,9 +880,11 @@ class PathFileFinder(QObject):
         Slot connected to the button clicked signal. It opens a QFileDialog 
         and adds the selected path to the lineEdit.
         """
-        path_name = QFileDialog.getOpenFileName(caption="Choose the subject's directory", directory=self.defaultPath)
-        self.lineEdit_pathSearch.setText(path_name[0])
-        self.signal_pathChanged[str, str].emit(self.name, path_name[0])
+        path_name = QFileDialog.getOpenFileName(caption="Choose the file for " + self.name, directory=self.defaultPath)
+
+        if path_name:
+            self.lineEdit_pathSearch.setText(path_name[0])
+            self.lineEdit_pathSearch.setFocus()
         
     @pyqtSlot()
     #----------------------------------------------------------------------
@@ -967,30 +972,50 @@ class Connect_NewSubject(QDialog):
         subject_id = self.layout().itemAt(0).itemAt(1).widget().text()
         protocol = self.layout().itemAt(0).itemAt(3).widget().currentText()
         
+        #-----------------------------------------------------------------------------------
+        # create the folder that will contains the scripts for a protocol
+        protocol_scripts_folder = Path(os.environ['PYCNBI_SCRIPTS']) / protocol
+        try:
+            os.mkdir(protocol_scripts_folder)
+            # Copy the protocols files
+            files_path = Path(os.environ['PYCNBI_ROOT']) / 'pycnbi' / 'protocols' / protocol
+            files = glob(os.fspath(files_path / "*.py") , recursive=False)       
+            for f in files:
+                copy2(f, os.fspath(protocol_scripts_folder))               
+        except:
+            pass
+        
+        #-----------------------------------------------------------------------------------
+        # create the folder that will contains the subjects data folders for a protocol
+        data_folder = Path(os.environ['PYCNBI_DATA']) / protocol
+        try:
+            os.mkdir(data_folder)
+        except:
+            pass
+        
+        #-----------------------------------------------------------------------------------
+        # Prepare the subjects folders with the config files
         try:
             # for PYCNBI_SCRIPTS
-            scripts_path = Path(os.environ['PYCNBI_SCRIPTS']) / (subject_id + '-' + protocol)            
+            scripts_path = protocol_scripts_folder / (subject_id + '-' + protocol)            
             os.mkdir(scripts_path)
               
             # Add path to the lineEdit_pathSearch
             self.lineEdit_pathSearch.setText(os.fspath(scripts_path))        
             
             # for PYCNBI_DATA
-            data_path = Path(os.environ['PYCNBI_DATA']) / (subject_id + '-' + protocol)
-            os.mkdir(data_path)            
+            subject_data = data_folder / (subject_id + '-' + protocol)
+            os.mkdir(subject_data)            
             
-            # Copy the protocol config_files
+            # Copy the config_files
             files_path = Path(os.environ['PYCNBI_ROOT']) / 'pycnbi' / 'config_files' / protocol / 'template_files'
             files = glob(os.fspath(files_path / "*.py") , recursive=False)
-            config_files = [f for f in files if 'structure' not in f]
-            for f in config_files:
+            for f in files:
                 fileName = os.path.split(f)[1].split('.')[0]
                 copy2(f, (os.fspath(scripts_path / fileName) + ('_' + subject_id + '-' + protocol +'.py')))
-            
+                
         except Exception as e:
-            self.signal_error[str].emit(str(e))
-            #error_dialog = QErrorMessage(self)
-            #error_dialog.showMessage(str(e))                 
+            self.signal_error[str].emit(str(e)) 
 
 #----------------------------------------------------------------------
 def add_v_separator(layout):
