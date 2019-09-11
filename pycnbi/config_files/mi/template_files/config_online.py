@@ -1,3 +1,6 @@
+# Path to save data
+DATA_PATH = ''
+
 # classifier type
 DECODER_FILE = r'C:\Users\adesvachez\git\pycnbi_data\testGUI\fif\classifier\classifier-64bit.pkl'
 
