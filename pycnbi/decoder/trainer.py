@@ -61,9 +61,10 @@ os.environ['OMP_NUM_THREADS'] = '1' # actually improves performance for multitap
 def load_config(cfg_file):
     cfg_file = qc.forward_slashify(cfg_file)
     if not (os.path.exists(cfg_file) and os.path.isfile(cfg_file)):
-        logger.error('%s cannot be loaded.' % os.path.realpath(cfg_file))
-        raise IOError
-    return importlib.import_module(cfg_file)
+        raise IOError('%s cannot be loaded.' % os.path.realpath(cfg_file))
+    cfg_path, cfg_file = os.path.split(cfg_file)
+    sys.path.append(cfg_path)
+    return importlib.import_module(cfg_file.split('.')[0])
 
 def check_config(cfg):
     critical_vars = {
