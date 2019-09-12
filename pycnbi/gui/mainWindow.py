@@ -225,8 +225,28 @@ class MainWindow(QMainWindow):
 
                         directions.signal_paramChanged[str, list].connect(self.on_guichanges)
                         self.paramsWidgets.update({key: directions})
-                        layout.addRow(key, directions.l)
+                        layout.addRow(key, directions.l)                
 
+                    # For the special case of choosing the trigger classes to train on
+                    elif 'TRIGGER_DEF' in key:
+                        
+                        directions = Connect_Directions(key, chosen_value, [None], 4)
+                        directions.signal_paramChanged[str, list].connect(self.on_guichanges)
+                        self.paramsWidgets['TRIGGER_FILE'].signal_pathChanged[str, str].connect(directions.on_new_tdef_file)
+                        self.paramsWidgets.update({key: directions})
+                        layout.addRow(key, directions.l)
+                        
+                        # --------------------------------------------v-----------------------------------
+                        #trigger_file = self.extract_value_from_module('TRIGGER_FILE', all_chosen_values)
+                        #tdef = trigger_def(trigger_file)
+                        #nb_directions = 4
+                        ##  Convert 'None' to real None (real None is removed when selected in the GUI)
+                        #tdef_values = [ None if i == 'None' else i for i in list(tdef.by_name) ]
+                        #directions = Connect_Directions(key, chosen_value, tdef_values, nb_directions)
+                        #directions.signal_paramChanged[str, list].connect(self.on_guichanges)
+                        #self.paramsWidgets.update({key: directions})
+                        #layout.addRow(key, directions.l)
+                        continue
 
                     # For providing a folder path.
                     elif 'PATH' in key:
@@ -250,19 +270,6 @@ class MainWindow(QMainWindow):
                         
                         if not chosen_value:
                             self.signal_error[str].emit(key + ' is empty! Provide a file before starting.')                        
-                        continue
-
-                    # For the special case of choosing the trigger classes to train on
-                    elif 'TRIGGER_DEF' in key:
-                        trigger_file = self.extract_value_from_module('TRIGGER_FILE', all_chosen_values)
-                        tdef = trigger_def(trigger_file)
-                        nb_directions = 4
-                        #  Convert 'None' to real None (real None is removed when selected in the GUI)
-                        tdef_values = [ None if i == 'None' else i for i in list(tdef.by_name) ]
-                        directions = Connect_Directions(key, chosen_value, tdef_values, nb_directions)
-                        directions.signal_paramChanged[str, list].connect(self.on_guichanges)
-                        self.paramsWidgets.update({key: directions})
-                        layout.addRow(key, directions.l)
                         continue
 
                     # To select specific electrodes
