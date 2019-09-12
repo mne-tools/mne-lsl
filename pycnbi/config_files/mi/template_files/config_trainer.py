@@ -1,14 +1,14 @@
 #-------------------------------------------
 # Data 
 #-------------------------------------------
-DATA_PATH = r'C:\Users\adesvachez\git\pycnbi_data\testGUI\fif'
+DATA_PATH = ''
 
 EPOCH = [0.5, 3.5]
 
 #-------------------------------------------
 # Trigger
 #-------------------------------------------
-TRIGGER_FILE = r'C:\Users\adesvachez\git\pycnbi\pycnbi\triggers\triggerdef_16.ini'
+TRIGGER_FILE = ''
 TRIGGER_DEF = ['LEFT_GO', 'RIGHT_GO']
 LOAD_EVENTS = {'selected':'False', 'False':None, 'True':'C:'}
 
