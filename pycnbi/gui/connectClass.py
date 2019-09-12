@@ -12,6 +12,7 @@ import os
 from glob import glob
 from pathlib import Path 
 from shutil import copy2
+from pycnbi.triggers.trigger_def import trigger_def
 from PyQt5.QtWidgets import QPushButton, QHBoxLayout, QVBoxLayout, QFileDialog, QLineEdit, QComboBox, QSpinBox, QDoubleSpinBox, QLabel, \
      QFrame, QDialog, QFormLayout, QDialogButtonBox
 from PyQt5.QtCore import pyqtSignal, QObject, pyqtSlot, Qt
@@ -67,7 +68,19 @@ class Connect_Directions(QObject):
 
     # ----------------------------------------------------------------------
     def __init__(self, paramName, chosen_value, all_Values, nb_directions):
-        """Constructor
+        """
+        Constructor
+        """
+        super().__init__()
+        self.paramName = paramName
+        self.l = QHBoxLayout()
+        self.chosen_value = chosen_value
+        
+        # self.create_the_comboBoxes(chosen_value, all_Values, nb_directions)
+
+    # ----------------------------------------------------------------------
+    def create_the_comboBoxes(self, chosen_value, all_Values, nb_directions):
+        """
         Creates nb_directions directions, list the possible values and select the chosen_value.
         
         paramName = Name of the parameter corresponding to the widget to create 
@@ -75,11 +88,6 @@ class Connect_Directions(QObject):
         all_Values = list of all possible values for a parameter
         nb_directions = number of directions to add.
         """
-        super().__init__()
-        self.paramName = paramName
-        self.l = QHBoxLayout()
-        self.chosen_value = chosen_value
-        
         nb_val = range(len(chosen_value)) 
         for i in nb_val:
             self.l.addWidget(self.add_To_ComboBox(all_Values, chosen_value[i], i))
@@ -95,7 +103,6 @@ class Connect_Directions(QObject):
             # Add a vertical separator
             if i != nb_val[-1]:
                 add_v_separator(self.l)                        
-
 
     # ----------------------------------------------------------------------
     def add_To_ComboBox(self, values, chosenValue, pos):
@@ -117,8 +124,29 @@ class Connect_Directions(QObject):
         templateChoices.signal_paramChanged[int, object].connect(self.on_modify)
         
         return templateChoices
-
+    
+    #----------------------------------------------------------------------
+    def clear_hBoxLayout(self):
+        """
+        #Removes all the widgets added to the layout
+        """
+        for i in reversed(range(self.l.count())): 
+            self.l.itemAt(i).widget().setParent(None)        
+               
+    @pyqtSlot(str, str)
+    #----------------------------------------------------------------------
+    def on_new_tdef_file(self, key, trigger_file):
+        """
+        Update the QComboBox witht the new events from the new tdef file.
+        """
+        self.clear_hBoxLayout()
+        tdef = trigger_def(trigger_file)
+        nb_directions = 4
+        #  Convert 'None' to real None (real None is removed when selected in the GUI)
+        tdef_values = [ None if i == 'None' else i for i in list(tdef.by_name) ]
+        self.create_the_comboBoxes(self.chosen_value, tdef_values, nb_directions)
         
+    
     @pyqtSlot(int, object)
     # ----------------------------------------------------------------------
     def on_modify(self, pos, new_Value):
