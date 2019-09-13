@@ -230,23 +230,11 @@ class MainWindow(QMainWindow):
                     # For the special case of choosing the trigger classes to train on
                     elif 'TRIGGER_DEF' in key:
                         
-                        directions = Connect_Directions(key, chosen_value, [None], 4)
-                        directions.signal_paramChanged[str, list].connect(self.on_guichanges)
-                        self.paramsWidgets['TRIGGER_FILE'].signal_pathChanged[str, str].connect(directions.on_new_tdef_file)
-                        self.paramsWidgets.update({key: directions})
-                        layout.addRow(key, directions.l)
-                        
-                        # --------------------------------------------v-----------------------------------
-                        #trigger_file = self.extract_value_from_module('TRIGGER_FILE', all_chosen_values)
-                        #tdef = trigger_def(trigger_file)
-                        #nb_directions = 4
-                        ##  Convert 'None' to real None (real None is removed when selected in the GUI)
-                        #tdef_values = [ None if i == 'None' else i for i in list(tdef.by_name) ]
-                        #directions = Connect_Directions(key, chosen_value, tdef_values, nb_directions)
-                        #directions.signal_paramChanged[str, list].connect(self.on_guichanges)
-                        #self.paramsWidgets.update({key: directions})
-                        #layout.addRow(key, directions.l)
-                        continue
+                        trigger_def = Connect_Directions(key, chosen_value, [None], 4)
+                        trigger_def.signal_paramChanged[str, list].connect(self.on_guichanges)
+                        self.paramsWidgets['TRIGGER_FILE'].signal_pathChanged[str, str].connect(trigger_def.on_new_tdef_file)
+                        self.paramsWidgets.update({key: trigger_def})
+                        layout.addRow(key, trigger_def.l)
 
                     # For providing a folder path.
                     elif 'PATH' in key:
@@ -270,7 +258,6 @@ class MainWindow(QMainWindow):
                         
                         if not chosen_value:
                             self.signal_error[str].emit(key + ' is empty! Provide a file before starting.')                        
-                        continue
 
                     # To select specific electrodes
                     elif '_CHANNELS' in key or 'CHANNELS_' in key:
@@ -293,7 +280,6 @@ class MainWindow(QMainWindow):
                         spinBox.signal_paramChanged[str, int].connect(self.on_guichanges)
                         self.paramsWidgets.update({key: spinBox})
                         layout.addRow(key, spinBox)
-                        continue
 
                     # For all the float values.
                     elif values is float:
@@ -301,7 +287,6 @@ class MainWindow(QMainWindow):
                         doublespinBox.signal_paramChanged[str, float].connect(self.on_guichanges)
                         self.paramsWidgets.update({key: doublespinBox})
                         layout.addRow(key, doublespinBox)
-                        continue
 
                     # For parameters with multiple non-fixed values in a list (user can modify them)
                     elif values is list:
@@ -318,7 +303,6 @@ class MainWindow(QMainWindow):
                         lineEdit.signal_paramChanged[str, type(None)].connect(self.on_guichanges)
                         self.paramsWidgets.update({key: lineEdit})
                         layout.addRow(key, lineEdit)
-                        continue
 
                     # For parameters with multiple fixed values.
                     elif type(values) is tuple:
@@ -338,13 +322,11 @@ class MainWindow(QMainWindow):
                             comboParams.signal_additionalParamChanged[str, dict].connect(self.on_guichanges)
                             self.paramsWidgets.update({key: comboParams})
                             layout.addRow(key, comboParams.layout)
-
                         except:
                             modifiable_dict = Connect_Modifiable_Dict(key, chosen_value, values)
                             modifiable_dict.signal_paramChanged[str, dict].connect(self.on_guichanges)
                             self.paramsWidgets.update({key: modifiable_dict})
                             layout.addRow(key, modifiable_dict)
-                        continue
 
                 # Add a horizontal line to separate parameters' type.
                 if p != param[-1]:

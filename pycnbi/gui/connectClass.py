@@ -76,7 +76,7 @@ class Connect_Directions(QObject):
         self.l = QHBoxLayout()
         self.chosen_value = chosen_value
         
-        # self.create_the_comboBoxes(chosen_value, all_Values, nb_directions)
+        self.create_the_comboBoxes(chosen_value, all_Values, nb_directions)
 
     # ----------------------------------------------------------------------
     def create_the_comboBoxes(self, chosen_value, all_Values, nb_directions):
