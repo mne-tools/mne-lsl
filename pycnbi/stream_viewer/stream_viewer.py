@@ -738,8 +738,9 @@ class Scope(QtGui.QMainWindow, form_class):
         low = lowcut / (0.5 * fs)
         high = highcut / (0.5 * fs)
         # get the order. TO BE DONE: Sometimes it fails
-        ord = buttord(high, low, 2, 40)
-        b, a = butter(ord[0], [high, low], btype='band')
+        #ord = buttord(high, low, 2, 40)
+        #b, a = butter(ord[0], [high, low], btype='band')
+        b, a = butter(2, [high, low], btype='band')
         zi = np.zeros([a.shape[0] - 1, num_ch])
         return b, a, zi
 
