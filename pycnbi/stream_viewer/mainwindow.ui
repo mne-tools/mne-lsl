@@ -165,13 +165,16 @@
      </rect>
     </property>
     <property name="minimum">
-     <double>0.100000000000000</double>
+     <double>0.1</double>
+    </property>
+    <property name="maximum">
+     <double>1000</double>
     </property>
     <property name="singleStep">
-     <double>0.100000000000000</double>
+     <double>1</double>
     </property>
     <property name="value">
-     <double>1.000000000000000</double>
+     <double>1</double>
     </property>
    </widget>
    <widget class="QDoubleSpinBox" name="doubleSpinBox_lp">
@@ -184,13 +187,16 @@
      </rect>
     </property>
     <property name="minimum">
-     <double>1.000000000000000</double>
+     <double>1</double>
+    </property>
+    <property name="maximum">
+     <double>1000</double>
     </property>
     <property name="singleStep">
-     <double>0.100000000000000</double>
+     <double>1</double>
     </property>
     <property name="value">
-     <double>50.000000000000000</double>
+     <double>50</double>
     </property>
    </widget>
    <widget class="QCheckBox" name="checkBox_showTID">
