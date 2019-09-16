@@ -14,7 +14,6 @@ import os
 import imp
 import mne
 import scipy
-import importlib
 import numpy as np
 import mne.time_frequency
 import multiprocessing as mp

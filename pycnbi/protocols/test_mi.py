@@ -33,7 +33,6 @@ import imp
 import time
 import random
 import pycnbi
-import importlib
 import multiprocessing as mp
 import pycnbi.utils.q_common as qc
 import pycnbi.utils.pycnbi_utils as pu
