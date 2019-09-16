@@ -8,6 +8,7 @@ Swiss Federal Institute of Technology Lausanne (EPFL)
 import os
 import sys
 import logging
+import pycnbi.colorer
 from pycnbi.utils import q_common as qc
 
 # log level options provided by pycnbi
@@ -57,7 +58,7 @@ def init_logger(logger, verbose_console='INFO'):
     '''
     if not logger.hasHandlers():
         add_logger_handler(logger, sys.stdout, verbosity=verbose_console)
-    
+
     '''
     TODO: add file handler
     # file logger handler
