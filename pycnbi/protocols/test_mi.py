@@ -54,12 +54,6 @@ color = dict(G=(20, 140, 0), B=(210, 0, 0), R=(0, 50, 200), Y=(0, 215, 235),
              K=(0, 0, 0), W=(255, 255, 255), w=(200, 200, 200))
 
 
-def load_config(cfg_file):
-    cfg_file = qc.forward_slashify(cfg_file)
-    if not (os.path.exists(cfg_file) and os.path.isfile(cfg_file)):
-        raise IOError('%s cannot be loaded.' % os.path.realpath(cfg_file))
-    return importlib.import_module(cfg_file)
-
 def check_config(cfg):
     critical_vars = {
         'COMMON': ['DECODER_FILE',
@@ -318,14 +312,14 @@ def run(cfg, state=mp.Value('i', 1), queue=None):
     logger.info('Finished.')
 
 # for batch script
-def batch_run(cfg_file):
-    cfg = load_config(cfg_file)
+def batch_run(cfg_module):
+    cfg = pu.load_config(cfg_module)
     cfg = check_config(cfg)
     run(cfg)
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
-        cfg_file = input('Config file name? ')
+        cfg_module = input('Config module name? ')
     else:
-        cfg_file = sys.argv[1]
-    batch_run(cfg_file)
+        cfg_module = sys.argv[1]
+    batch_run(cfg_module)
