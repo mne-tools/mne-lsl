@@ -124,11 +124,8 @@ def get_tfr(fif_file, cfg, tfr, n_jobs=1):
 
     logger.info('Finished !')
 
-def config_run(cfg_file):
-    cfg_file = qc.forward_slashify(cfg_file)
-    if not (os.path.exists(cfg_file) and os.path.isfile(cfg_file)):
-        raise IOError('%s cannot be loaded.' % os.path.realpath(cfg_file))
-    cfg = importlib.import_module(cfg_file)
+def config_run(cfg_module):
+    cfg = pu.load_config(cfg_module)
 
     if not hasattr(cfg, 'TFR_TYPE'):
         cfg.TFR_TYPE = 'multitaper'
@@ -136,7 +133,7 @@ def config_run(cfg_file):
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
-        cfg_module = input('Config file name? ')
+        cfg_module = input('Config module name? ')
     else:
         cfg_module = sys.argv[1]
     config_run(cfg_module)
