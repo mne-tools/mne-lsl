@@ -31,7 +31,6 @@ import imp
 import mne
 import mne.io
 import platform
-import importlib
 import numpy as np
 import multiprocessing as mp
 import sklearn.metrics as skmetrics
