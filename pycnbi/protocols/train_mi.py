@@ -31,19 +31,13 @@ import random
 import importlib
 import multiprocessing as mp
 import pycnbi.utils.q_common as qc
+import pycnbi.utils.pycnbi_utils as pu
 import pycnbi.triggers.pyLptControl as pyLptControl
 from pycnbi.protocols.viz_bars import BarVisual
 from pycnbi.triggers.trigger_def import trigger_def
 from pycnbi import logger
 from builtins import input
-
 from pycnbi.gui.streams import redirect_stdout_to_queue
-
-def load_config(cfg_file):
-    cfg_file = qc.forward_slashify(cfg_file)
-    if not (os.path.exists(cfg_file) and os.path.isfile(cfg_file)):
-        raise IOError('%s cannot be loaded.' % os.path.realpath(cfg_file))
-    return importlib.import_module(cfg_file)
 
 def check_config(cfg):
     critical_vars = {
@@ -84,8 +78,8 @@ def check_config(cfg):
     return cfg
 
 # for batch script
-def batch_run(cfg_file):
-    cfg = load_config(cfg_file)
+def batch_run(cfg_module):
+    cfg = pu.load_config(cfg_module)
     cfg = check_config(cfg)
     run(cfg)
 
@@ -252,7 +246,7 @@ def run(cfg, state=mp.Value('i', 1), queue=None):
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
-        cfg_file = input('Config file name? ')
+        cfg_module = input('Config module name? ')
     else:
-        cfg_file = sys.argv[1]
-    batch_run(cfg_file)
+        cfg_module = sys.argv[1]
+    batch_run(cfg_module)

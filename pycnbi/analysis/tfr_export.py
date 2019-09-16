@@ -276,20 +276,14 @@ def get_tfr(cfg, recursive=False, n_jobs=1):
             plt.close()
     logger.info('Finished !')
 
-def load_config(cfg_file):
-    cfg_file = qc.forward_slashify(cfg_file)
-    if not (os.path.exists(cfg_file) and os.path.isfile(cfg_file)):
-        raise IOError('%s cannot be loaded.' % os.path.realpath(cfg_file))
-    return importlib.import_module(cfg_file)
-
-def batch_run(cfg_file):
-    cfg = load_config(cfg_file)
+def batch_run(cfg_module):
+    cfg = pu.load_config(cfg_module)
     cfg = check_config(cfg)
     get_tfr(cfg)
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
-        cfg_file = input('Config file name? ')
+        cfg_module = input('Config module name? ')
     else:
-        cfg_file = sys.argv[1]
-    batch_run(cfg_file)
+        cfg_module = sys.argv[1]
+    batch_run(cfg_module)

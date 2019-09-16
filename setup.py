@@ -24,7 +24,7 @@ setup(
         'pyqtgraph>=0.10.0',
         'pylsl>=1.12.2',
         'pywin32>=222',
-        'ipython>=7',
+        'ipython>=6',
         'PyQt5>=5',
         'pyxdf>=1.15.2',
         'pyserial>=3.4',
