@@ -16,7 +16,6 @@ import pdb
 import scipy
 import traceback
 import numpy as np
-import importlib
 import multiprocessing as mp
 import mne.time_frequency
 import matplotlib.pyplot as plt
