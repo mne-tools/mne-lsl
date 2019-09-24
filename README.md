@@ -52,11 +52,6 @@ PyCNBI depends on following packages:
   - xgboost
   - psutil
 
-You can install these using pip package manager. To install all at once, type:
-```
-pip install -U scipy numpy PyQt5 scikit-learn pylsl mne matplotlib pyqtgraph opencv-python pyserial future configparser xgboost psutil
-```
-
 Optional but strongly recommended:
   - [OpenVibe](http://openvibe.inria.fr/downloads)
 
@@ -76,7 +71,7 @@ python setup.py develop
 Add "scripts" directory to PATH environment variable for convenient access to commonly used scripts.
 
 ## For Windows users, increase timer resolution
-The default timer resolution in some Windows versions is 16 ms, which can limit the precision of timings. It is strongly recommended to run the following tool and set the resolution to 1 ms or lower:
+The default timer resolution in some Windows versions is 16 ms, which can limit the precision of timings. It is recommended to run the following tool and set the resolution to 1 ms or lower:
 [https://vvvv.org/contribution/windows-system-timer-tool](https://vvvv.org/contribution/windows-system-timer-tool)
 
 
