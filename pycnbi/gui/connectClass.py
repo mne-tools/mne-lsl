@@ -12,6 +12,8 @@ import os
 from glob import glob
 from pathlib import Path 
 from shutil import copy2
+from pycnbi.utils import q_common as qc
+from pycnbi.triggers.trigger_def import trigger_def
 from PyQt5.QtWidgets import QPushButton, QHBoxLayout, QVBoxLayout, QFileDialog, QLineEdit, QComboBox, QSpinBox, QDoubleSpinBox, QLabel, \
      QFrame, QDialog, QFormLayout, QDialogButtonBox
 from PyQt5.QtCore import pyqtSignal, QObject, pyqtSlot, Qt
@@ -67,7 +69,19 @@ class Connect_Directions(QObject):
 
     # ----------------------------------------------------------------------
     def __init__(self, paramName, chosen_value, all_Values, nb_directions):
-        """Constructor
+        """
+        Constructor
+        """
+        super().__init__()
+        self.paramName = paramName
+        self.l = QHBoxLayout()
+        self.chosen_value = chosen_value
+        
+        self.create_the_comboBoxes(chosen_value, all_Values, nb_directions)
+
+    # ----------------------------------------------------------------------
+    def create_the_comboBoxes(self, chosen_value, all_Values, nb_directions):
+        """
         Creates nb_directions directions, list the possible values and select the chosen_value.
         
         paramName = Name of the parameter corresponding to the widget to create 
@@ -75,11 +89,6 @@ class Connect_Directions(QObject):
         all_Values = list of all possible values for a parameter
         nb_directions = number of directions to add.
         """
-        super().__init__()
-        self.paramName = paramName
-        self.l = QHBoxLayout()
-        self.chosen_value = chosen_value
-        
         nb_val = range(len(chosen_value)) 
         for i in nb_val:
             self.l.addWidget(self.add_To_ComboBox(all_Values, chosen_value[i], i))
@@ -95,7 +104,6 @@ class Connect_Directions(QObject):
             # Add a vertical separator
             if i != nb_val[-1]:
                 add_v_separator(self.l)                        
-
 
     # ----------------------------------------------------------------------
     def add_To_ComboBox(self, values, chosenValue, pos):
@@ -117,8 +125,29 @@ class Connect_Directions(QObject):
         templateChoices.signal_paramChanged[int, object].connect(self.on_modify)
         
         return templateChoices
-
+    
+    #----------------------------------------------------------------------
+    def clear_hBoxLayout(self):
+        """
+        #Removes all the widgets added to the layout
+        """
+        for i in reversed(range(self.l.count())): 
+            self.l.itemAt(i).widget().setParent(None)        
+               
+    @pyqtSlot(str, str)
+    #----------------------------------------------------------------------
+    def on_new_tdef_file(self, key, trigger_file):
+        """
+        Update the QComboBox with the new events from the new tdef file.
+        """
+        self.clear_hBoxLayout()
+        tdef = trigger_def(trigger_file)
+        nb_directions = 4
+        #  Convert 'None' to real None (real None is removed when selected in the GUI)
+        tdef_values = [ None if i == 'None' else i for i in list(tdef.by_name) ]
+        self.create_the_comboBoxes(self.chosen_value, tdef_values, nb_directions)
         
+    
     @pyqtSlot(int, object)
     # ----------------------------------------------------------------------
     def on_modify(self, pos, new_Value):
@@ -149,6 +178,7 @@ class Connect_Directions_Online(QObject):
     """
 
     signal_paramChanged = pyqtSignal([str, list])
+    signal_error = pyqtSignal(str)
     
     #----------------------------------------------------------------------
     def __init__(self, paramName, chosen_value, all_Values, nb_directions, chosen_events, events):
@@ -163,15 +193,69 @@ class Connect_Directions_Online(QObject):
         """
         super().__init__()
         
+        self.nb_direction = nb_directions
+        self.all_values = all_Values
+        self.chosen_events = chosen_events
+        self.chosen_value = chosen_value
+        self.events = None
+        self.tdef = None
+        
         self.directions = Connect_Directions(paramName, chosen_value, all_Values, nb_directions)
         self.directions.signal_paramChanged[str, list].connect(self.on_modify)
         
-        self.events = Connect_Directions('DIR_EVENTS', chosen_events, events, nb_directions)
-        self.events.signal_paramChanged[str, list].connect(self.on_modify)
+        self.associated_events = Connect_Directions('DIR_EVENTS', chosen_events, events, nb_directions)
+        self.associated_events.signal_paramChanged[str, list].connect(self.on_modify)
         
         self.l = QVBoxLayout()
         self.l.addLayout(self.directions.l)
-        self.l.addLayout(self.events.l)
+        self.l.addLayout(self.associated_events.l)
+        
+    #----------------------------------------------------------------------
+    def clear_VBoxLayout(self):
+        """
+        Clear the layout containing additional layouts and widgets
+        """
+        for i in reversed(range(self.l.count())): 
+            # self.l.itemAt(i).widget().clear_hBoxLayout()
+            self.l.removeItem(self.l.itemAt(i))
+            # self.l.itemAt(i).setParent(None)
+    
+    @pyqtSlot(str, str)  
+    #----------------------------------------------------------------------
+    def on_new_decoder_file(self, key, filePath):
+        """
+        Update the event QComboBox with the new events from the new .
+        """
+        cls = qc.load_obj(filePath)
+        events = cls['cls'].classes_        # Finds the events on which the decoder has been trained on
+        self.events = list(map(int, events))
+        self.nb_directions = len(events)
+                
+        if self.tdef:
+            self.on_update_VBoxLayout()
+                        
+    @pyqtSlot(str, str)
+    #----------------------------------------------------------------------
+    def on_new_tdef_file(self, key, trigger_file):
+        """
+        Update the event QComboBox with the new events from the new tdef file.
+        """
+        self.tdef = trigger_def(trigger_file)
+        
+        if self.events:
+            self.on_update_VBoxLayout()            
+    
+    @pyqtSlot()
+    #----------------------------------------------------------------------
+    def on_update_VBoxLayout(self):
+        """
+        Update the layout with the new events and chosen values
+        """
+        self.clear_VBoxLayout()
+        # events = [self.tdef.by_value[i] for i in self.events]
+        # self.directions.create_the_comboBoxes(self.chosen_value, self.all_values, self.nb_directions)
+        # self.associated_events.create_the_comboBoxes(self.chosen_events, events, self.nb_directions)
+        
     
     @pyqtSlot(str, list)
     #----------------------------------------------------------------------
@@ -816,8 +900,11 @@ class PathFolderFinder(QObject):
         Slot connected to the button clicked signal. It opens a QFileDialog 
         and adds the selected path to the lineEdit.
         """
-        path_name = QFileDialog.getExistingDirectory(caption="Choose the subject's directory", directory=self.defaultPath)
-        self.lineEdit_pathSearch.setText(path_name)
+        path_name = QFileDialog.getExistingDirectory(caption="Choose the directory for " + self.name, directory=self.defaultPath)
+
+        if path_name:            
+            self.lineEdit_pathSearch.setText(path_name)
+            self.lineEdit_pathSearch.setFocus()
     
     @pyqtSlot()
     #----------------------------------------------------------------------
@@ -877,9 +964,11 @@ class PathFileFinder(QObject):
         Slot connected to the button clicked signal. It opens a QFileDialog 
         and adds the selected path to the lineEdit.
         """
-        path_name = QFileDialog.getOpenFileName(caption="Choose the subject's directory", directory=self.defaultPath)
-        self.lineEdit_pathSearch.setText(path_name[0])
-        self.signal_pathChanged[str, str].emit(self.name, path_name[0])
+        path_name = QFileDialog.getOpenFileName(caption="Choose the file for " + self.name, directory=self.defaultPath)
+
+        if path_name:
+            self.lineEdit_pathSearch.setText(path_name[0])
+            self.lineEdit_pathSearch.setFocus()
         
     @pyqtSlot()
     #----------------------------------------------------------------------
@@ -967,30 +1056,50 @@ class Connect_NewSubject(QDialog):
         subject_id = self.layout().itemAt(0).itemAt(1).widget().text()
         protocol = self.layout().itemAt(0).itemAt(3).widget().currentText()
         
+        #-----------------------------------------------------------------------------------
+        # create the folder that will contains the scripts for a protocol
+        protocol_scripts_folder = Path(os.environ['PYCNBI_SCRIPTS']) / protocol
+        try:
+            os.mkdir(protocol_scripts_folder)
+            # Copy the protocols files
+            files_path = Path(os.environ['PYCNBI_ROOT']) / 'pycnbi' / 'protocols' / protocol
+            files = glob(os.fspath(files_path / "*.py") , recursive=False)       
+            for f in files:
+                copy2(f, os.fspath(protocol_scripts_folder))               
+        except:
+            pass
+        
+        #-----------------------------------------------------------------------------------
+        # create the folder that will contains the subjects data folders for a protocol
+        data_folder = Path(os.environ['PYCNBI_DATA']) / protocol
+        try:
+            os.mkdir(data_folder)
+        except:
+            pass
+        
+        #-----------------------------------------------------------------------------------
+        # Prepare the subjects folders with the config files
         try:
             # for PYCNBI_SCRIPTS
-            scripts_path = Path(os.environ['PYCNBI_SCRIPTS']) / (subject_id + '-' + protocol)            
+            scripts_path = protocol_scripts_folder / (subject_id + '-' + protocol)            
             os.mkdir(scripts_path)
               
             # Add path to the lineEdit_pathSearch
             self.lineEdit_pathSearch.setText(os.fspath(scripts_path))        
             
             # for PYCNBI_DATA
-            data_path = Path(os.environ['PYCNBI_DATA']) / (subject_id + '-' + protocol)
-            os.mkdir(data_path)            
+            subject_data = data_folder / (subject_id + '-' + protocol)
+            os.mkdir(subject_data)            
             
-            # Copy the protocol config_files
+            # Copy the config_files
             files_path = Path(os.environ['PYCNBI_ROOT']) / 'pycnbi' / 'config_files' / protocol / 'template_files'
             files = glob(os.fspath(files_path / "*.py") , recursive=False)
-            config_files = [f for f in files if 'structure' not in f]
-            for f in config_files:
+            for f in files:
                 fileName = os.path.split(f)[1].split('.')[0]
                 copy2(f, (os.fspath(scripts_path / fileName) + ('_' + subject_id + '-' + protocol +'.py')))
-            
+                
         except Exception as e:
-            self.signal_error[str].emit(str(e))
-            #error_dialog = QErrorMessage(self)
-            #error_dialog.showMessage(str(e))                 
+            self.signal_error[str].emit(str(e)) 
 
 #----------------------------------------------------------------------
 def add_v_separator(layout):

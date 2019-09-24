@@ -2,7 +2,13 @@
 class Basic:
     """
     Contains the basic parameters for the online modality of Motor Imagery protocol
-    """  
+    """
+    #-------------------------------------------
+    # PATH TO SAVE DATA
+    #-------------------------------------------
+    params0 = dict()
+    params0.update({'DATA_PATH': str})
+
     #-------------------------------------------
     # Decoder
     #-------------------------------------------
@@ -31,20 +37,20 @@ class Basic:
     #-------------------------------------------
     # Bar behavior
     #-------------------------------------------
-    params3 = dict()
-    params3.update({'PROB_ALPHA_NEW': float})
-    params3.update({'BAR_BIAS': None})
-    params3.update({'BAR_STEP': dict(left=int, right=int, up=int, down=int, both=int)})
-    params3.update({'BAR_SLOW_START': {'False':None, 'True':list}})             # BAR_SLOW_START: None or in seconds
-    params3.update({'BAR_REACH_FINISH': (False, True)})
-    params3.update({'POSTIVE_FEEDBACK': (False, True)})
+    params4 = dict()
+    params4.update({'PROB_ALPHA_NEW': float})
+    params4.update({'BAR_BIAS': None})
+    params4.update({'BAR_STEP': dict(left=int, right=int, up=int, down=int, both=int)})
+    params4.update({'BAR_SLOW_START': {'False':None, 'True':list}})             # BAR_SLOW_START: None or in seconds
+    params4.update({'BAR_REACH_FINISH': (False, True)})
+    params4.update({'POSTIVE_FEEDBACK': (False, True)})
 
     #-------------------------------------------
     # Screen property
     #-------------------------------------------
-    params4 = dict()
-    params4.update({'SCREEN_SIZE': ((1920, 1080), (1600, 1200), (1680, 1050), (1280, 1024), (1024, 768))})
-    params4.update({'SCREEN_POS': ((0, 0), (1920, 0))}) # TO CHANGE: add a check box second monitor and auto display on it. 
+    params5 = dict()
+    params5.update({'SCREEN_SIZE': ((1920, 1080), (1600, 1200), (1680, 1050), (1280, 1024), (1024, 768))})
+    params5.update({'SCREEN_POS': ((0, 0), (1920, 0))}) # TO CHANGE: add a check box second monitor and auto display on it. 
 
 
 ########################################################################
