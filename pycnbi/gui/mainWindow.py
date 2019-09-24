@@ -205,24 +205,11 @@ class MainWindow(QMainWindow):
                             directions = Connect_Directions(key, chosen_value, values, nb_directions)
 
                         elif self.modality is 'online':
-                            cls_path = self.paramsWidgets['DECODER_FILE'].lineEdit_pathSearch.text()
-                            cls = qc.load_obj(cls_path)
-                            events = cls['cls'].classes_        # Finds the events on which the decoder has been trained on
-                            events = list(map(int, events))
-                            nb_directions = len(events)
                             chosen_events = [event[1] for event in chosen_value]
                             chosen_value = [val[0] for val in chosen_value]
-
-                            # Need tdef to convert int to str trigger values
-                            try:
-                                [tdef.by_value(i) for i in events]
-                            except:
-                                trigger_file = self.extract_value_from_module('TRIGGER_FILE', all_chosen_values)
-                                tdef = trigger_def(trigger_file)
-                                events = [tdef.by_value[i] for i in events]
-
-                            directions = Connect_Directions_Online(key, chosen_value, values, nb_directions, chosen_events, events)
-
+                            nb_val = len(chosen_value) 
+                            directions = Connect_Directions_Online(key, chosen_value, values, nb_val, chosen_events, [None])
+                            
                         directions.signal_paramChanged[str, list].connect(self.on_guichanges)
                         self.paramsWidgets.update({key: directions})
                         layout.addRow(key, directions.l)                
@@ -232,7 +219,6 @@ class MainWindow(QMainWindow):
                         
                         trigger_def = Connect_Directions(key, chosen_value, [None], 4)
                         trigger_def.signal_paramChanged[str, list].connect(self.on_guichanges)
-                        self.paramsWidgets['TRIGGER_FILE'].signal_pathChanged[str, str].connect(trigger_def.on_new_tdef_file)
                         self.paramsWidgets.update({key: trigger_def})
                         layout.addRow(key, trigger_def.l)
 
@@ -341,7 +327,15 @@ class MainWindow(QMainWindow):
                 elif params[par][0] == 'Advanced':
                     self.ui.scrollAreaWidgetContents_Adv.setLayout(layout)
 
-
+        
+        
+        # Connect inter-widgets signals and slots
+        if self.modality == 'trainer':
+            self.paramsWidgets['TRIGGER_FILE'].signal_pathChanged[str, str].connect(trigger_def.on_new_tdef_file)
+        if self.modality == 'online':
+            self.paramsWidgets['TRIGGER_FILE'].signal_pathChanged[str, str].connect(directions.on_new_tdef_file)
+            self.paramsWidgets['DECODER_FILE'].signal_pathChanged[str, str].connect(directions.on_new_decoder_file)
+            
     # ----------------------------------------------------------------------
     def load_config(self, cfg_file):
         """
