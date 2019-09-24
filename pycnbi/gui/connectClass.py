@@ -12,6 +12,7 @@ import os
 from glob import glob
 from pathlib import Path 
 from shutil import copy2
+from pycnbi.utils import q_common as qc
 from pycnbi.triggers.trigger_def import trigger_def
 from PyQt5.QtWidgets import QPushButton, QHBoxLayout, QVBoxLayout, QFileDialog, QLineEdit, QComboBox, QSpinBox, QDoubleSpinBox, QLabel, \
      QFrame, QDialog, QFormLayout, QDialogButtonBox
@@ -137,7 +138,7 @@ class Connect_Directions(QObject):
     #----------------------------------------------------------------------
     def on_new_tdef_file(self, key, trigger_file):
         """
-        Update the QComboBox witht the new events from the new tdef file.
+        Update the QComboBox with the new events from the new tdef file.
         """
         self.clear_hBoxLayout()
         tdef = trigger_def(trigger_file)
@@ -177,6 +178,7 @@ class Connect_Directions_Online(QObject):
     """
 
     signal_paramChanged = pyqtSignal([str, list])
+    signal_error = pyqtSignal(str)
     
     #----------------------------------------------------------------------
     def __init__(self, paramName, chosen_value, all_Values, nb_directions, chosen_events, events):
@@ -191,15 +193,69 @@ class Connect_Directions_Online(QObject):
         """
         super().__init__()
         
+        self.nb_direction = nb_directions
+        self.all_values = all_Values
+        self.chosen_events = chosen_events
+        self.chosen_value = chosen_value
+        self.events = None
+        self.tdef = None
+        
         self.directions = Connect_Directions(paramName, chosen_value, all_Values, nb_directions)
         self.directions.signal_paramChanged[str, list].connect(self.on_modify)
         
-        self.events = Connect_Directions('DIR_EVENTS', chosen_events, events, nb_directions)
-        self.events.signal_paramChanged[str, list].connect(self.on_modify)
+        self.associated_events = Connect_Directions('DIR_EVENTS', chosen_events, events, nb_directions)
+        self.associated_events.signal_paramChanged[str, list].connect(self.on_modify)
         
         self.l = QVBoxLayout()
         self.l.addLayout(self.directions.l)
-        self.l.addLayout(self.events.l)
+        self.l.addLayout(self.associated_events.l)
+        
+    #----------------------------------------------------------------------
+    def clear_VBoxLayout(self):
+        """
+        Clear the layout containing additional layouts and widgets
+        """
+        for i in reversed(range(self.l.count())): 
+            # self.l.itemAt(i).widget().clear_hBoxLayout()
+            self.l.removeItem(self.l.itemAt(i))
+            # self.l.itemAt(i).setParent(None)
+    
+    @pyqtSlot(str, str)  
+    #----------------------------------------------------------------------
+    def on_new_decoder_file(self, key, filePath):
+        """
+        Update the event QComboBox with the new events from the new .
+        """
+        cls = qc.load_obj(filePath)
+        events = cls['cls'].classes_        # Finds the events on which the decoder has been trained on
+        self.events = list(map(int, events))
+        self.nb_directions = len(events)
+                
+        if self.tdef:
+            self.on_update_VBoxLayout()
+                        
+    @pyqtSlot(str, str)
+    #----------------------------------------------------------------------
+    def on_new_tdef_file(self, key, trigger_file):
+        """
+        Update the event QComboBox with the new events from the new tdef file.
+        """
+        self.tdef = trigger_def(trigger_file)
+        
+        if self.events:
+            self.on_update_VBoxLayout()            
+    
+    @pyqtSlot()
+    #----------------------------------------------------------------------
+    def on_update_VBoxLayout(self):
+        """
+        Update the layout with the new events and chosen values
+        """
+        self.clear_VBoxLayout()
+        # events = [self.tdef.by_value[i] for i in self.events]
+        # self.directions.create_the_comboBoxes(self.chosen_value, self.all_values, self.nb_directions)
+        # self.associated_events.create_the_comboBoxes(self.chosen_events, events, self.nb_directions)
+        
     
     @pyqtSlot(str, list)
     #----------------------------------------------------------------------
