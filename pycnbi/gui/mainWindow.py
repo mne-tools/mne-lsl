@@ -82,6 +82,7 @@ class MainWindow(QMainWindow):
         
         # To display errors
         self.error_dialog = QErrorMessage(self)
+        self.error_dialog.setWindowTitle('Warning')
         
         # Mp sharing variables
         self.record_state = mp.Value('i', 0)
@@ -173,7 +174,7 @@ class MainWindow(QMainWindow):
 
         # Load channels
         if self.modality == 'trainer':
-            subjectDataPath = Path('%s/%s/fif' % (os.environ['PYCNBI_DATA'], filePath.split('/')[-1]))
+            subjectDataPath = Path('%s/%s/%s/fif' % (os.environ['PYCNBI_DATA'], filePath.split('/')[-2], filePath.split('/')[-1]))
             self.channels = read_params_from_file(subjectDataPath, 'channelsList.txt')    
                 
         self.directions = ()
@@ -204,36 +205,33 @@ class MainWindow(QMainWindow):
                             directions = Connect_Directions(key, chosen_value, values, nb_directions)
 
                         elif self.modality is 'online':
-                            cls_path = self.paramsWidgets['DECODER_FILE'].lineEdit_pathSearch.text()
-                            cls = qc.load_obj(cls_path)
-                            events = cls['cls'].classes_        # Finds the events on which the decoder has been trained on
-                            events = list(map(int, events))
-                            nb_directions = len(events)
                             chosen_events = [event[1] for event in chosen_value]
                             chosen_value = [val[0] for val in chosen_value]
-
-                            # Need tdef to convert int to str trigger values
-                            try:
-                                [tdef.by_value(i) for i in events]
-                            except:
-                                trigger_file = self.extract_value_from_module('TRIGGER_FILE', all_chosen_values)
-                                tdef = trigger_def(trigger_file)
-                                events = [tdef.by_value[i] for i in events]
-
-                            directions = Connect_Directions_Online(key, chosen_value, values, nb_directions, chosen_events, events)
-
+                            nb_val = len(chosen_value) 
+                            directions = Connect_Directions_Online(key, chosen_value, values, nb_val, chosen_events, [None])
+                            
                         directions.signal_paramChanged[str, list].connect(self.on_guichanges)
                         self.paramsWidgets.update({key: directions})
-                        layout.addRow(key, directions.l)
+                        layout.addRow(key, directions.l)                
 
+                    # For the special case of choosing the trigger classes to train on
+                    elif 'TRIGGER_DEF' in key:
+                        
+                        trigger_def = Connect_Directions(key, chosen_value, [None], 4)
+                        trigger_def.signal_paramChanged[str, list].connect(self.on_guichanges)
+                        self.paramsWidgets.update({key: trigger_def})
+                        layout.addRow(key, trigger_def.l)
 
                     # For providing a folder path.
                     elif 'PATH' in key:
-                        pathfolderfinder = PathFolderFinder(key, os.environ['PYCNBI_ROOT'], chosen_value)
+                        pathfolderfinder = PathFolderFinder(key, os.environ['PYCNBI_DATA'], chosen_value)
                         pathfolderfinder.signal_pathChanged[str, str].connect(self.on_guichanges)
                         pathfolderfinder.signal_error[str].connect(self.on_error)
                         self.paramsWidgets.update({key: pathfolderfinder})
                         layout.addRow(key, pathfolderfinder.layout)
+                        
+                        if not chosen_value:
+                            self.signal_error[str].emit(key + ' is empty! Provide a path before starting.')
                         continue
 
                     # For providing a file path.
@@ -243,20 +241,9 @@ class MainWindow(QMainWindow):
                         pathfilefinder.signal_error[str].connect(self.on_error)
                         self.paramsWidgets.update({key: pathfilefinder})
                         layout.addRow(key, pathfilefinder.layout)
-                        continue
-
-                    # For the special case of choosing the trigger classes to train on
-                    elif 'TRIGGER_DEF' in key:
-                        trigger_file = self.extract_value_from_module('TRIGGER_FILE', all_chosen_values)
-                        tdef = trigger_def(trigger_file)
-                        nb_directions = 4
-                        #  Convert 'None' to real None (real None is removed when selected in the GUI)
-                        tdef_values = [ None if i == 'None' else i for i in list(tdef.by_name) ]
-                        directions = Connect_Directions(key, chosen_value, tdef_values, nb_directions)
-                        directions.signal_paramChanged[str, list].connect(self.on_guichanges)
-                        self.paramsWidgets.update({key: directions})
-                        layout.addRow(key, directions.l)
-                        continue
+                        
+                        if not chosen_value:
+                            self.signal_error[str].emit(key + ' is empty! Provide a file before starting.')                        
 
                     # To select specific electrodes
                     elif '_CHANNELS' in key or 'CHANNELS_' in key:
@@ -279,7 +266,6 @@ class MainWindow(QMainWindow):
                         spinBox.signal_paramChanged[str, int].connect(self.on_guichanges)
                         self.paramsWidgets.update({key: spinBox})
                         layout.addRow(key, spinBox)
-                        continue
 
                     # For all the float values.
                     elif values is float:
@@ -287,7 +273,6 @@ class MainWindow(QMainWindow):
                         doublespinBox.signal_paramChanged[str, float].connect(self.on_guichanges)
                         self.paramsWidgets.update({key: doublespinBox})
                         layout.addRow(key, doublespinBox)
-                        continue
 
                     # For parameters with multiple non-fixed values in a list (user can modify them)
                     elif values is list:
@@ -304,7 +289,6 @@ class MainWindow(QMainWindow):
                         lineEdit.signal_paramChanged[str, type(None)].connect(self.on_guichanges)
                         self.paramsWidgets.update({key: lineEdit})
                         layout.addRow(key, lineEdit)
-                        continue
 
                     # For parameters with multiple fixed values.
                     elif type(values) is tuple:
@@ -324,13 +308,11 @@ class MainWindow(QMainWindow):
                             comboParams.signal_additionalParamChanged[str, dict].connect(self.on_guichanges)
                             self.paramsWidgets.update({key: comboParams})
                             layout.addRow(key, comboParams.layout)
-
                         except:
                             modifiable_dict = Connect_Modifiable_Dict(key, chosen_value, values)
                             modifiable_dict.signal_paramChanged[str, dict].connect(self.on_guichanges)
                             self.paramsWidgets.update({key: modifiable_dict})
                             layout.addRow(key, modifiable_dict)
-                        continue
 
                 # Add a horizontal line to separate parameters' type.
                 if p != param[-1]:
@@ -345,14 +327,21 @@ class MainWindow(QMainWindow):
                 elif params[par][0] == 'Advanced':
                     self.ui.scrollAreaWidgetContents_Adv.setLayout(layout)
 
-
+        
+        
+        # Connect inter-widgets signals and slots
+        if self.modality == 'trainer':
+            self.paramsWidgets['TRIGGER_FILE'].signal_pathChanged[str, str].connect(trigger_def.on_new_tdef_file)
+        if self.modality == 'online':
+            self.paramsWidgets['TRIGGER_FILE'].signal_pathChanged[str, str].connect(directions.on_new_tdef_file)
+            self.paramsWidgets['DECODER_FILE'].signal_pathChanged[str, str].connect(directions.on_new_decoder_file)
+            
     # ----------------------------------------------------------------------
     def load_config(self, cfg_file):
         """
         Dynamic loading of a config file.
         Format the lib to fit the previous developed pycnbi code if subject specific file (not for the templates).
-        cfg_path: path to the folder containing the config file.
-        cfg_file: config file to load.
+        cfg_file: tuple containing the path and the config file name.
         """
         if self.cfg_subject == None or cfg_file[1] not in self.cfg_subject.__file__:
             # Dynamic loading
@@ -424,16 +413,16 @@ class MainWindow(QMainWindow):
         Opens the File dialog window when the search button is pressed.
         """
         
-        buttonDisplayName = self.ui.pushButton_Search.text()
+        buttonIcon = self.ui.pushButton_Search.text()
         
-        if buttonDisplayName == 'Search':            
+        if buttonIcon == 'Search':            
             path_name = QFileDialog.getExistingDirectory(caption="Choose the subject's directory", directory=os.environ['PYCNBI_SCRIPTS'])
-            self.ui.lineEdit_pathSearch.clear()
-            self.ui.lineEdit_pathSearch.insert(path_name)
-            self.ui.pushButton_Search.setText('Accept')
-            # self.ui.pushButton_Search.setAutoFillBackground(True)
-            self.ui.pushButton_Search.setStyleSheet("color: red;")
             
+            if path_name:
+                self.ui.lineEdit_pathSearch.clear()
+                self.ui.lineEdit_pathSearch.insert(path_name)
+                self.ui.pushButton_Search.setText('Accept')
+                self.ui.pushButton_Search.setStyleSheet("color: red;")            
         else:
             self.ui.pushButton_Search.setText('Search')
             self.ui.pushButton_Search.setStyleSheet("color: black;")
@@ -500,10 +489,12 @@ class MainWindow(QMainWindow):
         """
         Loads the Offline parameters.
         """
-        import pycnbi.protocols.train_mi as m
-
-        self.m = m
         self.modality = 'offline'
+        
+        path2protocol =  os.path.split(self.ui.lineEdit_pathSearch.text())[0]
+        sys.path.append(path2protocol)
+        self.m = import_module('train_mi')
+        
         cfg_file, cfg_template = self.prepare_config_files(self.modality)
         
         self.ui.checkBox_Record.setChecked(True)
@@ -511,8 +502,9 @@ class MainWindow(QMainWindow):
         
         if cfg_file and cfg_template:
             self.load_all_params(cfg_template, cfg_file)            
-
+           
         self.ui.groupBox_Launch.setEnabled(True)
+        
     # ----------------------------------------------------------------------
     @pyqtSlot()
     def on_click_train(self):
@@ -539,10 +531,12 @@ class MainWindow(QMainWindow):
         """
         Loads the Online parameters.
         """
-        import pycnbi.protocols.test_mi as m
-
-        self.m = m
         self.modality = 'online'
+        
+        path2protocol =  os.path.split(self.ui.lineEdit_pathSearch.text())[0]
+        sys.path.append(path2protocol)
+        self.m = import_module('test_mi')        
+        
         cfg_file, cfg_template = self.prepare_config_files(self.modality)
         
         self.ui.checkBox_Record.setChecked(True)
@@ -560,7 +554,7 @@ class MainWindow(QMainWindow):
         """
         Launch the selected protocol. It can be Offline, Train or Online.
         """
-        self.record_dir = Path(os.environ['PYCNBI_DATA']) / os.path.split(Path(self.ui.lineEdit_pathSearch.text()))[-1]
+        self.record_dir = Path(self.cfg_subject.DATA_PATH)
         
         ccfg = cfg_class(self.cfg_subject)  #  because a module is not pickable
         
@@ -593,7 +587,7 @@ class MainWindow(QMainWindow):
                     self.protocol_state.value = 2  #  0=stop, 1=start, 2=wait
                     
                 processesToLaunch = [('recording', recorder.run_gui, [self.record_state, self.protocol_state, self.record_dir, self.recordLogger, amp['name'], amp['serial'], False, self.record_terminal.my_receiver.queue]), \
-                                 ('protocol', self.m.run, [ccfg, self.protocol_state, self.my_receiver.queue])]
+                                     ('protocol', self.m.run, [ccfg, self.protocol_state, self.my_receiver.queue])]
 
             else:
                 with self.record_state.get_lock():
@@ -633,10 +627,19 @@ class MainWindow(QMainWindow):
         """
         Instance a Connect_NewSubject QDialog class
         """
-        qdialog = Connect_NewSubject(self, self.ui.lineEdit_pathSearch)
-        qdialog.signal_error[str].connect(self.on_error)
-        self.ui.groupBox_Params.setEnabled(True)
-    
+        buttonIcon = self.ui.pushButton_NewSubject.text()
+        
+        if buttonIcon == 'New':
+            qdialog = Connect_NewSubject(self, self.ui.lineEdit_pathSearch)
+            qdialog.signal_error[str].connect(self.on_error)
+            self.ui.pushButton_NewSubject.setText('Accept')
+            self.ui.pushButton_NewSubject.setStyleSheet("color: red;")
+        else:
+            self.ui.pushButton_NewSubject.setText('New')
+            self.ui.pushButton_NewSubject.setStyleSheet("color: black;")
+            self.on_enable_modality()
+
+
     #----------------------------------------------------------------------
     def on_error(self, errorMsg):
         """
@@ -651,16 +654,12 @@ class MainWindow(QMainWindow):
         """
         filePath, fileName = os.path.split(self.cfg_subject.__file__)
         fileName = fileName.split('.')[0]       # Remove the .py
-        # subjectProtocol = os.path.split(filePath)[1]    # format: subject-protocol
         
         file = self.cfg_subject.__file__.split('.')[0] + '_' + datetime.now().strftime('%m.%d.%d.%M') + '.py'
         filePath = QFileDialog.getSaveFileName(self, 'Save config file', file, 'python(*.py)')
-        
         if filePath[0]:
             save_params_to_file(filePath[0], cfg_class(self.cfg_subject))
-        else:
-            self.signal_error[str].emit('Provide a correct path and file name to save the config parameters')
-    
+        
     @pyqtSlot(list)
     #----------------------------------------------------------------------
     def fill_comboBox_lsl(self, amp_list):

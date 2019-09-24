@@ -52,7 +52,6 @@ keys = {'left':81, 'right':83, 'up':82, 'down':84, 'pgup':85, 'pgdn':86,
 color = dict(G=(20, 140, 0), B=(210, 0, 0), R=(0, 50, 200), Y=(0, 215, 235),
              K=(0, 0, 0), W=(255, 255, 255), w=(200, 200, 200))
 
-
 def check_config(cfg):
     critical_vars = {
         'COMMON': ['DECODER_FILE',
@@ -92,6 +91,9 @@ def check_config(cfg):
         if not hasattr(cfg, key):
             logger.error('%s is a required parameter' % key)
             raise RuntimeError
+
+    if getattr(cfg, 'TRIGGER_DEVICE') == None:
+        raise RuntimeError('The trigger device is set to None! No events will be saved.')
 
     if not hasattr(cfg, 'TIMINGS'):
         logger.error('"TIMINGS" not defined in config.')

@@ -1,5 +1,6 @@
 TRIGGER_DEVICE = 'SOFTWARE'
-TRIGGER_FILE = r'C:\Users\adesvachez\git\pycnbi\pycnbi\triggers\triggerdef_16.ini'
+DATA_PATH = ''
+TRIGGER_FILE = ''
 
 FEEDBACK_TYPE = 'BAR'
 FEEDBACK_IMAGE_PATH = ''
