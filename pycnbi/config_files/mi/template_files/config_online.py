@@ -12,10 +12,6 @@ DIRECTIONS = [ ('L', 'LEFT_GO'), ('R', 'RIGHT_GO') ]
 TRIGGER_DEVICE = None # None | 'ARDUINO' | 'USB2LPT' | 'DESKTOP' | 'SOFTWARE'
 TRIGGER_FILE = r'C:\Users\adesvachez\git\pycnbi\pycnbi\triggers\triggerdef_16.ini'
 
-# acquisition device (set both to None to search)
-AMP_NAME = None
-AMP_SERIAL = None
-
 # trial properties
 TRIALS_EACH = 10
 TRIALS_RANDOMIZE = True
