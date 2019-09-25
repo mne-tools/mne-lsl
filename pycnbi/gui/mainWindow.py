@@ -370,11 +370,10 @@ class MainWindow(QMainWindow):
             self.disp_params(self.cfg_struct, self.cfg_subject)
             
             # Check the parameters integrity
-            self.cfg_subject = self.m.check_config(self.cfg_subject)
-        
+            self.m.check_config(self.cfg_subject)
+            
         except Exception as e:
             self.signal_error[str].emit(str(e))
-
 
     @pyqtSlot(str, str)
     @pyqtSlot(str, bool)
@@ -502,7 +501,7 @@ class MainWindow(QMainWindow):
         self.ui.checkBox_Record.setEnabled(False)
         
         if cfg_file and cfg_template:
-            self.load_all_params(cfg_template, cfg_file)            
+            self.load_all_params(cfg_template, cfg_file)       
            
         self.ui.groupBox_Launch.setEnabled(True)
         
