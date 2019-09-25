@@ -207,8 +207,8 @@ class MainWindow(QMainWindow):
                         elif self.modality is 'online':
                             chosen_events = [event[1] for event in chosen_value]
                             chosen_value = [val[0] for val in chosen_value]
-                            nb_val = len(chosen_value) 
-                            directions = Connect_Directions_Online(key, chosen_value, values, nb_val, chosen_events, [None])
+                            nb_directions = len(chosen_value) 
+                            directions = Connect_Directions_Online(key, chosen_value, values, nb_directions, chosen_events, [None])
                             
                         directions.signal_paramChanged[str, list].connect(self.on_guichanges)
                         self.paramsWidgets.update({key: directions})
@@ -490,11 +490,14 @@ class MainWindow(QMainWindow):
         Loads the Offline parameters.
         """
         self.modality = 'offline'
-        
-        path2protocol =  os.path.split(self.ui.lineEdit_pathSearch.text())[0]
-        sys.path.append(path2protocol)
-        self.m = import_module('train_mi')
-        
+                
+        if 'train_mi' not in sys.modules:
+            path2protocol =  os.path.split(self.ui.lineEdit_pathSearch.text())[0]
+            sys.path.append(path2protocol)
+            self.m = import_module('train_mi')
+        else:
+            reload('train_mi')
+            
         cfg_file, cfg_template = self.prepare_config_files(self.modality)
         
         self.ui.checkBox_Record.setChecked(True)
@@ -531,11 +534,14 @@ class MainWindow(QMainWindow):
         """
         Loads the Online parameters.
         """
-        self.modality = 'online'
+        self.modality = 'online'        
         
-        path2protocol =  os.path.split(self.ui.lineEdit_pathSearch.text())[0]
-        sys.path.append(path2protocol)
-        self.m = import_module('test_mi')        
+        if 'test_mi' not in sys.modules:
+            path2protocol =  os.path.split(self.ui.lineEdit_pathSearch.text())[0]
+            sys.path.append(path2protocol)
+            self.m = import_module('test_mi')
+        else:
+            reload('test_mi')
         
         cfg_file, cfg_template = self.prepare_config_files(self.modality)
         
