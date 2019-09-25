@@ -60,9 +60,6 @@ def check_config(cfg):
     for key in critical_vars['COMMON']:
         if not hasattr(cfg, key):
             raise RuntimeError('%s is a required parameter' % key)
-        
-    if getattr(cfg, 'TRIGGER_DEVICE') == None:
-        raise RuntimeError('The trigger device is set to None! No events will be saved.')
 
     if not hasattr(cfg, 'TIMINGS'):
         logger.error('"TIMINGS" not defined in config.')
@@ -77,12 +74,14 @@ def check_config(cfg):
             setattr(cfg, key, optional_vars[key])
             logger.warning('Setting undefined %s=%s' % (key, optional[key]))
 
-    return cfg
+    if getattr(cfg, 'TRIGGER_DEVICE') == None:
+        logger.warning('The trigger device is set to None! No events will be saved.')
+        raise RuntimeError('The trigger device is set to None! No events will be saved.')
 
 # for batch script
 def batch_run(cfg_module):
     cfg = pu.load_config(cfg_module)
-    cfg = check_config(cfg)
+    check_config(cfg)
     run(cfg)
 
 def run(cfg, state=mp.Value('i', 1), queue=None):
