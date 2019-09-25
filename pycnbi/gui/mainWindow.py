@@ -495,9 +495,7 @@ class MainWindow(QMainWindow):
             path2protocol =  os.path.split(self.ui.lineEdit_pathSearch.text())[0]
             sys.path.append(path2protocol)
             self.m = import_module('train_mi')
-        else:
-            reload('train_mi')
-            
+
         cfg_file, cfg_template = self.prepare_config_files(self.modality)
         
         self.ui.checkBox_Record.setChecked(True)
@@ -540,8 +538,6 @@ class MainWindow(QMainWindow):
             path2protocol =  os.path.split(self.ui.lineEdit_pathSearch.text())[0]
             sys.path.append(path2protocol)
             self.m = import_module('test_mi')
-        else:
-            reload('test_mi')
         
         cfg_file, cfg_template = self.prepare_config_files(self.modality)
         
