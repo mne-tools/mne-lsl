@@ -214,11 +214,13 @@ class Connect_Directions_Online(QObject):
     def clear_VBoxLayout(self):
         """
         Clear the layout containing additional layouts and widgets
-        """
-        for i in reversed(range(self.l.count())): 
-            # self.l.itemAt(i).widget().clear_hBoxLayout()
-            self.l.removeItem(self.l.itemAt(i))
-            # self.l.itemAt(i).setParent(None)
+        """        
+        if self.l.itemAt(1):
+            self.associated_events.clear_hBoxLayout()
+            self.l.itemAt(1).setParent(None)
+        if self.l.itemAt(0):
+            self.directions.clear_hBoxLayout()
+            self.l.itemAt(0).setParent(None)
     
     @pyqtSlot(str, str)  
     #----------------------------------------------------------------------
@@ -252,9 +254,13 @@ class Connect_Directions_Online(QObject):
         Update the layout with the new events and chosen values
         """
         self.clear_VBoxLayout()
-        # events = [self.tdef.by_value[i] for i in self.events]
-        # self.directions.create_the_comboBoxes(self.chosen_value, self.all_values, self.nb_directions)
-        # self.associated_events.create_the_comboBoxes(self.chosen_events, events, self.nb_directions)
+        events = [self.tdef.by_value[i] for i in self.events]
+        
+        self.directions.create_the_comboBoxes(self.chosen_value, self.all_values, self.nb_directions)
+        self.associated_events.create_the_comboBoxes(self.chosen_events, events, self.nb_directions)
+        
+        self.l.addLayout(self.directions.l)
+        self.l.addLayout(self.associated_events.l)
         
     
     @pyqtSlot(str, list)
@@ -267,9 +273,9 @@ class Connect_Directions_Online(QObject):
         
         if paramName == self.directions.paramName:
             for i in range(len(new_Values)):
-                updatedList.append((new_Values[i], self.events.chosen_value[i]))
+                updatedList.append((new_Values[i], self.associated_events.chosen_value[i]))
                 
-        elif paramName == self.events.paramName:
+        elif paramName == self.associated_events.paramName:
             for i in range(len(new_Values)):
                 updatedList.append((self.directions.chosen_value[i], new_Values[i]))
                 
