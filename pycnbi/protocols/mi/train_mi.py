@@ -24,8 +24,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys
 import os
-import time
-import imp
 import cv2
 import random
 import multiprocessing as mp
