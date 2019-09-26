@@ -27,16 +27,14 @@ def save_params_to_file(filePath, params):
     config = Path(filePath)
     params_name = params.__dict__
     
-    if config.is_file() is False:
-        file = open(config, "w")    
+    if config.is_file() is True:
+        os.remove(config)
         
+    with open(config, "w") as file:
         for key, value in params_name.items():      
-            
             if 'PATH' in key or 'FILE' in key:
                 file.write("{} = r'{}'\n" .format(key, value))
             elif type(value) is str:
                 file.write("{} = '{}'\n" .format(key, value))
             else:
                 file.write("{} = {}\n" .format(key, value))
-        
-        file.close()
