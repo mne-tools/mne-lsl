@@ -80,8 +80,10 @@ Create environment variables:
 Add "%NEUROD_ROOT%/scripts" directory to PATH environment variable for convenient access to commonly used scripts.
 
 
-Launch GUI:
-> Go to "scripts" directory and launch ```nd_gui.cmd```.
+Launch GUI, Go to ""%NEUROD_ROOT%/scripts"" directory and launch:
+```
+nd_gui.cmd
+```
 
 
 ## For Windows users, increase timer resolution
