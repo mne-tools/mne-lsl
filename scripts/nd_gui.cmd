@@ -1,1 +1,1 @@
-start /B pythonw %NeuroD_ROOT%/pycnbi/gui/mainWindow.py
+start /B pythonw %NEUROD_ROOT%/neurodecode/gui/mainWindow.py
