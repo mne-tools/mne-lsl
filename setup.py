@@ -1,12 +1,12 @@
 from setuptools import find_packages, setup
 
 setup(
-    name='pycnbi',
+    name='NeuroDecode',
     version='0.9dev',
     author='Kyuhwa Lee, Arnaud Desvachez',
     author_email='lee.kyuh@gmail.com, arnaud.desvachez@gmail.com',
     license='The GNU General Public License',
-    url='https://github.com/dbdq/pycnbi/',
+    url='https://github.com/fcbg-hnp/NeuroDecode/',
     description='Real-time brain-machine interface',
     long_description=open('README.md').read(),
     packages=find_packages(),
