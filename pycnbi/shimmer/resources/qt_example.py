@@ -21,7 +21,7 @@ class RASER(QtGui.QWidget):
     def update_loop(self):
         # Do iterative stuff here
         self.tt2 = time()
-        print self.tt2 - self.tt
+        print(self.tt2 - self.tt)
         self.tt = self.tt2
 
 

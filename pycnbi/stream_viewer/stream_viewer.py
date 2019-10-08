@@ -32,22 +32,37 @@ import pyqtgraph as pg
 import pycnbi
 import pycnbi.utils.q_common as qc
 import pycnbi.utils.pycnbi_utils as pu
+import multiprocessing as mp
+from PyQt5.QtWidgets import QMainWindow,QApplication, QTableWidgetItem
+from PyQt5 import QtCore
+from PyQt5.QtGui import QPainter
+from pathlib import Path
 from scipy.signal import butter, lfilter, lfiltic, buttord
 from pycnbi.stream_receiver.stream_receiver import StreamReceiver
+from pycnbi.gui.streams import redirect_stdout_to_queue
 from pycnbi import logger
-from pyqtgraph.Qt import QtCore, QtGui, uic
 from configparser import RawConfigParser
 from builtins import input
+from pycnbi.stream_viewer.ui_mainwindow_Viewer import Ui_MainWindow
+
 
 # Load GUI. Designed with QT Creator, feel free to change stuff
-form_class = uic.loadUiType("./mainwindow.ui")[0]
+path2_viewerFolder = Path(os.environ['PYCNBI_ROOT'])/'pycnbi'/'stream_viewer'
 
-
-class Scope(QtGui.QMainWindow, form_class):
-    def __init__(self, amp_name, amp_serial):
+class Scope(QMainWindow):
+    def __init__(self, amp_name, amp_serial, state=mp.Value('i', 1), queue=None):        
         super(Scope, self).__init__()
+
+        self.ui = Ui_MainWindow()
+        self.ui.setupUi(self)
+        
+        redirect_stdout_to_queue(logger, queue, 'INFO')
+        logger.info('Viewer launched')
+        
         self.amp_name = amp_name
         self.amp_serial = amp_serial
+        self.state = state
+        
         self.init_scope()
 
     #
@@ -86,47 +101,46 @@ class Scope(QtGui.QMainWindow, form_class):
                 self.device_name = ""
                 self.show_channel_names = 0
         # self.scope_settings.read(os.getenv("HOME") + "/.scope_settings.ini")
-        self.scope_settings.read(".scope_settings.ini")
+        self.scope_settings.read(str(path2_viewerFolder/'.scope_settings.ini'))
 
     #
     # 	Initialize control panel parameter
     #
     def init_panel_GUI(self):
-        self.setupUi(self)
 
         self.show_TID_events = False
         self.show_LPT_events = False
         self.show_Key_events = False
 
         # Event handler
-        self.comboBox_scale.activated.connect(self.onActivated_combobox_scale)
-        self.spinBox_time.valueChanged.connect(self.onValueChanged_spinbox_time)
-        self.checkBox_car.stateChanged.connect(self.onActivated_checkbox_car)
-        self.checkBox_bandpass.stateChanged.connect(
+        self.ui.comboBox_scale.activated.connect(self.onActivated_combobox_scale)
+        self.ui.spinBox_time.valueChanged.connect(self.onValueChanged_spinbox_time)
+        self.ui.checkBox_car.stateChanged.connect(self.onActivated_checkbox_car)
+        self.ui.checkBox_bandpass.stateChanged.connect(
             self.onActivated_checkbox_bandpass)
-        self.checkBox_showTID.stateChanged.connect(
+        self.ui.checkBox_showTID.stateChanged.connect(
             self.onActivated_checkbox_TID)
-        self.checkBox_showLPT.stateChanged.connect(
+        self.ui.checkBox_showLPT.stateChanged.connect(
             self.onActivated_checkbox_LPT)
-        self.checkBox_showKey.stateChanged.connect(
+        self.ui.checkBox_showKey.stateChanged.connect(
             self.onActivated_checkbox_Key)
-        self.pushButton_bp.clicked.connect(self.onClicked_button_bp)
-        self.pushButton_rec.clicked.connect(self.onClicked_button_rec)
-        self.pushButton_stoprec.clicked.connect(self.onClicked_button_stoprec)
+        self.ui.pushButton_bp.clicked.connect(self.onClicked_button_bp)
+        self.ui.pushButton_rec.clicked.connect(self.onClicked_button_rec)
+        self.ui.pushButton_stoprec.clicked.connect(self.onClicked_button_stoprec)
 
-        self.pushButton_stoprec.setEnabled(False)
-        self.comboBox_scale.setCurrentIndex(4)
-        self.checkBox_car.setChecked(
+        self.ui.pushButton_stoprec.setEnabled(False)
+        self.ui.comboBox_scale.setCurrentIndex(4)
+        self.ui.checkBox_car.setChecked(
             int(self.scope_settings.get("filtering", "apply_car_filter")))
-        self.checkBox_bandpass.setChecked(
+        self.ui.checkBox_bandpass.setChecked(
             int(self.scope_settings.get("filtering", "apply_bandpass_filter")))
-        self.checkBox_showTID.setChecked(
+        self.ui.checkBox_showTID.setChecked(
             int(self.scope_settings.get("plot", "show_TID_events")))
-        self.checkBox_showLPT.setChecked(
+        self.ui.checkBox_showLPT.setChecked(
             int(self.scope_settings.get("plot", "show_LPT_events")))
-        self.checkBox_showKey.setChecked(
+        self.ui.checkBox_showKey.setChecked(
             int(self.scope_settings.get("plot", "show_KEY_events")))
-        self.statusBar.showMessage("[Not recording]")
+        self.ui.statusBar.showMessage("[Not recording]")
 
         self.channels_to_show_idx = []
         idx = 0
@@ -134,21 +148,21 @@ class Scope(QtGui.QMainWindow, form_class):
             for x in range(0, NUM_X_CHANNELS):
                 if (idx < self.config['eeg_channels']):
                     # self.table_channels.item(x,y).setTextAlignment(QtCore.Qt.AlignCenter)
-                    QtGui.QTableWidgetItem.setSelected(self.table_channels.item(x, y), True) # Qt5
+                    self.ui.table_channels.item(x, y).setSelected(True) # Qt5
                     #self.table_channels.setItemSelected(self.table_channels.item(x, y), True) # Qt4 only
                     self.channels_to_show_idx.append(idx)
                 else:
-                    self.table_channels.setItem(x, y,
-                        QtGui.QTableWidgetItem("N/A"))
-                    self.table_channels.item(x, y).setFlags(
+                    self.ui.table_channels.setItem(x, y,
+                        QTableWidgetItem("N/A"))
+                    self.ui.table_channels.item(x, y).setFlags(
                         QtCore.Qt.NoItemFlags)
-                    self.table_channels.item(x, y).setTextAlignment(
+                    self.ui.table_channels.item(x, y).setTextAlignment(
                         QtCore.Qt.AlignCenter)
                 idx += 1
 
-        self.table_channels.verticalHeader().setStretchLastSection(True)
-        self.table_channels.horizontalHeader().setStretchLastSection(True)
-        self.table_channels.itemSelectionChanged.connect(
+        self.ui.table_channels.verticalHeader().setStretchLastSection(True)
+        self.ui.table_channels.horizontalHeader().setStretchLastSection(True)
+        self.ui.table_channels.itemSelectionChanged.connect(
             self.onSelectionChanged_table)
 
         self.screen_width = 522
@@ -214,7 +228,7 @@ class Scope(QtGui.QMainWindow, form_class):
         for y in range(0, 4):
             for x in range(0, NUM_X_CHANNELS):
                 if (idx < self.config['eeg_channels']):
-                    self.table_channels.item(x, y).setText(
+                    self.ui.table_channels.item(x, y).setText(
                         self.channel_labels[idx])
                 idx += 1
 
@@ -284,16 +298,16 @@ class Scope(QtGui.QMainWindow, form_class):
         self.apply_bandpass = int(
             self.scope_settings.get("filtering", "apply_bandpass_filter"))
         if (self.apply_bandpass):
-            self.doubleSpinBox_hp.setValue(float(
+            self.ui.doubleSpinBox_hp.setValue(float(
                 self.scope_settings.get("filtering",
                     "bandpass_cutoff_frequency").split(' ')[0]))
-            self.doubleSpinBox_lp.setValue(float(
+            self.ui.doubleSpinBox_lp.setValue(float(
                 self.scope_settings.get("filtering",
                     "bandpass_cutoff_frequency").split(' ')[1]))
-            self.pushButton_bp.click()
+            self.ui.pushButton_bp.click()
 
-        self.checkBox_bandpass.setChecked(self.apply_car)
-        self.checkBox_bandpass.setChecked(self.apply_bandpass)
+        self.ui.checkBox_bandpass.setChecked(self.apply_car)
+        self.ui.checkBox_bandpass.setChecked(self.apply_bandpass)
 
         self.update_title_scope()
 
@@ -397,6 +411,12 @@ class Scope(QtGui.QMainWindow, form_class):
     #	Main update function (connected to the timer)
     #
     def update_loop(self):
+        
+        #  Sharing variable to stop at the GUI level
+        if not self.state.value:
+            logger.info('Viewer stopped')
+            sys.exit()
+            
         try:
             # assert self.updating==False, 'thread destroyed?'
             # self.updating= True
@@ -571,7 +591,7 @@ class Scope(QtGui.QMainWindow, form_class):
             pass
         else:
             self.force_repaint = 0
-            qp = QtGui.QPainter()
+            qp = QPainter()
             qp.begin(self)
             # Update the interface
             self.paintInterface(qp)
@@ -641,7 +661,7 @@ class Scope(QtGui.QMainWindow, form_class):
         # Do nothing unless...
         if (new_seconds != self.seconds_to_show) and (new_seconds > 0) and (
                 new_seconds < 100):
-            self.spinBox_time.setValue(new_seconds)
+            self.ui.spinBox_time.setValue(new_seconds)
             self.main_plot_handler.setRange(xRange=[0, new_seconds])
             self.x_ticks = np.zeros(self.config['sf'] * new_seconds);
             for x in range(0, self.config['sf'] * new_seconds):
@@ -738,8 +758,9 @@ class Scope(QtGui.QMainWindow, form_class):
         low = lowcut / (0.5 * fs)
         high = highcut / (0.5 * fs)
         # get the order. TO BE DONE: Sometimes it fails
-        ord = buttord(high, low, 2, 40)
-        b, a = butter(ord[0], [high, low], btype='band')
+        #ord = buttord(high, low, 2, 40)
+        #b, a = butter(ord[0], [high, low], btype='band')
+        b, a = butter(2, [high, low], btype='band')
         zi = np.zeros([a.shape[0] - 1, num_ch])
         return b, a, zi
 
@@ -754,8 +775,8 @@ class Scope(QtGui.QMainWindow, form_class):
                           self.show_Key_events] + ', CAR: ' + self.bool_parser[
                           self.apply_car] + ', BP: ' + self.bool_parser[
                           self.apply_bandpass] + ' [' + str(
-                    self.doubleSpinBox_hp.value()) + '-' + str(
-                    self.doubleSpinBox_lp.value()) + '] Hz')
+                    self.ui.doubleSpinBox_hp.value()) + '-' + str(
+                    self.ui.doubleSpinBox_lp.value()) + '] Hz')
             # ', BP: ' + self.bool_parser[self.apply_bandpass] + (' [' + str(self.doubleSpinBox_hp.value()) + '-' + str(self.doubleSpinBox_lp.value()) + '] Hz' if self.apply_bandpass else ''))
 
     #
@@ -776,66 +797,66 @@ class Scope(QtGui.QMainWindow, form_class):
         # Simply call cl_rpc for this.
         if (len(self.lineEdit_recFilename.text()) > 0):
             if ".gdf" in self.lineEdit_recFilename.text():
-                self.pushButton_stoprec.setEnabled(True)
-                self.pushButton_rec.setEnabled(False)
+                self.ui.pushButton_stoprec.setEnabled(True)
+                self.ui.pushButton_rec.setEnabled(False)
                 # Popen is more efficient than os.open, since it is non-blocking
                 subprocess.Popen(
-                    ["cl_rpc", "openxdf", str(self.lineEdit_recFilename.text()),
+                    ["cl_rpc", "openxdf", str(self.ui.lineEdit_recFilename.text()),
                         "dummy_log", "dummy_log"], close_fds=True)
                 self.statusBar.showMessage(
-                    "Recording file " + str(self.lineEdit_recFilename.text()))
-            elif ".bdf" in self.lineEdit_recFilename.text():
-                self.pushButton_stoprec.setEnabled(True)
-                self.pushButton_rec.setEnabled(False)
+                    "Recording file " + str(self.ui.lineEdit_recFilename.text()))
+            elif ".bdf" in self.ui.lineEdit_recFilename.text():
+                self.ui.pushButton_stoprec.setEnabled(True)
+                self.ui.pushButton_rec.setEnabled(False)
                 subprocess.Popen(
-                    ["cl_rpc", "openxdf", str(self.lineEdit_recFilename.text()),
+                    ["cl_rpc", "openxdf", str(self.ui.lineEdit_recFilename.text()),
                         "dummy_log", "dummy_log"], close_fds=True)
                 self.statusBar.showMessage(
-                    "Recording file " + str(self.lineEdit_recFilename.text()))
+                    "Recording file " + str(self.ui.lineEdit_recFilename.text()))
             else:
                 pass
 
     def onClicked_button_stoprec(self):
         subprocess.Popen(["cl_rpc", "closexdf"], close_fds=True)
-        self.pushButton_rec.setEnabled(True)
-        self.pushButton_stoprec.setEnabled(False)
-        self.statusBar.showMessage("Not recording")
+        self.ui.pushButton_rec.setEnabled(True)
+        self.ui.pushButton_stoprec.setEnabled(False)
+        self.ui.statusBar.showMessage("Not recording")
 
     def onActivated_checkbox_bandpass(self):
         self.apply_bandpass = False
-        self.pushButton_bp.setEnabled(self.checkBox_bandpass.isChecked())
-        self.doubleSpinBox_hp.setEnabled(self.checkBox_bandpass.isChecked())
-        self.doubleSpinBox_lp.setEnabled(self.checkBox_bandpass.isChecked())
+        self.ui.pushButton_bp.setEnabled(self.ui.checkBox_bandpass.isChecked())
+        self.ui.doubleSpinBox_hp.setEnabled(self.ui.checkBox_bandpass.isChecked())
+        self.ui.doubleSpinBox_lp.setEnabled(self.ui.checkBox_bandpass.isChecked())
         self.update_title_scope()
 
     def onActivated_checkbox_car(self):
-        self.apply_car = self.checkBox_car.isChecked()
+        self.apply_car = self.ui.checkBox_car.isChecked()
         self.update_title_scope()
 
     def onActivated_checkbox_TID(self):
-        self.show_TID_events = self.checkBox_showTID.isChecked()
+        self.show_TID_events = self.ui.checkBox_showTID.isChecked()
         self.update_title_scope()
 
     def onActivated_checkbox_LPT(self):
-        self.show_LPT_events = self.checkBox_showLPT.isChecked()
+        self.show_LPT_events = self.ui.checkBox_showLPT.isChecked()
         self.update_title_scope()
 
     def onActivated_checkbox_Key(self):
-        self.show_Key_events = self.checkBox_showKey.isChecked()
+        self.show_Key_events = self.ui.checkBox_showKey.isChecked()
         self.update_title_scope()
 
     def onValueChanged_spinbox_time(self):
-        self.update_plot_seconds(self.spinBox_time.value())
+        self.update_plot_seconds(self.ui.spinBox_time.value())
 
     def onActivated_combobox_scale(self):
         self.update_plot_scale(
-            self.scales_range[self.comboBox_scale.currentIndex()])
+            self.scales_range[self.ui.comboBox_scale.currentIndex()])
 
     def onClicked_button_bp(self):
-        if (self.doubleSpinBox_lp.value() > self.doubleSpinBox_hp.value()):
+        if (self.ui.doubleSpinBox_lp.value() > self.ui.doubleSpinBox_hp.value()):
             self.apply_bandpass = True
             self.b, self.a, self.zi = self.butter_bandpass(
-                self.doubleSpinBox_hp.value(), self.doubleSpinBox_lp.value(),
+                self.ui.doubleSpinBox_hp.value(), self.ui.doubleSpinBox_lp.value(),
                 self.config['sf'], self.config['eeg_channels'])
         self.update_title_scope()
 
@@ -853,8 +874,8 @@ class Scope(QtGui.QMainWindow, form_class):
             for x in range(0, NUM_X_CHANNELS):
                 if (idx < self.config['eeg_channels']):
                     #if (self.table_channels.isItemSelected( # Qt4 only
-                    if (QtGui.QTableWidgetItem.isSelected( # Qt5
-                        self.table_channels.item(x, y))):
+                    if (QTableWidgetItem.isSelected( # Qt5
+                        self.ui.table_channels.item(x, y))):
                         self.channels_to_show_idx.append(idx)
                     else:
                         self.channels_to_hide_idx.append(idx)
@@ -908,21 +929,21 @@ class Scope(QtGui.QMainWindow, form_class):
         if (key == QtCore.Qt.Key_Right):
             self.update_plot_seconds(self.seconds_to_show + 1)
         if (key == QtCore.Qt.Key_L):
-            self.checkBox_showLPT.setChecked(
-                not self.checkBox_showLPT.isChecked())
+            self.ui.checkBox_showLPT.setChecked(
+                not self.ui.checkBox_showLPT.isChecked())
         if (key == QtCore.Qt.Key_T):
-            self.checkBox_showTID.setChecked(
-                not self.checkBox_showTID.isChecked())
+            self.ui.checkBox_showTID.setChecked(
+                not self.ui.checkBox_showTID.isChecked())
         if (key == QtCore.Qt.Key_K):
-            self.checkBox_showKey.setChecked(
-                not self.checkBox_showKey.isChecked())
+            self.ui.checkBox_showKey.setChecked(
+                not self.ui.checkBox_showKey.isChecked())
         if (key == QtCore.Qt.Key_C):
-            self.checkBox_car.setChecked(not self.checkBox_car.isChecked())
+            self.ui.checkBox_car.setChecked(not self.ui.checkBox_car.isChecked())
         if (key == QtCore.Qt.Key_B):
-            self.checkBox_bandpass.setChecked(
-                not self.checkBox_bandpass.isChecked())
-            if self.checkBox_bandpass.isChecked():
-                self.pushButton_bp.click()
+            self.ui.checkBox_bandpass.setChecked(
+                not self.ui.checkBox_bandpass.isChecked())
+            if self.ui.checkBox_bandpass.isChecked():
+                self.ui.pushButton_bp.click()
         if ((key >= QtCore.Qt.Key_0) and (key <= QtCore.Qt.Key_9)):
             if (self.show_Key_events) and (not self.stop_plot):
                 self.addEventPlot("KEY", 990 + key - QtCore.Qt.Key_0)
@@ -944,10 +965,10 @@ class Scope(QtGui.QMainWindow, form_class):
         '''
 
         # leeq
-        if (self.pushButton_stoprec.isEnabled()):
+        if (self.ui.pushButton_stoprec.isEnabled()):
             subprocess.Popen(["cl_rpc", "closexdf"], close_fds=True)
-        # quit()
-        app.quit()
+        with self.state.get_lock():
+            self.state.value = 0
 
         # ----------------------------------------------------------------------------------------------------
         # 		END OF EVENT HANDLERS
@@ -966,6 +987,6 @@ if __name__ == '__main__':
         amp_name = None
     logger.info('Connecting to a server %s (Serial %s).' % (amp_name, amp_serial))
 
-    app = QtGui.QApplication(sys.argv)
+    app = QApplication(sys.argv)
     ex = Scope(amp_name, amp_serial)
     sys.exit(app.exec_())

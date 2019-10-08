@@ -9,7 +9,13 @@
 """
 
 import os
-from PyQt5.QtWidgets import QPushButton, QHBoxLayout, QVBoxLayout, QFileDialog, QLineEdit, QComboBox, QSpinBox, QDoubleSpinBox, QLabel, QWidget, QFrame
+from glob import glob
+from pathlib import Path 
+from shutil import copy2
+from pycnbi.utils import q_common as qc
+from pycnbi.triggers.trigger_def import trigger_def
+from PyQt5.QtWidgets import QPushButton, QHBoxLayout, QVBoxLayout, QFileDialog, QLineEdit, QComboBox, QSpinBox, QDoubleSpinBox, QLabel, \
+     QFrame, QDialog, QFormLayout, QDialogButtonBox
 from PyQt5.QtCore import pyqtSignal, QObject, pyqtSlot, Qt
 
 ########################################################################
@@ -31,7 +37,14 @@ class QComboBox_Directions(QComboBox):
         super().__init__()
         self.pos = pos
         self.currentIndexChanged[int].connect(self.on_modify)
-
+        self.setFocusPolicy(Qt.StrongFocus)
+    
+    # ----------------------------------------------------------------------
+    def wheelEvent(self, *args, **kwargs):
+        if self.hasFocus():
+            return QComboBox.wheelEvent(self, *args, **kwargs)
+        else:    
+            pass
 
     # ----------------------------------------------------------------------
     @pyqtSlot(int)
@@ -41,7 +54,7 @@ class QComboBox_Directions(QComboBox):
         new value.
         """
         val = self.itemData(index)
-        self.signal_paramChanged.emit(self.pos, val)
+        self.signal_paramChanged[int, object].emit(self.pos, val)
 
 
 ########################################################################
@@ -56,7 +69,19 @@ class Connect_Directions(QObject):
 
     # ----------------------------------------------------------------------
     def __init__(self, paramName, chosen_value, all_Values, nb_directions):
-        """Constructor
+        """
+        Constructor
+        """
+        super().__init__()
+        self.paramName = paramName
+        self.l = QHBoxLayout()
+        self.chosen_value = chosen_value
+        
+        self.create_the_comboBoxes(chosen_value, all_Values, nb_directions)
+
+    # ----------------------------------------------------------------------
+    def create_the_comboBoxes(self, chosen_value, all_Values, nb_directions):
+        """
         Creates nb_directions directions, list the possible values and select the chosen_value.
         
         paramName = Name of the parameter corresponding to the widget to create 
@@ -64,11 +89,6 @@ class Connect_Directions(QObject):
         all_Values = list of all possible values for a parameter
         nb_directions = number of directions to add.
         """
-        super().__init__()
-        self.paramName = paramName
-        self.l = QHBoxLayout()
-        self.chosen_value = chosen_value
-        
         nb_val = range(len(chosen_value)) 
         for i in nb_val:
             self.l.addWidget(self.add_To_ComboBox(all_Values, chosen_value[i], i))
@@ -85,12 +105,11 @@ class Connect_Directions(QObject):
             if i != nb_val[-1]:
                 add_v_separator(self.l)                        
 
-
     # ----------------------------------------------------------------------
     def add_To_ComboBox(self, values, chosenValue, pos):
         """
-        Add the possibles values found in the structure file to a QComboBox and
-        add it to a QFormLayout. Highlight the subject's specific value.
+        Add the possibles values found in the structure file to a QComboBox.
+        Highlight the subject's specific value.
         values = list of values.
         chosenValue = subject's specific value.
         pos = QComboBox position in the directions list
@@ -103,11 +122,32 @@ class Connect_Directions(QObject):
             if val == chosenValue:
                 templateChoices.setCurrentText(val)
 
-        templateChoices.signal_paramChanged.connect(self.on_modify)
+        templateChoices.signal_paramChanged[int, object].connect(self.on_modify)
         
         return templateChoices
-
+    
+    #----------------------------------------------------------------------
+    def clear_hBoxLayout(self):
+        """
+        #Removes all the widgets added to the layout
+        """
+        for i in reversed(range(self.l.count())): 
+            self.l.itemAt(i).widget().setParent(None)        
+               
+    @pyqtSlot(str, str)
+    #----------------------------------------------------------------------
+    def on_new_tdef_file(self, key, trigger_file):
+        """
+        Update the QComboBox with the new events from the new tdef file.
+        """
+        self.clear_hBoxLayout()
+        tdef = trigger_def(trigger_file)
+        nb_directions = 4
+        #  Convert 'None' to real None (real None is removed when selected in the GUI)
+        tdef_values = [ None if i == 'None' else i for i in list(tdef.by_name) ]
+        self.create_the_comboBoxes(self.chosen_value, tdef_values, nb_directions)
         
+    
     @pyqtSlot(int, object)
     # ----------------------------------------------------------------------
     def on_modify(self, pos, new_Value):
@@ -127,7 +167,7 @@ class Connect_Directions(QObject):
         except:
             pass
         
-        self.signal_paramChanged.emit(self.paramName, self.chosen_value)
+        self.signal_paramChanged[str, list].emit(self.paramName, self.chosen_value)
 
 ########################################################################
 class Connect_Directions_Online(QObject):
@@ -137,7 +177,8 @@ class Connect_Directions_Online(QObject):
     parameter value.
     """
 
-    signal_paramChanged = pyqtSignal(str, list)
+    signal_paramChanged = pyqtSignal([str, list])
+    signal_error = pyqtSignal(str)
     
     #----------------------------------------------------------------------
     def __init__(self, paramName, chosen_value, all_Values, nb_directions, chosen_events, events):
@@ -152,15 +193,75 @@ class Connect_Directions_Online(QObject):
         """
         super().__init__()
         
-        self.directions = Connect_Directions(paramName, chosen_value, all_Values, nb_directions)
-        self.directions.signal_paramChanged.connect(self.on_modify)
+        self.nb_direction = nb_directions
+        self.all_values = all_Values
+        self.chosen_events = chosen_events
+        self.chosen_value = chosen_value
+        self.events = None
+        self.tdef = None
         
-        self.events = Connect_Directions('DIR_EVENTS', chosen_events, events, nb_directions)
-        self.events.signal_paramChanged.connect(self.on_modify)
+        self.directions = Connect_Directions(paramName, chosen_value, all_Values, nb_directions)
+        self.directions.signal_paramChanged[str, list].connect(self.on_modify)
+        
+        self.associated_events = Connect_Directions('DIR_EVENTS', chosen_events, events, nb_directions)
+        self.associated_events.signal_paramChanged[str, list].connect(self.on_modify)
         
         self.l = QVBoxLayout()
         self.l.addLayout(self.directions.l)
-        self.l.addLayout(self.events.l)
+        self.l.addLayout(self.associated_events.l)
+        
+    #----------------------------------------------------------------------
+    def clear_VBoxLayout(self):
+        """
+        Clear the layout containing additional layouts and widgets
+        """        
+        if self.l.itemAt(1):
+            self.associated_events.clear_hBoxLayout()
+            self.l.itemAt(1).setParent(None)
+        if self.l.itemAt(0):
+            self.directions.clear_hBoxLayout()
+            self.l.itemAt(0).setParent(None)
+    
+    @pyqtSlot(str, str)  
+    #----------------------------------------------------------------------
+    def on_new_decoder_file(self, key, filePath):
+        """
+        Update the event QComboBox with the new events from the new .
+        """
+        cls = qc.load_obj(filePath)
+        events = cls['cls'].classes_        # Finds the events on which the decoder has been trained on
+        self.events = list(map(int, events))
+        self.nb_directions = len(events)
+                
+        if self.tdef:
+            self.on_update_VBoxLayout()
+                        
+    @pyqtSlot(str, str)
+    #----------------------------------------------------------------------
+    def on_new_tdef_file(self, key, trigger_file):
+        """
+        Update the event QComboBox with the new events from the new tdef file.
+        """
+        self.tdef = trigger_def(trigger_file)
+        
+        if self.events:
+            self.on_update_VBoxLayout()            
+    
+    @pyqtSlot()
+    #----------------------------------------------------------------------
+    def on_update_VBoxLayout(self):
+        """
+        Update the layout with the new events and chosen values
+        """
+        self.clear_VBoxLayout()
+        events = [self.tdef.by_value[i] for i in self.events]
+        
+        self.directions.create_the_comboBoxes(self.chosen_value, self.all_values, self.nb_directions)
+        self.associated_events.create_the_comboBoxes(self.chosen_events, events, self.nb_directions)
+        
+        self.l.addLayout(self.directions.l)
+        self.l.addLayout(self.associated_events.l)
+        
     
     @pyqtSlot(str, list)
     #----------------------------------------------------------------------
@@ -172,14 +273,32 @@ class Connect_Directions_Online(QObject):
         
         if paramName == self.directions.paramName:
             for i in range(len(new_Values)):
-                updatedList.append((new_Values[i], self.events.chosen_value[i]))
+                updatedList.append((new_Values[i], self.associated_events.chosen_value[i]))
                 
-        elif paramName == self.events.paramName:
+        elif paramName == self.associated_events.paramName:
             for i in range(len(new_Values)):
                 updatedList.append((self.directions.chosen_value[i], new_Values[i]))
                 
-        self.signal_paramChanged.emit(self.directions.paramName, updatedList)
+        self.signal_paramChanged[str, list].emit(self.directions.paramName, updatedList)
+        
+########################################################################
+class ComboBox(QComboBox):
+    """
+    Overload of QCombobox to overwrite wheelEvent()
+    """
+
+    #----------------------------------------------------------------------
+    def __init__(self):
+        """Constructor"""
+        super().__init__()
+        self.setFocusPolicy(Qt.StrongFocus)
     
+    # ----------------------------------------------------------------------
+    def wheelEvent(self, *args, **kwargs):
+        if self.hasFocus():
+            return QComboBox.wheelEvent(self, *args, **kwargs)
+        else:    
+            pass 
 
 ########################################################################
 class Connect_ComboBox(QObject):
@@ -203,23 +322,24 @@ class Connect_ComboBox(QObject):
         super().__init__()
 
         self.paramName = paramName
-        self.frame = QFrame()
+        # self.frame = QFrame()
         self.chosen_value = chosenValue
-        
+       
         self.add_To_ComboBox(all_values, chosenValue)
         
     # ----------------------------------------------------------------------
     def add_To_ComboBox(self, values, chosenValue):
         """
-        Add the possibles values found in the structure file to a QComboBox and
-        add it to a QFormLayout. Highlight the subject's specific value.
+        Add the possibles values found in the structure file to a QComboBox. \
+        Highlight the subject's specific value.
         
         values = list of values.
         chosenValue = subject's specific value.
         """
-        self.templateChoices = QComboBox()
+        self.templateChoices = ComboBox()
         self.additionalParams = list()
         self.layout = QHBoxLayout()
+        self.layout.setContentsMargins(0, 0, 0, 0)
                      
         # Special case of a dict 
         if type(values) is dict:
@@ -241,14 +361,14 @@ class Connect_ComboBox(QObject):
                 content_dict = val
                 chosen_additionalParams = chosenValue[key_val]
                 p = Connect_Modifiable_Dict(key_val, chosen_additionalParams, content_dict)
-                p.signal_paramChanged.connect(self.on_modify)
+                p.signal_paramChanged[str, dict].connect(self.on_modify)
                 self.additionalParams.append(p)
                 self.templateChoices.addItem(str(key_val), key_val)
 
             elif val is list:
                 chosen_additionalParams = chosenValue[key_val]
                 p = Connect_Modifiable_List(key_val, chosen_additionalParams)
-                p.signal_paramChanged.connect(self.on_modify)
+                p.signal_paramChanged[str, list].connect(self.on_modify)
                 self.additionalParams.append(p)
                 self.templateChoices.addItem(str(key_val), key_val)
                 
@@ -264,10 +384,10 @@ class Connect_ComboBox(QObject):
             
         if type(chosenValue) is dict:
             chosenValue = chosenValue['selected']
-
+        
         self.layout.addWidget(self.templateChoices)      
         for p in self.additionalParams:
-            self.layout.addWidget(p.frame)
+            self.layout.addWidget(p)
         
         index = self.templateChoices.findText(str(chosenValue))        
         if index != -1:
@@ -286,7 +406,7 @@ class Connect_ComboBox(QObject):
         
         # In case of a simple comboBox without additional params for all possible selections
         if not self.additionalParams:
-            self.signal_paramChanged.emit(self.paramName, val)
+            self.signal_paramChanged[str, object].emit(self.paramName, val)
         
         # In case of additional params for at least one selection
         else:  
@@ -294,15 +414,15 @@ class Connect_ComboBox(QObject):
             for p in self.additionalParams:
                 if p.paramName == val:
                     i = 1
-                    p.frame.show()
-                    self.signal_additionalParamChanged.emit(self.paramName, {'selected': p.paramName, p.paramName: p.chosen_value})
+                    p.show()
+                    self.signal_additionalParamChanged[str, dict].emit(self.paramName, {'selected': p.paramName, p.paramName: p.chosen_value})
                 else:
-                    p.frame.hide()
+                    p.hide()
                     pass
             
             #  In case of additional params but not for the selected one (e.g in case of None)
             if i == 0:
-                self.signal_additionalParamChanged.emit(self.paramName, {'selected': self.templateChoices.itemText(index), self.templateChoices.itemText(index): val})
+                self.signal_additionalParamChanged[str, dict].emit(self.paramName, {'selected': self.templateChoices.itemText(index), self.templateChoices.itemText(index): val})
 
     @pyqtSlot(str, dict)
     @pyqtSlot(str, list)
@@ -346,15 +466,13 @@ class Connect_Bias(QObject):
         else:
             self.directions = Connect_ComboBox('direction', chosen_value, directions)
             self.spinBox = Connect_DoubleSpinBox('value', 0.0)
-            self.spinBox.w.setDisabled(True)
+            self.spinBox.setDisabled(True)
     
         self.l.addWidget(self.directions.templateChoices)
-        self.l.addWidget(self.spinBox.w)
+        self.l.addWidget(self.spinBox)
         
-        self.directions.signal_paramChanged.connect(self.on_modify)
-        self.directions.signal_paramChanged.connect(self.on_modify)
-        
-        self.spinBox.signal_paramChanged.connect(self.on_modify)
+        self.directions.signal_paramChanged[str, object].connect(self.on_modify)        
+        self.spinBox.signal_paramChanged[str, float].connect(self.on_modify)
 
         
     @pyqtSlot(str, str)
@@ -368,18 +486,18 @@ class Connect_Bias(QObject):
         if 'direction' in paramName:
             self.selected_direction = new_Value
             if new_Value is None:
-                self.spinBox.w.setValue(0.0)
-                self.spinBox.w.setDisabled(True)
+                self.setValue(0.0)
+                self.spinBox.setDisabled(True)
                 self.signal_paramChanged[str, type(None)].emit(self.paramName, new_Value)
             else:
-                self.spinBox.w.setDisabled(False)
+                self.spinBox.setDisabled(False)
         
         elif 'value' in paramName:
             self.signal_paramChanged[str, tuple].emit(self.paramName, (self.selected_direction, new_Value))
     
 
 ########################################################################
-class Connect_SpinBox(QObject):
+class Connect_SpinBox(QSpinBox):
     """
     This class is used to connect the SpinBox modifications at the
     GUI level. It modifies the module according to the newly 
@@ -398,24 +516,30 @@ class Connect_SpinBox(QObject):
         super().__init__()
 
         self.paramName = paramName
-        self.w = QSpinBox()
-        self.w.setMinimum(-1)
-        self.w.setMaximum(10000)
+        self.setMinimum(-1)
+        self.setMaximum(10000)
         
-        self.w.setValue(chosen_value)
-        self.w.editingFinished.connect(self.on_modify)
-
+        self.setValue(chosen_value)
+        self.editingFinished.connect(self.on_modify)
+        self.setFocusPolicy(Qt.StrongFocus)
+    
+    # ----------------------------------------------------------------------
+    def wheelEvent(self, *args, **kwargs):
+        if self.hasFocus():
+            return QComboBox.wheelEvent(self, *args, **kwargs)
+        else:    
+            pass
 
     # ----------------------------------------------------------------------
     def on_modify(self):
         """
         Changes the module according to the new value written in the SpinBox
         """
-        self.signal_paramChanged.emit(self.paramName, self.w.value())
+        self.signal_paramChanged[str, int].emit(self.paramName, self.value())
 
 
 ########################################################################
-class Connect_DoubleSpinBox(QObject):
+class Connect_DoubleSpinBox(QDoubleSpinBox):
     """
     This class is used to connect the doubleSpinBox modifications at the
     GUI level. It modifies the module according to the newly 
@@ -434,22 +558,28 @@ class Connect_DoubleSpinBox(QObject):
         super().__init__()
 
         self.paramName = paramName
-        self.w = QDoubleSpinBox()
-        self.w.setSingleStep(0.05)
-        self.w.setValue(chosen_value)
-        self.w.editingFinished.connect(self.on_modify)
-
-
+        self.setSingleStep(0.05)
+        self.setValue(chosen_value)
+        self.editingFinished.connect(self.on_modify)
+        self.setFocusPolicy(Qt.StrongFocus)
+    
+    # ----------------------------------------------------------------------
+    def wheelEvent(self, *args, **kwargs):
+        if self.hasFocus():
+            return QDoubleSpinBox.wheelEvent(self, *args, **kwargs)
+        else:    
+            pass
+        
     # ----------------------------------------------------------------------
     def on_modify(self):
         """
         Changes the module according to the new value written in the DoubleSpinBox
         """
-        self.signal_paramChanged.emit(self.paramName, self.w.value())
+        self.signal_paramChanged[str, float].emit(self.paramName, self.value())
 
 
 ########################################################################
-class Connect_LineEdit(QObject):
+class Connect_LineEdit(QLineEdit):
     """
     This class is used to connect the lineEdit modifications at the
     GUI level. It modifies the module according to the newly 
@@ -465,15 +595,13 @@ class Connect_LineEdit(QObject):
         paramName = Name of the parameter corresponding to the widget to create 
         chosen_value = the subject's specific parameter value.
         """
-        super().__init__()
+        super().__init__(str(chosen_value))
         
         self.paramName = paramName
-        self.w = QLineEdit(str(chosen_value))
-        self.w.editingFinished.connect(self.on_modify)
+
+        self.editingFinished.connect(self.on_modify)
         self.chosen_value = chosen_value
         
-        #  To fit the disp_params function of mainWindow. 
-        self.frame = self.w
 
     @pyqtSlot()
     # ----------------------------------------------------------------------
@@ -481,14 +609,14 @@ class Connect_LineEdit(QObject):
         """
         Changes the module according to the new value written in the lineEdit
         """
-        text = self.w.text()
-        if text == 'None':
+        text = self.text()
+        if text == 'None' or text == '':
             text = None
         self.signal_paramChanged[str, type(text)].emit(self.paramName, text)
 
     
 ########################################################################
-class Connect_Modifiable_List(QObject):
+class Connect_Modifiable_List(QFrame):
     """
     This class is used in case of lists containing modifiable contents.
     It modifies the module according to the newly parameter value.
@@ -510,8 +638,8 @@ class Connect_Modifiable_List(QObject):
         self.chosen_value = chosen_value
         layout = QHBoxLayout()
         self.tempWidgets = []
-        self.frame = QFrame()
-        self.frame.setStyleSheet("margin:0; padding:0")
+        self.setContentsMargins(0, 0, 0, 0)
+        layout.setContentsMargins(0, 0, 0, 0)
         
         # first list
         for k in range(len(chosen_value)):
@@ -527,8 +655,9 @@ class Connect_Modifiable_List(QObject):
                     tempWidget.signal_paramChanged[list, float].connect(self.on_modify)
                     tempWidget.signal_paramChanged[list, str].connect(self.on_modify)
                     self.tempWidgets.append(tempWidget)
-                    vLayout.addWidget(tempWidget.w.w)
-
+                    vLayout.addWidget(tempWidget.w)
+                
+                vLayout.setContentsMargins(0, 0, 0, 0)
                 layout.addLayout(vLayout)
 
                 # Add a vertical line to separate parameters' type.
@@ -544,10 +673,9 @@ class Connect_Modifiable_List(QObject):
                 tempWidget.signal_paramChanged[list, float].connect(self.on_modify)
                 tempWidget.signal_paramChanged[list, str].connect(self.on_modify)
                 self.tempWidgets.append(tempWidget)
-                layout.addWidget(tempWidget.w.w)
+                layout.addWidget(tempWidget.w)
         
-        self.frame.setLayout(layout)
-        # self.layout = layout
+        self.setLayout(layout)
 
     @pyqtSlot(list, int)
     @pyqtSlot(list, float)
@@ -590,33 +718,35 @@ class tempWidget_for_Modifiable_List(QObject):
 
         if type(listElements) is str:
             self.w = Connect_LineEdit(str(None), listElements)
-            self.w.signal_paramChanged.connect(self.on_modify)
+            self.w.signal_paramChanged[str, str].connect(self.on_modify)
+            self.w.signal_paramChanged[str, type(None)].connect(self.on_modify)
 
         elif type(listElements) is int:
             self.w = Connect_SpinBox(str(None), listElements)
-            self.w.signal_paramChanged.connect(self.on_modify)
+            self.w.signal_paramChanged[str, int].connect(self.on_modify)
     
         elif type(listElements) is float:
             self.w = Connect_DoubleSpinBox(str(None), listElements)
-            self.w.signal_paramChanged.connect(self.on_modify)
+            self.w.signal_paramChanged[str, float].connect(self.on_modify)
 
         elif type(listElements[pos2]) is str:
             self.w = Connect_LineEdit(str(pos2), listElements[pos2])
-            self.w.signal_paramChanged.connect(self.on_modify)
+            self.w.signal_paramChanged[str, str].connect(self.on_modify)
+            self.w.signal_paramChanged[str, type(None)].connect(self.on_modify)
 
         elif type(listElements[pos2]) is int:
             self.w = Connect_SpinBox(str(pos2), listElements[pos2])
-            self.w.signal_paramChanged.connect(self.on_modify)
+            self.w.signal_paramChanged[str, int].connect(self.on_modify)
 
         elif type(listElements[pos2]) is float:
             self.w = Connect_DoubleSpinBox(str(pos2), listElements[pos2])
-            self.w.signal_paramChanged.connect(self.on_modify)
-
-
+            self.w.signal_paramChanged[str, float].connect(self.on_modify)
+        
 
     @pyqtSlot(str, int)
     @pyqtSlot(str, float)
     @pyqtSlot(str, str)
+    @pyqtSlot(str, type(None))
     # ----------------------------------------------------------------------
     def on_modify(self, inerPos, value):
         """
@@ -627,7 +757,7 @@ class tempWidget_for_Modifiable_List(QObject):
 
 
 ########################################################################
-class Connect_Modifiable_Dict(QObject):
+class Connect_Modifiable_Dict(QFrame):
     """
     This class is used in case of dicts containing modifiable contents.
     It modifies the module according to the newly parameter value.
@@ -649,9 +779,8 @@ class Connect_Modifiable_Dict(QObject):
         self.paramName = paramName
         self.chosen_value = chosen_value
         layout = QHBoxLayout()
-        self.frame = QFrame()
-        # self.frame.setStyleSheet("margin:0; padding:0")
-        self.frame.setContentsMargins(0, 0, 0, 0);
+        layout.setContentsMargins(0, 0, 0, 0)
+        self.setContentsMargins(0, 0, 0, 0);
                 
         for key, value in content_dict.items():
 
@@ -660,40 +789,50 @@ class Connect_Modifiable_Dict(QObject):
 
             if value is int:
                 spinBox = Connect_SpinBox(key, chosen_value[key])
-                spinBox.signal_paramChanged.connect(self.on_modify)
+                spinBox.signal_paramChanged[str, int].connect(self.on_modify)
                 self.paramWidgets.append(spinBox)
                 label = QLabel(key)
                 # label.setFixedWidth(80)
                 label.setAlignment(Qt.AlignCenter)
                 # spinBox.w.setFixedWidth(50)
                 layout.addWidget(label)
-                layout.addWidget(spinBox.w)
+                layout.addWidget(spinBox)
 
             elif value is float:
                 doublespinBox = Connect_DoubleSpinBox(key, chosen_value[key])
                 self.paramWidgets.append(doublespinBox)
-                doublespinBox.signal_paramChanged.connect(self.on_modify)
+                doublespinBox.signal_paramChanged[str, float].connect(self.on_modify)
                 label = QLabel(key)
                 # label.setFixedWidth(80)
                 label.setAlignment(Qt.AlignCenter)
                 # doublespinBox.w.setFixedWidth(50)
                 layout.addWidget(label)
-                layout.addWidget(doublespinBox.w)
+                layout.addWidget(doublespinBox)
 
             elif value is str:
                 lineEdit = Connect_LineEdit(key, chosen_value[key])
-                lineEdit.signal_paramChanged.connect(self.on_modify)
+                lineEdit.signal_paramChanged[str, str].connect(self.on_modify)
+                lineEdit.signal_paramChanged[str, type(None)].connect(self.on_modify)
                 self.paramWidgets.append(lineEdit)
                 label = QLabel(key)
                 # label.setFixedWidth(80)
                 label.setAlignment(Qt.AlignCenter)
                 # lineEdit.w.setFixedWidth(50)
                 layout.addWidget(label)
-                layout.addWidget(lineEdit.w)
-                
+                layout.addWidget(lineEdit)
+
+            elif value is list:
+                p = Connect_Modifiable_List(key, chosen_value[key])
+                p.signal_paramChanged[str, list].connect(self.on_modify)
+                self.paramWidgets.append(p)
+                label = QLabel(key)
+                label.setAlignment(Qt.AlignCenter)
+                layout.addWidget(label)
+                layout.addWidget(p)                
+
             elif type(value) is tuple:
                 comboBox = Connect_ComboBox(key, chosen_value[key], value)
-                comboBox.signal_paramChanged.connect(self.on_modify)
+                comboBox.signal_paramChanged[str, object].connect(self.on_modify)
                 self.paramWidgets.append(comboBox)
                 label = QLabel(key)
                 layout.addWidget(label)
@@ -706,13 +845,14 @@ class Connect_Modifiable_Dict(QObject):
         layout.addStretch(1)
         # self.setLayout(layout)
         # self.layout = layout
-        self.frame.setLayout(layout)
+        self.setLayout(layout)
 
 
     @pyqtSlot(str, int)
     @pyqtSlot(str, float)
     @pyqtSlot(str, str)
     @pyqtSlot(str, tuple)
+    @pyqtSlot(str, list)
     # ----------------------------------------------------------------------
     def on_modify(self, key, val):
         """
@@ -732,6 +872,7 @@ class PathFolderFinder(QObject):
     """
 
     signal_pathChanged = pyqtSignal(str, str)
+    signal_error = pyqtSignal(str)
 
     # ----------------------------------------------------------------------
     def __init__(self, paramName, defaultPath, defaultValue):
@@ -756,6 +897,7 @@ class PathFolderFinder(QObject):
         self.layout.addWidget(self.lineEdit_pathSearch)
 
         self.button.clicked.connect(self.on_click_pathSearch)
+        self.lineEdit_pathSearch.editingFinished.connect(self.on_selected)
 
     @pyqtSlot()
     #----------------------------------------------------------------------
@@ -764,9 +906,27 @@ class PathFolderFinder(QObject):
         Slot connected to the button clicked signal. It opens a QFileDialog 
         and adds the selected path to the lineEdit.
         """
-        path_name = QFileDialog.getExistingDirectory(caption="Choose the subject's directory", directory=self.defaultPath)
-        self.lineEdit_pathSearch.setText(path_name)
-        self.signal_pathChanged.emit(self.name, path_name)
+        path_name = QFileDialog.getExistingDirectory(caption="Choose the directory for " + self.name, directory=self.defaultPath)
+
+        if path_name:            
+            self.lineEdit_pathSearch.setText(path_name)
+            self.lineEdit_pathSearch.setFocus()
+    
+    @pyqtSlot()
+    #----------------------------------------------------------------------
+    def on_selected(self):
+        """
+        Emit the signal to modify the module with the new path
+        """
+        path_name = self.lineEdit_pathSearch.text()
+        
+        if path_name:
+            exist = os.path.isdir(path_name)
+            
+            if not exist:
+                self.signal_error[str].emit('The provided folder does not exists.')
+            else:
+                self.signal_pathChanged[str, str].emit(self.name, path_name)
         
         
 ########################################################################
@@ -777,6 +937,7 @@ class PathFileFinder(QObject):
     """
 
     signal_pathChanged = pyqtSignal(str, str)
+    signal_error = pyqtSignal(str)
     
     #----------------------------------------------------------------------
     def __init__(self, paramName, defaultValue):
@@ -790,7 +951,7 @@ class PathFileFinder(QObject):
         super().__init__()
 
         self.name = paramName
-        self.defaultPath = os.environ['PYCNBI_ROOT'] + '\pycnbi\\triggers'
+        self.defaultPath = os.environ['PYCNBI_ROOT']
         self.layout = QHBoxLayout()
 
         self.button = QPushButton('Search')
@@ -800,6 +961,7 @@ class PathFileFinder(QObject):
         self.layout.addWidget(self.lineEdit_pathSearch)
 
         self.button.clicked.connect(self.on_click_pathSearch)
+        self.lineEdit_pathSearch.editingFinished.connect(self.on_selected)
 
     @pyqtSlot()
     # ----------------------------------------------------------------------
@@ -808,9 +970,142 @@ class PathFileFinder(QObject):
         Slot connected to the button clicked signal. It opens a QFileDialog 
         and adds the selected path to the lineEdit.
         """
-        path_name = QFileDialog.getOpenFileName(caption="Choose the subject's directory", directory=self.defaultPath)
-        self.lineEdit_pathSearch.setText(path_name[0])
-        self.signal_pathChanged.emit(self.name, path_name[0])
+        path_name = QFileDialog.getOpenFileName(caption="Choose the file for " + self.name, directory=self.defaultPath)
+
+        if path_name:
+            self.lineEdit_pathSearch.setText(path_name[0])
+            self.lineEdit_pathSearch.setFocus()
+        
+    @pyqtSlot()
+    #----------------------------------------------------------------------
+    def on_selected(self):
+        """
+        Emit the signal to modify the module with the new path
+        """
+        path_name = self.lineEdit_pathSearch.text()
+        
+        if path_name:
+            exist = os.path.isfile(path_name)
+            
+            if not exist:
+                self.signal_error[str].emit('The provided file does not exists.')
+            else:
+                self.signal_pathChanged[str, str].emit(self.name, path_name)
+                
+
+########################################################################
+class Connect_NewSubject(QDialog):
+    """
+    Allow to create a new subject folders in PYCNBI_SCRIPTS and PYCNBI_DATA when the
+    pushButton_new is pressed and its name is provided
+    """
+
+    signal_error = pyqtSignal(str)
+    
+    #----------------------------------------------------------------------
+    def __init__(self, parent, lineEdit_pathSearch):
+        """Constructor"""
+        super().__init__(parent)
+        
+        # Ui lineEdit where to write the selected path.
+        self.lineEdit_pathSearch = lineEdit_pathSearch
+        
+        protocols_path = Path(os.environ['PYCNBI_ROOT']) / 'pycnbi' / 'config_files' 
+        protocols = self.find_protocols(os.fspath(protocols_path))
+        
+        formLayout = QFormLayout()
+        lineEdit = QLineEdit()
+        formLayout.addRow('Subject ID:', lineEdit)        
+        formLayout.addRow('Protocol:', self.create_widgets(protocols))
+        
+        buttonBox = QDialogButtonBox()
+        buttonBox.addButton(QDialogButtonBox.Ok)
+        buttonBox.addButton(QDialogButtonBox.Cancel)
+        
+        l = QVBoxLayout()
+        l.addLayout(formLayout)
+        l.addWidget(buttonBox)
+        
+        self.setLayout(l)
+        
+        buttonBox.accepted.connect(self.create_subject_folders)
+        buttonBox.accepted.connect(self.accept)
+        buttonBox.rejected.connect(self.reject)
+               
+        self.show()
+            
+    #----------------------------------------------------------------------
+    def find_protocols(self, path):
+        """
+        Find the possible protocols, defined in the config_files folder
+        """
+        folders = next(os.walk(path))[1]
+        
+        return [f for f in folders if '__' not in f] 
+    
+    #----------------------------------------------------------------------
+    def create_widgets(self, protocols):
+        """
+        Create an QComboBox containing the protocols
+        """
+        comboBox = QComboBox()
+        comboBox.addItems(protocols)
+        
+        return comboBox
+    
+    #----------------------------------------------------------------------
+    @pyqtSlot()
+    def create_subject_folders(self):
+        """
+        Create one folder in PYCNBI_SCRIPTS and one in PYCNBI_DATA
+        """
+        subject_id = self.layout().itemAt(0).itemAt(1).widget().text()
+        protocol = self.layout().itemAt(0).itemAt(3).widget().currentText()
+        
+        #-----------------------------------------------------------------------------------
+        # create the folder that will contains the scripts for a protocol
+        protocol_scripts_folder = Path(os.environ['PYCNBI_SCRIPTS']) / protocol
+        try:
+            os.mkdir(protocol_scripts_folder)
+            # Copy the protocols files
+            files_path = Path(os.environ['PYCNBI_ROOT']) / 'pycnbi' / 'protocols' / protocol
+            files = glob(os.fspath(files_path / "*.py") , recursive=False)       
+            for f in files:
+                copy2(f, os.fspath(protocol_scripts_folder))               
+        except:
+            pass
+        
+        #-----------------------------------------------------------------------------------
+        # create the folder that will contains the subjects data folders for a protocol
+        data_folder = Path(os.environ['PYCNBI_DATA']) / protocol
+        try:
+            os.mkdir(data_folder)
+        except:
+            pass
+        
+        #-----------------------------------------------------------------------------------
+        # Prepare the subjects folders with the config files
+        try:
+            # for PYCNBI_SCRIPTS
+            scripts_path = protocol_scripts_folder / (subject_id + '-' + protocol)            
+            os.mkdir(scripts_path)
+              
+            # Add path to the lineEdit_pathSearch
+            self.lineEdit_pathSearch.setText(os.fspath(scripts_path))        
+            
+            # for PYCNBI_DATA
+            subject_data = data_folder / (subject_id + '-' + protocol)
+            os.mkdir(subject_data)            
+            
+            # Copy the config_files
+            files_path = Path(os.environ['PYCNBI_ROOT']) / 'pycnbi' / 'config_files' / protocol / 'template_files'
+            files = glob(os.fspath(files_path / "*.py") , recursive=False)
+            for f in files:
+                fileName = os.path.split(f)[1].split('.')[0]
+                copy2(f, (os.fspath(scripts_path / fileName) + ('_' + subject_id + '-' + protocol +'.py')))
+                
+        except Exception as e:
+            self.signal_error[str].emit(str(e)) 
 
 #----------------------------------------------------------------------
 def add_v_separator(layout):
