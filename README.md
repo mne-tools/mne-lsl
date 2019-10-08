@@ -1,6 +1,6 @@
 # Introduction
 
-PyCNBI provides a real-time brain signal decoding framework. The decoding performance was recognised at [Microsoft Brain Signal Decoding competition](https://github.com/dbdq/microsoft_decoding) with the <i>First Prize Award</i> (2016) considering high decoding accuracy. It has been applied on a couple of online decoding projects based on EEG and ECoG and on various acquisition systems including AntNeuro eego, g.tec gUSBamp, BioSemi ActiveTwo, BrainProducts actiCHamp and Wearable Sensing. The decoding runs at approximately 15 classifications per second(cps) on a 4th-gen i7 laptop with 64-channel setup at 512 Hz sampling rate. High-speed decoding up to 200 cps was achieved using process-interleaving technique on 8 cores. It has been tested on both Linux and Windows using Python 3.7.
+NeuroDecode provides a real-time brain signal decoding framework. The decoding performance was recognised at [Microsoft Brain Signal Decoding competition](https://github.com/dbdq/microsoft_decoding) with the <i>First Prize Award</i> (2016) considering high decoding accuracy. It has been applied on a couple of online decoding projects based on EEG and ECoG and on various acquisition systems including AntNeuro eego, g.tec gUSBamp, BioSemi ActiveTwo, BrainProducts actiCHamp and Wearable Sensing. The decoding runs at approximately 15 classifications per second(cps) on a 4th-gen i7 laptop with 64-channel setup at 512 Hz sampling rate. High-speed decoding up to 200 cps was achieved using process-interleaving technique on 8 cores. It has been tested on both Linux and Windows using Python 3.7.
 
 The underlying data communication is based on Lab Streaming Layer (LSL) which provides sub-millisecond time synchronization accuracy. Any signal acquisition system supported by native LSL or OpenVibe is also supported by PyCNBI. Since the data communication is based on TCP, signals can be also transmitted wirelessly. For more information about LSL, please visit:
 [https://github.com/sccn/labstreaminglayer](https://github.com/sccn/labstreaminglayer)
@@ -36,7 +36,7 @@ Contains various utilities.
 
 Anaconda is recommended for easy installation of Python environment.
 
-PyCNBI depends on following packages:
+NeuroDecode depends on following packages:
   - scipy
   - numpy
   - PyQt5
@@ -70,6 +70,10 @@ python setup.py develop
 ```
 Add "scripts" directory to PATH environment variable for convenient access to commonly used scripts.
 
+Launch GUI:
+Go to "scripts" directory and launch nd_gui.cmd.
+
+
 ## For Windows users, increase timer resolution
 The default timer resolution in some Windows versions is 16 ms, which can limit the precision of timings. It is recommended to run the following tool and set the resolution to 1 ms or lower:
 [https://vvvv.org/contribution/windows-system-timer-tool](https://vvvv.org/contribution/windows-system-timer-tool)
@@ -96,12 +100,11 @@ Use the OpenVibe acquisition server and make sure to check "LSL output" in prefe
 
 
 # To do
-  - GUI (in progress)
   - Tutorial 
   - More cpu-efficient decoder class
   - Numba optimization
 
-There are still plenty of possibilities to optimize the speed in many parts of the code. Any contribution is welcome. Please contact lee.kyuh@gmail.com for any comment / feedback.
+There are still plenty of possibilities to optimize the speed in many parts of the code. Any contribution is welcome. Please contact arnaud.desvachez@gmail.com or lee.kyuh@gmail.com for any comment / feedback.
 
 
 # Copyright and license
