@@ -59,7 +59,7 @@ class AnalogPlot:
 def main():
     # expects 1 arg - serial port string
     if (len(sys.argv) != 2):
-        print 'Example usage: python showdata.py "/dev/tty.usbmodem411"'
+        print('Example usage: python showdata.py "/dev/tty.usbmodem411"')
         exit(1)
 
         # strPort = '/dev/tty.usbserial-A7006Yqh'
@@ -69,7 +69,7 @@ def main():
     analogData = AnalogData(100)
     analogPlot = AnalogPlot(analogData)
 
-    print 'plotting data...'
+    print('plotting data...')
 
     # open serial port
     ser = serial.Serial(strPort, 9600)
@@ -82,7 +82,7 @@ def main():
                 analogData.add(data)
                 analogPlot.update(analogData)
         except KeyboardInterrupt:
-            print 'exiting'
+            print('exiting')
             break
     # close serial
     ser.flush()

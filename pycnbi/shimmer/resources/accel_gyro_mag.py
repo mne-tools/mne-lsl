@@ -34,7 +34,7 @@ def wait_for_ack(sock):
     ack = struct.pack('B', 0xff)
     while ddata != ack:
         ddata = sock.recv(1)
-        print "received [%s]" % struct.unpack('B', ddata)
+        print("received [%s]" % struct.unpack('B', ddata))
     return
 
 
@@ -162,4 +162,4 @@ if __name__ == '__main__':
     wait_for_ack(sock)
     # close the socket
     sock.close()
-    print "\n"
+    print("\n")

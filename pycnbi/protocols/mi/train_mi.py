@@ -24,33 +24,26 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys
 import os
-import time
-import imp
 import cv2
 import random
-import pycnbi.triggers.pyLptControl as pyLptControl
+import multiprocessing as mp
 import pycnbi.utils.q_common as qc
+import pycnbi.utils.pycnbi_utils as pu
+import pycnbi.triggers.pyLptControl as pyLptControl
 from pycnbi.protocols.viz_bars import BarVisual
 from pycnbi.triggers.trigger_def import trigger_def
 from pycnbi import logger
 from builtins import input
-
 from pycnbi.gui.streams import redirect_stdout_to_queue
-
-def load_config(cfg_file):
-    cfg_file = qc.forward_slashify(cfg_file)
-    if not (os.path.exists(cfg_file) and os.path.isfile(cfg_file)):
-        raise IOError('%s cannot be loaded.' % os.path.realpath(cfg_file))
-    return imp.load_source(cfg_file, cfg_file)
 
 def check_config(cfg):
     critical_vars = {
         'COMMON': ['TRIGGER_DEVICE',
-                   'TRIGGER_FILE', 
+                   'TRIGGER_FILE',
                    'SCREEN_SIZE',
                    'DIRECTIONS',
                    'DIR_RANDOM',
-                   'TRIALS_EACH'], 
+                   'TRIALS_EACH'],
         'TIMINGS': ['INIT', 'GAP', 'CUE', 'READY', 'READY_RANDOMIZE', 'DIR', 'DIR_RANDOMIZE']
     }
     optional_vars = {'FEEDBACK_TYPE': 'BAR',
@@ -65,38 +58,48 @@ def check_config(cfg):
     for key in critical_vars['COMMON']:
         if not hasattr(cfg, key):
             raise RuntimeError('%s is a required parameter' % key)
-            
+
     if not hasattr(cfg, 'TIMINGS'):
         logger.error('"TIMINGS" not defined in config.')
         raise RuntimeError
     for v in critical_vars['TIMINGS']:
         if v not in cfg.TIMINGS:
             logger.error('%s not defined in config.' % v)
-            raise RuntimeError            
+            raise RuntimeError
 
     for key in optional_vars:
         if not hasattr(cfg, key):
             setattr(cfg, key, optional_vars[key])
             logger.warning('Setting undefined %s=%s' % (key, optional[key]))
 
-    return cfg
+    if getattr(cfg, 'TRIGGER_DEVICE') == None:
+        logger.warning('The trigger device is set to None! No events will be saved.')
+        raise RuntimeError('The trigger device is set to None! No events will be saved.')
 
 # for batch script
-def batch_run(cfg_file):
-    cfg = load_config(cfg_file)
-    cfg = check_config(cfg)
+def batch_run(cfg_module):
+    cfg = pu.load_config(cfg_module)
+    check_config(cfg)
     run(cfg)
 
-def run(cfg, queue=None):
-    
-    redirect_stdout_to_queue(queue)    
+def run(cfg, state=mp.Value('i', 1), queue=None):
+
+    redirect_stdout_to_queue(logger, queue, 'INFO')
+
+    # Wait the recording to start (GUI)
+    while state.value == 2: # 0: stop, 1:start, 2:wait
+        pass
+    #  Protocol start if equals to 1
+    if not state.value:
+        sys.exit()
+
     refresh_delay = 1.0 / cfg.REFRESH_RATE
-    
+
     cfg.tdef = trigger_def(cfg.TRIGGER_FILE)
 
     # visualizer
     keys = {'left':81, 'right':83, 'up':82, 'down':84, 'pgup':85, 'pgdn':86,
-        'home':80, 'end':87, 'space':32, 'esc':27, ',':44, '.':46, 's':115, 'c':99, 
+        'home':80, 'end':87, 'space':32, 'esc':27, ',':44, '.':46, 's':115, 'c':99,
         '[':91, ']':93, '1':49, '!':33, '2':50, '@':64, '3':51, '#':35}
     color = dict(G=(20, 140, 0), B=(210, 0, 0), R=(0, 50, 200), Y=(0, 215, 235),
         K=(0, 0, 0), w=(200, 200, 200))
@@ -114,7 +117,7 @@ def run(cfg, queue=None):
     if cfg.TRIGGER_DEVICE is None:
         logger.warning('No trigger device set. Press Ctrl+C to stop or Enter to continue.')
         #input()
-    trigger = pyLptControl.Trigger(cfg.TRIGGER_DEVICE)
+    trigger = pyLptControl.Trigger(state, cfg.TRIGGER_DEVICE)
     if trigger.init(50) == False:
         logger.error('\n** Error connecting to USB2LPT device. Use a mock trigger instead?')
         input('Press Ctrl+C to stop or Enter to continue.')
@@ -148,7 +151,7 @@ def run(cfg, queue=None):
                 bar.put_text('Press any key')
                 bar.update()
                 key = cv2.waitKey()
-                if key == keys['esc']:
+                if key == keys['esc'] or not state.value:
                     break
                 bar.fill()
             bar.put_text('Trial %d / %d' % (trial, num_trials))
@@ -231,15 +234,18 @@ def run(cfg, queue=None):
 
         bar.update()
         key = 0xFF & cv2.waitKey(1)
-        if key == keys['esc']:
+        if key == keys['esc'] or not state.value:
             break
 
     bar.finish()
-   
+
+    with state.get_lock():
+        state.value = 0
+
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
-        cfg_file = input('Config file name? ')
+        cfg_module = input('Config module name? ')
     else:
-        cfg_file = sys.argv[1]
-    batch_run(cfg_file)
+        cfg_module = sys.argv[1]
+    batch_run(cfg_module)
