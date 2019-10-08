@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
-        MainWindow.setObjectName("NeuroDecode")
+        MainWindow.setObjectName("MainWindow")
         MainWindow.setWindowModality(QtCore.Qt.NonModal)
         MainWindow.resize(607, 839)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
@@ -207,7 +207,7 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "PyCNBI"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "NeuroDecode"))
         self.groupBox_LSL.setTitle(_translate("MainWindow", "LSL"))
         self.pushButton_LSL.setText(_translate("MainWindow", "Search"))
         self.pushButton_Viewer.setText(_translate("MainWindow", "Viewer"))
