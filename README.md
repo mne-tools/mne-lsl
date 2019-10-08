@@ -69,7 +69,7 @@ Run setup script:
 python setup.py develop
 ```
 
-Create environment variables:
+**IMPORTANT:** Create environment variables:
 > NEUROD_ROOT = NeuroDecode path 
 
 > NEUROD_DATA = path to the desired data folder (data will be saved there if using the GUI)
@@ -80,7 +80,7 @@ Create environment variables:
 Add "%NEUROD_ROOT%/scripts" directory to PATH environment variable for convenient access to commonly used scripts.
 
 
-Launch GUI, Go to ""%NEUROD_ROOT%/scripts"" directory and launch:
+**Launch GUI**, Go to ""%NEUROD_ROOT%/scripts"" directory and launch:
 ```
 nd_gui.cmd
 ```
