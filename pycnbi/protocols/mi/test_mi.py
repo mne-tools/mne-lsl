@@ -29,22 +29,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
 import sys
-import cv2
-import imp
 import time
-import math
-import scipy
 import random
 import pycnbi
-import datetime
-import numpy as np
-import scipy.signal
-import mne.io, mne.viz
+import multiprocessing as mp
 import pycnbi.utils.q_common as qc
 import pycnbi.utils.pycnbi_utils as pu
-import pycnbi.glass.bgi_client as bgi_client
 import pycnbi.triggers.pyLptControl as pyLptControl
-from pycnbi.decoder.decoder import BCIDecoderDaemon, BCIDecoder
+from pycnbi.decoder.decoder import BCIDecoderDaemon
 from pycnbi.triggers.trigger_def import trigger_def
 from pycnbi.protocols.feedback import Feedback
 from pycnbi.gui.streams import redirect_stdout_to_queue
@@ -59,13 +51,6 @@ keys = {'left':81, 'right':83, 'up':82, 'down':84, 'pgup':85, 'pgdn':86,
 color = dict(G=(20, 140, 0), B=(210, 0, 0), R=(0, 50, 200), Y=(0, 215, 235),
              K=(0, 0, 0), W=(255, 255, 255), w=(200, 200, 200))
 
-
-def load_config(cfg_file):
-    cfg_file = qc.forward_slashify(cfg_file)
-    if not (os.path.exists(cfg_file) and os.path.isfile(cfg_file)):
-        raise IOError('%s cannot be loaded.' % os.path.realpath(cfg_file))
-    return imp.load_source(cfg_file, cfg_file)
-
 def check_config(cfg):
     critical_vars = {
         'COMMON': ['DECODER_FILE',
@@ -73,8 +58,8 @@ def check_config(cfg):
                    'TRIGGER_FILE',
                    'DIRECTIONS',
                    'TRIALS_EACH',
-                   'PROB_ALPHA_NEW'], 
-        'TIMINGS': ['INIT', 'GAP', 'READY', 'FEEDBACK', 'DIR_CUE', 'CLASSIFY'], 
+                   'PROB_ALPHA_NEW'],
+        'TIMINGS': ['INIT', 'GAP', 'READY', 'FEEDBACK', 'DIR_CUE', 'CLASSIFY'],
         'BAR_STEP': ['left', 'right', 'up', 'down', 'both']
         }
 
@@ -83,7 +68,7 @@ def check_config(cfg):
         'AMP_SERIAL':None,
         'FAKE_CLS':None,
         'TRIALS_RANDOMIZE':True,
-        'BAR_SLOW_START':{'selected':'False', 'False':None, 'True':[1.0]}, 
+        'BAR_SLOW_START':{'selected':'False', 'False':None, 'True':[1.0]},
         'PARALLEL_DECODING':{'selected':'False', 'False':None, 'True':{'period':0.06, 'num_strides':3}},
         'SHOW_TRIALS':True,
         'FREE_STYLE':False,
@@ -105,7 +90,7 @@ def check_config(cfg):
         if not hasattr(cfg, key):
             logger.error('%s is a required parameter' % key)
             raise RuntimeError
-        
+
     if not hasattr(cfg, 'TIMINGS'):
         logger.error('"TIMINGS" not defined in config.')
         raise RuntimeError
@@ -113,32 +98,40 @@ def check_config(cfg):
         if v not in cfg.TIMINGS:
             logger.error('%s not defined in config.' % v)
             raise RuntimeError
-        
+
     if not hasattr(cfg, 'BAR_STEP'):
         logger.error('"BAR_STEP" not defined in config.')
         raise RuntimeError
     for v in critical_vars['BAR_STEP']:
         if v not in cfg.BAR_STEP:
             logger.error('%s not defined in config.' % v)
-            raise RuntimeError            
-    
+            raise RuntimeError
+
     for key in optional_vars:
         if not hasattr(cfg, key):
             setattr(cfg, key, optional_vars[key])
             logger.warning('Setting undefined parameter %s=%s' % (key, getattr(cfg, key)))
 
-    return cfg
+    if getattr(cfg, 'TRIGGER_DEVICE') == None:
+        logger.warning('The trigger device is set to None! No events will be saved.')
+        raise RuntimeError('The trigger device is set to None! No events will be saved.')    
 
-# for batch script
-def run(cfg, queue=None):
-    qc.print_c('WITH_STIMO = %s' % cfg.WITH_STIMO, 'G')
+def run(cfg, state=mp.Value('i', 1), queue=None):
 
-    redirect_stdout_to_queue(queue)
+    redirect_stdout_to_queue(logger, queue, 'INFO')
+
+    # Wait the recording to start (GUI)
+    while state.value == 2: # 0: stop, 1:start, 2:wait
+        pass
+
+    #  Protocol runs if state equals to 1
+    if not state.value:
+        sys.exit(-1)
 
     if cfg.FAKE_CLS is None:
         # chooose amp
         if cfg.AMP_NAME is None and cfg.AMP_SERIAL is None:
-            amp_name, amp_serial = pu.search_lsl(ignore_markers=True)
+            amp_name, amp_serial = pu.search_lsl(state, ignore_markers=True)
         else:
             amp_name = cfg.AMP_NAME
             amp_serial = cfg.AMP_SERIAL
@@ -152,7 +145,7 @@ def run(cfg, queue=None):
     tdef = trigger_def(cfg.TRIGGER_FILE)
     #if cfg.TRIGGER_DEVICE is None:
     #    input('\n** Warning: No trigger device set. Press Ctrl+C to stop or Enter to continue.')
-    trigger = pyLptControl.Trigger(cfg.TRIGGER_DEVICE)
+    trigger = pyLptControl.Trigger(state, cfg.TRIGGER_DEVICE)
     if trigger.init(50) == False:
         logger.error('Cannot connect to USB2LPT device. Use a mock trigger instead?')
         input('Press Ctrl+C to stop or Enter to continue.')
@@ -207,7 +200,7 @@ def run(cfg, queue=None):
         probs_logfile = time.strftime(logdir + "probs-%Y%m%d-%H%M%S.txt", time.localtime())
     else:
         probs_logfile = None
-    feedback = Feedback(cfg, visual, tdef, trigger, probs_logfile)
+    feedback = Feedback(cfg, state, visual, tdef, trigger, probs_logfile)
 
     # start
     trial = 1
@@ -278,6 +271,10 @@ def run(cfg, queue=None):
         print(cfmat)
 
     visual.finish()
+
+    with state.get_lock():
+        state.value = 0
+
     if decoder:
         decoder.stop()
 
@@ -313,14 +310,14 @@ def run(cfg, queue=None):
     logger.info('Finished.')
 
 # for batch script
-def batch_run(cfg_file):
-    cfg = load_config(cfg_file)
-    cfg = check_config(cfg)
+def batch_run(cfg_module):
+    cfg = pu.load_config(cfg_module)
+    check_config(cfg)
     run(cfg)
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
-        cfg_file = input('Config file name? ')
+        cfg_module = input('Config module name? ')
     else:
-        cfg_file = sys.argv[1]
-    batch_run(cfg_file)
+        cfg_module = sys.argv[1]
+    batch_run(cfg_module)

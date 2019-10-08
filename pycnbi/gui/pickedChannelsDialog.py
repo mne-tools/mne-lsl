@@ -1,8 +1,6 @@
 from PyQt5.QtWidgets import QDialog, QVBoxLayout, QListWidget, QDialogButtonBox, QPushButton, QLineEdit, QHBoxLayout
 from PyQt5.QtCore import pyqtSlot, pyqtSignal, QObject
 
-from pycnbi import pycnbi_config
-
 ########################################################################
 class PickChannelsDialog(QDialog):
     """
@@ -19,7 +17,7 @@ class PickChannelsDialog(QDialog):
         super().__init__()
 
         self.setWindowTitle(title)
-        self.initial_selection = selected
+        self.selection = selected
         vbox = QVBoxLayout(self)
         self.channels = QListWidget()
         self.channels.insertItems(0, channels)
@@ -50,7 +48,7 @@ class PickChannelsDialog(QDialog):
         """
         selected = [item.data(0) for item in self.channels.selectedItems()]
 
-        if selected != self.initial_selection:
+        if selected != self.selection:
             self.buttonbox.button(QDialogButtonBox.Ok).setEnabled(True)
             self.selected = selected
         else:
@@ -59,7 +57,7 @@ class PickChannelsDialog(QDialog):
     # ----------------------------------------------------------------------
     def on_modify(self):
         """"""
-        self.signal_paramChanged.emit(self.selected)
+        self.signal_paramChanged[list].emit(self.selected)
 
 
 #######################################################################
@@ -95,7 +93,7 @@ class Channel_Select(QObject):
 
         self.pickChannelsDialog = PickChannelsDialog(channels, selected)
         self.pickChannelsDialog.hide()
-        self.pickChannelsDialog.signal_paramChanged.connect(self.on_modify)
+        self.pickChannelsDialog.signal_paramChanged[list].connect(self.on_modify)
 
 
     # @pyqtSlot()
@@ -113,4 +111,4 @@ class Channel_Select(QObject):
         Modify the lineEdit according to the newly selected channels
         """
         self.lineEdit.setText(str(new_value))
-        self.signal_paramChanged.emit(self.key, new_value)
+        self.signal_paramChanged[str, list].emit(self.key, new_value)

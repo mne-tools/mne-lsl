@@ -1,7 +1,7 @@
 from __future__ import print_function, division
 
 """
-Visual feedback with online decoding
+FES feedback with online decoding
 
 Kyuhwa Lee
 Swiss Federal Institute of Technology Lausanne (EPFL)
@@ -31,6 +31,8 @@ import time
 import serial
 import serial.tools.list_ports
 from pycnbi import logger
+import pycnbi.utils.Motionstim8 as fes
+
 
 # global constants
 KEYS = {'right':2555904, 'up':2490368, 'left':2424832, 'down':2621440, 'pgup':85, 'pgdn':86, 'home':80, 'end':87, 'space':32, 'esc':27}
@@ -44,7 +46,7 @@ class Feedback:
     Perform a classification with visual feedback
     """
 
-    def __init__(self, cfg, state, viz, tdef, trigger, logfile=None):
+    def __init__(self, cfg, viz, tdef, trigger, logfile=None):
         self.cfg = cfg
         self.tdef = tdef
         self.trigger = trigger
@@ -56,7 +58,6 @@ class Feedback:
         self.bar_step_up = self.cfg.BAR_STEP['up']
         self.bar_step_down = self.cfg.BAR_STEP['down']
         self.bar_step_both = self.cfg.BAR_STEP['both']
-        self.protocol_state = state      # Shared variable to stop the protocol from the GUI
         
         if type(self.cfg.BAR_BIAS) is tuple:
             self.bar_bias = list(self.cfg.BAR_BIAS)
@@ -95,11 +96,25 @@ class Feedback:
             self.ser = serial.Serial(self.stimo_port, self.cfg.STIMO_BAUDRATE)
             logger.info('STIMO serial port %s is_open = %s' % (self.stimo_port, self.ser.is_open))
 
+        # FES only
+        if self.cfg.WITH_FES is True:       
+            self.stim = fes.Motionstim8()
+            self.stim.OpenSerialPort(self.cfg.FES_COMPORT)
+            self.stim.InitializeChannelListMode()
+            logger.info('Opened FES serial port')
+           
+
     def __del__(self):
         # STIMO only
         if self.cfg.WITH_STIMO is True:
             self.ser.close()
             logger.info('Closed STIMO serial port %s' % self.stimo_port)
+        # FES only
+        if self.cfg.WITH_FES is True:
+            stim_code = [0, 0, 0, 0, 0, 0, 0, 0]                               
+            self.stim.UpdateChannelSettings(stim_code)
+            self.stim.CloseSerialPort()
+            logger.info('Closed FES serial port')
 
     def classify(self, decoder, true_label, title_text, bar_dirs, state='start', prob_history=None):
         """
@@ -124,7 +139,7 @@ class Feedback:
                     self.viz.put_text('Press any key')
                     self.viz.update()
                     key = cv2.waitKeyEx()
-                    if key == KEYS['esc'] or not self.protocol_state.value:
+                    if key == KEYS['esc']:
                         return
                 self.viz.fill()
                 self.tm_trigger.reset()
@@ -236,7 +251,6 @@ class Feedback:
                         else:
                             self.viz.move(bar_label, 100, overlay=False, barcolor=res_color)
                     else:
-                        res_color = 'Y'
                         if self.cfg.FEEDBACK_TYPE == 'BODY':
                             self.viz.move(bar_label, bar_score, overlay=False, barcolor=res_color, caption='TRIAL END', caption_color=res_color)
                         else:
@@ -260,6 +274,26 @@ class Feedback:
                             elif bar_label == 'R':
                                 self.ser.write(b'2')
                                 logger.info('STIMO: Sent 2')
+
+
+                    # FES event mode mode
+                    if self.cfg.WITH_FES is True and self.cfg.FES_CONTINUOUS is False:                                                  
+                        if bar_label == 'L':
+                            stim_code = [0, 30, 0, 0, 0, 0, 0, 0]                               
+                            self.stim.UpdateChannelSettings(stim_code)
+                            logger.info('FES: Sent Left')
+                            time.sleep(0.5)
+                            stim_code = [0, 0, 0, 0, 0, 0, 0, 0] 
+                            self.stim.UpdateChannelSettings(stim_code)
+
+                        elif bar_label == 'R':
+                            stim_code = [30, 0, 0, 0, 0, 0, 0, 0]                               
+                            self.stim.UpdateChannelSettings(stim_code)
+                            time.sleep(0.5)
+                            logger.info('FES: Sent Right')
+                            stim_code = [0, 0, 0, 0, 0, 0, 0, 0] 
+                            self.stim.UpdateChannelSettings(stim_code)
+
 
                     if self.cfg.DEBUG_PROBS:
                         msg = 'DEBUG: Accumulated probabilities = %s' % qc.list2string(probs_acc, '%.3f')
@@ -377,6 +411,20 @@ class Feedback:
                                     self.ser.write(bytes([stimo_code]))
                                     logger.info('Sent STIMO code %d' % stimo_code)
                                     self.stimo_timer.reset()
+                            # with FES
+                            if self.cfg.WITH_FES is True and self.cfg.FES_CONTINUOUS is True:
+                                if self.stimo_timer.sec() >= self.cfg.STIMO_COOLOFF:
+                                    if bar_label == 'L':
+                                        stim_code = [bar_score, 0, 0, 0, 0, 0, 0, 0]
+                                    else:
+                                        stim_code = [0, bar_score, 0, 0, 0, 0, 0, 0]                               
+                                    self.stim.UpdateChannelSettings(stim_code)
+                                    logger.info('Sent FES code %d' % bar_score)
+                                    self.stimo_timer.reset()
+
+                        
+
+
 
                         if self.cfg.DEBUG_PROBS:
                             if self.bar_bias is not None:
@@ -417,7 +465,7 @@ class Feedback:
 
             self.viz.update()
             key = cv2.waitKeyEx(1)
-            if key == KEYS['esc'] or not self.protocol_state.value:
+            if key == KEYS['esc']:
                 return
             elif key == KEYS['space']:
                 dx = 0
