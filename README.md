@@ -77,10 +77,10 @@ python setup.py develop
 > NEUROD_SCRIPTS = path to the desired scripts folder (subject specific scripts will be saved there if using the GUI)
 
 
-Add * *%NEUROD_ROOT%/scripts* * directory to PATH environment variable for convenient access to commonly used scripts.
+Add *%NEUROD_ROOT%/scripts* directory to PATH environment variable for convenient access to commonly used scripts.
 
 
-**Launch GUI**, Go to * *%NEUROD_ROOT%/scripts* * directory and launch:
+**Launch GUI**, Go to *%NEUROD_ROOT%/scripts* directory and launch:
 ```
 nd_gui.cmd
 ```
