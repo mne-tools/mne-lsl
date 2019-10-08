@@ -431,9 +431,7 @@ def compute_features(cfg):
     
     reref = cfg.REREFERENCE[cfg.REREFERENCE['selected']]
     if reref is not None:
-        #pu.rereference(raw, reref['new'], reref['old'])
-        logger.error('Sorry! Channel re-referencing is under development.')
-        raise NotImplementedError
+        pu.rereference(raw, reref['New'], reref['Old'])
     
     if cfg.LOAD_EVENTS[cfg.LOAD_EVENTS['selected']] is not None:
         events = mne.read_events(cfg.LOAD_EVENTS[cfg.LOAD_EVENTS['selected']])
@@ -493,21 +491,11 @@ def compute_features(cfg):
                 epoch = Epochs(raw, events, triggers, tmin=ep[0], tmax=ep[1],
                     proj=False, picks=picks, baseline=None, preload=True,
                     verbose=False, detrend=None)
-                # Channels are already selected by 'picks' param so use all channels.
-                '''
-                epoch = pu.preprocess(epoch, spatial=cfg.SP_FILTER, spatial_ch=None, spectral=cfg.TP_FILTER, spectral_ch=None,
-                    notch=cfg.NOTCH_FILTER, notch_ch=None, multiplier=cfg.MULTIPLIER, n_jobs=cfg.N_JOBS, decim=cfg.FEATURES['PSD']['decim'])
-                '''
                 epochs_train.append(epoch)
         else:
             # Usual method: single epoch range
             epochs_train = Epochs(raw, events, triggers, tmin=cfg.EPOCH[0], tmax=cfg.EPOCH[1], proj=False,
                 picks=picks, baseline=None, preload=True, verbose=False, detrend=None, on_missing='warning')
-            # Channels are already selected by 'picks' param so use all channels.
-            '''
-            epochs_train = pu.preprocess(epochs_train, spatial=cfg.SP_FILTER, spatial_ch=None, spectral=cfg.TP_FILTER, spectral_ch=None,
-                notch=cfg.NOTCH_FILTER, notch_ch=None, multiplier=cfg.MULTIPLIER, n_jobs=cfg.N_JOBS, decim=cfg.FEATURES['PSD']['decim'])
-            '''
     except:
         logger.exception('Problem while epoching.')
         raise RuntimeError

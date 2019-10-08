@@ -30,24 +30,19 @@ import sys
 import imp
 import mne
 import mne.io
-import pycnbi
-import timeit
 import platform
-import traceback
 import numpy as np
 import multiprocessing as mp
 import sklearn.metrics as skmetrics
 import pycnbi.utils.q_common as qc
 import pycnbi.utils.pycnbi_utils as pu
 import pycnbi.decoder.features as features
-from mne import Epochs, pick_types
 from builtins import input
-from IPython import embed  # for debugging
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import GradientBoostingClassifier
 from xgboost import XGBClassifier
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
-from pycnbi import logger, add_logger_handler
+from pycnbi import logger
 from pycnbi.decoder.rlda import rLDA
 from pycnbi.triggers.trigger_def import trigger_def
 from pycnbi.gui.streams import redirect_stdout_to_queue
@@ -61,14 +56,6 @@ except ImportError:
     SKLEARN_OLD = True
 mne.set_log_level('ERROR')
 os.environ['OMP_NUM_THREADS'] = '1' # actually improves performance for multitaper
-
-
-def load_config(cfg_file):
-    cfg_file = qc.forward_slashify(cfg_file)
-    if not (os.path.exists(cfg_file) and os.path.isfile(cfg_file)):
-        logger.error('%s cannot be loaded.' % os.path.realpath(cfg_file))
-        raise IOError
-    return imp.load_source(cfg_file, cfg_file)
 
 def check_config(cfg):
     critical_vars = {
@@ -755,39 +742,51 @@ def train_decoder(cfg, featdata, feat_file=None):
 
 
 # for batch scripts
-def batch_run(cfg_file):
-    cfg = load_config(cfg_file)
+def batch_run(cfg_module):
+    cfg = pu.load_config(cfg_module)
     cfg = check_config(cfg)
     run(cfg, interactive=True)
 
-def run(cfg, queue=None, interactive=False, cv_file=None, feat_file=None):
+def run(cfg, state=mp.Value('i', 1), queue=None, interactive=False, cv_file=None, feat_file=None, logger=logger):
 
-    redirect_stdout_to_queue(queue)
+    redirect_stdout_to_queue(logger, queue, 'INFO')
 
+    # add tdef object
     cfg.tdef = trigger_def(cfg.TRIGGER_FILE)
 
     # Extract features
+    if not state.value:
+        sys.exit(-1)
     featdata = features.compute_features(cfg)
 
     # Find optimal threshold for TPR balancing
     #balance_tpr(cfg, featdata)
 
     # Perform cross validation
+    if not state.value:
+        sys.exit(-1)
+
     if cfg.CV_PERFORM[cfg.CV_PERFORM['selected']] is not None:
         cross_validate(cfg, featdata, cv_file=cv_file)
 
     # Train a decoder
+    if not state.value:
+        sys.exit(-1)
+
     if cfg.EXPORT_CLS is True:
         train_decoder(cfg, featdata, feat_file=feat_file)
+
+    with state.get_lock():
+        state.value = 0
 
 
 
 if __name__ == '__main__':
     # Load parameters
     if len(sys.argv) < 2:
-        cfg_file = input('Config file name? ')
+        cfg_module = input('Config module name? ')
     else:
-        cfg_file = sys.argv[1]
-    batch_run(cfg_file)
+        cfg_module = sys.argv[1]
+    batch_run(cfg_module)
 
     logger.info('Finished.')

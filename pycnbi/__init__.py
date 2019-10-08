@@ -49,13 +49,16 @@ class PycnbiFormatter(logging.Formatter):
         self._style = logging.PercentStyle(self._fmt)
         return logging.Formatter.format(self, record)
 
-def init_logger(verbose_console='INFO'):
+def init_logger(logger, verbose_console='INFO'):
     '''
     Add the first logger as sys.stdout. Handler will be added only once.
+
+    logger = the logger to initialize
+    verbose_console = logger verbosity
     '''
     if not logger.hasHandlers():
-        add_logger_handler(sys.stdout, verbosity=verbose_console)
-    
+        add_logger_handler(logger, sys.stdout, verbosity=verbose_console)
+
     '''
     TODO: add file handler
     # file logger handler
@@ -66,7 +69,7 @@ def init_logger(verbose_console='INFO'):
     logger.addHandler(f_handler)
     '''
 
-def add_logger_handler(stream, verbosity='INFO'):
+def add_logger_handler(logger, stream, verbosity='INFO'):
     # add custom log levels
     logging.addLevelName(LOG_LEVELS['INFO_GREEN'], 'INFO_GREEN')
     def __log_info_green(self, message, *args, **kwargs):
@@ -92,13 +95,11 @@ def add_logger_handler(stream, verbosity='INFO'):
     logger.addHandler(c_handler)
 
     # minimum possible level of all handlers
-    logger.setLevel(logging.DEBUG)
-
-    logger.handlers[-1].level = LOG_LEVELS[verbosity]
-    set_log_level(verbosity)
+    #logger.setLevel(logging.DEBUG)
+    set_log_level(logger, verbosity, -1)
     return logger
 
-def set_log_level(verbosity, handler_id=0):
+def set_log_level(logger, verbosity, handler_id=0):
     '''
     hander ID 0 is always stdout, followed by user-defined handlers.
     '''
@@ -115,4 +116,4 @@ for d in qc.get_dir_list(ROOT):
 logging.getLogger('matplotlib').setLevel(logging.ERROR)
 logger = logging.getLogger('pycnbi')
 logger.propagate = False
-init_logger()
+init_logger(logger)

@@ -21,10 +21,10 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-
 import sys
+import time
 import pylsl
-import pycnbi.utils.q_common as qc
+import multiprocessing as mp
 from pycnbi import logger
 
 
@@ -66,7 +66,7 @@ def start_server(server_name, n_channels=1, channel_format='string', nominal_sra
     return pylsl.StreamOutlet(sinfo)
 
 
-def start_client(server_name):
+def start_client(server_name, state=mp.Value('i', 1)):
     """
     Search and connect to an LSL server
 
@@ -74,6 +74,8 @@ def start_client(server_name):
     ------
     server_name:
         Name of the server to search
+    state:
+        Multiprocessing.Value used to stop from the GUI, 1: acquire 0:stop
 
     Returns
     -------
@@ -82,6 +84,8 @@ def start_client(server_name):
 
     """
     while True:
+        if not state.value:
+            sys.exit(-1) 
         logger.info('Searching for LSL server %s ...' % server_name)
         streamInfos = pylsl.resolve_byprop("name", server_name, timeout=1)
         if not streamInfos:
