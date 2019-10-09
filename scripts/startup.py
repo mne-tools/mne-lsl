@@ -12,7 +12,7 @@ print('\nLoading startup modules... ', end='')
 
 import mne
 import numpy as np
-import pycnbi.utils.pycnbi_utils as pu
-import pycnbi.utils.q_common as qc
+import neurodecode.utils.neurodecode_utils as pu
+import neurodecode.utils.q_common as qc
 
 print('Done.')
