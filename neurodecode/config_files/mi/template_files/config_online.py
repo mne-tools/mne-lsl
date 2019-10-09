@@ -1,8 +1,8 @@
 # Path to save data
-DATA_PATH = ''
+DATA_PATH = r''
 
 # classifier type
-DECODER_FILE = r'C:\Users\adesvachez\git\pycnbi_data\testGUI\fif\classifier\classifier-64bit.pkl'
+DECODER_FILE = r''
 
 # fake decoder?
 FAKE_CLS = None
@@ -10,7 +10,7 @@ DIRECTIONS = [ ('L', 'LEFT_GO'), ('R', 'RIGHT_GO') ]
 
 # trigger device
 TRIGGER_DEVICE = None # None | 'ARDUINO' | 'USB2LPT' | 'DESKTOP' | 'SOFTWARE'
-TRIGGER_FILE = r'C:\Users\adesvachez\git\pycnbi\pycnbi\triggers\triggerdef_16.ini'
+TRIGGER_FILE = r''
 
 # trial properties
 TRIALS_EACH = 10
