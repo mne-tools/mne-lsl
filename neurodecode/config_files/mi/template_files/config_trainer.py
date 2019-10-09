@@ -10,13 +10,13 @@ EPOCH = [0.5, 3.5]
 #-------------------------------------------
 TRIGGER_FILE = ''
 TRIGGER_DEF = ['LEFT_GO', 'RIGHT_GO']
-LOAD_EVENTS = {'selected':'False', 'False':None, 'True':'C:'}
+LOAD_EVENTS = {'selected':'False', 'False':None, 'True':r''}
 
 #-------------------------------------------
 # Channels specification
 #-------------------------------------------
 PICKED_CHANNELS= ['Fz', 'F3', 'F4', 'F7', 'F8', 'Cz', 'C3', 'C4', 'P3', 'Pz', 'P4' ] 
-EXCLUDED_CHANNELS = ['Fz']
+EXCLUDED_CHANNELS = []
 
 REREFERENCE = {'selected':'False', 'False':None, 'True':dict(New=['Cz'], Old=['M1/2', 'M2/2'])}
 
