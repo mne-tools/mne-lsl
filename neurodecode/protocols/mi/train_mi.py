@@ -27,14 +27,14 @@ import os
 import cv2
 import random
 import multiprocessing as mp
-import pycnbi.utils.q_common as qc
-import pycnbi.utils.pycnbi_utils as pu
-import pycnbi.triggers.pyLptControl as pyLptControl
-from pycnbi.protocols.viz_bars import BarVisual
-from pycnbi.triggers.trigger_def import trigger_def
-from pycnbi import logger
+import neurodecode.utils.q_common as qc
+import neurodecode.utils.pycnbi_utils as pu
+import neurodecode.triggers.pyLptControl as pyLptControl
+from neurodecode.protocols.viz_bars import BarVisual
+from neurodecode.triggers.trigger_def import trigger_def
+from neurodecode import logger
 from builtins import input
-from pycnbi.gui.streams import redirect_stdout_to_queue
+from neurodecode.gui.streams import redirect_stdout_to_queue
 
 def check_config(cfg):
     critical_vars = {

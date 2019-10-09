@@ -31,16 +31,16 @@ import os
 import sys
 import time
 import random
-import pycnbi
+import neurodecode
 import multiprocessing as mp
-import pycnbi.utils.q_common as qc
-import pycnbi.utils.pycnbi_utils as pu
-import pycnbi.triggers.pyLptControl as pyLptControl
-from pycnbi.decoder.decoder import BCIDecoderDaemon
-from pycnbi.triggers.trigger_def import trigger_def
-from pycnbi.protocols.feedback import Feedback
-from pycnbi.gui.streams import redirect_stdout_to_queue
-from pycnbi import logger
+import neurodecode.utils.q_common as qc
+import neurodecode.utils.pycnbi_utils as pu
+import neurodecode.triggers.pyLptControl as pyLptControl
+from neurodecode.decoder.decoder import BCIDecoderDaemon
+from neurodecode.triggers.trigger_def import trigger_def
+from neurodecode.protocols.feedback import Feedback
+from neurodecode.gui.streams import redirect_stdout_to_queue
+from neurodecode import logger
 from builtins import input
 
 
@@ -186,12 +186,12 @@ def run(cfg, state=mp.Value('i', 1), queue=None):
 
     # bar visual object
     if cfg.FEEDBACK_TYPE == 'BAR':
-        from pycnbi.protocols.viz_bars import BarVisual
+        from neurodecode.protocols.viz_bars import BarVisual
         visual = BarVisual(cfg.GLASS_USE, screen_pos=cfg.SCREEN_POS,
             screen_size=cfg.SCREEN_SIZE)
     elif cfg.FEEDBACK_TYPE == 'BODY':
         assert hasattr(cfg, 'FEEDBACK_IMAGE_PATH'), 'FEEDBACK_IMAGE_PATH is undefined in your config.'
-        from pycnbi.protocols.viz_human import BodyVisual
+        from neurodecode.protocols.viz_human import BodyVisual
         visual = BodyVisual(cfg.FEEDBACK_IMAGE_PATH, use_glass=cfg.GLASS_USE,
             screen_pos=cfg.SCREEN_POS, screen_size=cfg.SCREEN_SIZE)
     visual.put_text('Waiting to start')
