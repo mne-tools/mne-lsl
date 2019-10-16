@@ -456,8 +456,8 @@ class MainWindow(QMainWindow):
         """
         # Find the config template
         tmp = cfg_file.split('.')[0]  # Remove the .py
-        tmp = tmp.split('-')[-1]    # Extract the protocol name
-        template_path = Path(os.environ['NEUROD_ROOT']) / 'neurodecode' / 'config_files' / tmp / 'structure_files'
+        self.protocol = tmp.split('-')[-1]    # Extract the protocol name
+        template_path = Path(os.environ['NEUROD_ROOT']) / 'neurodecode' / 'config_files' / self.protocol / 'structure_files'
         
         for f in glob(os.fspath(template_path / "*.py") , recursive=False):
             fileName =  os.path.split(f)[-1]
@@ -490,12 +490,13 @@ class MainWindow(QMainWindow):
         """
         self.modality = 'offline'
                 
-        if 'train_mi' not in sys.modules:
+        cfg_file, cfg_template = self.prepare_config_files(self.modality)
+        module_name = 'train_' + self.protocol
+        
+        if module_name not in sys.modules:
             path2protocol =  os.path.split(self.ui.lineEdit_pathSearch.text())[0]
             sys.path.append(path2protocol)
-            self.m = import_module('train_mi')
-
-        cfg_file, cfg_template = self.prepare_config_files(self.modality)
+            self.m = import_module(module_name)
         
         self.ui.checkBox_Record.setChecked(True)
         self.ui.checkBox_Record.setEnabled(False)
@@ -532,14 +533,15 @@ class MainWindow(QMainWindow):
         Loads the Online parameters.
         """
         self.modality = 'online'        
+                
+        cfg_file, cfg_template = self.prepare_config_files(self.modality)
+        module_name = 'test_' + self.protocol 
         
-        if 'test_mi' not in sys.modules:
+        if module_name not in sys.modules:
             path2protocol =  os.path.split(self.ui.lineEdit_pathSearch.text())[0]
             sys.path.append(path2protocol)
-            self.m = import_module('test_mi')
-        
-        cfg_file, cfg_template = self.prepare_config_files(self.modality)
-        
+            self.m = import_module(module_name)
+
         self.ui.checkBox_Record.setChecked(True)
         self.ui.checkBox_Record.setEnabled(True)
         
@@ -559,15 +561,15 @@ class MainWindow(QMainWindow):
         
         ccfg = cfg_class(self.cfg_subject)  #  because a module is not pickable
         
+        with self.record_state.get_lock():
+            self.record_state.value = 0
+
         if not self.protocol_state.value:            
             self.ui.textEdit_terminal.clear()
             
             # Recording shared variable + recording terminal            
             if self.ui.checkBox_Record.isChecked():
                 
-                with self.record_state.get_lock():
-                    self.record_state.value = 1
-
                 amp = self.ui.comboBox_LSL.currentData()
                 if not amp:   
                     self.signal_error[str].emit('No LSL amplifier specified.')
@@ -590,10 +592,7 @@ class MainWindow(QMainWindow):
                 processesToLaunch = [('recording', recorder.run_gui, [self.record_state, self.protocol_state, self.record_dir, self.recordLogger, amp['name'], amp['serial'], False, self.record_terminal.my_receiver.queue]), \
                                      ('protocol', self.m.run, [ccfg, self.protocol_state, self.my_receiver.queue])]
 
-            else:
-                with self.record_state.get_lock():
-                    self.record_state.value = 0
-                    
+            else:    
                 # Protocol shared variable
                 with self.protocol_state.get_lock():
                     self.protocol_state.value = 1  #  0=stop, 1=start, 2=wait
