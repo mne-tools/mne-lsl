@@ -37,7 +37,7 @@ class BarVisual(object):
     color = dict(G=(20, 140, 0), B=(210, 0, 0), R=(0, 50, 200),
         Y=(0, 215, 235), K=(0, 0, 0), W=(255, 255, 255), w=(200, 200, 200))
     barwidth = 100
-    textlimit = 20  # maximum number of characters to show
+    textlimit = 25  # maximum number of characters to show
 
     def __init__(self, use_glass=False, glass_feedback=True, pc_feedback=True, screen_pos=None, screen_size=None):
         """
