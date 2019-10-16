@@ -71,7 +71,10 @@ def record(recordState, amp_name, amp_serial, record_dir, eeg_only, recordLogger
 
     # start recording
     recordLogger.info('\n>> Recording started (PID %d).' % os.getpid())
-    qc.print_c('\n>> Press Enter to stop recording', 'G')
+
+    with recordState.get_lock():
+        recordState.value = 1
+        
     tm = qc.Timer(autoreset=True)
     next_sec = 1
     while recordState.value == 1:
@@ -150,7 +153,10 @@ def run_gui(recordState, protocolState, record_dir, recordLogger=logger, amp_nam
     recordLogger.info('\n>> Recording started.')
     proc = mp.Process(target=record, args=[recordState, amp_name, amp_serial, record_dir, eeg_only, recordLogger , queue])
     proc.start()
-
+    
+    while not recordState.value:
+        pass
+    
     # Launching the protocol (shared variable)
     with protocolState.get_lock():
         protocolState.value = 1
