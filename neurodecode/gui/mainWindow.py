@@ -676,6 +676,9 @@ class MainWindow(QMainWindow):
         """
         Fill the comboBox with the available lsl streams
         """
+        # Clear the comboBox_lsl first
+        self.ui.comboBox_LSL.clear()
+        
         for amp in amp_list:
             amp_formated = '{} ({})'.format(amp[1], amp[2])
             self.ui.comboBox_LSL.addItem(amp_formated, {'name':amp[1], 'serial':amp[2]})
