@@ -496,7 +496,7 @@ class MainWindow(QMainWindow):
         self.modality = 'offline'
                 
         cfg_file, cfg_template = self.prepare_config_files(self.modality)
-        module_name = 'train_' + self.protocol
+        module_name = 'offline_' + self.protocol
         
         if module_name not in sys.modules:
             path2protocol =  os.path.split(self.ui.lineEdit_pathSearch.text())[0]
@@ -517,11 +517,16 @@ class MainWindow(QMainWindow):
         """
         Loads the Training parameters.
         """
-        import neurodecode.decoder.trainer as m
-
-        self.m = m
         self.modality = 'trainer'
+                
         cfg_file, cfg_template = self.prepare_config_files(self.modality)
+        module_name = 'trainer_' + self.protocol
+        
+        if module_name not in sys.modules:
+            path2protocol =  os.path.split(self.ui.lineEdit_pathSearch.text())[0]
+            sys.path.append(path2protocol)
+            self.m = import_module(module_name)        
+
         
         self.ui.checkBox_Record.setChecked(False)
         self.ui.checkBox_Record.setEnabled(False)
@@ -540,7 +545,7 @@ class MainWindow(QMainWindow):
         self.modality = 'online'        
                 
         cfg_file, cfg_template = self.prepare_config_files(self.modality)
-        module_name = 'test_' + self.protocol 
+        module_name = 'online_' + self.protocol 
         
         if module_name not in sys.modules:
             path2protocol =  os.path.split(self.ui.lineEdit_pathSearch.text())[0]
