@@ -34,14 +34,14 @@ NOTCH_FILTER = {'selected':'False', 'False':None, 'True':[50]}
 MULTIPLIER = 1
 
 #-------------------------------------------
-# PSD 
+# Features
 #-------------------------------------------
 FEATURES = {'selected':'PSD','PSD':dict(fmin=1, fmax=40, wlen=0.5, wstep=10, decim=1)}
 EXPORT_GOOD_FEATURES = True
 FEAT_TOPN = 100
 
 #-------------------------------------------
-# Feature types
+# Classifier
 #-------------------------------------------
 
 CLASSIFIER =    {'selected': 'RF', \
