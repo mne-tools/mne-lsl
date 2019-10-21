@@ -332,9 +332,14 @@ class MainWindow(QMainWindow):
         # Connect inter-widgets signals and slots
         if self.modality == 'trainer':
             self.paramsWidgets['TRIGGER_FILE'].signal_pathChanged[str, str].connect(trigger_def.on_new_tdef_file)
+            self.paramsWidgets['TRIGGER_FILE'].on_selected()
+        
         if self.modality == 'online':
             self.paramsWidgets['TRIGGER_FILE'].signal_pathChanged[str, str].connect(directions.on_new_tdef_file)
+            self.paramsWidgets['TRIGGER_FILE'].on_selected()
+        
             self.paramsWidgets['DECODER_FILE'].signal_pathChanged[str, str].connect(directions.on_new_decoder_file)
+            self.paramsWidgets['DECODER_FILE'].on_selected()
             
     # ----------------------------------------------------------------------
     def load_config(self, cfg_file):
