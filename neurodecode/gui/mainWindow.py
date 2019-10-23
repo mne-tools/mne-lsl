@@ -486,7 +486,21 @@ class MainWindow(QMainWindow):
             cfg_template = os.path.split(cfg_template)
             
             return cfg_file, cfg_template
-            
+    
+    # ----------------------------------------------------------------------
+    def load_protocol_module(self, module_name):
+        """
+        Load or reload the protocol's module associated with the modality
+        
+        module_name = name of the module to load
+        """
+        if module_name not in sys.modules:
+            path2protocol =  os.path.split(self.ui.lineEdit_pathSearch.text())[0]
+            sys.path.append(path2protocol)
+            self.m = import_module(module_name)
+        else:
+            self.m = reload(sys.modules[module_name])
+        
     # ----------------------------------------------------------------------
     @pyqtSlot()
     def on_click_offline(self):
@@ -498,10 +512,7 @@ class MainWindow(QMainWindow):
         cfg_file, cfg_template = self.prepare_config_files(self.modality)
         module_name = 'offline_' + self.protocol
         
-        if module_name not in sys.modules:
-            path2protocol =  os.path.split(self.ui.lineEdit_pathSearch.text())[0]
-            sys.path.append(path2protocol)
-            self.m = import_module(module_name)
+        self.load_protocol_module(module_name)
         
         self.ui.checkBox_Record.setChecked(True)
         self.ui.checkBox_Record.setEnabled(False)
@@ -522,11 +533,7 @@ class MainWindow(QMainWindow):
         cfg_file, cfg_template = self.prepare_config_files(self.modality)
         module_name = 'trainer_' + self.protocol
         
-        if module_name not in sys.modules:
-            path2protocol =  os.path.split(self.ui.lineEdit_pathSearch.text())[0]
-            sys.path.append(path2protocol)
-            self.m = import_module(module_name)        
-
+        self.load_protocol_module(module_name)   
         
         self.ui.checkBox_Record.setChecked(False)
         self.ui.checkBox_Record.setEnabled(False)
@@ -547,10 +554,7 @@ class MainWindow(QMainWindow):
         cfg_file, cfg_template = self.prepare_config_files(self.modality)
         module_name = 'online_' + self.protocol 
         
-        if module_name not in sys.modules:
-            path2protocol =  os.path.split(self.ui.lineEdit_pathSearch.text())[0]
-            sys.path.append(path2protocol)
-            self.m = import_module(module_name)
+        self.load_protocol_module(module_name)      
 
         self.ui.checkBox_Record.setChecked(True)
         self.ui.checkBox_Record.setEnabled(True)
