@@ -13,6 +13,7 @@ import time
 import inspect
 import logging
 import multiprocessing as mp
+from threading import Thread
 from datetime import datetime
 from glob import glob
 from pathlib import Path
@@ -613,7 +614,7 @@ class MainWindow(QMainWindow):
                 
                 processesToLaunch = [('protocol', self.m.run, [ccfg, self.protocol_state, self.my_receiver.queue])]
                       
-            launchedProcess = mp.Process(target=launching_subprocesses, args=processesToLaunch)
+            launchedProcess = Thread(target=self.launching_subprocesses, args=processesToLaunch)
             launchedProcess.start()
             logger.info(self.modality + ' protocol starting...')
             self.ui.pushButton_Start.setText('Stop')
@@ -796,37 +797,36 @@ class MainWindow(QMainWindow):
         # LSL button
         self.ui.pushButton_LSL.clicked.connect(self.on_click_lsl_button)
 
+    #----------------------------------------------------------------------
+    def launching_subprocesses(*args):
+        """
+        Launch subprocesses
+        
+        processesToLaunch = list of tuple containing the functions to launch
+        and their args
+        """
+        launchedProcesses = dict()
+        
+        for p in args[1:]:
+            launchedProcesses[p[0]] = mp.Process(target=p[1], args=p[2])
+            launchedProcesses[p[0]].start()
+        
+        # Wait that the protocol is finished to stop recording
+        launchedProcesses['protocol'].join()
+        
+        recordState = args[1][2][1]     #  Sharing variable
+        try:        
+            with recordState.get_lock():
+                recordState.value = 0
+        except:
+            pass
+
 #----------------------------------------------------------------------
 def instantiate_scope(amp, state, logger=logger, queue=None):
     logger.info('Connecting to a %s (Serial %s).' % (amp['name'], amp['serial']))
     app = QApplication(sys.argv)
     ex = viewer.Scope(amp['name'], amp['serial'], state, queue)
     sys.exit(app.exec_())
-
-#----------------------------------------------------------------------
-def launching_subprocesses(*args):
-    """
-    Launch subprocesses
-    
-    processesToLaunch = list of tuple containing the functions to launch
-    and their args
-    """
-    launchedProcesses = dict()
-    
-    for p in args:
-        launchedProcesses[p[0]] = mp.Process(target=p[1], args=p[2])
-        launchedProcesses[p[0]].start()
-    
-    # Wait that the protocol is finished to stop recording
-    launchedProcesses['protocol'].join()
-    
-    recordState = args[0][2][0]     #  Sharing variable
-    try:        
-        with recordState.get_lock():
-            recordState.value = 0
-    except:
-        pass
-        
     
 #----------------------------------------------------------------------    
 def main():
