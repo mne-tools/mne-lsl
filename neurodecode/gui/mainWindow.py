@@ -621,7 +621,8 @@ class MainWindow(QMainWindow):
             
         else:    
             with self.protocol_state.get_lock():
-                self.protocol_state.value = 0
+                self.protocol_state.value = 0                
+            
             time.sleep(2)
             self.hide_recordTerminal[bool].emit(True)
             self.ui.pushButton_Start.setText('Start')
@@ -814,8 +815,9 @@ class MainWindow(QMainWindow):
         # Wait that the protocol is finished to stop recording
         launchedProcesses['protocol'].join()
         
-        recordState = args[1][2][1]     #  Sharing variable
-        try:        
+        try:
+            launchedProcesses['recording']            
+            recordState = args[1][2][0]     #  Sharing variable
             with recordState.get_lock():
                 recordState.value = 0
         except:
