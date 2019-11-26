@@ -22,13 +22,13 @@ from importlib import import_module, reload
 from PyQt5.QtGui import QTextCursor, QFont
 from PyQt5.QtCore import pyqtSlot, QThread, pyqtSignal
 from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QFormLayout, QWidget, \
-     QFrame, QErrorMessage
+    QFrame, QErrorMessage
 
-from ui_mainwindow import Ui_MainWindow
-from streams import MyReceiver, redirect_stdout_to_queue, GuiTerminal, search_lsl_streams_thread
-from readWriteFile import read_params_from_file, save_params_to_file
-from pickedChannelsDialog import Channel_Select
-from connectClass import PathFolderFinder, PathFileFinder, Connect_Directions, Connect_ComboBox, \
+from neurodecode.gui.ui_mainwindow import Ui_MainWindow
+from neurodecode.gui.streams import MyReceiver, redirect_stdout_to_queue, GuiTerminal, search_lsl_streams_thread
+from neurodecode.gui.readWriteFile import read_params_from_file, save_params_to_file
+from neurodecode.gui.pickedChannelsDialog import Channel_Select
+from neurodecode.gui.connectClass import PathFolderFinder, PathFileFinder, Connect_Directions, Connect_ComboBox, \
      Connect_LineEdit, Connect_SpinBox, Connect_DoubleSpinBox, Connect_Modifiable_List, \
      Connect_Modifiable_Dict,  Connect_Directions_Online, Connect_Bias, Connect_NewSubject
 
@@ -574,8 +574,15 @@ class MainWindow(QMainWindow):
         """
         self.record_dir = Path(self.cfg_subject.DATA_PATH)
         
+        # Find the selected amp and save it in the cfg
+        amp = self.ui.comboBox_LSL.currentData()
+        if not amp:   
+            self.signal_error[str].emit('No LSL amplifier specified.')
+            return
+        setattr(self.cfg_subject, 'AMP_NAME', amp['name'])
+        setattr(self.cfg_subject, 'AMP_SERIAL', amp['serial'])
         ccfg = cfg_class(self.cfg_subject)  #  because a module is not pickable
-        
+
         with self.record_state.get_lock():
             self.record_state.value = 0
 
@@ -585,10 +592,6 @@ class MainWindow(QMainWindow):
             # Recording shared variable + recording terminal            
             if self.ui.checkBox_Record.isChecked():
                 
-                amp = self.ui.comboBox_LSL.currentData()
-                if not amp:   
-                    self.signal_error[str].emit('No LSL amplifier specified.')
-                    return                
                 
                 if not self.record_terminal:                
                     self.record_terminal = GuiTerminal(self.recordLogger, 'INFO', self.width())
