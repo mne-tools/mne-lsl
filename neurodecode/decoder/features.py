@@ -290,7 +290,7 @@ def get_psd_feature(epochs_train, window, psdparam, picks=None, preprocess=None,
     # assign relative timestamps for each feature. time reference is the leading edge of a window.
     w_starts = np.arange(0, epochs_train.get_data().shape[2] - w_frames, psdparam['wstep'])
     t_features = w_starts / sfreq + psdparam['wlen'] + window[0]
-    return dict(X_data=X_data, Y_data=Y_data, wlen=wlen, w_frames=w_frames, psde=psde, times=t_features, decim=psdparam['decim'])
+    return dict(X_data=X_data, Y_data=Y_data, wlen=psdparam['wlen'], w_frames=w_frames, psde=psde, times=t_features, decim=psdparam['decim'])
 
 
 def get_timelags(epochs, wlen, wstep, downsample=1, picks=None):
