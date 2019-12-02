@@ -318,7 +318,7 @@ def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, sp
                 raise ValueError
     elif spatial == 'laplacian':
         if type(spatial_ch) is not dict:
-            logger.error('preprocess(): For Lapcacian, spatial_ch must be of form {CHANNEL:[NEIGHBORS], ...}')
+            logger.error('preprocess(): For laplacian, spatial_ch must be of form {CHANNEL:[NEIGHBORS], ...}')
             raise TypeError
         if type(spatial_ch.keys()[0]) == str:
             spatial_ch_i = {}
