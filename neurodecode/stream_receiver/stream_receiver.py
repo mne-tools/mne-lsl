@@ -210,8 +210,6 @@ class StreamReceiver:
         logger.info('Source sampling rate: %.1f' % sample_rate)
         logger.info('Unit multiplier: %.1f' % self.multiplier)
 
-        #self.winsize = int(self.winsec * sample_rate)
-        #self.bufsize = int(self.bufsec * sample_rate)
         self.winsize = int(round(self.winsec * sample_rate))
         self.bufsize = int(round(self.bufsec * sample_rate))
         self.stream_bufsize = int(round(self.stream_bufsec * sample_rate))
