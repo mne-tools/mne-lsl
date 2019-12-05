@@ -3,7 +3,7 @@ from __future__ import print_function, division, unicode_literals
 
 """
  EEG Scope
- Iñaki Iturrate, Kyuhwa Lee
+ Iñaki Iturrate, Kyuhwa Lee, Arnaud Desvachez
  2017
 
  V1.0
@@ -29,15 +29,16 @@ import traceback
 import subprocess
 import numpy as np
 import pyqtgraph as pg
-import neurodecode
 import neurodecode.utils.q_common as qc
 import neurodecode.utils.pycnbi_utils as pu
 import multiprocessing as mp
-from PyQt5.QtWidgets import QMainWindow,QApplication, QTableWidgetItem, QHeaderView
+from PyQt5.QtWidgets import QMainWindow,QApplication, QTableWidgetItem, QHeaderView, \
+     QFileDialog
 from PyQt5 import QtCore
 from PyQt5.QtGui import QPainter
 from pathlib import Path
 from scipy.signal import butter, lfilter, lfiltic, buttord
+from neurodecode.stream_recorder import stream_recorder
 from neurodecode.stream_receiver.stream_receiver import StreamReceiver
 from neurodecode.gui.streams import redirect_stdout_to_queue
 from neurodecode import logger
@@ -55,6 +56,7 @@ class Scope(QMainWindow):
 
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
+        self.setGeometry(100, 100, self.geometry().width(), self.geometry().height())
         self.setFixedSize(self.geometry().width(), self.geometry().height())
         
         redirect_stdout_to_queue(logger, queue, 'INFO')
@@ -123,6 +125,7 @@ class Scope(QMainWindow):
         self.ui.checkBox_showKey.stateChanged.connect(
             self.onActivated_checkbox_Key)
         self.ui.pushButton_bp.clicked.connect(self.onClicked_button_bp)
+        self.ui.pushButton_recdir.clicked.connect(self.on_click_button_recdir)
         self.ui.pushButton_rec.clicked.connect(self.onClicked_button_rec)
         self.ui.pushButton_stoprec.clicked.connect(self.onClicked_button_stoprec)
 
@@ -189,9 +192,9 @@ class Scope(QMainWindow):
         self.win.setWindowFlags(QtCore.Qt.WindowMinimizeButtonHint)
         self.win.setWindowFlags(QtCore.Qt.WindowMaximizeButtonHint)
         self.win.keyPressEvent = self.keyPressEvent
+        self.win.setGeometry(self.pos().x() + self.width(), self.geometry().y(), self.width() * 2, self.height()) #  Position next to the panel window
         self.win.show()
         self.main_plot_handler = self.win.addPlot()
-        self.win.resize(1280, 800)
 
         # Scales available in the GUI. If you change the options in the GUI
         # you should change them here as well
@@ -375,23 +378,20 @@ class Scope(QMainWindow):
         trg_ch =  self.sr.get_trigger_channel()
         logger.info('Trigger channel is %d' % trg_ch)
 
-        samples_chunk = self.sr.winsize
-        data = ['EEG', srate, ['L', 'R'], samples_chunk, self.nb_channels, 0, trg_ch, \
+        data = ['EEG', srate, ['L', 'R'], None, self.nb_channels, 0, trg_ch, \
                 None, None, None, None, None]
         self.config = {'id':data[0], 'sf':data[1], 'labels':data[2],
             'samples':data[3], 'eeg_channels':data[4], 'exg_channels':data[5],
             'tri_channels':data[6], 'eeg_type':data[8], 'exg_type':data[9],
             'tri_type':data[10], 'lbl_type':data[11], 'tim_size':1,
             'idx_size':1}
-
-        self.tri = np.zeros(self.config['samples'])
+        
+        # For now not a fixed number of samples per chunk
+        # self.tri = np.zeros(self.config['samples'])
+        # self.eeg = np.zeros((self.config['samples'], self.config['eeg_channels']), dtype=np.float)
+        # self.exg = np.zeros((self.config['samples'], self.config['exg_channels']), dtype=np.float)
+        
         self.last_tri = 0
-        self.eeg = np.zeros(
-            (self.config['samples'], self.config['eeg_channels']),
-            dtype=np.float)
-        self.exg = np.zeros(
-            (self.config['samples'], self.config['exg_channels']),
-            dtype=np.float)
         self.ts_list = []
         self.ts_list_tri = []
 
@@ -789,32 +789,34 @@ class Scope(QMainWindow):
     # ----------------------------------------------------------------------------------------------------
     # 			EVENT HANDLERS
     # ----------------------------------------------------------------------------------------------------
+    def on_click_button_recdir(self):
+        """
+        Open a QFileDialog to select the recording directory
+        """
+        defaultPath = os.environ["NEUROD_DATA"]
+        path_name = QFileDialog.getExistingDirectory(caption="Choose the recording directory", directory=defaultPath)
+
+        if path_name:            
+            self.ui.lineEdit_recdir.setText(path_name)
+            
+    #----------------------------------------------------------------------
     def onClicked_button_rec(self):
         # Simply call cl_rpc for this.
-        if (len(self.lineEdit_recFilename.text()) > 0):
-            if ".gdf" in self.lineEdit_recFilename.text():
-                self.ui.pushButton_stoprec.setEnabled(True)
-                self.ui.pushButton_rec.setEnabled(False)
-                # Popen is more efficient than os.open, since it is non-blocking
-                subprocess.Popen(
-                    ["cl_rpc", "openxdf", str(self.ui.lineEdit_recFilename.text()),
-                        "dummy_log", "dummy_log"], close_fds=True)
-                self.statusBar.showMessage(
-                    "Recording file " + str(self.ui.lineEdit_recFilename.text()))
-            elif ".bdf" in self.ui.lineEdit_recFilename.text():
-                self.ui.pushButton_stoprec.setEnabled(True)
-                self.ui.pushButton_rec.setEnabled(False)
-                subprocess.Popen(
-                    ["cl_rpc", "openxdf", str(self.ui.lineEdit_recFilename.text()),
-                        "dummy_log", "dummy_log"], close_fds=True)
-                self.statusBar.showMessage(
-                    "Recording file " + str(self.ui.lineEdit_recFilename.text()))
-            else:
-                pass
-    
+        # if (len(self.lineEdit_recFilename.text()) > 0):
+        self.ui.pushButton_stoprec.setEnabled(True)
+        self.ui.pushButton_rec.setEnabled(False)
+        
+        record_dir = self.ui.lineEdit_recdir.text()
+        self.recordState = mp.Value('i', 1)
+        record_process = mp.Process(target=stream_recorder.record, \
+                                         args=[self.recordState, self.amp_name, self.amp_serial, record_dir, False, logger, None])
+        record_process.start()
+        self.ui.statusBar.showMessage("Recording to" + record_dir)
+
     #----------------------------------------------------------------------
     def onClicked_button_stoprec(self):
-        subprocess.Popen(["cl_rpc", "closexdf"], close_fds=True)
+        with self.recordState.get_lock():
+            self.recordState.value = 0    
         self.ui.pushButton_rec.setEnabled(True)
         self.ui.pushButton_stoprec.setEnabled(False)
         self.ui.statusBar.showMessage("Not recording")

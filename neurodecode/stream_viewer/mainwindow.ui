@@ -280,10 +280,10 @@
    <widget class="QPushButton" name="pushButton_stoprec">
     <property name="geometry">
      <rect>
-      <x>310</x>
-      <y>95</y>
-      <width>201</width>
-      <height>28</height>
+      <x>460</x>
+      <y>60</y>
+      <width>61</width>
+      <height>31</height>
      </rect>
     </property>
     <property name="text">
@@ -293,22 +293,22 @@
    <widget class="QPushButton" name="pushButton_rec">
     <property name="geometry">
      <rect>
-      <x>460</x>
+      <x>390</x>
       <y>60</y>
-      <width>51</width>
-      <height>27</height>
+      <width>61</width>
+      <height>31</height>
      </rect>
     </property>
     <property name="text">
      <string>REC</string>
     </property>
    </widget>
-   <widget class="QLineEdit" name="lineEdit_recFilename">
+   <widget class="QLineEdit" name="lineEdit_recdir">
     <property name="geometry">
      <rect>
       <x>310</x>
-      <y>60</y>
-      <width>141</width>
+      <y>100</y>
+      <width>211</width>
       <height>27</height>
      </rect>
     </property>
@@ -349,6 +349,19 @@
     <attribute name="verticalHeaderHighlightSections">
      <bool>false</bool>
     </attribute>
+   </widget>
+   <widget class="QPushButton" name="pushButton_recdir">
+    <property name="geometry">
+     <rect>
+      <x>310</x>
+      <y>60</y>
+      <width>71</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>REC Dir</string>
+    </property>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
