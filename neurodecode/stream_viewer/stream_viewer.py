@@ -16,7 +16,6 @@ from __future__ import print_function, division, unicode_literals
 """
 
 DEBUG_TRIGGER = False # TODO: parameterize
-NB_CH_PER_ROWS = 4
 
 
 import os
@@ -146,11 +145,17 @@ class Scope(QMainWindow):
         self.channels_to_show_idx = []
         idx = 0
         
-        self.nb_table_rows = math.ceil(self.nb_channels/NB_CH_PER_ROWS)        
+        #  Define the numbers of electrodes displayed per line 
+        if self.nb_channels > 64:
+            self.nb_table_columns = 8
+        else:
+            self.nb_table_columns = 4
+        
+        self.nb_table_rows = math.ceil(self.nb_channels/self.nb_table_columns)
         self.ui.table_channels.setRowCount(self.nb_table_rows)
-        self.ui.table_channels.setColumnCount(NB_CH_PER_ROWS)
+        self.ui.table_channels.setColumnCount(self.nb_table_columns)
         for x in range(0, self.nb_table_rows):
-            for y in range(0, NB_CH_PER_ROWS):
+            for y in range(0, self.nb_table_columns):
                 if (idx < self.config['eeg_channels']):
                     self.ui.table_channels.setItem(x, y,
                         QTableWidgetItem(idx))                    
@@ -231,7 +236,7 @@ class Scope(QMainWindow):
         # Update table labels with current names
         idx = 0
         for x in range(0, self.nb_table_rows):
-            for y in range(0, NB_CH_PER_ROWS):
+            for y in range(0, self.nb_table_columns):
                 if (idx < self.config['eeg_channels']):
                     self.ui.table_channels.item(x, y).setText(
                         self.channel_labels[idx])
@@ -879,7 +884,7 @@ class Scope(QMainWindow):
         self.channels_to_hide_idx = []
         idx = 0
         for x in range(0, self.nb_table_rows):
-            for y in range(0, NB_CH_PER_ROWS):
+            for y in range(0, self.nb_table_columns):
                 if (idx < self.config['eeg_channels']):
                     #if (self.table_channels.isItemSelected( # Qt4 only
                     if (QTableWidgetItem.isSelected( # Qt5
