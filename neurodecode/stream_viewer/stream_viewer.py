@@ -64,6 +64,7 @@ class Scope(QMainWindow):
         self.amp_name = amp_name
         self.amp_serial = amp_serial
         self.state = state
+        self.recordState = mp.Value('i', 0)
         
         self.init_scope()
 
@@ -803,6 +804,7 @@ class Scope(QMainWindow):
 
         if path_name:            
             self.ui.lineEdit_recdir.setText(path_name)
+            self.ui.pushButton_rec.setEnabled(True)
             
     #----------------------------------------------------------------------
     def onClicked_button_rec(self):
@@ -812,7 +814,8 @@ class Scope(QMainWindow):
         self.ui.pushButton_rec.setEnabled(False)
         
         record_dir = self.ui.lineEdit_recdir.text()
-        self.recordState = mp.Value('i', 1)
+        with self.recordState.get_lock():
+            self.recordState.value = 1
         record_process = mp.Process(target=stream_recorder.record, \
                                          args=[self.recordState, self.amp_name, self.amp_serial, record_dir, False, logger, None])
         record_process.start()
@@ -972,7 +975,9 @@ class Scope(QMainWindow):
         '''
         if (self.ui.pushButton_stoprec.isEnabled()):
             # TO DO: ADD STOP RECORDING
-            pass
+            with self.recordState.get_lock():
+                self.recordState.value = 0
+                
         with self.state.get_lock():
             self.state.value = 0
 
