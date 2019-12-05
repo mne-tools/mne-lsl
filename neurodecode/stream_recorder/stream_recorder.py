@@ -107,13 +107,12 @@ def record(recordState, amp_name, amp_serial, record_dir, eeg_only, recordLogger
     recordLogger.info('Converting raw file into fif.')
     pcl2fif(pcl_file, external_event=eve_file)
 
-def run(record_dir, amp_name, amp_serial, recordLogger=logger, eeg_only=False, queue=None):
+def run(record_dir, amp_name, amp_serial, recordLogger=logger, eeg_only=False, queue=None, recordState = mp.Value('i', 1)):
     recordLogger.info('\nOutput directory: %s' % (record_dir))
 
     # spawn the recorder as a child process
     recordLogger.info('\n>> Press Enter to start recording.')
     key = input()
-    recordState = mp.Value('i', 1)
     proc = mp.Process(target=record, args=[recordState, amp_name, amp_serial, record_dir, eeg_only, recordLogger , queue])
     proc.start()
 
