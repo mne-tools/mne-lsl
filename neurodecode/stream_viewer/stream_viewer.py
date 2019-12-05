@@ -197,7 +197,7 @@ class Scope(QMainWindow):
         self.win.setWindowFlags(QtCore.Qt.WindowMinimizeButtonHint)
         self.win.setWindowFlags(QtCore.Qt.WindowMaximizeButtonHint)
         self.win.keyPressEvent = self.keyPressEvent
-        self.win.setGeometry(self.pos().x() + self.width(), self.geometry().y(), self.width() * 2, self.height()) #  Position next to the panel window
+        self.win.setGeometry(self.geometry().x() + self.width(), self.geometry().y(), self.width() * 2, self.height()) #  Position next to the panel window
         self.win.show()
         self.main_plot_handler = self.win.addPlot()
 
