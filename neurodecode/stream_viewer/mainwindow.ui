@@ -278,6 +278,9 @@
     </property>
    </widget>
    <widget class="QPushButton" name="pushButton_stoprec">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
     <property name="geometry">
      <rect>
       <x>460</x>
@@ -291,6 +294,9 @@
     </property>
    </widget>
    <widget class="QPushButton" name="pushButton_rec">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
     <property name="geometry">
      <rect>
       <x>390</x>
