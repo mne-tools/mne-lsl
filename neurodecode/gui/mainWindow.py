@@ -175,7 +175,7 @@ class MainWindow(QMainWindow):
         filePath = self.ui.lineEdit_pathSearch.text()
 
         # Load channels
-        if self.modality == 'trainer':
+        if self.modality != 'offline':
             subjectDataPath = Path('%s/%s/%s/fif' % (os.environ['NEUROD_DATA'], filePath.split('/')[-2], filePath.split('/')[-1]))
             self.channels = read_params_from_file(subjectDataPath, 'channelsList.txt')    
                 
@@ -230,10 +230,11 @@ class MainWindow(QMainWindow):
                         #  Automatic data path if not specified
                         if 'DATA_PATH' in key and not chosen_value:
                             if self.modality == 'offline':
-                                p_path = Path(self.ui.lineEdit_pathSearch.text())        #  path to subject protocol
-                                # define the auto data path according to p_path
+                                p_path = Path(self.ui.lineEdit_pathSearch.text())   # Path to subject protocol
                                 chosen_value = Path(os.environ['NEUROD_DATA']) / p_path.parent.name / p_path.name
                                 chosen_value = str(chosen_value)
+                            if self.modality == 'trainer' or 'online':
+                                chosen_value = str(subjectDataPath)                 # Defined above for channels list
                                 
                         pathfolderfinder = PathFolderFinder(key, os.environ['NEUROD_DATA'], chosen_value)
                         pathfolderfinder.signal_pathChanged[str, str].connect(self.on_guichanges)
@@ -247,6 +248,10 @@ class MainWindow(QMainWindow):
 
                     # For providing a file path.
                     elif 'FILE' in key:
+                        
+                        if 'DECODER_FILE' in key and not chosen_value:
+                            chosen_value = str(subjectDataPath / 'classifier')
+                            
                         pathfilefinder = PathFileFinder(key, chosen_value)
                         pathfilefinder.signal_pathChanged[str, str].connect(self.on_guichanges)
                         pathfilefinder.signal_error[str].connect(self.on_error)
