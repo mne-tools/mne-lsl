@@ -89,12 +89,14 @@ class Connect_Directions(QObject):
         all_Values = list of all possible values for a parameter
         nb_directions = number of directions to add.
         """
-        nb_val = range(len(chosen_value)) 
+        self.chosen_value = chosen_value
+        nb_val = range(len(chosen_value))
+        
         for i in nb_val:
             self.l.addWidget(self.add_To_ComboBox(all_Values, chosen_value[i], i))
             
             # Add a vertical separator
-            if i != nb_directions:
+            if i != nb_directions - 1:
                 add_v_separator(self.l)            
         
         nb_val = range(len(chosen_value), nb_directions) 
@@ -256,7 +258,14 @@ class Connect_Directions_Online(QObject):
         self.clear_VBoxLayout()
         events = [self.tdef.by_value[i] for i in self.events]
         
+        if len(self.chosen_value) !=  self.nb_directions:
+            self.chosen_value = list(self.all_values[:self.nb_directions])
+        
         self.directions.create_the_comboBoxes(self.chosen_value, self.all_values, self.nb_directions)
+        
+        if len(self.chosen_events) != self.nb_directions:
+            self.chosen_events = events
+        
         self.associated_events.create_the_comboBoxes(self.chosen_events, events, self.nb_directions)
         
         self.l.addLayout(self.directions.l)
