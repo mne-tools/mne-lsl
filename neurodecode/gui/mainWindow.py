@@ -12,6 +12,7 @@ import sys
 import time
 import inspect
 import logging
+import traceback
 import multiprocessing as mp
 from threading import Thread
 from datetime import datetime
@@ -225,6 +226,15 @@ class MainWindow(QMainWindow):
 
                     # For providing a folder path.
                     elif 'PATH' in key:
+                        
+                        #  Automatic data path if not specified
+                        if 'DATA_PATH' in key and not chosen_value:
+                            if self.modality == 'offline':
+                                p_path = Path(self.ui.lineEdit_pathSearch.text())        #  path to subject protocol
+                                # define the auto data path according to p_path
+                                chosen_value = Path(os.environ['NEUROD_DATA']) / p_path.parent.name / p_path.name
+                                chosen_value = str(chosen_value)
+                                
                         pathfolderfinder = PathFolderFinder(key, os.environ['NEUROD_DATA'], chosen_value)
                         pathfolderfinder.signal_pathChanged[str, str].connect(self.on_guichanges)
                         pathfolderfinder.signal_error[str].connect(self.on_error)
@@ -379,6 +389,7 @@ class MainWindow(QMainWindow):
             self.m.check_config(self.cfg_subject)
             
         except Exception as e:
+            # print(traceback.format_exc())
             self.signal_error[str].emit(str(e))
 
     @pyqtSlot(str, str)
