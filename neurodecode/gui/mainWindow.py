@@ -173,12 +173,7 @@ class MainWindow(QMainWindow):
         all_chosen_values = inspect.getmembers(cfg_module)
 
         filePath = self.ui.lineEdit_pathSearch.text()
-
-        # Load channels
-        if self.modality != 'offline':
-            subjectDataPath = Path('%s/%s/%s/fif' % (os.environ['NEUROD_DATA'], filePath.split('/')[-2], filePath.split('/')[-1]))
-            self.channels = read_params_from_file(subjectDataPath, 'channelsList.txt')    
-                
+      
         self.directions = ()
 
         # Iterates over the classes
@@ -229,12 +224,12 @@ class MainWindow(QMainWindow):
                         
                         #  Automatic data path if not specified
                         if 'DATA_PATH' in key and not chosen_value:
-                            if self.modality == 'offline':
-                                p_path = Path(self.ui.lineEdit_pathSearch.text())   # Path to subject protocol
-                                chosen_value = Path(os.environ['NEUROD_DATA']) / p_path.parent.name / p_path.name
-                                chosen_value = str(chosen_value)
-                            if self.modality == 'trainer' or 'online':
-                                chosen_value = str(subjectDataPath)                 # Defined above for channels list
+                            p_path = Path(self.ui.lineEdit_pathSearch.text())   # Path to subject protocol
+                            if self.modality == 'trainer':
+                                chosen_value = str(Path(os.environ['NEUROD_DATA']) / p_path.parent.name / p_path.name / 'offline' / 'fif')
+                            else:
+                                chosen_value = str(Path(os.environ['NEUROD_DATA']) / p_path.parent.name / p_path.name / self.modality)
+                            setattr(self.cfg_subject, key, chosen_value)
                                 
                         pathfolderfinder = PathFolderFinder(key, os.environ['NEUROD_DATA'], chosen_value)
                         pathfolderfinder.signal_pathChanged[str, str].connect(self.on_guichanges)
@@ -249,8 +244,18 @@ class MainWindow(QMainWindow):
                     # For providing a file path.
                     elif 'FILE' in key:
                         
+                        #  Automatic decoder path if not specified
                         if 'DECODER_FILE' in key and not chosen_value:
-                            chosen_value = str(subjectDataPath / 'classifier')
+                            p_path = Path(self.ui.lineEdit_pathSearch.text())   # Path to subject protocol
+                            chosen_value = str(Path(os.environ['NEUROD_DATA']) / p_path.parent.name / p_path.name
+                                               / 'offline' / 'fif' / 'classifier' / 'classifier-64bit.pkl')
+                            setattr(self.cfg_subject, key, chosen_value)
+                        
+                        #  Automatic trigger path if not specified
+                        if 'TRIGGER_FILE' in key and not chosen_value:
+                            p_path = Path(self.ui.lineEdit_pathSearch.text())   # Path to subject protocol
+                            chosen_value = str(Path(p_path.parent) / 'triggerdef.ini')
+                            setattr(self.cfg_subject, key, chosen_value)
                             
                         pathfilefinder = PathFileFinder(key, chosen_value)
                         pathfilefinder.signal_pathChanged[str, str].connect(self.on_guichanges)
@@ -263,6 +268,7 @@ class MainWindow(QMainWindow):
 
                     # To select specific electrodes
                     elif '_CHANNELS' in key or 'CHANNELS_' in key:
+                        self.channels = read_params_from_file(Path(self.cfg_subject.DATA_PATH), 'channelsList.txt')
                         ch_select = Channel_Select(key, self.channels, chosen_value)
                         ch_select.signal_paramChanged[str, list].connect(self.on_guichanges)
                         self.paramsWidgets.update({key: ch_select})
@@ -426,28 +432,6 @@ class MainWindow(QMainWindow):
 
         print("The parameter %s has been changed to %s" % (name, getattr(self.cfg_subject, name)))
         
-
-    # ----------------------------------------------------------------------
-    @pyqtSlot()
-    def on_click_pathSearch(self):
-        """
-        Opens the File dialog window when the search button is pressed.
-        """
-        
-        buttonIcon = self.ui.pushButton_Search.text()
-        
-        if buttonIcon == 'Search':            
-            path_name = QFileDialog.getExistingDirectory(caption="Choose the subject's directory", directory=os.environ['NEUROD_SCRIPTS'])
-            
-            if path_name:
-                self.ui.lineEdit_pathSearch.clear()
-                self.ui.lineEdit_pathSearch.insert(path_name)
-                self.ui.pushButton_Search.setText('Accept')
-                self.ui.pushButton_Search.setStyleSheet("color: red;")            
-        else:
-            self.ui.pushButton_Search.setText('Search')
-            self.ui.pushButton_Search.setStyleSheet("color: black;")
-            self.on_enable_modality()
 
     # ----------------------------------------------------------------------
     def look_for_subject_file(self, modality):
@@ -662,18 +646,22 @@ class MainWindow(QMainWindow):
         """
         Instance a Connect_NewSubject QDialog class
         """
-        buttonIcon = self.ui.pushButton_NewSubject.text()
-        
-        if buttonIcon == 'New':
-            qdialog = Connect_NewSubject(self, self.ui.lineEdit_pathSearch)
-            qdialog.signal_error[str].connect(self.on_error)
-            self.ui.pushButton_NewSubject.setText('Accept')
-            self.ui.pushButton_NewSubject.setStyleSheet("color: red;")
-        else:
-            self.ui.pushButton_NewSubject.setText('New')
-            self.ui.pushButton_NewSubject.setStyleSheet("color: black;")
-            self.on_enable_modality()
+        qdialog = Connect_NewSubject(self, self.ui.lineEdit_pathSearch)
+        qdialog.signal_error[str].connect(self.on_error)
+        qdialog.accepted.connect(self.on_enable_modality)
 
+    # ----------------------------------------------------------------------
+    @pyqtSlot()
+    def on_click_pathSearch(self):
+        """
+        Opens the File dialog window when the search button is pressed.
+        """
+        
+        path_name = QFileDialog.getExistingDirectory(caption="Choose the subject's directory", directory=os.environ['NEUROD_SCRIPTS'])
+        if path_name:
+            self.ui.lineEdit_pathSearch.clear()
+            self.ui.lineEdit_pathSearch.insert(path_name)
+            self.on_enable_modality()
 
     #----------------------------------------------------------------------
     def on_error(self, errorMsg):
