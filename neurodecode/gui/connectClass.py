@@ -933,7 +933,7 @@ class PathFolderFinder(QObject):
             exist = os.path.isdir(path_name)
             
             if not exist:
-                self.signal_error[str].emit('The provided folder does not exists.')
+                self.signal_error[str].emit('The provided folder does not exists: '+path_name)
             else:
                 self.signal_pathChanged[str, str].emit(self.name, path_name)
         
@@ -997,7 +997,7 @@ class PathFileFinder(QObject):
             exist = os.path.isfile(path_name)
             
             if not exist:
-                self.signal_error[str].emit('The provided file does not exists.')
+                self.signal_error[str].emit('The provided file does not exists: '+path_name)
             else:
                 self.signal_pathChanged[str, str].emit(self.name, path_name)
                 
@@ -1104,7 +1104,15 @@ class Connect_NewSubject(QDialog):
             
             # for NEUROD_DATA
             subject_data = data_folder / (subject_id + '-' + protocol)
-            os.mkdir(subject_data)            
+            os.mkdir(subject_data)
+            os.mkdir(subject_data / 'offline')
+            os.mkdir(subject_data / 'online')
+            
+            # Copy the trigger_def.ini
+            files_path = Path(os.environ['NEUROD_ROOT']) / 'neurodecode' / 'config_files' / protocol
+            files = glob(os.fspath(files_path / "*.ini") , recursive=False)
+            for f in files:
+                copy2(f, os.fspath(protocol_scripts_folder))     
             
             # Copy the config_files
             files_path = Path(os.environ['NEUROD_ROOT']) / 'neurodecode' / 'config_files' / protocol / 'template_files'
