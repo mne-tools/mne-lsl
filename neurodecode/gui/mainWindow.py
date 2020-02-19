@@ -575,13 +575,16 @@ class MainWindow(QMainWindow):
         self.record_dir = Path(self.cfg_subject.DATA_PATH)
         
         # Find the selected amp and save it in the cfg
-        amp = self.ui.comboBox_LSL.currentData()
-        if not amp:   
-            self.signal_error[str].emit('No LSL amplifier specified.')
-            return
-        setattr(self.cfg_subject, 'AMP_NAME', amp['name'])
-        setattr(self.cfg_subject, 'AMP_SERIAL', amp['serial'])
-        ccfg = cfg_class(self.cfg_subject)  #  because a module is not pickable
+        if self.modality != 'trainer':
+            amp = self.ui.comboBox_LSL.currentData()
+            if not amp:   
+                self.signal_error[str].emit('No LSL amplifier specified.')
+                return
+            setattr(self.cfg_subject, 'AMP_NAME', amp['name'])
+            setattr(self.cfg_subject, 'AMP_SERIAL', amp['serial'])
+        
+        # Prepare the pickable config class 
+        ccfg = cfg_class(self.cfg_subject)
 
         with self.record_state.get_lock():
             self.record_state.value = 0
