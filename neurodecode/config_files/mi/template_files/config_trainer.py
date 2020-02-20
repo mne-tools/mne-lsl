@@ -15,10 +15,10 @@ LOAD_EVENTS = {'selected':'False', 'False':None, 'True':r''}
 #-------------------------------------------
 # Channels specification
 #-------------------------------------------
-PICKED_CHANNELS= ['Fz', 'F3', 'F4', 'F7', 'F8', 'Cz', 'C3', 'C4', 'P3', 'Pz', 'P4' ] 
+PICKED_CHANNELS= [] 
 EXCLUDED_CHANNELS = []
 
-REREFERENCE = {'selected':'False', 'False':None, 'True':dict(New=['Cz'], Old=['M1/2', 'M2/2'])}
+REREFERENCE = {'selected':'False', 'False':None, 'True':dict(New=[''], Old=['', ''])}
 
 #-------------------------------------------
 # Filters
