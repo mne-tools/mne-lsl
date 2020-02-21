@@ -41,7 +41,7 @@ pip install -e .
 
 @REM Add to PATH the scripts folder
 @set PWS=powershell.exe -ExecutionPolicy Bypass -NoLogo -NonInteractive -NoProfile
-%PWS% -Command "[Environment]::SetEnvironmentVariable('Path', [Environment]::GetEnvironmentVariable('Path', 'User') + ';$env:NEUROD_ROOT\scripts', 'User')"
+%PWS% -Command "[Environment]::SetEnvironmentVariable('Path', [Environment]::GetEnvironmentVariable('Path', 'User')+';'+$env:NEUROD_ROOT+'\scripts', 'User')"
 
 @REM Create shorcut on the Desktop
 @set TARGET='%NEUROD_ROOT%\scripts\nd_gui.cmd'
