@@ -49,6 +49,6 @@ else
 fi
 
 # Add to PATH the scripts folder
-chmod u+x $NEUROD_ROOT"/scripts/unix/nd_gui.sh"
 echo 'alias neurodecode=$NEUROD_ROOT"/scripts/unix/nd_gui.sh"' >> ~/.bashrc
 source ~/.bashrc
+chmod u+x $NEUROD_ROOT"/scripts/unix/nd_gui.sh"
