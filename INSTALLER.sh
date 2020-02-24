@@ -5,8 +5,8 @@ echo Please type the path to folder which will contain the subjects scripts and 
 echo 
 read -p 'Path: ' FOLDER
 
-if test -f "$FOLDER"; then
-    echo 'export NEUROD_SCRIPTS=$FOLDER' >> ~/.bashrc 
+if test -d "$FOLDER"; then
+    echo 'export NEUROD_SCRIPTS='$FOLDER >> ~/.bashrc 
 else
     echo
     echo The provided path does not exit!
@@ -22,8 +22,8 @@ echo Please type the path to folder which will contain the subjects data and pre
 echo
 read -p 'Path: ' FOLDER
 
-if test -f "$FOLDER"; then
-    echo 'export NEUROD_DATA=$FOLDER' >> ~/.bashrc 
+if test -d "$FOLDER"; then
+    echo 'export NEUROD_DATA='$FOLDER >> ~/.bashrc 
 else
     echo
     echo The provided path does not exit!
@@ -33,17 +33,22 @@ else
 fi
 
 # Assign NEUROD_ROOT
-echo 'export NEUROD_ROOT=$PWD' >> ~/.bashrc 
+echo 'export NEUROD_ROOT='$PWD >> ~/.bashrc 
 
 # Install neurodecode
 echo
 echo ========================================================================================
 echo Installing dependencies
 echo
-pip install -e .
+
+version=$(python -V 2>&1 | grep -Po '(?<=Python )(.)')
+if [ "$version" -gt "2" ]; then
+	pip3 install -e .
+else
+	pip2 install -e .
+fi
 
 # Add to PATH the scripts folder
-echo 'export PATH="$PATH:$NEUROD_ROOT\scripts"' >> ~/.profile 
-
-# Create shorcut on the Desktop
-ln -ls $NEUROD_ROOT/scripts/unix/nd_gui.sh ~/Desktop/neurodecode
+chmod u+x $NEUROD_ROOT"/scripts/unix/nd_gui.sh"
+echo 'alias neurodecode=$NEUROD_ROOT"/scripts/unix/nd_gui.sh"' >> ~/.bashrc
+source ~/.bashrc
