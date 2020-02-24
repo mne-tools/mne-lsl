@@ -6,7 +6,7 @@ echo
 read -p 'Path: ' FOLDER
 
 if test -d "$FOLDER"; then
-    echo 'export NEUROD_SCRIPTS='$FOLDER >> ~/.bashrc 
+    echo 'export NEUROD_SCRIPTS='$FOLDER >> ~/.profile 
 else
     echo
     echo The provided path does not exit!
@@ -23,7 +23,7 @@ echo
 read -p 'Path: ' FOLDER
 
 if test -d "$FOLDER"; then
-    echo 'export NEUROD_DATA='$FOLDER >> ~/.bashrc 
+    echo 'export NEUROD_DATA='$FOLDER >> ~/.profile 
 else
     echo
     echo The provided path does not exit!
@@ -33,7 +33,7 @@ else
 fi
 
 # Assign NEUROD_ROOT
-echo 'export NEUROD_ROOT='$PWD >> ~/.bashrc 
+echo 'export NEUROD_ROOT='$PWD >> ~/.profile 
 
 # Install neurodecode
 echo
@@ -50,5 +50,6 @@ fi
 
 # Add to PATH the scripts folder
 echo 'alias neurodecode=$NEUROD_ROOT"/scripts/unix/nd_gui.sh"' >> ~/.bashrc
+source ~/.profile
 source ~/.bashrc
 chmod u+x $NEUROD_ROOT"/scripts/unix/nd_gui.sh"
