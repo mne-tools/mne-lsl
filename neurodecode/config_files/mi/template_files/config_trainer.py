@@ -24,9 +24,11 @@ REREFERENCE = {'selected':'False', 'False':None, 'True':dict(New=[''], Old=['', 
 # Filters
 #-------------------------------------------
 SP_FILTER = 'car'
-SP_CHANNELS = PICKED_CHANNELS
+SP_CHANNELS = []
 TP_FILTER = {'selected':'False', 'False':None, 'True':[1, 40]}
+SP_CHANNELS = []
 NOTCH_FILTER = {'selected':'False', 'False':None, 'True':[50]}
+SP_CHANNELS = []
 
 #-------------------------------------------
 # Unit conversion
