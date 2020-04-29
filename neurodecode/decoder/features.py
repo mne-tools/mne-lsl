@@ -26,7 +26,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
 import sys
-import imp
 import mne
 import mne.io
 import neurodecode
@@ -84,7 +83,7 @@ def slice_win(epochs_data, w_starts, w_length, psde, picks=None, title=None, fla
     if preprocess is not None and preprocess['decim'] != 1:
         title += ' (decim factor %d)' % preprocess['decim']
     logger.info(title)
-
+    
     X = None
     for n in w_starts:
         n = int(round(n))
@@ -92,6 +91,7 @@ def slice_win(epochs_data, w_starts, w_length, psde, picks=None, title=None, fla
             logger.error('w_starts has an out-of-bounds index %d for epoch length %d.' % (n, epochs_data.shape[1]))
             raise WrongIndexError
         window = epochs_data[:, n:(n + w_length)]
+        
 
         if preprocess is not None:
             window = pu.preprocess(window,
@@ -107,13 +107,17 @@ def slice_win(epochs_data, w_starts, w_length, psde, picks=None, title=None, fla
                 rereference=preprocess['rereference'],
                 decim=preprocess['decim'],
                 n_jobs=preprocess['n_jobs'])
-
+        
+        # Keep only the channels of interest
+        window = window[picks, :]
+        
         # dimension: psde.transform( [epochs x channels x times] )
         psd = psde.transform(window.reshape((1, window.shape[0], window.shape[1])))
         psd = psd.reshape((psd.shape[0], psd.shape[1] * psd.shape[2]))
-        if picks:
-            psd = psd[0][picks]
-            psd = psd.reshape((1, len(psd)))
+        
+        #if picks:
+            #psd = psd[0][picks]
+            #psd = psd.reshape((1, len(psd)))
 
         if X is None:
             X = psd
@@ -419,7 +423,8 @@ def compute_features(cfg):
     - ch_names: channel names
     - times: feature timestamp (leading edge of a window)
     '''
-    # Preprocessing, epoching and PSD computation
+    #-----------------------------------------------------------
+    # Load the data from files
     ftrain = []
     for f in qc.get_file_list(cfg.DATA_PATH, fullpath=True):
         if f[-4:] in ['.fif', '.fiff']:
@@ -429,59 +434,31 @@ def compute_features(cfg):
         raise RuntimeError
     raw, events = pu.load_multi(ftrain)
     
+    #-----------------------------------------------------------
+    # Rereference
     reref = cfg.REREFERENCE[cfg.REREFERENCE['selected']]
     if reref is not None:
         pu.rereference(raw, reref['New'], reref['Old'])
     
+    #-----------------------------------------------------------
+    # Load events from file
     if cfg.LOAD_EVENTS[cfg.LOAD_EVENTS['selected']] is not None:
         events = mne.read_events(cfg.LOAD_EVENTS[cfg.LOAD_EVENTS['selected']])
     
+    #-----------------------------------------------------------
+    # Load triggers from file
     trigger_def_int = set()
     for a in cfg.TRIGGER_DEF:
         trigger_def_int.add(getattr(cfg.tdef, a))
     triggers = {cfg.tdef.by_value[c]:c for c in trigger_def_int}
 
-    # Pick channels
-    if cfg.PICKED_CHANNELS is None:
-        chlist = [int(x) for x in pick_types(raw.info, stim=False, eeg=True)]
-    else:
-        chlist = cfg.PICKED_CHANNELS
-    picks = []
-    for c in chlist:
-        if type(c) == int:
-            picks.append(c)
-        elif type(c) == str:
-            picks.append(raw.ch_names.index(c))
-        else:
-            logger.error('PICKED_CHANNELS has a value of unknown type %s.\nPICKED_CHANNELS=%s' % (type(c), cfg.PICKED_CHANNELS))
-            raise RuntimeError
-    if cfg.EXCLUDED_CHANNELS is not None:
-        for c in cfg.EXCLUDED_CHANNELS:
-            if type(c) == str:
-                if c not in raw.ch_names:
-                    logger.warning('Exclusion channel %s does not exist. Ignored.' % c)
-                    continue
-                c_int = raw.ch_names.index(c)
-            elif type(c) == int:
-                c_int = c
-            else:
-                logger.error('EXCLUDED_CHANNELS has a value of unknown type %s.\nEXCLUDED_CHANNELS=%s' % (type(c), cfg.EXCLUDED_CHANNELS))
-                raise RuntimeError
-            if c_int in picks:
-                del picks[picks.index(c_int)]
-    if max(picks) > len(raw.ch_names):
-        logger.error('"picks" has a channel index %d while there are only %d channels.' % (max(picks), len(raw.ch_names)))
-        raise ValueError
-    if hasattr(cfg, 'SP_CHANNELS') and cfg.SP_CHANNELS is not None:
-        logger.warning('SP_CHANNELS parameter is not supported yet. Will be set to PICKED_CHANNELS.')
-    if hasattr(cfg, 'TP_CHANNELS') and cfg.TP_CHANNELS is not None:
-        logger.warning('TP_CHANNELS parameter is not supported yet. Will be set to PICKED_CHANNELS.')
-    if hasattr(cfg, 'NOTCH_CHANNELS') and cfg.NOTCH_CHANNELS is not None:
-        logger.warning('NOTCH_CHANNELS parameter is not supported yet. Will be set to PICKED_CHANNELS.')
+    #-----------------------------------------------------------
+    # Rescale the data
     if 'decim' not in cfg.FEATURES['PSD']:
         cfg.FEATURES['PSD']['decim'] = 1
         logger.warning('PSD["decim"] undefined. Set to 1.')
-
+    
+    #-----------------------------------------------------------
     # Read epochs
     try:
         # Experimental: multiple epoch ranges
@@ -489,35 +466,76 @@ def compute_features(cfg):
             epochs_train = []
             for ep in cfg.EPOCH:
                 epoch = Epochs(raw, events, triggers, tmin=ep[0], tmax=ep[1],
-                    proj=False, picks=picks, baseline=None, preload=True,
+                    proj=False, picks=['data'], baseline=None, preload=True,
                     verbose=False, detrend=None)
                 epochs_train.append(epoch)
         else:
             # Usual method: single epoch range
             epochs_train = Epochs(raw, events, triggers, tmin=cfg.EPOCH[0], tmax=cfg.EPOCH[1], proj=False,
-                picks=picks, baseline=None, preload=True, verbose=False, detrend=None, on_missing='warning')
+                picks=['data'], baseline=None, preload=True, verbose=False, detrend=None, on_missing='warning')
     except:
         logger.exception('Problem while epoching.')
         raise RuntimeError
+    
+    #-----------------------------------------------------------
+    # Pick channels
+    if cfg.PICKED_CHANNELS is None:
+        chlist = list(range(len(epochs_train.info.ch_names)))
+    else:
+        chlist = cfg.PICKED_CHANNELS
+    
+    picks = []
+    for c in chlist:
+        if type(c) == int:
+            picks.append(c)
+        elif type(c) == str:
+            picks.append(epochs_train.info.ch_names.index(c))
+        else:
+            logger.error('PICKED_CHANNELS has a value of unknown type %s.\nPICKED_CHANNELS=%s' % (type(c), cfg.PICKED_CHANNELS))
+            raise RuntimeError
+    #-----------------------------------------------------------
+    #  Exclude channels
+    if cfg.EXCLUDED_CHANNELS is not None:
+        for c in cfg.EXCLUDED_CHANNELS:
+            if type(c) == str:
+                if c not in epochs_train.info.ch_names:
+                    logger.warning('Exclusion channel %s does not exist. Ignored.' % c)
+                    continue
+                c_int = epochs_train.info.ch_names.index(c)
+            elif type(c) == int:
+                c_int = c
+            else:
+                logger.error('EXCLUDED_CHANNELS has a value of unknown type %s.\nEXCLUDED_CHANNELS=%s' % (type(c), cfg.EXCLUDED_CHANNELS))
+                raise RuntimeError
+            if c_int in picks:
+                del picks[picks.index(c_int)]
+    if max(picks) > len(epochs_train.info.ch_names):
+        logger.error('"picks" has a channel index %d while there are only %d channels.' % (max(picks), len(epochs_train.info.ch_names)))
+        raise ValueError
 
-    label_set = np.unique(triggers.values())
-
-    # Compute features
+    #-----------------------------------------------------------
+    #  Preprocessing
     if cfg.FEATURES['selected'] == 'PSD':
         preprocess = dict(sfreq=epochs_train.info['sfreq'],
             spatial=cfg.SP_FILTER,
-            spatial_ch=None,
+            spatial_ch=cfg.SP_CHANNELS,
             spectral=cfg.TP_FILTER[cfg.TP_FILTER['selected']],
-            spectral_ch=None,
+            spectral_ch=cfg.TP_CHANNELS,
             notch=cfg.NOTCH_FILTER[cfg.NOTCH_FILTER['selected']],
-            notch_ch=None,
+            notch_ch=cfg.NOTCH_CHANNELS,
             multiplier=cfg.MULTIPLIER,
-            ch_names=None,
+            ch_names=epochs_train.ch_names,
             rereference=None,
             decim=cfg.FEATURES['PSD']['decim'],
             n_jobs=cfg.N_JOBS
         )
-        featdata = get_psd_feature(epochs_train, cfg.EPOCH, cfg.FEATURES['PSD'], picks=None, preprocess=preprocess, n_jobs=cfg.N_JOBS)
+        
+        #-----------------------------------------------------------
+        # Compute features
+        featdata = get_psd_feature(epochs_train, cfg.EPOCH, cfg.FEATURES['PSD'], picks=picks, preprocess=preprocess, n_jobs=cfg.N_JOBS)
+    
+    #-----------------------------------------------------------
+    #  Other possible features
     elif cfg.FEATURES == 'TIMELAG':
         '''
         TODO: Implement multiple epochs for timelag feature
@@ -535,6 +553,7 @@ def compute_features(cfg):
         raise NotImplementedError
 
     featdata['picks'] = picks
-    featdata['sfreq'] = raw.info['sfreq']
-    featdata['ch_names'] = raw.ch_names
+    featdata['sfreq'] = epochs_train.info['sfreq']
+    featdata['ch_names'] = [epochs_train.info.ch_names[p] for p in picks]
+
     return featdata
