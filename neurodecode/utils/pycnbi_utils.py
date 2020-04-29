@@ -298,25 +298,32 @@ def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, sp
     # Apply spatial filter
     if spatial is None:
         pass
+    
     elif spatial == 'car':
+    
         if spatial_ch is None:
             spatial_ch = eeg_channels
-
-        if type(spatial_ch[0]) == str:
-            assert ch_names is not None, 'preprocess(): ch_names must not be None'
-            spatial_ch_i = [ch_names.index(c) for c in spatial_ch]
-        else:
-            spatial_ch_i = spatial_ch
-
-        if len(spatial_ch_i) > 1:
-            if len(data.shape) == 2:
-                data[spatial_ch_i] -= np.mean(data[spatial_ch_i], axis=0)
-            elif len(data.shape) == 3:
-                means = np.mean(data[:, spatial_ch_i, :], axis=1)
-                data[:, spatial_ch_i, :] -= means[:, np.newaxis, :]
+            logger.warning('preprocess(): For CAR, no specified channels, all channels selected')
+        elif len(spatial_ch):
+            if type(spatial_ch[0]) == str:
+                assert ch_names is not None, 'preprocess(): ch_names must not be None'
+                spatial_ch_i = [ch_names.index(c) for c in spatial_ch]
             else:
-                logger.error('Unknown data shape %s' % str(data.shape))
-                raise ValueError
+                spatial_ch_i = spatial_ch
+    
+            if len(spatial_ch_i) > 1:
+                if len(data.shape) == 2:
+                    data[spatial_ch_i] -= np.mean(data[spatial_ch_i], axis=0)
+                elif len(data.shape) == 3:
+                    means = np.mean(data[:, spatial_ch_i, :], axis=1)
+                    data[:, spatial_ch_i, :] -= means[:, np.newaxis, :]
+                else:
+                    logger.error('Unknown data shape %s' % str(data.shape))
+                    raise ValueError
+        else:
+            logger.error('preprocess(): For CAR, no specified channels!')
+            raise ValueError            
+    
     elif spatial == 'laplacian':
         if type(spatial_ch) is not dict:
             logger.error('preprocess(): For laplacian, spatial_ch must be of form {CHANNEL:[NEIGHBORS], ...}')
@@ -358,35 +365,42 @@ def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, sp
     if spectral is not None:
         if spectral_ch is None:
             spectral_ch = eeg_channels
-
-        if type(spectral_ch[0]) == str:
-            assert ch_names is not None, 'preprocess(): ch_names must not be None'
-            spectral_ch_i = [ch_names.index(c) for c in spectral_ch]
+            logger.warning('preprocess(): For temporal filter, all channels selected')
+        elif len(spatial_ch):
+            if type(spectral_ch[0]) == str:
+                assert ch_names is not None, 'preprocess(): ch_names must not be None'
+                spectral_ch_i = [ch_names.index(c) for c in spectral_ch]
+            else:
+                spectral_ch_i = spectral_ch
+    
+            # fir_design='firwin' is especially important for ICA analysis. See:
+            # http://martinos.org/mne/dev/generated/mne.preprocessing.ICA.html?highlight=score_sources#mne.preprocessing.ICA.score_sources
+            mne.filter.filter_data(data, sfreq, spectral[0], spectral[1], picks=spectral_ch_i,
+                                   filter_length='auto', l_trans_bandwidth='auto',
+                                   h_trans_bandwidth='auto', n_jobs=n_jobs, method='fir',
+                                   iir_params=None, copy=False, phase='zero',
+                                   fir_window='hamming', fir_design='firwin', verbose='ERROR')
         else:
-            spectral_ch_i = spectral_ch
-
-        # fir_design='firwin' is especially important for ICA analysis. See:
-        # http://martinos.org/mne/dev/generated/mne.preprocessing.ICA.html?highlight=score_sources#mne.preprocessing.ICA.score_sources
-        mne.filter.filter_data(data, sfreq, spectral[0], spectral[1], picks=spectral_ch_i,
-                               filter_length='auto', l_trans_bandwidth='auto',
-                               h_trans_bandwidth='auto', n_jobs=n_jobs, method='fir',
-                               iir_params=None, copy=False, phase='zero',
-                               fir_window='hamming', fir_design='firwin', verbose='ERROR')
+            logger.error('preprocess(): For temporal filter, no specified channels!')
+            raise ValueError                     
 
     # Apply notch filter
     if notch is not None:
-        assert False
         if notch_ch is None:
             notch_ch = eeg_channels
-
-        if type(notch_ch[0]) == str:
-            assert ch_names is not None, 'preprocess(): ch_names must not be None'
-            notch_ch_i = [ch_names.index(c) for c in notch_ch]
+            logger.warning('preprocess(): For temporal filter, all channels selected')
+        elif len(notch_ch):
+            if type(notch_ch[0]) == str:
+                assert ch_names is not None, 'preprocess(): ch_names must not be None'
+                notch_ch_i = [ch_names.index(c) for c in notch_ch]
+            else:
+                notch_ch_i = notch_ch
+    
+            mne.filter.notch_filter(data, Fs=sfreq, freqs=notch, notch_widths=3,
+                                    picks=notch_ch_i, method='fft', n_jobs=n_jobs, copy=False)
         else:
-            notch_ch_i = notch_ch
-
-        mne.filter.notch_filter(data, Fs=sfreq, freqs=notch, notch_widths=3,
-                                picks=notch_ch_i, method='fft', n_jobs=n_jobs, copy=False)
+            logger.error('preprocess(): For temporal filter, no specified channels!')
+            raise ValueError             
 
     if type(raw) == np.ndarray:
         raw = data
