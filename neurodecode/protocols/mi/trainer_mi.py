@@ -58,8 +58,13 @@ mne.set_log_level('ERROR')
 os.environ['OMP_NUM_THREADS'] = '1' # actually improves performance for multitaper
 
 def check_config(cfg):
+    """
+    Check if the required parameters are defined in the config module
+    
+    cfg = config module
+    """
     critical_vars = {
-        'COMMON': ['TRIGGER_FILE',
+        'COMMON': [ 'TRIGGER_FILE',
                     'TRIGGER_DEF',
                     'EPOCH',
                     'DATA_PATH',
@@ -67,100 +72,102 @@ def check_config(cfg):
                     'SP_FILTER',
                     'SP_CHANNELS',
                     'TP_FILTER',
+                    'TP_CHANNELS',
                     'NOTCH_FILTER',
+                    'NOTCH_CHANNELS', 
                     'FEATURES',
                     'CLASSIFIER',
                     'CV_PERFORM'],
-                    'RF': ['trees', 'depth', 'seed'],
-                    'GB': ['trees', 'learning_rate', 'depth', 'seed'],
-                    'LDA': [],
-                    'rLDA': ['r_coeff'],
-                    'StratifiedShuffleSplit': ['test_ratio', 'folds', 'seed', 'export_result'],
-                    'LeaveOneOut': ['export_result']
     }
 
-    # optional variables with default values
-    optional_vars = {
-        'MULTIPLIER': 1,
-        'EXPORT_GOOD_FEATURES': False,
-        'FEAT_TOPN': 10,
-        'EXPORT_CLS': False,
-        'REREFERENCE': None,
-        'N_JOBS': None,
-        'EXCLUDED_CHANNELS': None,
-        'LOAD_EVENTS': None,
-        'CV': {'IGNORE_THRES': None, 'DECISION_THRES': None, 'BALANCE_SAMPLES': False},
+    optional_vars = {  
+        'COMMON': { 'MULTIPLIER': 1,
+                    'EXPORT_GOOD_FEATURES': False,
+                    'FEAT_TOPN': 10,
+                    'EXPORT_CLS': False,
+                    'REREFERENCE': None,
+                    'N_JOBS': None,
+                    'EXCLUDED_CHANNELS': None,
+                    'LOAD_EVENTS': None,
+                    'CV': { 'IGNORE_THRES': None, 'DECISION_THRES': None, 'BALANCE_SAMPLES': False }
+                    }, 
+        
+        # Internal parmameters for the FEATURE
+        'PSD': { 'fmin': 1, 'fmax': 40, 'wlen': 0.5, 'wstep': 16, 'decim': 1 },
+        
+        # Internal parameters of CLASSIFIER
+        'RF': { 'trees': 1000, 'depth': 5, 'seed': 666 },
+        'GB': { 'trees': 1000, 'learning_rate': 0.01, 'depth': 3, 'seed': 666 },
+        'LDA': [],
+        'rLDA': { 'r_coeff': 0.3 },
+        
+        # Internal parameters of CV_PERFORM
+        'StratifiedShuffleSplit': {'test_ratio': 0.2, 'folds': 8, 'seed': 0, 'export_result': True},
+        'LeaveOneOut': {'export_result': False}
     }
+    
+    check_cfg_mandatory(cfg, critical_vars, 'COMMON')
 
-    for v in critical_vars['COMMON']:
-        if not hasattr(cfg, v):
-            logger.error('%s not defined in config.' % v)
-            raise RuntimeError
-
-    for key in optional_vars:
-        if not hasattr(cfg, key):
-            setattr(cfg, key, optional_vars[key])
-            logger.warning('Setting undefined parameter %s=%s' % (key, getattr(cfg, key)))
-
-    if 'decim' not in cfg.FEATURES['PSD']:
-        cfg.FEATURES['PSD']['decim'] = 1
-
-    # classifier parameters check
-    selected_classifier = cfg.CLASSIFIER[cfg.CLASSIFIER['selected']]
-
-    if selected_classifier == 'RF':
-        if 'RF' not in cfg.CLASSIFIER:
-            logger.error('"RF" not defined in config.')
-            raise RuntimeError
-        for v in critical_vars['RF']:
-            if v not in cfg.CLASSIFIER['RF']:
-                logger.error('%s not defined in config.' % v)
-                raise RuntimeError
-
-    elif selected_classifier == 'GB' or selected_classifier == 'XGB':
-        if 'GB' not in cfg.CLASSIFIER:
-            logger.error('"GB" not defined in config.')
-            raise RuntimeError
-        for v in critical_vars['GB']:
-            if v not in cfg.CLASSIFIER[selected_classifier]:
-                logger.error('%s not defined in config.' % v)
-                raise RuntimeError
-
-    elif selected_classifier == 'rLDA':
-        if 'rLDA' not in cfg.CLASSIFIER:
-            logger.error('"rLDA" not defined in config.')
-            raise RuntimeError
-        for v in critical_vars['rLDA']:
-            if v not in cfg.CLASSIFIER['rLDA']:
-                logger.error('%s not defined in config.' % v)
-                raise RuntimeError
-
-    cv_selected = cfg.CV_PERFORM['selected']
-    if cfg.CV_PERFORM[cv_selected] is not None:
-        if cv_selected == 'StratifiedShuffleSplit':
-            if 'StratifiedShuffleSplit' not in cfg.CV_PERFORM:
-                logger.error('"StratifiedShuffleSplit" not defined in config.')
-                raise RuntimeError
-            for v in critical_vars['StratifiedShuffleSplit']:
-                if v not in cfg.CV_PERFORM[cv_selected]:
-                    logger.error('%s not defined in config.' % v)
-                    raise RuntimeError
-
-        elif cv_selected == 'LeaveOneOut':
-            if 'LeaveOneOut' not in cfg.CV_PERFORM:
-                logger.error('"LeaveOneOut" not defined in config.')
-                raise RuntimeError
-            for v in critical_vars['LeaveOneOut']:
-                if v not in cfg.CV_PERFORM[cv_selected]:
-                    logger.error('%s not defined in config.' % v)
-                    raise RuntimeError
+    check_cfg_optional(cfg, optional_vars, 'COMMON')
+    
+    check_cfg_selected(cfg, optional_vars, 'FEATURES')
+    check_cfg_selected(cfg, optional_vars, 'CLASSIFIER')
+    check_cfg_selected(cfg, optional_vars, 'CV_PERFORM')
 
     if cfg.N_JOBS is None:
         cfg.N_JOBS = mp.cpu_count()
 
     return cfg
 
+def check_cfg_optional(cfg, optional_vars, key_var):
+    """
+    Check that the optional parameters are defined and if not assign them
+    
+    cfg = config module containing the parameters to check
+    optional_vars = optional parameters with predefined values
+    key_var = key to look at in optional_vars
+    """
+    for key , val in optional_vars[key_var].items():
+        if key == 'CV':
+            print('a')
+        if not hasattr(cfg, key):
+            setattr(cfg, key, val)
+            logger.warning('Setting undefined parameter %s=%s' % (key, getattr(cfg, key)))
 
+def check_cfg_mandatory(cfg, critical_vars, key_var):
+    """    
+    Check that the mandatory parameters are defined
+    
+    cfg = config module containing the parameters to check
+    critical_vars = critival parameters needed for the protocol
+    key_var = key to look at in critical_vars
+    """
+    for v in critical_vars[key_var]:
+        if not hasattr(cfg, v):
+            logger.error('%s not defined in config.' % v)
+            raise RuntimeError
+
+def check_cfg_selected(cfg, optional_vars, select):
+    """
+    Check that the selected cfg params is valid and that its
+    parameters are defined.
+
+    cfg = config module containing the parameter to check
+    optional_vars = optional parameters with predefined values for the param 
+    selected = the cfg parameter (type=dict) containing a key: selected
+    """
+    param = getattr(cfg, select)
+    selected = param['selected']
+    
+    if selected not in param:
+        logger.error('%s not defined in config.'% selected)
+        raise RuntimeError
+    for v,vv in optional_vars[selected].items():
+        if v not in param[selected]:
+            param[selected].update({v: vv})
+            setattr(cfg, select, param)
+            logger.warning('Updating internal parameter for classifier %s: %s=%s' % (selected, v, vv))
+            
 def balance_samples(X, Y, balance_type, verbose=False):
     if balance_type == 'OVER':
         """
@@ -572,9 +579,9 @@ def cross_validate(cfg, featdata, cv_file=None):
     txt += '\n- Experiment condition\n'
     txt += 'Sampling frequency: %.3f Hz\n' % featdata['sfreq']
     txt += 'Spatial filter: %s (channels: %s)\n' % (cfg.SP_FILTER, cfg.SP_CHANNELS)
-    txt += 'Spectral filter: %s\n' % cfg.TP_FILTER[cfg.TP_FILTER['selected']]
-    txt += 'Notch filter: %s\n' % cfg.NOTCH_FILTER[cfg.NOTCH_FILTER['selected']]
-    txt += 'Channels: ' + ','.join([str(featdata['ch_names'][p]) for p in featdata['picks']]) + '\n'
+    txt += 'Spectral filter: %s (channels: %s)\n' % (cfg.TP_FILTER[cfg.TP_FILTER['selected']], cfg.TP_CHANNELS)
+    txt += 'Notch filter: %s (channels: %s)\n' % (cfg.NOTCH_FILTER[cfg.NOTCH_FILTER['selected']], cfg.NOTCH_CHANNELS)
+    txt += 'PSD Channels: ' + ','.join([str(featdata['ch_names'][p]) for p in featdata['picks']]) + '\n'
     txt += 'PSD range: %.1f - %.1f Hz\n' % (cfg.FEATURES['PSD']['fmin'], cfg.FEATURES['PSD']['fmax'])
     txt += 'Window step: %.2f msec\n' % (1000.0 * cfg.FEATURES['PSD']['wstep'] / featdata['sfreq'])
     if type(wlen) is list:
