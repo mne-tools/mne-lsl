@@ -397,7 +397,7 @@ class MainWindow(QMainWindow):
             self.disp_params(self.cfg_struct, self.cfg_subject)
             
             # Check the parameters integrity
-            self.m.check_config(self.cfg_subject)
+            #self.m.check_config(self.cfg_subject)
             
         except Exception as e:
             # print(traceback.format_exc())
@@ -574,6 +574,13 @@ class MainWindow(QMainWindow):
         """
         self.record_dir = Path(self.cfg_subject.DATA_PATH)
         
+        # Check integrity of the parameters in cfg
+        try:
+            self.m.check_config(self.cfg_subject)
+        except Exception as e:
+            self.signal_error[str].emit(str(e))
+            return
+                        
         # Find the selected amp and save it in the cfg
         if self.modality != 'trainer':
             amp = self.ui.comboBox_LSL.currentData()
@@ -582,9 +589,9 @@ class MainWindow(QMainWindow):
                 return
             setattr(self.cfg_subject, 'AMP_NAME', amp['name'])
             setattr(self.cfg_subject, 'AMP_SERIAL', amp['serial'])
-        
+           
         # Prepare the pickable config class 
-        ccfg = cfg_class(self.cfg_subject)
+        ccfg = cfg_class(self.cfg_subject)         
 
         with self.record_state.get_lock():
             self.record_state.value = 0
@@ -593,31 +600,24 @@ class MainWindow(QMainWindow):
             self.ui.textEdit_terminal.clear()
             
             # Recording shared variable + recording terminal            
-            if self.ui.checkBox_Record.isChecked():
-                
+            if self.ui.checkBox_Record.isChecked():                
                 
                 if not self.record_terminal:                
                     self.record_terminal = GuiTerminal(self.recordLogger, 'INFO', self.width())
                     self.hide_recordTerminal[bool].connect(self.record_terminal.setHidden)
-                
                 else:
                     self.record_terminal.textEdit.clear()
                     self.record_terminal.textEdit.insertPlainText('Waiting for the recording to start...\n')
                     self.hide_recordTerminal[bool].emit(False)
-                
-                
                 # Protocol shared variable
                 with self.protocol_state.get_lock():
                     self.protocol_state.value = 2  #  0=stop, 1=start, 2=wait
-                    
                 processesToLaunch = [('recording', recorder.run_gui, [self.record_state, self.protocol_state, self.record_dir, self.recordLogger, amp['name'], amp['serial'], False, self.record_terminal.my_receiver.queue]), \
                                      ('protocol', self.m.run, [ccfg, self.protocol_state, self.my_receiver.queue])]
-
             else:    
                 # Protocol shared variable
                 with self.protocol_state.get_lock():
                     self.protocol_state.value = 1  #  0=stop, 1=start, 2=wait
-                
                 processesToLaunch = [('protocol', self.m.run, [ccfg, self.protocol_state, self.my_receiver.queue])]
                       
             launchedProcess = Thread(target=self.launching_subprocesses, args=processesToLaunch)

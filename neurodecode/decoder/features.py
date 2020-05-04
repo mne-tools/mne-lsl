@@ -552,8 +552,8 @@ def compute_features(cfg):
         logger.error('%s feature type is not supported.' % cfg.FEATURES)
         raise NotImplementedError
 
-    featdata['picks'] = picks
     featdata['sfreq'] = epochs_train.info['sfreq']
     featdata['ch_names'] = [epochs_train.info.ch_names[p] for p in picks]
+    featdata['picks'] = list(range(len(featdata['ch_names'])))
 
     return featdata
