@@ -4,7 +4,7 @@ from PyQt5.QtGui import QTextCursor
 from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot, QThread
 from PyQt5.QtWidgets import QDialog, QVBoxLayout, QTextEdit
 
-from neurodecode import add_logger_handler
+from neurodecode.logger import add_logger_handler
 from neurodecode.utils import pycnbi_utils as pu
 
 ########################################################################
