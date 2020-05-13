@@ -8,10 +8,10 @@ import neurodecode.utils.pycnbi_utils as pu
 
 class StreamViewer:
     """
-    Display the stream from a specific amplifier in real time.
+    Class for displaying the signals streamed from an amplifier in real time.
     
     ...
-    
+
     Parameters
     ----------
     amp_name : str
