@@ -12,6 +12,14 @@ class StreamViewer:
     
     ...
     
+    Parameters
+    ----------
+    amp_name : str
+        The amplifier's name to connect to
+    amp_serial : str
+        The amplifier's serial number
+    
+    
     Attributes
     ----------
     amp_name : str
