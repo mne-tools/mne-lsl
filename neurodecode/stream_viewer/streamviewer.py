@@ -9,8 +9,6 @@ import neurodecode.utils.pycnbi_utils as pu
 class StreamViewer:
     """
     Class for displaying the signals streamed from an amplifier in real time.
-    
-    ...
 
     Parameters
     ----------
@@ -18,33 +16,9 @@ class StreamViewer:
         The amplifier's name to connect to
     amp_serial : str
         The amplifier's serial number
-    
-    
-    Attributes
-    ----------
-    amp_name : str
-        The amplifier's name to connect to
-    amp_serial : str
-        The amplifier's serial number
-        
-    Methods
-    -------
-    run()
-        Launch the GUI and plot the streamed data
-    search_stream()
-        Look for an available stream on the LSL server
     """
     #----------------------------------------------------------------------
     def __init__(self, amp_name=None, amp_serial=None):
-        """Constructor
-        
-        Parameters
-        ----------
-        amp_name : str
-            The amplifier's name to connect to
-        amp_serial : str
-            The amplifier's serial number
-        """
         self.amp_name = amp_name
         self.amp_serial = amp_serial
     
@@ -58,18 +32,18 @@ class StreamViewer:
         if (self.amp_name is None):
             self.search_stream()
         
-        logger.info('Connecting to a stream %s (Serial %s).' % (amp_name, amp_serial))
+        logger.info('Connecting to a stream %s (Serial %s).' % (self.amp_name, self.amp_serial))
         
         app = QApplication(sys.argv)
-        ex = _Scope(amp_name, amp_serial)
+        ex = _Scope(self.amp_name, self.amp_serial)
         sys.exit(app.exec_())
-    
+
     #----------------------------------------------------------------------
     def search_stream(self):
         """
         Select an available stream on the LSL server to connect to.
         
-        Assign the found amp name and serial number to internal attributes
+        Assign the found amp name and serial number to the internal attributes
         """
         self.amp_name, self.amp_serial = pu.search_lsl()
         
