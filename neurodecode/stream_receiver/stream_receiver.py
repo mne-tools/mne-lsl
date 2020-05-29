@@ -95,6 +95,10 @@ class StreamReceiver:
                     # EEG streaming server only?
                     if eeg_only and s.type != 'EEG':
                         continue
+                    # Accept unkown streams
+                    if find_any is False:
+                        continue
+                    
                     self.streams.append(s)
                     self.buffers.append(_Buffer(si.nominal_srate(), buffer_size, window_size))        
                     server_found = True

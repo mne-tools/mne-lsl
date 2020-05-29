@@ -49,6 +49,10 @@ class _Stream:
         
         self.amp_name = streamInfo.name()
         self.amp_serial = self.inlet.info().desc().child('acquisition').child_value('serial_number')
+        
+        if self.amp_serial == '':
+            self.amp_serial = 'N/A'
+            
         self.type = streamInfo.type()
         self.is_slave= ('true'==pylsl.StreamInlet(streamInfo).info().desc().child('amplifier').child('settings').child('is_slave').first_child().value() )    
         self.multiplier = 1  # 10**6 for uV unit (automatically updated for openvibe servers)
