@@ -562,9 +562,10 @@ def list_lsl_streams(state=None, logger=logger, ignore_markers=False):
         if len(streamInfos) > 0:
             for index, si in enumerate(streamInfos):
                 # LSL XML parser has a bug which crashes so do not use for now
-                #desc = pylsl.StreamInlet(si).info().desc()
-                #amp_serial = desc.child('acquisition').child_value('serial_number').strip()
-                amp_serial = 'N/A' # serial number not supported yet
+                desc = pylsl.StreamInlet(si).info().desc()
+                amp_serial = desc.child('acquisition').child_value('serial_number').strip()
+                if amp_serial == '':
+                    amp_serial = 'N/A'                
                 amp_name = si.name()
                 if 'Markers' in amp_name:
                     amp_list_backup.append((index, amp_name, amp_serial))
@@ -579,14 +580,9 @@ def list_lsl_streams(state=None, logger=logger, ignore_markers=False):
 
     logger.info('-- List of servers --')
     for i, (index, amp_name, amp_serial) in enumerate(amp_list):
-        if amp_serial == '':
-            amp_ser = 'N/A'
-        else:
-            amp_ser = amp_serial
-        logger.info('%d: %s (Serial %s)' % (i, amp_name, amp_ser))
+        logger.info('%d: %s (Serial %s)' % (i, amp_name, amp_serial))
 
     return amp_list, streamInfos
-
 
 
 def search_lsl(state=None, logger=logger, ignore_markers=False):
