@@ -31,150 +31,123 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import os
 import sys
 import time
-import datetime
-import numpy as np
 import multiprocessing as mp
-import neurodecode.utils.add_lsl_events
+
 import neurodecode.utils.q_common as qc
 import neurodecode.utils.pycnbi_utils as pu
-from neurodecode.utils.convert2fif import pcl2fif
-from neurodecode.utils.cnbi_lsl import start_server
+
 from neurodecode.gui.streams import redirect_stdout_to_queue
-from neurodecode.stream_receiver.stream_receiver import StreamReceiver
+from neurodecode.stream_recorder._recorder import _Recorder
 from neurodecode import logger
 from builtins import input
 
 
-def record(recordState, amp_name, amp_serial, record_dir, eeg_only, recordLogger=logger, queue=None):
+class StreamRecorder:
+    """
+    Facade class for recording the signals coming from lsl streams.
     
-    redirect_stdout_to_queue(recordLogger, queue, 'INFO')
-    
-    # set data file name
-    timestamp = time.strftime('%Y%m%d-%H%M%S', time.localtime())
-    pcl_file = "%s/%s-raw.pcl" % (record_dir, timestamp)
-    eve_file = '%s/%s-eve.txt' % (record_dir, timestamp)
-    recordLogger.info('>> Output file: %s' % (pcl_file))
-
-    # test writability
-    try:
-        qc.make_dirs(record_dir)
-        open(pcl_file, 'w').write('The data will written when the recording is finished.')
-    except:
-        raise RuntimeError('Problem writing to %s. Check permission.' % pcl_file)
-
-    # start a server for sending out data pcl_file when software trigger is used
-    outlet = start_server('StreamRecorderInfo', channel_format='string',\
-        source_id=eve_file, stype='Markers')
-
-    # connect to EEG stream server
-    sr = StreamReceiver(buffer_size=0, amp_name=amp_name, amp_serial=amp_serial, eeg_only=eeg_only)
-
-    # start recording
-    recordLogger.info('\n>> Recording started (PID %d).' % os.getpid())
-
-    with recordState.get_lock():
-        recordState.value = 1
+    Parameters
+    ----------
+    amp_name : str
+            Connect to a server named 'amp_name'. None: no constraint.
+    amp_serial : str
+        Connect to a server with serial number 'amp_serial'. None: no constraint.
+    record_dir : str
+        The directory where the data will be saved.
+    eeg_only : bool
+        If true, ignore non-EEG servers.
+    logger : Logger
+        The logger where to output info. Default is the NeuroDecode logger.
+    queue : mp.Queue
+        Can redirect sys.stdout to a queue (e.g. used for GUI).
+    state : mp.Value
+        Multiprocessing sharing variable to stop the recording from another process
         
-    tm = qc.Timer(autoreset=True)
-    next_sec = 1
-    while recordState.value == 1:
-        sr.acquire()
-        if sr.get_buflen() > next_sec:
-            duration = str(datetime.timedelta(seconds=int(sr.get_buflen())))
-            recordLogger.info('RECORDING %s' % duration)
-            next_sec += 1
-        tm.sleep_atleast(0.001)
-
-    # record stop
-    recordLogger.info('>> Stop requested. Copying buffer')
-    buffers, times = sr.get_buffer()
-    signals = buffers
-    events = None
-
-    # channels = total channels from amp, including trigger channel
-    data = {'signals':signals, 'timestamps':times, 'events':events,
-            'sample_rate':sr.get_sample_rate(), 'channels':sr.get_num_channels(),
-            'ch_names':sr.get_channel_names(), 'lsl_time_offset':sr.lsl_time_offset}
-    recordLogger.info('Saving raw data ...')
-    qc.save_obj(pcl_file, data)
-    recordLogger.info('Saved to %s\n' % pcl_file)
-
-    # automatically convert to fif and use event file if it exists (software trigger)
-    if os.path.exists(eve_file):
-        recordLogger.info('Found matching event file, adding events.')
-    else:
-        eve_file = None
-    recordLogger.info('Converting raw file into fif.')
-    pcl2fif(pcl_file, external_event=eve_file)
-
-def run(record_dir, amp_name, amp_serial, recordLogger=logger, eeg_only=False, queue=None, recordState = mp.Value('i', 1)):
-    recordLogger.info('\nOutput directory: %s' % (record_dir))
-
-    # spawn the recorder as a child process
-    recordLogger.info('\n>> Press Enter to start recording.')
-    key = input()
-    proc = mp.Process(target=record, args=[recordState, amp_name, amp_serial, record_dir, eeg_only, recordLogger , queue])
-    proc.start()
-
-    # clean up
-    time.sleep(1) # required on some Python distribution
-    input()
-    recordState.value = 0
-    recordLogger.info('(main) Waiting for recorder process to finish.')
-    proc.join(10)
-    if proc.is_alive():
-        recordLogger.error('Recorder process not finishing. Are you running from Spyder?')
-        recordLogger.error('Dropping into a shell')
-        qc.shell()
-    sys.stdout.flush()
-    recordLogger.info('Recording finished.')
-
-# for batch script
-def batch_run(record_dir=None, amp_name=None, amp_serial=None):
-    # configure LSL server name and device serial if available
-    if not record_dir:
-        record_dir = '%s/records' % os.getcwd()    
-    if not amp_name:
-        amp_name, amp_serial = pu.search_lsl(ignore_markers=True)
-    run(record_dir, amp_name=amp_name, amp_serial=amp_serial)
-
-def run_gui(recordState, protocolState, record_dir, recordLogger=logger, amp_name=None, amp_serial=None, eeg_only=False, queue=None):
+    Attributes
+    ----------
     
-    redirect_stdout_to_queue(recordLogger, queue, 'INFO')
+    """
+    #----------------------------------------------------------------------
+    def __init__(self, amp_name=None, amp_serial=None, record_dir=None, eeg_only=False, logger=logger, queue=None, state=mp.Value('i', 0)):
+        
+        if record_dir is None:
+            raise RuntimeError("No recording directory was provided.")
+        
+        self.logger = logger
+        redirect_stdout_to_queue(self.logger, queue, 'INFO')
+            
+        self.recorder = _Recorder(amp_name, amp_serial, record_dir, eeg_only, self.logger, state)
     
-    # configure LSL server name and device serial if available
-    if not amp_name:
-        amp_name, amp_serial = pu.search_lsl(recordState, recordLogger, ignore_markers=True)
-
-    recordLogger.info('\nOutput directory: %s' % (record_dir))
-
-    # spawn the recorder as a child process
-    recordLogger.info('\n>> Recording started.')
-    proc = mp.Process(target=record, args=[recordState, amp_name, amp_serial, record_dir, eeg_only, recordLogger , queue])
-    proc.start()
+    #----------------------------------------------------------------------
+    def connect(self, amp_name=None, amp_serial=None, eeg_only=False):
+        """
+        Connect to a stream.
+        
+        Parameters
+        ----------
+        amp_name : str
+                Connect to a server named 'amp_name'. None: no constraint.
+        amp_serial : str
+            Connect to a server with serial number 'amp_serial'. None: no constraint.
+        eeg_only : bool
+            If true, ignore non-EEG servers.
+        """
+        self.recorder.connect(amp_name, amp_serial, eeg_only)
     
-    while not recordState.value:
-        pass
+    #----------------------------------------------------------------------
+    def record(self, gui=False):
+        """
+        Start the recording.
+        """
+        if gui is False and not amp_name:
+            amp_name, amp_serial = pu.search_lsl(ignore_markers=True)
+            self.recorder.connect(amp_name, amp_serial)
+        
+        self.proc = mp.Process(target=self.recorder.record, args=[])
+        self.proc.start()
     
-    # Launching the protocol (shared variable)
-    with protocolState.get_lock():
-        protocolState.value = 1
+        if gui is False:
+            time.sleep(1) # required on some Python distribution
+            input()    
+            self.stop(self.proc)
+    
+    #----------------------------------------------------------------------
+    def stop(self):
+        """
+        Stop the recording.
+        """
+        with self.recorder.state.get_lock():
+            self.recorder.state.value = 0
+        
+        self.logger.info('(main) Waiting for recorder process to finish.')
+        self.proc.join(10)
+        if self.proc.is_alive():
+            self.logger.error('Recorder process not finishing. Are you running from Spyder?')
+            self.logger.error('Dropping into a shell')
+            qc.shell()
+        sys.stdout.flush()
+        self.logger.info('Recording finished.')
+    
+    #----------------------------------------------------------------------
+    def _record_gui(self, protocolState, queue=None):
+        """
+        Start the recording when launched from the GUI.
+        """
+        self.record(True)
+       
+        while not self.recorder.state.value:
+            pass
+        
+        # Launching the protocol (shared variable)
+        with protocolState.get_lock():
+            protocolState.value = 1
+        
+        # Continue recording until the shared variable changes to 0.
+        while self.recorder.state.value:
+            time.sleep(1)
+        self.stop()
 
-    # Continue recording until the shared variable changes to 0.
-    while recordState.value:
-        time.sleep(1)
-
-    recordLogger.info('(main) Waiting for recorder process to finish.')
-    proc.join(10)
-    if proc.is_alive():
-        recordLogger.error('Recorder process not finishing. Are you running from Spyder?')
-        recordLogger.error('Dropping into a shell')
-        qc.shell()
-    sys.stdout.flush()
-    recordLogger.info('Recording finished.')
-
-
-# default sample recorder
+#----------------------------------------------------------------------
 if __name__ == '__main__':
     record_dir = None
     amp_name = None
@@ -185,4 +158,6 @@ if __name__ == '__main__':
         amp_name = sys.argv[2]
     if len(sys.argv) > 1:
         record_dir = sys.argv[1]
-    batch_run(record_dir, amp_name, amp_serial)
+    
+    recorder = StreamRecorder(amp_name=amp_name, amp_serial=amp_serial, record_dir=record_dir, eeg_only=False, logger=logger, queue=None, state=mp.Value('i',0)) 
+    recorder.record()
