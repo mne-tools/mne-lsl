@@ -170,7 +170,7 @@ class _Stream:
                 if len(tslist) == 0:
                     chunk, tslist = self.inlet.pull_chunk(max_samples=self._inlet_bufsize)
                     if blocking == False and len(tslist) == 0:
-                        return np.empty((0, len(self.ch_list))), []         
+                        return np.empty((0, len(self.ch_list))), [], None
                 if len(tslist) > 0:
                     if timestamp_offset is True:
                         lsl_clock = pylsl.local_clock()
@@ -202,7 +202,7 @@ class _Stream:
             # add an empty channel with zeros to channel 0
             data = np.concatenate((np.zeros((data.shape[0],1)),
                                        data[:, self._lsl_eeg_channels]), axis=1)
-             
+            
         return data, tslist, lsl_clock
     
     #----------------------------------------------------------------------
@@ -220,14 +220,14 @@ class _Stream:
     #----------------------------------------------------------------------
     def get_eeg_channels(self):
         """
-        Get the eeg channels list.
+        Get the eeg channels indexes.
 
         Returns
         -------
         list
-            channel list 
+            Channels' index list 
         """
-        return self.ch_list[1:]
+        return np.arange(1, self.get_num_channels())
     
     #----------------------------------------------------------------------
     def get_trigger_channel(self):
