@@ -100,8 +100,8 @@ class _Scope(QMainWindow):
                                  amp_serial=self.amp_serial, amp_name=self.amp_name)
 
         self.config = {
-            'sf': int(self.sr.sample_rate),
-            'samples': int(self.sr.sample_rate * window_size),
+            'sf': int(self.sr.get_sample_rate()),
+            'samples': int(self.sr.get_sample_rate() * window_size),
             'eeg_channels': len(self.sr.get_eeg_channels()),
             'exg_channels': 0,
             'tri_channels': self.sr.get_trigger_channel(),
@@ -353,7 +353,7 @@ class _Scope(QMainWindow):
         self.channel_labels = []
         values = []
         ch_names = np.array( self.sr.get_channel_names() )
-        self.channel_labels = ch_names[ self.sr.get_eeg_channels() ]
+        self.channel_labels = ch_names[self.sr.get_eeg_channels()]
         for x in range(0, len(self.channels_to_show_idx)):
             values.append((-x * self.scale,
                 self.channel_labels[self.channels_to_show_idx[x]]))
@@ -444,18 +444,16 @@ class _Scope(QMainWindow):
             # TODO: check and change to these two lines
             #self.sr.acquire(blocking=False, decim=DECIM)
             #data, self._ts_list = self.sr.get_window()
-
+    
             if len(self._ts_list) == 0:
-                # self.eeg= None
-                # self.tri= None
                 return
-
+    
             n = self.config['eeg_channels']
             trg_ch = self.config['tri_channels']
             if trg_ch is not None:
                 self.tri = np.reshape(data[:, trg_ch], (-1, 1))             # samples x 1
-            self.eeg = np.reshape(data[:, self.sr.eeg_channels], (-1, n))   # samples x channels
-
+            self.eeg = np.reshape(data[:, self.sr.get_eeg_channels()], (-1, n))   # samples x channels
+    
             if DEBUG_TRIGGER:
                 # show trigger value
                 try:

@@ -8,7 +8,7 @@ import neurodecode.utils.pycnbi_utils as pu
 
 class StreamViewer:
     """
-    Facade class for displaying in real time the signals coming from an lsl stream.
+    Class for displaying in real time the signals coming from an lsl stream.
 
     Parameters
     ----------
