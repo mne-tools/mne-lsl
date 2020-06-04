@@ -181,7 +181,7 @@ class _Stream:
             else:
                 logger.warning('Timeout occurred while acquiring data. Amp driver bug?')
                 # give up and return empty values to avoid deadlock
-                return np.empty((0, len(self.ch_list))), []
+                return np.empty((0, len(self.ch_list))), [], None
         
         data = np.array(chunk)
         
