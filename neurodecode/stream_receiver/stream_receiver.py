@@ -11,7 +11,7 @@ import neurodecode.utils.q_common as qc
 
 class StreamReceiver:
     """
-    Facade class for data acquisition from lsl streams.
+    Class for data acquisition from lsl streams.
         
     Parameters
     ----------
@@ -257,14 +257,12 @@ class StreamReceiver:
         
         return window, timestamps    
     #----------------------------------------------------------------------
-    def get_window(self, decim=1, stream_index=0):
+    def get_window(self, stream_index=0):
         """
         Get the latest window and timestamps  of a stream in numpy format.
 
         Parameters
         ----------
-        decim : int
-            Decimation factor for unit conversion.
         stream_index : int
             The index of the stream to get the window (default = 0).
 
@@ -388,7 +386,7 @@ class StreamReceiver:
         list
             The channels list
         """
-        return self.streams[stream_index].ch_list[1:]    
+        return self.streams[stream_index].get_eeg_channels()    
     
     #----------------------------------------------------------------------
     def get_trigger_channel(self, stream_index=0):
@@ -465,7 +463,7 @@ class StreamReceiver:
 """
 Example code for printing out raw values
 """
-def test_receiver():
+if __name__ == '__main__':
     import mne
     import os
 
@@ -531,6 +529,3 @@ def test_receiver():
 
         last_ts = tslist[-1]
         tm.sleep_atleast(0.05)
-
-if __name__ == '__main__':
-    test_receiver()
