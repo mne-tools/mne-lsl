@@ -28,7 +28,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import os
 import sys
 import time
 import multiprocessing as mp
@@ -44,7 +43,7 @@ from builtins import input
 
 class StreamRecorder:
     """
-    Facade class for recording the signals coming from lsl streams.
+    Class for recording the signals coming from lsl streams.
     
     Parameters
     ----------
