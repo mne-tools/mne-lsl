@@ -23,48 +23,174 @@ from multiprocessing import Process
 
 class StreamPlayer:
     """
+    Class for playing recorded file on LSL network in another process.
+     
+    Parameters
+    ----------
+    server_name : str
+        The stream's name, displayed on LSL network.
+    fif_file : str
+        The absolute path to the .fif file to play.
+    chunk_size : int
+        The number of samples to send at once (usually 16-32 is good enough).
+    trigger_file : str
+        The absolute path to the file containing the table converting event numbers
+        into event strings.
+        
+    Notes
+    -----
+    It instances a Streamer in a new process and call Streamer.stream().
+    """
+
+    def __init__(self, server_name, fif_file, chunk_size, trigger_file=None):
+
+        self._server_name = server_name
+        self._fif_file = fif_file
+        self._chunk_size = chunk_size
+        self._trigger_file = trigger_file
+        
+        self._process = None
+        
+    #----------------------------------------------------------------------
+    def start(self, repeat=np.float('inf'), high_resolution=False, auto_restart=False):
+        """
+        Start streaming data on LSL network in a new process by calling stream().
+        
+        Parameters
+        ----------
+        repeat : float
+            The number of times to replay the data.
+        high_resolution : bool
+            If True, it uses perf_counter() instead of sleep() for higher time resolution.
+            However, it uses much more cpu due to polling.
+        auto_restart : bool
+            If True, it replays from beginning after reaching the end.
+        """
+        self._process = Process(target=self._stream, args=(repeat, high_resolution, auto_restart))
+        self._process.start()
+    
+    #----------------------------------------------------------------------
+    def wait(self, timeout=None):
+        """
+        Wait that the data streaming finishes.
+        
+        Attributes
+        ----------
+        timeout : float
+            Block until timeout is reached. If None, block until streaming is finished.
+        
+        Notes
+        -----
+        If auto_restart = True, the streaming will only finish by calling stop()
+        """
+        self._process.join()
+        
+    #----------------------------------------------------------------------
+    def stop(self):
+        """
+        Stop the streaming, by terminating the process.
+        """
+        if self._process:
+            logger.info("Stop streaming data from: {}" .format(server_name))
+            self._process.terminate()
+        
+    #----------------------------------------------------------------------
+    def _stream(self, repeat, high_resolution, auto_restart):
+        """
+        The function called in the new process.
+        
+        Instance a Streamer and start streaming.
+        """
+        s = Streamer(self.server_name, self.fif_file, self.chunk_size, self.trigger_file)
+        s.stream(repeat, high_resolution, auto_restart) 
+    
+    #----------------------------------------------------------------------
+    @property
+    def server_name(self):
+        """
+        The stream's name, displayed on LSL network.
+        
+        Returns
+        -------
+        str
+        """
+        return self._server_name
+    
+    #----------------------------------------------------------------------
+    @property
+    def fif_file(self):
+        """
+        The absolute path to the .fif file to play.
+        
+        Returns
+        -------
+        str
+        """
+        return self._fif_file       
+    
+    #----------------------------------------------------------------------
+    @property
+    def chunk_size(self):
+        """
+        The size of a chunk of data.
+        
+        Returns
+        -------
+        int
+        """
+        return self._chunk_size      
+
+    #----------------------------------------------------------------------
+    @property
+    def trigger_file(self):
+        """
+        The absolute path to the file containing the table converting event numbers
+        into event strings.
+        
+        Returns
+        -------
+        int
+        """
+        return self._trigger_file
+    #----------------------------------------------------------------------
+    @property
+    def process(self):
+        """
+        The launched process
+        
+        Returns
+        -------
+        multiprocessing.Process
+        """
+        return self._process
+        
+class Streamer:
+    """
     Class for playing recorded file on LSL network.
     
     Parameters
     ----------
     server_name : str
-        LSL server name.
+        The stream's name, displayed on LSL network.
     fif_file : str
-        fif file to replay.
+        The absolute path to the .fif file to play.
     chunk_size : int
-        number of samples to send at once (usually 16-32 is good enough).
-    auto_restart : bool
-        play from beginning again after reaching the end.
-    wait_start : bool
-        wait for user to start in the beginning.
-    repeat : np.float
-        number of loops to play.
-    high_resolution :bool
-        use perf_counter() instead of sleep() for higher time resolution
-        but uses much more cpu due to polling.
+        The number of samples to send at once (usually 16-32 is good enough).
     trigger_file : str
-        used to convert event numbers into event strings for readability.
-        
-    Attributes
-    ----------
-    raw : mne.io.RawArray
-        The raw data to stream on LSL network.
-    events : np.array
-        mne-compatible events (N x [frame, 0, type]).
-    server_name : str
-        The name of the stream on the LSL network.
-    chunk_size :
-         The size of a chunk of data.
+        The absolute path to the file containing the table converting event numbers
+        into event strings.
     
-    Note: Run neurodecode.set_log_level('DEBUG') to print out the relative time stamps since started.
+    Notes
+    -----
+    Run neurodecode.set_log_level('DEBUG') to print out the relative time stamps since started.
     """
     #----------------------------------------------------------------------
     def __init__(self, server_name, fif_file, chunk_size, trigger_file=None):
         
-        self.raw = None
-        self.events = None
-        self.server_name = server_name
-        self.chunk_size = chunk_size
+        self._raw = None
+        self._events = None
+        self._server_name = server_name
+        self._chunk_size = chunk_size
 
         self._thread = None
         self._tdef = None
@@ -82,18 +208,20 @@ class StreamPlayer:
         """
         Stream data on LSL network.
         
+        Parameters
+        ----------
         repeat : int
-            The number of loops to play.
+            The number of times to replay the data.
         high_resolution : bool
-            Use perf_counter() instead of sleep() for higher time resolution
-            but uses much more cpu due to polling.
+            If True, it uses perf_counter() instead of sleep() for higher time resolution.
+            However, it uses much more cpu due to polling.
         auto_restart : bool
-            Replay from the beginning after reaching the end.
+            If True, it replays from beginning after reaching the end.
         """
         logger.info('Streaming started')
         
         idx_chunk = 0
-        t_chunk = chunk_size / self.get_sample_rate()
+        t_chunk = self.chunk_size / self.get_sample_rate()
         finished = False
         
         if high_resolution:
@@ -105,18 +233,18 @@ class StreamPlayer:
         played = 1
         while played < repeat:
         
-            idx_current = idx_chunk * chunk_size
-            chunk = self.raw._data[:, idx_current:idx_current + chunk_size]
+            idx_current = idx_chunk * self.chunk_size
+            chunk = self.raw._data[:, idx_current:idx_current + self.chunk_size]
             data = chunk.transpose().tolist()
         
-            if idx_current >= self.raw._data.shape[1] - chunk_size:
+            if idx_current >= self.raw._data.shape[1] - self.chunk_size:
                 finished = True
             
-            print("idx: {}, tstart: {}, t_chunk: {}" .format(idx_chunk, t_start, t_chunk))
             self._sleep(high_resolution, idx_chunk, t_start, t_chunk)
             
             self._outlet.push_chunk(data)
             logger.debug('[%8.3fs] sent %d samples (LSL %8.3f)' % (time.perf_counter(), len(data), pylsl.local_clock()))
+            print('[%8.3fs] sent %d samples (LSL %8.3f)' % (time.perf_counter(), len(data), pylsl.local_clock()))
             
             self._log_event(chunk)
             idx_chunk += 1
@@ -133,39 +261,21 @@ class StreamPlayer:
                     t_start = time.time()
                 played += 1
         
-        return finished
-    
-    #----------------------------------------------------------------------
-    def start(self, repeat=np.float('inf'), high_resolution=False, auto_restart=False):
-        """
-        Start streaming data on LSL network in a new process
-        
-        repeat : float
-            The number of chunks to stream.
-        high_resolution : bool
-            use perf_counter() instead of sleep() for higher time resolution
-            but uses much more cpu due to polling.
-        """
-        self.thread = Process(target=self.stream, args=(repeat, high_resolution))
-        self.thread.start()
-    
-    #----------------------------------------------------------------------   
-    def stop(self):
-        """
-        Stop the streaming of the data on LSL network when launched with start().
-        """
-        if self._thread:
-            self._thread.terminate()
-        
     #----------------------------------------------------------------------
     def set_lsl_info(self, server_name):
         """
-        Set the lsl server infos.
+        Set the lsl server's infos needed to create the LSL stream.
         
         Parameters
         ----------
         server_name : str
-            The name to display on LSL network.
+            The stream's name, displayed on LSL network.
+        
+        Returns
+        -------
+        pylsl.StreamInfo
+            The info to create the stream on LSL network.
+        
         """
         sinfo = pylsl.StreamInfo(server_name, channel_count=self.get_nb_ch(), channel_format='float32',\
             nominal_srate=self.get_sample_rate(), type='EEG', source_id=server_name)
@@ -189,9 +299,9 @@ class StreamPlayer:
         Parameters
         ----------
         fif_file : str
-            The fif file containing the raw data to play.
+            The absolute path to the .fif file to play.
         """
-        self.raw, self.events = pu.load_raw(fif_file)
+        self._raw, self._events = pu.load_raw(fif_file)
                 
         if self.raw is not None:
             logger.info_green('Successfully loaded %s' % fif_file)        
@@ -201,7 +311,12 @@ class StreamPlayer:
     #----------------------------------------------------------------------  
     def get_sample_rate(self):
         """
-        Get the sample rate 
+        Get the sample rate
+        
+        Returns
+        -------
+        float
+            The sampling rate [Hz]
         """
         return self.raw.info['sfreq']
         
@@ -209,6 +324,11 @@ class StreamPlayer:
     def get_nb_ch(self):
         """
         Get the number of channels.
+        
+        Returns
+        -------
+        int
+            The number of channels.
         """
         return len(self.raw.ch_names)
     
@@ -216,6 +336,11 @@ class StreamPlayer:
     def get_trg_index(self):
         """
         Return the index of the trigger channel.
+        
+        Returns
+        -------
+        int
+            The trigger channel's index.
         """
         try:
             event_ch = self.raw.ch_names.index('TRIGGER')
@@ -226,7 +351,7 @@ class StreamPlayer:
     #----------------------------------------------------------------------   
     def get_info(self):
         """
-        Log the info about the created LSL stream 
+        Log the info about the created LSL stream.
         """
         logger.info('Server name: %s' % self.server_name)
         logger.info('Sampling frequency %.3f Hz' % self.get_sample_rate())
@@ -239,7 +364,7 @@ class StreamPlayer:
     #----------------------------------------------------------------------
     def _sleep(self, high_resolution, idx_chunk, t_start, t_chunk):
         """
-        Sleep for
+        Determine the time to sleep to fit simulate the 
         """
         if high_resolution:
             # if a resolution over 2 KHz is needed
@@ -257,11 +382,6 @@ class StreamPlayer:
     def _log_event(self, chunk):
         """
         Look for an event on the data chunk and log it.
-        
-        Parameters
-        ----------
-        chunk : mne.io.RawArray
-            Chunk of data to stream on LSL network
         """
         event_ch = self.get_trg_index()
         
@@ -278,6 +398,53 @@ class StreamPlayer:
                         else:
                             logger.info('Events: %s (Undefined event)' % event)    
     
+    #----------------------------------------------------------------------
+    @property
+    def raw(self):
+        """
+        The raw data to stream on LSL network.
+        
+        Returns
+        -------
+        mne.io.RawArray
+        """
+        return self._raw
+    
+    #----------------------------------------------------------------------
+    @property
+    def events(self):
+        """
+        The mne-compatible events (N x [frame, 0, type]).
+        
+        Returns
+        -------
+        np.array
+        """
+        return self._events
+    
+    #----------------------------------------------------------------------
+    @property
+    def server_name(self):
+        """
+        The stream's name, displayed on LSL network.
+        
+        Returns
+        -------
+        str
+        """
+        return self._server_name
+    
+    #----------------------------------------------------------------------
+    @property
+    def chunk_size(self):
+        """
+         The size of a chunk of data.
+        
+        Returns
+        -------
+        int
+        """
+        return self._chunk_size        
 
 #----------------------------------------------------------------------
 if __name__ == '__main__':
@@ -307,5 +474,5 @@ if __name__ == '__main__':
         trigger_file = None
     
     sp = StreamPlayer(server_name, fif_file, chunk_size, trigger_file)
-    sp.stream(repeat=np.float('inf'), high_resolution=False, auto_restart=False)
-    # stream_player(server_name, fif_file, chunk_size)
+    sp.wait(timeout=10)
+    sp.stop()
