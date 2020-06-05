@@ -9,4 +9,4 @@ tweak tool to set to 500us time resolution of the OS.
 
 '''
 
-from .stream_player import StreamPlayer
+from .stream_player import StreamPlayer, Streamer
