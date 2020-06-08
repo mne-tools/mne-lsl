@@ -42,17 +42,18 @@ class StreamPlayer:
     It instances a Streamer in a new process and call Streamer.stream().
     """
 
-    def __init__(self, server_name, fif_file, chunk_size, trigger_file=None):
+    def __init__(self, server_name, fif_file, chunk_size, trigger_file=None, logger=logger):
 
         self._server_name = server_name
         self._fif_file = fif_file
         self._chunk_size = chunk_size
         self._trigger_file = trigger_file
         
+        self._logger = logger
         self._process = None
         
     #----------------------------------------------------------------------
-    def start(self, repeat=np.float('inf'), high_resolution=False, auto_restart=False):
+    def start(self, repeat=np.float('inf'), high_resolution=False):
         """
         Start streaming data on LSL network in a new process by calling stream().
         
@@ -63,10 +64,8 @@ class StreamPlayer:
         high_resolution : bool
             If True, it uses perf_counter() instead of sleep() for higher time resolution.
             However, it uses much more cpu due to polling.
-        auto_restart : bool
-            If True, it replays from beginning after reaching the end.
         """
-        self._process = Process(target=self._stream, args=(repeat, high_resolution, auto_restart))
+        self._process = Process(target=self._stream, args=(repeat, high_resolution))
         self._process.start()
     
     #----------------------------------------------------------------------
@@ -78,10 +77,6 @@ class StreamPlayer:
         ----------
         timeout : float
             Block until timeout is reached. If None, block until streaming is finished.
-        
-        Notes
-        -----
-        If auto_restart = True, the streaming will only finish by calling stop()
         """
         self._process.join()
         
@@ -91,18 +86,18 @@ class StreamPlayer:
         Stop the streaming, by terminating the process.
         """
         if self._process:
-            logger.info("Stop streaming data from: {}" .format(server_name))
+            self._logger.info("Stop streaming data from: {}" .format(server_name))
             self._process.terminate()
         
     #----------------------------------------------------------------------
-    def _stream(self, repeat, high_resolution, auto_restart):
+    def _stream(self, repeat, high_resolution):
         """
         The function called in the new process.
         
         Instance a Streamer and start streaming.
         """
         s = Streamer(self.server_name, self.fif_file, self.chunk_size, self.trigger_file)
-        s.stream(repeat, high_resolution, auto_restart) 
+        s.stream(repeat, high_resolution) 
     
     #----------------------------------------------------------------------
     @property
@@ -185,7 +180,7 @@ class Streamer:
     Run neurodecode.set_log_level('DEBUG') to print out the relative time stamps since started.
     """
     #----------------------------------------------------------------------
-    def __init__(self, server_name, fif_file, chunk_size, trigger_file=None):
+    def __init__(self, server_name, fif_file, chunk_size, trigger_file=None, logger=logger):
         
         self._raw = None
         self._events = None
@@ -194,6 +189,7 @@ class Streamer:
 
         self._thread = None
         self._tdef = None
+        self._logger = logger
         
         if trigger_file is not None:
             self._tdef = trigger_def(trigger_file)
@@ -204,21 +200,19 @@ class Streamer:
         self.get_info()
     
     #----------------------------------------------------------------------
-    def stream(self, repeat, high_resolution, auto_restart):
+    def stream(self, repeat=np.float('inf'), high_resolution=False):
         """
         Stream data on LSL network.
         
         Parameters
         ----------
         repeat : int
-            The number of times to replay the data.
+            The number of times to replay the data (Default=inf).
         high_resolution : bool
             If True, it uses perf_counter() instead of sleep() for higher time resolution.
             However, it uses much more cpu due to polling.
-        auto_restart : bool
-            If True, it replays from beginning after reaching the end.
         """
-        logger.info('Streaming started')
+        self._logger.info('Streaming started')
         
         idx_chunk = 0
         t_chunk = self.chunk_size / self.get_sample_rate()
@@ -230,8 +224,8 @@ class Streamer:
             t_start = time.time()
     
         # start streaming
-        played = 1
-        while played < repeat:
+        played = 0
+        while played <= repeat:
         
             idx_current = idx_chunk * self.chunk_size
             chunk = self.raw._data[:, idx_current:idx_current + self.chunk_size]
@@ -243,16 +237,14 @@ class Streamer:
             self._sleep(high_resolution, idx_chunk, t_start, t_chunk)
             
             self._outlet.push_chunk(data)
-            logger.debug('[%8.3fs] sent %d samples (LSL %8.3f)' % (time.perf_counter(), len(data), pylsl.local_clock()))
+            self._logger.debug('[%8.3fs] sent %d samples (LSL %8.3f)' % (time.perf_counter(), len(data), pylsl.local_clock()))
             print('[%8.3fs] sent %d samples (LSL %8.3f)' % (time.perf_counter(), len(data), pylsl.local_clock()))
             
             self._log_event(chunk)
             idx_chunk += 1
             
-            if auto_restart is True:
-                logger.info('Reached the end of data. Restarting.')
-            
             if finished:
+                self._logger.info('Reached the end of data. Restarting.')
                 idx_chunk = 0
                 finished = False
                 if high_resolution:
@@ -304,7 +296,7 @@ class Streamer:
         self._raw, self._events = pu.load_raw(fif_file)
                 
         if self.raw is not None:
-            logger.info_green('Successfully loaded %s' % fif_file)        
+            self._logger.info_green('Successfully loaded %s' % fif_file)        
         else:
             raise RuntimeError('Error while loading %s' % fif_file)
     
@@ -353,13 +345,13 @@ class Streamer:
         """
         Log the info about the created LSL stream.
         """
-        logger.info('Server name: %s' % self.server_name)
-        logger.info('Sampling frequency %.3f Hz' % self.get_sample_rate())
-        logger.info('Number of channels : %d' % self.get_nb_ch())
-        logger.info('Chunk size : %d' % self.chunk_size)
+        self._logger.info('Server name: %s' % self.server_name)
+        self._logger.info('Sampling frequency %.3f Hz' % self.get_sample_rate())
+        self._logger.info('Number of channels : %d' % self.get_nb_ch())
+        self._logger.info('Chunk size : %d' % self.chunk_size)
         for i, ch in enumerate(self.raw.ch_names):
-            logger.info('%d %s' % (i, ch))
-        logger.info('Trigger channel : %s' % self.get_trg_index())
+            self._logger.info('%d %s' % (i, ch))
+        self._logger.info('Trigger channel : %s' % self.get_trg_index())
         
     #----------------------------------------------------------------------
     def _sleep(self, high_resolution, idx_chunk, t_start, t_chunk):
@@ -390,13 +382,13 @@ class Streamer:
         
             if len(event_values) > 0:
                 if self._tdef is None:
-                    logger.info('Events: %s' % event_values)
+                    self._logger.info('Events: %s' % event_values)
                 else:
                     for event in event_values:
                         if event in self._tdef.by_value:
-                            logger.info('Events: %s (%s)' % (event, self._tdef.by_value[event]))
+                            self._logger.info('Events: %s (%s)' % (event, self._tdef.by_value[event]))
                         else:
-                            logger.info('Events: %s (Undefined event)' % event)    
+                            self._logger.info('Events: %s (Undefined event)' % event)    
     
     #----------------------------------------------------------------------
     @property
@@ -473,6 +465,10 @@ if __name__ == '__main__':
         fif_file = str(Path(input("Provide the path to the .fif file to play: \n")))
         trigger_file = None
     
+    # sp = Streamer(server_name, fif_file, chunk_size, trigger_file)
+    # sp.stream()
+    
     sp = StreamPlayer(server_name, fif_file, chunk_size, trigger_file)
+    sp.start()
     sp.wait(timeout=10)
     sp.stop()
