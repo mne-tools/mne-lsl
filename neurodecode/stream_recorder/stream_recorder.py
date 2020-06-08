@@ -61,22 +61,96 @@ class StreamRecorder:
         Can redirect sys.stdout to a queue (e.g. used for GUI).
     state : mp.Value
         Multiprocessing sharing variable to stop the recording from another process
-        
-    Attributes
-    ----------
-    
     """
     #----------------------------------------------------------------------
     def __init__(self, amp_name=None, amp_serial=None, record_dir=None, eeg_only=False, logger=logger, queue=None, state=mp.Value('i', 0)):
         
         if record_dir is None:
-            raise RuntimeError("No recording directory was provided.")
+            raise RuntimeError("No recording directory provided.")
         
-        self.logger = logger
-        redirect_stdout_to_queue(self.logger, queue, 'INFO')
-            
-        self.recorder = _Recorder(amp_name, amp_serial, record_dir, eeg_only, self.logger, state)
+        self._logger = logger
+        redirect_stdout_to_queue(self._logger, queue, 'INFO')
+        
+        self._proc = None
+        self._amp_name = amp_name
+        self._amp_serial = amp_serial
+        self._record_dir = record_dir
+        
+        self._recorder = _Recorder(amp_name, amp_serial, record_dir, eeg_only, self._logger, state)
     
+    @property
+    #----------------------------------------------------------------------
+    def process(self):
+        """
+        The process where the recording takes place.
+        
+        Gives access to all the function associated with mp.process
+        
+        Returns
+        -------
+        mp.Process
+        """
+        return self._proc
+    
+    @property
+    #----------------------------------------------------------------------    
+    def amp_name(self):
+        """
+        The amplifier's name associated with the recorded LSL stream.
+        
+        Returns
+        -------
+        str
+        """
+        return self._amp_name
+    
+   
+    @property
+    #----------------------------------------------------------------------    
+    def amp_serial(self):
+        """
+        The amplifier's serial associated with the recorded LSL stream.
+        
+        Returns
+        -------
+        str
+        """
+        return self._amp_serial
+    
+    
+    @property
+    #----------------------------------------------------------------------    
+    def record_dir(self):
+        """
+        The absolute directory where the data are saved.
+        
+        Returns
+        -------
+        str
+        """
+        return self._record_dir
+    
+    
+    @process.setter
+    #----------------------------------------------------------------------
+    def process(self):    
+        self._logger.warn("This attribute cannot be changed.")    
+    
+    @amp_name.setter
+    #----------------------------------------------------------------------
+    def amp_name(self):    
+        self._logger.warn("This attribute cannot be changed.")
+    
+    @amp_serial.setter
+    #----------------------------------------------------------------------
+    def amp_serial(self):    
+        self._logger.warn("This attribute cannot be changed.")
+    
+    @record_dir.setter
+    #----------------------------------------------------------------------
+    def record_dir(self):    
+        self._logger.warn("This attribute cannot be changed.")        
+     
     #----------------------------------------------------------------------
     def connect(self, amp_name=None, amp_serial=None, eeg_only=False):
         """
@@ -91,41 +165,46 @@ class StreamRecorder:
         eeg_only : bool
             If true, ignore non-EEG servers.
         """
-        self.recorder.connect(amp_name, amp_serial, eeg_only)
+        self._recorder.connect(amp_name, amp_serial, eeg_only)
     
     #----------------------------------------------------------------------
-    def record(self, gui=False):
+    def record(self, auto=False):
         """
         Start the recording.
-        """
-        if gui is False and not amp_name:
-            amp_name, amp_serial = pu.search_lsl(ignore_markers=True)
-            self.recorder.connect(amp_name, amp_serial)
         
-        self.proc = mp.Process(target=self.recorder.record, args=[])
-        self.proc.start()
+        Parameters
+        ----------
+        auto : bool
+            If False, wait user input to start/stop the recording.
+        """
+        if auto is False and not amp_name:
+            amp_name, amp_serial = pu.search_lsl(ignore_markers=True)
+            self._recorder.connect(amp_name, amp_serial)
+        
+        self._proc = mp.Process(target=self._recorder.record, args=[])
+        self._proc.start()
     
-        if gui is False:
+        if auto is False:
             time.sleep(1) # required on some Python distribution
             input()    
-            self.stop(self.proc)
+            self.stop(self._proc)
     
     #----------------------------------------------------------------------
     def stop(self):
         """
         Stop the recording.
         """
-        with self.recorder.state.get_lock():
-            self.recorder.state.value = 0
+        with self._recorder.state.get_lock():
+            self._recorder.state.value = 0
         
-        self.logger.info('(main) Waiting for recorder process to finish.')
-        self.proc.join(10)
-        if self.proc.is_alive():
-            self.logger.error('Recorder process not finishing. Are you running from Spyder?')
-            self.logger.error('Dropping into a shell')
+        self._logger.info('(main) Waiting for recorder process to finish.')
+        self._proc.join(10)
+        if self._proc.is_alive():
+            self._logger.error('Recorder process not finishing. Are you running from Spyder?')
+            self._logger.error('Dropping into a shell')
             qc.shell()
         sys.stdout.flush()
-        self.logger.info('Recording finished.')
+        self._logger.info('Recording finished.')
     
     #----------------------------------------------------------------------
     def _record_gui(self, protocolState, queue=None):
@@ -134,7 +213,7 @@ class StreamRecorder:
         """
         self.record(True)
        
-        while not self.recorder.state.value:
+        while not self._recorder.state.value:
             pass
         
         # Launching the protocol (shared variable)
@@ -142,7 +221,7 @@ class StreamRecorder:
             protocolState.value = 1
         
         # Continue recording until the shared variable changes to 0.
-        while self.recorder.state.value:
+        while self._recorder.state.value:
             time.sleep(1)
         self.stop()
 
@@ -159,4 +238,4 @@ if __name__ == '__main__':
         record_dir = sys.argv[1]
     
     recorder = StreamRecorder(amp_name=amp_name, amp_serial=amp_serial, record_dir=record_dir, eeg_only=False, logger=logger, queue=None, state=mp.Value('i',0)) 
-    recorder.record()
+    recorder.record(False)
