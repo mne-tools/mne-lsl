@@ -8,6 +8,7 @@ from neurodecode.stream_receiver._buffer import _Buffer
 from neurodecode.stream_receiver._stream import _Stream
 
 import neurodecode.utils.q_common as qc
+from threading import Thread
 
 class StreamReceiver:
     """
@@ -40,7 +41,11 @@ class StreamReceiver:
     """    
     #----------------------------------------------------------------------
     def __init__(self, window_size=1, buffer_size=1, amp_serial=None, eeg_only=False, amp_name=None, find_any=True):
-
+        
+        self._buffers = []
+        self._streams = []
+        self.ready = False
+        
         self.connect(window_size, buffer_size, amp_name, amp_serial, eeg_only, find_any)
     
     #----------------------------------------------------------------------
@@ -48,7 +53,7 @@ class StreamReceiver:
         """
         Search for the available streams on the lsl network and connect to the appropriate ones.
         
-        If a lsl stream fullfills the requirements (name, serial...), it is saved in streams list and its buffer is created.
+        If a lsl stream fullfills the requirements (name, serial...), a connection is done.
         
         Parameters
         ----------
@@ -65,14 +70,14 @@ class StreamReceiver:
         find_any : bool
             If True, look for any kind of streams. If False, look only for "USBamp", "BioSemi", "SmartBCI", "openvibeSignal", "openvibeMarkers", "StreamPlayer".
         """
-
+        self._buffers = []
+        self._streams = []
+        
         self._connected = False
-        self.ready = False        
-        self.buffers = []
-        self.streams = []
+        self.ready = False
         
         server_found = False
-        
+                
         while server_found == False:
             
             if amp_name is None and amp_serial is None:
@@ -85,34 +90,31 @@ class StreamReceiver:
             if len(streamInfos) > 0:
                 # For now, only 1 amp is supported by a single StreamReceiver object.
                 for si in streamInfos:
-                    s = _Stream(si, buffer_size)
-                    # connect to a specific amp only?
-                    if amp_serial is not None and amp_serial != s.amp_serial:
-                        continue
-                    # connect to a specific amp only?
-                    if amp_name is not None and amp_name != s.amp_name:
-                        continue
+                    
                     # EEG streaming server only?
-                    if eeg_only and s.type != 'EEG':
+                    if eeg_only and si.type() != 'EEG':
+                        continue
+                    # connect to a specific amp only?
+                    if amp_name is not None and si.name() not in amp_name:
                         continue
                     # Accept unkown streams
                     if find_any is False:
                         continue
                     
-                    self.streams.append(s)
-                    self.buffers.append(_Buffer(si.nominal_srate(), buffer_size, window_size))        
+                    self._streams.append(_Stream(si, buffer_size))
+                    self._buffers.append(_Buffer(si.nominal_srate(), buffer_size, window_size))        
                     server_found = True
             time.sleep(1)
             
         self._connected = True
 
-        # pre-fill in initial buffer
+        # pre-fill in initial buffers
         self.pre_acquire()
         self.ready = True
         logger.info('Start receiving stream data.')
     
     #----------------------------------------------------------------------
-    def acquire(self, blocking=True, stream_index=0):
+    def _acquire(self, blocking=True, stream_index=0):
         """
         Read data from one stream and fill its buffer.
         
@@ -124,29 +126,20 @@ class StreamReceiver:
             If True, the stream waits to receive some data. Othewise, return an empty list.
         stream_index : int
             The index of the stream to acquire the data.
-
-        Returns
-        --------
-        list
-             The acquired data [samples x channels]
-        list
-             Its timestamps [samples]
         """
         timestamp_offset = False
         
-        if len(self.buffers[stream_index].timestamps) == 0:
-            logger.info('Acquisition from: %s (%s)' % (self.streams[stream_index].amp_name, self.streams[stream_index].amp_serial))
+        if len(self._buffers[stream_index].timestamps) == 0:
+            logger.info('Acquisition from: %s (%s)' % (self._streams[stream_index].amp_name, self._streams[stream_index].amp_serial))
             timestamp_offset = True
 
-        data, tslist, lsl_clock = self.streams[stream_index].acquire(blocking, timestamp_offset)
-        self.buffers[stream_index].fill(data, tslist, lsl_clock)
-        
-        return (data, tslist)
-    
+        data, tslist, lsl_clock = self._streams[stream_index].acquire(blocking, timestamp_offset)
+        self._buffers[stream_index].fill(data, tslist, lsl_clock)
+            
     #----------------------------------------------------------------------
-    def acquire_all_streams(self, blocking=True):
+    def acquire(self, blocking=True):
         """
-        Read data from all the streams and fill their buffer.
+        Read data from each streams and fill their buffer using threading.
         
         It is a blocking function as default.
           
@@ -155,11 +148,38 @@ class StreamReceiver:
         blocking : bool
             If True, the streams wait to receive some data.
         """
-        for i in range(len(self.streams)):
-            self.acquire(blocking=True, stream_index=i)
+        threads = []
+        
+        for i in range(len(self._streams)):
+            t = Thread(target=self._acquire, args=[blocking, i])
+            t.daemon = True
+            t.start()
+        threads.append(t)
+        
+        if blocking is True:
+            self._wait_threads_to_finish(threads)
+            
+    #----------------------------------------------------------------------
+    def _wait_threads_to_finish(self, threads):
+        """
+        Wait that all the threads are finished
+        
+        Parameters
+        ----------
+        Threads : list
+            List of all active threads
+        """
+        while len(threads) > 0:                
+            for t in threads:
+                if not t.isAlive():
+                    t.handled = True
+                else:
+                    t.handled = False
+                
+            threads = [t for t in threads if not t.handled]          
     
     #----------------------------------------------------------------------
-    def pre_acquire(self, blocking=True, stream_index=0):
+    def _pre_acquire(self, stream_index=0):
         """
         Prefill the buffer with at least winsize elements.
         
@@ -167,31 +187,26 @@ class StreamReceiver:
         
         Parameters
         ----------
-        blocking : bool
-            If True, the stream wait to receive some data.
+        stream_index : int
+            The index of the stream to acquire the data.
         """
-        logger.info('Waiting to fill initial buffers')
+        logger.info('Waiting to fill initial buffer for stream {}({})'.format(self._streams[stream_index].amp_name, self._streams[stream_index].amp_serial))
         
-        while len(self.buffers[stream_index].timestamps) < self.buffers[stream_index].winsize:
-            self.acquire(blocking=True, stream_index=stream_index)
+        while len(self._buffers[stream_index].timestamps) < self._buffers[stream_index].winsize:
+            self._acquire(blocking=True, stream_index=stream_index)
     
     #----------------------------------------------------------------------
-    def pre_acquire_all(self, blocking=True):
+    def pre_acquire(self):
         """
         Prefill all the buffers with at least winsize elements.
         
-        It is a blocking function as default.
+        It is a blocking function.
+        """        
+        for i in range(len(self._streams)):
+            t = Thread(target=self._pre_acquire, args=[i])
+            t.daemon = True
+            t.start()
         
-        Parameters
-        ----------
-        blocking : bool
-            If True, the streams wait to receive some data.
-        """
-        logger.info('Waiting to fill initial buffers')
-        
-        for i in range(len(self.streams)):
-            self.pre_acquire(i)
-    
     #----------------------------------------------------------------------
     def check_connect(self):
         """
@@ -205,7 +220,7 @@ class StreamReceiver:
     #----------------------------------------------------------------------
     def set_window_size(self, window_size, stream_index=0):
         """
-        Set the window size for a buffer of stream_index.
+        Set the window size for a buffer.
         
         Parameters
         -----------
@@ -215,10 +230,10 @@ class StreamReceiver:
             The index of the stream to modify its buffer parameter (default = 0).
         """
         self.check_connect()
-        window_size = self.buffers[stream_index].check_window_size(window_size)
+        window_size = self._buffers[stream_index].check_window_size(window_size)
         
-        self.buffers[stream_index].winsize = window_size
-        self.buffers[stream_index].winsec = self.streams[stream_index].convert_sec_to_samples(window_size)
+        self._buffers[stream_index].winsize = window_size
+        self._buffers[stream_index].winsec = self._streams[stream_index].convert_sec_to_samples(window_size)
             
     #----------------------------------------------------------------------
     def get_channel_names(self, stream_index=0):
@@ -230,12 +245,12 @@ class StreamReceiver:
         stream_index : int
             The index of the stream to get the channels (default = 0).
         """
-        return self.streams[stream_index].ch_list
+        return self._streams[stream_index].ch_list
     
     #----------------------------------------------------------------------
     def get_window_list(self, stream_index=0):
         """
-        Get the latest window from the buffer of a stream.
+        Get the latest window from a buffer.
         
         Parameters
         -----------
@@ -250,10 +265,10 @@ class StreamReceiver:
             timestamps [samples]
         """
         self.check_connect()
-        winsize = self.buffers[stream_index].winsize
+        winsize = self._buffers[stream_index].winsize
         
-        window = self.buffers[stream_index].data[-winsize:]
-        timestamps = self.buffers[stream_index].timestamps[-winsize:]
+        window = self._buffers[stream_index].data[-winsize:]
+        timestamps = self._buffers[stream_index].timestamps[-winsize:]
         
         return window, timestamps    
     #----------------------------------------------------------------------
@@ -298,7 +313,7 @@ class StreamReceiver:
             Its timestamps [samples]
         """
         self.check_connect()
-        return self.buffers[stream_index].data, self.buffers[stream_index].timestamps    
+        return self._buffers[stream_index].data, self._buffers[stream_index].timestamps    
     #----------------------------------------------------------------------
     def get_buffer(self, stream_index=0):
         """
@@ -318,8 +333,8 @@ class StreamReceiver:
         """
         self.check_connect()
         
-        if len(self.buffers[stream_index].timestamps) > 0:
-            return np.array(self.buffers[stream_index].data), np.array(self.buffers[stream_index].timestamps)
+        if len(self._buffers[stream_index].timestamps) > 0:
+            return np.array(self._buffers[stream_index].data), np.array(self._buffers[stream_index].timestamps)
         else:
             return np.array([]), np.array([])
     
@@ -338,7 +353,7 @@ class StreamReceiver:
         int
             Buffer's length
         """
-        return self.buffers[stream_index].get_buflen()
+        return self._buffers[stream_index].get_buflen()
     #----------------------------------------------------------------------
     def get_sample_rate(self, stream_index=0):
         """
@@ -354,7 +369,7 @@ class StreamReceiver:
         int
             The sampling rate
         """
-        return self.buffers[stream_index].get_sample_rate()
+        return self._buffers[stream_index].get_sample_rate()
     #----------------------------------------------------------------------
     def get_num_channels(self, stream_index=0):
         """
@@ -370,7 +385,7 @@ class StreamReceiver:
         int
             The number of channels
         """
-        return self.streams[stream_index].get_num_channels
+        return self._streams[stream_index].get_num_channels()
     #----------------------------------------------------------------------
     def get_eeg_channels(self, stream_index=0):
         """
@@ -386,7 +401,7 @@ class StreamReceiver:
         list
             The channels list
         """
-        return self.streams[stream_index].get_eeg_channels()    
+        return self._streams[stream_index].get_eeg_channels()    
     
     #----------------------------------------------------------------------
     def get_trigger_channel(self, stream_index=0):
@@ -403,7 +418,7 @@ class StreamReceiver:
         int
             The trigger channel index
         """        
-        return self.streams[stream_index].get_trigger_channel()
+        return self._streams[stream_index].get_trigger_channel()
     
     #----------------------------------------------------------------------
     def get_lsl_offset(self, stream_index=0):
@@ -422,7 +437,7 @@ class StreamReceiver:
         float
             The lsl offset
         """
-        return self.buffers[stream_index].get_lsl_offset()
+        return self._buffers[stream_index].get_lsl_offset()
     
     #----------------------------------------------------------------------
     def reset_buffer(self, stream_index=0):
@@ -436,30 +451,31 @@ class StreamReceiver:
         stream_index : int
             The index of the stream to get the buffer (default = 0).
         """
-        self.buffers[stream_index].reset_buffer()
+        self._buffers[stream_index].reset_buffer()
         
     #----------------------------------------------------------------------
     def reset_all_buffers(self):
         """
         Clear the buffer of all the streams.
         
-        After call pre-acquire() to fill the buffers with at least winsize elements.
+        Call pre-acquire() after to fill the buffers with at least winsize elements.
         """
-        for i in range(len(self.streams)):
-            self.buffers[i].reset_buffer()
+        for i in range(len(self._streams)):
+            self._buffers[i].reset_buffer()
             
     #----------------------------------------------------------------------
     def is_ready(self):
         """
-        Get the receiver's status.
+        Get the receiver's status. True when buffers are prefilled.
         
         Returns
         -------
         bool
             True if the buffer is not empty.
         """
-        return self.ready    
-
+        return self.ready
+        
+    
 """
 Example code for printing out raw values
 """
