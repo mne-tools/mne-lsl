@@ -63,6 +63,16 @@ class _Stream:
         self.create_ch_name_list()
         self.show_info(streamInfo)
 
+    def check_buffer_size(self, bufsec, max_buffer_size=86400):
+        """
+        Check that buffer's size is positive, smaller than max size
+        
+        parameters
+        -----------
+        buffer_size : float
+            The buffer size to verify [secs].
+        """
+        
     #----------------------------------------------------------------------     
     def show_info(self, streamInfo):
         """
@@ -179,7 +189,7 @@ class _Stream:
                 time.sleep(0.0005)
             
             else:
-                logger.warning('Timeout occurred while acquiring data. Amp driver bug?')
+                logger.warning('Timeout occurred while acquiring data from {}({}). Amp driver bug?'.format(self.amp_name, self.amp_serial))
                 # give up and return empty values to avoid deadlock
                 return np.empty((0, len(self.ch_list))), [], None
         
@@ -241,4 +251,5 @@ class _Stream:
         """
         tr_channel = 0
         
-        return tr_channel    
+        return tr_channel
+    
