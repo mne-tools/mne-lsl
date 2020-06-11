@@ -12,7 +12,7 @@ Example:
   python stream_recorder.py openvibeSignals
 TODO:
 - Support HDF output.
-- Write simulatenously while receivng data.
+- Write simulatenously while receiving data.
 - Support multiple amps.
 Kyuhwa Lee, 2014
 Swiss Federal Institute of Technology Lausanne (EPFL)
@@ -32,9 +32,6 @@ import sys
 import time
 import multiprocessing as mp
 
-import neurodecode.utils.q_common as qc
-import neurodecode.utils.pycnbi_utils as pu
-
 from neurodecode.gui.streams import redirect_stdout_to_queue
 from neurodecode.stream_recorder._recorder import _Recorder
 from neurodecode import logger
@@ -47,23 +44,17 @@ class StreamRecorder:
     
     Parameters
     ----------
-    amp_name : str
-            Connect to a server named 'amp_name'. None: no constraint.
-    amp_serial : str
-        Connect to a server with serial number 'amp_serial'. None: no constraint.
     record_dir : str
         The directory where the data will be saved.
-    eeg_only : bool
-        If true, ignore non-EEG servers.
     logger : Logger
         The logger where to output info. Default is the NeuroDecode logger.
-    queue : mp.Queue
-        Can redirect sys.stdout to a queue (e.g. used for GUI).
     state : mp.Value
         Multiprocessing sharing variable to stop the recording from another process
+    queue : mp.Queue
+        Can redirect sys.stdout to a queue (e.g. used for GUI).
     """
     #----------------------------------------------------------------------
-    def __init__(self, amp_name=None, amp_serial=None, record_dir=None, eeg_only=False, logger=logger, queue=None, state=mp.Value('i', 0)):
+    def __init__(self, record_dir=None, logger=logger, state=mp.Value('i', 0), queue=None):
         
         if record_dir is None:
             raise RuntimeError("No recording directory provided.")
@@ -72,14 +63,91 @@ class StreamRecorder:
         redirect_stdout_to_queue(self._logger, queue, 'INFO')
         
         self._proc = None
-        self._amp_name = amp_name
-        self._amp_serial = amp_serial
+        self._amp_name = None
+        self._amp_serial = None
         self._record_dir = record_dir
         
-        self._recorder = _Recorder(amp_name, amp_serial, record_dir, eeg_only, self._logger, state)
+        self._state = state
     
-    @property
     #----------------------------------------------------------------------
+    def start(self, amp_name=None, amp_serial=None, eeg_only=False):
+        """
+        Start recording data from LSL network, in a new process.
+        
+        Parameters
+        ----------
+        amp_name : str
+            Connect to a server named 'amp_name'. None: no constraint.
+        amp_serial : str
+            Connect to a server with serial number 'amp_serial'. None: no constraint.
+        eeg_only : bool
+            If true, ignore non-EEG servers.
+        """
+        self._amp_name = amp_name
+        self._amp_serial = amp_serial
+        
+        self._proc = mp.Process(target=self._record, args=[amp_name, amp_serial, self._record_dir, eeg_only, self._logger, self._state])
+        self._proc.start()
+    
+    #----------------------------------------------------------------------
+    def wait(self, timeout):
+        """
+        Wait that the data streaming finishes.
+        
+        Attributes
+        ----------
+        timeout : float
+            Block until timeout is reached. If None, block until streaming is finished.
+        """
+        self._proc.join(timeout)
+        
+    #----------------------------------------------------------------------
+    def stop(self):
+        """
+        Stop the recording.
+        """
+        with self._state.get_lock():
+            self._state.value = 0
+        
+        self._logger.info('(main) Waiting for recorder process to finish.')
+        self._proc.join(10)
+        if self._proc.is_alive():
+            self._logger.error('Recorder process not finishing. Are you running from Spyder?')
+        self._logger.info('Recording finished.')
+    
+    #----------------------------------------------------------------------
+    def _record(self, amp_name, amp_serial, record_dir, eeg_only, logger, state):
+        """
+        The function launched in a new process.
+        
+        Instance _Recoder and record.
+        """
+        
+        recorder = _Recorder(record_dir, logger, state)
+        recorder.connect(amp_name, amp_serial, eeg_only)
+        recorder.record()
+    
+    #----------------------------------------------------------------------
+    def _record_gui(self, protocolState):
+        """
+        Start the recording when launched from the GUI.
+        """
+        self.record(True)
+       
+        while not self._state.value:
+            pass
+        
+        # Launching the protocol (shared variable)
+        with protocolState.get_lock():
+            protocolState.value = 1
+        
+        # Continue recording until the shared variable changes to 0.
+        while self._state.value:
+            time.sleep(1)
+        self.stop()
+        
+    #----------------------------------------------------------------------
+    @property
     def process(self):
         """
         The process where the recording takes place.
@@ -92,8 +160,8 @@ class StreamRecorder:
         """
         return self._proc
     
-    @property
     #----------------------------------------------------------------------    
+    @property
     def amp_name(self):
         """
         The amplifier's name associated with the recorded LSL stream.
@@ -105,8 +173,8 @@ class StreamRecorder:
         return self._amp_name
     
    
-    @property
     #----------------------------------------------------------------------    
+    @property
     def amp_serial(self):
         """
         The amplifier's serial associated with the recorded LSL stream.
@@ -118,8 +186,8 @@ class StreamRecorder:
         return self._amp_serial
     
     
-    @property
     #----------------------------------------------------------------------    
+    @property
     def record_dir(self):
         """
         The absolute directory where the data are saved.
@@ -131,111 +199,65 @@ class StreamRecorder:
         return self._record_dir
     
     
-    @process.setter
     #----------------------------------------------------------------------
+    @process.setter
     def process(self):    
         self._logger.warn("This attribute cannot be changed.")    
     
-    @amp_name.setter
     #----------------------------------------------------------------------
+    @amp_name.setter
     def amp_name(self):    
         self._logger.warn("This attribute cannot be changed.")
     
-    @amp_serial.setter
     #----------------------------------------------------------------------
+    @amp_serial.setter
     def amp_serial(self):    
         self._logger.warn("This attribute cannot be changed.")
     
+    #----------------------------------------------------------------------
     @record_dir.setter
-    #----------------------------------------------------------------------
     def record_dir(self):    
-        self._logger.warn("This attribute cannot be changed.")        
-     
-    #----------------------------------------------------------------------
-    def connect(self, amp_name=None, amp_serial=None, eeg_only=False):
-        """
-        Connect to a stream.
-        
-        Parameters
-        ----------
-        amp_name : str
-                Connect to a server named 'amp_name'. None: no constraint.
-        amp_serial : str
-            Connect to a server with serial number 'amp_serial'. None: no constraint.
-        eeg_only : bool
-            If true, ignore non-EEG servers.
-        """
-        self._recorder.connect(amp_name, amp_serial, eeg_only)
+        self._logger.warn("This attribute cannot be changed.")    
     
     #----------------------------------------------------------------------
-    def record(self, auto=False):
+    @property 
+    def state(self):
         """
-        Start the recording.
-        
-        Parameters
-        ----------
-        auto : bool
-            If False, wait user input to start/stop the recording.
+        Multiprocessing sharing variable to stop the recording from another process 
         """
-        if auto is False and not amp_name:
-            amp_name, amp_serial = pu.search_lsl(ignore_markers=True)
-            self._recorder.connect(amp_name, amp_serial)
-        
-        self._proc = mp.Process(target=self._recorder.record, args=[])
-        self._proc.start()
-    
-        if auto is False:
-            time.sleep(1) # required on some Python distribution
-            input()    
-            self.stop(self._proc)
-    
+        return self._state
     #----------------------------------------------------------------------
-    def stop(self):
+    @state.setter
+    def state(self):
         """
-        Stop the recording.
+        Multiprocessing sharing variable to stop the recording from another process 
         """
-        with self._recorder.state.get_lock():
-            self._recorder.state.value = 0
-        
-        self._logger.info('(main) Waiting for recorder process to finish.')
-        self._proc.join(10)
-        if self._proc.is_alive():
-            self._logger.error('Recorder process not finishing. Are you running from Spyder?')
-            self._logger.error('Dropping into a shell')
-            qc.shell()
-        sys.stdout.flush()
-        self._logger.info('Recording finished.')
-    
-    #----------------------------------------------------------------------
-    def _record_gui(self, protocolState, queue=None):
-        """
-        Start the recording when launched from the GUI.
-        """
-        self.record(True)
-       
-        while not self._recorder.state.value:
-            pass
-        
-        # Launching the protocol (shared variable)
-        with protocolState.get_lock():
-            protocolState.value = 1
-        
-        # Continue recording until the shared variable changes to 0.
-        while self._recorder.state.value:
-            time.sleep(1)
-        self.stop()
+        self._logger.warn("This attribute cannot be changed.")    
 
 #----------------------------------------------------------------------
 if __name__ == '__main__':
-    record_dir = None
+    
+    from pathlib import Path
+    
     amp_name = None
     amp_serial = None
+    
+    if len(sys.argv) > 4:
+        raise RuntimeError("Too many arguments provided, maximum is 3.")
+    
     if len(sys.argv) > 3:
         amp_serial = sys.argv[3]
+    
     if len(sys.argv) > 2:
         amp_name = sys.argv[2]
+    
     if len(sys.argv) > 1:
         record_dir = sys.argv[1]
     
-    recorder = StreamRecorder(amp_name=amp_name, amp_serial=amp_serial, record_dir=record_dir, eeg_only=False, logger=logger, queue=None, state=mp.Value('i',0)) 
-    recorder.record(False)
+    if len(sys.argv) == 1:
+        record_dir = str(Path(input(">> Provide the path to save the .fif file: \n")))
+    
+    recorder = StreamRecorder(record_dir=record_dir) 
+    recorder.start(amp_name=amp_name, amp_serial=amp_serial, eeg_only=False)
+    input(">> Press ENTER to stop the recording \n")
+    recorder.stop()
