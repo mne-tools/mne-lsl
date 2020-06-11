@@ -12,16 +12,15 @@ class _Recorder:
     Base class for recording signals coming from an lsl stream.
     """
     #----------------------------------------------------------------------
-    def __init__(self, amp_name, amp_serial, record_dir, eeg_only, logger, state):
+    def __init__(self, record_dir, logger, state):
+        self._MAX_BUFSIZE = 86400 
+        
+        self.record_dir = record_dir
         
         self.sr = None
+        self.amp_names = None
         self.state = state
         self.logger = logger
-        self.pcl_file, self.eve_file = self.create_files(record_dir)
-
-        self.connect(amp_name, amp_serial, eeg_only)
-        
-        self.outlet = self.create_events_server(source_id=self.eve_file)
         
     #----------------------------------------------------------------------
     def connect(self, amp_name, amp_serial, eeg_only):
@@ -37,7 +36,24 @@ class _Recorder:
         eeg_only : bool
             If true, ignore non-EEG servers.
         """   
-        self.sr = StreamReceiver(buffer_size=0, amp_name=amp_name, amp_serial=amp_serial, eeg_only=eeg_only)
+        self.sr = StreamReceiver(buffer_size=self._MAX_BUFSIZE, amp_name=amp_name, amp_serial=amp_serial, eeg_only=eeg_only)
+        self.extract_connected_amp_names()
+    
+    #----------------------------------------------------------------------
+    def extract_connected_amp_names(self):
+        """
+        Extract from the stream receiver the names of the connected amplifier.
+        
+        Returns
+        -------
+        list
+            The connected amplifiers' name.
+        """
+        self.nb_amps = len(self.sr._buffers)
+        self.amp_names = []
+        
+        for s in self.sr._streams:
+            self.amp_names.append(s.amp_name) 
             
     #----------------------------------------------------------------------
     def create_files(self, record_dir):
@@ -56,11 +72,11 @@ class _Recorder:
         str
             The software events' file (txt format)
         """
-        pcl_file, eve_file = self.create_filenames(record_dir)
-        self.test_writability(record_dir, pcl_file)
-        self.logger.info('>> Record to file: %s' % (pcl_file))
+        pcl_files, eve_file = self.create_filenames(record_dir)
+        self.test_writability(record_dir, pcl_files)
+        self.logger.info('>> Record to file: %s', *pcl_files, sep='\n')
         
-        return pcl_file, eve_file
+        return pcl_files, eve_file
         
     #----------------------------------------------------------------------
     def create_filenames(self, record_dir):
@@ -80,13 +96,15 @@ class _Recorder:
             The software events' file (txt format)
         """
         timestamp = time.strftime('%Y%m%d-%H%M%S', time.localtime())
-        pcl_file = "%s/%s-raw.pcl" % (record_dir, timestamp)
         eve_file = '%s/%s-eve.txt' % (record_dir, timestamp)
+        pcl_files = []
+        for i in range(len(self.sr._buffers)):
+            pcl_files.append("%s/%s-%s-raw.pcl" % (record_dir, timestamp, self.sr._streams[i].amp_name))
         
-        return pcl_file, eve_file    
+        return pcl_files, eve_file    
 
     #----------------------------------------------------------------------
-    def test_writability(self, record_dir, pcl_file):
+    def test_writability(self, record_dir, pcl_files):
         """
         Test the file's writability.
         
@@ -94,14 +112,16 @@ class _Recorder:
         ----------
         record_dir : str
             The directory where the file will be created
-        pcl_file : str
-            The pickle file to create and write to.
+        pcl_files : str
+            The pickle files to create to write to.
         """
-        try:
-            qc.make_dirs(record_dir)
-            open(pcl_file, 'w').write('The data will written when the recording is finished.')
-        except:
-            raise RuntimeError('Problem writing to %s. Check permission.' % pcl_file)    
+        qc.make_dirs(record_dir)
+
+        for i in range(self.nb_amps):
+            try:
+                open(pcl_files[i], 'w').write('The data will written when the recording is finished.')
+            except:
+                raise RuntimeError('Problem writing to %s. Check permission.' % pcl_files[i])
     
     #----------------------------------------------------------------------
     def create_events_server(self, name='StreamRecorderInfo', source_id=None):
@@ -118,10 +138,15 @@ class _Recorder:
         return start_server(name, channel_format='string', source_id=source_id, stype='Markers')
     
     #----------------------------------------------------------------------
-    def get_buffer(self):
+    def get_buffer(self, stream_index=0):
         """
-        Get all the data contained in the buffer.
+        Get all the data collected in the buffer for a stream.
         
+        Parameters
+        ----------
+        stream_index : int
+            The index of the stream to get the data.
+            
         Returns
         -------
         np.array
@@ -129,40 +154,44 @@ class _Recorder:
         np.array
             Its timestamps [samples]
         """
+        
         data, timestamps = self.sr.get_buffer()
         
         return data, timestamps
     
     #----------------------------------------------------------------------
-    def save_to_file(self):
+    def save_to_file(self, pcl_files, eve_file):
         """
-        Save the acquired date to pickle and also fif formats.
+        Save the acquired data of a stream.
         """
-        data = self.create_dict_to_save()
-        
         self.logger.info('Saving raw data ...')
-        qc.save_obj(self.pcl_file, data)
-        self.logger.info('Saved to %s\n' % self.pcl_file)
         
-        if os.path.exists(eve_file):
-            self.logger.info('Found matching event file, adding events.')
-        else:
-            eve_file = None
-        
-        self.logger.info('Converting raw file into fif.')
-        pcl2fif(self.pcl_file, external_event=self.eve_file)
-        
+        for i in range(self.nb_amps):
+            
+            signals, timestamps = self.get_buffer(i)
+            data = self.create_dict_to_save(signals, timestamps)
+            
+            qc.save_obj(pcl_files[i], data)
+            self.logger.info('Saved to %s\n' % pcl_files[i])
+            self.logger.info('Converting raw files into fif.')
+            
+            if os.path.exists(eve_file):
+                self.logger.info('Found matching event file, adding events.')
+                pcl2fif(pcl_files[i], external_event=eve_file)
+            else:
+                pcl2fif(pcl_files[i], external_event=None)
+ 
     #----------------------------------------------------------------------
-    def create_dict_to_save(self):
+    def create_dict_to_save(self, signals, timestamps):
         """
         Create a dictionnary containing the signals, its timestamps, the sampling rate,
-        the channels' names and the lsl offset.
-        """
-        signals, timestamps = self.get_buffer()
+        the channels' names and the lsl offset for each acquired streams.
+        """ 
+        
         
         data = {'signals':signals, 'timestamps':timestamps, 'events':None,
-                'sample_rate':self.sr.get_sample_rate(), 'channels':self.sr.get_num_channels(),
-                'ch_names':self.sr.get_channel_names(), 'lsl_time_offset':self.sr.buffers[-1].lsl_time_offset}
+                'sample_rate': self.sr.get_sample_rate(), 'channels':self.sr.get_num_channels(),
+                'ch_names':self.sr.get_channel_names(), 'lsl_time_offset':self.sr._buffers[-1].lsl_time_offset}
         
         return data
     
@@ -171,11 +200,14 @@ class _Recorder:
         """
         Start the recording and save to files the data in pickle and fif format.
         """
+        pcl_files, eve_file = self.create_files(self.record_dir)
+        
+        self.outlet = self.create_events_server(source_id=eve_file)
         self.logger.info('\n>> Recording started (PID %d).' % os.getpid())
         self.acquire()
         
         self.logger.info('>> Stop requested. Copying buffer')
-        self.save_to_file()
+        self.save_to_file(pcl_files, eve_file)
     
     #----------------------------------------------------------------------
     def acquire(self):
@@ -196,4 +228,4 @@ class _Recorder:
                 self.logger.info('RECORDING %s' % duration)
                 next_sec += 1
             tm.sleep_atleast(0.001)    
-        
+            
