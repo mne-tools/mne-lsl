@@ -27,24 +27,14 @@ class StreamReceiver:
     eeg_only : bool
         If true, ignore non-EEG servers.
     find_any : bool
-        If True, look for any kind of streams. If False, look only for USBamp, BioSemi, SmartBCI, openvibeSignal, openvibeMarkers, StreamPlayer.
-    
-    Attributes
-    ----------
-    streams : list
-        List of all the streams the receiver is connected to.
-    buffers : list
-        List containing the buffers associated to each connected streams.
-    ready : bool
-        The receiver's status, True when the buffers have been prefilled.
-             
+        If True, look for any kind of streams. If False, look only for USBamp, BioSemi, SmartBCI, openvibeSignal, openvibeMarkers, StreamPlayer. 
     """    
     #----------------------------------------------------------------------
     def __init__(self, window_size=1, buffer_size=1, amp_serial=None, eeg_only=False, amp_name=None, find_any=True):
         
         self._buffers = []
         self._streams = []
-        self.ready = False
+        self._ready = False
         
         self.connect(window_size, buffer_size, amp_name, amp_serial, eeg_only, find_any)
     
@@ -74,7 +64,7 @@ class StreamReceiver:
         self._streams = []
         
         self._connected = False
-        self.ready = False
+        self._ready = False
         
         server_found = False
                 
@@ -110,7 +100,7 @@ class StreamReceiver:
 
         # pre-fill in initial buffers
         self.pre_acquire()
-        self.ready = True
+        self._ready = True
         logger.info('Start receiving stream data.')
     
     #----------------------------------------------------------------------
@@ -162,7 +152,7 @@ class StreamReceiver:
     #----------------------------------------------------------------------
     def _wait_threads_to_finish(self, threads):
         """
-        Wait that all the threads are finished
+        Wait that all the threads finish.
         
         Parameters
         ----------
@@ -473,7 +463,7 @@ class StreamReceiver:
         bool
             True if the buffer is not empty.
         """
-        return self.ready
+        return self._ready
         
     
 """
