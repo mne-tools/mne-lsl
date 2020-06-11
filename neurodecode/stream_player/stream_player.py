@@ -78,7 +78,7 @@ class StreamPlayer:
         timeout : float
             Block until timeout is reached. If None, block until streaming is finished.
         """
-        self._process.join()
+        self._process.join(timeout)
         
     #----------------------------------------------------------------------
     def stop(self):
@@ -238,7 +238,6 @@ class Streamer:
             
             self._outlet.push_chunk(data)
             self._logger.debug('[%8.3fs] sent %d samples (LSL %8.3f)' % (time.perf_counter(), len(data), pylsl.local_clock()))
-            print('[%8.3fs] sent %d samples (LSL %8.3f)' % (time.perf_counter(), len(data), pylsl.local_clock()))
             
             self._log_event(chunk)
             idx_chunk += 1
@@ -366,7 +365,6 @@ class Streamer:
         else:
             # time.sleep() can have 500 us resolution using the tweak tool provided.
             t_wait = t_start + idx_chunk * t_chunk - time.time()
-            print(t_wait)
             if t_wait > 0.001:
                 time.sleep(t_wait)
 
@@ -460,15 +458,10 @@ if __name__ == '__main__':
         server_name = sys.argv[1]
     
     if len(sys.argv) == 1:
-        server_name = 'StreamPlayer'
         chunk_size = 16
         fif_file = str(Path(input("Provide the path to the .fif file to play: \n")))
+        server_name = input("Provide the server name displayed on LSL network: \n")
         trigger_file = None
     
-    # sp = Streamer(server_name, fif_file, chunk_size, trigger_file)
-    # sp.stream()
-    
-    sp = StreamPlayer(server_name, fif_file, chunk_size, trigger_file)
-    sp.start()
-    sp.wait(timeout=10)
-    sp.stop()
+    sp = Streamer(server_name, fif_file, chunk_size, trigger_file)
+    sp.stream()
