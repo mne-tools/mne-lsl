@@ -22,24 +22,20 @@ class StreamReceiver:
         1-day is the maximum size. Large buffer may lead to a delay if not pulled frequently.
     amp_name : str
         Connect to a server named 'amp_name'. None: no constraint.
-    amp_serial : str
-        Connect to a server with serial number 'amp_serial'. None: no constraint.
     eeg_only : bool
         If true, ignore non-EEG servers.
-    find_any : bool
-        If True, look for any kind of streams. If False, look only for USBamp, BioSemi, SmartBCI, openvibeSignal, openvibeMarkers, StreamPlayer. 
     """    
     #----------------------------------------------------------------------
-    def __init__(self, window_size=1, buffer_size=1, amp_serial=None, eeg_only=False, amp_name=None, find_any=True):
+    def __init__(self, window_size=1, buffer_size=1, amp_name=None, eeg_only=False):
         
         self._buffers = []
         self._streams = []
         self._ready = False
         
-        self.connect(window_size, buffer_size, amp_name, amp_serial, eeg_only, find_any)
+        self.connect(window_size, buffer_size, amp_name, eeg_only)
     
     #----------------------------------------------------------------------
-    def connect(self, window_size=1, buffer_size=1, amp_name=None, amp_serial=None, eeg_only=False, find_any=True):
+    def connect(self, window_size=1, buffer_size=1, amp_name=None, eeg_only=False):
         """
         Search for the available streams on the lsl network and connect to the appropriate ones.
         
@@ -53,12 +49,8 @@ class StreamReceiver:
             1-day is the maximum size. Large buffer may lead to a delay if not pulled frequently.
         amp_name : str
             Connect to a server named 'amp_name'. None: no constraint.
-        amp_serial : str
-            Connect to a server with serial number 'amp_serial'. None: no constraint.
         eeg_only : bool
             If true, ignore non-EEG servers.
-        find_any : bool
-            If True, look for any kind of streams. If False, look only for "USBamp", "BioSemi", "SmartBCI", "openvibeSignal", "openvibeMarkers", "StreamPlayer".
         """
         self._buffers = []
         self._streams = []
@@ -86,9 +78,6 @@ class StreamReceiver:
                         continue
                     # connect to a specific amp only?
                     if amp_name is not None and si.name() not in amp_name:
-                        continue
-                    # Accept unkown streams
-                    if find_any is False:
                         continue
                     
                     self._streams.append(_Stream(si, buffer_size))
@@ -481,7 +470,7 @@ if __name__ == '__main__':
 
     # connect to LSL server
     amp_name, amp_serial = pu.search_lsl()
-    sr = StreamReceiver(window_size=1, buffer_size=1, amp_name=amp_name, amp_serial=amp_serial, eeg_only=False)
+    sr = StreamReceiver(window_size=1, buffer_size=1, amp_name=amp_name, eeg_only=False)
     sfreq = sr.get_sample_rate()
     trg_ch = sr.get_trigger_channel()
     logger.info('Trigger channel = %d' % trg_ch)
