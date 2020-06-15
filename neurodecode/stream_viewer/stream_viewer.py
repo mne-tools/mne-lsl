@@ -35,7 +35,7 @@ class StreamViewer:
         logger.info('Connecting to a stream %s (Serial %s).' % (self.amp_name, self.amp_serial))
         
         app = QApplication(sys.argv)
-        ex = _Scope(self.amp_name, self.amp_serial)
+        ex = _Scope(self.amp_name)
         sys.exit(app.exec_())
 
     #----------------------------------------------------------------------
