@@ -44,14 +44,13 @@ class _Scope(QMainWindow):
     Load UI, data acquisition and ploting
     '''
     #----------------------------------------------------------------------
-    def __init__(self, amp_name, amp_serial, state=mp.Value('i', 1), queue=None):
+    def __init__(self, amp_name, state=mp.Value('i', 1), queue=None):
         '''
         Constructor
         '''
         super(_Scope, self).__init__()
 
         self.amp_name = amp_name
-        self.amp_serial = amp_serial
         self.state = state
         self.recordState = mp.Value('i', 0)
         
@@ -92,12 +91,11 @@ class _Scope(QMainWindow):
         self.scope_settings.read(str(path2_viewerFolder/'.scope_settings.ini'))
     
     #----------------------------------------------------------------------
-    def init_loop(self, window_size=0.2, buffer_size=1):
+    def init_loop(self, window_size=0.2, buffer_size=0.2):
         '''
         Instance a StreamReceiver and extract info from the stream
         '''
-        self.sr = StreamReceiver(window_size=window_size, buffer_size=buffer_size,
-                                 amp_serial=self.amp_serial, amp_name=self.amp_name)
+        self.sr = StreamReceiver(window_size=window_size, buffer_size=buffer_size, amp_name=self.amp_name)
 
         self.config = {
             'sf': int(self.sr.get_sample_rate()),
@@ -127,6 +125,8 @@ class _Scope(QMainWindow):
         
         self._ui.pushButton_stoprec.setEnabled(False)
         self._ui.comboBox_scale.setCurrentIndex(2)
+        
+        # self._ui.pushButton_bp.setDisabled(True)
         
         self.fill_table_channels()
         self.set_window_size_policy()
@@ -437,38 +437,29 @@ class _Scope(QMainWindow):
         '''
         Read EEG
         '''
+        # TODO: check and change to these two lines
+        self.sr.acquire(blocking=False)
+        data, self._ts_list = self.sr.get_buffer()
+        self.sr.reset_buffer()
 
-        try:
-            data, self._ts_list = self.sr.acquire(blocking=False)
-            
-            # TODO: check and change to these two lines
-            #self.sr.acquire(blocking=False, decim=DECIM)
-            #data, self._ts_list = self.sr.get_window()
-    
-            if len(self._ts_list) == 0:
-                return
-    
-            n = self.config['eeg_channels']
-            trg_ch = self.config['tri_channels']
-            if trg_ch is not None:
-                self.tri = np.reshape(data[:, trg_ch], (-1, 1))             # samples x 1
-            self.eeg = np.reshape(data[:, self.sr.get_eeg_channels()], (-1, n))   # samples x channels
-    
-            if DEBUG_TRIGGER:
-                # show trigger value
-                try:
-                    trg_value = max(self.tri)
-                    if trg_value > 0:
-                        logger.info('Received trigger %s' % trg_value)
-                except:
-                    logger.exception('Error! self.tri = %s' % self.tri)
-        except WindowsError:
-            # print('**** Access violation in read_eeg():\n%s\n%s'% (sys.exc_info()[0], sys.exc_info()[1]))
-            pass
-        except:
-            logger.exception()
-            pdb.set_trace()
+        if len(self._ts_list) == 0:
+            return
 
+        n = self.config['eeg_channels']
+        trg_ch = self.config['tri_channels']
+        if trg_ch is not None:
+            self.tri = np.reshape(data[:, trg_ch], (-1, 1))             # samples x 1
+        self.eeg = np.reshape(data[:, self.sr.get_eeg_channels()], (-1, n))   # samples x channels
+
+        if DEBUG_TRIGGER:
+            # show trigger value
+            try:
+                trg_value = max(self.tri)
+                if trg_value > 0:
+                    logger.info('Received trigger %s' % trg_value)
+            except:
+                logger.exception('Error! self.tri = %s' % self.tri)
+                
     #----------------------------------------------------------------------
     def filter_signal(self):
         '''
