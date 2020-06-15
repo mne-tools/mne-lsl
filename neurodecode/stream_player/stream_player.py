@@ -442,6 +442,9 @@ if __name__ == '__main__':
     import sys
     from pathlib import Path
     
+    chunk_size = 16
+    trigger_file = None
+    
     if len(sys.argv) > 5:
         raise RuntimeError("Too many arguments provided, maximum is 4.")
     
@@ -456,12 +459,12 @@ if __name__ == '__main__':
     
     if len(sys.argv) > 1:
         server_name = sys.argv[1]
+        if not fif_file:
+            fif_file = str(Path(input(">> Provide the path to the .fif file to play: \n")))
     
     if len(sys.argv) == 1:
-        chunk_size = 16
-        fif_file = str(Path(input("Provide the path to the .fif file to play: \n")))
-        server_name = input("Provide the server name displayed on LSL network: \n")
-        trigger_file = None
+        fif_file = str(Path(input(">> Provide the path to the .fif file to play: \n")))
+        server_name = input(">> Provide the server name displayed on LSL network: \n")
     
     sp = Streamer(server_name, fif_file, chunk_size, trigger_file)
     sp.stream()
