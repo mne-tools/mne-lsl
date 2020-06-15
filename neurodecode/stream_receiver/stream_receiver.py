@@ -62,10 +62,10 @@ class StreamReceiver:
                 
         while server_found == False:
             
-            if amp_name is None and amp_serial is None:
+            if amp_name is None:
                 logger.info("Looking for a streaming server...")
             else:
-                logger.info("Looking for %s (Serial %s) ..." % (amp_name, amp_serial))
+                logger.info("Looking for %s ..." % (amp_name))
                 
             streamInfos = pylsl.resolve_streams()
             
