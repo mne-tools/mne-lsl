@@ -42,9 +42,17 @@ class _Stream:
         
         self.streamInfo = streamInfo
         
-        _MAX_PYLSL_STREAM_BUFSIZE = 360     # max buffer size for pylsl.StreamInlet
-        inlet_bufsec = int(math.ceil(min(_MAX_PYLSL_STREAM_BUFSIZE, bufsec)))
-        self._inlet_bufsize = int(round(inlet_bufsec * streamInfo.nominal_srate()))
+        # _MAX_PYLSL_STREAM_BUFSIZE = 360     # max buffer size for pylsl.StreamInlet
+        # inlet_bufsec = int(math.ceil(min(_MAX_PYLSL_STREAM_BUFSIZE, bufsec)))
+        
+        # Check if irregular sample rate
+        if streamInfo.nominal_srate() > 0:
+            inlet_bufsec = bufsec
+            self._inlet_bufsize = int(round(inlet_bufsec * streamInfo.nominal_srate()))
+        else:
+            inlet_bufsec = int(round(bufsec * 100))
+            self._inlet_bufsize = inlet_bufsec
+            
         self.inlet = pylsl.StreamInlet(streamInfo, inlet_bufsec)
         
         self.amp_name = streamInfo.name()
@@ -63,16 +71,6 @@ class _Stream:
         self.create_ch_name_list()
         self.show_info(streamInfo)
 
-    def check_buffer_size(self, bufsec, max_buffer_size=86400):
-        """
-        Check that buffer's size is positive, smaller than max size
-        
-        parameters
-        -----------
-        buffer_size : float
-            The buffer size to verify [secs].
-        """
-        
     #----------------------------------------------------------------------     
     def show_info(self, streamInfo):
         """

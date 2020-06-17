@@ -437,10 +437,9 @@ class _Scope(QMainWindow):
         '''
         Read EEG
         '''
-        # TODO: check and change to these two lines
         self.sr.acquire(blocking=False)
         data, self._ts_list = self.sr.get_buffer()
-        self.sr.reset_buffer()
+        self.sr.reset_all_buffers()
 
         if len(self._ts_list) == 0:
             return
@@ -448,8 +447,8 @@ class _Scope(QMainWindow):
         n = self.config['eeg_channels']
         trg_ch = self.config['tri_channels']
         if trg_ch is not None:
-            self.tri = np.reshape(data[:, trg_ch], (-1, 1))             # samples x 1
-        self.eeg = np.reshape(data[:, self.sr.get_eeg_channels()], (-1, n))   # samples x channels
+            self.tri = np.reshape(data[:, trg_ch], (-1, 1))                     # samples x 1
+        self.eeg = np.reshape(data[:, self.sr.get_eeg_channels()], (-1, n))     # samples x channels
 
         if DEBUG_TRIGGER:
             # show trigger value

@@ -50,15 +50,17 @@ class StreamViewer:
     
 #----------------------------------------------------------------------
 if __name__ == '__main__':
-    if len(sys.argv) == 2:
-        amp_name = sys.argv[1]
-        amp_serial = None
-    elif len(sys.argv) == 3:
-        amp_name, amp_serial = sys.argv[1:3]
-    else:
-        amp_name, amp_serial = pu.search_lsl()
-    if amp_name == 'None':
-        amp_name = None
     
-    stream_viewer = StreamViewer(amp_name, amp_serial)
+    amp_name = None
+    
+    if len(sys.argv) > 2:
+        raise RuntimeError("Too many arguments provided, maximum is 1.")
+    
+    if len(sys.argv) > 1:
+        amp_name = sys.argv[1]
+        
+    if len(sys.argv) == 1:
+        amp_name, amp_serial = pu.search_lsl()
+    
+    stream_viewer = StreamViewer(amp_name)
     stream_viewer.run()
