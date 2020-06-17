@@ -38,11 +38,12 @@ from pathlib import Path
 mne.set_log_level('ERROR')
 
 
-def event_timestamps_to_indices(sigfile, eventfile, offset=0):
+def event_timestamps_to_indices(raw_timestamps, eventfile, offset=0):
     """
     Convert LSL timestamps to sample indices for separetely recorded events.
 
     Parameters:
+    raw_timestamps : The whole data's timestamps.  
     sigfile: raw signal file (Python Pickle) recorded with stream_recorder.py.
     eventfile: event file where events are indexed with LSL timestamps.
     offset: if the LSL server's timestamp is shifted, correct with offset value in seconds.
@@ -51,10 +52,8 @@ def event_timestamps_to_indices(sigfile, eventfile, offset=0):
     events list, which can be used as an input to mne.io.RawArray.add_events().
     """
 
-    raw = qc.load_obj(sigfile)
-    ts = raw['timestamps'].reshape(-1)
-    ts_min = min(ts)
-    ts_max = max(ts)
+    ts_min = min(raw_timestamps)
+    ts_max = max(raw_timestamps)
     events = []
 
     with open(eventfile) as f:
@@ -62,9 +61,9 @@ def event_timestamps_to_indices(sigfile, eventfile, offset=0):
             data = l.strip().split('\t')
             event_ts = float(data[0]) + offset
             event_value = int(data[2])
-            # find the first index not smaller than ts
-            next_index = np.searchsorted(ts, event_ts)
-            if next_index >= len(ts):
+            # find the first index not smaller than raw_timestamps
+            next_index = np.searchsorted(raw_timestamps, event_ts)
+            if next_index >= len(raw_timestamps):
                 logger.warning('Event %d at time %.3f is out of time range (%.3f - %.3f).' % (event_value, event_ts, ts_min, ts_max))
             else:
                 events.append([next_index, 0, event_value])
@@ -87,23 +86,43 @@ def convert2mat(filename, matfile):
             sys.exit()
 
 
-def pcl2fif(filename, interactive=False, outdir=None, external_event=None, offset=0, overwrite=False, precision='single'):
+def pcl2fif(filename, outdir=None, external_event=None, offset=0, overwrite=False, precision='single'):
     """
     neurodecode Python pickle file
 
     Params
-    --------
+    ------
     outdir: If None, it will be the subdirectory of the fif file.
     external_event: Event file in text format. Each row should be: "SAMPLE_INDEX 0 EVENT_TYPE"
     precision: Data matrix format. 'single' improves backward compatability.
     """
     fdir, fname, fext = qc.parse_path_list(filename)
     if outdir is None:
-        outdir = fdir + 'fif/'
+        outdir = fdir
     elif outdir[-1] != '/':
         outdir += '/'
 
     data = qc.load_obj(filename)
+        
+    raw, info = format_to_mne_RawArray(data)
+    
+    if external_event is not None:
+        add_events_from_txt(raw, external_event, offset)
+
+    qc.make_dirs(outdir)
+    fiffile = outdir + fname + '.fif'
+        
+    raw.save(fiffile, verbose=False, overwrite=overwrite, fmt=precision)
+    logger.info('Saved to %s' % fiffile)
+
+    saveChannels2txt(outdir, info["ch_names"])
+
+    return True
+
+def format_to_mne_RawArray(data):
+    """
+    Format the raw data to the mne rawArray structure.
+    """
 
     if type(data['signals']) == list:
         signals_raw = np.array(data['signals'][0]).T  # to channels x samples
@@ -118,26 +137,6 @@ def pcl2fif(filename, interactive=False, outdir=None, external_event=None, offse
 
     # search for event channel
     trig_ch = pu.find_event_channel(signals_raw, ch_names)
-
-    ''' TODO: REMOVE
-    # exception
-    if trig_ch is None:
-        logger.warning('Inferred event channel is None.')
-        if interactive:
-            logger.warning('If you are sure everything is alright, press Enter.')
-            input()
-
-    # fix wrong event channel
-    elif trig_ch_guess != trig_ch:
-        logger.warning('Specified event channel (%d) != inferred event channel (%d).' % (trig_ch, trig_ch_guess))
-        if interactive: input('Press Enter to fix. Event channel will be set to %d.' % trig_ch_guess)
-        ch_names.insert(trig_ch_guess, ch_names.pop(trig_ch))
-        trig_ch = trig_ch_guess
-        logger.info('New channel list:')
-        for c in ch_names:
-            logger.info('%s' % c)
-        logger.info('Event channel is now set to %d' % trig_ch)
-    '''
 
     # move trigger channel to index 0
     if trig_ch is None:
@@ -170,26 +169,23 @@ def pcl2fif(filename, interactive=False, outdir=None, external_event=None, offse
     # create Raw object
     raw = mne.io.RawArray(signals, info)
     raw._times = data['timestamps'] # seems to have no effect
+    
+    return raw, info
 
-    if external_event is not None:
-        raw._data[0] = 0  # erase current events
-        events_index = event_timestamps_to_indices(filename, external_event, offset)
-        if len(events_index) == 0:
-            logger.warning('No events were found in the event file')
-        else:
-            logger.info('Found %d events' % len(events_index))
-            raw.add_events(events_index, stim_channel='TRIGGER')
-
-    qc.make_dirs(outdir)
-    fiffile = outdir + fname + '.fif'
-
-    raw.save(fiffile, verbose=False, overwrite=overwrite, fmt=precision)
-    logger.info('Saved to %s' % fiffile)
-
-    saveChannels2txt(outdir, ch_names)
-
-    return True
-
+def add_events_from_txt(raw, external_event, offset=0):
+    """
+    Merge the events extracted from a txt file to the trigger channel.
+    """
+    raw._data[0] = 0  # erase current events
+    ts = raw['timestamps'].reshape(-1)        
+    events_index = event_timestamps_to_indices(ts, external_event, offset)
+    if len(events_index) == 0:
+        logger.warning('No events were found in the event file')
+    else:
+        logger.info('Found %d events' % len(events_index))
+        raw.add_events(events_index, stim_channel='TRIGGER')    
+    
+    return raw
 
 def eeg2fif(filename, interactive=False, outdir=None):
     """
