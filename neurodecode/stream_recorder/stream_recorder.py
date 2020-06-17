@@ -54,7 +54,7 @@ class StreamRecorder:
         Can redirect sys.stdout to a queue (e.g. used for GUI).
     """
     #----------------------------------------------------------------------
-    def __init__(self, record_dir=None, logger=logger, state=mp.Value('i', 0), queue=None):
+    def __init__(self, record_dir, bids_info=None, logger=logger, state=mp.Value('i', 0), queue=None):
         
         if record_dir is None:
             raise RuntimeError("No recording directory provided.")
@@ -64,13 +64,12 @@ class StreamRecorder:
         
         self._proc = None
         self._amp_name = None
-        self._amp_serial = None
         self._record_dir = record_dir
         
         self._state = state
     
     #----------------------------------------------------------------------
-    def start(self, amp_name=None, amp_serial=None, eeg_only=False):
+    def start(self, amp_name=None, eeg_only=False):
         """
         Start recording data from LSL network, in a new process.
         
@@ -78,15 +77,12 @@ class StreamRecorder:
         ----------
         amp_name : str
             Connect to a server named 'amp_name'. None: no constraint.
-        amp_serial : str
-            Connect to a server with serial number 'amp_serial'. None: no constraint.
         eeg_only : bool
             If true, ignore non-EEG servers.
         """
         self._amp_name = amp_name
-        self._amp_serial = amp_serial
         
-        self._proc = mp.Process(target=self._record, args=[amp_name, amp_serial, self._record_dir, eeg_only, self._logger, self._state])
+        self._proc = mp.Process(target=self._record, args=[amp_name, self._record_dir, bids_info, eeg_only, self._logger, self._state])
         self._proc.start()
     
     #----------------------------------------------------------------------
@@ -116,15 +112,13 @@ class StreamRecorder:
         self._logger.info('Recording finished.')
     
     #----------------------------------------------------------------------
-    def _record(self, amp_name, amp_serial, record_dir, eeg_only, logger, state):
+    def _record(self, amp_name, record_dir, bids_info, eeg_only, logger, state):
         """
         The function launched in a new process.
+                """
         
-        Instance _Recoder and record.
-        """
-        
-        recorder = _Recorder(record_dir, logger, state)
-        recorder.connect(amp_name, amp_serial, eeg_only)
+        recorder = _Recorder(record_dir, bids_info, logger, state)
+        recorder.connect(amp_name, eeg_only)
         recorder.record()
     
     #----------------------------------------------------------------------
@@ -164,27 +158,15 @@ class StreamRecorder:
     @property
     def amp_name(self):
         """
-        The amplifier's name associated with the recorded LSL stream.
+        The provided amp_name to connect to.
+        
+        If None, it will contain all available streams. 
         
         Returns
         -------
         str
         """
         return self._amp_name
-    
-   
-    #----------------------------------------------------------------------    
-    @property
-    def amp_serial(self):
-        """
-        The amplifier's serial associated with the recorded LSL stream.
-        
-        Returns
-        -------
-        str
-        """
-        return self._amp_serial
-    
     
     #----------------------------------------------------------------------    
     @property
@@ -198,7 +180,6 @@ class StreamRecorder:
         """
         return self._record_dir
     
-    
     #----------------------------------------------------------------------
     @process.setter
     def process(self):    
@@ -207,11 +188,6 @@ class StreamRecorder:
     #----------------------------------------------------------------------
     @amp_name.setter
     def amp_name(self):    
-        self._logger.warn("This attribute cannot be changed.")
-    
-    #----------------------------------------------------------------------
-    @amp_serial.setter
-    def amp_serial(self):    
         self._logger.warn("This attribute cannot be changed.")
     
     #----------------------------------------------------------------------
@@ -240,13 +216,9 @@ if __name__ == '__main__':
     from pathlib import Path
     
     amp_name = None
-    amp_serial = None
-    
-    if len(sys.argv) > 4:
-        raise RuntimeError("Too many arguments provided, maximum is 3.")
     
     if len(sys.argv) > 3:
-        amp_serial = sys.argv[3]
+        raise RuntimeError("Too many arguments provided, maximum is 3.")
     
     if len(sys.argv) > 2:
         amp_name = sys.argv[2]
@@ -256,8 +228,8 @@ if __name__ == '__main__':
     
     if len(sys.argv) == 1:
         record_dir = str(Path(input(">> Provide the path to save the .fif file: \n")))
-    
-    recorder = StreamRecorder(record_dir=record_dir) 
-    recorder.start(amp_name=amp_name, amp_serial=amp_serial, eeg_only=False)
+
+    recorder = StreamRecorder(record_dir) 
+    recorder.start(amp_name=amp_name, eeg_only=False)
     input(">> Press ENTER to stop the recording \n")
     recorder.stop()

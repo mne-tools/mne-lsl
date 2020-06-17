@@ -1,29 +1,34 @@
 import os
 import time
 import datetime
+from mne.io import read_raw_fif
+from mne_bids import make_bids_basename, write_raw_bids
 
 import neurodecode.utils.q_common as qc
-from neurodecode.utils.convert2fif import pcl2fif
+from neurodecode.utils.convert2fif import pcl2fif, add_events_from_txt
 from neurodecode.utils.cnbi_lsl import start_server
 from neurodecode.stream_receiver import StreamReceiver
+from neurodecode.triggers.trigger_def import trigger_def
 
 class _Recorder:
     """
     Base class for recording signals coming from an lsl stream.
     """
     #----------------------------------------------------------------------
-    def __init__(self, record_dir, logger, state):
+    def __init__(self, record_dir, bids_info, logger, state):
         self._MAX_BUFSIZE = 86400 
         
         self.record_dir = record_dir
+        self.bids_info = bids_info
         
         self.sr = None
+        self.nb_amps = 0
         self.amp_names = None
         self.state = state
         self.logger = logger
         
     #----------------------------------------------------------------------
-    def connect(self, amp_name, amp_serial, eeg_only):
+    def connect(self, amp_name, eeg_only):
         """
         Instance a StreamReceiver connecting to the appropriate lsl stream.
         
@@ -31,12 +36,10 @@ class _Recorder:
         ----------
         amp_name : str
                 Connect to a server named 'amp_name'. None: no constraint.
-        amp_serial : str
-            Connect to a server with serial number 'amp_serial'. None: no constraint.
         eeg_only : bool
             If true, ignore non-EEG servers.
         """   
-        self.sr = StreamReceiver(buffer_size=self._MAX_BUFSIZE, amp_name=amp_name, amp_serial=amp_serial, eeg_only=eeg_only)
+        self.sr = StreamReceiver(buffer_size=self._MAX_BUFSIZE, amp_name=amp_name, eeg_only=eeg_only)
         self.extract_connected_amp_names()
     
     #----------------------------------------------------------------------
@@ -72,11 +75,12 @@ class _Recorder:
         str
             The software events' file (txt format)
         """
-        pcl_files, eve_file = self.create_filenames(record_dir)
-        self.test_writability(record_dir, pcl_files)
-        self.logger.info('>> Record to file: %s', *pcl_files, sep='\n')
+        data_files, eve_file = self.create_filenames(record_dir)
+        self.test_writability(record_dir, data_files)
         
-        return pcl_files, eve_file
+        self.logger.info('>> Record to file: %s', *data_files, sep='\n')
+        
+        return data_files, eve_file
         
     #----------------------------------------------------------------------
     def create_filenames(self, record_dir):
@@ -97,11 +101,13 @@ class _Recorder:
         """
         timestamp = time.strftime('%Y%m%d-%H%M%S', time.localtime())
         eve_file = '%s/%s-eve.txt' % (record_dir, timestamp)
-        pcl_files = []
-        for i in range(len(self.sr._buffers)):
-            pcl_files.append("%s/%s-%s-raw.pcl" % (record_dir, timestamp, self.sr._streams[i].amp_name))
         
-        return pcl_files, eve_file    
+        data_files = []
+        
+        for i in range(len(self.sr._buffers)):
+            data_files.append("%s/%s-%s-raw.pcl" % (record_dir, timestamp, self.sr._streams[i].amp_name))
+        
+        return data_files, eve_file    
 
     #----------------------------------------------------------------------
     def test_writability(self, record_dir, pcl_files):
@@ -160,16 +166,40 @@ class _Recorder:
         return data, timestamps
     
     #----------------------------------------------------------------------
+    def save_to_bids(self, data_files, eve_file):
+        """
+        Save the data to BIDS structure using brainvision .eeg files.
+        """
+        self.logger.info('Saving data to BIDS...')
+        event_id = trigger_def(self.bids_info["trigger_file"])
+        
+        for i in range(len(data_files)):
+            
+            fif_file = os.path.splitext(data_files[i])[0] + ".fif"
+            raw = read_raw_fif(fif_file)
+            bids_file_name = make_bids_basename(subject=self.bids_info["subj_idx"], \
+                                               session=self.bids_info["session"], \
+                                               task=self.bids_info["task"], \
+                                               run=self.bids_info["run_idx"], \
+                                               recording=self.amp_names[i])             
+            
+            if os.path.exists(eve_file):
+                add_events_from_txt(raw, eve_file)
+                        
+            write_raw_bids(raw, bids_file_name, self.record_dir, event_id=event_id.by_name, \
+                        events_data=None, overwrite=True)        
+        
+    #----------------------------------------------------------------------
     def save_to_file(self, pcl_files, eve_file):
         """
-        Save the acquired data of a stream.
+        Save the acquired data to pcl and fif format.
         """
         self.logger.info('Saving raw data ...')
         
         for i in range(self.nb_amps):
             
             signals, timestamps = self.get_buffer(i)
-            data = self.create_dict_to_save(signals, timestamps)
+            data = self.create_dict_to_save(signals, timestamps, i)
             
             qc.save_obj(pcl_files[i], data)
             self.logger.info('Saved to %s\n' % pcl_files[i])
@@ -180,18 +210,34 @@ class _Recorder:
                 pcl2fif(pcl_files[i], external_event=eve_file)
             else:
                 pcl2fif(pcl_files[i], external_event=None)
+            
+            os.remove(pcl_files[i])
  
     #----------------------------------------------------------------------
-    def create_dict_to_save(self, signals, timestamps):
+    def save(self, data_files, eve_file):
+        """
+        Save the acquired data in .fif or bids format.
+        
+        Save to bids only if the bids info were provided.
+        """
+        self.save_to_file(data_files, eve_file)
+        
+        # if self.bids_info:
+        #    self.save_to_bids(data_files, eve_file)
+                    
+    #----------------------------------------------------------------------
+    def create_dict_to_save(self, signals, timestamps, stream_index):
         """
         Create a dictionnary containing the signals, its timestamps, the sampling rate,
         the channels' names and the lsl offset for each acquired streams.
-        """ 
-        
-        
-        data = {'signals':signals, 'timestamps':timestamps, 'events':None,
-                'sample_rate': self.sr.get_sample_rate(), 'channels':self.sr.get_num_channels(),
-                'ch_names':self.sr.get_channel_names(), 'lsl_time_offset':self.sr._buffers[-1].lsl_time_offset}
+        """
+        data = {'signals':signals,
+                'timestamps':timestamps,
+                'events':None,
+                'sample_rate': self.sr.get_sample_rate(stream_index),
+                'channels':self.sr.get_num_channels(stream_index),
+                'ch_names':self.sr.get_channel_names(stream_index),
+                'lsl_time_offset':self.sr.get_lsl_offset(stream_index)}
         
         return data
     
@@ -200,15 +246,15 @@ class _Recorder:
         """
         Start the recording and save to files the data in pickle and fif format.
         """
-        pcl_files, eve_file = self.create_files(self.record_dir)
+        data_files, eve_file = self.create_files(self.record_dir)
         
-        self.outlet = self.create_events_server(source_id=eve_file)
+        # self.outlet = self.create_events_server(source_id=eve_file)
         self.logger.info('\n>> Recording started (PID %d).' % os.getpid())
         self.acquire()
         
         self.logger.info('>> Stop requested. Copying buffer')
-        self.save_to_file(pcl_files, eve_file)
-    
+        self.save(data_files, eve_file)
+        
     #----------------------------------------------------------------------
     def acquire(self):
         """
