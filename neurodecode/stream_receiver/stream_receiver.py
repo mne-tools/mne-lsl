@@ -5,7 +5,7 @@ import numpy as np
 import neurodecode.utils.pycnbi_utils as pu
 from neurodecode import logger
 from neurodecode.stream_receiver._buffer import _Buffer
-from neurodecode.stream_receiver._stream import _Stream
+from neurodecode.stream_receiver._stream import _StreamEEG, _StreamMarker
 
 import neurodecode.utils.q_common as qc
 from threading import Thread
@@ -80,7 +80,10 @@ class StreamReceiver:
                     if amp_name is not None and si.name() not in amp_name:
                         continue
                     
-                    self._streams.append(_Stream(si, buffer_size))
+                    if si.type() == "eeg":
+                        self._streams.append(_StreamEEG(si, buffer_size))
+                    elif si.type() == "marker":
+                        self._streams.append(_StreamMarker(si, buffer_size))
                     self._buffers.append(_Buffer(si.nominal_srate(), buffer_size, window_size))        
                     server_found = True
             time.sleep(1)
