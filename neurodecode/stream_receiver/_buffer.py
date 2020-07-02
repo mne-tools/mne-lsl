@@ -1,48 +1,20 @@
 from neurodecode import logger
+from abc import ABC, abstractmethod
 
-                
-class _Buffer:
+class _Buffer(ABC):
     """
-    Class representing the receiver's buffer.
+    Abstract class representing a receiver's stream.
     
     Parameters
     ----------
-    sample_rate : Hertz
-        The sampling rate of the corresponding stream.
-    buffer_size : secs
-        1-day is the maximum size. Large buffer may lead to a delay if not pulled frequently.
-    window_size : secs
-        Extract the latest window_size seconds of the buffer.
-    
-    Attributes
-    ----------
-    data : list
-        Buffer's data [samples x channels].
-    timestamps : list
-        Data's timestamps [samples].
-    sample_rate : int
-        The sampling rate of the receiving stream [Hz].
-    bufsize : int
-        Buffer's size [samples].
-    winsize : int
-        Window's size [samples].
-    winsec: float
-            To extract the latest window_size of the buffer [secs].
-    bufsec : float
-            Buffer's size [secs]
     """
     #----------------------------------------------------------------------
-    def __init__(self, sample_rate, buffer_size=1, window_size=1,):
+    @abstractmethod
+    def __init__(self, sample_rate, buffer_size=1, window_size=1):
         
-        self.winsec = self.check_window_size(window_size)
-        self.bufsec= self.check_buffer_size(buffer_size)
         self.sample_rate = sample_rate
-        
-        self.winsize = self.convert_sec_to_samples(self.winsec)
-        self.bufsize = self.convert_sec_to_samples(self.bufsec)
-        
-        self.data = []
-        self.timestamps = []
+        self.winsec = self.check_window_size(window_size)
+        self.bufsec= self.check_buffer_size(buffer_size)        
     
     #----------------------------------------------------------------------
     def check_window_size(self, window_size):
@@ -92,6 +64,7 @@ class _Buffer:
         return buffer_size
     
     #----------------------------------------------------------------------
+    @abstractmethod
     def convert_sec_to_samples(self, winsec):
         """
         Convert a window's size from sec to samples
@@ -106,7 +79,65 @@ class _Buffer:
         samples
             The converted window's size.
         """
-        return int(round(winsec * self.sample_rate))        
+        
+                
+class _BufferEEG(_Buffer):
+    """
+    Class representing the receiver's buffer.
+    
+    Parameters
+    ----------
+    sample_rate : Hertz
+        The sampling rate of the corresponding stream.
+    buffer_size : secs
+        1-day is the maximum size. Large buffer may lead to a delay if not pulled frequently.
+    window_size : secs
+        Extract the latest window_size seconds of the buffer.
+    
+    Attributes
+    ----------
+    data : list
+        Buffer's data [samples x channels].
+    timestamps : list
+        Data's timestamps [samples].
+    sample_rate : int
+        The sampling rate of the receiving stream [Hz].
+    bufsize : int
+        Buffer's size [samples].
+    winsize : int
+        Window's size [samples].
+    winsec: float
+            To extract the latest window_size of the buffer [secs].
+    bufsec : float
+            Buffer's size [secs]
+    """
+    #----------------------------------------------------------------------
+    def __init__(self, sample_rate, buffer_size=1, window_size=1):
+        
+        super().__init__()
+        
+        self.winsize = self.convert_sec_to_samples(self.winsec)
+        self.bufsize = self.convert_sec_to_samples(self.bufsec)
+        
+        self.data = []
+        self.timestamps = []
+    
+    #----------------------------------------------------------------------
+    def convert_sec_to_samples(self, winsec):
+        """
+        Convert a window's size from sec to samples
+        
+        Parameters
+        -----------
+        winsec : float
+            The window's size [secs].
+        
+        Returns
+        --------
+        samples
+            The converted window's size.
+        """
+        return int(round(winsec * self.sample_rate))
     
     #----------------------------------------------------------------------
     def fill(self, data, tslist, lsl_clock=None):
