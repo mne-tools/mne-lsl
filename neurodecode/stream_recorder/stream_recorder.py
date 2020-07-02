@@ -69,7 +69,7 @@ class StreamRecorder:
         self._state = state
     
     #----------------------------------------------------------------------
-    def start(self, amp_name=None, eeg_only=False):
+    def start(self, amp_name=None, eeg_only=False, bids_info=None):
         """
         Start recording data from LSL network, in a new process.
         
