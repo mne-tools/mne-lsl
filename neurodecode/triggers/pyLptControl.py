@@ -255,7 +255,7 @@ class MockTrigger(object):
 
     def signal(self, value):
         logger.info('FAKE trigger signal %s' % value)
-        return Trues
+        return True
 
     def signal_off(self):
         logger.info('FAKE trigger value 0')
