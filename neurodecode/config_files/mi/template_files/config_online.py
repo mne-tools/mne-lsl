@@ -30,7 +30,7 @@ SHOW_RESULT = True          # show the classification result
 SHOW_TRIALS = True
 
 # feedback type can be 'BAR' or 'BODY'
-FEEDBACK_TYPE = 'BAR' # BAR | BODY
+FEEDBACK_TYPE = 'BAR' # BAR | BODY | COLORS 
 IMAGE_PATH = ''
 
 '''
