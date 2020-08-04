@@ -189,6 +189,10 @@ def run(cfg, state=mp.Value('i', 1), queue=None):
         from neurodecode.protocols.viz_bars import BarVisual
         visual = BarVisual(cfg.GLASS_USE, screen_pos=cfg.SCREEN_POS,
             screen_size=cfg.SCREEN_SIZE)
+    if cfg.FEEDBACK_TYPE == 'COLORS':
+        from neurodecode.protocols.viz_colors import ColorVisual
+        visual = ColorVisual(cfg.GLASS_USE, screen_pos=cfg.SCREEN_POS,
+            screen_size=cfg.SCREEN_SIZE)        
     elif cfg.FEEDBACK_TYPE == 'BODY':
         assert hasattr(cfg, 'FEEDBACK_IMAGE_PATH'), 'FEEDBACK_IMAGE_PATH is undefined in your config.'
         from neurodecode.protocols.viz_human import BodyVisual

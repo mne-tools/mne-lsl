@@ -30,7 +30,6 @@ import multiprocessing as mp
 import neurodecode.utils.q_common as qc
 import neurodecode.utils.pycnbi_utils as pu
 import neurodecode.triggers.pyLptControl as pyLptControl
-from neurodecode.protocols.viz_bars import BarVisual
 from neurodecode.triggers.trigger_def import trigger_def
 from neurodecode import logger
 from builtins import input
@@ -130,10 +129,19 @@ def run(cfg, state=mp.Value('i', 1), queue=None):
     timer_refresh = qc.Timer()
     t_dir = cfg.TIMINGS['DIR'] + random.uniform(-cfg.TIMINGS['DIR_RANDOMIZE'], cfg.TIMINGS['DIR_RANDOMIZE'])
     t_dir_ready = cfg.TIMINGS['READY'] + random.uniform(-cfg.TIMINGS['READY_RANDOMIZE'], cfg.TIMINGS['READY_RANDOMIZE'])
-
-    bar = BarVisual(cfg.GLASS_USE, screen_pos=cfg.SCREEN_POS, screen_size=cfg.SCREEN_SIZE)
-    bar.fill()
-    bar.glass_draw_cue()
+    
+    # bar visual object
+    if cfg.FEEDBACK_TYPE == 'BAR':
+        from neurodecode.protocols.viz_bars import BarVisual
+        visual = BarVisual(cfg.GLASS_USE, screen_pos=cfg.SCREEN_POS,
+            screen_size=cfg.SCREEN_SIZE)
+    if cfg.FEEDBACK_TYPE == 'COLORS':
+        from neurodecode.protocols.viz_colors import ColorVisual
+        visual = ColorVisual(cfg.GLASS_USE, screen_pos=cfg.SCREEN_POS,
+            screen_size=cfg.SCREEN_SIZE)
+        
+    visual.fill()
+    visual.glass_draw_cue()
 
     # start
     while trial <= num_trials:
@@ -143,51 +151,51 @@ def run(cfg, state=mp.Value('i', 1), queue=None):
         # segment= { 'cue':(s,e), 'dir':(s,e), 'label':0-4 } (zero-based)
         if event == 'start' and timer_trigger.sec() > cfg.TIMINGS['INIT']:
             event = 'gap_s'
-            bar.fill()
+            visual.fill()
             timer_trigger.reset()
             trigger.signal(cfg.tdef.INIT)
         elif event == 'gap_s':
             if cfg.TRIAL_PAUSE:
-                bar.put_text('Press any key')
-                bar.update()
+                visual.put_text('Press any key')
+                visual.update()
                 key = cv2.waitKey()
                 if key == keys['esc'] or not state.value:
                     break
-                bar.fill()
-            bar.put_text('Trial %d / %d' % (trial, num_trials))
+                visual.fill()
+            visual.put_text('Trial %d / %d' % (trial, num_trials))
             event = 'gap'
             timer_trigger.reset()
         elif event == 'gap' and timer_trigger.sec() > cfg.TIMINGS['GAP']:
             event = 'cue'
-            bar.fill()
-            bar.draw_cue()
+            visual.fill()
+            visual.draw_cue()
             trigger.signal(cfg.tdef.CUE)
             timer_trigger.reset()
         elif event == 'cue' and timer_trigger.sec() > cfg.TIMINGS['CUE']:
             event = 'dir_r'
             dir = dir_sequence[trial - 1]
             if dir == 'L':  # left
-                bar.move('L', 100, overlay=True)
+                visual.move('L', 100, overlay=True)
                 trigger.signal(cfg.tdef.LEFT_READY)
             elif dir == 'R':  # right
-                bar.move('R', 100, overlay=True)
+                visual.move('R', 100, overlay=True)
                 trigger.signal(cfg.tdef.RIGHT_READY)
             elif dir == 'U':  # up
-                bar.move('U', 100, overlay=True)
+                visual.move('U', 100, overlay=True)
                 trigger.signal(cfg.tdef.UP_READY)
             elif dir == 'D':  # down
-                bar.move('D', 100, overlay=True)
+                visual.move('D', 100, overlay=True)
                 trigger.signal(cfg.tdef.DOWN_READY)
             elif dir == 'B':  # both hands
-                bar.move('L', 100, overlay=True)
-                bar.move('R', 100, overlay=True)
+                visual.move('L', 100, overlay=True)
+                visual.move('R', 100, overlay=True)
                 trigger.signal(cfg.tdef.BOTH_READY)
             else:
                 raise RuntimeError('Unknown direction %d' % dir)
             timer_trigger.reset()
         elif event == 'dir_r' and timer_trigger.sec() > t_dir_ready:
-            bar.fill()
-            bar.draw_cue()
+            visual.fill()
+            visual.draw_cue()
             event = 'dir'
             timer_trigger.reset()
             timer_dir.reset()
@@ -205,7 +213,7 @@ def run(cfg, state=mp.Value('i', 1), queue=None):
                 raise RuntimeError('Unknown direction %d' % dir)
         elif event == 'dir' and timer_trigger.sec() > t_dir:
             event = 'gap_s'
-            bar.fill()
+            visual.fill()
             trial += 1
             logger.info('trial ' + str(trial - 1) + ' done')
             trigger.signal(cfg.tdef.BLANK)
@@ -217,27 +225,27 @@ def run(cfg, state=mp.Value('i', 1), queue=None):
         if event == 'dir':
             dx = min(100, int(100.0 * timer_dir.sec() / t_dir) + 1)
             if dir == 'L':  # L
-                bar.move('L', dx, overlay=True)
+                visual.move('L', dx, overlay=True)
             elif dir == 'R':  # R
-                bar.move('R', dx, overlay=True)
+                visual.move('R', dx, overlay=True)
             elif dir == 'U':  # U
-                bar.move('U', dx, overlay=True)
+                visual.move('U', dx, overlay=True)
             elif dir == 'D':  # D
-                bar.move('D', dx, overlay=True)
+                visual.move('D', dx, overlay=True)
             elif dir == 'B':  # Both
-                bar.move('L', dx, overlay=True)
-                bar.move('R', dx, overlay=True)
+                visual.move('L', dx, overlay=True)
+                visual.move('R', dx, overlay=True)
 
         # wait for start
         if event == 'start':
-            bar.put_text('Waiting to start')
+            visual.put_text('Waiting to start')
 
-        bar.update()
+        visual.update()
         key = 0xFF & cv2.waitKey(1)
         if key == keys['esc'] or not state.value:
             break
 
-    bar.finish()
+    visual.finish()
 
     with state.get_lock():
         state.value = 0
