@@ -149,7 +149,10 @@ class Feedback:
 
                 if self.cfg.SHOW_CUE is True:
                     if self.cfg.FEEDBACK_TYPE == 'BAR':
-                        self.viz.move(true_label, 100, overlay=False, barcolor='G')
+                        self.viz.move(true_label, 100, overlay=False)
+                    if self.cfg.FEEDBACK_TYPE == 'COLORS':
+                        self.viz.draw_cue(true_label)
+                        self.viz.move(true_label, 100, overlay=False)                        
                     elif self.cfg.FEEDBACK_TYPE == 'BODY':
                         self.viz.put_text(DIRS[true_label], 'R')
                     if true_label == 'L':  # left
