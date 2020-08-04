@@ -38,7 +38,9 @@ class Basic:
         # if lfreq == None: highpass
         # if hfreq == None: lowpass
     params5.update({'TP_FILTER': {'False':None, 'True':list}})                                     # None or [lfreq, hfreq]
+    params5.update({'TP_CHANNELS': list})
     params5.update({'NOTCH_FILTER': {'False':None, 'True':list}})         # None or list of values
+    params5.update({'NOTCH_CHANNELS': list})
 
     #-------------------------------------------
     # Parallel processing
