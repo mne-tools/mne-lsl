@@ -21,7 +21,7 @@ class Basic:
     # feedback type
     #-------------------------------------------
     params2 = dict()
-    params2.update({'FEEDBACK_TYPE': ('BAR', 'BODY')})
+    params2.update({'FEEDBACK_TYPE': ('BAR', 'BODY', 'COLORS')})
     params2.update({'FEEDBACK_IMAGE_PATH': str})
     params2.update({'REFRESH_RATE': int})              # Maximum refresh rate in Hz
 
@@ -63,6 +63,6 @@ class Advanced:
     # Screen property
     #-------------------------------------------
     params4 = dict()
-    params4.update({'SCREEN_SIZE': ((1920, 1080), (1600, 1200), (1680, 1050), (1280, 1024), (1024, 768))})
+    params4.update({'SCREEN_SIZE': ((1920, 1200), (1920, 1080), (1600, 1200), (1680, 1050), (1280, 1024), (1024, 768))})
     params4.update({'SCREEN_POS': ((0, 0), (1920, 0))}) # TO CHANGE: add a check box second monitor and auto display on it. 
     
