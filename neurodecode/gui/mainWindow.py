@@ -400,7 +400,7 @@ class MainWindow(QMainWindow):
             self.m.check_config(self.cfg_subject)
             
         except Exception as e:
-            # print(traceback.format_exc())
+            print(traceback.format_exc())
             self.signal_error[str].emit(str(e))
 
     @pyqtSlot(str, str)
