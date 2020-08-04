@@ -24,9 +24,11 @@ REREFERENCE = {'selected':'False', 'False':None, 'True':dict(New=[''], Old=['', 
 # Filters
 #-------------------------------------------
 SP_FILTER = 'car'
-SP_CHANNELS = PICKED_CHANNELS
+SP_CHANNELS = []
 TP_FILTER = {'selected':'False', 'False':None, 'True':[1, 40]}
+TP_CHANNELS = []
 NOTCH_FILTER = {'selected':'False', 'False':None, 'True':[50]}
+SP_CHANNELS = []
 
 #-------------------------------------------
 # Unit conversion
@@ -59,6 +61,8 @@ CV_PERFORM =   {'selected':'StratifiedShuffleSplit', \
                 'False':None, \
                 'StratifiedShuffleSplit': dict(test_ratio=0.2, folds=8, seed=0, export_result=True), \
                 'LeaveOneOut': dict(export_result=False)}
+
+CV = {'IGNORE_THRES': None, 'DECISION_THRES': None, 'BALANCE_SAMPLES': False}
 
 #-------------------------------------------
 # Parallel processing
