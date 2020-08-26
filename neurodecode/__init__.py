@@ -13,4 +13,4 @@ from neurodecode.logger import init_logger
 logging.getLogger('matplotlib').setLevel(logging.ERROR)
 logger  = logging.getLogger('neurodecode')
 logger.propagate = False
-init_logger(logger)
+init_logger(logger, verbose_console='INFO')
