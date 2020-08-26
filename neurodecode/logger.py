@@ -22,6 +22,7 @@ def init_logger(logger, verbose_console='INFO'):
     verbose_console = logger verbosity
     '''
     if not logger.hasHandlers():
+        logger.setLevel(verbose_console)
         add_logger_handler(logger, sys.stdout, verbosity=verbose_console)
 
     '''
