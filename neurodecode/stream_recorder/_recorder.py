@@ -56,7 +56,7 @@ class _Recorder:
         self.amp_names = []
         
         for s in self.sr._streams:
-            self.amp_names.append(s.amp_name) 
+            self.amp_names.append(s.name) 
             
     #----------------------------------------------------------------------
     def create_files(self, record_dir):
@@ -105,7 +105,7 @@ class _Recorder:
         data_files = []
         
         for i in range(len(self.sr._buffers)):
-            data_files.append("%s/%s-%s-raw.pcl" % (record_dir, timestamp, self.sr._streams[i].amp_name))
+            data_files.append("%s/%s-%s-raw.pcl" % (record_dir, timestamp, self.sr._streams[i].name))
         
         return data_files, eve_file    
 

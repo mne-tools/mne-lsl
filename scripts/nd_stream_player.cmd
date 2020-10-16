@@ -9,7 +9,7 @@ if not "%1" == "" (
 	) else (
 		set chunk=%2
 	)
-    python -c "if __name__ == '__main__': import neurodecode.stream_player.stream_player as m; m.stream_player('StreamPlayer', '!fif!', !chunk!)"
+    python -c "if __name__ == '__main__': from neurodecode.stream_player import Streamer; sp = Streamer('StreamPlayer', '!fif!', !chunk!); sp.stream()"
     pause
 ) else (
     echo Usage: %0 {fif_file} [chunk_size=16]
