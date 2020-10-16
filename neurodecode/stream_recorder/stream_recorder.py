@@ -183,17 +183,17 @@ class StreamRecorder:
     #----------------------------------------------------------------------
     @process.setter
     def process(self):    
-        self._logger.warn("This attribute cannot be changed.")    
+        self._logger.warning("This attribute cannot be changed.")    
     
     #----------------------------------------------------------------------
     @amp_name.setter
     def amp_name(self):    
-        self._logger.warn("This attribute cannot be changed.")
+        self._logger.warning("This attribute cannot be changed.")
     
     #----------------------------------------------------------------------
     @record_dir.setter
     def record_dir(self):    
-        self._logger.warn("This attribute cannot be changed.")    
+        self._logger.warning("This attribute cannot be changed.")    
     
     #----------------------------------------------------------------------
     @property 
@@ -208,7 +208,7 @@ class StreamRecorder:
         """
         Multiprocessing sharing variable to stop the recording from another process 
         """
-        self._logger.warn("This attribute cannot be changed.")    
+        self._logger.warning("This attribute cannot be changed.")    
 
 #----------------------------------------------------------------------
 if __name__ == '__main__':

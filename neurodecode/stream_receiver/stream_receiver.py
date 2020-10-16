@@ -2,75 +2,72 @@ import time
 import pylsl
 import numpy as np
 
-import neurodecode.utils.pycnbi_utils as pu
+from threading import Thread
 from neurodecode import logger
-from neurodecode.stream_receiver._buffer import _Buffer
-from neurodecode.stream_receiver._stream import _StreamEEG, _StreamMarker
+from neurodecode.stream_receiver import StreamEEG, StreamMarker
 
 import neurodecode.utils.q_common as qc
-from threading import Thread
 
 class StreamReceiver:
     """
-    Class for data acquisition from lsl streams.
+    Class for data acquisition from LSL streams.
+    
+    It now supports eeg and markers streams.
         
     Parameters
     ----------
-    window_size : secs
-        To extract the latest window_size seconds of the buffer.
-    buffer_size : secs
-        1-day is the maximum size. Large buffer may lead to a delay if not pulled frequently.
+    window_size : float
+        To extract the latest window_size seconds of the buffer [secs].
+    buffer_size : float
+        1-day is the maximum size. Large buffer may lead to a delay if not pulled frequently [secs].
     amp_name : str
         Connect to a server named 'amp_name'. None: no constraint.
     eeg_only : bool
         If true, ignore non-EEG servers.
-    """    
+    """
     #----------------------------------------------------------------------
     def __init__(self, window_size=1, buffer_size=1, amp_name=None, eeg_only=False):
         
-        self._buffers = []
         self._streams = []
-        self._ready = False
+        self._is_connected = False
         
         self.connect(window_size, buffer_size, amp_name, eeg_only)
     
     #----------------------------------------------------------------------
     def connect(self, window_size=1, buffer_size=1, amp_name=None, eeg_only=False):
         """
-        Search for the available streams on the lsl network and connect to the appropriate ones.
+        Search for the available streams on the LSL network and connect to the appropriate ones.
+        If a LSL stream fullfills the requirements (name...), a connection is established.
         
-        If a lsl stream fullfills the requirements (name, serial...), a connection is done.
+        This function is called while instanciating a StreamReceiver and call be recall to connect
+        to new LSL streams.
         
         Parameters
         ----------
-        window_size : secs
-            To extract the latest window_size seconds of the buffer.
-        buffer_size : secs
-            1-day is the maximum size. Large buffer may lead to a delay if not pulled frequently.
-        amp_name : str
-            Connect to a server named 'amp_name'. None: no constraint.
+        window_size : float
+            To extract the latest window_size seconds of the buffer [secs].
+        buffer_size : float
+            1-day is the maximum size. Large buffer may lead to a delay if not pulled frequently [secs].
+        amp_name : list
+            List of servers' name to connect to. None: no constraint.
         eeg_only : bool
             If true, ignore non-EEG servers.
         """
-        self._buffers = []
         self._streams = []
         
-        self._connected = False
-        self._ready = False
-        
+        self._is_connected = False        
         server_found = False
                 
         while server_found == False:
             
             if amp_name is None:
-                logger.info("Looking for a streaming server...")
+                logger.info("Looking for available lsl streaming servers...")
             else:
-                logger.info("Looking for %s ..." % (amp_name))
+                logger.info("Looking for server: {} ..." .format(amp_name))
                 
             streamInfos = pylsl.resolve_streams()
             
             if len(streamInfos) > 0:
-                # For now, only 1 amp is supported by a single StreamReceiver object.
                 for si in streamInfos:
                     
                     # EEG streaming server only?
@@ -80,46 +77,35 @@ class StreamReceiver:
                     if amp_name is not None and si.name() not in amp_name:
                         continue
                     
-                    if si.type() == "eeg":
-                        self._streams.append(_StreamEEG(si, buffer_size))
-                    elif si.type() == "marker":
-                        self._streams.append(_StreamMarker(si, buffer_size))
-                    self._buffers.append(_Buffer(si.nominal_srate(), buffer_size, window_size))        
+                    if si.type().lower() == "eeg":
+                        self._streams.append(StreamEEG(si, buffer_size, window_size))
+                    
+                    elif si.nominal_srate() == 0:
+                        self._streams.append(StreamMarker(si, buffer_size, window_size))
+                    
                     server_found = True
             time.sleep(1)
-            
-        self._connected = True
-
-        # pre-fill in initial buffers
-        self.pre_acquire()
-        self._ready = True
-        logger.info('Start receiving stream data.')
+        
+        self.show_info()
+        
+        self.acquire()
+        self._is_connected = True
+        logger.info('Ready to receive data from the connected streams.')
+    
     
     #----------------------------------------------------------------------
-    def _acquire(self, blocking=True, stream_index=0):
+    def show_info(self):
         """
-        Read data from one stream and fill its buffer.
-        
-        It is a blocking function as default.
-        
-        Parameters
-        ----------
-        blocking : bool
-            If True, the stream waits to receive some data. Othewise, return an empty list.
-        stream_index : int
-            The index of the stream to acquire the data.
+        Display the informations about all the connected streams
         """
-        timestamp_offset = False
-        
-        if len(self._buffers[stream_index].timestamps) == 0:
-            logger.info('Acquisition from: %s (%s)' % (self._streams[stream_index].amp_name, self._streams[stream_index].amp_serial))
-            timestamp_offset = True
-
-        data, tslist, lsl_clock = self._streams[stream_index].acquire(blocking, timestamp_offset)
-        self._buffers[stream_index].fill(data, tslist, lsl_clock)
+        for i in range(len(self.streams)):
+            logger.info("----------------------------------------------------------------")
+            logger.info("The stream {} is connected to:".format(i))
+            self.streams[i].show_info()
+            # logger.info("----------------------------------------------------------------\n")
             
     #----------------------------------------------------------------------
-    def acquire(self, blocking=True):
+    def acquire(self, blocking=True, timestamp_offset = False):
         """
         Read data from each streams and fill their buffer using threading.
         
@@ -133,14 +119,157 @@ class StreamReceiver:
         threads = []
         
         for i in range(len(self._streams)):
-            t = Thread(target=self._acquire, args=[blocking, i])
+            t = Thread(target=self._acquire, args=[blocking, i, timestamp_offset])
             t.daemon = True
             t.start()
-        threads.append(t)
+            threads.append(t)
         
         if blocking is True:
             self._wait_threads_to_finish(threads)
+             
+    #----------------------------------------------------------------------
+    def get_window(self, stream_index=0):
+        """
+        Get the latest window of a stream in numpy format.
+
+        Parameters
+        ----------
+        stream_index : int
+            The index of the stream to get the window (default = 0).
+
+        Returns
+        -------
+        np.array
+             The window data [[samples_ch1],[samples_ch2]...]
+        np.array
+             The timestamps [samples]
+        """
+        self.is_connected
+        window, timestamps = self._get_window_list()
+
+        if len(timestamps) > 0:
+            return np.array(window), np.array(timestamps)
+        else:
+            return np.array([]), np.array([])
+        
+    ##----------------------------------------------------------------------
+    #def _get_buffer_list(self, stream_index=0):
+        #"""
+        #Get the entire buffer of a stream.
+        
+        #Parameters
+        #----------
+        #stream_index : int
+            #The index of the stream to get the buffer.
+        
+        #Returns
+        #--------
+        #list
+            #The buffer data [samples x channels]
+        #list
+            #Its timestamps [samples]
+        #"""
+        #self.is_connected()
+        #return self._buffers[stream_index].data, self._buffers[stream_index].timestamps
+    
+    #----------------------------------------------------------------------
+    def get_buffer(self, stream_index=0):
+        """
+        Get the entire buffer of a stream in numpy format.
+        
+        Parameters
+        ----------
+        stream_index : int
+            The index of the stream to get the buffer (default = 0).
+
+        Returns
+        -------
+        np.array
+            The data [[samples_ch1],[samples_ch2]...]
+        np.array
+            Its timestamps [samples]
+        """
+        self.is_connected
+        
+        if len(self.streams[stream_index].buffer.timestamps) > 0:
+            return np.array(self.streams[stream_index].buffer.data), np.array(self.streams[stream_index].buffer.timestamps)
+        else:
+            return np.array([]), np.array([])
+    
+    #----------------------------------------------------------------------
+    def reset_buffer(self, stream_index=0):
+        """
+        Clear the buffer of a stream.
+                
+        Parameters
+        ----------
+        stream_index : int
+            The index of the stream to get the buffer (default = 0).
+        """
+        self.streams[stream_index].buffer.reset_buffer()
+        
+    #----------------------------------------------------------------------
+    def reset_all_buffers(self):
+        """
+        Clear the buffer of all the streams.
+        """
+        for i in range(len(self._streams)):
+            self.streams[i].buffer.reset_buffer()
             
+    #----------------------------------------------------------------------
+    def _get_window_list(self, stream_index=0):
+        """
+        Get the latest window from a buffer.
+        
+        Parameters
+        -----------
+        stream_index : int
+            The index of the stream to get the window (default = 0).
+        
+        Returns
+        --------
+        list
+            The window data [samples][channels]
+        list
+            timestamps [samples]
+        """
+        self.is_connected
+        winsize = self.streams[stream_index].buffer.winsize
+        
+        try:
+            window = self.streams[stream_index].buffer.data[-winsize:]
+            timestamps = self.streams[stream_index].buffer.timestamps[-winsize:]
+        except IndexError:
+            logger.warning("The buffer of {} does not contain enough samples" .format(self._streams[stream_index].name))
+            
+        
+        return window, timestamps    
+    #----------------------------------------------------------------------
+    def _acquire(self, blocking=True, stream_index=0, timestamp_offset = False):
+        """
+        Function called by acquire() in thread.
+        
+        Parameters
+        ----------
+        blocking : bool
+            If True, the stream waits to receive some data. Othewise, return an empty list.
+        stream_index : int
+            The index of the stream to acquire the data.
+        """        
+        if len(self.streams[stream_index].buffer.timestamps) == 0:
+            timestamp_offset = True
+
+        data, tslist, lsl_clock = self._streams[stream_index].acquire(blocking, timestamp_offset)
+        self.streams[stream_index].buffer.fill(data, tslist, lsl_clock)
+                
+        if lsl_clock is None:
+            pass
+        elif abs(self.streams[stream_index].buffer.lsl_time_offset) > 0.1:
+            logger.warning('LSL server {}({}) has a high timestamp offset.'.format(self.streams[stream_index].name, self._streams[stream_index].serial))
+        else:
+            logger.info('LSL time server {}({}) synchronized [offset={:.3f}]'.format(self.streams[stream_index].name, self._streams[stream_index].serial, \
+                                                                                    self.streams[stream_index].buffer.lsl_time_offset))          
+    
     #----------------------------------------------------------------------
     def _wait_threads_to_finish(self, threads):
         """
@@ -161,302 +290,42 @@ class StreamReceiver:
             threads = [t for t in threads if not t.handled]          
     
     #----------------------------------------------------------------------
-    def _pre_acquire(self, stream_index=0):
-        """
-        Prefill the buffer with at least winsize elements.
-        
-        It is a blocking function as default.
-        
-        Parameters
-        ----------
-        stream_index : int
-            The index of the stream to acquire the data.
-        """
-        logger.info('Waiting to fill initial buffer for stream {}({})'.format(self._streams[stream_index].amp_name, self._streams[stream_index].amp_serial))
-        
-        while len(self._buffers[stream_index].timestamps) < self._buffers[stream_index].winsize:
-            self._acquire(blocking=True, stream_index=stream_index)
-    
-    #----------------------------------------------------------------------
-    def pre_acquire(self):
-        """
-        Prefill all the buffers with at least winsize elements.
-        
-        It is a blocking function.
-        """        
-        for i in range(len(self._streams)):
-            t = Thread(target=self._pre_acquire, args=[i])
-            t.daemon = True
-            t.start()
-        
-    #----------------------------------------------------------------------
-    def check_connect(self):
+    @property
+    def is_connected(self):
         """
         Check the connections status and automatically connect if not connected.
         """
-        while not self._connected:
-            logger.error('LSL server not _connected yet. Trying to connect automatically.')
+        while not self._is_connected:
+            logger.error('No LSL servers connected yet. Trying to connect automatically.')
             self.connect()
             time.sleep(1)
-    
-    #----------------------------------------------------------------------
-    def set_window_size(self, window_size, stream_index=0):
-        """
-        Set the window size for a buffer.
         
-        Parameters
-        -----------
-        window_size : secs
-            The new window's size.
-        stream_index : int
-            The index of the stream to modify its buffer parameter (default = 0).
-        """
-        self.check_connect()
-        window_size = self._buffers[stream_index].check_window_size(window_size)
+        self._is_connected = True
         
-        self._buffers[stream_index].winsize = window_size
-        self._buffers[stream_index].winsec = self._streams[stream_index].convert_sec_to_samples(window_size)
+        #logger.info("Connected to the LSL servers: ")
+        #for s in self.streams:
+            #logger.info("- "+s.name)
             
-    #----------------------------------------------------------------------
-    def get_channel_names(self, stream_index=0):
-        """
-        Get the channels' list of a stream.
-        
-        Parameters
-        -----------
-        stream_index : int
-            The index of the stream to get the channels (default = 0).
-        """
-        return self._streams[stream_index].ch_list
+        return self._is_connected
     
     #----------------------------------------------------------------------
-    def get_window_list(self, stream_index=0):
-        """
-        Get the latest window from a buffer.
-        
-        Parameters
-        -----------
-        stream_index : int
-            The index of the stream to get the window (default = 0).
-        
-        Returns
-        --------
-        list
-            The window data [samples][channels]
-        list
-            timestamps [samples]
-        """
-        self.check_connect()
-        winsize = self._buffers[stream_index].winsize
-        
-        window = self._buffers[stream_index].data[-winsize:]
-        timestamps = self._buffers[stream_index].timestamps[-winsize:]
-        
-        return window, timestamps    
-    #----------------------------------------------------------------------
-    def get_window(self, stream_index=0):
-        """
-        Get the latest window and timestamps  of a stream in numpy format.
-
-        Parameters
-        ----------
-        stream_index : int
-            The index of the stream to get the window (default = 0).
-
-        Returns
-        -------
-        np.array
-             The window data [[samples_ch1],[samples_ch2]...]
-        np.array
-             The timestamps [samples]
-        """
-        self.check_connect()
-        window, timestamps = self.get_window_list()
-
-        if len(timestamps) > 0:
-            return np.array(window), np.array(timestamps)
-        else:
-            return np.array([]), np.array([])    
-    #----------------------------------------------------------------------
-    def get_buffer_list(self, stream_index=0):
-        """
-        Get the entire buffer of a stream.
-        
-        Parameters
-        ----------
-        stream_index : int
-            The index of the stream to get the buffer.
-        
-        Returns
-        --------
-        list
-            The buffer data [samples x channels]
-        list
-            Its timestamps [samples]
-        """
-        self.check_connect()
-        return self._buffers[stream_index].data, self._buffers[stream_index].timestamps    
-    #----------------------------------------------------------------------
-    def get_buffer(self, stream_index=0):
-        """
-        Get the entire buffer of a stream in numpy format.
-        
-        Parameters
-        ----------
-        stream_index : int
-            The index of the stream to get the buffer (default = 0).
-
-        Returns
-        -------
-        np.array
-            The data [[samples_ch1],[samples_ch2]...]
-        np.array
-            Its timestamps [samples]
-        """
-        self.check_connect()
-        
-        if len(self._buffers[stream_index].timestamps) > 0:
-            return np.array(self._buffers[stream_index].data), np.array(self._buffers[stream_index].timestamps)
-        else:
-            return np.array([]), np.array([])
+    @is_connected.setter
+    def is_connected(self, is_it):
+        logger.warning("This attribute cannot be modified.")
     
     #----------------------------------------------------------------------
-    def get_buflen(self, stream_index=0):
+    @property
+    def streams(self):
         """
-        Return buffer length in seconds.
-        
-        Parameters
-        ----------
-        stream_index : int
-            The index of the stream to get the buffer's length(default = 0).
-
-        Returns
-        -------
-        int
-            Buffer's length
+        The list of connected streams. They can be eeg or markers type.
         """
-        return self._buffers[stream_index].get_buflen()
-    #----------------------------------------------------------------------
-    def get_sample_rate(self, stream_index=0):
-        """
-        Get the sampling rate of a stream.
-        
-        Parameters
-        ----------
-        stream_index : int
-            The index of the stream to get the buffer (default = 0).
-
-        Returns
-        -------
-        int
-            The sampling rate
-        """
-        return self._buffers[stream_index].get_sample_rate()
-    #----------------------------------------------------------------------
-    def get_num_channels(self, stream_index=0):
-        """
-        Get the total number of channels including the trigger channel.
-        
-        Parameters
-        ----------
-        stream_index : int
-            The index of the stream to get the buffer (default = 0).
-
-        Returns
-        -------
-        int
-            The number of channels
-        """
-        return self._streams[stream_index].get_num_channels()
-    #----------------------------------------------------------------------
-    def get_eeg_channels(self, stream_index=0):
-        """
-        Get the eeg channels list.
-        
-        Parameters
-        ----------
-        stream_index : int
-            The index of the stream to get the eeg channels (default = 0).
-
-        Returns
-        -------
-        list
-            The channels list
-        """
-        return self._streams[stream_index].get_eeg_channels()    
+        return self._streams
     
     #----------------------------------------------------------------------
-    def get_trigger_channel(self, stream_index=0):
-        """
-        Get trigger channel index (0-based index).
-        
-        Parameters
-        ----------
-        stream_index : int
-            The index of the stream to get the buffer (default = 0).
-            
-        Returns
-        -------
-        int
-            The trigger channel index
-        """        
-        return self._streams[stream_index].get_trigger_channel()
+    @streams.setter
+    def streams(self, new_streams):
+        logger.warning("The connected streams cannot be modified directly.")
     
-    #----------------------------------------------------------------------
-    def get_lsl_offset(self, stream_index=0):
-        """
-        Get the time difference between the acquisition server's time and LSL time.
-
-        OpenVibe servers often have a bug of sending its own running time instead of LSL time.
-        
-        Parameters
-        ----------
-        stream_index : int
-            The index of the stream to get the buffer (default = 0).
-        
-        Returns
-        -------
-        float
-            The lsl offset
-        """
-        return self._buffers[stream_index].get_lsl_offset()
-    
-    #----------------------------------------------------------------------
-    def reset_buffer(self, stream_index=0):
-        """
-        Clear the buffer of a stream.
-        
-        After call pre-acquire() to fill the buffer with at least winsize elements.
-        
-        Parameters
-        ----------
-        stream_index : int
-            The index of the stream to get the buffer (default = 0).
-        """
-        self._buffers[stream_index].reset_buffer()
-        
-    #----------------------------------------------------------------------
-    def reset_all_buffers(self):
-        """
-        Clear the buffer of all the streams.
-        
-        Call pre-acquire() after to fill the buffers with at least winsize elements.
-        """
-        for i in range(len(self._streams)):
-            self._buffers[i].reset_buffer()
-            
-    #----------------------------------------------------------------------
-    def is_ready(self):
-        """
-        Get the receiver's status. True when buffers are prefilled.
-        
-        Returns
-        -------
-        bool
-            True if the buffer is not empty.
-        """
-        return self._ready
-        
     
 """
 Example code for printing out raw values
@@ -464,34 +333,41 @@ Example code for printing out raw values
 if __name__ == '__main__':
     import mne
     import os
-
-    CH_INDEX = [1] # channel to monitor
-    TIME_INDEX = None # integer or None. None = average of raw values of the current window
+    from neurodecode.utils.q_common import Timer 
+    
+    stream_index = 0                            # Stream of interest
+    CH_INDEX = [1]                              # Channel of interest
+    TIME_INDEX = None                           # integer or None. None = average of raw values of the current window
     SHOW_PSD = False
+    
     mne.set_log_level('ERROR')
-    os.environ['OMP_NUM_THREADS'] = '1' # actually improves performance for multitaper
-
+    os.environ['OMP_NUM_THREADS'] = '1'         # actually improves performance for multitaper
+    
     # connect to LSL server
-    amp_name, amp_serial = pu.search_lsl()
-    sr = StreamReceiver(window_size=1, buffer_size=1, amp_name=amp_name, eeg_only=False)
-    sfreq = sr.get_sample_rate()
-    trg_ch = sr.get_trigger_channel()
-    logger.info('Trigger channel = %d' % trg_ch)
-
+    sr = StreamReceiver(window_size=0.5, buffer_size=1, amp_name=None, eeg_only=False)
+    
+    
+    stream_index = int(input("Provide the stream index of the stream you want to acquire \n>> "))
+    
+    sfreq = sr.streams[stream_index].sample_rate
+    trg_ch = 0                                  # trg channels is always at index 0
+    
     # PSD init
     if SHOW_PSD:
         psde = mne.decoding.PSDEstimator(sfreq=sfreq, fmin=1, fmax=50, bandwidth=None, \
             adaptive=False, low_bias=True, n_jobs=1, normalization='length', verbose=None)
 
-    watchdog = qc.Timer()
     tm = qc.Timer(autoreset=True)
     last_ts = 0
+    
+    tm_classify = Timer(autoreset=True)
+    
     while True:
-        sr.acquire()
-        window, tslist = sr.get_window() # window = [samples x channels]
-        window = window.T # chanel x samples
-
-        qc.print_c('LSL Diff = %.3f' % (pylsl.local_clock() - tslist[-1]), 'G')
+        
+        
+        sr.acquire(blocking=True, timestamp_offset=False)
+        window, tslist = sr.get_window(stream_index=stream_index)       # window = [samples x channels]
+        window = window.T                                               # channels x samples
 
         # print event values
         tsnew = np.where(np.array(tslist) > last_ts)[0]
@@ -500,15 +376,6 @@ if __name__ == '__main__':
             time.sleep(1)
             continue
         trigger = np.unique(window[trg_ch, tsnew[0]:])
-
-        # for Biosemi
-        # if sr.amp_name=='BioSemi':
-        #    trigger= set( [255 & int(x-1) for x in trigger ] )
-
-        if len(trigger) > 0:
-            logger.info('Triggers: %s' % np.array(trigger))
-
-        logger.info('[%.1f] Receiving data...' % watchdog.sec())
 
         if TIME_INDEX is None:
             datatxt = qc.list2string(np.mean(window[CH_INDEX, :], axis=1), '%-15.6f')

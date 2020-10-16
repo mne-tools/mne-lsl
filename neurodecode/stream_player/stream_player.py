@@ -468,3 +468,5 @@ if __name__ == '__main__':
     
     sp = Streamer(server_name, fif_file, chunk_size, trigger_file)
     sp.stream()
+    # sp = StreamPlayer(server_name, fif_file, chunk_size, trigger_file)
+    # sp.start()
