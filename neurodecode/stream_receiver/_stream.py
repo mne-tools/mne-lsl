@@ -1,4 +1,3 @@
-import math
 import time
 import pylsl
 import numpy as np
@@ -6,6 +5,7 @@ import numpy as np
 import neurodecode.utils.q_common as qc
 from abc import ABC, abstractmethod
 from neurodecode import logger
+from neurodecode.stream_receiver import Buffer
 from neurodecode.utils.pycnbi_utils import find_event_channel, lsl_channel_list
 
 
@@ -15,57 +15,51 @@ class _Stream(ABC):
     
     Parameters
     ----------
-    
+    streamInfo : lsl streamInfo
+        Contain all the info from the lsl server to connect to.
+    bufsize : int
+        The buffer's size [samples]
+    winsize : int
+        Extract the latest winsize samples from the buffer.
     """
     #----------------------------------------------------------------------
     @abstractmethod
-    def __init__(self, streamInfo):
-        """
-        Constructor
-        """
+    def __init__(self, streamInfo, bufsize, winsize):
         
+        self._ch_list = []
         self._streamInfo = streamInfo
-        self._inlet = None
-        self._ch_list = None        
-        self._inlet_bufsize = None
+        self._watchdog = qc.Timer()
+        self._sample_rate = streamInfo.nominal_srate()
         
-        self.watchdog = qc.Timer()
+        self._inlet = pylsl.StreamInlet(streamInfo, max_buflen=bufsize)
+        self._buffer = Buffer(bufsize, winsize)
+        
+        self._extract_amp_info()
+        self._create_ch_name_list()
     
     #----------------------------------------------------------------------
-    def show_stream_info(self):
+    def show_info(self):
         """
         Display  the stream's info.
         """
-        logger.info('Found streaming server: %s (type %s) @ %s.' % (self.streamInfo.name(), self.streamInfo.type(), self.streamInfo.hostname()))
-        logger.info('LSL Protocol version: %s' % self.streamInfo.version())
-        logger.info('Source sampling rate: %.1f' % self.streamInfo.nominal_srate())
-        logger.info('Channels: %d' % self.streamInfo.channel_count())
-        # logger.info('Unit multiplier: %.1f' % self.multiplier)
+        logger.info('Server: {name}({serial}) / {type} @ {host} (v{version}).'.format(name=self.name, serial=self.serial, type=self.streamInfo.type(), host=self.streamInfo.hostname(), version=self.streamInfo.version()))
+        logger.info('Source sampling rate: {}'.format(self.streamInfo.nominal_srate()))
+        logger.info('Channels: {}'.format(self.streamInfo.channel_count()))
+        logger.info('{}'.format(self._ch_list))
     
     #----------------------------------------------------------------------
-    def extract_amp_info(self):
-        """
-        Extract the name and serial number and if it is slave.
-        """
-        self.name = self.streamInfo.name()
-        self.serial = self._inlet.info().desc().child('acquisition').child_value('serial_number')
-        
-        if self.serial == '':
-            self.serial = 'N/A'
-            
-        self.is_slave= ('true'==pylsl.StreamInlet(self.streamInfo).info().desc().child('amplifier').child('settings').child('is_slave').first_child().value())
-        
-    #----------------------------------------------------------------------
-    def acquire(self, blocking=True, timestamp_offset=False):
+    def acquire(self, blocking, timestamp_offset, blocking_time):
         """
         Pull data from the stream's inlet.
         
         Parameters
         -----------
         blocking : bool
-            True if the stream is blocking (wait until data is received).
+            True for a blocking stream.
         timestamp_offset : bool
             True if wrong timestamps and require to compute offset.
+        blocking_time : float
+            The time allowed to wait for receiving data. [secs]
         
         Returns
         --------
@@ -74,17 +68,17 @@ class _Stream(ABC):
         list
             timestamps [samples]
         """
-        self.watchdog.reset()
+        self._watchdog.reset()
         tslist = []
         received = False
         chunk = None
         lsl_clock = None
         
         while not received:
-            while self.watchdog.sec() < 5:    
+            while self._watchdog.sec() < blocking_time:    
                 # chunk = [frames]x[ch], tslist = [frames] 
                 if len(tslist) == 0:
-                    chunk, tslist = self._inlet.pull_chunk(max_samples=self._inlet_bufsize)
+                    chunk, tslist = self._inlet.pull_chunk(max_samples=self.buffer._bufsize)
                     if blocking == False and len(tslist) == 0:
                         return np.empty((0, len(self.ch_list))), [], None
                 if len(tslist) > 0:
@@ -95,34 +89,133 @@ class _Stream(ABC):
                 time.sleep(0.0005)
             
             else:
-                logger.warning('Timeout occurred while acquiring data from {}({}). Amp driver bug?'.format(self.name, self.serial))
+                logger.warning('Timeout occurred [{}secs] while acquiring data from {}({}). Amp driver bug?'.format(blocking_time, self.name, self.serial))
                 # give up and return empty values to avoid deadlock
-                return np.empty((0, len(self.ch_list))), [], None
+                return np.empty((0, len(self._ch_list))), [], None
         
         data = np.array(chunk)
         
         return data, tslist, lsl_clock
     
     #----------------------------------------------------------------------
-    def get_num_channels(self):
+    def _extract_amp_info(self):
+        
         """
-        Get the total number of channels including the trigger channel.
-
-        Returns
-        -------
-        int
-            The number of channels 
+        Extract the name and serial number and if it is slave.
         """
-        return len(self.ch_list)
+        self._name = self.streamInfo.name()
+        self._serial = self._inlet.info().desc().child('acquisition').child_value('serial_number')
+        
+        if self._serial == '':
+            self._serial = 'N/A'
+            
+        self.is_slave= ('true'==pylsl.StreamInlet(self.streamInfo).info().desc().child('amplifier').child('settings').child('is_slave').first_child().value())
     
+    #----------------------------------------------------------------------   
+    def _create_ch_name_list(self):
+        """
+        Create the channel info.
+        """
+        self._ch_list = lsl_channel_list(self.inlet)
+        
+    #----------------------------------------------------------------------
+    @staticmethod
+    def _check_window_size(window_size):
+        """
+        Check that buffer's window size is positive.
+        
+        Parameters
+        -----------
+        window_size : float
+            The buffer size to verify [secs].
+                
+        Returns
+        --------
+        secs
+            The verified buffer's size.
+        """        
+        if window_size <= 0:
+            logger.error('Wrong window_size %d.' % window_size)
+            raise ValueError()
+        return window_size
+    
+    #----------------------------------------------------------------------
+    @staticmethod
+    def _check_buffer_size(buffer_size, window_size, max_buffer_size=86400):
+        """
+        Check that buffer's size is positive, smaller than max size and bigger than window's size.
+        
+        Parameters
+        -----------
+        buffer_size : float
+            The buffer size to verify [secs].
+        window_size : float
+            The window's size to compare to buffer_size [secs].
+        max_buffer_size : float
+            max buffer size allowed by StreamReceiver, default is 24h [secs].
+        
+        Returns
+        --------
+        secs
+            The verified buffer size.
+        """
+        if buffer_size <= 0 or buffer_size > max_buffer_size:
+            logger.error('Improper buffer size %.1f. Setting to %d.' % (buffer_size, max_buffer_size))
+            buffer_size = max_buffer_size
+        
+        elif buffer_size < window_size:
+            logger.error('Buffer size %.1f is smaller than window size. Setting to %.1f.' % (buffer_size, window_size))
+            buffer_size = window_size
+
+        return buffer_size
+    
+    #----------------------------------------------------------------------
+    @abstractmethod
+    def _convert_sec_to_samples(self):
+        """
+        Convert a buffer's size from sec to samples.
+        """
+        pass
+        
     #----------------------------------------------------------------------
     @property
     def name(self):
         """
         The LSL stream's name.
         """
-        return self.streamInfo.name()
+        return self._name
 
+    #----------------------------------------------------------------------
+    @name.setter
+    def name(self, name):
+        logger.warning("The stream's name cannot be changed")
+    
+    #----------------------------------------------------------------------
+    @property
+    def serial(self):
+        """
+        The LSL stream's serial number.
+        """
+        return self._serial
+
+    #----------------------------------------------------------------------
+    @serial.setter
+    def serial(self):
+        logger.warning("The stream's name cannot be changed")
+        
+    #----------------------------------------------------------------------
+    @property
+    def sample_rate(self):
+        """
+        The LSL stream's sampling rate.
+        """
+        return self._sample_rate
+
+    #----------------------------------------------------------------------
+    @sample_rate.setter
+    def sample_rate(self, sr):
+        logger.warning("The stream's sampling rate cannot be changed")
+    
     #----------------------------------------------------------------------
     @property
     def streamInfo(self):
@@ -132,12 +225,22 @@ class _Stream(ABC):
         return self._streamInfo
     
     #----------------------------------------------------------------------
+    @streamInfo.setter
+    def streamInfo(self, si):
+        logger.warning("The stream's info cannot be changed")    
+    
+    #----------------------------------------------------------------------
     @property
     def ch_list(self):
         """
-        The channels' list from the LSL inlet
+        The channels' list from the LSL server
         """
         return self._ch_list
+    
+    #----------------------------------------------------------------------
+    @ch_list.setter
+    def ch_list(self, ch_list):
+        logger.warning("The channels' name list cannot be changed")
         
     #----------------------------------------------------------------------
     @property
@@ -146,90 +249,174 @@ class _Stream(ABC):
         The LSL inlet created to acquire from a stream
         """
         return self._inlet
-        
-        
+    
+    #----------------------------------------------------------------------
+    @inlet.setter
+    def inlet(self, inlet):
+        logger.warning("The LSL inlet cannot be changed")
+    #----------------------------------------------------------------------
+    @property
+    def buffer(self):
+        """
+        The buffer containing the data and the timestamps.
+        """
+        return self._buffer
+    
+    #----------------------------------------------------------------------
+    @buffer.setter
+    def buffer(self):
+        logger.warning("The buffer cannot be changed")    
+    
 #----------------------------------------------------------------------       
-class _StreamMarker(_Stream):
+class StreamMarker(_Stream):
     """
     Class representing a receiver's markers stream.
+    
+    Notice the irregular sampling rate.
     
     Parameters
     -----------
     streamInfo : lsl streamInfo
-        Contain all the info from the connected lsl inlet.
-    bufsec : secs
-        The buffer's size in seconds.
+        Contain all the info from the lsl server to connect to.
+    buffer_size : float
+        The buffer's size [secs]. 1-day is the maximum size.
+        Large buffer may lead to a delay if not pulled frequently.
+    window_size : float
+        To extract the latest window_size seconds of the buffer [secs].
+    nb_sample_per_sec : int
+        Due to the irregular sampling rate, a number of samples per second
+        needs to be defined.
     """
     #----------------------------------------------------------------------
-    def __init__(self, streamInfo, bufsec):
-        """Constructor"""
+    def __init__(self, streamInfo, buffer_size=1, window_size=1, nb_sample_per_sec=100):
         
-        super().__init__(streamInfo)
+        _Stream._check_window_size(window_size)
+        _Stream._check_buffer_size(buffer_size, window_size)
         
-        inlet_bufsec = int(round(bufsec * 100))     #  due to irregular sr, defined to 100x.
-        self._inlet_bufsize = inlet_bufsec
-        self._inlet = pylsl.StreamInlet(streamInfo, inlet_bufsec)
+        bufsize = self._convert_sec_to_samples(buffer_size, nb_sample_per_sec)
+        winsize = self._convert_sec_to_samples(window_size, nb_sample_per_sec)
         
-        self._ch_list = ["Markers"]
-        self.extract_amp_info()
-        self.show_stream_info()
-   
+        super().__init__(streamInfo, bufsize, winsize)
+    
+    #----------------------------------------------------------------------
+    def acquire(self, blocking=False, timestamp_offset=False, blocking_time=np.Inf):
+        """
+        Pull data from the stream's inlet.
+        
+        Parameters
+        -----------
+        blocking : bool
+            True if the stream is blocking (wait until data is received).
+        timestamp_offset : bool
+            True if wrong timestamps and require to compute offset.
+        blocking_time : float
+            The time allowed to wait for receiving data, if blocking mode. [secs]
+            
+        Returns
+        --------
+        list
+            data [samples x channels]
+        list
+            timestamps [samples]
+        """
+        super().acquire(blocking, timestamp_offset, blocking_time)
+
+    #----------------------------------------------------------------------
+    def _convert_sec_to_samples(self, bufsec, nb_samples_per_sec):
+        """
+        Convert a buffer's size from sec to samples.
+        
+        Parameters
+        -----------
+        bufsec : float
+            The buffer_size's size [secs].
+        nb_samples_per_sec: int
+            Empirical number of samples per sec due to irregular sampling rate.
+            
+        Returns
+        --------
+        samples
+            The converted buffer_size's size.
+        """
+        return int(round(bufsec * nb_samples_per_sec)) 
     
 #----------------------------------------------------------------------
-class _StreamEEG(_Stream):
+class StreamEEG(_Stream):
     """
     Class representing a receiver's eeg stream.
     
     Parameters
     -----------
     streamInfo : lsl streamInfo
-        Contain all the info from the connected lsl inlet.
-    bufsec : secs
-        The buffer's size in seconds.
-        
-    Attributes
-    ----------
-    inlet : lsl inlet
-        The lsl inlet the stream connect to
-    streamInfo : lsl streamInfo
-        All availbale info from the inlet.
-    name : str
-        The name of the amplifier connected to the inlet.
-    serial : str
-        The serial number of the amplifier.
-    is_slave : bool
-        True if the amplifier is the slave (more than one amplifier).
-    multiplier : float
-        Unit conversion.
-    ch_list : list
-        List of the channels.
+        Contain all the info from the lsl server to connect to.
+    buffer_size : float
+        The buffer's size [secs].
+    window_size : float
+        Extract the latest window_size seconds of the buffer [secs].
     """
     #----------------------------------------------------------------------
-    def __init__(self, streamInfo, bufsec):
+    def __init__(self, streamInfo, buffer_size=1, window_size=1):
         
-        super().__init__(streamInfo)
+        _Stream._check_window_size(window_size)
+        _Stream._check_buffer_size(buffer_size, window_size)
+        
+        bufsize = self._convert_sec_to_samples(buffer_size, streamInfo.nominal_srate())
+        winsize = self._convert_sec_to_samples(window_size, streamInfo.nominal_srate())
+        
+        self._buffer = Buffer(bufsize, winsize)
+        
+        super().__init__(streamInfo, bufsize, winsize)
+        
+        self._multiplier = 1  # 10**6 for uV unit (automatically updated for openvibe servers)
+
+    #----------------------------------------------------------------------   
+    def acquire(self, blocking=True, timestamp_offset=False, blocking_time=5):
+        """
+        Pull data from the stream's inlet.
+        
+        Parameters
+        -----------
+        blocking : bool
+            True if the stream is blocking (wait until data is received).
+        timestamp_offset : bool
+            True if wrong timestamps and require to compute offset.
+        blocking_time : float
+            The time allowed to wait for receiving data, if blocking mode. [secs]
+        
+        Returns
+        --------
+        list
+            data [samples x channels]
+        list
+            timestamps [samples]
+        """
+        data, tslist, lsl_clock = super().acquire(blocking, timestamp_offset, blocking_time)
+        
+        # BioSemi has pull-up resistor instead of pull-down
+        if 'BioSemi' in self.streamInfo.name()and self._lsl_tr_channel is not None:
+            datatype = data.dtype
+            data[:, self._lsl_tr_channel] = (np.bitwise_and(255, data[:, self._lsl_tr_channel].astype(int)) - 1).astype(datatype)
+        
+        # multiply values (to change unit)
+        if self._multiplier != 1:
+            data[:, self._lsl_eeg_channels] *= self._multiplier
     
-        self._lsl_tr_channel = None
-        self._lsl_eeg_channels = None
-        
-        inlet_bufsec = bufsec
-        self._inlet_bufsize = int(round(inlet_bufsec * streamInfo.nominal_srate())) 
-        self.inlet = pylsl.StreamInlet(streamInfo, inlet_bufsec)
-        
-        self.multiplier = 1  # 10**6 for uV unit (automatically updated for openvibe servers)
-        
-        self.find_trig_channel()
-        self.define_ch_indices()
-        self.create_ch_name_list()
-        self.show_stream_info()
-        
+        if self._lsl_tr_channel is not None:
+            # move trigger channel to 0 and add back to the buffer
+            data = np.concatenate((data[:, self._lsl_tr_channel].reshape(-1, 1),
+                                       data[:, self._lsl_eeg_channels]), axis=1)
+        else:
+            # add an empty channel with zeros to channel 0
+            data = np.concatenate((np.zeros((data.shape[0],1)),
+                                       data[:, self._lsl_eeg_channels]), axis=1)
+            
+        return data, tslist, lsl_clock    
+
     #----------------------------------------------------------------------     
-    def find_trig_channel(self):
+    def _find_lsl_trig_ch(self):
         """
         Look for the trigger channel index at the lsl inlet level.
         """
-        self.ch_list = lsl_channel_list(self.inlet)
-        
         if 'USBamp' in self.name:
             self._lsl_tr_channel = 16
         
@@ -243,115 +430,52 @@ class _StreamEEG(_Stream):
             self._lsl_tr_channel = 0
         
         elif 'openvibeSignal' in self.name:
-            self.multiplier = 10**6 # change V -> uV unit for OpenVibe sources
-            self._lsl_tr_channel = find_event_channel(ch_names=self.ch_list)
+            self._multiplier = 10**6 # change V -> uV unit for OpenVibe sources
+            self._lsl_tr_channel = find_event_channel(ch_names=self._ch_list)
         
         elif 'openvibeMarkers' in self.name:
-            self._lsl_tr_channel = find_event_channel(ch_names=self.ch_list)
+            self._lsl_tr_channel = find_event_channel(ch_names=self._ch_list)
         
         else:
-            self._lsl_tr_channel = find_event_channel(ch_names=self.ch_list)
+            self._lsl_tr_channel = find_event_channel(ch_names=self._ch_list)
     
-    #----------------------------------------------------------------------      
-    def define_ch_indices(self):
+    #----------------------------------------------------------------------   
+    def _create_ch_name_list(self):
         """
-        Define trigger and EEG channel indices at lsl inlet level.
+        Create the channel info.
         
         Trigger channel will always move to the first position.
         """
-        channels = self.streamInfo.channel_count()
-        self._lsl_eeg_channels = list(range(channels))
+        super()._create_ch_name_list()
+        
+        self._find_lsl_trig_ch()
+        
+        self._lsl_eeg_channels = list(range(len(self.ch_list)))
+        
         if self._lsl_tr_channel is None:
             logger.warning('Trigger channel not found. Adding an empty channel at index 0.')
         else:
-            if self._lsl_tr_channel != 0:
-                logger.info_yellow('Trigger channel found at index %d. Moving to index 0.' % self._lsl_tr_channel)
+            self._ch_list.pop(self._lsl_tr_channel)
             self._lsl_eeg_channels.pop(self._lsl_tr_channel)
+            logger.info_yellow('Trigger channel found at index %d. Moving to index 0.' % self._lsl_tr_channel)
         
-        self._lsl_eeg_channels = np.array(self._lsl_eeg_channels)
-        # self.tr_channel = 0                         # trigger channel is always set to 0.
-        # self.eeg_channels = np.arange(1, channels)  # signal channels start from 1.
-    
-    #----------------------------------------------------------------------   
-    def create_ch_name_list(self):
+        self._ch_list = ['TRIGGER'] + self._ch_list
+        
+    #----------------------------------------------------------------------
+    def _convert_sec_to_samples(self, bufsec, sample_rate):
         """
-        Create the channel info.
-        """        
-        if self._lsl_tr_channel is None:
-            self.ch_list = ['TRIGGER'] + self.ch_list
-        else:
-            for i, chn in enumerate(self.ch_list):
-                if chn == 'TRIGGER' or chn == 'TRG' or 'STI ' in chn:
-                    self.ch_list.pop(i)
-                    self.ch_list = ['TRIGGER'] + self.ch_list
-                    break
-        logger.info('Channels list %s(%s): ' % (self.name, self.serial))
-        logger.info(self.ch_list)
-    
-    #----------------------------------------------------------------------   
-    def acquire(self, blocking=True, timestamp_offset=False):
-        """
-        Pull data from the stream's inlet.
+        Convert a buffer's size from sec to samples.
         
         Parameters
         -----------
-        blocking : bool
-            True if the stream is blocking (wait until data is received).
-        timestamp_offset : bool
-            True if wrong timestamps and require to compute offset.
-        
+        bufsec : float
+            The buffer_size's size [secs].
+        sample_rate : float
+             The sampling rate of the LSL server
         Returns
         --------
-        list
-            data [samples x channels]
-        list
-            timestamps [samples]
+        samples
+            The converted buffer_size's size.
         """
-        data, tslist, lsl_clock = super().acquire()
-        
-        # BioSemi has pull-up resistor instead of pull-down
-        if 'BioSemi' in self.streamInfo.name()and self._lsl_tr_channel is not None:
-            datatype = data.dtype
-            data[:, self._lsl_tr_channel] = (np.bitwise_and(255, data[:, self._lsl_tr_channel].astype(int)) - 1).astype(datatype)
-        
-        # multiply values (to change unit)
-        if self.multiplier != 1:
-            data[:, self._lsl_eeg_channels] *= self.multiplier
-    
-        if self._lsl_tr_channel is not None:
-            # move trigger channel to 0 and add back to the buffer
-            data = np.concatenate((data[:, self._lsl_tr_channel].reshape(-1, 1),
-                                       data[:, self._lsl_eeg_channels]), axis=1)
-        else:
-            # add an empty channel with zeros to channel 0
-            data = np.concatenate((np.zeros((data.shape[0],1)),
-                                       data[:, self._lsl_eeg_channels]), axis=1)
-            
-        return data, tslist, lsl_clock
-    
-    #----------------------------------------------------------------------
-    def get_eeg_channels(self):
-        """
-        Get the eeg channels indexes.
-
-        Returns
-        -------
-        list
-            Channels' index list 
-        """
-        return np.arange(1, self.get_num_channels())
-    
-    #----------------------------------------------------------------------
-    def get_trigger_channel(self):
-        """
-        Get trigger channel index (0-based index).
-        
-        Returns
-        -------
-        int
-            The trigger channel index 
-        """
-        tr_channel = 0
-        
-        return tr_channel
+        return int(round(bufsec * sample_rate))
     
