@@ -197,11 +197,11 @@ class MainWindow(QMainWindow):
                     if 'DIRECTIONS' in key:
                         self.directions = values
 
-                        if self.modality is 'offline':
+                        if self.modality == 'offline':
                             nb_directions = 4
                             directions = Connect_Directions(key, chosen_value, values, nb_directions)
 
-                        elif self.modality is 'online':
+                        elif self.modality == 'online':
                             chosen_events = [event[1] for event in chosen_value]
                             chosen_value = [val[0] for val in chosen_value]
                             nb_directions = len(chosen_value) 
