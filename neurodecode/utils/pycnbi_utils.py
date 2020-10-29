@@ -622,9 +622,11 @@ def lsl_channel_list(inlet):
     root = ET.fromstring(inlet.info().as_xml())
     desc = root.find('desc')
     ch_list = []
-    for ch in desc.find('channels').getchildren():
-        ch_name = ch.find('label').text
-        ch_list.append(ch_name)
+    
+    if desc.find('channels') is not None:        
+        for ch in desc.find('channels').getchildren():
+            ch_name = ch.find('label').text
+            ch_list.append(ch_name)
 
     ''' This code may throw access violation error due to bug in pylsl.XMLElement
     # for some reason type(inlet) returns 'instance' type in Python 2.
