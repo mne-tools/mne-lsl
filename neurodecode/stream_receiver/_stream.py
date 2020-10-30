@@ -385,13 +385,6 @@ class StreamMarker(_Stream):
     def acquire(self):
         """
         Pull data from the stream's inlet and fill the buffer.
-            
-        Returns
-        --------
-        list
-            data [samples x channels]
-        list
-            timestamps [samples]
         """
         chunk, tslist = super().acquire()
         
@@ -429,13 +422,6 @@ class StreamEEG(_Stream):
     def acquire(self):
         """
         Pull data from the stream's inlet and fill the buffer.
-        
-        Returns
-        --------
-        list
-            data [samples x channels]
-        list
-            timestamps [samples]
         """
         chunk, tslist = super().acquire()
         
