@@ -8,19 +8,16 @@ import neurodecode.utils.pycnbi_utils as pu
 
 class StreamViewer:
     """
-    Class for displaying in real time the signals coming from an lsl stream.
+    Class for displaying in real time the signals coming from a lsl stream.
 
     Parameters
     ----------
     amp_name : str
         The amplifier's name to connect to
-    amp_serial : str
-        The amplifier's serial number
     """
     #----------------------------------------------------------------------
-    def __init__(self, amp_name=None, amp_serial=None):
+    def __init__(self, amp_name=None):
         self.amp_name = amp_name
-        self.amp_serial = amp_serial
     
     #----------------------------------------------------------------------
     def run(self):
@@ -32,7 +29,7 @@ class StreamViewer:
         if (self.amp_name is None):
             self.search_stream()
         
-        logger.info('Connecting to a stream %s (Serial %s).' % (self.amp_name, self.amp_serial))
+        logger.info('Connecting to a stream %s.'.format(self.amp_name))
         
         app = QApplication(sys.argv)
         ex = _Scope(self.amp_name)
@@ -45,7 +42,7 @@ class StreamViewer:
         
         Assign the found amp name and serial number to the internal attributes
         """
-        self.amp_name, self.amp_serial = pu.search_lsl()
+        self.amp_name, _ = pu.search_lsl()
         
     
 #----------------------------------------------------------------------
@@ -60,7 +57,7 @@ if __name__ == '__main__':
         amp_name = sys.argv[1]
         
     if len(sys.argv) == 1:
-        amp_name, amp_serial = pu.search_lsl()
+        amp_name, _ = pu.search_lsl()
     
     stream_viewer = StreamViewer(amp_name)
     stream_viewer.run()

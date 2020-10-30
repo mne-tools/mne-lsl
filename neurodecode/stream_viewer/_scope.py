@@ -98,11 +98,11 @@ class _Scope(QMainWindow):
         self.sr = StreamReceiver(window_size=window_size, buffer_size=buffer_size, amp_name=self.amp_name)
 
         self.config = {
-            'sf': int(self.sr.get_sample_rate()),
-            'samples': int(self.sr.get_sample_rate() * window_size),
-            'eeg_channels': len(self.sr.get_eeg_channels()),
+            'sf': int(self.sr.streams[-1].sample_rate),
+            'samples': int(self.sr.streams[-1].sample_rate * window_size),
+            'eeg_channels': len(self.sr.streams[-1].ch_list[1:]),
             'exg_channels': 0,
-            'tri_channels': self.sr.get_trigger_channel(),
+            'tri_channels': 0,
         }
         
         # For now, not a fixed number of samples per chunk --> TO FIX
@@ -352,8 +352,8 @@ class _Scope(QMainWindow):
         # Y Tick labels. Use values from the config file.
         self.channel_labels = []
         values = []
-        ch_names = np.array( self.sr.get_channel_names() )
-        self.channel_labels = ch_names[self.sr.get_eeg_channels()]
+        ch_names = np.array( self.sr.streams[-1].ch_list )
+        self.channel_labels = ch_names[1:]
         for x in range(0, len(self.channels_to_show_idx)):
             values.append((-x * self.scale,
                 self.channel_labels[self.channels_to_show_idx[x]]))
@@ -437,7 +437,8 @@ class _Scope(QMainWindow):
         '''
         Read EEG
         '''
-        self.sr.acquire(blocking=False)
+        self.sr.streams[-1].blocking = False
+        self.sr.acquire()
         data, self._ts_list = self.sr.get_buffer()
         self.sr.reset_all_buffers()
 
@@ -448,7 +449,7 @@ class _Scope(QMainWindow):
         trg_ch = self.config['tri_channels']
         if trg_ch is not None:
             self.tri = np.reshape(data[:, trg_ch], (-1, 1))                     # samples x 1
-        self.eeg = np.reshape(data[:, self.sr.get_eeg_channels()], (-1, n))     # samples x channels
+        self.eeg = np.reshape(data[:, 1:], (-1, n))     # samples x channels
 
         if DEBUG_TRIGGER:
             # show trigger value
