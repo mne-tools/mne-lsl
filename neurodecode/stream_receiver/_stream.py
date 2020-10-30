@@ -439,6 +439,9 @@ class StreamEEG(_Stream):
         """
         chunk, tslist = super().acquire()
         
+        if not chunk:
+            return
+        
         data = np.array(chunk)
         
         # BioSemi has pull-up resistor instead of pull-down
