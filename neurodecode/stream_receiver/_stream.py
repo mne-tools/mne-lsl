@@ -18,9 +18,9 @@ class _Stream(ABC):
     streamInfo : lsl streamInfo
         Contain all the info from the lsl stream to connect to.
     bufsize : int
-        The buffer's size [samples]
+        The buffer's size [secs]
     winsize : int
-        To extract the latest winsize samples from the buffer [samples]
+        To extract the latest winsize samples from the buffer [secs]
     """
     #----------------------------------------------------------------------
     @abstractmethod
@@ -30,11 +30,24 @@ class _Stream(ABC):
         self._streamInfo = streamInfo
         self._watchdog = qc.Timer()
         self._sample_rate = streamInfo.nominal_srate()
+        
         self._blocking = True
         self._blocking_time = 5
         self._lsl_time_offset = None
         
         self._inlet = pylsl.StreamInlet(streamInfo, max_buflen=bufsize)
+        
+        winsize = _Stream._check_window_size(winsize)
+        bufsize = _Stream._check_buffer_size(bufsize, winsize)
+    
+        if self._sample_rate:
+            samples_per_sec = self.sample_rate
+        else:
+            samples_per_sec = 100
+            
+        bufsize = _Stream._convert_sec_to_samples(bufsize, samples_per_sec)
+        winsize = _Stream._convert_sec_to_samples(winsize, samples_per_sec)
+        
         self._buffer = Buffer(bufsize, winsize)
         
         self._extract_amp_info()
@@ -181,9 +194,9 @@ class _Stream(ABC):
     
     #----------------------------------------------------------------------
     @staticmethod
-    def _check_buffer_size(buffer_size, window_size, max_buffer_size=86400):
+    def _check_buffer_size(buffer_size, window_size):
         """
-        Check that buffer's size is positive, smaller than max_buffer_size and bigger than window's size.
+        Check that buffer's size is positive and bigger than the window's size.
         
         Parameters
         -----------
@@ -191,17 +204,17 @@ class _Stream(ABC):
             The buffer size to verify [secs].
         window_size : float
             The window's size to compare to buffer_size [secs].
-        max_buffer_size : float
-            max buffer size allowed by StreamReceiver, default is 24h [secs].
         
         Returns
         --------
         secs
             The verified buffer size.
         """
-        if buffer_size <= 0 or buffer_size > max_buffer_size:
-            logger.error('Improper buffer size %.1f. Setting to %d.' % (buffer_size, max_buffer_size))
-            buffer_size = max_buffer_size
+        MAX_BUF_SIZE=86400       # 24h max buffer length
+        
+        if buffer_size <= 0 or buffer_size > MAX_BUF_SIZE:
+            logger.error('Improper buffer size %.1f. Setting to %d.' % (buffer_size, MAX_BUF_SIZE))
+            buffer_size = MAX_BUF_SIZE
         
         elif buffer_size < window_size:
             logger.error('Buffer size %.1f is smaller than window size. Setting to %.1f.' % (buffer_size, window_size))
@@ -353,6 +366,7 @@ class StreamMarker(_Stream):
     Class representing a receiver's markers stream.
     
     Notice the irregular sampling rate.
+    This stream is instanciated as non-blocking. 
     
     Parameters
     -----------
@@ -363,20 +377,11 @@ class StreamMarker(_Stream):
         Large buffer may lead to a delay if not pulled frequently.
     window_size : float
         To extract the latest seconds of the buffer [secs].
-    samples_per_sec : int
-        Due to the irregular sampling rate, a number of samples per second
-        needs to be defined for the buffer's size.
     """
     #----------------------------------------------------------------------
-    def __init__(self, streamInfo, buffer_size=1, window_size=1, samples_per_sec=100):
+    def __init__(self, streamInfo, buffer_size=1, window_size=1):
           
-        _Stream._check_window_size(window_size)
-        _Stream._check_buffer_size(buffer_size, window_size)
-
-        bufsize = _Stream._convert_sec_to_samples(buffer_size, samples_per_sec)
-        winsize = _Stream._convert_sec_to_samples(window_size, samples_per_sec)
-        
-        super().__init__(streamInfo, bufsize, winsize)
+        super().__init__(streamInfo, buffer_size, window_size)
         
         self._blocking = False
         self._blocking_time = np.Inf
@@ -396,6 +401,8 @@ class StreamEEG(_Stream):
     """
     Class representing a receiver's eeg stream.
     
+    This stream is instanciated as blocking. 
+    
     Parameters
     -----------
     streamInfo : lsl streamInfo
@@ -407,14 +414,8 @@ class StreamEEG(_Stream):
     """
     #----------------------------------------------------------------------
     def __init__(self, streamInfo, buffer_size=1, window_size=1):
-        
-        _Stream._check_window_size(window_size)
-        _Stream._check_buffer_size(buffer_size, window_size)
-        
-        bufsize = _Stream._convert_sec_to_samples(buffer_size, streamInfo.nominal_srate())
-        winsize = _Stream._convert_sec_to_samples(window_size, streamInfo.nominal_srate())
                 
-        super().__init__(streamInfo, bufsize, winsize)
+        super().__init__(streamInfo, buffer_size, window_size)
         
         self._multiplier = 1  # 10**6 for uV unit (automatically updated for openvibe servers)
 
