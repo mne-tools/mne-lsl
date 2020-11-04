@@ -115,7 +115,7 @@ class StreamRecorder:
     def _record(self, amp_name, record_dir, bids_info, eeg_only, logger, state):
         """
         The function launched in a new process.
-                """
+        """
         
         recorder = _Recorder(record_dir, bids_info, logger, state)
         recorder.connect(amp_name, eeg_only)
@@ -126,7 +126,7 @@ class StreamRecorder:
         """
         Start the recording when launched from the GUI.
         """
-        self.record(True)
+        self.start()
        
         while not self._state.value:
             pass
