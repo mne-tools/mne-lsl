@@ -1,9 +1,12 @@
 import os
 import time
 import datetime
+from path import Path
+import multiprocessing as mp
 from mne.io import read_raw_fif
 from mne_bids import make_bids_basename, write_raw_bids
 
+from neurodecode import logger
 import neurodecode.utils.q_common as qc
 from neurodecode.utils.convert2fif import pcl2fif, add_events_from_txt
 from neurodecode.utils.cnbi_lsl import start_server
@@ -15,7 +18,7 @@ class _Recorder:
     Base class for recording signals coming from an lsl stream.
     """
     #----------------------------------------------------------------------
-    def __init__(self, record_dir, bids_info, logger, state):
+    def __init__(self, record_dir, bids_info=None, logger=logger, state=mp.Value('i', 0)):
         self._MAX_BUFSIZE = 86400 
         
         self.record_dir = record_dir
@@ -28,7 +31,7 @@ class _Recorder:
         self.logger = logger
         
     #----------------------------------------------------------------------
-    def connect(self, amp_name, eeg_only):
+    def connect(self, amp_name=None, eeg_only=False):
         """
         Instance a StreamReceiver connecting to the appropriate lsl stream.
         
@@ -45,14 +48,14 @@ class _Recorder:
     #----------------------------------------------------------------------
     def extract_connected_amp_names(self):
         """
-        Extract from the stream receiver the names of the connected amplifier.
+        Extract from the StreamReceiver the names of the connected amplifier.
         
         Returns
         -------
         list
             The connected amplifiers' name.
         """
-        self.nb_amps = len(self.sr._buffers)
+        self.nb_amps = len(self.sr.streams)
         self.amp_names = []
         
         for s in self.sr._streams:
@@ -78,7 +81,8 @@ class _Recorder:
         data_files, eve_file = self.create_filenames(record_dir)
         self.test_writability(record_dir, data_files)
         
-        self.logger.info('>> Record to file: %s', *data_files, sep='\n')
+        print('>> Record to files:')
+        print(*data_files, sep='\n')
         
         return data_files, eve_file
         
@@ -104,7 +108,7 @@ class _Recorder:
         
         data_files = []
         
-        for i in range(len(self.sr._buffers)):
+        for i in range(len(self.sr.streams)):
             data_files.append("%s/%s-%s-raw.pcl" % (record_dir, timestamp, self.sr._streams[i].name))
         
         return data_files, eve_file    
@@ -234,10 +238,10 @@ class _Recorder:
         data = {'signals':signals,
                 'timestamps':timestamps,
                 'events':None,
-                'sample_rate': self.sr.get_sample_rate(stream_index),
-                'channels':self.sr.get_num_channels(stream_index),
-                'ch_names':self.sr.get_channel_names(stream_index),
-                'lsl_time_offset':self.sr.get_lsl_offset(stream_index)}
+                'sample_rate': self.sr.streams[stream_index].sample_rate,
+                'channels':len(self.sr.streams[stream_index].ch_list),
+                'ch_names':self.sr.streams[stream_index].ch_list,
+                'lsl_time_offset':self.sr.streams[stream_index].lsl_time_offset}
         
         return data
     
@@ -269,9 +273,12 @@ class _Recorder:
         while self.state.value == 1:
             self.sr.acquire()
             
-            if self.sr.get_buflen() > next_sec:
-                duration = str(datetime.timedelta(seconds=int(self.sr.get_buflen())))
+            bufsec = len(self.sr.streams[0].buffer.data) / self.sr.streams[0].sample_rate
+            
+            if bufsec > next_sec:
+                duration = str(datetime.timedelta(seconds=int(bufsec)))
                 self.logger.info('RECORDING %s' % duration)
                 next_sec += 1
+            
             tm.sleep_atleast(0.001)    
             
