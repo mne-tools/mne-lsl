@@ -82,7 +82,7 @@ class BCIDecoder(object):
 
     """
 
-    def __init__(self, classifier=None, buffer_size=1.0, fake=False, amp_serial=None, amp_name=None):
+    def __init__(self, classifier=None, buffer_size=1.0, fake=False, amp_serial=None, amp_name=None, label=None):
         """
         Params
         ------
@@ -145,6 +145,11 @@ class BCIDecoder(object):
                 self.spectral_ch = [self.ch_names.index(mc[p]) for p in model['spectral_ch']]
             if self.notch_ch is not None:
                 self.notch_ch = [self.ch_names.index(mc[p]) for p in model['notch_ch']]
+                
+            if "SAVED_FEAT" in model:
+                self.xdata = model["SAVED_FEAT"]["X"].tolist()
+                self.ydata = model["SAVED_FEAT"]["Y"].tolist()
+                self.label = label
 
             # PSD buffer
             #psd_temp = self.psde.transform(np.zeros((1, len(self.picks), self.w_frames // self.decim)))
@@ -232,9 +237,23 @@ class BCIDecoder(object):
             psd = self.psde.transform(w.reshape((1, w.shape[0], w.shape[1])))
 
             # make a feautre vector and classify
-            feats = np.concatenate(psd[0]).reshape(1, -1)
-
+            feats = np.concatenate(psd[0])
+            
+            # For adaptive classifier
+            if hasattr(self, 'xdata'):
+                with self.label.get_lock():
+                    if self.label.value in self.labels:
+                        self.xdata.append(feats.tolist())
+                        self.ydata.append(self.label.value)
+                    elif self.label.value == 0:
+                        pass
+                    elif self.label.value == 1:
+                        self.cls.fit(self.xdata, self.ydata)
+                        logger.info("Classifier retrained")
+                        self.label.value = 0
+           
             # compute likelihoods
+            feats = feats.reshape(1, -1)
             probs = self.cls.predict_proba(feats)[0]
 
             # update psd buffer ( < 1 msec overhead )
@@ -290,7 +309,7 @@ class BCIDecoderDaemon(object):
     """
 
     def __init__(self, classifier=None, buffer_size=1.0, fake=False, amp_serial=None,\
-                 amp_name=None, fake_dirs=None, parallel=None, alpha_new=None, wait_init=True):
+                 amp_name=None, fake_dirs=None, parallel=None, alpha_new=None, wait_init=True, label=None):
         """
         Params
         ------
@@ -322,6 +341,10 @@ class BCIDecoderDaemon(object):
         self.amp_name = amp_name
         self.parallel = parallel
         self.wait_init = wait_init
+        
+        # For adaptive classifier
+        self.label = label
+
         if alpha_new is None:
             alpha_new = 1
         if not 0 <= alpha_new <= 1:
@@ -371,7 +394,7 @@ class BCIDecoderDaemon(object):
             psd_shape = info['psd_shape'][1:]  # we get only the last window
             psd_ctypes = sharedctypes.RawArray('d', np.zeros(psd_size))
             self.psd = np.frombuffer(psd_ctypes, dtype=np.float64, count=psd_size)
-
+        
         self.probs = mp.Array('d', [1.0 / len(self.labels)] * len(self.labels))
         self.probs_smooth = mp.Array('d', [1.0 / len(self.labels)] * len(self.labels))
         self.pread = mp.Value('i', 1)
@@ -395,14 +418,14 @@ class BCIDecoderDaemon(object):
                 self.procs.append(mp.Process(target=self.daemon, args=\
                     [self.classifier, self.probs, self.probs_smooth, self.pread, self.t_problast,\
                      self.running[i], self.return_psd, psd_ctypes, self.psdlock,\
-                     dict(t_start=(t_start+i*stride), period=period)]))
+                     dict(t_start=(t_start+i*stride), period=period), self.label]))
         else:
             self.running = [mp.Value('i', 0)]
             self.procs = [mp.Process(target=self.daemon, args=\
                 [self.classifier, self.probs, self.probs_smooth, self.pread, self.t_problast,\
-                 self.running[0], self.return_psd, psd_ctypes, self.psdlock, None])]
+                 self.running[0], self.return_psd, psd_ctypes, self.psdlock, None, self.label])]
 
-    def daemon(self, classifier, probs, probs_smooth, pread, t_problast, running, return_psd, psd_ctypes, lock, interleave=None):
+    def daemon(self, classifier, probs, probs_smooth, pread, t_problast, running, return_psd, psd_ctypes, lock, interleave=None, label=None):
         """
         Runs Decoder class as a daemon.
 
@@ -428,7 +451,10 @@ class BCIDecoderDaemon(object):
         
         logger.debug('[DecodeWorker-%-6d] Decoder worker process started' % (pid))
         decoder = BCIDecoder(classifier, buffer_size=self.buffer_sec, fake=self.fake,\
-                             amp_serial=self.amp_serial, amp_name=self.amp_name)
+                             amp_serial=self.amp_serial, amp_name=self.amp_name, label=label)
+        # TO REMOVE
+        decoder.get_prob()    
+        
         if self.fake == False:
             psd = ctypeslib.as_array(psd_ctypes)
         else:
@@ -436,10 +462,12 @@ class BCIDecoderDaemon(object):
 
         if interleave is None:
             # single-core decoding
-            running.value = 1
+            with running.get_lock():
+                running.value = 1
             while running.value == 1:
                 # compute features and likelihoods
                 probs[:], t_prob = decoder.get_prob(True)
+                        
                 probs_smooth_sum = 0
                 for i in range(len(probs_smooth)):
                     probs_smooth[i] = probs_smooth[i] * self.alpha_old + probs[i] * self.alpha_new

@@ -16,6 +16,7 @@ class Basic:
     params1.update({'DECODER_FILE': str})
     params1.update({'DIRECTIONS': ('L', 'R', 'U', 'D', 'B')})
     params1.update({'FAKE_CLS': (None, True)})
+    params1.update({'ADAPTIVE': {'False':False, 'True':list}})
 
     #-------------------------------------------
     # feedback type
