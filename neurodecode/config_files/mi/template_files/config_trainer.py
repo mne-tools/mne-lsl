@@ -50,9 +50,10 @@ CLASSIFIER =    {'selected': 'RF', \
                 'GB': dict(trees=1000, learning_rate=0.01, depth=3, seed=666), \
                 'RF': dict(trees=1000, depth=5, seed=666), \
                 'rLDA': dict(r_coeff=0.3), \
-                'LDA': dict()}
+                'LDA': dict(solver='svd', shrinkage=None)}
 
 EXPORT_CLS = True
+SAVE_FEATURES = True
 
 #-------------------------------------------
 # Cross-Validation & testing

@@ -345,25 +345,27 @@ def balance_tpr(cfg, featdata):
         results = []
 
     # Init a classifier
-    selected_classifier = cfg.CLASSIFIER[cfg.CLASSIFIER['selected']]
+    selected_classifier = cfg.CLASSIFIER['selected']
+    cls_params = cfg.CLASSIFIER[selected_classifier]
+
     if selected_classifier == 'GB':
-        cls = GradientBoostingClassifier(loss='deviance', learning_rate=cfg.CLASSIFIER['GB']['learning_rate'],
-                                         n_estimators=cfg.CLASSIFIER['GB']['trees'], subsample=1.0, max_depth=cfg.CLASSIFIER['GB']['depth'],
-                                         random_state=cfg.CLASSIFIER[selected_classifier]['seed'], max_features='sqrt', verbose=0, warm_start=False,
+        cls = GradientBoostingClassifier(loss='deviance', learning_rate=cls_params['learning_rate'],
+                                         n_estimators=cls_params['trees'], subsample=1.0, max_depth=cls_params['depth'],
+                                         random_state=cls_params['seed'], max_features='sqrt', verbose=0, warm_start=False,
                                          presort='auto')
     elif selected_classifier == 'XGB':
-        cls = XGBClassifier(loss='deviance', learning_rate=cfg.CLASSIFIER['XGB']['learning_rate'],
-                                         n_estimators=cfg.CLASSIFIER['XGB']['trees'], subsample=1.0, max_depth=cfg.CLASSIFIER['XGB']['depth'],
-                                         random_state=cfg.CLASSIFIER['XGB']['seed'], max_features='sqrt', verbose=0, warm_start=False,
+        cls = XGBClassifier(loss='deviance', learning_rate=cls_params['learning_rate'],
+                                         n_estimators=cls_params['trees'], subsample=1.0, max_depth=cls_params['depth'],
+                                         random_state=cls_params['seed'], max_features='sqrt', verbose=0, warm_start=False,
                                          presort='auto')
     elif selected_classifier == 'RF':
-        cls = RandomForestClassifier(n_estimators=cfg.CLASSIFIER['RF']['trees'], max_features='auto',
-                                     max_depth=cfg.CLASSIFIER['RF']['depth'], n_jobs=cfg.N_JOBS, random_state=cfg.CLASSIFIER['RF']['seed'],
+        cls = RandomForestClassifier(n_estimators=cls_params['trees'], max_features='auto',
+                                     max_depth=cls_params['depth'], n_jobs=cfg.N_JOBS, random_state=cls_params['seed'],
                                      oob_score=False, class_weight='balanced_subsample')
     elif selected_classifier == 'LDA':
-        cls = LDA()
+        cls = LDA(solver=cls_params['solver'], shrinkage=cls_params['shrinkage'])
     elif selected_classifier == 'rLDA':
-        cls = rLDA(cfg.CLASSIFIER['rLDA'])
+        cls = rLDA(cls_params['r_coeff'])
     else:
         logger.error('Unknown classifier type %s' % selected_classifier)
         raise ValueError
@@ -509,22 +511,24 @@ def cross_validate(cfg, featdata, cv_file=None):
     """
     # Init a classifier
     selected_classifier = cfg.CLASSIFIER['selected']
+    cls_params = cfg.CLASSIFIER[selected_classifier]
+    
     if selected_classifier == 'GB':
-        cls = GradientBoostingClassifier(loss='deviance', learning_rate=cfg.CLASSIFIER['GB']['learning_rate'], presort='auto',
-                                         n_estimators=cfg.CLASSIFIER['GB']['trees'], subsample=1.0, max_depth=cfg.CLASSIFIER['GB']['depth'],
-                                         random_state=cfg.CLASSIFIER['GB']['seed'], max_features='sqrt', verbose=0, warm_start=False)
+        cls = GradientBoostingClassifier(loss='deviance', learning_rate=cls_params['learning_rate'], presort='auto',
+                                         n_estimators=cls_params['trees'], subsample=1.0, max_depth=cls_params['depth'],
+                                         random_state=cls_params['seed'], max_features='sqrt', verbose=0, warm_start=False)
     elif selected_classifier == 'XGB':
-        cls = XGBClassifier(loss='deviance', learning_rate=cfg.CLASSIFIER['XGB']['learning_rate'], presort='auto',
-                                         n_estimators=cfg.CLASSIFIER['XGB']['trees'], subsample=1.0, max_depth=cfg.CLASSIFIER['XGB']['depth'],
-                                         random_state=cfg.CLASSIFIER['XGB'], max_features='sqrt', verbose=0, warm_start=False)
+        cls = XGBClassifier(loss='deviance', learning_rate=cls_params['learning_rate'], presort='auto',
+                                         n_estimators=cls_params['trees'], subsample=1.0, max_depth=cls_params['depth'],
+                                         random_state=cls_params['seed'], max_features='sqrt', verbose=0, warm_start=False)
     elif selected_classifier == 'RF':
-        cls = RandomForestClassifier(n_estimators=cfg.CLASSIFIER['RF']['trees'], max_features='auto',
-                                     max_depth=cfg.CLASSIFIER['RF']['depth'], n_jobs=cfg.N_JOBS, random_state=cfg.CLASSIFIER['RF']['seed'],
+        cls = RandomForestClassifier(n_estimators=cls_params['trees'], max_features='auto',
+                                     max_depth=cls_params['depth'], n_jobs=cfg.N_JOBS, random_state=cls_params['seed'],
                                      oob_score=False, class_weight='balanced_subsample')
     elif selected_classifier == 'LDA':
-        cls = LDA()
+        cls = LDA(solver=cls_params['solver'], shrinkage=cls_params['shrinkage'])
     elif selected_classifier == 'rLDA':
-        cls = rLDA(cfg.CLASSIFIER['rLDA']['r_coeff'])
+        cls = rLDA(cls_params['r_coeff'])
     else:
         logger.error('Unknown classifier type %s' % selected_classifier)
         raise ValueError
@@ -625,24 +629,25 @@ def train_decoder(cfg, featdata, feat_file=None):
     """
     # Init a classifier
     selected_classifier = cfg.CLASSIFIER['selected']
+    cls_params = cfg.CLASSIFIER[selected_classifier]
     if selected_classifier == 'GB':
-        cls = GradientBoostingClassifier(loss='deviance', learning_rate=cfg.CLASSIFIER[selected_classifier]['learning_rate'],
-                                         n_estimators=cfg.CLASSIFIER[selected_classifier]['trees'], subsample=1.0, max_depth=cfg.CLASSIFIER[selected_classifier]['depth'],
-                                         random_state=cfg.CLASSIFIER[selected_classifier]['seed'], max_features='sqrt', verbose=0, warm_start=False,
+        cls = GradientBoostingClassifier(loss='deviance', learning_rate=cls_params['learning_rate'],
+                                         n_estimators=cls_params['trees'], subsample=1.0, max_depth=cls_params['depth'],
+                                         random_state=cls_params['seed'], max_features='sqrt', verbose=0, warm_start=False,
                                          presort='auto')
     elif selected_classifier == 'XGB':
-        cls = XGBClassifier(loss='deviance', learning_rate=cfg.CLASSIFIER[selected_classifier]['learning_rate'],
-                                         n_estimators=cfg.CLASSIFIER[selected_classifier]['trees'], subsample=1.0, max_depth=cfg.CLASSIFIER[selected_classifier]['depth'],
+        cls = XGBClassifier(loss='deviance', learning_rate=cls_params['learning_rate'],
+                                         n_estimators=cls_params['trees'], subsample=1.0, max_depth=cls_params['depth'],
                                          random_state=cfg.GB['seed'], max_features='sqrt', verbose=0, warm_start=False,
                                          presort='auto')
     elif selected_classifier == 'RF':
-        cls = RandomForestClassifier(n_estimators=cfg.CLASSIFIER[selected_classifier]['trees'], max_features='auto',
-                                     max_depth=cfg.CLASSIFIER[selected_classifier]['depth'], n_jobs=cfg.N_JOBS, random_state=cfg.CLASSIFIER[selected_classifier]['seed'],
+        cls = RandomForestClassifier(n_estimators=cls_params['trees'], max_features='auto',
+                                     max_depth=cls_params['depth'], n_jobs=cfg.N_JOBS, random_state=cls_params['seed'],
                                      oob_score=False, class_weight='balanced_subsample')
     elif selected_classifier == 'LDA':
-        cls = LDA()
+        cls = LDA(solver=cls_params['solver'], shrinkage=cls_params['shrinkage'])
     elif selected_classifier == 'rLDA':
-        cls = rLDA(cfg.CLASSIFIER[selected_classifier][r_coeff])
+        cls = rLDA(cls_params["r_coeff"])
     else:
         logger.error('Unknown classifier %s' % selected_classifier)
         raise ValueError
@@ -678,6 +683,9 @@ def train_decoder(cfg, featdata, feat_file=None):
                     spatial_ch=featdata['picks'], spectral=cfg.TP_FILTER[cfg.TP_FILTER['selected']], spectral_ch=featdata['picks'],
                     notch=cfg.NOTCH_FILTER[cfg.NOTCH_FILTER['selected']], notch_ch=featdata['picks'], multiplier=cfg.MULTIPLIER,
                     ref_ch=cfg.REREFERENCE[cfg.REREFERENCE['selected']], decim=cfg.FEATURES['PSD']['decim'])
+        if cfg.SAVE_FEATURES:
+            data["SAVED_FEAT"] = dict(X=X_data_merged, Y=Y_data_merged)
+           
     clsfile = '%s/classifier/classifier-%s.pkl' % (cfg.DATA_PATH, platform.architecture()[0])
     qc.make_dirs('%s/classifier' % cfg.DATA_PATH)
     qc.save_obj(clsfile, data)
@@ -701,7 +709,7 @@ def train_decoder(cfg, featdata, feat_file=None):
         if selected_classifier in ['RF', 'GB', 'XGB']:
             keys, values = qc.sort_by_value(list(cls.feature_importances_), rev=True)
         elif selected_classifier in ['LDA', 'rLDA']:
-            keys, values = qc.sort_by_value(cls.w, rev=True)
+            keys, values = qc.sort_by_value(cls.coef_.reshape(-1).tolist(), rev=True)
         keys = np.array(keys)
         values = np.array(values)
 
@@ -739,6 +747,7 @@ def train_decoder(cfg, featdata, feat_file=None):
             for i, (ch, hz) in enumerate(zip(chlist, hzlist)):
                 gfout.write('%.3f\t%s\t%s\t%d\n' % (values[i]*100.0, ch, hz, keys[i]))
             gfout.close()
+                    
 
 
 # for batch scripts
@@ -766,7 +775,7 @@ def run(cfg, state=mp.Value('i', 1), queue=None, interactive=False, cv_file=None
     if not state.value:
         sys.exit(-1)
 
-    if cfg.CV_PERFORM[cfg.CV_PERFORM['selected']] is not None:
+    if cfg.CV_PERFORM[cfg.CV_PERFORM['selected']]:
         cross_validate(cfg, featdata, cv_file=cv_file)
 
     # Train a decoder

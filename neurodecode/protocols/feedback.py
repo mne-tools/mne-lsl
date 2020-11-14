@@ -101,10 +101,10 @@ class Feedback:
             self.ser.close()
             logger.info('Closed STIMO serial port %s' % self.stimo_port)
 
-    def classify(self, decoder, true_label, title_text, bar_dirs, state='start', prob_history=None):
+    def classify(self, decoder, true_label, title_text, bar_dirs, state='start', prob_history=None, adaptive=False):
         """
         Run a single trial
-        """
+        """    
         true_label_index = bar_dirs.index(true_label)
         self.tm_trigger.reset()
         if self.bar_bias is not None:
@@ -112,12 +112,19 @@ class Feedback:
 
         if self.logf is not None:
             self.logf.write('True label: %s\n' % true_label)
-
+        
         tm_classify = qc.Timer(autoreset=True)
         self.stimo_timer = qc.Timer()
+        
+        # For adaptive, retrain classifier
+        if adaptive:
+            with decoder.label.get_lock():
+                decoder.label.value = 1           
+        
         while True:
             self.tm_display.sleep_atleast(self.refresh_delay)
-            self.tm_display.reset()
+            self.tm_display.reset()         
+            
             if state == 'start' and self.tm_trigger.sec() > self.cfg.TIMINGS['INIT']:
                 state = 'gap_s'
                 if self.cfg.TRIALS_PAUSE:
@@ -220,9 +227,20 @@ class Feedback:
 
                 self.tm_watchdog.reset()
                 self.tm_trigger.reset()
-
+                
+                # For adaptive
+                if adaptive:
+                    with decoder.label.get_lock():
+                        decoder.label.value = decoder.labels[true_label_index]
+                    
             elif state == 'dir':
                 if self.tm_trigger.sec() > self.cfg.TIMINGS['CLASSIFY'] or (self.premature_end and bar_score >= 100):
+                    
+                    #  For adaptive
+                    if adaptive:
+                        with decoder.label.get_lock():
+                            decoder.label.value = 0
+                    
                     if not hasattr(self.cfg, 'SHOW_RESULT') or self.cfg.SHOW_RESULT is True:
                         # show classfication result
                         if self.cfg.WITH_STIMO is True:
@@ -279,6 +297,7 @@ class Feedback:
                 else:
                     # classify
                     probs_new = decoder.get_prob_smooth_unread()
+                    
                     if probs_new is None:
                         if self.tm_watchdog.sec() > 3:
                             logger.warning('No classification being done. Are you receiving data streams?')
