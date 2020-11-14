@@ -41,6 +41,11 @@ class rLDA(object):
         the return values can be safely ignored.
 
         """
+        if type(X) is list:
+            X = np.array(X)
+        if type(Y) is list:
+            Y = np.array(Y)        
+        
         labels = np.unique(Y)
         if X.ndim != 2:
             raise RuntimeError('X must be 2 dimensional.')
@@ -65,11 +70,11 @@ class rLDA(object):
             assert not math.isnan(wi)
         assert not math.isnan(b)
 
-        self.w = np.array(w).reshape(-1)  # vector
-        self.b = np.array(b).reshape(-1)  # scalar
-        self.labels = labels
+        self.coef_ = np.array(w)  # vector
+        self.b = np.array(b)  # scalar
+        self.classes_ = labels
 
-        return self.w, self.b
+        return self.coef_, self.b
 
     def predict(self, X, proba=False):
         """
@@ -78,15 +83,15 @@ class rLDA(object):
         probs = []
         predicted = []
         for row in X:
-            probability = float(self.w.T * np.matrix(row).T + self.b.T)
+            probability = float(self.coef_.T * np.matrix(row).T + self.b.T)
             if probability >= 0:
-                predicted.append(self.labels[1])
+                predicted.append(self.classes_[1])
             else:
-                predicted.append(self.labels[0])
+                predicted.append(self.classes_[0])
 
             # rescale from 0 to 1, similar to scikit-learn's way
             prob_norm = 1.0 / (np.exp(-probability / 10.0) + 1.0)
-            # values are in the same order as that of self.labels
+            # values are in the same order as that of self.classes_
             probs.append([1 - prob_norm, prob_norm])
 
         if proba:
@@ -104,7 +109,7 @@ class rLDA(object):
         """
         Returns labels in the same order as you get when you call predict()
         """
-        return self.labels
+        return self.classes_
 
     def score(self, X, true_labels):
         raise RuntimeError('SORRY: FUNCTION IS NOT IMPLEMENTED YET.')

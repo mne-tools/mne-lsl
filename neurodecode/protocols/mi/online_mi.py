@@ -31,6 +31,7 @@ import os
 import sys
 import time
 import random
+import numpy as np
 import neurodecode
 import multiprocessing as mp
 import neurodecode.utils.q_common as qc
@@ -84,6 +85,7 @@ def check_config(cfg):
         'LOG_PROBS':False,
         'WITH_REX': False,
         'WITH_STIMO': False,
+        'ADAPTIVE': None,
     }
 
     for key in critical_vars['COMMON']:
@@ -114,7 +116,7 @@ def check_config(cfg):
 
     if getattr(cfg, 'TRIGGER_DEVICE') == None:
         logger.warning('The trigger device is set to None! No events will be saved.')
-        raise RuntimeError('The trigger device is set to None! No events will be saved.')    
+        # raise RuntimeError('The trigger device is set to None! No events will be saved.')    
 
 def run(cfg, state=mp.Value('i', 1), queue=None):
 
@@ -151,11 +153,15 @@ def run(cfg, state=mp.Value('i', 1), queue=None):
         input('Press Ctrl+C to stop or Enter to continue.')
         trigger = pyLptControl.MockTrigger()
         trigger.init(50)
+        
+    # For adaptive (need to share the actual true label accross process)
+    label = mp.Value('i', 0)
 
     # init classification
     decoder = BCIDecoderDaemon(cfg.DECODER_FILE, buffer_size=1.0, fake=(cfg.FAKE_CLS is not None),
                                amp_name=amp_name, amp_serial=amp_serial, fake_dirs=fake_dirs,
-                               parallel=cfg.PARALLEL_DECODING[cfg.PARALLEL_DECODING['selected']], alpha_new=cfg.PROB_ALPHA_NEW)
+                               parallel=cfg.PARALLEL_DECODING[cfg.PARALLEL_DECODING['selected']],
+                               alpha_new=cfg.PROB_ALPHA_NEW, label=label)
 
     # OLD: requires trigger values to be always defined
     #labels = [tdef.by_value[x] for x in decoder.get_labels()]
@@ -170,6 +176,7 @@ def run(cfg, state=mp.Value('i', 1), queue=None):
 
     # map class labels to bar directions
     bar_def = {label:str(dir) for dir, label in cfg.DIRECTIONS}
+
     bar_dirs = [bar_def[l] for l in labels]
     dir_seq = []
     for x in range(cfg.TRIALS_EACH):
@@ -216,12 +223,16 @@ def run(cfg, state=mp.Value('i', 1), queue=None):
         else:
             title_text = 'Ready'
         true_label = dir_seq[trial - 1]
+        
+        adaptive = False
+        if cfg.ADAPTIVE and (trial % cfg.ADAPTIVE[cfg.ADAPTIVE['selected']][0] == 0):
+            adaptive = True               
 
         # profiling feedback
         #import cProfile
         #pr = cProfile.Profile()
         #pr.enable()
-        result = feedback.classify(decoder, true_label, title_text, bar_dirs, prob_history=prob_history)
+        result = feedback.classify(decoder, true_label, title_text, bar_dirs, prob_history=prob_history, adaptive=adaptive)
         #pr.disable()
         #pr.print_stats(sort='time')
 
