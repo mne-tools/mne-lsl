@@ -7,6 +7,7 @@ DECODER_FILE = r''
 # fake decoder?
 FAKE_CLS = None
 DIRECTIONS = [ ('L', 'LEFT_GO'), ('R', 'RIGHT_GO') ]
+ADAPTIVE =  {'selected':'False', 'False':False, 'True':[3]}
 
 # trigger device
 TRIGGER_DEVICE = None # None | 'ARDUINO' | 'USB2LPT' | 'DESKTOP' | 'SOFTWARE'
