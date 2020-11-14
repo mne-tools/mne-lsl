@@ -225,7 +225,7 @@ def run(cfg, state=mp.Value('i', 1), queue=None):
         true_label = dir_seq[trial - 1]
         
         adaptive = False
-        if cfg.ADAPTIVE and (trial % cfg.ADAPTIVE[cfg.ADAPTIVE['selected']][0] == 0):
+        if cfg.ADAPTIVE and (trial % (cfg.ADAPTIVE[cfg.ADAPTIVE['selected']][0]+1) == 0):
             adaptive = True               
 
         # profiling feedback
