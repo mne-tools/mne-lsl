@@ -85,7 +85,7 @@ def check_config(cfg):
         'LOG_PROBS':False,
         'WITH_REX': False,
         'WITH_STIMO': False,
-        'ADAPTIVE': None,
+        'ADAPTIVE': False,
     }
 
     for key in critical_vars['COMMON']:
