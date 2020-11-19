@@ -452,8 +452,6 @@ class BCIDecoderDaemon(object):
         logger.debug('[DecodeWorker-%-6d] Decoder worker process started' % (pid))
         decoder = BCIDecoder(classifier, buffer_size=self.buffer_sec, fake=self.fake,\
                              amp_serial=self.amp_serial, amp_name=self.amp_name, label=label)
-        # TO REMOVE
-        decoder.get_prob()    
         
         if self.fake == False:
             psd = ctypeslib.as_array(psd_ctypes)
