@@ -468,7 +468,7 @@ class StreamEEG(_Stream):
             self._lsl_tr_channel = 23
         
         elif 'StreamPlayer' in self.name:
-            self._lsl_tr_channel = 0
+            self._lsl_tr_channel = find_event_channel(ch_names=self._ch_list)
         
         elif 'openvibeSignal' in self.name:
             self._multiplier = 10**6 # change V -> uV unit for OpenVibe sources
