@@ -28,7 +28,7 @@ SP_CHANNELS = []
 TP_FILTER = {'selected':'False', 'False':None, 'True':[1, 40]}
 TP_CHANNELS = []
 NOTCH_FILTER = {'selected':'False', 'False':None, 'True':[50]}
-SP_CHANNELS = []
+NOTCH_CHANNELS = []
 
 #-------------------------------------------
 # Unit conversion

@@ -240,7 +240,7 @@ class BCIDecoder(object):
             feats = np.concatenate(psd[0])
             
             # For adaptive classifier
-            if hasattr(self, 'xdata'):
+            if self.label:
                 with self.label.get_lock():
                     if self.label.value in self.labels:
                         self.xdata.append(feats.tolist())
