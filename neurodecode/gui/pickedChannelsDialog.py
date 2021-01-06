@@ -23,6 +23,7 @@ class PickChannelsDialog(QDialog):
         self.channels.insertItems(0, channels)
         self.channels.setSelectionMode(QListWidget.ExtendedSelection)
 
+        print(self.channels.item(2).data(0))
         for i in range(self.channels.count()):
             if self.channels.item(i).data(0) in selected:
                 self.channels.item(i).setSelected(True)

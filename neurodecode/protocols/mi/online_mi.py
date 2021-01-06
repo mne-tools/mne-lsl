@@ -176,17 +176,11 @@ def run(cfg, state=mp.Value('i', 1), queue=None):
 
     # map class labels to bar directions
     bar_def = {label:str(dir) for dir, label in cfg.DIRECTIONS}
-
     bar_dirs = [bar_def[l] for l in labels]
     dir_seq = []
     for x in range(cfg.TRIALS_EACH):
         dir_seq.extend(bar_dirs)
-    if cfg.TRIALS_RANDOMIZE:
-        random.shuffle(dir_seq)
-    else:
-        dir_seq = [d[0] for d in cfg.DIRECTIONS] * cfg.TRIALS_EACH
-    num_trials = len(dir_seq)
-
+    
     logger.info('Initializing decoder.')
     while decoder.is_running() is 0:
         time.sleep(0.01)
@@ -213,77 +207,97 @@ def run(cfg, state=mp.Value('i', 1), queue=None):
         probs_logfile = None
     feedback = Feedback(cfg, state, visual, tdef, trigger, probs_logfile)
 
-    # start
-    trial = 1
-    dir_detected = []
-    prob_history = {c:[] for c in bar_dirs}
-    while trial <= num_trials:
-        if cfg.SHOW_TRIALS:
-            title_text = 'Trial %d / %d' % (trial, num_trials)
-        else:
-            title_text = 'Ready'
-        true_label = dir_seq[trial - 1]
-        
+    # If adaptive classifier
+    if cfg.ADAPTIVE[cfg.ADAPTIVE['selected']]:
+        nb_runs = cfg.ADAPTIVE[cfg.ADAPTIVE['selected']][0]
+        adaptive = True
+    else:
+        nb_runs = 1
         adaptive = False
-        if cfg.ADAPTIVE and (trial % (cfg.ADAPTIVE[cfg.ADAPTIVE['selected']][0]+1) == 0):
-            adaptive = True               
 
-        # profiling feedback
-        #import cProfile
-        #pr = cProfile.Profile()
-        #pr.enable()
-        result = feedback.classify(decoder, true_label, title_text, bar_dirs, prob_history=prob_history, adaptive=adaptive)
-        #pr.disable()
-        #pr.print_stats(sort='time')
-
-        if result is None:
-            break
+    run = 1
+    while run <= nb_runs:
+        
+        if cfg.TRIALS_RANDOMIZE:
+            random.shuffle(dir_seq)
         else:
-            pred_label = result
-        dir_detected.append(pred_label)
-
-        if cfg.WITH_REX is True and pred_label == true_label:
-            # if cfg.WITH_REX is True:
-            if pred_label == 'U':
-                rex_dir = 'N'
-            elif pred_label == 'L':
-                rex_dir = 'W'
-            elif pred_label == 'R':
-                rex_dir = 'E'
-            elif pred_label == 'D':
-                rex_dir = 'S'
+            dir_seq = [d[0] for d in cfg.DIRECTIONS] * cfg.TRIALS_EACH
+        num_trials = len(dir_seq)
+        
+        # For adaptive, retrain classifier
+        if run > 1:
+            with decoder.label.get_lock():
+                decoder.label.value = 1            
+        
+        # start
+        trial = 1
+        dir_detected = []
+        prob_history = {c:[] for c in bar_dirs}
+        while trial <= num_trials:
+            if cfg.SHOW_TRIALS:
+                title_text = 'Trial %d / %d' % (trial, num_trials)
             else:
-                logger.warning('Rex cannot execute undefined action %s' % pred_label)
-                rex_dir = None
-            if rex_dir is not None:
-                visual.move(pred_label, 100, overlay=False, barcolor='B')
-                visual.update()
-                logger.info('Executing Rex action %s' % rex_dir)
-                os.system('%s/Rex/RexControlSimple.exe %s %s' % (pycnbi.ROOT, cfg.REX_COMPORT, rex_dir))
-                time.sleep(8)
-
-        if true_label == pred_label:
-            msg = 'Correct'
-        else:
-            msg = 'Wrong'
-        if cfg.TRIALS_RETRY is False or true_label == pred_label:
-            logger.info('Trial %d: %s (%s -> %s)' % (trial, msg, true_label, pred_label))
-            trial += 1
-
-    if len(dir_detected) > 0:
-        # write performance and log results
-        fdir, _, _ = qc.parse_path_list(cfg.DECODER_FILE)
-        logfile = time.strftime(fdir + "/online-%Y%m%d-%H%M%S.txt", time.localtime())
-        with open(logfile, 'w') as fout:
-            fout.write('Ground-truth,Prediction\n')
-            for gt, dt in zip(dir_seq, dir_detected):
-                fout.write('%s,%s\n' % (gt, dt))
-            cfmat, acc = qc.confusion_matrix(dir_seq, dir_detected)
-            fout.write('\nAccuracy %.3f\nConfusion matrix\n' % acc)
-            fout.write(cfmat)
-            logger.info('Log exported to %s' % logfile)
-        print('\nAccuracy %.3f\nConfusion matrix\n' % acc)
-        print(cfmat)
+                title_text = 'Ready'
+            true_label = dir_seq[trial - 1]       
+    
+            # profiling feedback
+            #import cProfile
+            #pr = cProfile.Profile()
+            #pr.enable()
+            result = feedback.classify(decoder, true_label, title_text, bar_dirs, prob_history=prob_history, adaptive=adaptive)
+            #pr.disable()
+            #pr.print_stats(sort='time')
+    
+            if result is None:
+                break
+            else:
+                pred_label = result
+            dir_detected.append(pred_label)
+    
+            if cfg.WITH_REX is True and pred_label == true_label:
+                # if cfg.WITH_REX is True:
+                if pred_label == 'U':
+                    rex_dir = 'N'
+                elif pred_label == 'L':
+                    rex_dir = 'W'
+                elif pred_label == 'R':
+                    rex_dir = 'E'
+                elif pred_label == 'D':
+                    rex_dir = 'S'
+                else:
+                    logger.warning('Rex cannot execute undefined action %s' % pred_label)
+                    rex_dir = None
+                if rex_dir is not None:
+                    visual.move(pred_label, 100, overlay=False, barcolor='B')
+                    visual.update()
+                    logger.info('Executing Rex action %s' % rex_dir)
+                    os.system('%s/Rex/RexControlSimple.exe %s %s' % (pycnbi.ROOT, cfg.REX_COMPORT, rex_dir))
+                    time.sleep(8)
+    
+            if true_label == pred_label:
+                msg = 'Correct'
+            else:
+                msg = 'Wrong'
+            if cfg.TRIALS_RETRY is False or true_label == pred_label:
+                logger.info('Trial %d: %s (%s -> %s)' % (trial, msg, true_label, pred_label))
+                trial += 1
+    
+        if len(dir_detected) > 0:
+            # write performance and log results
+            fdir, _, _ = qc.parse_path_list(cfg.DECODER_FILE)
+            logfile = time.strftime(fdir + "/online-%Y%m%d-%H%M%S.txt", time.localtime())
+            with open(logfile, 'w') as fout:
+                fout.write('Ground-truth,Prediction\n')
+                for gt, dt in zip(dir_seq, dir_detected):
+                    fout.write('%s,%s\n' % (gt, dt))
+                cfmat, acc = qc.confusion_matrix(dir_seq, dir_detected)
+                fout.write('\nAccuracy %.3f\nConfusion matrix\n' % acc)
+                fout.write(cfmat)
+                logger.info('Log exported to %s' % logfile)
+            print('\nAccuracy %.3f\nConfusion matrix\n' % acc)
+            print(cfmat)
+        
+        run += 1
 
     visual.finish()
 

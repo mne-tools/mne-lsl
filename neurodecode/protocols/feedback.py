@@ -116,11 +116,6 @@ class Feedback:
         tm_classify = qc.Timer(autoreset=True)
         self.stimo_timer = qc.Timer()
         
-        # For adaptive, retrain classifier
-        if adaptive:
-            with decoder.label.get_lock():
-                decoder.label.value = 1           
-        
         while True:
             self.tm_display.sleep_atleast(self.refresh_delay)
             self.tm_display.reset()         
