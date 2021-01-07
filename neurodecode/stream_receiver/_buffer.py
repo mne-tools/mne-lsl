@@ -19,7 +19,6 @@ class Buffer():
         
         self._data = []
         self._timestamps = []
-        self._lsl_time_offset = None
     
     #----------------------------------------------------------------------
     def fill(self, data, tslist):
