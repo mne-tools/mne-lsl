@@ -44,7 +44,6 @@ def event_timestamps_to_indices(raw_timestamps, eventfile, offset=0):
 
     Parameters:
     raw_timestamps : The whole data's timestamps.  
-    sigfile: raw signal file (Python Pickle) recorded with stream_recorder.py.
     eventfile: event file where events are indexed with LSL timestamps.
     offset: if the LSL server's timestamp is shifted, correct with offset value in seconds.
 
@@ -107,7 +106,8 @@ def pcl2fif(filename, outdir=None, external_event=None, offset=0, overwrite=Fals
     raw, info = format_to_mne_RawArray(data)
     
     if external_event is not None:
-        add_events_from_txt(raw, external_event, offset)
+        events_index = event_timestamps_to_indices(data["timestamps"], external_event, offset)
+        add_events_from_txt(raw, events_index)
 
     qc.make_dirs(outdir)
     fiffile = outdir + fname + '.fif'
@@ -168,22 +168,18 @@ def format_to_mne_RawArray(data):
 
     # create Raw object
     raw = mne.io.RawArray(signals, info)
-    raw._times = data['timestamps'] # seems to have no effect
     
     return raw, info
 
-def add_events_from_txt(raw, external_event, offset=0):
+def add_events_from_txt(raw, events_index):
     """
     Merge the events extracted from a txt file to the trigger channel.
-    """
-    raw._data[0] = 0  # erase current events
-    ts = raw['timestamps'].reshape(-1)        
-    events_index = event_timestamps_to_indices(ts, external_event, offset)
+    """    
     if len(events_index) == 0:
         logger.warning('No events were found in the event file')
     else:
         logger.info('Found %d events' % len(events_index))
-        raw.add_events(events_index, stim_channel='TRIGGER')    
+        raw.add_events(events_index, stim_channel='TRIGGER', replace="False")    
     
     return raw
 
