@@ -255,7 +255,7 @@ class MockTrigger(object):
 
     def signal(self, value):
         logger.info('FAKE trigger signal %s' % value)
-        return Trues
+        return True
 
     def signal_off(self):
         logger.info('FAKE trigger value 0')
@@ -281,7 +281,7 @@ def test_all_bits(trigger):
 # sample test code
 if __name__ == '__main__':
     #trigger = Trigger('COM3') # Arduino trigger
-    trigger = Trigger('SOFTWARE') # Arduino trigger
+    trigger = Trigger(lpttype='SOFTWARE') # Arduino trigger
     if not trigger.init(500):
         print('LPT port cannot be opened. Using mock trigger.')
         trigger = MockTrigger()
