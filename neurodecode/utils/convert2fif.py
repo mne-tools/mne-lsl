@@ -146,7 +146,7 @@ def format_to_mne_RawArray(data):
         signals = np.concatenate((eventch, signals_raw), axis=0)
         num_eeg_channels = signals_raw.shape[0] # data['channels'] is not reliable any more
         trig_ch = 0
-        ch_names = ['TRIGGER'] + ['CH%d' % (x + 1) for x in range(num_eeg_channels)]
+        ch_names = ['TRIGGER'] + ch_names
     elif trig_ch == 0:
         signals = signals_raw
         num_eeg_channels = data['channels'] - 1
