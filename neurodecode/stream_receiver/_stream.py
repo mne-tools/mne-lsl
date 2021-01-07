@@ -1,4 +1,5 @@
 import time
+import math
 import pylsl
 import numpy as np
 
@@ -35,7 +36,7 @@ class _Stream(ABC):
         self._blocking_time = 5
         self._lsl_time_offset = None
         
-        self._inlet = pylsl.StreamInlet(streamInfo, max_buflen=bufsize)
+        self._inlet = pylsl.StreamInlet(streamInfo, max_buflen=math.ceil(bufsize))
         
         winsize = _Stream._check_window_size(winsize)
         bufsize = _Stream._check_buffer_size(bufsize, winsize)
