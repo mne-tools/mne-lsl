@@ -207,7 +207,7 @@ class StreamReceiver:
         """
         while len(threads) > 0:                
             for t in threads:
-                if not t.isAlive():
+                if not t.is_alive():
                     t.handled = True
                 else:
                     t.handled = False
