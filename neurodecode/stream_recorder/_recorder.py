@@ -215,7 +215,7 @@ class _Recorder:
             else:
                 pcl2fif(pcl_files[i], external_event=None)
             
-            os.remove(pcl_files[i])
+            # os.remove(pcl_files[i])
  
     #----------------------------------------------------------------------
     def save(self, data_files, eve_file):
