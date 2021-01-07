@@ -1,10 +1,9 @@
 import os
 import time
 import datetime
-from path import Path
 import multiprocessing as mp
 from mne.io import read_raw_fif
-from mne_bids import make_bids_basename, write_raw_bids
+# from mne_bids import make_bids_basename, write_raw_bids
 
 from neurodecode import logger
 import neurodecode.utils.q_common as qc
