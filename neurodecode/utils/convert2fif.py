@@ -38,14 +38,14 @@ from pathlib import Path
 mne.set_log_level('ERROR')
 
 
-def event_timestamps_to_indices(raw_timestamps, eventfile, offset=0):
+def event_timestamps_to_indices(raw_timestamps, eventfile, offset):
     """
     Convert LSL timestamps to sample indices for separetely recorded events.
 
     Parameters:
     raw_timestamps : The whole data's timestamps.  
     eventfile: event file where events are indexed with LSL timestamps.
-    offset: if the LSL server's timestamp is shifted, correct with offset value in seconds.
+    offset: The first sample's LSL timestamps, to start at 0.0 sec 
 
     Returns:
     events list, which can be used as an input to mne.io.RawArray.add_events().
@@ -58,7 +58,7 @@ def event_timestamps_to_indices(raw_timestamps, eventfile, offset=0):
     with open(eventfile) as f:
         for l in f:
             data = l.strip().split('\t')
-            event_ts = float(data[0]) + offset
+            event_ts = float(data[0]) - offset
             event_value = int(data[2])
             # find the first index not smaller than raw_timestamps
             next_index = np.searchsorted(raw_timestamps, event_ts)
@@ -85,7 +85,7 @@ def convert2mat(filename, matfile):
             sys.exit()
 
 
-def pcl2fif(filename, outdir=None, external_event=None, offset=0, overwrite=False, precision='single'):
+def pcl2fif(filename, outdir=None, external_event=None, overwrite=False, precision='single'):
     """
     neurodecode Python pickle file
 
@@ -106,7 +106,7 @@ def pcl2fif(filename, outdir=None, external_event=None, offset=0, overwrite=Fals
     raw, info = format_to_mne_RawArray(data)
     
     if external_event is not None:
-        events_index = event_timestamps_to_indices(data["timestamps"], external_event, offset)
+        events_index = event_timestamps_to_indices(raw.times, external_event, data["timestamps"][0])
         add_events_from_txt(raw, events_index)
 
     qc.make_dirs(outdir)
