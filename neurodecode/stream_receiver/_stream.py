@@ -468,16 +468,16 @@ class StreamEEG(_Stream):
         elif 'SmartBCI' in self.name:
             self._lsl_tr_channel = 23
         
-        elif 'StreamPlayer' in self.name:
-            self._lsl_tr_channel = find_event_channel(ch_names=self._ch_list)
-        
         elif 'openvibeSignal' in self.name:
             self._multiplier = 10**6 # change V -> uV unit for OpenVibe sources
             self._lsl_tr_channel = find_event_channel(ch_names=self._ch_list)
         
         elif 'openvibeMarkers' in self.name:
             self._lsl_tr_channel = find_event_channel(ch_names=self._ch_list)
-        
+            
+        elif 'actiCHamp' in self.name:
+            self._lsl_tr_channel = -1
+            
         else:
             self._lsl_tr_channel = find_event_channel(ch_names=self._ch_list)
     
