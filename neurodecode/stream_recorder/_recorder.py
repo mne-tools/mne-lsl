@@ -252,7 +252,7 @@ class _Recorder:
         """
         data_files, eve_file = self.create_files(self.record_dir)
         
-        # self.outlet = self.create_events_server(source_id=eve_file)
+        self.outlet = self.create_events_server(source_id=eve_file)
         self.logger.info('\n>> Recording started (PID %d).' % os.getpid())
         self.acquire()
         
