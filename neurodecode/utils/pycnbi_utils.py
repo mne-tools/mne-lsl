@@ -442,7 +442,7 @@ def load_raw(rawfile, spfilter=None, spchannels=None, events_ext=None, multiplie
     extension = qc.parse_path(rawfile).ext
     assert extension in ['fif', 'fiff'], 'only fif format is supported'
     raw = mne.io.Raw(rawfile, preload=True, verbose=verbose)
-    if spfilter is not None or multiplier is not 1:
+    if spfilter is not None or multiplier != 1:
         preprocess(raw, spatial=spfilter, spatial_ch=spchannels, multiplier=multiplier)
     if events_ext is not None:
         events = mne.read_events(events_ext)
