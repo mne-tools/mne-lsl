@@ -624,7 +624,7 @@ def lsl_channel_list(inlet):
     ch_list = []
     
     if desc.find('channels') is not None:        
-        for ch in desc.find('channels').getchildren():
+        for ch in desc.find('channels'):
             ch_name = ch.find('label').text
             ch_list.append(ch_name)
 
