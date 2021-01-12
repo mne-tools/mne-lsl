@@ -248,9 +248,9 @@ class _Scope(QMainWindow):
         self.bool_parser = {True:'1', False:'0'}
 
         # Scales available in the GUI. 
-        self.scales_range = [1, 10, 25, 50, 100, 250, 500, 1000, 2500, 100000]
+        self.scales_range = [1E-6, 1E-5, 2.5E-5, 5E-5, 1E-4, 2.5E-4, 5E-4, 1E-3, 2.5E-3, 1E-1]
         # Scale in uV
-        self.scale = int(self.scope_settings.get("plot", "scale_plot"))
+        self.scale = float(self.scope_settings.get("plot", "scale_plot"))
         # Time window to show in seconds
         self.seconds_to_show = int(self.scope_settings.get("plot", "time_plot"))
 
@@ -563,13 +563,6 @@ class _Scope(QMainWindow):
         '''
         Do necessary stuff when scale has changed
         '''
-
-        if (new_scale < 1):
-            new_scale = 1
-        # commented out by dbdq.
-        # else:
-        #	new_scale = new_scale - new_scale%10
-
         self.scale = new_scale
 
         # Y Tick labels
