@@ -307,7 +307,7 @@ if __name__ == '__main__':
             psd = psd.reshape((psd.shape[1], psd.shape[2]))
             psdmean = np.mean(psd, axis=1)
             for p in psdmean:
-                print('%.1f' % p, end=' ')
+                print('{:.2e}'.format(p), end=' ')
             print("")
 
         last_ts = tslist[-1]
