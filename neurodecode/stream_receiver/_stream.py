@@ -418,7 +418,7 @@ class StreamEEG(_Stream):
                 
         super().__init__(streamInfo, buffer_size, window_size)
         
-        self._multiplier = 1  # 10**6 for uV unit (automatically updated for openvibe servers)
+        self._multiplier = 10 ** -6  # # change uV -> V unit
 
     #----------------------------------------------------------------------   
     def acquire(self):
@@ -469,7 +469,7 @@ class StreamEEG(_Stream):
             self._lsl_tr_channel = 23
         
         elif 'openvibeSignal' in self.name:
-            self._multiplier = 10**6 # change V -> uV unit for OpenVibe sources
+            self._multiplier = 1    
             self._lsl_tr_channel = find_event_channel(ch_names=self._ch_list)
         
         elif 'openvibeMarkers' in self.name:

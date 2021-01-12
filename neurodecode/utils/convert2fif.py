@@ -129,7 +129,7 @@ def format_to_mne_RawArray(data):
     else:
         signals_raw = data['signals'].T  # to channels x samples
     sample_rate = data['sample_rate']
-
+    
     if 'ch_names' not in data:
         ch_names = ['CH%d' % (x + 1) for x in range(signals_raw.shape[0])]
     else:
