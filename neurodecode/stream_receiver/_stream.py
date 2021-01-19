@@ -68,7 +68,7 @@ class _Stream(ABC):
         if self.lsl_time_offset is None:
             logger.warning('No LSL timestamp offset computed, no data received yet.')
         elif abs(self.lsl_time_offset) > 0.1:
-            logger.warning('LSL server {}({}) has a high timestamp offset [offset={:.3f}].'.format(self.name, self.serial, self.buffer.lsl_time_offset))
+            logger.warning('LSL server {}({}) has a high timestamp offset [offset={:.3f}].'.format(self.name, self.serial, self.lsl_time_offset))
         else:
             logger.info('LSL server {}({}) synchronized [offset={:.3f}]'.format(self.name, self.serial, self.lsl_time_offset))           
     
@@ -113,6 +113,7 @@ class _Stream(ABC):
             else:
                 # give up and return empty values to avoid deadlock
                 logger.warning('Timeout occurred [{}secs] while acquiring data from {}({}). Amp driver bug?'.format(self._blocking_time, self.name, self.serial))
+                received = True
 
         return chunk, tslist
     
