@@ -149,7 +149,7 @@ class StreamReceiver:
         if len(timestamps) > 0:
             return np.array(window), np.array(timestamps)
         else:
-            return np.array([]), np.array([])
+            return np.empty((0, len(self.streams[stream_index].ch_list))), np.array([])
     
     #----------------------------------------------------------------------
     def get_buffer(self, stream_index=0):
