@@ -76,6 +76,9 @@ class StreamReceiver:
                     # connect to a specific amp only?
                     if amp_name is not None and si.name() not in amp_name:
                         continue
+                    # do not connect to StreamRecorderInfo
+                    if si.name() == 'StreamRecorderInfo':
+                        continue
                     # eeg stream
                     if si.type().lower() == "eeg":
                         self._streams.append(StreamEEG(si, buffer_size, window_size))
