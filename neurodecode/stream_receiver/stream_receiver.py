@@ -28,7 +28,7 @@ class StreamReceiver:
     #----------------------------------------------------------------------
     def __init__(self, window_size=1, buffer_size=1, amp_name=None, eeg_only=False):
         
-        self._streams = []
+        self._streams = dict()
         self._is_connected = False
         
         self.connect(window_size, buffer_size, amp_name, eeg_only)
@@ -53,7 +53,7 @@ class StreamReceiver:
         eeg_only : bool
             If true, ignore non-EEG servers.
         """
-        self._streams = []
+        self._streams = dict()
         
         self._is_connected = False        
         server_found = False
@@ -81,10 +81,10 @@ class StreamReceiver:
                         continue
                     # eeg stream
                     if si.type().lower() == "eeg":
-                        self._streams.append(StreamEEG(si, buffer_size, window_size))
+                        self._streams[si.name()] = StreamEEG(si, buffer_size, window_size)
                     # marker stream
                     elif si.nominal_srate() == 0:
-                        self._streams.append(StreamMarker(si, buffer_size, window_size))
+                        self._streams[si.name()] = StreamMarker(si, buffer_size, window_size)
                     
                     server_found = True
             time.sleep(1)
@@ -101,7 +101,7 @@ class StreamReceiver:
         """
         Display the informations about the connected streams.
         """
-        for i in range(len(self.streams)):
+        for i in self.streams:
             logger.info("----------------------------------------------------------------")
             logger.info("The stream {} is connected to:".format(i))
             self.streams[i].show_info()
@@ -115,8 +115,8 @@ class StreamReceiver:
         """
         threads = []
         
-        for i in range(len(self._streams)):
-            t = Thread(target=self._streams[i].acquire, args=[])
+        for s in self._streams:
+            t = Thread(target=self._streams[s].acquire, args=[])
             t.daemon = True
             t.start()
             threads.append(t)
@@ -124,14 +124,16 @@ class StreamReceiver:
         self._wait_threads_to_finish(threads)
              
     #----------------------------------------------------------------------
-    def get_window(self, stream_index=0):
+    def get_window(self, stream_name=None):
         """
         Get the latest window from a stream's buffer.
-
+        
+        If several streams connected, specify the name.
+        
         Parameters
         ----------
-        stream_index : int
-            The index of the stream to extract from.
+        stream_name : int
+            The name of the stream to extract from.
 
         Returns
         -------
@@ -140,29 +142,36 @@ class StreamReceiver:
         np.array
              The timestamps [samples]
         """
+        if len(list(self.streams)) == 1:
+            stream_name = list(self.streams)[0]
+        elif stream_name is None:
+            raise IOError("Please provide a stream name to get its latest window.")
+            
         self.is_connected
-        winsize = self.streams[stream_index].buffer.winsize
+        winsize = self.streams[stream_name].buffer.winsize
         
         try:
-            window = self.streams[stream_index].buffer.data[-winsize:]
-            timestamps = self.streams[stream_index].buffer.timestamps[-winsize:]
+            window = self.streams[stream_name].buffer.data[-winsize:]
+            timestamps = self.streams[stream_name].buffer.timestamps[-winsize:]
         except IndexError:
-            logger.warning("The buffer of {} does not contain enough samples" .format(self._streams[stream_index].name))
+            logger.warning("The buffer of {} does not contain enough samples" .format(self._streams[stream_name].name))
 
         if len(timestamps) > 0:
             return np.array(window), np.array(timestamps)
         else:
-            return np.empty((0, len(self.streams[stream_index].ch_list))), np.array([])
+            return np.empty((0, len(self.streams[stream_name].ch_list))), np.array([])
     
     #----------------------------------------------------------------------
-    def get_buffer(self, stream_index=0):
+    def get_buffer(self, stream_name):
         """
         Get the entire buffer of a stream in numpy format.
         
+        If several streams connected, specify the name.
+        
         Parameters
         ----------
-        stream_index : int
-            The index of the stream to extract from.
+        stream_name : int
+            The name of the stream to extract from.
 
         Returns
         -------
@@ -171,31 +180,43 @@ class StreamReceiver:
         np.array
             Its timestamps [samples]
         """
+        if len(list(self.streams)) == 1:
+            stream_name = list(self.streams)[0]
+        elif stream_name is None:
+            raise IOError("Please provide a stream name to get its buffer.")
+        
         self.is_connected
         
-        if len(self.streams[stream_index].buffer.timestamps) > 0:
-            return np.array(self.streams[stream_index].buffer.data), np.array(self.streams[stream_index].buffer.timestamps)
+        if len(self.streams[stream_name].buffer.timestamps) > 0:
+            return np.array(self.streams[stream_name].buffer.data), np.array(self.streams[stream_name].buffer.timestamps)
         else:
             return np.array([]), np.array([])
     
     #----------------------------------------------------------------------
-    def reset_buffer(self, stream_index=0):
+    def reset_buffer(self, stream_name):
         """
         Clear the stream's buffer.
+        
+        If several streams connected, specify the name.
                 
         Parameters
         ----------
-        stream_index : int
-            The stream's index.
+        stream_name : int
+            The stream's name.
         """
-        self.streams[stream_index].buffer.reset_buffer()
+        if len(list(self.streams)) == 1:
+            stream_name = list(self.streams)[0]
+        elif stream_name is None:
+            raise IOError("Please provide a stream name to reset its buffer.")
+        
+        self.streams[stream_name].buffer.reset_buffer()
         
     #----------------------------------------------------------------------
     def reset_all_buffers(self):
         """
         Clear all the streams' buffer.
         """
-        for i in range(len(self._streams)):
+        for i in self._streams:
             self.streams[i].buffer.reset_buffer()
                         
     #----------------------------------------------------------------------
@@ -257,7 +278,6 @@ if __name__ == '__main__':
     import os
     from neurodecode.utils.q_common import Timer 
     
-    stream_index = 0                            # Stream of interest
     CH_INDEX = [1]                              # Channel of interest
     TIME_INDEX = None                           # integer or None. None = average of raw values of the current window
     SHOW_PSD = True
@@ -269,9 +289,9 @@ if __name__ == '__main__':
     sr = StreamReceiver(window_size=0.5, buffer_size=1, amp_name=None, eeg_only=False)
     
     
-    stream_index = int(input("Provide the index of the stream you want to acquire \n>> "))
-    
-    sfreq = sr.streams[stream_index].sample_rate
+    # stream_name = input("Provide the name of the stream you want to acquire \n>> ")
+    stream_name = None
+    sfreq = sr.streams[list(sr.streams.keys())[0]].sample_rate
     trg_ch = 0                                  # trg channels is always at index 0
     
     # PSD init
@@ -286,7 +306,7 @@ if __name__ == '__main__':
     
     while True:
         sr.acquire()
-        window, tslist = sr.get_window(stream_index=stream_index)       # window = [samples x channels]
+        window, tslist = sr.get_window(stream_name=stream_name)       # window = [samples x channels]
         window = window.T                                               # channels x samples
 
         # print event values
