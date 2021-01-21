@@ -612,7 +612,7 @@ def lsl_channel_list(inlet):
     root = ET.fromstring(inlet.info().as_xml())
     desc = root.find('desc')
     ch_list = []
-    for ch in desc.find('channels').getchildren():
+    for ch in desc.find('channels'):
         ch_name = ch.find('label').text
         ch_list.append(ch_name)
 
