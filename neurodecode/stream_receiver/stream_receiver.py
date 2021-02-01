@@ -101,10 +101,10 @@ class StreamReceiver:
         """
         Display the informations about the connected streams.
         """
-        for i in self.streams:
+        for s in self.streams:
             logger.info("----------------------------------------------------------------")
-            logger.info("The stream {} is connected to:".format(i))
-            self.streams[i].show_info()
+            logger.info("The stream {} is connected to:".format(s))
+            self.streams[s].show_info()
             
     #----------------------------------------------------------------------
     def acquire(self):
@@ -138,7 +138,7 @@ class StreamReceiver:
         Returns
         -------
         np.array
-             The data [[samples_ch1],[samples_ch2]...]
+             The data [samples x channels]
         np.array
              The timestamps [samples]
         """
@@ -176,7 +176,7 @@ class StreamReceiver:
         Returns
         -------
         np.array
-            The data [[samples_ch1],[samples_ch2]...]
+            The data [samples x channels]
         np.array
             Its timestamps [samples]
         """
