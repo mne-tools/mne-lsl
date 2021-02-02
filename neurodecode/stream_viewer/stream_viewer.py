@@ -29,7 +29,7 @@ class StreamViewer:
         if (self.amp_name is None):
             self.search_stream()
         
-        logger.info('Connecting to a stream %s.'.format(self.amp_name))
+        logger.info('Connecting to the stream: {}'.format(self.amp_name))
         
         app = QApplication(sys.argv)
         ex = _Scope(self.amp_name)
@@ -56,8 +56,5 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         amp_name = sys.argv[1]
         
-    if len(sys.argv) == 1:
-        amp_name, _ = pu.search_lsl()
-    
     stream_viewer = StreamViewer(amp_name)
     stream_viewer.run()
