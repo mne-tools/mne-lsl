@@ -162,7 +162,7 @@ class StreamReceiver:
             return np.empty((0, len(self.streams[stream_name].ch_list))), np.array([])
     
     #----------------------------------------------------------------------
-    def get_buffer(self, stream_name):
+    def get_buffer(self, stream_name=None):
         """
         Get the entire buffer of a stream in numpy format.
         
