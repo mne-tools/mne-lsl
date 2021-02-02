@@ -171,7 +171,7 @@ class StreamReceiver:
         Parameters
         ----------
         stream_name : int
-            The name of the stream to extract from.
+            The name of the stream to extract from. If None, it selects the first one.
 
         Returns
         -------
