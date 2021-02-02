@@ -54,7 +54,7 @@ class StreamRecorder:
         Can redirect sys.stdout to a queue (e.g. used for GUI).
     """
     #----------------------------------------------------------------------
-    def __init__(self, record_dir, bids_info=None, logger=logger, state=mp.Value('i', 0), queue=None):
+    def __init__(self, record_dir, logger=logger, state=mp.Value('i', 0), queue=None):
         
         if record_dir is None:
             raise RuntimeError("No recording directory provided.")
