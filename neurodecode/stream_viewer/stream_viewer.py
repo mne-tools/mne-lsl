@@ -20,7 +20,7 @@ class StreamViewer:
         self.amp_name = amp_name
     
     #----------------------------------------------------------------------
-    def run(self):
+    def start(self):
         """
         Connect to the selected amplifier and plot the streamed data 
         
@@ -57,4 +57,4 @@ if __name__ == '__main__':
         amp_name = sys.argv[1]
         
     stream_viewer = StreamViewer(amp_name)
-    stream_viewer.run()
+    stream_viewer.start()
