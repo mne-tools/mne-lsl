@@ -10,7 +10,7 @@ from neurodecode import logger
 import neurodecode.utils.q_common as qc
 from neurodecode.utils.convert2fif import pcl2fif, add_events_from_txt
 from neurodecode.utils.cnbi_lsl import start_server
-from neurodecode.stream_receiver import StreamReceiver
+from neurodecode.stream_receiver import StreamReceiver, StreamEEG
 from neurodecode.triggers.trigger_def import trigger_def
 
 class _Recorder:
@@ -184,6 +184,10 @@ class _Recorder:
         for s in self.sr.streams:
             
             signals, timestamps = self.get_buffer(s)
+            
+            if isinstance(self.sr.streams[s], StreamEEG):
+                signals[:, 1:] *= 1E-6
+                    
             data = self.create_dict_to_save(signals, timestamps, s)
             
             qc.save_obj(pcl_files[s], data)
