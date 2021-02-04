@@ -90,6 +90,7 @@ class StreamReceiver:
             time.sleep(1)
                 
         self.acquire()
+        self.reset_all_buffers()
         
         self.show_info()
         self._is_connected = True
