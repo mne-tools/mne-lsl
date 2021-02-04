@@ -293,6 +293,7 @@ class Streamer:
             The absolute path to the .fif file to play.
         """
         self._raw, self._events = pu.load_raw(fif_file)
+        self.raw._data[1:, :] = self._raw.get_data()[1:, :] * 1E6
                 
         if self.raw is not None:
             self._logger.info_green('Successfully loaded %s' % fif_file)        
