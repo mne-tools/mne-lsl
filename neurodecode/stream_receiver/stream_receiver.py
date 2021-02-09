@@ -88,15 +88,13 @@ class StreamReceiver:
                     
                     server_found = True
             time.sleep(1)
-                
-        self.acquire()
-        self.reset_all_buffers()
+        
+        self._prefill_buffers()
         
         self.show_info()
         self._is_connected = True
         logger.info('Ready to receive data from the connected streams.')
-    
-    
+        
     #----------------------------------------------------------------------
     def show_info(self):
         """
@@ -239,6 +237,18 @@ class StreamReceiver:
                 
             threads = [t for t in threads if not t.handled]          
     
+    #----------------------------------------------------------------------
+    def _prefill_buffers(self):
+        '''
+        Prefill the buffers after connection to the streams.
+        '''
+        not_filled = True
+        
+        while not_filled: 
+            self.acquire()
+            for _, s in self.streams.items():
+                if len(s.buffer.timestamps) == s.buffer.bufsize:
+                    not_filled = False    
     #----------------------------------------------------------------------
     @property
     def is_connected(self):
