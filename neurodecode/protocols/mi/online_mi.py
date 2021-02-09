@@ -114,7 +114,7 @@ def check_config(cfg):
 
     if getattr(cfg, 'TRIGGER_DEVICE') == None:
         logger.warning('The trigger device is set to None! No events will be saved.')
-        raise RuntimeError('The trigger device is set to None! No events will be saved.')    
+        # raise RuntimeError('The trigger device is set to None! No events will be saved.')    
 
 def run(cfg, state=mp.Value('i', 1), queue=None):
 
@@ -153,8 +153,7 @@ def run(cfg, state=mp.Value('i', 1), queue=None):
         trigger.init(50)
 
     # init classification
-    decoder = BCIDecoderDaemon(cfg.DECODER_FILE, buffer_size=1.0, fake=(cfg.FAKE_CLS is not None),
-                               amp_name=amp_name, amp_serial=amp_serial, fake_dirs=fake_dirs,
+    decoder = BCIDecoderDaemon(amp_name, cfg.DECODER_FILE, buffer_size=1.0, fake=(cfg.FAKE_CLS is not None), fake_dirs=fake_dirs, \
                                parallel=cfg.PARALLEL_DECODING[cfg.PARALLEL_DECODING['selected']], alpha_new=cfg.PROB_ALPHA_NEW)
 
     # OLD: requires trigger values to be always defined

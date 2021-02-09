@@ -82,7 +82,7 @@ class BCIDecoder(object):
 
     """
 
-    def __init__(self, classifier=None, buffer_size=1.0, fake=False, amp_serial=None, amp_name=None):
+    def __init__(self, amp_name, classifier, buffer_size=1.0, fake=False,):
         """
         Params
         ------
@@ -94,7 +94,6 @@ class BCIDecoder(object):
         self.classifier = classifier
         self.buffer_sec = buffer_size
         self.fake = fake
-        self.amp_serial = amp_serial
         self.amp_name = amp_name
 
         if self.fake == False:
@@ -126,9 +125,9 @@ class BCIDecoder(object):
                 self.multiplier = 1
 
             # Stream Receiver
-            self.sr = StreamReceiver(window_size=self.w_seconds, amp_name=self.amp_name, amp_serial=self.amp_serial)
-            if self.sfreq != self.sr.sample_rate:
-                logger.error('Amplifier sampling rate (%.3f) != model sampling rate (%.3f). Stop.' % (self.sr.sample_rate, self.sfreq))
+            self.sr = StreamReceiver(window_size=self.w_seconds, amp_name=self.amp_name)
+            if self.sfreq != self.sr.streams[self.amp_name].sample_rate:
+                logger.error('Amplifier sampling rate (%.3f) != model sampling rate (%.3f). Stop.' % (self.sr.streams[self.amp_name].sample_rate, self.sfreq))
                 raise RuntimeError
 
             # Map channel indices based on channel names of the streaming server
@@ -136,7 +135,7 @@ class BCIDecoder(object):
             self.spectral_ch = model['spectral_ch']
             self.notch_ch = model['notch_ch']
             #self.ref_ch = model['ref_ch'] # not supported yet
-            self.ch_names = self.sr.get_channel_names()
+            self.ch_names = self.sr.streams[self.amp_name].ch_list
             mc = model['ch_names']
             self.picks = [self.ch_names.index(mc[p]) for p in model['picks']]
             if self.spatial_ch is not None:
@@ -209,7 +208,7 @@ class BCIDecoder(object):
             time.sleep(0.0625)  # simulated delay
             t_prob = pylsl.local_clock()
         else:
-            self.sr.acquire(blocking=True)
+            self.sr.acquire()
             w, ts = self.sr.get_window()  # w = times x channels
             t_prob = ts[-1]
             w = w.T  # -> channels x times
@@ -289,8 +288,8 @@ class BCIDecoderDaemon(object):
 
     """
 
-    def __init__(self, classifier=None, buffer_size=1.0, fake=False, amp_serial=None,\
-                 amp_name=None, fake_dirs=None, parallel=None, alpha_new=None, wait_init=True):
+    def __init__(self, amp_name, classifier, buffer_size=1.0, fake=False, \
+                 fake_dirs=None, parallel=None, alpha_new=None, wait_init=True):
         """
         Params
         ------
@@ -318,7 +317,6 @@ class BCIDecoderDaemon(object):
         self.startmsg = 'Decoder daemon started.'
         self.stopmsg = 'Decoder daemon stopped.'
         self.fake = fake
-        self.amp_serial = amp_serial
         self.amp_name = amp_name
         self.parallel = parallel
         self.wait_init = wait_init
@@ -427,8 +425,7 @@ class BCIDecoderDaemon(object):
             ps.nice(psutil.HIGH_PRIORITY_CLASS)
         
         logger.debug('[DecodeWorker-%-6d] Decoder worker process started' % (pid))
-        decoder = BCIDecoder(classifier, buffer_size=self.buffer_sec, fake=self.fake,\
-                             amp_serial=self.amp_serial, amp_name=self.amp_name)
+        decoder = BCIDecoder(self.amp_name, classifier, buffer_size=self.buffer_sec, fake=self.fake)
         if self.fake == False:
             psd = ctypeslib.as_array(psd_ctypes)
         else:
@@ -624,7 +621,7 @@ class BCIDecoderDaemon(object):
 
 
 
-def log_decoding_helper(state, event_queue, amp_name=None, amp_serial=None, autostop=False):
+def log_decoding_helper(state, event_queue, amp_name=None, autostop=False):
     """
     Helper function to run StreamReceiver object in background
     """
@@ -635,7 +632,7 @@ def log_decoding_helper(state, event_queue, amp_name=None, amp_serial=None, auto
         time.sleep(0.01)
     
     # acquire event values and returns event times and event values
-    sr = StreamReceiver(buffer_size=0, amp_name=amp_name, amp_serial=amp_serial)
+    sr = StreamReceiver(buffer_size=0, amp_name=amp_name)
     tm = qc.Timer(autoreset=True)
     started = False
     while state.value == 1:
@@ -658,7 +655,7 @@ def log_decoding_helper(state, event_queue, amp_name=None, amp_serial=None, auto
     assert len(event_times) == len(event_values)
     event_queue.put((event_times, event_values))
 
-def log_decoding(decoder, logfile, amp_name=None, amp_serial=None, pklfile=True, matfile=False, autostop=False, prob_smooth=False):
+def log_decoding(decoder, logfile, amp_name=None, pklfile=True, matfile=False, autostop=False, prob_smooth=False):
     """
     Decode online and write results with event timestamps
 
@@ -667,7 +664,6 @@ def log_decoding(decoder, logfile, amp_name=None, amp_serial=None, pklfile=True,
     decoder: Decoder or DecoderDaemon class object.
     logfile: File name to contain the result in Python pickle format.
     amp_name: LSL server name (if known).
-    amp_serial: LSL server serial number (if known).
     pklfile: Export results to Python pickle format.
     matfile: Export results to Matlab .mat file if True.
     autostop: Automatically finish when no more data is received.
@@ -680,7 +676,7 @@ def log_decoding(decoder, logfile, amp_name=None, amp_serial=None, pklfile=True,
     # run event acquisition process in the background
     state = mp.Value('i', 1)
     event_queue = mp.Queue()
-    proc = mp.Process(target=log_decoding_helper, args=[state, event_queue, amp_name, amp_serial, autostop])
+    proc = mp.Process(target=log_decoding_helper, args=[state, event_queue, amp_name, autostop])
     proc.start()
     logger.info_green('Spawned event acquisition process.')
 
@@ -811,27 +807,36 @@ def sample_decoding(decoder):
 
 # sample code
 if __name__ == '__main__':
-    model_file = r'D:\data\STIMO_EEG\DM002\offline\all\classifier_L_vs_Feedback\classifier-64bit.pkl'
-
-    if len(sys.argv) == 2:
+    
+    model_file = None
+    from pathlib import Path
+    
+    if len(sys.argv) > 3:
+        raise RuntimeError("Too many arguments provided, maximum is 2.")
+    
+    if len(sys.argv) > 2:
+        model_file = sys.argv[2]
+    
+    if len(sys.argv) > 1:
         amp_name = sys.argv[1]
-        amp_serial = None
-    elif len(sys.argv) == 3:
-        amp_name, amp_serial = sys.argv[1:3]
-    else:
+        if not model_file:
+            model_file = str(Path(input(">> Provide the path to decoder file: \n")))
+        
+    if len(sys.argv) == 1:
+        model_file = str(Path(input(">> Provide the path to decoder file: \n")))
         amp_name, amp_serial = pu.search_lsl(ignore_markers=True)
-    if amp_name == 'None':
-        amp_name = None
+
     logger.info('Connecting to a server %s (Serial %s).' % (amp_name, amp_serial))
 
     # run on background
     parallel = None # no process interleaving
     #parallel = dict(period=0.06, num_strides=3)
-    decoder = BCIDecoderDaemon(model_file, buffer_size=1.0, fake=False, amp_name=amp_name,\
-        amp_serial=amp_serial, parallel=parallel, alpha_new=0.1)
+    # decoder = BCIDecoderDaemon(amp_name, model_file, buffer_size=1.0, fake=False, parallel=parallel, alpha_new=0.1)
 
     # run on foreground
-    #decoder = BCIDecoder(model_file, buffer_size=1.0, amp_name=amp_name, amp_serial=amp_serial)
+    decoder = BCIDecoder(amp_name, model_file, buffer_size=1.0)
+    
+    time.sleep(1)
 
     # run a fake classifier on background
     #decoder= BCIDecoderDaemon(fake=True, fake_dirs=['L','R'])
