@@ -836,8 +836,6 @@ if __name__ == '__main__':
     # run on foreground
     decoder = BCIDecoder(amp_name, model_file, buffer_size=1.0)
     
-    time.sleep(1)
-
     # run a fake classifier on background
     #decoder= BCIDecoderDaemon(fake=True, fake_dirs=['L','R'])
 
