@@ -157,7 +157,7 @@ class Trigger(object):
     def __del__(self):
         if self.evefile is not None and not self.evefile.closed:
             self.evefile.close()
-        if self.lpttype == 'SOFTWARE':
+        if self.lpttype == 'ARDUINO':
             self.ser.close()
 
     def init(self, duration):
