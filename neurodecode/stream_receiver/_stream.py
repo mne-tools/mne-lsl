@@ -267,7 +267,7 @@ class _Stream(ABC):
     #----------------------------------------------------------------------
     @serial.setter
     def serial(self, serial):
-        logger.warning("The stream's name cannot be changed")
+        logger.warning("The stream's serial cannot be changed")
         
     #----------------------------------------------------------------------
     @property
