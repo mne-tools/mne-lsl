@@ -36,15 +36,18 @@ class _Stream(ABC):
         self._blocking_time = 5
         self._lsl_time_offset = None
         
-        self._inlet = pylsl.StreamInlet(streamInfo, max_buflen=math.ceil(bufsize))
-        
-        winsize = _Stream._check_window_size(winsize)
-        bufsize = _Stream._check_buffer_size(bufsize, winsize)
     
         if self._sample_rate:
             samples_per_sec = self.sample_rate
+            self._inlet = pylsl.StreamInlet(streamInfo, max_buflen=math.ceil(bufsize))
         else:
-            samples_per_sec = 100
+            samples_per_sec = 100        
+            self._inlet = pylsl.StreamInlet(streamInfo, max_buflen=(math.ceil(bufsize)*samples_per_sec))
+        
+        
+        winsize = _Stream._check_window_size(winsize)
+        bufsize = _Stream._check_buffer_size(bufsize, winsize)
+
             
         bufsize = _Stream._convert_sec_to_samples(bufsize, samples_per_sec)
         winsize = _Stream._convert_sec_to_samples(winsize, samples_per_sec)
@@ -385,7 +388,7 @@ class StreamMarker(_Stream):
           
         super().__init__(streamInfo, buffer_size, window_size)
         
-        self._blocking = False
+        self.blocking = False
         self._blocking_time = np.Inf
     
     #----------------------------------------------------------------------
