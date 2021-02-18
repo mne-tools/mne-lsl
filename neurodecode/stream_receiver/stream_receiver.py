@@ -240,15 +240,18 @@ class StreamReceiver:
     #----------------------------------------------------------------------
     def _prefill_buffers(self):
         '''
-        Prefill the buffers after connection to the streams.
+        Prefill the buffers after connection to the streams, except for StreamMarker.
         '''
         not_filled = True
         
         while not_filled: 
             self.acquire()
             for _, s in self.streams.items():
-                if len(s.buffer.timestamps) == s.buffer.bufsize:
+                if s.sample_rate == 0:
+                    not_filled = False
+                elif len(s.buffer.timestamps) >= s.buffer.winsize:
                     not_filled = False    
+   
     #----------------------------------------------------------------------
     @property
     def is_connected(self):
