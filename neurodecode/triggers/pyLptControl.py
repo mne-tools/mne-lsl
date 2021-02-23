@@ -116,8 +116,12 @@ class Trigger(object):
                     com_port = arduinos[0][0]
             else:
                 com_port = portaddr
-
-            self.ser = serial.Serial(com_port, BAUD_RATE)
+        
+            try:
+                self.ser = serial.Serial(com_port, BAUD_RATE)
+            except serial.SerialException as error:
+                raise Exception("Disconnect and reconnect the ARDUINO convertor because {}".format(error))            
+            
             time.sleep(1)  # doesn't work without this delay. why?
             logger.info('Connected to %s.' % com_port)
 
@@ -157,8 +161,6 @@ class Trigger(object):
     def __del__(self):
         if self.evefile is not None and not self.evefile.closed:
             self.evefile.close()
-        if self.ser is not None and self.lpttype == 'ARDUINO':
-            self.ser.close()
 
     def init(self, duration):
         if self.lpttype == 'SOFTWARE':
