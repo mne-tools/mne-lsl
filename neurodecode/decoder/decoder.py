@@ -79,17 +79,20 @@ class BCIDecoder(object):
     Decoder class
 
     The label order of self.labels and self.label_names match likelihood orders computed by get_prob()
-
+    
+    Parameters
+    ----------
+    amp_name : str
+        Connect to a specific stream.
+    classifier : str
+        Path to the classifier file.
+    buffer_size : float
+        The signal buffer's length in seconds
+    fake : bool
+        If True, load a fake decoder
     """
-
-    def __init__(self, amp_name, classifier, buffer_size=1.0, fake=False,):
-        """
-        Params
-        ------
-        classifier: classifier file
-        spatial: spatial filter to use
-        buffer_size: length of the signal buffer in seconds
-        """
+    #----------------------------------------------------------------------
+    def __init__(self, amp_name, classifier=None, buffer_size=1.0, fake=False):
 
         self.classifier = classifier
         self.buffer_sec = buffer_size
@@ -163,40 +166,55 @@ class BCIDecoder(object):
             # TODO: parameterize directions using fake_dirs
             self.labels = [11, 9]
             self.label_names = ['LEFT_GO', 'RIGHT_GO']
-
-    def get_labels(self):
+        
+    #----------------------------------------------------------------------
+    @property
+    def labels(self):
         """
-        Returns
-        -------
         Class labels numbers in the same order as the likelihoods returned by get_prob()
         """
         return self.labels
+    
+    #----------------------------------------------------------------------
+    @labels.setter
+    def labels(self, labels):
+        logger.warning("The class labels numbers cannot be changed.")
 
-    def get_label_names(self):
+    #----------------------------------------------------------------------
+    @property
+    def label_names(self):
         """
-        Returns
-        -------
-        Class label names in the same order as get_labels()
+        Class labels names in the same order as get_labels().
         """
         return self.label_names
-
+    #----------------------------------------------------------------------
+    @label_names.setter
+    def label_names(self):
+        logger.warning("The class labels names cannot be changed.")
+    
+    #----------------------------------------------------------------------
     def start(self):
         pass
 
+    #----------------------------------------------------------------------
     def stop(self):
         pass
 
+    #----------------------------------------------------------------------
     def get_prob(self, timestamp=False):
         """
-        Read the latest window
+        Read the latest window, apply preprocessing, compute PSD and class probabilities. 
 
-        Input
-        -----
+        Parameters
+        -----------
         timestamp: If True, returns LSL timestamp of the leading edge of the window used for decoding.
 
         Returns
         -------
-        The likelihood P(X|C), where X=window, C=model
+        np.array
+            The likelihood P(X|C), where X=window, C=model
+        float
+            LSL timestamp of the leading edge of the window used for decoding.
         """
         if self.fake:
             # fake deocder: biased likelihood for the first class
@@ -257,25 +275,48 @@ class BCIDecoder(object):
         if timestamp:
             return probs, t_prob
         else:
-            return probs
-
+            return probs, None
+    
+    #----------------------------------------------------------------------
     def get_prob_unread(self, timestamp=False):
-        return self.get_prob(timestamp)
-
-    def get_psd(self):
-        """
+        '''
+        Call get_prob
+        
+        Used to fit BCIDecoderDaemon class.
+        
         Returns
         -------
-        The latest computed PSD
+        np.array
+            The likelihood P(X|C), where X=window, C=model
+        float
+            LSL timestamp of the leading edge of the window used for decoding.
+        '''
+        return self.get_prob(timestamp)
+
+    #----------------------------------------------------------------------
+    def get_psd(self):
+        """
+        Get the latest computed PSD
+        
+        Returns
+        -------
+        np.array
+            The latest computed PSD
         """
         raise NotImplementedError('Sorry! PSD buffer is under testing.')
-        return self.psd_buffer[-1].reshape((1, -1))
-
+        # return self.psd_buffer[-1].reshape((1, -1))
+    
+    #----------------------------------------------------------------------
     def is_ready(self):
         """
-        Ready to decode? Returns True if buffer is not empty.
+        Ready to decode? 
+        
+        Returns
+        -------
+        bool
+            True if the StreamReceiver is connected to a stream.
         """
-        return self.sr.is_ready()
+        return self.sr.is_connected()
 
 
 class BCIDecoderDaemon(object):
@@ -291,21 +332,30 @@ class BCIDecoderDaemon(object):
     def __init__(self, amp_name, classifier, buffer_size=1.0, fake=False, \
                  fake_dirs=None, parallel=None, alpha_new=None, wait_init=True):
         """
-        Params
-        ------
-        classifier: file name of the classifier
-        buffer_size: buffer window size in seconds
-        fake:
-            False: Connect to an amplifier LSL server and decode
-            True: Create a mock decoder (fake probabilities biased to 1.0)
-        buffer_size: Buffer size in seconds.
+        Parameters
+        ----------
+        amp_name : str
+            Connect to a specific stream.
+        classifier: str
+            Path to the classifier file..
+        buffer_size : float
+            The buffer window size in seconds
+        fake : bool
+            If True, create a mock decoder (fake probabilities biased to 1.0)
+        buffer_size : float
+            The buffer's size in seconds.
         parallel: dict(period, stride, num_strides)
-            period: Decoding period length for a single decoder in seconds.
-            stride: Time step between decoders in seconds.
-            num_strides: Number of decoders to run in parallel.
-        alpha_new: exponential smoothing factor, real value in [0, 1].
+            period: float
+                Decoding period length for a single decoder in seconds.
+            stride : float
+                Time step between decoders in seconds.
+            num_strides : int
+                Number of decoders to run in parallel.
+        alpha_new : float
+            The exponential smoothing factor, [0, 1].
             p_new = p_new * alpha_new + p_old * (1 - alpha_new)
-        wait_init: If True, wait (block) until the initial buffer of the decoder is full.
+        wait_init : bool
+            If True, wait (block) until the initial buffer of the decoder is full.
 
         Example: If the decoder runs 32ms per cycle, we can set
                  period=0.04, stride=0.01, num_strides=4
@@ -354,7 +404,7 @@ class BCIDecoderDaemon(object):
 
     def reset(self):
         """
-        Reset classifier to the initial state
+        Reset the classifier to its initial state.
         """
         # share numpy array self.psd between processes.
         # to compute the shared memory size, we need to create a temporary decoder object.
@@ -406,11 +456,14 @@ class BCIDecoderDaemon(object):
 
         BCIDecoder object cannot be pickled but Pathos library may solve this problem and simplify the code.
 
-        Input
-        -----
-        interleave: None or dict with the following keys:
-        - t_start:double (seconds, same as time.time() format)
-        - period:double (seconds)
+        Parameters
+        ----------
+        interleave : dict(t_start, period)
+            For interleaved parallel decoding:
+            t_start : double
+                (seconds, same as time.time() format)
+            period : double
+                (seconds)
 
         """
 
