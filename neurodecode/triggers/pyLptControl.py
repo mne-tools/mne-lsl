@@ -116,8 +116,11 @@ class Trigger(object):
                     com_port = arduinos[0][0]
             else:
                 com_port = portaddr
-
-            self.ser = serial.Serial(com_port, BAUD_RATE)
+            try:
+                self.ser = serial.Serial(com_port, BAUD_RATE)
+            except serial.SerialException as error:
+                raise Exception("Disconnect and reconnect the ARDUINO convertor because {}".format(error))
+                
             time.sleep(1)  # doesn't work without this delay. why?
             logger.info('Connected to %s.' % com_port)
 
@@ -213,7 +216,7 @@ class Trigger(object):
         else:
             if self.offtimer.is_alive():
                 logger.warning('You are sending a new signal before the end of the last signal. Signal ignored.')
-                logger.warning('self.delay=%.1f' % self.delay)
+                logger.warning('self.delay=%.3f' % self.delay)
                 return False
             self.set_data(value)
             if self.verbose is True:
