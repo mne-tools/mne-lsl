@@ -83,9 +83,7 @@ def start_client(server_name, state=mp.Value('i', 1)):
         LSL client object
 
     """
-    while True:
-        if not state.value:
-            sys.exit(-1) 
+    while state.value == 1:
         logger.info('Searching for LSL server %s ...' % server_name)
         streamInfos = pylsl.resolve_byprop("name", server_name, timeout=1)
         if not streamInfos:
