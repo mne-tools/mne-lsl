@@ -11,7 +11,7 @@ import neurodecode.utils.q_common as qc
 from neurodecode.utils.convert2fif import pcl2fif, add_events_from_txt
 from neurodecode.utils.cnbi_lsl import start_server
 from neurodecode.stream_receiver import StreamReceiver, StreamEEG
-from neurodecode.triggers.trigger_def import trigger_def
+from neurodecode.triggers import TriggerDef
 
 class _Recorder:
     """
@@ -156,7 +156,7 @@ class _Recorder:
         Save the data to BIDS structure using brainvision .eeg files.
         """
         self.logger.info('Saving data to BIDS...')
-        event_id = trigger_def(self.bids_info["trigger_file"])
+        event_id = TriggerDef(self.bids_info["trigger_file"])
         
         for d in data_files:
             
