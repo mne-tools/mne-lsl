@@ -21,7 +21,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-import sys
 import time
 import pylsl
 import multiprocessing as mp
@@ -31,32 +30,27 @@ from neurodecode import logger
 def start_server(server_name, n_channels=1, channel_format='string', nominal_srate=pylsl.IRREGULAR_RATE, stype='EEG',
                  source_id=None):
     """
-    Start a new LSL server
+    Start a new LSL server.
 
     Params
     ------
-    server_name:
+    server_name : str
         Name of the server
-    n_channels:
+    n_channels : int
         Number of channels
-    channel_format:
-        pylsl.cf_string (or 'string')
-        pylsl.cf_float32 (or 'float32')
-        pylsl.cf_double64 (or 'double64')
-        pylsl.cf_int8 (or 'int8')
-        pylsl.cf_int16 (or 'int16')
-        pylsl.cf_int32 (or 'int32')
-        pylsl.cf_int64 (or 'int64')
-    nominal_srate:
-        Sampling rate in Hz. Defaults to irregular sampling rate.
-    stype:
-        Signal type in string format
-    source_id:
+    channel_format 4 : str
+        The channels' format ('string', 'float32', 'double64', 'int8', 'int16', 'int32', 'int64')
+    nominal_srate : float
+        Sampling rate in Hz
+    stype : str
+        Signal type
+    source_id : str
         If None, set to server name
 
     Returns
     -------
-    outlet: LSL server object
+    LSL outlet :
+        LSL server object
 
     """
     if source_id is None:
@@ -68,20 +62,19 @@ def start_server(server_name, n_channels=1, channel_format='string', nominal_sra
 
 def start_client(server_name, state=mp.Value('i', 1)):
     """
-    Search and connect to an LSL server
+    Search and connect to an LSL server.
 
     Params
     ------
-    server_name:
+    server_name: str
         Name of the server to search
-    state:
-        Multiprocessing.Value used to stop from the GUI, 1: acquire 0:stop
+    state : Multiprocessing.Value 
+        used to stop from the GUI, 1: acquire 0:stop
 
     Returns
     -------
-    inlet:
+    LSL inlet:
         LSL client object
-
     """
     while state.value == 1:
         logger.info('Searching for LSL server %s ...' % server_name)
