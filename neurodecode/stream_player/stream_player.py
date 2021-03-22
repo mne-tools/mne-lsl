@@ -1,22 +1,11 @@
 from __future__ import print_function, division
 
-"""
-Stream Player
-
-Stream signals from a recorded file on LSL network.
-
-For Windows users, make sure to use the provided time resolution
-tweak tool to set to 500us time resolution of the OS.
-
-Kyuhwa Lee, 2015
-
-"""
 import time
 import pylsl
 import numpy as np
 import neurodecode.utils.q_common as qc
 import neurodecode.utils.pycnbi_utils as pu
-from neurodecode.triggers.trigger_def import trigger_def
+from neurodecode.triggers import TriggerDef
 from neurodecode import logger
 from builtins import input
 from multiprocessing import Process
@@ -192,7 +181,7 @@ class Streamer:
         self._logger = logger
         
         if trigger_file is not None:
-            self._tdef = trigger_def(trigger_file)
+            self._tdef = TriggerDef(trigger_file)
         
         self.load_data(fif_file)
         sinfo = self.set_lsl_info(server_name)
