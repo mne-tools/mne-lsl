@@ -1,78 +1,103 @@
 from __future__ import print_function, division
 
-"""
-Reads trigger info and creates a class object with the follwing attributes:
-- self.event_id = event_value
-- self.by_name() = {key:value, ...}
-- self.by_value() = {value:key, ...}
-
-"""
-
-import sys
 import os
-import neurodecode.utils.q_common as qc
 from configparser import ConfigParser
 from neurodecode import logger
 
-def trigger_def(ini_file, verbose=False):
-    class TriggerDef(object):
-        def __init__(self, items):
-            self.by_name = {}
-            self.by_value = {}
-            for key, value in items:
-                value = int(value)
-                setattr(self, key, value)
-                self.by_name[key] = value
-                self.by_value[value] = key
 
-        # show all possible trigger values
-        def check_data(self):
-            print('Attributes of the final class')
-            for attr in dir(self):
-                if not callable(getattr(self, attr)) and not attr.startswith("__"):
-                    print(attr, getattr(self, attr))
+class TriggerDef(object):
+    """
+    Class for reading event's pairs (string-integer) from ini file.
+    
+    The class will also have as attributes self.event_str = event_int for all pairs.
+    
+    Parameters
+    ----------
+    ini_file : str
+        The path of the ini file
+    """
+    
+    #----------------------------------------------------------------------
+    def __init__(self, ini_file):
+        self._by_name = {}
+        self.by_value = {}
+        
+        self._check_ini_path(ini_file)
+        self._extract_from_ini(ini_file)
 
-    if not os.path.exists(ini_file):
-        search_path = []
-        path_ini = qc.parse_path(ini_file)
-        path_self = qc.parse_path(__file__)
-        search_path.append(ini_file + '.ini')
-        search_path.append('%s/%s' % (path_self.dir, path_ini.name))
-        search_path.append('%s/%s.ini' % (path_self.dir, path_ini.name))
-        for ini_file in search_path:
-            if os.path.exists(ini_file):
-                if verbose:
-                    logger.info('Found trigger definition file %s' % ini_file)
-                break
+    #----------------------------------------------------------------------
+    def _check_ini_path(self, ini_file):
+        """
+        Ensure that the provided file exists.
+        
+        Parameters
+        ----------
+        ini_file : str
+            The absolute path of the ini file
+        """
+        if os.path.exists(ini_file):
+            logger.info('Found trigger definition file %s' % ini_file)
         else:
-            raise IOError('Trigger event definition file %s not found' % ini_file)
-    config = ConfigParser(inline_comment_prefixes=('#', ';'))
-    config.optionxform = str
-    config.read(ini_file)
-    return TriggerDef(config.items('events'))
+            raise IOError('Trigger event definition file %s not found' % ini_file)        
+    
+    #----------------------------------------------------------------------    
+    def _extract_from_ini(self, ini_file):
+        """
+        Extract the events' name and associated integer.
+        """
+        config = ConfigParser(inline_comment_prefixes=('#', ';'))
+        config.optionxform = str
+        config.read(ini_file)
+        self._create_attributes(config.items('events'))
+        
+    #----------------------------------------------------------------------
+    def _create_attributes(self, items):
+        """
+        Fill the class attributes with the pairs string-integer
+        """
+        for key, value in items:
+            setattr(self, key, int(value))
+            self._by_name[key] = value
+            self.by_value[value] = key
 
+    #----------------------------------------------------------------------
+    def check_data(self):
+        """
+        Display all attributes.
+        """
+        print('TriggerDef Attributes:')
+        for attr in dir(self):
+            if not callable(getattr(self, attr)) and not attr.startswith("__"):
+                print(attr, getattr(self, attr))
+
+    #----------------------------------------------------------------------
+    @property
+    def by_name(self):
+        """
+        A dictionnary with string keys and integers value
+        """
+        return self._by_name
+    
+    #----------------------------------------------------------------------
+    @by_name.setter
+    def by_name(self, new):
+        logger.warning("Cannot modify this attribute manually.")
+        
+    #----------------------------------------------------------------------
+    @property
+    def by_value(self):
+        """
+        A dictionnary with integers keys and string values
+        """
+        return self._by_name
+    
+    #----------------------------------------------------------------------
+    @by_value.setter
+    def by_value(self, new):
+        logger.warning("Cannot modify this attribute manually.")
+    
 # example
 if __name__ == '__main__':
-    ini_file = 'triggerdef_16.ini'
-    tdef = trigger_def(ini_file)
-
-    # accessing a trigger value as a member variable
-    print('INIT =', tdef.INIT)
-
-    # check whether the trigger name is defined
-    print('\nINIT in tdef.by_name?')
-    print('INIT' in tdef.by_name)
-
-    # check whether the trigger value is defined
-    print('\n255 in tdef.by_value?')
-    print(255 in tdef.by_value)
-    print('\n1 in tdef.by_value?')
-    print(1 in tdef.by_value)
-
-    # print all trigger names and associated values
-    print('\ntdef.by_name')
-    print(tdef.by_name)
-
-    # print all trigger values and associated names
-    print('\ntdef.by_value')
-    print(tdef.by_value)
+    ini_file = './triggerdef_template.ini'
+    tdef = TriggerDef(ini_file)
+    tdef.check_data()
