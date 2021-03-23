@@ -90,7 +90,7 @@ class StreamRecorder:
         """
         Wait that the data streaming finishes.
         
-        Attributes
+        Parameters
         ----------
         timeout : float
             Block until timeout is reached. If None, block until streaming is finished.
