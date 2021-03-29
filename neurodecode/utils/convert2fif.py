@@ -85,7 +85,7 @@ def convert2mat(filename, matfile):
             sys.exit()
 
 
-def pcl2fif(filename, outdir=None, external_event=None, overwrite=False, precision='single'):
+def pcl2fif(filename, outdir=None, external_event=None, precision='single'):
     """
     neurodecode Python pickle file
 
@@ -107,12 +107,12 @@ def pcl2fif(filename, outdir=None, external_event=None, overwrite=False, precisi
     
     if external_event is not None:
         events_index = event_timestamps_to_indices(raw.times, external_event, data["timestamps"][0])
-        add_events_from_txt(raw, events_index)
+        add_events_from_txt(raw, events_index, stim_channel='TRIGGER', replace=False)
 
     qc.make_dirs(outdir)
     fiffile = outdir + fname + '.fif'
         
-    raw.save(fiffile, verbose=False, overwrite=overwrite, fmt=precision)
+    raw.save(fiffile, verbose=False, overwrite=True, fmt=precision)
     logger.info('Saved to %s' % fiffile)
 
     saveChannels2txt(outdir, info["ch_names"])
@@ -171,15 +171,24 @@ def format_to_mne_RawArray(data):
     
     return raw, info
 
-def add_events_from_txt(raw, events_index):
+def add_events_from_txt(raw, events_index, stim_channel='TRIGGER', replace=False):
     """
     Merge the events extracted from a txt file to the trigger channel.
+    
+    raw : mne.io.raw
+        The mne raw data structure
+    events_index : list
+        The list of events' index
+    stim_channel : str
+        The stin channel to add the events
+    replace : bool
+        If True the old events on the stim channel are removed before adding the new ones
     """    
     if len(events_index) == 0:
         logger.warning('No events were found in the event file')
     else:
         logger.info('Found %d events' % len(events_index))
-        raw.add_events(events_index, stim_channel='TRIGGER', replace="False")    
+        raw.add_events(events_index, stim_channel=stim_channel, replace=replace)    
     
     return raw
 
