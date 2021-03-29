@@ -456,7 +456,7 @@ if __name__ == '__main__':
         fif_file = str(Path(input(">> Provide the path to the .fif file to play: \n")))
         server_name = input(">> Provide the server name displayed on LSL network: \n")
     
-    sp = Streamer(server_name, fif_file, chunk_size, trigger_file)
-    sp.stream()
-    # sp = StreamPlayer(server_name, fif_file, chunk_size, trigger_file)
-    # sp.start()
+    sp = StreamPlayer(server_name, fif_file, chunk_size, trigger_file)
+    sp.start()
+    input(">> Press ENTER to stop the recording \n")
+    sp.stop()
