@@ -37,17 +37,21 @@ from pathlib import Path
 
 mne.set_log_level('ERROR')
 
-
+#----------------------------------------------------------------------
 def event_timestamps_to_indices(raw_timestamps, eventfile, offset):
     """
     Convert LSL timestamps to sample indices for separetely recorded events.
 
-    Parameters:
-    raw_timestamps : The whole data's timestamps.  
-    eventfile: event file where events are indexed with LSL timestamps.
-    offset: The first sample's LSL timestamps, to start at 0.0 sec 
+    Parameters
+    ----------
+    raw_timestamps : list
+        The whole data's timestamps
+    eventfile : str
+        Event file containing the events, indexed with LSL timestamps
+    offset : The first sample's LSL timestamps, to start at 0.0 sec 
 
-    Returns:
+    Returns
+    -------
     events list, which can be used as an input to mne.io.RawArray.add_events().
     """
 
@@ -65,7 +69,7 @@ def event_timestamps_to_indices(raw_timestamps, eventfile, offset):
             if next_index >= len(raw_timestamps):
                 logger.warning('Event %d at time %.3f is out of time range (%.3f - %.3f).' % (event_value, event_ts, ts_min, ts_max))
             else:
-                events.append([next_index, 0, event_value])
+                events.append([next_index[0], 0, event_value])
     return events
 
 
@@ -107,7 +111,7 @@ def pcl2fif(filename, outdir=None, external_event=None, precision='single'):
     
     if external_event is not None:
         events_index = event_timestamps_to_indices(raw.times, external_event, data["timestamps"][0])
-        add_events_from_txt(raw, events_index, stim_channel='TRIGGER', replace=False)
+        add_events_from_txt(raw, events_index, stim_channel='TRIGGER', replace=True)
 
     qc.make_dirs(outdir)
     fiffile = outdir + fname + '.fif'
