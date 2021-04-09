@@ -3,7 +3,7 @@ Format conversion.
 
 It supports converting:
 
-- from .xdf | .gdf | .bdf | .eeg | .pickle files to mne.io.raw
+- from .xdf | .gdf | .edf | .bdf | .eeg | .pickle files to mne.io.raw
 - from mne.io.raw to .mat.
 '''
 
