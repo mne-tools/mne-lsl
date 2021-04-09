@@ -21,7 +21,7 @@ mne.set_log_level('ERROR')
 #----------------------------------------------------------------------
 def any2fif(filename, outdir=None, channel_file=None):
     """
-    Generic file format converter to mne.io.raw format.
+    Generic file format converter to mne.io.raw.
     
     Parameters
     ----------
@@ -64,7 +64,7 @@ def any2fif(filename, outdir=None, channel_file=None):
 #----------------------------------------------------------------------
 def pcl2fif(filename, outdir=None, external_event=None, precision='single'):
     """
-    Convert NeuroDecode Python pickle format to mne.io.raw format.
+    Convert NeuroDecode Python pickle format to mne.io.raw.
 
     Parameters
     ----------
@@ -103,7 +103,7 @@ def pcl2fif(filename, outdir=None, external_event=None, precision='single'):
 #----------------------------------------------------------------------
 def edf2fif(filename, outdir=None):
     """
-    Convert European Data Format (EDF) to mne.io.raw format.
+    Convert European Data Format (EDF) to mne.io.raw.
     
     Parameters
     ----------
@@ -139,7 +139,7 @@ def edf2fif(filename, outdir=None):
 #----------------------------------------------------------------------
 def bdf2fif(filename, outdir=None, channel_file=None):
     """
-    Convert BioSemi BDF format to mne.io.raw format.
+    Convert BioSemi BDF format to mne.io.raw.
     
     Parameters
     ----------
@@ -179,7 +179,7 @@ def bdf2fif(filename, outdir=None, channel_file=None):
 #----------------------------------------------------------------------
 def gdf2fif(filename, outdir=None, channel_file=None):
     """
-    Convert g.Tec format (gdf) to mne.io.raw format.
+    Convert g.Tec format (gdf) to mne.io.raw.
     
     Parameters
     ----------
@@ -222,7 +222,7 @@ def gdf2fif(filename, outdir=None, channel_file=None):
 #----------------------------------------------------------------------
 def xdf2fif(filename, outdir=None):
     """
-    Convert LabStreamingLayer format (xdf) to mne.io.raw format.
+    Convert LabStreamingLayer format (xdf) to mne.io.raw.
     
     Note: Can only convert data with one eeg stream.
     
@@ -279,7 +279,7 @@ def xdf2fif(filename, outdir=None):
 #----------------------------------------------------------------------
 def eeg2fif(filename, outdir=None):
     """
-    Convert Brain Products EEG format to mne.io.raw format.
+    Convert Brain Products EEG format to mne.io.raw.
     
     Parameters
     ----------
