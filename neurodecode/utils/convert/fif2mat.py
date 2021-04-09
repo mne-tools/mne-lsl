@@ -2,7 +2,6 @@ from __future__ import print_function, division
 
 """
 Export fif data to mat files.
-
 """
 
 import neurodecode.utils.q_common as qc
