@@ -619,7 +619,10 @@ if __name__ == '__main__':
     
     channel_file = None
     
-    if len(sys.argv) > 2:
+    if len(sys.argv) > 3:
+        raise IOError("Two many arguments provided, max is 2  (directory and channels file)")
+    
+    elif len(sys.argv) > 2:
         channel_file = sys.argv[2]
     
     elif len(sys.argv) > 1:
