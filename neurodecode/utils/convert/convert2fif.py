@@ -92,7 +92,7 @@ def pcl2fif(filename, outdir=None, external_event=None, precision='single'):
     # Add events from txt file
     if external_event is not None:
         events_index = event_timestamps_to_indices(raw.times, external_event, data["timestamps"][0])
-        add_events_from_txt(raw, events_index, stim_channel='TRIGGER', replace=True)
+        _add_events_from_txt(raw, events_index, stim_channel='TRIGGER', replace=True)
     
     # Save
     raw.save(fiffile, verbose=False, overwrite=True, fmt=precision)
@@ -351,7 +351,7 @@ def event_timestamps_to_indices(raw_timestamps, eventfile, offset):
     return events
 
 #----------------------------------------------------------------------
-def add_events_from_txt(raw, events_index, stim_channel='TRIGGER', replace=False):
+def _add_events_from_txt(raw, events_index, stim_channel='TRIGGER', replace=False):
     """
     Merge the events extracted from a txt file to the trigger channel.
     
