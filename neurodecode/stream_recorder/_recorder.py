@@ -8,7 +8,7 @@ from mne.io import read_raw_fif
 
 from neurodecode import logger
 import neurodecode.utils.q_common as qc
-from neurodecode.utils.convert2fif import pcl2fif, add_events_from_txt
+from neurodecode.utils.convert import pcl2fif, add_events_from_txt
 from neurodecode.utils.cnbi_lsl import start_server
 from neurodecode.stream_receiver import StreamReceiver, StreamEEG
 from neurodecode.triggers import TriggerDef
