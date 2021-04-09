@@ -1,17 +1,13 @@
 import os
 import time
-import datetime
 import multiprocessing as mp
 from pathlib import Path
-from mne.io import read_raw_fif
-# from mne_bids import make_bids_basename, write_raw_bids
 
 from neurodecode import logger
 import neurodecode.utils.q_common as qc
-from neurodecode.utils.convert import pcl2fif, add_events_from_txt
+from neurodecode.utils.convert import pcl2fif
 from neurodecode.utils.cnbi_lsl import start_server
 from neurodecode.stream_receiver import StreamReceiver, StreamEEG
-from neurodecode.triggers import TriggerDef
 
 class _Recorder:
     """
@@ -149,31 +145,7 @@ class _Recorder:
         data, timestamps = self.sr.get_buffer(stream_name)
         
         return data, timestamps
-    
-    #----------------------------------------------------------------------
-    def save_to_bids(self, data_files, eve_file):
-        """
-        Save the data to BIDS structure using brainvision .eeg files.
-        """
-        self.logger.info('Saving data to BIDS...')
-        event_id = TriggerDef(self.bids_info["trigger_file"])
-        
-        for d in data_files:
             
-            fif_file = os.path.splitext(data_files[d])[0] + ".fif"
-            raw = read_raw_fif(fif_file)
-            bids_file_name = make_bids_basename(subject=self.bids_info["subj_idx"], \
-                                               session=self.bids_info["session"], \
-                                               task=self.bids_info["task"], \
-                                               run=self.bids_info["run_idx"], \
-                                               recording=d)             
-            
-            if os.path.exists(eve_file):
-                add_events_from_txt(raw, eve_file)
-                        
-            write_raw_bids(raw, bids_file_name, self.record_dir, event_id=event_id.by_name, \
-                        events_data=None, overwrite=True)        
-        
     #----------------------------------------------------------------------
     def save_to_file(self, pcl_files, eve_file):
         """
@@ -199,9 +171,7 @@ class _Recorder:
                 pcl2fif(pcl_files[s], external_event=eve_file)
             else:
                 pcl2fif(pcl_files[s], external_event=None)
-            
-            # os.remove(pcl_files[i])
- 
+             
     #----------------------------------------------------------------------
     def save(self, data_files, eve_file):
         """
