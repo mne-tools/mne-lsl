@@ -171,19 +171,7 @@ class _Recorder:
                 pcl2fif(pcl_files[s], external_event=eve_file)
             else:
                 pcl2fif(pcl_files[s], external_event=None)
-             
-    #----------------------------------------------------------------------
-    def save(self, data_files, eve_file):
-        """
-        Save the acquired data in .fif or bids format.
-        
-        Save to bids only if the bids info were provided.
-        """
-        self.save_to_file(data_files, eve_file)
-        
-        # if self.bids_info:
-        #    self.save_to_bids(data_files, eve_file)
-                    
+                
     #----------------------------------------------------------------------
     def create_dict_to_save(self, signals, timestamps, stream_name):
         """
@@ -228,7 +216,7 @@ class _Recorder:
         self.acquire()
         
         self.logger.info('>> Stop requested. Copying buffer')
-        self.save(data_files, eve_file)
+        self.save_to_file(data_files, eve_file)
         
     #----------------------------------------------------------------------
     def acquire(self):
