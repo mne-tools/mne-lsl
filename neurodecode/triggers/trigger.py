@@ -17,7 +17,7 @@ import pylsl
 import ctypes
 import threading
 import multiprocessing as mp
-import neurodecode.utils.cnbi_lsl as cnbi_lsl
+from neurodecode.utils.lsl import start_client
 import neurodecode.utils.pycnbi_utils as pu
 from neurodecode import logger
 from builtins import input, bytes
@@ -90,7 +90,7 @@ class Trigger(object):
         """
         LSL_SERVER = 'StreamRecorderInfo'
         
-        inlet = cnbi_lsl.start_client(LSL_SERVER, state)
+        inlet = start_client(LSL_SERVER, state)
         evefile = inlet.info().source_id()
         logger.info('Event file is: %s' % evefile) 
         
