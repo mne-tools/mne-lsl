@@ -91,7 +91,7 @@ def pcl2fif(filename, outdir=None, external_event=None, precision='single'):
     
     # Add events from txt file
     if external_event is not None:
-        events_index = event_timestamps_to_indices(raw.times, external_event, data["timestamps"][0])
+        events_index = _event_timestamps_to_indices(raw.times, external_event, data["timestamps"][0])
         _add_events_from_txt(raw, events_index, stim_channel='TRIGGER', replace=True)
     
     # Save
@@ -315,7 +315,7 @@ def eeg2fif(filename, outdir=None):
     _saveChannels2txt(outdir, raw.info['ch_names'])
 
 #----------------------------------------------------------------------
-def event_timestamps_to_indices(raw_timestamps, eventfile, offset):
+def _event_timestamps_to_indices(raw_timestamps, eventfile, offset):
     """
     Convert LSL timestamps to sample indices for separetely recorded events.
 
