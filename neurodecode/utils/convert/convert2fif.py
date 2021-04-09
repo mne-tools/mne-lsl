@@ -73,7 +73,7 @@ def pcl2fif(filename, outdir=None, external_event=None, precision='single'):
     outdir : str
         Saving directory. If None, it will be the directory of the .pkl file.
     external_event : str
-        Event file path in text format. Each row should be: "SAMPLE_INDEX 0 EVENT_TYPE"
+        Event file path in text formatm following mne event struct. Each row should be: index 0 event
     precision : str
         Data matrix format. [single|double|int|short], 'single' improves backward compatability.
     """
