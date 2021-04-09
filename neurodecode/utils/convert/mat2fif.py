@@ -14,6 +14,8 @@ def mat2fif(mat_file, sample_rate, data_field, event_field):
     """
     Convert a mat file to MNE format (.fif)
     
+    Parameters
+    ----------
     mat_file : str
         The path to the matlab file to convert
     sample_rate: float
@@ -49,10 +51,6 @@ def mat2fif(mat_file, sample_rate, data_field, event_field):
 
 #----------------------------------------------------------------------
 if __name__ == '__main__':
-    mat_file = r'D:\data\Phoneme\data.mat'
-    sample_rate = 1000.0
-    data_field = 'ecog' # data containing signals
-    event_field = 'phoneme' # data containing events
     
     if len(sys.argv) > 2:
         raise IOError("Two many arguments provided, max is 4 (matfile, sample_rate, data_field, event_field)")
