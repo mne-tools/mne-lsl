@@ -19,7 +19,8 @@ def fif2mat(data_dir, out_dir=None):
     ----------
     data_dir : str
         The directory containing the .fif files to convert
-    out_dir : 
+    out_dir : str
+        The output directory
     """
     # mat file will be in a subfolder
     if not out_dir:
@@ -52,13 +53,18 @@ def fif2mat(data_dir, out_dir=None):
 #----------------------------------------------------------------------
 if __name__ == '__main__':
     
+    out_dir = None
+    
+    if len(sys.argv) > 3:
+        raise IOError("Two many arguments provided, max is 2 (fif_dir, output_dir)")
+    
     if len(sys.argv) > 2:
-        raise IOError("Two many arguments provided, max is 1 (fif directory)")
+        out_dir  = sys.argv[1]    
 
-    elif len(sys.argv) > 1:
+    if len(sys.argv) > 1:
         fif_dir  = sys.argv[1]
     
-    elif len(sys.argv) == 1:
-        input_dir = input('Provide the directory with the fif file to convert: \n>> ')    
+    if len(sys.argv) == 1:
+        fif_dir = input('Provide the directory with the fif file to convert: \n>> ')
     
     fif2mat(fif_dir)
