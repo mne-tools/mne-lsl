@@ -622,16 +622,21 @@ if __name__ == '__main__':
     if len(sys.argv) > 3:
         raise IOError("Two many arguments provided, max is 2  (directory and channels file)")
     
-    elif len(sys.argv) > 2:
+    if len(sys.argv) > 2:
         channel_file = sys.argv[2]
     
-    elif len(sys.argv) > 1:
+    if len(sys.argv) > 1:
+        if not channel_file:
+            channel_answer = input('Channels file (only for .gdf .bdf)? [y/n]\n>> ')
+            if channel_answer in ['y', 'Y', 'yes', 'YES', 'Yes']:
+                channel_file = input('Provide its path?\n>> ')
+                
         input_dir = sys.argv[1]
     
-    elif len(sys.argv) == 1:
+    if len(sys.argv) == 1:
         input_dir = input('Input directory?\n>> ')
-        channel_answer = input('Channels file (only for .gdf .bdf)? [y/n]\n>> ')
         
+        channel_answer = input('Channels file (only for .gdf .bdf)? [y/n]\n>> ')
         if channel_answer in ['y', 'Y', 'yes', 'YES', 'Yes']:
             channel_file = input('Provide its path?\n>> ')
     
