@@ -34,6 +34,7 @@ os.environ['OMP_NUM_THREADS'] = '1' # actually improves performance for multitap
 
 
 # note that MNE already has find_events function
+#----------------------------------------------------------------------
 def find_events(events_raw):
     """
     Find trigger values, rising from zero to non-zero
@@ -51,7 +52,7 @@ def find_events(events_raw):
 
     return events
 
-
+#----------------------------------------------------------------------
 def find_event_channel(raw=None, ch_names=None):
     """
     Find event channel using heuristics for pcl files.
@@ -89,7 +90,7 @@ def find_event_channel(raw=None, ch_names=None):
                 return ch_names.index(ch_name)
     return None
 
-
+#----------------------------------------------------------------------
 def raw2mat(infile, outfile):
     '''
     Convert raw data file to MATLAB file
@@ -100,7 +101,7 @@ def raw2mat(infile, outfile):
     scipy.io.savemat(outfile, dict(signals=raw._data, header=header))
     logger.info('Exported to %s' % outfile)
 
-
+#----------------------------------------------------------------------
 def add_events_raw(rawfile, outfile, eventfile, overwrite=True):
     """
     Add events from a file and save
@@ -114,7 +115,7 @@ def add_events_raw(rawfile, outfile, eventfile, overwrite=True):
     raw.add_events(events, stim_channel='TRIGGER')
     raw.save(outfile, overwrite=overwrite)
 
-
+#----------------------------------------------------------------------
 def export_morlet(epochs, filename):
     """
     Export wavelet tranformation decomposition into Matlab format
@@ -126,7 +127,7 @@ def export_morlet(epochs, filename):
     scipy.io.savemat(filename, dict(power=power.data, itc=itc.data, freqs=freqs,
         channels=epochs.ch_names, sfreq=epochs.info['sfreq'], onset=-epochs.tmin))
 
-
+#----------------------------------------------------------------------
 def event_timestamps_to_indices(sigfile, eventfile):
     """
     Convert LSL timestamps to sample indices for separetely recorded events.
@@ -158,7 +159,7 @@ def event_timestamps_to_indices(sigfile, eventfile):
                 events.append([next_index, 0, event_value])
     return events
 
-
+#----------------------------------------------------------------------
 def rereference(raw, ref_new, ref_old=None):
     """
     Reference to new channels. raw object is modified in-place for efficiency.
@@ -191,7 +192,7 @@ def rereference(raw, ref_new, ref_old=None):
 
     return True
 
-
+#----------------------------------------------------------------------
 def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, spectral_ch=None,
                notch=None, notch_ch=None, multiplier=1, ch_names=None, rereference=None, decim=None, n_jobs=1):
     """
@@ -406,7 +407,7 @@ def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, sp
         raw = data
     return raw
 
-
+#----------------------------------------------------------------------
 def load_raw(rawfile, spfilter=None, spchannels=None, events_ext=None, multiplier=1, verbose='ERROR'):
     """
     Loads data from a fif-format file.
@@ -457,7 +458,7 @@ def load_raw(rawfile, spfilter=None, spchannels=None, events_ext=None, multiplie
 
     return raw, events
 
-
+#----------------------------------------------------------------------
 def load_multi(src, spfilter=None, spchannels=None, multiplier=1):
     """
     Load multiple data files and concatenate them into a single series
@@ -524,7 +525,7 @@ def load_multi(src, spfilter=None, spchannels=None, multiplier=1):
 
     return raw_merged, events
 
-
+#----------------------------------------------------------------------
 def butter_bandpass(highcut, lowcut, fs, num_ch):
     """
     Calculation of bandpass coefficients.
@@ -541,105 +542,8 @@ def butter_bandpass(highcut, lowcut, fs, num_ch):
     zi = np.zeros([a.shape[0] - 1, num_ch])
     return b, a, zi
 
+
 #----------------------------------------------------------------------
-def list_lsl_streams(state=None, logger=logger, ignore_markers=False):
-    """
-    """
-    import time
-    #  GUI sharing variable to stop the process, 1 = start, 0 = stop
-    if not state:
-        state = mp.Value('i', 1)
-
-    # look for LSL servers
-    amp_list = []
-    amp_list_backup = []
-
-    while True:
-        #  Stop if recording state (mp shared variable) is set to 0 from GUI
-        if not state.value:
-            sys.exit()
-        streamInfos = pylsl.resolve_streams()
-        if len(streamInfos) > 0:
-            for index, si in enumerate(streamInfos):
-                # LSL XML parser has a bug which crashes so do not use for now
-                desc = pylsl.StreamInlet(si).info().desc()
-                amp_serial = desc.child('acquisition').child_value('serial_number').strip()
-                if amp_serial == '':
-                    amp_serial = 'N/A'                
-                amp_name = si.name()
-                if 'Markers' in amp_name:
-                    amp_list_backup.append((index, amp_name, amp_serial))
-                else:
-                    amp_list.append((index, amp_name, amp_serial))
-            break
-        logger.info('No server available yet on the network...')
-        time.sleep(1)
-
-    if ignore_markers is False:
-        amp_list += amp_list_backup
-
-    logger.info('-- List of servers --')
-    for i, (index, amp_name, amp_serial) in enumerate(amp_list):
-        logger.info('%d: %s (Serial %s)' % (i, amp_name, amp_serial))
-
-    return amp_list, streamInfos
-
-
-def search_lsl(state=None, logger=logger, ignore_markers=False):
-
-    #  List the avaiable LSL streams
-    amp_list, streamInfos = list_lsl_streams(state, logger, ignore_markers)
-
-    if len(amp_list) == 1:
-        index = 0
-    else:
-        index = input('Amp index? Hit enter without index to select the first server.\n>> ')
-        if index.strip() == '':
-            index = 0
-        else:
-            index = int(index.strip())
-    amp_index, amp_name, amp_serial = amp_list[index]
-    si = streamInfos[amp_index]
-    assert amp_name == si.name()
-    # LSL XML parser has a bug which crashes so do not use for now
-    #assert amp_serial == pylsl.StreamInlet(si).info().desc().child('acquisition').child_value('serial_number').strip()
-    logger.info('Selected %s (Serial: %s)' % (amp_name, amp_serial))
-
-    return amp_name, amp_serial
-
-def lsl_channel_list(inlet):
-    """
-    Reads XML description of LSL header and returns channel list
-
-    Input:
-        pylsl.StreamInlet object
-    Returns:
-        ch_list: [ name1, name2, ... ]
-    """
-    if not type(inlet) is pylsl.StreamInlet:
-        logger.error('lsl_channel_list(): wrong input type %s' % type(inlet))
-        raise TypeError
-    root = ET.fromstring(inlet.info().as_xml())
-    desc = root.find('desc')
-    ch_list = []
-    
-    if desc.find('channels') is not None:        
-        for ch in desc.find('channels'):
-            ch_name = ch.find('label').text
-            ch_list.append(ch_name)
-
-    ''' This code may throw access violation error due to bug in pylsl.XMLElement
-    # for some reason type(inlet) returns 'instance' type in Python 2.
-    ch = inlet.info().desc().child('channels').first_child()
-    ch_list = []
-    for k in range(inlet.info().channel_count()):
-        ch_name = ch.child_value('label')
-        ch_list.append(ch_name)
-        ch = ch.next_sibling()
-    '''
-    return ch_list
-
-
 def channel_names_to_index(raw, channel_names=None):
     """
     Return channel indicies among EEG channels
@@ -660,7 +564,7 @@ def channel_names_to_index(raw, channel_names=None):
 
     return picks
 
-
+#----------------------------------------------------------------------
 def raw_crop(raw, tmin, tmax):
     """
     Perform a real cropping of a Raw object
@@ -677,7 +581,7 @@ def raw_crop(raw, tmin, tmax):
     tmax_index = int(round(raw.info['sfreq'] * tmax))
     return mne.io.RawArray(raw._data[:, tmin_index:tmax_index], info)
 
-
+#----------------------------------------------------------------------
 def load_config(cfg_module):
     """
     Dynamic loading of a config file module.
