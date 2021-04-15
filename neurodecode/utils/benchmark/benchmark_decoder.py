@@ -17,7 +17,7 @@ Results on i7-8700K machine:
 """
 import numpy as np
 import neurodecode.utils.q_common as qc
-from neurodecode.decoder.decoder import BCIDecoder, BCIDecoderDaemon
+from neurodecode.decoder.decoder import BCIDecoder
 
 #----------------------------------------------------------------------
 def benchmark_BCIdecoder(decoder_file, num_decode=200):
