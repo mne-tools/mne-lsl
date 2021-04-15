@@ -16,57 +16,36 @@ Swiss Federal Institute of Technology Lausanne (EPFL)
 import os
 import sys
 import mne
-import pylsl
 import scipy.io
 import importlib
 import numpy as np
 from pathlib import Path
 import multiprocessing as mp
-import xml.etree.ElementTree as ET
-import neurodecode.utils.q_common as qc
-from scipy.signal import butter, lfilter, lfiltic, buttord
-from neurodecode.pycnbi_config import CAP, LAPLACIAN
+from scipy.signal import butter
 from neurodecode import logger
-from builtins import input
 
 mne.set_log_level('ERROR')
-os.environ['OMP_NUM_THREADS'] = '1' # actually improves performance for multitaper
-
-
-# note that MNE already has find_events function
-#----------------------------------------------------------------------
-def find_events(events_raw):
-    """
-    Find trigger values, rising from zero to non-zero
-    """
-    events = []  # triggered event values other than zero
-
-    # set epochs (frame start, frame end)
-    ev_last = 0
-    for et in range(len(events_raw)):
-        ev = events_raw[et]
-        if ev != ev_last:
-            if ev > 0:
-                events.append([et, 0, ev])
-            ev_last = ev
-
-    return events
 
 #----------------------------------------------------------------------
 def find_event_channel(raw=None, ch_names=None):
     """
-    Find event channel using heuristics for pcl files.
+    Find the event channel using heuristics.
 
-    Disclaimer: Not 100% guaranteed to find.
+    Disclaimer: Not 100% guaranteed to find it.
+    If raw is None, ch_names must be given.
 
-    Input:
-        raw: mne.io.RawArray-like object or numpy array (n_channels x n_samples)
-        if raw is None, ch_names must be given.
+    Parameters
+    ----------
+    raw : mne.io.Raw or numpy.ndarray (n_channels x n_samples)
+        The data
+    ch_names : list
+        The channels name list
 
-    Output:
-        channel index or None if not found.
+    Returns:
+    --------
+    int : The event channel index or None if not found.
     """
-
+    # For numpy array
     if type(raw) == np.ndarray:
         if ch_names is not None:
             for ch_name in ch_names:
@@ -78,10 +57,17 @@ def find_event_channel(raw=None, ch_names=None):
             if (raw[ch].astype(int) == raw[ch]).all()\
                     and max(raw[ch]) < 256 and min(raw[ch]) == 0:
                 return ch
+    
+    # For mne.Array
     elif hasattr(raw, 'ch_names'):
+        if 'stim' in raw.get_channel_types():
+            return raw.get_channel_types().index('stim')
+
         for ch_name in raw.ch_names:
             if 'TRIGGER' in ch_name or 'STI ' in ch_name or 'TRG' in ch_name or 'CH_Event' in ch_name:
                 return raw.ch_names.index(ch_name)
+    
+    # For unknown data type
     else:
         if ch_names is None:
             raise ValueError('ch_names cannot be None when raw is None.')
@@ -91,85 +77,40 @@ def find_event_channel(raw=None, ch_names=None):
     return None
 
 #----------------------------------------------------------------------
-def raw2mat(infile, outfile):
-    '''
-    Convert raw data file to MATLAB file
-    '''
-    raw, events = load_raw(infile)
-    header = dict(bads=raw.info['bads'], ch_names=raw.info['ch_names'],\
-                  sfreq=raw.info['sfreq'], events=events)
-    scipy.io.savemat(outfile, dict(signals=raw._data, header=header))
-    logger.info('Exported to %s' % outfile)
-
-#----------------------------------------------------------------------
 def add_events_raw(rawfile, outfile, eventfile, overwrite=True):
     """
     Add events from a file and save
 
     Note: If the event values already exists in raw file, the new event values
-        will be added to the previous value instead of replacing them.
+    will be added to the previous value instead of replacing them.
+    
+    Parameters
+    ----------
+    rawfile : str
+        The (absolute) .fif file path
+    outfile : str
+        The (absolute) .fif output file path
+    overwrite : bool
+        If True, it will overwrite the existing output file
     """
-
     raw = mne.io.Raw(rawfile, preload=True, proj=False)
     events = mne.read_events(eventfile)
-    raw.add_events(events, stim_channel='TRIGGER')
+    raw.add_events(events, stim_channel='TRIGGER', replace=False)
     raw.save(outfile, overwrite=overwrite)
-
-#----------------------------------------------------------------------
-def export_morlet(epochs, filename):
-    """
-    Export wavelet tranformation decomposition into Matlab format
-    """
-    freqs = np.array(DWT['freqs'])  # define frequencies of interest
-    n_cycles = freqs / 2.  # different number of cycle per frequency
-    power, itc = mne.time_frequency.tfr_morlet(epochs, freqs=freqs,
-        n_cycles=n_cycles, use_fft=False, return_itc=True, n_jobs=mp.cpu_count())
-    scipy.io.savemat(filename, dict(power=power.data, itc=itc.data, freqs=freqs,
-        channels=epochs.ch_names, sfreq=epochs.info['sfreq'], onset=-epochs.tmin))
-
-#----------------------------------------------------------------------
-def event_timestamps_to_indices(sigfile, eventfile):
-    """
-    Convert LSL timestamps to sample indices for separetely recorded events.
-
-    Parameters:
-    sigfile: raw signal file (Python Pickle) recorded with stream_recorder.py.
-    eventfile: event file where events are indexed with LSL timestamps.
-
-    Returns:
-    events list, which can be used as an input to mne.io.RawArray.add_events().
-    """
-
-    raw = qc.load_obj(sigfile)
-    ts = raw['timestamps'].reshape(-1)
-    ts_min = min(ts)
-    ts_max = max(ts)
-    events = []
-
-    with open(eventfile) as f:
-        for l in f:
-            data = l.strip().split('\t')
-            event_ts = float(data[0])
-            event_value = int(data[2])
-            # find the first index not smaller than ts
-            next_index = np.searchsorted(ts, event_ts)
-            if next_index >= len(ts):
-                logger.warning('Event %d at time %.3f is out of time range (%.3f - %.3f).' % (event_value, event_ts, ts_min, ts_max))
-            else:
-                events.append([next_index, 0, event_value])
-    return events
 
 #----------------------------------------------------------------------
 def rereference(raw, ref_new, ref_old=None):
     """
     Reference to new channels. raw object is modified in-place for efficiency.
 
-    raw: mne.io.RawArray
+    The average of the new reference channel values are substracted from all channel values.
 
-    ref_new: None | list of str (RawArray) | list of int (numpy array)
+    Parameters
+    ----------
+    raw : mne.io.RawArray
+        The data
+    ref_new : None | list of str (RawArray) | list of int (numpy array)
         Channel(s) to re-reference, e.g. M1, M2.
-        Average of these channel values are substracted from all channel values.
-
     ref_old: None | str
         Channel to recover, assuming this channel was originally used as a reference.
     """
@@ -186,62 +127,47 @@ def rereference(raw, ref_new, ref_old=None):
     else:
         if ref_old is not None:
             # Add a blank (zero-valued) channel
-            mne.io.add_reference_channels(raw, ref_old, copy=False)
+            mne.add_reference_channels(raw, ref_old, copy=False)
         # Re-reference
-        mne.io.set_eeg_reference(raw, ref_new, copy=False)
-
-    return True
+        mne.set_eeg_reference(raw, ref_new, copy=False)
 
 #----------------------------------------------------------------------
 def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, spectral_ch=None,
-               notch=None, notch_ch=None, multiplier=1, ch_names=None, rereference=None, decim=None, n_jobs=1):
+               notch=None, notch_ch=None, ch_names=None, rereference=None, decim=None, n_jobs=1):
     """
-    Apply spatial, spectral, notch filters and convert unit.
-    raw is modified in-place.
+    Apply spatial, spectral, notch filters, rereference and decim.
+    
+    raw is modified in-place.Neurodecode puts trigger channel as index 0, data channel starts from index 1.
 
-    Input
-    ------
-    raw: mne.io.Raw | mne.io.RawArray | mne.Epochs | numpy.array (n_channels x n_samples)
-         numpy.array type assumes the data has only pure EEG channnels without event channels
-
-    sfreq: required only if raw is numpy array.
-
+    Parameters
+    ----------
+    raw : mne.io.Raw | mne.io.RawArray | mne.Epochs | numpy.array (n_channels x n_samples)
+        The raw data (numpy.array type assumes the data has only pure EEG channnels without event channels)
+    sfreq : float
+        Only required if raw is numpy array.
     spatial: None | 'car' | 'laplacian'
         Spatial filter type.
-
     spatial_ch: None | list (for CAR) | dict (for LAPLACIAN)
         Reference channels for spatial filtering. May contain channel names.
-        'car': channel indices used for CAR filtering. If None, use all channels except
-               the trigger channel (index 0).
+        'car': channel indices used for CAR filtering. If None, use all channels except the trigger channel (index 0).
         'laplacian': {channel:[neighbor1, neighbor2, ...], ...}
-        *** Note ***
-        Since neurodecode puts trigger channel as index 0, data channel starts from index 1.
-
-    spectral: None | [l_freq, h_freq]
+    spectral : None | [l_freq, h_freq]
         Spectral filter.
         if l_freq is None: lowpass filter is applied.
         if h_freq is None: highpass filter is applied.
         if l_freq < h_freq: bandpass filter is applied.
         if l_freq > h_freq: band-stop filter is applied.
-
-    spectral_ch: None | list
-        Channel picks for spectra filtering. May contain channel names.
-
-    notch: None | float | list of frequency in floats
+    spectral_ch : None | list
+        Channel picks for spectral filtering. May contain channel names.
+    notch: None | float | list
         Notch filter.
-
     notch_ch: None | list
         Channel picks for notch filtering. May contain channel names.
-
-    multiplier: float
-        If not 1, multiply data values excluding trigger values.
-
     ch_names: None | list
         If raw is numpy array and channel picks are list of strings, ch_names will
         be used as a look-up table to convert channel picks to channel numbers.
-
-    rereference: Not supported yet.
-
+    rereference : Unknown
+        Not supported yet.
     decim: None | int
         Apply low-pass filter and decimate (downsample). sfreq must be given. Ignored if 1.
 
@@ -291,11 +217,7 @@ def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, sp
     if rereference is not None:
         logger.error('re-referencing not implemented yet. Sorry.')
         raise NotImplementedError
-
-    # Do unit conversion
-    if multiplier != 1:
-        data[eeg_channels] *= multiplier
-
+    
     # Apply spatial filter
     if spatial is None:
         pass
@@ -405,125 +327,9 @@ def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, sp
 
     if type(raw) == np.ndarray:
         raw = data
+    
     return raw
 
-#----------------------------------------------------------------------
-def load_raw(rawfile, spfilter=None, spchannels=None, events_ext=None, multiplier=1, verbose='ERROR'):
-    """
-    Loads data from a fif-format file.
-    You can convert non-fif files (.eeg, .bdf, .gdf, .pcl) to fif format.
-
-    Parameters:
-    rawfile: (absolute) data file path
-    spfilter: 'car' | 'laplacian' | None
-    spchannels: None | list (for CAR) | dict (for LAPLACIAN)
-        'car': channel indices used for CAR filtering. If None, use all channels except
-               the trigger channel (index 0).
-        'laplacian': {channel:[neighbor1, neighbor2, ...], ...}
-        *** Note ***
-        Since neurodecode puts trigger channel as index 0, data channel starts from index 1.
-    events_ext: Add externally recorded events.
-                [ [sample_index1, 0, event_value1],... ]
-    multiplier: Multiply all values except triggers (to convert unit).
-
-    Returns:
-    raw: mne.io.RawArray object. First channel (index 0) is always trigger channel.
-    events: mne-compatible events numpy array object (N x [frame, 0, type])
-    spfilter= {None | 'car' | 'laplacian'}
-
-    """
-
-    if not os.path.exists(rawfile):
-        logger.error('File %s not found' % rawfile)
-        raise IOError
-    if not os.path.isfile(rawfile):
-        logger.error('%s is not a file' % rawfile)
-        raise IOError
-
-    extension = qc.parse_path(rawfile).ext
-    assert extension in ['fif', 'fiff'], 'only fif format is supported'
-    raw = mne.io.Raw(rawfile, preload=True, verbose=verbose)
-    if spfilter is not None or multiplier != 1:
-        preprocess(raw, spatial=spfilter, spatial_ch=spchannels, multiplier=multiplier)
-    if events_ext is not None:
-        events = mne.read_events(events_ext)
-    else:
-        tch = find_event_channel(raw)
-        if tch is not None:
-            events = mne.find_events(raw, stim_channel=raw.ch_names[tch], shortest_event=1, uint_cast=True, consecutive='increasing')
-            # MNE's annoying hidden cockroach: first_samp
-            events[:, 0] -= raw.first_samp
-        else:
-            events = np.array([], dtype=np.int64)
-
-    return raw, events
-
-#----------------------------------------------------------------------
-def load_multi(src, spfilter=None, spchannels=None, multiplier=1):
-    """
-    Load multiple data files and concatenate them into a single series
-
-    - Assumes all files have the same sampling rate and channel order.
-    - Event locations are updated accordingly with new offset.
-
-    @params:
-        src: directory or list of files.
-        spfilter: apply spatial filter while loading.
-        spchannels: list of channel names to apply spatial filter.
-        multiplier: to change units for better numerical stability.
-
-    See load_raw() for more low-level details.
-
-    """
-
-    if type(src) == str:
-        if not os.path.isdir(src):
-            logger.error('%s is not a directory or does not exist.' % src)
-            raise IOError
-        flist = []
-        for f in qc.get_file_list(src):
-            if qc.parse_path_list(f)[2] == 'fif':
-                flist.append(f)
-    elif type(src) in [list, tuple]:
-        flist = src
-    else:
-        logger.error('Unknown input type %s' % type(src))
-        raise TypeError
-
-    if len(flist) == 0:
-        logger.error('load_multi(): No fif files found in %s.' % src)
-        raise RuntimeError
-    elif len(flist) == 1:
-        return load_raw(flist[0], spfilter=spfilter, spchannels=spchannels, multiplier=multiplier)
-
-    # load raw files
-    rawlist = []
-    for f in flist:
-        logger.info('Loading %s' % f)
-        raw, _ = load_raw(f, spfilter=spfilter, spchannels=spchannels, multiplier=multiplier)
-        rawlist.append(raw)
-
-    # concatenate signals
-    signals = None
-    for raw in rawlist:
-        if signals is None:
-            signals = raw._data
-        else:
-            signals = np.concatenate((signals, raw._data), axis=1) # append samples
-
-    # create a concatenated raw object and update channel names
-    raw = rawlist[0]
-    trigch = find_event_channel(raw)
-    ch_types = ['eeg'] * len(raw.ch_names)
-    if trigch is not None:
-        ch_types[trigch] = 'stim'
-    info = mne.create_info(raw.ch_names, raw.info['sfreq'], ch_types)
-    raw_merged = mne.io.RawArray(signals, info)
-
-    # re-calculate event positions
-    events = mne.find_events(raw_merged, stim_channel='TRIGGER', shortest_event=1, consecutive=True)
-
-    return raw_merged, events
 
 #----------------------------------------------------------------------
 def butter_bandpass(highcut, lowcut, fs, num_ch):
