@@ -169,7 +169,7 @@ def lsl_channel_list(inlet):
         
     Returns:
     --------
-        list : List of channels name [ name1, name2, ... ]
+    list : List of channels name [ name1, name2, ... ]
     """
     if not type(inlet) is pylsl.StreamInlet:
         logger.error('Wrong input type %s' % type(inlet))

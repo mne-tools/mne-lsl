@@ -9,12 +9,12 @@ from neurodecode.utils.pycnbi_utils import find_event_channel
 #----------------------------------------------------------------------
 def load_raw(rawfile, events_ext=None):
     """
-    Loads data from a fif-format file.
+    Load data from a .fif file.
 
     Parameters
     ----------
     rawfile : str
-        The (absolute) data file path
+        The (absolute) .fif file path
     events_ext : str
         The txt file containing external events 
 
@@ -55,7 +55,7 @@ def load_raw(rawfile, events_ext=None):
 #----------------------------------------------------------------------
 def load_multi(src):
     """
-    Load multiple data files and concatenate them into a single series
+    Load multiple data .fif files and concatenate them into a single series
     - Assumes all files have the same sampling rate and channel order.
     - Event locations are updated accordingly with new offset.
     
