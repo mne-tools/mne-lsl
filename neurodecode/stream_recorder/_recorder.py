@@ -5,7 +5,7 @@ from pathlib import Path
 
 from neurodecode import logger
 import neurodecode.utils.q_common as qc
-from neurodecode.utils.convert import pcl2fif
+from neurodecode.utils.io import pcl2fif
 from neurodecode.utils.lsl import start_server
 from neurodecode.stream_receiver import StreamReceiver, StreamEEG
 
