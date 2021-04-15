@@ -160,7 +160,7 @@ def search_lsl(ignore_markers=False, logger=logger, state=mp.Value('i', 1)):
 #----------------------------------------------------------------------
 def lsl_channel_list(inlet):
     """
-    Reads the XML description of the LSL header and returns the channels name list.
+    Extract the channels name list from the LSL info.
 
     Parameters
     ----------

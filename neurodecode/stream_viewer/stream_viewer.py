@@ -3,8 +3,7 @@ from PyQt5.QtWidgets import QApplication
 
 from neurodecode import logger
 from neurodecode.stream_viewer._scope import _Scope
-
-import neurodecode.utils.pycnbi_utils as pu
+from neurodecode.utils.lsl import search_lsl
 
 class StreamViewer:
     """
@@ -42,7 +41,7 @@ class StreamViewer:
         
         Assign the found amp name and serial number to the internal attributes
         """
-        self.amp_name, _ = pu.search_lsl()
+        self.amp_name, _ = search_lsl()
         
     
 #----------------------------------------------------------------------
