@@ -16,12 +16,9 @@ Swiss Federal Institute of Technology Lausanne (EPFL)
 import os
 import sys
 import mne
-import scipy.io
 import importlib
 import numpy as np
 from pathlib import Path
-import multiprocessing as mp
-from scipy.signal import butter
 from neurodecode import logger
 
 mne.set_log_level('ERROR')
@@ -90,6 +87,8 @@ def add_events_raw(rawfile, outfile, eventfile, overwrite=True):
         The (absolute) .fif file path
     outfile : str
         The (absolute) .fif output file path
+    eventfile : str
+        The (absolute) .txt events file path
     overwrite : bool
         If True, it will overwrite the existing output file
     """
@@ -117,10 +116,10 @@ def rereference(raw, ref_new, ref_old=None):
 
     # Re-reference and recover the original reference channel values if possible
     if type(raw) == np.ndarray:
-        if raw_ch_old is not None:
+        if ref_new is not None:
             logger.error('Recovering original reference channel is not yet supported for numpy arrays.')
             raise NotImplementedError
-        if type(raw_ch_new[0]) is not int:
+        if type(ref_new[0]) is not int:
             logger.error('Channels must be integer values for numpy arrays')
             raise ValueError
         raw -= np.mean(raw[ref_new], axis=0)
@@ -329,63 +328,6 @@ def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, sp
         raw = data
     
     return raw
-
-
-#----------------------------------------------------------------------
-def butter_bandpass(highcut, lowcut, fs, num_ch):
-    """
-    Calculation of bandpass coefficients.
-    Order is computed automatically.
-    Note that if filter is unstable this function crashes.
-
-    TODO: handle exceptions
-    """
-
-    low = lowcut / (0.5 * fs)
-    high = highcut / (0.5 * fs)
-    ord = buttord(high, low, 2, 40)
-    b, a = butter(2, [low, high], btype='band')
-    zi = np.zeros([a.shape[0] - 1, num_ch])
-    return b, a, zi
-
-
-#----------------------------------------------------------------------
-def channel_names_to_index(raw, channel_names=None):
-    """
-    Return channel indicies among EEG channels
-    """
-    if channel_names is None:
-        picks = mne.pick_types(raw.info, meg=False, eeg=True, stim=False, eog=False, exclude='bads')
-    else:
-        picks = []
-        for c in channel_names:
-            if type(c) == int:
-                picks.append(c)
-            elif type(c) == str:
-                if c not in raw.ch_names:
-                    raise IndexError('Channel %s not found in raw.ch_names' % c)
-                picks.append(raw.ch_names.index(c))
-            else:
-                raise TypeError('channel_names is unknown format.\nchannel_names=%s' % channel_names)
-
-    return picks
-
-#----------------------------------------------------------------------
-def raw_crop(raw, tmin, tmax):
-    """
-    Perform a real cropping of a Raw object
-
-    mne.Raw.crop() updates a very confusing variable "first_samp", which reuslts
-    in the mismatch of real event indices when run with mne.find_events().
-    """
-    trigch = find_event_channel(raw)
-    ch_types = ['eeg'] * len(raw.ch_names)
-    if trigch is not None:
-        ch_types[trigch] = 'stim'
-    info = mne.create_info(raw.ch_names, raw.info['sfreq'], ch_types)
-    tmin_index = int(round(raw.info['sfreq'] * tmin))
-    tmax_index = int(round(raw.info['sfreq'] * tmax))
-    return mne.io.RawArray(raw._data[:, tmin_index:tmax_index], info)
 
 #----------------------------------------------------------------------
 def load_config(cfg_module):
