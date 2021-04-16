@@ -123,8 +123,8 @@ def get_tfr(cfg, recursive=False, n_jobs=1):
     sfreq = raw.info['sfreq']
 
     # set channels of interest
-    picks = pu.channel_names_to_index(raw, cfg.CHANNEL_PICKS)
-    spchannels = pu.channel_names_to_index(raw, cfg.SP_CHANNELS)
+    picks = mne.pick_channels(raw.ch_names, cfg.CHANNEL_PICKS)
+    spchannels = picks = mne.pick_channels(raw.ch_names, cfg.SP_CHANNELS)
 
     if max(picks) > len(raw.info['ch_names']):
         msg = 'ERROR: "picks" has a channel index %d while there are only %d channels.' %\
