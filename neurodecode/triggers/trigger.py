@@ -68,11 +68,7 @@ class Trigger(object):
 
         elif self._lpttype == 'SOFTWARE':
             logger.info('Using software trigger')
-            evefile = self._find_evefile(state)
-            self.evefile = open(evefile, 'a')
-
-            #if check_lsl_offset:
-                #self._compute_lsl_offset(evefile)
+            self.evefile = self._find_evefile(state)
 
         elif self._lpttype == 'FAKE' or self._lpttype is None or self._lpttype is False:
             logger.warning('Using a fake trigger.')
@@ -209,6 +205,14 @@ class Trigger(object):
             True if trigger is ready to use, False otherwise.
         """
         if self._lpttype == 'SOFTWARE':
+            #  Open the file
+            try:
+                self.evefile = open(self.evefile, 'a')
+            # Close it before if already opened.
+            except IOError:
+                self.evefile.close()
+                self.evefile = open(self.evefile, 'a')
+                
             logger.info('Ignoring delay parameter for software trigger.')
             return True
         elif self._lpttype == 'FAKE':
