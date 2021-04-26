@@ -41,7 +41,7 @@ class StreamViewer:
         
         Assign the found amp name and serial number to the internal attributes
         """
-        self.amp_name, _ = search_lsl()
+        self.amp_name = search_lsl()
         
     
 #----------------------------------------------------------------------
