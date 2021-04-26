@@ -39,7 +39,8 @@ def any2fif(filename, outdir=None, channel_file=None):
         eve_file = '%s/%s.txt' % (p.dir, p.name.replace('raw', 'eve'))
         
         # Remove the stream name from the event file name
-        eve_file = eve_file.split('-').pop(-2)
+        eve_file = eve_file.split('-')
+        eve_file.pop(-2)
         eve_file = '-'.join(eve_file)
         
         if os.path.exists(eve_file):
@@ -601,7 +602,7 @@ def _create_saving_dir(outdir, fdir):
         outdir = fdir
     elif outdir[-1] != '/':
         outdir += '/'
-        qc.make_dirs(outdir)
+    qc.make_dirs(outdir)
         
     return outdir
 
