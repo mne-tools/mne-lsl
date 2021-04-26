@@ -3,7 +3,6 @@ from __future__ import print_function, division
 import time
 import pylsl
 import numpy as np
-import neurodecode.utils.q_common as qc
 import neurodecode.utils.pycnbi_utils as pu
 from neurodecode.triggers import TriggerDef
 from neurodecode import logger
