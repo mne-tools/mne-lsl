@@ -35,11 +35,17 @@ def any2fif(filename, outdir=None, channel_file=None):
     p = qc.parse_path(filename)
 
     if p.ext in ['pcl', 'pkl', 'pickle']:
+        
         eve_file = '%s/%s.txt' % (p.dir, p.name.replace('raw', 'eve'))
+        
+        # Remove the stream name from the event file name
+        eve_file = eve_file.split('-').pop(-2)
+        eve_file = '-'.join(eve_file)
         
         if os.path.exists(eve_file):
             logger.info('Adding events from %s' % eve_file)
         else:
+            logger.info('No SOFTWARE event file %s' % eve_file)
             eve_file = None
         pcl2fif(filename, outdir=outdir, external_event=eve_file)
     
