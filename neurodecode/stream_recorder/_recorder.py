@@ -15,7 +15,7 @@ class _Recorder:
     """
     #----------------------------------------------------------------------
     def __init__(self, record_dir, bids_info=None, logger=logger, state=mp.Value('i', 0)):
-        self._MAX_BUFSIZE = 86400 
+        self._MAX_BUFSIZE = 7200 
         
         self.record_dir = record_dir
         self.bids_info = bids_info
@@ -80,9 +80,12 @@ class _Recorder:
         str
             The software events' file (txt format)
         """
-        timestamp = time.strftime('%Y%m%d-%H%M%S', time.localtime())
-        eve_file = Path('%s/%s-eve.txt' % (record_dir, timestamp))
+        if record_dir == '.':
+            record_dir = os.getcwd()
         
+        timestamp = time.strftime('%Y%m%d-%H%M%S', time.localtime())        
+        eve_file = Path('%s/%s-eve.txt' % (record_dir, timestamp))
+
         data_files = dict()
         
         for s in self.sr.streams:
