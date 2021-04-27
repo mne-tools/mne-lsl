@@ -11,7 +11,6 @@ import pickle
 import numpy as np
 import neurodecode.utils.q_common as qc
 from neurodecode.utils.preprocess import find_event_channel
-import neurodecode.utils.pycnbi_utils as pu
 
 from neurodecode import logger
 from builtins import input

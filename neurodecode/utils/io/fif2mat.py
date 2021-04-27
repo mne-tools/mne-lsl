@@ -5,9 +5,7 @@ Export fif data to mat files.
 """
 
 import neurodecode.utils.q_common as qc
-import neurodecode.utils.pycnbi_utils as pu
-
-from neurodecode.utils.io import load_fif_raw
+from .load_fif import load_fif_raw
 from neurodecode import logger
 from scipy.io import savemat
 
@@ -36,7 +34,7 @@ def fif2mat(data_dir, out_dir=None):
         if rawfile[-4:] != '.fif': continue
         
         # Load fif
-        raw, events = pu.load_fif_raw(rawfile)
+        raw, events = load_fif_raw(rawfile)
         
         # Formating
         events[:,0] += 1            # MATLAB uses 1-based indexing
