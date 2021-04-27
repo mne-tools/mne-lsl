@@ -18,7 +18,6 @@ import ctypes
 import threading
 import multiprocessing as mp
 from neurodecode.utils.lsl import start_client
-import neurodecode.utils.pycnbi_utils as pu
 from neurodecode import logger
 from builtins import input, bytes
 
