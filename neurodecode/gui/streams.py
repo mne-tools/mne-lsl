@@ -5,7 +5,7 @@ from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot, QThread
 from PyQt5.QtWidgets import QDialog, QVBoxLayout, QTextEdit
 
 from neurodecode.logger import add_logger_handler
-from neurodecode.utils import pycnbi_utils as pu
+from neurodecode.utils.lsl import list_lsl_streams
 
 ########################################################################
 class WriteStream():
@@ -128,7 +128,7 @@ class search_lsl_streams_thread(QThread):
     
     #----------------------------------------------------------------------
     def run(self):
-        amp_list, streamInfos = pu.list_lsl_streams(state=self.state, logger=self.logger, ignore_markers=False)
+        amp_list, streamInfos = list_lsl_streams(state=self.state, logger=self.logger, ignore_markers=False)
         
         with self.state.get_lock():
             self.state.value = 0
