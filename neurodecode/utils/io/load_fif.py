@@ -4,10 +4,10 @@ import numpy as np
 
 from neurodecode import logger
 import neurodecode.utils.q_common as qc
-from neurodecode.utils.pycnbi_utils import find_event_channel
+from neurodecode.utils.preprocess import find_event_channel
 
 #----------------------------------------------------------------------
-def load_raw(rawfile, events_ext=None):
+def load_fif_raw(rawfile, events_ext=None):
     """
     Load data from a .fif file.
 
@@ -46,14 +46,14 @@ def load_raw(rawfile, events_ext=None):
         if tch is not None:
             events = mne.find_events(raw, stim_channel=raw.ch_names[tch], shortest_event=1, uint_cast=True, consecutive='increasing')
             # MNE's annoying hidden cockroach: first_samp
-            events[:, 0] -= raw.first_samp
+            # events[:, 0] -= raw.first_samp
         else:
             events = np.array([], dtype=np.int64)
 
     return raw, events
 
 #----------------------------------------------------------------------
-def load_multi(src):
+def load_fif_multi(src):
     """
     Load multiple data .fif files and concatenate them into a single series
     - Assumes all files have the same sampling rate and channel order.
@@ -90,13 +90,13 @@ def load_multi(src):
         logger.error('load_multi(): No fif files found in %s.' % src)
         raise RuntimeError
     elif len(flist) == 1:
-        return load_raw(flist[0])
+        return load_fif_raw(flist[0])
 
     # load raw files
     rawlist = []
     for f in flist:
         logger.info('Loading %s' % f)
-        raw, _ = load_raw(f)
+        raw, _ = load_fif_raw(f)
         rawlist.append(raw)
 
     # concatenate signals

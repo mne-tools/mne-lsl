@@ -9,17 +9,17 @@ EPFL, 2019
 """
 
 import sys
-import os
 import mne
-import imp
 import pdb
 import scipy
-import traceback
 import numpy as np
 import multiprocessing as mp
 import mne.time_frequency
 import matplotlib.pyplot as plt
-import neurodecode.utils.pycnbi_utils as pu
+from neurodecode.utils.preprocess import preprocess
+from neurodecode.utils.preprocess import rereference
+from neurodecode.utils.io import load_config 
+from neurodecode.utils.io import load_fif_raw, load_fif_multi
 import neurodecode.utils.q_common as qc
 from neurodecode import logger
 from builtins import input
@@ -99,10 +99,10 @@ def get_tfr(cfg, recursive=False, n_jobs=1):
             for f in qc.get_file_list(ddir, fullpath=True, recursive=recursive):
                 if qc.parse_path(f).ext in ['fif', 'bdf', 'gdf']:
                     flist.append(f)
-        raw, events = pu.load_multi(flist)
+        raw, events = load_fif_multi(flist)
     else:
         logger.info('Loading %s' % cfg.DATA_FILE)
-        raw, events = pu.load_raw(cfg.DATA_FILE)
+        raw, events = load_fif_raw(cfg.DATA_FILE)
 
         # custom events
         if hasattr(cfg, 'EVENT_FILE') and cfg.EVENT_FILE is not None:
@@ -117,7 +117,7 @@ def get_tfr(cfg, recursive=False, n_jobs=1):
 
     # re-referencing
     if cfg.REREFERENCE is not None:
-        pu.rereference(raw, cfg.REREFERENCE[1], cfg.REREFERENCE[0])
+        rereference(raw, cfg.REREFERENCE[1], cfg.REREFERENCE[0])
         assert cfg.REREFERENCE[0] in raw.ch_names
 
     sfreq = raw.info['sfreq']
@@ -132,7 +132,7 @@ def get_tfr(cfg, recursive=False, n_jobs=1):
         raise RuntimeError(msg)
 
     # Apply filters
-    raw = pu.preprocess(raw, spatial=cfg.SP_FILTER, spatial_ch=spchannels, spectral=cfg.TP_FILTER,
+    raw = preprocess(raw, spatial=cfg.SP_FILTER, spatial_ch=spchannels, spectral=cfg.TP_FILTER,
                   spectral_ch=picks, notch=cfg.NOTCH_FILTER, notch_ch=picks,
                   multiplier=cfg.MULTIPLIER, n_jobs=n_jobs)
 
@@ -276,7 +276,7 @@ def get_tfr(cfg, recursive=False, n_jobs=1):
     logger.info('Finished !')
 
 def batch_run(cfg_module):
-    cfg = pu.load_config(cfg_module)
+    cfg = load_config(cfg_module)
     cfg = check_config(cfg)
     get_tfr(cfg)
 

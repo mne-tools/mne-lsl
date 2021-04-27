@@ -20,8 +20,8 @@ EPOCHS = {'stand':240, 'sit':238}
 TMIN = 0.0
 TMAX = 2.0
 
-
-import neurodecode.utils.pycnbi_utils as pu
+from neurodecode.utils.io import load_fif_multi
+from neurodecode.utils.preprocess import rereference
 import neurodecode.utils.q_common as qc
 import scipy.io
 import mne
@@ -45,11 +45,11 @@ if __name__ == '__main__':
     qc.make_dirs(out_path)
 
     # load data
-    raw, events = pu.load_multi(rawlist, multiplier=MULTIPLIER)
+    raw, events = load_fif_multi(rawlist, multiplier=MULTIPLIER)
     raw.pick_types(meg=False, eeg=True, stim=False)
     sfreq = raw.info['sfreq']
     if REF_CH_NEW is not None:
-        pu.rereference(raw, REF_CH_NEW, REF_CH_OLD)
+        rereference(raw, REF_CH_NEW, REF_CH_OLD)
 
     # pick channels
     if CHANNEL_PICKS is None:

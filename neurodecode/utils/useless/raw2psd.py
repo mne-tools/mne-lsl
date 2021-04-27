@@ -13,8 +13,9 @@ Swiss Federal Institute of Technology (EPFL)
 import os
 import mne
 import numpy as np
-import neurodecode.utils.pycnbi_utils as pu
 import neurodecode.utils.q_common as qc
+
+from neurodecode.utils.io import load_fif_raw
 from neurodecode import logger
 from IPython import embed
 
@@ -41,7 +42,7 @@ def raw2psd(rawfile=None, fmin=1, fmax=40, wlen=0.5, wstep=1, tmin=0.0, tmax=Non
     excludes (list): list of channels to exclude
     """
 
-    raw, eve = pu.load_raw(rawfile)
+    raw, eve = load_fif_raw(rawfile)
     sfreq = raw.info['sfreq']
     wframes = int(round(sfreq * wlen))
     raw_eeg = raw.pick_types(meg=False, eeg=True, stim=False, exclude=excludes)

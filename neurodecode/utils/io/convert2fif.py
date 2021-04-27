@@ -10,6 +10,7 @@ import mne
 import pickle
 import numpy as np
 import neurodecode.utils.q_common as qc
+from neurodecode.utils.preprocess import find_event_channel
 import neurodecode.utils.pycnbi_utils as pu
 
 from neurodecode import logger
@@ -262,7 +263,7 @@ def xdf2fif(filename, outdir=None):
     sample_rate = int(data[0][0]['info']['nominal_srate'][0])
     
     # Find trig channel
-    trig_ch_guess = pu.find_event_channel(None, labels)
+    trig_ch_guess = find_event_channel(None, labels)
 
     if trig_ch_guess is None:
         logger.warning('No trigger channel found: {}'.format(raw.info['ch_names']))
@@ -411,7 +412,7 @@ def _format_pkl_to_mne_RawArray(data):
         ch_names = data['ch_names']
 
     # search for the trigger channel
-    trig_ch = pu.find_event_channel(signals_raw, ch_names)
+    trig_ch = find_event_channel(signals_raw, ch_names)
 
     # move trigger channel to index 0
     if trig_ch is None:
@@ -526,7 +527,7 @@ def _find_trig_ch(raw):
     --------
     int : the trigger channel index.
     """
-    trig_ch_guess = pu.find_event_channel(raw)
+    trig_ch_guess = find_event_channel(raw)
     
     if trig_ch_guess is None:
         logger.warning('No trigger channel found: {}'.format(raw.info['ch_names']))
