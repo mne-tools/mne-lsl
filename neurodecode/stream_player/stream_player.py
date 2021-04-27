@@ -3,7 +3,7 @@ from __future__ import print_function, division
 import time
 import pylsl
 import numpy as np
-import neurodecode.utils.pycnbi_utils as pu
+from neurodecode.utils.io import load_fif_raw
 from neurodecode.triggers import TriggerDef
 from neurodecode import logger
 from builtins import input
@@ -280,7 +280,7 @@ class Streamer:
         fif_file : str
             The absolute path to the .fif file to play.
         """
-        self._raw, self._events = pu.load_raw(fif_file)
+        self._raw, self._events = load_fif_raw(fif_file)
         self.raw._data[1:, :] = self._raw.get_data()[1:, :] * 1E6
                 
         if self.raw is not None:

@@ -7,7 +7,7 @@ import neurodecode.utils.q_common as qc
 from abc import ABC, abstractmethod
 from neurodecode import logger
 from neurodecode.stream_receiver import Buffer
-from neurodecode.utils.pycnbi_utils import find_event_channel
+from neurodecode.utils.preprocess import find_event_channel
 from neurodecode.utils.lsl import  lsl_channel_list
 
 class _Stream(ABC):

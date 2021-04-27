@@ -27,7 +27,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
 import sys
-import imp
 import mne
 import mne.io
 import platform
@@ -35,7 +34,7 @@ import numpy as np
 import multiprocessing as mp
 import sklearn.metrics as skmetrics
 import neurodecode.utils.q_common as qc
-import neurodecode.utils.pycnbi_utils as pu
+from neurodecode.utils.io import load_config
 import neurodecode.decoder.features as features
 from builtins import input
 from sklearn.ensemble import RandomForestClassifier
@@ -44,7 +43,7 @@ from xgboost import XGBClassifier
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
 from neurodecode import logger
 from neurodecode.decoder.rlda import rLDA
-from neurodecode.triggers.trigger_def import trigger_def
+from neurodecode.triggers import TriggerDef
 from neurodecode.gui.streams import redirect_stdout_to_queue
 
 # scikit-learn old version compatibility
@@ -750,7 +749,7 @@ def train_decoder(cfg, featdata, feat_file=None):
 
 # for batch scripts
 def batch_run(cfg_module):
-    cfg = pu.load_config(cfg_module)
+    cfg = load_config(cfg_module)
     cfg = check_config(cfg)
     run(cfg, interactive=True)
 
@@ -759,7 +758,7 @@ def run(cfg, state=mp.Value('i', 1), queue=None, interactive=False, cv_file=None
     redirect_stdout_to_queue(logger, queue, 'INFO')
 
     # add tdef object
-    cfg.tdef = trigger_def(cfg.TRIGGER_FILE)
+    cfg.tdef = TriggerDef(cfg.TRIGGER_FILE)
 
     # Extract features
     if not state.value:

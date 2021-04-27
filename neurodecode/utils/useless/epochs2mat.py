@@ -14,9 +14,9 @@ Swiss Federal Institute of Technology (EPFL)
 import mne
 import scipy.io
 import numpy as np
-import neurodecode.utils.pycnbi_utils as pu
 import neurodecode.utils.q_common as qc
 from neurodecode import logger
+from neurodecode.utils.io import load_fif_raw, load_fif_multi
 
 mne.set_log_level('ERROR')
 
@@ -52,7 +52,7 @@ def epochs2mat(data_dir, channel_picks, event_id, tmin, tmax, merge_epochs=False
             if data_file[-4:] != '.fif':
                 continue
             fiflist.append(data_file)
-        raw, events = pu.load_multi(fiflist, spfilter=spfilter, spchannels=spchannels)
+        raw, events = load_fif_multi(fiflist, spfilter=spfilter, spchannels=spchannels)
         matfile = data_dir + '/epochs_all.mat'
         save_mat(raw, events, channel_picks, event_id, tmin, tmax, matfile)
     else:
@@ -62,7 +62,7 @@ def epochs2mat(data_dir, channel_picks, event_id, tmin, tmax, merge_epochs=False
                 continue
             [base, fname, fext] = qc.parse_path_list(data_file)
             matfile = '%s/%s-epochs.mat' % (base, fname)
-            raw, events = pu.load_raw(data_file)
+            raw, events = load_fif_raw(data_file)
             save_mat(raw, events, channel_picks, event_id, tmin, tmax, matfile)
 
     logger.info('Exported to %s' % matfile)

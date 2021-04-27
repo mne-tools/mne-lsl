@@ -11,16 +11,17 @@ Swiss Federal Institute of Technology (EPFL)
 
 import sys
 import mne
-import numpy as np
 import neurodecode.utils.q_common as qc
-import neurodecode.utils.pycnbi_utils as pu
+
+from neurodecode.utils.io import load_fif_raw
 from builtins import input
 from IPython import embed
+
 mne.set_log_level('ERROR')
 
 def run(fif_file):
     print('Loading "%s"' % fif_file)
-    raw, events = pu.load_raw(fif_file)
+    raw, events = load_fif_raw(fif_file)
     print('Raw info: %s' % raw)
     print('Channels: %s' % ', '.join(raw.ch_names))
     print('Events: %s' % set(events[:, 2]))

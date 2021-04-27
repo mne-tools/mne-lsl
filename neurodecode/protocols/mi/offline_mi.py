@@ -28,10 +28,9 @@ import cv2
 import random
 import multiprocessing as mp
 import neurodecode.utils.q_common as qc
-import neurodecode.utils.pycnbi_utils as pu
-import neurodecode.triggers.pyLptControl as pyLptControl
+from neurodecode.utils.io import load_config  
+from neurodecode.triggers import Trigger, TriggerDef
 from neurodecode.protocols.viz_bars import BarVisual
-from neurodecode.triggers.trigger_def import trigger_def
 from neurodecode import logger
 from builtins import input
 from neurodecode.gui.streams import redirect_stdout_to_queue
@@ -78,7 +77,7 @@ def check_config(cfg):
 
 # for batch script
 def batch_run(cfg_module):
-    cfg = pu.load_config(cfg_module)
+    cfg = load_config(cfg_module)
     check_config(cfg)
     run(cfg)
 
@@ -95,7 +94,7 @@ def run(cfg, state=mp.Value('i', 1), queue=None):
 
     refresh_delay = 1.0 / cfg.REFRESH_RATE
 
-    cfg.tdef = trigger_def(cfg.TRIGGER_FILE)
+    cfg.tdef = TriggerDef(cfg.TRIGGER_FILE)
 
     # visualizer
     keys = {'left':81, 'right':83, 'up':82, 'down':84, 'pgup':85, 'pgdn':86,
@@ -117,11 +116,11 @@ def run(cfg, state=mp.Value('i', 1), queue=None):
     if cfg.TRIGGER_DEVICE is None:
         logger.warning('No trigger device set. Press Ctrl+C to stop or Enter to continue.')
         #input()
-    trigger = pyLptControl.Trigger(state, cfg.TRIGGER_DEVICE)
+    trigger = Trigger(state, cfg.TRIGGER_DEVICE)
     if trigger.init(50) == False:
         logger.error('\n** Error connecting to USB2LPT device. Use a mock trigger instead?')
         input('Press Ctrl+C to stop or Enter to continue.')
-        trigger = pyLptControl.MockTrigger()
+        trigger = Trigger(lpttype='FAKE')
         trigger.init(50)
 
     # timers

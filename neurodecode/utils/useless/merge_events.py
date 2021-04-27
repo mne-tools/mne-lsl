@@ -10,14 +10,15 @@ Kyuhwa Lee, 2015
 
 import numpy as np
 import neurodecode.utils.q_common as qc
-import neurodecode.utils.pycnbi_utils as pu
-from neurodecode.triggers.trigger_def import trigger_def
+
+from neurodecode.utils.io import load_fif_raw
+from neurodecode.triggers import trigger_def
 from neurodecode import logger
 
 #----------------------------------------------------------------------
 def merge_events(trigger_file, events, rawfile_in, rawfile_out):
     tdef = trigger_def(trigger_file)
-    raw, eve = pu.load_raw(rawfile_in)
+    raw, eve = load_fif_raw(rawfile_in)
 
     logger.info('=== Before merging ===')
     notfounds = []
