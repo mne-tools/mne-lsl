@@ -2,10 +2,10 @@ import time
 import math
 import pylsl
 import numpy as np
-
-import neurodecode.utils.q_common as qc
 from abc import ABC, abstractmethod
+
 from neurodecode import logger
+from neurodecode.utils.timer import Timer
 from neurodecode.stream_receiver import Buffer
 from neurodecode.utils.preprocess import find_event_channel
 from neurodecode.utils.lsl import  lsl_channel_list
@@ -29,7 +29,7 @@ class _Stream(ABC):
         
         self._ch_list = []
         self._streamInfo = streamInfo
-        self._watchdog = qc.Timer()
+        self._watchdog = Timer()
         self._sample_rate = streamInfo.nominal_srate()
         
         self._blocking = True
