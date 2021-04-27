@@ -5,6 +5,7 @@ from pathlib import Path
 
 from neurodecode import logger
 import neurodecode.utils.q_common as qc
+from neurodecode.utils.timer import Timer
 from neurodecode.utils.io import pcl2fif
 from neurodecode.utils.lsl import start_server
 from neurodecode.stream_receiver import StreamReceiver, StreamEEG
@@ -229,7 +230,7 @@ class _Recorder:
         with self.state.get_lock():
             self.state.value = 1
             
-        tm = qc.Timer(autoreset=True)
+        tm = Timer(autoreset=True)
         # next_sec = 1
         
         while self.state.value == 1:

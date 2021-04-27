@@ -290,7 +290,7 @@ Example code for printing out raw values
 if __name__ == '__main__':
     import mne
     import os
-    from neurodecode.utils.q_common import Timer 
+    from neurodecode.utils.timer import Timer
     
     CH_INDEX = [1]                              # Channel of interest
     TIME_INDEX = None                           # integer or None. None = average of raw values of the current window
@@ -313,7 +313,7 @@ if __name__ == '__main__':
         psde = mne.decoding.PSDEstimator(sfreq=sfreq, fmin=1, fmax=50, bandwidth=None, \
             adaptive=False, low_bias=True, n_jobs=1, normalization='length', verbose=None)
 
-    tm = qc.Timer(autoreset=True)
+    tm = Timer(autoreset=True)
     last_ts = 0
     
     tm_classify = Timer(autoreset=True)

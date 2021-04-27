@@ -22,14 +22,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import neurodecode
 import cv2
-import os
 import neurodecode.utils.q_common as qc
 import numpy as np
 import time
 import serial
 import serial.tools.list_ports
+
+from neurodecode.utils.timer import Timer
 from neurodecode import logger
 
 # global constants
@@ -72,9 +72,9 @@ class Feedback:
         else:
             self.premature_end = False
 
-        self.tm_trigger = qc.Timer()
-        self.tm_display = qc.Timer()
-        self.tm_watchdog = qc.Timer()
+        self.tm_trigger = Timer()
+        self.tm_display = Timer()
+        self.tm_watchdog = Timer()
         if logfile is not None:
             self.logf = open(logfile, 'w')
         else:
@@ -113,8 +113,8 @@ class Feedback:
         if self.logf is not None:
             self.logf.write('True label: %s\n' % true_label)
 
-        tm_classify = qc.Timer(autoreset=True)
-        self.stimo_timer = qc.Timer()
+        tm_classify = Timer(autoreset=True)
+        self.stimo_timer = Timer()
         while True:
             self.tm_display.sleep_atleast(self.refresh_delay)
             self.tm_display.reset()
