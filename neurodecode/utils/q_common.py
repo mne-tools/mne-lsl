@@ -22,19 +22,12 @@ import scipy
 import shutil
 import logging
 import inspect
-import traceback
 import itertools
 import numpy as np
 import sklearn.metrics
 import multiprocessing as mp
 
-# logger
-try:
-    from neurodecode import logger
-except ImportError:
-    logging.basicConfig(format='%(msg)s', level='DEBUG')
-    logger = logging.getLogger(__name__)
-    logger.propagate = False
+from neurodecode import logger
 
 # pickle
 try:
@@ -338,7 +331,7 @@ def detect_delim(filename, allowSingleCol=True):
     else:
         if not allowSingleCol:
             raise Exception('Cannot detect the right delimiter')
-            return ''
+
     return delim
 
 
@@ -514,42 +507,6 @@ def parse_path_list(path):
 
 def forward_slashify(txt):
     return txt.replace('\\\\', '/').replace('\\', '/')
-
-'''"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
- Timer class
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""'''
-
-class Timer(object):
-    """
-    Timer class
-
-    if autoreset=True, timer is reset after any member function call
-    """
-    def __init__(self, autoreset=False):
-        self.autoreset = autoreset
-        self.reset()
-
-    def sec(self):
-        read = time.time() - self.ref
-        if self.autoreset: self.reset()
-        return read
-
-    def msec(self):
-        return self.sec() * 1000.0
-
-    def reset(self):
-        self.ref = time.time()
-
-    def sleep_atleast(self, sec):
-        """
-        Sleep up to sec seconds
-        It's more convenient if autoreset=True
-        """
-        timer_sec = self.sec()
-        if timer_sec < sec:
-            time.sleep(sec - timer_sec)
-            if self.autoreset: self.reset()
-
 
 '''"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
  MATLAB

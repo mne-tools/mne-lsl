@@ -23,11 +23,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import sys
-import os
 import cv2
 import random
 import multiprocessing as mp
-import neurodecode.utils.q_common as qc
+
+from neurodecode.utils.timer import Timer
 from neurodecode.utils.io import load_config  
 from neurodecode.triggers import Trigger, TriggerDef
 from neurodecode.protocols.viz_bars import BarVisual
@@ -124,9 +124,9 @@ def run(cfg, state=mp.Value('i', 1), queue=None):
         trigger.init(50)
 
     # timers
-    timer_trigger = qc.Timer()
-    timer_dir = qc.Timer()
-    timer_refresh = qc.Timer()
+    timer_trigger = Timer()
+    timer_dir = Timer()
+    timer_refresh = Timer()
     t_dir = cfg.TIMINGS['DIR'] + random.uniform(-cfg.TIMINGS['DIR_RANDOMIZE'], cfg.TIMINGS['DIR_RANDOMIZE'])
     t_dir_ready = cfg.TIMINGS['READY'] + random.uniform(-cfg.TIMINGS['READY_RANDOMIZE'], cfg.TIMINGS['READY_RANDOMIZE'])
 

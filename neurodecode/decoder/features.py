@@ -25,18 +25,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import os
-import sys
 import mne
 import mne.io
-import neurodecode
-import timeit
-import platform
-import traceback
 import numpy as np
 import multiprocessing as mp
-import sklearn.metrics as skmetrics
 import neurodecode.utils.q_common as qc
-import neurodecode.utils.pycnbi_utils as pu
+
+from neurodecode.utils.timer import Timer
 from neurodecode.utils.io import load_fif_multi
 from neurodecode.utils.preprocess import preprocess, rereference
 from mne import Epochs, pick_types
@@ -158,7 +153,7 @@ def get_psd(epochs, psde, wlen, wstep, picks=None, flatten=True, preprocess=None
         Accept input as numpy array as well, in addition to Epochs object
     """
 
-    tm = qc.Timer()
+    tm = Timer()
 
     if n_jobs is None:
         n_jobs = mp.cpu_count()

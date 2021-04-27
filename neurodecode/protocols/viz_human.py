@@ -28,11 +28,11 @@ import gzip
 import time
 import cv2
 import numpy as np
-import neurodecode
 import neurodecode.glass.bgi_client as bgi_client
 import neurodecode.utils.q_common as qc
 from neurodecode import logger
-from builtins import input
+from neurodecode.utils.timer import Timer
+
 try:
     import cPickle as pickle  # Python 2 (cPickle = C version of pickle)
 except ImportError:
@@ -136,7 +136,7 @@ class BodyVisual(object):
             # load images
             left_image_path = '%s/left' % image_path
             right_image_path = '%s/right' % image_path
-            tm = qc.Timer()
+            tm = Timer()
             logger.info('Reading images from %s' % left_image_path )
             self.left_images = read_images(left_image_path, screen_size)
             logger.info('Reading images from %s' % right_image_path)
@@ -147,7 +147,7 @@ class BodyVisual(object):
             # note: this is painfully slow in Pytohn 2 even with cPickle (3s vs 27s)
             assert image_path[-4:] == '.pkl', 'The file must be of .pkl format'
             logger.info('Loading image binary file %s ...' % image_path)
-            tm = qc.Timer()
+            tm = Timer()
             with gzip.open(image_path, 'rb') as fp:
                 image_data = pickle.load(fp)
             self.left_images = image_data['left_images']

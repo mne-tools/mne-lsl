@@ -6,9 +6,11 @@ Compress feedback images into a single pickle object.
 """
 
 import gzip
-import neurodecode.utils.q_common as qc
-from neurodecode.protocols.viz_human import read_images
+
 from neurodecode import logger
+from neurodecode.utils.timer import Timer
+from neurodecode.protocols.viz_human import read_images
+
 try:
     import cPickle as pickle  # Python 2 (cPickle = C version of pickle)
 except ImportError:
@@ -21,7 +23,7 @@ if __name__ == '__main__':
 
     if pickle.HIGHEST_PROTOCOL >= 4:
         outfile = '%s/BodyVisuals.pkl' % EXPORT_IMAGE_DIR
-        tm = qc.Timer()
+        tm = Timer()
         logger.info('Reading images from %s' % LEFT_IMAGE_DIR )
         left_images = read_images(LEFT_IMAGE_DIR)
         logger.info('Reading images from %s' % RIGHT_IMAGE_DIR)

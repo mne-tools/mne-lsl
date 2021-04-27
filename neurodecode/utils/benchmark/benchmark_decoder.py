@@ -16,7 +16,7 @@ Results on i7-8700K machine:
 @author: leeq
 """
 import numpy as np
-import neurodecode.utils.q_common as qc
+from neurodecode.utils.timer import Timer
 from neurodecode.decoder.decoder import BCIDecoder
 
 #----------------------------------------------------------------------
@@ -33,7 +33,7 @@ def benchmark_BCIdecoder(decoder_file, num_decode=200):
     """
     decoder = BCIDecoder(decoder_file, buffer_size=1.0)
     
-    tm = qc.Timer()
+    tm = Timer()
     times = []
     
     while len(times) < num_decode:
