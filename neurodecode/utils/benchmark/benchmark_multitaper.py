@@ -12,8 +12,9 @@ i7-8700K: 9.9 ms (101.0 Hz)
 import os
 import mne
 import numpy as np
-import neurodecode.utils.q_common as qc
+
 from neurodecode import logger
+from neurodecode.utils.timer import Timer
 
 os.environ['OMP_NUM_THREADS'] = '1' # actually improves performance for multitaper
 
@@ -44,7 +45,7 @@ def benchmark_multitaper(nb_ch, sfreq, freq_range, s_len, nb_iter):
         n_jobs=1, normalization='length', verbose=None)
 
     # timer for computation speed assessment
-    tm = qc.Timer()
+    tm = Timer()
     times = []
     
     # Assess over several iterations

@@ -45,6 +45,7 @@ from neurodecode import logger
 from neurodecode.decoder.rlda import rLDA
 from neurodecode.triggers import TriggerDef
 from neurodecode.gui.streams import redirect_stdout_to_queue
+from neurodecode.utils.timer import Timer
 
 # scikit-learn old version compatibility
 try:
@@ -460,7 +461,7 @@ def get_predict_proba(cls, X_train, Y_train, X_test, Y_test, cnum):
     a threshold will be computed that will balance the true positive rate of each class.
     Available with binary classification scenario only.
     """
-    timer = qc.Timer()
+    timer = Timer()
     cls.fit(X_train, Y_train)
     Y_pred = cls.predict_proba(X_test)
     logger.info('Cross-validation %d (%d tests) - %.1f sec' % (cnum, Y_pred.shape[0], timer.sec()))
@@ -479,7 +480,7 @@ def fit_predict_thres(cls, X_train, Y_train, X_test, Y_test, cnum, label_list, i
     while computing confusion matrix.
 
     """
-    timer = qc.Timer()
+    timer = Timer()
     cls.fit(X_train, Y_train)
     assert ignore_thres is None or ignore_thres >= 0
     if ignore_thres is None or ignore_thres == 0:
@@ -561,7 +562,7 @@ def cross_validate(cfg, featdata, cv_file=None):
     logger.info('%d trials, %d samples per trial, %d feature dimension' % (ntrials, nsamples, fsize))
 
     # Do it!
-    timer_cv = qc.Timer()
+    timer_cv = Timer()
     scores, cm_txt = crossval_epochs(cv, X_data, Y_data, cls, cfg.tdef.by_value, cfg.CV['BALANCE_SAMPLES'], n_jobs=cfg.N_JOBS,
                                      ignore_thres=cfg.CV['IGNORE_THRES'], decision_thres=cfg.CV['DECISION_THRES'])
     t_cv = timer_cv.sec()
@@ -668,7 +669,7 @@ def train_decoder(cfg, featdata, feat_file=None):
 
     # Start training the decoder
     logger.info_green('Training the decoder')
-    timer = qc.Timer()
+    timer = Timer()
     cls.n_jobs = cfg.N_JOBS
     cls.fit(X_data_merged, Y_data_merged)
     logger.info('Trained %d samples x %d dimension in %.1f sec' %\

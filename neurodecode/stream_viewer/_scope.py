@@ -18,7 +18,6 @@ import pdb
 import math
 import numpy as np
 import pyqtgraph as pg
-import neurodecode.utils.q_common as qc
 import multiprocessing as mp
 
 from PyQt5 import QtCore
@@ -402,8 +401,6 @@ class _Scope(QMainWindow):
         '''
         Initializes the QT timer, which will call the update function every 20 ms
         '''
-        self.tm = qc.Timer()  # leeq
-
         QtCore.QCoreApplication.processEvents()
         QtCore.QCoreApplication.flush()
         self.timer = QtCore.QTimer(self)

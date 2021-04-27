@@ -28,14 +28,16 @@ import pylsl
 import random
 import psutil
 import numpy as np
+from numpy import ctypeslib
 import multiprocessing as mp
 import multiprocessing.sharedctypes as sharedctypes
 import neurodecode.utils.q_common as qc
-import neurodecode.utils.pycnbi_utils as pu
-from neurodecode.utils.preprocess import preprocess
-from numpy import ctypeslib
+
 from neurodecode import logger
+from neurodecode.utils.timer import Timer
 from neurodecode.triggers import trigger_def
+from neurodecode.utils.lsl import search_lsl
+from neurodecode.utils.preprocess import preprocess
 from neurodecode.stream_receiver.stream_receiver import StreamReceiver
 
 mne.set_log_level('ERROR')
@@ -670,7 +672,7 @@ def log_decoding_helper(state, event_queue, amp_name=None, autostop=False):
     
     # acquire event values and returns event times and event values
     sr = StreamReceiver(buffer_size=0, amp_name=amp_name)
-    tm = qc.Timer(autoreset=True)
+    tm = Timer(autoreset=True)
     started = False
     while state.value == 1:
         chunk, ts_list = sr.acquire()
@@ -739,8 +741,8 @@ def log_decoding(decoder, logfile, amp_name=None, pklfile=True, matfile=False, a
 
     key = 0
     started = False
-    tm_watchdog = qc.Timer(autoreset=True)
-    tm_cls = qc.Timer()
+    tm_watchdog = Timer(autoreset=True)
+    tm_cls = Timer()
     while key != 27:
         prob, prob_time = decode_fn(True)
         t_lsl = pylsl.local_clock()
@@ -797,7 +799,7 @@ def check_speed(decoder, max_count=float('inf')):
     """
     Test decoding speed
     """
-    tm = qc.Timer()
+    tm = Timer()
     count = 0
     mslist = []
     while count < max_count:
@@ -821,8 +823,8 @@ def sample_decoding(decoder):
     """
     # load trigger definitions for labeling
     labels = decoder.get_label_names()
-    tm_watchdog = qc.Timer(autoreset=True)
-    tm_cls = qc.Timer()
+    tm_watchdog = Timer(autoreset=True)
+    tm_cls = Timer()
     while True:
         praw = decoder.get_prob_unread()
         psmooth = decoder.get_prob_smooth()
@@ -861,7 +863,7 @@ if __name__ == '__main__':
         
     if len(sys.argv) == 1:
         model_file = str(Path(input(">> Provide the path to decoder file: \n")))
-        amp_name, amp_serial = pu.search_lsl(ignore_markers=True)
+        amp_name, amp_serial = search_lsl(ignore_markers=True)
 
     logger.info('Connecting to a server %s (Serial %s).' % (amp_name, amp_serial))
 

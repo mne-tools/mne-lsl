@@ -30,7 +30,8 @@ import socket
 import time
 import os
 import sys
-import neurodecode.utils.q_common as qc
+
+from neurodecode.utils.timer import Timer
 
 
 class GlassControl(object):
@@ -45,7 +46,7 @@ class GlassControl(object):
     def __init__(self, mock=False):
         self.BUFFER_SIZE = 1024
         self.last_dir = 'L'
-        self.timer = qc.Timer(autoreset=True)
+        self.timer = Timer(autoreset=True)
         self.mock = mock
         if self.mock:
             self.print('Using a fake, mock Glass control object.')
