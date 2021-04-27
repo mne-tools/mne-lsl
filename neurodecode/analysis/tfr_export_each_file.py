@@ -10,14 +10,13 @@ Kyuhwa Lee, 2018
 """
 
 import sys
-import os
-import imp
 import mne
 import scipy
 import numpy as np
 import mne.time_frequency
-import multiprocessing as mp
-import neurodecode.utils.pycnbi_utils as pu
+from neurodecode.utils.preprocess import preprocess
+from neurodecode.utils.io import load_config 
+from neurodecode.utils.io import load_fif_raw
 import neurodecode.utils.q_common as qc
 from neurodecode import logger
 from builtins import input
@@ -65,7 +64,7 @@ def get_tfr_each_file(cfg, tfr_type='multitaper', recursive=False, export_path=N
                 get_tfr(f, cfg, tfr, cfg.N_JOBS)
 
 def get_tfr(fif_file, cfg, tfr, n_jobs=1):
-    raw, events = pu.load_raw(fif_file)
+    raw, events = load_fif_raw(fif_file)
     p = qc.parse_path(fif_file)
     fname = p.name
     outpath = p.dir
@@ -83,7 +82,7 @@ def get_tfr(fif_file, cfg, tfr, n_jobs=1):
         raise RuntimeError(msg)
 
     # Apply filters
-    raw = pu.preprocess(raw, spatial=cfg.SP_FILTER, spatial_ch=spchannels, spectral=cfg.TP_FILTER,
+    raw = preprocess(raw, spatial=cfg.SP_FILTER, spatial_ch=spchannels, spectral=cfg.TP_FILTER,
                   spectral_ch=picks, notch=cfg.NOTCH_FILTER, notch_ch=picks,
                   multiplier=cfg.MULTIPLIER, n_jobs=n_jobs)
 
@@ -124,7 +123,7 @@ def get_tfr(fif_file, cfg, tfr, n_jobs=1):
     logger.info('Finished !')
 
 def config_run(cfg_module):
-    cfg = pu.load_config(cfg_module)
+    cfg = load_config(cfg_module)
 
     if not hasattr(cfg, 'TFR_TYPE'):
         cfg.TFR_TYPE = 'multitaper'

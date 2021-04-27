@@ -33,7 +33,7 @@ multiplier = 1
 # code begins
 from mne.decoding import PSDEstimator
 from neurodecode.stream_receiver.stream_receiver import StreamReceiver
-import neurodecode.utils.pycnbi_utils as pu
+from neurodecode.utils.preprocess import preprocess
 import numpy as np
 import cv2
 import mne
@@ -48,7 +48,7 @@ def get_psd(sr, psde, picks):
     w = w.T  # -> channels x times
 
     # apply filters. Important: maintain the original channel order at this point.
-    w = pu.preprocess(w, sfreq=sfreq, spatial=spatial, spatial_ch=spatial_ch,
+    w = preprocess(w, sfreq=sfreq, spatial=spatial, spatial_ch=spatial_ch,
                       spectral=spectral, spectral_ch=spectral_ch, notch=notch,
                               notch_ch=notch_ch, multiplier=multiplier)
 

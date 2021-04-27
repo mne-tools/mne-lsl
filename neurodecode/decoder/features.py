@@ -37,6 +37,8 @@ import multiprocessing as mp
 import sklearn.metrics as skmetrics
 import neurodecode.utils.q_common as qc
 import neurodecode.utils.pycnbi_utils as pu
+from neurodecode.utils.io import load_fif_multi
+from neurodecode.utils.preprocess import preprocess, rereference
 from mne import Epochs, pick_types
 from neurodecode import logger
 from neurodecode.decoder.rlda import rLDA
@@ -94,7 +96,7 @@ def slice_win(epochs_data, w_starts, w_length, psde, picks=None, title=None, fla
         
 
         if preprocess is not None:
-            window = pu.preprocess(window,
+            window = preprocess(window,
                 sfreq=preprocess['sfreq'],
                 spatial=preprocess['spatial'],
                 spatial_ch=preprocess['spatial_ch'],
@@ -432,13 +434,13 @@ def compute_features(cfg):
     if len(ftrain) > 1 and cfg.PICKED_CHANNELS is not None and type(cfg.PICKED_CHANNELS[0]) == int:
         logger.error('When loading multiple EEG files, PICKED_CHANNELS must be list of string, not integers because they may have different channel order.')
         raise RuntimeError
-    raw, events = pu.load_multi(ftrain)
+    raw, events = load_fif_multi(ftrain)
     
     #-----------------------------------------------------------
     # Rereference
     reref = cfg.REREFERENCE[cfg.REREFERENCE['selected']]
     if reref is not None:
-        pu.rereference(raw, reref['New'], reref['Old'])
+        rereference(raw, reref['New'], reref['Old'])
     
     #-----------------------------------------------------------
     # Load events from file
