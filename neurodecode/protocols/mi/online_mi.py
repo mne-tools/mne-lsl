@@ -31,13 +31,12 @@ import os
 import sys
 import time
 import random
-import neurodecode
 import multiprocessing as mp
 import neurodecode.utils.q_common as qc
-import neurodecode.utils.pycnbi_utils as pu
-import neurodecode.triggers.pyLptControl as pyLptControl
+from neurodecode.utils.lsl import search_lsl
+from neurodecode.utils.io import load_config
+from neurodecode.triggers import Trigger, TriggerDef
 from neurodecode.decoder.decoder import BCIDecoderDaemon
-from neurodecode.triggers.trigger_def import trigger_def
 from neurodecode.protocols.feedback import Feedback
 from neurodecode.gui.streams import redirect_stdout_to_queue
 from neurodecode import logger
@@ -131,7 +130,7 @@ def run(cfg, state=mp.Value('i', 1), queue=None):
     if cfg.FAKE_CLS is None:
         # chooose amp
         if cfg.AMP_NAME is None and cfg.AMP_SERIAL is None:
-            amp_name, amp_serial = pu.search_lsl(state, ignore_markers=True)
+            amp_name, amp_serial = search_lsl(state, ignore_markers=True)
         else:
             amp_name = cfg.AMP_NAME
             amp_serial = cfg.AMP_SERIAL
@@ -142,10 +141,10 @@ def run(cfg, state=mp.Value('i', 1), queue=None):
         fake_dirs = [v for (k, v) in cfg.DIRECTIONS]
 
     # events and triggers
-    tdef = trigger_def(cfg.TRIGGER_FILE)
+    tdef = TriggerDef(cfg.TRIGGER_FILE)
     #if cfg.TRIGGER_DEVICE is None:
     #    input('\n** Warning: No trigger device set. Press Ctrl+C to stop or Enter to continue.')
-    trigger = pyLptControl.Trigger(state, cfg.TRIGGER_DEVICE)
+    trigger = Trigger(state, cfg.TRIGGER_DEVICE)
     if trigger.init(50) == False:
         logger.error('Cannot connect to USB2LPT device. Use a mock trigger instead?')
         input('Press Ctrl+C to stop or Enter to continue.')
@@ -310,7 +309,7 @@ def run(cfg, state=mp.Value('i', 1), queue=None):
 
 # for batch script
 def batch_run(cfg_module):
-    cfg = pu.load_config(cfg_module)
+    cfg = load_config(cfg_module)
     check_config(cfg)
     run(cfg)
 

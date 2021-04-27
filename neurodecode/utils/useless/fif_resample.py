@@ -11,7 +11,7 @@ Swiss Federal Institute of Technology (EPFL)
 
 import sys
 import neurodecode.utils.q_common as qc
-import neurodecode.utils.pycnbi_utils as pu
+from neurodecode.utils.io import load_fif_raw 
 from builtins import input
 from neurodecode import logger
 
@@ -23,7 +23,7 @@ def fif_resample(fif_dir, sfreq_target):
         if pp.ext != 'fif':
             continue
         logger.info('Resampling %s' % f)
-        raw, events = pu.load_raw(f)
+        raw, events = load_fif_raw(f)
         raw.resample(sfreq_target)
         fif_out = '%s/%s.fif' % (out_dir, pp.name)
         raw.save(fif_out)

@@ -1,6 +1,6 @@
 from __future__ import print_function, division
 
-import neurodecode.utils.pycnbi_utils as pu
+from neurodecode.utils.io import load_fif_raw
 import neurodecode.utils.q_common as qc
 from neurodecode import logger
 
@@ -31,7 +31,7 @@ def fix_channel_names(fif_dir, new_channel_names):
             logger.info('\nLoading %s' % f)
             p = qc.parse_path(f)
             if p.ext == 'fif':
-                raw, eve = pu.load_raw(f)
+                raw, eve = load_fif_raw(f)
                 if len(raw.ch_names) != len(new_channel_names):
                     raise RuntimeError('The number of new channels do not matach that of fif file.')
                 raw.info['ch_names'] = new_channel_names

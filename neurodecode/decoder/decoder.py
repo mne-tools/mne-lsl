@@ -32,25 +32,28 @@ import multiprocessing as mp
 import multiprocessing.sharedctypes as sharedctypes
 import neurodecode.utils.q_common as qc
 import neurodecode.utils.pycnbi_utils as pu
+from neurodecode.utils.preprocess import preprocess
 from numpy import ctypeslib
 from neurodecode import logger
-from neurodecode.triggers.trigger_def import trigger_def
+from neurodecode.triggers import trigger_def
 from neurodecode.stream_receiver.stream_receiver import StreamReceiver
+
 mne.set_log_level('ERROR')
 os.environ['OMP_NUM_THREADS'] = '1' # actually improves performance for multitaper
 
 
 def get_decoder_info(classifier):
     """
-    Get only the classifier information without connecting to a server
+    Get the classifier information from a .pkl file.
 
-    Params
-    ------
-        classifier: model file
+    Parameters
+    ----------
+    classifier : str
+        The (absolute) path to the classifier file (.pkl)
 
     Returns
     -------
-        info dictionary object
+    dict : Classifier info
     """
 
     model = qc.load_obj(classifier)
@@ -78,14 +81,14 @@ class BCIDecoder(object):
     """
     Decoder class
 
-    The label order of self.labels and self.label_names match likelihood orders computed by get_prob()
+    The label order of self.labels and self.label_names match likelihood orders computed by get_prob().
     
     Parameters
     ----------
     amp_name : str
         Connect to a specific stream.
     classifier : str
-        Path to the classifier file.
+        The (absolute) path to the classifier file (.pkl)
     buffer_size : float
         The signal buffer's length in seconds
     fake : bool
@@ -184,7 +187,7 @@ class BCIDecoder(object):
     @property
     def label_names(self):
         """
-        Class labels names in the same order as get_labels().
+        Class labels names in the same order as get_prob().
         """
         return self.label_names
     #----------------------------------------------------------------------
@@ -231,11 +234,8 @@ class BCIDecoder(object):
             t_prob = ts[-1]
             w = w.T  # -> channels x times
 
-            # re-reference channels
-            # TODO: add re-referencing function to preprocess()
-
             # apply filters. Important: maintain the original channel order at this point.
-            w = pu.preprocess(w, sfreq=self.sfreq, spatial=self.spatial, spatial_ch=self.spatial_ch,
+            w = preprocess(w, sfreq=self.sfreq, spatial=self.spatial, spatial_ch=self.spatial_ch,
                           spectral=self.spectral, spectral_ch=self.spectral_ch, notch=self.notch,
                           notch_ch=self.notch_ch, multiplier=self.multiplier, decim=self.decim)
 
@@ -321,12 +321,12 @@ class BCIDecoder(object):
 
 class BCIDecoderDaemon(object):
     """
-    BCI Decoder daemon class
-
-    Some codes are redundant because BCIDecoder class object cannot be pickled.
-    BCIDecoder object must be created inside the child process.
+    Decoder daemon class
+    
+    Instance a BCIDecoder object in a child process (BCIDecoder class object cannot be pickled).
     Set parallel parameter to achieve high-frequency decoding using multiple cores.
-
+    
+    Example: If the decoder runs 32ms per cycle, we can set period=0.04, stride=0.01, num_strides=4 to achieve 100 Hz decoding.
     """
 
     def __init__(self, amp_name, classifier, buffer_size=1.0, fake=False, \
@@ -335,9 +335,9 @@ class BCIDecoderDaemon(object):
         Parameters
         ----------
         amp_name : str
-            Connect to a specific stream.
+            Connect to a specific stream
         classifier: str
-            Path to the classifier file..
+            Path to the classifier file
         buffer_size : float
             The buffer window size in seconds
         fake : bool
@@ -345,21 +345,17 @@ class BCIDecoderDaemon(object):
         buffer_size : float
             The buffer's size in seconds.
         parallel: dict(period, stride, num_strides)
-            period: float
-                Decoding period length for a single decoder in seconds.
+            period : float
+                Decoding period length for a single decoder in seconds
             stride : float
                 Time step between decoders in seconds.
             num_strides : int
-                Number of decoders to run in parallel.
+                Number of decoders to run in parallel
         alpha_new : float
             The exponential smoothing factor, [0, 1].
             p_new = p_new * alpha_new + p_old * (1 - alpha_new)
         wait_init : bool
             If True, wait (block) until the initial buffer of the decoder is full.
-
-        Example: If the decoder runs 32ms per cycle, we can set
-                 period=0.04, stride=0.01, num_strides=4
-                 to achieve 100 Hz decoding.
         """
 
         self.classifier = classifier
@@ -440,31 +436,19 @@ class BCIDecoderDaemon(object):
                 stride = 0
             t_start = time.time()
             for i in range(num_strides):
-                self.procs.append(mp.Process(target=self.daemon, args=\
+                self.procs.append(mp.Process(target=self._daemon, args=\
                     [self.classifier, self.probs, self.probs_smooth, self.pread, self.t_problast,\
                      self.running[i], self.return_psd, psd_ctypes, self.psdlock,\
                      dict(t_start=(t_start+i*stride), period=period)]))
         else:
             self.running = [mp.Value('i', 0)]
-            self.procs = [mp.Process(target=self.daemon, args=\
+            self.procs = [mp.Process(target=self._daemon, args=\
                 [self.classifier, self.probs, self.probs_smooth, self.pread, self.t_problast,\
                  self.running[0], self.return_psd, psd_ctypes, self.psdlock, None])]
 
-    def daemon(self, classifier, probs, probs_smooth, pread, t_problast, running, return_psd, psd_ctypes, lock, interleave=None):
+    def _daemon(self, classifier, probs, probs_smooth, pread, t_problast, running, return_psd, psd_ctypes, lock, interleave=None):
         """
         Runs Decoder class as a daemon.
-
-        BCIDecoder object cannot be pickled but Pathos library may solve this problem and simplify the code.
-
-        Parameters
-        ----------
-        interleave : dict(t_start, period)
-            For interleaved parallel decoding:
-            t_start : double
-                (seconds, same as time.time() format)
-            period : double
-                (seconds)
-
         """
 
         pid = os.getpid()
