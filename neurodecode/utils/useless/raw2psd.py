@@ -15,10 +15,13 @@ import mne
 import numpy as np
 import neurodecode.utils.q_common as qc
 
-from neurodecode.utils.timer import Timer
-from neurodecode.utils.io import load_fif_raw
-from neurodecode import logger
 from IPython import embed
+
+from neurodecode import logger
+from neurodecode.utils.io import save_obj
+from neurodecode.utils.timer import Timer
+from neurodecode.utils.io import parse_path
+from neurodecode.utils.io import load_fif_raw
 
 mne.set_log_level('ERROR')
 os.environ['OMP_NUM_THREADS'] = '1' # actually improves performance for multitaper
@@ -100,12 +103,12 @@ def raw2psd(rawfile=None, fmin=1, fmax=40, wlen=0.5, wstep=1, tmin=0.0, tmax=Non
     try:
         chnames = [raw.ch_names[ch] for ch in chlist]
         psd_all = np.array(psd_all)
-        [basedir, fname, fext] = qc.parse_path_list(rawfile)
-        fout_header = '%s/psd-%s-header.pkl' % (basedir, fname)
-        fout_psd = '%s/psd-%s-data.npy' % (basedir, fname)
+        p = parse_path(rawfile)
+        fout_header = '%s/psd-%s-header.pkl' % (p.dir, p.name)
+        fout_psd = '%s/psd-%s-data.npy' % (p.dir, p.name)
         header = {'psdfile':fout_psd, 'times':np.array(times), 'sfreq':sfreq,
                   'channels':chnames, 'wframes':wframes, 'events':evelist}
-        qc.save_obj(fout_header, header)
+        save_obj(fout_header, header)
         np.save(fout_psd, psd_all)
         logger.info('Exported to:\n(header) %s\n(numpy array) %s' % (fout_header, fout_psd))
     except:

@@ -9,12 +9,14 @@ import sys
 import mne
 import pickle
 import numpy as np
-import neurodecode.utils.q_common as qc
-from neurodecode.utils.preprocess import find_event_channel
 
-from neurodecode import logger
 from builtins import input
 from pathlib import Path
+
+from neurodecode import logger
+from neurodecode.utils.preprocess import find_event_channel
+from neurodecode.utils.io import parse_path, make_dirs, load_obj, get_file_list
+
 
 mne.set_log_level('ERROR')
 
@@ -32,7 +34,7 @@ def any2fif(filename, outdir=None, channel_file=None):
     channel_file : str
         The file containing the channels name in case of .gdf/.bdf files.
     """
-    p = qc.parse_path(filename)
+    p = parse_path(filename)
 
     if p.ext in ['pcl', 'pkl', 'pickle']:
         
@@ -84,14 +86,14 @@ def pcl2fif(filename, outdir=None, external_event=None, precision='single'):
     precision : str
         Data matrix format. [single|double|int|short], 'single' improves backward compatability.
     """
-    fdir, fname, fext = qc.parse_path_list(filename)
+    p = parse_path(filename)
     
-    outdir = _create_saving_dir(outdir, fdir)
+    outdir = _create_saving_dir(outdir, p.dir)
     
-    fiffile = outdir + fname + '.fif'
+    fiffile = outdir + p.name + '.fif'
         
     # Load from file
-    data = qc.load_obj(filename)
+    data = load_obj(filename)
     
     # mne format
     raw = _format_pkl_to_mne_RawArray(data)
@@ -119,14 +121,15 @@ def edf2fif(filename, outdir=None):
     outdir : str
         If None, it will be the subdirectory of the fif file.
     """
-    fdir, fname, fext = qc.parse_path_list(filename)
+    p = parse_path(filename)
+    
     if outdir is None:
-        outdir = fdir
+        outdir = p.dir
     elif outdir[-1] != '/':
         outdir += '/'
 
-    fiffile = outdir + fname + '-raw.fif'
-    eventsfile = outdir + fname + '-events_id.pkl'
+    fiffile = outdir + p.name + '-raw.fif'
+    eventsfile = outdir + p.name + '-events_id.pkl'
 
     # Load the data
     raw = mne.io.read_raw_edf(filename, preload=True)
@@ -157,14 +160,14 @@ def bdf2fif(filename, outdir=None, channel_file=None):
     channel_file : str
         The .txt file containing one channel's name per line
     """
-    # convert to mat using MATLAB (MNE's edf reader has an offset bug)
-    fdir, fname, fext = qc.parse_path_list(filename)
+    p = parse_path(filename)
+    
     if outdir is None:
-        outdir = fdir
+        outdir = p.dir
     elif outdir[-1] != '/':
         outdir += '/'
 
-    fiffile = outdir + fname + '.fif'
+    fiffile = outdir + p.name + '.fif'
     
     # Load the data
     raw = mne.io.read_raw_edf(filename, preload=True)
@@ -197,14 +200,14 @@ def gdf2fif(filename, outdir=None, channel_file=None):
     channel_file : str
         The .txt file containing one channel's name per line
     """
-    fdir, fname, fext = qc.parse_path_list(filename)
+    p = parse_path(filename)
     if outdir is None:
-        outdir = fdir
+        outdir = p.dir
     elif outdir[-1] != '/':
         outdir += '/'
 
-    fiffile = outdir + fname + '-raw.fif'
-    eventsfile = outdir + fname + '-events_id.pkl'
+    fiffile = outdir + p.name + '-raw.fif'
+    eventsfile = outdir + p.name + '-events_id.pkl'
 
     # Load the data
     raw = mne.io.read_raw_gdf(filename, preload=True)
@@ -242,13 +245,14 @@ def xdf2fif(filename, outdir=None):
     """
     from pyxdf import pyxdf
 
-    fdir, fname, fext = qc.parse_path_list(filename)
+    p = parse_path(filename)
+    
     if outdir is None:
-        outdir = fdir
+        outdir = p.dir
     elif outdir[-1] != '/':
         outdir += '/'
 
-    fiffile = outdir + fname + '-raw.fif'
+    fiffile = outdir + p.name + '-raw.fif'
 
     # Load the data
     data = pyxdf.load_xdf(filename)         # channel x times
@@ -295,15 +299,16 @@ def eeg2fif(filename, outdir=None):
     outdir : str
         The folder where the fif file will be saved.
     """
-    fdir, fname, fext = qc.parse_path_list(filename)
+    p = parse_path(filename)
+    
     if outdir is None:
-        outdir = fdir
+        outdir = p.dir
     elif outdir[-1] != '/':
         outdir += '/'
 
-    headerfile = fdir + fname + '.vhdr'
-    fiffile = outdir + fname + '-raw.fif'
-    eventsfile = outdir + fname + '-events_id.pkl'
+    headerfile = p.dir + p.name + '.vhdr'
+    fiffile = outdir + p.name + '-raw.fif'
+    eventsfile = outdir + p.name + '-events_id.pkl'
     
     # Load from file
     raw = mne.io.read_raw_brainvision(headerfile, preload=True)    
@@ -602,7 +607,7 @@ def _create_saving_dir(outdir, fdir):
         outdir = fdir
     elif outdir[-1] != '/':
         outdir += '/'
-    qc.make_dirs(outdir)
+    make_dirs(outdir)
         
     return outdir
 
@@ -648,8 +653,8 @@ if __name__ == '__main__':
             channel_file = input('Provide its path?\n>> ')
     
     count = 0
-    for f in qc.get_file_list(input_dir, fullpath=True, recursive=True):
-        p = qc.parse_path(f)
+    for f in get_file_list(input_dir, fullpath=True, recursive=True):
+        p = parse_path(f)
         outdir = p.dir + '/fif/'
         
         if p.ext in ['pcl', 'pkl', 'pickle', 'bdf', 'edf', 'gdf', 'eeg', 'xdf']:

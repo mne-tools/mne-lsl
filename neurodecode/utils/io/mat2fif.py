@@ -3,11 +3,12 @@ from __future__ import print_function, division, unicode_literals
 """
 Export Matlab signal data into fif format.
 """
+import mne
 import scipy.io
 import numpy as np
-import neurodecode.utils.q_common as qc
+
 from neurodecode import logger
-import mne
+from neurodecode.utils.io import parse_path
 
 #----------------------------------------------------------------------
 def mat2fif(mat_file, sample_rate, data_field, event_field):
@@ -44,8 +45,8 @@ def mat2fif(mat_file, sample_rate, data_field, event_field):
     raw = mne.io.RawArray(signals, info)
 
     # Save
-    [basedir, fname, fext] = qc.parse_path_list(mat_file)
-    fifname = '%s/%s.fif' % (basedir, fname)
+    p = parse_path(mat_file)
+    fifname = '%s/%s.fif' % (p.dir, p.name)
     raw.save(fifname, verbose=False, overwrite=True)
     logger.info('Saved to %s.' % fifname)
 

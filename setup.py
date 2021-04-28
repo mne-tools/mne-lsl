@@ -15,7 +15,6 @@ setup(
         'opencv_python>=3.4',
         'numpy>=1.16',
         'scipy>=1.2',
-        'colorama>=0.3.9',
         'xgboost>=0.81',
         'matplotlib>=3.0.2',
         'mne>=0.16',

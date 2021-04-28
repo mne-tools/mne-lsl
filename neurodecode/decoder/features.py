@@ -31,18 +31,20 @@ import numpy as np
 import multiprocessing as mp
 import neurodecode.utils.q_common as qc
 
-from neurodecode.utils.timer import Timer
-from neurodecode.utils.io import load_fif_multi
-from neurodecode.utils.preprocess import preprocess, rereference
-from mne import Epochs, pick_types
-from neurodecode import logger
-from neurodecode.decoder.rlda import rLDA
 from builtins import input
 from IPython import embed  # for debugging
+from xgboost import XGBClassifier
+from mne import Epochs, pick_types
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import GradientBoostingClassifier
-from xgboost import XGBClassifier
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
+
+from neurodecode import logger
+from neurodecode.utils.timer import Timer
+from neurodecode.decoder.rlda import rLDA
+from neurodecode.utils.preprocess import rereference
+from neurodecode.utils.io import load_fif_multi, get_file_list
+from neurodecode.utils.preprocess import preprocess as apply_preprocess
 
 
 def slice_win(epochs_data, w_starts, w_length, psde, picks=None, title=None, flatten=True, preprocess=None, verbose=False):
@@ -91,7 +93,7 @@ def slice_win(epochs_data, w_starts, w_length, psde, picks=None, title=None, fla
         
 
         if preprocess is not None:
-            window = preprocess(window,
+            window = apply_preprocess(window,
                 sfreq=preprocess['sfreq'],
                 spatial=preprocess['spatial'],
                 spatial_ch=preprocess['spatial_ch'],
@@ -382,21 +384,6 @@ def feature2chz(x, fqlist, ch_names):
 
     return ch_names[ch], hz
 
-
-def cva_features(datadir):
-    """
-    (DEPRECATED FUNCTION)
-    """
-    for fin in qc.get_file_list(datadir, fullpath=True):
-        if fin[-4:] != '.gdf': continue
-        fout = fin + '.cva'
-        if os.path.exists(fout):
-            logger.info('Skipping', fout)
-            continue
-        logger.info("cva_features('%s')" % fin)
-        qc.matlab("cva_features('%s')" % fin)
-
-
 def compute_features(cfg):
     '''
     Compute features using config specification.
@@ -423,7 +410,7 @@ def compute_features(cfg):
     #-----------------------------------------------------------
     # Load the data from files
     ftrain = []
-    for f in qc.get_file_list(cfg.DATA_PATH, fullpath=True):
+    for f in get_file_list(cfg.DATA_PATH, fullpath=True):
         if f[-4:] in ['.fif', '.fiff']:
             ftrain.append(f)
     if len(ftrain) > 1 and cfg.PICKED_CHANNELS is not None and type(cfg.PICKED_CHANNELS[0]) == int:
