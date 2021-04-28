@@ -11,15 +11,18 @@ Swiss Federal Institute of Technology (EPFL)
 
 import sys
 import neurodecode.utils.q_common as qc
-from neurodecode.utils.io import load_fif_raw 
+
 from builtins import input
+
 from neurodecode import logger
+from neurodecode.utils.io import load_fif_raw, make_dirs, parse_path, get_file_list
+
 
 def fif_resample(fif_dir, sfreq_target):
     out_dir = fif_dir + '/fif_resample%d' % sfreq_target
-    qc.make_dirs(out_dir)
-    for f in qc.get_file_list(fif_dir):
-        pp = qc.parse_path(f)
+    make_dirs(out_dir)
+    for f in get_file_list(fif_dir):
+        pp = parse_path(f)
         if pp.ext != 'fif':
             continue
         logger.info('Resampling %s' % f)

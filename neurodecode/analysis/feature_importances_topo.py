@@ -8,15 +8,13 @@ TODO: merge with parse_features.py to use its API.
 import os
 import sys
 import mne
-import neurodecode
 import numpy as np
-import neurodecode.utils.pycnbi_utils as pu
-import neurodecode.utils.q_common as qc
 import matplotlib.pyplot as plt
-from neurodecode.pycnbi_config import NEUROD_ROOT
-from neurodecode import logger
-from matplotlib.figure import Figure
+import neurodecode.utils.q_common as qc
+
 from builtins import input
+from neurodecode import logger
+from neurodecode.utils.io import parse_path
 
 def export_topo(data, pos, pngfile, xlabel='', vmin=None, vmax=None, chan_vis=None, res=64, contours=0):
     mne.viz.plot_topomap(data, pos, names=chan_vis, show_names=True, res=res, contours=contours, show=False)
@@ -101,7 +99,7 @@ def feature_importances_topo(featfile, topo_layout_file=None, channels=None, cha
     result += '-' * hlen + '\n'
     result += 'per_ch  ' + qc.list2string(data_per_ch, '%6.2f') + ' | 100.00\n'
     print(result)
-    p = qc.parse_path(featfile)
+    p = parse_path(featfile)
     open('%s/%s_summary.txt' % (p.dir, p.name), 'w').write(result)
 
     # export topo maps
@@ -120,7 +118,7 @@ def feature_importances_topo(featfile, topo_layout_file=None, channels=None, cha
         # set channel locations and reverse lookup table
         chanloc = {}
         if not os.path.exists(topo_layout_file):
-            topo_layout_file = NEUROD_ROOT + '/layout/' + topo_layout_file
+            topo_layout_file = os.environ['NEUROD_ROOT'] + '/layout/' + topo_layout_file
             if not os.path.exists(topo_layout_file):
                 raise FileNotFoundError('Layout file %s not found.' % topo_layout_file)
         logger.info('Using layout %s' % topo_layout_file)

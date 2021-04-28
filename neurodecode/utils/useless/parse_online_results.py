@@ -1,5 +1,7 @@
 from __future__ import print_function, division
 
+from neurodecode.utils.io import get_file_list
+
 """
 Compute confusion matrix and accuracy from online result logs.
 
@@ -9,14 +11,14 @@ Swiss Federal Institute of Technology of Lausanne (EPFL)
 
 LOG_DIR = r'D:\data\MI\rx1\classifier\gait-ULR-250ms'
 
-import neurodecode
-import neurodecode.utils.q_common as qc
+from neurodecode.utils.io import parse_path
+from neurodecode.utils.math import confusion_matrix
 
 dtlist = []
 gtlist = []
-for f in qc.get_file_list(LOG_DIR):
-    [basedir, fname, fext] = qc.parse_path_list(f)
-    if 'online' not in fname or fext != 'txt':
+for f in get_file_list(LOG_DIR):
+    p = parse_path(f)
+    if 'online' not in p.name or p.ext != 'txt':
         continue
     print(f)
 
@@ -28,6 +30,6 @@ for f in qc.get_file_list(LOG_DIR):
 
 print('Ground-truth: %s' % ''.join(gtlist))
 print('Detected as : %s' % ''.join(dtlist))
-cfmat, acc = qc.confusion_matrix(gtlist, dtlist)
+cfmat, acc = confusion_matrix(gtlist, dtlist)
 print('\nAverage accuracy: %.3f' % acc)
 print(cfmat)

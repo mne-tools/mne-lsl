@@ -13,19 +13,22 @@ import mne
 import pdb
 import scipy
 import numpy as np
-import multiprocessing as mp
 import mne.time_frequency
+import multiprocessing as mp
 import matplotlib.pyplot as plt
-from neurodecode.utils.preprocess import preprocess
-from neurodecode.utils.preprocess import rereference
-from neurodecode.utils.io import load_config 
-from neurodecode.utils.io import load_fif_raw, load_fif_multi
+
 import neurodecode.utils.q_common as qc
-from neurodecode import logger
+
 from builtins import input
 from scipy.signal import lfilter
 from scipy.signal import butter
 from scipy.signal import hilbert
+
+from neurodecode import logger
+from neurodecode.utils.preprocess import preprocess
+from neurodecode.utils.preprocess import rereference
+from neurodecode.utils.io import get_file_list, load_config, make_dirs
+from neurodecode.utils.io import load_fif_raw, load_fif_multi, parse_path
 
 def check_config(cfg):
     if not hasattr(cfg, 'TFR_TYPE'):
@@ -96,8 +99,8 @@ def get_tfr(cfg, recursive=False, n_jobs=1):
         for ddir in cfg.DATA_PATHS:
             ddir = ddir.replace('\\', '/')
             if ddir[-1] != '/': ddir += '/'
-            for f in qc.get_file_list(ddir, fullpath=True, recursive=recursive):
-                if qc.parse_path(f).ext in ['fif', 'bdf', 'gdf']:
+            for f in get_file_list(ddir, fullpath=True, recursive=recursive):
+                if parse_path(f).ext in ['fif', 'bdf', 'gdf']:
                     flist.append(f)
         raw, events = load_fif_multi(flist)
     else:
@@ -109,11 +112,12 @@ def get_tfr(cfg, recursive=False, n_jobs=1):
             events = mne.read_events(cfg.EVENT_FILE)
 
         if export_path is None:
-            [outpath, file_prefix, _] = qc.parse_path_list(cfg.DATA_FILE)
+            p = parse_path(cfg.DATA_FILE)
+            outpath = p.dir
+            file_prefix = p.name 
         else:
-            file_prefix = qc.parse_path(cfg.DATA_FILE).name
             outpath = export_path
-            file_prefix = qc.parse_path(cfg.DATA_FILE).name
+            file_prefix = parse_path(cfg.DATA_FILE).name
 
     # re-referencing
     if cfg.REREFERENCE is not None:
@@ -182,7 +186,7 @@ def get_tfr(cfg, recursive=False, n_jobs=1):
     power = {}
     for evname in classes:
         export_dir = outpath
-        qc.make_dirs(export_dir)
+        make_dirs(export_dir)
         logger.info('>> Processing %s' % evname)
         freqs = cfg.FREQ_RANGE  # define frequencies of interest
         n_cycles = freqs / 2.  # different number of cycle per frequency
@@ -257,7 +261,7 @@ def get_tfr(cfg, recursive=False, n_jobs=1):
 
     if hasattr(cfg, 'POWER_DIFF'):
         export_dir = '%s/diff' % outpath
-        qc.make_dirs(export_dir)
+        make_dirs(export_dir)
         labels = classes.keys()
         df = power[labels[0]] - power[labels[1]]
         df.data = np.log(np.abs(df.data))

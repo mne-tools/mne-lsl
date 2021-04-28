@@ -58,6 +58,7 @@ from pylab import *
 import simplejson
 
 import neurodecode.utils.q_common as qc
+from neurodecode.utils.io import make_dirs
 
 # shimmer class
 from .shimmerpy import *
@@ -197,7 +198,7 @@ def run(file_flag):
         if file_flag == 1:
             # Create buffer
             now = datetime.datetime.now()
-            qc.make_dirs('../DATA')
+            make_dirs('../DATA')
             logname = "../DATA/IMU_" + now.strftime("%Y%m%d%H%M") + ".log"
             print("[cnbi_shimmer] Creating file: %s" % (logname))
             outfile = open(logname, "w")

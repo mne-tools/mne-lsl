@@ -13,15 +13,14 @@ Swiss Federal Institute of Technology (EPFL)
 
 import mne
 import scipy.io
-import numpy as np
-import neurodecode.utils.q_common as qc
+
 from neurodecode import logger
-from neurodecode.utils.io import load_fif_raw, load_fif_multi
+from neurodecode.utils.io import parse_path
+from neurodecode.utils.io import load_fif_raw, load_fif_multi, parse_path, get_file_list
 
 mne.set_log_level('ERROR')
 
 def save_mat(raw, events, picks, event_id, tmin, tmax, matfile):
-    sfreq = raw.info['sfreq']
 
     # pick channels
     if picks is None:
@@ -48,7 +47,7 @@ def epochs2mat(data_dir, channel_picks, event_id, tmin, tmax, merge_epochs=False
     if merge_epochs:
         # load all raw files in the directory and merge epochs
         fiflist = []
-        for data_file in qc.get_file_list(data_dir, fullpath=True):
+        for data_file in get_file_list(data_dir, fullpath=True):
             if data_file[-4:] != '.fif':
                 continue
             fiflist.append(data_file)
@@ -57,11 +56,11 @@ def epochs2mat(data_dir, channel_picks, event_id, tmin, tmax, merge_epochs=False
         save_mat(raw, events, channel_picks, event_id, tmin, tmax, matfile)
     else:
         # process individual raw file separately
-        for data_file in qc.get_file_list(data_dir, fullpath=True):
+        for data_file in get_file_list(data_dir, fullpath=True):
             if data_file[-4:] != '.fif':
                 continue
-            [base, fname, fext] = qc.parse_path_list(data_file)
-            matfile = '%s/%s-epochs.mat' % (base, fname)
+            p = parse_path(data_file)
+            matfile = '%s/%s-epochs.mat' % (p.dir, p.name)
             raw, events = load_fif_raw(data_file)
             save_mat(raw, events, channel_picks, event_id, tmin, tmax, matfile)
 

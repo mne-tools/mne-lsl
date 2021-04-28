@@ -16,15 +16,10 @@ import os
 import sys
 import pdb
 import code
-import time
-import math
 import scipy
-import shutil
-import logging
 import inspect
 import itertools
 import numpy as np
-import sklearn.metrics
 import multiprocessing as mp
 
 from neurodecode import logger
@@ -85,7 +80,7 @@ def run_multi(cmd_list, cores=0, quiet=False):
     if cores == 0: cores = mp.cpu_count()
     pool = mp.Pool(cores)
     processes = []
-    for c in cmd_list:
+    for cmd in cmd_list:
         if not quiet:
             logger.info(cmd)
         processes.append(pool.apply_async(os.system, [cmd]))
@@ -93,55 +88,6 @@ def run_multi(cmd_list, cores=0, quiet=False):
         proc.get()
     pool.close()
     pool.join()
-
-
-# print_c definition: print texts in color
-try:
-    import colorama
-    colorama.init()
-
-    def print_c(msg, color=None, end='\n'):
-        """
-        Colored print using colorama.
-
-        Fullset:
-            https://pypi.python.org/pypi/colorama
-            Fore: BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE, RESET.
-            Back: BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE, RESET.
-            Style: DIM, NORMAL, BRIGHT, RESET_ALL
-
-        TODO:
-            Make it using *args and **kwargs to support fully featured print().
-
-        """
-        if color is None:
-            print(str(msg), end=end)
-            return
-        color = str(color)
-        if len(color) != 1:
-            raise ValueError('Color parameter must be a single color code, not %s' % type(color))
-        if color.upper() == 'B':
-            c = colorama.Fore.BLUE
-        elif color.upper() == 'R':
-            c = colorama.Fore.RED
-        elif color.upper() == 'G':
-            c = colorama.Fore.GREEN
-        elif color.upper() == 'Y':
-            c = colorama.Fore.YELLOW
-        elif color.upper() == 'W':
-            c = colorama.Fore.WHITE
-        elif color.upper() == 'C':
-            c = colorama.Fore.CYAN
-        else:
-            logger.error('print_c(): Unknown color code %s' % color)
-            raise ValueError
-        print(colorama.Style.BRIGHT + c + str(msg) + colorama.Style.RESET_ALL, end=end)
-
-except ImportError:
-    logger.warning('colorama module not found. print_c() will ignore color codes.')
-    def print_c(msg, color, end='\n'):
-        print(msg, end=end)
-
 
 '''"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
  List/Dict related
@@ -221,179 +167,6 @@ def detect_delim(filename, allowSingleCol=True):
 
     return delim
 
-
-'''"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
- File I/O
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""'''
-
-def get_file_list(path, fullpath=True, recursive=False):
-    """
-    Get files with or without full path.
-    """
-    path = path.replace('\\', '/')
-    if not path[-1] == '/': path += '/'
-
-    if recursive == False:
-        if fullpath == True:
-            filelist = [path + f for f in os.listdir(path) if os.path.isfile(path + '/' + f) and f[0] != '.']
-        else:
-            filelist = [f for f in os.listdir(path) if os.path.isfile(path + '/' + f) and f[0] != '.']
-    else:
-        filelist = []
-        for root, dirs, files in os.walk(path):
-            root = root.replace('\\', '/')
-            if fullpath == True:
-                [filelist.append(root + '/' + f) for f in files]
-            else:
-                [filelist.append(f) for f in files]
-    return sorted(filelist)
-
-
-def get_dir_list(path, recursive=False, no_child=False):
-    """
-    Get directory list relative to path.
-
-    Input:
-        recusrive: search recursively if True.
-        no_child: search directories having no child directory (leaf nodes)
-    """
-    path = path.replace('\\', '/')
-    if not path[-1] == '/': path += '/'
-
-    if recursive == True:
-        pathlist = []
-        for root, dirs, files in os.walk(path):
-            root = root.replace('\\', '/')
-            [pathlist.append(root + '/' + d) for d in dirs]
-
-            if no_child:
-                for p in pathlist:
-                    if len(get_dir_list(p)) > 0:
-                        pathlist.remove(p)
-
-    else:
-        pathlist = [path + f for f in os.listdir(path) if os.path.isdir(path + '/' + f)]
-        if no_child:
-            for p in pathlist:
-                if len(get_dir_list(p)) > 0:
-                    pathlist.remove(p)
-
-    return sorted(pathlist)
-
-
-def make_dirs(dirname, delete=False):
-    """
-    Recusively create directories.
-    if delete=true, directory will be deleted first if exists.
-    """
-    if os.path.exists(dirname) and delete == True:
-        try:
-            shutil.rmtree(dirname)
-        except OSError:
-            logger.error('Directory was not completely removed. (Perhaps a Dropbox folder?). Continuing.')
-    if not os.path.exists(dirname):
-        os.makedirs(dirname)
-
-
-def save_obj(fname, obj, protocol=pickle.HIGHEST_PROTOCOL):
-    """
-    Save python object into a file
-    Set protocol=2 for Python 2 compatibility
-    """
-    with open(fname, 'wb') as fout:
-        pickle.dump(obj, fout, protocol)
-
-
-def load_obj(fname):
-    """
-    Read python object from a file
-    """
-    try:
-        with open(fname, 'rb') as f:
-            return pickle.load(f)
-    except UnicodeDecodeError:
-        # usually happens when trying to load Python 2 pickle object from Python 3
-        with open(fname, 'rb') as f:
-            return pickle.load(f, encoding='latin1')
-    except:
-        msg = 'load_obj(): Cannot load pickled object file "%s". The error was:\n%s\n%s' %\
-              (fname, sys.exc_info()[0], sys.exc_info()[1])
-        raise IOError(msg)
-
-
-def loadtxt_fast(filename, delimiter=',', skiprows=0, dtype=float):
-    """
-    Much faster matrix loading than numpy's loadtxt
-    http://stackoverflow.com/a/8964779
-    """
-    def iter_func():
-        with open(filename, 'r') as infile:
-            for _ in range(skiprows):
-                next(infile)
-            for line in infile:
-                line = line.rstrip().split(delimiter)
-                for item in line:
-                    yield dtype(item)
-        loadtxt_fast.rowlength = len(line)
-
-    data = np.fromiter(iter_func(), dtype=dtype)
-    data = data.reshape((-1, loadtxt_fast.rowlength))
-    return data
-
-
-def parse_path(file_path):
-    """
-    Input:
-        full path
-    Returns:
-        self.dir = base directory of the file
-        self.name = file name without extension
-        self.ext = file extension
-    """
-    class path_info:
-        def __init__(self, path):
-            path_abs = os.path.realpath(path).replace('\\', '/')
-            s = path_abs.split('/')
-            f = s[-1].split('.')
-            basedir = '/'.join(s[:-1])
-            if len(f) == 1:
-                name, ext = f[-1], ''
-            else:
-                name, ext = '.'.join(f[:-1]), f[-1]
-            self.dir = basedir
-            self.name = name
-            self.ext = ext
-            self.txt = 'self.dir=%s\nself.name=%s\nself.ext=%s\n' % (self.dir, self.name, self.ext)
-        def __repr__(self):
-            return self.txt
-        def __str__(self):
-            return self.txt
-
-    return path_info(file_path)
-
-
-def parse_path_list(path):
-    """
-    Input:
-        full path
-    Returns:
-        base dir, file(or dir) name, extension (if file)
-    """
-
-    path_abs = os.path.realpath(path).replace('\\', '/')
-    s = path_abs.split('/')
-    f = s[-1].split('.')
-    basedir = '/'.join(s[:-1]) + '/'
-    if len(f) == 1:
-        name, ext = f[-1], ''
-    else:
-        name, ext = '.'.join(f[:-1]), f[-1]
-
-    return basedir, name, ext
-
-
-def forward_slashify(txt):
-    return txt.replace('\\\\', '/').replace('\\', '/')
 
 '''"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
  MATLAB

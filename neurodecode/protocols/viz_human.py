@@ -28,10 +28,12 @@ import gzip
 import time
 import cv2
 import numpy as np
+
 import neurodecode.glass.bgi_client as bgi_client
-import neurodecode.utils.q_common as qc
+
 from neurodecode import logger
 from neurodecode.utils.timer import Timer
+from neurodecode.utils.io import get_file_list
 
 try:
     import cPickle as pickle  # Python 2 (cPickle = C version of pickle)
@@ -41,7 +43,7 @@ except ImportError:
 
 def read_images(img_path, screen_size=None):
     pnglist = []
-    for f in qc.get_file_list(img_path):
+    for f in get_file_list(img_path):
         if f[-4:] != '.png':
             continue
 

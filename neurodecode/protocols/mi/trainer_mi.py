@@ -33,19 +33,22 @@ import platform
 import numpy as np
 import multiprocessing as mp
 import sklearn.metrics as skmetrics
+
 import neurodecode.utils.q_common as qc
-from neurodecode.utils.io import load_config
 import neurodecode.decoder.features as features
+
 from builtins import input
+from xgboost import XGBClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import GradientBoostingClassifier
-from xgboost import XGBClassifier
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
+
 from neurodecode import logger
+from neurodecode.utils.timer import Timer
 from neurodecode.decoder.rlda import rLDA
 from neurodecode.triggers import TriggerDef
 from neurodecode.gui.streams import redirect_stdout_to_queue
-from neurodecode.utils.timer import Timer
+from neurodecode.utils.io import save_obj, load_config, make_dirs, get_file_list
 
 # scikit-learn old version compatibility
 try:
@@ -445,7 +448,7 @@ def cva_features(datadir):
     """
     (DEPRECATED FUNCTION)
     """
-    for fin in qc.get_file_list(datadir, fullpath=True):
+    for fin in get_file_list(datadir, fullpath=True):
         if fin[-4:] != '.gdf': continue
         fout = fin + '.cva'
         if os.path.exists(fout):
@@ -616,7 +619,7 @@ def cross_validate(cfg, featdata, cv_file=None):
     if 'export_result' in cfg.CV_PERFORM[selected_cv] and cfg.CV_PERFORM[selected_cv]['export_result'] is True:
         if cv_file is None:
             if cfg.EXPORT_CLS is True:
-                qc.make_dirs('%s/classifier' % cfg.DATA_PATH)
+                make_dirs('%s/classifier' % cfg.DATA_PATH)
                 fout = open('%s/classifier/cv_result.txt' % cfg.DATA_PATH, 'w')
             else:
                 fout = open('%s/cv_result.txt' % cfg.DATA_PATH, 'w')
@@ -686,8 +689,8 @@ def train_decoder(cfg, featdata, feat_file=None):
                     notch=cfg.NOTCH_FILTER[cfg.NOTCH_FILTER['selected']], notch_ch=featdata['picks'], multiplier=cfg.MULTIPLIER,
                     ref_ch=cfg.REREFERENCE[cfg.REREFERENCE['selected']], decim=cfg.FEATURES['PSD']['decim'])
     clsfile = '%s/classifier/classifier-%s.pkl' % (cfg.DATA_PATH, platform.architecture()[0])
-    qc.make_dirs('%s/classifier' % cfg.DATA_PATH)
-    qc.save_obj(clsfile, data)
+    make_dirs('%s/classifier' % cfg.DATA_PATH)
+    save_obj(clsfile, data)
     logger.info('Decoder saved to %s' % clsfile)
 
     # Reverse-lookup frequency from FFT
