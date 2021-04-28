@@ -1,8 +1,9 @@
 from __future__ import print_function, division
 
-from neurodecode.utils.io import load_fif_raw
 import neurodecode.utils.q_common as qc
+
 from neurodecode import logger
+from neurodecode.utils.io import parse_path, make_dirs, load_fif_raw, get_file_list
 
 def fix_channel_names(fif_dir, new_channel_names):
     '''
@@ -21,15 +22,15 @@ def fix_channel_names(fif_dir, new_channel_names):
     '''
 
     flist = []
-    for f in qc.get_file_list(fif_dir):
-        if qc.parse_path(f).ext == 'fif':
+    for f in get_file_list(fif_dir):
+        if parse_path(f).ext == 'fif':
             flist.append(f)
 
     if len(flist) > 0:
-        qc.make_dirs('%s/corrected' % fif_dir)
-        for f in qc.get_file_list(fif_dir):
+        make_dirs('%s/corrected' % fif_dir)
+        for f in get_file_list(fif_dir):
             logger.info('\nLoading %s' % f)
-            p = qc.parse_path(f)
+            p = parse_path(f)
             if p.ext == 'fif':
                 raw, eve = load_fif_raw(f)
                 if len(raw.ch_names) != len(new_channel_names):

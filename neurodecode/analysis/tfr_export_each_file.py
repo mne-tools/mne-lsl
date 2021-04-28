@@ -14,12 +14,14 @@ import mne
 import scipy
 import numpy as np
 import mne.time_frequency
-from neurodecode.utils.preprocess import preprocess
-from neurodecode.utils.io import load_config 
-from neurodecode.utils.io import load_fif_raw
+
 import neurodecode.utils.q_common as qc
-from neurodecode import logger
+
 from builtins import input
+
+from neurodecode import logger
+from neurodecode.utils.preprocess import preprocess
+from neurodecode.utils.io import parse_path, make_dirs, load_config, load_fif_raw, get_file_list
 
 def check_cfg(cfg):
     if not hasattr(cfg, 'N_JOBS'):
@@ -58,19 +60,19 @@ def get_tfr_each_file(cfg, tfr_type='multitaper', recursive=False, export_path=N
         raise ValueError('Wrong TFR type %s' % tfr_type)
 
     for fifdir in cfg.DATA_PATHS:
-        for f in qc.get_file_list(fifdir, fullpath=True, recursive=recursive):
-            [fdir, fname, fext] = qc.parse_path_list(f)
+        for f in get_file_list(fifdir, fullpath=True, recursive=recursive):
+            fext = parse_path(f).ext
             if fext in ['fif', 'bdf', 'gdf']:
                 get_tfr(f, cfg, tfr, cfg.N_JOBS)
 
 def get_tfr(fif_file, cfg, tfr, n_jobs=1):
     raw, events = load_fif_raw(fif_file)
-    p = qc.parse_path(fif_file)
+    p = parse_path(fif_file)
     fname = p.name
     outpath = p.dir
 
     export_dir = '%s/plot_%s' % (outpath, fname)
-    qc.make_dirs(export_dir)
+    make_dirs(export_dir)
 
     # set channels of interest
     picks = mne.pick_channels(raw.ch_names, cfg.CHANNEL_PICKS)

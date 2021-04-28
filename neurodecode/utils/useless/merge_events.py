@@ -9,11 +9,10 @@ Kyuhwa Lee, 2015
 """
 
 import numpy as np
-import neurodecode.utils.q_common as qc
 
-from neurodecode.utils.io import load_fif_raw
-from neurodecode.triggers import trigger_def
 from neurodecode import logger
+from neurodecode.triggers import trigger_def
+from neurodecode.utils.io import parse_path, load_fif_raw, make_dirs, get_file_list
 
 #----------------------------------------------------------------------
 def merge_events(trigger_file, events, rawfile_in, rawfile_out):
@@ -63,9 +62,9 @@ if __name__ == '__main__':
     events = {'BOTH_GO':['LEFT_GO', 'RIGHT_GO']}
 
     out_dir = fif_dir + '/merged'
-    qc.make_dirs(out_dir)
-    for rawfile_in in qc.get_file_list(fif_dir):
-        p = qc.parse_path(rawfile_in)
+    make_dirs(out_dir)
+    for rawfile_in in get_file_list(fif_dir):
+        p = parse_path(rawfile_in)
         if p.ext != 'fif':
             continue
         rawfile_out = '%s/%s.%s' % (out_dir, p.name, p.ext)

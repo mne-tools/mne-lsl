@@ -20,8 +20,9 @@ EPOCHS = {'stand':240, 'sit':238}
 TMIN = 0.0
 TMAX = 2.0
 
-from neurodecode.utils.io import load_fif_multi
 from neurodecode.utils.preprocess import rereference
+from neurodecode.utils.io import load_fif_multi, make_dirs, get_file_list
+
 import neurodecode.utils.q_common as qc
 import scipy.io
 import mne
@@ -34,7 +35,7 @@ mne.set_log_level('ERROR')
 
 if __name__ == '__main__':
     rawlist = []
-    for f in qc.get_file_list(DATA_PATH, fullpath=True):
+    for f in get_file_list(DATA_PATH, fullpath=True):
         if f[-4:] == '.fif':
             rawlist.append(f)
     if len(rawlist) == 0:
@@ -42,7 +43,7 @@ if __name__ == '__main__':
 
     # make output directory
     out_path = DATA_PATH + '/epochs'
-    qc.make_dirs(out_path)
+    make_dirs(out_path)
 
     # load data
     raw, events = load_fif_multi(rawlist, multiplier=MULTIPLIER)

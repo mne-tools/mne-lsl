@@ -17,7 +17,7 @@ import os
 import mne
 import numpy as np
 from neurodecode import logger
-import neurodecode.utils.q_common as qc
+from neurodecode.utils.io import parse_path
 
 mne.set_log_level('ERROR')
 
@@ -367,5 +367,5 @@ def _check_fif_path(rawfile):
         logger.error('%s is not a file' % rawfile)
         raise IOError
 
-    extension = qc.parse_path(rawfile).ext
+    extension = parse_path(rawfile).ext
     assert extension in ['fif', 'fiff'], 'only fif format is supported'

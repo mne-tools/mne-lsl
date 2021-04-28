@@ -32,15 +32,20 @@ import sys
 import time
 import random
 import multiprocessing as mp
+
 import neurodecode.utils.q_common as qc
+
+from builtins import input
+
+from neurodecode import logger
+from neurodecode.utils.io import parse_path
 from neurodecode.utils.lsl import search_lsl
 from neurodecode.utils.io import load_config
 from neurodecode.triggers import Trigger, TriggerDef
-from neurodecode.decoder.decoder import BCIDecoderDaemon
 from neurodecode.protocols.feedback import Feedback
+from neurodecode.decoder.decoder import BCIDecoderDaemon
 from neurodecode.gui.streams import redirect_stdout_to_queue
-from neurodecode import logger
-from builtins import input
+from neurodecode.utils.math import confusion_matrix
 
 
 # visualization
@@ -194,7 +199,7 @@ def run(cfg, state=mp.Value('i', 1), queue=None):
             screen_pos=cfg.SCREEN_POS, screen_size=cfg.SCREEN_SIZE)
     visual.put_text('Waiting to start')
     if cfg.LOG_PROBS:
-        logdir = qc.parse_path_list(cfg.DECODER_FILE)[0]
+        logdir = parse_path(cfg.DECODER_FILE).dir
         probs_logfile = time.strftime(logdir + "probs-%Y%m%d-%H%M%S.txt", time.localtime())
     else:
         probs_logfile = None
@@ -242,7 +247,7 @@ def run(cfg, state=mp.Value('i', 1), queue=None):
                 visual.move(pred_label, 100, overlay=False, barcolor='B')
                 visual.update()
                 logger.info('Executing Rex action %s' % rex_dir)
-                os.system('%s/Rex/RexControlSimple.exe %s %s' % (pycnbi.ROOT, cfg.REX_COMPORT, rex_dir))
+                os.system('%s/Rex/RexControlSimple.exe %s %s' % (os.environ['NEUROD_ROOT'], cfg.REX_COMPORT, rex_dir))
                 time.sleep(8)
 
         if true_label == pred_label:
@@ -255,13 +260,13 @@ def run(cfg, state=mp.Value('i', 1), queue=None):
 
     if len(dir_detected) > 0:
         # write performance and log results
-        fdir, _, _ = qc.parse_path_list(cfg.DECODER_FILE)
+        fdir = parse_path(cfg.DECODER_FILE).dir
         logfile = time.strftime(fdir + "/online-%Y%m%d-%H%M%S.txt", time.localtime())
         with open(logfile, 'w') as fout:
             fout.write('Ground-truth,Prediction\n')
             for gt, dt in zip(dir_seq, dir_detected):
                 fout.write('%s,%s\n' % (gt, dt))
-            cfmat, acc = qc.confusion_matrix(dir_seq, dir_detected)
+            cfmat, acc = confusion_matrix(dir_seq, dir_detected)
             fout.write('\nAccuracy %.3f\nConfusion matrix\n' % acc)
             fout.write(cfmat)
             logger.info('Log exported to %s' % logfile)

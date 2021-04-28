@@ -35,9 +35,11 @@ import neurodecode.utils.q_common as qc
 
 from neurodecode import logger
 from neurodecode.utils.timer import Timer
+from neurodecode.utils.io import parse_path
 from neurodecode.triggers import trigger_def
 from neurodecode.utils.lsl import search_lsl
 from neurodecode.utils.preprocess import preprocess
+from neurodecode.utils.io import load_obj, save_obj
 from neurodecode.stream_receiver.stream_receiver import StreamReceiver
 
 mne.set_log_level('ERROR')
@@ -58,7 +60,7 @@ def get_decoder_info(classifier):
     dict : Classifier info
     """
 
-    model = qc.load_obj(classifier)
+    model = load_obj(classifier)
     if model is None:
         logger.error('>> Error loading %s' % model)
         raise ValueError
@@ -105,7 +107,7 @@ class BCIDecoder(object):
         self.amp_name = amp_name
 
         if self.fake == False:
-            model = qc.load_obj(self.classifier)
+            model = load_obj(self.classifier)
             if model is None:
                 logger.error('Classifier model is None.')
                 raise ValueError
@@ -377,7 +379,7 @@ class BCIDecoderDaemon(object):
         self.alpha_old = 1 - alpha_new
 
         if fake == False or fake is None:
-            self.model = qc.load_obj(self.classifier)
+            self.model = load_obj(self.classifier)
             if self.model == None:
                 logger.error('Error loading %s' % self.model)
                 raise IOError
@@ -787,10 +789,10 @@ def log_decoding(decoder, logfile, amp_name=None, pklfile=True, matfile=False, a
     event_values = np.array(event_values)
     data = dict(probs=probs, prob_times=prob_times, event_times=event_times, event_values=event_values, labels=labels)
     if pklfile:
-        qc.save_obj(logfile, data)
+        save_obj(logfile, data)
         logger.info('Saved to %s' % logfile)
     if matfile:
-        pp = qc.parse_path(logfile)
+        pp = parse_path(logfile)
         matout = '%s/%s.mat' % (pp.dir, pp.name)
         scipy.io.savemat(matout, data)
         logger.info('Saved to %s' % matout)

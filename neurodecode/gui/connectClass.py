@@ -9,14 +9,17 @@
 """
 
 import os
+
 from glob import glob
 from pathlib import Path 
 from shutil import copy2
-from neurodecode.utils import q_common as qc
-from neurodecode.triggers.trigger_def import trigger_def
+
 from PyQt5.QtWidgets import QPushButton, QHBoxLayout, QVBoxLayout, QFileDialog, QLineEdit, QComboBox, QSpinBox, QDoubleSpinBox, QLabel, \
      QFrame, QDialog, QFormLayout, QDialogButtonBox
 from PyQt5.QtCore import pyqtSignal, QObject, pyqtSlot, Qt
+
+from neurodecode.utils.io import load_obj
+from neurodecode.triggers import TriggerDef
 
 ########################################################################
 class QComboBox_Directions(QComboBox):
@@ -143,7 +146,7 @@ class Connect_Directions(QObject):
         Update the QComboBox with the new events from the new tdef file.
         """
         self.clear_hBoxLayout()
-        tdef = trigger_def(trigger_file)
+        tdef = TriggerDef(trigger_file)
         nb_directions = 4
         #  Convert 'None' to real None (real None is removed when selected in the GUI)
         tdef_values = [ None if i == 'None' else i for i in list(tdef.by_name) ]
@@ -230,7 +233,7 @@ class Connect_Directions_Online(QObject):
         """
         Update the event QComboBox with the new events from the new .
         """
-        cls = qc.load_obj(filePath)
+        cls = load_obj(filePath)
         events = cls['cls'].classes_        # Finds the events on which the decoder has been trained on
         self.events = list(map(int, events))
         self.nb_directions = len(events)

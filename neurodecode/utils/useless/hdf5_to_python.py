@@ -13,13 +13,13 @@ Created on Mon Oct 05 10:02:22 2015
 import h5py
 import scipy.io
 import numpy as np
-import neurodecode.utils.q_common as qc
-import neurodecode.utils.pycnbi_utils as pu
 import xml.etree.ElementTree as XET  # xml parser
+
 from neurodecode import logger
+from neurodecode.utils.io import get_file_list
 
 def hdf5_to_python(data_dir):
-    for rawfile in qc.get_file_list(data_dir, fullpath=True):
+    for rawfile in get_file_list(data_dir, fullpath=True):
         # rawfile = 'D:/Hoang/My Documents/Python/artifact_data/arm_move2015.09.30_18.48.16.hdf5'
         # rawfile= 'D:/data/Artifact/eyeroll2015.09.30_18.38.23.hdf5'
         if rawfile.split('.')[-1] != 'hdf5': continue
