@@ -1,5 +1,7 @@
 from __future__ import print_function, division
+
 from neurodecode import logger
+from neurodecode.utils.io import get_dir_list, get_file_list
 
 #----------------------------------------------------------------------
 def add_lsl_events(event_dir, recursive=False, interactive=True):
@@ -18,19 +20,19 @@ def add_lsl_events(event_dir, recursive=False, interactive=True):
         If true, press Enter will be asked to convert the found files
     """
     import neurodecode.utils.q_common as qc
-    from neurodecode.utils.convert2fif import pcl2fif
+    from neurodecode.utils.io import pcl2fif
     from builtins import input
 
     to_process = []
     logger.info('Files to be processed')
     if recursive:
-        for d in qc.get_dir_list(event_dir):
-            for f in qc.get_file_list(d, True):
+        for d in get_dir_list(event_dir):
+            for f in get_file_list(d, True):
                 if f[-8:] == '-eve.txt':
                     to_process.append(f)
                     logger.info(f)
     else:
-        for f in qc.get_file_list(event_dir, True):
+        for f in get_file_list(event_dir, True):
             if f[-8:] == '-eve.txt':
                 to_process.append(f)
                 logger.info(f)

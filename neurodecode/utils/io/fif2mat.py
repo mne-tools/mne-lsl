@@ -9,6 +9,8 @@ from .load_fif import load_fif_raw
 from neurodecode import logger
 from scipy.io import savemat
 
+from neurodecode.utils.io import parse_path, make_dirs, get_file_list
+
 #----------------------------------------------------------------------
 def fif2mat(data_dir, out_dir=None):
     """
@@ -26,10 +28,10 @@ def fif2mat(data_dir, out_dir=None):
         out_dir = '%s/mat_files' % data_dir
     
     #  create the output directory
-    qc.make_dirs(out_dir)
+    make_dirs(out_dir)
     
     # Convert each fif file 
-    for rawfile in qc.get_file_list(data_dir, fullpath=True):
+    for rawfile in get_file_list(data_dir, fullpath=True):
         # keep only fif files
         if rawfile[-4:] != '.fif': continue
         
@@ -42,7 +44,7 @@ def fif2mat(data_dir, out_dir=None):
         data = dict(signals=raw._data, events=events, sfreq=sfreq, ch_names=raw.ch_names)
         
         # Save
-        fname = qc.parse_path(rawfile).name
+        fname = parse_path(rawfile).name
         matfile = '%s/%s.mat' % (out_dir, fname)
         savemat(matfile, data)
         logger.info('Exported to %s' % matfile)

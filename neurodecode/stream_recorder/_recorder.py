@@ -3,11 +3,12 @@ import time
 import multiprocessing as mp
 from pathlib import Path
 
-from neurodecode import logger
 import neurodecode.utils.q_common as qc
+
+from neurodecode import logger
 from neurodecode.utils.timer import Timer
-from neurodecode.utils.io import pcl2fif
 from neurodecode.utils.lsl import start_server
+from neurodecode.utils.io import save_obj, pcl2fif, make_dirs
 from neurodecode.stream_receiver import StreamReceiver, StreamEEG
 
 class _Recorder:
@@ -106,7 +107,7 @@ class _Recorder:
         pcl_files : str
             The pickle files to create to write to.
         """
-        qc.make_dirs(record_dir)
+        make_dirs(record_dir)
 
         for pcl_f in pcl_files:
             try:
@@ -166,7 +167,7 @@ class _Recorder:
                     
             data = self.create_dict_to_save(signals, timestamps, s)
             
-            qc.save_obj(pcl_files[s], data)
+            save_obj(pcl_files[s], data)
             self.logger.info('Saved to %s\n' % pcl_files[s])
             self.logger.info('Converting raw files into fif.')
             
