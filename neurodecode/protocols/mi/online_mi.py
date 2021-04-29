@@ -35,10 +35,9 @@ import multiprocessing as mp
 
 from builtins import input
 
+import neurodecode.utils.io as io 
+
 from neurodecode import logger
-from neurodecode.utils.io import parse_path
-from neurodecode.utils.lsl import search_lsl
-from neurodecode.utils.io import load_config
 from neurodecode.triggers import Trigger, TriggerDef
 from neurodecode.protocols.feedback import Feedback
 from neurodecode.decoder.decoder import BCIDecoderDaemon
@@ -133,7 +132,7 @@ def run(cfg, state=mp.Value('i', 1), queue=None):
     if cfg.FAKE_CLS is None:
         # chooose amp
         if cfg.AMP_NAME is None and cfg.AMP_SERIAL is None:
-            amp_name, amp_serial = search_lsl(state, ignore_markers=True)
+            amp_name, amp_serial = io.search_lsl(state, ignore_markers=True)
         else:
             amp_name = cfg.AMP_NAME
             amp_serial = cfg.AMP_SERIAL
@@ -197,7 +196,7 @@ def run(cfg, state=mp.Value('i', 1), queue=None):
             screen_pos=cfg.SCREEN_POS, screen_size=cfg.SCREEN_SIZE)
     visual.put_text('Waiting to start')
     if cfg.LOG_PROBS:
-        logdir = parse_path(cfg.DECODER_FILE).dir
+        logdir = io.parse_path(cfg.DECODER_FILE).dir
         probs_logfile = time.strftime(logdir + "probs-%Y%m%d-%H%M%S.txt", time.localtime())
     else:
         probs_logfile = None
@@ -258,7 +257,7 @@ def run(cfg, state=mp.Value('i', 1), queue=None):
 
     if len(dir_detected) > 0:
         # write performance and log results
-        fdir = parse_path(cfg.DECODER_FILE).dir
+        fdir = io.parse_path(cfg.DECODER_FILE).dir
         logfile = time.strftime(fdir + "/online-%Y%m%d-%H%M%S.txt", time.localtime())
         with open(logfile, 'w') as fout:
             fout.write('Ground-truth,Prediction\n')
@@ -312,7 +311,7 @@ def run(cfg, state=mp.Value('i', 1), queue=None):
 
 # for batch script
 def batch_run(cfg_module):
-    cfg = load_config(cfg_module)
+    cfg = io.load_config(cfg_module)
     check_config(cfg)
     run(cfg)
 

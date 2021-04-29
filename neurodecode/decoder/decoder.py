@@ -32,9 +32,10 @@ from numpy import ctypeslib
 import multiprocessing as mp
 import multiprocessing.sharedctypes as sharedctypes
 
+import neurodecode.utils.io as io
+
 from neurodecode import logger
 from neurodecode.utils.timer import Timer
-from neurodecode.utils.io import parse_path
 from neurodecode.triggers import trigger_def
 from neurodecode.utils.lsl import search_lsl
 from neurodecode.utils.etc import get_index_max
@@ -792,7 +793,7 @@ def log_decoding(decoder, logfile, amp_name=None, pklfile=True, matfile=False, a
         save_obj(logfile, data)
         logger.info('Saved to %s' % logfile)
     if matfile:
-        pp = parse_path(logfile)
+        pp = io.parse_path(logfile)
         matout = '%s/%s.mat' % (pp.dir, pp.name)
         scipy.io.savemat(matout, data)
         logger.info('Saved to %s' % matout)
