@@ -7,8 +7,9 @@ import mne
 import scipy.io
 import numpy as np
 
+import neurodecode.utils.io as io
+
 from neurodecode import logger
-from neurodecode.utils.io import parse_path
 
 #----------------------------------------------------------------------
 def mat2fif(mat_file, sample_rate, data_field, event_field):
@@ -45,7 +46,7 @@ def mat2fif(mat_file, sample_rate, data_field, event_field):
     raw = mne.io.RawArray(signals, info)
 
     # Save
-    p = parse_path(mat_file)
+    p = io.parse_path(mat_file)
     fifname = '%s/%s.fif' % (p.dir, p.name)
     raw.save(fifname, verbose=False, overwrite=True)
     logger.info('Saved to %s.' % fifname)
