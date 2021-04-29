@@ -31,13 +31,13 @@ import numpy as np
 from numpy import ctypeslib
 import multiprocessing as mp
 import multiprocessing.sharedctypes as sharedctypes
-import neurodecode.utils.q_common as qc
 
 from neurodecode import logger
 from neurodecode.utils.timer import Timer
 from neurodecode.utils.io import parse_path
 from neurodecode.triggers import trigger_def
 from neurodecode.utils.lsl import search_lsl
+from neurodecode.utils.etc import get_index_max
 from neurodecode.utils.preprocess import preprocess
 from neurodecode.utils.io import load_obj, save_obj
 from neurodecode.stream_receiver.stream_receiver import StreamReceiver
@@ -841,7 +841,7 @@ def sample_decoding(decoder):
         txt = '[%8.1f msec]' % (tm_cls.msec())
         for i, label in enumerate(labels):
             txt += '   %s %.3f (raw %.3f)' % (label, psmooth[i], praw[i])
-        maxi = qc.get_index_max(psmooth)
+        maxi = get_index_max(psmooth)
         txt += '   %s' % labels[maxi]
         print(txt)
         tm_cls.reset()

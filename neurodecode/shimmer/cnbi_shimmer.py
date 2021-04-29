@@ -59,6 +59,7 @@ import simplejson
 
 import neurodecode.utils.q_common as qc
 from neurodecode.utils.io import make_dirs
+from neurodecode.utils.etc import list2string
 
 # shimmer class
 from .shimmerpy import *
@@ -264,7 +265,7 @@ def run(file_flag):
                     analogPlot.update(analogData)
 
             if file_flag == 0:
-                print(qc.list2string(sample_lslclock[1], '%9.1f', ' '))
+                print(list2string(sample_lslclock[1], '%9.1f', ' '))
 
         # Exit if key is pressed
         except KeyboardInterrupt:

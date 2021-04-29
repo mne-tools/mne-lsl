@@ -29,8 +29,11 @@ import time
 import serial
 import serial.tools.list_ports
 import neurodecode.utils.Motionstim8 as fes
-from neurodecode.utils.timer import Timer
+
 from neurodecode import logger
+from neurodecode.utils.timer import Timer
+from neurodecode.utils.etc import list2string
+from neurodecode.utils.etc import get_index_max
 
 
 # global constants
@@ -295,7 +298,7 @@ class Feedback:
 
 
                     if self.cfg.DEBUG_PROBS:
-                        msg = 'DEBUG: Accumulated probabilities = %s' % qc.list2string(probs_acc, '%.3f')
+                        msg = 'DEBUG: Accumulated probabilities = %s' % list2string(probs_acc, '%.3f')
                         logger.info(msg)
                         if self.logf is not None:
                             self.logf.write(msg + '\n')
@@ -355,7 +358,7 @@ class Feedback:
 
                         # determine the direction
                         # TODO: np.argmax(probs)
-                        max_pidx = qc.get_index_max(probs)
+                        max_pidx = get_index_max(probs)
                         max_label = bar_dirs[max_pidx]
 
                         if self.cfg.POSITIVE_FEEDBACK is False or \
@@ -431,7 +434,7 @@ class Feedback:
                             else:
                                 biastxt = ''
                             msg = '%s%s  prob %s   acc %s   bar %s%d  (%.1f ms)' % \
-                                  (biastxt, bar_dirs, qc.list2string(probs_new, '%.2f'), qc.list2string(probs, '%.2f'),
+                                  (biastxt, bar_dirs, list2string(probs_new, '%.2f'), list2string(probs, '%.2f'),
                                    bar_label, bar_score, tm_classify.msec())
                             logger.info(msg)
                             if self.logf is not None:
