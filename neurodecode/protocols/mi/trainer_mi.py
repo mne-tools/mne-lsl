@@ -443,21 +443,6 @@ def balance_tpr(cfg, featdata):
         thres = Y_preds[mid_idx]
     return thres
 
-
-def cva_features(datadir):
-    """
-    (DEPRECATED FUNCTION)
-    """
-    for fin in get_file_list(datadir, fullpath=True):
-        if fin[-4:] != '.gdf': continue
-        fout = fin + '.cva'
-        if os.path.exists(fout):
-            logger.info('Skipping', fout)
-            continue
-        logger.info("cva_features('%s')" % fin)
-        qc.matlab("cva_features('%s')" % fin)
-
-
 def get_predict_proba(cls, X_train, Y_train, X_test, Y_test, cnum):
     """
     All likelihoods will be collected from every fold of a cross-validaiton. Based on these likelihoods,

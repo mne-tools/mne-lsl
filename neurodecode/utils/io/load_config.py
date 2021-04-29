@@ -8,7 +8,10 @@ def load_config(cfg_module):
     """
     Dynamic loading of a config file module.
     
-    cfg_module = absolute path to the config file to load 
+    Parameters
+    ----------
+    cfg_module : str
+        The absolute path to the config file to load 
     """
     cfg_module = Path(cfg_module)
     cfg_path, cfg_name = os.path.split(cfg_module)
