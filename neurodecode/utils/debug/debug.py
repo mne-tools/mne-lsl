@@ -1,46 +1,18 @@
-from __future__ import print_function, division
-
-"""
-Python utilities
-
-Kyuhwa Lee (kyu.lee@epfl.ch)
-Swiss Federal Institute of Technology of Lausanne (EPFL)
-
-"""
-
-# set Q_VERBOSE= 0 to make it silent. 1:verbose, 2:extra verbose
-Q_VERBOSE = 0
-
-
 import os
-import sys
 import pdb
 import code
-import scipy
 import inspect
-import itertools
-import numpy as np
 import multiprocessing as mp
 
 from neurodecode import logger
 
-# pickle
-try:
-    import cPickle as pickle  # Python 2 (cPickle = C version of pickle)
-except ImportError:
-    import pickle  # Python 3 (C version is the default)
 
-
-'''"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
- Debugging
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""'''
-
+#----------------------------------------------------------------------
 def auto_debug():
     """
     Triggers debugging mode automatically when AssertionError is raised
 
-    Snippet from:
-      stackoverflow.com/questions/242485/starting-python-debugger-automatically-on-error
+    Snippet from: stackoverflow.com/questions/242485/starting-python-debugger-automatically-on-error
     """
     def debug_info(type, value, tb):
         if hasattr(sys, 'ps1') or not sys.stderr.isatty() or type == KeyboardInterrupt:
@@ -52,8 +24,7 @@ def auto_debug():
             pdb.pm()
     sys.excepthook = debug_info
 
-
-# enter interactive shell within the caller's scope
+#----------------------------------------------------------------------
 def shell():
     """
     Enter interactive shell within the caller's scope
@@ -68,14 +39,21 @@ def shell():
         del stack
     code.InteractiveConsole(globals_).interact()
 
-
+#----------------------------------------------------------------------
 def run_multi(cmd_list, cores=0, quiet=False):
     """
-    Input
-    -----
-    cmd_list: list of commands just like when you type on bash
-    cores: number of cores to use (use all cores if 0)
+    Run multiple command in separate process.
+    
     Logging tip: "command args > log.txt 2>&1"
+
+    Parameters
+    ----------
+    cmd_list : list
+        The list of commands to run
+    cores : int
+        The number of cores to use (use all cores if 0)
+    quiet : bool
+        If True, display the command into the logger
     """
     if cores == 0: cores = mp.cpu_count()
     pool = mp.Pool(cores)
