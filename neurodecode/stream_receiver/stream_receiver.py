@@ -5,8 +5,7 @@ import numpy as np
 from threading import Thread
 from neurodecode import logger
 from neurodecode.stream_receiver import StreamEEG, StreamMarker
-
-import neurodecode.utils.q_common as qc
+from neurodecode.utils.etc import list2string
 
 class StreamReceiver:
     """
@@ -332,10 +331,10 @@ if __name__ == '__main__':
         trigger = np.unique(window[trg_ch, tsnew[0]:])
 
         if TIME_INDEX is None:
-            datatxt = qc.list2string(np.mean(window[CH_INDEX, :], axis=1), '%-15.6f')
+            datatxt = list2string(np.mean(window[CH_INDEX, :], axis=1), '%-15.6f')
             print('[%.3f ]' % (tslist[0]-tslist[-1]) + ' data: %s' % datatxt)
         else:
-            datatxt = qc.list2string(window[CH_INDEX, TIME_INDEX], '%-15.6f')
+            datatxt = list2string(window[CH_INDEX, TIME_INDEX], '%-15.6f')
             print('[%.3f]' % tslist[TIME_INDEX] + ' data: %s' % datatxt)
 
         # show PSD

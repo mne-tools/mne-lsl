@@ -47,8 +47,9 @@ from neurodecode import logger
 from neurodecode.utils.timer import Timer
 from neurodecode.decoder.rlda import rLDA
 from neurodecode.triggers import TriggerDef
+from neurodecode.utils.etc import sort_by_value
 from neurodecode.gui.streams import redirect_stdout_to_queue
-from neurodecode.utils.io import save_obj, load_config, make_dirs, get_file_list
+from neurodecode.utils.io import save_obj, load_config, make_dirs
 
 # scikit-learn old version compatibility
 try:
@@ -694,9 +695,9 @@ def train_decoder(cfg, featdata, feat_file=None):
     if cfg.FEATURES['selected'] == 'PSD':
         logger.info_green('Good features ordered by importance')
         if selected_classifier in ['RF', 'GB', 'XGB']:
-            keys, values = qc.sort_by_value(list(cls.feature_importances_), rev=True)
+            keys, values = sort_by_value(list(cls.feature_importances_), rev=True)
         elif selected_classifier in ['LDA', 'rLDA']:
-            keys, values = qc.sort_by_value(cls.w, rev=True)
+            keys, values = sort_by_value(cls.w, rev=True)
         keys = np.array(keys)
         values = np.array(values)
 

@@ -31,7 +31,7 @@ def find_event_channel(raw=None, ch_names=None):
 
     Parameters
     ----------
-    raw : mne.io.Raw or numpy.ndarray (n_channels x n_samples)
+    raw : mne.io.Raw | numpy.ndarray (n_channels x n_samples)
         The data
     ch_names : list
         The channels name list
