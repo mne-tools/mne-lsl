@@ -17,8 +17,6 @@ import mne.time_frequency
 import multiprocessing as mp
 import matplotlib.pyplot as plt
 
-import neurodecode.utils.q_common as qc
-
 from builtins import input
 from scipy.signal import lfilter
 from scipy.signal import butter

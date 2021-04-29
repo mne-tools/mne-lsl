@@ -33,8 +33,6 @@ import time
 import random
 import multiprocessing as mp
 
-import neurodecode.utils.q_common as qc
-
 from builtins import input
 
 from neurodecode import logger

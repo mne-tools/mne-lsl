@@ -10,7 +10,6 @@ Swiss Federal Institute of Technology (EPFL)
 """
 
 import sys
-import neurodecode.utils.q_common as qc
 
 from builtins import input
 

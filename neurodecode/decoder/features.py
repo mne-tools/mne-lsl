@@ -29,7 +29,6 @@ import mne
 import mne.io
 import numpy as np
 import multiprocessing as mp
-import neurodecode.utils.q_common as qc
 
 from builtins import input
 from IPython import embed  # for debugging

@@ -22,8 +22,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 import cv2
-import neurodecode.utils.q_common as qc
-
 import numpy as np
 import time
 import serial
