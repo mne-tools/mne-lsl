@@ -14,9 +14,10 @@ Swiss Federal Institute of Technology Lausanne (EPFL)
 import os
 import mne
 import numpy as np
-from neurodecode import logger
-# from neurodecode.utils.io import parse_path
+
 import neurodecode.utils.io as io
+
+from neurodecode import logger
 
 mne.set_log_level('ERROR')
 
