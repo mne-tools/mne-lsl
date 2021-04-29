@@ -20,16 +20,13 @@ EPOCHS = {'stand':240, 'sit':238}
 TMIN = 0.0
 TMAX = 2.0
 
+import mne
+
+from neurodecode import logger
+from neurodecode.utils.etc import list2string
 from neurodecode.utils.preprocess import rereference
 from neurodecode.utils.io import load_fif_multi, make_dirs, get_file_list
 
-import neurodecode.utils.q_common as qc
-import scipy.io
-import mne
-import numpy as np
-import trainer
-from multiprocessing import cpu_count
-from neurodecode import logger
 
 mne.set_log_level('ERROR')
 
@@ -70,5 +67,5 @@ if __name__ == '__main__':
             fout = '%s/%s-%d.txt' % (out_path, epname, i + 1)
             with open(fout, 'w') as f:
                 for t in range(ep_data.shape[1]):
-                    f.write(qc.list2string(ep_data[:, t], '%.6f') + '\n')
+                    f.write(list2string(ep_data[:, t], '%.6f') + '\n')
             logger.info('Exported %s' % fout)
