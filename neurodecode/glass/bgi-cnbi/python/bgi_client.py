@@ -1,5 +1,6 @@
 import socket, time, os
-import pycnbi.utils.q_common as qc
+
+from neurodecode.utils.timer import Timer
 
 
 class GlassControl():
@@ -7,7 +8,7 @@ class GlassControl():
         self.BUFFER_SIZE = 1024
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.last_dir = 'L'
-        self.timer = qc.Timer()
+        self.timer = Timer()
 
     def connect(self, ip, port):
         self.ip = ip

@@ -15,8 +15,6 @@ import scipy
 import numpy as np
 import mne.time_frequency
 
-import neurodecode.utils.q_common as qc
-
 from builtins import input
 
 from neurodecode import logger

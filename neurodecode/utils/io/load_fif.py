@@ -3,8 +3,9 @@ import mne
 import numpy as np
 
 from neurodecode import logger
-from neurodecode.utils.io import parse_path, get_file_list
 from neurodecode.utils.preprocess import find_event_channel
+
+import neurodecode.utils.io as io 
 
 #----------------------------------------------------------------------
 def load_fif_raw(rawfile, events_ext=None):
@@ -32,7 +33,7 @@ def load_fif_raw(rawfile, events_ext=None):
         raise IOError
     
     # Check the fif extension
-    extension = parse_path(rawfile).ext
+    extension = io.parse_path(rawfile).ext
     assert extension in ['fif', 'fiff'], 'only fif format is supported'
     
     # Load mne raw data
@@ -77,8 +78,8 @@ def load_fif_multi(src):
             logger.error('%s is not a directory or does not exist.' % src)
             raise IOError
         flist = []
-        for f in get_file_list(src):
-            if parse_path(f).ext == 'fif':
+        for f in io.get_file_list(src):
+            if io.parse_path(f).ext == 'fif':
                 flist.append(f)
     elif type(src) in [list, tuple]:
         flist = src

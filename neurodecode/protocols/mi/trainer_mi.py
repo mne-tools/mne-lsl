@@ -34,7 +34,6 @@ import numpy as np
 import multiprocessing as mp
 import sklearn.metrics as skmetrics
 
-import neurodecode.utils.q_common as qc
 import neurodecode.decoder.features as features
 
 from builtins import input

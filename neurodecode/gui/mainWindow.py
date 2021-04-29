@@ -34,9 +34,6 @@ from neurodecode.gui.connectClass import PathFolderFinder, PathFileFinder, Conne
      Connect_Modifiable_Dict,  Connect_Directions_Online, Connect_Bias, Connect_NewSubject
 
 from neurodecode import logger, init_logger
-from neurodecode.utils import q_common as qc
-from neurodecode.utils import pycnbi_utils as pu
-from neurodecode.triggers.trigger_def import trigger_def
 import neurodecode.stream_viewer.stream_viewer as viewer
 import neurodecode.stream_recorder.stream_recorder as recorder
 

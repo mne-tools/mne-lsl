@@ -3,8 +3,6 @@ import time
 import multiprocessing as mp
 from pathlib import Path
 
-import neurodecode.utils.q_common as qc
-
 from neurodecode import logger
 from neurodecode.utils.timer import Timer
 from neurodecode.utils.lsl import start_server

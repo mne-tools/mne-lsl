@@ -16,7 +16,6 @@ import neurodecode
 import scipy.io
 import numpy as np
 from neurodecode import logger
-from neurodecode.utils import q_common as qc
 
 def get_feature_scores(featfile, channels=None, freq_ranges=None, matfile=None):
     """
@@ -172,6 +171,6 @@ if __name__ == '__main__':
         alpha=[8, 13],
         beta=[13, 30],
         lgamma=[30, 49])
-    #MATFILE = '%s/good_features.mat' % qc.parse_path(FEATFILE).dir
+
     MATFILE = None
     feature_info(FEATFILE, CHANNELS, FREQ_RANGES, MATFILE)

@@ -1,7 +1,5 @@
 from __future__ import print_function, division
 
-import neurodecode.utils.q_common as qc
-
 from neurodecode import logger
 from neurodecode.utils.io import parse_path, make_dirs, load_fif_raw, get_file_list
 
