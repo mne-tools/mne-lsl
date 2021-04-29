@@ -19,7 +19,6 @@ def add_lsl_events(event_dir, recursive=False, interactive=True):
     interactive : bool
         If true, press Enter will be asked to convert the found files
     """
-    import neurodecode.utils.q_common as qc
     from neurodecode.utils.io import pcl2fif
     from builtins import input
 

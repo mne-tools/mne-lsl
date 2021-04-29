@@ -13,7 +13,6 @@ Swiss Federal Institute of Technology (EPFL)
 import os
 import mne
 import numpy as np
-import neurodecode.utils.q_common as qc
 
 from IPython import embed
 
