@@ -10,11 +10,11 @@ import sys
 import mne
 import numpy as np
 import matplotlib.pyplot as plt
-import neurodecode.utils.q_common as qc
 
 from builtins import input
 from neurodecode import logger
 from neurodecode.utils.io import parse_path
+from neurodecode.utils.etc import list2string
 
 def export_topo(data, pos, pngfile, xlabel='', vmin=None, vmax=None, chan_vis=None, res=64, contours=0):
     mne.viz.plot_topomap(data, pos, names=chan_vis, show_names=True, res=res, contours=contours, show=False)
@@ -85,19 +85,19 @@ def feature_importances_topo(featfile, topo_layout_file=None, channels=None, cha
 
     hlen = 18 + len(channels) * 7
     result = '>> Feature importance distribution\n'
-    result += 'bands   ' + qc.list2string(channels, '%6s') + ' | ' + 'per band\n'
+    result += 'bands   ' + list2string(channels, '%6s') + ' | ' + 'per band\n'
     result += '-' * hlen + '\n'
-    result += 'delta   ' + qc.list2string(data_delta, '%6.2f') + ' | %6.2f\n' % np.sum(data_delta)
-    result += 'theta   ' + qc.list2string(data_theta, '%6.2f') + ' | %6.2f\n' % np.sum(data_theta)
-    result += 'mu      ' + qc.list2string(data_mu, '%6.2f') + ' | %6.2f\n' % np.sum(data_mu)
+    result += 'delta   ' + list2string(data_delta, '%6.2f') + ' | %6.2f\n' % np.sum(data_delta)
+    result += 'theta   ' + list2string(data_theta, '%6.2f') + ' | %6.2f\n' % np.sum(data_theta)
+    result += 'mu      ' + list2string(data_mu, '%6.2f') + ' | %6.2f\n' % np.sum(data_mu)
     #result += 'beta    ' + qc.list2string(data_beta, '%6.2f') + ' | %6.2f\n' % np.sum(data_beta)
-    result += 'beta1   ' + qc.list2string(data_beta1, '%6.2f') + ' | %6.2f\n' % np.sum(data_beta1)
-    result += 'beta2   ' + qc.list2string(data_beta2, '%6.2f') + ' | %6.2f\n' % np.sum(data_beta2)
-    result += 'beta3   ' + qc.list2string(data_beta3, '%6.2f') + ' | %6.2f\n' % np.sum(data_beta3)
-    result += 'lgamma  ' + qc.list2string(data_lgamma, '%6.2f') + ' | %6.2f\n' % np.sum(data_lgamma)
-    result += 'hgamma  ' + qc.list2string(data_hgamma, '%6.2f') + ' | %6.2f\n' % np.sum(data_hgamma)
+    result += 'beta1   ' + list2string(data_beta1, '%6.2f') + ' | %6.2f\n' % np.sum(data_beta1)
+    result += 'beta2   ' + list2string(data_beta2, '%6.2f') + ' | %6.2f\n' % np.sum(data_beta2)
+    result += 'beta3   ' + list2string(data_beta3, '%6.2f') + ' | %6.2f\n' % np.sum(data_beta3)
+    result += 'lgamma  ' + list2string(data_lgamma, '%6.2f') + ' | %6.2f\n' % np.sum(data_lgamma)
+    result += 'hgamma  ' + list2string(data_hgamma, '%6.2f') + ' | %6.2f\n' % np.sum(data_hgamma)
     result += '-' * hlen + '\n'
-    result += 'per_ch  ' + qc.list2string(data_per_ch, '%6.2f') + ' | 100.00\n'
+    result += 'per_ch  ' + list2string(data_per_ch, '%6.2f') + ' | 100.00\n'
     print(result)
     p = parse_path(featfile)
     open('%s/%s_summary.txt' % (p.dir, p.name), 'w').write(result)
