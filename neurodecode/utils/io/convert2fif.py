@@ -15,7 +15,7 @@ from pathlib import Path
 
 from neurodecode import logger
 from neurodecode.utils.preprocess import find_event_channel
-from neurodecode.utils.io import parse_path, make_dirs, load_obj, get_file_list
+import neurodecode.utils.io as io
 
 
 mne.set_log_level('ERROR')
@@ -34,7 +34,7 @@ def any2fif(filename, outdir=None, channel_file=None):
     channel_file : str
         The file containing the channels name in case of .gdf/.bdf files.
     """
-    p = parse_path(filename)
+    p = io.parse_path(filename)
 
     if p.ext in ['pcl', 'pkl', 'pickle']:
         
@@ -86,14 +86,14 @@ def pcl2fif(filename, outdir=None, external_event=None, precision='single'):
     precision : str
         Data matrix format. [single|double|int|short], 'single' improves backward compatability.
     """
-    p = parse_path(filename)
+    p = io.parse_path(filename)
     
     outdir = _create_saving_dir(outdir, p.dir)
     
     fiffile = outdir + p.name + '.fif'
         
     # Load from file
-    data = load_obj(filename)
+    data = io.load_obj(filename)
     
     # mne format
     raw = _format_pkl_to_mne_RawArray(data)
@@ -121,7 +121,7 @@ def edf2fif(filename, outdir=None):
     outdir : str
         If None, it will be the subdirectory of the fif file.
     """
-    p = parse_path(filename)
+    p = io.parse_path(filename)
     
     if outdir is None:
         outdir = p.dir
@@ -160,7 +160,7 @@ def bdf2fif(filename, outdir=None, channel_file=None):
     channel_file : str
         The .txt file containing one channel's name per line
     """
-    p = parse_path(filename)
+    p = io.parse_path(filename)
     
     if outdir is None:
         outdir = p.dir
@@ -200,7 +200,7 @@ def gdf2fif(filename, outdir=None, channel_file=None):
     channel_file : str
         The .txt file containing one channel's name per line
     """
-    p = parse_path(filename)
+    p = io.parse_path(filename)
     if outdir is None:
         outdir = p.dir
     elif outdir[-1] != '/':
@@ -245,7 +245,7 @@ def xdf2fif(filename, outdir=None):
     """
     from pyxdf import pyxdf
 
-    p = parse_path(filename)
+    p = io.parse_path(filename)
     
     if outdir is None:
         outdir = p.dir
@@ -299,7 +299,7 @@ def eeg2fif(filename, outdir=None):
     outdir : str
         The folder where the fif file will be saved.
     """
-    p = parse_path(filename)
+    p = io.parse_path(filename)
     
     if outdir is None:
         outdir = p.dir
@@ -607,7 +607,7 @@ def _create_saving_dir(outdir, fdir):
         outdir = fdir
     elif outdir[-1] != '/':
         outdir += '/'
-    make_dirs(outdir)
+    io.make_dirs(outdir)
         
     return outdir
 
@@ -653,8 +653,8 @@ if __name__ == '__main__':
             channel_file = input('Provide its path?\n>> ')
     
     count = 0
-    for f in get_file_list(input_dir, fullpath=True, recursive=True):
-        p = parse_path(f)
+    for f in io.get_file_list(input_dir, fullpath=True, recursive=True):
+        p = io.parse_path(f)
         outdir = p.dir + '/fif/'
         
         if p.ext in ['pcl', 'pkl', 'pickle', 'bdf', 'edf', 'gdf', 'eeg', 'xdf']:

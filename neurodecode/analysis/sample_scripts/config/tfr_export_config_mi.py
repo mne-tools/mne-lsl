@@ -1,9 +1,8 @@
 import neurodecode
 import numpy as np
-import neurodecode.utils.q_common as qc
-from neurodecode.triggers.trigger_def import trigger_def
+from neurodecode.triggers import TriggerDef
 
-tdef = trigger_def('triggerdef_16.ini')
+tdef = TriggerDef('triggerdef_16.ini')
 
 DATA_DIRS = [r'D:\data\MI\rx1\train']
 CHANNEL_PICKS = [5, 6, 7, 11]

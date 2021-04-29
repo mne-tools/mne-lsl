@@ -1,8 +1,6 @@
 from __future__ import print_function, division
 
 """
-neurodecode utility functions
-
 Note:
 When exporting to Panda Dataframes format, raw.as_data_frame() silently
 scales data to the Volts unit by default, which is the convention in MNE.
@@ -17,7 +15,8 @@ import os
 import mne
 import numpy as np
 from neurodecode import logger
-from neurodecode.utils.io import parse_path
+# from neurodecode.utils.io import parse_path
+import neurodecode.utils.io as io
 
 mne.set_log_level('ERROR')
 
@@ -367,5 +366,5 @@ def _check_fif_path(rawfile):
         logger.error('%s is not a file' % rawfile)
         raise IOError
 
-    extension = parse_path(rawfile).ext
+    extension = io.parse_path(rawfile).ext
     assert extension in ['fif', 'fiff'], 'only fif format is supported'
