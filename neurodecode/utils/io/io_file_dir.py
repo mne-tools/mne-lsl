@@ -218,32 +218,6 @@ def parse_path(file_path):
     return path_info(file_path)
 
 #----------------------------------------------------------------------
-def parse_path_list(filepath):
-    """
-    Parse the file path with dir, name and extension
-    
-    Parameters
-    ----------
-    filepath : str
-        The file's absolute path
-    
-    Returns
-    -------
-    tuple : A tuple containing the base dir, file(or dir) name and its extension (if file)
-    """
-
-    path_abs = os.path.realpath(filepath).replace('\\', '/')
-    s = path_abs.split('/')
-    f = s[-1].split('.')
-    basedir = '/'.join(s[:-1]) + '/'
-    if len(f) == 1:
-        name, ext = f[-1], ''
-    else:
-        name, ext = '.'.join(f[:-1]), f[-1]
-
-    return basedir, name, ext
-
-#----------------------------------------------------------------------
 def forward_slashify(txt):
     """
     Replace all the backslash to slash for python compatibility

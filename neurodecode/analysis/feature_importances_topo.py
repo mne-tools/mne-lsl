@@ -11,9 +11,10 @@ import mne
 import numpy as np
 import matplotlib.pyplot as plt
 
+import neurodecode.utils.io as io
+
 from builtins import input
 from neurodecode import logger
-from neurodecode.utils.io import parse_path
 from neurodecode.utils.etc import list2string
 
 def export_topo(data, pos, pngfile, xlabel='', vmin=None, vmax=None, chan_vis=None, res=64, contours=0):
@@ -99,7 +100,7 @@ def feature_importances_topo(featfile, topo_layout_file=None, channels=None, cha
     result += '-' * hlen + '\n'
     result += 'per_ch  ' + list2string(data_per_ch, '%6.2f') + ' | 100.00\n'
     print(result)
-    p = parse_path(featfile)
+    p = io.parse_path(featfile)
     open('%s/%s_summary.txt' % (p.dir, p.name), 'w').write(result)
 
     # export topo maps
