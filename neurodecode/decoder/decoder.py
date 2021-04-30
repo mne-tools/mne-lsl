@@ -40,48 +40,12 @@ from neurodecode.triggers import trigger_def
 from neurodecode.utils.lsl import search_lsl
 from neurodecode.utils.etc import get_index_max
 from neurodecode.utils.preprocess import preprocess
-from neurodecode.utils.io import load_obj, save_obj
-from neurodecode.stream_receiver.stream_receiver import StreamReceiver
+from neurodecode.stream_receiver import StreamReceiver
 
 mne.set_log_level('ERROR')
 os.environ['OMP_NUM_THREADS'] = '1' # actually improves performance for multitaper
 
-
-def get_decoder_info(classifier):
-    """
-    Get the classifier information from a .pkl file.
-
-    Parameters
-    ----------
-    classifier : str
-        The (absolute) path to the classifier file (.pkl)
-
-    Returns
-    -------
-    dict : Classifier info
-    """
-
-    model = load_obj(classifier)
-    if model is None:
-        logger.error('>> Error loading %s' % model)
-        raise ValueError
-
-    cls = model['cls']
-    psde = model['psde']
-    labels = list(cls.classes_)
-    w_seconds = model['w_seconds']
-    w_frames = model['w_frames']
-    wstep = model['wstep']
-    sfreq = model['sfreq']
-    psd_temp = psde.transform(np.zeros((1, len(model['picks']), w_frames)))
-    psd_shape = psd_temp.shape
-    psd_size = psd_temp.size
-
-    info = dict(labels=labels, cls=cls, psde=psde, w_seconds=w_seconds, w_frames=w_frames,\
-                wstep=wstep, sfreq=sfreq, psd_shape=psd_shape, psd_size=psd_size)
-    return info
-
-
+#----------------------------------------------------------------------
 class BCIDecoder(object):
     """
     Decoder class
@@ -108,7 +72,7 @@ class BCIDecoder(object):
         self.amp_name = amp_name
 
         if self.fake == False:
-            model = load_obj(self.classifier)
+            model = io.load_obj(self.classifier)
             if model is None:
                 logger.error('Classifier model is None.')
                 raise ValueError
@@ -202,10 +166,16 @@ class BCIDecoder(object):
     
     #----------------------------------------------------------------------
     def start(self):
+        """
+        To fit the BCIDecoderDaemon class
+        """
         pass
 
     #----------------------------------------------------------------------
     def stop(self):
+        """
+        To fit the BCIDecoderDaemon class
+        """
         pass
 
     #----------------------------------------------------------------------
@@ -215,7 +185,8 @@ class BCIDecoder(object):
 
         Parameters
         -----------
-        timestamp: If True, returns LSL timestamp of the leading edge of the window used for decoding.
+        timestamp : bool
+            If True, returns LSL timestamp of the leading edge of the window used for decoding.
 
         Returns
         -------
@@ -246,9 +217,6 @@ class BCIDecoder(object):
 
             # select the same channels used for training
             w = w[self.picks]
-
-            # debug: show max - min
-            # c=1; print( '### %d: %.1f - %.1f = %.1f'% ( self.picks[c], max(w[c]), min(w[c]), max(w[c])-min(w[c]) ) )
 
             # psd = channels x freqs
             psd = self.psde.transform(w.reshape((1, w.shape[0], w.shape[1])))
@@ -285,9 +253,14 @@ class BCIDecoder(object):
     #----------------------------------------------------------------------
     def get_prob_unread(self, timestamp=False):
         '''
-        Call get_prob
+        Simply call get_prob
         
         Used to fit BCIDecoderDaemon class.
+        
+        Parameters
+        -----------
+        timestamp : bool
+            If True, returns LSL timestamp of the leading edge of the window used for decoding.
         
         Returns
         -------
@@ -324,6 +297,7 @@ class BCIDecoder(object):
         return self.sr.is_connected()
 
 
+#----------------------------------------------------------------------
 class BCIDecoderDaemon(object):
     """
     Decoder daemon class
@@ -333,7 +307,7 @@ class BCIDecoderDaemon(object):
     
     Example: If the decoder runs 32ms per cycle, we can set period=0.04, stride=0.01, num_strides=4 to achieve 100 Hz decoding.
     """
-
+    #----------------------------------------------------------------------
     def __init__(self, amp_name, classifier, buffer_size=1.0, fake=False, \
                  fake_dirs=None, parallel=None, alpha_new=None, wait_init=True):
         """
@@ -342,13 +316,13 @@ class BCIDecoderDaemon(object):
         amp_name : str
             Connect to a specific stream
         classifier: str
-            Path to the classifier file
+            The absolute path to the classifier file
         buffer_size : float
             The buffer window size in seconds
         fake : bool
             If True, create a mock decoder (fake probabilities biased to 1.0)
-        buffer_size : float
-            The buffer's size in seconds.
+        fake_dirs : list
+            
         parallel: dict(period, stride, num_strides)
             period : float
                 Decoding period length for a single decoder in seconds
@@ -380,7 +354,7 @@ class BCIDecoderDaemon(object):
         self.alpha_old = 1 - alpha_new
 
         if fake == False or fake is None:
-            self.model = load_obj(self.classifier)
+            self.model = io.load_obj(self.classifier)
             if self.model == None:
                 logger.error('Error loading %s' % self.model)
                 raise IOError
@@ -403,6 +377,7 @@ class BCIDecoderDaemon(object):
         self.reset()
         self.start()
 
+    #----------------------------------------------------------------------
     def reset(self):
         """
         Reset the classifier to its initial state.
@@ -451,6 +426,7 @@ class BCIDecoderDaemon(object):
                 [self.classifier, self.probs, self.probs_smooth, self.pread, self.t_problast,\
                  self.running[0], self.return_psd, psd_ctypes, self.psdlock, None])]
 
+    #----------------------------------------------------------------------
     def _daemon(self, classifier, probs, probs_smooth, pread, t_problast, running, return_psd, psd_ctypes, lock, interleave=None):
         """
         Runs Decoder class as a daemon.
@@ -542,6 +518,7 @@ class BCIDecoderDaemon(object):
                     time.sleep(t_sleep)
                 logger.debug('[DecodeWorker-%-6d] Woke up at %.3f' % (pid, time.time()))
 
+    #----------------------------------------------------------------------
     def start(self):
         """
         Start the daemon
@@ -558,6 +535,7 @@ class BCIDecoderDaemon(object):
                     time.sleep(0.001)
         logger.info(self.startmsg)
 
+    #----------------------------------------------------------------------
     def stop(self):
         """
         Stop the daemon
@@ -574,27 +552,42 @@ class BCIDecoderDaemon(object):
         self.reset()
         logger.info(self.stopmsg)
 
+    #----------------------------------------------------------------------
     def get_labels(self):
         """
+        Get the labels number in the same order as the likelihoods returned by get_prob() 
+        
         Returns
         -------
-        Class labels numbers in the same order as the likelihoods returned by get_prob()
+        list : The list of labels number
         """
         return self.labels
 
+    #----------------------------------------------------------------------
     def get_label_names(self):
         """
+        Get the labels names in the same order as get_labels()
+        
         Returns
         -------
-        Class label names in the same order as get_labels()
+        list : The list of labels name
         """
         return self.label_names
 
+    #----------------------------------------------------------------------
     def get_prob(self, timestamp=False):
         """
+        Get the latest computed classes probability
+        
+        Parameters
+        ----------
+        timestamp : bool
+            If True, provide the timestamp of the returned probabilities
+        
         Returns
         -------
-        The last computed probability.
+        list : The classes probability.
+        float : The timestamp only if asked for 
         """
         self.pread.value = 1
         if timestamp:
@@ -602,12 +595,20 @@ class BCIDecoderDaemon(object):
         else:
             return list(self.probs[:])
 
+    #----------------------------------------------------------------------
     def get_prob_unread(self, timestamp=False):
         """
+        If not previously read, get the latest computed classes probability.
+        
+        Parameters
+        ----------
+        timestamp : bool
+            If True, provide the timestamp of the returned probabilities
+        
         Returns
         -------
-        Probability if it's not read previously.
-        None otherwise.
+        list : The classes probability.
+        float : The timestamp only if asked for
         """
         if self.pread.value == 0:
             return self.get_prob(timestamp)
@@ -616,11 +617,20 @@ class BCIDecoderDaemon(object):
         else:
             return None
 
+    #----------------------------------------------------------------------
     def get_prob_smooth(self, timestamp=False):
         """
+        Get the smoothed probabilities
+        
+        Parameters
+        ----------
+        timestamp : bool
+            If True, provide the timestamp of the returned probabilities
+            
         Returns
         -------
-        The last computed probability.
+        list : The classes probability.
+        float : The timestamp only if asked for
         """
         self.pread.value = 1
         if timestamp:
@@ -628,8 +638,16 @@ class BCIDecoderDaemon(object):
         else:
             return list(self.probs_smooth[:])
 
+    #----------------------------------------------------------------------
     def get_prob_smooth_unread(self, timestamp=False):
         """
+        If not previously read, get the latest computed smoothed classes probability.
+        
+        Parameters
+        ----------
+        timestamp : bool
+            If True, provide the timestamp of the returned probabilities
+        
         Returns
         -------
         Probability if it's not read previously.
@@ -641,9 +659,12 @@ class BCIDecoderDaemon(object):
             return None, None
         else:
             return None
-
+    
+    #----------------------------------------------------------------------
     def get_psd(self):
         """
+        Return the latest computed PSD
+        
         Returns
         -------
         The latest computed PSD
@@ -653,8 +674,11 @@ class BCIDecoderDaemon(object):
             time.sleep(0.001)
         return self.psd
 
+    #----------------------------------------------------------------------
     def is_running(self):
         """
+        Provide the number of daemon processes running
+        
         Returns
         -------
         The number of daemons running
@@ -662,10 +686,57 @@ class BCIDecoderDaemon(object):
         return sum([v.value for v in self.running])
 
 
+#----------------------------------------------------------------------
+def get_decoder_info(classifier):
+    """
+    Get the classifier information from a .pkl file.
 
-def log_decoding_helper(state, event_queue, amp_name=None, autostop=False):
+    Parameters
+    ----------
+    classifier : str
+        The (absolute) path to the classifier file (.pkl)
+
+    Returns
+    -------
+    dict : Classifier info
+    """
+
+    model = io.load_obj(classifier)
+    if model is None:
+        logger.error('>> Error loading %s' % model)
+        raise ValueError
+
+    cls = model['cls']
+    psde = model['psde']
+    labels = list(cls.classes_)
+    w_seconds = model['w_seconds']
+    w_frames = model['w_frames']
+    wstep = model['wstep']
+    sfreq = model['sfreq']
+    psd_temp = psde.transform(np.zeros((1, len(model['picks']), w_frames)))
+    psd_shape = psd_temp.shape
+    psd_size = psd_temp.size
+
+    info = dict(labels=labels, cls=cls, psde=psde, w_seconds=w_seconds, w_frames=w_frames,\
+                wstep=wstep, sfreq=sfreq, psd_shape=psd_shape, psd_size=psd_size)
+    return info
+
+
+#----------------------------------------------------------------------
+def _log_decoding_helper(state, event_queue, amp_name=None, autostop=False):
     """
     Helper function to run StreamReceiver object in background
+    
+    Parameters
+    ----------
+    state : mp.Value
+        The multiprocessing sharing variable
+    event_queue : mp.Queue
+        The queue used to share new events
+    amp_name : str
+        The stream name to connect to
+    autostop : bool
+        If True, automatically finish when no more data is received.
     """
     logger.info('Event acquisition subprocess started.')
 
@@ -697,19 +768,27 @@ def log_decoding_helper(state, event_queue, amp_name=None, autostop=False):
     assert len(event_times) == len(event_values)
     event_queue.put((event_times, event_values))
 
+#----------------------------------------------------------------------
 def log_decoding(decoder, logfile, amp_name=None, pklfile=True, matfile=False, autostop=False, prob_smooth=False):
     """
     Decode online and write results with event timestamps
 
-    input
-    -----
-    decoder: Decoder or DecoderDaemon class object.
-    logfile: File name to contain the result in Python pickle format.
-    amp_name: LSL server name (if known).
-    pklfile: Export results to Python pickle format.
-    matfile: Export results to Matlab .mat file if True.
-    autostop: Automatically finish when no more data is received.
-    prob_smooth: Use smoothed probability values according to decoder's smoothing parameter.
+    Parameters
+    ----------
+    decoder : BCIDecoder or BCIDecoderDaemon class
+        The decoder to use 
+    logfile : str
+        The file path to contain the result in Python pickle format
+    amp_name : str
+        The stream name to connect to
+    pklfile : bool
+    If True, export the results to Python pickle format
+    matfile : bool
+    If True, export the results to .mat file
+    autostop : bool
+        If True, automatically finish when no more data is received.
+    prob_smooth : bool
+        If True, use smoothed probability values according to decoder's smoothing parameter.
     """
 
     import cv2
@@ -718,7 +797,7 @@ def log_decoding(decoder, logfile, amp_name=None, pklfile=True, matfile=False, a
     # run event acquisition process in the background
     state = mp.Value('i', 1)
     event_queue = mp.Queue()
-    proc = mp.Process(target=log_decoding_helper, args=[state, event_queue, amp_name, autostop])
+    proc = mp.Process(target=_log_decoding_helper, args=[state, event_queue, amp_name, autostop])
     proc.start()
     logger.info_green('Spawned event acquisition process.')
 
@@ -790,7 +869,7 @@ def log_decoding(decoder, logfile, amp_name=None, pklfile=True, matfile=False, a
     event_values = np.array(event_values)
     data = dict(probs=probs, prob_times=prob_times, event_times=event_times, event_values=event_values, labels=labels)
     if pklfile:
-        save_obj(logfile, data)
+        io.save_obj(logfile, data)
         logger.info('Saved to %s' % logfile)
     if matfile:
         pp = io.parse_path(logfile)
@@ -798,9 +877,17 @@ def log_decoding(decoder, logfile, amp_name=None, pklfile=True, matfile=False, a
         scipy.io.savemat(matout, data)
         logger.info('Saved to %s' % matout)
 
+#----------------------------------------------------------------------
 def check_speed(decoder, max_count=float('inf')):
     """
-    Test decoding speed
+    Test decoding speed accross several classifications.
+    
+    Parameters
+    ----------
+    decoder : BCIDecoder or BCIDecoderDaemon class
+        The decoder to assess its performance
+    max_count : int
+        The number of classification for averaging
     """
     tm = Timer()
     count = 0
@@ -819,10 +906,14 @@ def check_speed(decoder, max_count=float('inf')):
             tm.reset()
     print('mean = %.1f ms' % np.mean(mslist))
 
-
+#----------------------------------------------------------------------
 def sample_decoding(decoder):
     """
     Decoding example
+    
+    Parameters
+    ----------
+    decoder : The decoder to use
     """
     # load trigger definitions for labeling
     labels = decoder.get_label_names()
@@ -847,7 +938,7 @@ def sample_decoding(decoder):
         print(txt)
         tm_cls.reset()
 
-# sample code
+#----------------------------------------------------------------------
 if __name__ == '__main__':
     
     model_file = None
@@ -878,11 +969,10 @@ if __name__ == '__main__':
     # run on foreground
     decoder = BCIDecoder(amp_name, model_file, buffer_size=1.0)
     
-    # run a fake classifier on background
-    #decoder= BCIDecoderDaemon(fake=True, fake_dirs=['L','R'])
-
+    # Assess classification speed
     check_speed(decoder, 5000)
 
+    # Decoding example
     #sample_decoding(decoder)
 
     decoder.stop()
