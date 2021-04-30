@@ -11,18 +11,18 @@ Kyuhwa Lee
 Swiss Federal Institute of Technology Lausanne (EPFL)
 
 """
-
-import sys
 import math
 import numpy as np
-from neurodecode import logger
 
 class rLDA(object):
+    
+    #----------------------------------------------------------------------
     def __init__(self, reg_cov=None):
         if reg_cov > 1:
             raise RuntimeError('reg_cov > 1')
         self.lambdaStar = reg_cov
-
+        
+    #----------------------------------------------------------------------
     def fit(self, X, Y):
         """
         Train rLDA
@@ -71,6 +71,7 @@ class rLDA(object):
 
         return self.w, self.b
 
+    #----------------------------------------------------------------------
     def predict(self, X, proba=False):
         """
         Returns the predicted class labels optionally with likelihoods
@@ -94,17 +95,20 @@ class rLDA(object):
         else:
             return predicted
 
+    #----------------------------------------------------------------------
     def predict_proba(self, X):
         """
         Returns the predicted class labels and likelihoods
         """
         return self.predict(X, proba=True)
 
+    #----------------------------------------------------------------------
     def get_labels(self):
         """
         Returns labels in the same order as you get when you call predict()
         """
         return self.labels
 
+    #----------------------------------------------------------------------
     def score(self, X, true_labels):
         raise RuntimeError('SORRY: FUNCTION IS NOT IMPLEMENTED YET.')
