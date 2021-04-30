@@ -32,7 +32,7 @@ from configparser import RawConfigParser
 from neurodecode import logger
 from neurodecode.stream_recorder import stream_recorder
 from neurodecode.gui.streams import redirect_stdout_to_queue
-from neurodecode.stream_receiver.stream_receiver import StreamReceiver
+from neurodecode.stream_receiver import StreamReceiver
 from neurodecode.stream_viewer.ui_mainwindow_Viewer import Ui_MainWindow
 
 
