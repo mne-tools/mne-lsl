@@ -324,12 +324,9 @@ class BCIDecoderDaemon(object):
         fake_dirs : list
             
         parallel: dict(period, stride, num_strides)
-            period : float
-                Decoding period length for a single decoder in seconds
-            stride : float
-                Time step between decoders in seconds.
-            num_strides : int
-                Number of decoders to run in parallel
+            period (float): Decoding period length for a single decoder in seconds
+            stride (float): Time step between decoders in seconds.
+            num_strides (int): Number of decoders to run in parallel
         alpha_new : float
             The exponential smoothing factor, [0, 1].
             p_new = p_new * alpha_new + p_old * (1 - alpha_new)

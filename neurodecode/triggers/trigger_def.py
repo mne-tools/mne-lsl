@@ -20,7 +20,7 @@ class TriggerDef(object):
     #----------------------------------------------------------------------
     def __init__(self, ini_file):
         self._by_name = {}
-        self.by_value = {}
+        self._by_value = {}
         
         self._check_ini_path(ini_file)
         self._extract_from_ini(ini_file)

@@ -34,7 +34,8 @@ from neurodecode.gui.connectClass import PathFolderFinder, PathFileFinder, Conne
      Connect_Modifiable_Dict,  Connect_Directions_Online, Connect_Bias, Connect_NewSubject
 
 from neurodecode import logger, init_logger
-import neurodecode.stream_viewer.stream_viewer as viewer
+from neurodecode.stream_viewer import StreamViewer
+from neurodecode.stream_recorder import StreamRecorder
 import neurodecode.stream_recorder.stream_recorder as recorder
 
 class cfg_class:
@@ -580,12 +581,11 @@ class MainWindow(QMainWindow):
                         
         # Find the selected amp and save it in the cfg
         if self.modality != 'trainer':
-            amp = self.ui.comboBox_LSL.currentData()
+            amp = self.ui.comboBox_LSL.currentText()
             if not amp:   
                 self.signal_error[str].emit('No LSL amplifier specified.')
                 return
-            setattr(self.cfg_subject, 'AMP_NAME', amp['name'])
-            setattr(self.cfg_subject, 'AMP_SERIAL', amp['serial'])
+            setattr(self.cfg_subject, 'AMP_NAME', amp)
            
         # Prepare the pickable config class 
         ccfg = cfg_class(self.cfg_subject)         
@@ -598,7 +598,6 @@ class MainWindow(QMainWindow):
             
             # Recording shared variable + recording terminal            
             if self.ui.checkBox_Record.isChecked():                
-                
                 if not self.record_terminal:                
                     self.record_terminal = GuiTerminal(self.recordLogger, 'INFO', self.width())
                     self.hide_recordTerminal[bool].connect(self.record_terminal.setHidden)
@@ -606,11 +605,16 @@ class MainWindow(QMainWindow):
                     self.record_terminal.textEdit.clear()
                     self.record_terminal.textEdit.insertPlainText('Waiting for the recording to start...\n')
                     self.hide_recordTerminal[bool].emit(False)
+                
+                recorder = StreamRecorder(self.record_dir, logger=self.recordLogger, state=self.record_state, queue=self.record_terminal.my_receiver.queue)
+                
                 # Protocol shared variable
                 with self.protocol_state.get_lock():
                     self.protocol_state.value = 2  #  0=stop, 1=start, 2=wait
-                processesToLaunch = [('recording', recorder.run_gui, [self.record_state, self.protocol_state, self.record_dir, self.recordLogger, amp['name'], amp['serial'], False, self.record_terminal.my_receiver.queue]), \
+                processesToLaunch = [('recording', recorder._start_gui, [self.protocol_state, amp, False]) , \
                                      ('protocol', self.m.run, [ccfg, self.protocol_state, self.my_receiver.queue])]
+                #processesToLaunch = [('recording', recorder._start_gui, [self.record_state, self.protocol_state, self.record_dir, self.recordLogger, amp['name'], amp['serial'], False, self.record_terminal.my_receiver.queue]), \
+                                     #('protocol', self.m.run, [ccfg, self.protocol_state, self.my_receiver.queue])]                
             else:    
                 # Protocol shared variable
                 with self.protocol_state.get_lock():
@@ -693,8 +697,7 @@ class MainWindow(QMainWindow):
         self.ui.comboBox_LSL.clear()
         
         for amp in amp_list:
-            amp_formated = '{} ({})'.format(amp[1], amp[2])
-            self.ui.comboBox_LSL.addItem(amp_formated, {'name':amp[1], 'serial':amp[2]})
+            self.ui.comboBox_LSL.addItem(amp[1])
         self.ui.pushButton_LSL.setText('Search')
         self.ui.pushButton_Viewer.setEnabled(True)
     
@@ -738,7 +741,7 @@ class MainWindow(QMainWindow):
                 self.viewer_state.value = 1
             
             amp = self.ui.comboBox_LSL.currentData()
-            viewerprocess = mp.Process(target=instantiate_scope, args=[amp, self.viewer_state, logger, self.my_receiver.queue])
+            viewerprocess = mp.Process(target=instantiate_viewer, args=[amp, self.viewer_state, logger, self.my_receiver.queue])
             viewerprocess.start()
             
             self.ui.pushButton_Viewer.setText('Stop')
@@ -831,11 +834,10 @@ class MainWindow(QMainWindow):
             pass
 
 #----------------------------------------------------------------------
-def instantiate_scope(amp, state, logger=logger, queue=None):
-    logger.info('Connecting to a %s (Serial %s).' % (amp['name'], amp['serial']))
-    app = QApplication(sys.argv)
-    ex = viewer.Scope(amp['name'], amp['serial'], state, queue)
-    sys.exit(app.exec_())
+def instantiate_viewer(amp, state, logger=logger, queue=None):
+    
+    sv = StreamViewer(amp)
+    sv.start()
     
 #----------------------------------------------------------------------    
 def main():
