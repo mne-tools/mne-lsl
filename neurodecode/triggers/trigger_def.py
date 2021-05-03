@@ -58,7 +58,7 @@ class TriggerDef(object):
         for key, value in items:
             setattr(self, key, int(value))
             self._by_name[key] = value
-            self.by_value[value] = key
+            self._by_value[value] = key
 
     #----------------------------------------------------------------------
     def check_data(self):
@@ -89,7 +89,7 @@ class TriggerDef(object):
         """
         A dictionnary with integers keys and string values
         """
-        return self._by_name
+        return self._by_value
     
     #----------------------------------------------------------------------
     @by_value.setter
