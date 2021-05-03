@@ -188,8 +188,8 @@ class MainWindow(QMainWindow):
 
                 # Iterates over the dict
                 for key, values in p[1].items():
-                    chosen_value = self.extract_value_from_module(key, all_chosen_values)
-                    
+
+                    chosen_value = self.extract_value_from_module(key, all_chosen_values)                    
             
                     # For the feedback directions [offline and online].
                     if 'DIRECTIONS' in key:
@@ -346,8 +346,6 @@ class MainWindow(QMainWindow):
                     self.ui.scrollAreaWidgetContents_Basics.setLayout(layout)
                 elif params[par][0] == 'Advanced':
                     self.ui.scrollAreaWidgetContents_Adv.setLayout(layout)
-
-        
         
         # Connect inter-widgets signals and slots
         if self.modality == 'trainer':
@@ -611,10 +609,9 @@ class MainWindow(QMainWindow):
                 # Protocol shared variable
                 with self.protocol_state.get_lock():
                     self.protocol_state.value = 2  #  0=stop, 1=start, 2=wait
-                processesToLaunch = [('recording', recorder._start_gui, [self.protocol_state, amp, False]) , \
+                
+                processesToLaunch = [('recording', recorder._start_gui, [self.protocol_state, amp, self.record_dir, False, self.recordLogger, self.record_terminal.my_receiver.queue, self.record_state]) , \
                                      ('protocol', self.m.run, [ccfg, self.protocol_state, self.my_receiver.queue])]
-                #processesToLaunch = [('recording', recorder._start_gui, [self.record_state, self.protocol_state, self.record_dir, self.recordLogger, amp['name'], amp['serial'], False, self.record_terminal.my_receiver.queue]), \
-                                     #('protocol', self.m.run, [ccfg, self.protocol_state, self.my_receiver.queue])]                
             else:    
                 # Protocol shared variable
                 with self.protocol_state.get_lock():
