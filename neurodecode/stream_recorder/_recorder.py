@@ -14,11 +14,10 @@ class _Recorder:
     Base class for recording signals coming from an lsl stream.
     """
     #----------------------------------------------------------------------
-    def __init__(self, record_dir, bids_info=None, logger=logger, state=mp.Value('i', 0)):
+    def __init__(self, record_dir, logger=logger, state=mp.Value('i', 0)):
         self._MAX_BUFSIZE = 7200 
         
         self.record_dir = record_dir
-        self.bids_info = bids_info
         
         self.sr = None
         self.state = state

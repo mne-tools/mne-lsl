@@ -3,7 +3,7 @@ import mne
 import numpy as np
 
 from neurodecode import logger
-from neurodecode.utils.preprocess import find_event_channel
+import neurodecode.utils.preprocess as preprocess
 
 import neurodecode.utils.io as io 
 
@@ -43,7 +43,7 @@ def load_fif_raw(rawfile, events_ext=None):
     if events_ext is not None:
         events = mne.read_events(events_ext)
     else:
-        tch = find_event_channel(raw)
+        tch = preprocess.find_event_channel(raw)
         if tch is not None:
             events = mne.find_events(raw, stim_channel=raw.ch_names[tch], shortest_event=1, uint_cast=True, consecutive='increasing')
             # MNE's annoying hidden cockroach: first_samp
@@ -110,7 +110,7 @@ def load_fif_multi(src):
 
     # create a concatenated raw object and update channel names
     raw = rawlist[0]
-    trigch = find_event_channel(raw)
+    trigch = preprocess.find_event_channel(raw)
     ch_types = ['eeg'] * len(raw.ch_names)
     
     if trigch is not None:
