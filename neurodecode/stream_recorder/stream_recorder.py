@@ -82,7 +82,7 @@ class StreamRecorder:
         """
         self._amp_name = amp_name
         
-        self._proc = mp.Process(target=self._record, args=[amp_name, self._record_dir, eeg_only, self._logger, self._state])
+        self._proc = mp.Process(target=self._record, args=[amp_name, self._record_dir, eeg_only, self._logger, self._queue, self._state])
         self._proc.start()
         
         while not self._state.value:
@@ -115,22 +115,26 @@ class StreamRecorder:
         self._logger.info('Recording finished.')
     
     #----------------------------------------------------------------------
-    def _record(self, amp_name, record_dir, eeg_only, logger, state):
+    def _record(self, amp_name, record_dir, eeg_only, logger, queue, state):
         """
         The function launched in a new process.
         """
-        redirect_stdout_to_queue(self._logger, self._queue, 'INFO')
+        redirect_stdout_to_queue(logger, queue, 'INFO')
         
         recorder = _Recorder(record_dir, logger, state)
         recorder.connect(amp_name, eeg_only)
         recorder.record()
     
     #----------------------------------------------------------------------
-    def _start_gui(self, protocolState, amp_name=None, eeg_only=False):
+    def _start_gui(self, protocolState, amp_name, record_dir, eeg_only, logger, queue, state):
         """
         Start the recording when launched from the GUI.
         """
-        self.start()
+        self._proc = mp.Process(target=self._record, args=[amp_name, record_dir, eeg_only, logger, queue, state])
+        self._proc.start()
+        
+        while not state.value:
+            pass           
         
         # Launching the protocol (shared variable)
         with protocolState.get_lock():

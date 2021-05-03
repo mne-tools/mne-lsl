@@ -3,7 +3,6 @@ import time
 import multiprocessing as mp
 from pathlib import Path
 
-from neurodecode import logger
 from neurodecode.utils.timer import Timer
 from neurodecode.utils.lsl import start_server
 from neurodecode.utils.io import save_obj, pcl2fif, make_dirs
@@ -14,7 +13,7 @@ class _Recorder:
     Base class for recording signals coming from an lsl stream.
     """
     #----------------------------------------------------------------------
-    def __init__(self, record_dir, logger=logger, state=mp.Value('i', 0)):
+    def __init__(self, record_dir, logger, state=mp.Value('i', 0)):
         self._MAX_BUFSIZE = 7200 
         
         self.record_dir = record_dir
@@ -57,7 +56,7 @@ class _Recorder:
         data_files, eve_file = self.create_filenames(record_dir)
         self.test_writability(record_dir, data_files)
         
-        logger.info('Record to files:')
+        self.logger.info('Record to files:')
         print(*data_files.values(), sep='\n')
         
         return data_files, eve_file
