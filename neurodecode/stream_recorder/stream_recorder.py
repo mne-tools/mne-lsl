@@ -84,6 +84,9 @@ class StreamRecorder:
         
         self._proc = mp.Process(target=self._record, args=[amp_name, self._record_dir, bids_info, eeg_only, self._logger, self._state])
         self._proc.start()
+        
+        while not self._state.value:
+            pass        
     
     #----------------------------------------------------------------------
     def wait(self, timeout):
@@ -127,9 +130,6 @@ class StreamRecorder:
         Start the recording when launched from the GUI.
         """
         self.start()
-       
-        while not self._state.value:
-            pass
         
         # Launching the protocol (shared variable)
         with protocolState.get_lock():
