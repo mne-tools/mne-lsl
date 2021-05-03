@@ -60,7 +60,7 @@ class StreamRecorder:
             raise RuntimeError("No recording directory provided.")
         
         self._logger = logger
-        redirect_stdout_to_queue(self._logger, queue, 'INFO')
+        self._queue = queue
         
         self._proc = None
         self._amp_name = None
@@ -69,7 +69,7 @@ class StreamRecorder:
         self._state = state
     
     #----------------------------------------------------------------------
-    def start(self, amp_name=None, eeg_only=False, bids_info=None):
+    def start(self, amp_name=None, eeg_only=False):
         """
         Start recording data from LSL network, in a new process.
         
@@ -82,7 +82,7 @@ class StreamRecorder:
         """
         self._amp_name = amp_name
         
-        self._proc = mp.Process(target=self._record, args=[amp_name, self._record_dir, bids_info, eeg_only, self._logger, self._state])
+        self._proc = mp.Process(target=self._record, args=[amp_name, self._record_dir, eeg_only, self._logger, self._state])
         self._proc.start()
         
         while not self._state.value:
@@ -115,17 +115,18 @@ class StreamRecorder:
         self._logger.info('Recording finished.')
     
     #----------------------------------------------------------------------
-    def _record(self, amp_name, record_dir, bids_info, eeg_only, logger, state):
+    def _record(self, amp_name, record_dir, eeg_only, logger, state):
         """
         The function launched in a new process.
         """
+        redirect_stdout_to_queue(self._logger, self._queue, 'INFO')
         
-        recorder = _Recorder(record_dir, bids_info, logger, state)
+        recorder = _Recorder(record_dir, logger, state)
         recorder.connect(amp_name, eeg_only)
         recorder.record()
     
     #----------------------------------------------------------------------
-    def _record_gui(self, protocolState):
+    def _start_gui(self, protocolState, amp_name=None, eeg_only=False):
         """
         Start the recording when launched from the GUI.
         """
@@ -136,7 +137,7 @@ class StreamRecorder:
             protocolState.value = 1
         
         # Continue recording until the shared variable changes to 0.
-        while self._state.value:
+        while protocolState.value:
             time.sleep(1)
         self.stop()
         

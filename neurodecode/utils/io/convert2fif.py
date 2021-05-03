@@ -14,8 +14,9 @@ from builtins import input
 from pathlib import Path
 
 from neurodecode import logger
-from neurodecode.utils.preprocess import find_event_channel
+
 import neurodecode.utils.io as io
+import neurodecode.utils.preprocess as preprocess
 
 
 mne.set_log_level('ERROR')
@@ -266,7 +267,7 @@ def xdf2fif(filename, outdir=None):
     sample_rate = int(data[0][0]['info']['nominal_srate'][0])
     
     # Find trig channel
-    trig_ch_guess = find_event_channel(None, labels)
+    trig_ch_guess = preprocess.find_event_channel(None, labels)
 
     if trig_ch_guess is None:
         logger.warning('No trigger channel found: {}'.format(raw.info['ch_names']))
@@ -358,7 +359,7 @@ def _event_timestamps_to_indices(raw_timestamps, eventfile, offset):
             if next_index >= len(raw_timestamps):
                 logger.warning('Event %d at time %.3f is out of time range (%.3f - %.3f).' % (event_value, event_ts, ts_min, ts_max))
             else:
-                events.append([next_index[0], 0, event_value])
+                events.append([next_index, 0, event_value])
     
     return events
 
@@ -416,7 +417,7 @@ def _format_pkl_to_mne_RawArray(data):
         ch_names = data['ch_names']
 
     # search for the trigger channel
-    trig_ch = find_event_channel(signals_raw, ch_names)
+    trig_ch = preprocess.find_event_channel(signals_raw, ch_names)
 
     # move trigger channel to index 0
     if trig_ch is None:
@@ -531,7 +532,7 @@ def _find_trig_ch(raw):
     --------
     int : the trigger channel index.
     """
-    trig_ch_guess = find_event_channel(raw)
+    trig_ch_guess = preprocess.find_event_channel(raw)
     
     if trig_ch_guess is None:
         logger.warning('No trigger channel found: {}'.format(raw.info['ch_names']))
@@ -604,8 +605,8 @@ def _create_saving_dir(outdir, fdir):
     
     """
     if outdir is None:
-        outdir = fdir
-    elif outdir[-1] != '/':
+        outdir = fdir + '/fif/'
+    if outdir[-1] != '/':
         outdir += '/'
     io.make_dirs(outdir)
         
