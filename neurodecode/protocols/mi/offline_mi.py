@@ -116,7 +116,7 @@ def run(cfg, state=mp.Value('i', 1), queue=None):
     if cfg.TRIGGER_DEVICE is None:
         logger.warning('No trigger device set. Press Ctrl+C to stop or Enter to continue.')
         #input()
-    trigger = Trigger(state, cfg.TRIGGER_DEVICE)
+    trigger = Trigger(lpttype=cfg.TRIGGER_DEVICE, state=state)
     if trigger.init(50) == False:
         logger.error('\n** Error connecting to USB2LPT device. Use a mock trigger instead?')
         input('Press Ctrl+C to stop or Enter to continue.')
