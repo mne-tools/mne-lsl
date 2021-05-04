@@ -3,11 +3,13 @@ from __future__ import print_function, division
 import time
 import pylsl
 import numpy as np
-from neurodecode.utils.io import load_fif_raw
-from neurodecode.triggers import TriggerDef
-from neurodecode import logger
+
 from builtins import input
-from multiprocessing import Process
+import multiprocessing as mp
+
+from neurodecode import logger
+from neurodecode.triggers import TriggerDef
+from neurodecode.utils.io import load_fif_raw
 
 class StreamPlayer:
     """
@@ -39,6 +41,7 @@ class StreamPlayer:
         
         self._logger = logger
         self._process = None
+        self._state = mp.Value('i', 0)
         
     #----------------------------------------------------------------------
     def start(self, repeat=np.float('inf'), high_resolution=False):
@@ -53,8 +56,11 @@ class StreamPlayer:
             If True, it uses perf_counter() instead of sleep() for higher time resolution.
             However, it uses much more cpu due to polling.
         """
-        self._process = Process(target=self._stream, args=(repeat, high_resolution))
+        self._process = mp.Process(target=self._stream, args=(repeat, high_resolution, self._logger, self._state))
         self._process.start()
+        
+        while self._state.value == 0:
+            time.sleep(0.1)
     
     #----------------------------------------------------------------------
     def wait(self, timeout=None):
@@ -78,13 +84,13 @@ class StreamPlayer:
             self._process.terminate()
         
     #----------------------------------------------------------------------
-    def _stream(self, repeat, high_resolution):
+    def _stream(self, repeat, high_resolution, logger, state):
         """
         The function called in the new process.
         
         Instance a Streamer and start streaming.
         """
-        s = Streamer(self.server_name, self.fif_file, self.chunk_size, self.trigger_file)
+        s = Streamer(self.server_name, self.fif_file, self.chunk_size, self.trigger_file, self._logger, state)
         s.stream(repeat, high_resolution) 
     
     #----------------------------------------------------------------------
@@ -162,13 +168,15 @@ class Streamer:
     trigger_file : str
         The absolute path to the file containing the table converting event numbers
         into event strings.
+    state : mp.Value
+        The mp sharing variable (used to wait that the streaming is launched)
     
     Notes
     -----
     Run neurodecode.set_log_level('DEBUG') to print out the relative time stamps since started.
     """
     #----------------------------------------------------------------------
-    def __init__(self, server_name, fif_file, chunk_size, trigger_file=None, logger=logger):
+    def __init__(self, server_name, fif_file, chunk_size, trigger_file=None, logger=logger, state=mp.Value('i', 0)):
         
         self._raw = None
         self._events = None
@@ -178,6 +186,7 @@ class Streamer:
         self._thread = None
         self._tdef = None
         self._logger = logger
+        self._state = state
         
         if trigger_file is not None:
             self._tdef = TriggerDef(trigger_file)
@@ -201,6 +210,10 @@ class Streamer:
             However, it uses much more cpu due to polling.
         """
         self._logger.info('Streaming started')
+        
+        # Change sharing variable to 1 to let other process know that it is now streaming
+        with self._state.get_lock():
+            self._state.value = 1
         
         idx_chunk = 0
         t_chunk = self.chunk_size / self.get_sample_rate()
