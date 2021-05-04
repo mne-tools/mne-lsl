@@ -247,7 +247,7 @@ class Connect_Directions_Online(QObject):
         """
         Update the event QComboBox with the new events from the new tdef file.
         """
-        self.tdef = trigger_def(trigger_file)
+        self.tdef = TriggerDef(trigger_file)
         
         if self.events:
             self.on_update_VBoxLayout()            

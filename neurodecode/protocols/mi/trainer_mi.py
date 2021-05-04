@@ -131,8 +131,6 @@ def check_cfg_optional(cfg, optional_vars, key_var):
     key_var = key to look at in optional_vars
     """
     for key , val in optional_vars[key_var].items():
-        if key == 'CV':
-            print('a')
         if not hasattr(cfg, key):
             setattr(cfg, key, val)
             logger.warning('Setting undefined parameter %s=%s' % (key, getattr(cfg, key)))
