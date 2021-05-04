@@ -146,11 +146,11 @@ def run(cfg, state=mp.Value('i', 1), queue=None):
     tdef = TriggerDef(cfg.TRIGGER_FILE)
     #if cfg.TRIGGER_DEVICE is None:
     #    input('\n** Warning: No trigger device set. Press Ctrl+C to stop or Enter to continue.')
-    trigger = Trigger(state, cfg.TRIGGER_DEVICE)
+    trigger = Trigger(cfg.TRIGGER_DEVICE, state)
     if trigger.init(50) == False:
         logger.error('Cannot connect to USB2LPT device. Use a mock trigger instead?')
         input('Press Ctrl+C to stop or Enter to continue.')
-        trigger = pyLptControl.MockTrigger()
+        trigger = Trigger('FAKE', state)
         trigger.init(50)
 
     # init classification

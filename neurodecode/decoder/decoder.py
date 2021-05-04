@@ -78,50 +78,52 @@ class BCIDecoder(object):
                 raise ValueError
             self.cls = model['cls']
             self.psde = model['psde']
-            self.labels = list(self.cls.classes_)
-            self.label_names = [model['classes'][k] for k in self.labels]
-            self.spatial = model['spatial']
-            self.spectral = model['spectral']
-            self.notch = model['notch']
-            self.w_seconds = model['w_seconds']
-            self.w_frames = model['w_frames']
-            self.wstep = model['wstep']
-            self.sfreq = model['sfreq']
+            self._labels = list(self.cls.classes_)
+            self._label_names = [model['classes'][k] for k in self.labels]
+            self._spatial = model['spatial']
+            self._spectral = model['spectral']
+            self._notch = model['notch']
+            self._w_seconds = model['w_seconds']
+            self._w_frames = model['w_frames']
+            self._wstep = model['wstep']
+            self._sfreq = model['sfreq']
             if 'decim' not in model:
                 model['decim'] = 1
-            self.decim = model['decim']
-            if not int(round(self.sfreq * self.w_seconds)) == self.w_frames:
-                logger.error('sfreq * w_sec %d != w_frames %d' % (int(round(self.sfreq * self.w_seconds)), self.w_frames))
+            self._decim = model['decim']
+            if not int(round(self._sfreq * self._w_seconds)) == self._w_frames:
+                logger.error('sfreq * w_sec %d != w_frames %d' % (int(round(self._sfreq * self._w_seconds)), self._w_frames))
                 raise RuntimeError
 
             if 'multiplier' in model:
-                self.multiplier = model['multiplier']
+                self._multiplier = model['multiplier']
             else:
-                self.multiplier = 1
+                self._multiplier = 1
 
             # Stream Receiver
-            self.sr = StreamReceiver(window_size=self.w_seconds, amp_name=self.amp_name)
-            if self.sfreq != self.sr.streams[self.amp_name].sample_rate:
-                logger.error('Amplifier sampling rate (%.3f) != model sampling rate (%.3f). Stop.' % (self.sr.streams[self.amp_name].sample_rate, self.sfreq))
+            self._sr = StreamReceiver(window_size=self._w_seconds, amp_name=self.amp_name)
+            if self._sfreq != self._sr.streams[self.amp_name].sample_rate:
+                logger.error('Amplifier sampling rate (%.3f) != model sampling rate (%.3f). Stop.' % (self._sr.streams[self.amp_name].sample_rate, self._sfreq))
                 raise RuntimeError
 
-            # Map channel indices based on channel names of the streaming server
-            self.spatial_ch = model['spatial_ch']
-            self.spectral_ch = model['spectral_ch']
-            self.notch_ch = model['notch_ch']
-            #self.ref_ch = model['ref_ch'] # not supported yet
-            self.ch_names = self.sr.streams[self.amp_name].ch_list
+            self._spatial_ch = model['spatial_ch']
+            self._spectral_ch = model['spectral_ch']
+            self._notch_ch = model['notch_ch']
+            self._ref_ch = model['ref_ch']
+            
+            self._ch_names = self._sr.streams[self.amp_name].ch_list
             mc = model['ch_names']
-            self.picks = [self.ch_names.index(mc[p]) for p in model['picks']]
-            if self.spatial_ch is not None:
-                self.spatial_ch = [self.ch_names.index(mc[p]) for p in model['spatial_ch']]
-            if self.spectral_ch is not None:
-                self.spectral_ch = [self.ch_names.index(mc[p]) for p in model['spectral_ch']]
-            if self.notch_ch is not None:
-                self.notch_ch = [self.ch_names.index(mc[p]) for p in model['notch_ch']]
+            self._picks = [self._ch_names.index(mc[p]) for p in model['picks']]
+            
+            # Map channel indices based on channel names of the streaming server
+            if self._spatial_ch is not None:
+                self._spatial_ch = [self._ch_names.index(mc[p]) for p in model['spatial_ch']]
+            if self._spectral_ch is not None:
+                self._spectral_ch = [self._ch_names.index(mc[p]) for p in model['spectral_ch']]
+            if self._notch_ch is not None:
+                self._notch_ch = [self._ch_names.index(mc[p]) for p in model['notch_ch']]
 
             # PSD buffer
-            #psd_temp = self.psde.transform(np.zeros((1, len(self.picks), self.w_frames // self.decim)))
+            #psd_temp = self.psde.transform(np.zeros((1, len(self._picks), self._w_frames // self._decim)))
             #self.psd_shape = psd_temp.shape
             #self.psd_size = psd_temp.size
             #self.psd_buffer = np.zeros((0, self.psd_shape[1], self.psd_shape[2]))
@@ -129,15 +131,12 @@ class BCIDecoder(object):
 
             self.ts_buffer = []
 
-            logger.info_green('Loaded classifier %s (sfreq=%.3f, decim=%d)' % (' vs '.join(self.label_names), self.sfreq, self.decim))
+            logger.info_green('Loaded classifier %s (sfreq=%.3f, decim=%d)' % (' vs '.join(self.label_names), self._sfreq, self._decim))
         else:
             # Fake left-right decoder
-            model = None
-            self.psd_shape = None
-            self.psd_size = None
             # TODO: parameterize directions using fake_dirs
-            self.labels = [11, 9]
-            self.label_names = ['LEFT_GO', 'RIGHT_GO']
+            self._labels = [11, 9]
+            self._label_names = ['LEFT_GO', 'RIGHT_GO']
         
     #----------------------------------------------------------------------
     @property
@@ -145,7 +144,7 @@ class BCIDecoder(object):
         """
         Class labels numbers in the same order as the likelihoods returned by get_prob()
         """
-        return self.labels
+        return self._labels
     
     #----------------------------------------------------------------------
     @labels.setter
@@ -158,7 +157,7 @@ class BCIDecoder(object):
         """
         Class labels names in the same order as get_prob().
         """
-        return self.label_names
+        return self._label_names
     #----------------------------------------------------------------------
     @label_names.setter
     def label_names(self):
@@ -205,18 +204,19 @@ class BCIDecoder(object):
             time.sleep(0.0625)  # simulated delay
             t_prob = pylsl.local_clock()
         else:
-            self.sr.acquire()
-            w, ts = self.sr.get_window()  # w = times x channels
+            self._sr.acquire()
+            w, ts = self._sr.get_window()  # w = times x channels
             t_prob = ts[-1]
             w = w.T  # -> channels x times
 
             # apply filters. Important: maintain the original channel order at this point.
-            w = preprocess(w, sfreq=self.sfreq, spatial=self.spatial, spatial_ch=self.spatial_ch,
-                          spectral=self.spectral, spectral_ch=self.spectral_ch, notch=self.notch,
-                          notch_ch=self.notch_ch, multiplier=self.multiplier, decim=self.decim)
+            w = preprocess(w, sfreq=self._sfreq, spatial=self._spatial, spatial_ch=self._spatial_ch,
+                          spectral=self._spectral, spectral_ch=self._spectral_ch, notch=self._notch,
+                          notch_ch=self._notch_ch, multiplier=self._multiplier, ch_names=self._ch_names, 
+                          rereference=self._ref_ch, decim=self._decim)
 
             # select the same channels used for training
-            w = w[self.picks]
+            w = w[self._picks]
 
             # psd = channels x freqs
             psd = self.psde.transform(w.reshape((1, w.shape[0], w.shape[1])))
@@ -294,7 +294,7 @@ class BCIDecoder(object):
         bool
             True if the StreamReceiver is connected to a stream.
         """
-        return self.sr.is_connected()
+        return self._sr.is_connected()
 
 
 #----------------------------------------------------------------------
