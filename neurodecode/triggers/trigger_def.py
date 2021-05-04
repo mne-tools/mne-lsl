@@ -56,6 +56,7 @@ class TriggerDef(object):
         Fill the class attributes with the pairs string-integer
         """
         for key, value in items:
+            value = int(value)
             setattr(self, key, int(value))
             self._by_name[key] = value
             self._by_value[value] = key

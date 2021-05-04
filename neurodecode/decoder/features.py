@@ -129,7 +129,7 @@ def compute_features(cfg):
     triggers = {cfg.tdef.by_value[c]:c for c in trigger_def_int}
 
     #-----------------------------------------------------------
-    # Rescale the data
+    # Downsampling
     if 'decim' not in cfg.FEATURES['PSD']:
         cfg.FEATURES['PSD']['decim'] = 1
         logger.warning('PSD["decim"] undefined. Set to 1.')
@@ -201,7 +201,7 @@ def compute_features(cfg):
             notch_ch=cfg.NOTCH_CHANNELS,
             multiplier=cfg.MULTIPLIER,
             ch_names=epochs_train.ch_names,
-            rereference=None,
+            rereference=cfg.NOTCH_FILTER[cfg.NOTCH_FILTER['selected']],
             decim=cfg.FEATURES['PSD']['decim'],
             n_jobs=cfg.N_JOBS
         )
@@ -373,10 +373,10 @@ def _get_psd(epochs, psde, wlen, wstep, picks=None, flatten=True, preprocess=Non
         title = 'Epoch %d / %d, Frames %d-%d' % (ep+1, len(labels), w_starts[0], w_starts[-1] + wlen - 1)
         if n_jobs == 1:
             # no multiprocessing
-            results.append(_slice_win(epochs_data[ep], w_starts, wlen, psde, picks, title, True, preprocess))
+            results.append(_slice_win(epochs_data[ep], w_starts, wlen, psde, picks, title, preprocess, False))
         else:
             # parallel psd computation
-            results.append(pool.apply_async(_slice_win, [epochs_data[ep], w_starts, wlen, psde, picks, title, True, preprocess]))
+            results.append(pool.apply_async(_slice_win, [epochs_data[ep], w_starts, wlen, psde, picks, title, preprocess, False]))
 
     for ep in range(len(results)):
         if n_jobs == 1:
