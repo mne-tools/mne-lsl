@@ -106,7 +106,7 @@ def rereference(raw, ref_new, ref_old=None):
 
 #----------------------------------------------------------------------
 def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, spectral_ch=None,
-               notch=None, notch_ch=None, ch_names=None, rereference=None, decim=None, n_jobs=1):
+               notch=None, notch_ch=None, multiplier=1, ch_names=None, rereference=None, decim=None, n_jobs=1):
     """
     Apply spatial, spectral, notch filters, rereference and decim.
     
@@ -136,6 +136,8 @@ def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, sp
         Notch filter.
     notch_ch: None | list
         Channel picks for notch filtering. May contain channel names.
+    multiplier : int
+        Used for changing eeg data unit. Mne assumes Volts.
     ch_names: None | list
         If raw is numpy array and channel picks are list of strings, ch_names will
         be used as a look-up table to convert channel picks to channel numbers.
@@ -158,10 +160,18 @@ def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, sp
 
     # Downsample
     if decim is not None and decim != 1:
+        assert sfreq is not None and sfreq > 0, 'Wrong sfreq value.'
+        if type(raw) == np.ndarray:
+            logger.error('Decimation cannot be applied if sfreq is None.')
+            raise ValueError        
         raw, sfreq = _apply_downsampling(raw, decim, sfreq, n_jobs)
 
-    # Format data to numpy array, data does not contain anymore trig channel
-    data, eeg_channels, ch_names, sfreq = _format_eeg_data_for_preprocessing(raw, sfreq, decim)
+    # Format data to numpy array
+    data, eeg_channels, ch_names= _format_eeg_data_for_preprocessing(raw, ch_names)
+    
+    # Do unit conversion
+    if multiplier != 1:
+        data[eeg_channels] *= multiplier
     
     # Apply spatial filter
     _apply_spatial_filtering(data, spatial, eeg_channels, spatial_ch, ch_names)
@@ -293,48 +303,40 @@ def _apply_car_filtering(data, spatial_ch, eeg_channels, ch_names):
     """
     Apply Common Average Reference to data.
     """
-    if spatial_ch is None:
+    if spatial_ch is None or not len(spatial_ch):
         spatial_ch = eeg_channels
         logger.warning('preprocess(): For CAR, no specified channels, all channels selected')
-    elif len(spatial_ch):
-        if type(spatial_ch[0]) == str:
-            assert ch_names is not None, 'preprocess(): ch_names must not be None'
-            spatial_ch_i = [ch_names.index(c) for c in spatial_ch]
-        else:
-            spatial_ch_i = spatial_ch
-    
-        if len(spatial_ch_i) > 1:
-            if len(data.shape) == 2:
-                data[spatial_ch_i] -= np.mean(data[spatial_ch_i], axis=0)
-            elif len(data.shape) == 3:
-                means = np.mean(data[:, spatial_ch_i, :], axis=1)
-                data[:, spatial_ch_i, :] -= means[:, np.newaxis, :]
-            else:
-                logger.error('Unknown data shape %s' % str(data.shape))
-                raise ValueError
+        
+    if type(spatial_ch[0]) == str:
+        assert ch_names is not None, 'preprocess(): ch_names must not be None'
+        spatial_ch_i = [ch_names.index(c) for c in spatial_ch]
     else:
-        logger.error('preprocess(): For CAR, no specified channels!')
-        raise ValueError        
+        spatial_ch_i = spatial_ch
+
+    if len(spatial_ch_i) > 1:
+        if len(data.shape) == 2:
+            data[spatial_ch_i] -= np.mean(data[spatial_ch_i], axis=0)
+        elif len(data.shape) == 3:
+            means = np.mean(data[:, spatial_ch_i, :], axis=1)
+            data[:, spatial_ch_i, :] -= means[:, np.newaxis, :]
+        else:
+            logger.error('Unknown data shape %s' % str(data.shape))
+            raise ValueError
     
     return data
 
 #----------------------------------------------------------------------
-def _format_eeg_data_for_preprocessing(raw, sfreq, decim):
+def _format_eeg_data_for_preprocessing(raw, ch_names=None):
     # Check datatype
     if type(raw) == np.ndarray:
         # Numpy array: assume we don't have event channel
         data = raw
-        assert sfreq is not None and sfreq > 0, 'Wrong sfreq value.'
         assert 2 <= len(data.shape) <= 3, 'Unknown data shape. The dimension must be 2 or 3.'
         if len(data.shape) == 3:
             n_channels = data.shape[1]
         elif len(data.shape) == 2:
             n_channels = data.shape[0]
         eeg_channels = list(range(n_channels))
-        if decim is not None and decim != 1:
-            if sfreq is None:
-                logger.error('Decimation cannot be applied if sfreq is None.')
-                raise ValueError
     else:
         # MNE Raw object: exclude event channel
         ch_names = raw.ch_names
@@ -353,7 +355,7 @@ def _format_eeg_data_for_preprocessing(raw, sfreq, decim):
         else:
             eeg_channels.pop(tch)
             
-    return data, eeg_channels, ch_names, sfreq
+    return data, eeg_channels, ch_names
 
 #----------------------------------------------------------------------
 def _check_fif_path(rawfile):
