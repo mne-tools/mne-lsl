@@ -446,6 +446,8 @@ if __name__ == '__main__':
     
     chunk_size = 16
     trigger_file = None
+    fif_file = None
+    server_name = None
     
     if len(sys.argv) > 5:
         raise RuntimeError("Too many arguments provided, maximum is 4.")
@@ -470,5 +472,5 @@ if __name__ == '__main__':
     
     sp = StreamPlayer(server_name, fif_file, chunk_size, trigger_file)
     sp.start()
-    input(">> Press ENTER to stop the recording \n")
+    input(">> Press ENTER to stop replaying data \n")
     sp.stop()
