@@ -456,7 +456,7 @@ if __name__ == '__main__':
         trigger_file = sys.argv[4]
     
     if len(sys.argv) > 3:
-        chunk_size = sys.argv[3]
+        chunk_size = int(sys.argv[3])
     
     if len(sys.argv) > 2:
         fif_file = sys.argv[2]
