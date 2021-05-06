@@ -69,7 +69,7 @@ def check_config(cfg):
     for key in optional_vars:
         if not hasattr(cfg, key):
             setattr(cfg, key, optional_vars[key])
-            logger.warning('Setting undefined %s=%s' % (key, optional[key]))
+            logger.warning('Setting undefined %s=%s' % (key, getattr(cfg, key)))
 
     if getattr(cfg, 'TRIGGER_DEVICE') == None:
         logger.warning('The trigger device is set to None! No events will be saved.')
