@@ -1,7 +1,8 @@
 import os
 import time
-import multiprocessing as mp
+import datetime
 from pathlib import Path
+import multiprocessing as mp
 
 from neurodecode.utils.timer import Timer
 from neurodecode.utils.lsl import start_server
@@ -14,7 +15,7 @@ class _Recorder:
     """
     #----------------------------------------------------------------------
     def __init__(self, record_dir, logger, state=mp.Value('i', 0)):
-        self._MAX_BUFSIZE = 7200 
+        self._MAX_BUFSIZE = 86400 
         
         self.record_dir = record_dir
         
@@ -206,7 +207,7 @@ class _Recorder:
         return data
     
     #----------------------------------------------------------------------
-    def record(self):
+    def record(self, verbose=False):
         """
         Start the recording and save to files the data in pickle and fif format.
         """
@@ -214,13 +215,13 @@ class _Recorder:
         
         self.outlet = self.create_events_server(source_id=str(eve_file))
         self.logger.info('>> Recording started (PID %d).' % os.getpid())
-        self.acquire()
+        self.acquire(verbose)
         
         self.logger.info('>> Stop requested. Copying buffer')
         self.save_to_file(data_files, eve_file)
         
     #----------------------------------------------------------------------
-    def acquire(self):
+    def acquire(self, verbose=False):
         """
         Acquire the data from the connected lsl stream.
         """
@@ -228,17 +229,18 @@ class _Recorder:
             self.state.value = 1
             
         tm = Timer(autoreset=True)
-        # next_sec = 1
+        
+        #  Extract name of the first recorded stream
+        first_stream = list(self.sr.streams.keys())[0]
         
         while self.state.value == 1:
             self.sr.acquire()
             
-            #bufsec = len(self.sr.streams[0].buffer.data) / self.sr.streams[0].sample_rate
+            bufsec = len(self.sr.streams[first_stream].buffer.data) / self.sr.streams[first_stream].sample_rate
             
-            #if bufsec > next_sec:
-                #duration = str(datetime.timedelta(seconds=int(bufsec)))
-                #self.logger.info('RECORDING %s' % duration)
-                #next_sec += 1
+            if verbose:
+                duration = str(datetime.timedelta(seconds=int(bufsec)))
+                self.logger.info('RECORDING %s' % duration)
             
-            tm.sleep_atleast(0.001)    
+            tm.sleep_atleast(1)    
             
