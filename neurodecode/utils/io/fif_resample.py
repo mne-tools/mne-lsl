@@ -9,7 +9,7 @@ import neurodecode.utils.io as io
 #----------------------------------------------------------------------
 def fif_resample(fif_dir, sfreq_target, out_dir=None):
     """
-    Resample all .fif file contained in a directory and save them.
+    Resample all .fif files contained in a directory and save them.
         
     Parameters
     ----------
