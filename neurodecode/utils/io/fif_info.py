@@ -18,7 +18,7 @@ def fif_info(fif_file):
     fif_file : str
         The path to the .fif file
     """
-    print('Loading "%s"' % fif_file)
+    print('\nLoading "%s"\n' % fif_file)
     raw, events = io.load_fif_raw(fif_file)
     print('Raw info: %s' % raw)
     print('Channels: %s' % ', '.join(raw.ch_names))
