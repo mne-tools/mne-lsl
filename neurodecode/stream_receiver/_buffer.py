@@ -10,12 +10,15 @@ class Buffer():
         Buffer's size [samples].
     window_size : int
         To extract the latest winsize samples from the buffer [samples].
+    lsl_bufsize :
+        The LSL buffer size (can be smaller than buffer_size because stream_receiver acquire at regular interval)
     """
     #----------------------------------------------------------------------
-    def __init__(self, buffer_size, window_size):
+    def __init__(self, buffer_size, window_size, lsl_bufsize):
         
         self._winsize = window_size
         self._bufsize = buffer_size
+        self._lsl_bufsize = lsl_bufsize
         
         self._data = []
         self._timestamps = []
