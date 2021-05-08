@@ -36,13 +36,16 @@ class _Stream(ABC):
         self._blocking_time = 5
         self._lsl_time_offset = None
         
+        _MAX_PYLSL_STREAM_BUFSIZE = 10 # max 10 sec of data buffered at LSL level
+        
+        lsl_bufsize = min(_MAX_PYLSL_STREAM_BUFSIZE, bufsize)
     
         if self._sample_rate:
             samples_per_sec = self.sample_rate
-            self._inlet = pylsl.StreamInlet(streamInfo, max_buflen=math.ceil(bufsize))
+            self._inlet = pylsl.StreamInlet(streamInfo, max_buflen=math.ceil(lsl_bufsize))
         else:
             samples_per_sec = 100        
-            self._inlet = pylsl.StreamInlet(streamInfo, max_buflen=(math.ceil(bufsize)*samples_per_sec))
+            self._inlet = pylsl.StreamInlet(streamInfo, max_buflen=(math.ceil(lsl_bufsize)*samples_per_sec))
         
         
         winsize = _Stream._check_window_size(winsize)
@@ -51,8 +54,9 @@ class _Stream(ABC):
             
         bufsize = _Stream._convert_sec_to_samples(bufsize, samples_per_sec)
         winsize = _Stream._convert_sec_to_samples(winsize, samples_per_sec)
+        lsl_bufsize = _Stream._convert_sec_to_samples(lsl_bufsize, samples_per_sec)
         
-        self._buffer = Buffer(bufsize, winsize)
+        self._buffer = Buffer(bufsize, winsize, lsl_bufsize)
         
         self._extract_amp_info()
         self._create_ch_name_list()
@@ -102,7 +106,7 @@ class _Stream(ABC):
         while not received:
             while self._watchdog.sec() < self._blocking_time:    
                 if len(tslist) == 0:
-                    chunk, tslist = self._inlet.pull_chunk(max_samples=self.buffer._bufsize)    # chunk = [frames]x[ch], tslist = [frames]
+                    chunk, tslist = self._inlet.pull_chunk(max_samples=self.buffer._lsl_bufsize)    # chunk = [frames]x[ch], tslist = [frames]
                     if self._blocking == False and len(tslist) == 0:
                         received = True
                         break

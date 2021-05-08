@@ -69,7 +69,7 @@ class StreamRecorder:
         self._state = state
     
     #----------------------------------------------------------------------
-    def start(self, amp_name=None, eeg_only=False):
+    def start(self, amp_name=None, eeg_only=False, verbose=False):
         """
         Start recording data from LSL network, in a new process.
         
@@ -79,10 +79,12 @@ class StreamRecorder:
             Connect to a server named 'amp_name'. None: no constraint.
         eeg_only : bool
             If true, ignore non-EEG servers.
+        verbose : bool
+            IF true, it will print every sec the time since the recording start.
         """
         self._amp_name = amp_name
         
-        self._proc = mp.Process(target=self._record, args=[amp_name, self._record_dir, eeg_only, self._logger, self._queue, self._state])
+        self._proc = mp.Process(target=self._record, args=[amp_name, self._record_dir, eeg_only, verbose, self._logger, self._queue, self._state])
         self._proc.start()
         
         while not self._state.value:
@@ -115,7 +117,7 @@ class StreamRecorder:
         self._logger.info('Recording finished.')
     
     #----------------------------------------------------------------------
-    def _record(self, amp_name, record_dir, eeg_only, logger, queue, state):
+    def _record(self, amp_name, record_dir, eeg_only, verbose, logger, queue, state):
         """
         The function launched in a new process.
         """
@@ -123,7 +125,7 @@ class StreamRecorder:
         
         recorder = _Recorder(record_dir, logger, state)
         recorder.connect(amp_name, eeg_only)
-        recorder.record()
+        recorder.record(verbose)
     
     #----------------------------------------------------------------------
     def _start_gui(self, protocolState, amp_name, record_dir, eeg_only, logger, queue, state):
@@ -225,16 +227,17 @@ if __name__ == '__main__':
     if len(sys.argv) > 3:
         raise RuntimeError("Too many arguments provided, maximum is 3.")
     
-    if len(sys.argv) > 2:
+    if len(sys.argv) == 3:
+        record_dir = sys.argv[1]
         amp_name = sys.argv[2]
     
-    if len(sys.argv) > 1:
+    if len(sys.argv) == 2:
         record_dir = sys.argv[1]
-    
+
     if len(sys.argv) == 1:
-        record_dir = str(Path(input(">> Provide the path to save the .fif file: \n")))
+        record_dir = str(Path(input(">> Provide the path to save the .fif file: \n>> ")))
 
     recorder = StreamRecorder(record_dir) 
-    recorder.start(amp_name=amp_name, eeg_only=False)
+    recorder.start(amp_name=amp_name, eeg_only=False, verbose=True)
     input(">> Press ENTER to stop the recording \n")
     recorder.stop()
