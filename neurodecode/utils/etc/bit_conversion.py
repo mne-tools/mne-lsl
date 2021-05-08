@@ -1,7 +1,8 @@
 
 #----------------------------------------------------------------------
 def int2bits(num, nbits=8):
-    """ Convert an integer into bits representation.
+    """
+    Convert an integer into bits representation.
     
     Parameters
     ----------
@@ -18,7 +19,8 @@ def int2bits(num, nbits=8):
 
 #----------------------------------------------------------------------
 def bits2int(bitlist):
-    """ Convert a list of bits into an integer
+    """
+    Convert a list of bits into an integer
     
     Parameters
     ----------
