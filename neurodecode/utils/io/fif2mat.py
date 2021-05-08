@@ -3,8 +3,8 @@ from __future__ import print_function, division
 """
 Export fif data to mat files.
 """
+import sys
 
-from .load_fif import load_fif_raw
 from neurodecode import logger
 from scipy.io import savemat
 
@@ -35,7 +35,7 @@ def fif2mat(data_dir, out_dir=None):
         if rawfile[-4:] != '.fif': continue
         
         # Load fif
-        raw, events = load_fif_raw(rawfile)
+        raw, events = io.load_fif_raw(rawfile)
         
         # Formating
         events[:,0] += 1            # MATLAB uses 1-based indexing
