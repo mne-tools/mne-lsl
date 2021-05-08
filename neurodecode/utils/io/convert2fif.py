@@ -150,7 +150,7 @@ def edf2fif(filename, outdir=None):
 #----------------------------------------------------------------------
 def bdf2fif(filename, outdir=None, channel_file=None):
     """
-    Convert BioSemi BDF format to mne.io.raw.
+    Convert BioSemi (bdf) format to mne.io.raw.
     
     Parameters
     ----------
