@@ -225,7 +225,7 @@ if __name__ == '__main__':
     amp_name = None
     
     if len(sys.argv) > 3:
-        raise RuntimeError("Too many arguments provided, maximum is 3.")
+        raise RuntimeError("Too many arguments provided, maximum is 2.")
     
     if len(sys.argv) == 3:
         record_dir = sys.argv[1]
