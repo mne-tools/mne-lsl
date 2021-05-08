@@ -9,7 +9,7 @@ import multiprocessing as mp
 
 from neurodecode import logger
 from neurodecode.triggers import TriggerDef
-from neurodecode.utils.io import load_fif_raw
+from neurodecode.utils.io import load_fif_raw, parse_path
 
 class StreamPlayer:
     """
@@ -442,6 +442,7 @@ class Streamer:
 if __name__ == '__main__':
     
     import sys
+    from os.path import exists
     from pathlib import Path
     
     chunk_size = 16
@@ -464,11 +465,16 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         server_name = sys.argv[1]
         if not fif_file:
-            fif_file = str(Path(input(">> Provide the path to the .fif file to play: \n")))
+            fif_file = str(Path(input(">> Provide the path to the .fif file to play: \n>> ")))
     
     if len(sys.argv) == 1:
-        fif_file = str(Path(input(">> Provide the path to the .fif file to play: \n")))
-        server_name = input(">> Provide the server name displayed on LSL network: \n")
+        fif_file = str(Path(input(">> Provide the path to the .fif file to play: \n>> ")))
+        server_name = input(">> Provide the server name displayed on LSL network: \n>> ")
+    
+    path_info = parse_path(fif_file)
+    
+    if not exists(fif_file) or path_info.ext != '.fif':
+        raise IOError("The file does not exist or is not a .fif file")
     
     sp = StreamPlayer(server_name, fif_file, chunk_size, trigger_file)
     sp.start()
