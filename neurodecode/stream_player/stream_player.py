@@ -473,7 +473,7 @@ if __name__ == '__main__':
     
     path_info = parse_path(fif_file)
     
-    if not exists(fif_file) or path_info.ext != '.fif':
+    if not exists(fif_file) or path_info.ext != 'fif':
         raise IOError("The file does not exist or is not a .fif file")
     
     sp = StreamPlayer(server_name, fif_file, chunk_size, trigger_file)
