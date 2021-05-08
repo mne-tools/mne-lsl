@@ -1,2 +1,4 @@
 @echo off
-python -c "if __name__ == '__main__': from neurodecode.utils.fif_resample import batch_run; batch_run(r'%1', '%2')"
+setlocal enabledelayedexpansion
+
+python %NEUROD_ROOT%\neurodecode\utils\io\fif_resample.py %1 %2 %3
