@@ -201,7 +201,7 @@ def compute_features(cfg):
             notch_ch=cfg.NOTCH_CHANNELS,
             multiplier=cfg.MULTIPLIER,
             ch_names=epochs_train.ch_names,
-            rereference=cfg.NOTCH_FILTER[cfg.NOTCH_FILTER['selected']],
+            rereference=cfg.REREFERENCE[cfg.REREFERENCE['selected']],
             decim=cfg.FEATURES['PSD']['decim'],
             n_jobs=cfg.N_JOBS
         )
