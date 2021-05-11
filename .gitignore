@@ -1,7 +1,5 @@
 pycnbi/glass/bgi-cnbi/app/build
 pycnbi/glass/bgi-cnbi/build
-pycnbi/build
-build
 obj
 __pycache__
 .DS_Store
