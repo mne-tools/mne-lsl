@@ -272,6 +272,7 @@ Utils :mod:`neurodecode.utils`
    fif_info
    fif_resample
    merge_events
+   event_timestamps_to_indices
    fix_channel_names
    parse_path
    forward_slashify

@@ -55,4 +55,4 @@ Covers the core elements of `NeuroDecode`, describing each modules and how to la
 The API documentation provides detailed information of the implemented methods.
 This information includes method's descriptions, parameters, references, examples, etc.
 
-*NeuroDecode is a fork of the following* `code <https://github.com/dbdq/neurodecode>`_ *developped by Kyuwha Lee (CNBI lab)*.
+*NeuroDecode is a fork of the following* `code <https://github.com/dbdq/neurodecode>`_ *developed by Kyuwha Lee (CNBI lab)*.
