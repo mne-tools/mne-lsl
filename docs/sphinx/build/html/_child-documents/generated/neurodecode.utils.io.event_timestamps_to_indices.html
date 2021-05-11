@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>neurodecode.utils.io.fix_channel_names &mdash; NeuroDecode 0.5.dev0 documentation</title>
+  <title>neurodecode.utils.io.event_timestamps_to_indices &mdash; NeuroDecode 0.5.dev0 documentation</title>
   
 
   
@@ -35,8 +35,8 @@
   <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="neurodecode.utils.io.parse_path" href="neurodecode.utils.io.parse_path.html" />
-    <link rel="prev" title="neurodecode.utils.io.event_timestamps_to_indices" href="neurodecode.utils.io.event_timestamps_to_indices.html" /> 
+    <link rel="next" title="neurodecode.utils.io.fix_channel_names" href="neurodecode.utils.io.fix_channel_names.html" />
+    <link rel="prev" title="neurodecode.utils.io.merge_events" href="neurodecode.utils.io.merge_events.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -223,13 +223,13 @@
         
           <li><a href="../api.html">API Documentation</a> &raquo;</li>
         
-      <li>neurodecode.utils.io.fix_channel_names</li>
+      <li>neurodecode.utils.io.event_timestamps_to_indices</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="../../_sources/_child-documents/generated/neurodecode.utils.io.fix_channel_names.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../../_sources/_child-documents/generated/neurodecode.utils.io.event_timestamps_to_indices.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -242,18 +242,25 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="neurodecode-utils-io-fix-channel-names">
-<h1>neurodecode.utils.io.fix_channel_names<a class="headerlink" href="#neurodecode-utils-io-fix-channel-names" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="neurodecode-utils-io-event-timestamps-to-indices">
+<h1>neurodecode.utils.io.event_timestamps_to_indices<a class="headerlink" href="#neurodecode-utils-io-event-timestamps-to-indices" title="Permalink to this headline">¶</a></h1>
 <dl class="py function">
-<dt id="neurodecode.utils.io.fix_channel_names">
-<code class="sig-prename descclassname">neurodecode.utils.io.</code><code class="sig-name descname">fix_channel_names</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fif_dir</span></em>, <em class="sig-param"><span class="n">new_channel_names</span></em><span class="sig-paren">)</span><a class="headerlink" href="#neurodecode.utils.io.fix_channel_names" title="Permalink to this definition">¶</a></dt>
-<dd><p>Change the channel names of all fif files in a given directory.</p>
+<dt id="neurodecode.utils.io.event_timestamps_to_indices">
+<code class="sig-prename descclassname">neurodecode.utils.io.</code><code class="sig-name descname">event_timestamps_to_indices</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">raw_timestamps</span></em>, <em class="sig-param"><span class="n">eventfile</span></em>, <em class="sig-param"><span class="n">offset</span></em><span class="sig-paren">)</span><a class="headerlink" href="#neurodecode.utils.io.event_timestamps_to_indices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert LSL timestamps to sample indices for separetely recorded events.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>fif_dir</strong> (<em>str</em>) – The path to the directory containing fif files</p></li>
-<li><p><strong>new_channel_names</strong> (<em>list</em>) – The list of the new channel names</p></li>
+<li><p><strong>raw_timestamps</strong> (<em>list</em>) – The whole data’s timestamps (mne: start at 0.0 sec)</p></li>
+<li><p><strong>eventfile</strong> (<em>str</em>) – Event file containing the events, indexed with LSL timestamps</p></li>
+<li><p><strong>offset</strong> (<em>float</em>) – The first sample’s LSL timestamp, to start at 0.0 sec</p></li>
 </ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The events [shape=(n_events, 3)]; used as input to mne.io.RawArray.add_events().</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
 </dd></dl>
@@ -268,10 +275,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="neurodecode.utils.io.parse_path.html" class="btn btn-neutral float-right" title="neurodecode.utils.io.parse_path" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="neurodecode.utils.io.fix_channel_names.html" class="btn btn-neutral float-right" title="neurodecode.utils.io.fix_channel_names" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="neurodecode.utils.io.event_timestamps_to_indices.html" class="btn btn-neutral float-left" title="neurodecode.utils.io.event_timestamps_to_indices" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="neurodecode.utils.io.merge_events.html" class="btn btn-neutral float-left" title="neurodecode.utils.io.merge_events" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

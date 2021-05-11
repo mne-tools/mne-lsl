@@ -246,7 +246,7 @@
 <h1>neurodecode.utils.io.pcl2fif<a class="headerlink" href="#neurodecode-utils-io-pcl2fif" title="Permalink to this headline">¶</a></h1>
 <dl class="py function">
 <dt id="neurodecode.utils.io.pcl2fif">
-<code class="sig-prename descclassname">neurodecode.utils.io.</code><code class="sig-name descname">pcl2fif</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span></em>, <em class="sig-param"><span class="n">outdir</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">external_event</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">precision</span><span class="o">=</span><span class="default_value">'single'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#neurodecode.utils.io.pcl2fif" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">neurodecode.utils.io.</code><code class="sig-name descname">pcl2fif</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span></em>, <em class="sig-param"><span class="n">outdir</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">external_event</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">precision</span><span class="o">=</span><span class="default_value">'single'</span></em>, <em class="sig-param"><span class="n">replace</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#neurodecode.utils.io.pcl2fif" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert NeuroDecode Python pickle format to mne.io.raw.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -255,6 +255,7 @@
 <li><p><strong>outdir</strong> (<em>str</em>) – Saving directory. If None, it will be the directory of the .pkl file.</p></li>
 <li><p><strong>external_event</strong> (<em>str</em>) – Event file path in text formatm following mne event struct. Each row should be: index 0 event</p></li>
 <li><p><strong>precision</strong> (<em>str</em>) – Data matrix format. [single|double|int|short], ‘single’ improves backward compatability.</p></li>
+<li><p><strong>replace</strong> (<em>bool</em>) – If true, previous events will be overwritten by the new ones from the external events file.</p></li>
 </ul>
 </dd>
 </dl>
