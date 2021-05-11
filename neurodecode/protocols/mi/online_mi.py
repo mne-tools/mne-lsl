@@ -77,7 +77,6 @@ def check_config(cfg):
         'BAR_BIAS':None,
         'BAR_REACH_FINISH':False,
         'FEEDBACK_TYPE':'BAR',
-        'LOG_PROBS':False,
         'SHOW_CUE':True,
         'SCREEN_SIZE':(1920, 1080),
         'SCREEN_POS':(0, 0),
