@@ -66,7 +66,6 @@ def check_config(cfg):
 
     optional_vars = {
         'AMP_NAME':None,
-        'AMP_SERIAL':None,
         'FAKE_CLS':None,
         'TRIALS_RANDOMIZE':True,
         'BAR_SLOW_START':{'selected':'False', 'False':None, 'True':[1.0]},
