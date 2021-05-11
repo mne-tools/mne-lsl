@@ -174,7 +174,8 @@ def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, sp
         data[eeg_channels] *= multiplier
     
     # Apply spatial filter
-    _apply_spatial_filtering(data, spatial, eeg_channels, spatial_ch, ch_names)
+    if spatial is not None:
+        _apply_spatial_filtering(data, spatial, eeg_channels, spatial_ch, ch_names)
 
     # Apply spectral filter
     if spectral is not None:
@@ -194,9 +195,7 @@ def _apply_spatial_filtering(data, spatial, eeg_channels, spatial_ch, ch_names):
     """
     Apply spatial filtering to the data. Supported: CAR or Laplacian.
     """
-    if spatial is None:
-        pass
-    elif spatial == 'car':
+    if spatial == 'car':
         _apply_car_filtering(data, spatial_ch, eeg_channels, ch_names)
         
     elif spatial == 'laplacian':
