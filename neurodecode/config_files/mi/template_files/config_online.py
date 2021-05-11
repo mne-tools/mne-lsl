@@ -31,7 +31,7 @@ SHOW_TRIALS = True
 
 # feedback type can be 'BAR' or 'BODY'
 FEEDBACK_TYPE = 'BAR' # BAR | BODY
-IMAGE_PATH = ''
+FEEDBACK_IMAGE_PATH = ''
 
 '''
 Bar behavior
