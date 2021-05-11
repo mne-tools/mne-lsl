@@ -132,7 +132,7 @@ class StreamRecorder:
         """
         Start the recording when launched from the GUI.
         """
-        self._proc = mp.Process(target=self._record, args=[amp_name, record_dir, eeg_only, logger, queue, state])
+        self._proc = mp.Process(target=self._record, args=[amp_name, record_dir, eeg_only, True, logger, queue, state])
         self._proc.start()
         
         while not state.value:
