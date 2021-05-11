@@ -72,7 +72,7 @@ def any2fif(filename, outdir=None, channel_file=None):
         logger.error('Ignored unrecognized file extension %s. It should be [.pickle | .eeg | .edf | .gdf | .bdf | .xdf]' % p.ext)
 
 #----------------------------------------------------------------------
-def pcl2fif(filename, outdir=None, external_event=None, precision='single'):
+def pcl2fif(filename, outdir=None, external_event=None, precision='single', replace=True):
     """
     Convert NeuroDecode Python pickle format to mne.io.raw.
 
@@ -86,6 +86,8 @@ def pcl2fif(filename, outdir=None, external_event=None, precision='single'):
         Event file path in text formatm following mne event struct. Each row should be: index 0 event
     precision : str
         Data matrix format. [single|double|int|short], 'single' improves backward compatability.
+    replace : bool
+        If true, previous events will be overwritten by the new ones from the external events file.
     """
     p = io.parse_path(filename)
     
@@ -101,8 +103,8 @@ def pcl2fif(filename, outdir=None, external_event=None, precision='single'):
     
     # Add events from txt file
     if external_event is not None:
-        events_index = _event_timestamps_to_indices(raw.times, external_event, data["timestamps"][0])
-        _add_events_from_txt(raw, events_index, stim_channel='TRIGGER', replace=True)
+        events_index = event_timestamps_to_indices(raw.times, external_event, data["timestamps"][0])
+        _add_events_from_txt(raw, events_index, stim_channel='TRIGGER', replace=replace)
     
     # Save
     raw.save(fiffile, verbose=False, overwrite=True, fmt=precision)
@@ -328,7 +330,7 @@ def eeg2fif(filename, outdir=None):
     _saveChannels2txt(outdir, raw.info['ch_names'])
 
 #----------------------------------------------------------------------
-def _event_timestamps_to_indices(raw_timestamps, eventfile, offset):
+def event_timestamps_to_indices(raw_timestamps, eventfile, offset):
     """
     Convert LSL timestamps to sample indices for separetely recorded events.
 
@@ -338,7 +340,8 @@ def _event_timestamps_to_indices(raw_timestamps, eventfile, offset):
         The whole data's timestamps (mne: start at 0.0 sec)
     eventfile : str
         Event file containing the events, indexed with LSL timestamps
-    offset : The first sample's LSL timestamps, to start at 0.0 sec 
+    offset : float
+        The first sample's LSL timestamp, to start at 0.0 sec 
 
     Returns
     -------
