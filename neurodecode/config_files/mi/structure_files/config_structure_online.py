@@ -67,7 +67,7 @@ class Advanced:
     params1.update({'TRIGGER_FILE': str})                                                       # .ini file containing the triggers events mapping int-str (cf. config_files/mi/triggerdef.ini)
 
     #-------------------------------------------
-    # acquisition device (set both to None to search)
+    # acquisition device (set to None to search)
     #-------------------------------------------
     params2 = dict()
     params2.update({'AMP_NAME': str})                                                           # The LSL stream name to connect to
