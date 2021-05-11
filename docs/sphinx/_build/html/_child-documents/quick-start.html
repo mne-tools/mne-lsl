@@ -1,0 +1,356 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Quick-Start &mdash; NeuroDecode 0.5.dev0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="User-Guide" href="user-guide.html" />
+    <link rel="prev" title="Installation" href="installation.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> NeuroDecode
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.5.dev0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/fcbg-hnp/NeuroDecode/">GitHub</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Getting Started</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html"> Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#dependencies">Dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#requirements">Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#option-1-from-source">Option 1. From source</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#option-2-install-from-pypi">Option 2. Install from PyPI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#option-3-install-from-conda-forge">Option 3. Install from conda-forge</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#option-3-install-with-docker">Option 3. Install with Docker</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#"> Quick-Start</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#data-communication">Data communication</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#low-level-modules">Low-Level modules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#motor-imagery">Motor Imagery</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#offline">Offline</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#trainer">Trainer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#online">Online</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#gui">GUI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#windows-users">Windows users</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="user-guide.html">User Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="user-guide.html#streamreceiver">StreamReceiver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user-guide.html#streamviewer">StreamViewer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user-guide.html#streamrecoder">StreamRecoder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user-guide.html#streamplayer">StreamPlayer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user-guide.html#decoder">Decoder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user-guide.html#protocols">Protocols</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user-guide.html#triggers">Triggers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user-guide.html#utils">Utils</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api.html#module-neurodecode.stream_receiver">Stream Receiver: <code class="xref py py-mod docutils literal notranslate"><span class="pre">neurodecode.stream_receiver</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="generated/neurodecode.stream_receiver.StreamReceiver.html">neurodecode.stream_receiver.StreamReceiver</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/neurodecode.stream_receiver.StreamMarker.html">neurodecode.stream_receiver.StreamMarker</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/neurodecode.stream_receiver.StreamEEG.html">neurodecode.stream_receiver.StreamEEG</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/neurodecode.stream_receiver.Buffer.html">neurodecode.stream_receiver.Buffer</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#module-neurodecode.stream_viewer">Stream Viewer: <code class="xref py py-mod docutils literal notranslate"><span class="pre">neurodecode.stream_viewer</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="generated/neurodecode.stream_viewer.StreamViewer.html">neurodecode.stream_viewer.StreamViewer</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#module-neurodecode.stream_recorder">Stream Recorder: <code class="xref py py-mod docutils literal notranslate"><span class="pre">neurodecode.stream_recorder</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="generated/neurodecode.stream_recorder.StreamRecorder.html">neurodecode.stream_recorder.StreamRecorder</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#module-neurodecode.stream_player">Stream Player: <code class="xref py py-mod docutils literal notranslate"><span class="pre">neurodecode.stream_player</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="generated/neurodecode.stream_player.StreamPlayer.html">neurodecode.stream_player.StreamPlayer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/neurodecode.stream_player.Streamer.html">neurodecode.stream_player.Streamer</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#module-neurodecode.triggers">Trigger: <code class="xref py py-mod docutils literal notranslate"><span class="pre">neurodecode.triggers</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="generated/neurodecode.triggers.Trigger.html">neurodecode.triggers.Trigger</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/neurodecode.triggers.TriggerDef.html">neurodecode.triggers.TriggerDef</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#module-neurodecode.decoder">Decoder: <code class="xref py py-mod docutils literal notranslate"><span class="pre">neurodecode.decoder</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="generated/neurodecode.decoder.BCIDecoder.html">neurodecode.decoder.BCIDecoder</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/neurodecode.decoder.BCIDecoderDaemon.html">neurodecode.decoder.BCIDecoderDaemon</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/neurodecode.decoder.get_decoder_info.html">neurodecode.decoder.get_decoder_info</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/neurodecode.decoder.check_speed.html">neurodecode.decoder.check_speed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/neurodecode.decoder.sample_decoding.html">neurodecode.decoder.sample_decoding</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/neurodecode.decoder.log_decoding.html">neurodecode.decoder.log_decoding</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/neurodecode.decoder.compute_features.html">neurodecode.decoder.compute_features</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/neurodecode.decoder.feature2chz.html">neurodecode.decoder.feature2chz</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#utils-neurodecode-utils">Utils <code class="xref py py-mod docutils literal notranslate"><span class="pre">neurodecode.utils</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api.html#module-neurodecode.utils.benchmark"><code class="xref py py-mod docutils literal notranslate"><span class="pre">neurodecode.utils.benchmark</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api.html#module-neurodecode.utils.debug"><code class="xref py py-mod docutils literal notranslate"><span class="pre">neurodecode.utils.debug</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api.html#module-neurodecode.utils.etc"><code class="xref py py-mod docutils literal notranslate"><span class="pre">neurodecode.utils.etc</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api.html#module-neurodecode.utils.io"><code class="xref py py-mod docutils literal notranslate"><span class="pre">neurodecode.utils.io</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api.html#module-neurodecode.utils.layouts"><code class="xref py py-mod docutils literal notranslate"><span class="pre">neurodecode.utils.layouts</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api.html#module-neurodecode.utils.lsl"><code class="xref py py-mod docutils literal notranslate"><span class="pre">neurodecode.utils.lsl</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api.html#module-neurodecode.utils.math"><code class="xref py py-mod docutils literal notranslate"><span class="pre">neurodecode.utils.math</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api.html#module-neurodecode.utils.preprocess"><code class="xref py py-mod docutils literal notranslate"><span class="pre">neurodecode.utils.preprocess</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api.html#module-neurodecode.utils.timer"><code class="xref py py-mod docutils literal notranslate"><span class="pre">neurodecode.utils.timer</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">NeuroDecode</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>Quick-Start</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/_child-documents/quick-start.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="quick-start">
+<h1>Quick-Start<a class="headerlink" href="#quick-start" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="data-communication">
+<h2>Data communication<a class="headerlink" href="#data-communication" title="Permalink to this headline">¶</a></h2>
+<p>The underlying data communication is based on LabStreamingLayer (LSL), which provides sub-millisecond time synchronization accuracy. Any signal acquisition system supported by native LSL or OpenVibe is also supported by NeuroDecode. Since the data communication is based on TCP, signals can be also transmitted wirelessly. For more information about LSL, please visit:
+<a class="reference external" href="https://github.com/sccn/labstreaminglayer">LabStreamingLayer</a>.</p>
+</div>
+<div class="section" id="low-level-modules">
+<h2>Low-Level modules<a class="headerlink" href="#low-level-modules" title="Permalink to this headline">¶</a></h2>
+<p>NeuroDecode provides low-level modules for receiving, replaying, recording, visualizing and processing EEG data. It aims at providing fast and easy implementations of neurofeedback and Brain-Computer Interface protocols.</p>
+</div>
+<div class="section" id="motor-imagery">
+<h2>Motor Imagery<a class="headerlink" href="#motor-imagery" title="Permalink to this headline">¶</a></h2>
+<p>NeuroDecode provides a ready to use protocols for Motor Imagery experiments. The decoding performance was recognized at <a class="reference external" href="https://github.com/dbdq/microsoft_decoding">Microsoft Brain Signal Decoding competition</a> with the First Prize Award (2016) considering high decoding accuracy. It has been applied on a couple of online decoding projects based on EEG and ECoG and on various acquisition systems including AntNeuro eego, g.tec gUSBamp, BioSemi ActiveTwo, BrainProducts actiCHamp and Wearable Sensing. The decoding runs at approximately 15 classifications per second(cps) on a 4th-gen i7 laptop with 64-channel setup at 512 Hz sampling rate. High-speed decoding up to 200 cps was achieved using process-interleaving technique on 8 cores. It has been tested on both Linux and Windows using Python 3.7.</p>
+<p>The scripts can be found <a class="reference external" href="https://github.com/fcbg-hnp/NeuroDecode/tree/master/neurodecode/protocols/mi">here</a>. All protocols options can be selected in the config_files. The experiment is splitted in three parts: offline, trainer and online.</p>
+<div class="section" id="offline">
+<h3>Offline<a class="headerlink" href="#offline" title="Permalink to this headline">¶</a></h3>
+<p>The subject is asked to perform a MI task for each condition and to repeat them over several runs composed of multiple trials. It is mandatory to collect EEG data to train a classifier.</p>
+<p>As an example, left-right hands MI experiment would work as follow: when the subject sees a red square on the left box, he will perform left-hand MI and vis-versa for the righ box with right hand MI. The image below depicts the bar feedback shown during a left condition.</p>
+<a class="reference internal image-reference" href="_child-documents\../../../../_images/mi_offline_images.png"><img alt="_child-documents\../../../../_images/mi_offline_images.png" class="align-center" src="_child-documents\../../../../_images/mi_offline_images.png" style="width: 500px;" /></a>
+<p>In general, for unaccustomed subjects, a minimum of 3 runs of 15 trials per condition is necessary to achieve acceptable performance. Splitting trials into runs gives some rest to the subject and keeps the subject commitment high.</p>
+</div>
+<div class="section" id="trainer">
+<h3>Trainer<a class="headerlink" href="#trainer" title="Permalink to this headline">¶</a></h3>
+<p>After the offline part, enough data are collected to train a classifier. Several steps needs to be performed before training the final classifier:</p>
+<ul class="simple">
+<li><p><em>trials epoching</em>: Data for each trial are extracted from raw data</p></li>
+<li><p><em>sliding windowing</em>: To simulate online data acquisition, a sliding window over the trials is done</p></li>
+<li><p><em>preprocessing</em>: Rereferencing, spatial, temporal, notch filtering…</p></li>
+<li><p><em>features extraction</em>: Compute the Power Spectrum Density (PSD)</p></li>
+<li><p><em>k-fold cross-validation</em>: Several classifiers are trained on data subsets and tested on the remaining data. Their performances are then averaged to estimate the classifier robustness to new data (optional).</p></li>
+</ul>
+<p>The final classifier can now be trained on the whole prepared dataset and saved to a .pkl file for online applications.</p>
+</div>
+<div class="section" id="online">
+<h3>Online<a class="headerlink" href="#online" title="Permalink to this headline">¶</a></h3>
+<p>During the online protocol, the subject will now control the feedback. The feedback displacement is linked to the classifier probabilies as follow:</p>
+<ul class="simple">
+<li><p><em>classifier output</em>: The classifier returns the smoothed probabilities for each classes</p></li>
+<li><p><em>selecting the winner</em>: The class with the highest probabilities is selected</p></li>
+<li><p><em>feedback displacement</em>: The feedback is moved one step toward the direction associated with this class label.</p></li>
+<li><p><em>trial end</em>: The trial ends when the feedback reaches full displacement to one direction or if the maximum allowed trial time is reached</p></li>
+</ul>
+<p>At the end of each online run, the accuracy and the confusion matrix will be shown and saved to a .txt file. Moreover, all the probabilities are also saved to a .txt file.</p>
+</div>
+</div>
+<div class="section" id="gui">
+<h2>GUI<a class="headerlink" href="#gui" title="Permalink to this headline">¶</a></h2>
+<p>NeuroDecode provides a GUI for fast protocol launching, recording and eeg visualization. All the parameters from a config_file can be modified at GUI level. The GUI is ready to use for the Motor Imagery
+protocol but new protocols can be added to the protocols folder (and their config files in config_files folder).</p>
+<p>Notice:</p>
+<ul class="simple">
+<li><p>The first time a protocol is used, its scripts: <em>offline_&lt;protocol&gt;.py</em>, <em>trainer_&lt;protocol&gt;.py</em> and <em>online_&lt;protocol&gt;.py</em> will be copied to the script folder defined during the installation. The scripts can therefore be modified and adapted outside of the NeuroDecode git folder.</p></li>
+<li><p>For each new subject, the config files (found in <em>neurodecode/config_files/&lt;protocol&gt;</em>) will also be copied in the subject specific folder. Therefore, each subject can have his own protocol parameters.</p></li>
+<li><p>In <em>neurodecode/config_files/&lt;protocol&gt;</em>, structure config files defines all the possible values for each parameters contained in the config_file. They are only used by the GUI, not the protocols scripts.</p></li>
+<li><p>Save the config file (GUI file tab) to keep track of the modifications</p></li>
+<li><p>GUI is still in development.</p></li>
+</ul>
+<a class="reference internal image-reference" href="_child-documents\../../../../_images/gui.png"><img alt="_child-documents\../../../../_images/gui.png" class="align-center" src="_child-documents\../../../../_images/gui.png" style="width: 500px;" /></a>
+</div>
+<div class="section" id="windows-users">
+<h2>Windows users<a class="headerlink" href="#windows-users" title="Permalink to this headline">¶</a></h2>
+<p>The default timer resolution in some Windows versions is 16 ms, which can limit the precision of timings. It is recommended to run the following tool and set the resolution to 1 ms or lower before any experiments: <a class="reference external" href="https://vvvv.org/contribution/windows-system-timer-tool">TimerTool</a></p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="user-guide.html" class="btn btn-neutral float-right" title="User-Guide" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="installation.html" class="btn btn-neutral float-left" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+
+    </p>
+  </div> 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -1,0 +1,442 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>neurodecode.stream_recorder.StreamRecorder &mdash; NeuroDecode 0.5.dev0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="neurodecode.stream_player.StreamPlayer" href="neurodecode.stream_player.StreamPlayer.html" />
+    <link rel="prev" title="neurodecode.stream_viewer.StreamViewer" href="neurodecode.stream_viewer.StreamViewer.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> NeuroDecode
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.5.dev0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/fcbg-hnp/NeuroDecode/">GitHub</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html"> Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#dependencies">Dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#requirements">Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#option-1-from-source">Option 1. From source</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#option-2-install-from-pypi">Option 2. Install from PyPI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#option-3-install-from-conda-forge">Option 3. Install from conda-forge</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#option-3-install-with-docker">Option 3. Install with Docker</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../quick-start.html"> Quick-Start</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../quick-start.html#data-communication">Data communication</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../quick-start.html#low-level-modules">Low-Level modules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../quick-start.html#motor-imagery">Motor Imagery</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../quick-start.html#offline">Offline</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../quick-start.html#trainer">Trainer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../quick-start.html#online">Online</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../quick-start.html#gui">GUI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../quick-start.html#windows-users">Windows users</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../user-guide.html">User Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../user-guide.html#streamreceiver">StreamReceiver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../user-guide.html#streamviewer">StreamViewer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../user-guide.html#streamrecoder">StreamRecoder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../user-guide.html#streamplayer">StreamPlayer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../user-guide.html#decoder">Decoder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../user-guide.html#protocols">Protocols</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../user-guide.html#triggers">Triggers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../user-guide.html#utils">Utils</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../api.html#module-neurodecode.stream_receiver">Stream Receiver: <code class="xref py py-mod docutils literal notranslate"><span class="pre">neurodecode.stream_receiver</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="neurodecode.stream_receiver.StreamReceiver.html">neurodecode.stream_receiver.StreamReceiver</a></li>
+<li class="toctree-l3"><a class="reference internal" href="neurodecode.stream_receiver.StreamMarker.html">neurodecode.stream_receiver.StreamMarker</a></li>
+<li class="toctree-l3"><a class="reference internal" href="neurodecode.stream_receiver.StreamEEG.html">neurodecode.stream_receiver.StreamEEG</a></li>
+<li class="toctree-l3"><a class="reference internal" href="neurodecode.stream_receiver.Buffer.html">neurodecode.stream_receiver.Buffer</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#module-neurodecode.stream_viewer">Stream Viewer: <code class="xref py py-mod docutils literal notranslate"><span class="pre">neurodecode.stream_viewer</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="neurodecode.stream_viewer.StreamViewer.html">neurodecode.stream_viewer.StreamViewer</a></li>
+</ul>
+</li>
+<li class="toctree-l2 current"><a class="reference internal" href="../api.html#module-neurodecode.stream_recorder">Stream Recorder: <code class="xref py py-mod docutils literal notranslate"><span class="pre">neurodecode.stream_recorder</span></code></a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">neurodecode.stream_recorder.StreamRecorder</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#module-neurodecode.stream_player">Stream Player: <code class="xref py py-mod docutils literal notranslate"><span class="pre">neurodecode.stream_player</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="neurodecode.stream_player.StreamPlayer.html">neurodecode.stream_player.StreamPlayer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="neurodecode.stream_player.Streamer.html">neurodecode.stream_player.Streamer</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#module-neurodecode.triggers">Trigger: <code class="xref py py-mod docutils literal notranslate"><span class="pre">neurodecode.triggers</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="neurodecode.triggers.Trigger.html">neurodecode.triggers.Trigger</a></li>
+<li class="toctree-l3"><a class="reference internal" href="neurodecode.triggers.TriggerDef.html">neurodecode.triggers.TriggerDef</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#module-neurodecode.decoder">Decoder: <code class="xref py py-mod docutils literal notranslate"><span class="pre">neurodecode.decoder</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="neurodecode.decoder.BCIDecoder.html">neurodecode.decoder.BCIDecoder</a></li>
+<li class="toctree-l3"><a class="reference internal" href="neurodecode.decoder.BCIDecoderDaemon.html">neurodecode.decoder.BCIDecoderDaemon</a></li>
+<li class="toctree-l3"><a class="reference internal" href="neurodecode.decoder.get_decoder_info.html">neurodecode.decoder.get_decoder_info</a></li>
+<li class="toctree-l3"><a class="reference internal" href="neurodecode.decoder.check_speed.html">neurodecode.decoder.check_speed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="neurodecode.decoder.sample_decoding.html">neurodecode.decoder.sample_decoding</a></li>
+<li class="toctree-l3"><a class="reference internal" href="neurodecode.decoder.log_decoding.html">neurodecode.decoder.log_decoding</a></li>
+<li class="toctree-l3"><a class="reference internal" href="neurodecode.decoder.compute_features.html">neurodecode.decoder.compute_features</a></li>
+<li class="toctree-l3"><a class="reference internal" href="neurodecode.decoder.feature2chz.html">neurodecode.decoder.feature2chz</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#utils-neurodecode-utils">Utils <code class="xref py py-mod docutils literal notranslate"><span class="pre">neurodecode.utils</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api.html#module-neurodecode.utils.benchmark"><code class="xref py py-mod docutils literal notranslate"><span class="pre">neurodecode.utils.benchmark</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api.html#module-neurodecode.utils.debug"><code class="xref py py-mod docutils literal notranslate"><span class="pre">neurodecode.utils.debug</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api.html#module-neurodecode.utils.etc"><code class="xref py py-mod docutils literal notranslate"><span class="pre">neurodecode.utils.etc</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api.html#module-neurodecode.utils.io"><code class="xref py py-mod docutils literal notranslate"><span class="pre">neurodecode.utils.io</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api.html#module-neurodecode.utils.layouts"><code class="xref py py-mod docutils literal notranslate"><span class="pre">neurodecode.utils.layouts</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api.html#module-neurodecode.utils.lsl"><code class="xref py py-mod docutils literal notranslate"><span class="pre">neurodecode.utils.lsl</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api.html#module-neurodecode.utils.math"><code class="xref py py-mod docutils literal notranslate"><span class="pre">neurodecode.utils.math</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api.html#module-neurodecode.utils.preprocess"><code class="xref py py-mod docutils literal notranslate"><span class="pre">neurodecode.utils.preprocess</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api.html#module-neurodecode.utils.timer"><code class="xref py py-mod docutils literal notranslate"><span class="pre">neurodecode.utils.timer</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">NeuroDecode</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../api.html">API Documentation</a> &raquo;</li>
+        
+      <li>neurodecode.stream_recorder.StreamRecorder</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/_child-documents/generated/neurodecode.stream_recorder.StreamRecorder.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="neurodecode-stream-recorder-streamrecorder">
+<h1>neurodecode.stream_recorder.StreamRecorder<a class="headerlink" href="#neurodecode-stream-recorder-streamrecorder" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt id="neurodecode.stream_recorder.StreamRecorder">
+<em class="property">class </em><code class="sig-prename descclassname">neurodecode.stream_recorder.</code><code class="sig-name descname">StreamRecorder</code><span class="sig-paren">(</span><em class="sig-param">record_dir</em>, <em class="sig-param">logger=&lt;Logger neurodecode (INFO)&gt;</em>, <em class="sig-param">state=&lt;Synchronized wrapper for c_long(0)&gt;</em>, <em class="sig-param">queue=None</em><span class="sig-paren">)</span><a class="headerlink" href="#neurodecode.stream_recorder.StreamRecorder" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class for recording the signals coming from lsl streams.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>record_dir</strong> (<em>str</em>) – The directory where the data will be saved.</p></li>
+<li><p><strong>logger</strong> (<em>Logger</em>) – The logger where to output info. Default is the NeuroDecode logger.</p></li>
+<li><p><strong>state</strong> (<em>mp.Value</em>) – Multiprocessing sharing variable to stop the recording from another process</p></li>
+<li><p><strong>queue</strong> (<em>mp.Queue</em>) – Can redirect sys.stdout to a queue (e.g. used for GUI).</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="neurodecode.stream_recorder.StreamRecorder.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">record_dir</em>, <em class="sig-param">logger=&lt;Logger neurodecode (INFO)&gt;</em>, <em class="sig-param">state=&lt;Synchronized wrapper for c_long(0)&gt;</em>, <em class="sig-param">queue=None</em><span class="sig-paren">)</span><a class="headerlink" href="#neurodecode.stream_recorder.StreamRecorder.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#neurodecode.stream_recorder.StreamRecorder.__init__" title="neurodecode.stream_recorder.StreamRecorder.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(record_dir[, logger, state, queue])</p></td>
+<td><p>Initialize self.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#neurodecode.stream_recorder.StreamRecorder.start" title="neurodecode.stream_recorder.StreamRecorder.start"><code class="xref py py-obj docutils literal notranslate"><span class="pre">start</span></code></a>([amp_name, eeg_only, verbose])</p></td>
+<td><p>Start recording data from LSL network, in a new process.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#neurodecode.stream_recorder.StreamRecorder.stop" title="neurodecode.stream_recorder.StreamRecorder.stop"><code class="xref py py-obj docutils literal notranslate"><span class="pre">stop</span></code></a>()</p></td>
+<td><p>Stop the recording.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#neurodecode.stream_recorder.StreamRecorder.wait" title="neurodecode.stream_recorder.StreamRecorder.wait"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wait</span></code></a>(timeout)</p></td>
+<td><p>Wait that the data streaming finishes.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Attributes</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#neurodecode.stream_recorder.StreamRecorder.amp_name" title="neurodecode.stream_recorder.StreamRecorder.amp_name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">amp_name</span></code></a></p></td>
+<td><p>The provided amp_name to connect to.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#neurodecode.stream_recorder.StreamRecorder.process" title="neurodecode.stream_recorder.StreamRecorder.process"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process</span></code></a></p></td>
+<td><p>The process where the recording takes place.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#neurodecode.stream_recorder.StreamRecorder.record_dir" title="neurodecode.stream_recorder.StreamRecorder.record_dir"><code class="xref py py-obj docutils literal notranslate"><span class="pre">record_dir</span></code></a></p></td>
+<td><p>The absolute directory where the data are saved.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#neurodecode.stream_recorder.StreamRecorder.state" title="neurodecode.stream_recorder.StreamRecorder.state"><code class="xref py py-obj docutils literal notranslate"><span class="pre">state</span></code></a></p></td>
+<td><p>Multiprocessing sharing variable to stop the recording from another process</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt id="neurodecode.stream_recorder.StreamRecorder.amp_name">
+<em class="property">property </em><code class="sig-name descname">amp_name</code><a class="headerlink" href="#neurodecode.stream_recorder.StreamRecorder.amp_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>The provided amp_name to connect to.</p>
+<p>If None, it will contain all available streams.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="neurodecode.stream_recorder.StreamRecorder.process">
+<em class="property">property </em><code class="sig-name descname">process</code><a class="headerlink" href="#neurodecode.stream_recorder.StreamRecorder.process" title="Permalink to this definition">¶</a></dt>
+<dd><p>The process where the recording takes place.</p>
+<p>Gives access to all the function associated with mp.process</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>mp.Process</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="neurodecode.stream_recorder.StreamRecorder.record_dir">
+<em class="property">property </em><code class="sig-name descname">record_dir</code><a class="headerlink" href="#neurodecode.stream_recorder.StreamRecorder.record_dir" title="Permalink to this definition">¶</a></dt>
+<dd><p>The absolute directory where the data are saved.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="neurodecode.stream_recorder.StreamRecorder.start">
+<code class="sig-name descname">start</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">amp_name</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">eeg_only</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#neurodecode.stream_recorder.StreamRecorder.start" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start recording data from LSL network, in a new process.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>amp_name</strong> (<em>str</em>) – Connect to a server named ‘amp_name’. None: no constraint.</p></li>
+<li><p><strong>eeg_only</strong> (<em>bool</em>) – If true, ignore non-EEG servers.</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em>) – IF true, it will print every sec the time since the recording start.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="neurodecode.stream_recorder.StreamRecorder.state">
+<em class="property">property </em><code class="sig-name descname">state</code><a class="headerlink" href="#neurodecode.stream_recorder.StreamRecorder.state" title="Permalink to this definition">¶</a></dt>
+<dd><p>Multiprocessing sharing variable to stop the recording from another process</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="neurodecode.stream_recorder.StreamRecorder.stop">
+<code class="sig-name descname">stop</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#neurodecode.stream_recorder.StreamRecorder.stop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stop the recording.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="neurodecode.stream_recorder.StreamRecorder.wait">
+<code class="sig-name descname">wait</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">timeout</span></em><span class="sig-paren">)</span><a class="headerlink" href="#neurodecode.stream_recorder.StreamRecorder.wait" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wait that the data streaming finishes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>timeout</strong> (<em>float</em>) – Block until timeout is reached. If None, block until streaming is finished.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="neurodecode.stream_player.StreamPlayer.html" class="btn btn-neutral float-right" title="neurodecode.stream_player.StreamPlayer" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="neurodecode.stream_viewer.StreamViewer.html" class="btn btn-neutral float-left" title="neurodecode.stream_viewer.StreamViewer" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+
+    </p>
+  </div> 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
