@@ -50,7 +50,7 @@ class BCIDecoder(object):
     """
     Decoder class
 
-    The label order of self.labels and self.label_names match likelihood orders computed by get_prob().
+    The labels order of self.labels and self.label_names match likelihood orders computed by get_prob().
     
     Parameters
     ----------
@@ -62,9 +62,11 @@ class BCIDecoder(object):
         The signal buffer's length in seconds
     fake : bool
         If True, load a fake decoder
+    label : mp.Variable('i')
+        Used for adaptive classifier, share the actual trial label
     """
     #----------------------------------------------------------------------
-    def __init__(self, amp_name, classifier=None, buffer_size=1.0, fake=False):
+    def __init__(self, amp_name, classifier=None, buffer_size=1.0, fake=False, label=None):
 
         self.classifier = classifier
         self.buffer_sec = buffer_size
@@ -115,12 +117,20 @@ class BCIDecoder(object):
             self._picks = [self._ch_names.index(mc[p]) for p in model['picks']]
             
             # Map channel indices based on channel names of the streaming server
-            if self._spatial_ch is not None:
+            if len(self._spatial_ch) > 0:
                 self._spatial_ch = [self._ch_names.index(mc[p]) for p in model['spatial_ch']]
-            if self._spectral_ch is not None:
+            if len(self._spectral_ch) > 0:
                 self._spectral_ch = [self._ch_names.index(mc[p]) for p in model['spectral_ch']]
-            if self._notch_ch is not None:
+            if len(self._notch_ch) > 0:
                 self._notch_ch = [self._ch_names.index(mc[p]) for p in model['notch_ch']]
+            if self._ref_ch is not None:
+                self._ref_ch['New'] = [self._ch_names.index(mc[p]) for p in model['_ref_ch']['New']]
+                self._ref_ch['Old'] = [self._ch_names.index(mc[p]) for p in model['_ref_ch']['Old']]
+            
+            if "SAVED_FEAT" in model:
+                self.xdata = model["SAVED_FEAT"]["X"].tolist()
+                self.ydata = model["SAVED_FEAT"]["Y"].tolist()
+                self.label = label            
 
             # PSD buffer
             #psd_temp = self.psde.transform(np.zeros((1, len(self._picks), self._w_frames // self._decim)))
@@ -222,9 +232,23 @@ class BCIDecoder(object):
             psd = self.psde.transform(w.reshape((1, w.shape[0], w.shape[1])))
 
             # make a feautre vector and classify
-            feats = np.concatenate(psd[0]).reshape(1, -1)
+            feats = np.concatenate(psd[0])
+            
+            # For adaptive classifier
+            if self.label:
+                with self.label.get_lock():
+                    if self.label.value in self.labels:
+                        self.xdata.append(feats.tolist())
+                        self.ydata.append(self.label.value)
+                    elif self.label.value == 0:
+                        pass
+                    elif self.label.value == 1:
+                        self.cls.fit(self.xdata, self.ydata)
+                        logger.info("Classifier retrained")
+                        self.label.value = 0            
 
             # compute likelihoods
+            feats = feats.reshape(1, -1)
             probs = self.cls.predict_proba(feats)[0]
 
             # update psd buffer ( < 1 msec overhead )
@@ -309,7 +333,7 @@ class BCIDecoderDaemon(object):
     """
     #----------------------------------------------------------------------
     def __init__(self, amp_name, classifier, buffer_size=1.0, fake=False, \
-                 fake_dirs=None, parallel=None, alpha_new=None, wait_init=True):
+                 fake_dirs=None, parallel=None, alpha_new=None, wait_init=True, label=None):
         """
         Parameters
         ----------
@@ -332,6 +356,8 @@ class BCIDecoderDaemon(object):
             p_new = p_new * alpha_new + p_old * (1 - alpha_new)
         wait_init : bool
             If True, wait (block) until the initial buffer of the decoder is full.
+        label : mp.Variable('i')
+            Used for adaptive classifier, share the actual trial label
         """
 
         self.classifier = classifier
@@ -342,6 +368,10 @@ class BCIDecoderDaemon(object):
         self.amp_name = amp_name
         self.parallel = parallel
         self.wait_init = wait_init
+        
+        # For adaptive classifier
+        self.label = label
+            
         if alpha_new is None:
             alpha_new = 1
         if not 0 <= alpha_new <= 1:
@@ -416,15 +446,15 @@ class BCIDecoderDaemon(object):
                 self.procs.append(mp.Process(target=self._daemon, args=\
                     [self.classifier, self.probs, self.probs_smooth, self.pread, self.t_problast,\
                      self.running[i], self.return_psd, psd_ctypes, self.psdlock,\
-                     dict(t_start=(t_start+i*stride), period=period)]))
+                     dict(t_start=(t_start+i*stride), period=period), self.label]))
         else:
             self.running = [mp.Value('i', 0)]
             self.procs = [mp.Process(target=self._daemon, args=\
                 [self.classifier, self.probs, self.probs_smooth, self.pread, self.t_problast,\
-                 self.running[0], self.return_psd, psd_ctypes, self.psdlock, None])]
+                 self.running[0], self.return_psd, psd_ctypes, self.psdlock, None, self.label])]
 
     #----------------------------------------------------------------------
-    def _daemon(self, classifier, probs, probs_smooth, pread, t_problast, running, return_psd, psd_ctypes, lock, interleave=None):
+    def _daemon(self, classifier, probs, probs_smooth, pread, t_problast, running, return_psd, psd_ctypes, lock, interleave=None, label=None):
         """
         Runs Decoder class as a daemon.
         """
@@ -440,7 +470,7 @@ class BCIDecoderDaemon(object):
             ps.nice(psutil.HIGH_PRIORITY_CLASS)
         
         logger.debug('[DecodeWorker-%-6d] Decoder worker process started' % (pid))
-        decoder = BCIDecoder(self.amp_name, classifier, buffer_size=self.buffer_sec, fake=self.fake)
+        decoder = BCIDecoder(self.amp_name, classifier, buffer_size=self.buffer_sec, fake=self.fake, label=label)
         if self.fake == False:
             psd = ctypeslib.as_array(psd_ctypes)
         else:
@@ -448,7 +478,9 @@ class BCIDecoderDaemon(object):
 
         if interleave is None:
             # single-core decoding
-            running.value = 1
+            with running.get_lock():
+                running.value = 1
+            
             while running.value == 1:
                 # compute features and likelihoods
                 probs[:], t_prob = decoder.get_prob(True)
