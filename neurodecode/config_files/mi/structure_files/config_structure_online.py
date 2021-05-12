@@ -15,7 +15,8 @@ class Basic:
     params1 = dict()
     params1.update({'DECODER_FILE': str})                           # Path to the saved decoder
     params1.update({'DIRECTIONS': ('L', 'R', 'U', 'D', 'B')})       # The feedback directions, correspond to the feedback squares (L:Left, R:Right, U: Up, D:Down, B:Both)
-    params1.update({'FAKE_CLS': (None, True)})                      #  If true, use a random classifier
+    params1.update({'FAKE_CLS': (None, True)})                      # If true, use a random classifier
+    params1.update({'ADAPTIVE': {'False':False, 'True':list}})      # For semi-adaptive: retrain the classifier every [X trials] the decoder with offline + new online data
 
     #-------------------------------------------
     # feedback type

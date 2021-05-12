@@ -28,6 +28,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import os
+import cv2
 import sys
 import time
 import random
@@ -35,15 +36,15 @@ import multiprocessing as mp
 
 from builtins import input
 
-import neurodecode.utils.io as io 
+import neurodecode.utils.io as io
 
 from neurodecode import logger
+from neurodecode.utils.lsl import search_lsl
 from neurodecode.triggers import Trigger, TriggerDef
 from neurodecode.protocols.feedback import Feedback
 from neurodecode.decoder.decoder import BCIDecoderDaemon
 from neurodecode.gui.streams import redirect_stdout_to_queue
 from neurodecode.utils.math import confusion_matrix
-
 
 # visualization
 keys = {'left':81, 'right':83, 'up':82, 'down':84, 'pgup':85, 'pgdn':86,
@@ -83,6 +84,7 @@ def check_config(cfg):
         'LOG_PROBS':False,
         'WITH_REX': False,
         'WITH_STIMO': False,
+        'ADAPTIVE': None,
     }
 
     for key in critical_vars['COMMON']:
@@ -129,15 +131,13 @@ def run(cfg, state=mp.Value('i', 1), queue=None):
 
     if cfg.FAKE_CLS is None:
         # chooose amp
-        if cfg.AMP_NAME is None and cfg.AMP_SERIAL is None:
-            amp_name, amp_serial = io.search_lsl(state, ignore_markers=True)
+        if cfg.AMP_NAME is None:
+            amp_name = search_lsl(ignore_markers=True, state=state)
         else:
             amp_name = cfg.AMP_NAME
-            amp_serial = cfg.AMP_SERIAL
         fake_dirs = None
     else:
         amp_name = None
-        amp_serial = None
         fake_dirs = [v for (k, v) in cfg.DIRECTIONS]
 
     # events and triggers
@@ -150,10 +150,13 @@ def run(cfg, state=mp.Value('i', 1), queue=None):
         input('Press Ctrl+C to stop or Enter to continue.')
         trigger = Trigger('FAKE', state)
         trigger.init(50)
+    
+    # For adaptive (need to share the actual true label accross process)
+    label = mp.Value('i', 0)    
 
     # init classification
     decoder = BCIDecoderDaemon(amp_name, cfg.DECODER_FILE, buffer_size=1.0, fake=(cfg.FAKE_CLS is not None), fake_dirs=fake_dirs, \
-                               parallel=cfg.PARALLEL_DECODING[cfg.PARALLEL_DECODING['selected']], alpha_new=cfg.PROB_ALPHA_NEW)
+                               parallel=cfg.PARALLEL_DECODING[cfg.PARALLEL_DECODING['selected']], alpha_new=cfg.PROB_ALPHA_NEW, label=label)
 
     # OLD: requires trigger values to be always defined
     #labels = [tdef.by_value[x] for x in decoder.get_labels()]
@@ -172,14 +175,9 @@ def run(cfg, state=mp.Value('i', 1), queue=None):
     dir_seq = []
     for x in range(cfg.TRIALS_EACH):
         dir_seq.extend(bar_dirs)
-    if cfg.TRIALS_RANDOMIZE:
-        random.shuffle(dir_seq)
-    else:
-        dir_seq = [d[0] for d in cfg.DIRECTIONS] * cfg.TRIALS_EACH
-    num_trials = len(dir_seq)
 
     logger.info('Initializing decoder.')
-    while decoder.is_running() is 0:
+    while decoder.is_running() == 0:
         time.sleep(0.01)
 
     # bar visual object
@@ -200,80 +198,116 @@ def run(cfg, state=mp.Value('i', 1), queue=None):
         probs_logfile = None
     feedback = Feedback(cfg, state, visual, tdef, trigger, probs_logfile)
 
-    # start
-    trial = 1
-    dir_detected = []
-    prob_history = {c:[] for c in bar_dirs}
-    while trial <= num_trials:
-        if cfg.SHOW_TRIALS:
-            title_text = 'Trial %d / %d' % (trial, num_trials)
+    # If adaptive classifier
+    if cfg.ADAPTIVE[cfg.ADAPTIVE['selected']]:
+        nb_runs = cfg.ADAPTIVE[cfg.ADAPTIVE['selected']][0]
+        adaptive = True
+    else:
+        nb_runs = 1
+        adaptive = False
+    
+    run = 1
+    while run <= nb_runs:
+    
+        if cfg.TRIALS_RANDOMIZE:
+            random.shuffle(dir_seq)
         else:
-            title_text = 'Ready'
-        true_label = dir_seq[trial - 1]
+            dir_seq = [d[0] for d in cfg.DIRECTIONS] * cfg.TRIALS_EACH
+        num_trials = len(dir_seq)
+        
+        # For adaptive, retrain classifier
+        if run > 1:
+            
+            #  Allow to retrain classifier
+            with decoder.label.get_lock():
+                decoder.label.value = 1
+            
+            # Wait that the retraining is done
+            while decoder.label.value == 1:
+                time.sleep(0.01)
+                
+            feedback.viz.put_text('Press any key')
+            feedback.viz.update()
+            cv2.waitKeyEx()
+            feedback.viz.fill()            
 
-        # profiling feedback
-        #import cProfile
-        #pr = cProfile.Profile()
-        #pr.enable()
-        result = feedback.classify(decoder, true_label, title_text, bar_dirs, prob_history=prob_history)
-        #pr.disable()
-        #pr.print_stats(sort='time')
-
-        if result is None:
-            break
-        else:
-            pred_label = result
-        dir_detected.append(pred_label)
-
-        if cfg.WITH_REX is True and pred_label == true_label:
-            # if cfg.WITH_REX is True:
-            if pred_label == 'U':
-                rex_dir = 'N'
-            elif pred_label == 'L':
-                rex_dir = 'W'
-            elif pred_label == 'R':
-                rex_dir = 'E'
-            elif pred_label == 'D':
-                rex_dir = 'S'
+        # start
+        trial = 1
+        dir_detected = []
+        prob_history = {c:[] for c in bar_dirs}
+        while trial <= num_trials:
+            if cfg.SHOW_TRIALS:
+                title_text = 'Trial %d / %d' % (trial, num_trials)
             else:
-                logger.warning('Rex cannot execute undefined action %s' % pred_label)
-                rex_dir = None
-            if rex_dir is not None:
-                visual.move(pred_label, 100, overlay=False, barcolor='B')
-                visual.update()
-                logger.info('Executing Rex action %s' % rex_dir)
-                os.system('%s/Rex/RexControlSimple.exe %s %s' % (os.environ['NEUROD_ROOT'], cfg.REX_COMPORT, rex_dir))
-                time.sleep(8)
-
-        if true_label == pred_label:
-            msg = 'Correct'
-        else:
-            msg = 'Wrong'
-        if cfg.TRIALS_RETRY is False or true_label == pred_label:
-            logger.info('Trial %d: %s (%s -> %s)' % (trial, msg, true_label, pred_label))
-            trial += 1
-
-    if len(dir_detected) > 0:
-        # write performance and log results
-        fdir = io.parse_path(cfg.DECODER_FILE).dir
-        logfile = time.strftime(fdir + "/online-%Y%m%d-%H%M%S.txt", time.localtime())
-        with open(logfile, 'w') as fout:
-            fout.write('Ground-truth,Prediction\n')
-            for gt, dt in zip(dir_seq, dir_detected):
-                fout.write('%s,%s\n' % (gt, dt))
-            cfmat, acc = confusion_matrix(dir_seq, dir_detected)
-            fout.write('\nAccuracy %.3f\nConfusion matrix\n' % acc)
-            fout.write(cfmat)
-            logger.info('Log exported to %s' % logfile)
-        print('\nAccuracy %.3f\nConfusion matrix\n' % acc)
-        print(cfmat)
+                title_text = 'Ready'
+            true_label = dir_seq[trial - 1]       
+    
+            # profiling feedback
+            #import cProfile
+            #pr = cProfile.Profile()
+            #pr.enable()
+            result = feedback.classify(decoder, true_label, title_text, bar_dirs, prob_history=prob_history, adaptive=adaptive)
+            #pr.disable()
+            #pr.print_stats(sort='time')
+    
+            if result is None:
+                decoder.stop()
+                return
+            else:
+                pred_label = result
+            dir_detected.append(pred_label)
+    
+            if cfg.WITH_REX is True and pred_label == true_label:
+                # if cfg.WITH_REX is True:
+                if pred_label == 'U':
+                    rex_dir = 'N'
+                elif pred_label == 'L':
+                    rex_dir = 'W'
+                elif pred_label == 'R':
+                    rex_dir = 'E'
+                elif pred_label == 'D':
+                    rex_dir = 'S'
+                else:
+                    logger.warning('Rex cannot execute undefined action %s' % pred_label)
+                    rex_dir = None
+                if rex_dir is not None:
+                    visual.move(pred_label, 100, overlay=False, barcolor='B')
+                    visual.update()
+                    logger.info('Executing Rex action %s' % rex_dir)
+                    os.system('%s/Rex/RexControlSimple.exe %s %s' % (os.environ['NEUROD_ROOT'], cfg.REX_COMPORT, rex_dir))
+                    time.sleep(8)
+    
+            if true_label == pred_label:
+                msg = 'Correct'
+            else:
+                msg = 'Wrong'
+            if cfg.TRIALS_RETRY is False or true_label == pred_label:
+                logger.info('Trial %d: %s (%s -> %s)' % (trial, msg, true_label, pred_label))
+                trial += 1
+    
+        if len(dir_detected) > 0:
+            # write performance and log results
+            fdir = io.parse_path(cfg.DECODER_FILE).dir
+            logfile = time.strftime(fdir + "/online-%Y%m%d-%H%M%S.txt", time.localtime())
+            with open(logfile, 'w') as fout:
+                fout.write('Ground-truth,Prediction\n')
+                for gt, dt in zip(dir_seq, dir_detected):
+                    fout.write('%s,%s\n' % (gt, dt))
+                cfmat, acc = confusion_matrix(dir_seq, dir_detected)
+                fout.write('\nAccuracy %.3f\nConfusion matrix\n' % acc)
+                fout.write(cfmat)
+                logger.info('Log exported to %s' % logfile)
+            print('\nAccuracy %.3f\nConfusion matrix\n' % acc)
+            print(cfmat)
+        
+        run += 1
 
     visual.finish()
 
     with state.get_lock():
         state.value = 0
 
-    if decoder:
+    if decoder.is_running():
         decoder.stop()
 
     '''
