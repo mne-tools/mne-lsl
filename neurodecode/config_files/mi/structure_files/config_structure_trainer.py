@@ -97,9 +97,10 @@ class Advanced:
     params6.update({'CLASSIFIER':   {'GB': dict(trees=int, learning_rate=float, depth=int, seed=int), \
                                     'RF': dict(trees=int, depth=int, seed=int), \
                                     'rLDA': dict(r_coeff=float), \
-                                    'LDA': dict()}})                                                        
+                                    'LDA': dict(solver=('svd','lsqr','eigen'), shrinkage=(None, 'auto'))}})                                                        
 
     params6.update({'EXPORT_CLS': (False, True)})                                                           # Save the trained classifier to .pkl file
+    params6.update({'SAVE_FEATURES': (False, True)})                                                        # Save the feature with classifier if online is adaptive 
 
 
     #-------------------------------------------

@@ -12,7 +12,6 @@ import sys
 import time
 import inspect
 import logging
-import traceback
 import multiprocessing as mp
 from threading import Thread
 from datetime import datetime
@@ -36,7 +35,6 @@ from neurodecode.gui.connectClass import PathFolderFinder, PathFileFinder, Conne
 from neurodecode import logger, init_logger
 from neurodecode.stream_viewer import StreamViewer
 from neurodecode.stream_recorder import StreamRecorder
-import neurodecode.stream_recorder.stream_recorder as recorder
 
 class cfg_class:
     def __init__(self, cfg):

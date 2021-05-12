@@ -102,7 +102,7 @@ class Feedback:
             self.ser.close()
             logger.info('Closed STIMO serial port %s' % self.stimo_port)
 
-    def classify(self, decoder, true_label, title_text, bar_dirs, state='start', prob_history=None):
+    def classify(self, decoder, true_label, title_text, bar_dirs, state='start', prob_history=None, adaptive=False):
         """
         Run a single trial
         """
@@ -116,6 +116,7 @@ class Feedback:
 
         tm_classify = Timer(autoreset=True)
         self.stimo_timer = Timer()
+        
         while True:
             self.tm_display.sleep_atleast(self.refresh_delay)
             self.tm_display.reset()
@@ -150,7 +151,10 @@ class Feedback:
 
                 if self.cfg.SHOW_CUE is True:
                     if self.cfg.FEEDBACK_TYPE == 'BAR':
-                        self.viz.move(true_label, 100, overlay=False, barcolor='G')
+                        self.viz.move(true_label, 100, overlay=False)
+                    elif self.cfg.FEEDBACK_TYPE == 'COLORS':
+                        self.viz.draw_cue(true_label)
+                        self.viz.move(true_label, 100, overlay=False)
                     elif self.cfg.FEEDBACK_TYPE == 'BODY':
                         self.viz.put_text(DIRS[true_label], 'R')
                     if true_label == 'L':  # left
@@ -214,13 +218,24 @@ class Feedback:
                 elif true_label == 'B':  # both
                     self.trigger.signal(self.tdef.BOTH_GO)
                 else:
-                    raise RuntimeError('Unknown truedirection %s' % true_label)
+                    raise RuntimeError('Unknown true direction %s' % true_label)
 
                 self.tm_watchdog.reset()
                 self.tm_trigger.reset()
+                
+                # For adaptive
+                if adaptive:
+                    with decoder.label.get_lock():
+                        decoder.label.value = decoder.labels[true_label_index]                
 
             elif state == 'dir':
                 if self.tm_trigger.sec() > self.cfg.TIMINGS['CLASSIFY'] or (self.premature_end and bar_score >= 100):
+                    
+                    #  For adaptive
+                    if adaptive:
+                        with decoder.label.get_lock():
+                            decoder.label.value = 0                    
+                    
                     if not hasattr(self.cfg, 'SHOW_RESULT') or self.cfg.SHOW_RESULT is True:
                         # show classfication result
                         if self.cfg.WITH_STIMO is True:
@@ -231,7 +246,10 @@ class Feedback:
                             else:
                                 res_color = 'Y'
                         else:
-                            res_color = 'Y'
+                            if bar_label == true_label:
+                                res_color = 'G'
+                            else:
+                                res_color = 'Y'                            
                         if self.cfg.FEEDBACK_TYPE == 'BODY':
                             self.viz.move(bar_label, bar_score, overlay=False, barcolor=res_color, caption=DIRS[bar_label], caption_color=res_color)
                         else:
