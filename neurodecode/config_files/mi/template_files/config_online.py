@@ -7,7 +7,8 @@ DECODER_FILE = r''
 # fake decoder?
 FAKE_CLS = None
 DIRECTIONS = [ ('L', 'LEFT_GO'), ('R', 'RIGHT_GO') ]
-ADAPTIVE =  {'selected':'False', 'False':False, 'True':[3]}     # Retrain classifier every 6 trials (3 trials per directions)
+ADAPTIVE =  {'selected':'False', 'False':False, 'True':[3]}     # Retrain classifier every 2 x TRIALS_EACH, 3= nb_runs, 
+                                                                # total = 3 x 2 x TRIAL_EACH
 
 # trigger device
 TRIGGER_DEVICE = None # None | 'ARDUINO' | 'USB2LPT' | 'DESKTOP' | 'SOFTWARE'
