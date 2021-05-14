@@ -295,6 +295,8 @@ class Feedback:
                 else:
                     # classify
                     probs_new = decoder.get_prob_smooth_unread()
+                    probs_unsmoothed = decoder.get_prob()
+                    
                     if probs_new is None:
                         if self.tm_watchdog.sec() > 3:
                             logger.warning('No classification being done. Are you receiving data streams?')
@@ -402,8 +404,8 @@ class Feedback:
                                 biastxt = '[Bias=%s%.3f]  ' % (self.bar_bias[0], self.bar_bias[1])
                             else:
                                 biastxt = ''
-                            msg = '%s%s  prob %s   acc %s   bar %s%d  (%.1f ms)' % \
-                                  (biastxt, bar_dirs, list2string(probs_new, '%.2f'), list2string(probs, '%.2f'),
+                            msg = '%s%s  prob %s smoothed %s  biaised %s   bar %s%d  (%.1f ms)' % \
+                                  (biastxt, bar_dirs, list2string(probs_unsmoothed, '%.2f'), list2string(probs_new, '%.2f'), list2string(probs, '%.2f'),
                                    bar_label, bar_score, tm_classify.msec())
                             logger.info(msg)
                             if self.logf is not None:
