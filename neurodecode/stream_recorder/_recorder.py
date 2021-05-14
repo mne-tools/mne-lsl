@@ -168,6 +168,10 @@ class _Recorder:
             self.logger.info('Saved to %s\n' % pcl_files[s])
             self.logger.info('Converting raw files into fif.')
             
+            # Convert only EEG stream to fif format
+            if not isinstance(self.sr.streams[s], StreamEEG):
+                continue
+            
             if os.path.exists(eve_file):
                 self.logger.info('Found matching event file, adding events.')
                 pcl2fif(pcl_files[s], external_event=eve_file)
