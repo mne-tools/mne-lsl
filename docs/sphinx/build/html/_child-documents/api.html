@@ -361,7 +361,7 @@ tweak tool to set to 500us time resolution of the OS.</p>
 </tbody>
 </table>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">neurodecode.stream_player</span> <span class="kn">import</span> <span class="n">StreamPlayer</span>
-<span class="n">sp</span> <span class="o">=</span> <span class="n">stream_player</span><span class="p">(</span><span class="n">server_name</span><span class="o">=</span><span class="s1">&#39;StreamPlayer&#39;</span><span class="p">,</span> <span class="n">fif_file</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;C:\test.fif&#39;</span><span class="p">,</span> <span class="n">chunk_size</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
+<span class="n">sp</span> <span class="o">=</span> <span class="n">StreamPlayer</span><span class="p">(</span><span class="n">server_name</span><span class="o">=</span><span class="s1">&#39;StreamPlayer&#39;</span><span class="p">,</span> <span class="n">fif_file</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;C:\test.fif&#39;</span><span class="p">,</span> <span class="n">chunk_size</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
 <span class="n">sp</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
 <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&gt;&gt; Press ENTER to stop streaming </span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 <span class="n">sp</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
