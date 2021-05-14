@@ -160,10 +160,7 @@ def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, sp
 
     # Downsample
     if decim is not None and decim != 1:
-        assert sfreq is not None and sfreq > 0, 'Wrong sfreq value.'
-        if type(raw) == np.ndarray:
-            logger.error('Decimation cannot be applied if sfreq is None.')
-            raise ValueError        
+        assert sfreq is not None and sfreq > 0, 'Wrong sfreq value.'   
         raw, sfreq = _apply_downsampling(raw, decim, sfreq, n_jobs)
 
     # Format data to numpy array
