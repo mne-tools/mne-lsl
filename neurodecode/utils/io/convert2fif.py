@@ -72,7 +72,7 @@ def any2fif(filename, outdir=None, channel_file=None):
         logger.error('Ignored unrecognized file extension %s. It should be [.pickle | .eeg | .edf | .gdf | .bdf | .xdf]' % p.ext)
 
 #----------------------------------------------------------------------
-def pcl2fif(filename, outdir=None, external_event=None, precision='single', replace=True):
+def pcl2fif(filename, outdir=None, external_event=None, precision='single', replace=False):
     """
     Convert NeuroDecode Python pickle format to mne.io.raw.
 
