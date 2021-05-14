@@ -90,7 +90,7 @@ def rereference(raw, ref_new, ref_old=None):
 
     # Re-reference and recover the original reference channel values if possible
     if type(raw) == np.ndarray:
-        if ref_new is not None:
+        if ref_old is not None:
             logger.error('Recovering original reference channel is not yet supported for numpy arrays.')
             raise NotImplementedError
         if type(ref_new[0]) is not int:
@@ -211,7 +211,7 @@ def _apply_notch_filtering(data, notch, notch_ch, eeg_channels, ch_names, n_jobs
     """
     if notch_ch is None:
         notch_ch = eeg_channels
-        logger.warning('preprocess(): For temporal filter, all channels selected')
+        logger.warning('preprocess(): For notch filter, all channels selected')
     elif len(notch_ch):
         if type(notch_ch[0]) == str:
             assert ch_names is not None, 'preprocess(): ch_names must not be None'
