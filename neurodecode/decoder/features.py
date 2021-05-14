@@ -78,7 +78,7 @@ def compute_features(cfg):
     '''
     Compute features using config specification.
 
-    Performs preprocessing, epcoching and feature computation.
+    Performs preprocessing, epoching and feature computation.
 
     Parameters
     ----------
@@ -112,9 +112,9 @@ def compute_features(cfg):
     
     #-----------------------------------------------------------
     # Rereference
-    reref = cfg.REREFERENCE[cfg.REREFERENCE['selected']]
-    if reref is not None:
-        rereference(raw, reref['New'], reref['Old'])
+    #reref = cfg.REREFERENCE[cfg.REREFERENCE['selected']]
+    #if reref is not None:
+        #rereference(raw, reref['New'], reref['Old'])
     
     #-----------------------------------------------------------
     # Load events from file
@@ -204,7 +204,7 @@ def compute_features(cfg):
             rereference=cfg.REREFERENCE[cfg.REREFERENCE['selected']],
             decim=cfg.FEATURES['PSD']['decim'],
             n_jobs=cfg.N_JOBS
-        )
+        )        
         
         #-----------------------------------------------------------
         # Compute features
@@ -342,6 +342,8 @@ def _get_psd(epochs, psde, wlen, wstep, picks=None, flatten=True, preprocess=Non
         The channels to use; use all if None
     flatten : bool
         If True, generate concatenated feature vectors ([windows] x [channels x freqs])
+    preprocess : dict
+        The preprocessing info (spatial, temporal, notch, reref...)
     n_jobs: int
         The number of cores to use, None = use all cores
 
