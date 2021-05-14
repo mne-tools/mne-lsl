@@ -116,7 +116,7 @@ Stream Player: :mod:`neurodecode.stream_player`
 .. code-block:: python
 
     from neurodecode.stream_player import StreamPlayer
-    sp = stream_player(server_name='StreamPlayer', fif_file=r'C:\test.fif', chunk_size=16)
+    sp = StreamPlayer(server_name='StreamPlayer', fif_file=r'C:\test.fif', chunk_size=16)
     sp.start()
     input("\n>> Press ENTER to stop streaming \n")
     sp.stop()
