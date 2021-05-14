@@ -143,6 +143,7 @@ def redirect_stdout_to_queue(logger, queue, verbosity):
     """
     if queue is not None:
 
+        logger.setLevel(verbosity)
         sys.stdout = WriteStream(queue)
         # sys.stderr = WriteStream(queue)
         add_logger_handler(logger, sys.stdout, verbosity)
