@@ -272,7 +272,7 @@ def xdf2fif(filename, outdir=None):
     trig_ch_guess = preprocess.find_event_channel(None, labels)
 
     if trig_ch_guess is None:
-        logger.warning('No trigger channel found: {}'.format(raw.info['ch_names']))
+        logger.warning(f'No trigger channel found: {labels}')
         trig_ch_guess = int(input('Provide the trigger channel index to continue: \n >> '))
     
     # Plugins use other name (markers....)
