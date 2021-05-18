@@ -64,6 +64,8 @@ def merge_events(trigger_file, events, rawfile_in, rawfile_out):
 #----------------------------------------------------------------------
 if __name__ == '__main__':
     
+    import sys
+    
     if len(sys.argv) > 5:
         raise IOError("Too many arguments provided. Max is 4: fif_dir; out_dir; trigger_file; events")
     
