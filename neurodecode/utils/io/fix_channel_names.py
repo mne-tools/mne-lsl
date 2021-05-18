@@ -46,6 +46,8 @@ def fix_channel_names(fif_dir, new_channel_names):
 #----------------------------------------------------------------------
 if __name__ == '__main__':
     
+    import sys
+    
     if len(sys.argv) > 3:
         raise IOError("Too many arguments provided. Max is 2: fif_dir; new_channel_names")
     
