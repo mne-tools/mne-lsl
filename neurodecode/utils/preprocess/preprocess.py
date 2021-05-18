@@ -337,7 +337,6 @@ def _format_eeg_data_for_preprocessing(raw, ch_names=None):
         # MNE Raw object: exclude event channel
         ch_names = raw.ch_names
         data = raw._data
-        sfreq = raw.info['sfreq']
         assert 2 <= len(data.shape) <= 3, 'Unknown data shape. The dimension must be 2 or 3.'
         if len(data.shape) == 3:
             # assert type(raw) is mne.epochs.Epochs
