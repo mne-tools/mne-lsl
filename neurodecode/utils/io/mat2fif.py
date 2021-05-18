@@ -54,6 +54,8 @@ def mat2fif(mat_file, sample_rate, data_field, event_field):
 #----------------------------------------------------------------------
 if __name__ == '__main__':
     
+    import sys
+    
     if len(sys.argv) > 2:
         raise IOError("Two many arguments provided, max is 4 (matfile, sample_rate, data_field, event_field)")
     

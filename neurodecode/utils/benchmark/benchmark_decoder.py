@@ -53,6 +53,8 @@ def benchmark_BCIdecoder(decoder_file, num_decode=200):
 
 if __name__ == '__main__':
     
+    import sys
+    
     if len(sys.argv) > 3:
         raise IOError("Two many arguments provided, max is 2  (decoder_file and num_decode)")
     
