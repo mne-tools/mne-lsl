@@ -4,8 +4,8 @@ import scipy
 #----------------------------------------------------------------------
 def load_mat(filename):
     '''
-    Proper mat file loading perserving the correct structure
-    https://stackoverflow.com/review/suggested-edits/21667510
+    Proper mat file loading preserving the correct structure
+    https://stackoverflow.com/questions/7008608/scipy-io-loadmat-nested-structures-i-e-dictionaries
 
     It should be called instead of direct scipy.io.loadmat
     as it cures the problem of not properly recovering python dictionaries

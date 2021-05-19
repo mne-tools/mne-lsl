@@ -1,4 +1,5 @@
-from __future__ import print_function, division, unicode_literals
+from __future__ import unicode_literals
+from builtins import input
 
 """
 Convert known file format to FIF.
@@ -10,7 +11,6 @@ import mne
 import pickle
 import numpy as np
 
-from builtins import input
 from pathlib import Path
 
 from neurodecode import logger

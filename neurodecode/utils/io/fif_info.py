@@ -1,8 +1,8 @@
-from __future__ import print_function, division
+from __future__ import print_function
+from builtins import input
 
 import sys
 import mne
-from builtins import input
 
 import neurodecode.utils.io as io
 

@@ -1,4 +1,4 @@
-from __future__ import print_function, division
+from builtins import input
 
 """
 Export fif data to mat files.
@@ -11,39 +11,40 @@ from scipy.io import savemat
 import neurodecode.utils.io as io 
 
 #----------------------------------------------------------------------
-def fif2mat(data_dir, out_dir=None):
+def fif2mat(fif_dir, out_dir=None):
     """
     Convert MNE format (.fif) to MatLab format (.mat).
     
     Parameters
     ----------
-    data_dir : str
+    fif_dir : str
         The directory containing the .fif files to convert
     out_dir : str
         The output directory
     """
     # mat file will be in a subfolder
     if not out_dir:
-        out_dir = '%s/mat_files' % data_dir
+        out_dir = '%s/mat_files' % fif_dir
     
     #  create the output directory
     io.make_dirs(out_dir)
     
     # Convert each fif file 
-    for rawfile in io.get_file_list(data_dir, fullpath=True):
+    for f in io.get_file_list(fif_dir, fullpath=True):
         # keep only fif files
-        if rawfile[-4:] != '.fif': continue
+        if io.parse_path(f).ext not in ['fif', 'fiff']: 
+            continue
         
         # Load fif
-        raw, events = io.load_fif_raw(rawfile)
+        raw, events = io.load_fif_raw(f)
         
         # Formating
         events[:,0] += 1            # MATLAB uses 1-based indexing
         sfreq = raw.info['sfreq']
-        data = dict(signals=raw._data, events=events, sfreq=sfreq, ch_names=raw.ch_names)
+        data = dict(signals=raw.get_data(picks='all'), events=events, sfreq=sfreq, ch_names=raw.ch_names)
         
         # Save
-        fname = io.parse_path(rawfile).name
+        fname = io.parse_path(f).name
         matfile = '%s/%s.mat' % (out_dir, fname)
         savemat(matfile, data)
         logger.info('Exported to %s' % matfile)
