@@ -63,11 +63,11 @@ class Cap:
         """Constructor"""
         try:
             self._layout = CAP[cap_name]
-            self._ch_types = CH_TYPES(cap_name)
+            self._ch_types = CH_TYPES[cap_name]
         except:
             raise KeyError("The provided cap name is not yet included. Add it first to NeuroDecode.")
         try:
-            self._laplacian = LAPLACIAN(cap_name)
+            self._laplacian = LAPLACIAN[cap_name]
         except:
             logger.warning("The laplacian is not yet defined for this cap. Add it first to NeuroDecode to apply laplacian spatial filtering.")
             self._laplacian = None
