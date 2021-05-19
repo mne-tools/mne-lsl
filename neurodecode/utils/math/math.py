@@ -1,3 +1,5 @@
+from __future__ import division
+
 import math
 from sklearn.metrics import confusion_matrix as sk_confusion_matrix 
 import numpy as np
@@ -9,13 +11,9 @@ def sigmoid(x):
     """
     Standard sigmoid
     """
-    return 1 / (1 + math.exp(-x))
-
-#----------------------------------------------------------------------
-def sigmoid_array(x):
-    """
-    Sigmoid for a np.Array
-    """
+    if isinstance(x, (list, tuple)):
+        x = np.array(x)
+    
     return 1 / (1 + np.exp(-x))
 
 #----------------------------------------------------------------------
@@ -101,7 +99,7 @@ def confusion_matrix(Y_true, Y_pred, label_len=6):
     if type(Y_true) == np.ndarray:
         Y_labels = np.unique(Y_true)
     else:
-        Y_labels = [x for x in set(Y_true)]
+        Y_labels = list(set(Y_true))
     
     # Check the provided label name length
     if label_len < 6:
@@ -128,10 +126,10 @@ def confusion_matrix(Y_true, Y_pred, label_len=6):
             r /= s
     cm_txt = label_tpl % 'gt\dt'
     for l in Y_labels:
-        cm_txt += label_tpl % l[:label_len]
+        cm_txt += label_tpl % str(l)[:label_len]
     cm_txt += '\n'
     for l, r in zip(Y_labels, cm_rate):
-        cm_txt += label_tpl % l[:label_len]
+        cm_txt += label_tpl % str(l)[:label_len]
         for c in r:
             cm_txt += col_tpl % c
         cm_txt += '\n'

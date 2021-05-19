@@ -40,11 +40,13 @@ def find_event_channel(raw=None, ch_names=None):
     --------
     int : The event channel index or None if not found.
     """
+    valid_trigger_ch_names = ['TRIGGER', 'STI', 'TRG', 'CH_Event']
+    
     # For numpy array
-    if type(raw) == np.ndarray:
+    if isinstance(raw, np.ndarray):
         if ch_names is not None:
             for ch_name in ch_names:
-                if 'TRIGGER' in ch_name or 'STI ' in ch_name or 'TRG' in ch_name or 'CH_Event' in ch_name:
+                if any(trigger_ch_name in ch_name for trigger_ch_name in valid_trigger_ch_names):
                     return ch_names.index(ch_name)
 
         # data range between 0 and 255 and all integers?
@@ -59,7 +61,7 @@ def find_event_channel(raw=None, ch_names=None):
             return raw.get_channel_types().index('stim')
 
         for ch_name in raw.ch_names:
-            if 'TRIGGER' in ch_name or 'STI ' in ch_name or 'TRG' in ch_name or 'CH_Event' in ch_name:
+            if any(trigger_ch_name in ch_name for trigger_ch_name in valid_trigger_ch_names):
                 return raw.ch_names.index(ch_name)
     
     # For unknown data type
@@ -67,7 +69,7 @@ def find_event_channel(raw=None, ch_names=None):
         if ch_names is None:
             raise ValueError('ch_names cannot be None when raw is None.')
         for ch_name in ch_names:
-            if 'TRIGGER' in ch_name or 'STI ' in ch_name or 'TRG' in ch_name or 'CH_Event' in ch_name:
+            if any(trigger_ch_name in ch_name for trigger_ch_name in valid_trigger_ch_names):
                 return ch_names.index(ch_name)
     return None
 
@@ -89,7 +91,7 @@ def rereference(raw, ref_new, ref_old=None):
     """
 
     # Re-reference and recover the original reference channel values if possible
-    if type(raw) == np.ndarray:
+    if isinstance(raw, np.ndarray):
         if ref_old is not None:
             logger.error('Recovering original reference channel is not yet supported for numpy arrays.')
             raise NotImplementedError
