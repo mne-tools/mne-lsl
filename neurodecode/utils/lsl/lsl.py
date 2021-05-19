@@ -1,5 +1,3 @@
-from __future__ import print_function, division
-
 """
 LSL wrapper functions for creating a server and a client.
 """
@@ -24,7 +22,7 @@ def start_server(server_name, n_channels=1, channel_format='string', nominal_sra
     nominal_srate : float
         Sampling rate in Hz
     stype : str
-        Signal type
+        Signal type (https://github.com/sccn/xdf/wiki/Meta-Data#stream-content-types)
     source_id : str
         If None, set to server name
 
@@ -171,7 +169,7 @@ def lsl_channel_list(inlet):
     --------
     list : List of channels name [ name1, name2, ... ]
     """
-    if not type(inlet) is pylsl.StreamInlet:
+    if not isinstance(inlet, pylsl.StreamInlet):
         logger.error('Wrong input type %s' % type(inlet))
         raise TypeError
 
