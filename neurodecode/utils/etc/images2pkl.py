@@ -1,13 +1,14 @@
 from __future__ import print_function, division
+from builtins import input
 
 import cv2
 import gzip
-import os
 import sys
 
 from pathlib import Path
 
 from neurodecode import logger
+from neurodecode.utils.io import get_file_list
 
 try:
     import cPickle as pickle  # Python 2 (cPickle = C version of pickle)
@@ -29,9 +30,7 @@ def images2pkl(in_dir, out_dir):
     if pickle.HIGHEST_PROTOCOL >= 4:
         logger.info('Reading images from %s' % in_dir)
         
-        for file in os.scandir(in_dir):
-            if os.path.isdir(file):
-                continue
+        for file in get_file_list(in_dir, fullpath=True, recursive=False):
             
             path = Path(file)
             if path.suffix != '.png':
