@@ -1,4 +1,8 @@
-from __future__ import print_function, division
+from __future__ import print_function
+from builtins import input
+
+import os
+import mne
 
 from neurodecode import logger
 import neurodecode.utils.io as io
@@ -15,31 +19,29 @@ def fix_channel_names(fif_dir, new_channel_names):
     new_channel_names : list
         The list of the new channel names
     '''
-
-    flist = []
+    
     for f in io.get_file_list(fif_dir):
-        if io.parse_path(f).ext == 'fif':
-            flist.append(f)
-
-    if len(flist) > 0:
-        io.make_dirs('%s/corrected' % fif_dir)
+        if not io.parse_path(f).ext == 'fif':
+            continue
         
-        for f in io.get_file_list(fif_dir):
-            logger.info('\nLoading %s' % f)
-            p = io.parse_path(f)
+        if not os.path.isdir('%s/corrected' % fif_dir):
+            io.make_dirs('%s/corrected' % fif_dir)
+        
+        logger.info('\nLoading %s' % f)
+        pp = io.parse_path(f)
+        
+        raw, eve = io.load_fif_raw(f)
+        
+        if len(raw.ch_names) != len(new_channel_names):
+            raise RuntimeError('The number of new channels do not match that of fif file.')
+        
+        mapping = {raw.info['ch_names'][k]: new_ch for k, new_ch in enumerate(new_channel_names)}
+        mne.rename_channels(raw.info, mapping)
             
-            if p.ext == 'fif':
-                raw, eve = io.load_fif_raw(f)
-                
-                if len(raw.ch_names) != len(new_channel_names):
-                    raise RuntimeError('The number of new channels do not matach that of fif file.')
-                raw.info['ch_names'] = new_channel_names
-                
-                for ch, new_ch in zip(raw.info['chs'], new_channel_names):
-                    ch['ch_name'] = new_ch
-                out_fif = '%s/corrected/%s.fif' % (p.dir, p.name)
-                logger.info('Exporting to %s' % out_fif)
-                raw.save(out_fif)
+        out_fif = '%s/corrected/%s.fif' % (pp.dir, pp.name)
+        logger.info('Exporting to %s' % out_fif)
+        raw.save(out_fif)
+    
     else:
         logger.warning('No fif files found in %s' % fif_dir)
 
@@ -57,7 +59,7 @@ if __name__ == '__main__':
     
     if len(sys.argv) == 2:
         fif_dir = sys.argv[1]
-        new_channel_names = float(input('New channel names (list)? \n>> '))
+        new_channel_names = list(input('New channel names (list)? \n>> '))
         
     if len(sys.argv) == 1:
         fif_dir = input('Directory path containing the file files? \n>> ')

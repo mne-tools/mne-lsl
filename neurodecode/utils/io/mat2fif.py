@@ -1,4 +1,5 @@
-from __future__ import print_function, division, unicode_literals
+from __future__ import unicode_literals
+from builtins import input
 
 """
 Export Matlab signal data into fif format.
