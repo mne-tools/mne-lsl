@@ -11,15 +11,18 @@ def set_eeg_reference(inst, ref_channels, ref_old=None, bads=None):
     Parameters
     ----------
     inst : numpy.ndarray (n_channels x n_samples)
-        The raw data.
+        The raw data. Assumes all data is 'eeg'.
     ref_channels : list of int | int
-        Can be:
-        - The name(s) of the channel(s) used to construct the reference.
-        - 'average' to apply an average reference (CAR)
+        List of channel indices to use as reference.
     ref_old : list of str | list of int | str
-        Channel(s) to recover.
+        Channel(s) to recover. List of indices, list of names.
     bads : None | list of int
-        The bad channels to ignore for an average reference.
+        List of indices of bad channels to ignore for an average reference.
+
+    Returns
+    -------
+    numpy.ndarray (n_channels x n_samples)
+        The data re-referenced.
     """
     if ref_channels != 'average':
         if isinstance(ref_channels, int):
@@ -30,18 +33,16 @@ def set_eeg_reference(inst, ref_channels, ref_old=None, bads=None):
                              f'are not in raw.shape {inst.shape[0]}.')
 
     if ref_old is not None:
-        if isinstance(ref_old, (list, tuple, np.ndarray)):
-            ref_old = len(ref_old)
-
-        refs = np.zeros((ref_old, inst.shape[1]))
+        refs = np.zeros((len(ref_old), inst.shape[1]))
         inst = np.vstack((inst, refs))  # this can not be done in-place
 
-    if isinstance(ref_channels, (list, tuple)):
+    if isinstance(ref_channels, (list, tuple, np.ndarray)):
         if bads is not None:
             bad_in_new_reference = set(ref_channels).intersection(set(bads))
             if len(bad_in_new_reference) != 0:
                 logger.warning(
-                    f'Channels marked as bad are present in the new reference {ref_channels}')
+                    'Channels marked as bad are present in '
+                    f'the new reference {ref_channels}')
         inst -= np.mean(inst[ref_channels], axis=0)
 
     elif ref_channels == 'average':
@@ -51,3 +52,5 @@ def set_eeg_reference(inst, ref_channels, ref_old=None, bads=None):
             car = np.mean(np.delete(copy.deepcopy(inst), bads), axis=0)
 
         inst -= car
+
+    return inst

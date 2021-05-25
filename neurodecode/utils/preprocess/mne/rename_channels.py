@@ -46,7 +46,7 @@ def rename_channels(inst, new_channel_names, copy=False, **kwargs):
 
 def dir_rename_channels(fif_dir, recursive, new_channel_names, overwrite=False):
     """
-    Change the channel names of all fif files in a given directory.
+    Change the channel names of all raw fif files in a given directory.
     The file name must respect MNE convention and end with '-raw.fif' or
     '-raw.fiff'.
 
@@ -57,7 +57,7 @@ def dir_rename_channels(fif_dir, recursive, new_channel_names, overwrite=False):
     recursive : bool
         If true, search recursively.
     new_channel_names : list
-        The list of the new channel names
+        The list of the new channel names.
     overwrite : bool
         If true, overwrite previously corrected files.
     """
@@ -71,7 +71,6 @@ def dir_rename_channels(fif_dir, recursive, new_channel_names, overwrite=False):
 
     for fif_file in io.get_file_list(fif_dir, fullpath=True, recursive=recursive):
         fif_file = Path(fif_file)
-        print(fif_file)
 
         if fif_file.suffix == '.fif':
             continue  # skip
@@ -81,14 +80,14 @@ def dir_rename_channels(fif_dir, recursive, new_channel_names, overwrite=False):
         raw = mne.io.read_raw(fif_file, preload=True)
         rename_channels(raw, new_channel_names, copy=False)
 
-        if not (fif_file.parent / 'corrected').is_dir():
-            io.make_dirs(fif_file.parent / 'corrected')
+        if not (fif_file.parent / 'renamed').is_dir():
+            io.make_dirs(fif_file.parent / 'renamed')
 
         logger.info(
-            f"Exporting to '{fif_file.parent / 'corrected' / fif_file.name}'")
+            f"Exporting to '{fif_file.parent / 'renamed' / fif_file.name}'")
         try:
-            raw.save(fif_file.parent / 'corrected' /
-                     fif_file.name, overwrite=overwrite)
+            raw.save(fif_file.parent / 'renamed' / fif_file.name,
+                     overwrite=overwrite)
         except FileExistsError:
             logger.warning(
                 f'The corrected file already exist for {fif_file.name}. '
@@ -111,11 +110,11 @@ if __name__ == '__main__':
 
     if len(sys.argv) == 2:
         fif_dir = sys.argv[1]
-        new_channel_names = list(input('New channel names (list)? \n>> '))
+        new_channel_names = eval(input('New channel names (list)? \n>> '))
 
     if len(sys.argv) == 1:
         fif_dir = input('Directory path containing the file files? \n>> ')
-        new_channel_names = list(input('New channel names (list)? \n>> '))
+        new_channel_names = eval(input('New channel names (list)? \n>> '))
 
     dir_rename_channels(fif_dir, recursive=False,
                         new_channel_names=new_channel_names)
