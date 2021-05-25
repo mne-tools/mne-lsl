@@ -7,23 +7,19 @@ from neurodecode import logger
 import neurodecode.utils.io as io
 
 
-def dir_set_channel_types(fif_dir, recursive, mapping, overwrite=False):
+def dir_resample(fif_dir, recursive, sfreq_target, overwrite=False):
     """
-    Change the channel types of all raw fif files in a given directory.
-    The file name must respect MNE convention and end with '-raw.fif' or
-    '-raw.fiff'.
+    Change the sampling rate of all raw fif files in a given directory.
 
     Parameters
     ----------
     fif_dir : str
-         The path to the directory containing fif files.
-    recursive : bool
-        If true, search recursively.
-    mapping : dict
-        The channel type mapping. c.f.
-        https://mne.tools/dev/generated/mne.io.Raw.html#mne.io.Raw.set_channel_types
-    overwrite : bool
-        If true, overwrite previously corrected files.
+        The absolute path to the directory containing the .fif files to resample.
+    sfreq_target : float
+        Tne desired sampling rate in Hz.
+    out_dir : str
+        The absolute path to the directory where the new files will be saved.
+        If None, they will be saved in %fif_dir%/fif_resample%sfreq_target%
     """
     fif_dir = Path(fif_dir)
     if not fif_dir.exists():
@@ -42,19 +38,21 @@ def dir_set_channel_types(fif_dir, recursive, mapping, overwrite=False):
             continue
 
         raw = mne.io.read_raw(fif_file, preload=True)
-        raw.set_channel_types(mapping)
+        raw.resample(sfreq_target)
 
-        if not (fif_file.parent / 'corrected').is_dir():
-            io.make_dirs(fif_file.parent / 'corrected')
+        out_dir = f'fif_resampled_{sfreq_target}'
+        if not (fif_file.parent / out_dir).is_dir():
+            io.make_dirs(fif_file.parent / out_dir)
 
         logger.info(
-            f"Exporting to '{fif_file.parent / 'corrected' / fif_file.name}'")
+            f"Exporting to '{fif_file.parent / out_dir / fif_file.name}'")
+
         try:
-            raw.save(fif_file.parent / 'corrected' / fif_file.name,
+            raw.save(fif_file.parent / out_dir / fif_file.name,
                      overwrite=overwrite)
         except FileExistsError:
             logger.warning(
-                f'The corrected file already exist for {fif_file.name}. '
+                f'The resampled file already exist for {fif_file.name}. '
                 'Use overwrite=True to force overwriting.')
         except:
             raise
@@ -66,21 +64,21 @@ if __name__ == '__main__':
 
     if len(sys.argv) > 3:
         raise IOError(
-            "Too many arguments provided. Max is 2: fif_dir; mapping.")
+            "Too many arguments provided. Max is 2: fif_dir; sfreq_target")
 
     if len(sys.argv) == 3:
         fif_dir = sys.argv[1]
-        mapping = sys.argv[2]
+        sfreq_target = sys.argv[2]
 
     if len(sys.argv) == 2:
         fif_dir = sys.argv[1]
-        mapping = eval(input('New channel types (dict)? \n>> '))
+        sfreq_target = float(input('Target sampling frequency? \n>> '))
 
     if len(sys.argv) == 1:
         fif_dir = input('Directory path containing the file files? \n>> ')
-        mapping = eval(input('New channel types (dict)? \n>> '))
+        sfreq_target = float(input('Target sampling frequency? \n>> '))
 
-    dir_set_channel_types(fif_dir, recursive=False,
-                          mapping=mapping, overwrite=False)
+    dir_resample(fif_dir, recursive=False,
+                 sfreq_target=sfreq_target, overwrite=False)
 
     print('Finished.')
