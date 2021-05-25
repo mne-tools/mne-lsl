@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import time
 import pylsl
 import numpy as np
@@ -299,9 +301,9 @@ class Streamer:
         self.raw._data[1:, :] = self._raw.get_data()[1:, :] * 1E6
 
         if self.raw is not None:
-            self._logger.info_green('Successfully loaded %s' % fif_file)
+            self._logger.info_green(f'Successfully loaded {fif_file}')
         else:
-            raise RuntimeError('Error while loading %s' % fif_file)
+            raise RuntimeError(f'Error while loading {fif_file}')
 
     def get_sample_rate(self):
         """
