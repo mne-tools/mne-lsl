@@ -17,20 +17,20 @@ def start_server(server_name, n_channels=1, channel_format='string',
     Parameters
     ----------
     server_name : str
-        Name of the server
+        Name of the server.
     n_channels : int
-        Number of channels
+        Number of channels.
     channel_format : str
         The channels' format.
             ('string', 'float32', 'double64', 'int8', 'int16',
              'int32', 'int64')
     nominal_srate : float
-        Sampling rate in Hz
+        Sampling rate in Hz.
     stype : str
         Signal type.
         (https://github.com/sccn/xdf/wiki/Meta-Data#stream-content-types)
     source_id : str
-        If None, set to server name
+        If None, set to server name.
 
     Returns
     -------
@@ -55,24 +55,24 @@ def start_client(server_name, state=mp.Value('i', 1)):
     Parameters
     ----------
     server_name: str
-        Name of the server to search
+        Name of the server to search.
     state : Multiprocessing.Value
         Used to stop searching from another process.
 
     Returns
     -------
     LSL inlet:
-        LSL client object
+        LSL client object.
     """
     while state.value == 1:
-        logger.info('Searching for LSL server %s ...' % server_name)
+        logger.info(f'Searching for LSL server {server_name} ...')
         streamInfos = pylsl.resolve_byprop("name", server_name, timeout=1)
 
         if not streamInfos:
             continue
 
         for sinfo in streamInfos:
-            logger.info('Found %s' % sinfo.name())
+            logger.info(f'Found {sinfo.name()}')
         sinfo = streamInfos[0]
         break
 
@@ -87,9 +87,9 @@ def list_lsl_streams(ignore_markers=False,
     Parameters
     ----------
     ignore_markers : bool
-        If True, ignore streams with Marker type
+        If True, ignore streams with Marker type.
     logger : logging.Logger
-        The logger to output info
+        The logger to output info.
     state: mp.Value
         The multiprocess sharing variable, used to stop search from another
         process.
@@ -122,7 +122,7 @@ def list_lsl_streams(ignore_markers=False,
     logger.info('-- List of servers --')
 
     for i, (index, amp_name) in enumerate(amp_list):
-        logger.info('%d: %s' % (i, amp_name))
+        logger.info(f'{i}: {amp_name}')
 
     return amp_list, streamInfos
 
@@ -136,16 +136,16 @@ def search_lsl(ignore_markers=False, logger=logger, state=mp.Value('i', 1)):
     Parameters
     ----------
     ignore_markers : bool
-        If True, ignore streams with Marker type
+        If True, ignore streams with Marker type.
     logger : logging.Logger
-        The logger to output info
+        The logger to output info.
     state: mp.Value
         The multiprocess sharing variable, used to stop search from another
         process.
 
     Returns:
     --------
-    str : The selected amp name
+    str : The selected amp name.
     """
     amp_list, streamInfos = list_lsl_streams(ignore_markers, logger, state)
 
@@ -163,7 +163,7 @@ def search_lsl(ignore_markers=False, logger=logger, state=mp.Value('i', 1)):
     si = streamInfos[amp_index]
     assert amp_name == si.name()
 
-    logger.info('Selected: %s' % (amp_name))
+    logger.info(f'Selected: {amp_name}')
 
     return amp_name
 
@@ -182,7 +182,7 @@ def lsl_channel_list(inlet):
     list : List of channels name [ name1, name2, ... ]
     """
     if not isinstance(inlet, pylsl.StreamInlet):
-        logger.error('Wrong input type %s' % type(inlet))
+        logger.error(f'Wrong input type {type(inlet)}')
         raise TypeError
 
     ch = inlet.info().desc().child('channels').first_child()

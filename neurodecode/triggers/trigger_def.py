@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import os
 from configparser import ConfigParser
 from neurodecode import logger
@@ -89,7 +91,6 @@ class TriggerDef(object):
         logger.warning("Cannot modify this attribute manually.")
 
 
-# Example
 if __name__ == '__main__':
     ini_file = './triggerdef_template.ini'
     tdef = TriggerDef(ini_file)
