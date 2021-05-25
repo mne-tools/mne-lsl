@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Send trigger events to parallel port (LPT).
 
