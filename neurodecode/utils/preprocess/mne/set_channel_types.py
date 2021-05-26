@@ -1,17 +1,32 @@
-#!/usr/bin/env python3
-
 import mne
 from pathlib import Path
 
-from neurodecode import logger
-import neurodecode.utils.io as io
+from ... import io
+from .... import logger
+
+
+def set_channel_types(raw, mapping):
+    """
+    Change the channel types of the raw instance.
+
+    https://mne.tools/stable/generated/mne.io.Raw.html#mne.io.Raw.set_channel_types
+
+    Parameters
+    ----------
+    raw : mne.io.Raw | mne.io.RawArray
+        MNE instance of Raw.
+    new_channel_names : list
+        The list of the new channel names.
+    """
+    raw.set_channel_types(mapping)
 
 
 def dir_set_channel_types(fif_dir, recursive, mapping, overwrite=False):
     """
     Change the channel types of all raw fif files in a given directory.
-    The file name must respect MNE convention and end with '-raw.fif' or
-    '-raw.fiff'.
+    The file name must respect MNE convention and end with '-raw.fif'.
+
+    https://mne.tools/dev/generated/mne.io.Raw.html#mne.io.Raw.set_channel_types
 
     Parameters
     ----------
@@ -20,8 +35,7 @@ def dir_set_channel_types(fif_dir, recursive, mapping, overwrite=False):
     recursive : bool
         If true, search recursively.
     mapping : dict
-        The channel type mapping. c.f.
-        https://mne.tools/dev/generated/mne.io.Raw.html#mne.io.Raw.set_channel_types
+        The channel type mapping.
     overwrite : bool
         If true, overwrite previously corrected files.
     """
@@ -42,15 +56,16 @@ def dir_set_channel_types(fif_dir, recursive, mapping, overwrite=False):
             continue
 
         raw = mne.io.read_raw(fif_file, preload=True)
-        raw.set_channel_types(mapping)
+        set_channel_types(raw, mapping)
 
-        if not (fif_file.parent / 'corrected').is_dir():
-            io.make_dirs(fif_file.parent / 'corrected')
+        out_dir = 'corrected'
+        if not (fif_file.parent / out_dir).is_dir():
+            io.make_dirs(fif_file.parent / out_dir)
 
         logger.info(
-            f"Exporting to '{fif_file.parent / 'corrected' / fif_file.name}'")
+            f"Exporting to '{fif_file.parent / out_dir / fif_file.name}'")
         try:
-            raw.save(fif_file.parent / 'corrected' / fif_file.name,
+            raw.save(fif_file.parent / out_dir / fif_file.name,
                      overwrite=overwrite)
         except FileExistsError:
             logger.warning(
@@ -58,29 +73,3 @@ def dir_set_channel_types(fif_dir, recursive, mapping, overwrite=False):
                 'Use overwrite=True to force overwriting.')
         except:
             raise
-
-
-if __name__ == '__main__':
-
-    import sys
-
-    if len(sys.argv) > 3:
-        raise IOError(
-            "Too many arguments provided. Max is 2: fif_dir; mapping.")
-
-    if len(sys.argv) == 3:
-        fif_dir = sys.argv[1]
-        mapping = sys.argv[2]
-
-    if len(sys.argv) == 2:
-        fif_dir = sys.argv[1]
-        mapping = eval(input('New channel types (dict)? \n>> '))
-
-    if len(sys.argv) == 1:
-        fif_dir = input('Directory path containing the file files? \n>> ')
-        mapping = eval(input('New channel types (dict)? \n>> '))
-
-    dir_set_channel_types(fif_dir, recursive=False,
-                          mapping=mapping, overwrite=False)
-
-    print('Finished.')
