@@ -51,8 +51,8 @@ def fix_default_event_values(raw, default_value=-1):
         raise
 
 
-def dir_fix_default_event_values(fif_dir, recursive,
-                                 default_value=-1, overwrite=False):
+def dir_fix_default_event_values(fif_dir, recursive, default_value=-1,
+                                 out_dir=None, overwrite=False):
     """
     Replace the values 'default_value' with 0 for the trigger channel.
     The file name must respect MNE convention and end with '-raw.fif'.
@@ -67,6 +67,9 @@ def dir_fix_default_event_values(fif_dir, recursive,
         If true, search recursively.
     default_value : int
         Trigger channel default value to replace with 0. The default is -1.
+    out_dir : str | None
+        The path to the output directory. If None, the directory
+        'event_fixed' is used.
     overwrite : bool
         If true, overwrite previously corrected files.
     """
@@ -77,6 +80,15 @@ def dir_fix_default_event_values(fif_dir, recursive,
     if not fif_dir.is_dir():
         logger.error(f"'{fif_dir}' is not a directory.")
         raise IOError
+
+    if out_dir is None:
+        out_dir = 'event_fixed'
+        if not (fif_dir / out_dir).is_dir():
+            io.make_dirs(fif_dir / out_dir)
+    else:
+        out_dir = Path(out_dir)
+        if not out_dir.is_dir():
+            io.make_dirs(out_dir)
 
     for fif_file in io.get_file_list(fif_dir, fullpath=True, recursive=recursive):
         fif_file = Path(fif_file)
@@ -89,14 +101,14 @@ def dir_fix_default_event_values(fif_dir, recursive,
         raw = mne.io.read_raw(fif_file, preload=True)
         fix_default_event_values(raw, default_value=default_value)
 
-        out_dir = 'event_fixed'
-        if not (fif_file.parent / out_dir).is_dir():
-            io.make_dirs(fif_file.parent / out_dir)
+        relative = fif_file.relative_to(fif_dir).parent
+        if not (fif_dir / out_dir / relative).is_dir():
+            io.make_dirs(fif_dir / out_dir / relative)
 
         logger.info(
-            f"Exporting to '{fif_file.parent / out_dir / fif_file.name}'")
+            f"Exporting to '{fif_dir / out_dir / relative / fif_file.name}'")
         try:
-            raw.save(fif_file.parent / out_dir / fif_file.name,
+            raw.save(fif_dir / out_dir / relative / fif_file.name,
                      overwrite=overwrite)
         except FileExistsError:
             logger.warning(

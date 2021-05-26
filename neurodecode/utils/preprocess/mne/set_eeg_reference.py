@@ -38,7 +38,7 @@ def set_eeg_reference(inst, ref_channels, ref_old=None, **kwargs):
 
 
 def dir_set_eeg_reference(fif_dir, recursive, ref_channels, ref_old=None,
-                          overwrite=False, **kwargs):
+                          out_dir=None, overwrite=False, **kwargs):
     """
     Change the eeg reference of all raw fif files in a given directory.
     The file name must respect MNE convention and end with '-raw.fif'.
@@ -59,6 +59,9 @@ def dir_set_eeg_reference(fif_dir, recursive, ref_channels, ref_old=None,
         infinity reference (requires raw with montage and forward model/kwarg).
     ref_old : list of str | str
         Channel(s) to recover.
+    out_dir : str | None
+        The path to the output directory. If None, the directory
+        'rereferenced' is used.
     overwrite : bool
         If true, overwrite previously corrected files.
     **kwargs : Additional arguments are passed to mne.set_eeg_reference()
@@ -72,6 +75,15 @@ def dir_set_eeg_reference(fif_dir, recursive, ref_channels, ref_old=None,
         logger.error(f"'{fif_dir}' is not a directory.")
         raise IOError
 
+    if out_dir is None:
+        out_dir = 'rereferenced'
+        if not (fif_dir / out_dir).is_dir():
+            io.make_dirs(fif_dir / out_dir)
+    else:
+        out_dir = Path(out_dir)
+        if not out_dir.is_dir():
+            io.make_dirs(out_dir)
+
     for fif_file in io.get_file_list(fif_dir, fullpath=True, recursive=recursive):
         fif_file = Path(fif_file)
 
@@ -83,19 +95,18 @@ def dir_set_eeg_reference(fif_dir, recursive, ref_channels, ref_old=None,
         raw = mne.io.read_raw(fif_file, preload=True)
         set_eeg_reference(raw, ref_channels, ref_old, **kwargs)
 
-        out_dir = 'rereferenced'
-        if not (fif_file.parent / out_dir).is_dir():
-            io.make_dirs(fif_file.parent / out_dir)
+        relative = fif_file.relative_to(fif_dir).parent
+        if not (fif_dir / out_dir / relative).is_dir():
+            io.make_dirs(fif_dir / out_dir / relative)
 
         logger.info(
-            f"Exporting to '{fif_file.parent / out_dir / fif_file.name}'")
-
+            f"Exporting to '{fif_dir / out_dir / relative / fif_file.name}'")
         try:
-            raw.save(fif_file.parent / out_dir / fif_file.name,
+            raw.save(fif_dir / out_dir / relative / fif_file.name,
                      overwrite=overwrite)
         except FileExistsError:
             logger.warning(
-                f'The resampled file already exist for {fif_file.name}. '
+                f'The corrected file already exist for {fif_file.name}. '
                 'Use overwrite=True to force overwriting.')
         except:
             raise
