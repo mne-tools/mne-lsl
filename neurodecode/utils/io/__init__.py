@@ -12,7 +12,6 @@ from .mat2fif import mat2fif
 from .fif2mat import fif2mat
 from .load_mat import load_mat
 from .load_config import load_config
-from .fif_resample import fif_resample
 from .merge_events import merge_events
 from .read_raw_fif import read_raw_fif, read_raw_fif_multi
 from .convert2fif import any2fif, pcl2fif, edf2fif, bdf2fif, gdf2fif, xdf2fif, eeg2fif, event_timestamps_to_indices
