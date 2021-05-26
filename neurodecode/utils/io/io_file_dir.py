@@ -1,7 +1,8 @@
 import os
 import shutil
 from pathlib import Path
-from neurodecode import logger
+
+from ... import logger
 
 
 def get_file_list(path, fullpath=True, recursive=False):
