@@ -10,6 +10,7 @@ import neurodecode.utils.io as io
 def dir_resample(fif_dir, recursive, sfreq_target, overwrite=False):
     """
     Change the sampling rate of all raw fif files in a given directory.
+    https://mne.tools/stable/generated/mne.io.Raw.html#mne.io.Raw.resample
 
     Parameters
     ----------
@@ -32,7 +33,7 @@ def dir_resample(fif_dir, recursive, sfreq_target, overwrite=False):
     for fif_file in io.get_file_list(fif_dir, fullpath=True, recursive=recursive):
         fif_file = Path(fif_file)
 
-        if fif_file.suffix == '.fif':
+        if not fif_file.suffix == '.fif':
             continue  # skip
         if not fif_file.stem.endswith('-raw'):
             continue

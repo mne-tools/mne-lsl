@@ -36,7 +36,7 @@ def dir_set_channel_types(fif_dir, recursive, mapping, overwrite=False):
     for fif_file in io.get_file_list(fif_dir, fullpath=True, recursive=recursive):
         fif_file = Path(fif_file)
 
-        if fif_file.suffix == '.fif':
+        if not fif_file.suffix == '.fif':
             continue  # skip
         if not fif_file.stem.endswith('-raw'):
             continue
