@@ -42,6 +42,7 @@ def fix_default_event_values(raw, default_value=-1):
                            event_value_new=0,
                            picks=raw.ch_names[tch], channel_wise=True)
     except RuntimeError:
+        logger.warning('MNE raw data should be (pre)loaded. Loading now.')
         raw.load_data()
         raw.apply_function(change_event_values_arr,
                            event_value_old=default_value,
