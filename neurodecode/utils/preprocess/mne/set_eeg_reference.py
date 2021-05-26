@@ -1,4 +1,8 @@
 import mne
+from pathlib import Path
+
+from ... import io
+from .... import logger
 
 
 def set_eeg_reference(inst, ref_channels, ref_old=None, **kwargs):
@@ -15,7 +19,7 @@ def set_eeg_reference(inst, ref_channels, ref_old=None, **kwargs):
         - The name(s) of the channel(s) used to construct the reference.
         - 'average' to apply an average reference (CAR)
         - 'REST' to use the reference electrode standardization technique
-        infinity reference (requires instance with montage forward arg).
+        infinity reference (requires instance with montage forward kwarg).
     ref_old : list of str | str
         Channel(s) to recover.
     **kwargs : Additional arguments are passed to mne.set_eeg_reference()
@@ -31,3 +35,67 @@ def set_eeg_reference(inst, ref_channels, ref_old=None, **kwargs):
         mne.add_reference_channels(inst, ref_old, copy=False)
 
     mne.set_eeg_reference(inst, ref_channels, copy=False, **kwargs)
+
+
+def dir_set_eeg_reference(fif_dir, recursive, ref_channels, ref_old=None,
+                          overwrite=False, **kwargs):
+    """
+    Change the eeg reference of all raw fif files in a given directory.
+    The file name must respect MNE convention and end with '-raw.fif'.
+
+    https://mne.tools/dev/generated/mne.set_eeg_reference.html
+
+    Parameters
+    ----------
+    fif_dir : str
+         The path to the directory containing fif files.
+    recursive : bool
+        If true, search recursively.
+    ref_channels : list of str | str
+        Can be:
+        - The name(s) of the channel(s) used to construct the reference.
+        - 'average' to apply an average reference (CAR)
+        - 'REST' to use the reference electrode standardization technique
+        infinity reference (requires raw with montage and forward model/kwarg).
+    ref_old : list of str | str
+        Channel(s) to recover.
+    overwrite : bool
+        If true, overwrite previously corrected files.
+    **kwargs : Additional arguments are passed to mne.set_eeg_reference()
+        c.f. https://mne.tools/dev/generated/mne.set_eeg_reference.html
+    """
+    fif_dir = Path(fif_dir)
+    if not fif_dir.exists():
+        logger.error(f"Directory '{fif_dir}' not found.")
+        raise IOError
+    if not fif_dir.is_dir():
+        logger.error(f"'{fif_dir}' is not a directory.")
+        raise IOError
+
+    for fif_file in io.get_file_list(fif_dir, fullpath=True, recursive=recursive):
+        fif_file = Path(fif_file)
+
+        if not fif_file.suffix == '.fif':
+            continue  # skip
+        if not fif_file.stem.endswith('-raw'):
+            continue
+
+        raw = mne.io.read_raw(fif_file, preload=True)
+        set_eeg_reference(raw, ref_channels, ref_old, **kwargs)
+
+        out_dir = 'rereferenced'
+        if not (fif_file.parent / out_dir).is_dir():
+            io.make_dirs(fif_file.parent / out_dir)
+
+        logger.info(
+            f"Exporting to '{fif_file.parent / out_dir / fif_file.name}'")
+
+        try:
+            raw.save(fif_file.parent / out_dir / fif_file.name,
+                     overwrite=overwrite)
+        except FileExistsError:
+            logger.warning(
+                f'The resampled file already exist for {fif_file.name}. '
+                'Use overwrite=True to force overwriting.')
+        except:
+            raise

@@ -1,1 +1,1 @@
-from .find_event_channel import find_event_channel
+from .change_event_values import (change_event_values_arr, change_event_values,                                  dir_change_event_values)from .find_event_channel import find_event_channel
