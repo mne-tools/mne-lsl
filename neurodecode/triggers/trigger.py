@@ -24,7 +24,7 @@ from builtins import input, bytes
 class Trigger(object):
     """
     Class for sending trigger events.
-    
+
     Parameters
     ----------
     lpttype : str
@@ -34,7 +34,7 @@ class Trigger(object):
         - 'SOFTWARE': Software trigger
         - 'ARDUINO': Arduino trigger
         - 'FAKE': Mock trigger device for testing
-    
+
     portaddr : hex
         The port address in hexadecimal format (standard: 0x278, 0x378)
         When using USB2LPT, the port number (e.g. 0x378) can be searched automatically.
@@ -46,7 +46,7 @@ class Trigger(object):
     """
     #----------------------------------------------------------------------
     def __init__(self, lpttype='SOFTWARE', portaddr=None, verbose=True, state=mp.Value('i', 1)):
-        
+
         self.evefile = None
         self.offtimer = None
         self._lpttype = lpttype
@@ -55,7 +55,7 @@ class Trigger(object):
         if self._lpttype in ['USB2LPT', 'DESKTOP']:
             if portaddr not in [0x278, 0x378]:
                 logger.warning('LPT port address %d is unusual.' % portaddr)
-                
+
             self.portaddr = portaddr
             dllname = self._find_dllname()
             self.lpt = self._load_dll(dllname)
@@ -84,18 +84,18 @@ class Trigger(object):
         Find the event file name from LSL Server in case of SOFTWARE trigger.
         """
         LSL_SERVER = 'StreamRecorderInfo'
-        
+
         inlet = start_client(LSL_SERVER, state)
         evefile = inlet.info().source_id()
-        logger.info('Event file is: %s' % evefile) 
-        
+        logger.info('Event file is: %s' % evefile)
+
         return evefile
-        
+
     #----------------------------------------------------------------------
     def _connect_arduino(self, com_port, baud_rate):
         """
         Connect to the Arduino USB2LPT converter.
-        
+
         Parameters
         ----------
         com_port : str
@@ -104,24 +104,24 @@ class Trigger(object):
             The baud rate, determined the communication speed
         """
         import serial
-        
+
         try:
             self.ser = serial.Serial(com_port, baud_rate)
         except serial.SerialException as error:
-            raise Exception("Disconnect and reconnect the ARDUINO convertor because {}".format(error))            
-        
+            raise Exception("Disconnect and reconnect the ARDUINO convertor because {}".format(error))
+
         time.sleep(1)  # doesn't work without this delay. why?
         logger.info('Connected to %s.' % com_port)
-    
+
     #----------------------------------------------------------------------
     def _find_arduino_port(self):
         """
         Automatic Arduino comPort detection.
         """
         import serial.tools.list_ports
-        
+
         arduinos = [x for x in serial.tools.list_ports.grep('Arduino')]
-        
+
         if len(arduinos) == 0:
             logger.error('No Arduino found. Stop.')
             sys.exit()
@@ -132,19 +132,19 @@ class Trigger(object):
             com_port = arduinos[0].device
         except AttributeError: # depends on Python distribution
             com_port = arduinos[0][0]
-        
+
         return com_port
-    
+
     #----------------------------------------------------------------------
     def _load_dll(self, dllname):
         """
         Load the dll library.
-        
+
         Parameters
         ----------
         dllname : str
             The dll lib's name.
-        
+
         Returns
         -------
         lib
@@ -152,52 +152,55 @@ class Trigger(object):
         """
         # Define the dll library path
         f = os.path.dirname(__file__) + '/libs/' + dllname
-        
+
         # Ensure that the dll exists
         if os.path.exists(f):
             dllpath = f
         else:
             logger.error('Cannot find the required library %s' % dllname)
             raise RuntimeError
-        
+
         logger.info('Loading %s' % dllpath)
-        
+
         return ctypes.cdll.LoadLibrary(dllpath)
 
     #----------------------------------------------------------------------
     def _find_dllname(self):
         """
         Name the required dll libraries in case of USB2LPT or DESKTOP trigger.
-        
+
         Returns
         -------
         string
             The dll library name to load
         """
         if ctypes.sizeof(ctypes.c_voidp) == 4:
-            extension =  '32.dll'
+            extension = '32.dll'
         else:
-            extension =  '64.dll'
-        
-        dllname = 'LptControl_' + self._lpttype + extension 
+            extension = '64.dll'
+
+        if self._lpttype == 'DESKTOP':
+            dllname = 'LptControl_Desktop' + extension
+        elif self._lpttype == 'USB2LPT':
+            dllname = 'LptControl_USB2LPT' + extension
 
         return dllname
-    
+
     #----------------------------------------------------------------------
     def __del__(self):
         if self.evefile is not None and not self.evefile.closed:
             self.evefile.close()
-            
+
     #----------------------------------------------------------------------
     def init(self, duration):
         """
         Initialize the trigger's duration.
-        
+
         Parameters
         ----------
         duration : int
             The event's duration in ms.
-            
+
         Returns
         -------
         bool
@@ -211,7 +214,7 @@ class Trigger(object):
             except IOError:
                 self.evefile.close()
                 self.evefile = open(self.evefile, 'a')
-                
+
             logger.info('Ignoring delay parameter for software trigger.')
             return True
         elif self._lpttype == 'FAKE':
@@ -233,7 +236,7 @@ class Trigger(object):
     def _write_software_event(self, value):
         """
         Write to file in case of SOFTWARE trigger.
-        
+
         Parameters
         ----------
         value : int
@@ -247,7 +250,7 @@ class Trigger(object):
     def _set_data(self, value):
         """
         Set the trigger's value to the LPT port.
-        
+
         Parameters
         ----------
         value : int
@@ -274,12 +277,12 @@ class Trigger(object):
         """
         Sends the value to the parallel port and sets to 0 after a set period.
         The value shuold be an integer in the range of 0-255.
-        
+
         Parameters
         ----------
         value : int
             The trigger event to write to the file.
-            
+
         Returns
         -------
         bool
@@ -342,20 +345,20 @@ class Trigger(object):
         The trigger type
         """
         return self._lpttype
-    
+
     #----------------------------------------------------------------------
     @type.setter
     def type(self, new_type):
         logger.warning("The trigger type cannot be modify directly, instead instance a new Trigger.")
-        
-    
+
+
 #----------------------------------------------------------------------
 if __name__ == '__main__':
-    
+
     lpttype = input("Provide the type of LPT connector: DESKTOP, USB2LPT, SOFTWARE, ARDUINO, FAKE \n>>")
-    
+
     trigger = Trigger(lpttype=lpttype)
-    
+
     if not trigger.init(500):
         raise RuntimeError('LPT port cannot be opened. Using mock trigger.')
 
