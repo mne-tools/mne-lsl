@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 """
 Acquires signals from LSL server and save them to '-raw.fif' files in a
 record directory.
