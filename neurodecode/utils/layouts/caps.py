@@ -1,4 +1,4 @@
-from neurodecode import logger
+from ... import logger
 
 CAP = {
     'GTEC_16': ['TRIGGER', 'Fz', 'FC3', 'FC1', 'FCz', 'FC2', 'FC4', 'C3',
