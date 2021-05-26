@@ -2,9 +2,9 @@ import mne
 import numpy as np
 from pathlib import Path
 
-from neurodecode import logger
-import neurodecode.utils.io as io
-from neurodecode.utils.events import find_event_channel
+from .io_file_dir import get_file_list
+from ..events import find_event_channel
+from ... import logger
 
 
 def read_raw_fif(fname, events_ext=None, preload=True):
@@ -30,7 +30,7 @@ def read_raw_fif(fname, events_ext=None, preload=True):
     if not fname.exists():
         logger.error(f"File '{fname}' not found.")
         raise IOError
-    if fname.is_file():
+    if not fname.is_file():
         logger.error(f"'{fname}' is not a file.")
         raise IOError
 
@@ -81,8 +81,8 @@ def read_raw_fif_multi(src):
         if not src.is_dir():
             logger.error(f"'{src} is not a directory or does not exist.")
             raise IOError
-        flist = [file for file in io.get_file_list(
-            src) if Path(file).suffix == '.fif']
+        flist = [file for file in get_file_list(src)
+                 if Path(file).suffix == '.fif']
     elif isinstance(src, (list, tuple)):
         flist = [file for file in src if Path(file).suffix == '.fif']
         if len(flist) != len(src):
