@@ -27,7 +27,8 @@ def rename_channels(inst, new_channel_names, **kwargs):
     mne.rename_channels(inst.info, mapping, **kwargs)
 
 
-def dir_rename_channels(fif_dir, recursive, new_channel_names, overwrite=False):
+def dir_rename_channels(fif_dir, recursive, new_channel_names,
+                        out_dir=None, overwrite=False):
     """
     Change the channel names of all raw fif files in a given directory.
     The file name must respect MNE convention and end with '-raw.fif'.
@@ -42,6 +43,9 @@ def dir_rename_channels(fif_dir, recursive, new_channel_names, overwrite=False):
         If true, search recursively.
     new_channel_names : list
         The list of the new channel names.
+    out_dir : str | None
+        The path to the output directory. If None, the directory
+        f'fif_dir/renamed' is used.
     overwrite : bool
         If true, overwrite previously corrected files.
     """
@@ -52,6 +56,15 @@ def dir_rename_channels(fif_dir, recursive, new_channel_names, overwrite=False):
     if not fif_dir.is_dir():
         logger.error(f"'{fif_dir}' is not a directory.")
         raise IOError
+
+    if out_dir is None:
+        out_dir = 'renamed'
+        if not (fif_dir / out_dir).is_dir():
+            io.make_dirs(fif_dir / out_dir)
+    else:
+        out_dir = Path(out_dir)
+        if not out_dir.is_dir():
+            io.make_dirs(out_dir)
 
     for fif_file in io.get_file_list(fif_dir, fullpath=True, recursive=recursive):
         fif_file = Path(fif_file)
@@ -64,14 +77,14 @@ def dir_rename_channels(fif_dir, recursive, new_channel_names, overwrite=False):
         raw = mne.io.read_raw(fif_file, preload=True)
         rename_channels(raw, new_channel_names)
 
-        out_dir = 'renamed'
-        if not (fif_file.parent / out_dir).is_dir():
-            io.make_dirs(fif_file.parent / out_dir)
+        relative = fif_file.relative_to(fif_dir).parent
+        if not (fif_dir / out_dir / relative).is_dir():
+            io.make_dirs(fif_dir / out_dir / relative)
 
         logger.info(
-            f"Exporting to '{fif_file.parent / out_dir / fif_file.name}'")
+            f"Exporting to '{fif_dir / out_dir / relative / fif_file.name}'")
         try:
-            raw.save(fif_file.parent / out_dir / fif_file.name,
+            raw.save(fif_dir / out_dir / relative / fif_file.name,
                      overwrite=overwrite)
         except FileExistsError:
             logger.warning(

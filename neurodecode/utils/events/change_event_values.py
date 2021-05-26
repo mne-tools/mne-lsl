@@ -2,7 +2,7 @@ import mne
 import numpy as np
 from pathlib import Path
 
-from . import find_event_channel
+from .find_event_channel import find_event_channel
 from .. import io
 from ... import logger
 
@@ -10,7 +10,7 @@ from ... import logger
 def change_event_values_arr(timearr, event_value_old, event_value_new):
     """
     Replace the values 'event_value_old' with 'event_value_new'
-    for the event channel.
+    for the channel timearr.
 
     Parameters
     ----------
@@ -54,19 +54,21 @@ def change_event_values(raw, event_value_old, event_value_new):
 
     try:
         raw.apply_function(change_event_values_arr,
-                           event_value_old, event_value_new,
+                           event_value_old=event_value_old,
+                           event_value_new=event_value_new,
                            picks=raw.ch_names[tch], channel_wise=True)
     except RuntimeError:
         raw.load_data()
         raw.apply_function(change_event_values_arr,
-                           event_value_old, event_value_new,
+                           event_value_old=event_value_old,
+                           event_value_new=event_value_new,
                            picks=raw.ch_names[tch], channel_wise=True)
     except:
         raise
 
 
 def dir_change_event_values(fif_dir, recursive, event_value_old,
-                            event_value_new, overwrite=False):
+                            event_value_new, out_dir=None, overwrite=False):
     """
     Replace the value 'event_value_old' with 'event_value_new' for the trigger
     channel. The file name must respect MNE convention and end with '-raw.fif'.
@@ -83,6 +85,10 @@ def dir_change_event_values(fif_dir, recursive, event_value_old,
         The old event value.
     event_value_new : int
         The new event value.
+    out_dir : str | None
+        The path to the output directory. If None, the directory
+        f'fif_dir/event_{event_value_old}_changed_to_{event_value_new}'
+        is used.
     overwrite : bool
         If true, overwrite previously corrected files.
     """
@@ -94,6 +100,15 @@ def dir_change_event_values(fif_dir, recursive, event_value_old,
         logger.error(f"'{fif_dir}' is not a directory.")
         raise IOError
 
+    if out_dir is None:
+        out_dir = f'event_{event_value_old}_changed_to_{event_value_new}'
+        if not (fif_dir / out_dir).is_dir():
+            io.make_dirs(fif_dir / out_dir)
+    else:
+        out_dir = Path(out_dir)
+        if not out_dir.is_dir():
+            io.make_dirs(out_dir)
+
     for fif_file in io.get_file_list(fif_dir, fullpath=True, recursive=recursive):
         fif_file = Path(fif_file)
 
@@ -103,16 +118,16 @@ def dir_change_event_values(fif_dir, recursive, event_value_old,
             continue
 
         raw = mne.io.read_raw(fif_file, preload=True)
-        change_event_values_arr(raw, event_value_old, event_value_new)
+        change_event_values(raw, event_value_old, event_value_new)
 
-        out_dir = f'event_{event_value_old}_changed_to_{event_value_new}'
-        if not (fif_file.parent / out_dir).is_dir():
-            io.make_dirs(fif_file.parent / out_dir)
+        relative = fif_file.relative_to(fif_dir).parent
+        if not (fif_dir / out_dir / relative).is_dir():
+            io.make_dirs(fif_dir / out_dir / relative)
 
         logger.info(
-            f"Exporting to '{fif_file.parent / out_dir / fif_file.name}'")
+            f"Exporting to '{fif_dir / out_dir / relative / fif_file.name}'")
         try:
-            raw.save(fif_file.parent / out_dir / fif_file.name,
+            raw.save(fif_dir / out_dir / relative / fif_file.name,
                      overwrite=overwrite)
         except FileExistsError:
             logger.warning(
