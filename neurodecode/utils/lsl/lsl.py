@@ -5,7 +5,7 @@ import multiprocessing as mp
 import pylsl
 import time
 
-from neurodecode import logger
+from ... import logger
 
 
 def start_server(server_name, n_channels=1, channel_format='string',

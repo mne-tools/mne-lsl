@@ -1,7 +1,7 @@
 import copy
 import numpy as np
 
-from neurodecode import logger
+from .... import logger
 
 
 def set_eeg_reference(inst, ref_channels, ref_old=None, bads=None):
