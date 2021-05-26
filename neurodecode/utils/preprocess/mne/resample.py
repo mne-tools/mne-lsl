@@ -24,7 +24,7 @@ def resample(inst, sfreq, **kwargs):
     inst.resample(sfreq, **kwargs)
 
 
-def dir_resample(fif_dir, recursive, sfreq, overwrite=False):
+def dir_resample(fif_dir, recursive, sfreq, out_dir=None, overwrite=False):
     """
     Change the sampling rate of all raw and epochs fif files in a given directory.
     The file name must respect MNE convention and end with '-raw.fif' or
@@ -35,12 +35,16 @@ def dir_resample(fif_dir, recursive, sfreq, overwrite=False):
     Parameters
     ----------
     fif_dir : str
-        The absolute path to the directory containing the .fif files to resample.
+         The path to the directory containing fif files.
+    recursive : bool
+        If true, search recursively.
     sfreq : float
         Tne desired sampling rate in Hz.
-    out_dir : str
-        The absolute path to the directory where the new files will be saved.
-        If None, they will be saved in %fif_dir%/fif_resample%sfreq_target%
+    out_dir : str | None
+        The path to the output directory. If None, the directory
+        f'fif_resampled_{sfreq}' is used.
+    overwrite : bool
+        If true, overwrite previously corrected files.
     """
     fif_dir = Path(fif_dir)
     if not fif_dir.exists():
@@ -49,6 +53,15 @@ def dir_resample(fif_dir, recursive, sfreq, overwrite=False):
     if not fif_dir.is_dir():
         logger.error(f"'{fif_dir}' is not a directory.")
         raise IOError
+
+    if out_dir is None:
+        out_dir = f'fif_resampled_{sfreq}'
+        if not (fif_dir / out_dir).is_dir():
+            io.make_dirs(fif_dir / out_dir)
+    else:
+        out_dir = Path(out_dir)
+        if not out_dir.is_dir():
+            io.make_dirs(out_dir)
 
     for fif_file in io.get_file_list(fif_dir, fullpath=True, recursive=recursive):
         fif_file = Path(fif_file)
@@ -65,19 +78,18 @@ def dir_resample(fif_dir, recursive, sfreq, overwrite=False):
             inst = mne.read_epochs(fif_file, preload=True)
         resample(inst, sfreq)
 
-        out_dir = f'fif_resampled_{sfreq}'
-        if not (fif_file.parent / out_dir).is_dir():
-            io.make_dirs(fif_file.parent / out_dir)
+        relative = fif_file.relative_to(fif_dir).parent
+        if not (fif_dir / out_dir / relative).is_dir():
+            io.make_dirs(fif_dir / out_dir / relative)
 
         logger.info(
-            f"Exporting to '{fif_file.parent / out_dir / fif_file.name}'")
-
+            f"Exporting to '{fif_dir / out_dir / relative / fif_file.name}'")
         try:
-            inst.save(fif_file.parent / out_dir / fif_file.name,
+            inst.save(fif_dir / out_dir / relative / fif_file.name,
                       overwrite=overwrite)
         except FileExistsError:
             logger.warning(
-                f'The resampled file already exist for {fif_file.name}. '
+                f'The corrected file already exist for {fif_file.name}. '
                 'Use overwrite=True to force overwriting.')
         except:
             raise
