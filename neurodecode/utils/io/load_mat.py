@@ -1,46 +1,48 @@
+"""
+Proper mat file loading preserving the correct structure.
+https://stackoverflow.com/questions/7008608/scipy-io-loadmat-nested-structures-i-e-dictionaries
+
+It should be called instead of direct scipy.io.loadmat as it cures the problem
+of not properly recovering python dictionaries from mat files.
+"""
 import numpy as np
 import scipy
 
-#----------------------------------------------------------------------
-def load_mat(filename):
-    '''
-    Proper mat file loading preserving the correct structure
-    https://stackoverflow.com/questions/7008608/scipy-io-loadmat-nested-structures-i-e-dictionaries
 
-    It should be called instead of direct scipy.io.loadmat
-    as it cures the problem of not properly recovering python dictionaries
-    from mat files.
-    
+def load_mat(filename):
+    """
+    Load MATLAB .mat file.
+
     Parameters
     ----------
     filename : str
-        The absolute path to the mat file to load
-        
+        The absolute path to the mat file to load.
+
     Returns
     -------
-    python.object : The loaded python object 
-    '''
-    #----------------------------------------------------------------------
+    python.object : The loaded python object.
+    """
     def _check_keys(d):
-        '''
+        """
         checks if entries in dictionary are mat-objects. If yes
         todict is called to change them to nested dictionaries
-        '''
+        """
         for key in d:
             if isinstance(d[key], scipy.io.matlab.mio5_params.mat_struct):
                 d[key] = _todict(d[key])
         return d
-    #----------------------------------------------------------------------
+
     def _has_struct(elem):
         """Determine if elem is an array and if any array item is a struct"""
-        return isinstance(elem, np.ndarray) and any(isinstance(
-                    e, scipy.io.matlab.mio5_params.mat_struct) for e in elem)
+        return isinstance(elem, np.ndarray) and \
+            any(isinstance(e, scipy.io.matlab.mio5_params.mat_struct)
+                for e in elem)
 
-    #----------------------------------------------------------------------
     def _todict(matobj):
-        '''
-        A recursive function which constructs from matobjects nested dictionaries
-        '''
+        """
+        A recursive function which constructs from matobjects nested
+        dictionaries.
+        """
         d = {}
         for strg in matobj._fieldnames:
             elem = matobj.__dict__[strg]
@@ -52,13 +54,12 @@ def load_mat(filename):
                 d[strg] = elem
         return d
 
-    #----------------------------------------------------------------------
     def _tolist(ndarray):
-        '''
+        """
         A recursive function which constructs lists from cellarrays
         (which are loaded as numpy ndarrays), recursing into the elements
         if they contain matobjects.
-        '''
+        """
         elem_list = []
         for sub_elem in ndarray:
             if isinstance(sub_elem, scipy.io.matlab.mio5_params.mat_struct):
@@ -68,7 +69,7 @@ def load_mat(filename):
             else:
                 elem_list.append(sub_elem)
         return elem_list
-    
+
     data = scipy.io.loadmat(filename, struct_as_record=False, squeeze_me=True)
-    
+
     return _check_keys(data)
