@@ -1,16 +1,13 @@
-from builtins import input
-
 import numpy as np
 
 from neurodecode import logger
 from neurodecode.triggers import TriggerDef
 import neurodecode.utils.io as io
 
-#----------------------------------------------------------------------
 def merge_events(trigger_file, events, rawfile_in, rawfile_out):
     """
     Merge different events. Can be also used to simply change event values.
-    
+
     Parameters
     ----------
     trigger_file : str
@@ -63,35 +60,35 @@ def merge_events(trigger_file, events, rawfile_in, rawfile_out):
 
 #----------------------------------------------------------------------
 if __name__ == '__main__':
-    
+
     import sys
-    
+
     if len(sys.argv) > 5:
         raise IOError("Too many arguments provided. Max is 4: fif_dir; out_dir; trigger_file; events")
-    
+
     if len(sys.argv) == 5:
         fif_dir = sys.argv[1]
         out_dir =  sys.argv[2]
         trigger_file = sys.argv[3]
         events =  sys.argv[4]
-    
+
     if len(sys.argv) == 4:
         fif_dir = sys.argv[1]
         out_dir =  sys.argv[2]
         trigger_file = sys.argv[3]
         events =  dict(input("Provide the events to merge as follow: {LABEL_MERGED:[LABEL1, LABEL2, ...]} \n>> "))
-    
+
     if len(sys.argv) == 3:
         fif_dir = sys.argv[1]
         out_dir =  sys.argv[2]
         trigger_file = input("Trigger definitions file: \n>> ")
-        events =  dict(input("Provide the events to merge as follow: {LABEL_MERGED:[LABEL1, LABEL2, ...]} \n>> "))    
-    
+        events =  dict(input("Provide the events to merge as follow: {LABEL_MERGED:[LABEL1, LABEL2, ...]} \n>> "))
+
     if len(sys.argv) == 2:
         fif_dir = sys.argv[1]
         out_dir =  input("Ouput directory: \n>> ")
         trigger_file = input("Trigger definitions file: \n>> ")
-        events =  dict(input("Provide the events to merge as follow: {LABEL_MERGED:[LABEL1, LABEL2, ...]} \n>> "))    
+        events =  dict(input("Provide the events to merge as follow: {LABEL_MERGED:[LABEL1, LABEL2, ...]} \n>> "))
 
     if len(sys.argv) == 1:
         fif_dir = input("Directory with the fif files: \n>> ")
@@ -100,12 +97,12 @@ if __name__ == '__main__':
         events =  dict(input("Provide the events to merge as follow: {LABEL_MERGED:[LABEL1, LABEL2, ...]} \n>> "))
 
     io.make_dirs(out_dir)
-    
+
     for rawfile_in in io.get_file_list(fif_dir):
         p = io.parse_path(rawfile_in)
-        
+
         if p.ext != 'fif':
             continue
-        
+
         rawfile_out = '%s/%s.%s' % (out_dir, p.name, p.ext)
         merge_events(trigger_file, events, rawfile_in, rawfile_out)
