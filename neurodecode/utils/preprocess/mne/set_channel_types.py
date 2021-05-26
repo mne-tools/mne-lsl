@@ -21,7 +21,8 @@ def set_channel_types(raw, mapping):
     raw.set_channel_types(mapping)
 
 
-def dir_set_channel_types(fif_dir, recursive, mapping, overwrite=False):
+def dir_set_channel_types(fif_dir, recursive, mapping,
+                          out_dir=None, overwrite=False):
     """
     Change the channel types of all raw fif files in a given directory.
     The file name must respect MNE convention and end with '-raw.fif'.
@@ -36,6 +37,9 @@ def dir_set_channel_types(fif_dir, recursive, mapping, overwrite=False):
         If true, search recursively.
     mapping : dict
         The channel type mapping.
+    out_dir : str | None
+        The path to the output directory. If None, the directory
+        'corrected' is used.
     overwrite : bool
         If true, overwrite previously corrected files.
     """
@@ -46,6 +50,15 @@ def dir_set_channel_types(fif_dir, recursive, mapping, overwrite=False):
     if not fif_dir.is_dir():
         logger.error(f"'{fif_dir}' is not a directory.")
         raise IOError
+
+    if out_dir is None:
+        out_dir = 'corrected'
+        if not (fif_dir / out_dir).is_dir():
+            io.make_dirs(fif_dir / out_dir)
+    else:
+        out_dir = Path(out_dir)
+        if not out_dir.is_dir():
+            io.make_dirs(out_dir)
 
     for fif_file in io.get_file_list(fif_dir, fullpath=True, recursive=recursive):
         fif_file = Path(fif_file)
@@ -58,14 +71,14 @@ def dir_set_channel_types(fif_dir, recursive, mapping, overwrite=False):
         raw = mne.io.read_raw(fif_file, preload=True)
         set_channel_types(raw, mapping)
 
-        out_dir = 'corrected'
-        if not (fif_file.parent / out_dir).is_dir():
-            io.make_dirs(fif_file.parent / out_dir)
+        relative = fif_file.relative_to(fif_dir).parent
+        if not (fif_dir / out_dir / relative).is_dir():
+            io.make_dirs(fif_dir / out_dir / relative)
 
         logger.info(
-            f"Exporting to '{fif_file.parent / out_dir / fif_file.name}'")
+            f"Exporting to '{fif_dir / out_dir / relative / fif_file.name}'")
         try:
-            raw.save(fif_file.parent / out_dir / fif_file.name,
+            raw.save(fif_dir / out_dir / relative / fif_file.name,
                      overwrite=overwrite)
         except FileExistsError:
             logger.warning(
