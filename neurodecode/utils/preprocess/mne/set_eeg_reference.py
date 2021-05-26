@@ -27,10 +27,10 @@ def set_eeg_reference(inst, ref_channels, ref_old=None, **kwargs):
     """
     if not (all(isinstance(ref_ch, str) for ref_ch in ref_channels)
             or isinstance(ref_channels, str)):
-        raise ValueError(
+        logger.error(
             "The new reference channel must be a list of strings "
             "or 'average' or 'REST'.")
-
+        raise ValueError
     if ref_old is not None:
         mne.add_reference_channels(inst, ref_old, copy=False)
 

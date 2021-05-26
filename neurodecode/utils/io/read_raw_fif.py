@@ -33,9 +33,9 @@ def read_raw_fif(fname, events_ext=None, preload=True):
     if not fname.is_file():
         logger.error(f"'{fname}' is not a file.")
         raise IOError
-
-    # Check the fif extension
-    assert fname.suffix == '.fif', "Only '.fif' format is supported."
+    if not fname.suffix == '.fif':
+        logger.error("Only '.fif' format is supported.")
+        raise IOError
 
     # Load mne raw data
     raw = mne.io.read_raw_fif(fname, preload=preload)
