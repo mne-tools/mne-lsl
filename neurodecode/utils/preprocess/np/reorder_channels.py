@@ -1,5 +1,7 @@
 import numpy as np
 
+from .... import logger
+
 
 def reorder_channels(inst, new_order):
     """
@@ -20,7 +22,8 @@ def reorder_channels(inst, new_order):
     if isinstance(new_order, np.ndarray):
         new_order = list(new_order)
     if not inst.shape[0] == len(new_order):
-        raise ValueError(
+        logger.error(
             "The new order does not have the same number of channels.")
+        raise ValueError
 
     return inst[new_order, :]
