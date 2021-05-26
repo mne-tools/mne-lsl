@@ -82,9 +82,10 @@ class Cap:
             self._layout = CAP[cap_name]
             self._ch_types = CH_TYPES[cap_name]
         except:
-            raise KeyError(
+            logger.error(
                 "The provided cap name is not yet included. "
                 "Add it first to NeuroDecode.")
+            raise KeyError
         try:
             self._laplacian = LAPLACIAN[cap_name]
         except:

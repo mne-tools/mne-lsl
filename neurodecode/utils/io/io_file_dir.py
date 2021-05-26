@@ -24,7 +24,8 @@ def get_file_list(path, fullpath=True, recursive=False):
     """
     path = Path(path)
     if not path.exists():
-        raise IOError(f"The directory '{path}' does not exist.")
+        logger.error((f"The directory '{path}' does not exist."))
+        raise IOError
 
     if recursive == False:
         if fullpath == True:
@@ -69,7 +70,8 @@ def get_dir_list(path, recursive=False, no_child=False):
     """
     path = Path(path)
     if not path.exists():
-        raise IOError(f"The directory '{path}' does not exist.")
+        logger.error(f"The directory '{path}' does not exist.")
+        raise IOError
 
     if recursive == False:
         dirlist = [str(path / file.name) for file in os.scandir(path)

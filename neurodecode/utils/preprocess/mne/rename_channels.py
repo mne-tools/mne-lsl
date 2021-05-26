@@ -19,8 +19,9 @@ def rename_channels(inst, new_channel_names, **kwargs):
         c.f. https://mne.tools/stable/generated/mne.rename_channels.html
     """
     if len(inst.ch_names) != len(new_channel_names):
-        raise RuntimeError(
+        logger.error(
             'The number of new channels does not match that of fif file.')
+        raise RuntimeError
 
     mapping = {inst.info['ch_names'][k]: new_ch
                for k, new_ch in enumerate(new_channel_names)}

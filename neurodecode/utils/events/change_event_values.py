@@ -58,6 +58,7 @@ def change_event_values(raw, event_value_old, event_value_new):
                            event_value_new=event_value_new,
                            picks=raw.ch_names[tch], channel_wise=True)
     except RuntimeError:
+        logger.warning('MNE raw data should be (pre)loaded. Loading now.')
         raw.load_data()
         raw.apply_function(change_event_values_arr,
                            event_value_old=event_value_old,

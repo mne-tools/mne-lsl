@@ -29,8 +29,9 @@ def set_eeg_reference(inst, ref_channels, ref_old=None, bads=None):
             ref_channels = [ref_channels]
         if not (all(isinstance(ref_ch, int) for ref_ch in ref_channels)
                 and all(0 <= ref_ch <= inst.shape[0] for ref_ch in ref_channels)):
-            raise ValueError(f'The new reference channel indices {ref_channels} '
-                             f'are not in raw.shape {inst.shape[0]}.')
+            logger.error(f'The new reference channel indices {ref_channels} '
+                         f'are not in raw.shape {inst.shape[0]}.')
+            raise ValueError
 
     if ref_old is not None:
         refs = np.zeros((len(ref_old), inst.shape[1]))
