@@ -30,7 +30,8 @@ def start_server(server_name, n_channels=1, channel_format='string',
         Signal type.
         (https://github.com/sccn/xdf/wiki/Meta-Data#stream-content-types)
     source_id : str
-        If None, set to server name.
+        Unique identifier of the device or source of the data, if available
+        (such as the serial number). If None, set to server name.
 
     Returns
     -------
