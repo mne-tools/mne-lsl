@@ -37,6 +37,9 @@ class TriggerDef(object):
             raise IOError
 
     def _extract_from_ini(self):
+        """
+        Load the ini file.
+        """
         config = ConfigParser(inline_comment_prefixes=('#', ';'))
         config.optionxform = str
         config.read(str(self._ini_file))
