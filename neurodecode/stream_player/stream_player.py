@@ -1,14 +1,3 @@
-#!/usr/bin/env python3
-
-"""
-Strean a recorded fif file on LSL network.
-
-Command-line arguments:
-    #1: Server name
-    #2: Raw FIF file to stream
-    #3: Chunk size
-    #4: Trigger file
-"""
 
 import time
 import pylsl
@@ -95,7 +84,7 @@ class StreamPlayer:
         Stop the streaming, by terminating the process.
         """
         if self._process:
-            self._logger.info(f"Stop streaming data from: '{server_name}'.")
+            self._logger.info(f"Stop streaming data from: '{self._server_name}'.")
             self._process.terminate()
 
     def _stream(self, repeat, high_resolution, logger, state):
@@ -319,7 +308,7 @@ class Streamer:
         self._raw, self._events = read_raw_fif(fif_file)
 
         tch = self.get_trg_index()
-        idx = [k for k in range(self.raw._data.shape[0]) if k != tch]
+        idx = np.arange(self.raw._data.shape[0] != tch)
         self.raw._data[idx, :] = self._raw.get_data()[idx, :] * 1E6
 
         if self.raw is not None:
