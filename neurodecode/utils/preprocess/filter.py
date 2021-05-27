@@ -36,7 +36,7 @@ def notch_filter(raw, freqs=np.arange(50, 151, 50), picks=None, **kwargs):
     raw.notch_filter(freqs, picks, **kwargs)
 
 
-def dir_notch_filter(fif_dir, recursive, freqs, picks,
+def dir_notch_filter(fif_dir, recursive, freqs, picks=None,
                      out_dir=None, overwrite=False, **kwargs):
     """
     Apply a notch filter to all raw fif files in a given directory.
@@ -112,7 +112,7 @@ def dir_notch_filter(fif_dir, recursive, freqs, picks,
             raise
 
 
-def spectral_filter(inst, l_freq, h_freq, picks, **kwargs):
+def spectral_filter(inst, l_freq, h_freq, picks=None, **kwargs):
     """
     Apply a filter to the data of the MNE instance.
 
@@ -143,7 +143,7 @@ def spectral_filter(inst, l_freq, h_freq, picks, **kwargs):
     inst.filter(l_freq, h_freq, picks, **kwargs)
 
 
-def dir_spectral_filter(fif_dir, recursive, l_freq, h_freq, picks,
+def dir_spectral_filter(fif_dir, recursive, l_freq, h_freq, picks=None,
                         out_dir=None, overwrite=False, **kwargs):
     """
     Apply a filter to all raw fif files in a given directory.
