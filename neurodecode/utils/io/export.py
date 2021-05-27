@@ -54,8 +54,7 @@ def write_set(raw, fname):
             appendmat=False)
 
 
-def dir_write_set(fif_dir, recursive,
-                  out_dir=None):
+def dir_write_set(fif_dir, recursive, out_dir=None):
     """
     Converts all raw fif file in a given directory to EEGLAB '.set' format.
     The file name must respect MNE convention and end with '-raw.fif'.
