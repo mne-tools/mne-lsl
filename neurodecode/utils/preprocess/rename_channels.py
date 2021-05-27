@@ -1,33 +1,46 @@
 import mne
 from pathlib import Path
 
-from ... import io
-from .... import logger
+from .. import io
+from ... import logger
 
 
-def set_channel_types(raw, mapping):
+def rename_channels(inst, new_channel_names, **kwargs):
     """
-    Change the channel types of the raw instance.
-
-    https://mne.tools/stable/generated/mne.io.Raw.html#mne.io.Raw.set_channel_types
+    Change the channel names of the MNE instance.
 
     Parameters
     ----------
-    raw : mne.io.Raw | mne.io.RawArray
-        MNE instance of Raw.
+    inst : mne.io.Raw | mne.io.RawArray | mne.Epochs | mne.Evoked
+        MNE instance of Raw | Epochs | Evoked.
     new_channel_names : list
         The list of the new channel names.
+    **kwargs : Additional arguments are passed to mne.rename_channels()
+        c.f. https://mne.tools/stable/generated/mne.rename_channels.html
     """
-    raw.set_channel_types(mapping)
+    if 'mapping' in kwargs.keys():
+        logger.warning(
+            'Argument mapping should not be provided. '
+            'Override with new_channel_names.')
+        del kwargs['mapping']
+
+    if len(inst.ch_names) != len(new_channel_names):
+        logger.error(
+            'The number of new channels does not match that of fif file.')
+        raise RuntimeError
+
+    mapping = {inst.info['ch_names'][k]: new_ch
+               for k, new_ch in enumerate(new_channel_names)}
+    mne.rename_channels(inst.info, mapping, **kwargs)
 
 
-def dir_set_channel_types(fif_dir, recursive, mapping,
-                          out_dir=None, overwrite=False):
+def dir_rename_channels(fif_dir, recursive, new_channel_names,
+                        out_dir=None, overwrite=False):
     """
-    Change the channel types of all raw fif files in a given directory.
+    Change the channel names of all raw fif files in a given directory.
     The file name must respect MNE convention and end with '-raw.fif'.
 
-    https://mne.tools/dev/generated/mne.io.Raw.html#mne.io.Raw.set_channel_types
+    https://mne.tools/stable/generated/mne.rename_channels.html
 
     Parameters
     ----------
@@ -35,11 +48,11 @@ def dir_set_channel_types(fif_dir, recursive, mapping,
          The path to the directory containing fif files.
     recursive : bool
         If true, search recursively.
-    mapping : dict
-        The channel type mapping.
+    new_channel_names : list
+        The list of the new channel names.
     out_dir : str | None
         The path to the output directory. If None, the directory
-        'corrected' is used.
+        f'fif_dir/renamed' is used.
     overwrite : bool
         If true, overwrite previously corrected files.
     """
@@ -52,7 +65,7 @@ def dir_set_channel_types(fif_dir, recursive, mapping,
         raise IOError
 
     if out_dir is None:
-        out_dir = 'corrected'
+        out_dir = 'renamed'
         if not (fif_dir / out_dir).is_dir():
             io.make_dirs(fif_dir / out_dir)
     else:
@@ -69,7 +82,7 @@ def dir_set_channel_types(fif_dir, recursive, mapping,
             continue
 
         raw = mne.io.read_raw(fif_file, preload=True)
-        set_channel_types(raw, mapping)
+        rename_channels(raw, new_channel_names)
 
         relative = fif_file.relative_to(fif_dir).parent
         if not (fif_dir / out_dir / relative).is_dir():
