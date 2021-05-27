@@ -64,7 +64,7 @@ def dir_set_channel_types(fif_dir, recursive, mapping,
         fif_file = Path(fif_file)
 
         if not fif_file.suffix == '.fif':
-            continue  # skip
+            continue
         if not fif_file.stem.endswith('-raw'):
             continue
 

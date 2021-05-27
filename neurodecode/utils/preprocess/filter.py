@@ -62,7 +62,7 @@ def dir_notch_filter(fif_dir, recursive, freqs, picks,
             picks=['eog', 'ecg']
     out_dir : str | None
         The path to the output directory. If None, the directory
-        f'fif_dir/renamed' is used.
+        f'fif_dir/notched' is used.
     overwrite : bool
         If true, overwrite previously corrected files.
     **kwargs : Additional arguments are passed to raw.notch_filter()
@@ -88,7 +88,7 @@ def dir_notch_filter(fif_dir, recursive, freqs, picks,
         fif_file = Path(fif_file)
 
         if not fif_file.suffix == '.fif':
-            continue  # skip
+            continue
         if not fif_file.stem.endswith('-raw'):
             continue
 
@@ -173,7 +173,7 @@ def dir_spectral_filter(fif_dir, recursive, l_freq, h_freq, picks,
             picks=['eog', 'ecg']
     out_dir : str | None
         The path to the output directory. If None, the directory
-        f'fif_dir/renamed' is used.
+        f'fif_dir/filtered' is used.
     overwrite : bool
         If true, overwrite previously corrected files.
     **kwargs : Additional arguments are passed to raw.filter()
@@ -199,7 +199,7 @@ def dir_spectral_filter(fif_dir, recursive, l_freq, h_freq, picks,
         fif_file = Path(fif_file)
 
         if not fif_file.suffix == '.fif':
-            continue  # skip
+            continue
         if not fif_file.stem.endswith('-raw'):
             continue
 

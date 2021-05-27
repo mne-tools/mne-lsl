@@ -114,7 +114,7 @@ def dir_change_event_values(fif_dir, recursive, event_value_old,
         fif_file = Path(fif_file)
 
         if not fif_file.suffix == '.fif':
-            continue  # skip
+            continue
         if not fif_file.stem.endswith('-raw'):
             continue
 
