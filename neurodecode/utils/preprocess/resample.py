@@ -67,7 +67,7 @@ def dir_resample(fif_dir, recursive, sfreq, out_dir=None, overwrite=False):
         fif_file = Path(fif_file)
 
         if not fif_file.suffix == '.fif':
-            continue  # skip
+            continue
         if not (fif_file.stem.endswith('-raw') or
                 fif_file.stem.endswith('-epo')):
             continue

@@ -68,7 +68,7 @@ def dir_write_set(fif_dir, recursive,
         If true, search recursively.
     out_dir : str | None
         The path to the output directory. If None, the directory
-        f'fif_dir/renamed' is used.
+        f'fif_dir/fif2set' is used.
     """
     fif_dir = Path(fif_dir)
     if not fif_dir.exists():
@@ -79,7 +79,7 @@ def dir_write_set(fif_dir, recursive,
         raise IOError
 
     if out_dir is None:
-        out_dir = 'renamed'
+        out_dir = 'fif2set'
         if not (fif_dir / out_dir).is_dir():
             make_dirs(fif_dir / out_dir)
     else:
@@ -87,21 +87,21 @@ def dir_write_set(fif_dir, recursive,
         if not out_dir.is_dir():
             make_dirs(out_dir)
 
-        for fif_file in get_file_list(fif_dir, fullpath=True, recursive=recursive):
-            fif_file = Path(fif_file)
+    for fif_file in get_file_list(fif_dir, fullpath=True, recursive=recursive):
+        fif_file = Path(fif_file)
 
-            if not fif_file.suffix == '.fif':
-                continue  # skip
-            if not fif_file.stem.endswith('-raw'):
-                continue
+        if not fif_file.suffix == '.fif':
+            continue
+        if not fif_file.stem.endswith('-raw'):
+            continue
 
-            raw = mne.io.read_raw(fif_file, preload=True)
+        raw = mne.io.read_raw(fif_file, preload=True)
 
-            relative = fif_file.relative_to(fif_dir).parent
-            if not (fif_dir / out_dir / relative).is_dir():
-                make_dirs(fif_dir / out_dir / relative)
+        relative = fif_file.relative_to(fif_dir).parent
+        if not (fif_dir / out_dir / relative).is_dir():
+            make_dirs(fif_dir / out_dir / relative)
 
-            logger.info(
-                f"Exporting to '{fif_dir / out_dir / relative / fif_file.name}'")
+        logger.info(
+            f"Exporting to '{fif_dir / out_dir / relative / fif_file.stem}.set'")
 
-            write_set(raw, fif_dir / out_dir / relative / fif_file.name)
+        write_set(raw, str(fif_dir / out_dir / relative / fif_file.stem) + '.set')
