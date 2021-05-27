@@ -36,7 +36,7 @@ def write_set(raw, fname):
     events = fromarrays([raw.annotations.description,
                          raw.annotations.onset * fs + 1,
                          raw.annotations.duration * fs],
-                        names=["type", "latency", "duration"])
+                         names=["type", "latency", "duration"])
     savemat(fname,
             dict(EEG=dict(data=data,
                           setname=fname,
