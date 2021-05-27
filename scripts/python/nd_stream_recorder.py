@@ -6,7 +6,7 @@ record directory.
 
 Command-line arguments:
     #1: Path to the record directory
-    #2: AMP name (optional)
+    #2: Stream name (optional)
 If no argument is supplied, prompts for a path to a record directory.
 Example:
     python nd_stream_recorder.py "D:/Data"
@@ -26,14 +26,14 @@ if __name__ == '__main__':
     import sys
     from pathlib import Path
 
-    amp_name = None
+    stream_name = None
 
     if len(sys.argv) > 3:
         raise RuntimeError("Too many arguments provided, maximum is 2.")
 
     if len(sys.argv) == 3:
         record_dir = sys.argv[1]
-        amp_name = sys.argv[2]
+        stream_name = sys.argv[2]
 
     if len(sys.argv) == 2:
         record_dir = sys.argv[1]
@@ -43,6 +43,6 @@ if __name__ == '__main__':
             Path(input(">> Provide the path to save the .fif file: \n>> ")))
 
     recorder = StreamRecorder(record_dir)
-    recorder.start(amp_name=amp_name, eeg_only=False, verbose=True)
+    recorder.start(stream_name=stream_name, eeg_only=False, verbose=True)
     input(">> Press ENTER to stop the recording \n")
     recorder.stop()
