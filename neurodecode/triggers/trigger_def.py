@@ -1,8 +1,7 @@
-#!/usr/bin/env python3
-
-import os
+from pathlib import Path
 from configparser import ConfigParser
-from neurodecode import logger
+
+from .. import logger
 
 
 class TriggerDef(object):
@@ -19,39 +18,33 @@ class TriggerDef(object):
     """
 
     def __init__(self, ini_file):
+        self._ini_file = Path(ini_file)
         self._by_name = dict()
         self._by_value = dict()
 
-        self._check_ini_path(ini_file)
-        self._extract_from_ini(ini_file)
+        self._check_ini_path()
+        self._extract_from_ini()
 
-    def _check_ini_path(self, ini_file):
+    def _check_ini_path(self):
         """
         Ensure that the provided file exists.
-
-        Parameters
-        ----------
-        ini_file : str
-            The absolute path of the ini file
         """
-        if os.path.exists(ini_file):
-            logger.info(f"Found trigger definition file {ini_file}")
+        if self._ini_file.exists():
+            logger.info(f"Found trigger definition file '{self._ini_file}'")
         else:
-            raise IOError(
-                f"Trigger event definition file {ini_file} not found.")
+            logger.error(
+                f"Trigger event definition file '{self._ini_file}' not found.")
+            raise IOError
 
-    def _extract_from_ini(self, ini_file):
-        """
-        Extract the events' name and associated integer.
-        """
+    def _extract_from_ini(self):
         config = ConfigParser(inline_comment_prefixes=('#', ';'))
         config.optionxform = str
-        config.read(ini_file)
+        config.read(str(self._ini_file))
         self._create_attributes(config.items('events'))
 
     def _create_attributes(self, items):
         """
-        Fill the class attributes with the pairs string-integer
+        Fill the class attributes with the pairs string-integer.
         """
         for key, value in items:
             value = int(value)
@@ -64,14 +57,13 @@ class TriggerDef(object):
         Display all attributes.
         """
         print('TriggerDef Attributes:')
-        for attr in dir(self):
-            if not callable(getattr(self, attr)) and not attr.startswith("__"):
-                print(attr, getattr(self, attr))
+        for str_key, int_value in self._by_name.items():
+            print(str_key, int_value)
 
     @property
     def by_name(self):
         """
-        A dictionnary with string keys and integers value
+        A dictionnary with string keys and integers value.
         """
         return self._by_name
 
@@ -82,16 +74,10 @@ class TriggerDef(object):
     @property
     def by_value(self):
         """
-        A dictionnary with integers keys and string values
+        A dictionnary with integers keys and string values.
         """
         return self._by_value
 
     @by_value.setter
     def by_value(self, new):
         logger.warning("Cannot modify this attribute manually.")
-
-
-if __name__ == '__main__':
-    ini_file = './triggerdef_template.ini'
-    tdef = TriggerDef(ini_file)
-    tdef.check_data()
