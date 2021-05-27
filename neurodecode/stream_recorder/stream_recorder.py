@@ -35,18 +35,18 @@ class StreamRecorder:
             raise RuntimeError
 
         self._proc = None
-        self._amp_name = None
+        self._stream_name = None
         self._record_dir = record_dir
 
         self._state = state
 
-    def start(self, amp_name=None, eeg_only=False, verbose=False):
+    def start(self, stream_name=None, eeg_only=False, verbose=False):
         """
         Start recording data from LSL network, in a new process.
 
         Parameters
         ----------
-        amp_name : str
+        stream_name : str
             Connect to a server named 'amp_name'. None: no constraint.
         eeg_only : bool
             If true, ignore non-EEG servers.
@@ -54,10 +54,10 @@ class StreamRecorder:
             IF true, it will print every second the time since the recording
             start.
         """
-        self._amp_name = amp_name
+        self._stream_name = stream_name
 
         self._proc = mp.Process(target=self._record,
-                                args=(amp_name,
+                                args=(stream_name,
                                       self._record_dir,
                                       eeg_only,
                                       verbose,
@@ -95,7 +95,7 @@ class StreamRecorder:
                 'Recorder process not finishing. Are you running from Spyder?')
         self._logger.info('Recording finished.')
 
-    def _record(self, amp_name, record_dir, eeg_only,
+    def _record(self, stream_name, record_dir, eeg_only,
                 verbose, logger, queue, state):
         """
         The function launched in a new process.
@@ -103,16 +103,16 @@ class StreamRecorder:
         redirect_stdout_to_queue(logger, queue, 'INFO')
 
         recorder = _Recorder(record_dir, logger, state)
-        recorder.connect(amp_name, eeg_only)
+        recorder.connect(stream_name, eeg_only)
         recorder.record(verbose)
 
-    def _start_gui(self, protocolState, amp_name, record_dir, eeg_only,
+    def _start_gui(self, protocolState, stream_name, record_dir, eeg_only,
                    logger, queue, state):
         """
         Start the recording when launched from the GUI.
         """
         self._proc = mp.Process(target=self._record,
-                                args=(amp_name,
+                                args=(stream_name,
                                       record_dir,
                                       eeg_only,
                                       True,
@@ -151,7 +151,7 @@ class StreamRecorder:
         self._logger.warning("This attribute cannot be changed.")
 
     @property
-    def amp_name(self):
+    def stream_name(self):
         """
         The provided amp_name to connect to.
 
@@ -161,10 +161,10 @@ class StreamRecorder:
         -------
         str
         """
-        return self._amp_name
+        return self._stream_name
 
-    @amp_name.setter
-    def amp_name(self):
+    @stream_name.setter
+    def stream_name(self):
         self._logger.warning("This attribute cannot be changed.")
 
     @property
@@ -187,6 +187,10 @@ class StreamRecorder:
         """
         Multiprocessing sharing variable to stop the recording from another
         process.
+
+        Returns
+        -------
+        mp.Value
         """
         return self._state
 
