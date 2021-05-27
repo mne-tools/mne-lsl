@@ -1,40 +1,36 @@
 import mne
 from pathlib import Path
 
-from ... import io
-from .... import logger
+from .. import io
+from ... import logger
 
 
-def rename_channels(inst, new_channel_names, **kwargs):
+def resample(inst, sfreq, **kwargs):
     """
-    Change the channel names of the MNE instance.
+    Resample the inst.
+    /!\ Resample goal is to speed up computation. As it add a jitter to the
+    trigger/events, it is recommanded to first create the epochs and then
+    downsample the epochs.
 
     Parameters
     ----------
-    inst : mne.io.Raw | mne.io.RawArray | mne.Epochs | mne.Evoked
+    inst : inst : mne.io.Raw | mne.io.RawArray | mne.Epochs | mne.Evoked
         MNE instance of Raw | Epochs | Evoked.
-    new_channel_names : list
-        The list of the new channel names.
-    **kwargs : Additional arguments are passed to mne.rename_channels()
-        c.f. https://mne.tools/stable/generated/mne.rename_channels.html
+    sfreq : float
+        Tne desired sampling rate in Hz.
+    **kwargs : Additional arguments are passed to inst.resample().
+        c.f. https://mne.tools/stable/generated/mne.io.Raw.html#mne.io.Raw.resample
     """
-    if len(inst.ch_names) != len(new_channel_names):
-        logger.error(
-            'The number of new channels does not match that of fif file.')
-        raise RuntimeError
-
-    mapping = {inst.info['ch_names'][k]: new_ch
-               for k, new_ch in enumerate(new_channel_names)}
-    mne.rename_channels(inst.info, mapping, **kwargs)
+    inst.resample(sfreq, **kwargs)
 
 
-def dir_rename_channels(fif_dir, recursive, new_channel_names,
-                        out_dir=None, overwrite=False):
+def dir_resample(fif_dir, recursive, sfreq, out_dir=None, overwrite=False):
     """
-    Change the channel names of all raw fif files in a given directory.
-    The file name must respect MNE convention and end with '-raw.fif'.
+    Change the sampling rate of all raw and epochs fif files in a given directory.
+    The file name must respect MNE convention and end with '-raw.fif' or
+    '-epo.fif'.
 
-    https://mne.tools/stable/generated/mne.rename_channels.html
+    https://mne.tools/stable/generated/mne.io.Raw.html#mne.io.Raw.resample
 
     Parameters
     ----------
@@ -42,11 +38,11 @@ def dir_rename_channels(fif_dir, recursive, new_channel_names,
          The path to the directory containing fif files.
     recursive : bool
         If true, search recursively.
-    new_channel_names : list
-        The list of the new channel names.
+    sfreq : float
+        Tne desired sampling rate in Hz.
     out_dir : str | None
         The path to the output directory. If None, the directory
-        f'fif_dir/renamed' is used.
+        f'fif_resampled_{sfreq}' is used.
     overwrite : bool
         If true, overwrite previously corrected files.
     """
@@ -59,7 +55,7 @@ def dir_rename_channels(fif_dir, recursive, new_channel_names,
         raise IOError
 
     if out_dir is None:
-        out_dir = 'renamed'
+        out_dir = f'fif_resampled_{sfreq}'
         if not (fif_dir / out_dir).is_dir():
             io.make_dirs(fif_dir / out_dir)
     else:
@@ -72,11 +68,15 @@ def dir_rename_channels(fif_dir, recursive, new_channel_names,
 
         if not fif_file.suffix == '.fif':
             continue  # skip
-        if not fif_file.stem.endswith('-raw'):
+        if not (fif_file.stem.endswith('-raw') or
+                fif_file.stem.endswith('-epo')):
             continue
 
-        raw = mne.io.read_raw(fif_file, preload=True)
-        rename_channels(raw, new_channel_names)
+        if fif_file.stem.endswith('-raw'):
+            inst = mne.io.read_raw(fif_file, preload=True)
+        elif fif_file.stem.endswith('-epo'):
+            inst = mne.read_epochs(fif_file, preload=True)
+        resample(inst, sfreq)
 
         relative = fif_file.relative_to(fif_dir).parent
         if not (fif_dir / out_dir / relative).is_dir():
@@ -85,8 +85,8 @@ def dir_rename_channels(fif_dir, recursive, new_channel_names,
         logger.info(
             f"Exporting to '{fif_dir / out_dir / relative / fif_file.name}'")
         try:
-            raw.save(fif_dir / out_dir / relative / fif_file.name,
-                     overwrite=overwrite)
+            inst.save(fif_dir / out_dir / relative / fif_file.name,
+                      overwrite=overwrite)
         except FileExistsError:
             logger.warning(
                 f'The corrected file already exist for {fif_file.name}. '
