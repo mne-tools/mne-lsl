@@ -77,7 +77,7 @@ def dir_rename_channels(fif_dir, recursive, new_channel_names,
         fif_file = Path(fif_file)
 
         if not fif_file.suffix == '.fif':
-            continue  # skip
+            continue
         if not fif_file.stem.endswith('-raw'):
             continue
 

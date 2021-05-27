@@ -88,7 +88,7 @@ def dir_set_eeg_reference(fif_dir, recursive, ref_channels, ref_old=None,
         fif_file = Path(fif_file)
 
         if not fif_file.suffix == '.fif':
-            continue  # skip
+            continue
         if not fif_file.stem.endswith('-raw'):
             continue
 
