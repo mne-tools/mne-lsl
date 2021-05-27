@@ -1,8 +1,10 @@
-'''
-Module for data preprocessing.
+"""
+Module for simple MNE data preprocessing.
+"""
 
-It supports temporal, spatial, notch filtering, downsampling, rereferencing.
-This module also contains the find_event_channel using heuristic methods.
-'''
-
-from .preprocess import preprocess, find_event_channel, rereference
+from .filter import (spectral_filter, dir_spectral_filter,
+                     notch_filter, dir_notch_filter)
+from .rename_channels import rename_channels, dir_rename_channels
+from .resample import resample, dir_resample
+from .set_channel_types import set_channel_types, dir_set_channel_types
+from .set_eeg_reference import set_eeg_reference, dir_set_eeg_reference
