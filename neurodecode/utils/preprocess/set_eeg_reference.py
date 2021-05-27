@@ -1,8 +1,8 @@
 import mne
 from pathlib import Path
 
-from ... import io
-from .... import logger
+from .. import io
+from ... import logger
 
 
 def set_eeg_reference(inst, ref_channels, ref_old=None, **kwargs):
