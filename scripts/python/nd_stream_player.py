@@ -13,12 +13,14 @@ the '-raw.fif' file to play.
 Example:
     python nd_stream_player.py StreamPlayer "D:/Data/sample-raw.fif"
     python nd_stream_player.py StreamPlayer "D:/Data/sample-raw.fif" 16
+    python nd_stream_player.py StreamPlayer "D:/Data/sample-raw.fif" 16 'D:/triggerdef_template.ini'
 
 If the scripts have been added to the PATH (c.f. github), can be called
 from terminal with the command nd_stream_recorder.
 Example:
     nd_stream_player StreamPlayer "D:/Data/sample-raw.fif"
-    nd_stream_recorder StreamPlayer "D:/Data/sample-raw.fif" 16
+    nd_stream_player StreamPlayer "D:/Data/sample-raw.fif" 16
+    nd_stream_player StreamPlayer "D:/Data/sample-raw.fif" 16 'D:/triggerdef_template.ini'
 """
 
 from neurodecode.stream_player import StreamPlayer
