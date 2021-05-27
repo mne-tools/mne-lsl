@@ -308,7 +308,7 @@ class Streamer:
         self._raw, self._events = read_raw_fif(fif_file)
 
         tch = self.get_trg_index()
-        idx = np.arange(self.raw._data.shape[0] != tch)
+        idx = np.arange(self.raw._data.shape[0]) != tch
         self.raw._data[idx, :] = self._raw.get_data()[idx, :] * 1E6
 
         if self.raw is not None:
