@@ -224,7 +224,7 @@ def dir_spectral_filter(fif_dir, recursive, l_freq, h_freq, picks=None,
             raise
 
 
-def laplacin_filter(inst, montage=None, **kwargs):
+def laplacian_filter(inst, montage=None, **kwargs):
     """
     Apply current source density transformation, also called laplacian filter.
 
