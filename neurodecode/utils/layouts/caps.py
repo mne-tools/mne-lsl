@@ -54,13 +54,6 @@ CH_TYPES = {
               ['misc'] * 2 + ['eeg'] * 2,
 }
 
-LAPLACIAN = {
-    'GTEC_16': {1: [4], 2: [3, 7], 3: [2, 4, 8], 4: [3, 5, 9],
-                5: [4, 6, 10], 6: [5, 11], 7: [2, 8, 12], 8: [3, 7, 9, 13],
-                9: [4, 8, 10, 14], 10: [5, 9, 11, 15], 11: [6, 10, 16], 12: [7, 13],
-                13: [8, 12, 14], 14: [9, 13, 15], 15: [10, 14, 16], 16: [11, 15]}
-}
-
 
 class Cap:
     """
@@ -86,13 +79,6 @@ class Cap:
                 "The provided cap name is not yet included. "
                 "Add it first to NeuroDecode.")
             raise KeyError
-        try:
-            self._laplacian = LAPLACIAN[cap_name]
-        except:
-            logger.warning(
-                "The laplacian is not yet defined for this cap. "
-                "Add it first to NeuroDecode to apply laplacian spatial filtering.")
-            self._laplacian = None
 
     @property
     def layout(self):
@@ -115,14 +101,3 @@ class Cap:
     @ch_types.setter
     def ch_types(self, new_ch_types):
         self._ch_types = new_ch_types
-
-    @property
-    def laplacian(self):
-        """
-        The laplacian for spatial filtering (neighbours of each electrodes).
-        """
-        return self._laplacian
-
-    @laplacian.setter
-    def laplacian(self, new_laplacian):
-        self.laplacian = new_laplacian
