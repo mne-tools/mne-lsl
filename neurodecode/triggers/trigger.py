@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Send trigger events to parallel port (LPT).
 
@@ -6,7 +5,6 @@ See sample code at the end.
 
 Kyuhwa Lee, 2014
 Swiss Federal Institute of Technology Lausanne (EPFL)
-
 """
 
 import sys
@@ -344,27 +342,3 @@ class Trigger(object):
                 self.ser.close()
             except:
                 pass
-
-
-if __name__ == '__main__':
-
-    lpttype = input(
-        "Provide the type of LPT connector: DESKTOP, USB2LPT, SOFTWARE, ARDUINO, FAKE \n>>")
-
-    trigger = Trigger(lpttype=lpttype)
-
-    if not trigger.init(500):
-        raise RuntimeError('LPT port cannot be opened.')
-
-    print('Type quit or Ctrl+C to finish.')
-    while True:
-        val = input('Trigger value? \n>> ')
-        if val.strip() == '':
-            continue
-        if val.strip().lower() == 'quit':
-            break
-        if 0 <= int(val) <= 255:
-            trigger.signal(int(val))
-            print(f'Sent {int(val)}')
-        else:
-            print(f'Ignored {val}')
