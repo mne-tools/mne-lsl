@@ -54,42 +54,85 @@ CH_TYPES = {
               ['misc'] * 2 + ['eeg'] * 2,
 }
 
-
-class Cap:
+def available_layouts(verbose=False):
     """
-    Class containing the cap information.
+    Function returning the list of available layouts.
+
+    Parameters
+    ----------
+    verbose : bool
+        If True, prints the available layouts.
+    """
+    if verbose:
+        print ('Available layouts are:')
+        for key in CAP.keys():
+            print (f'  | {key}')
+
+    return list(CAP.keys())
+
+class Layout:
+    """
+    Class containing the layout (Cap + AUX) information.
     Supports: GTEC_16, BIOSEMI_64, SMARTBCI_24, ANTNEURO_64, DSI_24.
 
-    It provides the layout, channels' type and laplacian for spatial filtering.
+    Parameters
+    ----------
+    name : str
+        The name of the cap. Supported cap names have associated channel names
+        and channel types saved in NeuroDecode.
+    ch_names : list | None
+        The list of channels' name in the order receied from LSL.
+    ch_types : list | None
+        The list of channels' type in the order received from LSL.
+
+    It provides the layout and channels' type.
     """
 
-    def __init__(self, cap_name):
-        """
-        Constructor.
+    def __init__(self, name, ch_names=None, ch_types=None):
+        self._name = name
 
-        Parameters
-        ----------
-        cap_name : str
-        """
-        try:
-            self._layout = CAP[cap_name]
-            self._ch_types = CH_TYPES[cap_name]
-        except:
-            logger.error(
-                "The provided cap name is not yet included. "
-                "Add it first to NeuroDecode.")
-            raise KeyError
+        if ch_names is not None and ch_types is not None:
+            if not len(ch_names) == len(ch_types):
+                logger.error(
+                    f"The number of channels provided {len(ch_names)} "
+                    f"does not match the number of channels types {len(ch_types)}.")
+                raise ValueError
+
+            self._ch_names = list(ch_names)
+            self._ch_types = list(ch_types)
+
+        else:
+            try:
+                self._ch_names = CAP[name]
+                self._ch_types = CH_TYPES[name]
+            except:
+                logger.warning(
+                    "The provided cap name is not yet included. "
+                    "Add it first to NeuroDecode or provided the arguments "
+                    "'ch_names' and 'ch_types'.")
+                raise KeyError
 
     @property
-    def layout(self):
+    def name(self):
         """
-        Cap layout: channels' name in the order received from LSL.
+        The name of the layout.
         """
-        return self._layout
+        return self._names
 
-    @layout.setter
-    def layout(self, new_layout):
-        self._layout = new_layout
+    @name.setter
+    def name(self):
+        self._logger.warning("This attribute cannot be changed.")
+
+    @property
+    def ch_names(self):
+        """
+        The list of channels' name in the order receied from LSL.
+        """
+        return self._ch_names
+
+    @ch_names.setter
+    def ch_names(self, new_ch_names):
+        self._ch_names = new_ch_names
 
     @property
     def ch_types(self):
