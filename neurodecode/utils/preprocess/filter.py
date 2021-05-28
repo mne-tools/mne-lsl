@@ -34,7 +34,14 @@ def notch_filter(raw, freqs=np.arange(50, 151, 50), picks=None, **kwargs):
     if kwargs.get('method') == 'iir' and kwargs.get('iir_params') is None:
         kwargs['iir_params'] = dict(order=4, ftype='butter', output='sos')
 
-    raw.notch_filter(freqs, picks, **kwargs)
+    try:
+        raw.notch_filter(freqs, picks, **kwargs)
+    except RuntimeError:
+        logger.warning('MNE raw data should be (pre)loaded. Loading now.')
+        raw.load_data()
+        raw.notch_filter(freqs, picks, **kwargs)
+    except:
+        raise
 
 
 def dir_notch_filter(fif_dir, recursive, freqs, picks=None,
