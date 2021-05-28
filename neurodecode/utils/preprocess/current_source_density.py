@@ -89,7 +89,7 @@ def dir_current_source_density(fif_dir, recursive, montage=None,
             continue
 
         raw = mne.io.read_raw(fif_file, preload=True)
-        current_source_density(raw, montage, **kwargs)
+        raw = current_source_density(raw, montage, **kwargs)
 
         relative = fif_file.relative_to(fif_dir).parent
         if not (fif_dir / out_dir / relative).is_dir():
