@@ -3,7 +3,7 @@ import numpy as np
 from pathlib import Path
 
 from .io_file_dir import get_file_list
-from ..events import find_event_channel
+from ..preprocess.events import find_event_channel
 from ... import logger
 
 
