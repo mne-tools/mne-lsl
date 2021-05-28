@@ -92,6 +92,13 @@ class Layout:
         self._name = name
 
         if ch_names is not None and ch_types is not None:
+            if not isinstance(ch_names, (list, tuple)):
+                logger.error('The channel names must be provided as a list.')
+                raise TypeError
+            if not isinstance(ch_types, (list, tuple)):
+                logger.error('The channel types must be provided as a list.')
+                raise TypeError
+
             if not len(ch_names) == len(ch_types):
                 logger.error(
                     f"The number of channels provided {len(ch_names)} "
