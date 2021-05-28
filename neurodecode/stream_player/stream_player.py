@@ -7,7 +7,7 @@ import multiprocessing as mp
 from .. import logger
 from ..triggers import TriggerDef
 from ..utils.io import read_raw_fif
-from ..utils.events import find_event_channel
+from ..utils.preprocess.events import find_event_channel
 
 
 class StreamPlayer:

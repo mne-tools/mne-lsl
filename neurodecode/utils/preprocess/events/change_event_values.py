@@ -3,8 +3,8 @@ import numpy as np
 from pathlib import Path
 
 from .find_event_channel import find_event_channel
-from .. import io
-from ... import logger
+from ... import io
+from .... import logger
 
 
 def change_event_values_arr(timearr, event_value_old, event_value_new):

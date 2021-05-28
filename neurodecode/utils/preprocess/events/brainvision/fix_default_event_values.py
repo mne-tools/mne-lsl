@@ -12,8 +12,8 @@ import mne
 from pathlib import Path
 
 from .. import find_event_channel, change_event_values_arr
-from ... import io
-from .... import logger
+from .... import io
+from ..... import logger
 
 
 def fix_default_event_values(raw, default_value=-1):
