@@ -2,6 +2,8 @@
 Module for simple MNE data preprocessing.
 """
 
+from .current_source_density import (current_source_density,
+                                     dir_current_source_density)
 from .filter import (spectral_filter, dir_spectral_filter,
                      notch_filter, dir_notch_filter)
 from .rename_channels import rename_channels, dir_rename_channels
