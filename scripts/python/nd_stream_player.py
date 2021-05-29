@@ -4,7 +4,7 @@
 Stream a recorded fif file on LSL network.
 
 Command-line arguments:
-    #1: Server name
+    #1: Stream name
     #2: Raw FIF file to stream
     #3: Chunk size
     #4: Trigger file
