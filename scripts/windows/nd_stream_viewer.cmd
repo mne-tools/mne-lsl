@@ -1,4 +1,4 @@
 @echo off
 setlocal enabledelayedexpansion
 
-python %NeuroD_ROOT%/neurodecode/stream_viewer/stream_viewer.py
+python %NeuroD_ROOT%/scripts/python/nd_stream_viewer.py %1
