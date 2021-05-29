@@ -5,10 +5,10 @@ Convert known file format to FIF.
 import mne
 import pickle
 import numpy as np
-
 from pathlib import Path
+from mne.io._read_raw import readers
 
-from .io_file_dir import make_dirs
+from .io_file_dir import get_file_list, make_dirs
 from ..preprocess.events import find_event_channel
 from ... import logger
 
@@ -16,7 +16,7 @@ from ... import logger
 mne.set_log_level('ERROR')
 
 # ------------------------- Stream Recorder PCL -------------------------
-def pcl2fif(filename, outdir=None, external_event=None,
+def pcl2fif(filename, out_dir=None, external_event=None,
             precision='double', replace=False):
     """
     Convert NeuroDecode Python pickle format to mne.io.raw.
@@ -25,7 +25,7 @@ def pcl2fif(filename, outdir=None, external_event=None,
     ----------
     filename : str
         The pickle file path to convert to fif format.
-    outdir : str
+    out_dir : str
         Saving directory. If None, it will be the directory of the .pkl file.
     external_event : str
         Event file path in text formatm following mne event struct. Each row should be: index 0 event
@@ -42,13 +42,13 @@ def pcl2fif(filename, outdir=None, external_event=None,
         logger.error(f"File '{filename}' is not '.pcl'.")
         raise IOError
 
-    if outdir is not None:
-        outdir = Path(outdir)
+    if out_dir is not None:
+        out_dir = Path(out_dir)
     else:
-        outdir = filename.parent / 'fif'
-    make_dirs(outdir)
+        out_dir = filename.parent / 'fif'
+    make_dirs(out_dir)
 
-    fiffile = outdir / filename.stem + '.fif'
+    fiffile = out_dir / filename.stem + '.fif'
 
     # Load from file
     with open(filename, 'rb') as f:
@@ -66,7 +66,7 @@ def pcl2fif(filename, outdir=None, external_event=None,
 
     # Save
     raw.save(fiffile, verbose=False, overwrite=True, fmt=precision)
-    _saveChannels2txt(outdir, raw.info["ch_names"])
+    _saveChannels2txt(out_dir, raw.info["ch_names"])
     logger.info(f"Data saved to: '{fiffile}'")
 
 
@@ -203,11 +203,11 @@ def _add_events_from_txt(raw, events_index, stim_channel='TRIGGER', replace=Fals
                        replace=replace)
 
 
-def _saveChannels2txt(outdir, ch_names):
+def _saveChannels2txt(out_dir, ch_names):
     """
     Save the channels list to a txt file for the GUI
     """
-    filename = outdir + "channelsList.txt"
+    filename = out_dir + "channelsList.txt"
     config = Path(filename)
 
     if config.is_file() is False:
@@ -216,8 +216,13 @@ def _saveChannels2txt(outdir, ch_names):
             file.write(ch_names[x] + "\n")
         file.close()
 
+
 # ------------------------- General converter -------------------------
-def any2fif(filename, outdir=None, precision='double'):
+# Edit readers with NeuroDecode '.pcl' reader.
+readers['.pcl'] = pcl2fif
+
+
+def any2fif(filename, out_dir=None, overwrite=True, precision='double'):
     """
     Generic file format converter to mne.io.raw.
     Uses mne.io.read_raw():
@@ -227,8 +232,10 @@ def any2fif(filename, outdir=None, precision='double'):
     ----------
     filename : str
         The pickle file path to convert to fif format.
-    outdir : str
+    out_dir : str
         Saving directory. If None, it will be the directory of the .pkl file.
+    overwrite : bool
+        If true, overwrite previously converted files with the same name.
     precision : str
         Data matrix format. [single|double|int|short], 'single' improves backward compatability.
     """
@@ -245,17 +252,63 @@ def any2fif(filename, outdir=None, precision='double'):
             logger.info(f"No SOFTWARE event file '{eve_file}'")
             eve_file = None
 
-        pcl2fif(filename, outdir=outdir, external_event=eve_file,
+        pcl2fif(filename, out_dir=out_dir, external_event=eve_file,
                 precision=precision, replace=False)
 
     else:
-        if outdir is not None:
-            outdir = Path(outdir)
+        if out_dir is not None:
+            out_dir = Path(out_dir)
         else:
-            outdir = filename.parent / 'fif'
-        make_dirs(outdir)
+            out_dir = filename.parent / 'fif'
+        make_dirs(out_dir)
 
-        fiffile = outdir / filename.stem + '.fif'
+        fiffile = out_dir / filename.stem + '.fif'
 
         raw = mne.io.read_raw(filename)
-        raw.save(fiffile, verbose=False, overwrite=True, fmt=precision)
+        raw.save(fiffile, verbose=False, overwrite=overwrite, fmt=precision)
+
+
+def dir_any2fif(directory, recursive, out_dir=None, overwrite=False, **kwargs):
+    """
+    Converts all the compatible files to raw fif files in a given directory.
+
+    https://mne.tools/stable/generated/mne.io.read_raw.html
+
+    Parameters
+    ----------
+    fif_dir : str
+         The path to the directory containing fif files.
+    recursive : bool
+        If true, search recursively.
+    out_dir : str | None
+        The path to the output directory. If None, the directory
+        'corrected' is used.
+    overwrite : bool
+        If true, overwrite previously corrected files.
+    **kwargs : Additional arguments are passed to any2fif().
+    """
+    directory = Path(directory)
+    if not directory.exists():
+        logger.error(f"Directory '{directory}' not found.")
+        raise IOError
+    if not directory.is_dir():
+        logger.error(f"'{directory}' is not a directory.")
+        raise IOError
+
+    if out_dir is None:
+        out_dir = 'corrected'
+        if not (directory / out_dir).is_dir():
+            make_dirs(directory / out_dir)
+    else:
+        out_dir = Path(out_dir)
+        if not out_dir.is_dir():
+            make_dirs(out_dir)
+
+    for file in get_file_list(directory, fullpath=True, recursive=recursive):
+        file = Path(file)
+
+        if not file.suffix in readers.keys():
+            continue
+
+        any2fif(file, out_dir, overwrite, **kwargs)
+        logger.info(f"Converted '{file}'.")
