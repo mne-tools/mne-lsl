@@ -13,3 +13,4 @@ from .rename_channels import rename_channels, dir_rename_channels
 from .resample import resample, dir_resample
 from .set_channel_types import set_channel_types, dir_set_channel_types
 from .set_eeg_reference import set_eeg_reference, dir_set_eeg_reference
+from .set_montage import set_montage, dir_set_montage
