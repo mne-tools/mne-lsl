@@ -54,6 +54,7 @@ CH_TYPES = {
               ['misc'] * 2 + ['eeg'] * 2,
 }
 
+
 def available_layouts(verbose=False):
     """
     Function returning the list of available layouts.
@@ -64,11 +65,20 @@ def available_layouts(verbose=False):
         If True, prints the available layouts.
     """
     if verbose:
-        print ('Available layouts are:')
-        for key in CAP.keys():
-            print (f'  | {key}')
+        print('Available layouts are:')
+        for name in CAP.keys():
+            if CH_TYPES.get(name) is not None:
+                if len(CAP[name]) == len(CH_TYPES[name]):
+                    print(f'  | {name}')
+                else:
+                    print(
+                        f"  | Error with '{name}': len() differs in CAP and CH_TYPES.")
+            else:
+                print(f"  | Error with '{name}': KeyError in CH_TYPES.")
 
-    return list(CAP.keys())
+    return [name for name in CAP.keys() if CH_TYPES.get(name) is not None and
+            len(CAP[name]) == len(CH_TYPES[name])]
+
 
 class Layout:
     """
