@@ -6,7 +6,7 @@ import mne
 import pickle
 import numpy as np
 from pathlib import Path
-from mne.io._read_raw import readers
+from mne.io._read_raw import supported
 
 from .io_file_dir import get_file_list, make_dirs
 from ..preprocess.events import find_event_channel
@@ -219,7 +219,7 @@ def _saveChannels2txt(out_dir, ch_names):
 
 # ------------------------- General converter -------------------------
 # Edit readers with NeuroDecode '.pcl' reader.
-readers['.pcl'] = pcl2fif
+supported['.pcl'] = pcl2fif
 
 
 def any2fif(filename, out_dir=None, overwrite=True, precision='double'):
@@ -307,8 +307,12 @@ def dir_any2fif(directory, recursive, out_dir=None, overwrite=False, **kwargs):
     for file in get_file_list(directory, fullpath=True, recursive=recursive):
         file = Path(file)
 
-        if not file.suffix in readers.keys():
+        if not file.suffix in supported.keys():
             continue
 
-        any2fif(file, out_dir, overwrite, **kwargs)
-        logger.info(f"Converted '{file}'.")
+        try:
+            any2fif(file, out_dir, overwrite, **kwargs)
+            logger.info(f"Converted '{file}'.")
+        except:
+            logger.error(f"Error converting '{file}'.")
+            raise
