@@ -47,7 +47,7 @@ class StreamRecorder:
         Parameters
         ----------
         stream_name : str
-            Connect to a server named 'amp_name'. None: no constraint.
+            Connect to a server named 'stream_name'. None: no constraint.
         eeg_only : bool
             If true, ignore non-EEG servers.
         verbose : bool
@@ -153,7 +153,7 @@ class StreamRecorder:
     @property
     def stream_name(self):
         """
-        The provided amp_name to connect to.
+        The provided stream_name to connect to.
 
         If None, it will connect to all available streams.
 
