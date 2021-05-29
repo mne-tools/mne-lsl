@@ -1,14 +1,15 @@
-'''
-Module containing functions for processing files/directories, loading/saving data and converting to other formats.
+"""
+Module containing functions for processing files/directories, loading/saving
+data and converting to other formats.
 
-For converting, it supports:
+For converting to '.fif', it supports MNE supported formats to '.fif'.
+c.f. https://mne.tools/stable/generated/mne.io.read_raw.html
 
-- from .xdf | .gdf | .edf | .bdf | .eeg | .pickle | .mat files to mne.io.raw
-- from mne.io.raw to .mat.
+For exporting, it supports:
+    - EEGLAB: '.set'
+"""
 
-'''
-
-from .convert2fif import any2fif, pcl2fif, edf2fif, bdf2fif, gdf2fif, xdf2fif, eeg2fif, event_timestamps_to_indices
+from .convert2fif import any2fif, pcl2fif
 from .export import write_set, dir_write_set
 from .io_file_dir import get_file_list, get_dir_list, make_dirs
 from .load_config import load_config
