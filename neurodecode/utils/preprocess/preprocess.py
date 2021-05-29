@@ -12,6 +12,7 @@ from .set_channel_types import set_channel_types
 from .set_eeg_reference import set_eeg_reference
 from .events import change_event_values
 from .events.brainvision import fix_default_event_values
+from .set_montage import set_montage
 
 from .. import io
 from ... import logger
@@ -25,7 +26,8 @@ FUNCTIONS_IN_PLACE = {
     'set_channel_types': set_channel_types,
     'set_eeg_reference': set_eeg_reference,
     'change_event_values': change_event_values,
-    'brainvision.fix_default_event_values': fix_default_event_values
+    'brainvision.fix_default_event_values': fix_default_event_values,
+    'set_montage': set_montage
 }
 
 FUNCTIONS_OUT_OF_PLACE = {
@@ -45,7 +47,8 @@ INPUTS = {
     'set_channel_types': (BaseRaw),
     'set_eeg_reference': (BaseRaw),
     'change_event_values': (BaseRaw),
-    'brainvision.fix_default_event_values': (BaseRaw)
+    'brainvision.fix_default_event_values': (BaseRaw),
+    'set_montage': (BaseRaw, BaseEpochs, Evoked)
 }
 
 # ----------- List of supported files extension -----------
