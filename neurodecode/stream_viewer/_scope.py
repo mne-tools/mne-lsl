@@ -1,13 +1,10 @@
-# -*- coding: utf-8 -*-
-from __future__ import print_function, division, unicode_literals
-
 """
  EEG Scope
  Iñaki Iturrate, Kyuhwa Lee, Arnaud Desvachez
 
  TODO
 	- Should move to VisPY: http://vispy.org/plot.html#module-vispy.plot but still under development
-	- Events should stored in a class.
+	- Events should be stored in a class.
 """
 
 DEBUG_TRIGGER = False # TODO: parameterize
@@ -24,46 +21,46 @@ from PyQt5 import QtCore
 from pathlib import Path
 from PyQt5.QtGui import QPainter
 from scipy.signal import butter, lfilter
-from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem, \
-     QHeaderView, QFileDialog
+from PyQt5.QtWidgets import (QMainWindow, QTableWidgetItem,
+                             QHeaderView, QFileDialog)
 
 from configparser import RawConfigParser
 
-from neurodecode import logger
-from neurodecode.stream_recorder import stream_recorder
+from .. import logger
+from ..stream_recorder import stream_recorder
 from neurodecode.gui.streams import redirect_stdout_to_queue
-from neurodecode.stream_receiver import StreamReceiver
-from neurodecode.stream_viewer.ui_mainwindow_Viewer import Ui_MainWindow
+from ..stream_receiver import StreamReceiver
+from .ui_mainwindow_Viewer import Ui_MainWindow
 
 
 class _Scope(QMainWindow):
-    '''
-    Internal class
-    
-    Load UI, data acquisition and ploting
-    '''
+    """
+    Internal class.
+
+    Load UI, data acquisition and ploting.
+    """
     #----------------------------------------------------------------------
     def __init__(self, amp_name, state=mp.Value('i', 1), queue=None):
-        '''
-        Constructor
-        '''
+        """
+        Constructor.
+        """
         super(_Scope, self).__init__()
 
         self.amp_name = amp_name
         self.state = state
         self.recordState = mp.Value('i', 0)
-        
+
         redirect_stdout_to_queue(logger, queue, 'INFO')
         logger.info('Viewer launched')
-        
-        self.load_ui()        
+
+        self.load_ui()
         self.init_scope()
-    
+
     #----------------------------------------------------------------------
     def load_ui(self):
-        '''
+        """
         Load the GUI from .ui file created by QtCreator
-        '''
+        """
         self._ui = Ui_MainWindow()
         self._ui.setupUi(self)
         self.setGeometry(100, 100, self.geometry().width(), self.geometry().height())
@@ -71,9 +68,9 @@ class _Scope(QMainWindow):
 
     #----------------------------------------------------------------------
     def init_scope(self):
-        '''
+        """
         Main init function
-        '''
+        """
         self.load_config_file()
         self.init_loop()
         self.init_panel_GUI()
@@ -82,18 +79,18 @@ class _Scope(QMainWindow):
 
     #----------------------------------------------------------------------
     def load_config_file(self):
-        '''
+        """
         Load predefined parameters from the config file
-        '''
+        """
         path2_viewerFolder = Path(os.environ['NEUROD_ROOT'])/'neurodecode'/'stream_viewer'
         self.scope_settings = RawConfigParser(allow_no_value=True, inline_comment_prefixes=('#', ';'))
         self.scope_settings.read(str(path2_viewerFolder/'.scope_settings.ini'))
-    
+
     #----------------------------------------------------------------------
     def init_loop(self, window_size=0.2, buffer_size=0.2):
-        '''
+        """
         Instance a StreamReceiver and extract info from the stream
-        '''
+        """
         self.sr = StreamReceiver(window_size=window_size, buffer_size=buffer_size, amp_name=self.amp_name)
 
         self.config = {
@@ -103,39 +100,39 @@ class _Scope(QMainWindow):
             'exg_channels': 0,
             'tri_channels': 1,
         }
-        
+
         # For now, not a fixed number of samples per chunk --> TO FIX
         self.tri = np.zeros(self.config['samples'])
         self.eeg = np.zeros((self.config['samples'], self.config['eeg_channels']), dtype=np.float)
         self.exg = np.zeros((self.config['samples'], self.config['exg_channels']), dtype=np.float)
-        
+
         self._last_tri = 0
         self._ts_list = []
         self._ts_list_tri = []
-        
+
     #----------------------------------------------------------------------
     def init_panel_GUI(self):
-        '''
+        """
         Initialize control panel parameters
-        '''
+        """
         self.show_events()
         self.connect_signals_to_slots()
         self.set_checked_widgets()
-        
+
         self._ui.pushButton_stoprec.setEnabled(False)
         self._ui.comboBox_scale.setCurrentIndex(2)
-        
+
         # self._ui.pushButton_bp.setDisabled(True)
-        
+
         self.fill_table_channels()
         self.set_window_size_policy()
         self.show()
 
     #----------------------------------------------------------------------
     def set_window_size_policy(self):
-        '''
+        """
         Set window's size and policy
-        '''
+        """
         self.screen_width = 522
         self.screen_height = 160
         self.setWindowTitle('EEG Scope Panel')
@@ -144,20 +141,20 @@ class _Scope(QMainWindow):
 
     #----------------------------------------------------------------------
     def fill_table_channels(self):
-        '''
+        """
         Fill the channels table with the available EEG and EXG channels' names
-        '''
+        """
         idx = 0
         self.channels_to_show_idx = []
-        
+
         nb_channels = self.config['eeg_channels'] + self.config['exg_channels']
         self.set_table_size(nb_channels)
-        
+
         for x in range(0, self._nb_table_rows):
             for y in range(0, self._nb_table_columns):
                 if (idx < self.config['eeg_channels']):
                     self._ui.table_channels.setItem(x, y,
-                        QTableWidgetItem(idx))                    
+                        QTableWidgetItem(idx))
                     self._ui.table_channels.item(x,y).setTextAlignment(QtCore.Qt.AlignCenter)
                     self._ui.table_channels.item(x, y).setSelected(True) # Qt5
                     self.channels_to_show_idx.append(idx)
@@ -172,38 +169,38 @@ class _Scope(QMainWindow):
 
         self._ui.table_channels.verticalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self._ui.table_channels.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-        
+
         self._ui.table_channels.itemSelectionChanged.connect(self.onSelectionChanged_table)
-    
+
     #----------------------------------------------------------------------
     def set_table_size(self, nb_channels):
-        '''
+        """
         Compute the numbers of raws and columns of the channel table and set it
-        '''   
+        """
         if nb_channels > 64:
             self._nb_table_columns = 8
         else:
             self._nb_table_columns = 4
-        
+
         self._nb_table_rows = math.ceil(nb_channels/self._nb_table_columns)
-        
+
         self._ui.table_channels.setRowCount(self._nb_table_rows)
-        self._ui.table_channels.setColumnCount(self._nb_table_columns)        
+        self._ui.table_channels.setColumnCount(self._nb_table_columns)
 
     #----------------------------------------------------------------------
     def show_events(self, tid=False, lpt=False, key=False):
-        '''
+        """
         Display or not events
-        '''
+        """
         self._show_TID_events = tid
         self._show_LPT_events = lpt
         self._show_Key_events = key
 
     #----------------------------------------------------------------------
     def set_checked_widgets(self):
-        '''
+        """
         Set checkBox widgets to checked state
-        '''
+        """
         self._ui.checkBox_car.setChecked(
             int(self.scope_settings.get("filtering", "apply_car_filter")))
         self._ui.checkBox_bandpass.setChecked(
@@ -218,11 +215,11 @@ class _Scope(QMainWindow):
 
     #----------------------------------------------------------------------
     def connect_signals_to_slots(self):
-        '''
+        """
         Event handler
-        
+
         Connect QT signals to slots
-        '''
+        """
         self._ui.comboBox_scale.activated.connect(self.onActivated_combobox_scale)
         self._ui.spinBox_time.valueChanged.connect(self.onValueChanged_spinbox_time)
         self._ui.checkBox_car.stateChanged.connect(self.onActivated_checkbox_car)
@@ -241,12 +238,12 @@ class _Scope(QMainWindow):
 
     #----------------------------------------------------------------------
     def init_scope_GUI(self):
-        '''
+        """
         Initialize scope parameters
-        '''
+        """
         self.bool_parser = {True:'1', False:'0'}
 
-        # Scales available in the GUI. 
+        # Scales available in the GUI.
         self.scales_range = [1, 10, 25, 50, 100, 250, 500, 1000, 2500, 100000]
         # Scale in uV
         self.scale = float(self.scope_settings.get("plot", "scale_plot"))
@@ -297,17 +294,17 @@ class _Scope(QMainWindow):
 
         # Force repaint even when we shouldn't repaint.
         self.force_repaint = 0
-    
+
     #----------------------------------------------------------------------
     def init_bandpass(self):
-        '''
+        """
         Init the bandpass filtering parameters high and low cutoff
-        '''
+        """
         self.apply_bandpass = int(
             self.scope_settings.get("filtering", "apply_bandpass_filter"))
 
         self._ui.checkBox_bandpass.setChecked(self.apply_bandpass)
-        
+
         if (self.apply_bandpass):
             self._ui.doubleSpinBox_hp.setValue(float(
                 self.scope_settings.get("filtering",
@@ -319,33 +316,33 @@ class _Scope(QMainWindow):
 
     #----------------------------------------------------------------------
     def init_car(self):
-        '''
-        Init the Common Average Reference 
-        '''
+        """
+        Init the Common Average Reference
+        """
         self.apply_car = int(
             self.scope_settings.get("filtering", "apply_car_filter"))
 
         self._ui.checkBox_bandpass.setChecked(self.apply_car)
 
-        if (self.apply_car):  
+        if (self.apply_car):
             self.matrix_car = np.zeros(
                 (self.config['eeg_channels'], self.config['eeg_channels']),
                 dtype=float)
             self.matrix_car[:, :] = -1 / float(self.config['eeg_channels'])
             np.fill_diagonal(self.matrix_car,
                 1 - (1 / float(self.config['eeg_channels'])))
-        
+
 
     #----------------------------------------------------------------------
     def init_graph(self):
-        '''
+        """
         Init the PyQTGraph plot
-        '''
+        """
         self._win = pg.GraphicsWindow()
         self.set_win_geometry_title()
         self._win.keyPressEvent = self.keyPressEvent
         self._win.show()
-        
+
         self._main_plot_handler = self._win.addPlot()
 
         # Y Tick labels. Use values from the config file.
@@ -385,12 +382,12 @@ class _Scope(QMainWindow):
         self.x_ticks = np.zeros(self.config['sf'] * self.seconds_to_show);
         for x in range(0, self.config['sf'] * self.seconds_to_show):
             self.x_ticks[x] = (x * 1) / float(self.config['sf'])
-    
+
     #----------------------------------------------------------------------
     def set_win_geometry_title(self):
-        '''
+        """
         Set the title and the geometry of the PyQTGraph window based on MainWindow size
-        '''
+        """
         self._win.setWindowTitle('EEG Scope')
         self._win.setWindowFlags(QtCore.Qt.WindowMinimizeButtonHint)
         self._win.setWindowFlags(QtCore.Qt.WindowMaximizeButtonHint)
@@ -398,9 +395,9 @@ class _Scope(QMainWindow):
 
     #----------------------------------------------------------------------
     def init_timer(self):
-        '''
+        """
         Initializes the QT timer, which will call the update function every 20 ms
-        '''
+        """
         QtCore.QCoreApplication.processEvents()
         QtCore.QCoreApplication.flush()
         self.timer = QtCore.QTimer(self)
@@ -409,15 +406,15 @@ class _Scope(QMainWindow):
 
     #----------------------------------------------------------------------
     def update_loop(self):
-        '''
+        """
         Main update function (connected to the timer)
-        '''
-        
+        """
+
         #  Sharing variable to stop at the GUI level
         if not self.state.value:
             logger.info('Viewer stopped')
             sys.exit()
-            
+
         try:
             self.read_eeg()                 # Read new chunk
             if len(self._ts_list) > 0:
@@ -431,9 +428,9 @@ class _Scope(QMainWindow):
 
     #----------------------------------------------------------------------
     def read_eeg(self):
-        '''
+        """
         Read EEG
-        '''
+        """
         next(iter(self.sr.streams.values())).blocking = False
         self.sr.acquire()
         data, self._ts_list = self.sr.get_buffer()
@@ -443,7 +440,7 @@ class _Scope(QMainWindow):
             return
 
         n = self.config['eeg_channels']
-        
+
         self.tri = np.reshape(data[:, 0], (-1, 1))      # samples x 1
         self.eeg = np.reshape(data[:, 1:], (-1, n))     # samples x channels
 
@@ -455,12 +452,12 @@ class _Scope(QMainWindow):
                     logger.info('Received trigger %s' % trg_value)
             except:
                 logger.exception('Error! self.tri = %s' % self.tri)
-                
+
     #----------------------------------------------------------------------
     def filter_signal(self):
-        '''
+        """
         Bandpas + CAR filtering
-        '''
+        """
 
         if (self.apply_bandpass):
             for x in range(0, self.eeg.shape[1]):
@@ -474,9 +471,9 @@ class _Scope(QMainWindow):
 
     #----------------------------------------------------------------------
     def update_ringbuffers(self):
-        '''
+        """
         Update ringbuffers and events for plotting
-        '''
+        """
         # leeq
         self.data_plot = np.roll(self.data_plot, -len(self._ts_list), 0)
         self.data_plot[-len(self._ts_list):, :] = self.eeg
@@ -512,9 +509,9 @@ class _Scope(QMainWindow):
 
     #----------------------------------------------------------------------
     def paintEvent(self, e):
-        '''
+        """
         Called by repaint()
-        '''
+        """
         # Distinguish between paint events from timer and event QT widget resizing, clicking etc (sender is None)
         # We should only paint when the timer triggered the event.
         # Just in case, there's a flag to force a repaint even when we shouldn't repaint
@@ -534,9 +531,9 @@ class _Scope(QMainWindow):
 
     #----------------------------------------------------------------------
     def paintInterface(self, qp):
-        '''
+        """
         Update stuff on the interface. Only graphical updates should be added here
-        '''
+        """
 
         # Update EEG channels
         for x in range(0, len(self.channels_to_show_idx)):
@@ -556,9 +553,9 @@ class _Scope(QMainWindow):
 
     #----------------------------------------------------------------------
     def update_plot_scale(self, new_scale):
-        '''
+        """
         Do necessary stuff when scale has changed
-        '''
+        """
         self.scale = new_scale
 
         # Y Tick labels
@@ -585,9 +582,9 @@ class _Scope(QMainWindow):
 
     #----------------------------------------------------------------------
     def update_plot_seconds(self, new_seconds):
-        '''
+        """
         Do necessary stuff when seconds to show have changed
-        '''
+        """
 
         # Do nothing unless...
         if (new_seconds != self.seconds_to_show) and (new_seconds > 0) and (
@@ -625,9 +622,9 @@ class _Scope(QMainWindow):
 
     #----------------------------------------------------------------------
     def handle_tobiid_input(self):
-        '''
+        """
         Handle TOBI iD events
-        '''
+        """
 
         data = None
         try:
@@ -652,14 +649,13 @@ class _Scope(QMainWindow):
                 MsgNum = self.bci.idStreamer_bus.Count("<tcstatus")
                 for i in range(1, MsgNum - 1):
                     # Extract most of these messages and trash them
-                    msg_useless = self.bci.idStreamer_bus.Extract("<tcstatus",
-                        "/>")
+                    self.bci.idStreamer_bus.Extract("<tcstatus", "/>")
 
     #----------------------------------------------------------------------
     def addEventPlot(self, event_name, event_id):
-        '''
+        """
         Add an event to the scope
-        '''
+        """
         if (event_name == "TID"):
             color = pg.mkColor(0, 0, 255)
         elif (event_name == "KEY"):
@@ -684,12 +680,12 @@ class _Scope(QMainWindow):
 
     #----------------------------------------------------------------------
     def butter_bandpass(self, highcut, lowcut, fs, num_ch):
-        '''
+        """
         Calculation of bandpass coefficients.
-        
-        TO DO: AUTOMATIC ORDER COMPUTATION
+
+        TODO: AUTOMATIC ORDER COMPUTATION
         (If filter is unstable this function crashes (TODO handle problems))
-        '''
+        """
         low = lowcut / (0.5 * fs)
         high = highcut / (0.5 * fs)
         # get the order. TO BE DONE: Sometimes it fails
@@ -701,9 +697,9 @@ class _Scope(QMainWindow):
 
     #----------------------------------------------------------------------
     def update_title_scope(self):
-        '''
+        """
         Updates the title shown in the scope
-        '''
+        """
         if (hasattr(self, 'main_plot_handler')):
             self._main_plot_handler.setTitle(
                 title='TLK: ' + self.bool_parser[self._show_TID_events] +
@@ -717,9 +713,9 @@ class _Scope(QMainWindow):
 
     #----------------------------------------------------------------------
     def trigger_help(self):
-        '''
+        """
         Shows / hide help in the scope window
-        '''
+        """
         if self.show_help:
             self.help.setPos(0, self.scale)
             self._main_plot_handler.addItem(self.help)
@@ -737,15 +733,15 @@ class _Scope(QMainWindow):
         defaultPath = os.environ["NEUROD_DATA"]
         path_name = QFileDialog.getExistingDirectory(caption="Choose the recording directory", directory=defaultPath)
 
-        if path_name:            
+        if path_name:
             self._ui.lineEdit_recdir.setText(path_name)
             self._ui.pushButton_rec.setEnabled(True)
-            
+
     #----------------------------------------------------------------------
     def onClicked_button_rec(self):
         self._ui.pushButton_stoprec.setEnabled(True)
         self._ui.pushButton_rec.setEnabled(False)
-        
+
         record_dir = self._ui.lineEdit_recdir.text()
         with self.recordState.get_lock():
             self.recordState.value = 1
@@ -757,7 +753,7 @@ class _Scope(QMainWindow):
     #----------------------------------------------------------------------
     def onClicked_button_stoprec(self):
         with self.recordState.get_lock():
-            self.recordState.value = 0    
+            self.recordState.value = 0
         self._ui.pushButton_rec.setEnabled(True)
         self._ui.pushButton_stoprec.setEnabled(False)
         self._ui.statusBar.showMessage("Not recording")
@@ -769,7 +765,7 @@ class _Scope(QMainWindow):
         self._ui.doubleSpinBox_hp.setEnabled(self._ui.checkBox_bandpass.isChecked())
         self._ui.doubleSpinBox_lp.setEnabled(self._ui.checkBox_bandpass.isChecked())
         self.update_title_scope()
-    
+
     #----------------------------------------------------------------------
     def onActivated_checkbox_car(self):
         self.apply_car = self._ui.checkBox_car.isChecked()
@@ -779,21 +775,21 @@ class _Scope(QMainWindow):
     def onActivated_checkbox_TID(self):
         self._show_TID_events = self._ui.checkBox_showTID.isChecked()
         self.update_title_scope()
-    
+
     #----------------------------------------------------------------------
     def onActivated_checkbox_LPT(self):
         self._show_LPT_events = self._ui.checkBox_showLPT.isChecked()
         self.update_title_scope()
-    
+
     #----------------------------------------------------------------------
     def onActivated_checkbox_Key(self):
         self._show_Key_events = self._ui.checkBox_showKey.isChecked()
         self.update_title_scope()
-        
+
     #----------------------------------------------------------------------
     def onValueChanged_spinbox_time(self):
         self.update_plot_seconds(self._ui.spinBox_time.value())
-        
+
     #----------------------------------------------------------------------
     def onActivated_combobox_scale(self):
         self.update_plot_scale(
@@ -807,7 +803,7 @@ class _Scope(QMainWindow):
                 self._ui.doubleSpinBox_hp.value(), self._ui.doubleSpinBox_lp.value(),
                 self.config['sf'], self.config['eeg_channels'])
         self.update_title_scope()
-    
+
     #----------------------------------------------------------------------
     def onSelectionChanged_table(self):
 
@@ -815,7 +811,7 @@ class _Scope(QMainWindow):
         for x in range(0, len(self.channels_to_show_idx)):
             self._main_plot_handler.removeItem(self.curve_eeg[x])
 
-        # Which channels should I plot? 
+        # Which channels should I plot?
         self.channels_to_show_idx = []
         self.channels_to_hide_idx = []
         idx = 0
@@ -900,16 +896,16 @@ class _Scope(QMainWindow):
                 # self.bci.id_msg_bus.SetEvent(990 + key - QtCore.Qt.Key_0)
                 # self.bci.iDsock_bus.sendall(self.bci.id_serializer_bus.Serialize());
                 # 666
-                
+
     #----------------------------------------------------------------------
     def closeEvent(self, event):
-        '''
+        """
         Function called when a closing event was triggered.
-        '''
-        if (self._ui.pushButton_stoprec.isEnabled()): 
+        """
+        if (self._ui.pushButton_stoprec.isEnabled()):
             # Stop Recording
             with self.recordState.get_lock():
                 self.recordState.value = 0
-        # Stop viewer       
+        # Stop viewer
         with self.state.get_lock():
             self.state.value = 0
