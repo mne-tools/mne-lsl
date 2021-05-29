@@ -24,7 +24,8 @@ def resample(inst, sfreq, **kwargs):
     inst.resample(sfreq, **kwargs)
 
 
-def dir_resample(fif_dir, recursive, sfreq, out_dir=None, overwrite=False):
+def dir_resample(fif_dir, recursive, sfreq,
+                 out_dir=None, overwrite=False, **kwargs):
     """
     Change the sampling rate of all raw and epochs fif files in a given directory.
     The file name must respect MNE convention and end with '-raw.fif' or
@@ -45,6 +46,7 @@ def dir_resample(fif_dir, recursive, sfreq, out_dir=None, overwrite=False):
         f'fif_resampled_{sfreq}' is used.
     overwrite : bool
         If true, overwrite previously corrected files.
+    **kwargs : Additional arguments are passed to inst.resample().
     """
     fif_dir = Path(fif_dir)
     if not fif_dir.exists():
@@ -76,7 +78,7 @@ def dir_resample(fif_dir, recursive, sfreq, out_dir=None, overwrite=False):
             inst = mne.io.read_raw(fif_file, preload=True)
         elif fif_file.stem.endswith('-epo'):
             inst = mne.read_epochs(fif_file, preload=True)
-        resample(inst, sfreq)
+        resample(inst, sfreq, **kwargs)
 
         relative = fif_file.relative_to(fif_dir).parent
         if not (fif_dir / out_dir / relative).is_dir():
