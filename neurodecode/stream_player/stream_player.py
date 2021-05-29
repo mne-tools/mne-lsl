@@ -16,7 +16,7 @@ class StreamPlayer:
 
     Parameters
     ----------
-    server_name : str
+    stream_name : str
         The stream's name, displayed on LSL network.
     fif_file : str
         The absolute path to the .fif file to play.
@@ -31,10 +31,10 @@ class StreamPlayer:
     It instances a Streamer in a new process and call Streamer.stream().
     """
 
-    def __init__(self, server_name, fif_file, chunk_size,
+    def __init__(self, stream_name, fif_file, chunk_size,
                  trigger_file=None, logger=logger):
 
-        self._server_name = server_name
+        self._stream_name = stream_name
         self._fif_file = fif_file
         self._chunk_size = chunk_size
         self._trigger_file = trigger_file
@@ -84,7 +84,7 @@ class StreamPlayer:
         Stop the streaming, by terminating the process.
         """
         if self._process:
-            self._logger.info(f"Stop streaming data from: '{self._server_name}'.")
+            self._logger.info(f"Stop streaming data from: '{self.stream_name}'.")
             self._process.terminate()
 
     def _stream(self, repeat, high_resolution, logger, state):
@@ -93,12 +93,12 @@ class StreamPlayer:
 
         Instance a Streamer and start streaming.
         """
-        s = Streamer(self.server_name, self.fif_file, self.chunk_size,
+        s = Streamer(self.stream_name, self.fif_file, self.chunk_size,
                      self.trigger_file, self._logger, state)
         s.stream(repeat, high_resolution)
 
     @property
-    def server_name(self):
+    def stream_name(self):
         """
         The stream's name, displayed on LSL network.
 
@@ -106,7 +106,7 @@ class StreamPlayer:
         -------
         str
         """
-        return self._server_name
+        return self._stream_name
 
     @property
     def fif_file(self):
@@ -160,7 +160,7 @@ class Streamer:
 
     Parameters
     ----------
-    server_name : str
+    stream_name : str
         The stream's name, displayed on LSL network.
     fif_file : str
         The absolute path to the .fif file to play.
@@ -178,12 +178,12 @@ class Streamer:
     timestamps since started.
     """
 
-    def __init__(self, server_name, fif_file, chunk_size, trigger_file=None,
+    def __init__(self, stream_name, fif_file, chunk_size, trigger_file=None,
                  logger=logger, state=mp.Value('i', 0)):
 
         self._raw = None
         self._events = None
-        self._server_name = server_name
+        self._stream_name = stream_name
         self._chunk_size = chunk_size
 
         self._thread = None
@@ -195,7 +195,7 @@ class Streamer:
             self._tdef = TriggerDef(trigger_file)
 
         self.load_data(fif_file)
-        sinfo = self.set_lsl_info(server_name)
+        sinfo = self.set_lsl_info(stream_name)
         self._outlet = pylsl.StreamOutlet(sinfo, chunk_size=chunk_size)
         self.get_info()
 
@@ -258,13 +258,13 @@ class Streamer:
                     t_start = time.time()
                 played += 1
 
-    def set_lsl_info(self, server_name):
+    def set_lsl_info(self, stream_name):
         """
         Set the lsl server's infos needed to create the LSL stream.
 
         Parameters
         ----------
-        server_name : str
+        stream_name : str
             The stream's name, displayed on LSL network.
 
         Returns
@@ -272,10 +272,10 @@ class Streamer:
         pylsl.StreamInfo
             The info to create the stream on LSL network.
         """
-        sinfo = pylsl.StreamInfo(server_name, channel_count=self.get_nb_ch(),
+        sinfo = pylsl.StreamInfo(stream_name, channel_count=self.get_nb_ch(),
                                  channel_format='float32',
                                  nominal_srate=self.get_sample_rate(),
-                                 type='EEG', source_id=server_name)
+                                 type='EEG', source_id=stream_name)
 
         desc = sinfo.desc()
         channel_desc = desc.append_child("channels")
@@ -355,7 +355,7 @@ class Streamer:
         Log the info about the created LSL stream.
         """
         self._logger.info(
-            f'Server name: {self.server_name}')
+            f'Stream name: {self.stream_name}')
         self._logger.info(
             f'Sampling frequency {self.get_sample_rate() = :.3f} Hz')
         self._logger.info(
@@ -426,7 +426,7 @@ class Streamer:
         return self._events
 
     @property
-    def server_name(self):
+    def stream_name(self):
         """
         The stream's name, displayed on LSL network.
 
@@ -434,7 +434,7 @@ class Streamer:
         -------
         str
         """
-        return self._server_name
+        return self._stream_name
 
     @property
     def chunk_size(self):
@@ -446,43 +446,3 @@ class Streamer:
         int
         """
         return self._chunk_size
-
-
-if __name__ == '__main__':
-
-    import sys
-    from pathlib import Path
-
-    chunk_size = 16
-    trigger_file = None
-    fif_file = None
-    server_name = None
-
-    if len(sys.argv) > 5:
-        raise RuntimeError("Too many arguments provided, maximum is 4.")
-
-    if len(sys.argv) > 4:
-        trigger_file = sys.argv[4]
-
-    if len(sys.argv) > 3:
-        chunk_size = int(sys.argv[3])
-
-    if len(sys.argv) > 2:
-        fif_file = sys.argv[2]
-
-    if len(sys.argv) > 1:
-        server_name = sys.argv[1]
-        if not fif_file:
-            fif_file = str(
-                Path(input(">> Provide the path to the .fif file to play: \n>> ")))
-
-    if len(sys.argv) == 1:
-        server_name = input(
-            ">> Provide the server name displayed on LSL network: \n>> ")
-        fif_file = str(
-            Path(input(">> Provide the path to the .fif file to play: \n>> ")))
-
-    sp = StreamPlayer(server_name, fif_file, chunk_size, trigger_file)
-    sp.start()
-    input(">> Press ENTER to stop replaying data \n")
-    sp.stop()
