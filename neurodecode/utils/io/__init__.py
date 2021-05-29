@@ -9,7 +9,7 @@ For exporting, it supports:
     - EEGLAB: '.set'
 """
 
-from .convert2fif import any2fif, pcl2fif
+from .convert2fif import pcl2fif, any2fif, dir_any2fif
 from .export import write_set, dir_write_set
 from .io_file_dir import get_file_list, get_dir_list, make_dirs
 from .load_config import load_config
