@@ -35,7 +35,7 @@ def rename_channels(inst, new_channel_names, **kwargs):
 
 
 def dir_rename_channels(fif_dir, recursive, new_channel_names,
-                        out_dir=None, overwrite=False):
+                        out_dir=None, overwrite=False, **kwargs):
     """
     Change the channel names of all raw fif files in a given directory.
     The file name must respect MNE convention and end with '-raw.fif'.
@@ -55,6 +55,7 @@ def dir_rename_channels(fif_dir, recursive, new_channel_names,
         f'fif_dir/renamed' is used.
     overwrite : bool
         If true, overwrite previously corrected files.
+    **kwargs : Additional arguments are passed to mne.rename_channels()
     """
     fif_dir = Path(fif_dir)
     if not fif_dir.exists():
@@ -82,7 +83,7 @@ def dir_rename_channels(fif_dir, recursive, new_channel_names,
             continue
 
         raw = mne.io.read_raw(fif_file, preload=True)
-        rename_channels(raw, new_channel_names)
+        rename_channels(raw, new_channel_names, **kwargs)
 
         relative = fif_file.relative_to(fif_dir).parent
         if not (fif_dir / out_dir / relative).is_dir():
