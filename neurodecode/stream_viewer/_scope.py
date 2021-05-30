@@ -117,8 +117,7 @@ class _Scope(QMainWindow):
             dtype=np.float)
 
         self._last_tri = 0
-        self._ts_list = []
-        self._ts_list_tri = []
+        self._ts_list = [] # timestamps list
 
     # ----------------------- INIT_PANEL_GUI -----------------------
     def init_panel_GUI(self):
@@ -439,34 +438,34 @@ class _Scope(QMainWindow):
         self.timer.timeout.connect(self.update_loop)
         self.timer.start(20)
 
-    #----------------------------------------------------------------------
+    # --------------------------- UPDATE ---------------------------
     def update_loop(self):
         """
-        Main update function (connected to the timer)
+        Main update function (connected to the timer).
         """
-
         #  Sharing variable to stop at the GUI level
         if not self.state.value:
             logger.info('Viewer stopped')
             sys.exit()
 
         try:
-            self.read_eeg()                 # Read new chunk
+            self.read_lsl_stream()
             if len(self._ts_list) > 0:
                 self.filter_signal()        # Filter acquired data
-                self.update_ringbuffers()   # Update the plotting infor
-                if (not self.stop_plot):
+                self.update_ringbuffers()   # Update the plotting info
+                if not self.stop_plot:
                     self.repaint()          # Call paint event
         except:
             logger.exception('Exception. Dropping into a shell.')
-            pdb.set_trace()
 
-    #----------------------------------------------------------------------
-    def read_eeg(self):
+    def read_lsl_stream(self):
         """
-        Read EEG
+        Read chunk of signal from LSL stream.
         """
         next(iter(self.sr.streams.values())).blocking = False
+        # TODO: Supposely only the connected stream should be turned non blocking
+        # But since .acquire() waits for all the streams... And it can connect to multiple streams if a list is provided.
+        # But the stream_viewer init only takes one 'str' argument -> So only one stream!
         self.sr.acquire()
         data, self._ts_list = self.sr.get_buffer()
         self.sr.reset_all_buffers()
@@ -484,30 +483,28 @@ class _Scope(QMainWindow):
             try:
                 trg_value = max(self.tri)
                 if trg_value > 0:
-                    logger.info('Received trigger %s' % trg_value)
+                    logger.info(f'Received trigger {trg_value}')
             except:
-                logger.exception('Error! self.tri = %s' % self.tri)
+                logger.exception(f'Error! self.tri = {self.tri}')
 
-    #----------------------------------------------------------------------
     def filter_signal(self):
         """
-        Bandpas + CAR filtering
+        Bandpas + CAR filtering.
         """
-
         if (self.apply_bandpass):
             for x in range(0, self.eeg.shape[1]):
-                self.eeg[:, x], self.zi[:, x] = lfilter(self.b, self.a,
-                    self.eeg[:, x], -1, self.zi[:, x])
+                self.eeg[:, x], self.zi[:, x] = lfilter(
+                    self.b, self.a, self.eeg[:, x], -1, self.zi[:, x])
 
-        # We only apply CAR if selected AND there are at least 2 channels. Otherwise it makes no sense
+        # We only apply CAR if selected AND there are at least 2 channels.
+        # Otherwise it makes no sense.
         if (self.apply_car) and (len(self.channels_to_show_idx) > 1):
             self.eeg = np.dot(self.matrix_car, np.transpose(self.eeg))
             self.eeg = np.transpose(self.eeg)
 
-    #----------------------------------------------------------------------
     def update_ringbuffers(self):
         """
-        Update ringbuffers and events for plotting
+        Update ringbuffers and events for plotting.
         """
         # leeq
         self.data_plot = np.roll(self.data_plot, -len(self._ts_list), 0)
@@ -526,20 +523,20 @@ class _Scope(QMainWindow):
                 self.events_curves[xh].clear()
                 self._main_plot_handler.removeItem(self.events_text[xh])
 
-        self.events_detected = [i for j, i in enumerate(self.events_detected) if
-            j not in delete_indices_e]
-        self.events_curves = [i for j, i in enumerate(self.events_curves) if
-            j not in delete_indices_c]
-        self.events_text = [i for j, i in enumerate(self.events_text) if
-            j not in delete_indices_c]
+        self.events_detected = [i for j, i in enumerate(self.events_detected) \
+                                if j not in delete_indices_e]
+        self.events_curves = [i for j, i in enumerate(self.events_curves) \
+                              if j not in delete_indices_c]
+        self.events_text = [i for j, i in enumerate(self.events_text) \
+                            if j not in delete_indices_c]
 
-        # Find LPT events and add them
+        # Find LPT events and add them.
         if (self._show_LPT_events) and (not self.stop_plot):
             for x in range(len(self.tri)):
                 tri = int(self.tri[x])
                 if tri != 0 and (tri > self._last_tri):
                     self.addEventPlot("LPT", tri)
-                    logger.info('Trigger %d received' % tri)
+                    logger.info(f'Trigger {tri} received')
                 self._last_tri = tri
 
     #----------------------------------------------------------------------
