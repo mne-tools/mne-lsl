@@ -26,7 +26,7 @@ class StreamViewer:
         If stream infos are not provided, look for available streams on the network.
         """
         if (self.stream_name is None):
-            self.search_stream()
+            self.search_stream(ignore_markers=True)
 
         logger.info(f'Connecting to the stream: {self.amp_name}')
 
