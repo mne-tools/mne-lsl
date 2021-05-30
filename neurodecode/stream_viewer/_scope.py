@@ -27,7 +27,7 @@ from PyQt5.QtWidgets import (QMainWindow, QTableWidgetItem,
 from configparser import RawConfigParser
 
 from .. import logger
-from ..stream_recorder import stream_recorder
+from ..stream_recorder import StreamRecorder
 from neurodecode.gui.streams import redirect_stdout_to_queue
 from ..stream_receiver import StreamReceiver
 from .ui_mainwindow_Viewer import Ui_MainWindow
@@ -39,14 +39,13 @@ class _Scope(QMainWindow):
 
     Load UI, data acquisition and ploting.
     """
-    #----------------------------------------------------------------------
-    def __init__(self, amp_name, state=mp.Value('i', 1), queue=None):
+    def __init__(self, stream_name, state=mp.Value('i', 1), queue=None):
         """
         Constructor.
         """
         super(_Scope, self).__init__()
 
-        self.amp_name = amp_name
+        self.stream_name = stream_name
         self.state = state
         self.recordState = mp.Value('i', 0)
 
@@ -56,20 +55,22 @@ class _Scope(QMainWindow):
         self.load_ui()
         self.init_scope()
 
-    #----------------------------------------------------------------------
     def load_ui(self):
         """
-        Load the GUI from .ui file created by QtCreator
+        Load the GUI from .ui file created by QtCreator.
         """
         self._ui = Ui_MainWindow()
         self._ui.setupUi(self)
-        self.setGeometry(100, 100, self.geometry().width(), self.geometry().height())
-        self.setFixedSize(self.geometry().width(), self.geometry().height())
+        self.setGeometry(100, 100,
+                         self.geometry().width(),
+                         self.geometry().height())
+        self.setFixedSize(self.geometry().width(),
+                          self.geometry().height())
 
-    #----------------------------------------------------------------------
+    # ------------------------- INIT_SCOPE -------------------------
     def init_scope(self):
         """
-        Main init function
+        Main init function.
         """
         self.load_config_file()
         self.init_loop()
@@ -77,43 +78,52 @@ class _Scope(QMainWindow):
         self.init_scope_GUI()
         self.init_timer()
 
-    #----------------------------------------------------------------------
     def load_config_file(self):
         """
-        Load predefined parameters from the config file
+        Load predefined parameters from the config file.
         """
-        path2_viewerFolder = Path(os.environ['NEUROD_ROOT'])/'neurodecode'/'stream_viewer'
-        self.scope_settings = RawConfigParser(allow_no_value=True, inline_comment_prefixes=('#', ';'))
+        path2_viewerFolder = Path(__file__).parent
+        self.scope_settings = RawConfigParser(
+            allow_no_value=True, inline_comment_prefixes=('#', ';'))
         self.scope_settings.read(str(path2_viewerFolder/'.scope_settings.ini'))
 
-    #----------------------------------------------------------------------
+    # ------------------------- INIT_LOOP -------------------------
     def init_loop(self, window_size=0.2, buffer_size=0.2):
         """
-        Instance a StreamReceiver and extract info from the stream
+        Instance a StreamReceiver and extract info from the stream.
         """
-        self.sr = StreamReceiver(window_size=window_size, buffer_size=buffer_size, amp_name=self.amp_name)
+        self.sr = StreamReceiver(window_size=window_size,
+                                 buffer_size=buffer_size,
+                                 amp_name=self.stream_name)
 
         self.config = {
-            'sf': int(next(iter(self.sr.streams.values())).sample_rate),
-            'samples': int(next(iter(self.sr.streams.values())).sample_rate * window_size),
-            'eeg_channels': len(next(iter(self.sr.streams.values())).ch_list[1:]),
+            'sf': int(next(
+                iter(self.sr.streams.values())).sample_rate),
+            'samples': int(next(
+                iter(self.sr.streams.values())).sample_rate * window_size),
+            'eeg_channels': len(next(
+                iter(self.sr.streams.values())).ch_list[1:]),
             'exg_channels': 0,
             'tri_channels': 1,
         }
 
         # For now, not a fixed number of samples per chunk --> TO FIX
         self.tri = np.zeros(self.config['samples'])
-        self.eeg = np.zeros((self.config['samples'], self.config['eeg_channels']), dtype=np.float)
-        self.exg = np.zeros((self.config['samples'], self.config['exg_channels']), dtype=np.float)
+        self.eeg = np.zeros(
+            (self.config['samples'], self.config['eeg_channels']),
+            dtype=np.float)
+        self.exg = np.zeros(
+            (self.config['samples'], self.config['exg_channels']),
+            dtype=np.float)
 
         self._last_tri = 0
         self._ts_list = []
         self._ts_list_tri = []
 
-    #----------------------------------------------------------------------
+    # ----------------------- INIT_PANEL_GUI -----------------------
     def init_panel_GUI(self):
         """
-        Initialize control panel parameters
+        Initialize control panel parameters.
         """
         self.show_events()
         self.connect_signals_to_slots()
@@ -126,80 +136,46 @@ class _Scope(QMainWindow):
 
         self.fill_table_channels()
         self.set_window_size_policy()
-        self.show()
+        self.show() # TODO: What the heck is this method?
 
-    #----------------------------------------------------------------------
-    def set_window_size_policy(self):
-        """
-        Set window's size and policy
-        """
-        self.screen_width = 522
-        self.screen_height = 160
-        self.setWindowTitle('EEG Scope Panel')
-        self.setFocusPolicy(QtCore.Qt.ClickFocus)
-        self.setFocus()
-
-    #----------------------------------------------------------------------
-    def fill_table_channels(self):
-        """
-        Fill the channels table with the available EEG and EXG channels' names
-        """
-        idx = 0
-        self.channels_to_show_idx = []
-
-        nb_channels = self.config['eeg_channels'] + self.config['exg_channels']
-        self.set_table_size(nb_channels)
-
-        for x in range(0, self._nb_table_rows):
-            for y in range(0, self._nb_table_columns):
-                if (idx < self.config['eeg_channels']):
-                    self._ui.table_channels.setItem(x, y,
-                        QTableWidgetItem(idx))
-                    self._ui.table_channels.item(x,y).setTextAlignment(QtCore.Qt.AlignCenter)
-                    self._ui.table_channels.item(x, y).setSelected(True) # Qt5
-                    self.channels_to_show_idx.append(idx)
-                else:
-                    self._ui.table_channels.setItem(x, y,
-                        QTableWidgetItem("N/A"))
-                    self._ui.table_channels.item(x, y).setFlags(
-                        QtCore.Qt.NoItemFlags)
-                    self._ui.table_channels.item(x, y).setTextAlignment(
-                        QtCore.Qt.AlignCenter)
-                idx += 1
-
-        self._ui.table_channels.verticalHeader().setSectionResizeMode(QHeaderView.Stretch)
-        self._ui.table_channels.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-
-        self._ui.table_channels.itemSelectionChanged.connect(self.onSelectionChanged_table)
-
-    #----------------------------------------------------------------------
-    def set_table_size(self, nb_channels):
-        """
-        Compute the numbers of raws and columns of the channel table and set it
-        """
-        if nb_channels > 64:
-            self._nb_table_columns = 8
-        else:
-            self._nb_table_columns = 4
-
-        self._nb_table_rows = math.ceil(nb_channels/self._nb_table_columns)
-
-        self._ui.table_channels.setRowCount(self._nb_table_rows)
-        self._ui.table_channels.setColumnCount(self._nb_table_columns)
-
-    #----------------------------------------------------------------------
     def show_events(self, tid=False, lpt=False, key=False):
         """
-        Display or not events
+        Display or not events.
         """
         self._show_TID_events = tid
         self._show_LPT_events = lpt
         self._show_Key_events = key
 
-    #----------------------------------------------------------------------
+    def connect_signals_to_slots(self):
+        """
+        Event handler. Connect QT signals to slots.
+        """
+        self._ui.comboBox_scale.activated.connect(
+            self.onActivated_combobox_scale)
+        self._ui.spinBox_time.valueChanged.connect(
+            self.onValueChanged_spinbox_time)
+        self._ui.checkBox_car.stateChanged.connect(
+            self.onActivated_checkbox_car)
+        self._ui.checkBox_bandpass.stateChanged.connect(
+            self.onActivated_checkbox_bandpass)
+        self._ui.checkBox_showTID.stateChanged.connect(
+            self.onActivated_checkbox_TID)
+        self._ui.checkBox_showLPT.stateChanged.connect(
+            self.onActivated_checkbox_LPT)
+        self._ui.checkBox_showKey.stateChanged.connect(
+            self.onActivated_checkbox_Key)
+        self._ui.pushButton_bp.clicked.connect(
+            self.onClicked_button_bp)
+        self._ui.pushButton_recdir.clicked.connect(
+            self.on_click_button_recdir)
+        self._ui.pushButton_rec.clicked.connect(
+            self.onClicked_button_rec)
+        self._ui.pushButton_stoprec.clicked.connect(
+            self.onClicked_button_stoprec)
+
     def set_checked_widgets(self):
         """
-        Set checkBox widgets to checked state
+        Set checkBox widgets to checked state.
         """
         self._ui.checkBox_car.setChecked(
             int(self.scope_settings.get("filtering", "apply_car_filter")))
@@ -213,33 +189,70 @@ class _Scope(QMainWindow):
             int(self.scope_settings.get("plot", "show_Key_events")))
         self._ui.statusBar.showMessage("[Not recording]")
 
-    #----------------------------------------------------------------------
-    def connect_signals_to_slots(self):
+    def fill_table_channels(self):
         """
-        Event handler
-
-        Connect QT signals to slots
+        Fill the channels table with the available names.
         """
-        self._ui.comboBox_scale.activated.connect(self.onActivated_combobox_scale)
-        self._ui.spinBox_time.valueChanged.connect(self.onValueChanged_spinbox_time)
-        self._ui.checkBox_car.stateChanged.connect(self.onActivated_checkbox_car)
-        self._ui.checkBox_bandpass.stateChanged.connect(
-            self.onActivated_checkbox_bandpass)
-        self._ui.checkBox_showTID.stateChanged.connect(
-            self.onActivated_checkbox_TID)
-        self._ui.checkBox_showLPT.stateChanged.connect(
-            self.onActivated_checkbox_LPT)
-        self._ui.checkBox_showKey.stateChanged.connect(
-            self.onActivated_checkbox_Key)
-        self._ui.pushButton_bp.clicked.connect(self.onClicked_button_bp)
-        self._ui.pushButton_recdir.clicked.connect(self.on_click_button_recdir)
-        self._ui.pushButton_rec.clicked.connect(self.onClicked_button_rec)
-        self._ui.pushButton_stoprec.clicked.connect(self.onClicked_button_stoprec)
+        idx = 0
+        self.channels_to_show_idx = []
 
-    #----------------------------------------------------------------------
+        nb_channels = self.config['eeg_channels'] + self.config['exg_channels']
+        self.set_table_size(nb_channels)
+
+        for x in range(0, self._nb_table_rows):
+            for y in range(0, self._nb_table_columns):
+                if (idx < self.config['eeg_channels']):
+                    self._ui.table_channels.setItem(
+                        x, y, QTableWidgetItem(idx))
+                    self._ui.table_channels.item(x,y).setTextAlignment(
+                        QtCore.Qt.AlignCenter)
+                    self._ui.table_channels.item(x, y).setSelected(True) # Qt5
+                    self.channels_to_show_idx.append(idx)
+                else:
+                    self._ui.table_channels.setItem(x, y,
+                        QTableWidgetItem("N/A"))
+                    self._ui.table_channels.item(x, y).setFlags(
+                        QtCore.Qt.NoItemFlags)
+                    self._ui.table_channels.item(x, y).setTextAlignment(
+                        QtCore.Qt.AlignCenter)
+                idx += 1
+
+        self._ui.table_channels.verticalHeader().setSectionResizeMode(
+            QHeaderView.Stretch)
+        self._ui.table_channels.horizontalHeader().setSectionResizeMode(
+            QHeaderView.Stretch)
+
+        self._ui.table_channels.itemSelectionChanged.connect(
+            self.onSelectionChanged_table)
+
+    def set_table_size(self, nb_channels):
+        """
+        Compute the numbers of raws and columns of the channel table.
+        """
+        if nb_channels > 64:
+            self._nb_table_columns = 8
+        else:
+            self._nb_table_columns = 4
+
+        self._nb_table_rows = math.ceil(nb_channels/self._nb_table_columns)
+
+        self._ui.table_channels.setRowCount(self._nb_table_rows)
+        self._ui.table_channels.setColumnCount(self._nb_table_columns)
+
+    def set_window_size_policy(self):
+        """
+        Set window's size and policy.
+        """
+        self.screen_width = 522
+        self.screen_height = 160
+        self.setWindowTitle('EEG Scope Panel')
+        self.setFocusPolicy(QtCore.Qt.ClickFocus)
+        self.setFocus()
+
+    # ----------------------- INIT_SCOPE_GUI -----------------------
     def init_scope_GUI(self):
         """
-        Initialize scope parameters
+        Initialize scope parameters.
         """
         self.bool_parser = {True:'1', False:'0'}
 
@@ -252,7 +265,7 @@ class _Scope(QMainWindow):
 
         self.init_graph()
 
-        # Plotting colors. If channels > 16, colors will roll back to the beginning
+        # Plotting colors. If channels > 16, colors will cycle to the beginning
         self.colors = np.array(
             [[255, 0, 0], [0, 255, 0], [0, 0, 255], [255, 255, 0],
             [0, 255, 255], [255, 0, 255], [128, 100, 100], [0, 128, 0],
@@ -264,13 +277,15 @@ class _Scope(QMainWindow):
 
         # EEG data for plotting
         self.data_plot = np.zeros((self.config['sf'] * self.seconds_to_show,
-        self.config['eeg_channels']))
+                                   self.config['eeg_channels']))
         self.curve_eeg = []
         for x in range(0, len(self.channels_to_show_idx)):
-            self.curve_eeg.append(self._main_plot_handler.plot(x=self.x_ticks,
-                y=self.data_plot[:, self.channels_to_show_idx[x]],
-                pen=pg.mkColor(
-                    self.colors[self.channels_to_show_idx[x] % 16, :])))
+            self.curve_eeg.append(
+                self._main_plot_handler.plot(
+                    x=self.x_ticks,
+                    y=self.data_plot[:, self.channels_to_show_idx[x]],
+                    pen=pg.mkColor(
+                        self.colors[self.channels_to_show_idx[x] % 16, :])))
 
         # Events data
         self.events_detected = []
@@ -285,7 +300,24 @@ class _Scope(QMainWindow):
         # Help variables
         self.show_help = 0
         self.help = pg.TextItem(
-            "Stream Viewer \n" + "----------------------------------------------------------------------------------\n" + "C: De/activate CAR Filter\n" + "B: De/activate Bandpass Filter (with current settings)\n" + "T: Show/hide TiD events\n" + "L: Show/hide LPT events\n" + "K: Show/hide Key events. If not shown, they are NOT recorded!\n" + "0-9: Add a user-specific Key event. Do not forget to write down why you marked it.\n" + "Up, down arrow keys: Increase/decrease the scale, steps of 10 uV\n" + "Left, right arrow keys: Increase/decrease the time to show, steps of 1 s\n" + "Spacebar: Stop the scope plotting, whereas data acquisition keeps running (EXPERIMENTAL)\n" + "Esc: Exits the scope",
+            "Stream Viewer \n" + \
+            "-----------------------------------------"
+            "-----------------------------------------\n" + \
+            "C: De/activate CAR Filter\n" + \
+            "B: De/activate Bandpass Filter (with current settings)\n" + \
+            "T: Show/hide TiD events\n" + \
+            "L: Show/hide LPT events\n" + \
+            "K: Show/hide Key events. " + \
+            "If not shown, they are NOT recorded!\n" + \
+            "0-9: Add a user-specific Key event. " + \
+            "Do not forget to write down why you marked it.\n" + \
+            "Up, down arrow keys: " + \
+            "Increase/decrease the scale, steps of 10 uV\n" + \
+            "Left, right arrow keys: " + \
+            "Increase/decrease the time to show, steps of 1 s\n" + \
+            "Spacebar: Stop the scope plotting, " + \
+            "whereas data acquisition keeps running (EXPERIMENTAL)\n" + \
+            "Esc: Exits the scope",
             anchor=(0, 0), border=(70, 70, 70),
             fill=pg.mkColor(20, 20, 20, 200), color=(255, 255, 255))
 
@@ -295,48 +327,9 @@ class _Scope(QMainWindow):
         # Force repaint even when we shouldn't repaint.
         self.force_repaint = 0
 
-    #----------------------------------------------------------------------
-    def init_bandpass(self):
-        """
-        Init the bandpass filtering parameters high and low cutoff
-        """
-        self.apply_bandpass = int(
-            self.scope_settings.get("filtering", "apply_bandpass_filter"))
-
-        self._ui.checkBox_bandpass.setChecked(self.apply_bandpass)
-
-        if (self.apply_bandpass):
-            self._ui.doubleSpinBox_hp.setValue(float(
-                self.scope_settings.get("filtering",
-                    "bandpass_cutoff_frequency").split(' ')[0]))
-            self._ui.doubleSpinBox_lp.setValue(float(
-                self.scope_settings.get("filtering",
-                    "bandpass_cutoff_frequency").split(' ')[1]))
-            self._ui.pushButton_bp.click()
-
-    #----------------------------------------------------------------------
-    def init_car(self):
-        """
-        Init the Common Average Reference
-        """
-        self.apply_car = int(
-            self.scope_settings.get("filtering", "apply_car_filter"))
-
-        self._ui.checkBox_bandpass.setChecked(self.apply_car)
-
-        if (self.apply_car):
-            self.matrix_car = np.zeros(
-                (self.config['eeg_channels'], self.config['eeg_channels']),
-                dtype=float)
-            self.matrix_car[:, :] = -1 / float(self.config['eeg_channels'])
-            np.fill_diagonal(self.matrix_car,
-                1 - (1 / float(self.config['eeg_channels'])))
-
-
-    #----------------------------------------------------------------------
     def init_graph(self):
         """
-        Init the PyQTGraph plot
+        Init the PyQTGraph plot.
         """
         self._win = pg.GraphicsWindow()
         self.set_win_geometry_title()
@@ -348,11 +341,12 @@ class _Scope(QMainWindow):
         # Y Tick labels. Use values from the config file.
         self.channel_labels = []
         values = []
-        ch_names = np.array( next(iter(self.sr.streams.values())).ch_list )
+        ch_names = np.array(next(iter(self.sr.streams.values())).ch_list)
         self.channel_labels = ch_names[1:]
         for x in range(0, len(self.channels_to_show_idx)):
-            values.append((-x * self.scale,
-                self.channel_labels[self.channels_to_show_idx[x]]))
+            values.append(
+                (-x * self.scale,
+                 self.channel_labels[self.channels_to_show_idx[x]]))
 
         values_axis = []
         values_axis.append(values)
@@ -369,13 +363,14 @@ class _Scope(QMainWindow):
 
         # Plot initialization
         self._main_plot_handler.getAxis('left').setTicks(values_axis)
-        self._main_plot_handler.setRange(xRange=[0, self.seconds_to_show],
-            yRange=[+1.5 * self.scale,
-                -0.5 * self.scale - self.scale * self.config['eeg_channels']])
+        self._main_plot_handler.setRange(
+            xRange=[0, self.seconds_to_show],
+            yRange=[+1.5*self.scale,
+                    -0.5*self.scale - self.scale*self.config['eeg_channels']])
         self._main_plot_handler.disableAutoRange()
         self._main_plot_handler.showGrid(y=True)
-        self._main_plot_handler.setLabel(axis='left',
-            text='Scale (uV): ' + str(self.scale))
+        self._main_plot_handler.setLabel(
+            axis='left', text='Scale (uV): ' + str(self.scale))
         self._main_plot_handler.setLabel(axis='bottom', text='Time (s)')
 
         # X axis
@@ -383,26 +378,66 @@ class _Scope(QMainWindow):
         for x in range(0, self.config['sf'] * self.seconds_to_show):
             self.x_ticks[x] = (x * 1) / float(self.config['sf'])
 
-    #----------------------------------------------------------------------
     def set_win_geometry_title(self):
         """
-        Set the title and the geometry of the PyQTGraph window based on MainWindow size
+        Set the title and the geometry of the PyQTGraph window based on
+        MainWindow size.
         """
         self._win.setWindowTitle('EEG Scope')
         self._win.setWindowFlags(QtCore.Qt.WindowMinimizeButtonHint)
         self._win.setWindowFlags(QtCore.Qt.WindowMaximizeButtonHint)
-        self._win.setGeometry(self.geometry().x() + self.width(), self.geometry().y(), self.width() * 2, self.height()) #  Position next to the panel window
+        # Position next to the panel window
+        self._win.setGeometry(self.geometry().x() + self.width(),
+                              self.geometry().y(),
+                              self.width() * 2,
+                              self.height())
 
-    #----------------------------------------------------------------------
+    def init_car(self):
+        """
+        Init the Common Average Reference.
+        """
+        self.apply_car = int(
+            self.scope_settings.get("filtering", "apply_car_filter"))
+
+        self._ui.checkBox_bandpass.setChecked(self.apply_car)
+
+        if (self.apply_car):
+            self.matrix_car = np.zeros(
+                (self.config['eeg_channels'], self.config['eeg_channels']),
+                dtype=float)
+            self.matrix_car[:, :] = -1 / float(self.config['eeg_channels'])
+            np.fill_diagonal(
+                self.matrix_car, 1 - (1 / float(self.config['eeg_channels'])))
+
+    def init_bandpass(self):
+        """
+        Init the bandpass filtering parameters high and low cutoff.
+        """
+        self.apply_bandpass = int(
+            self.scope_settings.get("filtering", "apply_bandpass_filter"))
+
+        self._ui.checkBox_bandpass.setChecked(self.apply_bandpass)
+
+        if (self.apply_bandpass):
+            self._ui.doubleSpinBox_hp.setValue(float(
+                self.scope_settings.get(
+                    "filtering", "bandpass_cutoff_frequency").split(' ')[0]))
+            self._ui.doubleSpinBox_lp.setValue(float(
+                self.scope_settings.get(
+                    "filtering", "bandpass_cutoff_frequency").split(' ')[1]))
+            self._ui.pushButton_bp.click()
+
+    # ------------------------- INIT_TIMER -------------------------
     def init_timer(self):
         """
-        Initializes the QT timer, which will call the update function every 20 ms
+        Initializes the QT timer, which will call the update function every
+        20 ms.
         """
         QtCore.QCoreApplication.processEvents()
         QtCore.QCoreApplication.flush()
         self.timer = QtCore.QTimer(self)
         self.timer.timeout.connect(self.update_loop)
-        self.timer.start(20);
+        self.timer.start(20)
 
     #----------------------------------------------------------------------
     def update_loop(self):
@@ -745,8 +780,12 @@ class _Scope(QMainWindow):
         record_dir = self._ui.lineEdit_recdir.text()
         with self.recordState.get_lock():
             self.recordState.value = 1
-        record_process = mp.Process(target=stream_recorder.record, \
-                                         args=[self.recordState, self.amp_name, self.amp_serial, record_dir, False, logger, None])
+        # This can not be working. To change with new version of Stream Recorder
+        # instantiate a recorder and call start which call _record in new process.
+        record_process = mp.Process(target=stream_recorder.record,
+                                    args=[self.recordState, self.stream_name,
+                                          self.amp_serial, record_dir,
+                                          False, logger, None])
         record_process.start()
         self._ui.statusBar.showMessage("Recording to" + record_dir)
 
