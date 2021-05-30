@@ -97,8 +97,8 @@ def list_lsl_streams(ignore_markers=False,
     """
 
     # look for LSL servers
-    amp_list = []
-    amp_list_markers = []
+    stream_list = []
+    stream_list_markers = []
 
     while state.value == 1:
 
@@ -107,25 +107,25 @@ def list_lsl_streams(ignore_markers=False,
         if len(streamInfos) > 0:
 
             for index, si in enumerate(streamInfos):
-                amp_name = si.name()
+                stream_name = si.name()
                 if 'Markers' in si.type():
-                    amp_list_markers.append((index, amp_name))
+                    stream_list_markers.append((index, stream_name))
                 else:
-                    amp_list.append((index, amp_name))
+                    stream_list.append((index, stream_name))
             break
 
         logger.info('No server available yet on the network...')
         time.sleep(1)
 
     if ignore_markers is False:
-        amp_list += amp_list_markers
+        stream_list += stream_list_markers
 
     logger.info('-- List of servers --')
 
-    for i, (index, amp_name) in enumerate(amp_list):
-        logger.info(f'{i}: {amp_name}')
+    for i, (index, stream_name) in enumerate(stream_list):
+        logger.info(f'{i}: {stream_name}')
 
-    return amp_list, streamInfos
+    return stream_list, streamInfos
 
 
 def search_lsl(ignore_markers=False, logger=logger, state=mp.Value('i', 1)):
@@ -148,25 +148,25 @@ def search_lsl(ignore_markers=False, logger=logger, state=mp.Value('i', 1)):
     --------
     str : The selected amp name.
     """
-    amp_list, streamInfos = list_lsl_streams(ignore_markers, logger, state)
+    stream_list, streamInfos = list_lsl_streams(ignore_markers, logger, state)
 
-    if len(amp_list) == 1:
+    if len(stream_list) == 1:
         index = 0
     else:
         index = input(
-            'Amp index? Hit enter without index to select the first server.\n>> ')
+            'Stream index? Hit enter without index to select the first server.\n>> ')
         if index.strip() == '':
             index = 0
         else:
             index = int(index.strip())
 
-    amp_index, amp_name = amp_list[index]
-    si = streamInfos[amp_index]
-    assert amp_name == si.name()
+    stream_index, stream_name = stream_list[index]
+    si = streamInfos[stream_index]
+    assert stream_name == si.name()
 
-    logger.info(f'Selected: {amp_name}')
+    logger.info(f'Selected: {stream_name}')
 
-    return amp_name
+    return stream_name
 
 
 def lsl_channel_list(inlet):
