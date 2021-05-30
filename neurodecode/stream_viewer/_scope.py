@@ -11,7 +11,6 @@ DEBUG_TRIGGER = False # TODO: parameterize
 
 import os
 import sys
-import pdb
 import math
 import numpy as np
 import pyqtgraph as pg
