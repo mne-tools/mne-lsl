@@ -94,7 +94,7 @@ class _Scope(QMainWindow):
         self.sr = StreamReceiver(window_size=window_size,
                                  buffer_size=buffer_size,
                                  amp_name=self.stream_name)
-        self.sr.streams['self.stream_name'].blocking = False
+        self.sr.streams[self.stream_name].blocking = False
 
         self.config = {
             'sf': int(next(
