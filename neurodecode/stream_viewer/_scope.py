@@ -94,6 +94,7 @@ class _Scope(QMainWindow):
         self.sr = StreamReceiver(window_size=window_size,
                                  buffer_size=buffer_size,
                                  amp_name=self.stream_name)
+        self.sr.streams['self.stream_name'].blocking = False
 
         self.config = {
             'sf': int(next(
@@ -461,10 +462,6 @@ class _Scope(QMainWindow):
         """
         Read chunk of signal from LSL stream.
         """
-        next(iter(self.sr.streams.values())).blocking = False
-        # TODO: Supposely only the connected stream should be turned non blocking
-        # But since .acquire() waits for all the streams... And it can connect to multiple streams if a list is provided.
-        # But the stream_viewer init only takes one 'str' argument -> So only one stream!
         self.sr.acquire()
         data, self._ts_list = self.sr.get_buffer()
         self.sr.reset_all_buffers()
@@ -488,7 +485,7 @@ class _Scope(QMainWindow):
 
     def filter_signal(self):
         """
-        Bandpas + CAR filtering.
+        Bandpass + CAR filtering.
         """
         if (self.apply_bandpass):
             for x in range(0, self.eeg.shape[1]):
