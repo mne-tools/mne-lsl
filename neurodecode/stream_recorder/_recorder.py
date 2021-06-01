@@ -5,7 +5,6 @@ import datetime
 from pathlib import Path
 import multiprocessing as mp
 
-from ..utils.timer import Timer
 from ..utils.lsl import start_server
 from ..utils.io import pcl2fif, make_dirs
 from ..stream_receiver import StreamReceiver, StreamEEG
@@ -87,8 +86,6 @@ class _Recorder:
         with self.state.get_lock():
             self.state.value = 1
 
-        tm = Timer(autoreset=True)
-
         # Extract name of the first recorded stream
         first_stream = list(self.sr.streams.keys())[0]
 
@@ -98,10 +95,11 @@ class _Recorder:
             if verbose:
                 bufsec = len(self.sr.streams[first_stream].buffer.data) / \
                          self.sr.streams[first_stream].sample_rate
+                print (len(self.sr.streams[first_stream].buffer.data), bufsec)
                 duration = str(datetime.timedelta(seconds=int(bufsec)))
                 self.logger.info(f'RECORDING {duration}')
 
-            tm.sleep_atleast(1)
+            time.sleep(1)
 
     # ------------------------ File Management ------------------------
     def create_files(self):
