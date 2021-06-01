@@ -9,6 +9,7 @@ from ..utils.timer import Timer
 from ..utils.lsl import start_server
 from ..utils.io import pcl2fif, make_dirs
 from ..stream_receiver import StreamReceiver, StreamEEG
+from ..stream_receiver._stream import MAX_BUF_SIZE
 
 
 class _Recorder:
@@ -17,8 +18,6 @@ class _Recorder:
     """
 
     def __init__(self, record_dir, logger, state=mp.Value('i', 0)):
-        self._MAX_BUFSIZE = 86400  # seconds - 24h
-
         if record_dir == '.':
             self.record_dir = Path.cwd()
         else:
@@ -28,9 +27,10 @@ class _Recorder:
         self.state = state
         self.logger = logger
 
+    # --------------------------- Recording ---------------------------
     def connect(self, stream_name=None, eeg_only=False):
         """
-        Instance a StreamReceiver connecting to the appropriate lsl stream.
+        Instance a StreamReceiver connecting to the appropriate LSL stream.
 
         Parameters
         ----------
@@ -39,10 +39,71 @@ class _Recorder:
         eeg_only : bool
             If true, ignore non-EEG servers.
         """
-        self.sr = StreamReceiver(buffer_size=self._MAX_BUFSIZE,
-                                 amp_name=stream_name,  # TODO change name to stream_name
+        self.sr = StreamReceiver(bufsize=MAX_BUF_SIZE,
+                                 stream_name=stream_name,
                                  eeg_only=eeg_only)
 
+    def record(self, verbose=False):
+        """
+        Start the recording and save to files the data in pickle and fif format.
+
+        Parameters
+        ----------
+        verbose : bool
+            If True, the recording will log 'RECORDING {time}' every second.
+        """
+        data_files, eve_file = self.create_files()
+
+        self.outlet = self.create_events_server(eve_file=str(eve_file))
+        self.logger.info(f'>> Recording started (PID {os.getpid()}).')
+        self.acquire(verbose)
+
+        self.logger.info('>> Stop requested. Copying buffer')
+        self.save_to_file(data_files, eve_file)
+
+    def create_events_server(self, name='StreamRecorderInfo', eve_file=None):
+        """
+        Start a LSL server for sending out events when software trigger is used.
+
+        Parameters
+        ----------
+        name : str
+            The server's name displayed on the network.
+        eve_file : str
+            The software events' file (txt format).
+        """
+        return start_server(name, channel_format='string',
+                            source_id=eve_file, stype='Markers')
+
+    def acquire(self, verbose=False):
+        """
+        Acquire the data from the connected LSL stream.
+
+        Parameters
+        ----------
+        verbose : bool
+            If True, the recording will log 'RECORDING ...' every second.
+        """
+        with self.state.get_lock():
+            self.state.value = 1
+
+        tm = Timer(autoreset=True)
+
+        # Extract name of the first recorded stream
+        first_stream = list(self.sr.streams.keys())[0]
+
+        while self.state.value == 1:
+            self.sr.acquire()
+
+            if verbose:
+                bufsec = len(self.sr.streams[first_stream].buffer.data) / \
+                         self.sr.streams[first_stream].sample_rate
+                duration = str(datetime.timedelta(seconds=int(bufsec)))
+                self.logger.info(f'RECORDING {duration}')
+
+            tm.sleep_atleast(1)
+
+    # ------------------------ File Management ------------------------
     def create_files(self):
         """
         Create the files to save the data.
@@ -103,40 +164,6 @@ class _Recorder:
                     f"Problem writing to '{pcl_file}'. Check permission.")
                 raise RuntimeError
 
-    def create_events_server(self, name='StreamRecorderInfo', eve_file=None):
-        """
-        Start a LSL server for sending out events when software trigger is used.
-
-        Parameters
-        ----------
-        name : str
-            The server's name displayed on the network.
-        eve_file : str
-            The software events' file (txt format).
-        """
-        return start_server(name, channel_format='string',
-                            source_id=eve_file, stype='Markers')
-
-    def get_buffer(self, stream_name=None):
-        """
-        Get all the data collected in the buffer for a stream.
-
-        Parameters
-        ----------
-        stream_name : str
-            The name of the stream to get the data.
-
-        Returns
-        -------
-        data : np.ndarray
-            The data [[samples_ch1],[samples_ch2]...]
-        timestamps : np.ndarray
-            The associated timestamps [samples]
-        """
-        data, timestamps = self.sr.get_buffer(stream_name)
-
-        return data, timestamps
-
     def save_to_file(self, pcl_files, eve_file):
         """
         Save the acquired data to pcl and fif format.
@@ -152,7 +179,7 @@ class _Recorder:
 
         for s in self.sr.streams:
 
-            signals, timestamps = self.get_buffer(s)
+            signals, timestamps = self.sr.get_buffer(s)
 
             if isinstance(self.sr.streams[s], StreamEEG):
                 signals[:, 1:] *= 1E-6
@@ -205,50 +232,3 @@ class _Recorder:
                 'lsl_time_offset': self.sr.streams[stream_name].lsl_time_offset}
 
         return data
-
-    def record(self, verbose=False):
-        """
-        Start the recording and save to files the data in pickle and fif format.
-
-        Parameters
-        ----------
-        verbose : bool
-            If True, the recording will log 'RECORDING {time}' every second.
-        """
-        data_files, eve_file = self.create_files()
-
-        self.outlet = self.create_events_server(eve_file=str(eve_file))
-        self.logger.info(f'>> Recording started (PID {os.getpid()}).')
-        self.acquire(verbose)
-
-        self.logger.info('>> Stop requested. Copying buffer')
-        self.save_to_file(data_files, eve_file)
-
-    def acquire(self, verbose=False):
-        """
-        Acquire the data from the connected LSL stream.
-
-        Parameters
-        ----------
-        verbose : bool
-            If True, the recording will log 'RECORDING ...' every second.
-        """
-        with self.state.get_lock():
-            self.state.value = 1
-
-        tm = Timer(autoreset=True)
-
-        #  Extract name of the first recorded stream
-        first_stream = list(self.sr.streams.keys())[0]
-
-        while self.state.value == 1:
-            self.sr.acquire()
-
-            if verbose:
-                bufsec = len(self.sr.streams[first_stream].buffer.data) / \
-                    self.sr.streams[first_stream].sample_rate
-
-                duration = str(datetime.timedelta(seconds=int(bufsec)))
-                self.logger.info(f'RECORDING {duration}')
-
-            tm.sleep_atleast(1)
