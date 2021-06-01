@@ -439,9 +439,10 @@ class StreamEEG(_Stream):
         self._lsl_eeg_channels = list(range(len(self.ch_list)))
 
         if self._lsl_tr_channel is not None:
+            self._ch_list.pop(self._lsl_tr_channel)
             self._lsl_eeg_channels.pop(self._lsl_tr_channel)
 
-        self._ch_list = ['TRIGGER'] + self._lsl_eeg_channels
+        self._ch_list = ['TRIGGER'] + self._ch_list
 
     def _find_lsl_trig_ch(self):
         """
