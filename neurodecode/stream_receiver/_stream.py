@@ -43,11 +43,13 @@ class _Stream(ABC):
 
         if self._sample_rate is not None:
             samples_per_sec = self.sample_rate
+            # max_buflen: seconds
             self._inlet = pylsl.StreamInlet(
                 streamInfo,
                 max_buflen=math.ceil(self._lsl_bufsize))
         else:
             samples_per_sec = 100
+            # max_buflen: samples x100
             self._inlet = pylsl.StreamInlet(
                 streamInfo,
                 max_buflen=math.ceil(self._lsl_bufsize)*samples_per_sec)
@@ -60,8 +62,11 @@ class _Stream(ABC):
         self._blocking = True
         self._blocking_time = 5
 
+        # Convert to samples
         bufsize = _Stream._convert_sec_to_samples(bufsize, samples_per_sec)
         winsize = _Stream._convert_sec_to_samples(winsize, samples_per_sec)
+        self._lsl_bufsize = _Stream._convert_sec_to_samples(
+            self._lsl_bufsize, samples_per_sec)
         self._buffer = Buffer(bufsize, winsize)
 
     def _create_ch_name_list(self):
