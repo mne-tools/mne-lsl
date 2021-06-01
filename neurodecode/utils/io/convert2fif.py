@@ -48,7 +48,7 @@ def pcl2fif(filename, out_dir=None, external_event=None,
         out_dir = filename.parent / 'fif'
     make_dirs(out_dir)
 
-    fiffile = out_dir / filename.stem + '.fif'
+    fiffile = out_dir / str(filename.stem + '.fif')
 
     # Load from file
     with open(filename, 'rb') as f:
@@ -207,7 +207,7 @@ def _saveChannels2txt(out_dir, ch_names):
     """
     Save the channels list to a txt file for the GUI
     """
-    filename = out_dir + "channelsList.txt"
+    filename = out_dir / "channelsList.txt"
     config = Path(filename)
 
     if config.is_file() is False:
