@@ -66,7 +66,7 @@ class StreamRecorder:
                                       self._state))
         self._proc.start()
 
-        while not self._state.value:
+        while not self._state.value:  # TODO: What is the goal of this loop??
             pass
 
     def wait(self, timeout):
