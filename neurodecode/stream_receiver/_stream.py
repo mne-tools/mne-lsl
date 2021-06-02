@@ -52,7 +52,8 @@ class _Stream(ABC):
             # max_buflen: samples x100
             self._inlet = pylsl.StreamInlet(
                 streamInfo,
-                max_buflen=math.ceil(self._lsl_bufsize)*samples_per_sec)
+                max_buflen=math.ceil(self._lsl_bufsize*samples_per_sec))
+        self._inlet.open_stream()
 
         self._extract_stream_info()
         self._create_ch_name_list()
