@@ -95,7 +95,6 @@ class _Recorder:
             if verbose:
                 bufsec = len(self.sr.streams[first_stream].buffer.data) / \
                          self.sr.streams[first_stream].sample_rate
-                print (len(self.sr.streams[first_stream].buffer.data), bufsec)
                 duration = str(datetime.timedelta(seconds=int(bufsec)))
                 self.logger.info(f'RECORDING {duration}')
 
