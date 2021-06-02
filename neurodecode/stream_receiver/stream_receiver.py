@@ -157,8 +157,14 @@ class StreamReceiver:
                 "Please provide a stream name to remove it.")
             raise ValueError
 
-        self.streams[stream_name]._inlet.close_stream()
-        del self.stream[stream_name]
+        try:
+            self.streams[stream_name]._inlet.close_stream()
+            del self.stream[stream_name]
+        except KeyError:
+            logger.error(
+                f"The stream '{stream_name}' does not exist. Skipping.")
+        except:
+            raise
 
     def acquire(self):
         """
