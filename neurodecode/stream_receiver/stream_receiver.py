@@ -140,6 +140,26 @@ class StreamReceiver:
             logger.info(f"The stream {s} is connected to:")
             self.streams[s].show_info()
 
+    def disconnect_stream(self, stream_name=None):
+        """
+        Disconnects the stream 'stream_name' from the StreamReceiver.
+        If several streams are connected, specify the name.
+
+        Parameters
+        ----------
+        stream_name : str
+            The name of the stream to extract from.
+        """
+        if len(self.streams) == 1:
+            stream_name = list(self.streams.keys())[0]
+        elif stream_name is None:
+            logger.error(
+                "Please provide a stream name to remove it.")
+            raise ValueError
+
+        self.streams[stream_name]._inlet.close_stream()
+        del self.stream[stream_name]
+
     def acquire(self):
         """
         Read data from the streams and fill their buffer using threading.
