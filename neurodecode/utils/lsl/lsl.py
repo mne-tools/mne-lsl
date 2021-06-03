@@ -146,7 +146,7 @@ def search_lsl(ignore_markers=False, logger=logger, state=mp.Value('i', 1)):
 
     Returns:
     --------
-    str : The selected amp name.
+    str : The selected stream name.
     """
     stream_list, streamInfos = list_lsl_streams(ignore_markers, logger, state)
 
