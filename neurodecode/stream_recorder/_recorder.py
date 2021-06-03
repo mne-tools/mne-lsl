@@ -53,24 +53,24 @@ class _Recorder:
         """
         data_files, eve_file = self.create_files()
 
-        self.outlet = self.create_events_server(eve_file=str(eve_file))
+        self.create_events_server(eve_file=str(eve_file))
         self.logger.info(f'>> Recording started (PID {os.getpid()}).')
         self.acquire(verbose)
 
         self.logger.info('>> Stop requested. Copying buffer')
         self.save_to_file(data_files, eve_file)
 
-    def create_events_server(self, name='StreamRecorderInfo', eve_file=None):
+    def create_events_server(self, eve_file=None):
         """
-        Start a LSL server for sending out events when software trigger is used.
+        Start a LSL server for sending out the event file name when SOFTWARE
+        triggers are used.
 
         Parameters
         ----------
-        name : str
-            The server's name displayed on the network.
         eve_file : str
             The software events' file (txt format).
         """
+        name='StreamRecorderInfo'
         return start_server(name, channel_format='string',
                             source_id=eve_file, stype='Markers')
 
