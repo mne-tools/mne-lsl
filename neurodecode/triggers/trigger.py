@@ -14,8 +14,9 @@ import ctypes
 import threading
 import multiprocessing as mp
 from pathlib import Path
-from neurodecode.utils.lsl import start_client
-from neurodecode import logger
+
+from .. import logger
+from ..utils.lsl import start_client
 
 
 class Trigger(object):
