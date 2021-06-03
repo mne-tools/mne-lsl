@@ -49,8 +49,6 @@ def read_raw_fif(fname, events_ext=None, preload=True):
             events = mne.find_events(raw, stim_channel=raw.ch_names[tch],
                                      shortest_event=1, uint_cast=True,
                                      consecutive='increasing')
-            # MNE's annoying hidden cockroach: first_samp
-            # events[:, 0] -= raw.first_samp
         else:
             events = np.array([], dtype=np.int64)
 
