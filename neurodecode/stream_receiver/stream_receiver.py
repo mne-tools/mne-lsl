@@ -190,7 +190,14 @@ class StreamReceiver:
 
         winsize = self.streams[stream_name].buffer.winsize
         self.is_connected
-        self._acquisition_threads[stream_name].join()
+        try:
+            self._acquisition_threads[stream_name].join()
+        except AttributeError:
+            logger.warning('.acquire() must be called before .get_window().')
+            return (np.empty((0, len(self.streams[stream_name].ch_list))),
+                    np.array([]))
+        except:
+            raise
 
         try:
             window = self.streams[stream_name].buffer.data[-winsize:]
@@ -233,7 +240,14 @@ class StreamReceiver:
             raise ValueError
 
         self.is_connected
-        self._acquisition_threads[stream_name].join()
+        try:
+            self._acquisition_threads[stream_name].join()
+        except AttributeError:
+            logger.warning('.acquire() must be called before .get_window().')
+            return (np.empty((0, len(self.streams[stream_name].ch_list))),
+                    np.array([]))
+        except:
+            raise
 
         if len(self.streams[stream_name].buffer.timestamps) > 0:
             return (np.array(self.streams[stream_name].buffer.data),
