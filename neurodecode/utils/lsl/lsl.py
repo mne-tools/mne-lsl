@@ -1,9 +1,10 @@
 """
 LSL wrapper functions for creating a server and a client.
 """
-import multiprocessing as mp
-import pylsl
 import time
+import pylsl
+import multiprocessing as mp
+import xml.etree.ElementTree as ET
 
 from ... import logger
 
@@ -176,7 +177,7 @@ def lsl_channel_list(inlet):
     Parameters
     ----------
     inlet : pylsl.StreamInlet
-        The inlet to extract channels list
+        The inlet to extract channels list from.
 
     Returns:
     --------
@@ -186,11 +187,11 @@ def lsl_channel_list(inlet):
         logger.error(f'Wrong input type {type(inlet)}')
         raise TypeError
 
-    ch = inlet.info().desc().child('channels').first_child()
+    xml_str = inlet.info().as_xml()
+    root = ET.fromstring(xml_str)
+
     ch_list = []
-    for k in range(inlet.info().channel_count()):
-        ch_name = ch.child_value('label')
-        ch_list.append(ch_name)
-        ch = ch.next_sibling()
+    for elt in root.iter('channel'):
+        ch_list.append(elt.find('label').text)
 
     return ch_list
