@@ -110,25 +110,9 @@ class StreamReceiver:
             if s not in self._acquisition_threads.keys():
                 self._acquisition_threads[s] = None
 
-        self._prefill_buffers()
         self.show_info()
         self._is_connected = True
         logger.info('Ready to receive data from the connected streams.')
-
-    def _prefill_buffers(self):
-        """
-        Prefill 1 acquisition window in the buffers after connection to the
-        streams, except for StreamMarker.
-        """
-        filled = False
-
-        while not filled:
-            self.acquire()
-            for _, s in self.streams.items():
-                if s.sample_rate == 0:
-                    filled = True
-                elif len(s.buffer.timestamps) >= s.buffer.winsize:
-                    filled = True
 
     def show_info(self):
         """
