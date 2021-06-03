@@ -7,6 +7,7 @@ Kyuhwa Lee, 2014
 Swiss Federal Institute of Technology Lausanne (EPFL)
 """
 
+import io
 import sys
 import time
 import pylsl
@@ -50,7 +51,7 @@ class Trigger(object):
         self._lpttype = lpttype.upper().strip()
         self.verbose = verbose
 
-        if self._lpttype in ['USB2LPT', 'DESKTOP']:
+        if self._lpttype in ('USB2LPT', 'DESKTOP'):
             if portaddr not in [0x278, 0x378]:
                 logger.warning(f'LPT port address {portaddr} is unusual.')
 
@@ -67,7 +68,7 @@ class Trigger(object):
             logger.info('Using software trigger')
             self.evefile = self._find_evefile(state)
 
-        elif self._lpttype == 'FAKE' or self._lpttype is None or self._lpttype is False:
+        elif self._lpttype in (None, 'False', 'Fake'):
             logger.warning('Using a fake trigger.')
             self._lpttype = 'FAKE'
             self.lpt = None
@@ -83,7 +84,7 @@ class Trigger(object):
         Returns
         -------
         string
-            The dll library name to load
+            The dll library name to load.
         """
         if ctypes.sizeof(ctypes.c_voidp) == 4:
             extension = '32.dll'
@@ -116,7 +117,7 @@ class Trigger(object):
 
         # Ensure that the dll exists
         if not dllpath.exists():
-            logger.error(f'Cannot find the required library {dllname}')
+            logger.error(f"Cannot find the required library '{dllname}'.")
             raise RuntimeError
 
         logger.info(f'Loading {dllpath}')
@@ -241,12 +242,12 @@ class Trigger(object):
         Parameters
         ----------
         value : int
-            The trigger event to write to the file.
+            The trigger event to send.
 
         Returns
         -------
         bool
-            True if trigger event has been properly sent
+            True if trigger event has been properly sent.
         """
         if self._lpttype == 'SOFTWARE':
             if self.verbose is True:
@@ -262,7 +263,8 @@ class Trigger(object):
                 return False
             if self.offtimer.is_alive():
                 logger.warning(
-                    'You are sending a new signal before the end of the last signal. Signal ignored.')
+                    'You are sending a new signal before the end of the last '
+                    'signal. Signal ignored.')
                 logger.warning(f'Delay required = {self.delay} us.')
                 return False
             self._set_data(value)
@@ -335,7 +337,7 @@ class Trigger(object):
                        "instead instance a new Trigger.")
 
     def __del__(self):
-        if self.evefile is not None and not self.evefile.closed:
+        if isinstance(self.evefile, io.IOBase) and not self.evefile.closed:
             self.evefile.close()
 
         if self._lpttype == 'ARDUINO':
