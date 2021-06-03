@@ -19,17 +19,17 @@ import multiprocessing as mp
 from PyQt5 import QtCore
 from pathlib import Path
 from PyQt5.QtGui import QPainter
-from scipy.signal import butter, lfilter
+from scipy.signal import butter, sosfilt, sosfilt_zi
 from PyQt5.QtWidgets import (QMainWindow, QTableWidgetItem,
                              QHeaderView, QFileDialog)
 
 from configparser import RawConfigParser
 
-from .. import logger
-from ..stream_recorder import StreamRecorder
-from neurodecode.gui.streams import redirect_stdout_to_queue
-from ..stream_receiver import StreamReceiver
 from .ui_mainwindow_Viewer import Ui_MainWindow
+from .. import logger
+from ..stream_receiver import StreamReceiver
+from ..stream_recorder import StreamRecorder
+from ..gui.streams import redirect_stdout_to_queue
 
 
 class _Scope(QMainWindow):
@@ -87,22 +87,21 @@ class _Scope(QMainWindow):
         self.scope_settings.read(str(path2_viewerFolder/'.scope_settings.ini'))
 
     # ------------------------- INIT_LOOP -------------------------
-    def init_loop(self, window_size=0.2, buffer_size=0.2):
+    def init_loop(self, bufsize=0.2, winsize=0.2):
         """
         Instance a StreamReceiver and extract info from the stream.
         """
-        self.sr = StreamReceiver(window_size=window_size,
-                                 buffer_size=buffer_size,
-                                 amp_name=self.stream_name)
+        self.sr = StreamReceiver(bufsize=bufsize, winsize=winsize,
+                                 stream_name=self.stream_name)
         self.sr.streams[self.stream_name].blocking = False
 
         self.config = {
-            'sf': int(next(
-                iter(self.sr.streams.values())).sample_rate),
-            'samples': int(next(
-                iter(self.sr.streams.values())).sample_rate * window_size),
-            'eeg_channels': len(next(
-                iter(self.sr.streams.values())).ch_list[1:]),
+            'sf': int(
+                self.sr.streams[self.stream_name].sample_rate),
+            'samples': round(
+                self.sr.streams[self.stream_name].sample_rate * winsize),
+            'eeg_channels': len(
+                self.sr.streams[self.stream_name].ch_list[1:]),
             'exg_channels': 0,
             'tri_channels': 1,
         }
@@ -445,7 +444,7 @@ class _Scope(QMainWindow):
         """
         #  Sharing variable to stop at the GUI level
         if not self.state.value:
-            logger.info('Viewer stopped')
+            logger.info('Viewer stopped.')
             sys.exit()
 
         try:
@@ -488,9 +487,7 @@ class _Scope(QMainWindow):
         Bandpass + CAR filtering.
         """
         if (self.apply_bandpass):
-            for x in range(0, self.eeg.shape[1]):
-                self.eeg[:, x], self.zi[:, x] = lfilter(
-                    self.b, self.a, self.eeg[:, x], -1, self.zi[:, x])
+            self.eeg, self.zi = sosfilt(self.sos, self.eeg, 0, self.zi)
 
         # We only apply CAR if selected AND there are at least 2 channels.
         # Otherwise it makes no sense.
@@ -707,7 +704,7 @@ class _Scope(QMainWindow):
         self._main_plot_handler.addItem(self.events_text[-1])
 
     #----------------------------------------------------------------------
-    def butter_bandpass(self, highcut, lowcut, fs, num_ch):
+    def butter_bandpass(self, lowcut, highcut, fs, num_ch):
         """
         Calculation of bandpass coefficients.
 
@@ -716,12 +713,9 @@ class _Scope(QMainWindow):
         """
         low = lowcut / (0.5 * fs)
         high = highcut / (0.5 * fs)
-        # get the order. TO BE DONE: Sometimes it fails
-        #ord = buttord(high, low, 2, 40)
-        #b, a = butter(ord[0], [high, low], btype='band')
-        b, a = butter(2, [high, low], btype='band')
-        zi = np.zeros([a.shape[0] - 1, num_ch])
-        return b, a, zi
+        sos = butter(2, [low, high], btype='band', output='sos', fs=fs)
+        zi = np.zeros((sos.shape[0], 2, num_ch))
+        return sos, zi
 
     #----------------------------------------------------------------------
     def update_title_scope(self):
@@ -831,9 +825,11 @@ class _Scope(QMainWindow):
     def onClicked_button_bp(self):
         if (self._ui.doubleSpinBox_lp.value() > self._ui.doubleSpinBox_hp.value()):
             self.apply_bandpass = True
-            self.b, self.a, self.zi = self.butter_bandpass(
-                self._ui.doubleSpinBox_hp.value(), self._ui.doubleSpinBox_lp.value(),
-                self.config['sf'], self.config['eeg_channels'])
+            self.sos, self.zi = self.butter_bandpass(
+                self._ui.doubleSpinBox_lp.value(),
+                self._ui.doubleSpinBox_hp.value(),
+                self.config['sf'],
+                self.config['eeg_channels'])
         self.update_title_scope()
 
     #----------------------------------------------------------------------
