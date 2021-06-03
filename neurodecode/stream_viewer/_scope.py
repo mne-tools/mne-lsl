@@ -12,6 +12,7 @@ DEBUG_TRIGGER = False # TODO: parameterize
 import os
 import sys
 import math
+# import time
 import numpy as np
 import pyqtgraph as pg
 import multiprocessing as mp
@@ -94,6 +95,7 @@ class _Scope(QMainWindow):
         self.sr = StreamReceiver(bufsize=bufsize, winsize=winsize,
                                  stream_name=self.stream_name)
         self.sr.streams[self.stream_name].blocking = False
+        # time.sleep(bufsize) # Delay to fill the LSL buffer.
 
         self.config = {
             'sf': int(
@@ -399,14 +401,6 @@ class _Scope(QMainWindow):
 
         self._ui.checkBox_bandpass.setChecked(self.apply_car)
 
-        if (self.apply_car):
-            self.matrix_car = np.zeros(
-                (self.config['eeg_channels'], self.config['eeg_channels']),
-                dtype=float)
-            self.matrix_car[:, :] = -1 / float(self.config['eeg_channels'])
-            np.fill_diagonal(
-                self.matrix_car, 1 - (1 / float(self.config['eeg_channels'])))
-
     def init_bandpass(self):
         """
         Init the bandpass filtering parameters high and low cutoff.
@@ -486,14 +480,18 @@ class _Scope(QMainWindow):
         """
         Bandpass + CAR filtering.
         """
-        if (self.apply_bandpass):
+        if self.apply_bandpass:
             self.eeg, self.zi = sosfilt(self.sos, self.eeg, 0, self.zi)
 
         # We only apply CAR if selected AND there are at least 2 channels.
         # Otherwise it makes no sense.
-        if (self.apply_car) and (len(self.channels_to_show_idx) > 1):
-            self.eeg = np.dot(self.matrix_car, np.transpose(self.eeg))
-            self.eeg = np.transpose(self.eeg)
+        if self.apply_car and len(self.channels_to_show_idx) > 1:
+            # Compute CAR virtual channel
+            car_ch = np.mean(
+                self.eeg[:, self.channels_to_show_idx], axis=1)
+
+            # Apply CAR
+            self.eeg -= car_ch.reshape((-1, 1))
 
     def update_ringbuffers(self):
         """
@@ -862,18 +860,6 @@ class _Scope(QMainWindow):
                 pen=self.colors[self.channels_to_show_idx[x] % self._nb_table_rows, :]))
             self.curve_eeg[-1].setDownsampling(ds=self.subsampling_value,
                 auto=False, method="mean")
-
-        # Update CAR so it's computed based only on the shown channels
-        if (len(self.channels_to_show_idx) > 1):
-            self.matrix_car = np.zeros(
-                (self.config['eeg_channels'], self.config['eeg_channels']),
-                dtype=float)
-            self.matrix_car[:, :] = -1 / float(len(self.channels_to_show_idx))
-            np.fill_diagonal(self.matrix_car,
-                1 - (1 / float(len(self.channels_to_show_idx))))
-            for x in range(0, len(self.channels_to_hide_idx)):
-                self.matrix_car[self.channels_to_hide_idx[x], :] = 0
-                self.matrix_car[:, self.channels_to_hide_idx[x]] = 0
 
         # Refresh the plot
         self.update_plot_scale(self.scale)
