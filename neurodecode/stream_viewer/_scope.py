@@ -136,7 +136,7 @@ class _Scope(QMainWindow):
 
         self.fill_table_channels()
         self.set_window_size_policy()
-        self.show() # TODO: What the heck is this method?
+        self.show()
 
     def show_events(self, tid=False, lpt=False, key=False):
         """
@@ -431,7 +431,7 @@ class _Scope(QMainWindow):
         self.timer.timeout.connect(self.update_loop)
         self.timer.start(20)
 
-    # --------------------------- UPDATE ---------------------------
+    # ------------------------- ACQUISITION -------------------------
     def update_loop(self):
         """
         Main update function (connected to the timer).
@@ -498,7 +498,7 @@ class _Scope(QMainWindow):
         Update ringbuffers and events for plotting.
         """
         # leeq
-        self.data_plot = np.roll(self.data_plot, -len(self._ts_list), 0)
+        self.data_plot = np.roll(self.data_plot, - len(self._ts_list), 0)
         self.data_plot[-len(self._ts_list):, :] = self.eeg
 
         # We have to remove those indexes that reached time = 0
@@ -507,7 +507,7 @@ class _Scope(QMainWindow):
         for x in range(0, len(self.events_detected), 2):
             xh = int(x / 2)
             self.events_detected[x] -= len(self._ts_list)  # leeq
-            if (self.events_detected[x] < 0) and (not self.stop_plot):
+            if self.events_detected[x] < 0 and not self.stop_plot:
                 delete_indices_e.append(x)
                 delete_indices_e.append(x + 1)
                 delete_indices_c.append(xh)
@@ -522,18 +522,18 @@ class _Scope(QMainWindow):
                             if j not in delete_indices_c]
 
         # Find LPT events and add them.
-        if (self._show_LPT_events) and (not self.stop_plot):
+        if self._show_LPT_events and not self.stop_plot:
             for x in range(len(self.tri)):
                 tri = int(self.tri[x])
                 if tri != 0 and (tri > self._last_tri):
                     self.addEventPlot("LPT", tri)
-                    logger.info(f'Trigger {tri} received')
+                    logger.info(f'Trigger {tri} received.')
                 self._last_tri = tri
 
-    #----------------------------------------------------------------------
+    # --------------------------- PAINT ---------------------------
     def paintEvent(self, e):
         """
-        Called by repaint()
+        Called by repaint().
         """
         # Distinguish between paint events from timer and event QT widget resizing, clicking etc (sender is None)
         # We should only paint when the timer triggered the event.
@@ -542,7 +542,7 @@ class _Scope(QMainWindow):
         if 'force_repaint' not in self.__dict__.keys():
             logger.warning('force_repaint is not set! Is it a Qt bug?')
             self.force_repaint = 0
-        if (sender is None) and (not self.force_repaint):
+        if sender is None and not self.force_repaint:
             pass
         else:
             self.force_repaint = 0
@@ -552,32 +552,35 @@ class _Scope(QMainWindow):
             self.paintInterface(qp)
             qp.end()
 
-    #----------------------------------------------------------------------
     def paintInterface(self, qp):
         """
-        Update stuff on the interface. Only graphical updates should be added here
+        Update stuff on the interface.
+        Only graphical updates should be added here.
         """
-
         # Update EEG channels
         for x in range(0, len(self.channels_to_show_idx)):
-            self.curve_eeg[x].setData(x=self.x_ticks, y=self.data_plot[:,self.channels_to_show_idx[x]] - x * self.scale)
+            self.curve_eeg[x].setData(
+                x=self.x_ticks,
+                y=self.data_plot[:, self.channels_to_show_idx[x]] - x*self.scale)
 
         # Update events
         for x in range(0, len(self.events_detected), 2):
             xh = int(x / 2)
-            self.events_curves[xh].setData(x=np.array(
-                [self.x_ticks[self.events_detected[x]],
-                    self.x_ticks[self.events_detected[x]]]), y=np.array(
-                [+1.5 * self.scale,
-                    -0.5 * self.scale - self.scale * self.config[
-                        'eeg_channels']]))
-            self.events_text[xh].setPos(self.x_ticks[self.events_detected[x]],
+            self.events_curves[xh].setData(
+                x=np.array(
+                    [self.x_ticks[self.events_detected[x]],
+                     self.x_ticks[self.events_detected[x]]]),
+                y=np.array(
+                    [+1.5*self.scale,
+                     -0.5*self.scale - self.scale*self.config['eeg_channels']]))
+            self.events_text[xh].setPos(
+                self.x_ticks[self.events_detected[x]],
                 self.scale)
 
-    #----------------------------------------------------------------------
+    # --------------------------- UPDATE ---------------------------
     def update_plot_scale(self, new_scale):
         """
-        Do necessary stuff when scale has changed
+        Do necessary stuff when scale has changed.
         """
         self.scale = new_scale
 
@@ -593,36 +596,34 @@ class _Scope(QMainWindow):
 
         self._main_plot_handler.getAxis('left').setTicks(values_axis)
         self._main_plot_handler.setRange(
-            yRange=[+self.scale, -self.scale * len(self.channels_to_show_idx)])
-        self._main_plot_handler.setLabel(axis='left',
-            text='Scale (uV): ' + str(self.scale))
+            yRange=[+self.scale, -self.scale*len(self.channels_to_show_idx)])
+        self._main_plot_handler.setLabel(
+            axis='left', text='Scale (uV): ' + str(self.scale))
         self.trigger_help()
 
         # We force an immediate repaint to avoid "shakiness".
-        if (not self.stop_plot):
+        if not self.stop_plot:
             self.force_repaint = 1
             self.repaint()
 
-    #----------------------------------------------------------------------
     def update_plot_seconds(self, new_seconds):
         """
-        Do necessary stuff when seconds to show have changed
+        Do necessary stuff when seconds to show have changed.
         """
-
         # Do nothing unless...
-        if (new_seconds != self.seconds_to_show) and (new_seconds > 0) and (
-                new_seconds < 100):
+        if (new_seconds != self.seconds_to_show) and (0 < new_seconds < 100):
             self._ui.spinBox_time.setValue(new_seconds)
             self._main_plot_handler.setRange(xRange=[0, new_seconds])
-            self.x_ticks = np.zeros(self.config['sf'] * new_seconds);
-            for x in range(0, self.config['sf'] * new_seconds):
-                self.x_ticks[x] = (x * 1) / float(self.config['sf'])
+            self.x_ticks = np.zeros(self.config['sf'] * new_seconds)
+            for x in range(0, self.config['sf']*new_seconds):
+                self.x_ticks[x] = x / float(self.config['sf'])
 
-            if (new_seconds > self.seconds_to_show):
-                padded_signal = np.zeros((self.config['sf'] * new_seconds,
-                self.config['eeg_channels']))
-                padded_signal[padded_signal.shape[0] - self.data_plot.shape[0]:,
-                :] = self.data_plot
+            if new_seconds > self.seconds_to_show:
+                padded_signal = np.zeros(
+                    (self.config['sf'] * new_seconds,
+                     self.config['eeg_channels']))
+                padded_signal[padded_signal.shape[0]-self.data_plot.shape[0]:,
+                              :] = self.data_plot
                 for x in range(0, len(self.events_detected), 2):
                     self.events_detected[x] += padded_signal.shape[0] - \
                                                self.data_plot.shape[0]
@@ -631,50 +632,18 @@ class _Scope(QMainWindow):
             else:
                 for x in range(0, len(self.events_detected), 2):
                     self.events_detected[x] -= self.data_plot.shape[0] - \
-                                               self.config['sf'] * new_seconds
+                                               self.config['sf']*new_seconds
                 self.data_plot = self.data_plot[
-                self.data_plot.shape[0] - self.config['sf'] * new_seconds:, :]
+                    self.data_plot.shape[0]-self.config['sf']*new_seconds:, :]
 
             self.seconds_to_show = new_seconds
             self.trigger_help()
 
             # We force an immediate repaint to avoid "shakiness".
-            if (not self.stop_plot):
+            if not self.stop_plot:
                 self.force_repaint = 1
                 self.repaint()
 
-    #----------------------------------------------------------------------
-    def handle_tobiid_input(self):
-        """
-        Handle TOBI iD events
-        """
-
-        data = None
-        try:
-            data = self.bci.iDsock_bus.recv(512)
-            self.bci.idStreamer_bus.Append(data)
-        except:
-            self.nS = False
-            self.dec = 0
-            pass
-
-        # deserialize ID message
-        if data:
-            if self.bci.idStreamer_bus.Has("<tobiid", "/>"):
-                msg = self.bci.idStreamer_bus.Extract("<tobiid", "/>")
-                self.bci.id_serializer_bus.Deserialize(msg)
-                self.bci.idStreamer_bus.Clear()
-                tmpmsg = int(self.bci.id_msg_bus.GetEvent())
-                if (self._show_TID_events) and (not self.stop_plot):
-                    self.addEventPlot("TID", tmpmsg)
-
-            elif self.bci.idStreamer_bus.Has("<tcstatus", "/>"):
-                MsgNum = self.bci.idStreamer_bus.Count("<tcstatus")
-                for i in range(1, MsgNum - 1):
-                    # Extract most of these messages and trash them
-                    self.bci.idStreamer_bus.Extract("<tcstatus", "/>")
-
-    #----------------------------------------------------------------------
     def addEventPlot(self, event_name, event_id):
         """
         Add an event to the scope
@@ -701,7 +670,54 @@ class _Scope(QMainWindow):
         self.events_text.append(text)
         self._main_plot_handler.addItem(self.events_text[-1])
 
-    #----------------------------------------------------------------------
+    def update_title_scope(self):
+        """
+        Updates the title shown in the scope
+        """
+        if hasattr(self, 'main_plot_handler'):
+            self._main_plot_handler.setTitle(
+                title='TLK: ' + \
+                    self.bool_parser[self._show_TID_events] + \
+                    self.bool_parser[self._show_LPT_events] + \
+                    self.bool_parser[self._show_Key_events] + \
+                    ', CAR: ' + \
+                    self.bool_parser[self.apply_car] + \
+                    ', BP: ' + \
+                    self.bool_parser[self.apply_bandpass] + \
+                    ' [' + str(self._ui.doubleSpinBox_hp.value()) +
+                    '-' + str(self._ui.doubleSpinBox_lp.value()) + '] Hz')
+
+    # --------------------------- UTILS ---------------------------
+    def handle_tobiid_input(self):
+        """
+        Handle TOBI iD events.
+        TODO: What is this?? self.bci is not even defined.
+        """
+        data = None
+        try:
+            data = self.bci.iDsock_bus.recv(512)
+            self.bci.idStreamer_bus.Append(data)
+        except:
+            self.nS = False
+            self.dec = 0
+            pass
+
+        # deserialize ID message
+        if data:
+            if self.bci.idStreamer_bus.Has("<tobiid", "/>"):
+                msg = self.bci.idStreamer_bus.Extract("<tobiid", "/>")
+                self.bci.id_serializer_bus.Deserialize(msg)
+                self.bci.idStreamer_bus.Clear()
+                tmpmsg = int(self.bci.id_msg_bus.GetEvent())
+                if (self._show_TID_events) and (not self.stop_plot):
+                    self.addEventPlot("TID", tmpmsg)
+
+            elif self.bci.idStreamer_bus.Has("<tcstatus", "/>"):
+                MsgNum = self.bci.idStreamer_bus.Count("<tcstatus")
+                for i in range(1, MsgNum - 1):
+                    # Extract most of these messages and trash them
+                    self.bci.idStreamer_bus.Extract("<tcstatus", "/>")
+
     def butter_bandpass(self, lowcut, highcut, fs, num_ch):
         """
         Calculation of bandpass coefficients.
@@ -715,26 +731,9 @@ class _Scope(QMainWindow):
         zi = np.zeros((sos.shape[0], 2, num_ch))
         return sos, zi
 
-    #----------------------------------------------------------------------
-    def update_title_scope(self):
-        """
-        Updates the title shown in the scope
-        """
-        if (hasattr(self, 'main_plot_handler')):
-            self._main_plot_handler.setTitle(
-                title='TLK: ' + self.bool_parser[self._show_TID_events] +
-                      self.bool_parser[self._show_LPT_events] + self.bool_parser[
-                          self._show_Key_events] + ', CAR: ' + self.bool_parser[
-                          self.apply_car] + ', BP: ' + self.bool_parser[
-                          self.apply_bandpass] + ' [' + str(
-                    self._ui.doubleSpinBox_hp.value()) + '-' + str(
-                    self._ui.doubleSpinBox_lp.value()) + '] Hz')
-            # ', BP: ' + self.bool_parser[self.apply_bandpass] + (' [' + str(self.doubleSpinBox_hp.value()) + '-' + str(self.doubleSpinBox_lp.value()) + '] Hz' if self.apply_bandpass else ''))
-
-    #----------------------------------------------------------------------
     def trigger_help(self):
         """
-        Shows / hide help in the scope window
+        Shows / hide help in the scope window.
         """
         if self.show_help:
             self.help.setPos(0, self.scale)
@@ -743,14 +742,14 @@ class _Scope(QMainWindow):
         else:
             self._main_plot_handler.removeItem(self.help)
 
-    # ----------------------------------------------------------------------------------------------------
-    # 			EVENT HANDLERS
-    # ----------------------------------------------------------------------------------------------------
+    # -------------------------------------------------------------------
+    # --------------------------- EVENT HANDLERS ------------------------
+    # -------------------------------------------------------------------
     def on_click_button_recdir(self):
         """
-        Open a QFileDialog to select the recording directory
+        Open a QFileDialog to select the recording directory.
         """
-        defaultPath = os.environ["NEUROD_DATA"]
+        defaultPath = os.environ["NEUROD_DATA"] # TODO: Change with a non PATH variable path
         path_name = QFileDialog.getExistingDirectory(caption="Choose the recording directory", directory=defaultPath)
 
         if path_name:
