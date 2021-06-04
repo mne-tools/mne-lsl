@@ -7,31 +7,28 @@
 	- Events should be stored in a class.
 """
 
-DEBUG_TRIGGER = False # TODO: parameterize
-
-import os
-import sys
-import math
-# import time
-import numpy as np
-import pyqtgraph as pg
-import multiprocessing as mp
-
-from PyQt5 import QtCore
-from pathlib import Path
-from PyQt5.QtGui import QPainter
-from scipy.signal import butter, sosfilt, sosfilt_zi
+from ..gui.streams import redirect_stdout_to_queue
+from ..stream_recorder import StreamRecorder
+from ..stream_receiver import StreamReceiver
+from .. import logger
+from .ui_mainwindow_Viewer import Ui_MainWindow
+from configparser import RawConfigParser
 from PyQt5.QtWidgets import (QMainWindow, QTableWidgetItem,
                              QHeaderView, QFileDialog)
+from scipy.signal import butter, sosfilt
+from PyQt5.QtGui import QPainter
+from pathlib import Path
+from PyQt5 import QtCore
+import multiprocessing as mp
+import pyqtgraph as pg
+import numpy as np
+import math
+import sys
+import os
 
-from configparser import RawConfigParser
+# import time
 
-from .ui_mainwindow_Viewer import Ui_MainWindow
-from .. import logger
-from ..stream_receiver import StreamReceiver
-from ..stream_recorder import StreamRecorder
-from ..gui.streams import redirect_stdout_to_queue
-
+DEBUG_TRIGGER = False  # TODO: parameterize
 
 class _Scope(QMainWindow):
     """
@@ -39,6 +36,7 @@ class _Scope(QMainWindow):
 
     Load UI, data acquisition and ploting.
     """
+
     def __init__(self, stream_name, state=mp.Value('i', 1), queue=None):
         """
         Constructor.
@@ -118,7 +116,7 @@ class _Scope(QMainWindow):
             dtype=np.float)
 
         self._last_tri = 0
-        self._ts_list = [] # timestamps list
+        self._ts_list = []  # timestamps list
 
     # ----------------------- INIT_PANEL_GUI -----------------------
     def init_panel_GUI(self):
@@ -204,13 +202,13 @@ class _Scope(QMainWindow):
                 if (idx < self.config['eeg_channels']):
                     self._ui.table_channels.setItem(
                         x, y, QTableWidgetItem(idx))
-                    self._ui.table_channels.item(x,y).setTextAlignment(
+                    self._ui.table_channels.item(x, y).setTextAlignment(
                         QtCore.Qt.AlignCenter)
-                    self._ui.table_channels.item(x, y).setSelected(True) # Qt5
+                    self._ui.table_channels.item(x, y).setSelected(True)  # Qt5
                     self.channels_to_show_idx.append(idx)
                 else:
                     self._ui.table_channels.setItem(x, y,
-                        QTableWidgetItem("N/A"))
+                                                    QTableWidgetItem("N/A"))
                     self._ui.table_channels.item(x, y).setFlags(
                         QtCore.Qt.NoItemFlags)
                     self._ui.table_channels.item(x, y).setTextAlignment(
@@ -254,23 +252,24 @@ class _Scope(QMainWindow):
         """
         Initialize scope parameters.
         """
-        self.bool_parser = {True:'1', False:'0'}
+        self.bool_parser = {True: '1', False: '0'}
 
         # Scales available in the GUI.
         self.scales_range = [1, 10, 25, 50, 100, 250, 500, 1000, 2500, 100000]
         # Scale in uV
         self.scale = float(self.scope_settings.get("plot", "scale_plot"))
         # Time window to show in seconds
-        self.seconds_to_show = int(self.scope_settings.get("plot", "time_plot"))
+        self.seconds_to_show = int(
+            self.scope_settings.get("plot", "time_plot"))
 
         self.init_graph()
 
         # Plotting colors. If channels > 16, colors will cycle to the beginning
         self.colors = np.array(
             [[255, 0, 0], [0, 255, 0], [0, 0, 255], [255, 255, 0],
-            [0, 255, 255], [255, 0, 255], [128, 100, 100], [0, 128, 0],
-            [0, 128, 128], [128, 128, 0], [255, 128, 128], [128, 0, 128],
-            [128, 255, 0], [255, 128, 0], [0, 255, 128], [128, 0, 255]])
+             [0, 255, 255], [255, 0, 255], [128, 100, 100], [0, 128, 0],
+             [0, 128, 128], [128, 128, 0], [255, 128, 128], [128, 0, 128],
+             [128, 255, 0], [255, 128, 0], [0, 255, 128], [128, 0, 255]])
 
         # We want a lightweight scope, so we downsample the plotting to 64 Hz
         self.subsampling_value = self.config['sf'] / 64
@@ -300,23 +299,23 @@ class _Scope(QMainWindow):
         # Help variables
         self.show_help = 0
         self.help = pg.TextItem(
-            "Stream Viewer \n" + \
+            "Stream Viewer \n" +
             "-----------------------------------------"
-            "-----------------------------------------\n" + \
-            "C: De/activate CAR Filter\n" + \
-            "B: De/activate Bandpass Filter (with current settings)\n" + \
-            "T: Show/hide TiD events\n" + \
-            "L: Show/hide LPT events\n" + \
-            "K: Show/hide Key events. " + \
-            "If not shown, they are NOT recorded!\n" + \
-            "0-9: Add a user-specific Key event. " + \
-            "Do not forget to write down why you marked it.\n" + \
-            "Up, down arrow keys: " + \
-            "Increase/decrease the scale, steps of 10 uV\n" + \
-            "Left, right arrow keys: " + \
-            "Increase/decrease the time to show, steps of 1 s\n" + \
-            "Spacebar: Stop the scope plotting, " + \
-            "whereas data acquisition keeps running (EXPERIMENTAL)\n" + \
+            "-----------------------------------------\n" +
+            "C: De/activate CAR Filter\n" +
+            "B: De/activate Bandpass Filter (with current settings)\n" +
+            "T: Show/hide TiD events\n" +
+            "L: Show/hide LPT events\n" +
+            "K: Show/hide Key events. " +
+            "If not shown, they are NOT recorded!\n" +
+            "0-9: Add a user-specific Key event. " +
+            "Do not forget to write down why you marked it.\n" +
+            "Up, down arrow keys: " +
+            "Increase/decrease the scale, steps of 10 uV\n" +
+            "Left, right arrow keys: " +
+            "Increase/decrease the time to show, steps of 1 s\n" +
+            "Spacebar: Stop the scope plotting, " +
+            "whereas data acquisition keeps running (EXPERIMENTAL)\n" +
             "Esc: Exits the scope",
             anchor=(0, 0), border=(70, 70, 70),
             fill=pg.mkColor(20, 20, 20, 200), color=(255, 255, 255))
@@ -374,7 +373,7 @@ class _Scope(QMainWindow):
         self._main_plot_handler.setLabel(axis='bottom', text='Time (s)')
 
         # X axis
-        self.x_ticks = np.zeros(self.config['sf'] * self.seconds_to_show);
+        self.x_ticks = np.zeros(self.config['sf'] * self.seconds_to_show)
         for x in range(0, self.config['sf'] * self.seconds_to_show):
             self.x_ticks[x] = (x * 1) / float(self.config['sf'])
 
@@ -514,11 +513,11 @@ class _Scope(QMainWindow):
                 self.events_curves[xh].clear()
                 self._main_plot_handler.removeItem(self.events_text[xh])
 
-        self.events_detected = [i for j, i in enumerate(self.events_detected) \
+        self.events_detected = [i for j, i in enumerate(self.events_detected)
                                 if j not in delete_indices_e]
-        self.events_curves = [i for j, i in enumerate(self.events_curves) \
+        self.events_curves = [i for j, i in enumerate(self.events_curves)
                               if j not in delete_indices_c]
-        self.events_text = [i for j, i in enumerate(self.events_text) \
+        self.events_text = [i for j, i in enumerate(self.events_text)
                             if j not in delete_indices_c]
 
         # Find LPT events and add them.
@@ -588,7 +587,7 @@ class _Scope(QMainWindow):
         values = []
         for x in range(0, len(self.channels_to_show_idx)):
             values.append((-x * self.scale,
-            self.channel_labels[self.channels_to_show_idx[x]]))
+                           self.channel_labels[self.channels_to_show_idx[x]]))
 
         values_axis = []
         values_axis.append(values)
@@ -626,13 +625,13 @@ class _Scope(QMainWindow):
                               :] = self.data_plot
                 for x in range(0, len(self.events_detected), 2):
                     self.events_detected[x] += padded_signal.shape[0] - \
-                                               self.data_plot.shape[0]
+                        self.data_plot.shape[0]
                 self.data_plot = padded_signal
 
             else:
                 for x in range(0, len(self.events_detected), 2):
                     self.events_detected[x] -= self.data_plot.shape[0] - \
-                                               self.config['sf']*new_seconds
+                        self.config['sf']*new_seconds
                 self.data_plot = self.data_plot[
                     self.data_plot.shape[0]-self.config['sf']*new_seconds:, :]
 
@@ -659,13 +658,14 @@ class _Scope(QMainWindow):
 
         self.events_detected.append(self.data_plot.shape[0] - 1)
         self.events_detected.append(event_id)
-        self.events_curves.append(self._main_plot_handler.plot(pen=color,
-            x=np.array([self.x_ticks[-1], self.x_ticks[-1]]), y=np.array(
-                [+1.5 * self.scale,
-                    -1.5 * self.scale * self.config['eeg_channels']])))
+        self.events_curves.append(
+            self._main_plot_handler.plot(
+                pen=color,
+                x=np.array([self.x_ticks[-1], self.x_ticks[-1]]),
+                y=np.array([+1.5 * self.scale, -1.5 * self.scale * self.config['eeg_channels']])))
         # text = pg.TextItem(event_name + "(" + str(self.events_detected[-1]) + ")", anchor=(1.1,0), fill=(0,0,0), color=color)
         text = pg.TextItem(str(self.events_detected[-1]), anchor=(1.1, 0),
-            fill=(0, 0, 0), color=color)
+                           fill=(0, 0, 0), color=color)
         text.setPos(self.x_ticks[-1], self.scale)
         self.events_text.append(text)
         self._main_plot_handler.addItem(self.events_text[-1])
@@ -676,16 +676,16 @@ class _Scope(QMainWindow):
         """
         if hasattr(self, 'main_plot_handler'):
             self._main_plot_handler.setTitle(
-                title='TLK: ' + \
-                    self.bool_parser[self._show_TID_events] + \
-                    self.bool_parser[self._show_LPT_events] + \
-                    self.bool_parser[self._show_Key_events] + \
-                    ', CAR: ' + \
-                    self.bool_parser[self.apply_car] + \
-                    ', BP: ' + \
-                    self.bool_parser[self.apply_bandpass] + \
-                    ' [' + str(self._ui.doubleSpinBox_hp.value()) +
-                    '-' + str(self._ui.doubleSpinBox_lp.value()) + '] Hz')
+                title='TLK: ' +
+                self.bool_parser[self._show_TID_events] +
+                self.bool_parser[self._show_LPT_events] +
+                self.bool_parser[self._show_Key_events] +
+                ', CAR: ' +
+                self.bool_parser[self.apply_car] +
+                ', BP: ' +
+                self.bool_parser[self.apply_bandpass] +
+                ' [' + str(self._ui.doubleSpinBox_hp.value()) +
+                '-' + str(self._ui.doubleSpinBox_lp.value()) + '] Hz')
 
     # --------------------------- UTILS ---------------------------
     def handle_tobiid_input(self):
@@ -749,14 +749,15 @@ class _Scope(QMainWindow):
         """
         Open a QFileDialog to select the recording directory.
         """
-        defaultPath = os.environ["NEUROD_DATA"] # TODO: Change with a non PATH variable path
-        path_name = QFileDialog.getExistingDirectory(caption="Choose the recording directory", directory=defaultPath)
+        defaultPath = os.environ["NEUROD_DATA"]  # TODO: Change with a non PATH variable path
+        path_name = QFileDialog.getExistingDirectory(
+            caption="Choose the recording directory", directory=defaultPath)
 
         if path_name:
             self._ui.lineEdit_recdir.setText(path_name)
             self._ui.pushButton_rec.setEnabled(True)
 
-    #----------------------------------------------------------------------
+    # -------------------------------------------------------------------
     def onClicked_button_rec(self):
         self._ui.pushButton_stoprec.setEnabled(True)
         self._ui.pushButton_rec.setEnabled(False)
@@ -764,63 +765,62 @@ class _Scope(QMainWindow):
         record_dir = self._ui.lineEdit_recdir.text()
         with self.recordState.get_lock():
             self.recordState.value = 1
-        # This can not be working. To change with new version of Stream Recorder
-        # instantiate a recorder and call start which call _record in new process.
-        record_process = mp.Process(target=stream_recorder.record,
-                                    args=[self.recordState, self.stream_name,
-                                          self.amp_serial, record_dir,
-                                          False, logger, None])
-        record_process.start()
+
+        recorder = StreamRecorder(record_dir, logger, self.recordState)
+        recorder.start(stream_name=self.stream_name, verbose=False)
         self._ui.statusBar.showMessage("Recording to" + record_dir)
 
-    #----------------------------------------------------------------------
+    # -------------------------------------------------------------------
     def onClicked_button_stoprec(self):
         with self.recordState.get_lock():
             self.recordState.value = 0
         self._ui.pushButton_rec.setEnabled(True)
         self._ui.pushButton_stoprec.setEnabled(False)
-        self._ui.statusBar.showMessage("Not recording")
+        self._ui.statusBar.showMessage("Not recording.")
 
-    #----------------------------------------------------------------------
+    # -------------------------------------------------------------------
     def onActivated_checkbox_bandpass(self):
         self.apply_bandpass = False
-        self._ui.pushButton_bp.setEnabled(self._ui.checkBox_bandpass.isChecked())
-        self._ui.doubleSpinBox_hp.setEnabled(self._ui.checkBox_bandpass.isChecked())
-        self._ui.doubleSpinBox_lp.setEnabled(self._ui.checkBox_bandpass.isChecked())
+        self._ui.pushButton_bp.setEnabled(
+            self._ui.checkBox_bandpass.isChecked())
+        self._ui.doubleSpinBox_hp.setEnabled(
+            self._ui.checkBox_bandpass.isChecked())
+        self._ui.doubleSpinBox_lp.setEnabled(
+            self._ui.checkBox_bandpass.isChecked())
         self.update_title_scope()
 
-    #----------------------------------------------------------------------
+    # -------------------------------------------------------------------
     def onActivated_checkbox_car(self):
         self.apply_car = self._ui.checkBox_car.isChecked()
         self.update_title_scope()
 
-    #----------------------------------------------------------------------
+    # -------------------------------------------------------------------
     def onActivated_checkbox_TID(self):
         self._show_TID_events = self._ui.checkBox_showTID.isChecked()
         self.update_title_scope()
 
-    #----------------------------------------------------------------------
+    # -------------------------------------------------------------------
     def onActivated_checkbox_LPT(self):
         self._show_LPT_events = self._ui.checkBox_showLPT.isChecked()
         self.update_title_scope()
 
-    #----------------------------------------------------------------------
+    # -------------------------------------------------------------------
     def onActivated_checkbox_Key(self):
         self._show_Key_events = self._ui.checkBox_showKey.isChecked()
         self.update_title_scope()
 
-    #----------------------------------------------------------------------
+    # -------------------------------------------------------------------
     def onValueChanged_spinbox_time(self):
         self.update_plot_seconds(self._ui.spinBox_time.value())
 
-    #----------------------------------------------------------------------
+    # -------------------------------------------------------------------
     def onActivated_combobox_scale(self):
         self.update_plot_scale(
             self.scales_range[self._ui.comboBox_scale.currentIndex()])
 
-    #----------------------------------------------------------------------
+    # -------------------------------------------------------------------
     def onClicked_button_bp(self):
-        if (self._ui.doubleSpinBox_lp.value() > self._ui.doubleSpinBox_hp.value()):
+        if self._ui.doubleSpinBox_lp.value() > self._ui.doubleSpinBox_hp.value():
             self.apply_bandpass = True
             self.sos, self.zi = self.butter_bandpass(
                 self._ui.doubleSpinBox_lp.value(),
@@ -829,9 +829,8 @@ class _Scope(QMainWindow):
                 self.config['eeg_channels'])
         self.update_title_scope()
 
-    #----------------------------------------------------------------------
+    # -------------------------------------------------------------------
     def onSelectionChanged_table(self):
-
         # Remove current plot
         for x in range(0, len(self.channels_to_show_idx)):
             self._main_plot_handler.removeItem(self.curve_eeg[x])
@@ -843,9 +842,8 @@ class _Scope(QMainWindow):
         for x in range(0, self._nb_table_rows):
             for y in range(0, self._nb_table_columns):
                 if (idx < self.config['eeg_channels']):
-                    #if (self.table_channels.isItemSelected( # Qt4 only
-                    if (QTableWidgetItem.isSelected( # Qt5
-                        self._ui.table_channels.item(x, y))):
+                    if (QTableWidgetItem.isSelected(
+                            self._ui.table_channels.item(x, y))):
                         self.channels_to_show_idx.append(idx)
                     else:
                         self.channels_to_hide_idx.append(idx)
@@ -854,68 +852,74 @@ class _Scope(QMainWindow):
         # Add new plots
         self.curve_eeg = []
         for x in range(0, len(self.channels_to_show_idx)):
-            self.curve_eeg.append(self._main_plot_handler.plot(x=self.x_ticks,
-                y=self.data_plot[:, self.channels_to_show_idx[x]],
-                pen=self.colors[self.channels_to_show_idx[x] % self._nb_table_rows, :]))
-            self.curve_eeg[-1].setDownsampling(ds=self.subsampling_value,
-                auto=False, method="mean")
+            self.curve_eeg.append(
+                self._main_plot_handler.plot(
+                    x=self.x_ticks,
+                    y=self.data_plot[:, self.channels_to_show_idx[x]],
+                    pen=self.colors[
+                        self.channels_to_show_idx[x] % self._nb_table_rows, :]
+                )
+            )
+            self.curve_eeg[-1].setDownsampling(
+                ds=self.subsampling_value, auto=False, method="mean")
 
         # Refresh the plot
         self.update_plot_scale(self.scale)
 
-    #----------------------------------------------------------------------
+    # -------------------------------------------------------------------
     def keyPressEvent(self, event):
         key = event.key()
-        if (key == QtCore.Qt.Key_Escape):
+        if key == QtCore.Qt.Key_Escape:
             self.closeEvent(None)
-        if (key == QtCore.Qt.Key_H):
+        if key == QtCore.Qt.Key_H:
             self.show_help = not self.show_help
             self.trigger_help()
-        if (key == QtCore.Qt.Key_Up):
+        if key == QtCore.Qt.Key_Up:
             # Python's log(x, 10) has a rounding bug. Use log10(x) instead.
             new_scale = self.scale + max(1, 10 ** int(math.log10(self.scale)))
             self.update_plot_scale(new_scale)
-        if (key == QtCore.Qt.Key_Space):
+        if key == QtCore.Qt.Key_Space:
             self.stop_plot = not self.stop_plot
-        if (key == QtCore.Qt.Key_Down):
+        if key == QtCore.Qt.Key_Down:
             if self.scale >= 2:
                 # Python's log(x, 10) has a rounding bug. Use log10(x) instead.
-                new_scale = self.scale - max(1,
-                    10 ** int(math.log10(self.scale - 1)))
+                new_scale = self.scale - max(
+                    1, 10 ** int(math.log10(self.scale - 1)))
                 self.update_plot_scale(new_scale)
-        if (key == QtCore.Qt.Key_Left):
+        if key == QtCore.Qt.Key_Left:
             self.update_plot_seconds(self.seconds_to_show - 1)
-        if (key == QtCore.Qt.Key_Right):
+        if key == QtCore.Qt.Key_Right:
             self.update_plot_seconds(self.seconds_to_show + 1)
-        if (key == QtCore.Qt.Key_L):
+        if key == QtCore.Qt.Key_L:
             self._ui.checkBox_showLPT.setChecked(
                 not self._ui.checkBox_showLPT.isChecked())
-        if (key == QtCore.Qt.Key_T):
+        if key == QtCore.Qt.Key_T:
             self._ui.checkBox_showTID.setChecked(
                 not self._ui.checkBox_showTID.isChecked())
-        if (key == QtCore.Qt.Key_K):
+        if key == QtCore.Qt.Key_K:
             self._ui.checkBox_showKey.setChecked(
                 not self._ui.checkBox_showKey.isChecked())
-        if (key == QtCore.Qt.Key_C):
-            self._ui.checkBox_car.setChecked(not self._ui.checkBox_car.isChecked())
-        if (key == QtCore.Qt.Key_B):
+        if key == QtCore.Qt.Key_C:
+            self._ui.checkBox_car.setChecked(
+                not self._ui.checkBox_car.isChecked())
+        if key == QtCore.Qt.Key_B:
             self._ui.checkBox_bandpass.setChecked(
                 not self._ui.checkBox_bandpass.isChecked())
             if self._ui.checkBox_bandpass.isChecked():
                 self._ui.pushButton_bp.click()
-        if ((key >= QtCore.Qt.Key_0) and (key <= QtCore.Qt.Key_9)):
-            if (self._show_Key_events) and (not self.stop_plot):
+        if key >= QtCore.Qt.Key_0 and key <= QtCore.Qt.Key_9:
+            if self._show_Key_events and not self.stop_plot:
                 self.addEventPlot("KEY", 990 + key - QtCore.Qt.Key_0)
                 # self.bci.id_msg_bus.SetEvent(990 + key - QtCore.Qt.Key_0)
                 # self.bci.iDsock_bus.sendall(self.bci.id_serializer_bus.Serialize());
                 # 666
 
-    #----------------------------------------------------------------------
+    # -------------------------------------------------------------------
     def closeEvent(self, event):
         """
         Function called when a closing event was triggered.
         """
-        if (self._ui.pushButton_stoprec.isEnabled()):
+        if self._ui.pushButton_stoprec.isEnabled():
             # Stop Recording
             with self.recordState.get_lock():
                 self.recordState.value = 0
