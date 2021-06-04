@@ -138,7 +138,7 @@ class _Stream(ABC):
         self._watchdog.reset()
 
         # If first data acquisition, compute LSL offset
-        if len(self.buffer.timestamps) == 0:
+        if self._lsl_time_offset is None:
             compute_timestamp_offset = True
         else:
             compute_timestamp_offset = False
