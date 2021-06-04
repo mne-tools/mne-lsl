@@ -1,4 +1,4 @@
-'''
+"""
 Trigger events sending
 
 Triggers are used to mark event (stimulus) timings during a recording.
@@ -21,7 +21,7 @@ can be later added to fif. This file will be automatically saved and closed when
 pressed or terminal window is closed (or killed for whatever reason).
 
 **For Arduino:** go here https://github.com/fcbg-hnp/arduino-trigger to build the Arduino converter.
-'''
+"""
 
 from .trigger import Trigger
 from .trigger_def import TriggerDef
