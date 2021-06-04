@@ -137,12 +137,6 @@ class _Stream(ABC):
         received = False
         self._watchdog.reset()
 
-        # If first data acquisition, compute LSL offset
-        if self._lsl_time_offset is None:
-            compute_timestamp_offset = True
-        else:
-            compute_timestamp_offset = False
-
         # Acquire the data
         while not received:
             while self._watchdog.sec() < self._blocking_time:
@@ -153,7 +147,7 @@ class _Stream(ABC):
                         received = True
                         break
                 if len(tslist) > 0:
-                    if compute_timestamp_offset is True:
+                    if self._lsl_time_offset is None: # First acquisition
                         self._compute_offset(tslist)
                     received = True
                     tslist = self._correct_lsl_offset(tslist)
