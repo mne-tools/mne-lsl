@@ -28,16 +28,16 @@ class StreamViewer:
         if (self.stream_name is None):
             self.search_stream(ignore_markers=True)
 
-        logger.info(f'Connecting to the stream: {self.amp_name}')
+        logger.info(f'Connecting to the stream: {self.stream_name}')
 
         app = QApplication(sys.argv)
         _Scope(self.stream_name)
         sys.exit(app.exec_())
 
-    def search_stream(self):
+    def search_stream(self, ignore_markers):
         """
         Select an available stream on the LSL server to connect to.
 
         Assign the found stream and serial number to the internal attributes.
         """
-        self.stream_name = search_lsl()
+        self.stream_name = search_lsl(ignore_markers)
