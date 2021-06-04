@@ -60,7 +60,7 @@ class Ui_MainWindow(object):
         self.doubleSpinBox_lp.setMinimum(1.0)
         self.doubleSpinBox_lp.setMaximum(1000.0)
         self.doubleSpinBox_lp.setSingleStep(1.0)
-        self.doubleSpinBox_lp.setProperty("value", 50.0)
+        self.doubleSpinBox_lp.setProperty("value", 40.0)
         self.doubleSpinBox_lp.setObjectName("doubleSpinBox_lp")
         self.checkBox_showTID = QtWidgets.QCheckBox(self.centralWidget)
         self.checkBox_showTID.setGeometry(QtCore.QRect(120, 60, 161, 22))
@@ -152,5 +152,3 @@ class Ui_MainWindow(object):
         self.pushButton_stoprec.setText(_translate("MainWindow", "Stop REC"))
         self.pushButton_rec.setText(_translate("MainWindow", "REC"))
         self.pushButton_recdir.setText(_translate("MainWindow", "REC Dir"))
-
-
