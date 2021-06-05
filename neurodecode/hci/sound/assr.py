@@ -6,7 +6,7 @@ Auditory Steady State Response Stimuli
 
 import numpy as np
 
-from .sound import _Sound
+from ._sound import _Sound
 from ... import logger
 
 
