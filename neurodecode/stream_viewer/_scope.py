@@ -15,7 +15,7 @@ from .ui_mainwindow_Viewer import Ui_MainWindow
 from configparser import RawConfigParser
 from PyQt5.QtWidgets import (QMainWindow, QTableWidgetItem,
                              QHeaderView, QFileDialog)
-from scipy.signal import butter, sosfilt
+from scipy.signal import butter, sosfilt, sosfilt_zi
 from PyQt5.QtGui import QPainter
 from pathlib import Path
 from PyQt5 import QtCore
@@ -23,12 +23,12 @@ import multiprocessing as mp
 import pyqtgraph as pg
 import numpy as np
 import math
+import time
 import sys
-import os
 
-# import time
 
 DEBUG_TRIGGER = False  # TODO: parameterize
+BUTTER_BP_ORDER = 2
 
 class _Scope(QMainWindow):
     """
@@ -93,7 +93,7 @@ class _Scope(QMainWindow):
         self.sr = StreamReceiver(bufsize=bufsize, winsize=winsize,
                                  stream_name=self.stream_name)
         self.sr.streams[self.stream_name].blocking = False
-        # time.sleep(bufsize) # Delay to fill the LSL buffer.
+        time.sleep(bufsize) # Delay to fill the LSL buffer.
 
         self.config = {
             'sf': int(
@@ -463,8 +463,8 @@ class _Scope(QMainWindow):
 
         n = self.config['eeg_channels']
 
-        self.tri = np.reshape(data[:, 0], (-1, 1))      # samples x 1
-        self.eeg = np.reshape(data[:, 1:], (-1, n))     # samples x channels
+        self.tri = data[:, 0].reshape((-1, 1))        # (samples, )
+        self.eeg = data[:, 1:].reshape((-1, n))       # (samples, channels)
 
         if DEBUG_TRIGGER:
             # show trigger value
@@ -718,17 +718,16 @@ class _Scope(QMainWindow):
                     # Extract most of these messages and trash them
                     self.bci.idStreamer_bus.Extract("<tcstatus", "/>")
 
-    def butter_bandpass(self, lowcut, highcut, fs, num_ch):
+    def butter_bandpass(self, lowcut, highcut, fs):
         """
         Calculation of bandpass coefficients.
-
-        TODO: AUTOMATIC ORDER COMPUTATION
-        (If filter is unstable this function crashes (TODO handle problems))
         """
         low = lowcut / (0.5 * fs)
         high = highcut / (0.5 * fs)
-        sos = butter(2, [low, high], btype='band', output='sos', fs=fs)
-        zi = np.zeros((sos.shape[0], 2, num_ch))
+        sos = butter(BUTTER_BP_ORDER, [low, high],
+                     btype='band', output='sos')
+        zi = sosfilt_zi(sos).reshape((sos.shape[0], 2, 1))
+        zi = zi * np.mean(self.eeg, axis=0) # Multiply by DC
         return sos, zi
 
     def trigger_help(self):
@@ -749,7 +748,7 @@ class _Scope(QMainWindow):
         """
         Open a QFileDialog to select the recording directory.
         """
-        defaultPath = os.environ["NEUROD_DATA"]  # TODO: Change with a non PATH variable path
+        defaultPath = str(Path.home())
         path_name = QFileDialog.getExistingDirectory(
             caption="Choose the recording directory", directory=defaultPath)
 
@@ -823,10 +822,9 @@ class _Scope(QMainWindow):
         if self._ui.doubleSpinBox_lp.value() > self._ui.doubleSpinBox_hp.value():
             self.apply_bandpass = True
             self.sos, self.zi = self.butter_bandpass(
-                self._ui.doubleSpinBox_lp.value(),
                 self._ui.doubleSpinBox_hp.value(),
-                self.config['sf'],
-                self.config['eeg_channels'])
+                self._ui.doubleSpinBox_lp.value(),
+                self.config['sf'])
         self.update_title_scope()
 
     # -------------------------------------------------------------------
