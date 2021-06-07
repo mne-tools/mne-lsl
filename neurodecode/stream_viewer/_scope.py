@@ -435,7 +435,7 @@ class _Scope(QMainWindow):
         """
         Main update function (connected to the timer).
         """
-        #  Sharing variable to stop at the GUI level
+        # Sharing variable to stop at the GUI level
         if not self.state.value:
             logger.info('Viewer stopped.')
             sys.exit()

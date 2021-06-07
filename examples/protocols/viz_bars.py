@@ -27,7 +27,7 @@ import numpy as np
 import time
 import cv2
 import neurodecode
-import neurodecode.glass.bgi_client as bgi_client
+import neurodecode.hci.glass.bgi_client as bgi_client
 from neurodecode import logger
 
 
