@@ -60,8 +60,6 @@ class _ScopeControllerUI(QMainWindow):
         self.ui.table_channels.setColumnCount(self._nb_table_columns)
 
         self.channels_to_show_idx = list()
-        self.channels_to_hide_idx = list()
-
         for idx, ch in enumerate(range(self.scope.n_channels)):
             row = idx // self._nb_table_columns
             col = idx % self._nb_table_columns
@@ -221,13 +219,13 @@ class _ScopeControllerUI(QMainWindow):
     @QtCore.pyqtSlot()
     def onClicked_checkBox_show_LPT_events(self):
         # TODO: Set value in the backend
-        # self.backend._show_LPT_events = self.ui.checkBox_show_LPT_events.isChecked()
+        # self.backend._show_LPT_events = bool(self.ui.checkBox_show_LPT_events.isChecked())
         pass
 
     @QtCore.pyqtSlot()
     def onClicked_checkBox_show_Key_events(self):
         # TODO: Set value in the backend
-        # self.backend._show_Key_events = self.ui.checkBox_show_Key_events.isChecked()
+        # self.backend._show_Key_events = bool(self.ui.checkBox_show_Key_events.isChecked())
         pass
 
     @QtCore.pyqtSlot()
@@ -258,4 +256,10 @@ class _ScopeControllerUI(QMainWindow):
 
     @QtCore.pyqtSlot()
     def onSelectionChanged_table_channels(self):
-        pass
+        selected = self.ui.table_channels.selectedItems()
+        self.channels_to_show_idx = [
+            item.row()*self._nb_table_columns + item.column() \
+                for item in selected]
+
+        self.scope.channels_to_show_idx = self.channels_to_show_idx
+        # TODO: Update backend
