@@ -263,3 +263,8 @@ class _ScopeControllerUI(QMainWindow):
 
         self.scope.channels_to_show_idx = self.channels_to_show_idx
         # TODO: Update backend
+
+    def closeEvent(self, event):
+        if self.ui.pushButton_stop_recording.isEnabled():
+            self.onClicked_pushButton_stop_recording()
+        event.accept()
