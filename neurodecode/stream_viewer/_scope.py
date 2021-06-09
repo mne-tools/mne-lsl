@@ -1,3 +1,4 @@
+import math
 import numpy as np
 from scipy.signal import butter, sosfilt, sosfilt_zi
 
@@ -18,7 +19,7 @@ class _Scope:
             self.sr.streams[self.stream_name].sample_rate)
 
     def init_arr(self, plot_duration):
-        self.n_samples_plot = plot_duration * self.sample_rate
+        self.n_samples_buffer = math.ceil(plot_duration * self.sample_rate)
         self._ts_list = list()
 
     # -------------------------- Main Loop -------------------------
@@ -56,9 +57,9 @@ class _ScopeEEG(_Scope):
 
     def init_arr(self, plot_duration):
         super().init_arr(plot_duration)
-        self.trigger = np.zeros(self.n_samples_plot)
-        self.data_plot = np.zeros((self.n_channels, self.n_samples_plot),
-                                  dtype=np.float32)
+        self.trigger = np.zeros(self.n_samples_buffer)
+        self.data_buffer = np.zeros((self.n_channels, self.n_samples_buffer),
+                                    dtype=np.float32)
 
     def init_bandpass_filter(self, low, high):
         self.bp_low = low / (0.5 * self.sample_rate)
@@ -69,14 +70,14 @@ class _ScopeEEG(_Scope):
         self.zi = None
 
     # -------------------------- Main Loop -------------------------
-    def update_loop(self, event):
+    def update_loop(self):
         self.read_lsl_stream()
         if len(self._ts_list) > 0:
             self.filter_signal()
             # shape (channels, samples)
-            self.data_plot = np.roll(self.data_plot, -len(self._ts_list),
-                                     axis=1)
-            self.data_plot[:, -len(self._ts_list):] = self.data_acquired.T
+            self.data_buffer = np.roll(self.data_buffer, -len(self._ts_list),
+                                       axis=1)
+            self.data_buffer[:, -len(self._ts_list):] = self.data_acquired.T
 
     def read_lsl_stream(self):
         super().read_lsl_stream()
