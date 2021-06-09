@@ -6,11 +6,10 @@ from PyQt5 import QtCore
 from PyQt5.QtWidgets import (QMainWindow, QHeaderView,
                              QTableWidgetItem, QFileDialog)
 
-# TODO: Change to relative imports
-from ui_ScopeSettings import UI_MainWindow
-from neurodecode.stream_recorder import StreamRecorder
-from neurodecode import logger
-from backends.vispy import _BackendVispy
+from .backends import _BackendVispy, _BackendPyQt5
+from .ui_ScopeSettings import UI_MainWindow
+from ..stream_recorder import StreamRecorder
+from .. import logger
 
 
 class _ScopeControllerUI(QMainWindow):
@@ -95,7 +94,7 @@ class _ScopeControllerUI(QMainWindow):
             self.ui.spinBox_signal_x_scale.setValue(int(
                 self.scope_settings.get("plot", "time_plot")))
         except:
-            self.ui.spinBox_signal_x_scale.setValue(10) # 10s by default
+            self.ui.spinBox_signal_x_scale.setValue(10)  # 10s by default
 
         # BP/CAR Filters
         try:
@@ -271,8 +270,8 @@ class _ScopeControllerUI(QMainWindow):
     def onSelectionChanged_table_channels(self):
         selected = self.ui.table_channels.selectedItems()
         self.channels_to_show_idx = [
-            item.row()*self._nb_table_columns + item.column() \
-                for item in selected]
+            item.row()*self._nb_table_columns + item.column()
+            for item in selected]
 
         self.scope.channels_to_show_idx = self.channels_to_show_idx
         self.backend.update_channels_to_show_idx(self.channels_to_show_idx)
