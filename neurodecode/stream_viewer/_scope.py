@@ -9,6 +9,7 @@ _MAX_PLOT_DURATION = 30 # seconds
 class _Scope:
     # ---------------------------- INIT ----------------------------
     def __init__(self, stream_receiver, stream_name):
+        assert stream_name in stream_receiver.streams.keys()
         self.sr = stream_receiver
         self.stream_name = stream_name
         self.init_infos()
