@@ -4,8 +4,7 @@ from PyQt5.QtWidgets import (QWidget, QCheckBox, QLabel, QComboBox,
                              QPushButton, QSpinBox, QDoubleSpinBox,
                              QFrame, QLineEdit, QTableWidget, QStatusBar)
 
-# TODO: Change to relative import
-from _scope import _MAX_PLOT_DURATION
+from ._scope import _MAX_PLOT_DURATION
 
 
 class UI_MainWindow(object):
