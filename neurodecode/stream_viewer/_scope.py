@@ -3,7 +3,7 @@ from scipy.signal import butter, sosfilt, sosfilt_zi
 
 
 BP_ORDER = 2
-
+_MAX_PLOT_DURATION = 30 # seconds
 
 class _Scope:
     # ---------------------------- INIT ----------------------------
@@ -11,10 +11,15 @@ class _Scope:
         self.sr = stream_receiver
         self.stream_name = stream_name
         self.init_infos()
+        self.init_arr(_MAX_PLOT_DURATION)
 
     def init_infos(self):
         self.sample_rate = int(
             self.sr.streams[self.stream_name].sample_rate)
+
+    def init_arr(self, plot_duration):
+        self.n_samples_plot = plot_duration * self.sample_rate
+        self._ts_list = list()
 
     # -------------------------- Main Loop -------------------------
     def read_lsl_stream(self):
@@ -31,7 +36,6 @@ class _ScopeEEG(_Scope):
         super().__init__(stream_receiver, stream_name)
         self.init_signal_y_scales()
         self.init_variables()
-        self.init_arr(10) #TODO: Get from GUI (seconds)
 
     def init_infos(self):
         super().init_infos()
@@ -50,13 +54,11 @@ class _ScopeEEG(_Scope):
         self._apply_bandpass = False
         self.channels_to_show_idx = list(range(self.n_channels))
 
-    def init_arr(self, duration_plot):
-        self.n_samples_plot = duration_plot * self.sample_rate
+    def init_arr(self, plot_duration):
+        super().init_arr(plot_duration)
         self.trigger = np.zeros(self.n_samples_plot)
         self.data_plot = np.zeros((self.n_channels, self.n_samples_plot),
                                   dtype=np.float32)
-        self._ts_list = list()
-
 
     def init_bandpass_filter(self, low, high):
         self.bp_low = low / (0.5 * self.sample_rate)
@@ -78,7 +80,6 @@ class _ScopeEEG(_Scope):
 
     def read_lsl_stream(self):
         super().read_lsl_stream()
-
         # Remove trigger ch - shapes (samples, ) and (samples, channels)
         self.trigger = self.data_acquired[:, 0].reshape((-1, 1))
         self.data_acquired = self.data_acquired[:, 1:].reshape(
