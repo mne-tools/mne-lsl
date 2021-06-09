@@ -62,12 +62,12 @@ class _BackendVispy(app.Canvas):
         self.scope = scope
         self.backend_initialized = False
 
-    def init_backend(self, x_scale, y_scale, channels_to_show_idx):
+    def init_backend(self, geometry, x_scale, y_scale, channels_to_show_idx):
         assert len(channels_to_show_idx) <= self.scope.n_channels
         self.init_variables(x_scale, y_scale, channels_to_show_idx)
         self.init_data_plot()
         self.init_program_variables()
-        self.init_gloo()
+        self.init_gloo(geometry)
         self.show()
 
     def init_variables(self, x_scale, y_scale, channels_to_show_idx):
@@ -88,7 +88,8 @@ class _BackendVispy(app.Canvas):
 
     # ------------------------ Init program -----------------------
     def init_data_plot(self):
-        self.data_plot = np.zeros((self.scope.n_channels, self.n_samples_plot),
+        self.data_plot = np.zeros((len(self.channels_to_show_idx),
+                                   self.n_samples_plot),
                                   dtype=np.float32)
 
     def init_program_variables(self):
@@ -130,9 +131,10 @@ class _BackendVispy(app.Canvas):
     def init_u_n(self):
         self.u_n = self.n_samples_plot
 
-    def init_gloo(self):
+    def init_gloo(self, geometry):
         app.Canvas.__init__(
             self, title=f'Stream Viewer: {self.scope.stream_name}',
+            size=geometry[2:], position=geometry[:2],
             keys='interactive')
         self.program = gloo.Program(VERT_SHADER, FRAG_SHADER)
         self.program['a_position'] = self.data_plot.ravel()
