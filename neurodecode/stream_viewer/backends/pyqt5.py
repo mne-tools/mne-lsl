@@ -74,7 +74,13 @@ class _BackendPyQt5:
     # ------------------------- Init plot -------------------------
     def init_plot(self):
         self.init_plotting_channel_offset()
-        self.update()
+        self._plot_handler.clear()
+        self.plots = list()
+        for k, idx in enumerate(self.channels_to_show_idx):
+            self.plots.append(self._plot_handler.plot(
+                x=self.x_arr,
+                y=self.scope.data_buffer[idx, -self.n_samples_plot:]+self.offset[idx],
+                pen=pg.mkColor(self.available_colors[idx, :])))
 
     # -------------------------- Main Loop -------------------------
     def start_timer(self):
@@ -86,12 +92,10 @@ class _BackendPyQt5:
             self.update()
 
     def update(self):
-        self._plot_handler.clear()
         for k, idx in enumerate(self.channels_to_show_idx):
-            self._plot_handler.plot(
+            self.plots[k].setData(
                 x=self.x_arr,
-                y=self.scope.data_buffer[idx, -self.n_samples_plot:]+self.offset[idx],
-                pen=pg.mkColor(self.available_colors[idx, :]))
+                y=self.scope.data_buffer[idx, -self.n_samples_plot:]+self.offset[idx])
 
     # ------------------------ Update program ----------------------
     def update_x_scale(self, new_x_scale):

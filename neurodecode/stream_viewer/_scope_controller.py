@@ -11,7 +11,7 @@ from .ui_ScopeSettings import UI_MainWindow
 from ..stream_recorder import StreamRecorder
 from .. import logger
 
-BACKEND = 'vispy'
+BACKEND = 'pyqt5'
 
 
 class _ScopeControllerUI(QMainWindow):
