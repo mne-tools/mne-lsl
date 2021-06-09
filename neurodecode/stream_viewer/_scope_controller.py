@@ -11,12 +11,19 @@ from .ui_ScopeSettings import UI_MainWindow
 from ..stream_recorder import StreamRecorder
 from .. import logger
 
+BACKEND = 'pyqt5'
+
 
 class _ScopeControllerUI(QMainWindow):
     def __init__(self, scope):
         super().__init__()
         self.scope = scope
-        self.backend = _BackendVispy(scope)
+        if BACKEND == 'vispy':
+            self.backend = _BackendVispy(scope)
+        elif BACKEND == 'pyqt5':
+            self.backend = _BackendPyQt5(scope)
+        else:
+            logger.error(f'StreamViewer backend {BACKEND} not supported.')
         self.load_ui()
 
         # Load and set default configuration
@@ -83,7 +90,7 @@ class _ScopeControllerUI(QMainWindow):
     def set_init_configuration(self):
         # Y-Scale (amplitude)
         try:
-            scale = int(self.scope_settings.get("plot", "signal_y_scale"))
+            scale = float(self.scope_settings.get("plot", "signal_y_scale"))
             init_idx = list(self.scope.signal_y_scales.values()).index(scale)
             self.ui.comboBox_signal_y_scale.setCurrentIndex(init_idx)
         except:
@@ -148,8 +155,13 @@ class _ScopeControllerUI(QMainWindow):
         x_scale = self.ui.spinBox_signal_x_scale.value()
         y_scale_key = self.ui.comboBox_signal_y_scale.currentIndex()
         y_scale = list(self.scope.signal_y_scales.values())[y_scale_key]
-        self.backend.init_backend(x_scale, y_scale, self.channels_to_show_idx)
-        self.backend._timer.start()
+        geometry = (self.geometry().x() + self.width(), self.geometry().y(),
+                    self.width() * 2, self.height())
+        #TODO: Position is wrong with Vispy. y() doesn't include the title bar.
+        self.backend.init_backend(geometry, x_scale, y_scale, self.channels_to_show_idx)
+        if BACKEND == 'vispy':
+            self.backend._timer.start()
+
 
     # -------------------------------------------------------------------
     # --------------------------- EVENT HANDLERS ------------------------
@@ -196,7 +208,7 @@ class _ScopeControllerUI(QMainWindow):
     def onActivated_comboBox_signal_y_scale(self):
         y_scale = list(self.scope.signal_y_scales.values())[
             self.ui.comboBox_signal_y_scale.currentIndex()]
-        self.backend.update_y_scale(y_scale)
+        self.backend.update_y_scale(float(y_scale))
 
     @QtCore.pyqtSlot()
     def onValueChanged_spinBox_signal_x_scale(self):
