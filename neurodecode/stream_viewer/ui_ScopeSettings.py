@@ -1,9 +1,11 @@
 from PyQt5 import QtCore, QtWidgets
-
 from PyQt5.QtCore import QRect, QSize
 from PyQt5.QtWidgets import (QWidget, QCheckBox, QLabel, QComboBox,
                              QPushButton, QSpinBox, QDoubleSpinBox,
                              QFrame, QLineEdit, QTableWidget, QStatusBar)
+
+# TODO: Change to relative import
+from _scope import _MAX_PLOT_DURATION
 
 
 class UI_MainWindow(object):
@@ -31,9 +33,9 @@ class UI_MainWindow(object):
 
         # X-Scale of the signal
         self.spinBox_signal_x_scale = QSpinBox(self.MainWidget) # Integers
-        self.spinBox_signal_x_scale.setGeometry(QtCore.QRect(10, 80, 85, 27))
+        self.spinBox_signal_x_scale.setGeometry(QRect(10, 80, 85, 27))
         self.spinBox_signal_x_scale.setMinimum(1)
-        # TODO: Add Maximum
+        self.spinBox_signal_x_scale.setMaximum(int(_MAX_PLOT_DURATION))
         self.spinBox_signal_x_scale.setProperty("value", 10) # Default 10s
         self.spinBox_signal_x_scale.setObjectName("spinBox_signal_x_scale")
 
@@ -111,15 +113,15 @@ class UI_MainWindow(object):
         self.pushButton_start_recording.setEnabled(False)
 
         # Stop recording
-        self.pushButton_stop_recording = QtWidgets.QPushButton(self.MainWidget)
+        self.pushButton_stop_recording = QPushButton(self.MainWidget)
         self.pushButton_stop_recording.setGeometry(QRect(460, 60, 61, 31))
         self.pushButton_stop_recording.setObjectName("pushButton_stop_recording")
         self.pushButton_stop_recording.setText("Stop REC")
         self.pushButton_stop_recording.setEnabled(False)
 
         # Set recording directory
-        self.pushButton_set_recording_dir = QtWidgets.QPushButton(self.MainWidget)
-        self.pushButton_set_recording_dir.setGeometry(QtCore.QRect(310, 60, 71, 31))
+        self.pushButton_set_recording_dir = QPushButton(self.MainWidget)
+        self.pushButton_set_recording_dir.setGeometry(QRect(310, 60, 71, 31))
         self.pushButton_set_recording_dir.setObjectName("pushButton_set_recording_dir")
         self.pushButton_set_recording_dir.setText("REC Dir")
 
