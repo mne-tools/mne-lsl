@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 Vispy Canvas for Neurodecode's StreamViewer.
 """
