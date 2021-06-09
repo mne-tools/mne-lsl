@@ -279,6 +279,6 @@ class _ScopeControllerUI(QMainWindow):
 
     def closeEvent(self, event):
         if self.ui.pushButton_stop_recording.isEnabled():
-            self.onClicked_pushButton_stop_recording().
+            self.onClicked_pushButton_stop_recording()
         self.backend.close()
         event.accept()
