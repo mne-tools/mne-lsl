@@ -65,7 +65,6 @@ class _BackendVispy(app.Canvas):
     def init_backend(self, geometry, x_scale, y_scale, channels_to_show_idx):
         assert len(channels_to_show_idx) <= self.scope.n_channels
         self.init_variables(x_scale, y_scale, channels_to_show_idx)
-        self.init_data_plot()
         self.init_program_variables()
         self.init_gloo(geometry)
         self.show()
@@ -87,11 +86,6 @@ class _BackendVispy(app.Canvas):
         self.n_samples_plot = math.ceil(self.x_scale * self.scope.sample_rate)
 
     # ------------------------ Init program -----------------------
-    def init_data_plot(self):
-        self.data_plot = np.zeros((len(self.channels_to_show_idx),
-                                   self.n_samples_plot),
-                                  dtype=np.float32)
-
     def init_program_variables(self):
         self.init_a_color()
         self.init_a_index()
@@ -137,7 +131,8 @@ class _BackendVispy(app.Canvas):
             size=geometry[2:], position=geometry[:2],
             keys='interactive')
         self.program = gloo.Program(VERT_SHADER, FRAG_SHADER)
-        self.program['a_position'] = self.data_plot.ravel()
+        self.program['a_position'] = self.scope.data_buffer[
+            self.channels_to_show_idx, -self.n_samples_plot:].ravel().astype(np.float32)
         self.program['a_color'] = self.a_color
         self.program['a_index'] = self.a_index
         self.program['u_scale'] = self.u_scale
@@ -148,6 +143,9 @@ class _BackendVispy(app.Canvas):
                        blend_func=('src_alpha', 'one_minus_src_alpha'))
 
     # -------------------------- Main Loop -------------------------
+    def start_timer(self):
+        self._timer.start()
+
     def update_loop(self, event):
         self.scope.update_loop()
 
