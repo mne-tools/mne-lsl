@@ -2,14 +2,12 @@
 Vispy Canvas for Neurodecode's StreamViewer.
 """
 
+from vispy import app
+from vispy import gloo
+import numpy as np
+import math
 import vispy
 vispy.use("pyqt5")
-
-import math
-import numpy as np
-
-from vispy import gloo
-from vispy import app
 
 
 VERT_SHADER = """
@@ -73,8 +71,8 @@ class _BackendVispy(app.Canvas):
         self.show()
 
     def init_variables(self, x_scale, y_scale, channels_to_show_idx):
-        self.x_scale = x_scale # duration in seconds
-        self.y_scale = y_scale # amplitude scale in uV
+        self.x_scale = x_scale  # duration in seconds
+        self.y_scale = y_scale  # amplitude scale in uV
         self.available_colors = np.random.uniform(
             size=(self.scope.n_channels, 3), low=.5, high=.9)
         self.channels_to_show_idx = channels_to_show_idx
@@ -110,9 +108,17 @@ class _BackendVispy(app.Canvas):
 
     def init_a_index(self):
         self.a_index = np.c_[
-            np.repeat(np.repeat(np.arange(self.ncols), self.nrows), self.n_samples_plot),
-            np.repeat(np.tile(np.arange(self.nrows), self.ncols), self.n_samples_plot),
-            np.tile(np.arange(self.n_samples_plot), self.nrows*self.ncols)].astype(np.float32)
+            np.repeat(
+                np.repeat(np.arange(self.ncols),
+                          self.nrows),
+                self.n_samples_plot),
+            np.repeat(
+                np.tile(np.arange(self.nrows),
+                        self.ncols),
+                self.n_samples_plot),
+            np.tile(
+                np.arange(self.n_samples_plot),
+                self.nrows*self.ncols)].astype(np.float32)
 
     def init_u_scale(self):
         # TODO: Defined second value based on self.y_scale
