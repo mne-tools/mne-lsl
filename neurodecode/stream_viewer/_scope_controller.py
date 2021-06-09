@@ -11,7 +11,7 @@ from .ui_ScopeSettings import UI_MainWindow
 from ..stream_recorder import StreamRecorder
 from .. import logger
 
-BACKEND = 'pyqt5'
+BACKEND = 'vispy'
 
 
 class _ScopeControllerUI(QMainWindow):
@@ -159,8 +159,7 @@ class _ScopeControllerUI(QMainWindow):
                     self.width() * 2, self.height())
         #TODO: Position is wrong with Vispy. y() doesn't include the title bar.
         self.backend.init_backend(geometry, x_scale, y_scale, self.channels_to_show_idx)
-        if BACKEND == 'vispy':
-            self.backend._timer.start()
+        self.backend.start_timer()
 
 
     # -------------------------------------------------------------------

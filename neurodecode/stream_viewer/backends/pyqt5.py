@@ -5,7 +5,7 @@ import math
 import numpy as np
 
 import pyqtgraph as pg
-
+from PyQt5 import QtCore
 
 class _BackendPyQt5:
     # ---------------------------- Init ---------------------------
@@ -23,14 +23,17 @@ class _BackendPyQt5:
 
         self._win.show()
         self.init_canvas()
-        self.init_data_plot()
         self.init_plot()
+
+        self.backend_initialized = True
+        self._timer = QtCore.QTimer(self._win)
+        self._timer.timeout.connect(self.update_loop)
 
     def init_variables(self, x_scale, y_scale, channels_to_show_idx):
         self.x_scale = x_scale  # duration in seconds
         self.y_scale = y_scale  # amplitude scale in uV
         self.available_colors = np.random.uniform(
-            size=(self.scope.n_channels, 3), low=.5, high=.9)
+            size=(self.scope.n_channels, 3), low=128, high=230)
         self.channels_to_show_idx = channels_to_show_idx
         self.init_n_samples_plot()
 
@@ -42,13 +45,13 @@ class _BackendPyQt5:
         # We want a lightweight scope, so we downsample the plotting to 64 Hz
         subsampling_ratio = self.scope.sample_rate / 64
         self._plot_handler.setDownsampling(ds=subsampling_ratio,
-                                           auto=None, mode='mean')
+                                            auto=None, mode='mean')
+        # TODO: Not sure the downsampling is required, feels laggy either way.
 
         # Range
         self._plot_handler.setRange(
             xRange=[0, self.x_scale],
-            yRange=[+1.5*self.y_scale,
-                    -0.5*self.y_scale - self.y_scale*self.scope.n_channels])
+            yRange=[self.y_scale, -self.y_scale*len(self.channels_to_show_idx)])
         self._plot_handler.disableAutoRange()
         self._plot_handler.showGrid(y=True)
 
@@ -64,18 +67,31 @@ class _BackendPyQt5:
         self.x_arr = np.arange(self.n_samples_plot) / self.scope.sample_rate
         self._plot_handler.setLabel(axis='bottom', text='Time (s)')
 
-    # ------------------------ Init program -----------------------
-    def init_data_plot(self):
-        self.data_plot = np.zeros((len(self.channels_to_show_idx),
-                                   self.n_samples_plot),
-                                  dtype=np.float32)
+    def init_plotting_channel_offset(self):
+        self.offset =  np.arange(
+            0, -len(self.channels_to_show_idx)*self.y_scale, -self.y_scale)
 
+    # ------------------------- Init plot -------------------------
     def init_plot(self):
-        self.plots = list()
+        self.init_plotting_channel_offset()
+        self.update()
+
+    # -------------------------- Main Loop -------------------------
+    def start_timer(self):
+        self._timer.start(20)
+
+    def update_loop(self):
+        self.scope.update_loop()
+        if len(self.scope._ts_list) > 0:
+            self.update()
+
+    def update(self):
+        self._plot_handler.clear()
         for k, idx in enumerate(self.channels_to_show_idx):
-            self.plots.append(self._plot_handler.plot(
-                x=self.x_arr, y=self.data_plot[idx, :],
-                pen=pg.mkColor(self.available_colors[idx, :])))
+            self._plot_handler.plot(
+                x=self.x_arr,
+                y=self.scope.data_buffer[idx, -self.n_samples_plot:]+self.offset[idx],
+                pen=pg.mkColor(self.available_colors[idx, :]))
 
     # ------------------------ Update program ----------------------
     def update_x_scale(self, new_x_scale):
