@@ -10,17 +10,22 @@ from PyQt5.QtWidgets import (QMainWindow, QHeaderView,
 from ui_ScopeSettings import UI_MainWindow
 from neurodecode.stream_recorder import StreamRecorder
 from neurodecode import logger
+from backends.vispy import _BackendVispy
+
 
 class _ScopeControllerUI(QMainWindow):
-    def __init__(self, scope, backend=None):
+    def __init__(self, scope):
         super().__init__()
         self.scope = scope
-        self.backend = backend
+        self.backend = _BackendVispy(scope)
         self.load_ui()
 
         # Load and set default configuration
         self.load_config_file('.scope_settings_eeg.ini')
         self.set_init_configuration()
+
+        # Init backend
+        self.init_backend()
 
     def load_config_file(self, file):
         path2_viewerFolder = Path(__file__).parent
@@ -59,7 +64,6 @@ class _ScopeControllerUI(QMainWindow):
         self.ui.table_channels.setRowCount(self._nb_table_rows)
         self.ui.table_channels.setColumnCount(self._nb_table_columns)
 
-        self.channels_to_show_idx = list()
         for idx, ch in enumerate(range(self.scope.n_channels)):
             row = idx // self._nb_table_columns
             col = idx % self._nb_table_columns
@@ -71,7 +75,6 @@ class _ScopeControllerUI(QMainWindow):
             self.ui.table_channels.item(row, col).setText(
                 self.scope.channels_labels[idx])
             self.ui.table_channels.item(row, col).setSelected(True)
-            self.channels_to_show_idx.append(idx)
 
         self.ui.table_channels.verticalHeader().setSectionResizeMode(
             QHeaderView.Stretch)
@@ -123,6 +126,9 @@ class _ScopeControllerUI(QMainWindow):
             self.ui.doubleSpinBox_bandpass_low.value()+1)
         self.ui.doubleSpinBox_bandpass_low.setMaximum(
             self.ui.doubleSpinBox_bandpass_high.value()-1)
+        self.scope.init_bandpass_filter(
+            low=self.ui.doubleSpinBox_bandpass_low.value(),
+            high=self.ui.doubleSpinBox_bandpass_high.value())
 
         # Events
         try:
@@ -138,6 +144,13 @@ class _ScopeControllerUI(QMainWindow):
             self.ui.checkBox_show_Key_events.setChecked(False)
 
         self.ui.statusBar.showMessage("[Not recording]")
+
+    def init_backend(self):
+        x_scale = self.ui.spinBox_signal_x_scale.value()
+        y_scale_key = self.ui.comboBox_signal_y_scale.currentIndex()
+        y_scale = list(self.scope.signal_y_scales.values())[y_scale_key]
+        self.backend.init_backend(x_scale, y_scale, self.channels_to_show_idx)
+        self.backend._timer.start()
 
     # -------------------------------------------------------------------
     # --------------------------- EVENT HANDLERS ------------------------
@@ -182,13 +195,13 @@ class _ScopeControllerUI(QMainWindow):
 
     @QtCore.pyqtSlot()
     def onActivated_comboBox_signal_y_scale(self):
-        # TODO: Set the Y-Scale value in the backend
-        self.ui.comboBox_signal_y_scale.currentIndex()
+        y_scale = list(self.scope.signal_y_scales.values())[
+            self.ui.comboBox_signal_y_scale.currentIndex()]
+        self.backend.update_y_scale(y_scale)
 
     @QtCore.pyqtSlot()
     def onValueChanged_spinBox_signal_x_scale(self):
-        # TODO: Set the X-Scale value in the backend
-        self.ui.spinBox_signal_x_scale.value()
+        self.backend.update_x_scale(self.ui.spinBox_signal_x_scale.value())
 
     @QtCore.pyqtSlot()
     def onClicked_checkBox_car(self):
@@ -262,9 +275,10 @@ class _ScopeControllerUI(QMainWindow):
                 for item in selected]
 
         self.scope.channels_to_show_idx = self.channels_to_show_idx
-        # TODO: Update backend
+        self.backend.update_channels_to_show_idx(self.channels_to_show_idx)
 
     def closeEvent(self, event):
         if self.ui.pushButton_stop_recording.isEnabled():
-            self.onClicked_pushButton_stop_recording()
+            self.onClicked_pushButton_stop_recording().
+        self.backend.close()
         event.accept()

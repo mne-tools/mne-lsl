@@ -6,14 +6,12 @@ Vispy Canvas for Neurodecode's StreamViewer.
 import vispy
 vispy.use("pyqt5")
 
-from neurodecode.stream_receiver import StreamReceiver
+import math
+import numpy as np
 
-from scipy.signal import butter, sosfilt, sosfilt_zi
 from vispy import gloo
 from vispy import app
-import numpy as np
-import time
-import math
+
 
 VERT_SHADER = """
 #version 120
@@ -61,115 +59,137 @@ void main() {
 """
 
 
-class _CanvasScope(app.Canvas):
-    # ---------------------------- INIT ----------------------------
-    def __init__(self, stream_name):
-        # Init loop
-        self.init_loop(stream_name)
-        self.init_arr(duration_plot=10)
-        self.init_gloo(nrows=self.n_channels, ncols=1)
-        self.init_filter(low=1., high=40.)
-        self._timer = app.Timer(0.020, connect=self.update_loop, start=True)
+class _BackendVispy(app.Canvas):
+    # ---------------------------- Init ---------------------------
+    def __init__(self, scope):
+        self.scope = scope
+        self.backend_initialized = False
+
+    def init_backend(self, x_scale, y_scale, channels_to_show_idx):
+        assert len(channels_to_show_idx) <= self.scope.n_channels
+        self.init_variables(x_scale, y_scale, channels_to_show_idx)
+        self.init_data_plot()
+        self.init_program_variables()
+        self.init_gloo()
         self.show()
 
-    def init_loop(self, stream_name, bufsize=0.2, winsize=0.2):
-        """
-        Instance a StreamReceiver and extract info from the stream.
-        """
-        self.stream_name = stream_name
-        self.sr = StreamReceiver(bufsize=bufsize, winsize=winsize,
-                                 stream_name=self.stream_name)
-        self.sr.streams[self.stream_name].blocking = False
-        time.sleep(bufsize) # Delay to fill the LSL buffer.
+    def init_variables(self, x_scale, y_scale, channels_to_show_idx):
+        self.x_scale = x_scale # duration in seconds
+        self.y_scale = y_scale # amplitude scale in uV
+        self.available_colors = np.random.uniform(
+            size=(self.scope.n_channels, 3), low=.5, high=.9)
+        self.channels_to_show_idx = channels_to_show_idx
+        self.init_nrows_ncols()
+        self.init_n_samples_plot()
 
-        self.n_channels = len(
-            self.sr.streams[self.stream_name].ch_list[1:])
-        self.sample_rate = int(
-            self.sr.streams[self.stream_name].sample_rate)
+    def init_nrows_ncols(self):
+        self.nrows = len(self.channels_to_show_idx)
+        self.ncols = 1
 
-    def init_arr(self, duration_plot):
-        self.n_samples_plot = duration_plot * self.sample_rate
-        self.trigger = np.zeros(self.n_samples_plot)
-        self.data = np.zeros((self.n_channels, self.n_samples_plot),
-                             dtype=np.float32)
-        self._ts_list = list()
+    def init_n_samples_plot(self):
+        self.n_samples_plot = math.ceil(self.x_scale * self.scope.sample_rate)
 
-    def init_gloo(self, nrows, ncols):
-        # Colors for each subplot
-        self.color = np.repeat(
-            np.random.uniform(size=(nrows*ncols, 3), low=.5, high=.9),
+    # ------------------------ Init program -----------------------
+    def init_data_plot(self):
+        self.data_plot = np.zeros((self.scope.n_channels, self.n_samples_plot),
+                                  dtype=np.float32)
+
+    def init_program_variables(self):
+        self.init_a_color()
+        self.init_a_index()
+        self.init_u_scale()
+        self.init_u_size()
+        self.init_u_n()
+
+        self.backend_initialized = True
+        self._timer = app.Timer(0.020, connect=self.update_loop, start=False)
+
+    def init_a_color(self):
+        self.a_color = np.repeat(
+            self.available_colors[self.channels_to_show_idx, :],
             self.n_samples_plot, axis=0).astype(np.float32)
-        # Index/Position of each point (vertex) on the Canvas
-        self.index = np.c_[
-            np.repeat(np.repeat(np.arange(ncols), nrows), self.n_samples_plot),
-            np.repeat(np.tile(np.arange(nrows), ncols), self.n_samples_plot),
-            np.tile(np.arange(self.n_samples_plot), nrows*ncols)].astype(np.float32)
 
-        app.Canvas.__init__(self, title=f'Stream Viewer: {self.stream_name}',
-                            keys='interactive')
+    def init_a_index(self):
+        self.a_index = np.c_[
+            np.repeat(np.repeat(np.arange(self.ncols), self.nrows), self.n_samples_plot),
+            np.repeat(np.tile(np.arange(self.nrows), self.ncols), self.n_samples_plot),
+            np.tile(np.arange(self.n_samples_plot), self.nrows*self.ncols)].astype(np.float32)
+
+    def init_u_scale(self):
+        # TODO: Defined second value based on self.y_scale
+        self.u_scale = (1., 1/20)
+
+    def init_u_size(self):
+        self.u_size = (self.nrows, self.ncols)
+
+    def init_u_n(self):
+        self.u_n = self.n_samples_plot
+
+    def init_gloo(self):
+        app.Canvas.__init__(
+            self, title=f'Stream Viewer: {self.scope.stream_name}',
+            keys='interactive')
         self.program = gloo.Program(VERT_SHADER, FRAG_SHADER)
-        self.program['a_position'] = self.data.reshape(-1, 1)
-        self.program['a_color'] = self.color
-        self.program['a_index'] = self.index
-        self.program['u_scale'] = (1., 1/20)
-        self.program['u_size'] = (nrows, ncols)
-        self.program['u_n'] = self.n_samples_plot
+        self.program['a_position'] = self.data_plot.ravel()
+        self.program['a_color'] = self.a_color
+        self.program['a_index'] = self.a_index
+        self.program['u_scale'] = self.u_scale
+        self.program['u_size'] = self.u_size
+        self.program['u_n'] = self.u_n
         gloo.set_viewport(0, 0, *self.physical_size)
         gloo.set_state(clear_color='black', blend=True,
                        blend_func=('src_alpha', 'one_minus_src_alpha'))
 
-    def init_filter(self, low, high):
-        self.bp_low = low / (0.5 * self.sample_rate)
-        self.bp_high = high / (0.5 * self.sample_rate)
-        self.sos = butter(2, [self.bp_low, self.bp_high],
-                     btype='band', output='sos')
-        self.zi_coeff = sosfilt_zi(self.sos).reshape((self.sos.shape[0], 2, 1))
-        self.zi = None
-
-    # -------------------------- Main Loop --------------------------
+    # -------------------------- Main Loop -------------------------
     def update_loop(self, event):
-        self.read_lsl_stream()
-        if len(self._ts_list) > 0:
-            self.filter_signal()
-            self.data = np.roll(self.data, -len(self._ts_list), axis=1)
-            self.data[:, -len(self._ts_list):] = np.transpose(self.window)
+        self.scope.update_loop()
 
+        if len(self.scope._ts_list) > 0:
             self.program['a_position'].set_data(
-                self.data.ravel().astype(np.float32))
+                self.scope.data_buffer[
+                    self.channels_to_show_idx,
+                    -self.n_samples_plot:].ravel().astype(np.float32))
             self.update()
 
-    def read_lsl_stream(self):
-        self.sr.acquire()
-        data, self._ts_list = self.sr.get_buffer()
-        self.sr.reset_all_buffers()
+    # ------------------------ Update program ----------------------
+    def update_x_scale(self, new_x_scale):
+        if self.backend_initialized:
+            self.x_scale = new_x_scale
+            self.init_n_samples_plot()
+            self.init_a_color()
+            self.init_a_index()
+            self.init_u_n()
 
-        if len(self._ts_list) == 0:
-            return
+            self.program['a_color'].set_data(self.a_color)
+            self.program['a_index'].set_data(self.a_index)
+            self.program['u_n'] = self.u_n
+            self.update()
 
-        self.trigger = data[:, 0].reshape((-1, 1))               # (samples, )
-        self.window = data[:, 1:].reshape((-1, self.n_channels)) # (samples, channels)
+    def update_y_scale(self, new_y_scale):
+        if self.backend_initialized:
+            self.y_scale = new_y_scale
+            self.init_u_scale()
 
-    def filter_signal(self):
-        if self.zi is None:
-            self.zi = self.zi_coeff * np.mean(self.window, axis=0) # Multiply by DC
-        self.window, self.zi = sosfilt(self.sos, self.window, 0, self.zi)
+            self.program['u_scale'] = self.u_scale
+            self.update()
+
+    def update_channels_to_show_idx(self, new_channels_to_show_idx):
+        if self.backend_initialized:
+            self.channels_to_show_idx = new_channels_to_show_idx
+            self.init_nrows_ncols()
+            self.init_a_color()
+            self.init_a_index()
+            self.init_u_size()
+
+            self.program['a_color'].set_data(self.a_color)
+            self.program['a_index'].set_data(self.a_index)
+            self.program['u_size'] = self.u_size
+            self.update()
 
     # --------------------------- Events ---------------------------
     def on_resize(self, event):
         gloo.set_viewport(0, 0, *event.physical_size)
 
-    def on_mouse_wheel(self, event):
-        dx = np.sign(event.delta[1]) * 0.125
-        scale_x, scale_y = self.program['u_scale']
-        scale_x_new = scale_x * math.exp(dx)
-        self.program['u_scale'] = (max(1, scale_x_new), scale_y)
-        self.update()
-
     def on_draw(self, event):
         gloo.clear()
         self.program.draw('line_strip')
-
-if __name__ == '__main__':
-    stream_name = 'StreamPlayer'
-    c = _CanvasScope(stream_name)
-    app.run()
