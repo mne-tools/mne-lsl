@@ -703,9 +703,9 @@ def train_decoder(cfg, featdata, feat_file=None):
     if cfg.FEATURES['selected'] == 'PSD':
         logger.info_green('Good features ordered by importance')
         if selected_classifier in ['RF', 'GB', 'XGB']:
-            keys, values = sort_by_value(list(cls.feature_importances_), rev=True)
+            keys, values = sort_by_value(list(cls.feature_importances_), reverse=True)
         elif selected_classifier in ['LDA', 'rLDA']:
-            keys, values = sort_by_value(cls.coef_.reshape(-1).tolist(), rev=True)
+            keys, values = sort_by_value(cls.coef_.reshape(-1).tolist(), reverse=True)
         keys = np.array(keys)
         values = np.array(values)
 
