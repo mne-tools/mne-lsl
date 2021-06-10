@@ -28,7 +28,6 @@ class _BackendPyQt5:
         self.init_plot()
 
         self.events = list()
-        self.init_LPT_events()
 
         self.backend_initialized = True
         self._timer = QtCore.QTimer(self._win)
@@ -96,16 +95,13 @@ class _BackendPyQt5:
             0, -len(self.channels_to_show_idx)*self.y_scale, -self.y_scale)
 
     # ------------------------ Trigger Events ----------------------
-    def init_LPT_events(self):
-        self.update_LPT_events(self.scope.trigger_buffer)
-
     def update_LPT_events(self, trigger_arr):
         events_trigger_arr_idx = np.where(trigger_arr != 0)[0]
         events_values = trigger_arr[events_trigger_arr_idx]
 
         for k, ev_value in enumerate(events_values):
-
-            position_buffer = events_trigger_arr_idx[k]/self.scope.sample_rate + self.delta_with_buffer
+            position_buffer = self.scope.duration_buffer - \
+                (trigger_arr.shape[0] - events_trigger_arr_idx[k])/self.scope.sample_rate
             position_plot = position_buffer - self.delta_with_buffer
 
             event =  _Event(
@@ -123,15 +119,12 @@ class _BackendPyQt5:
 
     def clean_up_events(self):
         for ev in self.events:
-            if ev.position_plot >= 0:
-                break
-            self.events[0].removeEventPlot()
+            if ev.position_plot < 0:
+                ev.removeEventPlot()
 
-        if len(self.events) > 0:
-            while self.events[0].position_buffer < 0:
-                del self.events[0]
-                if len(self.events) == 0:
-                    break
+        for k in range(len(self.events)-1, -1, -1):
+            if self.events[k].position_buffer < 0:
+                del self.events[k]
 
     # -------------------------- Main Loop -------------------------
     def start_timer(self):
@@ -150,9 +143,8 @@ class _BackendPyQt5:
                 ev.update_position(
                     ev.position_buffer - len(self.scope._ts_list)/self.scope.sample_rate,
                     ev.position_plot - len(self.scope._ts_list)/self.scope.sample_rate)
-
             # Add new events entering the buffer
-            self.update_LPT_events(self.scope.trigger_buffer[-self.n_samples_plot:])
+            self.update_LPT_events(self.scope.trigger_buffer[-len(self.scope._ts_list):])
             # Hide/Remove events exiting window and buffer
             self.clean_up_events()
 
@@ -168,6 +160,10 @@ class _BackendPyQt5:
                 ev.update_position(
                     ev.position_buffer,
                     ev.position_buffer - self.delta_with_buffer)
+                if ev.position_plot >= 0:
+                    ev.addEventPlot()
+                else:
+                    ev.removeEventPlot()
 
     def update_y_scale(self, new_y_scale):
         if self.backend_initialized:
@@ -223,14 +219,18 @@ class _Event:
         else:
             self.color = pg.mkColor(255, 255, 255)
 
-    def addEventPlot(self):
-        self.LineItem = pg.InfiniteLine(pos=self.position_plot, pen=self.color)
-        self.plot_handler.addItem(self.LineItem)
+        self.plotted = False
 
-        self.TextItem = pg.TextItem(str(self.event_value), anchor=(0.5, 1),
-                           fill=(0, 0, 0), color=self.color)
-        self.TextItem.setPos(self.position_plot, 1.5*self.plot_y_scale)
-        self.plot_handler.addItem(self.TextItem)
+    def addEventPlot(self):
+        if not self.plotted:
+            self.LineItem = pg.InfiniteLine(pos=self.position_plot, pen=self.color)
+            self.plot_handler.addItem(self.LineItem)
+
+            self.TextItem = pg.TextItem(str(self.event_value), anchor=(0.5, 1),
+                               fill=(0, 0, 0), color=self.color)
+            self.TextItem.setPos(self.position_plot, 1.5*self.plot_y_scale)
+            self.plot_handler.addItem(self.TextItem)
+            self.plotted = True
 
     def update_scales(self, plot_y_scale):
         self.plot_y_scale = plot_y_scale
@@ -246,8 +246,10 @@ class _Event:
         self.TextItem.setPos(self.position_plot, 1.5*self.plot_y_scale)
 
     def removeEventPlot(self):
-        self.plot_handler.removeItem(self.LineItem)
-        self.plot_handler.removeItem(self.TextItem)
+        if self.plotted:
+            self.plot_handler.removeItem(self.LineItem)
+            self.plot_handler.removeItem(self.TextItem)
+            self.plotted = False
 
     def __del__(self):
         try:
