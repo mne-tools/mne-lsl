@@ -1,9 +1,9 @@
-from __future__ import print_function, division
+from builtins import input
 
 import numpy as np
 
 from neurodecode import logger
-from neurodecode.triggers import trigger_def
+from neurodecode.triggers import TriggerDef
 import neurodecode.utils.io as io
 
 #----------------------------------------------------------------------
@@ -22,7 +22,7 @@ def merge_events(trigger_file, events, rawfile_in, rawfile_out):
     rawfile_out : str
         The absolute path to save the new .fif file
     """
-    tdef = trigger_def(trigger_file)
+    tdef = TriggerDef(trigger_file)
     raw, eve = io.load_fif_raw(rawfile_in)
 
     logger.info('=== Before merging ===')
@@ -63,6 +63,8 @@ def merge_events(trigger_file, events, rawfile_in, rawfile_out):
 
 #----------------------------------------------------------------------
 if __name__ == '__main__':
+    
+    import sys
     
     if len(sys.argv) > 5:
         raise IOError("Too many arguments provided. Max is 4: fif_dir; out_dir; trigger_file; events")
