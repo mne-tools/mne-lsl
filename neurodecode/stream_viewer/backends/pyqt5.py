@@ -113,8 +113,7 @@ class _BackendPyQt5:
                 position_buffer=position_buffer,
                 position_plot=position_plot,
                 plot_handler=self._plot_handler,
-                plot_y_scale=self.y_scale,
-                plot_y_range=self.y_range)
+                plot_y_scale=self.y_scale)
 
             if position_plot >= 0:
                 event.addEventPlot()
@@ -199,7 +198,7 @@ class _BackendPyQt5:
 
 class _Event:
     def __init__(self, event_type, event_value, position_buffer, position_plot,
-                 plot_handler, plot_y_scale, plot_y_range):
+                 plot_handler, plot_y_scale):
         self.event_type = event_value
         self.event_value = event_value
         self.position_buffer = position_buffer # In time (s)
@@ -207,7 +206,6 @@ class _Event:
 
         self.plot_handler = plot_handler
         self.plot_y_scale = plot_y_scale
-        self.plot_y_range = plot_y_range
 
         if event_type == 'KEY':
             self.color = pg.mkColor(255, 0, 0)
@@ -217,19 +215,16 @@ class _Event:
             self.color = pg.mkColor(255, 255, 255)
 
     def addEventPlot(self):
-        self.plotDataItem = self.plot_handler.plot(
-            x=[self.position_plot, self.position_plot],
-            y=self.plot_y_range,
-            pen=self.color)
+        self.LineItem = pg.InfiniteLine(pos=self.position_plot, pen=self.color)
+        self.plot_handler.addItem(self.LineItem)
 
         self.TextItem = pg.TextItem(str(self.event_value), anchor=(0.5, 1),
                            fill=(0, 0, 0), color=self.color)
         self.TextItem.setPos(self.position_plot, 1.5*self.plot_y_scale)
         self.plot_handler.addItem(self.TextItem)
 
-    def update_scales(self, plot_y_scale, plot_y_range):
+    def update_scales(self, plot_y_scale):
         self.plot_y_scale = plot_y_scale
-        self.plot_y_range = plot_y_range
         self._update()
 
     def update_position(self, position_buffer, position_plot):
@@ -238,12 +233,11 @@ class _Event:
         self._update()
 
     def _update(self):
-        self.plotDataItem.setData(x=[self.position_plot, self.position_plot],
-                                  y=self.plot_y_range)
+        self.LineItem.setValue(self.position_plot)
         self.TextItem.setPos(self.position_plot, 1.5*self.plot_y_scale)
 
     def removeEventPlot(self):
-        self.plot_handler.removeItem(self.plotDataItem)
+        self.plot_handler.removeItem(self.LineItem)
         self.plot_handler.removeItem(self.TextItem)
 
     def __del__(self):
