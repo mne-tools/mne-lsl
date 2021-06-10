@@ -13,7 +13,7 @@ class StreamViewer:
     def __init__(self, stream_name=None):
         self.stream_name = stream_name
 
-    def start(self, bufsize=0.2, backend=None):
+    def start(self, bufsize=0.2, backend='pyqt5'):
         """
         Connect to the selected amplifier and plot the streamed data.
 
