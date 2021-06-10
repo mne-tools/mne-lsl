@@ -19,8 +19,9 @@ class _Scope:
         self.sample_rate = int(
             self.sr.streams[self.stream_name].sample_rate)
 
-    def init_arr(self, plot_duration):
-        self.n_samples_buffer = math.ceil(plot_duration * self.sample_rate)
+    def init_arr(self, duration_buffer):
+        self.duration_buffer = duration_buffer
+        self.n_samples_buffer = math.ceil(duration_buffer * self.sample_rate)
         self._ts_list = list()
 
     # -------------------------- Main Loop -------------------------
@@ -75,11 +76,12 @@ class _ScopeEEG(_Scope):
         self.read_lsl_stream()
         if len(self._ts_list) > 0:
             self.filter_signal()
+            self.filter_trigger()
             # shape (channels, samples)
             self.data_buffer = np.roll(self.data_buffer, -len(self._ts_list),
                                        axis=1)
             self.data_buffer[:, -len(self._ts_list):] = self.data_acquired.T
-
+            # shape (samples, )
             self.trigger_buffer = np.roll(self.trigger_buffer, -len(self._ts_list))
             self.trigger_buffer[-len(self._ts_list):] = self.trigger_acquired
 
@@ -102,3 +104,7 @@ class _ScopeEEG(_Scope):
             car_ch = np.mean(
                 self.data_acquired[:, self.channels_to_show_idx], axis=1)
             self.data_acquired -= car_ch.reshape((-1, 1))
+
+    def filter_trigger(self, tol=0.05):
+        self.trigger_acquired[
+            np.abs(np.diff(self.trigger_acquired, prepend=[0])) <= tol] = 0
