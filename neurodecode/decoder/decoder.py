@@ -118,14 +118,16 @@ class BCIDecoder(object):
             
             # Map channel indices based on channel names of the streaming server
             if len(self._spatial_ch) > 0:
-                self._spatial_ch = [self._ch_names.index(mc[p]) for p in model['spatial_ch']]
+                self._spatial_ch = [self._ch_names.index(p) for p in model['spatial_ch']]
             if len(self._spectral_ch) > 0:
-                self._spectral_ch = [self._ch_names.index(mc[p]) for p in model['spectral_ch']]
+                self._spectral_ch = [self._ch_names.index(p) for p in model['spectral_ch']]
             if len(self._notch_ch) > 0:
-                self._notch_ch = [self._ch_names.index(mc[p]) for p in model['notch_ch']]
+                self._notch_ch = [self._ch_names.index(p) for p in model['notch_ch']]
             if self._ref_ch is not None:
-                self._ref_ch['New'] = [self._ch_names.index(mc[p]) for p in model['_ref_ch']['New']]
-                self._ref_ch['Old'] = [self._ch_names.index(mc[p]) for p in model['_ref_ch']['Old']]
+                self._ref_ch['New'] = [self._ch_names.index(p) for p in model['_ref_ch']['New']]
+                self._ref_ch['Old'] = [self._ch_names.index(p) for p in model['_ref_ch']['Old']]
+            
+            self.label = None
             
             if "SAVED_FEAT" in model:
                 self.xdata = model["SAVED_FEAT"]["X"].tolist()
@@ -986,9 +988,9 @@ if __name__ == '__main__':
         
     if len(sys.argv) == 1:
         model_file = str(Path(input(">> Provide the path to decoder file: \n")))
-        amp_name, amp_serial = search_lsl(ignore_markers=True)
+        amp_name = search_lsl(ignore_markers=True)
 
-    logger.info('Connecting to a server %s (Serial %s).' % (amp_name, amp_serial))
+    logger.info('Connecting to a server %s' % (amp_name))
 
     # run on background
     parallel = None # no process interleaving
