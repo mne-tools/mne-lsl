@@ -96,13 +96,10 @@ class _BackendPyQt5:
     def update_loop(self):
         self.scope.update_loop()
         if len(self.scope._ts_list) > 0:
-            self.update()
-
-    def update(self):
-        for k, idx in enumerate(self.channels_to_show_idx):
-            self.plots[idx].setData(
-                x=self.x_arr,
-                y=self.scope.data_buffer[idx, -self.n_samples_plot:]+self.offset[k])
+            for k, idx in enumerate(self.channels_to_show_idx):
+                self.plots[idx].setData(
+                    x=self.x_arr,
+                    y=self.scope.data_buffer[idx, -self.n_samples_plot:]+self.offset[k])
 
     # ------------------------ Update program ----------------------
     def update_x_scale(self, new_x_scale):

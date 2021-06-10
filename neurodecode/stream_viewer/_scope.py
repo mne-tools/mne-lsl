@@ -58,7 +58,7 @@ class _ScopeEEG(_Scope):
 
     def init_arr(self, plot_duration):
         super().init_arr(plot_duration)
-        self.trigger = np.zeros(self.n_samples_buffer)
+        self.trigger_buffer = np.zeros(self.n_samples_buffer)
         self.data_buffer = np.zeros((self.n_channels, self.n_samples_buffer),
                                     dtype=np.float32)
 
@@ -80,10 +80,13 @@ class _ScopeEEG(_Scope):
                                        axis=1)
             self.data_buffer[:, -len(self._ts_list):] = self.data_acquired.T
 
+            self.trigger_buffer = np.roll(self.trigger_buffer, -len(self._ts_list))
+            self.trigger_buffer[-len(self._ts_list):] = self.trigger_acquired
+
     def read_lsl_stream(self):
         super().read_lsl_stream()
         # Remove trigger ch - shapes (samples, ) and (samples, channels)
-        self.trigger = self.data_acquired[:, 0].reshape((-1, 1))
+        self.trigger_acquired = self.data_acquired[:, 0]
         self.data_acquired = self.data_acquired[:, 1:].reshape(
             (-1, self.n_channels))
 
