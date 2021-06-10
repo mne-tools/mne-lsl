@@ -198,3 +198,7 @@ class _BackendVispy(app.Canvas):
     def on_draw(self, event):
         gloo.clear()
         self.program.draw('line_strip')
+
+    def close(self):
+        self._timer.stop()
+        super().close()
