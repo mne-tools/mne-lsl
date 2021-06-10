@@ -48,14 +48,18 @@ class _BackendPyQt5:
                                             auto=None, mode='mean')
         # TODO: Not sure the downsampling is required, feels laggy either way.
 
-        # Range
+        self.init_range()
+        self.init_y_axis()
+        self.init_x_axis()
+
+    def init_range(self):
         self._plot_handler.setRange(
             xRange=[0, self.x_scale],
             yRange=[self.y_scale, -self.y_scale*len(self.channels_to_show_idx)])
         self._plot_handler.disableAutoRange()
         self._plot_handler.showGrid(y=True)
 
-        # # Y-axis
+    def init_y_axis(self):
         yticks = [(-k*self.y_scale, self.scope.channels_labels[idx]) \
                   for k, idx in enumerate(self.channels_to_show_idx)]
         ticks = [yticks, []] # [major, minor]
@@ -63,7 +67,7 @@ class _BackendPyQt5:
         self._plot_handler.setLabel(
             axis='left', text=f'Scale (uV): {self.y_scale}')
 
-        # # X-axis
+    def init_x_axis(self):
         self.x_arr = np.arange(self.n_samples_plot) / self.scope.sample_rate
         self._plot_handler.setLabel(axis='bottom', text='Time (s)')
 
@@ -99,14 +103,23 @@ class _BackendPyQt5:
 
     # ------------------------ Update program ----------------------
     def update_x_scale(self, new_x_scale):
-        pass
+        if self.backend_initialized:
+            self.x_scale = new_x_scale
+            self.init_n_samples_plot()
+            self.init_range()
+            self.init_x_axis()
 
     def update_y_scale(self, new_y_scale):
-        pass
+        if self.backend_initialized:
+            self.y_scale = new_y_scale
+            self.init_range()
+            self.init_y_axis()
+            self.init_plotting_channel_offset()
 
     def update_channels_to_show_idx(self, new_channels_to_show_idx):
         pass
 
     # --------------------------- Events ---------------------------
     def close(self):
+        self._timer.stop()
         self._win.close()
