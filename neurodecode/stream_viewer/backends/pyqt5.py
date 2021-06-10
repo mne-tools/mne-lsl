@@ -59,7 +59,8 @@ class _BackendPyQt5:
         self.init_x_axis()
 
     def init_range(self):
-        self.y_range = [1.5*self.y_scale, -self.y_scale*(len(self.channels_to_show_idx)+1)]
+        self.y_range = [1.5*self.y_scale,
+                        -self.y_scale*(len(self.channels_to_show_idx)+1)]
         self._plot_handler.setRange(
             xRange=[0, self.x_scale],
             yRange=self.y_range)
@@ -163,12 +164,20 @@ class _BackendPyQt5:
             self.init_range()
             self.init_x_axis()
 
+            for ev in self.events:
+                ev.update_position(
+                    ev.position_buffer,
+                    ev.position_buffer - self.delta_with_buffer)
+
     def update_y_scale(self, new_y_scale):
         if self.backend_initialized:
             self.y_scale = new_y_scale
             self.init_range()
             self.init_y_axis()
             self.init_plotting_channel_offset()
+
+            for ev in self.events:
+                ev.update_scales(self.y_scale)
 
     def update_channels_to_show_idx(self, new_channels_to_show_idx):
         if self.backend_initialized:
