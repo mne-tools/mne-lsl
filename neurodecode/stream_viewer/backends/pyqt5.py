@@ -27,6 +27,9 @@ class _BackendPyQt5:
         self.init_canvas()
         self.init_plot()
 
+        self.events = list()
+        self.init_LPT_events()
+
         self.backend_initialized = True
         self._timer = QtCore.QTimer(self._win)
         self._timer.timeout.connect(self.update_loop)
@@ -40,6 +43,7 @@ class _BackendPyQt5:
         self.init_n_samples_plot()
 
     def init_n_samples_plot(self):
+        self.delta_with_buffer = self.scope.duration_buffer-self.x_scale
         self.n_samples_plot = math.ceil(self.x_scale * self.scope.sample_rate)
 
     def init_canvas(self):
@@ -55,9 +59,10 @@ class _BackendPyQt5:
         self.init_x_axis()
 
     def init_range(self):
+        self.y_range = [1.5*self.y_scale, -self.y_scale*(len(self.channels_to_show_idx)+1)]
         self._plot_handler.setRange(
             xRange=[0, self.x_scale],
-            yRange=[self.y_scale, -self.y_scale*len(self.channels_to_show_idx)])
+            yRange=self.y_range)
         self._plot_handler.disableAutoRange()
         self._plot_handler.showGrid(y=True)
 
@@ -73,10 +78,6 @@ class _BackendPyQt5:
         self.x_arr = np.arange(self.n_samples_plot) / self.scope.sample_rate
         self._plot_handler.setLabel(axis='bottom', text='Time (s)')
 
-    def init_plotting_channel_offset(self):
-        self.offset =  np.arange(
-            0, -len(self.channels_to_show_idx)*self.y_scale, -self.y_scale)
-
     # ------------------------- Init plot -------------------------
     def init_plot(self):
         self.init_plotting_channel_offset()
@@ -89,6 +90,49 @@ class _BackendPyQt5:
                 y=self.scope.data_buffer[idx, -self.n_samples_plot:]+self.offset[k],
                 pen=pg.mkColor(self.available_colors[idx, :]))
 
+    def init_plotting_channel_offset(self):
+        self.offset =  np.arange(
+            0, -len(self.channels_to_show_idx)*self.y_scale, -self.y_scale)
+
+    # ------------------------ Trigger Events ----------------------
+    def init_LPT_events(self):
+        self.update_LPT_events(self.scope.trigger_buffer)
+
+    def update_LPT_events(self, trigger_arr):
+        events_trigger_arr_idx = np.where(trigger_arr != 0)[0]
+        events_values = trigger_arr[events_trigger_arr_idx]
+
+        for k, ev_value in enumerate(events_values):
+
+            position_buffer = events_trigger_arr_idx[k]/self.scope.sample_rate + self.delta_with_buffer
+            position_plot = position_buffer - self.delta_with_buffer
+
+            event =  _Event(
+                event_type='LPT',
+                event_value=ev_value,
+                position_buffer=position_buffer,
+                position_plot=position_plot,
+                plot_handler=self._plot_handler,
+                plot_y_scale=self.y_scale,
+                plot_y_range=self.y_range)
+
+            if position_plot >= 0:
+                event.addEventPlot()
+
+            self.events.append(event)
+
+    def clean_up_events(self):
+        for ev in self.events:
+            if ev.position_plot >= 0:
+                break
+            self.events[0].removeEventPlot()
+
+        if len(self.events) > 0:
+            while self.events[0].position_buffer < 0:
+                del self.events[0]
+                if len(self.events) == 0:
+                    break
+
     # -------------------------- Main Loop -------------------------
     def start_timer(self):
         self._timer.start(20)
@@ -100,6 +144,17 @@ class _BackendPyQt5:
                 self.plots[idx].setData(
                     x=self.x_arr,
                     y=self.scope.data_buffer[idx, -self.n_samples_plot:]+self.offset[k])
+
+            # Update existing events position
+            for ev in self.events:
+                ev.update_position(
+                    ev.position_buffer - len(self.scope._ts_list)/self.scope.sample_rate,
+                    ev.position_plot - len(self.scope._ts_list)/self.scope.sample_rate)
+
+            # Add new events entering the buffer
+            self.update_LPT_events(self.scope.trigger_buffer[-self.n_samples_plot:])
+            # Hide/Remove events exiting window and buffer
+            self.clean_up_events()
 
     # ------------------------ Update program ----------------------
     def update_x_scale(self, new_x_scale):
@@ -141,3 +196,58 @@ class _BackendPyQt5:
     def close(self):
         self._timer.stop()
         self._win.close()
+
+class _Event:
+    def __init__(self, event_type, event_value, position_buffer, position_plot,
+                 plot_handler, plot_y_scale, plot_y_range):
+        self.event_type = event_value
+        self.event_value = event_value
+        self.position_buffer = position_buffer # In time (s)
+        self.position_plot = position_plot # In time (s)
+
+        self.plot_handler = plot_handler
+        self.plot_y_scale = plot_y_scale
+        self.plot_y_range = plot_y_range
+
+        if event_type == 'KEY':
+            self.color = pg.mkColor(255, 0, 0)
+        elif event_type == 'LPT':
+            self.color = pg.mkColor(0, 255, 0)
+        else:
+            self.color = pg.mkColor(255, 255, 255)
+
+    def addEventPlot(self):
+        self.plotDataItem = self.plot_handler.plot(
+            x=[self.position_plot, self.position_plot],
+            y=self.plot_y_range,
+            pen=self.color)
+
+        self.TextItem = pg.TextItem(str(self.event_value), anchor=(0.5, 1),
+                           fill=(0, 0, 0), color=self.color)
+        self.TextItem.setPos(self.position_plot, 1.5*self.plot_y_scale)
+        self.plot_handler.addItem(self.TextItem)
+
+    def update_scales(self, plot_y_scale, plot_y_range):
+        self.plot_y_scale = plot_y_scale
+        self.plot_y_range = plot_y_range
+        self._update()
+
+    def update_position(self, position_buffer, position_plot):
+        self.position_buffer = position_buffer
+        self.position_plot = position_plot
+        self._update()
+
+    def _update(self):
+        self.plotDataItem.setData(x=[self.position_plot, self.position_plot],
+                                  y=self.plot_y_range)
+        self.TextItem.setPos(self.position_plot, 1.5*self.plot_y_scale)
+
+    def removeEventPlot(self):
+        self.plot_handler.removeItem(self.plotDataItem)
+        self.plot_handler.removeItem(self.TextItem)
+
+    def __del__(self):
+        try:
+            self.removeEventPlot()
+        except:
+            pass
