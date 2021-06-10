@@ -127,12 +127,11 @@ class BCIDecoder(object):
                 self._ref_ch['New'] = [self._ch_names.index(p) for p in model['_ref_ch']['New']]
                 self._ref_ch['Old'] = [self._ch_names.index(p) for p in model['_ref_ch']['Old']]
             
-            self.label = None
+            self.label = label
             
             if "SAVED_FEAT" in model:
                 self.xdata = model["SAVED_FEAT"]["X"].tolist()
                 self.ydata = model["SAVED_FEAT"]["Y"].tolist()
-                self.label = label            
 
             # PSD buffer
             #psd_temp = self.psde.transform(np.zeros((1, len(self._picks), self._w_frames // self._decim)))
