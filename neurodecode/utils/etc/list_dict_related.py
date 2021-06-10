@@ -23,7 +23,7 @@ def list2string(vec, fmt, sep=' '):
     str : The list formated to string.
     """
     
-    return sep.join((fmt % x for x in vec))
+    return sep.join(fmt % x for x in vec)
 
 #----------------------------------------------------------------------
 def flatten_list(l):
@@ -92,7 +92,7 @@ def get_index_max(seq):
         return None
 
 #----------------------------------------------------------------------
-def sort_by_value(s, rev=False):
+def sort_by_value(s, reverse=False):
     """
     Sort dictionary or list by value and return a sorted list of keys and values.
     
@@ -102,12 +102,15 @@ def sort_by_value(s, rev=False):
     ----------
     s : list | dict
         The list or dict to sort
-    rev : bool
+    reverse : bool
         If True, sorting in descending order
     
     Returns:
     --------
-    list | dict : The sorted list or dict
+    keys : list
+        The sorted list of keys (dict) or indices (list)
+    values : list
+        The sorted list of values
     """
     assert type(s) == dict or type(s) == list, 'Input must be a dictionary or list.'
     
@@ -119,7 +122,7 @@ def sort_by_value(s, rev=False):
     if not len(s_rev) == len(s):
         logger.warning('sort_by_value(): %d identical values' % (len(s.values()) - len(set(s.values())) + 1))
     
-    values = sorted(s_rev, reverse=rev)
+    values = sorted(s_rev, reverse=reverse)
     keys = [s_rev[x] for x in values]
     
     return keys, values
@@ -127,7 +130,7 @@ def sort_by_value(s, rev=False):
 #----------------------------------------------------------------------
 def detect_delim(filename, allowSingleCol=True):
     """
-    Automatically find the right delimiter of a file.
+    Automatically find the right delimiter of a file from the first line.
 
     Returns '' if the input file is single column or unknown format.
     
@@ -143,8 +146,9 @@ def detect_delim(filename, allowSingleCol=True):
     delim : str
         The found delimiter
     """
-
-    temp = open(filename).readline().strip()
+    
+    with open(filename, 'r') as f:
+        temp = f.readline().strip()
     delim = ''
     
     for d in [',', ' ', '\t']:

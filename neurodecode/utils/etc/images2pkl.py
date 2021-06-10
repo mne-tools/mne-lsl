@@ -1,11 +1,14 @@
 from __future__ import print_function, division
+from builtins import input
 
+import cv2
 import gzip
 import sys
 
+from pathlib import Path
+
 from neurodecode import logger
-from neurodecode.utils.timer import Timer
-from neurodecode.protocols.viz_human import read_images
+from neurodecode.utils.io import get_file_list
 
 try:
     import cPickle as pickle  # Python 2 (cPickle = C version of pickle)
@@ -25,16 +28,18 @@ def images2pkl(in_dir, out_dir):
         The output directory path 
     """
     if pickle.HIGHEST_PROTOCOL >= 4:
-        
-        tm = Timer()
-
         logger.info('Reading images from %s' % in_dir)
-        images = read_images(in_dir)
-
-        logger.info('Took %.1f s. Start exporting ...' % tm.sec())
-
-        with gzip.open(out_dir, 'wb') as fp:
-            pickle.dump(images, fp)
+        
+        for file in get_file_list(in_dir, fullpath=True, recursive=False):
+            
+            path = Path(file)
+            if path.suffix != '.png':
+                continue
+            
+            img = cv2.imread(str(path))
+            
+            with gzip.open(Path(out_dir + path.stem + '.pcl'), 'wb') as fp:
+                pickle.dump(img, fp)
 
         logger.info('Exported to %s' % out_dir)
 

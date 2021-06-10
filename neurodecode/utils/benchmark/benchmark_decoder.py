@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function, division
+from builtins import input
 
 """
 Decoder speed test.
@@ -52,6 +53,8 @@ def benchmark_BCIdecoder(decoder_file, num_decode=200):
     return ms, cps
 
 if __name__ == '__main__':
+    
+    import sys
     
     if len(sys.argv) > 3:
         raise IOError("Two many arguments provided, max is 2  (decoder_file and num_decode)")

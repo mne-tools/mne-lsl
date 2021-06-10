@@ -1,4 +1,5 @@
 import os
+import sys
 import shutil
 import pickle
 import numpy as np
@@ -21,16 +22,17 @@ def get_file_list(path, fullpath=True, recursive=False):
         
     Returns
     -------
-    list : The files' list
+    list : The file's list
     """
     path = path.replace('\\', '/')
     if not path[-1] == '/': path += '/'
 
     if recursive == False:
         if fullpath == True:
-            filelist = [path + f for f in os.listdir(path) if os.path.isfile(path + '/' + f) and f[0] != '.']
+            filelist = [path + f.name for f in os.scandir(path) if os.path.isfile(path + '/' + f.name) and f.name[0] != '.']
         else:
-            filelist = [f for f in os.listdir(path) if os.path.isfile(path + '/' + f) and f[0] != '.']
+            filelist = [f.name for f in os.scandir(path) if os.path.isfile(path + '/' + f.name) and f.name[0] != '.']
+    
     else:
         filelist = []
         for root, dirs, files in os.walk(path):
@@ -39,6 +41,7 @@ def get_file_list(path, fullpath=True, recursive=False):
                 [filelist.append(root + '/' + f) for f in files]
             else:
                 [filelist.append(f) for f in files]
+    
     return sorted(filelist)
 
 #----------------------------------------------------------------------
@@ -62,7 +65,14 @@ def get_dir_list(path, recursive=False, no_child=False):
     path = path.replace('\\', '/')
     if not path[-1] == '/': path += '/'
 
-    if recursive == True:
+    if recursive == False:
+        pathlist = [path + f.name for f in os.scandir(path) if os.path.isdir(path + '/' + f.name)]
+        if no_child:
+            for p in pathlist:
+                if len(get_dir_list(p)) > 0:
+                    pathlist.remove(p)
+
+    else:
         pathlist = []
         for root, dirs, files in os.walk(path):
             root = root.replace('\\', '/')
@@ -72,13 +82,6 @@ def get_dir_list(path, recursive=False, no_child=False):
                 for p in pathlist:
                     if len(get_dir_list(p)) > 0:
                         pathlist.remove(p)
-
-    else:
-        pathlist = [path + f for f in os.listdir(path) if os.path.isdir(path + '/' + f)]
-        if no_child:
-            for p in pathlist:
-                if len(get_dir_list(p)) > 0:
-                    pathlist.remove(p)
 
     return sorted(pathlist)
 
@@ -144,16 +147,16 @@ def load_obj(fname):
         raise IOError(msg)
 
 #----------------------------------------------------------------------
-def loadtxt_fast(filename, delimiter=',', skiprows=0, dtype=float):
+def loadtxt_fast(fname, delimiter=',', skiprows=0, dtype=float):
     """
     Much faster matrix loading than numpy's loadtxt.
     
-    Only work for simple and regular data (http://stackoverflow.com/a/8964779).
+    Only work for simple and regular data.
     Numpy's loadtxt do a lot of guessing and error-checking.
     
     Parameters
     ----------
-    filename : str
+    fname : str
         The txt file's path
     delimiter : str
         The data delimiter
@@ -168,7 +171,7 @@ def loadtxt_fast(filename, delimiter=',', skiprows=0, dtype=float):
         The extracted data
     """
     def iter_func():
-        with open(filename, 'r') as infile:
+        with open(fname, 'r') as infile:
             for _ in range(skiprows):
                 next(infile)
             for line in infile:
@@ -183,13 +186,13 @@ def loadtxt_fast(filename, delimiter=',', skiprows=0, dtype=float):
     return data
 
 #----------------------------------------------------------------------
-def parse_path(file_path):
+def parse_path(fname):
     """
     Parse the file path with dir, name and extension
     
     Parameters
     ----------
-    filepath : str
+    fname : str
         The file's absolute path
     
     Returns
@@ -215,7 +218,7 @@ def parse_path(file_path):
         def __str__(self):
             return self.txt
 
-    return path_info(file_path)
+    return path_info(fname)
 
 #----------------------------------------------------------------------
 def forward_slashify(txt):

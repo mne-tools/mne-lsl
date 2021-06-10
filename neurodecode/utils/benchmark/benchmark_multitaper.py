@@ -1,5 +1,6 @@
-'# -*- coding: utf-8 -*-'
+# -*- coding: utf-8 -*-
 from __future__ import print_function, division
+from builtins import input
 
 """
 Measure multitaper computation speed.
@@ -54,7 +55,7 @@ def benchmark_multitaper(nb_ch, sfreq, freq_range, s_len, nb_iter):
         psde.transform(signal.reshape((1, signal.shape[0], signal.shape[1])))
         times.append(tm.msec())
         
-        if i % 100 == 0:
+        if nb_iter > 100 and i % 100 == 0:
             logger.info('%d / %d' % (i, nb_iter))
     
     ms = np.mean(times)
