@@ -1,4 +1,5 @@
-from __future__ import print_function, division, unicode_literals
+from __future__ import unicode_literals
+from builtins import input
 
 """
 Convert known file format to FIF.
@@ -10,7 +11,6 @@ import mne
 import pickle
 import numpy as np
 
-from builtins import input
 from pathlib import Path
 
 from neurodecode import logger
@@ -272,7 +272,7 @@ def xdf2fif(filename, outdir=None):
     trig_ch_guess = preprocess.find_event_channel(None, labels)
 
     if trig_ch_guess is None:
-        logger.warning('No trigger channel found: {}'.format(raw.info['ch_names']))
+        logger.warning('No trigger channel found: {}'.format(labels))
         trig_ch_guess = int(input('Provide the trigger channel index to continue: \n >> '))
     
     # Plugins use other name (markers....)

@@ -1,4 +1,4 @@
-from __future__ import print_function, division
+from __future__ import print_function
 from builtins import input
 
 import sys
@@ -29,7 +29,7 @@ def fif_resample(fif_dir, sfreq_target, out_dir=None):
     for f in io.get_file_list(fif_dir):
         pp = io.parse_path(f)
         
-        if pp.ext != 'fif':
+        if pp.ext not in ['fif', 'fiff']:
             continue
         
         logger.info('Resampling %s' % f)
