@@ -5,29 +5,39 @@ from configparser import RawConfigParser
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import (QMainWindow, QHeaderView,
                              QTableWidgetItem, QFileDialog)
-
-from .backends import _BackendVispy, _BackendPyQt5
+try:
+    from .backends import _BackendVispy, _BackendPyQt5
+except:
+    from .backends import _BackendPyQt5
 from .ui_ScopeSettings import UI_MainWindow
 from ..stream_recorder import StreamRecorder
 from .. import logger
 
-BACKEND = 'pyqt5'
-
 
 class _ScopeControllerUI(QMainWindow):
-    def __init__(self, scope):
+    def __init__(self, scope, backend=None):
         super().__init__()
-        self.scope = scope
-        if BACKEND == 'vispy':
-            self.backend = _BackendVispy(scope)
-        elif BACKEND == 'pyqt5':
+
+        # Select the backend
+        if backend == 'vispy' or backend is None:
+            try:
+                self.backend = _BackendVispy(scope)
+            except:
+                logger.warning("Could not use the backend 'Vispy'. "
+                               "Resorting to 'PyQt5'.")
+                self.backend = _BackendPyQt5(scope)
+        elif backend == 'pyqt5':
             self.backend = _BackendPyQt5(scope)
         else:
-            logger.error(f'StreamViewer backend {BACKEND} not supported.')
+            logger.error(f"StreamViewer backend '{backend}' not supported."
+                         "Supported: 'pyqt5', 'vispy'.")
+
+        # Load UI
+        self.scope = scope
         self.load_ui()
 
         # Load and set default configuration
-        self.load_config_file('.scope_settings_eeg.ini')
+        self.load_config_file(str(Path(__file__)/'.scope_settings_eeg.ini'))
         self.set_init_configuration()
 
         # Init backend

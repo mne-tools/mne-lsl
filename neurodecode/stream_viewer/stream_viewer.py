@@ -13,7 +13,7 @@ class StreamViewer:
     def __init__(self, stream_name=None):
         self.stream_name = stream_name
 
-    def start(self, bufsize=0.2):
+    def start(self, bufsize=0.2, backend=None):
         """
         Connect to the selected amplifier and plot the streamed data.
 
@@ -37,5 +37,5 @@ class StreamViewer:
                 f'{type(self.sr.streams[self.stream_name])}')
 
         app = QApplication(sys.argv)
-        self._ui = _ScopeControllerUI(self._scope)
+        self._ui = _ScopeControllerUI(self._scope, backend.lower().strip())
         sys.exit(app.exec_())
