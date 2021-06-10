@@ -23,6 +23,9 @@ class StreamViewer:
         if self.stream_name is None:
             self.stream_name = search_lsl(ignore_markers=True)
 
+        if isinstance(backend, str):
+            backend = backend.lower().strip()
+
         logger.info(f'Connecting to the stream: {self.stream_name}')
         self.sr = StreamReceiver(bufsize=bufsize, winsize=bufsize,
                                  stream_name=self.stream_name)
@@ -37,5 +40,5 @@ class StreamViewer:
                 f'{type(self.sr.streams[self.stream_name])}')
 
         app = QApplication(sys.argv)
-        self._ui = _ScopeControllerUI(self._scope, backend.lower().strip())
+        self._ui = _ScopeControllerUI(self._scope, backend)
         sys.exit(app.exec_())
