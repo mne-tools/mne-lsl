@@ -95,7 +95,7 @@ class _ScopeEEG(_Scope):
             self.data_acquired, self.zi = sosfilt(
                 self.sos, self.data_acquired, 0, self.zi)
 
-        if self._apply_car:
+        if self._apply_car and len(self.channels_to_show_idx) >= 2:
             car_ch = np.mean(
                 self.data_acquired[:, self.channels_to_show_idx], axis=1)
             self.data_acquired -= car_ch.reshape((-1, 1))
