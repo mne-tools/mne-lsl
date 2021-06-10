@@ -92,7 +92,8 @@ def check_config(cfg):
                     'N_JOBS': None,
                     'EXCLUDED_CHANNELS': None,
                     'LOAD_EVENTS': None,
-                    'CV': { 'IGNORE_THRES': None, 'DECISION_THRES': None, 'BALANCE_SAMPLES': False }
+                    'CV': { 'IGNORE_THRES': None, 'DECISION_THRES': None, 'BALANCE_SAMPLES': False },
+                    'SAVE_FEATURES': False,
                     }, 
         
         # Internal parmameters for the FEATURE
@@ -674,8 +675,8 @@ def train_decoder(cfg, featdata, feat_file=None):
         data = dict(cls=cls, ch_names=ch_names, psde=featdata['psde'], sfreq=featdata['sfreq'],
                     picks=featdata['picks'], classes=classes, epochs=cfg.EPOCH, w_frames=w_frames,
                     w_seconds=cfg.FEATURES['PSD']['wlen'], wstep=cfg.FEATURES['PSD']['wstep'], spatial=cfg.SP_FILTER,
-                    spatial_ch=cfg.SP_CHANNELS[cfg.SP_CHANNELS['selected']], spectral=cfg.TP_FILTER[cfg.TP_FILTER['selected']], spectral_ch=cfg.SP_CHANNELS[cfg.SP_CHANNELS['selected']],
-                    notch=cfg.NOTCH_FILTER[cfg.NOTCH_FILTER['selected']], notch_ch=cfg.NOTCH_CHANNELS[cfg.NOTCH_CHANNELS['selected']], multiplier=cfg.MULTIPLIER,
+                    spatial_ch=cfg.SP_CHANNELS, spectral=cfg.TP_FILTER[cfg.TP_FILTER['selected']], spectral_ch=cfg.SP_CHANNELS,
+                    notch=cfg.NOTCH_FILTER[cfg.NOTCH_FILTER['selected']], notch_ch=cfg.NOTCH_CHANNELS, multiplier=cfg.MULTIPLIER,
                     ref_ch=cfg.REREFERENCE[cfg.REREFERENCE['selected']], decim=cfg.FEATURES['PSD']['decim'])
     
     if cfg.SAVE_FEATURES:
