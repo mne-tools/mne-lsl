@@ -61,6 +61,8 @@ class _BackendVispy(app.Canvas):
     def __init__(self, scope):
         self.scope = scope
         self.backend_initialized = False
+        self._show_LPT_events = False
+        self._show_Key_events = False
 
     def init_backend(self, geometry, x_scale, y_scale, channels_to_show_idx):
         assert len(channels_to_show_idx) <= self.scope.n_channels
