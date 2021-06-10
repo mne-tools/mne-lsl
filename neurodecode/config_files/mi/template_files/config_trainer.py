@@ -53,6 +53,7 @@ CLASSIFIER =    {'selected': 'RF', \
                 'LDA': dict(solver='svd', shrinkage=None)}
 
 EXPORT_CLS = True
+SAVE_FEATURES = False
 
 #-------------------------------------------
 # Cross-Validation & testing
@@ -66,3 +67,4 @@ CV_PERFORM =   {'selected':'StratifiedShuffleSplit', \
 # Parallel processing
 #-------------------------------------------
 N_JOBS = 8
+
