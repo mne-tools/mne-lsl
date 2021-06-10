@@ -41,7 +41,7 @@ class _BackendPyQt5:
         self.n_samples_plot = math.ceil(self.x_scale * self.scope.sample_rate)
 
     def init_canvas(self):
-        self._plot_handler = self._win.addPlot()
+        self._plot_handler = self._win.addPlot() # pyqtgraph.PlotItem
         # We want a lightweight scope, so we downsample the plotting to 64 Hz
         subsampling_ratio = self.scope.sample_rate / 64
         self._plot_handler.setDownsampling(ds=subsampling_ratio,
@@ -79,12 +79,13 @@ class _BackendPyQt5:
     def init_plot(self):
         self.init_plotting_channel_offset()
         self._plot_handler.clear()
-        self.plots = list()
+        self.plots = dict()
         for k, idx in enumerate(self.channels_to_show_idx):
-            self.plots.append(self._plot_handler.plot(
+            # Add PlotDataItem
+            self.plots[idx] = self._plot_handler.plot(
                 x=self.x_arr,
-                y=self.scope.data_buffer[idx, -self.n_samples_plot:]+self.offset[idx],
-                pen=pg.mkColor(self.available_colors[idx, :])))
+                y=self.scope.data_buffer[idx, -self.n_samples_plot:]+self.offset[k],
+                pen=pg.mkColor(self.available_colors[idx, :]))
 
     # -------------------------- Main Loop -------------------------
     def start_timer(self):
@@ -97,9 +98,9 @@ class _BackendPyQt5:
 
     def update(self):
         for k, idx in enumerate(self.channels_to_show_idx):
-            self.plots[k].setData(
+            self.plots[idx].setData(
                 x=self.x_arr,
-                y=self.scope.data_buffer[idx, -self.n_samples_plot:]+self.offset[idx])
+                y=self.scope.data_buffer[idx, -self.n_samples_plot:]+self.offset[k])
 
     # ------------------------ Update program ----------------------
     def update_x_scale(self, new_x_scale):
@@ -117,7 +118,25 @@ class _BackendPyQt5:
             self.init_plotting_channel_offset()
 
     def update_channels_to_show_idx(self, new_channels_to_show_idx):
-        pass
+        if self.backend_initialized:
+            plots2remove = [idx for idx in self.channels_to_show_idx \
+                            if idx not in new_channels_to_show_idx]
+            plots2add = [idx for idx in new_channels_to_show_idx \
+                         if idx not in self.channels_to_show_idx]
+
+            self.channels_to_show_idx = new_channels_to_show_idx
+            self.init_range()
+            self.init_y_axis()
+            self.init_plotting_channel_offset()
+
+            for idx in plots2remove:
+                self._plot_handler.removeItem(self.plots[idx])
+                del self.plots[idx]
+            for k, idx in enumerate(plots2add):
+                self.plots[idx] = self._plot_handler.plot(
+                    x=self.x_arr,
+                    y=self.scope.data_buffer[idx, -self.n_samples_plot:]+self.offset[k],
+                    pen=pg.mkColor(self.available_colors[idx, :]))
 
     # --------------------------- Events ---------------------------
     def close(self):
