@@ -13,7 +13,7 @@ def int2bits(num, nbits=8):
         
     Returns
     -------
-    list : The bits lit
+    list : The bits list
     """
     return [int(num) >> x & 1 for x in range(nbits - 1, -1, -1)]
 

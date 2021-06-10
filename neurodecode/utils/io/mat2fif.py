@@ -1,4 +1,5 @@
-from __future__ import print_function, division, unicode_literals
+from __future__ import unicode_literals
+from builtins import input
 
 """
 Export Matlab signal data into fif format.
@@ -53,6 +54,8 @@ def mat2fif(mat_file, sample_rate, data_field, event_field):
 
 #----------------------------------------------------------------------
 if __name__ == '__main__':
+    
+    import sys
     
     if len(sys.argv) > 2:
         raise IOError("Two many arguments provided, max is 4 (matfile, sample_rate, data_field, event_field)")
