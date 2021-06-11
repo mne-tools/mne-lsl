@@ -218,7 +218,7 @@ def balance_samples(X, Y, balance_type, verbose=False):
         logger.error('Unknown balancing type %s' % balance_type)
         raise ValueError
 
-    logger.info_green('\nNumber of samples after %ssampling' % balance_type.lower())
+    logger.info('\nNumber of samples after %ssampling' % balance_type.lower())
     for c in label_set:
         logger.info('%s: %d -> %d' % (c, len(np.where(Y == c)[0]), len(np.where(Y_balanced == c)[0])))
 
@@ -389,13 +389,13 @@ def balance_tpr(cfg, featdata):
     ntrials, nsamples, fsize = X_data.shape
     selected_CV = cfg.CV_PERFORM[cfg.CV_PERFORM['selected']]
     if selected_CV == 'LeaveOneOut':
-        logger.info_green('\n%d-fold leave-one-out cross-validation' % ntrials)
+        logger.info('\n%d-fold leave-one-out cross-validation' % ntrials)
         if SKLEARN_OLD:
             cv = LeaveOneOut(len(Y_data))
         else:
             cv = LeaveOneOut()
     elif selected_CV == 'StratifiedShuffleSplit':
-        logger.info_green('\n%d-fold stratified cross-validation with test set ratio %.2f' % (cfg.CV_PERFORM[selected_CV]['folds'], cfg.CV_PERFORM[selected_CV]['test_ratio']))
+        logger.info('\n%d-fold stratified cross-validation with test set ratio %.2f' % (cfg.CV_PERFORM[selected_CV]['folds'], cfg.CV_PERFORM[selected_CV]['test_ratio']))
         if SKLEARN_OLD:
             cv = StratifiedShuffleSplit(Y_data[:, 0], cfg.CV_PERFORM[selected_CV]['folds'], test_size=cfg.CV_PERFORM[selected_CV]['test_ratio'], random_state=cfg.CV_PERFORM[selected_CV]['random_seed'])
         else:
@@ -535,13 +535,13 @@ def cross_validate(cfg, featdata, cv_file=None):
     ntrials, nsamples, fsize = X_data.shape
     selected_cv =  cfg.CV_PERFORM['selected']
     if selected_cv == 'LeaveOneOut':
-        logger.info_green('%d-fold leave-one-out cross-validation' % ntrials)
+        logger.info('%d-fold leave-one-out cross-validation' % ntrials)
         if SKLEARN_OLD:
             cv = LeaveOneOut(len(Y_data))
         else:
             cv = LeaveOneOut()
     elif selected_cv == 'StratifiedShuffleSplit':
-        logger.info_green('%d-fold stratified cross-validation with test set ratio %.2f' % (cfg.CV_PERFORM[selected_cv]['folds'], cfg.CV_PERFORM[selected_cv]['test_ratio']))
+        logger.info('%d-fold stratified cross-validation with test set ratio %.2f' % (cfg.CV_PERFORM[selected_cv]['folds'], cfg.CV_PERFORM[selected_cv]['test_ratio']))
         if SKLEARN_OLD:
             cv = StratifiedShuffleSplit(Y_data[:, 0], cfg.CV_PERFORM[selected_cv]['folds'], test_size=cfg.CV_PERFORM[selected_cv]['test_ratio'], random_state=cfg.CV_PERFORM[selected_cv]['seed'])
         else:
@@ -660,7 +660,7 @@ def train_decoder(cfg, featdata, feat_file=None):
         X_data_merged, Y_data_merged = balance_samples(X_data_merged, Y_data_merged, cfg.CV['BALANCE_SAMPLES'], verbose=True)
 
     # Start training the decoder
-    logger.info_green('Training the decoder')
+    logger.info('Training the decoder')
     timer = Timer()
     cls.n_jobs = cfg.N_JOBS
     cls.fit(X_data_merged, Y_data_merged)
@@ -700,7 +700,7 @@ def train_decoder(cfg, featdata, feat_file=None):
 
     # Show top distinctive features
     if cfg.FEATURES['selected'] == 'PSD':
-        logger.info_green('Good features ordered by importance')
+        logger.info('Good features ordered by importance')
         if selected_classifier in ['RF', 'GB', 'XGB']:
             keys, values = sort_by_value(list(cls.feature_importances_), reverse=True)
         elif selected_classifier in ['LDA', 'rLDA']:
