@@ -1,11 +1,8 @@
-from __future__ import print_function, division
-
 """
 Time-frequency analysis using Morlet wavelets or multitapers
 
 Kyuhwa Lee
 EPFL, 2019
-
 """
 
 import sys
@@ -13,11 +10,11 @@ import mne
 import pdb
 import scipy
 import numpy as np
+from pathlib import Path
 import mne.time_frequency
 import multiprocessing as mp
 import matplotlib.pyplot as plt
 
-from builtins import input
 from scipy.signal import lfilter
 from scipy.signal import butter
 from scipy.signal import hilbert
@@ -26,7 +23,7 @@ import neurodecode.utils.io as io
 
 from neurodecode import logger
 from neurodecode.utils.preprocess import preprocess
-from neurodecode.utils.preprocess import rereference
+from neurodecode.utils.preprocess import set_eeg_reference
 
 def check_config(cfg):
     if not hasattr(cfg, 'TFR_TYPE'):
@@ -98,28 +95,28 @@ def get_tfr(cfg, recursive=False, n_jobs=1):
             ddir = ddir.replace('\\', '/')
             if ddir[-1] != '/': ddir += '/'
             for f in io.get_file_list(ddir, fullpath=True, recursive=recursive):
-                if io.parse_path(f).ext in ['fif', 'bdf', 'gdf']:
+                if Path(f).suffix in ['.fif', '.bdf', '.gdf']:
                     flist.append(f)
-        raw, events = io.load_fif_multi(flist)
+        raw, events = io.read_raw_fif_multi(flist)
     else:
         logger.info('Loading %s' % cfg.DATA_FILE)
-        raw, events = io.load_fif_raw(cfg.DATA_FILE)
+        raw, events = io.read_raw_fif(cfg.DATA_FILE)
 
         # custom events
         if hasattr(cfg, 'EVENT_FILE') and cfg.EVENT_FILE is not None:
             events = mne.read_events(cfg.EVENT_FILE)
 
         if export_path is None:
-            p = io.parse_path(cfg.DATA_FILE)
-            outpath = p.dir
-            file_prefix = p.name 
+            p = Path(cfg.DATA_FILE)
+            outpath = p.parent
+            file_prefix = p.stem
         else:
             outpath = export_path
-            file_prefix = io.parse_path(cfg.DATA_FILE).name
+            file_prefix = Path(cfg.DATA_FILE).stem
 
     # re-referencing
     if cfg.REREFERENCE is not None:
-        rereference(raw, cfg.REREFERENCE[1], cfg.REREFERENCE[0])
+        set_eeg_reference(raw, cfg.REREFERENCE[1], cfg.REREFERENCE[0])
         assert cfg.REREFERENCE[0] in raw.ch_names
 
     sfreq = raw.info['sfreq']
