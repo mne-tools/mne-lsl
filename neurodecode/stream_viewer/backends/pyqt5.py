@@ -7,6 +7,8 @@ import numpy as np
 import pyqtgraph as pg
 from PyQt5 import QtCore
 
+# pg.setConfigOptions(antialias=True)
+
 class _BackendPyQt5:
     # ---------------------------- Init ---------------------------
     def __init__(self, scope):
@@ -47,10 +49,12 @@ class _BackendPyQt5:
     def init_canvas(self):
         self._plot_handler = self._win.addPlot() # pyqtgraph.PlotItem
         # We want a lightweight scope, so we downsample the plotting to 64 Hz
+        # TODO: Not sure the downsampling is required, feels laggy either way.
         subsampling_ratio = self.scope.sample_rate / 64
         self._plot_handler.setDownsampling(ds=subsampling_ratio,
                                             auto=None, mode='mean')
-        # TODO: Not sure the downsampling is required, feels laggy either way.
+
+        self._plot_handler.setMouseEnabled(x=False, y=False)
 
         self.init_range()
         self.init_y_axis()
