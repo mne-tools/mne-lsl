@@ -1,5 +1,3 @@
-from __future__ import print_function, division
-
 """
 trainer.py
 
@@ -24,11 +22,11 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-
 import os
 import sys
 import mne
 import mne.io
+import pickle
 import platform
 import numpy as np
 import multiprocessing as mp
@@ -36,7 +34,6 @@ import sklearn.metrics as skmetrics
 
 import neurodecode.decoder.features as features
 
-from builtins import input
 from xgboost import XGBClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import GradientBoostingClassifier
@@ -46,9 +43,8 @@ from neurodecode import logger
 from neurodecode.utils.timer import Timer
 from neurodecode.decoder.rlda import rLDA
 from neurodecode.triggers import TriggerDef
-from neurodecode.utils.etc import sort_by_value
 from neurodecode.gui.streams import redirect_stdout_to_queue
-from neurodecode.utils.io import save_obj, load_config, make_dirs
+from neurodecode.utils.io import load_config, make_dirs
 
 # scikit-learn old version compatibility
 try:
@@ -620,6 +616,23 @@ def train_decoder(cfg, featdata, feat_file=None):
     """
     Train the final decoder using all data
     """
+    def sort_by_value(s, reverse=False):
+        assert type(s) == dict or type(s) == list, 'Input must be a dictionary or list.'
+
+        if type(s) == list:
+            s = dict(enumerate(s))
+
+        s_rev = dict((v, k) for k, v in s.items())
+
+        if not len(s_rev) == len(s):
+            logger.warning('sort_by_value(): %d identical values' % (len(s.values()) - len(set(s.values())) + 1))
+
+        values = sorted(s_rev, reverse=reverse)
+        keys = [s_rev[x] for x in values]
+
+        return keys, values
+
+
     # Init a classifier
     selected_classifier = cfg.CLASSIFIER['selected']
     cls_params = cfg.CLASSIFIER[selected_classifier]
@@ -683,7 +696,8 @@ def train_decoder(cfg, featdata, feat_file=None):
 
     clsfile = '%s/classifier/classifier-%s.pkl' % (cfg.DATA_PATH, platform.architecture()[0])
     make_dirs('%s/classifier' % cfg.DATA_PATH)
-    save_obj(clsfile, data)
+    with open(clsfile, 'wb') as f:
+        pickle.dump(data, f, pickle.HIGHEST_PROTOCOL)
     logger.info('Decoder saved to %s' % clsfile)
 
     # Reverse-lookup frequency from FFT
