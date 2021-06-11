@@ -297,6 +297,10 @@ class _ScopeControllerUI(QMainWindow):
         self.scope.channels_to_show_idx = self.channels_to_show_idx
         self.backend.update_channels_to_show_idx(self.channels_to_show_idx)
 
+    def keyPressEvent(self, event):
+        if event.key() == QtCore.Qt.Key_Escape:
+            self.close()
+
     def closeEvent(self, event):
         if self.ui.pushButton_stop_recording.isEnabled():
             self.onClicked_pushButton_stop_recording()
