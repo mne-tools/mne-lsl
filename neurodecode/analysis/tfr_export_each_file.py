@@ -1,21 +1,18 @@
-from __future__ import print_function, division
-
 """
 Time-frequency analysis using Morlet wavelets or multitapers
 TFR computed on each raw file, from the beginning until the end.
 The result is the grand average of TFRs over all epochs.
 
 Kyuhwa Lee, 2018
-
 """
 
 import sys
 import mne
 import scipy
 import numpy as np
-import mne.time_frequency
+from pathlib import Path
 
-from builtins import input
+import mne.time_frequency
 
 import neurodecode.utils.io as io
 
@@ -60,15 +57,15 @@ def get_tfr_each_file(cfg, tfr_type='multitaper', recursive=False, export_path=N
 
     for fifdir in cfg.DATA_PATHS:
         for f in io.get_file_list(fifdir, fullpath=True, recursive=recursive):
-            fext = io.parse_path(f).ext
-            if fext in ['fif', 'bdf', 'gdf']:
+            fext = Path(f).suffix
+            if fext in ['.fif', '.bdf', '.gdf']:
                 get_tfr(f, cfg, tfr, cfg.N_JOBS)
 
 def get_tfr(fif_file, cfg, tfr, n_jobs=1):
-    raw, events = io.load_fif_raw(fif_file)
-    p = io.parse_path(fif_file)
-    fname = p.name
-    outpath = p.dir
+    raw, events = io.read_raw_fif(fif_file)
+    p = Path(fif_file)
+    fname = p.stem
+    outpath = p.parent
 
     export_dir = '%s/plot_%s' % (outpath, fname)
     io.make_dirs(export_dir)
@@ -83,6 +80,7 @@ def get_tfr(fif_file, cfg, tfr, n_jobs=1):
         raise RuntimeError(msg)
 
     # Apply filters
+    # TODO: Not compatible with the new preprocess structure.
     raw = preprocess(raw, spatial=cfg.SP_FILTER, spatial_ch=spchannels, spectral=cfg.TP_FILTER,
                   spectral_ch=picks, notch=cfg.NOTCH_FILTER, notch_ch=picks,
                   multiplier=cfg.MULTIPLIER, n_jobs=n_jobs)

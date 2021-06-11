@@ -905,7 +905,7 @@ def log_decoding(decoder, logfile, amp_name=None, pklfile=True, matfile=False, a
     if matfile:
         pp = io.parse_path(logfile)
         pp = Path(logfile)
-        matout = '%s/%s.mat' % (pp.parent, pp.name)
+        matout = '%s/%s.mat' % (pp.parent, pp.stem)
         scipy.io.savemat(matout, data)
         logger.info('Saved to %s' % matout)
 
