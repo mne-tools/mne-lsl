@@ -15,6 +15,18 @@ from .. import logger
 
 
 class _ScopeControllerUI(QMainWindow):
+    """
+    GUI controlling the scope and the backend.
+
+    Parameters
+    ----------
+    scope : neurodecode.stream_viewer._scope._Scope
+        The scope connected to a stream receiver acquiring the data and applying
+        filtering. The scope has a buffer of _scope._BUFFER_DURATION (default: 30s).
+    backend : str
+        One of the supported backend's name. Supported 'vispy', 'pyqt5'.
+        If None, load the first backend in the order: Vispy, PyQt5.
+    """
     def __init__(self, scope, backend=None):
         super().__init__()
 
@@ -37,19 +49,16 @@ class _ScopeControllerUI(QMainWindow):
         self.load_ui()
 
         # Load and set default configuration
-        self.load_config_file(str(Path(__file__).parent/'.scope_settings_eeg.ini'))
-        self.set_init_configuration()
+        self.set_init_configuration(
+            str(Path(__file__).parent/'.scope_settings_eeg.ini'))
 
         # Init backend
         self.init_backend()
 
-    def load_config_file(self, file):
-        path2_viewerFolder = Path(__file__).parent
-        self.scope_settings = RawConfigParser(
-            allow_no_value=True, inline_comment_prefixes=('#', ';'))
-        self.scope_settings.read(str(path2_viewerFolder/file))
-
     def load_ui(self):
+        """
+        Loads the UI created with QtCreator.
+        """
         # Load
         self.ui = UI_MainWindow(self)
         self.connect_signals_to_slots()
@@ -69,11 +78,24 @@ class _ScopeControllerUI(QMainWindow):
         self.show()
 
     def _fill_list_signal_y_scale(self, y_scales, init_idx=0):
+        """
+        Fill the drop-down menu to select the signal range.
+
+        Parameters
+        ----------
+        y_scales : list of str
+            The list of items to place in the drop-down menu.
+        init_idx : int
+            The default selected item in the drop-down menu.
+        """
         for y_scale in y_scales:
             self.ui.comboBox_signal_y_scale.addItem(str(y_scale))
             self.ui.comboBox_signal_y_scale.setCurrentIndex(init_idx)
 
     def _fill_table_channels(self):
+        """
+        Fill the table widget with the channel names.
+        """
         self._nb_table_columns = 8 if self.scope.n_channels > 64 else 4
         self._nb_table_rows = math.ceil(
             self.scope.n_channels / self._nb_table_columns)
@@ -97,7 +119,15 @@ class _ScopeControllerUI(QMainWindow):
         self.ui.table_channels.horizontalHeader().setSectionResizeMode(
             QHeaderView.Stretch)
 
-    def set_init_configuration(self):
+    def set_init_configuration(self, file):
+        """
+        Load and set a default configuration for the GUI.
+        """
+        path2_viewerFolder = Path(__file__).parent
+        self.scope_settings = RawConfigParser(
+            allow_no_value=True, inline_comment_prefixes=('#', ';'))
+        self.scope_settings.read(str(path2_viewerFolder/file))
+
         # Y-Scale (amplitude)
         try:
             scale = float(self.scope_settings.get("plot", "signal_y_scale"))
@@ -156,9 +186,19 @@ class _ScopeControllerUI(QMainWindow):
         self.ui.statusBar.showMessage("[Not recording]")
 
     def init_backend(self):
+        """
+        Initialize the backend.
+
+        When calling .load_ui(), .connect_signals_to_slots() is called which
+        required both a scope and a backend to be defined.
+        However, the backend requires the _ScopeControllerUI to be fully
+        initialized and setup. Thus the backend is initialized in 2 steps:
+            - Creation of the instance (with all the associated methods)
+            - Initialization (with all the associated variables)
+        """
         x_scale = self.ui.spinBox_signal_x_scale.value()
-        y_scale_key = self.ui.comboBox_signal_y_scale.currentIndex()
-        y_scale = list(self.scope.signal_y_scales.values())[y_scale_key]
+        y_scale_idx = self.ui.comboBox_signal_y_scale.currentIndex()
+        y_scale = list(self.scope.signal_y_scales.values())[y_scale_idx]
         geometry = (self.geometry().x() + self.width(), self.geometry().y(),
                     self.width() * 2, self.height())
         self.backend.init_backend(geometry, x_scale, y_scale, self.channels_to_show_idx)
@@ -283,6 +323,9 @@ class _ScopeControllerUI(QMainWindow):
         self.backend.update_channels_to_show_idx(self.channels_to_show_idx)
 
     def closeEvent(self, event):
+        """
+        Event called when closing the _ScopeControllerUI window.
+        """
         if self.ui.pushButton_stop_recording.isEnabled():
             self.onClicked_pushButton_stop_recording()
         self.backend.close()

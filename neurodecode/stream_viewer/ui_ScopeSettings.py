@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import (QWidget, QCheckBox, QLabel, QComboBox,
                              QPushButton, QSpinBox, QDoubleSpinBox,
                              QFrame, QLineEdit, QTableWidget, QStatusBar)
 
-from ._scope import _MAX_PLOT_DURATION
+from ._scope import _BUFFER_DURATION
 
 
 class UI_MainWindow(object):
@@ -34,7 +34,7 @@ class UI_MainWindow(object):
         self.spinBox_signal_x_scale = QSpinBox(self.MainWidget) # Integers
         self.spinBox_signal_x_scale.setGeometry(QRect(10, 80, 85, 27))
         self.spinBox_signal_x_scale.setMinimum(1)
-        self.spinBox_signal_x_scale.setMaximum(int(_MAX_PLOT_DURATION))
+        self.spinBox_signal_x_scale.setMaximum(int(_BUFFER_DURATION))
         self.spinBox_signal_x_scale.setProperty("value", 10) # Default 10s
         self.spinBox_signal_x_scale.setObjectName("spinBox_signal_x_scale")
 
