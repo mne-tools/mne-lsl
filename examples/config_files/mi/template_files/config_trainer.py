@@ -1,5 +1,5 @@
 #-------------------------------------------
-# Data 
+# Data
 #-------------------------------------------
 DATA_PATH = ''
 
@@ -15,7 +15,7 @@ LOAD_EVENTS = {'selected':'False', 'False':None, 'True':r''}
 #-------------------------------------------
 # Channels specification
 #-------------------------------------------
-PICKED_CHANNELS= [] 
+PICKED_CHANNELS= []
 EXCLUDED_CHANNELS = []
 
 REREFERENCE = {'selected':'False', 'False':None, 'True':dict(New=[''], Old=['', ''])}
@@ -53,6 +53,7 @@ CLASSIFIER =    {'selected': 'RF', \
                 'LDA': dict(solver='svd', shrinkage=None)}
 
 EXPORT_CLS = True
+SAVE_FEATURES = False
 
 #-------------------------------------------
 # Cross-Validation & testing
