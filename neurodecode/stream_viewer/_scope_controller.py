@@ -9,7 +9,7 @@ try:
     from .backends import _BackendVispy, _BackendPyQt5
 except:
     from .backends import _BackendPyQt5
-from .ui_ScopeSettings import UI_MainWindow
+from ._ui_scope_controller import UI_MainWindow
 from ..stream_recorder import StreamRecorder
 from .. import logger
 
@@ -49,8 +49,7 @@ class _ScopeControllerUI(QMainWindow):
         self.load_ui()
 
         # Load and set default configuration
-        self.set_init_configuration(
-            str(Path(__file__).parent/'.scope_settings_eeg.ini'))
+        self.set_init_configuration('scope_settings_eeg.ini')
 
         # Init backend
         self.init_backend()
@@ -123,14 +122,14 @@ class _ScopeControllerUI(QMainWindow):
         """
         Load and set a default configuration for the GUI.
         """
-        path2_viewerFolder = Path(__file__).parent
-        self.scope_settings = RawConfigParser(
+        path2settings_folder = Path(__file__).parent / 'settings'
+        scope_settings = RawConfigParser(
             allow_no_value=True, inline_comment_prefixes=('#', ';'))
-        self.scope_settings.read(str(path2_viewerFolder/file))
+        scope_settings.read(str(path2settings_folder/file))
 
         # Y-Scale (amplitude)
         try:
-            scale = float(self.scope_settings.get("plot", "signal_y_scale"))
+            scale = float(scope_settings.get("plot", "signal_y_scale"))
             init_idx = list(self.scope.signal_y_scales.values()).index(scale)
             self.ui.comboBox_signal_y_scale.setCurrentIndex(init_idx)
         except:
@@ -139,29 +138,29 @@ class _ScopeControllerUI(QMainWindow):
         # X-Scale (time)
         try:
             self.ui.spinBox_signal_x_scale.setValue(int(
-                self.scope_settings.get("plot", "time_plot")))
+                scope_settings.get("plot", "time_plot")))
         except:
             self.ui.spinBox_signal_x_scale.setValue(10)  # 10s by default
 
         # BP/CAR Filters
         try:
             self.ui.checkBox_car.setChecked(bool(
-                self.scope_settings.get("filtering", "apply_car_filter")))
+                scope_settings.get("filtering", "apply_car_filter")))
         except:
             self.ui.checkBox_car.setChecked(False)
 
         try:
             self.ui.checkBox_bandpass.setChecked(bool(
-                self.scope_settings.get("filtering", "apply_bandpass_filter")))
+                scope_settings.get("filtering", "apply_bandpass_filter")))
         except:
             self.ui.checkBox_bandpass.setChecked(False)
 
         try:
             self.ui.doubleSpinBox_bandpass_low.setValue(float(
-                self.scope_settings.get(
+                scope_settings.get(
                     "filtering", "bandpass_cutoff_frequency").split(' ')[0]))
             self.ui.doubleSpinBox_bandpass_high.setValue(float(
-                self.scope_settings.get(
+                scope_settings.get(
                     "filtering", "bandpass_cutoff_frequency").split(' ')[1]))
         except:
             # Default to [1, 40] Hz.
@@ -179,7 +178,7 @@ class _ScopeControllerUI(QMainWindow):
         # Events
         try:
             self.ui.checkBox_show_LPT_events.setChecked(
-                bool(self.scope_settings.get("plot", "show_LPT_events")))
+                bool(scope_settings.get("plot", "show_LPT_events")))
         except:
             self.ui.checkBox_show_LPT_events.setChecked(False)
 
