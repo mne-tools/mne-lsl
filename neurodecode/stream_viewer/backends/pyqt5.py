@@ -14,9 +14,8 @@ class _BackendPyQt5:
     def __init__(self, scope):
         self.scope = scope
         self.backend_initialized = False
-        self.events = list()
+        self.trigger_events = list()
         self._show_LPT_events = False
-        self._show_KEY_events = False
 
     def init_backend(self, geometry, x_scale, y_scale, channels_to_show_idx):
         assert len(channels_to_show_idx) <= self.scope.n_channels
@@ -48,8 +47,6 @@ class _BackendPyQt5:
 
     def init_canvas(self):
         self._plot_handler = self._win.addPlot() # pyqtgraph.PlotItem
-        # We want a lightweight scope, so we downsample the plotting to 64 Hz
-        # TODO: Not sure the downsampling is required, feels laggy either way.
         subsampling_ratio = self.scope.sample_rate / 64
         self._plot_handler.setDownsampling(ds=subsampling_ratio,
                                             auto=None, mode='mean')
@@ -107,7 +104,7 @@ class _BackendPyQt5:
                 (trigger_arr.shape[0] - events_trigger_arr_idx[k])/self.scope.sample_rate
             position_plot = position_buffer - self.delta_with_buffer
 
-            event =  _Event(
+            event =  _TriggerEvent(
                 event_type='LPT',
                 event_value=ev_value,
                 position_buffer=position_buffer,
@@ -118,19 +115,17 @@ class _BackendPyQt5:
             if position_plot >= 0:
                 if event.event_type == 'LPT' and self._show_LPT_events:
                         event.addEventPlot()
-                elif event.event_type == 'KEY' and self._show_KEY_events:
-                    event.addEventPlot()
 
-            self.events.append(event)
+            self.trigger_events.append(event)
 
     def clean_up_events(self):
-        for event in self.events:
+        for event in self.trigger_events:
             if event.position_plot < 0:
                 event.removeEventPlot()
 
-        for k in range(len(self.events)-1, -1, -1):
-            if self.events[k].position_buffer < 0:
-                del self.events[k]
+        for k in range(len(self.trigger_events)-1, -1, -1):
+            if self.trigger_events[k].position_buffer < 0:
+                del self.trigger_events[k]
 
     # -------------------------- Main Loop -------------------------
     def start_timer(self):
@@ -145,7 +140,7 @@ class _BackendPyQt5:
                     y=self.scope.data_buffer[idx, -self.n_samples_plot:]+self.offset[k])
 
             # Update existing events position
-            for event in self.events:
+            for event in self.trigger_events:
                 event.update_position(
                     event.position_buffer - len(self.scope._ts_list)/self.scope.sample_rate,
                     event.position_plot - len(self.scope._ts_list)/self.scope.sample_rate)
@@ -162,14 +157,12 @@ class _BackendPyQt5:
             self.init_range()
             self.init_x_axis()
 
-            for event in self.events:
+            for event in self.trigger_events:
                 event.update_position(
                     event.position_buffer,
                     event.position_buffer - self.delta_with_buffer)
                 if event.position_plot >= 0:
                     if event.event_type == 'LPT' and self._show_LPT_events:
-                        event.addEventPlot()
-                    elif event.event_type == 'KEY' and self._show_KEY_events:
                         event.addEventPlot()
                 else:
                     event.removeEventPlot()
@@ -181,7 +174,7 @@ class _BackendPyQt5:
             self.init_y_axis()
             self.init_plotting_channel_offset()
 
-            for event in self.events:
+            for event in self.trigger_events:
                 event.update_scales(self.y_scale)
 
     def update_channels_to_show_idx(self, new_channels_to_show_idx):
@@ -206,17 +199,9 @@ class _BackendPyQt5:
                     pen=pg.mkColor(self.available_colors[idx, :]))
 
     def update_show_LPT_events(self):
-        for event in self.events:
+        for event in self.trigger_events:
             if event.position_plot >= 0 and event.event_type == 'LPT':
                 if self._show_LPT_events:
-                    event.addEventPlot()
-                else:
-                    event.removeEventPlot()
-
-    def update_show_KEY_events(self):
-        for event in self.events:
-            if event.position_plot >= 0 and event.event_type == 'KEY':
-                if self._show_KEY_events:
                     event.addEventPlot()
                 else:
                     event.removeEventPlot()
@@ -226,9 +211,8 @@ class _BackendPyQt5:
         self._timer.stop()
         self._win.close()
 
-class _Event:
-    pens = {'KEY': pg.mkColor(255, 0, 0),
-            'LPT': pg.mkColor(0, 255, 0)}
+class _TriggerEvent:
+    pens = {'LPT': pg.mkColor(0, 255, 0)}
 
     def __init__(self, event_type, event_value, position_buffer, position_plot,
                  plot_handler, plot_y_scale):

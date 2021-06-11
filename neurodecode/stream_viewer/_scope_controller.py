@@ -153,12 +153,6 @@ class _ScopeControllerUI(QMainWindow):
         except:
             self.ui.checkBox_show_LPT_events.setChecked(False)
 
-        try:
-            self.ui.checkBox_show_Key_events.setChecked(
-                bool(self.scope_settings.get("plot", "show_Key_events")))
-        except:
-            self.ui.checkBox_show_Key_events.setChecked(False)
-
         self.ui.statusBar.showMessage("[Not recording]")
 
     def init_backend(self):
@@ -167,7 +161,6 @@ class _ScopeControllerUI(QMainWindow):
         y_scale = list(self.scope.signal_y_scales.values())[y_scale_key]
         geometry = (self.geometry().x() + self.width(), self.geometry().y(),
                     self.width() * 2, self.height())
-        #TODO: Position is wrong with Vispy. y() doesn't include the title bar.
         self.backend.init_backend(geometry, x_scale, y_scale, self.channels_to_show_idx)
         self.backend.start_timer()
 
@@ -198,8 +191,6 @@ class _ScopeControllerUI(QMainWindow):
         # Events
         self.ui.checkBox_show_LPT_events.stateChanged.connect(
             self.onClicked_checkBox_show_LPT_events)
-        self.ui.checkBox_show_Key_events.stateChanged.connect(
-            self.onClicked_checkBox_show_Key_events)
 
         # Recording
         self.ui.pushButton_start_recording.clicked.connect(
@@ -256,12 +247,6 @@ class _ScopeControllerUI(QMainWindow):
         self.backend.update_show_LPT_events()
 
     @QtCore.pyqtSlot()
-    def onClicked_checkBox_show_Key_events(self):
-        self.backend._show_Key_events = bool(
-            self.ui.checkBox_show_Key_events.isChecked())
-        self.backend.update_show_KEY_events()
-
-    @QtCore.pyqtSlot()
     def onClicked_pushButton_start_recording(self):
         record_dir = self.ui.lineEdit_recording_dir.text()
         self.recorder = StreamRecorder(record_dir, logger)
@@ -296,10 +281,6 @@ class _ScopeControllerUI(QMainWindow):
 
         self.scope.channels_to_show_idx = self.channels_to_show_idx
         self.backend.update_channels_to_show_idx(self.channels_to_show_idx)
-
-    def keyPressEvent(self, event):
-        if event.key() == QtCore.Qt.Key_Escape:
-            self.close()
 
     def closeEvent(self, event):
         if self.ui.pushButton_stop_recording.isEnabled():
