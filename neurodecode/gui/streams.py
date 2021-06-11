@@ -26,7 +26,7 @@ class WriteStream():
         Overload sys.stdout write function
         """
         self.queue.put(text)
-    
+
     #----------------------------------------------------------------------
     def flush(self):
         """
@@ -35,16 +35,16 @@ class WriteStream():
         #if self.queue.empty() is False:
             #tmp = self.queue.get()
         pass
-        
+
 
 ########################################################################
 class MyReceiver(QObject):
     """
     A QObject (to be run in a QThread) which sits waiting for data to come through a Queue.Queue().
-    It blocks until data is available, and once it got something from the queue, it sends it to the "MainThread" by emitting a Qt Signal 
+    It blocks until data is available, and once it got something from the queue, it sends it to the "MainThread" by emitting a Qt Signal
     """
     mysignal = pyqtSignal(str)
-    
+
     #----------------------------------------------------------------------
     def __init__(self, queue):
         QObject.__init__(self)
@@ -57,29 +57,29 @@ class MyReceiver(QObject):
             text = self.queue.get()
             self.mysignal[str].emit(text)
 
-        
+
 ########################################################################
 class GuiTerminal(QDialog):
     """
-    Open a QDialog and display the terminal output of a specific process 
+    Open a QDialog and display the terminal output of a specific process
     """
 
     #----------------------------------------------------------------------
     def __init__(self, logger, verbosity, width):
         """Constructor"""
         super().__init__()
-        
+
         self.textEdit = QTextEdit()
         self.setWindowTitle('Recording')
         self.resize(width, 100)
         self.textEdit.setReadOnly(1)
-        
+
         l = QVBoxLayout()
         l.addWidget(self.textEdit)
         self.setLayout(l)
-        
+
         self.redirect_stdout(logger, verbosity)
-        
+
     # ----------------------------------------------------------------------
     def redirect_stdout(self, logger, verbosity):
         """
@@ -98,8 +98,8 @@ class GuiTerminal(QDialog):
         self.thread.start()
         self.textEdit.insertPlainText('Waiting for the recording to start...\n')
         self.show()
-        
-    
+
+
     @pyqtSlot(str)
     #----------------------------------------------------------------------
     def on_terminal_append(self, text):
@@ -114,9 +114,9 @@ class search_lsl_streams_thread(QThread):
     """
     Look for available lsl streams and emit the signal to share the list
     """
-    
+
     signal_lsl_found = pyqtSignal(list)
-    
+
     #----------------------------------------------------------------------
     def __init__(self, state, logger):
         """
@@ -125,21 +125,21 @@ class search_lsl_streams_thread(QThread):
         super().__init__()
         self.state = state
         self.logger = logger
-    
+
     #----------------------------------------------------------------------
     def run(self):
-        amp_list, streamInfos = list_lsl_streams(state=self.state, logger=self.logger, ignore_markers=False)
-        
+        amp_list, streamInfos = list_lsl_streams(ignore_markers=False, logger=self.logger, state=self.state)
+
         with self.state.get_lock():
             self.state.value = 0
-            
+
         if amp_list:
             self.signal_lsl_found[list].emit(amp_list)
 
 #----------------------------------------------------------------------
 def redirect_stdout_to_queue(logger, queue, verbosity):
     """
-    Redirect stdout and stderr to a queue (GUI purpose). 
+    Redirect stdout and stderr to a queue (GUI purpose).
     """
     if queue is not None:
 
