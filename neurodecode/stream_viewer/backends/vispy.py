@@ -118,7 +118,6 @@ class _BackendVispy(app.Canvas):
                 self.nrows*self.ncols)].astype(np.float32)
 
     def init_u_scale(self):
-        # TODO: Defined second value based on self.y_scale
         self.u_scale = (1., 1/20)
 
     def init_u_size(self):
