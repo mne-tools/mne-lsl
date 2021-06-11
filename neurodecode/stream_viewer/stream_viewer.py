@@ -10,10 +10,19 @@ from ..utils.lsl import search_lsl
 
 
 class StreamViewer:
+    """
+    StreamViewer instance. The stream viewer will connect to only one LSL
+    stream. If stream_name is set to None, an automatic search is performed
+    followed by a prompt if multiple non-markers streams are found.
+
+    Supports 2 backends:
+        'pyqt5': fully functional.
+        'vispy': signal displayed with limited control and information.
+    """
     def __init__(self, stream_name=None):
         self.stream_name = stream_name
 
-    def start(self, bufsize=0.2, backend='pyqt5'):
+    def start(self, bufsize=0.2, backend='vispy'):
         """
         Connect to the selected amplifier and plot the streamed data.
 
