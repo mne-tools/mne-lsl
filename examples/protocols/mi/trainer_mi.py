@@ -63,7 +63,7 @@ os.environ['OMP_NUM_THREADS'] = '1' # actually improves performance for multitap
 def check_config(cfg):
     """
     Check if the required parameters are defined in the config module
-    
+
     cfg = config module
     """
     critical_vars = {
@@ -77,13 +77,13 @@ def check_config(cfg):
                     'TP_FILTER',
                     'TP_CHANNELS',
                     'NOTCH_FILTER',
-                    'NOTCH_CHANNELS', 
+                    'NOTCH_CHANNELS',
                     'FEATURES',
                     'CLASSIFIER',
                     'CV_PERFORM'],
     }
 
-    optional_vars = {  
+    optional_vars = {
         'COMMON': { 'MULTIPLIER': 1,
                     'EXPORT_GOOD_FEATURES': False,
                     'FEAT_TOPN': 10,
@@ -92,27 +92,27 @@ def check_config(cfg):
                     'N_JOBS': None,
                     'EXCLUDED_CHANNELS': None,
                     'LOAD_EVENTS': None,
-                    'CV': { 'IGNORE_THRES': None, 'DECISION_THRES': None, 'BALANCE_SAMPLES': False }
-                    }, 
-        
+                    'CV': { 'IGNORE_THRES': None, 'DECISION_THRES': None, 'BALANCE_SAMPLES': False },
+                    'SAVE_FEATURES': False},
+
         # Internal parmameters for the FEATURE
         'PSD': { 'fmin': 1, 'fmax': 40, 'wlen': 0.5, 'wstep': 16, 'decim': 1 },
-        
+
         # Internal parameters of CLASSIFIER
         'RF': { 'trees': 1000, 'depth': 5, 'seed': 666 },
         'GB': { 'trees': 1000, 'learning_rate': 0.01, 'depth': 3, 'seed': 666 },
         'LDA': [],
         'rLDA': { 'r_coeff': 0.3 },
-        
+
         # Internal parameters of CV_PERFORM
         'StratifiedShuffleSplit': {'test_ratio': 0.2, 'folds': 8, 'seed': 0, 'export_result': True},
         'LeaveOneOut': {'export_result': False}
     }
-    
+
     check_cfg_mandatory(cfg, critical_vars, 'COMMON')
 
     check_cfg_optional(cfg, optional_vars, 'COMMON')
-    
+
     check_cfg_selected(cfg, optional_vars, 'FEATURES')
     check_cfg_selected(cfg, optional_vars, 'CLASSIFIER')
     check_cfg_selected(cfg, optional_vars, 'CV_PERFORM')
@@ -125,7 +125,7 @@ def check_config(cfg):
 def check_cfg_optional(cfg, optional_vars, key_var):
     """
     Check that the optional parameters are defined and if not assign them
-    
+
     cfg = config module containing the parameters to check
     optional_vars = optional parameters with predefined values
     key_var = key to look at in optional_vars
@@ -136,9 +136,9 @@ def check_cfg_optional(cfg, optional_vars, key_var):
             logger.warning('Setting undefined parameter %s=%s' % (key, getattr(cfg, key)))
 
 def check_cfg_mandatory(cfg, critical_vars, key_var):
-    """    
+    """
     Check that the mandatory parameters are defined
-    
+
     cfg = config module containing the parameters to check
     critical_vars = critival parameters needed for the protocol
     key_var = key to look at in critical_vars
@@ -154,12 +154,12 @@ def check_cfg_selected(cfg, optional_vars, select):
     parameters are defined.
 
     cfg = config module containing the parameter to check
-    optional_vars = optional parameters with predefined values for the param 
+    optional_vars = optional parameters with predefined values for the param
     selected = the cfg parameter (type=dict) containing a key: selected
     """
     param = getattr(cfg, select)
     selected = param['selected']
-    
+
     if selected not in param:
         logger.error('%s not defined in config.'% selected)
         raise RuntimeError
@@ -168,7 +168,7 @@ def check_cfg_selected(cfg, optional_vars, select):
             param[selected].update({v: vv})
             setattr(cfg, select, param)
             logger.warning('Updating internal parameter for classifier %s: %s=%s' % (selected, v, vv))
-            
+
 def balance_samples(X, Y, balance_type, verbose=False):
     if balance_type == 'OVER':
         """
@@ -355,7 +355,7 @@ def balance_tpr(cfg, featdata):
     # Init a classifier
     selected_classifier = cfg.CLASSIFIER[cfg.CLASSIFIER['selected']]
     cls_params = cfg.CLASSIFIER[selected_classifier]
-     
+
     if selected_classifier == 'GB':
         cls = GradientBoostingClassifier(loss='deviance', learning_rate=cls_params['learning_rate'],
                                          n_estimators=cls_params['trees'], subsample=1.0, max_depth=cls_params['depth'],
@@ -505,7 +505,7 @@ def cross_validate(cfg, featdata, cv_file=None):
     # Init a classifier
     selected_classifier = cfg.CLASSIFIER['selected']
     cls_params = cfg.CLASSIFIER[selected_classifier]
-    
+
     if selected_classifier == 'GB':
         cls = GradientBoostingClassifier(loss='deviance', learning_rate=cls_params['learning_rate'], presort='auto',
                                          n_estimators=cls_params['trees'], subsample=1.0, max_depth=cls_params['depth'],
@@ -623,7 +623,7 @@ def train_decoder(cfg, featdata, feat_file=None):
     # Init a classifier
     selected_classifier = cfg.CLASSIFIER['selected']
     cls_params = cfg.CLASSIFIER[selected_classifier]
-    
+
     if selected_classifier == 'GB':
         cls = GradientBoostingClassifier(loss='deviance', learning_rate=cls_params['learning_rate'],
                                          n_estimators=cls_params['trees'], subsample=1.0, max_depth=cls_params['depth'],
@@ -674,13 +674,13 @@ def train_decoder(cfg, featdata, feat_file=None):
         data = dict(cls=cls, ch_names=ch_names, psde=featdata['psde'], sfreq=featdata['sfreq'],
                     picks=featdata['picks'], classes=classes, epochs=cfg.EPOCH, w_frames=w_frames,
                     w_seconds=cfg.FEATURES['PSD']['wlen'], wstep=cfg.FEATURES['PSD']['wstep'], spatial=cfg.SP_FILTER,
-                    spatial_ch=cfg.SP_CHANNELS[cfg.SP_CHANNELS['selected']], spectral=cfg.TP_FILTER[cfg.TP_FILTER['selected']], spectral_ch=cfg.SP_CHANNELS[cfg.SP_CHANNELS['selected']],
-                    notch=cfg.NOTCH_FILTER[cfg.NOTCH_FILTER['selected']], notch_ch=cfg.NOTCH_CHANNELS[cfg.NOTCH_CHANNELS['selected']], multiplier=cfg.MULTIPLIER,
+                    spatial_ch=cfg.SP_CHANNELS, spectral=cfg.TP_FILTER[cfg.TP_FILTER['selected']], spectral_ch=cfg.TP_CHANNELS,
+                    notch=cfg.NOTCH_FILTER[cfg.NOTCH_FILTER['selected']], notch_ch=cfg.NOTCH_CHANNELS, multiplier=cfg.MULTIPLIER,
                     ref_ch=cfg.REREFERENCE[cfg.REREFERENCE['selected']], decim=cfg.FEATURES['PSD']['decim'])
-    
+
     if cfg.SAVE_FEATURES:
-        data["SAVED_FEAT"] = dict(X=X_data_merged, Y=Y_data_merged)    
-    
+        data["SAVED_FEAT"] = dict(X=X_data_merged, Y=Y_data_merged)
+
     clsfile = '%s/classifier/classifier-%s.pkl' % (cfg.DATA_PATH, platform.architecture()[0])
     make_dirs('%s/classifier' % cfg.DATA_PATH)
     save_obj(clsfile, data)
@@ -702,9 +702,9 @@ def train_decoder(cfg, featdata, feat_file=None):
     if cfg.FEATURES['selected'] == 'PSD':
         logger.info_green('Good features ordered by importance')
         if selected_classifier in ['RF', 'GB', 'XGB']:
-            keys, values = sort_by_value(list(cls.feature_importances_), rev=True)
+            keys, values = sort_by_value(list(cls.feature_importances_), reverse=True)
         elif selected_classifier in ['LDA', 'rLDA']:
-            keys, values = sort_by_value(cls.coef_.reshape(-1).tolist(), rev=True)
+            keys, values = sort_by_value(cls.coef_.reshape(-1).tolist(), reverse=True)
         keys = np.array(keys)
         values = np.array(values)
 
