@@ -202,9 +202,13 @@ class _BackendPyQt5:
         self._win.close()
 
 class _Event:
+    pens = {'KEY': pg.mkColor(255, 0, 0),
+            'LPT': pg.mkColor(0, 255, 0)}
+
     def __init__(self, event_type, event_value, position_buffer, position_plot,
                  plot_handler, plot_y_scale):
-        self.event_type = event_value
+        assert event_type in self.pens.keys()
+        self.event_type = event_type
         self.event_value = event_value
         self.position_buffer = position_buffer # In time (s)
         self.position_plot = position_plot # In time (s)
@@ -212,22 +216,15 @@ class _Event:
         self.plot_handler = plot_handler
         self.plot_y_scale = plot_y_scale
 
-        if event_type == 'KEY':
-            self.color = pg.mkColor(255, 0, 0)
-        elif event_type == 'LPT':
-            self.color = pg.mkColor(0, 255, 0)
-        else:
-            self.color = pg.mkColor(255, 255, 255)
-
         self.plotted = False
 
     def addEventPlot(self):
         if not self.plotted:
-            self.LineItem = pg.InfiniteLine(pos=self.position_plot, pen=self.color)
+            self.LineItem = pg.InfiniteLine(pos=self.position_plot, pen=self.pens[self.event_type])
             self.plot_handler.addItem(self.LineItem)
 
             self.TextItem = pg.TextItem(str(self.event_value), anchor=(0.5, 1),
-                               fill=(0, 0, 0), color=self.color)
+                               fill=(0, 0, 0), color=self.pens[self.event_type])
             self.TextItem.setPos(self.position_plot, 1.5*self.plot_y_scale)
             self.plot_handler.addItem(self.TextItem)
             self.plotted = True
