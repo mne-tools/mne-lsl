@@ -10,6 +10,7 @@ TODO:
         - Add Key triggers
         - Add a trigger selection to allow Key trigger to be saved in the
         recorded file.
+        - Reorganize / Improve GUI.
 
     Vispy backend:
         - Add channels names + axis labels
