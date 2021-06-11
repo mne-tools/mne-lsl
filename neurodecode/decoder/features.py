@@ -1,5 +1,3 @@
-from __future__ import print_function, division
-
 """
 features.py
 
@@ -30,18 +28,11 @@ import mne.io
 import numpy as np
 import multiprocessing as mp
 
-from xgboost import XGBClassifier
-from mne import Epochs, pick_types
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.ensemble import GradientBoostingClassifier
-from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
-
-from neurodecode import logger
-from neurodecode.decoder.rlda import rLDA
-from neurodecode.utils.timer import Timer
-from neurodecode.utils.preprocess import rereference
-from neurodecode.utils.io import load_fif_multi, get_file_list
-from neurodecode.utils.preprocess import preprocess as apply_preprocess
+from .. import logger
+from ..utils.timer import Timer
+# from ..utils.preprocess import set_eeg_reference
+from ..utils.io import read_raw_fif_multi, get_file_list
+from ..utils.preprocess import preprocess as apply_preprocess
 
 #----------------------------------------------------------------------
 def feature2chz(x, fqlist, ch_names):
@@ -108,13 +99,13 @@ def compute_features(cfg):
     if len(ftrain) > 1 and cfg.PICKED_CHANNELS is not None and type(cfg.PICKED_CHANNELS[0]) == int:
         logger.error('When loading multiple EEG files, PICKED_CHANNELS must be list of string, not integers because they may have different channel order.')
         raise RuntimeError
-    raw, events = load_fif_multi(ftrain)
+    raw, events = read_raw_fif_multi(ftrain)
 
     #-----------------------------------------------------------
     # Rereference
-    #reref = cfg.REREFERENCE[cfg.REREFERENCE['selected']]
-    #if reref is not None:
-        #rereference(raw, reref['New'], reref['Old'])
+    # reref = cfg.REREFERENCE[cfg.REREFERENCE['selected']]
+    # if reref is not None:
+        # set_eeg_reference(raw, reref['New'], reref['Old'])
 
     #-----------------------------------------------------------
     # Load events from file
@@ -141,13 +132,13 @@ def compute_features(cfg):
         if type(cfg.EPOCH[0]) is list:
             epochs_train = []
             for ep in cfg.EPOCH:
-                epoch = Epochs(raw, events, triggers, tmin=ep[0], tmax=ep[1],
+                epoch = mne.Epochs(raw, events, triggers, tmin=ep[0], tmax=ep[1],
                     proj=False, picks=['data'], baseline=None, preload=True,
                     verbose=False, detrend=None)
                 epochs_train.append(epoch)
         else:
             # Usual method: single epoch range
-            epochs_train = Epochs(raw, events, triggers, tmin=cfg.EPOCH[0], tmax=cfg.EPOCH[1], proj=False,
+            epochs_train = mne.Epochs(raw, events, triggers, tmin=cfg.EPOCH[0], tmax=cfg.EPOCH[1], proj=False,
                 picks=['data'], baseline=None, preload=True, verbose=False, detrend=None, on_missing='warning')
     except:
         logger.exception('Problem while epoching.')
@@ -192,6 +183,7 @@ def compute_features(cfg):
     #-----------------------------------------------------------
     #  Preprocessing
     if cfg.FEATURES['selected'] == 'PSD':
+        # TODO: This is not compatible with the new preprocess structure.
         preprocess = dict(sfreq=epochs_train.info['sfreq'],
             spatial=cfg.SP_FILTER,
             spatial_ch=cfg.SP_CHANNELS,
@@ -288,6 +280,7 @@ def _slice_win(epochs_data, w_starts, w_length, psde, picks=None, title=None, pr
 
         #  Apply preprocessing on slices
         if preprocess is not None:
+            # TODO: This is not compatible with the new preprocess structure.
             window = apply_preprocess(window,
                 sfreq=preprocess['sfreq'],
                 spatial=preprocess['spatial'],

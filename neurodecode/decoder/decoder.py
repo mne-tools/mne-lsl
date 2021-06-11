@@ -1,22 +1,16 @@
-from __future__ import print_function, division
-
 """
 Online decoder using frequency features.
 
 Interleaved parallel decoding is supported to achieve high frequency decoding.
-For example, if a single decoder takes 40ms to compute the likelihoods of a single window,
-100 Hz decoding rate can be achieved reliably using 4 cpu cores.
+For example, if a single decoder takes 40ms to compute the likelihoods of a
+single window, 100 Hz decoding rate can be achieved reliably using 4 cpu cores.
 
-TODO:
-Allow self.ref_new to be a list.
-
-TODO:
-Use Pathos to overcome non-picklable class object limitations.
+TODO: Allow self.ref_new to be a list.
+TODO: Use Pathos to overcome non-picklable class object limitations.
 
 Auhtor:
 Kyuhwa Lee
 Swiss Federal Institute of Technology Lausanne (EPFL)
-
 """
 
 import os
@@ -25,9 +19,11 @@ import mne
 import time
 import math
 import pylsl
+import pickle
 import random
 import psutil
 import numpy as np
+from pathlbi import Path
 from numpy import ctypeslib
 import multiprocessing as mp
 import multiprocessing.sharedctypes as sharedctypes
@@ -38,7 +34,6 @@ from neurodecode import logger
 from neurodecode.utils.timer import Timer
 from neurodecode.triggers import trigger_def
 from neurodecode.utils.lsl import search_lsl
-from neurodecode.utils.etc import get_index_max
 from neurodecode.utils.preprocess import preprocess
 from neurodecode.stream_receiver import StreamReceiver
 
@@ -74,7 +69,8 @@ class BCIDecoder(object):
         self.amp_name = amp_name
 
         if self.fake == False:
-            model = io.load_obj(self.classifier)
+            with open(self.classifier, 'rb') as f:
+                model = pickle.load(f)
             if model is None:
                 logger.error('Classifier model is None.')
                 raise ValueError
@@ -102,7 +98,8 @@ class BCIDecoder(object):
                 self._multiplier = 1
 
             # Stream Receiver
-            self._sr = StreamReceiver(window_size=self._w_seconds, amp_name=self.amp_name)
+            self._sr = StreamReceiver(bufsize=self._w_seconds, winsize=self._w_seconds,
+                                      stream_name=self.amp_name)
             if self._sfreq != self._sr.streams[self.amp_name].sample_rate:
                 logger.error('Amplifier sampling rate (%.3f) != model sampling rate (%.3f). Stop.' % (self._sr.streams[self.amp_name].sample_rate, self._sfreq))
                 raise RuntimeError
@@ -221,6 +218,7 @@ class BCIDecoder(object):
             w = w.T  # -> channels x times
 
             # apply filters. Important: maintain the original channel order at this point.
+            # TODO: Not compatible with the new structure of preprocess.
             w = preprocess(w, sfreq=self._sfreq, spatial=self._spatial, spatial_ch=self._spatial_ch,
                           spectral=self._spectral, spectral_ch=self._spectral_ch, notch=self._notch,
                           notch_ch=self._notch_ch, multiplier=self._multiplier, ch_names=self._ch_names,
@@ -382,7 +380,8 @@ class BCIDecoderDaemon(object):
         self.alpha_old = 1 - alpha_new
 
         if fake == False or fake is None:
-            self.model = io.load_obj(self.classifier)
+            with open(self.classifier, 'rb') as f:
+                self.model = pickle.load(f)
             if self.model == None:
                 logger.error('Error loading %s' % self.model)
                 raise IOError
@@ -731,7 +730,8 @@ def get_decoder_info(classifier):
     dict : Classifier info
     """
 
-    model = io.load_obj(classifier)
+    with open(classifier, 'rb') as f:
+        model = pickle.load(f)
     if model is None:
         logger.error('>> Error loading %s' % model)
         raise ValueError
@@ -775,7 +775,7 @@ def _log_decoding_helper(state, event_queue, amp_name=None, autostop=False):
         time.sleep(0.01)
 
     # acquire event values and returns event times and event values
-    sr = StreamReceiver(buffer_size=0, amp_name=amp_name)
+    sr = StreamReceiver(bufsize=0, stream_name=amp_name)
     tm = Timer(autoreset=True)
     started = False
     while state.value == 1:
@@ -899,11 +899,13 @@ def log_decoding(decoder, logfile, amp_name=None, pklfile=True, matfile=False, a
     event_values = np.array(event_values)
     data = dict(probs=probs, prob_times=prob_times, event_times=event_times, event_values=event_values, labels=labels)
     if pklfile:
-        io.save_obj(logfile, data)
+        with open(logfile, 'wb') as f:
+            pickle.dump(data, f, pickle.HIGHEST_PROTOCOL)
         logger.info('Saved to %s' % logfile)
     if matfile:
         pp = io.parse_path(logfile)
-        matout = '%s/%s.mat' % (pp.dir, pp.name)
+        pp = Path(logfile)
+        matout = '%s/%s.mat' % (pp.parent, pp.name)
         scipy.io.savemat(matout, data)
         logger.info('Saved to %s' % matout)
 
@@ -945,6 +947,15 @@ def sample_decoding(decoder):
     ----------
     decoder : The decoder to use
     """
+    def get_index_max(seq):
+        if type(seq) == list:
+            return max(range(len(seq)), key=seq.__getitem__)
+        elif type(seq) == dict:
+            return max(seq, key=seq.__getitem__)
+        else:
+            logger.error('Unsupported input %s' % type(seq))
+            return None
+
     # load trigger definitions for labeling
     labels = decoder.get_label_names()
     tm_watchdog = Timer(autoreset=True)
