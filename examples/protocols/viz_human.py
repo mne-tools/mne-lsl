@@ -1,5 +1,3 @@
-from __future__ import print_function, division
-
 """
 Bar visual feedback class
 
@@ -19,7 +17,6 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 """
 
 import sys
@@ -27,6 +24,7 @@ import os
 import gzip
 import time
 import cv2
+import pickle
 import numpy as np
 
 import neurodecode.hci.glass.bgi_client as bgi_client
@@ -34,11 +32,6 @@ import neurodecode.hci.glass.bgi_client as bgi_client
 from neurodecode import logger
 from neurodecode.utils.timer import Timer
 from neurodecode.utils.io import get_file_list
-
-try:
-    import cPickle as pickle  # Python 2 (cPickle = C version of pickle)
-except ImportError:
-    import pickle  # Python 3 (C version is the default)
 
 
 def read_images(img_path, screen_size=None):
