@@ -1,5 +1,3 @@
-from __future__ import print_function, division
-
 """
 Bar visual feedback class
 Kyuhwa Lee, 2015
@@ -18,7 +16,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys
 import numpy as np
-import time
 import cv2
 import neurodecode.hci.glass.bgi_client as bgi_client
 from neurodecode import logger
@@ -47,8 +44,8 @@ class ColorVisual(object):
                 self.screen_width = GetSystemMetrics(0)
                 self.screen_height = GetSystemMetrics(1)
             else:
-                screen_width = 1024
-                screen_height = 768
+                self.screen_width = 1024
+                self.screen_height = 768
         else:
             self.screen_width, self.screen_height = screen_size
 
@@ -216,7 +213,6 @@ class ColorVisual(object):
 
 
 if __name__ == '__main__':
-    import cv2
     viz = ColorVisual()
     viz.draw_cue('L')
     viz.move('R', 100)

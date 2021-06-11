@@ -1,11 +1,7 @@
-from __future__ import print_function, division
-
 import sys
 import multiprocessing as mp
 
-from builtins import input
-
-import neurodecode.utils.io as io 
+import neurodecode.utils.io as io
 
 from neurodecode import logger
 from neurodecode.utils.timer import Timer
@@ -17,7 +13,7 @@ from neurodecode.gui.streams import redirect_stdout_to_queue
 def check_config(cfg):
     """
     Check if the required parameters are defined in the config module
-    
+
     Parameters
     ----------
     cfg : python.module
@@ -31,20 +27,20 @@ def check_config(cfg):
     }
 
     # Check the critical variables
-    optional_vars = {  
+    optional_vars = {
         'COMMON': { 'DDD',
-                    'EEE'}, 
-        
+                    'EEE'},
+
         # Internal parmameters for the CCC
         'XXX': { 'min': 1, 'max': 40, },
     }
-    
+
     # Check the critical variables
     _check_cfg_mandatory(cfg, critical_vars, 'COMMON')
-    
+
     # Check the optional variables
     _check_cfg_optional(cfg, optional_vars, 'COMMON')
-    
+
     # Check the internal param of CCC
     _check_cfg_selected(cfg, optional_vars, 'CCC')
 
@@ -54,7 +50,7 @@ def check_config(cfg):
 def run(cfg, state=mp.Value('i', 1), queue=None):
     '''
     Main function used to run the online protocol.
-    
+
     Parameters
     ----------
     cfg : python.module
@@ -86,31 +82,32 @@ def run(cfg, state=mp.Value('i', 1), queue=None):
         input('Press Ctrl+C to stop or Enter to continue.')
         trigger = Trigger('FAKE', state)
         trigger.init(50)
-    
+
     # Instance a stream receiver
-    sr = StreamReceiver(window_size=0.5, buffer_size=1, amp_name=None, eeg_only=True)
-    
+    sr = StreamReceiver(bufsize=1, winsize=0.5,
+                        stream_name=None, eeg_only=True)
+
     # Timer for acquisition rate, here 20 Hz
     tm = Timer(autoreset=True)
-    
-    # Refresh rate 
-    refresh_delay = 1.0 / cfg.REFRESH_RATE    
+
+    # Refresh rate
+    refresh_delay = 1.0 / cfg.REFRESH_RATE
 
     while True:
-    
+
         # Acquire data from all the connected LSL streams by filling each associated buffers.
         sr.acquire()
-    
+
         # Extract the latest window from the buffer of the chosen stream.
         window, tslist = sr.get_window()              # window = [samples x channels], tslist = [samples]
-    
+
         #-------------------------------------
         # ADD YOUR CODE HERE
         #-------------------------------------
-        
-        #  To run a trained BCI decoder, look at online_mi.py protocol 
-    
-        tm.sleep_atleast(refresh_delay)    
+
+        #  To run a trained BCI decoder, look at online_mi.py protocol
+
+        tm.sleep_atleast(refresh_delay)
 
     with state.get_lock():
         state.value = 0
@@ -121,21 +118,21 @@ def run(cfg, state=mp.Value('i', 1), queue=None):
 def batch_run(cfg_module):
     '''
     Used when launch from the terminal (not GUI)
-    
+
     Parameters
     ----------
     cfg_module : str
         The path to the config module
-    '''    
+    '''
     cfg = io.load_config(cfg_module)
     check_config(cfg)
     run(cfg)
-    
+
 #-------------------------------------------------------------------------
 def _check_cfg_optional(cfg, optional_vars, key_var):
     """
     Check that the optional parameters are defined and if not assign them
-    
+
     Parameters
     ----------
     cfg :python.module
@@ -152,9 +149,9 @@ def _check_cfg_optional(cfg, optional_vars, key_var):
 
 #-------------------------------------------------------------------------
 def _check_cfg_mandatory(cfg, critical_vars, key_var):
-    """    
+    """
     Check that the mandatory parameters are defined
-    
+
     Parameters
     ----------
     cfg : python.module
@@ -181,12 +178,12 @@ def _check_cfg_selected(cfg, optional_vars, select):
     cfg : python.module
         The config module containing the parameters to check
     optional_vars :
-        The optional parameters with predefined values for the param 
+        The optional parameters with predefined values for the param
     selected = the cfg parameter (type=dict) containing a key: selected
     """
     param = getattr(cfg, select)
     selected = param['selected']
-    
+
     if selected not in param:
         logger.error('%s not defined in config.'% selected)
         raise RuntimeError
