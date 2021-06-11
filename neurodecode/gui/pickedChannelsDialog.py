@@ -6,7 +6,7 @@ class PickChannelsDialog(QDialog):
     """
     Defines the Dialog for selected channels for different cases (picked, excluded, filter...)
     """
-    
+
     signal_paramChanged = pyqtSignal(list)
 
     # ----------------------------------------------------------------------
@@ -74,7 +74,7 @@ class Channel_Select(QObject):
     def __init__(self, key, channels, selected):
         """
         Constructor
-        
+
         channels = full channels list, specific to the eeg headset
         selected = channels pre-selection
         """
