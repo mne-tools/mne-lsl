@@ -79,12 +79,6 @@ class UI_MainWindow(object):
         self.checkBox_show_LPT_events.setObjectName("checkBox_show_LPT_events")
         self.checkBox_show_LPT_events.setText("Show LPT events")
 
-        # Show Key events
-        self.checkBox_show_Key_events = QCheckBox(self.MainWidget)
-        self.checkBox_show_Key_events.setGeometry(QRect(120, 100, 151, 22))
-        self.checkBox_show_Key_events.setObjectName("checkBox_show_Key_events")
-        self.checkBox_show_Key_events.setText("Show Key events")
-
         # Lines
         self.line1 = QFrame(self.MainWidget)
         self.line1.setGeometry(QRect(100, -1, 21, 133))
