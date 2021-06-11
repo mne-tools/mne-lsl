@@ -142,7 +142,7 @@ class BCIDecoder(object):
 
             self.ts_buffer = []
 
-            logger.info_green('Loaded classifier %s (sfreq=%.3f, decim=%d)' % (' vs '.join(self.label_names), self._sfreq, self._decim))
+            logger.info('Loaded classifier %s (sfreq=%.3f, decim=%d)' % (' vs '.join(self.label_names), self._sfreq, self._decim))
         else:
             # Fake left-right decoder
             # TODO: parameterize directions using fake_dirs
@@ -829,7 +829,7 @@ def log_decoding(decoder, logfile, amp_name=None, pklfile=True, matfile=False, a
     event_queue = mp.Queue()
     proc = mp.Process(target=_log_decoding_helper, args=[state, event_queue, amp_name, autostop])
     proc.start()
-    logger.info_green('Spawned event acquisition process.')
+    logger.info('Spawned event acquisition process.')
 
     # init variables and choose decoding function
     labels = decoder.get_label_names()
