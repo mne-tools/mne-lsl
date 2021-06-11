@@ -253,11 +253,13 @@ class _ScopeControllerUI(QMainWindow):
     def onClicked_checkBox_show_LPT_events(self):
         self.backend._show_LPT_events = bool(
             self.ui.checkBox_show_LPT_events.isChecked())
+        self.backend.update_show_LPT_events()
 
     @QtCore.pyqtSlot()
     def onClicked_checkBox_show_Key_events(self):
         self.backend._show_Key_events = bool(
             self.ui.checkBox_show_Key_events.isChecked())
+        self.backend.update_show_KEY_events()
 
     @QtCore.pyqtSlot()
     def onClicked_pushButton_start_recording(self):
