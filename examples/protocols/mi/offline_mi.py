@@ -1,5 +1,3 @@
-from __future__ import print_function, division
-
 """
 Motor imagery training
 
@@ -19,7 +17,6 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 """
 
 import sys
@@ -28,11 +25,10 @@ import random
 import multiprocessing as mp
 
 from neurodecode.utils.timer import Timer
-from neurodecode.utils.io import load_config  
+from neurodecode.utils.io import load_config
 from neurodecode.triggers import Trigger, TriggerDef
 from neurodecode.protocols.viz_bars import BarVisual
 from neurodecode import logger
-from builtins import input
 from neurodecode.gui.streams import redirect_stdout_to_queue
 
 def check_config(cfg):

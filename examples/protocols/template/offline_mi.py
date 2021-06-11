@@ -1,9 +1,5 @@
-from __future__ import print_function, division
-
 import sys
 import multiprocessing as mp
-
-from builtins import input
 
 from neurodecode import logger
 from neurodecode.utils.timer import Timer
@@ -15,13 +11,13 @@ import neurodecode.utils.io as io
 def check_config(cfg):
     '''
     Check the variables contained in the loaded config file
-    
+
     Parameters
     ----------
     cfg : python.module
         The loaded config module
     '''
-    
+
     # Add here the critical variables that need to be defined in the config_offline.py
     critical_vars = {
         'COMMON': ['TRIALS_NB',
@@ -33,20 +29,20 @@ def check_config(cfg):
     # If not defined, the variable will be added with the value defined below
     optional_vars = {
         'COMMON' : {'REFRESH_RATE': 20, },
-        
+
         # Internal parmameters for the CCC
-        'XXX': { 'min': 1, 'max': 40, },        
+        'XXX': { 'min': 1, 'max': 40, },
     }
 
     # Check the critical variables
     _check_cfg_mandatory(cfg, critical_vars, 'COMMON')
-    
+
     # Check the optional variables
     _check_cfg_optional(cfg, optional_vars, 'COMMON')
-    
+
     # Check the internal param of CCC
-    _check_cfg_selected(cfg, optional_vars, 'CCC')    
-    
+    _check_cfg_selected(cfg, optional_vars, 'CCC')
+
     # The TRIGGER_DEVICE attribute is mandatory
     if getattr(cfg, 'TRIGGER_DEVICE') == None:
         logger.warning('The trigger device is set to None! No events will be saved.')
@@ -55,7 +51,7 @@ def check_config(cfg):
 def batch_run(cfg_module):
     '''
     Used when launch from the terminal (not GUI)
-    
+
     Parameters
     ----------
     cfg_module : str
@@ -69,7 +65,7 @@ def batch_run(cfg_module):
 def run(cfg, state=mp.Value('i', 1), queue=None, logger=logger):
     '''
     Main function used to run the offline protocol.
-    
+
     Parameters
     ----------
     cfg : python.module
@@ -93,7 +89,7 @@ def run(cfg, state=mp.Value('i', 1), queue=None, logger=logger):
     # Load the mapping from int to string for triggers events
     cfg.tdef = TriggerDef(cfg.TRIGGER_FILE)
 
-    # Refresh rate 
+    # Refresh rate
     refresh_delay = 1.0 / cfg.REFRESH_RATE
 
     # Trigger
@@ -106,7 +102,7 @@ def run(cfg, state=mp.Value('i', 1), queue=None, logger=logger):
 
     # timers
     timer_refresh = Timer()
-    
+
     trial = 1
     num_trials = cfg.TRIALS_NB
 
@@ -126,7 +122,7 @@ def run(cfg, state=mp.Value('i', 1), queue=None, logger=logger):
 def _check_cfg_optional(cfg, optional_vars, key_var):
     """
     Check that the optional parameters are defined and if not assign them
-    
+
     Parameters
     ----------
     cfg :python.module
@@ -143,9 +139,9 @@ def _check_cfg_optional(cfg, optional_vars, key_var):
 
 #-------------------------------------------------------------------------
 def _check_cfg_mandatory(cfg, critical_vars, key_var):
-    """    
+    """
     Check that the mandatory parameters are defined
-    
+
     Parameters
     ----------
     cfg : python.module
@@ -172,12 +168,12 @@ def _check_cfg_selected(cfg, optional_vars, select):
     cfg : python.module
         The config module containing the parameters to check
     optional_vars :
-        The optional parameters with predefined values for the param 
+        The optional parameters with predefined values for the param
     selected = the cfg parameter (type=dict) containing a key: selected
     """
     param = getattr(cfg, select)
     selected = param['selected']
-    
+
     if selected not in param:
         logger.error('%s not defined in config.'% selected)
         raise RuntimeError
