@@ -312,7 +312,7 @@ class Streamer:
         self.raw._data[idx, :] = self._raw.get_data()[idx, :] * 1E6
 
         if self.raw is not None:
-            self._logger.info_green(f'Successfully loaded {fif_file}')
+            self._logger.info(f'Successfully loaded {fif_file}')
         else:
             self._logger.error(f"Error while loading '{fif_file}'.")
             raise IOError

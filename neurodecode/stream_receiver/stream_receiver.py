@@ -18,9 +18,7 @@ class StreamReceiver:
 
     Parameters
     ----------
-    bufsize : int
-        The buffer's size [secs]. 1-day is the maximum size.
-        Large buffer may lead to a delay if not pulled frequently.
+    logger : logger
     winsize : int
         To extract the latest winsize samples from the buffer [secs].
     stream_name : list | str
