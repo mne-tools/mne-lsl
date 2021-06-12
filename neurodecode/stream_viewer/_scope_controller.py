@@ -49,7 +49,7 @@ class _ScopeControllerUI(QMainWindow):
         self.load_ui()
 
         # Load and set default configuration
-        self.set_init_configuration('scope_settings_eeg.ini')
+        self.set_init_configuration('settings_scope_eeg.ini')
 
         # Init backend
         self.init_backend()
