@@ -1,26 +1,25 @@
 """
-Send trigger events to parallel port (LPT).
-
-See sample code at the end.
-
-Kyuhwa Lee, 2014
-Swiss Federal Institute of Technology Lausanne (EPFL)
+Trigger can send events to the parallel port (DESKTOP, USB2LPT, ARDUINO), to an
+event file (SOFTWARE) or to nothing (FAKE).
 """
 
 import io
 import sys
 import time
-import pylsl
 import ctypes
 import threading
 import multiprocessing as mp
 from pathlib import Path
 
+import pylsl
+import serial
+from serial.tools import list_ports
+
 from .. import logger
 from ..utils.lsl import start_client
 
 
-class Trigger(object):
+class Trigger:
     """
     Class for sending trigger events.
 
@@ -32,11 +31,12 @@ class Trigger(object):
         - 'SOFTWARE': Software trigger
         - 'ARDUINO': Arduino trigger
         - 'FAKE': Mock trigger device for testing
-
     portaddr : hex
         The port address in hexadecimal format (standard: 0x278, 0x378)
-        When using USB2LPT, the port number (e.g. 0x378) can be searched automatically.
-        When using Desktop's LPT, the port number must be specified during initialization.
+        When using USB2LPT, the port number (e.g. 0x378) can be searched
+        automatically.
+        When using Desktop's LPT, the port number must be specified during
+        initialization.
     verbose : bool
         The verbosity, True display logging info output.
     state : multiprocessing.value
@@ -60,9 +60,8 @@ class Trigger(object):
             self.lpt = self._load_dll(dllname)
 
         elif self._lpttype == 'ARDUINO':
-            BAUD_RATE = 115200
             com_port = self._find_arduino_port()
-            self._connect_arduino(com_port, BAUD_RATE)
+            self._connect_arduino(com_port, baud_rate=115200)
 
         elif self._lpttype == 'SOFTWARE':
             logger.info('Using software trigger')
@@ -128,20 +127,16 @@ class Trigger(object):
         """
         Automatic Arduino comPort detection.
         """
-        import serial.tools.list_ports
+        com_port = None
 
-        arduinos = [x for x in serial.tools.list_ports.grep('Arduino')]
+        for arduino in list_ports.grep(regexp='Arduino'):
+            logger.info(f'Found {arduino}')
+            com_port = arduino.device
+            break
 
-        if len(arduinos) == 0:
-            logger.error('No Arduino found. Stop.')
+        if com_port is None:
+            logger.error('No Arduino found.')
             sys.exit()
-
-        for i, a in enumerate(arduinos):
-            logger.info(f'Found {a[0]}')
-        try:
-            com_port = arduinos[0].device
-        except AttributeError:  # depends on Python distribution
-            com_port = arduinos[0][0]
 
         return com_port
 
@@ -156,13 +151,13 @@ class Trigger(object):
         baud_rate : int
             The baud rate, determined the communication speed
         """
-        import serial
-
         try:
             self.ser = serial.Serial(com_port, baud_rate)
         except serial.SerialException as error:
-            raise Exception(
-                f"Disconnect and reconnect the ARDUINO convertor because {error}")
+            logger.error(
+                "Disconnect and reconnect the ARDUINO convertor because "
+                f"{error}")
+            raise Exception from error
 
         time.sleep(1)  # doesn't work without this delay. why?
         logger.info(f'Connected to {com_port}.')
@@ -171,9 +166,7 @@ class Trigger(object):
         """
         Find the event file name from LSL Server in case of SOFTWARE trigger.
         """
-        LSL_SERVER = 'StreamRecorderInfo'
-
-        inlet = start_client(LSL_SERVER, state)
+        inlet = start_client(server_name='StreamRecorderInfo', state=state)
         evefile = inlet.info().source_id()
         logger.info(f'Event file is: {evefile}')
 
@@ -343,5 +336,5 @@ class Trigger(object):
         if self._lpttype == 'ARDUINO':
             try:
                 self.ser.close()
-            except:
+            except Exception:
                 pass

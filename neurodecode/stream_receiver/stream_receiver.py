@@ -1,8 +1,8 @@
 import time
+from threading import Thread
+
 import pylsl
 import numpy as np
-
-from threading import Thread
 
 from ._stream import StreamEEG, StreamMarker
 from .. import logger
@@ -58,7 +58,7 @@ class StreamReceiver:
         self._is_connected = False
         server_found = False
 
-        while server_found == False:
+        while not server_found:
 
             if stream_name is None:
                 logger.info(
@@ -70,43 +70,43 @@ class StreamReceiver:
             streamInfos = pylsl.resolve_streams()
 
             if len(streamInfos) > 0:
-                for si in streamInfos:
+                for streamInfo in streamInfos:
 
                     # EEG streaming server only?
-                    if eeg_only and si.type().lower() != 'eeg':
-                        logger.info(f'Stream {si.name()} skipped.')
+                    if eeg_only and streamInfo.type().lower() != 'eeg':
+                        logger.info(f'Stream {streamInfo.name()} skipped.')
                         continue
                     # connect to a specific amp only?
                     if isinstance(stream_name, str) and \
-                            si.name() != stream_name:
-                        if stream_name in si.name():
+                            streamInfo.name() != stream_name:
+                        if stream_name in streamInfo.name():
                             logger.info(
                                 f'Stream {stream_name} skipped, '
-                                f'however {si.name()} exists.')
+                                f'however {streamInfo.name()} exists.')
                         continue
                     if isinstance(stream_name, (list, tuple)) and \
-                            si.name() not in stream_name:
-                        logger.info(f'Stream {si.name()} skipped.')
+                            streamInfo.name() not in stream_name:
+                        logger.info(f'Stream {streamInfo.name()} skipped.')
                         continue
                     # do not connect to StreamRecorderInfo
-                    if si.name() == 'StreamRecorderInfo':
+                    if streamInfo.name() == 'StreamRecorderInfo':
                         continue
 
                     # EEG stream
-                    if si.type().lower() == "eeg":
-                        self._streams[si.name()] = StreamEEG(si, bufsize,
-                                                             winsize)
+                    if streamInfo.type().lower() == "eeg":
+                        self._streams[streamInfo.name()] = StreamEEG(
+                            streamInfo, bufsize, winsize)
                     # Marker stream
-                    elif si.nominal_srate() == 0:
-                        self._streams[si.name()] = StreamMarker(si, bufsize,
-                                                                winsize)
+                    elif streamInfo.nominal_srate() == 0:
+                        self._streams[streamInfo.name()] = StreamMarker(
+                            streamInfo, bufsize, winsize)
 
                     server_found = True
             time.sleep(1)
 
-        for s in self._streams.keys():
-            if s not in self._acquisition_threads.keys():
-                self._acquisition_threads[s] = None
+        for stream in self._streams:
+            if stream not in self._acquisition_threads.keys():
+                self._acquisition_threads[stream] = None
 
         self.show_info()
         self._is_connected = True
@@ -116,11 +116,11 @@ class StreamReceiver:
         """
         Display the informations about the connected streams.
         """
-        for s in self.streams:
+        for stream in self.streams:
             logger.info("--------------------------------"
                         "--------------------------------")
-            logger.info(f"The stream {s} is connected to:")
-            self.streams[s].show_info()
+            logger.info(f"The stream {stream} is connected to:")
+            self.streams[stream].show_info()
 
     def disconnect_stream(self, stream_name=None):
         """
@@ -141,26 +141,24 @@ class StreamReceiver:
 
         try:
             self.streams[stream_name]._inlet.close_stream()
-            del self.stream[stream_name]
+            del self.streams[stream_name]
         except KeyError:
             logger.error(
                 f"The stream '{stream_name}' does not exist. Skipping.")
-        except:
-            raise
 
     def acquire(self):
         """
         Read data from the streams and fill their buffer using threading.
         """
-        for s in self._streams:
-            if self._acquisition_threads[s] is not None and \
-                self._acquisition_threads[s].is_alive():
+        for stream in self._streams:
+            if self._acquisition_threads[stream] is not None and \
+                    self._acquisition_threads[stream].is_alive():
                 continue
 
-            t = Thread(target=self._streams[s].acquire, args=[])
-            t.daemon = True
-            t.start()
-            self._acquisition_threads[s] = t
+            thread = Thread(target=self._streams[stream].acquire, args=[])
+            thread.daemon = True
+            thread.start()
+            self._acquisition_threads[stream] = thread
 
     def get_window(self, stream_name=None):
         """
@@ -194,8 +192,6 @@ class StreamReceiver:
             logger.warning('.acquire() must be called before .get_window().')
             return (np.empty((0, len(self.streams[stream_name].ch_list))),
                     np.array([]))
-        except:
-            raise
 
         try:
             window = self.streams[stream_name].buffer.data[-winsize:]
@@ -244,8 +240,6 @@ class StreamReceiver:
             logger.warning('.acquire() must be called before .get_window().')
             return (np.empty((0, len(self.streams[stream_name].ch_list))),
                     np.array([]))
-        except:
-            raise
 
         if len(self.streams[stream_name].buffer.timestamps) > 0:
             return (np.array(self.streams[stream_name].buffer.data),
@@ -277,8 +271,8 @@ class StreamReceiver:
         """
         Clear all the streams' buffer.
         """
-        for s in self._streams.keys():
-            self.reset_buffer(s)
+        for stream in self._streams:
+            self.reset_buffer(stream)
 
     @property
     def is_connected(self):
@@ -294,7 +288,7 @@ class StreamReceiver:
         return self._is_connected
 
     @is_connected.setter
-    def is_connected(self, is_it):
+    def is_connected(self, is_connected):
         logger.warning("This attribute cannot be modified.")
 
     @property
@@ -305,5 +299,5 @@ class StreamReceiver:
         return self._streams
 
     @streams.setter
-    def streams(self, new_streams):
+    def streams(self, streams):
         logger.warning("The connected streams cannot be modified.")

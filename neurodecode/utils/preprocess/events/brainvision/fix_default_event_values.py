@@ -1,15 +1,15 @@
 """
 BrainVision amplifiers have a default value of -1 for the trigger channel
 instead of the conventional 0.
-/!\ Tested on actiCHamp amplifiers only, verify the default value for your
+Tested on actiCHamp amplifiers only, verify the default value for your
 amplifier.
 
 Correction is done via:
 https://mne.tools/stable/generated/mne.io.Raw.html#mne.io.Raw.apply_function
 """
+from pathlib import Path
 
 import mne
-from pathlib import Path
 
 from .. import find_event_channel, change_event_values_arr
 from .... import io
@@ -48,8 +48,6 @@ def fix_default_event_values(raw, default_value=-1):
                            event_value_old=default_value,
                            event_value_new=0,
                            picks=raw.ch_names[tch], channel_wise=True)
-    except:
-        raise
 
 
 def dir_fix_default_event_values(fif_dir, recursive, default_value=-1,
@@ -91,10 +89,11 @@ def dir_fix_default_event_values(fif_dir, recursive, default_value=-1,
         if not out_dir.is_dir():
             io.make_dirs(out_dir)
 
-    for fif_file in io.get_file_list(fif_dir, fullpath=True, recursive=recursive):
+    for fif_file in io.get_file_list(fif_dir, fullpath=True,
+                                     recursive=recursive):
         fif_file = Path(fif_file)
 
-        if not fif_file.suffix == '.fif':
+        if fif_file.suffix != '.fif':
             continue
         if not fif_file.stem.endswith('-raw'):
             continue
@@ -115,5 +114,3 @@ def dir_fix_default_event_values(fif_dir, recursive, default_value=-1,
             logger.warning(
                 f'The corrected file already exist for {fif_file.name}. '
                 'Use overwrite=True to force overwriting.')
-        except:
-            raise

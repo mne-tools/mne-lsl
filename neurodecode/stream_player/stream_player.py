@@ -1,8 +1,8 @@
-
 import time
+import multiprocessing as mp
+
 import pylsl
 import numpy as np
-import multiprocessing as mp
 
 from .. import logger
 from ..triggers import TriggerDef
@@ -59,7 +59,6 @@ class StreamPlayer:
         self._process = mp.Process(target=self._stream,
                                    args=(repeat,
                                          high_resolution,
-                                         self._logger,
                                          self._state))
         self._process.start()
 
@@ -84,18 +83,19 @@ class StreamPlayer:
         Stop the streaming, by terminating the process.
         """
         if self._process:
-            self._logger.info(f"Stop streaming data from: '{self.stream_name}'.")
+            self._logger.info(
+                f"Stop streaming data from: '{self.stream_name}'.")
             self._process.terminate()
 
-    def _stream(self, repeat, high_resolution, logger, state):
+    def _stream(self, repeat, high_resolution, state):
         """
         The function called in the new process.
 
         Instance a Streamer and start streaming.
         """
-        s = Streamer(self.stream_name, self.fif_file, self.chunk_size,
-                     self.trigger_file, self._logger, state)
-        s.stream(repeat, high_resolution)
+        streamer = Streamer(self.stream_name, self.fif_file, self.chunk_size,
+                            self.trigger_file, self._logger, state)
+        streamer.stream(repeat, high_resolution)
 
     @property
     def stream_name(self):
@@ -213,7 +213,7 @@ class Streamer:
         """
         self._logger.info('Streaming started.')
 
-        # Change sharing variable to 1 to let other process know that it is now streaming
+        # Change sharing to 1 to let other process know that it is streaming.
         with self._state.get_lock():
             self._state.value = 1
 
@@ -279,9 +279,9 @@ class Streamer:
 
         desc = sinfo.desc()
         channel_desc = desc.append_child("channels")
-        for ch in self.raw.ch_names:
+        for channel in self.raw.ch_names:
             channel_desc.append_child('channel')\
-                        .append_child_value('label', str(ch))\
+                        .append_child_value('label', str(channel))\
                         .append_child_value('type', 'EEG')\
                         .append_child_value('unit', 'microvolts')
 
@@ -362,8 +362,8 @@ class Streamer:
             f'Number of channels : {self.get_nb_ch()}')
         self._logger.info(
             f'Chunk size : {self.chunk_size}')
-        for i, ch in enumerate(self.raw.ch_names):
-            self._logger.info(f'{i} {ch}')
+        for i, channel in enumerate(self.raw.ch_names):
+            self._logger.info(f'{i} {channel}')
         self._logger.info(
             f'Trigger channel : {self.get_trg_index()}')
 
@@ -377,7 +377,7 @@ class Streamer:
             while time.perf_counter() < t_sleep_until:
                 pass
         else:
-            # time.sleep() can have 500 us resolution using the tweak tool provided.
+            # time.sleep() can have 500 us resolution.
             t_wait = t_start + idx_chunk * t_chunk - time.time()
             if t_wait > 0.001:
                 time.sleep(t_wait)
@@ -398,7 +398,8 @@ class Streamer:
                     for event in event_values:
                         if event in self._tdef.by_value:
                             self._logger.info(
-                                f'Events: {event} ({self._tdef.by_value[event]})')
+                                f'Events: {event} '
+                                f'({self._tdef.by_value[event]})')
                         else:
                             self._logger.info(
                                 f'Events: {event} (Undefined event {event})')

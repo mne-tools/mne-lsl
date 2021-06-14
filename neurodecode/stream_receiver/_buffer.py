@@ -4,7 +4,7 @@ from .. import logger
 class Buffer():
     """
     Class representing the stream's buffer.
-    /!\ This is not a Python Buffer Interface compatible class.
+    This is not a Python Buffer Interface compatible class.
 
     Parameters
     ----------
@@ -56,7 +56,7 @@ class Buffer():
 
     @winsize.setter
     def winsize(self, winsize):
-        logger.warning("This attribute cannot be changed")
+        logger.warning("This attribute cannot be changed.")
 
     @property
     def bufsize(self):
@@ -67,7 +67,7 @@ class Buffer():
 
     @bufsize.setter
     def bufsize(self, bufsize):
-        logger.warning("This attribute cannot be changed")
+        logger.warning("This attribute cannot be changed.")
 
     @property
     def data(self):

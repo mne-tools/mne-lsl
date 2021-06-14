@@ -3,12 +3,12 @@ Vispy Canvas for Neurodecode's StreamViewer.
 Code adapted from Vispy official example:
 https://github.com/vispy/vispy/blob/main/examples/demo/gloo/realtime_signals.py
 """
+import math
 
+import vispy
+import numpy as np
 from vispy import app
 from vispy import gloo
-import numpy as np
-import math
-import vispy
 vispy.use("pyqt5")
 
 
@@ -65,10 +65,12 @@ class _BackendVispy(app.Canvas):
     Parameters
     ----------
     scope : neurodecode.stream_viewer._scope._Scope
-        The scope connected to a stream receiver acquiring the data and applying
-        filtering. The scope has a buffer of _scope._BUFFER_DURATION (default: 30s).
+        The scope connected to a stream receiver acquiring the data and
+        applying filtering. The scope has a buffer of _scope._BUFFER_DURATION
+        (default: 30s).
     """
     # ---------------------------- Init ---------------------------
+
     def __init__(self, scope):
         self.scope = scope
         self.backend_initialized = False
@@ -116,7 +118,8 @@ class _BackendVispy(app.Canvas):
 
     def init_nrows_ncols(self):
         """
-        Initialize the number of rows and columns on which the channels are displayed.
+        Initialize the number of rows and columns on which the channels are
+        displayed.
         """
         self.nrows = len(self.channels_to_show_idx)
         self.ncols = 1
@@ -203,7 +206,8 @@ class _BackendVispy(app.Canvas):
             keys='interactive')
         self.program = gloo.Program(VERT_SHADER, FRAG_SHADER)
         self.program['a_position'] = self.scope.data_buffer[
-            self.channels_to_show_idx, -self.n_samples_plot:].ravel().astype(np.float32)
+            self.channels_to_show_idx,
+            -self.n_samples_plot:].ravel().astype(np.float32)
         self.program['a_color'] = self.a_color
         self.program['a_index'] = self.a_index
         self.program['u_scale'] = self.u_scale

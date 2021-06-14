@@ -1,9 +1,9 @@
 import math
-import numpy as np
-import pylsl
 import time
-
 from abc import ABC, abstractmethod
+
+import pylsl
+import numpy as np
 
 from ._buffer import Buffer
 from .. import logger
@@ -91,9 +91,9 @@ class _Stream(ABC):
         if self._serial == '':
             self._serial = 'N/A'
 
-        self.is_slave = 'true' == self._inlet.info().desc().child(
+        self.is_slave = self._inlet.info().desc().child(
             'amplifier').child('settings').child(
-                'is_slave').first_child().value()
+                'is_slave').first_child().value() == 'true'
 
     # ---------------------------- Method ----------------------------
     def show_info(self):
@@ -143,11 +143,11 @@ class _Stream(ABC):
                 if len(tslist) == 0:
                     chunk, tslist = self._inlet.pull_chunk(
                         timeout=0.0, max_samples=self._lsl_bufsize)
-                    if self._blocking == False and len(tslist) == 0:
+                    if not self._blocking and len(tslist) == 0:
                         received = True
                         break
                 if len(tslist) > 0:
-                    if self._lsl_time_offset is None: # First acquisition
+                    if self._lsl_time_offset is None:  # First acquisition
                         self._compute_offset(tslist)
                     received = True
                     tslist = self._correct_lsl_offset(tslist)
@@ -294,7 +294,7 @@ class _Stream(ABC):
         return self._sample_rate
 
     @sample_rate.setter
-    def sample_rate(self, sr):
+    def sample_rate(self, sample_rate):
         logger.warning("The stream's sampling rate cannot be changed.")
 
     @property
@@ -305,7 +305,7 @@ class _Stream(ABC):
         return self._streamInfo
 
     @streamInfo.setter
-    def streamInfo(self, si):
+    def streamInfo(self, streamInfo):
         logger.warning("The stream's info cannot be changed.")
 
     @property
@@ -494,8 +494,9 @@ class StreamEEG(_Stream):
 
         if self._lsl_tr_channel is not None:
             # move trigger channel to 0 and add back to the buffer
-            data = np.concatenate((data[:, self._lsl_tr_channel].reshape(-1, 1),
-                                   data[:, self._lsl_eeg_channels]), axis=1)
+            data = np.concatenate(
+                (data[:, self._lsl_tr_channel].reshape(-1, 1),
+                 data[:, self._lsl_eeg_channels]), axis=1)
         else:
             # add an empty channel with zeros to channel 0
             data = np.concatenate((np.zeros((data.shape[0], 1)),

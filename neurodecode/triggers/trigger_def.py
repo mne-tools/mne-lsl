@@ -4,7 +4,7 @@ from configparser import ConfigParser
 from .. import logger
 
 
-class TriggerDef(object):
+class TriggerDef:
     """
     Class for reading event's pairs (string-integer) from ini file.
 
