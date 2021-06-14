@@ -44,7 +44,8 @@ class _Recorder:
 
     def record(self, verbose=False):
         """
-        Start the recording and save to files the data in pickle and fif format.
+        Start the recording and save to files the recorded data in pickle and
+        fif format.
 
         Parameters
         ----------
@@ -70,9 +71,10 @@ class _Recorder:
         eve_file : str
             The software events' file (txt format).
         """
-        name='StreamRecorderInfo'
-        return start_server(name, channel_format='string',
-                            source_id=eve_file, stype='Markers')
+        return start_server(server_name='StreamRecorderInfo',
+                            channel_format='string',
+                            source_id=eve_file,
+                            stype='Markers')
 
     def acquire(self, verbose=False):
         """
@@ -94,7 +96,7 @@ class _Recorder:
 
             if verbose:
                 bufsec = len(self.sr.streams[first_stream].buffer.data) / \
-                         self.sr.streams[first_stream].sample_rate
+                    self.sr.streams[first_stream].sample_rate
                 duration = str(datetime.timedelta(seconds=int(bufsec)))
                 self.logger.info(f'RECORDING {duration}')
 
@@ -136,8 +138,8 @@ class _Recorder:
 
         pcl_files = dict()
 
-        for s in self.sr.streams:
-            pcl_files[s] = self.record_dir / f'{timestamp}-{s}-raw.pcl'
+        for stream in self.sr.streams:
+            pcl_files[stream] = self.record_dir/f'{timestamp}-{stream}-raw.pcl'
 
         return pcl_files, eve_file
 
@@ -154,9 +156,10 @@ class _Recorder:
 
         for pcl_file in pcl_files.keys():
             try:
-                with open(pcl_files[pcl_file], 'w') as f:
-                    f.write('Data will be written when the recording is finished.')
-            except:
+                with open(pcl_files[pcl_file], 'w') as file:
+                    file.write(
+                        'Data will be written when the recording is finished.')
+            except Exception:
                 self.logger.error(
                     f"Problem writing to '{pcl_file}'. Check permission.")
                 raise RuntimeError
@@ -174,30 +177,30 @@ class _Recorder:
         """
         self.logger.info('Saving raw data ...')
 
-        for s in self.sr.streams:
+        for stream in self.sr.streams:
 
-            signals, timestamps = self.sr.get_buffer(s)
+            signals, timestamps = self.sr.get_buffer(stream)
 
-            if isinstance(self.sr.streams[s], StreamEEG):
+            if isinstance(self.sr.streams[stream], StreamEEG):
                 signals[:, 1:] *= 1E-6
 
-            data = self.create_dict_to_save(signals, timestamps, s)
+            data = self.create_dict_to_save(signals, timestamps, stream)
 
-            with open(pcl_files[s], 'wb') as file:
+            with open(pcl_files[stream], 'wb') as file:
                 pickle.dump(data, file, protocol=pickle.HIGHEST_PROTOCOL)
 
-            self.logger.info(f"Saved to '{pcl_files[s]}'\n")
+            self.logger.info(f"Saved to '{pcl_files[stream]}'\n")
             self.logger.info('Converting raw files into fif.')
 
             # Convert only EEG stream to fif format
-            if not isinstance(self.sr.streams[s], StreamEEG):
+            if not isinstance(self.sr.streams[stream], StreamEEG):
                 continue
 
             if eve_file.exists():
                 self.logger.info('Found matching event file, adding events.')
-                pcl2fif(pcl_files[s], external_event=eve_file)
+                pcl2fif(pcl_files[stream], external_event=eve_file)
             else:
-                pcl2fif(pcl_files[s], external_event=None)
+                pcl2fif(pcl_files[stream], external_event=None)
 
     def create_dict_to_save(self, signals, timestamps, stream_name):
         """
@@ -220,12 +223,13 @@ class _Recorder:
             keys:   'signals', 'timestamps', 'events', 'sample_rate',
                     'channels', 'ch_names', 'lsl_time_offset'
         """
-        data = {'signals': signals,
-                'timestamps': timestamps,
-                'events': None,
-                'sample_rate': self.sr.streams[stream_name].sample_rate,
-                'channels': len(self.sr.streams[stream_name].ch_list),
-                'ch_names': self.sr.streams[stream_name].ch_list,
-                'lsl_time_offset': self.sr.streams[stream_name].lsl_time_offset}
+        data = {
+            'signals': signals,
+            'timestamps': timestamps,
+            'events': None,
+            'sample_rate': self.sr.streams[stream_name].sample_rate,
+            'channels': len(self.sr.streams[stream_name].ch_list),
+            'ch_names': self.sr.streams[stream_name].ch_list,
+            'lsl_time_offset': self.sr.streams[stream_name].lsl_time_offset}
 
         return data

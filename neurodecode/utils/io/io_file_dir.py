@@ -27,19 +27,21 @@ def get_file_list(path, fullpath=True, recursive=False):
         logger.error((f"The directory '{path}' does not exist."))
         raise IOError
 
-    if recursive == False:
-        if fullpath == True:
-            filelist = [str(path / file.name) for file in os.scandir(path)
-                        if (path / file.name).is_file() and file.name[0] != '.']
+    if not recursive:
+        if fullpath:
+            filelist = [
+                str(path / file.name) for file in os.scandir(path)
+                if (path / file.name).is_file() and file.name[0] != '.']
         else:
-            filelist = [file.name for file in os.scandir(path)
-                        if (path / file.name).is_file() and file.name[0] != '.']
+            filelist = [
+                file.name for file in os.scandir(path)
+                if (path / file.name).is_file() and file.name[0] != '.']
 
     else:
         filelist = []
-        for root, dirs, files in os.walk(path):
+        for root, _, files in os.walk(path):
             root = root.replace('\\', '/')
-            if fullpath == True:
+            if fullpath:
                 for file in files:
                     if file[0] != '.':
                         filelist.append(str(Path(root) / file))
@@ -73,7 +75,7 @@ def get_dir_list(path, recursive=False, no_child=False):
         logger.error(f"The directory '{path}' does not exist.")
         raise IOError
 
-    if recursive == False:
+    if not recursive:
         dirlist = [str(path / file.name) for file in os.scandir(path)
                    if (path / file.name).is_dir()]
         if no_child:
@@ -82,10 +84,10 @@ def get_dir_list(path, recursive=False, no_child=False):
 
     else:
         dirlist = []
-        for root, dirs, files in os.walk(path):
+        for root, dirs, _ in os.walk(path):
             root = root.replace('\\', '/')
-            for d in dirs:
-                dirlist.append(str(Path(root) / d))
+            for directory in dirs:
+                dirlist.append(str(Path(root) / directory))
 
             if no_child:
                 dirlist2remove = [
@@ -107,11 +109,12 @@ def make_dirs(dirname, delete=False):
         If True, if the directory already exists, it will be deleted
     """
     dirname = Path(dirname)
-    if dirname.exists() and delete == True:
+    if dirname.exists() and delete:
         try:
             shutil.rmtree(dirname)
         except OSError:
             logger.error(
-                'Directory was not completely removed. (Perhaps a Dropbox folder?). Continuing.')
+                'Directory was not completely removed. '
+                '(Perhaps a Dropbox folder?). Continuing.')
     if not dirname.exists():
         os.makedirs(dirname)

@@ -1,5 +1,6 @@
-import mne
 from pathlib import Path
+
+import mne
 
 from .. import io
 from ... import logger
@@ -60,10 +61,11 @@ def dir_set_montage(fif_dir, recursive, montage,
         if not out_dir.is_dir():
             io.make_dirs(out_dir)
 
-    for fif_file in io.get_file_list(fif_dir, fullpath=True, recursive=recursive):
+    for fif_file in io.get_file_list(fif_dir, fullpath=True,
+                                     recursive=recursive):
         fif_file = Path(fif_file)
 
-        if not fif_file.suffix == '.fif':
+        if fif_file.suffix != '.fif':
             continue
         if not fif_file.stem.endswith('-raw'):
             continue
@@ -84,5 +86,3 @@ def dir_set_montage(fif_dir, recursive, montage,
             logger.warning(
                 f'The corrected file already exist for {fif_file.name}. '
                 'Use overwrite=True to force overwriting.')
-        except:
-            raise

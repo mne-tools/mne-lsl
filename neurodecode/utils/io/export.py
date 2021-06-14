@@ -4,8 +4,9 @@ Export fif raw data to different format.
 Supported:
     - EEGLAB '.set'
 """
-import mne
 from pathlib import Path
+
+import mne
 from scipy.io import savemat
 from numpy.core.records import fromarrays
 
@@ -29,21 +30,21 @@ def write_set(raw, fname):
         Name/Path of the '.set' file created.
     """
     data = raw.get_data() * 1e6  # convert to microvolts
-    fs = raw.info["sfreq"]
+    sample_rate = raw.info["sfreq"]
     times = raw.times
     ch_names = raw.info["ch_names"]
     chanlocs = fromarrays([ch_names], names=["labels"])
     events = fromarrays([raw.annotations.description,
-                         raw.annotations.onset * fs + 1,
-                         raw.annotations.duration * fs],
-                         names=["type", "latency", "duration"])
+                         raw.annotations.onset * sample_rate + 1,
+                         raw.annotations.duration * sample_rate],
+                        names=["type", "latency", "duration"])
     savemat(fname,
             dict(EEG=dict(data=data,
                           setname=fname,
                           nbchan=data.shape[0],
                           pnts=data.shape[1],
                           trials=1,
-                          srate=fs,
+                          srate=sample_rate,
                           xmin=times[0],
                           xmax=times[-1],
                           chanlocs=chanlocs,
@@ -89,7 +90,7 @@ def dir_write_set(fif_dir, recursive, out_dir=None):
     for fif_file in get_file_list(fif_dir, fullpath=True, recursive=recursive):
         fif_file = Path(fif_file)
 
-        if not fif_file.suffix == '.fif':
+        if fif_file.suffix != '.fif':
             continue
         if not fif_file.stem.endswith('-raw'):
             continue
@@ -101,6 +102,8 @@ def dir_write_set(fif_dir, recursive, out_dir=None):
             make_dirs(fif_dir / out_dir / relative)
 
         logger.info(
-            f"Exporting to '{fif_dir / out_dir / relative / fif_file.stem}.set'")
+            "Exporting to "
+            "'{fif_dir / out_dir / relative / fif_file.stem}.set'")
 
-        write_set(raw, str(fif_dir / out_dir / relative / fif_file.stem) + '.set')
+        write_set(raw, str(fif_dir / out_dir /
+                           relative / fif_file.stem) + '.set')

@@ -1,6 +1,7 @@
+from pathlib import Path
+
 import mne
 import numpy as np
-from pathlib import Path
 
 from .find_event_channel import find_event_channel
 from ... import io
@@ -64,8 +65,6 @@ def change_event_values(raw, event_value_old, event_value_new):
                            event_value_old=event_value_old,
                            event_value_new=event_value_new,
                            picks=raw.ch_names[tch], channel_wise=True)
-    except:
-        raise
 
 
 def dir_change_event_values(fif_dir, recursive, event_value_old,
@@ -110,10 +109,11 @@ def dir_change_event_values(fif_dir, recursive, event_value_old,
         if not out_dir.is_dir():
             io.make_dirs(out_dir)
 
-    for fif_file in io.get_file_list(fif_dir, fullpath=True, recursive=recursive):
+    for fif_file in io.get_file_list(fif_dir, fullpath=True,
+                                     recursive=recursive):
         fif_file = Path(fif_file)
 
-        if not fif_file.suffix == '.fif':
+        if fif_file.suffix != '.fif':
             continue
         if not fif_file.stem.endswith('-raw'):
             continue
@@ -134,5 +134,3 @@ def dir_change_event_values(fif_dir, recursive, event_value_old,
             logger.warning(
                 f'The corrected file already exist for {fif_file.name}. '
                 'Use overwrite=True to force overwriting.')
-        except:
-            raise

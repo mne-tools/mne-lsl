@@ -15,11 +15,11 @@ def load_config(cfg_module):
         The absolute path to the config file to load.
     """
     cfg_module = Path(cfg_module)
-    if not cfg_module.is_abolute():
+    if not cfg_module.is_absolute():
         cfg_module = cfg_module.absolute()
         if not cfg_module.exists():
-            logger.error('CFG file not found. '
-                         'Provide the absolute path to the config file to load.')
+            logger.error('CFG file not found. Provide the absolute path '
+                         'to the config file to load.')
             raise IOError
 
     sys.path.append(str(cfg_module.parent))
