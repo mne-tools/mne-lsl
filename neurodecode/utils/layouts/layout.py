@@ -66,17 +66,18 @@ def available_layouts(verbose=False):
     """
     if verbose:
         print('Available layouts are:')
-        for name in CAP.keys():
+        for name in CAP:
             if CH_TYPES.get(name) is not None:
                 if len(CAP[name]) == len(CH_TYPES[name]):
                     print(f'  | {name}')
                 else:
                     print(
-                        f"  | Error with '{name}': len() differs in CAP and CH_TYPES.")
+                        f"  | Error with '{name}': "
+                        "len() differs in CAP and CH_TYPES.")
             else:
                 print(f"  | Error with '{name}': KeyError in CH_TYPES.")
 
-    return [name for name in CAP.keys() if CH_TYPES.get(name) is not None and
+    return [name for name in CAP if CH_TYPES.get(name) is not None and
             len(CAP[name]) == len(CH_TYPES[name])]
 
 
@@ -111,8 +112,8 @@ class Layout:
 
             if not len(ch_names) == len(ch_types):
                 logger.error(
-                    f"The number of channels provided {len(ch_names)} "
-                    f"does not match the number of channels types {len(ch_types)}.")
+                    f"The number of channels provided {len(ch_names)} does "
+                    f"not match the number of channels types {len(ch_types)}.")
                 raise ValueError
 
             self._ch_names = list(ch_names)
@@ -122,7 +123,7 @@ class Layout:
             try:
                 self._ch_names = CAP[name]
                 self._ch_types = CH_TYPES[name]
-            except:
+            except Exception:
                 logger.warning(
                     "The provided cap name is not yet included. "
                     "Add it first to NeuroDecode or provided the arguments "
@@ -134,11 +135,11 @@ class Layout:
         """
         The name of the layout.
         """
-        return self._names
+        return self._name
 
     @name.setter
     def name(self):
-        self._logger.warning("This attribute cannot be changed.")
+        logger.warning("This attribute cannot be changed.")
 
     @property
     def ch_names(self):

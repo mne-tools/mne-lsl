@@ -1,11 +1,11 @@
 """
 Convert known file format to FIF.
 """
+import pickle
+from pathlib import Path
 
 import mne
-import pickle
 import numpy as np
-from pathlib import Path
 from mne.io._read_raw import supported
 
 from .io_file_dir import get_file_list, make_dirs
@@ -16,6 +16,8 @@ from ... import logger
 mne.set_log_level('ERROR')
 
 # ------------------------- Stream Recorder PCL -------------------------
+
+
 def pcl2fif(filename, out_dir=None, external_event=None,
             precision='double', replace=False):
     """
@@ -28,17 +30,20 @@ def pcl2fif(filename, out_dir=None, external_event=None,
     out_dir : str
         Saving directory. If None, it will be the directory of the .pkl file.
     external_event : str
-        Event file path in text formatm following mne event struct. Each row should be: index 0 event
+        Event file path in text formatm following mne event struct.
+        Each row should be: index 0 event
     precision : str
-        Data matrix format. [single|double|int|short], 'single' improves backward compatability.
+        Data matrix format. [single|double|int|short], 'single' improves
+        backward compatability.
     replace : bool
-        If true, previous events will be overwritten by the new ones from the external events file.
+        If true, previous events will be overwritten by the new ones from the
+        external events file.
     """
     filename = Path(filename)
     if not filename.is_file():
         logger.error(f"File '{filename}' not found.")
         raise IOError
-    if not filename.suffix == '.pcl':
+    if filename.suffix != '.pcl':
         logger.error(f"File '{filename}' is not '.pcl'.")
         raise IOError
 
@@ -51,8 +56,8 @@ def pcl2fif(filename, out_dir=None, external_event=None,
     fiffile = out_dir / str(filename.stem + '.fif')
 
     # Load from file
-    with open(filename, 'rb') as f:
-        data = pickle.load(f)
+    with open(filename, 'rb') as file:
+        data = pickle.load(file)
 
     # MNE format
     raw = _format_pcl_to_mne_RawArray(data)
@@ -85,7 +90,7 @@ def _format_pcl_to_mne_RawArray(data):
     mne.io.raw
         The mne raw structure.
     """
-    if type(data['signals']) == list:
+    if isinstance(data['signals'], list):
         signals_raw = np.array(data['signals'][0]).T    # to channels x samples
     else:
         signals_raw = data['signals'].T                 # to channels x samples
@@ -103,9 +108,10 @@ def _format_pcl_to_mne_RawArray(data):
 
     # move trigger channel to index 0
     if trig_ch is None:
-        # assuming no event channel exists, add a event channel to index 0 for consistency.
+        # Add a event channel to index 0 for consistency.
         logger.warning(
-            'No event channel was not found. Adding a blank event channel to index 0.')
+            'No event channel was not found. '
+            'Adding a blank event channel to index 0.')
         eventch = np.zeros([1, signals_raw.shape[1]])
         signals = np.concatenate((eventch, signals_raw), axis=0)
         # data['channels'] is not reliable any more
@@ -129,8 +135,8 @@ def _format_pcl_to_mne_RawArray(data):
         trig_ch = 0
         ch_names.insert(trig_ch, 'TRIGGER')
         logger.info('New channel list:')
-        for c in ch_names:
-            logger.info(f'{c}')
+        for channel in ch_names:
+            logger.info(f'{channel}')
 
     ch_info = ['stim'] + ['eeg'] * num_eeg_channels
     info = mne.create_info(ch_names, sample_rate, ch_info)
@@ -164,22 +170,24 @@ def _event_timestamps_to_indices(raw_timestamps, eventfile, offset):
     ts_max = max(raw_timestamps)
     events = []
 
-    with open(eventfile) as f:
-        for l in f:
-            data = l.strip().split('\t')
+    with open(eventfile) as file:
+        for line in file:
+            data = line.strip().split('\t')
             event_ts = float(data[0]) - offset
             event_value = int(data[2])
             next_index = np.searchsorted(raw_timestamps, event_ts)
             if next_index >= len(raw_timestamps):
-                logger.warning('Event %d at time %.3f is out of time range (%.3f - %.3f).'
-                               % (event_value, event_ts, ts_min, ts_max))
+                logger.warning(
+                    'Event %d at time %.3f is out of time range (%.3f - %.3f).'
+                    % (event_value, event_ts, ts_min, ts_max))
             else:
                 events.append([next_index, 0, event_value])
 
     return events
 
 
-def _add_events_from_txt(raw, events_index, stim_channel='TRIGGER', replace=False):
+def _add_events_from_txt(raw, events_index, stim_channel='TRIGGER',
+                         replace=False):
     """
     Merge the events extracted from a txt file to the trigger channel.
 
@@ -212,8 +220,8 @@ def _saveChannels2txt(out_dir, ch_names):
 
     if config.is_file() is False:
         file = open(filename, "w")
-        for x in range(len(ch_names)):
-            file.write(ch_names[x] + "\n")
+        for channel in ch_names:
+            file.write(channel + "\n")
         file.close()
 
 
@@ -237,7 +245,8 @@ def any2fif(filename, out_dir=None, overwrite=True, precision='double'):
     overwrite : bool
         If true, overwrite previously converted files with the same name.
     precision : str
-        Data matrix format. [single|double|int|short], 'single' improves backward compatability.
+        Data matrix format. [single|double|int|short], 'single' improves
+        backward compatability.
     """
     filename = Path(filename)
     if not filename.is_file():
@@ -307,12 +316,12 @@ def dir_any2fif(directory, recursive, out_dir=None, overwrite=False, **kwargs):
     for file in get_file_list(directory, fullpath=True, recursive=recursive):
         file = Path(file)
 
-        if not file.suffix in supported.keys():
+        if file.suffix not in supported.keys():
             continue
 
         try:
             any2fif(file, out_dir, overwrite, **kwargs)
             logger.info(f"Converted '{file}'.")
-        except:
+        except Exception:
             logger.error(f"Error converting '{file}'.")
             raise

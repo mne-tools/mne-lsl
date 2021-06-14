@@ -1,6 +1,7 @@
+from pathlib import Path
+
 import mne
 import numpy as np
-from pathlib import Path
 
 from .io_file_dir import get_file_list
 from ..preprocess.events import find_event_channel
@@ -33,7 +34,7 @@ def read_raw_fif(fname, events_ext=None, preload=True):
     if not fname.is_file():
         logger.error(f"'{fname}' is not a file.")
         raise IOError
-    if not fname.suffix == '.fif':
+    if fname.suffix != '.fif':
         logger.error("Only '.fif' format is supported.")
         raise IOError
 
@@ -106,6 +107,7 @@ def read_raw_fif_multi(src):
 
         # re-calculate event positions
         events = mne.find_events(
-            raw_merged, stim_channel='TRIGGER', shortest_event=1, consecutive=True)
+            raw_merged, stim_channel='TRIGGER',
+            shortest_event=1, consecutive=True)
 
         return raw_merged, events

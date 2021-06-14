@@ -1,5 +1,6 @@
-import mne
 from pathlib import Path
+
+import mne
 from mne.io import BaseRaw
 from mne.epochs import BaseEpochs
 from mne.evoked import Evoked
@@ -71,7 +72,7 @@ def available_transformation(verbose=False):
     """
     if verbose:
         print('Available transformations are:')
-        for key in INPUTS.keys():
+        for key in INPUTS:
             print(f'  | {key}')
 
     return list(INPUTS.keys())
@@ -91,8 +92,9 @@ def preprocess(inst, transformations):
             key: str
                 The name of the transformation function.
             value: list | dict
-                The list of arguments (*args) to pass to the transformation function
-                or the dictionnary of kwargs (*kwargs) to pass to the transformation function.
+                The list of arguments (*args) to pass to the transformation
+                function or the dictionnary of kwargs (*kwargs) to pass to the
+                transformation function.
         Example:
             {
                 'notch_filter': {'freqs': np.arange(50, 151, 50)},
@@ -166,8 +168,9 @@ def dir_preprocess(fif_dir, recursive, transformations,
             key: str
                 The name of the transformation function.
             value: list | dict
-                The list of arguments (*args) to pass to the transformation function
-                or the dictionnary of kwargs (*kwargs) to pass to the transformation function.
+                The list of arguments (*args) to pass to the transformation
+                function or the dictionnary of kwargs (*kwargs) to pass to the
+                transformation function.
         Example:
             {
                 'notch_filter': {'freqs': np.arange(50, 151, 50)},
@@ -197,7 +200,8 @@ def dir_preprocess(fif_dir, recursive, transformations,
         if not out_dir.is_dir():
             io.make_dirs(out_dir)
 
-    for fif_file in io.get_file_list(fif_dir, fullpath=True, recursive=recursive):
+    for fif_file in io.get_file_list(fif_dir, fullpath=True,
+                                     recursive=recursive):
         fif_file = Path(fif_file)
 
         if any(fif_file.name.endswith(ending) for ending in EXT[BaseRaw]):
@@ -205,7 +209,7 @@ def dir_preprocess(fif_dir, recursive, transformations,
         elif any(fif_file.name.endswith(ending) for ending in EXT[BaseEpochs]):
             inst = mne.read_epochs(fif_file, preload=True)
         elif any(fif_file.name.endswith(ending) for ending in EXT[Evoked]):
-            inst = mne.read_evokeds(fif_file, preload=True)
+            inst = mne.read_evokeds(fif_file)
         else:
             continue
 
@@ -224,16 +228,14 @@ def dir_preprocess(fif_dir, recursive, transformations,
                           overwrite=overwrite)
             except FileExistsError:
                 logger.warning(
-                    f'The preprocessed file already exist for {fif_file.name}. '
+                    'The preprocessed file already exist for '
+                    f'{fif_file.name}. '
                     'Use overwrite=True to force overwriting.')
-            except:
-                raise
 
         elif any(fif_file.name.endswith(ending) for ending in EXT[Evoked]):
             try:
                 inst.save(fif_dir / out_dir / relative / fif_file.name)
             except FileExistsError:
                 logger.warning(
-                    f'The preprocessed file already exist for {fif_file.name}.')
-            except:
-                raise
+                    'The preprocessed file already exist for '
+                    f'{fif_file.name}.')

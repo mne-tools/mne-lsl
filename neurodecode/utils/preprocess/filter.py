@@ -1,8 +1,10 @@
-import mne
-import numpy as np
 from pathlib import Path
 
-from .current_source_density import current_source_density, dir_current_source_density
+import mne
+import numpy as np
+
+from .current_source_density import (current_source_density,
+                                     dir_current_source_density)
 from .. import io
 from ... import logger
 
@@ -40,8 +42,6 @@ def notch_filter(raw, freqs=np.arange(50, 151, 50), picks=None, **kwargs):
         logger.warning('MNE raw data should be (pre)loaded. Loading now.')
         raw.load_data()
         raw.notch_filter(freqs, picks, **kwargs)
-    except:
-        raise
 
 
 def dir_notch_filter(fif_dir, recursive, freqs, picks=None,
@@ -92,10 +92,11 @@ def dir_notch_filter(fif_dir, recursive, freqs, picks=None,
         if not out_dir.is_dir():
             io.make_dirs(out_dir)
 
-    for fif_file in io.get_file_list(fif_dir, fullpath=True, recursive=recursive):
+    for fif_file in io.get_file_list(fif_dir, fullpath=True,
+                                     recursive=recursive):
         fif_file = Path(fif_file)
 
-        if not fif_file.suffix == '.fif':
+        if fif_file.suffix != '.fif':
             continue
         if not fif_file.stem.endswith('-raw'):
             continue
@@ -116,8 +117,6 @@ def dir_notch_filter(fif_dir, recursive, freqs, picks=None,
             logger.warning(
                 f'The corrected file already exist for {fif_file.name}. '
                 'Use overwrite=True to force overwriting.')
-        except:
-            raise
 
 
 def spectral_filter(inst, l_freq, h_freq, picks=None, **kwargs):
@@ -203,10 +202,11 @@ def dir_spectral_filter(fif_dir, recursive, l_freq, h_freq, picks=None,
         if not out_dir.is_dir():
             io.make_dirs(out_dir)
 
-    for fif_file in io.get_file_list(fif_dir, fullpath=True, recursive=recursive):
+    for fif_file in io.get_file_list(fif_dir, fullpath=True,
+                                     recursive=recursive):
         fif_file = Path(fif_file)
 
-        if not fif_file.suffix == '.fif':
+        if fif_file.suffix != '.fif':
             continue
         if not fif_file.stem.endswith('-raw'):
             continue
@@ -227,8 +227,6 @@ def dir_spectral_filter(fif_dir, recursive, l_freq, h_freq, picks=None,
             logger.warning(
                 f'The corrected file already exist for {fif_file.name}. '
                 'Use overwrite=True to force overwriting.')
-        except:
-            raise
 
 
 def laplacian_filter(inst, montage=None, **kwargs):
@@ -242,7 +240,8 @@ def laplacian_filter(inst, montage=None, **kwargs):
     montage : str | DigMontage
         The montage to used, e.g. 'standard_1020'.
         c.f. https://mne.tools/stable/generated/mne.io.Raw.html#mne.io.Raw.set_montage
-    **kwargs : Additional arguments are passed to mne.preprocessing.compute_current_source_density()
+    **kwargs : Additional arguments are passed to
+        mne.preprocessing.compute_current_source_density()
         c.f. https://mne.tools/stable/generated/mne.preprocessing.compute_current_source_density.html
 
     Returns
@@ -278,7 +277,8 @@ def dir_laplacian_filter(fif_dir, recursive, montage=None,
         f'fif_dir/csd' is used.
     overwrite : bool
         If true, overwrite previously corrected files.
-    **kwargs : Additional arguments are passed to mne.preprocessing.compute_current_source_density()
+    **kwargs : Additional arguments are passed to
+        mne.preprocessing.compute_current_source_density()
     """
     logger.info(
         'Laplacin filter is called Current Source Density by MNE. '

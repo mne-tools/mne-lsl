@@ -1,10 +1,12 @@
 import math
+
 import numpy as np
 from scipy.signal import butter, sosfilt, sosfilt_zi
 
 
 BP_ORDER = 2
-_BUFFER_DURATION = 30 # seconds
+_BUFFER_DURATION = 30  # seconds
+
 
 class _Scope:
     """
@@ -13,11 +15,12 @@ class _Scope:
     Parameters
     ----------
     stream_receiver : neurodecode.stream_receiver.StreamReceiver
-        The connected stream receiver, which can be connected to multiple streams.
+        The connected stream receiver.
     stream_name : str
         The stream to connect to.
     """
     # ---------------------------- INIT ----------------------------
+
     def __init__(self, stream_receiver, stream_name):
         assert stream_name in stream_receiver.streams.keys()
         self.sr = stream_receiver
@@ -52,6 +55,7 @@ class _Scope:
         if len(self._ts_list) == 0:
             return
 
+
 class _ScopeEEG(_Scope):
     """
     Class representing an EEG scope.
@@ -59,11 +63,12 @@ class _ScopeEEG(_Scope):
     Parameters
     ----------
     stream_receiver : neurodecode.stream_receiver.StreamReceiver
-        The connected stream receiver, which can be connected to multiple streams.
+        The connected stream receiver.
     stream_name : str
         The stream to connect to.
     """
     # ---------------------------- INIT ----------------------------
+
     def __init__(self, stream_receiver, stream_name):
         super().__init__(stream_receiver, stream_name)
         self.init_signal_y_scales()
@@ -96,11 +101,11 @@ class _ScopeEEG(_Scope):
         self._apply_bandpass = False
         self.channels_to_show_idx = list(range(self.n_channels))
 
-    def init_buffer(self, plot_duration):
+    def init_buffer(self, duration_buffer):
         """
         Initialize buffer(s).
         """
-        super().init_buffer(plot_duration)
+        super().init_buffer(duration_buffer)
         self.trigger_buffer = np.zeros(self.n_samples_buffer)
         self.data_buffer = np.zeros((self.n_channels, self.n_samples_buffer),
                                     dtype=np.float32)
@@ -139,7 +144,8 @@ class _ScopeEEG(_Scope):
                                        axis=1)
             self.data_buffer[:, -len(self._ts_list):] = self.data_acquired.T
             # shape (samples, )
-            self.trigger_buffer = np.roll(self.trigger_buffer, -len(self._ts_list))
+            self.trigger_buffer = np.roll(
+                self.trigger_buffer, -len(self._ts_list))
             self.trigger_buffer[-len(self._ts_list):] = self.trigger_acquired
 
     def read_lsl_stream(self):

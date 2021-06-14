@@ -9,6 +9,7 @@ from PyQt5 import QtCore
 
 # pg.setConfigOptions(antialias=True)
 
+
 class _BackendPyQt5:
     """
     The PyQt5 backend for neurodecode's StreamViewer.
@@ -16,10 +17,12 @@ class _BackendPyQt5:
     Parameters
     ----------
     scope : neurodecode.stream_viewer._scope._Scope
-        The scope connected to a stream receiver acquiring the data and applying
-        filtering. The scope has a buffer of _scope._BUFFER_DURATION (default: 30s).
+        The scope connected to a stream receiver acquiring the data and
+        applying filtering. The scope has a buffer of _scope._BUFFER_DURATION
+        (default: 30s).
     """
     # ---------------------------- Init ---------------------------
+
     def __init__(self, scope):
         self.scope = scope
         self.backend_initialized = False
@@ -83,12 +86,12 @@ class _BackendPyQt5:
 
     def init_canvas(self):
         """
-        Initialize the plot handler with all the associated labels and settings.
+        Initialize the plot handler with the associated labels and settings.
         """
-        self._plot_handler = self._win.addPlot() # pyqtgraph.PlotItem
+        self._plot_handler = self._win.addPlot()  # pyqtgraph.PlotItem
         subsampling_ratio = self.scope.sample_rate / 64
         self._plot_handler.setDownsampling(ds=subsampling_ratio,
-                                            auto=None, mode='mean')
+                                           auto=None, mode='mean')
 
         self._plot_handler.setMouseEnabled(x=False, y=False)
 
@@ -112,9 +115,9 @@ class _BackendPyQt5:
         """
         Initialize the Y-axis and its label and ticks.
         """
-        yticks = [(-k*self.y_scale, self.scope.channels_labels[idx]) \
+        yticks = [(-k*self.y_scale, self.scope.channels_labels[idx])
                   for k, idx in enumerate(self.channels_to_show_idx)]
-        ticks = [yticks, []] # [major, minor]
+        ticks = [yticks, []]  # [major, minor]
         self._plot_handler.getAxis('left').setTicks(ticks)
         self._plot_handler.setLabel(
             axis='left', text=f'Scale (uV): {self.y_scale}')
@@ -129,7 +132,7 @@ class _BackendPyQt5:
     # ------------------------- Init plot -------------------------
     def init_plot(self):
         """
-        Initialize the plot by adding a PlotDataItem for every displayed channel.
+        Initialize the plot by adding a PlotDataItem for every shown channel.
         """
         self.init_plotting_channel_offset()
         self._plot_handler.clear()
@@ -138,32 +141,35 @@ class _BackendPyQt5:
             # Add PlotDataItem
             self.plots[idx] = self._plot_handler.plot(
                 x=self.x_arr,
-                y=self.scope.data_buffer[idx, -self.n_samples_plot:]+self.offset[k],
+                y=self.scope.data_buffer[idx, -
+                                         self.n_samples_plot:]+self.offset[k],
                 pen=pg.mkColor(self.available_colors[idx, :]))
 
     def init_plotting_channel_offset(self):
         """
-        As all channels are plotted on the same plot handler / window, an offset
-        is computed to vertically shift each channel.
+        As all channels are plotted on the same plot handler / window, an
+        offset is computed to vertically shift each channel.
         """
-        self.offset =  np.arange(
+        self.offset = np.arange(
             0, -len(self.channels_to_show_idx)*self.y_scale, -self.y_scale)
 
     # ------------------------ Trigger Events ----------------------
     def update_LPT_events(self, trigger_arr):
         """
-        Check if new LPT events (on the trigger channel) have entered the buffer.
-        New events are added to self.trigger_events and displayed if needed.
+        Check if new LPT events (on the trigger channel) have entered the
+        buffer. New events are added to self.trigger_events and displayed if
+        needed.
         """
         events_trigger_arr_idx = np.where(trigger_arr != 0)[0]
         events_values = trigger_arr[events_trigger_arr_idx]
 
         for k, ev_value in enumerate(events_values):
             position_buffer = self.scope.duration_buffer - \
-                (trigger_arr.shape[0] - events_trigger_arr_idx[k])/self.scope.sample_rate
+                (trigger_arr.shape[0] - events_trigger_arr_idx[k]
+                 )/self.scope.sample_rate
             position_plot = position_buffer - self.delta_with_buffer
 
-            event =  _TriggerEvent(
+            event = _TriggerEvent(
                 event_type='LPT',
                 event_value=ev_value,
                 position_buffer=position_buffer,
@@ -173,7 +179,7 @@ class _BackendPyQt5:
 
             if position_plot >= 0:
                 if event.event_type == 'LPT' and self._show_LPT_events:
-                        event.addEventPlot()
+                    event.addEventPlot()
 
             self.trigger_events.append(event)
 
@@ -207,15 +213,19 @@ class _BackendPyQt5:
             for k, idx in enumerate(self.channels_to_show_idx):
                 self.plots[idx].setData(
                     x=self.x_arr,
-                    y=self.scope.data_buffer[idx, -self.n_samples_plot:]+self.offset[k])
+                    y=self.scope.data_buffer[idx, -self.n_samples_plot:] +
+                    self.offset[k])
 
             # Update existing events position
             for event in self.trigger_events:
                 event.update_position(
-                    event.position_buffer - len(self.scope._ts_list)/self.scope.sample_rate,
-                    event.position_plot - len(self.scope._ts_list)/self.scope.sample_rate)
+                    event.position_buffer -
+                    len(self.scope._ts_list) / self.scope.sample_rate,
+                    event.position_plot -
+                    len(self.scope._ts_list) / self.scope.sample_rate)
             # Add new events entering the buffer
-            self.update_LPT_events(self.scope.trigger_buffer[-len(self.scope._ts_list):])
+            self.update_LPT_events(
+                self.scope.trigger_buffer[-len(self.scope._ts_list):])
             # Hide/Remove events exiting window and buffer
             self.clean_up_events()
 
@@ -259,9 +269,9 @@ class _BackendPyQt5:
         Called when the user changes the selection of channels.
         """
         if self.backend_initialized:
-            plots2remove = [idx for idx in self.channels_to_show_idx \
+            plots2remove = [idx for idx in self.channels_to_show_idx
                             if idx not in new_channels_to_show_idx]
-            plots2add = [idx for idx in new_channels_to_show_idx \
+            plots2add = [idx for idx in new_channels_to_show_idx
                          if idx not in self.channels_to_show_idx]
 
             self.channels_to_show_idx = new_channels_to_show_idx
@@ -275,7 +285,8 @@ class _BackendPyQt5:
             for k, idx in enumerate(plots2add):
                 self.plots[idx] = self._plot_handler.plot(
                     x=self.x_arr,
-                    y=self.scope.data_buffer[idx, -self.n_samples_plot:]+self.offset[k],
+                    y=self.scope.data_buffer[
+                        idx, -self.n_samples_plot:]+self.offset[k],
                     pen=pg.mkColor(self.available_colors[idx, :]))
 
     def update_show_LPT_events(self):
@@ -296,6 +307,7 @@ class _BackendPyQt5:
         """
         self._timer.stop()
         self._win.close()
+
 
 class _TriggerEvent:
     """
@@ -325,14 +337,14 @@ class _TriggerEvent:
         assert event_type in self.pens.keys()
         self.event_type = event_type
         self.event_value = event_value
-        self.position_buffer = position_buffer # In time (s)
-        self.position_plot = position_plot # In time (s)
+        self.position_buffer = position_buffer  # In time (s)
+        self.position_plot = position_plot  # In time (s)
 
         self.plot_handler = plot_handler
         self.plot_y_scale = plot_y_scale
 
-        self.LineItem = None
-        self.TextItem = None
+        self.lineItem = None
+        self.textItem = None
         self.plotted = False
 
     def addEventPlot(self):
@@ -340,13 +352,16 @@ class _TriggerEvent:
         Plots the event on the handler.
         """
         if not self.plotted:
-            self.LineItem = pg.InfiniteLine(pos=self.position_plot, pen=self.pens[self.event_type])
-            self.plot_handler.addItem(self.LineItem)
+            self.lineItem = pg.InfiniteLine(
+                pos=self.position_plot, pen=self.pens[self.event_type])
+            self.plot_handler.addItem(self.lineItem)
 
-            self.TextItem = pg.TextItem(str(self.event_value), anchor=(0.5, 1),
-                               fill=(0, 0, 0), color=self.pens[self.event_type])
-            self.TextItem.setPos(self.position_plot, 1.5*self.plot_y_scale)
-            self.plot_handler.addItem(self.TextItem)
+            self.textItem = pg.TextItem(str(self.event_value),
+                                        anchor=(0.5, 1),
+                                        fill=(0, 0, 0),
+                                        color=self.pens[self.event_type])
+            self.textItem.setPos(self.position_plot, 1.5*self.plot_y_scale)
+            self.plot_handler.addItem(self.textItem)
             self.plotted = True
 
     def update_scales(self, plot_y_scale):
@@ -368,24 +383,24 @@ class _TriggerEvent:
         """
         Updates the plot handler.
         """
-        if self.LineItem is not None:
-            self.LineItem.setValue(self.position_plot)
-        if self.TextItem is not None:
-            self.TextItem.setPos(self.position_plot, 1.5*self.plot_y_scale)
+        if self.lineItem is not None:
+            self.lineItem.setValue(self.position_plot)
+        if self.textItem is not None:
+            self.textItem.setPos(self.position_plot, 1.5*self.plot_y_scale)
 
     def removeEventPlot(self):
         """
         Remove the event from the plot handler.
         """
         if self.plotted:
-            self.plot_handler.removeItem(self.LineItem)
-            self.plot_handler.removeItem(self.TextItem)
-            self.LineItem = None
-            self.TextItem = None
+            self.plot_handler.removeItem(self.lineItem)
+            self.plot_handler.removeItem(self.textItem)
+            self.lineItem = None
+            self.textItem = None
             self.plotted = False
 
     def __del__(self):
         try:
             self.removeEventPlot()
-        except:
+        except Exception:
             pass
