@@ -19,6 +19,7 @@ class StreamViewer:
         'pyqt5': fully functional.
         'vispy': signal displayed with limited control and information.
     """
+
     def __init__(self, stream_name=None):
         self.stream_name = stream_name
 

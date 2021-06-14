@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import (QMainWindow, QHeaderView,
                              QTableWidgetItem, QFileDialog)
 try:
     from .backends import _BackendVispy, _BackendPyQt5
-except:
+except Exception:
     from .backends import _BackendPyQt5
 from ._ui_scope_controller import UI_MainWindow
 from ..stream_recorder import StreamRecorder
@@ -21,12 +21,14 @@ class _ScopeControllerUI(QMainWindow):
     Parameters
     ----------
     scope : neurodecode.stream_viewer._scope._Scope
-        The scope connected to a stream receiver acquiring the data and applying
-        filtering. The scope has a buffer of _scope._BUFFER_DURATION (default: 30s).
+        The scope connected to a stream receiver acquiring the data and
+        applying filtering. The scope has a buffer of _scope._BUFFER_DURATION
+        (default: 30s).
     backend : str
         One of the supported backend's name. Supported 'vispy', 'pyqt5'.
         If None, load the first backend in the order: Vispy, PyQt5.
     """
+
     def __init__(self, scope, backend=None):
         super().__init__()
 
@@ -34,7 +36,7 @@ class _ScopeControllerUI(QMainWindow):
         if backend == 'vispy' or backend is None:
             try:
                 self.backend = _BackendVispy(scope)
-            except:
+            except Exception:
                 logger.warning("Could not use the backend 'Vispy'. "
                                "Resorting to 'PyQt5'.")
                 self.backend = _BackendPyQt5(scope)
@@ -101,7 +103,7 @@ class _ScopeControllerUI(QMainWindow):
         self.ui.table_channels.setRowCount(self._nb_table_rows)
         self.ui.table_channels.setColumnCount(self._nb_table_columns)
 
-        for idx, ch in enumerate(range(self.scope.n_channels)):
+        for idx in range(self.scope.n_channels):
             row = idx // self._nb_table_columns
             col = idx % self._nb_table_columns
 
@@ -132,27 +134,27 @@ class _ScopeControllerUI(QMainWindow):
             scale = float(scope_settings.get("plot", "signal_y_scale"))
             init_idx = list(self.scope.signal_y_scales.values()).index(scale)
             self.ui.comboBox_signal_y_scale.setCurrentIndex(init_idx)
-        except:
+        except Exception:
             self.ui.comboBox_signal_y_scale.setCurrentIndex(0)
 
         # X-Scale (time)
         try:
             self.ui.spinBox_signal_x_scale.setValue(int(
                 scope_settings.get("plot", "time_plot")))
-        except:
+        except Exception:
             self.ui.spinBox_signal_x_scale.setValue(10)  # 10s by default
 
         # BP/CAR Filters
         try:
             self.ui.checkBox_car.setChecked(bool(
                 scope_settings.get("filtering", "apply_car_filter")))
-        except:
+        except Exception:
             self.ui.checkBox_car.setChecked(False)
 
         try:
             self.ui.checkBox_bandpass.setChecked(bool(
                 scope_settings.get("filtering", "apply_bandpass_filter")))
-        except:
+        except Exception:
             self.ui.checkBox_bandpass.setChecked(False)
 
         try:
@@ -162,7 +164,7 @@ class _ScopeControllerUI(QMainWindow):
             self.ui.doubleSpinBox_bandpass_high.setValue(float(
                 scope_settings.get(
                     "filtering", "bandpass_cutoff_frequency").split(' ')[1]))
-        except:
+        except Exception:
             # Default to [1, 40] Hz.
             self.ui.doubleSpinBox_bandpass_low.setValue(1.)
             self.ui.doubleSpinBox_bandpass_high.setValue(40.)
@@ -179,7 +181,7 @@ class _ScopeControllerUI(QMainWindow):
         try:
             self.ui.checkBox_show_LPT_events.setChecked(
                 bool(scope_settings.get("plot", "show_LPT_events")))
-        except:
+        except Exception:
             self.ui.checkBox_show_LPT_events.setChecked(False)
 
         self.ui.statusBar.showMessage("[Not recording]")
@@ -200,13 +202,14 @@ class _ScopeControllerUI(QMainWindow):
         y_scale = list(self.scope.signal_y_scales.values())[y_scale_idx]
         geometry = (self.geometry().x() + self.width(), self.geometry().y(),
                     self.width() * 2, self.height())
-        self.backend.init_backend(geometry, x_scale, y_scale, self.channels_to_show_idx)
+        self.backend.init_backend(
+            geometry, x_scale, y_scale, self.channels_to_show_idx)
         self.backend.start_timer()
-
 
     # -------------------------------------------------------------------
     # --------------------------- EVENT HANDLERS ------------------------
     # -------------------------------------------------------------------
+
     def connect_signals_to_slots(self):
         """
         Event handler. Connect QT signals to slots.

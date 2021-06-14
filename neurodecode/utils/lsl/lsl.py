@@ -2,9 +2,10 @@
 LSL wrapper functions for creating a server and a client.
 """
 import time
-import pylsl
 import multiprocessing as mp
 import xml.etree.ElementTree as ET
+
+import pylsl
 
 from ... import logger
 
@@ -107,9 +108,9 @@ def list_lsl_streams(ignore_markers=False,
 
         if len(streamInfos) > 0:
 
-            for index, si in enumerate(streamInfos):
-                stream_name = si.name()
-                if 'Markers' in si.type():
+            for index, streamInfo in enumerate(streamInfos):
+                stream_name = streamInfo.name()
+                if 'Markers' in streamInfo.type():
                     stream_list_markers.append((index, stream_name))
                 else:
                     stream_list.append((index, stream_name))
@@ -155,15 +156,16 @@ def search_lsl(ignore_markers=False, logger=logger, state=mp.Value('i', 1)):
         index = 0
     else:
         index = input(
-            'Stream index? Hit enter without index to select the first server.\n>> ')
+            'Stream index? '
+            'Hit enter without index to select the first server.\n>> ')
         if index.strip() == '':
             index = 0
         else:
             index = int(index.strip())
 
     stream_index, stream_name = stream_list[index]
-    si = streamInfos[stream_index]
-    assert stream_name == si.name()
+    streamInfo = streamInfos[stream_index]
+    assert stream_name == streamInfo.name()
 
     logger.info(f'Selected: {stream_name}')
 
