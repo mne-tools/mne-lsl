@@ -7,7 +7,6 @@ White Noise
 import numpy as np
 
 from ._sound import _Sound
-from ... import logger
 
 
 class WhiteNoise(_Sound):
@@ -22,33 +21,24 @@ class WhiteNoise(_Sound):
         channels (stereo).
         The volume of each channel is given between 0 and 100. For stereo, the
         volume is given as [L, R].
-    fs : int, optional
+    sample_rate : int, optional
         Sampling frequency of the sound. The default is 44100 kHz.
     duration : float, optional
         The duration of the sound. The default is 1.0 second.
     """
 
-    def __init__(self, volume, fs=44100, duration=1.0):
-        if isinstance(volume, (int, float)):
-            volume = [volume]
-        if not all(0 <= v <= 100 for v in volume):
-            logger.error(
-                f'Volume must be set between 0 and 100. Provided {volume}.')
-            raise ValueError
-        if not len(volume) in (1, 2):
-            logger.error(
-                'Volume must be a 1-length (mono) or a '
-                '2-length (stereo) sequence.')
-            raise ValueError
-
-        super().__init__(fs, duration, len(volume))
+    def __init__(self, volume, sample_rate=44100, duration=1.0):
         self.name = 'whitenoise'
-        self.volume = volume
+        self._rng = np.random.default_rng()
+        super().__init__(volume, sample_rate, duration)
 
+    def _compute_signal(self):
+        """
+        Computes the signal to output.
+        """
         # mean: 0, sigma: 0.33
-        rng = np.random.default_rng()
-        wn_arr = rng.normal(loc=0, scale=1/3, size=self.t.size)
+        wn_arr = self._rng.normal(loc=0, scale=1/3, size=self._time_arr.size)
 
-        self.signal[:, 0] = wn_arr * 0.1 * volume[0] / 100
-        if len(volume) == 2:
-            self.signal[:, 1] = wn_arr * 0.1 * volume[1] / 100
+        self._signal[:, 0] = wn_arr * 0.1 * self._volume[0] / 100
+        if len(self._volume) == 2:
+            self._signal[:, 1] = wn_arr * 0.1 * self._volume[1] / 100
