@@ -17,7 +17,7 @@ import mne.time_frequency
 import neurodecode.utils.io as io
 
 from neurodecode import logger
-from neurodecode.utils.preprocess import preprocess
+from neurodecode.utils.preprocess.old_preprocess import preprocess
 
 def check_cfg(cfg):
     if not hasattr(cfg, 'N_JOBS'):

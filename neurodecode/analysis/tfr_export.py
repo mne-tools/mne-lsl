@@ -22,8 +22,8 @@ from scipy.signal import hilbert
 import neurodecode.utils.io as io
 
 from neurodecode import logger
-from neurodecode.utils.preprocess import preprocess
-from neurodecode.utils.preprocess import set_eeg_reference
+from neurodecode.utils.preprocess.old_preprocess import preprocess
+from neurodecode.utils.preprocess.old_preprocess import rereference
 
 def check_config(cfg):
     if not hasattr(cfg, 'TFR_TYPE'):
@@ -116,7 +116,7 @@ def get_tfr(cfg, recursive=False, n_jobs=1):
 
     # re-referencing
     if cfg.REREFERENCE is not None:
-        set_eeg_reference(raw, cfg.REREFERENCE[1], cfg.REREFERENCE[0])
+        rereference(raw, cfg.REREFERENCE[1], cfg.REREFERENCE[0])
         assert cfg.REREFERENCE[0] in raw.ch_names
 
     sfreq = raw.info['sfreq']
