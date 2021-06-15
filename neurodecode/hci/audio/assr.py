@@ -26,11 +26,11 @@ class ASSR(_Sound):
         channels (stereo).
         The volume of each channel is given between 0 and 100. For stereo, the
         volume is given as [L, R].
-    fc : int
+    frequency_carrier : int
         Carrier frequency in Hz.
-    fm : int
+    frequency_modulation : int
         Modulatiom frequency in Hz.
-    fs : int, optional
+    sample_rate : int, optional
         Sampling frequency of the sound.
         The default is 44100 kHz.
     method : str
@@ -48,43 +48,86 @@ class ASSR(_Sound):
         The duration of the sound. The default is 1.0 second.
     """
 
-    def __init__(self, volume, fc=1000, fm=40, method='conventional',
-                 fs=44100, duration=1.0):
-        if isinstance(volume, (int, float)):
-            volume = [volume]
-        if not all(0 <= v <= 100 for v in volume):
-            logger.error(
-                f'Volume must be set between 0 and 100. Provided {volume}.')
-            raise ValueError
-        if not len(volume) in (1, 2):
-            logger.error(
-                'Volume must be a 1-length (mono) or a '
-                '2-length (stereo) sequence.')
-            raise ValueError
+    def __init__(self, volume, frequency_carrier=1000,
+                 frequency_modulation=40, method='conventional',
+                 sample_rate=44100, duration=1.0):
+        self._method = ASSR._check_method(method)
+        self.name = f'assr {self._method}'
+        self._frequency_carrier = int(frequency_carrier)
+        self._frequency_modulation = int(frequency_modulation)
+        super().__init__(volume, sample_rate, duration)
+
+    def _compute_signal(self):
+        """
+        Computes the signal to output.
+        """
+        if self._method == 'conventional':
+            assr_amplitude = (1-np.cos(
+                2*np.pi*self._frequency_modulation*self._time_arr))
+            assr_arr = assr_amplitude * np.cos(
+                2*np.pi*self._frequency_carrier*self._time_arr)
+
+            self._signal[:, 0] = assr_arr * self._volume[0] / 100
+            if len(self._volume) == 2:
+                self._signal[:, 1] = assr_arr * self._volume[1] / 100
+
+        elif self._method == 'dsbsc':
+            assr_amplitude = np.sin(
+                2*np.pi*self._frequency_modulation*self._time_arr)
+            assr_arr = assr_amplitude * np.sin(
+                2*np.pi*self._frequency_carrier*self._time_arr)
+
+            self._signal[:, 0] = assr_arr * self._volume[0] / 100
+            if len(self._volume) == 2:
+                self._signal[:, 1] = assr_arr * self._volume[1] / 1000
+
+    # --------------------------------------------------------------------
+    @staticmethod
+    def _check_method(method):
+        """
+        Checks that the method is either 'conventional' or 'dsbsc'.
+        """
         method = method.lower().strip()
         if method not in ('conventional', 'dsbsc'):
             logger.error(
                 "Supported amplitude modulation methods are 'conventional' "
                 f"and 'dsbsc'. Provided: '{method}'.")
 
-        super().__init__(fs, duration, len(volume))
-        self.name = f'assr {method}'
-        self.fc = int(fc)
-        self.fm = int(fm)
-        self.volume = volume
+        return method
 
-        if method == 'conventional':
-            self.assr_amplitude = (1-np.cos(2*np.pi*self.fm*self.t))
-            assr_arr = self.assr_amplitude * np.cos(2*np.pi*self.fc*self.t)
+    # --------------------------------------------------------------------
+    @property
+    def frequency_carrier(self):
+        """
+        The sound's carrier frequency.
+        """
+        return self._frequency_carrier
 
-            self.signal[:, 0] = assr_arr * self.volume[0] / 100
-            if len(self.volume) == 2:
-                self.signal[:, 1] = assr_arr * self.volume[1] / 100
+    @frequency_carrier.setter
+    def frequency_carrier(self, frequency_carrier):
+        self._frequency_carrier = int(frequency_carrier)
+        self._compute_signal()
 
-        elif method == 'dsbsc':
-            self.assr_amplitude = np.sin(2*np.pi*self.fm*self.t)
-            assr_arr = self.assr_amplitude * np.sin(2*np.pi*self.fc*self.t)
+    @property
+    def frequency_modulation(self):
+        """
+        The sound's modulation frequency.
+        """
+        return self._frequency_modulation
 
-            self.signal[:, 0] = assr_arr * self.volume[0] / 100
-            if len(self.volume) == 2:
-                self.signal[:, 1] = assr_arr * self.volume[1] / 100
+    @frequency_modulation.setter
+    def frequency_modulation(self, frequency_modulation):
+        self._frequency_modulation = int(frequency_modulation)
+        self._compute_signal()
+
+    @property
+    def method(self):
+        """
+        The sound's modulation method.
+        """
+        return self._method
+
+    @method.setter
+    def method(self, method):
+        self._method = ASSR._check_method(method)
+        self._compute_signal()
