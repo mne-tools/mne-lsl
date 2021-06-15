@@ -34,7 +34,7 @@ from neurodecode import logger
 from neurodecode.utils.timer import Timer
 from neurodecode.triggers import trigger_def
 from neurodecode.utils.lsl import search_lsl
-from neurodecode.utils.preprocess import preprocess
+from neurodecode.utils.preprocess.old_preprocess import preprocess
 from neurodecode.stream_receiver import StreamReceiver
 
 mne.set_log_level('ERROR')
