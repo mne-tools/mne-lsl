@@ -7,6 +7,7 @@ White Noise
 import numpy as np
 
 from ._sound import _Sound
+from ... import logger
 
 
 class Tone(_Sound):
@@ -34,7 +35,7 @@ class Tone(_Sound):
 
     def __init__(self, volume, frequency=440, sample_rate=44100, duration=1.0):
         self.name = 'tone'
-        self._frequency = frequency
+        self._frequency = Tone._check_frequency(frequency)
         super().__init__(volume, sample_rate, duration)
 
     def _compute_signal(self):
@@ -48,6 +49,21 @@ class Tone(_Sound):
             self._signal[:, 1] = tone_arr * self._volume[1] / 100
 
     # --------------------------------------------------------------------
+    @staticmethod
+    def _check_frequency(frequency):
+        """
+        Checks if the frequency is positive.
+        """
+        frequency = float(frequency)
+        if frequency <= 0:
+            logger.error(
+                'The frequency must be positive. '
+                f'Provided {frequency} Hz.')
+            raise ValueError
+
+        return frequency
+
+    # --------------------------------------------------------------------
     @property
     def frequency(self):
         """
@@ -57,5 +73,5 @@ class Tone(_Sound):
 
     @frequency.setter
     def frequency(self, frequency):
-        self._frequency = frequency
+        self._frequency = Tone._check_frequency(frequency)
         self._compute_signal()
