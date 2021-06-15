@@ -53,8 +53,10 @@ class ASSR(_Sound):
                  sample_rate=44100, duration=1.0):
         self._method = ASSR._check_method(method)
         self.name = f'assr {self._method}'
-        self._frequency_carrier = int(frequency_carrier)
-        self._frequency_modulation = int(frequency_modulation)
+        self._frequency_carrier = ASSR._check_frequency_carrier(
+            frequency_carrier)
+        self._frequency_modulation = ASSR._check_frequency_modulation(
+            frequency_modulation)
         super().__init__(volume, sample_rate, duration)
 
     def _compute_signal(self):
@@ -95,6 +97,34 @@ class ASSR(_Sound):
 
         return method
 
+    @staticmethod
+    def _check_frequency_carrier(frequency_carrier):
+        """
+        Checks if the carrier frequency is positive.
+        """
+        frequency_carrier = float(frequency_carrier)
+        if frequency_carrier <= 0:
+            logger.error(
+                'The carrier frequency must be positive. '
+                f'Provided {frequency_carrier} Hz.')
+            raise ValueError
+
+        return frequency_carrier
+
+    @staticmethod
+    def _check_frequency_modulation(frequency_modulation):
+        """
+        Checks if the modulation frequency is positive.
+        """
+        frequency_modulation = float(frequency_modulation)
+        if frequency_modulation <= 0:
+            logger.error(
+                'The modulation frequency must be positive. '
+                f'Provided {frequency_modulation} Hz.')
+            raise ValueError
+
+        return frequency_modulation
+
     # --------------------------------------------------------------------
     @property
     def frequency_carrier(self):
@@ -105,7 +135,8 @@ class ASSR(_Sound):
 
     @frequency_carrier.setter
     def frequency_carrier(self, frequency_carrier):
-        self._frequency_carrier = int(frequency_carrier)
+        self._frequency_carrier = ASSR._check_frequency_carrier(
+            frequency_carrier)
         self._compute_signal()
 
     @property
@@ -117,7 +148,8 @@ class ASSR(_Sound):
 
     @frequency_modulation.setter
     def frequency_modulation(self, frequency_modulation):
-        self._frequency_modulation = int(frequency_modulation)
+        self._frequency_modulation = ASSR._check_frequency_modulation(
+            frequency_modulation)
         self._compute_signal()
 
     @property
