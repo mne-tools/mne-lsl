@@ -33,8 +33,8 @@ class _Sound(ABC):
     @abstractmethod
     def __init__(self, volume, sample_rate=44100, duration=1.0):
         self._volume = _Sound._check_volume(volume)
-        self._sample_rate = int(sample_rate)
-        self._duration = duration
+        self._sample_rate = _Sound._check_sample_rate(sample_rate)
+        self._duration = _Sound._check_duration(duration)
         self._time_arr = np.linspace(
             0, duration, int(duration*sample_rate), endpoint=True)
         # [:, 0] for left and [:, 1] for right
@@ -96,7 +96,8 @@ class _Sound(ABC):
         if not isinstance(volume, (list, tuple)):
             logger.error(
                 'Volume must be either an (int | float) for mono OR '
-                'a (list | tuple) for mono or stereo.')
+                'a (list | tuple) for mono or stereo.'
+                f'Provided {type(volume)}.')
         if not len(volume) in (1, 2):
             logger.error(
                 'Volume must be a 1-length (mono) or a '
@@ -109,6 +110,38 @@ class _Sound(ABC):
             raise ValueError
 
         return volume
+
+    @staticmethod
+    def _check_sample_rate(sample_rate):
+        """
+        Checks if the sample rate is a positive integer.
+        """
+        sample_rate = int(sample_rate)
+        if sample_rate <= 0:
+            logger.error(
+                'The sample rate must be a positive integer. '
+                f'Provided {sample_rate} Hz.')
+            raise ValueError
+        if sample_rate not in (44100, 48000):
+            logger.warning(
+                f'Sound sample rate {sample_rate} different from the usual '
+                '44 100 Hz or 48 000 Hz.')
+
+        return sample_rate
+
+    @staticmethod
+    def _check_duration(duration):
+        """
+        Checks if the duration is positive.
+        """
+        duration = float(duration)
+        if duration <= 0:
+            logger.error(
+                'The duration must be positive. '
+                f'Provided {duration} seconds.')
+            raise ValueError
+
+        return duration
 
     # --------------------------------------------------------------------
     @property
@@ -133,7 +166,7 @@ class _Sound(ABC):
 
     @sample_rate.setter
     def sample_rate(self, sample_rate):
-        self._sample_rate = int(sample_rate)
+        self._sample_rate = _Sound._check_sample_rate(sample_rate)
         self._time_arr = np.linspace(
             0, self._duration,
             int(self._duration*self._sample_rate), endpoint=True)
@@ -149,7 +182,7 @@ class _Sound(ABC):
 
     @duration.setter
     def duration(self, duration):
-        self._duration = duration
+        self._duration = _Sound._check_duration(duration)
         self._time_arr = np.linspace(
             0, self._duration,
             int(self._duration*self._sample_rate), endpoint=True)
