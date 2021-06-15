@@ -1,12 +1,14 @@
 """
 Created on Tue Jun 15 16:14:39 2021
 
-@author: scheltie
+@author: Mathieu Scheltienne
 """
+
 from abc import ABC, abstractmethod
 
 import cv2
 import numpy as np
+from matplotlib import colors
 from screeninfo import get_monitors
 
 from ... import logger
@@ -28,7 +30,7 @@ class _Visual(ABC):
         self._window_center = (self._window_width//2, self._window_height//2)
 
         self.img = np.full((self._window_height, self._window_width, 3),
-                            fill_value=(0, 0, 0), dtype=np.uint8)
+                           fill_value=(0, 0, 0), dtype=np.uint8)
 
     def show(self, wait=1):
         """
@@ -42,9 +44,56 @@ class _Visual(ABC):
         cv2.imshow(self.window_name, self.img)
         cv2.waitKey(wait)
 
+    def draw_background_uniform(self, background_color):
+        """
+        Draw a uniform single color background.
+        """
+        background_color = _Visual._check_color(background_color)
+        self.img = np.full((self._window_height, self._window_width, 3),
+                           fill_value=background_color, dtype=np.uint8)
+
+    def draw_background_stripes(self, stripes_colors, axis=0):
+        """
+        Draw a multi-color background composed of stripes along the given axis.
+        """
+        stripes_colors = _Visual._check_color(stripes_colors)
+        if axis == 0:
+            stripes_size = self._window_height // len(stripes_colors)
+            extra = self._window_height % len(stripes_colors)
+        elif axis == 1:
+            stripes_size = self._window_width // len(stripes_colors)
+            extra = self._window_width % len(stripes_colors)
+        else:
+            logger.error(
+                'Axis must be 0 (horizontal stripes) or 1 (vertical stripes).')
+            raise ValueError
+
+        for k, color in enumerate(stripes_colors):
+            slc = [slice(None)] * 2
+            slc[axis] = slice(k*stripes_size, (k+1)*stripes_size)
+            stripes_shape = [self._window_height, self._window_width, 3]
+            stripes_shape[axis] = stripes_size
+
+            self.img[tuple(slc)] = np.full(
+                tuple(stripes_shape), fill_value=color, dtype=np.uint8)
+
+        if extra != 0:
+            slc[axis] = slice(len(stripes_colors)*stripes_size,
+                              len(stripes_colors)*stripes_size + extra)
+            extra_shape = [self._window_height, self._window_width, 3]
+            extra_shape[axis] = extra
+            self.img[tuple(slc)] = np.full(
+                tuple(extra_shape),
+                fill_value=stripes_colors[-1],
+                dtype=np.uint8)
+
     # --------------------------------------------------------------------
     @staticmethod
     def _check_window_size(window_size):
+        """
+        Checks if the window size is valid or set it as the minimum
+        (width, height) supported by any connected monitor.
+        """
         if window_size is not None:
             window_size = tuple(int(size) for size in window_size)
 
@@ -72,3 +121,36 @@ class _Visual(ABC):
             window_size = (width, height)
 
         return window_size
+
+    @staticmethod
+    def _check_color(color):
+        """
+        Checks if a color or a list of colors is valid and converts it to BGR.
+        """
+        if isinstance(color, str):
+            r, g, b, _ = colors.to_rgba(color)
+            bgr_color = [int(c*255) for c in (b, g, r)]
+
+        elif isinstance(color, (tuple, list)):
+            bgr_color = list()
+            for col in color:
+                if isinstance(col, str):
+                    try:
+                        r, g, b, _ = colors.to_rgba(col)
+                    except:
+                        logger.warning(
+                            f"Color '{col}' is not supported. Skipping.")
+                    bgr_color.append([int(c*255) for c in (b, g, r)])
+                elif isinstance(col, (list, tuple)) and len(col) == 3 and \
+                        all(0 <= c <= 255 for c in col):
+                    bgr_color.append(col)
+                else:
+                    logger.warning(
+                        f"Color '{col}' is not supported. Skipping.")
+
+            if len(bgr_color) == 0:
+                logger.error(
+                    'None of the color provided was supported.')
+                raise ValueError
+
+        return bgr_color
