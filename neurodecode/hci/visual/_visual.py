@@ -103,7 +103,7 @@ class _Visual(ABC):
                     'OR None for automatic selection based on screen size. '
                     f'Provided {len(window_size)}.')
                 raise ValueError
-            if not all(0 < size for size in window_size):
+            if not all(size > 0 for size in window_size):
                 logger.error(
                     'The window size must be either a 2-length sequence of '
                     'positive integers OR None for automatic selection based '
@@ -113,11 +113,11 @@ class _Visual(ABC):
             try:
                 width = min(monitor.width for monitor in get_monitors())
                 height = min(monitor.height for monitor in get_monitors())
-            except ValueError:
+            except ValueError as headless:
                 logger.error(
                     'Automatic window size selection does not work for '
                     'headless systems.')
-                raise ValueError
+                raise ValueError from headless
             window_size = (width, height)
 
         return window_size
@@ -137,7 +137,7 @@ class _Visual(ABC):
                 if isinstance(col, str):
                     try:
                         r, g, b, _ = colors.to_rgba(col)
-                    except:
+                    except ValueError:
                         logger.warning(
                             f"Color '{col}' is not supported. Skipping.")
                     bgr_color.append([int(c*255) for c in (b, g, r)])
