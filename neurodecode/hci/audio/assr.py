@@ -30,9 +30,6 @@ class ASSR(_Sound):
         Carrier frequency in Hz.
     frequency_modulation : int
         Modulatiom frequency in Hz.
-    sample_rate : int, optional
-        Sampling frequency of the sound.
-        The default is 44100 kHz.
     method : str
         Either 'conventional' or 'dsbsc'.
         'conventional':
@@ -44,6 +41,9 @@ class ASSR(_Sound):
             used is:
                 signal = M(t)*cos(2*pi*fc*t)
                 M(t) = sin(2*pi*fm*t)
+    sample_rate : int, optional
+        Sampling frequency of the sound.
+        The default is 44100 kHz.
     duration : float, optional
         The duration of the sound. The default is 1.0 second.
     """
