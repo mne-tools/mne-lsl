@@ -32,7 +32,7 @@ from .. import logger
 from ..utils.timer import Timer
 # from ..utils.preprocess import set_eeg_reference
 from ..utils.io import read_raw_fif_multi, get_file_list
-from ..utils.preprocess import preprocess as apply_preprocess
+from ..utils.preprocess.old_preprocess import preprocess as apply_preprocess
 
 #----------------------------------------------------------------------
 def feature2chz(x, fqlist, ch_names):
