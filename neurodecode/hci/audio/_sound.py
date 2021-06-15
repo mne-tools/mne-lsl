@@ -98,7 +98,7 @@ class _Sound(ABC):
                 'Volume must be either an (int | float) for mono OR '
                 'a (list | tuple) for mono or stereo.'
                 f'Provided {type(volume)}.')
-        if not len(volume) in (1, 2):
+        if len(volume) not in (1, 2):
             logger.error(
                 'Volume must be a 1-length (mono) or a '
                 '2-length (stereo) sequence. '
