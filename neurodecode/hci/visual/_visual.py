@@ -17,6 +17,14 @@ from ... import logger
 class _Visual(ABC):
     """
     Base visual class.
+
+    Parameters
+    ----------
+    window_name : str
+        The name of the window in which the visual is displayed.
+    window_size : tuple | list | None
+        Either None to automatically select a window size based on the
+        available monitors, or a 2-length of positive integer sequence.
     """
 
     @abstractmethod
@@ -29,8 +37,10 @@ class _Visual(ABC):
         self._window_height = self._window_size[1]
         self._window_center = (self._window_width//2, self._window_height//2)
 
-        self.img = np.full((self._window_height, self._window_width, 3),
-                           fill_value=(0, 0, 0), dtype=np.uint8)
+        # Default black background
+        self.img = np.full(
+            (self._window_height, self._window_width, 3),
+            fill_value=(0, 0, 0), dtype=np.uint8)
 
     def show(self, wait=1):
         """
@@ -49,8 +59,9 @@ class _Visual(ABC):
         Draw a uniform single color background.
         """
         background_color = _Visual._check_color(background_color)
-        self.img = np.full((self._window_height, self._window_width, 3),
-                           fill_value=background_color, dtype=np.uint8)
+        self.img = np.full(
+            (self._window_height, self._window_width, 3),
+            fill_value=background_color, dtype=np.uint8)
 
     def draw_background_stripes(self, stripes_colors, axis=0):
         """
@@ -84,8 +95,7 @@ class _Visual(ABC):
             extra_shape[axis] = extra
             self.img[tuple(slc)] = np.full(
                 tuple(extra_shape),
-                fill_value=stripes_colors[-1],
-                dtype=np.uint8)
+                fill_value=stripes_colors[-1], dtype=np.uint8)
 
     # --------------------------------------------------------------------
     @staticmethod
@@ -153,4 +163,47 @@ class _Visual(ABC):
                     'None of the color provided was supported.')
                 raise ValueError
 
+        else:
+            logger.error('Unrecognized color format.')
+            raise TypeError
+
         return bgr_color
+
+    # --------------------------------------------------------------------
+    @property
+    def window_size(self):
+        """
+        The window size (width x height).
+        """
+        return self._window_size
+
+    @window_size.setter
+    def window_size(self, window_size):
+        window_size = _Visual._check_window_size(window_size)
+
+        if window_size[0] < self._window_width:
+            start = self._window_center[0] - window_size[0] // 2
+            stop = start + window_size[0]
+            self.img = self.img[:, start:stop, :]
+            self._window_width = window_size[0]
+        elif window_size[0] == self._window_width:
+            logger.info('Window width unchanged. Skipping.')
+        elif window_size[0] > self._window_width:
+            logger.warning(
+                'Window width entered is larger than the current width. '
+                'Cannot resize. Skipping.')
+
+        if window_size[1] < self._window_height:
+            start = self._window_center[1] - window_size[1] // 2
+            stop = start + window_size[1]
+            self.img = self.img[start:stop, :, :]
+            self._window_height = window_size[1]
+        elif window_size[1] == self._window_height:
+            logger.info('Window height unchanged. Skipping.')
+        elif window_size[1] > self._window_height:
+            logger.warning(
+                'Window height entered is larger than the current height. '
+                'Cannot resize. Skipping.')
+
+        self._window_size = (self._window_width, self._window_height)
+        self._window_center = (self._window_width//2, self._window_height//2)
