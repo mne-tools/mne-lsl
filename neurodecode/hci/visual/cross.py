@@ -150,6 +150,12 @@ class Cross(_Visual):
 
             position = window_center
 
+        position = tuple(position)
+        if len(position) != 2:
+            logger.error(
+                'The cross position must be a 2-length sequence (x, y).')
+            raise ValueError
+
         if position[0] - length//2 < 0:
             logger.error(
                 'The cross position does not allow the cross '
