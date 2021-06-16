@@ -38,9 +38,9 @@ class Tone(_Sound):
         self._frequency = Tone._check_frequency(frequency)
         super().__init__(volume, sample_rate, duration)
 
-    def _compute_signal(self):
+    def _set_signal(self):
         """
-        Computes the signal to output.
+        Sets the signal to output.
         """
         tone_arr = np.sin(2*np.pi*self._frequency*self._time_arr)
 
@@ -74,4 +74,4 @@ class Tone(_Sound):
     @frequency.setter
     def frequency(self, frequency):
         self._frequency = Tone._check_frequency(frequency)
-        self._compute_signal()
+        self._set_signal()

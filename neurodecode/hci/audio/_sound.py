@@ -40,12 +40,12 @@ class _Sound(ABC):
         # [:, 0] for left and [:, 1] for right
         self._signal = np.zeros(shape=(self._time_arr.size, len(self._volume)))
 
-        self._compute_signal()
+        self._set_signal()
 
     @abstractmethod
-    def _compute_signal(self):
+    def _set_signal(self):
         """
-        Computes the signal to output.
+        Sets the signal to output.
         """
         pass
 
@@ -63,12 +63,6 @@ class _Sound(ABC):
         Stops the sounds played in the background.
         """
         sd.stop()
-
-    def read(self, fname):
-        """
-        scipy.io.wavfile.read()
-        """
-        raise NotImplementedError
 
     def write(self, fname):
         """
@@ -155,7 +149,7 @@ class _Sound(ABC):
     def volume(self, volume):
         self._volume = _Sound._check_volume(volume)
         self._signal = np.zeros(shape=(self._time_arr.size, len(self._volume)))
-        self._compute_signal()
+        self._set_signal()
 
     @property
     def sample_rate(self):
@@ -171,7 +165,7 @@ class _Sound(ABC):
             0, self._duration,
             int(self._duration*self._sample_rate), endpoint=True)
         self._signal = np.zeros(shape=(self._time_arr.size, len(self._volume)))
-        self._compute_signal()
+        self._set_signal()
 
     @property
     def duration(self):
@@ -187,7 +181,7 @@ class _Sound(ABC):
             0, self._duration,
             int(self._duration*self._sample_rate), endpoint=True)
         self._signal = np.zeros(shape=(self._time_arr.size, len(self._volume)))
-        self._compute_signal()
+        self._set_signal()
 
     @property
     def signal(self):
