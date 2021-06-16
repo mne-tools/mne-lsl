@@ -129,7 +129,7 @@ class Sound(_Sound):
         Volume modifications is not supported for loaded sounds.
         Returns [50] * number of channels.
         """
-        return [50] * signal.shape[1]
+        return [100] * signal.shape[1]
 
     @staticmethod
     def _valid_trim_duration(trim_duration, sound_duration):
@@ -144,36 +144,16 @@ class Sound(_Sound):
         return True
 
     # --------------------------------------------------------------------
-    @property
-    def volume(self):
-        """
-        The sound's volume(s).
-        """
-        return self._volume
-
-    @volume.setter
+    @_Sound.volume.setter
     def volume(self, volume):
-        logger.warning("The sound's volume cannot be changed.")
+        logger.warning(
+            "The sound's volume cannot be changed for a loaded sound.")
 
-    @property
-    def sample_rate(self):
-        """
-        The sound's sampling rate.
-        """
-        return self._sample_rate
-
-    @sample_rate.setter
+    @_Sound.sample_rate.setter
     def sample_rate(self, sample_rate):
         self.resample(sample_rate)
 
-    @property
-    def duration(self):
-        """
-        The sound's duration (seconds).
-        """
-        return self._duration
-
-    @duration.setter
+    @_Sound.duration.setter
     def duration(self, duration):
         self.trim(duration)
 
