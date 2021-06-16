@@ -59,9 +59,9 @@ class ASSR(_Sound):
             frequency_modulation)
         super().__init__(volume, sample_rate, duration)
 
-    def _compute_signal(self):
+    def _set_signal(self):
         """
-        Computes the signal to output.
+        Sets the signal to output.
         """
         if self._method == 'conventional':
             assr_amplitude = (1-np.cos(
@@ -137,7 +137,7 @@ class ASSR(_Sound):
     def frequency_carrier(self, frequency_carrier):
         self._frequency_carrier = ASSR._check_frequency_carrier(
             frequency_carrier)
-        self._compute_signal()
+        self._set_signal()
 
     @property
     def frequency_modulation(self):
@@ -150,7 +150,7 @@ class ASSR(_Sound):
     def frequency_modulation(self, frequency_modulation):
         self._frequency_modulation = ASSR._check_frequency_modulation(
             frequency_modulation)
-        self._compute_signal()
+        self._set_signal()
 
     @property
     def method(self):
@@ -162,4 +162,4 @@ class ASSR(_Sound):
     @method.setter
     def method(self, method):
         self._method = ASSR._check_method(method)
-        self._compute_signal()
+        self._set_signal()

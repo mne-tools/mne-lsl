@@ -32,9 +32,9 @@ class WhiteNoise(_Sound):
         self._rng = np.random.default_rng()
         super().__init__(volume, sample_rate, duration)
 
-    def _compute_signal(self):
+    def _set_signal(self):
         """
-        Computes the signal to output.
+        Sets the signal to output.
         """
         # mean: 0, sigma: 0.33
         wn_arr = self._rng.normal(loc=0, scale=1/3, size=self._time_arr.size)
