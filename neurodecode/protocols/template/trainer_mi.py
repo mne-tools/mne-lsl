@@ -1,10 +1,7 @@
-from __future__ import print_function, division
-
 import os
 import sys
 import mne
 import multiprocessing as mp
-from builtins import input
 from neurodecode import logger
 from neurodecode.triggers import TriggerDef
 from neurodecode.gui.streams import redirect_stdout_to_queue
@@ -17,7 +14,7 @@ os.environ['OMP_NUM_THREADS'] = '1' # actually improves performance for multitap
 def check_config(cfg):
     """
     Check if the required parameters are defined in the config module
-    
+
     Parameters
     ----------
     cfg : python.module
@@ -30,25 +27,25 @@ def check_config(cfg):
     }
 
     # Check the critical variables
-    optional_vars = {  
+    optional_vars = {
         'COMMON': { 'DDD',
-                    'EEE'}, 
-        
+                    'EEE'},
+
         # Internal parmameters for the AAA
         'XXX': { 'min': 1, 'max': 40, },
     }
-    
+
     # Check the critical variables
     _check_cfg_mandatory(cfg, critical_vars, 'COMMON')
-    
+
     # Check the optional variables
     _check_cfg_optional(cfg, optional_vars, 'COMMON')
-    
+
     # Check the internal param of AAA
     _check_cfg_selected(cfg, optional_vars, 'AAA')
-    
+
     if getattr(cfg, 'TRIGGER_DEVICE') == None:
-        logger.warning('The trigger device is set to None! No events will be saved.')    
+        logger.warning('The trigger device is set to None! No events will be saved.')
 
     return cfg
 
@@ -56,12 +53,12 @@ def check_config(cfg):
 def batch_run(cfg_module):
     '''
     Used when launch from the terminal (not GUI)
-    
+
     Parameters
     ----------
     cfg_module : str
         The path to the config module
-    '''    
+    '''
     cfg = io.load_config(cfg_module)
     cfg = check_config(cfg)
     run(cfg, interactive=True)
@@ -70,7 +67,7 @@ def batch_run(cfg_module):
 def run(cfg, state=mp.Value('i', 1), queue=None, logger=logger):
     '''
     Main function used to run the offline protocol.
-    
+
     Parameters
     ----------
     cfg : python.module
@@ -79,22 +76,22 @@ def run(cfg, state=mp.Value('i', 1), queue=None, logger=logger):
         If not None, redirect sys.stdout to GUI terminal
     logger : logging.logger
         The logger to use
-    '''    
+    '''
     redirect_stdout_to_queue(logger, queue, 'INFO')
 
     # Load the mapping from int to string for triggers events
     cfg.tdef = TriggerDef(cfg.TRIGGER_FILE)
-    
+
     # Protocol start if equals to 1
     if not state.value:
         sys.exit(-1)
-    
+
     #-------------------------------------
     # ADD YOUR CODE HERE
     #-------------------------------------
-    
+
     # TO train a decoder, look at trainer_mi.py protocol
-    
+
     with state.get_lock():
         state.value = 0
 
@@ -102,7 +99,7 @@ def run(cfg, state=mp.Value('i', 1), queue=None, logger=logger):
 def _check_cfg_optional(cfg, optional_vars, key_var):
     """
     Check that the optional parameters are defined and if not assign them
-    
+
     Parameters
     ----------
     cfg :python.module
@@ -119,9 +116,9 @@ def _check_cfg_optional(cfg, optional_vars, key_var):
 
 #-------------------------------------------------------------------------
 def _check_cfg_mandatory(cfg, critical_vars, key_var):
-    """    
+    """
     Check that the mandatory parameters are defined
-    
+
     Parameters
     ----------
     cfg : python.module
@@ -148,12 +145,12 @@ def _check_cfg_selected(cfg, optional_vars, select):
     cfg : python.module
         The config module containing the parameters to check
     optional_vars :
-        The optional parameters with predefined values for the param 
+        The optional parameters with predefined values for the param
     selected = the cfg parameter (type=dict) containing a key: selected
     """
     param = getattr(cfg, select)
     selected = param['selected']
-    
+
     if selected not in param:
         logger.error('%s not defined in config.'% selected)
         raise RuntimeError

@@ -1,5 +1,3 @@
-from __future__ import print_function, division
-
 """
 FES feedback with online decoding
 
@@ -30,9 +28,6 @@ import neurodecode.utils.Motionstim8 as fes
 
 from neurodecode import logger
 from neurodecode.utils.timer import Timer
-from neurodecode.utils.etc import list2string
-from neurodecode.utils.etc import get_index_max
-
 
 # global constants
 KEYS = {'right':2555904, 'up':2490368, 'left':2424832, 'down':2621440, 'pgup':85, 'pgdn':86, 'home':80, 'end':87, 'space':32, 'esc':27}
@@ -58,7 +53,7 @@ class Feedback:
         self.bar_step_up = self.cfg.BAR_STEP['up']
         self.bar_step_down = self.cfg.BAR_STEP['down']
         self.bar_step_both = self.cfg.BAR_STEP['both']
-        
+
         if type(self.cfg.BAR_BIAS) is tuple:
             self.bar_bias = list(self.cfg.BAR_BIAS)
         else:
@@ -97,12 +92,12 @@ class Feedback:
             logger.info('STIMO serial port %s is_open = %s' % (self.stimo_port, self.ser.is_open))
 
         # FES only
-        if self.cfg.WITH_FES is True:       
+        if self.cfg.WITH_FES is True:
             self.stim = fes.Motionstim8()
             self.stim.OpenSerialPort(self.cfg.FES_COMPORT)
             self.stim.InitializeChannelListMode()
             logger.info('Opened FES serial port')
-           
+
 
     def __del__(self):
         # STIMO only
@@ -111,7 +106,7 @@ class Feedback:
             logger.info('Closed STIMO serial port %s' % self.stimo_port)
         # FES only
         if self.cfg.WITH_FES is True:
-            stim_code = [0, 0, 0, 0, 0, 0, 0, 0]                               
+            stim_code = [0, 0, 0, 0, 0, 0, 0, 0]
             self.stim.UpdateChannelSettings(stim_code)
             self.stim.CloseSerialPort()
             logger.info('Closed FES serial port')
@@ -120,6 +115,8 @@ class Feedback:
         """
         Run a single trial
         """
+        def list2string(vec, fmt, sep=' '):
+            return sep.join(fmt % x for x in vec)
         true_label_index = bar_dirs.index(true_label)
         self.tm_trigger.reset()
         if self.bar_bias is not None:
@@ -277,21 +274,21 @@ class Feedback:
 
 
                     # FES event mode mode
-                    if self.cfg.WITH_FES is True and self.cfg.FES_CONTINUOUS is False:                                                  
+                    if self.cfg.WITH_FES is True and self.cfg.FES_CONTINUOUS is False:
                         if bar_label == 'L':
-                            stim_code = [0, 30, 0, 0, 0, 0, 0, 0]                               
+                            stim_code = [0, 30, 0, 0, 0, 0, 0, 0]
                             self.stim.UpdateChannelSettings(stim_code)
                             logger.info('FES: Sent Left')
                             time.sleep(0.5)
-                            stim_code = [0, 0, 0, 0, 0, 0, 0, 0] 
+                            stim_code = [0, 0, 0, 0, 0, 0, 0, 0]
                             self.stim.UpdateChannelSettings(stim_code)
 
                         elif bar_label == 'R':
-                            stim_code = [30, 0, 0, 0, 0, 0, 0, 0]                               
+                            stim_code = [30, 0, 0, 0, 0, 0, 0, 0]
                             self.stim.UpdateChannelSettings(stim_code)
                             time.sleep(0.5)
                             logger.info('FES: Sent Right')
-                            stim_code = [0, 0, 0, 0, 0, 0, 0, 0] 
+                            stim_code = [0, 0, 0, 0, 0, 0, 0, 0]
                             self.stim.UpdateChannelSettings(stim_code)
 
 
@@ -356,7 +353,7 @@ class Feedback:
 
                         # determine the direction
                         # TODO: np.argmax(probs)
-                        max_pidx = get_index_max(probs)
+                        max_pidx = np.argmax(probs)
                         max_label = bar_dirs[max_pidx]
 
                         if self.cfg.POSITIVE_FEEDBACK is False or \
@@ -417,12 +414,12 @@ class Feedback:
                                     if bar_label == 'L':
                                         stim_code = [bar_score, 0, 0, 0, 0, 0, 0, 0]
                                     else:
-                                        stim_code = [0, bar_score, 0, 0, 0, 0, 0, 0]                               
+                                        stim_code = [0, bar_score, 0, 0, 0, 0, 0, 0]
                                     self.stim.UpdateChannelSettings(stim_code)
                                     logger.info('Sent FES code %d' % bar_score)
                                     self.stimo_timer.reset()
 
-                        
+
 
 
 
