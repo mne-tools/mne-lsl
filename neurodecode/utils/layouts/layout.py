@@ -140,6 +140,8 @@ class Layout:
         """
         Add a list of channels to the existing layout.
 
+        Parameters
+        ----------
         ch_names : list
             The list of channels' name to add.
         ch_types : list | str
@@ -150,6 +152,17 @@ class Layout:
         Layout._check_ch_number(ch_names, ch_types)
         self._ch_names += ch_names
         self._ch_types += ch_types
+
+    def remove_channels(self, ch_names):
+        """
+        Remove a list of channels from the existing layout.
+
+        Parameters
+        ----------
+        ch_names : list
+            The list of channels' name to remove.
+        """
+        raise NotImplementedError # TODO: Implement channel removal.
 
     # --------------------------------------------------------------------
     @staticmethod
@@ -222,7 +235,6 @@ class Layout:
         return montage
 
     # --------------------------------------------------------------------
-
     @property
     def name(self):
         """
@@ -254,13 +266,7 @@ class Layout:
 
     @ch_names.setter
     def ch_names(self, ch_names):
-        ch_names = Layout._check_ch_names(ch_names)
-        if len(ch_names) == len(self._ch_types):
-            self._ch_names = ch_names
-        else:
-            logger.warning(
-                'The mumber of channel differs from the number of channel '
-                'types. Skipping.')
+        logger.warning('This attribute can not be changed directly.')
 
     @property
     def ch_types(self):
@@ -271,10 +277,4 @@ class Layout:
 
     @ch_types.setter
     def ch_types(self, ch_types):
-        ch_types = Layout._check_ch_types(self.ch_names, ch_types)
-        if len(ch_types) == len(self._ch_names):
-            self._ch_types = ch_types
-        else:
-            logger.warning(
-                'The mumber of channel types differs from the number of '
-                'channels. Skipping.')
+        logger.warning('This attribute can not be changed directly.')
