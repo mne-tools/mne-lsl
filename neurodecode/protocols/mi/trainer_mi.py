@@ -89,7 +89,8 @@ def check_config(cfg):
                     'EXCLUDED_CHANNELS': None,
                     'LOAD_EVENTS': None,
                     'CV': { 'IGNORE_THRES': None, 'DECISION_THRES': None, 'BALANCE_SAMPLES': False },
-                    'SAVE_FEATURES': False},
+                    'SAVE_FEATURES': False
+                  },
 
         # Internal parmameters for the FEATURE
         'PSD': { 'fmin': 1, 'fmax': 40, 'wlen': 0.5, 'wstep': 16, 'decim': 1 },
