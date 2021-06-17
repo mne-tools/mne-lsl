@@ -1,915 +1,184 @@
-# -*- coding: utf-8 -*-
-from __future__ import print_function, division, unicode_literals
-
-"""
- EEG Scope
- Iñaki Iturrate, Kyuhwa Lee, Arnaud Desvachez
-
- TODO
-	- Should move to VisPY: http://vispy.org/plot.html#module-vispy.plot but still under development
-	- Events should stored in a class.
-"""
-
-DEBUG_TRIGGER = False # TODO: parameterize
-
-import os
-import sys
-import pdb
 import math
+
 import numpy as np
-import pyqtgraph as pg
-import multiprocessing as mp
-
-from PyQt5 import QtCore
-from pathlib import Path
-from PyQt5.QtGui import QPainter
-from scipy.signal import butter, lfilter
-from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem, \
-     QHeaderView, QFileDialog
-
-from configparser import RawConfigParser
-
-from neurodecode import logger
-from neurodecode.stream_recorder import stream_recorder
-from neurodecode.gui.streams import redirect_stdout_to_queue
-from neurodecode.stream_receiver import StreamReceiver
-from neurodecode.stream_viewer.ui_mainwindow_Viewer import Ui_MainWindow
+from scipy.signal import butter, sosfilt, sosfilt_zi
 
 
-class _Scope(QMainWindow):
-    '''
-    Internal class
-    
-    Load UI, data acquisition and ploting
-    '''
-    #----------------------------------------------------------------------
-    def __init__(self, amp_name, state=mp.Value('i', 1), queue=None):
-        '''
-        Constructor
-        '''
-        super(_Scope, self).__init__()
+BP_ORDER = 2
+_BUFFER_DURATION = 30  # seconds
 
-        self.amp_name = amp_name
-        self.state = state
-        self.recordState = mp.Value('i', 0)
-        
-        redirect_stdout_to_queue(logger, queue, 'INFO')
-        logger.info('Viewer launched')
-        
-        self.load_ui()        
-        self.init_scope()
-    
-    #----------------------------------------------------------------------
-    def load_ui(self):
-        '''
-        Load the GUI from .ui file created by QtCreator
-        '''
-        self._ui = Ui_MainWindow()
-        self._ui.setupUi(self)
-        self.setGeometry(100, 100, self.geometry().width(), self.geometry().height())
-        self.setFixedSize(self.geometry().width(), self.geometry().height())
 
-    #----------------------------------------------------------------------
-    def init_scope(self):
-        '''
-        Main init function
-        '''
-        self.load_config_file()
-        self.init_loop()
-        self.init_panel_GUI()
-        self.init_scope_GUI()
-        self.init_timer()
+class _Scope:
+    """
+    Class representing a base scope.
 
-    #----------------------------------------------------------------------
-    def load_config_file(self):
-        '''
-        Load predefined parameters from the config file
-        '''
-        path2_viewerFolder = Path(os.environ['NEUROD_ROOT'])/'neurodecode'/'stream_viewer'
-        self.scope_settings = RawConfigParser(allow_no_value=True, inline_comment_prefixes=('#', ';'))
-        self.scope_settings.read(str(path2_viewerFolder/'.scope_settings.ini'))
-    
-    #----------------------------------------------------------------------
-    def init_loop(self, window_size=0.2, buffer_size=0.2):
-        '''
-        Instance a StreamReceiver and extract info from the stream
-        '''
-        self.sr = StreamReceiver(window_size=window_size, buffer_size=buffer_size, amp_name=self.amp_name)
+    Parameters
+    ----------
+    stream_receiver : neurodecode.stream_receiver.StreamReceiver
+        The connected stream receiver.
+    stream_name : str
+        The stream to connect to.
+    """
+    # ---------------------------- INIT ----------------------------
 
-        self.config = {
-            'sf': int(next(iter(self.sr.streams.values())).sample_rate),
-            'samples': int(next(iter(self.sr.streams.values())).sample_rate * window_size),
-            'eeg_channels': len(next(iter(self.sr.streams.values())).ch_list[1:]),
-            'exg_channels': 0,
-            'tri_channels': 1,
-        }
-        
-        # For now, not a fixed number of samples per chunk --> TO FIX
-        self.tri = np.zeros(self.config['samples'])
-        self.eeg = np.zeros((self.config['samples'], self.config['eeg_channels']), dtype=np.float)
-        self.exg = np.zeros((self.config['samples'], self.config['exg_channels']), dtype=np.float)
-        
-        self._last_tri = 0
-        self._ts_list = []
-        self._ts_list_tri = []
-        
-    #----------------------------------------------------------------------
-    def init_panel_GUI(self):
-        '''
-        Initialize control panel parameters
-        '''
-        self.show_events()
-        self.connect_signals_to_slots()
-        self.set_checked_widgets()
-        
-        self._ui.pushButton_stoprec.setEnabled(False)
-        self._ui.comboBox_scale.setCurrentIndex(2)
-        
-        # self._ui.pushButton_bp.setDisabled(True)
-        
-        self.fill_table_channels()
-        self.set_window_size_policy()
-        self.show()
+    def __init__(self, stream_receiver, stream_name):
+        assert stream_name in stream_receiver.streams.keys()
+        self.sr = stream_receiver
+        self.stream_name = stream_name
+        self.init_infos()
+        self.init_buffer(_BUFFER_DURATION)
 
-    #----------------------------------------------------------------------
-    def set_window_size_policy(self):
-        '''
-        Set window's size and policy
-        '''
-        self.screen_width = 522
-        self.screen_height = 160
-        self.setWindowTitle('EEG Scope Panel')
-        self.setFocusPolicy(QtCore.Qt.ClickFocus)
-        self.setFocus()
+    def init_infos(self):
+        """
+        Extract basic stream informations.
+        """
+        self.sample_rate = int(
+            self.sr.streams[self.stream_name].sample_rate)
 
-    #----------------------------------------------------------------------
-    def fill_table_channels(self):
-        '''
-        Fill the channels table with the available EEG and EXG channels' names
-        '''
-        idx = 0
-        self.channels_to_show_idx = []
-        
-        nb_channels = self.config['eeg_channels'] + self.config['exg_channels']
-        self.set_table_size(nb_channels)
-        
-        for x in range(0, self._nb_table_rows):
-            for y in range(0, self._nb_table_columns):
-                if (idx < self.config['eeg_channels']):
-                    self._ui.table_channels.setItem(x, y,
-                        QTableWidgetItem(idx))                    
-                    self._ui.table_channels.item(x,y).setTextAlignment(QtCore.Qt.AlignCenter)
-                    self._ui.table_channels.item(x, y).setSelected(True) # Qt5
-                    self.channels_to_show_idx.append(idx)
-                else:
-                    self._ui.table_channels.setItem(x, y,
-                        QTableWidgetItem("N/A"))
-                    self._ui.table_channels.item(x, y).setFlags(
-                        QtCore.Qt.NoItemFlags)
-                    self._ui.table_channels.item(x, y).setTextAlignment(
-                        QtCore.Qt.AlignCenter)
-                idx += 1
+    def init_buffer(self, duration_buffer):
+        """
+        Initialize buffer(s).
+        """
+        self.duration_buffer = duration_buffer
+        self.n_samples_buffer = math.ceil(duration_buffer * self.sample_rate)
+        self._ts_list = list()
 
-        self._ui.table_channels.verticalHeader().setSectionResizeMode(QHeaderView.Stretch)
-        self._ui.table_channels.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-        
-        self._ui.table_channels.itemSelectionChanged.connect(self.onSelectionChanged_table)
-    
-    #----------------------------------------------------------------------
-    def set_table_size(self, nb_channels):
-        '''
-        Compute the numbers of raws and columns of the channel table and set it
-        '''   
-        if nb_channels > 64:
-            self._nb_table_columns = 8
-        else:
-            self._nb_table_columns = 4
-        
-        self._nb_table_rows = math.ceil(nb_channels/self._nb_table_columns)
-        
-        self._ui.table_channels.setRowCount(self._nb_table_rows)
-        self._ui.table_channels.setColumnCount(self._nb_table_columns)        
-
-    #----------------------------------------------------------------------
-    def show_events(self, tid=False, lpt=False, key=False):
-        '''
-        Display or not events
-        '''
-        self._show_TID_events = tid
-        self._show_LPT_events = lpt
-        self._show_Key_events = key
-
-    #----------------------------------------------------------------------
-    def set_checked_widgets(self):
-        '''
-        Set checkBox widgets to checked state
-        '''
-        self._ui.checkBox_car.setChecked(
-            int(self.scope_settings.get("filtering", "apply_car_filter")))
-        self._ui.checkBox_bandpass.setChecked(
-            int(self.scope_settings.get("filtering", "apply_bandpass_filter")))
-        self._ui.checkBox_showTID.setChecked(
-            int(self.scope_settings.get("plot", "show_TID_events")))
-        self._ui.checkBox_showLPT.setChecked(
-            int(self.scope_settings.get("plot", "show_LPT_events")))
-        self._ui.checkBox_showKey.setChecked(
-            int(self.scope_settings.get("plot", "show_Key_events")))
-        self._ui.statusBar.showMessage("[Not recording]")
-
-    #----------------------------------------------------------------------
-    def connect_signals_to_slots(self):
-        '''
-        Event handler
-        
-        Connect QT signals to slots
-        '''
-        self._ui.comboBox_scale.activated.connect(self.onActivated_combobox_scale)
-        self._ui.spinBox_time.valueChanged.connect(self.onValueChanged_spinbox_time)
-        self._ui.checkBox_car.stateChanged.connect(self.onActivated_checkbox_car)
-        self._ui.checkBox_bandpass.stateChanged.connect(
-            self.onActivated_checkbox_bandpass)
-        self._ui.checkBox_showTID.stateChanged.connect(
-            self.onActivated_checkbox_TID)
-        self._ui.checkBox_showLPT.stateChanged.connect(
-            self.onActivated_checkbox_LPT)
-        self._ui.checkBox_showKey.stateChanged.connect(
-            self.onActivated_checkbox_Key)
-        self._ui.pushButton_bp.clicked.connect(self.onClicked_button_bp)
-        self._ui.pushButton_recdir.clicked.connect(self.on_click_button_recdir)
-        self._ui.pushButton_rec.clicked.connect(self.onClicked_button_rec)
-        self._ui.pushButton_stoprec.clicked.connect(self.onClicked_button_stoprec)
-
-    #----------------------------------------------------------------------
-    def init_scope_GUI(self):
-        '''
-        Initialize scope parameters
-        '''
-        self.bool_parser = {True:'1', False:'0'}
-
-        # Scales available in the GUI. 
-        self.scales_range = [1, 10, 25, 50, 100, 250, 500, 1000, 2500, 100000]
-        # Scale in uV
-        self.scale = float(self.scope_settings.get("plot", "scale_plot"))
-        # Time window to show in seconds
-        self.seconds_to_show = int(self.scope_settings.get("plot", "time_plot"))
-
-        self.init_graph()
-
-        # Plotting colors. If channels > 16, colors will roll back to the beginning
-        self.colors = np.array(
-            [[255, 0, 0], [0, 255, 0], [0, 0, 255], [255, 255, 0],
-            [0, 255, 255], [255, 0, 255], [128, 100, 100], [0, 128, 0],
-            [0, 128, 128], [128, 128, 0], [255, 128, 128], [128, 0, 128],
-            [128, 255, 0], [255, 128, 0], [0, 255, 128], [128, 0, 255]])
-
-        # We want a lightweight scope, so we downsample the plotting to 64 Hz
-        self.subsampling_value = self.config['sf'] / 64
-
-        # EEG data for plotting
-        self.data_plot = np.zeros((self.config['sf'] * self.seconds_to_show,
-        self.config['eeg_channels']))
-        self.curve_eeg = []
-        for x in range(0, len(self.channels_to_show_idx)):
-            self.curve_eeg.append(self._main_plot_handler.plot(x=self.x_ticks,
-                y=self.data_plot[:, self.channels_to_show_idx[x]],
-                pen=pg.mkColor(
-                    self.colors[self.channels_to_show_idx[x] % 16, :])))
-
-        # Events data
-        self.events_detected = []
-        self.events_curves = []
-        self.events_text = []
-
-        # Filters
-        self.init_car()
-        self.init_bandpass()
-        self.update_title_scope()
-
-        # Help variables
-        self.show_help = 0
-        self.help = pg.TextItem(
-            "Stream Viewer \n" + "----------------------------------------------------------------------------------\n" + "C: De/activate CAR Filter\n" + "B: De/activate Bandpass Filter (with current settings)\n" + "T: Show/hide TiD events\n" + "L: Show/hide LPT events\n" + "K: Show/hide Key events. If not shown, they are NOT recorded!\n" + "0-9: Add a user-specific Key event. Do not forget to write down why you marked it.\n" + "Up, down arrow keys: Increase/decrease the scale, steps of 10 uV\n" + "Left, right arrow keys: Increase/decrease the time to show, steps of 1 s\n" + "Spacebar: Stop the scope plotting, whereas data acquisition keeps running (EXPERIMENTAL)\n" + "Esc: Exits the scope",
-            anchor=(0, 0), border=(70, 70, 70),
-            fill=pg.mkColor(20, 20, 20, 200), color=(255, 255, 255))
-
-        # Stop plot functionality
-        self.stop_plot = 0
-
-        # Force repaint even when we shouldn't repaint.
-        self.force_repaint = 0
-    
-    #----------------------------------------------------------------------
-    def init_bandpass(self):
-        '''
-        Init the bandpass filtering parameters high and low cutoff
-        '''
-        self.apply_bandpass = int(
-            self.scope_settings.get("filtering", "apply_bandpass_filter"))
-
-        self._ui.checkBox_bandpass.setChecked(self.apply_bandpass)
-        
-        if (self.apply_bandpass):
-            self._ui.doubleSpinBox_hp.setValue(float(
-                self.scope_settings.get("filtering",
-                    "bandpass_cutoff_frequency").split(' ')[0]))
-            self._ui.doubleSpinBox_lp.setValue(float(
-                self.scope_settings.get("filtering",
-                    "bandpass_cutoff_frequency").split(' ')[1]))
-            self._ui.pushButton_bp.click()
-
-    #----------------------------------------------------------------------
-    def init_car(self):
-        '''
-        Init the Common Average Reference 
-        '''
-        self.apply_car = int(
-            self.scope_settings.get("filtering", "apply_car_filter"))
-
-        self._ui.checkBox_bandpass.setChecked(self.apply_car)
-
-        if (self.apply_car):  
-            self.matrix_car = np.zeros(
-                (self.config['eeg_channels'], self.config['eeg_channels']),
-                dtype=float)
-            self.matrix_car[:, :] = -1 / float(self.config['eeg_channels'])
-            np.fill_diagonal(self.matrix_car,
-                1 - (1 / float(self.config['eeg_channels'])))
-        
-
-    #----------------------------------------------------------------------
-    def init_graph(self):
-        '''
-        Init the PyQTGraph plot
-        '''
-        self._win = pg.GraphicsWindow()
-        self.set_win_geometry_title()
-        self._win.keyPressEvent = self.keyPressEvent
-        self._win.show()
-        
-        self._main_plot_handler = self._win.addPlot()
-
-        # Y Tick labels. Use values from the config file.
-        self.channel_labels = []
-        values = []
-        ch_names = np.array( next(iter(self.sr.streams.values())).ch_list )
-        self.channel_labels = ch_names[1:]
-        for x in range(0, len(self.channels_to_show_idx)):
-            values.append((-x * self.scale,
-                self.channel_labels[self.channels_to_show_idx[x]]))
-
-        values_axis = []
-        values_axis.append(values)
-        values_axis.append([])
-
-        # Update table labels with current names
-        idx = 0
-        for x in range(0, self._nb_table_rows):
-            for y in range(0, self._nb_table_columns):
-                if (idx < self.config['eeg_channels']):
-                    self._ui.table_channels.item(x, y).setText(
-                        self.channel_labels[idx])
-                idx += 1
-
-        # Plot initialization
-        self._main_plot_handler.getAxis('left').setTicks(values_axis)
-        self._main_plot_handler.setRange(xRange=[0, self.seconds_to_show],
-            yRange=[+1.5 * self.scale,
-                -0.5 * self.scale - self.scale * self.config['eeg_channels']])
-        self._main_plot_handler.disableAutoRange()
-        self._main_plot_handler.showGrid(y=True)
-        self._main_plot_handler.setLabel(axis='left',
-            text='Scale (uV): ' + str(self.scale))
-        self._main_plot_handler.setLabel(axis='bottom', text='Time (s)')
-
-        # X axis
-        self.x_ticks = np.zeros(self.config['sf'] * self.seconds_to_show);
-        for x in range(0, self.config['sf'] * self.seconds_to_show):
-            self.x_ticks[x] = (x * 1) / float(self.config['sf'])
-    
-    #----------------------------------------------------------------------
-    def set_win_geometry_title(self):
-        '''
-        Set the title and the geometry of the PyQTGraph window based on MainWindow size
-        '''
-        self._win.setWindowTitle('EEG Scope')
-        self._win.setWindowFlags(QtCore.Qt.WindowMinimizeButtonHint)
-        self._win.setWindowFlags(QtCore.Qt.WindowMaximizeButtonHint)
-        self._win.setGeometry(self.geometry().x() + self.width(), self.geometry().y(), self.width() * 2, self.height()) #  Position next to the panel window
-
-    #----------------------------------------------------------------------
-    def init_timer(self):
-        '''
-        Initializes the QT timer, which will call the update function every 20 ms
-        '''
-        QtCore.QCoreApplication.processEvents()
-        QtCore.QCoreApplication.flush()
-        self.timer = QtCore.QTimer(self)
-        self.timer.timeout.connect(self.update_loop)
-        self.timer.start(20);
-
-    #----------------------------------------------------------------------
-    def update_loop(self):
-        '''
-        Main update function (connected to the timer)
-        '''
-        
-        #  Sharing variable to stop at the GUI level
-        if not self.state.value:
-            logger.info('Viewer stopped')
-            sys.exit()
-            
-        try:
-            self.read_eeg()                 # Read new chunk
-            if len(self._ts_list) > 0:
-                self.filter_signal()        # Filter acquired data
-                self.update_ringbuffers()   # Update the plotting infor
-                if (not self.stop_plot):
-                    self.repaint()          # Call paint event
-        except:
-            logger.exception('Exception. Dropping into a shell.')
-            pdb.set_trace()
-
-    #----------------------------------------------------------------------
-    def read_eeg(self):
-        '''
-        Read EEG
-        '''
-        next(iter(self.sr.streams.values())).blocking = False
+    # -------------------------- Main Loop -------------------------
+    def read_lsl_stream(self):
+        """
+        Acquires data from the connected LSL stream.
+        """
         self.sr.acquire()
-        data, self._ts_list = self.sr.get_buffer()
+        self.data_acquired, self._ts_list = self.sr.get_buffer()
         self.sr.reset_all_buffers()
 
         if len(self._ts_list) == 0:
             return
 
-        n = self.config['eeg_channels']
-        
-        self.tri = np.reshape(data[:, 0], (-1, 1))      # samples x 1
-        self.eeg = np.reshape(data[:, 1:], (-1, n))     # samples x channels
 
-        if DEBUG_TRIGGER:
-            # show trigger value
-            try:
-                trg_value = max(self.tri)
-                if trg_value > 0:
-                    logger.info('Received trigger %s' % trg_value)
-            except:
-                logger.exception('Error! self.tri = %s' % self.tri)
-                
-    #----------------------------------------------------------------------
+class _ScopeEEG(_Scope):
+    """
+    Class representing an EEG scope.
+
+    Parameters
+    ----------
+    stream_receiver : neurodecode.stream_receiver.StreamReceiver
+        The connected stream receiver.
+    stream_name : str
+        The stream to connect to.
+    """
+    # ---------------------------- INIT ----------------------------
+
+    def __init__(self, stream_receiver, stream_name):
+        super().__init__(stream_receiver, stream_name)
+        self.init_signal_y_scales()
+        self.init_variables()
+
+    def init_infos(self):
+        """
+        Extract basic stream informations.
+        """
+        super().init_infos()
+        self.channels_labels = self.sr.streams[self.stream_name].ch_list[1:]
+        self.n_channels = len(
+            self.sr.streams[self.stream_name].ch_list[1:])
+
+    def init_signal_y_scales(self):
+        """
+        The available signal scale/range values as a dictionnary {key: value}
+        with key a representative string and value in uV.
+        """
+        self.signal_y_scales = {'1uV': 1, '10uV': 10, '25uV': 25,
+                                '50uV': 50, '100uV': 100, '250uV': 250,
+                                '500uV': 500, '1mV': 1000, '2.5mV': 2500,
+                                '100mV': 100000}
+
+    def init_variables(self):
+        """
+        Initialize variables.
+        """
+        self._apply_car = False
+        self._apply_bandpass = False
+        self.channels_to_show_idx = list(range(self.n_channels))
+
+    def init_buffer(self, duration_buffer):
+        """
+        Initialize buffer(s).
+        """
+        super().init_buffer(duration_buffer)
+        self.trigger_buffer = np.zeros(self.n_samples_buffer)
+        self.data_buffer = np.zeros((self.n_channels, self.n_samples_buffer),
+                                    dtype=np.float32)
+
+    def init_bandpass_filter(self, low, high):
+        """
+        Initialize the bandpass filter. The filter is a butter filter of order
+        neurodecode.stream_viewer._scope.BP_ORDER
+
+        Parameters
+        ----------
+        low : int | float
+            The frequency at which the signal is high-passed.
+        high : int | float
+            The frequency at which the signal is low-passed.
+        """
+        self.bp_low = low / (0.5 * self.sample_rate)
+        self.bp_high = high / (0.5 * self.sample_rate)
+        self.sos = butter(BP_ORDER, [self.bp_low, self.bp_high],
+                          btype='band', output='sos')
+        self.zi_coeff = sosfilt_zi(self.sos).reshape((self.sos.shape[0], 2, 1))
+        self.zi = None
+
+    # -------------------------- Main Loop -------------------------
+    def update_loop(self):
+        """
+        Main update loop acquiring data from the LSL stream and filling the
+        scope's buffer.
+        """
+        self.read_lsl_stream()
+        if len(self._ts_list) > 0:
+            self.filter_signal()
+            self.filter_trigger()
+            # shape (channels, samples)
+            self.data_buffer = np.roll(self.data_buffer, -len(self._ts_list),
+                                       axis=1)
+            self.data_buffer[:, -len(self._ts_list):] = self.data_acquired.T
+            # shape (samples, )
+            self.trigger_buffer = np.roll(
+                self.trigger_buffer, -len(self._ts_list))
+            self.trigger_buffer[-len(self._ts_list):] = self.trigger_acquired
+
+    def read_lsl_stream(self):
+        """
+        Acquires data from the connected LSL stream. The acquired data is
+        splitted between the trigger channel and the data channels.
+        """
+        super().read_lsl_stream()
+        # Remove trigger ch - shapes (samples, ) and (samples, channels)
+        self.trigger_acquired = self.data_acquired[:, 0]
+        self.data_acquired = self.data_acquired[:, 1:].reshape(
+            (-1, self.n_channels))
+
     def filter_signal(self):
-        '''
-        Bandpas + CAR filtering
-        '''
-
-        if (self.apply_bandpass):
-            for x in range(0, self.eeg.shape[1]):
-                self.eeg[:, x], self.zi[:, x] = lfilter(self.b, self.a,
-                    self.eeg[:, x], -1, self.zi[:, x])
-
-        # We only apply CAR if selected AND there are at least 2 channels. Otherwise it makes no sense
-        if (self.apply_car) and (len(self.channels_to_show_idx) > 1):
-            self.eeg = np.dot(self.matrix_car, np.transpose(self.eeg))
-            self.eeg = np.transpose(self.eeg)
-
-    #----------------------------------------------------------------------
-    def update_ringbuffers(self):
-        '''
-        Update ringbuffers and events for plotting
-        '''
-        # leeq
-        self.data_plot = np.roll(self.data_plot, -len(self._ts_list), 0)
-        self.data_plot[-len(self._ts_list):, :] = self.eeg
-
-        # We have to remove those indexes that reached time = 0
-        delete_indices_e = []
-        delete_indices_c = []
-        for x in range(0, len(self.events_detected), 2):
-            xh = int(x / 2)
-            self.events_detected[x] -= len(self._ts_list)  # leeq
-            if (self.events_detected[x] < 0) and (not self.stop_plot):
-                delete_indices_e.append(x)
-                delete_indices_e.append(x + 1)
-                delete_indices_c.append(xh)
-                self.events_curves[xh].clear()
-                self._main_plot_handler.removeItem(self.events_text[xh])
-
-        self.events_detected = [i for j, i in enumerate(self.events_detected) if
-            j not in delete_indices_e]
-        self.events_curves = [i for j, i in enumerate(self.events_curves) if
-            j not in delete_indices_c]
-        self.events_text = [i for j, i in enumerate(self.events_text) if
-            j not in delete_indices_c]
-
-        # Find LPT events and add them
-        if (self._show_LPT_events) and (not self.stop_plot):
-            for x in range(len(self.tri)):
-                tri = int(self.tri[x])
-                if tri != 0 and (tri > self._last_tri):
-                    self.addEventPlot("LPT", tri)
-                    logger.info('Trigger %d received' % tri)
-                self._last_tri = tri
-
-    #----------------------------------------------------------------------
-    def paintEvent(self, e):
-        '''
-        Called by repaint()
-        '''
-        # Distinguish between paint events from timer and event QT widget resizing, clicking etc (sender is None)
-        # We should only paint when the timer triggered the event.
-        # Just in case, there's a flag to force a repaint even when we shouldn't repaint
-        sender = self.sender()
-        if 'force_repaint' not in self.__dict__.keys():
-            logger.warning('force_repaint is not set! Is it a Qt bug?')
-            self.force_repaint = 0
-        if (sender is None) and (not self.force_repaint):
-            pass
-        else:
-            self.force_repaint = 0
-            qp = QPainter()
-            qp.begin(self)
-            # Update the interface
-            self.paintInterface(qp)
-            qp.end()
-
-    #----------------------------------------------------------------------
-    def paintInterface(self, qp):
-        '''
-        Update stuff on the interface. Only graphical updates should be added here
-        '''
-
-        # Update EEG channels
-        for x in range(0, len(self.channels_to_show_idx)):
-            self.curve_eeg[x].setData(x=self.x_ticks, y=self.data_plot[:,self.channels_to_show_idx[x]] - x * self.scale)
-
-        # Update events
-        for x in range(0, len(self.events_detected), 2):
-            xh = int(x / 2)
-            self.events_curves[xh].setData(x=np.array(
-                [self.x_ticks[self.events_detected[x]],
-                    self.x_ticks[self.events_detected[x]]]), y=np.array(
-                [+1.5 * self.scale,
-                    -0.5 * self.scale - self.scale * self.config[
-                        'eeg_channels']]))
-            self.events_text[xh].setPos(self.x_ticks[self.events_detected[x]],
-                self.scale)
-
-    #----------------------------------------------------------------------
-    def update_plot_scale(self, new_scale):
-        '''
-        Do necessary stuff when scale has changed
-        '''
-        self.scale = new_scale
-
-        # Y Tick labels
-        values = []
-        for x in range(0, len(self.channels_to_show_idx)):
-            values.append((-x * self.scale,
-            self.channel_labels[self.channels_to_show_idx[x]]))
-
-        values_axis = []
-        values_axis.append(values)
-        values_axis.append([])
-
-        self._main_plot_handler.getAxis('left').setTicks(values_axis)
-        self._main_plot_handler.setRange(
-            yRange=[+self.scale, -self.scale * len(self.channels_to_show_idx)])
-        self._main_plot_handler.setLabel(axis='left',
-            text='Scale (uV): ' + str(self.scale))
-        self.trigger_help()
-
-        # We force an immediate repaint to avoid "shakiness".
-        if (not self.stop_plot):
-            self.force_repaint = 1
-            self.repaint()
-
-    #----------------------------------------------------------------------
-    def update_plot_seconds(self, new_seconds):
-        '''
-        Do necessary stuff when seconds to show have changed
-        '''
-
-        # Do nothing unless...
-        if (new_seconds != self.seconds_to_show) and (new_seconds > 0) and (
-                new_seconds < 100):
-            self._ui.spinBox_time.setValue(new_seconds)
-            self._main_plot_handler.setRange(xRange=[0, new_seconds])
-            self.x_ticks = np.zeros(self.config['sf'] * new_seconds);
-            for x in range(0, self.config['sf'] * new_seconds):
-                self.x_ticks[x] = (x * 1) / float(self.config['sf'])
-
-            if (new_seconds > self.seconds_to_show):
-                padded_signal = np.zeros((self.config['sf'] * new_seconds,
-                self.config['eeg_channels']))
-                padded_signal[padded_signal.shape[0] - self.data_plot.shape[0]:,
-                :] = self.data_plot
-                for x in range(0, len(self.events_detected), 2):
-                    self.events_detected[x] += padded_signal.shape[0] - \
-                                               self.data_plot.shape[0]
-                self.data_plot = padded_signal
-
-            else:
-                for x in range(0, len(self.events_detected), 2):
-                    self.events_detected[x] -= self.data_plot.shape[0] - \
-                                               self.config['sf'] * new_seconds
-                self.data_plot = self.data_plot[
-                self.data_plot.shape[0] - self.config['sf'] * new_seconds:, :]
-
-            self.seconds_to_show = new_seconds
-            self.trigger_help()
-
-            # We force an immediate repaint to avoid "shakiness".
-            if (not self.stop_plot):
-                self.force_repaint = 1
-                self.repaint()
-
-    #----------------------------------------------------------------------
-    def handle_tobiid_input(self):
-        '''
-        Handle TOBI iD events
-        '''
-
-        data = None
-        try:
-            data = self.bci.iDsock_bus.recv(512)
-            self.bci.idStreamer_bus.Append(data)
-        except:
-            self.nS = False
-            self.dec = 0
-            pass
-
-        # deserialize ID message
-        if data:
-            if self.bci.idStreamer_bus.Has("<tobiid", "/>"):
-                msg = self.bci.idStreamer_bus.Extract("<tobiid", "/>")
-                self.bci.id_serializer_bus.Deserialize(msg)
-                self.bci.idStreamer_bus.Clear()
-                tmpmsg = int(self.bci.id_msg_bus.GetEvent())
-                if (self._show_TID_events) and (not self.stop_plot):
-                    self.addEventPlot("TID", tmpmsg)
-
-            elif self.bci.idStreamer_bus.Has("<tcstatus", "/>"):
-                MsgNum = self.bci.idStreamer_bus.Count("<tcstatus")
-                for i in range(1, MsgNum - 1):
-                    # Extract most of these messages and trash them
-                    msg_useless = self.bci.idStreamer_bus.Extract("<tcstatus",
-                        "/>")
-
-    #----------------------------------------------------------------------
-    def addEventPlot(self, event_name, event_id):
-        '''
-        Add an event to the scope
-        '''
-        if (event_name == "TID"):
-            color = pg.mkColor(0, 0, 255)
-        elif (event_name == "KEY"):
-            color = pg.mkColor(255, 0, 0)
-        elif (event_name == "LPT"):
-            color = pg.mkColor(0, 255, 0)
-        else:
-            color = pg.mkColor(255, 255, 255)
-
-        self.events_detected.append(self.data_plot.shape[0] - 1)
-        self.events_detected.append(event_id)
-        self.events_curves.append(self._main_plot_handler.plot(pen=color,
-            x=np.array([self.x_ticks[-1], self.x_ticks[-1]]), y=np.array(
-                [+1.5 * self.scale,
-                    -1.5 * self.scale * self.config['eeg_channels']])))
-        # text = pg.TextItem(event_name + "(" + str(self.events_detected[-1]) + ")", anchor=(1.1,0), fill=(0,0,0), color=color)
-        text = pg.TextItem(str(self.events_detected[-1]), anchor=(1.1, 0),
-            fill=(0, 0, 0), color=color)
-        text.setPos(self.x_ticks[-1], self.scale)
-        self.events_text.append(text)
-        self._main_plot_handler.addItem(self.events_text[-1])
-
-    #----------------------------------------------------------------------
-    def butter_bandpass(self, highcut, lowcut, fs, num_ch):
-        '''
-        Calculation of bandpass coefficients.
-        
-        TO DO: AUTOMATIC ORDER COMPUTATION
-        (If filter is unstable this function crashes (TODO handle problems))
-        '''
-        low = lowcut / (0.5 * fs)
-        high = highcut / (0.5 * fs)
-        # get the order. TO BE DONE: Sometimes it fails
-        #ord = buttord(high, low, 2, 40)
-        #b, a = butter(ord[0], [high, low], btype='band')
-        b, a = butter(2, [high, low], btype='band')
-        zi = np.zeros([a.shape[0] - 1, num_ch])
-        return b, a, zi
-
-    #----------------------------------------------------------------------
-    def update_title_scope(self):
-        '''
-        Updates the title shown in the scope
-        '''
-        if (hasattr(self, 'main_plot_handler')):
-            self._main_plot_handler.setTitle(
-                title='TLK: ' + self.bool_parser[self._show_TID_events] +
-                      self.bool_parser[self._show_LPT_events] + self.bool_parser[
-                          self._show_Key_events] + ', CAR: ' + self.bool_parser[
-                          self.apply_car] + ', BP: ' + self.bool_parser[
-                          self.apply_bandpass] + ' [' + str(
-                    self._ui.doubleSpinBox_hp.value()) + '-' + str(
-                    self._ui.doubleSpinBox_lp.value()) + '] Hz')
-            # ', BP: ' + self.bool_parser[self.apply_bandpass] + (' [' + str(self.doubleSpinBox_hp.value()) + '-' + str(self.doubleSpinBox_lp.value()) + '] Hz' if self.apply_bandpass else ''))
-
-    #----------------------------------------------------------------------
-    def trigger_help(self):
-        '''
-        Shows / hide help in the scope window
-        '''
-        if self.show_help:
-            self.help.setPos(0, self.scale)
-            self._main_plot_handler.addItem(self.help)
-            self.help.setZValue(1)
-        else:
-            self._main_plot_handler.removeItem(self.help)
-
-    # ----------------------------------------------------------------------------------------------------
-    # 			EVENT HANDLERS
-    # ----------------------------------------------------------------------------------------------------
-    def on_click_button_recdir(self):
         """
-        Open a QFileDialog to select the recording directory
+        Apply bandpass and CAR filter to the signal acquired if needed.
         """
-        defaultPath = os.environ["NEUROD_DATA"]
-        path_name = QFileDialog.getExistingDirectory(caption="Choose the recording directory", directory=defaultPath)
+        if self._apply_bandpass:
+            if self.zi is None:
+                # Multiply by DC offset
+                self.zi = self.zi_coeff * np.mean(self.data_acquired, axis=0)
+            self.data_acquired, self.zi = sosfilt(
+                self.sos, self.data_acquired, 0, self.zi)
 
-        if path_name:            
-            self._ui.lineEdit_recdir.setText(path_name)
-            self._ui.pushButton_rec.setEnabled(True)
-            
-    #----------------------------------------------------------------------
-    def onClicked_button_rec(self):
-        self._ui.pushButton_stoprec.setEnabled(True)
-        self._ui.pushButton_rec.setEnabled(False)
-        
-        record_dir = self._ui.lineEdit_recdir.text()
-        with self.recordState.get_lock():
-            self.recordState.value = 1
-        record_process = mp.Process(target=stream_recorder.record, \
-                                         args=[self.recordState, self.amp_name, self.amp_serial, record_dir, False, logger, None])
-        record_process.start()
-        self._ui.statusBar.showMessage("Recording to" + record_dir)
+        if self._apply_car and len(self.channels_to_show_idx) >= 2:
+            car_ch = np.mean(
+                self.data_acquired[:, self.channels_to_show_idx], axis=1)
+            self.data_acquired -= car_ch.reshape((-1, 1))
 
-    #----------------------------------------------------------------------
-    def onClicked_button_stoprec(self):
-        with self.recordState.get_lock():
-            self.recordState.value = 0    
-        self._ui.pushButton_rec.setEnabled(True)
-        self._ui.pushButton_stoprec.setEnabled(False)
-        self._ui.statusBar.showMessage("Not recording")
-
-    #----------------------------------------------------------------------
-    def onActivated_checkbox_bandpass(self):
-        self.apply_bandpass = False
-        self._ui.pushButton_bp.setEnabled(self._ui.checkBox_bandpass.isChecked())
-        self._ui.doubleSpinBox_hp.setEnabled(self._ui.checkBox_bandpass.isChecked())
-        self._ui.doubleSpinBox_lp.setEnabled(self._ui.checkBox_bandpass.isChecked())
-        self.update_title_scope()
-    
-    #----------------------------------------------------------------------
-    def onActivated_checkbox_car(self):
-        self.apply_car = self._ui.checkBox_car.isChecked()
-        self.update_title_scope()
-
-    #----------------------------------------------------------------------
-    def onActivated_checkbox_TID(self):
-        self._show_TID_events = self._ui.checkBox_showTID.isChecked()
-        self.update_title_scope()
-    
-    #----------------------------------------------------------------------
-    def onActivated_checkbox_LPT(self):
-        self._show_LPT_events = self._ui.checkBox_showLPT.isChecked()
-        self.update_title_scope()
-    
-    #----------------------------------------------------------------------
-    def onActivated_checkbox_Key(self):
-        self._show_Key_events = self._ui.checkBox_showKey.isChecked()
-        self.update_title_scope()
-        
-    #----------------------------------------------------------------------
-    def onValueChanged_spinbox_time(self):
-        self.update_plot_seconds(self._ui.spinBox_time.value())
-        
-    #----------------------------------------------------------------------
-    def onActivated_combobox_scale(self):
-        self.update_plot_scale(
-            self.scales_range[self._ui.comboBox_scale.currentIndex()])
-
-    #----------------------------------------------------------------------
-    def onClicked_button_bp(self):
-        if (self._ui.doubleSpinBox_lp.value() > self._ui.doubleSpinBox_hp.value()):
-            self.apply_bandpass = True
-            self.b, self.a, self.zi = self.butter_bandpass(
-                self._ui.doubleSpinBox_hp.value(), self._ui.doubleSpinBox_lp.value(),
-                self.config['sf'], self.config['eeg_channels'])
-        self.update_title_scope()
-    
-    #----------------------------------------------------------------------
-    def onSelectionChanged_table(self):
-
-        # Remove current plot
-        for x in range(0, len(self.channels_to_show_idx)):
-            self._main_plot_handler.removeItem(self.curve_eeg[x])
-
-        # Which channels should I plot? 
-        self.channels_to_show_idx = []
-        self.channels_to_hide_idx = []
-        idx = 0
-        for x in range(0, self._nb_table_rows):
-            for y in range(0, self._nb_table_columns):
-                if (idx < self.config['eeg_channels']):
-                    #if (self.table_channels.isItemSelected( # Qt4 only
-                    if (QTableWidgetItem.isSelected( # Qt5
-                        self._ui.table_channels.item(x, y))):
-                        self.channels_to_show_idx.append(idx)
-                    else:
-                        self.channels_to_hide_idx.append(idx)
-                    idx += 1
-
-        # Add new plots
-        self.curve_eeg = []
-        for x in range(0, len(self.channels_to_show_idx)):
-            self.curve_eeg.append(self._main_plot_handler.plot(x=self.x_ticks,
-                y=self.data_plot[:, self.channels_to_show_idx[x]],
-                pen=self.colors[self.channels_to_show_idx[x] % self._nb_table_rows, :]))
-            self.curve_eeg[-1].setDownsampling(ds=self.subsampling_value,
-                auto=False, method="mean")
-
-        # Update CAR so it's computed based only on the shown channels
-        if (len(self.channels_to_show_idx) > 1):
-            self.matrix_car = np.zeros(
-                (self.config['eeg_channels'], self.config['eeg_channels']),
-                dtype=float)
-            self.matrix_car[:, :] = -1 / float(len(self.channels_to_show_idx))
-            np.fill_diagonal(self.matrix_car,
-                1 - (1 / float(len(self.channels_to_show_idx))))
-            for x in range(0, len(self.channels_to_hide_idx)):
-                self.matrix_car[self.channels_to_hide_idx[x], :] = 0
-                self.matrix_car[:, self.channels_to_hide_idx[x]] = 0
-
-        # Refresh the plot
-        self.update_plot_scale(self.scale)
-
-    #----------------------------------------------------------------------
-    def keyPressEvent(self, event):
-        key = event.key()
-        if (key == QtCore.Qt.Key_Escape):
-            self.closeEvent(None)
-        if (key == QtCore.Qt.Key_H):
-            self.show_help = not self.show_help
-            self.trigger_help()
-        if (key == QtCore.Qt.Key_Up):
-            # Python's log(x, 10) has a rounding bug. Use log10(x) instead.
-            new_scale = self.scale + max(1, 10 ** int(math.log10(self.scale)))
-            self.update_plot_scale(new_scale)
-        if (key == QtCore.Qt.Key_Space):
-            self.stop_plot = not self.stop_plot
-        if (key == QtCore.Qt.Key_Down):
-            if self.scale >= 2:
-                # Python's log(x, 10) has a rounding bug. Use log10(x) instead.
-                new_scale = self.scale - max(1,
-                    10 ** int(math.log10(self.scale - 1)))
-                self.update_plot_scale(new_scale)
-        if (key == QtCore.Qt.Key_Left):
-            self.update_plot_seconds(self.seconds_to_show - 1)
-        if (key == QtCore.Qt.Key_Right):
-            self.update_plot_seconds(self.seconds_to_show + 1)
-        if (key == QtCore.Qt.Key_L):
-            self._ui.checkBox_showLPT.setChecked(
-                not self._ui.checkBox_showLPT.isChecked())
-        if (key == QtCore.Qt.Key_T):
-            self._ui.checkBox_showTID.setChecked(
-                not self._ui.checkBox_showTID.isChecked())
-        if (key == QtCore.Qt.Key_K):
-            self._ui.checkBox_showKey.setChecked(
-                not self._ui.checkBox_showKey.isChecked())
-        if (key == QtCore.Qt.Key_C):
-            self._ui.checkBox_car.setChecked(not self._ui.checkBox_car.isChecked())
-        if (key == QtCore.Qt.Key_B):
-            self._ui.checkBox_bandpass.setChecked(
-                not self._ui.checkBox_bandpass.isChecked())
-            if self._ui.checkBox_bandpass.isChecked():
-                self._ui.pushButton_bp.click()
-        if ((key >= QtCore.Qt.Key_0) and (key <= QtCore.Qt.Key_9)):
-            if (self._show_Key_events) and (not self.stop_plot):
-                self.addEventPlot("KEY", 990 + key - QtCore.Qt.Key_0)
-                # self.bci.id_msg_bus.SetEvent(990 + key - QtCore.Qt.Key_0)
-                # self.bci.iDsock_bus.sendall(self.bci.id_serializer_bus.Serialize());
-                # 666
-                
-    #----------------------------------------------------------------------
-    def closeEvent(self, event):
-        '''
-        Function called when a closing event was triggered.
-        '''
-        if (self._ui.pushButton_stoprec.isEnabled()): 
-            # Stop Recording
-            with self.recordState.get_lock():
-                self.recordState.value = 0
-        # Stop viewer       
-        with self.state.get_lock():
-            self.state.value = 0
+    def filter_trigger(self, tol=0.05):
+        """
+        Cleans up the trigger signal by removing successive duplicates of a
+        trigger value.
+        """
+        self.trigger_acquired[
+            np.abs(np.diff(self.trigger_acquired, prepend=[0])) <= tol] = 0

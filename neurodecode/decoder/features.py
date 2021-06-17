@@ -1,5 +1,3 @@
-from __future__ import print_function, division
-
 """
 features.py
 
@@ -30,18 +28,11 @@ import mne.io
 import numpy as np
 import multiprocessing as mp
 
-from xgboost import XGBClassifier
-from mne import Epochs, pick_types
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.ensemble import GradientBoostingClassifier
-from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
-
-from neurodecode import logger
-from neurodecode.decoder.rlda import rLDA
-from neurodecode.utils.timer import Timer
-from neurodecode.utils.preprocess import rereference
-from neurodecode.utils.io import load_fif_multi, get_file_list
-from neurodecode.utils.preprocess import preprocess as apply_preprocess
+from .. import logger
+from ..utils.timer import Timer
+# from ..utils.preprocess import set_eeg_reference
+from ..utils.io import read_raw_fif_multi, get_file_list
+from ..utils.preprocess.old_preprocess import preprocess as apply_preprocess
 
 #----------------------------------------------------------------------
 def feature2chz(x, fqlist, ch_names):
@@ -88,7 +79,7 @@ def compute_features(cfg):
     Returns
     -------
     dict : The dictionnary containing:
-    
+
     - X_data: feature vectors
     - Y_data: feature labels
     - wlen: window length in seconds
@@ -108,19 +99,19 @@ def compute_features(cfg):
     if len(ftrain) > 1 and cfg.PICKED_CHANNELS is not None and type(cfg.PICKED_CHANNELS[0]) == int:
         logger.error('When loading multiple EEG files, PICKED_CHANNELS must be list of string, not integers because they may have different channel order.')
         raise RuntimeError
-    raw, events = load_fif_multi(ftrain)
-    
+    raw, events = read_raw_fif_multi(ftrain)
+
     #-----------------------------------------------------------
     # Rereference
-    #reref = cfg.REREFERENCE[cfg.REREFERENCE['selected']]
-    #if reref is not None:
-        #rereference(raw, reref['New'], reref['Old'])
-    
+    # reref = cfg.REREFERENCE[cfg.REREFERENCE['selected']]
+    # if reref is not None:
+        # set_eeg_reference(raw, reref['New'], reref['Old'])
+
     #-----------------------------------------------------------
     # Load events from file
     if cfg.LOAD_EVENTS[cfg.LOAD_EVENTS['selected']] is not None:
         events = mne.read_events(cfg.LOAD_EVENTS[cfg.LOAD_EVENTS['selected']])
-    
+
     #-----------------------------------------------------------
     # Load triggers from file
     trigger_def_int = set()
@@ -133,7 +124,7 @@ def compute_features(cfg):
     if 'decim' not in cfg.FEATURES['PSD']:
         cfg.FEATURES['PSD']['decim'] = 1
         logger.warning('PSD["decim"] undefined. Set to 1.')
-    
+
     #-----------------------------------------------------------
     # Read epochs
     try:
@@ -141,25 +132,25 @@ def compute_features(cfg):
         if type(cfg.EPOCH[0]) is list:
             epochs_train = []
             for ep in cfg.EPOCH:
-                epoch = Epochs(raw, events, triggers, tmin=ep[0], tmax=ep[1],
+                epoch = mne.Epochs(raw, events, triggers, tmin=ep[0], tmax=ep[1],
                     proj=False, picks=['data'], baseline=None, preload=True,
                     verbose=False, detrend=None)
                 epochs_train.append(epoch)
         else:
             # Usual method: single epoch range
-            epochs_train = Epochs(raw, events, triggers, tmin=cfg.EPOCH[0], tmax=cfg.EPOCH[1], proj=False,
+            epochs_train = mne.Epochs(raw, events, triggers, tmin=cfg.EPOCH[0], tmax=cfg.EPOCH[1], proj=False,
                 picks=['data'], baseline=None, preload=True, verbose=False, detrend=None, on_missing='warning')
     except:
         logger.exception('Problem while epoching.')
         raise RuntimeError
-    
+
     #-----------------------------------------------------------
     # Pick channels
     if cfg.PICKED_CHANNELS is None:
         chlist = list(range(len(epochs_train.info.ch_names)))
     else:
         chlist = cfg.PICKED_CHANNELS
-    
+
     picks = []
     for c in chlist:
         if type(c) == int:
@@ -192,6 +183,7 @@ def compute_features(cfg):
     #-----------------------------------------------------------
     #  Preprocessing
     if cfg.FEATURES['selected'] == 'PSD':
+        # TODO: This is not compatible with the new preprocess structure.
         preprocess = dict(sfreq=epochs_train.info['sfreq'],
             spatial=cfg.SP_FILTER,
             spatial_ch=cfg.SP_CHANNELS,
@@ -204,12 +196,12 @@ def compute_features(cfg):
             rereference=cfg.REREFERENCE[cfg.REREFERENCE['selected']],
             decim=cfg.FEATURES['PSD']['decim'],
             n_jobs=cfg.N_JOBS
-        )        
-        
+        )
+
         #-----------------------------------------------------------
         # Compute features
         featdata = _get_psd_feature(epochs_train, cfg.EPOCH, cfg.FEATURES['PSD'], picks=picks, preprocess=preprocess, n_jobs=cfg.N_JOBS)
-    
+
     #-----------------------------------------------------------
     #  Other possible features
     elif cfg.FEATURES == 'TIMELAG':
@@ -242,7 +234,7 @@ def _slice_win(epochs_data, w_starts, w_length, psde, picks=None, title=None, pr
     Parameters
     ----------
     epochs_data : raw epoch data
-        The data to slice ([channels]x[samples]): 
+        The data to slice ([channels]x[samples]):
     w_starts : list
         The starting indices of the slices
     w_length : int
@@ -257,7 +249,7 @@ def _slice_win(epochs_data, w_starts, w_length, psde, picks=None, title=None, pr
         The parameters needed by preprocess.preprocess() with the following keys:
             sfreq, spatial, spatial_ch, spectral, spectral_ch, notch, notch_ch,
             multiplier, ch_names, rereference, decim, n_jobs
-    
+
     Returns
     -------
     numpy.Array : The PSD for each slices [windows] x [channels x freqs] or [windows] x [channels] x [freqs]
@@ -277,7 +269,7 @@ def _slice_win(epochs_data, w_starts, w_length, psde, picks=None, title=None, pr
     if preprocess is not None and preprocess['decim'] != 1:
         title += ' (decim factor %d)' % preprocess['decim']
     logger.info(title)
-    
+
     X = None
     for n in w_starts:
         n = int(round(n))
@@ -288,6 +280,7 @@ def _slice_win(epochs_data, w_starts, w_length, psde, picks=None, title=None, pr
 
         #  Apply preprocessing on slices
         if preprocess is not None:
+            # TODO: This is not compatible with the new preprocess structure.
             window = apply_preprocess(window,
                 sfreq=preprocess['sfreq'],
                 spatial=preprocess['spatial'],
@@ -301,14 +294,14 @@ def _slice_win(epochs_data, w_starts, w_length, psde, picks=None, title=None, pr
                 rereference=preprocess['rereference'],
                 decim=preprocess['decim'],
                 n_jobs=preprocess['n_jobs'])
-        
+
         # Keep only the channels of interest
         window = window[picks, :]
-        
+
         # dimension: psde.transform( [epochs x channels x times] )
         psd = psde.transform(window.reshape((1, window.shape[0], window.shape[1])))
         psd = psd.reshape((psd.shape[0], psd.shape[1] * psd.shape[2]))
-        
+
         #if picks:
             #psd = psd[0][picks]
             #psd = psd.reshape((1, len(psd)))
@@ -474,7 +467,7 @@ def _get_psd_feature(epochs_train, window, psdparam, picks=None, preprocess=None
     psde = mne.decoding.PSDEstimator(sfreq=psde_sfreq, fmin=psdparam['fmin'], fmax=psdparam['fmax'],
         bandwidth=None, adaptive=False, low_bias=True, n_jobs=1, normalization='length', verbose='WARNING')
 
-    logger.info_green('PSD computation')
+    logger.info('PSD computation')
     if type(epochs_train) is list:
         X_all = []
         for i, ep in enumerate(epochs_train):
@@ -495,6 +488,5 @@ def _get_psd_feature(epochs_train, window, psdparam, picks=None, preprocess=None
     # assign relative timestamps for each feature. time reference is the leading edge of a window.
     w_starts = np.arange(0, epochs_train.get_data().shape[2] - w_frames, psdparam['wstep'])
     t_features = w_starts / sfreq + psdparam['wlen'] + window[0]
-    
-    return dict(X_data=X_data, Y_data=Y_data, wlen=psdparam['wlen'], w_frames=w_frames, psde=psde, times=t_features, decim=psdparam['decim'])
 
+    return dict(X_data=X_data, Y_data=Y_data, wlen=psdparam['wlen'], w_frames=w_frames, psde=psde, times=t_features, decim=psdparam['decim'])

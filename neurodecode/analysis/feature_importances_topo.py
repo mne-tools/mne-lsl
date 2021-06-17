@@ -9,13 +9,10 @@ import os
 import sys
 import mne
 import numpy as np
+from pathlib import Path
 import matplotlib.pyplot as plt
 
-import neurodecode.utils.io as io
-
-from builtins import input
 from neurodecode import logger
-from neurodecode.utils.etc import list2string
 
 def export_topo(data, pos, pngfile, xlabel='', vmin=None, vmax=None, chan_vis=None, res=64, contours=0):
     mne.viz.plot_topomap(data, pos, names=chan_vis, show_names=True, res=res, contours=contours, show=False)
@@ -32,6 +29,9 @@ def feature_importances_topo(featfile, topo_layout_file=None, channels=None, cha
     channel_name_show: list of channel names to show on topography map.
 
     """
+    def list2string(vec, fmt, sep=' '):
+        return sep.join(fmt % x for x in vec)
+
     logger.info('Loading %s' % featfile)
 
     if channels is None:
@@ -100,8 +100,8 @@ def feature_importances_topo(featfile, topo_layout_file=None, channels=None, cha
     result += '-' * hlen + '\n'
     result += 'per_ch  ' + list2string(data_per_ch, '%6.2f') + ' | 100.00\n'
     print(result)
-    p = io.parse_path(featfile)
-    open('%s/%s_summary.txt' % (p.dir, p.name), 'w').write(result)
+    p = Path(featfile)
+    open('%s/%s_summary.txt' % (p.parent, p.stem), 'w').write(result)
 
     # export topo maps
     if topo_layout_file is not None:
@@ -166,6 +166,7 @@ def config_run(featfile=None, topo_layout_file=None):
     if topo_layout_file is None or len(topo_layout_file.strip()) == 0:
         topo_layout_file = 'antneuro_64ch.lay'
 
+    # TODO: This is not defined...
     feature_importances(featfile, topo_layout_file)
 
 # sample code

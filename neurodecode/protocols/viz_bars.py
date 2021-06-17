@@ -1,5 +1,3 @@
-from __future__ import print_function, division
-
 """
 Bar visual feedback class
 
@@ -19,15 +17,12 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 """
 
 import sys
 import numpy as np
-import time
 import cv2
-import neurodecode
-import neurodecode.glass.bgi_client as bgi_client
+import neurodecode.hci.glass.bgi_client as bgi_client
 from neurodecode import logger
 
 
