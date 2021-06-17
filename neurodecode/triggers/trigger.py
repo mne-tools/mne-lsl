@@ -42,7 +42,7 @@ class Trigger:
     state : multiprocessing.value
         For GUI usage.
     """
-
+    
     def __init__(self, lpttype='SOFTWARE', portaddr=None,
                  verbose=True, state=mp.Value('i', 1)):
 

@@ -67,3 +67,4 @@ CV_PERFORM =   {'selected':'StratifiedShuffleSplit', \
 # Parallel processing
 #-------------------------------------------
 N_JOBS = 8
+
