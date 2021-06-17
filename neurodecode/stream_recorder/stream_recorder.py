@@ -1,10 +1,7 @@
-
-import time
 import multiprocessing as mp
 
 from ._recorder import _Recorder
 from .. import logger
-from ..gui.streams import redirect_stdout_to_queue
 
 
 class StreamRecorder:
@@ -106,33 +103,7 @@ class StreamRecorder:
         recorder.connect(stream_name, eeg_only)
         recorder.record(verbose)
 
-    def _start_gui(self, protocolState, stream_name, record_dir, eeg_only,
-                   logger, queue, state):
-        """
-        Start the recording when launched from the GUI.
-        """
-        self._proc = mp.Process(target=self._record,
-                                args=(stream_name,
-                                      record_dir,
-                                      eeg_only,
-                                      True,
-                                      logger,
-                                      queue,
-                                      state))
-        self._proc.start()
-
-        while not state.value:
-            pass
-
-        # Launching the protocol (shared variable)
-        with protocolState.get_lock():
-            protocolState.value = 1
-
-        # Continue recording until the shared variable changes to 0.
-        while protocolState.value:
-            time.sleep(1)
-        self.stop()
-
+    # --------------------------------------------------------------------
     @property
     def process(self):
         """
