@@ -123,7 +123,7 @@ class BCIDecoder(object):
             if self._ref_ch is not None:
                 self._ref_ch['New'] = [self._ch_names.index(p) for p in model['_ref_ch']['New']]
                 self._ref_ch['Old'] = [self._ch_names.index(p) for p in model['_ref_ch']['Old']]
-
+            
             self.label = label
 
             if "SAVED_FEAT" in model:
