@@ -32,9 +32,8 @@ class TriggerSoftware(_Trigger):
 
     def _signal_off(self):
         """
-        Reset trigger signal to 0.
+        Reset trigger signal to 0. Not needed for SOFTWARE triggers.
         """
-        # super()._signal_off() # TODO: Should not be needed at all
         pass
 
     def _set_data(self, value):
