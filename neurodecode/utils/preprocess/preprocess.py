@@ -1,399 +1,241 @@
-from __future__ import division
+from pathlib import Path
 
-"""
-Note:
-When exporting to Panda Dataframes format, raw.as_data_frame() silently
-scales data to the Volts unit by default, which is the convention in MNE.
-Try raw.as_data_frame(scalings=dict(eeg=1.0, misc=1.0))
-
-Kyuhwa Lee, 2014
-Swiss Federal Institute of Technology Lausanne (EPFL)
-
-"""
-
-import os
 import mne
-import numpy as np
+from mne.io import BaseRaw
+from mne.epochs import BaseEpochs
+from mne.evoked import Evoked
 
-import neurodecode.utils.io as io
+from .current_source_density import current_source_density
+from .filter import spectral_filter, notch_filter, laplacian_filter
+from .rename_channels import rename_channels
+from .resample import resample
+from .set_channel_types import set_channel_types
+from .set_eeg_reference import set_eeg_reference
+from .events import change_event_values
+from .events.brainvision import fix_default_event_values
+from .set_montage import set_montage
 
-from neurodecode import logger
+from .. import io
+from ... import logger
 
-mne.set_log_level('ERROR')
+# -------------- List of available functions --------------
+FUNCTIONS_IN_PLACE = {
+    'notch_filter': notch_filter,
+    'spectral_filter': spectral_filter,
+    'rename_channels': rename_channels,
+    'resample': resample,
+    'set_channel_types': set_channel_types,
+    'set_eeg_reference': set_eeg_reference,
+    'change_event_values': change_event_values,
+    'brainvision.fix_default_event_values': fix_default_event_values,
+    'set_montage': set_montage
+}
 
-#----------------------------------------------------------------------
-def find_event_channel(raw=None, ch_names=None):
+FUNCTIONS_OUT_OF_PLACE = {
+    'current_source_density': current_source_density,
+    'laplacian_filter': laplacian_filter
+}
+
+# ---------------- List of function's input ---------------
+SUPPORTED = (BaseRaw, BaseEpochs, Evoked)
+INPUTS = {
+    'notch_filter': (BaseRaw),
+    'spectral_filter': (BaseRaw, BaseEpochs, Evoked),
+    'laplacian_filter': (BaseRaw, BaseEpochs, Evoked),
+    'current_source_density': (BaseRaw, BaseEpochs, Evoked),
+    'rename_channels': (BaseRaw, BaseEpochs, Evoked),
+    'resample': (BaseRaw, BaseEpochs, Evoked),
+    'set_channel_types': (BaseRaw),
+    'set_eeg_reference': (BaseRaw),
+    'change_event_values': (BaseRaw),
+    'brainvision.fix_default_event_values': (BaseRaw),
+    'set_montage': (BaseRaw, BaseEpochs, Evoked)
+}
+
+# ----------- List of supported files extension -----------
+EXT = {
+    BaseRaw: ['-raw.fif'],
+    BaseEpochs: ['-epo.fif'],
+    Evoked: ['-ave.fif']
+}
+# ---------------------------------------------------------
+
+
+def available_transformation(verbose=False):
     """
-    Find the event channel using heuristics.
-
-    Disclaimer: Not 100% guaranteed to find it.
-    If raw is None, ch_names must be given.
+    Function returning the list of available transformation.
 
     Parameters
     ----------
-    raw : mne.io.Raw | numpy.ndarray (n_channels x n_samples)
-        The data
-    ch_names : list
-        The channels name list
-
-    Returns:
-    --------
-    int : The event channel index or None if not found.
+    verbose : bool
+        If True, prints the available transformations.
     """
-    valid_trigger_ch_names = ['TRIGGER', 'STI', 'TRG', 'CH_Event']
+    if verbose:
+        print('Available transformations are:')
+        for key in INPUTS:
+            print(f'  | {key}')
 
-    # For numpy array
-    if isinstance(raw, np.ndarray):
-        if ch_names is not None:
-            for ch_name in ch_names:
-                if any(trigger_ch_name in ch_name for trigger_ch_name in valid_trigger_ch_names):
-                    return ch_names.index(ch_name)
+    return list(INPUTS.keys())
 
-        # data range between 0 and 255 and all integers?
-        for ch in range(raw.shape[0]):
-            if (raw[ch].astype(int) == raw[ch]).all()\
-                    and max(raw[ch]) < 256 and min(raw[ch]) == 0:
-                return ch
 
-    # For MNE raw
-    elif hasattr(raw, 'ch_names'):
-        if 'stim' in raw.get_channel_types():
-            return raw.get_channel_types().index('stim')
-
-        for ch_name in raw.ch_names:
-            if any(trigger_ch_name in ch_name for trigger_ch_name in valid_trigger_ch_names):
-                return raw.ch_names.index(ch_name)
-
-    # For unknown data type
-    else:
-        if ch_names is None:
-            raise ValueError('ch_names cannot be None when raw is None.')
-        for ch_name in ch_names:
-            if any(trigger_ch_name in ch_name for trigger_ch_name in valid_trigger_ch_names):
-                return ch_names.index(ch_name)
-
-    return None
-
-#----------------------------------------------------------------------
-def rereference(raw, ref_new, ref_old=None, **kwargs):
+def preprocess(inst, transformations):
     """
-    Reference to new channels. MNE raw object is modified in-place for efficiency.
-
-    The new reference channel or the average of the new reference channels
-    values are substracted from all channel values.
-    The original reference channel is recovered if possible.
+    Apply the transformations to the MNE instance.
 
     Parameters
     ----------
-    raw : mne.io.RawArray | numpy.ndarray (n_channels x n_samples)
-        The raw data. For MNE raw, assumes the 'eeg' channel type is correctly set.
-        For numpy array, assumes all data is 'eeg'.
-    ref_new : list of str (for MNE raw) | list of int (for numpy array) | str
-        Channel(s) to re-reference, e.g. ['M1', 'M2'] for MNE raw or [0, 31] for numpy array.
-        For MNE raw, supports 'average' (CAR) and 'REST' (infinity reference) parameters.
-        c.f. https://mne.tools/stable/generated/mne.set_eeg_reference.html
-        For 'REST' method, the montage must be set and the forward model must be provided in the **kwargs.
-    ref_old: list of str (for MNE raw) | int (for numpy array) | list of ints (for numpy array)
-        Channel to recover, assuming this channel was originally used as a reference.
-        For numpy array, the number of channel to recover or the list of indices of the
-        channels to recover e.g. ['M1', 'M2'] for MNE raw or 1 for numpy array.
-    **kwargs passed to mne.set_eeg_reference() if raw is MNE raw.
-
-    Returns
-    -------
-    raw : mne.io.RawArray | numpy.ndarray (n_channels x n_samples)
-        The rereferenced array or MNE raw.
+    inst : mne.io.Raw | mne.io.RawArray | mne.Epochs | mne.Evoked
+        MNE instance of Raw | Epochs | Evoked.
+    transformations : dict
+        The dict containing the transformations and arguments to pass to each
+        transformation.
+            key: str
+                The name of the transformation function.
+            value: list | dict
+                The list of arguments (*args) to pass to the transformation
+                function or the dictionnary of kwargs (*kwargs) to pass to the
+                transformation function.
+        Example:
+            {
+                'notch_filter': {'freqs': np.arange(50, 151, 50)},
+                'spectral_filter': [1, 40, 'eeg'],
+                'set_eeg_reference': ['average', 'CPz']
+            }
     """
-    # For numpy array
-    if isinstance(raw, np.ndarray):
-        # Check
-        if isinstance(ref_new, int):
-            ref_new = [ref_new]
-        if not (all(isinstance(ref_ch, int) for ref_ch in ref_new) and all(0 <= ref_ch <= raw.shape[0] for ref_ch in ref_new)):
-            raise ValueError('The new reference channel indices {} are not in raw.shape {}.'.format(ref_new, raw.shape[0]))
-
-        if ref_old is not None:
-            # Number of channel to recover
-            if isinstance(ref_old, (list, tuple, np.ndarray)):
-                ref_old = len(ref_old)
-            # Add blank (zero-valued) channel(s)
-            refs = np.zeros((ref_old, raw.shape[1]))
-            raw = np.vstack((raw, refs)) # this can not be done in-place
-        # Re-reference
-        raw -= np.mean(raw[ref_new], axis=0)
-
-    # For MNE raw
-    else:
-        # Check
-        if not (all(isinstance(ref_ch, str) for ref_ch in ref_new) or isinstance(ref_new, str)):
-            raise ValueError("The new reference channel must be a list of strings or 'average' or 'REST'.")
-
-        if ref_old is not None:
-            # Add blank (zero-valued) channel(s)
-            mne.add_reference_channels(raw, ref_old, copy=False)
-        # Re-reference
-        mne.set_eeg_reference(raw, ref_new, copy=False, **kwargs)
-
-    return raw
-
-#----------------------------------------------------------------------
-def preprocess(raw, sfreq=None, spatial=None, spatial_ch=None, spectral=None, spectral_ch=None,
-               notch=None, notch_ch=None, multiplier=1, ch_names=None, rereference=None, decim=None, n_jobs=1):
-    """
-    Apply spatial, spectral, notch filters, rereference and decim.
-
-    raw is modified in-place.Neurodecode puts trigger channel as index 0, data channel starts from index 1.
-
-    Parameters
-    ----------
-    raw : mne.io.Raw | mne.io.RawArray | mne.Epochs | numpy.array (n_channels x n_samples)
-        The raw data (numpy.array type assumes the data has only pure EEG channnels without event channels)
-    sfreq : float
-        Only required if raw is numpy array.
-    spatial: None | 'car' | 'laplacian'
-        Spatial filter type.
-    spatial_ch: None | list (for CAR) | dict (for LAPLACIAN)
-        Reference channels for spatial filtering. May contain channel names.
-        'car': channel indices used for CAR filtering. If None, use all channels except the trigger channel (index 0).
-        'laplacian': {channel:[neighbor1, neighbor2, ...], ...}
-    spectral : None | [l_freq, h_freq]
-        Spectral filter.
-        if l_freq is None: lowpass filter is applied.
-        if h_freq is None: highpass filter is applied.
-        if l_freq < h_freq: bandpass filter is applied.
-        if l_freq > h_freq: band-stop filter is applied.
-    spectral_ch : None | list
-        Channel picks for spectral filtering. May contain channel names.
-    notch: None | float | list
-        Notch filter.
-    notch_ch: None | list
-        Channel picks for notch filtering. May contain channel names.
-    multiplier : int
-        Used for changing eeg data unit. Mne assumes Volts.
-    ch_names: None | list
-        If raw is numpy array and channel picks are list of strings, ch_names will
-        be used as a look-up table to convert channel picks to channel numbers.
-    rereference : list
-        List of new and old references. [[ref_new_1, ..., ref_new_N], [ref_old_1, ..., ref_old_N]]
-    decim: None | int
-        Apply low-pass filter and decimate (downsample). sfreq must be given. Ignored if 1.
-
-    Output
-    ------
-    Same input data structure.
-
-    Note: To save computation time, input data may be modified in-place.
-    TODO: Add an option to disable in-place modification.
-    """
-
-    # Re-reference channels
-    if rereference is not None:
-        raw = rereference(raw, rereference[0], rereference[1])
-
-    # Downsample
-    if decim is not None and decim != 1:
-        assert sfreq is not None and sfreq > 0, 'Wrong sfreq value.'
-        raw, sfreq = _apply_downsampling(raw, decim, sfreq, n_jobs)
-
-    # Format data to numpy array
-    data, eeg_channels, ch_names= _format_eeg_data_for_preprocessing(raw, ch_names)
-
-    # Do unit conversion
-    if multiplier != 1:
-        data[eeg_channels] *= multiplier
-
-    # Apply spatial filter
-    if spatial is not None:
-        _apply_spatial_filtering(data, spatial, eeg_channels, spatial_ch, ch_names)
-
-    # Apply spectral filter
-    if spectral is not None:
-        _apply_spectral_filtering(data, spectral_ch, eeg_channels, ch_names, n_jobs, spectral, sfreq)
-
-    # Apply notch filter
-    if notch is not None:
-        _apply_notch_filtering(data, notch, notch_ch, eeg_channels, ch_names, n_jobs, sfreq)
-
-    if type(raw) == np.ndarray:
-        raw = data
-
-    return raw
-
-#----------------------------------------------------------------------
-def _apply_spatial_filtering(data, spatial, eeg_channels, spatial_ch, ch_names):
-    """
-    Apply spatial filtering to the data. Supported: CAR or Laplacian.
-    """
-    if spatial == 'car':
-        _apply_car_filtering(data, spatial_ch, eeg_channels, ch_names)
-    elif spatial == 'laplacian':
-        _apply_laplacian_filtering(data, spatial_ch, ch_names)
-    else:
-        logger.error('preprocess(): Unknown spatial filter %s' % spatial)
-        raise ValueError
-
-#----------------------------------------------------------------------
-def _apply_notch_filtering(data, notch, notch_ch, eeg_channels, ch_names, n_jobs, sfreq):
-    """
-    Apply a notch filter to the data.
-    """
-    if notch_ch is None:
-        notch_ch = eeg_channels
-        logger.warning('preprocess(): For notch filter, all channels selected')
-    elif len(notch_ch):
-        if type(notch_ch[0]) == str:
-            assert ch_names is not None, 'preprocess(): ch_names must not be None'
-            notch_ch_i = [ch_names.index(c) for c in notch_ch]
-        else:
-            notch_ch_i = notch_ch
-
-        mne.filter.notch_filter(data, Fs=sfreq, freqs=notch, notch_widths=3,
-                                picks=notch_ch_i, method='fft', n_jobs=n_jobs, copy=False)
-    else:
-        logger.error('preprocess(): For temporal filter, no specified channels!')
-        raise ValueError
-
-#----------------------------------------------------------------------
-def _apply_downsampling(raw, decim, sfreq, n_jobs):
-    """
-    Apply downsampling with factor decim.
-    """
-    if type(raw) == np.ndarray:
-        raw = mne.filter.resample(raw, down=decim, npad='auto', window='boxcar', n_jobs=n_jobs)
-    else:
-        # resample() of Raw* and Epochs object internally calls mne.filter.resample()
-        raw = raw.resample(raw.info['sfreq'] / decim, npad='auto', window='boxcar', n_jobs=n_jobs)
-        sfreq = raw.info['sfreq']
-
-    sfreq /= decim
-
-    return raw, sfreq
-
-#----------------------------------------------------------------------
-def _apply_spectral_filtering(data, spectral_ch, eeg_channels, ch_names, n_jobs, spectral, sfreq):
-    """
-    Apply temporal filtering
-    """
-    if spectral_ch is None:
-        spectral_ch = eeg_channels
-        logger.warning('preprocess(): For temporal filter, all channels selected')
-    elif len(spectral_ch):
-        if type(spectral_ch[0]) == str:
-            assert ch_names is not None, 'preprocess(): ch_names must not be None'
-            spectral_ch_i = [ch_names.index(c) for c in spectral_ch]
-        else:
-            spectral_ch_i = spectral_ch
-
-        # fir_design='firwin' is especially important for ICA analysis. See:
-        # http://martinos.org/mne/dev/generated/mne.preprocessing.ICA.html?highlight=score_sources#mne.preprocessing.ICA.score_sources
-        mne.filter.filter_data(data, sfreq, spectral[0], spectral[1], picks=spectral_ch_i,
-                               filter_length='auto', l_trans_bandwidth='auto',
-                               h_trans_bandwidth='auto', n_jobs=n_jobs, method='fir',
-                               iir_params=None, copy=False, phase='zero',
-                               fir_window='hamming', fir_design='firwin', verbose='ERROR')
-    else:
-        logger.error('preprocess(): For temporal filter, no specified channels!')
-        raise ValueError
-
-#----------------------------------------------------------------------
-def _apply_laplacian_filtering(data, spatial_ch, ch_names):
-    """
-    Apply the lapacian spatial filtering
-    """
-    if type(spatial_ch) is not dict:
-        logger.error('preprocess(): For laplacian, spatial_ch must be of form {CHANNEL:[NEIGHBORS], ...}')
+    if not isinstance(inst, SUPPORTED):
+        logger.error('Preprocess supports Raw, Epochs and Evoked instances.')
         raise TypeError
-    if type(spatial_ch.keys()[0]) == str:
-        spatial_ch_i = {}
-        for c in spatial_ch:
-            ref_ch = ch_names.index(c)
-            spatial_ch_i[ref_ch] = [ch_names.index(n) for n in spatial_ch[c]]
-    else:
-        spatial_ch_i = spatial_ch
 
-    if len(spatial_ch_i) > 1:
-        rawcopy = data.copy()
-        for src in spatial_ch:
-            nei = spatial_ch[src]
-            if len(data.shape) == 2:
-                data[src] = rawcopy[src] - np.mean(rawcopy[nei], axis=0)
-            elif len(data.shape) == 3:
-                data[:, src, :] = rawcopy[:, src, :] - np.mean(rawcopy[:, nei, :], axis=1)
+    for function_name, args in transformations.items():
+        if function_name in FUNCTIONS_IN_PLACE.keys():
+
+            if not isinstance(inst, INPUTS[function_name]):
+                logger.warning(
+                    f"Preprocessing function '{function_name}' supports "
+                    f"{INPUTS[function_name]}.\n"
+                    "Skipping.")
+                continue
+            if isinstance(args, list):
+                FUNCTIONS_IN_PLACE[function_name](inst, *args)
+            elif isinstance(args, dict):
+                FUNCTIONS_IN_PLACE[function_name](inst, **args)
             else:
-                logger.error('preprocess(): Unknown data shape %s' % str(data.shape))
-                raise ValueError
+                logger.error('The argument provided must be a list or a dict.')
+                raise TypeError
 
-    return data
+            logger.info(f"Preprocessing function '{function_name}' applied.")
 
-#----------------------------------------------------------------------
-def _apply_car_filtering(data, spatial_ch, eeg_channels, ch_names):
-    """
-    Apply Common Average Reference to data.
-    """
-    if spatial_ch is None or not len(spatial_ch):
-        spatial_ch = eeg_channels
-        logger.warning('preprocess(): For CAR, no specified channels, all channels selected')
+        elif function_name in FUNCTIONS_OUT_OF_PLACE.keys():
+            if not isinstance(inst, INPUTS[function_name]):
+                logger.warning(
+                    f"Preprocessing function '{function_name}' supports "
+                    f"{INPUTS[function_name]}.\n"
+                    "Skipping.")
+                continue
+            if isinstance(args, list):
+                inst = FUNCTIONS_OUT_OF_PLACE[function_name](inst, *args)
+            elif isinstance(args, dict):
+                inst = FUNCTIONS_OUT_OF_PLACE[function_name](inst, **args)
+            else:
+                logger.error('The argument provided must be a list or a dict.')
+                raise TypeError
 
-    if type(spatial_ch[0]) == str:
-        assert ch_names is not None, 'preprocess(): ch_names must not be None'
-        spatial_ch_i = [ch_names.index(c) for c in spatial_ch]
-    else:
-        spatial_ch_i = spatial_ch
+            logger.info(f"Preprocessing function '{function_name}' applied.")
 
-    if len(spatial_ch_i) > 1:
-        if len(data.shape) == 2:
-            data[spatial_ch_i] -= np.mean(data[spatial_ch_i], axis=0)
-        elif len(data.shape) == 3:
-            means = np.mean(data[:, spatial_ch_i, :], axis=1)
-            data[:, spatial_ch_i, :] -= means[:, np.newaxis, :]
         else:
-            logger.error('Unknown data shape %s' % str(data.shape))
-            raise ValueError
+            logger.warning(
+                f"Preprocessing function '{function_name}' not recognized. "
+                "Skipping.")
+            continue
 
-    return data
+    return inst
 
-#----------------------------------------------------------------------
-def _format_eeg_data_for_preprocessing(raw, ch_names=None):
-    # Check datatype
-    if type(raw) == np.ndarray:
-        # Numpy array: assume we don't have event channel
-        data = raw
-        assert 2 <= len(data.shape) <= 3, 'Unknown data shape. The dimension must be 2 or 3.'
-        if len(data.shape) == 3:
-            n_channels = data.shape[1]
-        elif len(data.shape) == 2:
-            n_channels = data.shape[0]
-        eeg_channels = list(range(n_channels))
-    else:
-        # MNE Raw object: exclude event channel
-        ch_names = raw.ch_names
-        data = raw._data
-        assert 2 <= len(data.shape) <= 3, 'Unknown data shape. The dimension must be 2 or 3.'
-        if len(data.shape) == 3:
-            # assert type(raw) is mne.epochs.Epochs
-            n_channels = data.shape[1]
-        elif len(data.shape) == 2:
-            n_channels = data.shape[0]
-        eeg_channels = list(range(n_channels))
-        tch = find_event_channel(raw)
-        if tch is None:
-            logger.warning('No trigger channel found. Using all channels.')
-        else:
-            eeg_channels.pop(tch)
 
-    return data, eeg_channels, ch_names
-
-#----------------------------------------------------------------------
-def _check_fif_path(rawfile):
+def dir_preprocess(fif_dir, recursive, transformations,
+                   out_dir=None, overwrite=False):
     """
-    Ensure that the fif file exists.
+    Apply the transformation to all fif files in a given directory.
+
+    Parameters
+    ----------
+    fif_dir : str
+         The path to the directory containing fif files.
+    recursive : bool
+        If true, search recursively.
+    transformations : dict
+        The dict containing the transformations and arguments to pass to each
+        transformation.
+            key: str
+                The name of the transformation function.
+            value: list | dict
+                The list of arguments (*args) to pass to the transformation
+                function or the dictionnary of kwargs (*kwargs) to pass to the
+                transformation function.
+        Example:
+            {
+                'notch_filter': {'freqs': np.arange(50, 151, 50)},
+                'spectral_filter': [1, 40, 'eeg'],
+                'set_eeg_reference': ['average', 'CPz']
+            }
+    out_dir : str | None
+        The path to the output directory. If None, the directory
+        f'fif_dir/preprocessed' is used.
+    overwrite : bool
+        If true, overwrite previously corrected files.
     """
-    if not os.path.exists(rawfile):
-        logger.error('File %s not found' % rawfile)
+    fif_dir = Path(fif_dir)
+    if not fif_dir.exists():
+        logger.error(f"Directory '{fif_dir}' not found.")
         raise IOError
-    if not os.path.isfile(rawfile):
-        logger.error('%s is not a file' % rawfile)
+    if not fif_dir.is_dir():
+        logger.error(f"'{fif_dir}' is not a directory.")
         raise IOError
 
-    extension = io.parse_path(rawfile).ext
-    assert extension in ['fif', 'fiff'], 'only fif format is supported'
+    if out_dir is None:
+        out_dir = 'preprocessed'
+        if not (fif_dir / out_dir).is_dir():
+            io.make_dirs(fif_dir / out_dir)
+    else:
+        out_dir = Path(out_dir)
+        if not out_dir.is_dir():
+            io.make_dirs(out_dir)
+
+    for fif_file in io.get_file_list(fif_dir, fullpath=True,
+                                     recursive=recursive):
+        fif_file = Path(fif_file)
+
+        if any(fif_file.name.endswith(ending) for ending in EXT[BaseRaw]):
+            inst = mne.io.read_raw(fif_file, preload=True)
+        elif any(fif_file.name.endswith(ending) for ending in EXT[BaseEpochs]):
+            inst = mne.read_epochs(fif_file, preload=True)
+        elif any(fif_file.name.endswith(ending) for ending in EXT[Evoked]):
+            inst = mne.read_evokeds(fif_file)
+        else:
+            continue
+
+        preprocess(inst, transformations)
+
+        relative = fif_file.relative_to(fif_dir).parent
+        if not (fif_dir / out_dir / relative).is_dir():
+            io.make_dirs(fif_dir / out_dir / relative)
+
+        logger.info(
+            f"Exporting to '{fif_dir / out_dir / relative / fif_file.name}'")
+        if any(fif_file.name.endswith(ending) for ending in EXT[BaseRaw]) or\
+           any(fif_file.name.endswith(ending) for ending in EXT[BaseEpochs]):
+            try:
+                inst.save(fif_dir / out_dir / relative / fif_file.name,
+                          overwrite=overwrite)
+            except FileExistsError:
+                logger.warning(
+                    'The preprocessed file already exist for '
+                    f'{fif_file.name}. '
+                    'Use overwrite=True to force overwriting.')
+
+        elif any(fif_file.name.endswith(ending) for ending in EXT[Evoked]):
+            try:
+                inst.save(fif_dir / out_dir / relative / fif_file.name)
+            except FileExistsError:
+                logger.warning(
+                    'The preprocessed file already exist for '
+                    f'{fif_file.name}.')
