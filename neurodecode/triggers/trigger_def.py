@@ -19,26 +19,15 @@ class TriggerDef:
 
     def __init__(self, ini_file):
         self._ini_file = Path(ini_file)
+        TriggerDef._check_ini_path(self._ini_file)
+
         self._by_name = dict()
         self._by_value = dict()
-
-        self._check_ini_path()
         self._extract_from_ini()
-
-    def _check_ini_path(self):
-        """
-        Ensure that the provided file exists.
-        """
-        if self._ini_file.exists():
-            logger.info(f"Found trigger definition file '{self._ini_file}'")
-        else:
-            logger.error(
-                f"Trigger event definition file '{self._ini_file}' not found.")
-            raise IOError
 
     def _extract_from_ini(self):
         """
-        Load the ini file.
+        Load the .ini file.
         """
         config = ConfigParser(inline_comment_prefixes=('#', ';'))
         config.optionxform = str
@@ -55,14 +44,25 @@ class TriggerDef:
             self._by_name[key] = value
             self._by_value[value] = key
 
-    def check_data(self):
+    # --------------------------------------------------------------------
+    @staticmethod
+    def _check_ini_path(ini_file):
         """
-        Display all attributes.
+        Checks that the provided file exists and ends with .ini.
         """
-        print('TriggerDef Attributes:')
-        for str_key, int_value in self._by_name.items():
-            print(str_key, int_value)
+        if ini_file.exists():
+            logger.info(f"Found trigger definition file '{ini_file}'")
+        else:
+            logger.error(
+                f"Trigger event definition file '{ini_file}' not found.")
+            raise IOError
 
+        if ini_file.suffix != '.ini':
+            logger.error(
+                "Trigger event definition file format must be '.ini'.")
+            raise IOError
+
+    # --------------------------------------------------------------------
     @property
     def by_name(self):
         """
