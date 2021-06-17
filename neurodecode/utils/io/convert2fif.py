@@ -71,7 +71,6 @@ def pcl2fif(filename, out_dir=None, external_event=None,
 
     # Save
     raw.save(fiffile, verbose=False, overwrite=True, fmt=precision)
-    _saveChannels2txt(out_dir, raw.info["ch_names"])
     logger.info(f"Data saved to: '{fiffile}'")
 
 
@@ -209,20 +208,6 @@ def _add_events_from_txt(raw, events_index, stim_channel='TRIGGER',
         logger.info(f'Found {len(events_index)} events')
         raw.add_events(events_index, stim_channel=stim_channel,
                        replace=replace)
-
-
-def _saveChannels2txt(out_dir, ch_names):
-    """
-    Save the channels list to a txt file for the GUI
-    """
-    filename = out_dir / "channelsList.txt"
-    config = Path(filename)
-
-    if config.is_file() is False:
-        file = open(filename, "w")
-        for channel in ch_names:
-            file.write(channel + "\n")
-        file.close()
 
 
 # ------------------------- General converter -------------------------
