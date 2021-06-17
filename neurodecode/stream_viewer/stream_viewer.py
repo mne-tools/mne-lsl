@@ -1,59 +1,54 @@
 import sys
+import time
 from PyQt5.QtWidgets import QApplication
 
-from neurodecode import logger
-from neurodecode.stream_viewer._scope import _Scope
-from neurodecode.utils.lsl import search_lsl
+from ._scope import _ScopeEEG
+from ._scope_controller import _ScopeControllerUI
+from .. import logger
+from ..stream_receiver import StreamReceiver, StreamEEG
+from ..utils.lsl import search_lsl
+
 
 class StreamViewer:
     """
-    Class for displaying in real time the signals coming from a lsl stream.
+    StreamViewer instance. The stream viewer will connect to only one LSL
+    stream. If stream_name is set to None, an automatic search is performed
+    followed by a prompt if multiple non-markers streams are found.
 
-    Parameters
-    ----------
-    amp_name : str
-        The amplifier's name to connect to
+    Supports 2 backends:
+        'pyqt5': fully functional.
+        'vispy': signal displayed with limited control and information.
     """
-    #----------------------------------------------------------------------
-    def __init__(self, amp_name=None):
-        self.amp_name = amp_name
-    
-    #----------------------------------------------------------------------
-    def start(self):
-        """
-        Connect to the selected amplifier and plot the streamed data 
-        
-        If not amp infos are provided, look for available streams on the LSL server.
-        """
-        if (self.amp_name is None):
-            self.search_stream()
-        
-        logger.info('Connecting to the stream: {}'.format(self.amp_name))
-        
-        app = QApplication(sys.argv)
-        ex = _Scope(self.amp_name)
-        sys.exit(app.exec_())
 
-    #----------------------------------------------------------------------
-    def search_stream(self):
+    def __init__(self, stream_name=None):
+        self.stream_name = stream_name
+
+    def start(self, bufsize=0.2, backend='pyqt5'):
         """
-        Select an available stream on the LSL server to connect to.
-        
-        Assign the found amp name and serial number to the internal attributes
+        Connect to the selected amplifier and plot the streamed data.
+
+        If stream infos are not provided, look for available streams on the
+        network.
         """
-        self.amp_name = search_lsl()
-        
-    
-#----------------------------------------------------------------------
-if __name__ == '__main__':
-    
-    amp_name = None
-    
-    if len(sys.argv) > 2:
-        raise RuntimeError("Too many arguments provided, maximum is 1.")
-    
-    if len(sys.argv) > 1:
-        amp_name = sys.argv[1]
-        
-    stream_viewer = StreamViewer(amp_name)
-    stream_viewer.start()
+        if self.stream_name is None:
+            self.stream_name = search_lsl(ignore_markers=True)
+
+        if isinstance(backend, str):
+            backend = backend.lower().strip()
+
+        logger.info(f'Connecting to the stream: {self.stream_name}')
+        self.sr = StreamReceiver(bufsize=bufsize, winsize=bufsize,
+                                 stream_name=self.stream_name)
+        self.sr.streams[self.stream_name].blocking = False
+        time.sleep(bufsize)  # Delay to fill the LSL buffer.
+
+        if isinstance(self.sr.streams[self.stream_name], StreamEEG):
+            self._scope = _ScopeEEG(self.sr, self.stream_name)
+        else:
+            logger.error(
+                'Unsupported stream type '
+                f'{type(self.sr.streams[self.stream_name])}')
+
+        app = QApplication(sys.argv)
+        self._ui = _ScopeControllerUI(self._scope, backend)
+        sys.exit(app.exec_())

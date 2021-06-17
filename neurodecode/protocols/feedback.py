@@ -1,5 +1,3 @@
-from __future__ import print_function, division
-
 """
 Visual feedback with online decoding
 
@@ -30,8 +28,6 @@ import serial.tools.list_ports
 
 from neurodecode import logger
 from neurodecode.utils.timer import Timer
-from neurodecode.utils.etc import list2string
-from neurodecode.utils.etc import get_index_max
 
 # global constants
 KEYS = {'right':2555904, 'up':2490368, 'left':2424832, 'down':2621440, 'pgup':85, 'pgdn':86, 'home':80, 'end':87, 'space':32, 'esc':27}
@@ -58,7 +54,7 @@ class Feedback:
         self.bar_step_down = self.cfg.BAR_STEP['down']
         self.bar_step_both = self.cfg.BAR_STEP['both']
         self.protocol_state = state      # Shared variable to stop the protocol from the GUI
-        
+
         if type(self.cfg.BAR_BIAS) is tuple:
             self.bar_bias = list(self.cfg.BAR_BIAS)
         else:
@@ -106,6 +102,8 @@ class Feedback:
         """
         Run a single trial
         """
+        def list2string(vec, fmt, sep=' '):
+            return sep.join(fmt % x for x in vec)
         true_label_index = bar_dirs.index(true_label)
         self.tm_trigger.reset()
         if self.bar_bias is not None:
@@ -116,7 +114,7 @@ class Feedback:
 
         tm_classify = Timer(autoreset=True)
         self.stimo_timer = Timer()
-        
+
         while True:
             self.tm_display.sleep_atleast(self.refresh_delay)
             self.tm_display.reset()
@@ -222,20 +220,20 @@ class Feedback:
 
                 self.tm_watchdog.reset()
                 self.tm_trigger.reset()
-                
+
                 # For adaptive
                 if adaptive:
                     with decoder.label.get_lock():
-                        decoder.label.value = decoder.labels[true_label_index]                
+                        decoder.label.value = decoder.labels[true_label_index]
 
             elif state == 'dir':
                 if self.tm_trigger.sec() > self.cfg.TIMINGS['CLASSIFY'] or (self.premature_end and bar_score >= 100):
-                    
+
                     #  For adaptive
                     if adaptive:
                         with decoder.label.get_lock():
-                            decoder.label.value = 0                    
-                    
+                            decoder.label.value = 0
+
                     if not hasattr(self.cfg, 'SHOW_RESULT') or self.cfg.SHOW_RESULT is True:
                         # show classfication result
                         if self.cfg.WITH_STIMO is True:
@@ -249,7 +247,7 @@ class Feedback:
                             if bar_label == true_label:
                                 res_color = 'G'
                             else:
-                                res_color = 'Y'                            
+                                res_color = 'Y'
                         if self.cfg.FEEDBACK_TYPE == 'BODY':
                             self.viz.move(bar_label, bar_score, overlay=False, barcolor=res_color, caption=DIRS[bar_label], caption_color=res_color)
                         else:
@@ -296,7 +294,7 @@ class Feedback:
                     # classify
                     probs_new = decoder.get_prob_smooth_unread()
                     probs_unsmoothed = decoder.get_prob()
-                    
+
                     if probs_new is None:
                         if self.tm_watchdog.sec() > 3:
                             logger.warning('No classification being done. Are you receiving data streams?')
@@ -343,7 +341,7 @@ class Feedback:
 
                         # determine the direction
                         # TODO: np.argmax(probs)
-                        max_pidx = get_index_max(probs)
+                        max_pidx = np.argmax(probs)
                         max_label = bar_dirs[max_pidx]
 
                         if self.cfg.POSITIVE_FEEDBACK is False or \

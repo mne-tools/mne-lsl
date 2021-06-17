@@ -1,5 +1,3 @@
-from __future__ import print_function, division
-
 """
 Bar visual feedback class
 Kyuhwa Lee, 2015
@@ -18,9 +16,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys
 import numpy as np
-import time
 import cv2
-import neurodecode.glass.bgi_client as bgi_client
+import neurodecode.hci.glass.bgi_client as bgi_client
 from neurodecode import logger
 
 
@@ -47,8 +44,8 @@ class ColorVisual(object):
                 self.screen_width = GetSystemMetrics(0)
                 self.screen_height = GetSystemMetrics(1)
             else:
-                screen_width = 1024
-                screen_height = 768
+                self.screen_width = 1024
+                self.screen_height = 768
         else:
             self.screen_width, self.screen_height = screen_size
 
@@ -73,15 +70,15 @@ class ColorVisual(object):
         self.width = self.img.shape[1]
         self.height = self.img.shape[0]
 
-        
+
         hw = int(self.barwidth / 2)
         self.cx = int(self.width / 2)
         self.cy = int(self.height / 2)
-        
+
         self.outerRadiusThickness = 5
-        self.outerCircleRadius = int(self.cx/8)        
+        self.outerCircleRadius = int(self.cx/8)
         self.innerCircleRadius = self.outerCircleRadius - self.outerRadiusThickness / 2
-        
+
         self.xl1 = self.cx - hw  # 200
         self.xl2 = self.xl1 - self.barwidth  # 100
         self.xr1 = self.cx + hw  # 300
@@ -90,7 +87,7 @@ class ColorVisual(object):
         self.yl2 = self.yl1 - self.barwidth
         self.yr1 = self.cy + hw
         self.yr2 = self.yr1 + self.barwidth
-        
+
         self.actual_cue_color = None
 
     def finish(self):
@@ -124,17 +121,17 @@ class ColorVisual(object):
             color =  self.color['R']
             self.actual_cue = dir
             self.put_text('Fo')
-        
+
         cv2.circle(self.img, (self.cx, self.cy), int(self.cx/8), color, self.outerRadiusThickness)
-        
+
     def draw_fixation_cross(self):
         # cross fixation point
         cv2.rectangle( self.img, (self.cx-10,self.cy), (self.cx+10,self.cy), self.crosscol, thickness=3 )
         cv2.rectangle( self.img, (self.cx,self.cy-10), (self.cx,self.cy+10), self.crosscol, thickness=3 )
-        
+
     # paints the new bar on top of the current image
     def move(self, dir, dx, overlay=False, barcolor=None, caption='', caption_color='W'):
-        
+
         #if barcolor is None:
             #if dx == self.xl2:
                 #c = 'G'
@@ -163,27 +160,27 @@ class ColorVisual(object):
                 if barcolor is None:
                     color = (self.color['R'][0], self.color['R'][1], (dx/100) * self.color['R'][2])
                 else:
-                    color = self.color[barcolor]                    
+                    color = self.color[barcolor]
                 # color = (color[0], color[1], (dx/100) * color[2])
                 # color = (self.color['R'][0], self.color['R'][1], (dx/100) * self.color['R'][2])
                 cv2.circle(self.img, (self.cx, self.cy), int(self.cx/8) - int(self.outerRadiusThickness-2), color, -1)
                 # self.draw_fixation_cross()
                 if not overlay:
                     self.draw_cue(self.actual_cue)
-        
+
         #elif dir == 'U':
             #if self.pc_feedback:tas
                 #color = (self.color['R'][0], self.color['R'][1], (dx/100) * self.color['R'][2])
                 #cv2.circle(self.img, (self.cx, self.cy), int(self.cx/8), color, -1)
-                #self.draw_fixation_cross()                
-        
-            
+                #self.draw_fixation_cross()
+
+
         #elif dir == 'D':
             #if self.pc_feedback:
                 #color = (self.color['R'][0], self.color['R'][1], (dx/100) * self.color['R'][2])
                 #cv2.circle(self.img, (self.cx, self.cy), int(self.cx/8), color, -1)
-                #self.draw_fixation_cross()                
-            
+                #self.draw_fixation_cross()
+
         else:
             logger.error('Unknown direction %s' % dir)
         self.put_text(caption, caption_color)
@@ -191,18 +188,18 @@ class ColorVisual(object):
     #def put_text(self, txt, color='W'):
         #cv2.putText(self.img, txt[:self.textlimit].center(self.textlimit, ' '), (self.text_x, self.text_y),\
                     #cv2.FONT_HERSHEY_DUPLEX, self.text_size, self.color[color], 2, cv2.LINE_AA)
-        
-    
+
+
     def put_text(self, txt, color='W'):
-        textsize = cv2.getTextSize(txt, cv2.FONT_HERSHEY_DUPLEX, 1, 2)[0]        
+        textsize = cv2.getTextSize(txt, cv2.FONT_HERSHEY_DUPLEX, 1, 2)[0]
 
         text_x = int((self.screen_width - textsize[0]) / 2)
         text_y = int((self.screen_height + textsize[1]) / 2)
 
         cv2.putText(self.img, txt, (text_x, text_y),\
                     cv2.FONT_HERSHEY_DUPLEX, 1, self.color[color], 2)
-        
-    
+
+
     def update(self):
         cv2.imshow("img", self.img)
         #time.sleep(0.0005) # needed for CV to update window -> seems ok without this line
@@ -214,9 +211,8 @@ class ColorVisual(object):
     def glass_fullbarcolor(self, color):
         self.glass.set_fullbar_color(color)
 
-        
+
 if __name__ == '__main__':
-    import cv2
     viz = ColorVisual()
     viz.draw_cue('L')
     viz.move('R', 100)

@@ -1,5 +1,3 @@
-from __future__ import print_function, division
-
 """
 Motor imagery testing.
 
@@ -34,8 +32,6 @@ import time
 import random
 import multiprocessing as mp
 
-from builtins import input
-
 import neurodecode.utils.io as io
 
 from neurodecode import logger
@@ -44,7 +40,6 @@ from neurodecode.triggers import Trigger, TriggerDef
 from neurodecode.protocols.feedback import Feedback
 from neurodecode.decoder.decoder import BCIDecoderDaemon
 from neurodecode.gui.streams import redirect_stdout_to_queue
-from neurodecode.utils.math import confusion_matrix
 
 # visualization
 keys = {'left':81, 'right':83, 'up':82, 'down':84, 'pgup':85, 'pgdn':86,
@@ -115,9 +110,82 @@ def check_config(cfg):
 
     if getattr(cfg, 'TRIGGER_DEVICE') == None:
         logger.warning('The trigger device is set to None! No events will be saved.')
-        # raise RuntimeError('The trigger device is set to None! No events will be saved.')    
+        # raise RuntimeError('The trigger device is set to None! No events will be saved.')
 
 def run(cfg, state=mp.Value('i', 1), queue=None):
+
+    def confusion_matrix(Y_true, Y_pred, label_len=6):
+        """
+        Generate confusion matrix in a string format
+        Parameters
+        ----------
+        Y_true : list
+            The true labels
+        Y_pred : list
+            The test labels
+        label_len : int
+            The maximum label text length displayed (minimum length: 6)
+        Returns
+        -------
+        cfmat : str
+            The confusion matrix in str format (X-axis: prediction, -axis: ground truth)
+        acc : float
+            The accuracy
+        """
+        import numpy as np
+        from sklearn.metrics import confusion_matrix as sk_confusion_matrix
+
+        # find labels
+        if type(Y_true) == np.ndarray:
+            Y_labels = np.unique(Y_true)
+        else:
+            Y_labels = list(set(Y_true))
+
+        # Check the provided label name length
+        if label_len < 6:
+            label_len = 6
+            logger.warning('label_len < 6. Setting to 6.')
+        label_tpl = '%' + '-%ds' % label_len
+        col_tpl = '%' + '-%d.2f' % label_len
+
+        # sanity check
+        if len(Y_pred) > len(Y_true):
+            raise RuntimeError('Y_pred has more items than Y_true')
+        elif len(Y_pred) < len(Y_true):
+            Y_true = Y_true[:len(Y_pred)]
+
+        cm = sk_confusion_matrix(Y_true, Y_pred, Y_labels)
+
+        # compute confusion matrix
+        cm_rate = cm.copy().astype('float')
+        cm_sum = np.sum(cm, axis=1)
+
+        # Fill confusion string
+        for r, s in zip(cm_rate, cm_sum):
+            if s > 0:
+                r /= s
+        cm_txt = label_tpl % 'gt\dt'
+        for l in Y_labels:
+            cm_txt += label_tpl % str(l)[:label_len]
+        cm_txt += '\n'
+        for l, r in zip(Y_labels, cm_rate):
+            cm_txt += label_tpl % str(l)[:label_len]
+            for c in r:
+                cm_txt += col_tpl % c
+            cm_txt += '\n'
+
+        # compute accuracy
+        correct = 0.0
+        for c in range(cm.shape[0]):
+            correct += cm[c][c]
+        cm_sum = cm.sum()
+        if cm_sum > 0:
+            acc = correct / cm.sum()
+        else:
+            acc = 0.0
+
+        return cm_txt, acc
+
 
     redirect_stdout_to_queue(logger, queue, 'INFO')
 
@@ -150,9 +218,9 @@ def run(cfg, state=mp.Value('i', 1), queue=None):
         input('Press Ctrl+C to stop or Enter to continue.')
         trigger = Trigger('FAKE', state)
         trigger.init(50)
-    
+
     # For adaptive (need to share the actual true label accross process)
-    label = mp.Value('i', 0)    
+    label = mp.Value('i', 0)
 
     # init classification
     decoder = BCIDecoderDaemon(amp_name, cfg.DECODER_FILE, buffer_size=1.0, fake=(cfg.FAKE_CLS is not None), fake_dirs=fake_dirs, \
@@ -205,31 +273,31 @@ def run(cfg, state=mp.Value('i', 1), queue=None):
     else:
         nb_runs = 1
         adaptive = False
-    
+
     run = 1
     while run <= nb_runs:
-    
+
         if cfg.TRIALS_RANDOMIZE:
             random.shuffle(dir_seq)
         else:
             dir_seq = [d[0] for d in cfg.DIRECTIONS] * cfg.TRIALS_EACH
         num_trials = len(dir_seq)
-        
+
         # For adaptive, retrain classifier
         if run > 1:
-            
+
             #  Allow to retrain classifier
             with decoder.label.get_lock():
                 decoder.label.value = 1
-            
+
             # Wait that the retraining is done
             while decoder.label.value == 1:
                 time.sleep(0.01)
-                
+
             feedback.viz.put_text('Press any key')
             feedback.viz.update()
             cv2.waitKeyEx()
-            feedback.viz.fill()            
+            feedback.viz.fill()
 
         # start
         trial = 1
@@ -240,8 +308,8 @@ def run(cfg, state=mp.Value('i', 1), queue=None):
                 title_text = 'Trial %d / %d' % (trial, num_trials)
             else:
                 title_text = 'Ready'
-            true_label = dir_seq[trial - 1]       
-    
+            true_label = dir_seq[trial - 1]
+
             # profiling feedback
             #import cProfile
             #pr = cProfile.Profile()
@@ -249,14 +317,14 @@ def run(cfg, state=mp.Value('i', 1), queue=None):
             result = feedback.classify(decoder, true_label, title_text, bar_dirs, prob_history=prob_history, adaptive=adaptive)
             #pr.disable()
             #pr.print_stats(sort='time')
-    
+
             if result is None:
                 decoder.stop()
                 return
             else:
                 pred_label = result
             dir_detected.append(pred_label)
-    
+
             if cfg.WITH_REX is True and pred_label == true_label:
                 # if cfg.WITH_REX is True:
                 if pred_label == 'U':
@@ -276,7 +344,7 @@ def run(cfg, state=mp.Value('i', 1), queue=None):
                     logger.info('Executing Rex action %s' % rex_dir)
                     os.system('%s/Rex/RexControlSimple.exe %s %s' % (os.environ['NEUROD_ROOT'], cfg.REX_COMPORT, rex_dir))
                     time.sleep(8)
-    
+
             if true_label == pred_label:
                 msg = 'Correct'
             else:
@@ -284,7 +352,7 @@ def run(cfg, state=mp.Value('i', 1), queue=None):
             if cfg.TRIALS_RETRY is False or true_label == pred_label:
                 logger.info('Trial %d: %s (%s -> %s)' % (trial, msg, true_label, pred_label))
                 trial += 1
-    
+
         if len(dir_detected) > 0:
             # write performance and log results
             fdir = io.parse_path(cfg.DECODER_FILE).dir
@@ -299,7 +367,7 @@ def run(cfg, state=mp.Value('i', 1), queue=None):
                 logger.info('Log exported to %s' % logfile)
             print('\nAccuracy %.3f\nConfusion matrix\n' % acc)
             print(cfmat)
-        
+
         run += 1
 
     visual.finish()
