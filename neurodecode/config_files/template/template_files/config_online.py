@@ -1,3 +1,0 @@
-XXX = 
-YYY = 
-ZZZ =
