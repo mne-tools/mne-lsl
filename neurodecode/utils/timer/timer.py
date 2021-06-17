@@ -4,8 +4,7 @@ import time
 class Timer:
     """
     Timer class.
-
-    if autoreset=True, timer is reset after any member function call
+    If autoreset=True, timer is reset after any member function call.
     """
 
     def __init__(self, autoreset=False):
@@ -24,10 +23,6 @@ class Timer:
     def msec(self):
         """
         Provide the time since reset in milliseconds.
-
-        Returns
-        -------
-        float : The timing
         """
         return self.sec() * 1000.0
 
@@ -40,8 +35,7 @@ class Timer:
     def sleep_atleast(self, sec):
         """
         Sleep up to sec seconds.
-
-        It's more convenient if autoreset=True
+        It's more convenient if autoreset=True.
 
         Parameters
         ----------
