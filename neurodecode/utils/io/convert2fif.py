@@ -252,6 +252,9 @@ def any2fif(filename, out_dir=None, overwrite=True, precision='double'):
     if not filename.is_file():
         logger.error(f"File '{filename}' not found.")
         raise IOError
+    if filename.suffix not in supported:
+        logger.error(f'File type {filename.suffix} is not supported.')
+        raise IOError
 
     if filename.suffix == '.pcl':
         eve_file = filename.parent / (filename.stem[:-4] + 'eve.txt')
@@ -316,12 +319,8 @@ def dir_any2fif(directory, recursive, out_dir=None, overwrite=False, **kwargs):
     for file in get_file_list(directory, fullpath=True, recursive=recursive):
         file = Path(file)
 
-        if file.suffix not in supported.keys():
-            continue
-
         try:
             any2fif(file, out_dir, overwrite, **kwargs)
             logger.info(f"Converted '{file}'.")
         except Exception:
             logger.error(f"Error converting '{file}'.")
-            raise
