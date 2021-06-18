@@ -24,15 +24,13 @@ class StreamReceiver:
     stream_name : list | str
         Servers' name or list of servers' name to connect to.
         None: no constraint.
-    eeg_only : bool
-        If true, ignores non-EEG servers.
     """
 
-    def __init__(self, bufsize=1, winsize=1, stream_name=None, eeg_only=False):
+    def __init__(self, bufsize=1, winsize=1, stream_name=None):
         self._acquisition_threads = dict()
-        self.connect(bufsize, winsize, stream_name, eeg_only)
+        self.connect(bufsize, winsize, stream_name)
 
-    def connect(self, bufsize=1, winsize=1, stream_name=None, eeg_only=False):
+    def connect(self, bufsize=1, winsize=1, stream_name=None):
         """
         Search for the available streams on the LSL network and connect to the
         appropriate ones. If a LSL stream fullfills the requirements (name...),
@@ -51,8 +49,6 @@ class StreamReceiver:
         stream_name : list | str
             Servers' name or list of servers' name to connect to.
             None: no constraint.
-        eeg_only : bool
-            If true, ignore non-EEG servers.
         """
         self._streams = dict()
         self._is_connected = False
@@ -62,7 +58,7 @@ class StreamReceiver:
 
             if stream_name is None:
                 logger.info(
-                    "Looking for available lsl streaming servers...")
+                    "Looking for available LSL streaming servers...")
             else:
                 logger.info(
                     f"Looking for server(s): '{stream_name}'...")
@@ -72,10 +68,6 @@ class StreamReceiver:
             if len(streamInfos) > 0:
                 for streamInfo in streamInfos:
 
-                    # EEG streaming server only?
-                    if eeg_only and streamInfo.type().lower() != 'eeg':
-                        logger.info(f'Stream {streamInfo.name()} skipped.')
-                        continue
                     # connect to a specific amp only?
                     if isinstance(stream_name, str) and \
                             streamInfo.name() != stream_name:
@@ -83,12 +75,15 @@ class StreamReceiver:
                             logger.info(
                                 f'Stream {stream_name} skipped, '
                                 f'however {streamInfo.name()} exists.')
+                        else:
+                            logger.info(
+                                f'Stream {streamInfo.name()} skipped.')
                         continue
                     if isinstance(stream_name, (list, tuple)) and \
                             streamInfo.name() not in stream_name:
                         logger.info(f'Stream {streamInfo.name()} skipped.')
                         continue
-                    # do not connect to StreamRecorderInfo
+                    # TODO: To be removed.
                     if streamInfo.name() == 'StreamRecorderInfo':
                         continue
 
@@ -102,10 +97,10 @@ class StreamReceiver:
                             streamInfo, bufsize, winsize)
 
                     server_found = True
-            time.sleep(1)
+            time.sleep(1) # TODO: test without.
 
         for stream in self._streams:
-            if stream not in self._acquisition_threads.keys():
+            if stream not in self._acquisition_threads:
                 self._acquisition_threads[stream] = None
 
         self.show_info()
