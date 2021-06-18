@@ -30,7 +30,7 @@ class _Stream(ABC):
     winsize : int
         To extract the latest winsize samples from the buffer [secs].
     """
-    # ----------------------------- Init -----------------------------
+
     @abstractmethod
     def __init__(self, streamInfo, bufsize, winsize):
 
@@ -91,11 +91,10 @@ class _Stream(ABC):
         if self._serial == '':
             self._serial = 'N/A'
 
-        self.is_slave = self._inlet.info().desc().child(
+        self._is_slave = self._inlet.info().desc().child(
             'amplifier').child('settings').child(
                 'is_slave').first_child().value() == 'true'
 
-    # ---------------------------- Method ----------------------------
     def show_info(self):
         """
         Display the stream's info.
@@ -110,7 +109,7 @@ class _Stream(ABC):
 
         # Check for high LSL offset
         if self.lsl_time_offset is None:
-            logger.warning(
+            logger.info(
                 'No LSL timestamp offset computed, no data received yet.')
         elif abs(self.lsl_time_offset) > HIGH_LSL_OFFSET_THRESHOLD:
             logger.warning(
@@ -152,13 +151,12 @@ class _Stream(ABC):
                     received = True
                     tslist = self._correct_lsl_offset(tslist)
                     break
-                time.sleep(0.0005)
+                time.sleep(0.0005) # TODO: test without
             else:
                 # Give up and return empty values to avoid deadlock
-                logger.warning(
+                logger.error(
                     f'Timeout occurred [{self.blocking_time}secs] while '
-                    f'acquiring data from {self.name}({self.serial}). '
-                    'Amp driver bug?')
+                    f'acquiring data from {self.name}({self.serial}). ')
                 received = True
 
         return chunk, tslist
@@ -192,7 +190,7 @@ class _Stream(ABC):
 
         return timestamps
 
-    # ---------------------------- Static ----------------------------
+    # --------------------------------------------------------------------
     @staticmethod
     def _check_window_size(window_size):
         """
@@ -263,7 +261,7 @@ class _Stream(ABC):
         """
         return round(bufsec * sample_rate)
 
-    # -------------------------- Properties --------------------------
+    # --------------------------------------------------------------------
     @property
     def name(self):
         """
@@ -339,12 +337,12 @@ class _Stream(ABC):
 
     @blocking.setter
     def blocking(self, block):
-        self._blocking = block
+        self._blocking = bool(block)
 
     @property
     def blocking_time(self):
         """
-        If blocking is True, how long to wait to receive data [secs].
+        If blocking is True, how long to wait to receive data in seconds.
         """
         return self._blocking_time
 
@@ -387,7 +385,6 @@ class StreamMarker(_Stream):
     """
 
     def __init__(self, streamInfo, bufsize=1, winsize=1):
-
         super().__init__(streamInfo, bufsize, winsize)
 
         self.blocking = False
@@ -421,7 +418,6 @@ class StreamEEG(_Stream):
     """
 
     def __init__(self, streamInfo, bufsize=1, winsize=1):
-
         super().__init__(streamInfo, bufsize, winsize)
 
         # self._multiplier = 10 ** -6  # # change uV -> V unit
@@ -458,7 +454,7 @@ class StreamEEG(_Stream):
             self._lsl_tr_channel = 23
 
         elif 'openvibeSignal' in self.name:
-            self._multiplier = 10E6
+            self._multiplier = 10E6 # TODO: Test if this is correct or should be 1E6
             self._lsl_tr_channel = find_event_channel(ch_names=self._ch_list)
 
         elif 'openvibeMarkers' in self.name:
@@ -476,10 +472,10 @@ class StreamEEG(_Stream):
         """
         chunk, tslist = super().acquire()
 
-        if not chunk:
+        if len(chunk) == 0:
             return
 
-        data = np.array(chunk)
+        data = np.array(chunk) # TODO: Is it not more efficient to keep working on lists?
 
         # BioSemi has pull-up resistor instead of pull-down
         if 'BioSemi' in self.name and self._lsl_tr_channel is not None:
@@ -506,3 +502,15 @@ class StreamEEG(_Stream):
 
         # Fill its buffer
         self.buffer.fill(data, tslist)
+
+    # --------------------------------------------------------------------
+    @property
+    def multiplier(self):
+        """
+        The scaling factor applied to the data.
+        """
+        return self._multiplier
+
+    @multiplier.setter
+    def multiplier(self, multiplier):
+        self._multiplier = multiplier
