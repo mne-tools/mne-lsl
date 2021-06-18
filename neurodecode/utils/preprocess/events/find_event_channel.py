@@ -30,10 +30,10 @@ def find_event_channel(inst=None, ch_names=None):
                     return ch_names.index(ch_name)
 
         # data range between 0 and 255 and all integers?
-        for ch in range(inst.shape[0]):
-            if (inst[ch].astype(int) == inst[ch]).all()\
-                    and max(inst[ch]) < 256 and min(inst[ch]) == 0:
-                return ch
+        for ch_index in range(inst.shape[0]):
+            if (inst[ch_index].astype(int) == inst[ch_index]).all()\
+                    and max(inst[ch_index]) < 256 and min(inst[ch_index]) == 0:
+                return ch_index
 
     # For MNE raw
     elif hasattr(inst, 'ch_names'):
