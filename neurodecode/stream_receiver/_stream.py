@@ -420,7 +420,7 @@ class StreamEEG(_Stream):
     def __init__(self, streamInfo, bufsize=1, winsize=1):
         super().__init__(streamInfo, bufsize, winsize)
 
-        # self._multiplier = 10 ** -6  # # change uV -> V unit
+        # self._multiplier = 10 ** -6  # change uV -> V unit
         self._multiplier = 1
 
     def _create_ch_name_list(self):
