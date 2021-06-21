@@ -8,6 +8,15 @@ from ._stream import StreamEEG, StreamMarker
 from .. import logger
 
 
+def is_connected(func):
+    def wrapper(self, *args, **kwargs):
+        while not self._server_found:
+            self.connect()
+            # time.sleep(1) # TODO: Add here if removed from connect()
+        func(*args, **kwargs)
+    return wrapper
+
+
 class StreamReceiver:
     """
     Class for data acquisition from LSL streams.
@@ -18,9 +27,11 @@ class StreamReceiver:
 
     Parameters
     ----------
-    logger : logger
+    bufsize : int
+        The buffer's size [secs]. 1-day is the maximum size.
+        Large buffer may lead to a delay if not pulled frequently.
     winsize : int
-        To extract the latest winsize samples from the buffer [secs].
+            To extract the latest winsize samples from the buffer [secs].
     stream_name : list | str
         Servers' name or list of servers' name to connect to.
         None: no constraint.
@@ -28,40 +39,31 @@ class StreamReceiver:
 
     def __init__(self, bufsize=1, winsize=1, stream_name=None):
         self._acquisition_threads = dict()
-        self.connect(bufsize, winsize, stream_name)
+        self.bufsize = bufsize
+        self.winsize = winsize
+        self.stream_name = stream_name
+        self.connect(stream_name)
 
-    def connect(self, bufsize=1, winsize=1, stream_name=None):
+    def connect(self):
         """
         Search for the available streams on the LSL network and connect to the
         appropriate ones. If a LSL stream fullfills the requirements (name...),
         a connection is established.
 
         This function is called while instanciating a StreamReceiver and can be
-        recall to reconnect to the LSL streams.
-
-        Parameters
-        ----------
-        bufsize : int
-            The buffer's size [secs]. 1-day is the maximum size.
-            Large buffer may lead to a delay if not pulled frequently.
-        winsize : int
-            To extract the latest winsize samples from the buffer [secs].
-        stream_name : list | str
-            Servers' name or list of servers' name to connect to.
-            None: no constraint.
+        recall to reconnect to the LSL streams
         """
         self._streams = dict()
-        self._is_connected = False
-        server_found = False
+        self._server_found = False
 
-        while not server_found:
+        while not self._server_found:
 
-            if stream_name is None:
+            if self.stream_name is None:
                 logger.info(
                     "Looking for available LSL streaming servers...")
             else:
                 logger.info(
-                    f"Looking for server(s): '{stream_name}'...")
+                    f"Looking for server(s): '{self.stream_name}'...")
 
             streamInfos = pylsl.resolve_streams()
 
@@ -69,18 +71,18 @@ class StreamReceiver:
                 for streamInfo in streamInfos:
 
                     # connect to a specific amp only?
-                    if isinstance(stream_name, str) and \
-                            streamInfo.name() != stream_name:
-                        if stream_name in streamInfo.name():
+                    if isinstance(self.stream_name, str) and \
+                            streamInfo.name() != self.stream_name:
+                        if self.stream_name in streamInfo.name():
                             logger.info(
-                                f'Stream {stream_name} skipped, '
+                                f'Stream {self.stream_name} skipped, '
                                 f'however {streamInfo.name()} exists.')
                         else:
                             logger.info(
                                 f'Stream {streamInfo.name()} skipped.')
                         continue
-                    if isinstance(stream_name, (list, tuple)) and \
-                            streamInfo.name() not in stream_name:
+                    if isinstance(self.stream_name, (list, tuple)) and \
+                            streamInfo.name() not in self.stream_name:
                         logger.info(f'Stream {streamInfo.name()} skipped.')
                         continue
                     # TODO: To be removed.
@@ -90,13 +92,13 @@ class StreamReceiver:
                     # EEG stream
                     if streamInfo.type().lower() == "eeg":
                         self._streams[streamInfo.name()] = StreamEEG(
-                            streamInfo, bufsize, winsize)
+                            streamInfo, self.bufsize, self.winsize)
                     # Marker stream
                     elif streamInfo.nominal_srate() == 0:
                         self._streams[streamInfo.name()] = StreamMarker(
-                            streamInfo, bufsize, winsize)
+                            streamInfo, self.bufsize, self.winsize)
 
-                    server_found = True
+                    self._server_found = True
             time.sleep(1) # TODO: test without.
 
         for stream in self._streams:
@@ -104,7 +106,6 @@ class StreamReceiver:
                 self._acquisition_threads[stream] = None
 
         self.show_info()
-        self._is_connected = True
         logger.info('Ready to receive data from the connected streams.')
 
     def show_info(self):
@@ -127,10 +128,15 @@ class StreamReceiver:
         stream_name : str
             The name of the stream to extract from.
         """
-        if len(self.streams) == 1:
-            stream_name = list(self.streams.keys())[0]
-        elif stream_name is None:
+        if len(self.streams) == 0:
             logger.error(
+                'The Stream Receiver is not connected to any streams.')
+            raise RuntimeError
+        elif len(self.streams) == 1:
+            stream_name = list(self.streams.keys())[0]
+        elif len(self.streams) > 1 and stream_name is None:
+            logger.error(
+                "Multiple streams connected. "
                 "Please provide a stream name to remove it.")
             raise ValueError
 
@@ -180,7 +186,6 @@ class StreamReceiver:
             raise ValueError
 
         winsize = self.streams[stream_name].buffer.winsize
-        self.is_connected
         try:
             self._acquisition_threads[stream_name].join()
         except AttributeError:
@@ -228,7 +233,6 @@ class StreamReceiver:
                 "Please provide a stream name to get its buffer.")
             raise ValueError
 
-        self.is_connected
         try:
             self._acquisition_threads[stream_name].join()
         except AttributeError:
@@ -268,23 +272,6 @@ class StreamReceiver:
         """
         for stream in self._streams:
             self.reset_buffer(stream)
-
-    @property
-    def is_connected(self):
-        """
-        Check the connection status and automatically connect if not connected.
-        """
-        while not self._is_connected:
-            logger.error('No LSL servers connected yet. '
-                         'Trying to connect automatically.')
-            self.connect()
-            time.sleep(1)
-
-        return self._is_connected
-
-    @is_connected.setter
-    def is_connected(self, is_connected):
-        logger.warning("This attribute cannot be modified.")
 
     @property
     def streams(self):
