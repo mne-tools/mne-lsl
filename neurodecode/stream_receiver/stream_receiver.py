@@ -22,21 +22,22 @@ class StreamReceiver:
         The buffer's size [secs]. 1-day is the maximum size.
         Large buffer may lead to a delay if not pulled frequently.
     winsize : int
-            To extract the latest winsize samples from the buffer [secs].
-    stream_name : list | str
+        To extract the latest winsize samples from the buffer [secs].
+    stream_name : list | str | None
         Servers' name or list of servers' name to connect to.
         None: no constraint.
     """
 
     def __init__(self, bufsize=1, winsize=1, stream_name=None):
         self._acquisition_threads = dict()
-        self._bufsize = bufsize
-        self._winsize = winsize
+        self._winsize = StreamReceiver._check_winsize(winsize)
+        self._bufsize = StreamReceiver._check_bufsize(bufsize, winsize)
         self._stream_name = StreamReceiver._check_format_stream_name(
             stream_name)
-        self.connect(self._stream_name)
+        self._connected = False
+        self.connect()
 
-    def connect(self, timeout=10):
+    def connect(self, timeout=10, force=False):
         """
         Search for the available streams on the LSL network and connect to the
         appropriate ones. If a LSL stream fullfills the requirements (name...),
@@ -49,9 +50,14 @@ class StreamReceiver:
         ----------
         timeout : int
             Timeout duration in seconds after which the search is abandonned.
+        force : bool
+            If True, force reconnect if the Stream Receiver was already
+            connected.
         """
+        if not force and self._connected:
+            return True
+
         self._streams = dict()
-        self._connected = False
 
         if self._stream_name is None:
             logger.info(
@@ -67,7 +73,8 @@ class StreamReceiver:
             for streamInfo in streamInfos:
 
                 # connect to a specific amp only?
-                if streamInfo.name() not in self._stream_name:
+                if self._stream_name is not None and \
+                   streamInfo.name() not in self._stream_name:
                     logger.info(f'Stream {streamInfo.name()} skipped.')
                     continue
                 # TODO: To be removed.
@@ -110,82 +117,41 @@ class StreamReceiver:
             logger.info(f"The stream {stream} is connected to:")
             self._streams[stream].show_info()
 
-    # --------------------------------------------------------------------
-    def reconnect(func):
-        """
-        Decorator to check if the StreamReceiver is connected to LSL Streams.
-        """
-        def wrapper(self, *args, **kwargs):
-            if not self._connected:
-                self.connect()
-            func(*args, **kwargs)
-        return wrapper
-
-    def check_arg_stream_name(func):
-        """
-        Decorator to check the argument stream_name.
-        Checks if the list of connected streams is not empty and checks if
-        stream_name is set to None that the list of connected streams only
-        contains one stream.
-        """
-        def wrapper(self, stream_name):
-            if len(self._streams) == 0:
-                logger.error(
-                    'The StreamReceiver is not connected to any streams.')
-                raise RuntimeError
-            elif len(self._streams) == 1 and stream_name is None:
-                stream_name = list(self._streams.keys())[0]
-            elif len(self._streams) > 1 and stream_name is None:
-                logger.error(
-                    "Multiple streams connected. "
-                    "Please provide a stream to remove it.")
-                raise ValueError
-
-            func(self, stream_name)
-        return wrapper
-
-    def check_acquisition_thread(func):
-        def wrapper(self, stream_name):
-            try:
-                self._acquisition_threads[stream_name].join()
-            except KeyError:
-                logger.error(
-                    f"The StreamReceiver is not connected to '{stream_name}'.")
-                raise RuntimeError
-            except AttributeError:
-                logger.warning(
-                    '.acquire() must be called before .get_window().')
-                return (np.empty((0, len(self._streams[stream_name].ch_list))),
-                        np.array([])) #TODO: Does this work?
-
-            func(self, stream_name)
-        return wrapper
-
-    # --------------------------------------------------------------------
-    @check_arg_stream_name
-    def disconnect_stream(self, stream_name=None):
+    def disconnect(self, stream_name=None):
         """
         Disconnects the stream 'stream_name' from the StreamReceiver.
-        If several streams are connected, specify the name.
+        If stream_name is a list, disconnects all streams in the list.
+        If stream_name is None, disconnects all streams.
 
         Parameters
         ----------
-        stream_name : str
-            The name of the stream to extract from.
+        stream_name : str | list | None
+            The name of the stream to disconnect.
         """
-        try:
-            self._streams[stream_name]._inlet.close_stream()
-            del self._streams[stream_name]
-            del self._acquisition_threads[stream_name]
-        except KeyError:
-            logger.error(
-                f"The stream '{stream_name}' does not exist. Skipping.")
+        stream_name = StreamReceiver._check_format_stream_name(stream_name)
+        if stream_name is None:
+            stream_name = list(self._streams)
 
-    @reconnect
+        for stream in list(self._streams):
+            if stream not in stream_name:
+                continue
+
+            self._streams[stream]._inlet.close_stream()
+            del self._streams[stream]
+            del self._acquisition_threads[stream]
+
+        if len(self._streams) == 0:
+            self._connected = False
+
     def acquire(self):
         """
         Read data from the streams and fill their buffer using threading.
         """
+        if not self._connected:
+            logger.error(
+                'The Stream Receiver is not connected to any streams. ')
+            raise RuntimeError
+
         for stream in self._streams:
             if self._acquisition_threads[stream] is not None and \
                     self._acquisition_threads[stream].is_alive():
@@ -196,9 +162,6 @@ class StreamReceiver:
             thread.start()
             self._acquisition_threads[stream] = thread
 
-    @reconnect
-    @check_arg_stream_name
-    @check_acquisition_thread
     def get_window(self, stream_name=None):
         """
         Get the latest window from a stream's buffer.
@@ -206,8 +169,10 @@ class StreamReceiver:
 
         Parameters
         ----------
-        stream_name : str
+        stream_name : str | None
             The name of the stream to extract from.
+            Can be set to None if the StreamReceiver is connected to a single
+            stream.
 
         Returns
         -------
@@ -216,15 +181,38 @@ class StreamReceiver:
         timestamps : np.array
              The timestamps [samples]
         """
+        if not self._connected:
+            logger.error(
+                'The Stream Receiver is not connected to any streams. ')
+            raise RuntimeError
+        if stream_name is None and len(self._streams) == 1:
+            stream_name = list(self._streams)[0]
+        elif stream_name is None and len(self._streams) > 1:
+            logger.error('The Stream Receiver is connected to multiple '
+                         'streams. Please provide the stream_name argument. ')
+            raise RuntimeError
+
+        try:
+            self._acquisition_threads[stream_name].join()
+        except KeyError as error:
+            logger.error(
+                f"The Stream Receiver is not connected to '{stream_name}'.")
+            raise error
+        except AttributeError as error:
+            logger.warning('.acquire() must be called before .get_buffer().')
+            raise error
+
         winsize = self._streams[stream_name].buffer.winsize
 
         try:
-            window = self._streams[stream_name].buffer.data[-winsize:]
-            timestamps = self._streams[stream_name].buffer.timestamps[-winsize:]
+            window = self._streams[
+                stream_name].buffer.data[-winsize:]
+            timestamps = self._streams[
+                stream_name].buffer.timestamps[-winsize:]
         except IndexError:
             logger.warning(
-                f"The buffer of {self._streams[stream_name].name} "
-                "does not contain enough samples.")
+                f"The buffer of {stream_name} does not contain enough "
+                "samples. Returning the available samples.")
             window = self._streams[stream_name].buffer.data[:]
             timestamps = self._streams[stream_name].buffer.timestamps[:]
 
@@ -234,9 +222,6 @@ class StreamReceiver:
             return (np.empty((0, len(self._streams[stream_name].ch_list))),
                     np.array([]))
 
-    @reconnect
-    @check_arg_stream_name
-    @check_acquisition_thread
     def get_buffer(self, stream_name=None):
         """
         Get the entire buffer of a stream in numpy format.
@@ -244,8 +229,10 @@ class StreamReceiver:
 
         Parameters
         ----------
-        stream_name : str
+        stream_name : str | None
             The name of the stream to extract from.
+            Can be set to None if the StreamReceiver is connected to a single
+            stream.
 
         Returns
         -------
@@ -254,6 +241,27 @@ class StreamReceiver:
         timestamps : np.array
             The timestamps [samples]
         """
+        if not self._connected:
+            logger.error(
+                'The Stream Receiver is not connected to any streams. ')
+            raise RuntimeError
+        if stream_name is None and len(self._streams) == 1:
+            stream_name = list(self._streams)[0]
+        elif stream_name is None and len(self._streams) > 1:
+            logger.error('The Stream Receiver is connected to multiple '
+                         'streams. Please provide the stream_name argument. ')
+            raise RuntimeError
+
+        try:
+            self._acquisition_threads[stream_name].join()
+        except KeyError as error:
+            logger.error(
+                f"The Stream Receiver is not connected to '{stream_name}'.")
+            raise error
+        except AttributeError as error:
+            logger.warning('.acquire() must be called before .get_buffer().')
+            raise error
+
         if len(self._streams[stream_name].buffer.timestamps) > 0:
             return (np.array(self._streams[stream_name].buffer.data),
                     np.array(self._streams[stream_name].buffer.timestamps))
@@ -261,27 +269,56 @@ class StreamReceiver:
             return (np.empty((0, len(self._streams[stream_name].ch_list))),
                     np.array([]))
 
-    @check_arg_stream_name
     def reset_buffer(self, stream_name=None):
         """
         Clear the stream's buffer.
-        If several streams are connected, specify the name.
+        If stream_name is a list, applied to all streams in the list.
+        If stream_name is None, applied to all streams.
 
         Parameters
         ----------
-        stream_name : str
-            The stream's name.
+        stream_name : str | list | None
+            The name of the stream to reset its buffer.
         """
-        self._streams[stream_name].buffer.reset_buffer()
+        stream_name = StreamReceiver._check_format_stream_name(stream_name)
+        if stream_name is None:
+            stream_name = list(self._streams)
 
-    def reset_all_buffers(self):
-        """
-        Clear all the streams' buffer.
-        """
         for stream in self._streams:
-            self.reset_buffer(stream)
+            if stream not in stream_name:
+                continue
+
+            self._streams[stream].buffer.reset_buffer()
 
     # --------------------------------------------------------------------
+    @staticmethod
+    def _check_winsize(winsize):
+        """
+        Check that the window size is positive.
+        """
+        if winsize <= 0:
+            logger.error(f'Invalid window size {winsize}.')
+            raise ValueError
+
+        return winsize
+
+    @staticmethod
+    def _check_bufsize(bufsize, winsize):
+        """
+        Check that buffer's size is positive and bigger than the window's size.
+        """
+        if bufsize <= 0:
+            logger.error(f'Invalid buffer size {bufsize}.')
+            raise ValueError
+
+        if bufsize < winsize:
+            logger.error(
+                f'Buffer size  {bufsize:.1f} is smaller than window size. '
+                f'Setting to {winsize:.1f}')
+            bufsize = winsize
+
+        return bufsize
+
     @staticmethod
     def _check_format_stream_name(stream_name):
         if isinstance(stream_name, (list, tuple)):
@@ -300,14 +337,34 @@ class StreamReceiver:
     # --------------------------------------------------------------------
     @property
     def bufsize(self):
+        """
+        The buffer size in seconds.
+        """
         return self._bufsize
+
+    @bufsize.setter
+    def bufsize(self, bufsize):
+        self._bufsize = StreamReceiver._check_bufsize(bufsize, self._winsize)
+        self.connect(force=True)
 
     @property
     def winsize(self):
+        """
+        The window size in seconds.
+        """
         return self._winsize
+
+    @winsize.setter
+    def winsize(self, winsize):
+        self._winsize = StreamReceiver._check_winsize(winsize)
+        self._bufsize = StreamReceiver._check_bufsize(self._bufsize, winsize)
+        self.connect(force=True)
 
     @property
     def stream_name(self):
+        """
+        The connected stream's name.
+        """
         return self._stream_name
 
     @stream_name.setter
@@ -315,20 +372,22 @@ class StreamReceiver:
         old_stream_name = self._stream_name
         self._stream_name = StreamReceiver._check_format_stream_name(
             stream_name)
-        try:
-            self.connect()
-        except RuntimeError:
+        self.connect(force=True)
+
+        if not self._connected:
+            logger.error(
+                'The Stream Receiver could not connect to the new stream '
+                'names. Reconnecting to the old stream names.')
             self._stream_name = old_stream_name
-            logger.warning(
-                "Could not connected to '{', '.join(self._stream_name)}'.")
+            self.connect(force=True)
 
     @property
     def streams(self):
         """
-        The connected streams list.
+        The connected streams dictionnary: {stream_name: _Stream}.
         """
         return self._streams
 
     @streams.setter
     def streams(self, streams):
-        logger.warning("The connected streams cannot be modified.")
+        logger.warning("The connected streams cannot be changed directly.")
