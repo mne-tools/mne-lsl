@@ -34,8 +34,8 @@ class _Stream(ABC):
     @abstractmethod
     def __init__(self, streamInfo, bufsize, winsize):
 
-        winsize = _Stream._check_window_size(winsize)
-        bufsize = _Stream._check_buffer_size(bufsize, winsize)
+        winsize = _Stream._check_winsize(winsize)
+        bufsize = _Stream._check_bufsize(bufsize, winsize)
 
         self._streamInfo = streamInfo
         self._sample_rate = self.streamInfo.nominal_srate()
@@ -192,13 +192,13 @@ class _Stream(ABC):
 
     # --------------------------------------------------------------------
     @staticmethod
-    def _check_window_size(window_size):
+    def _check_winsize(winsize):
         """
         Check that the window size is positive.
 
         Parameters
         ----------
-        window_size : float
+        winsize : float
             The window size to verify [secs].
 
         Returns
@@ -206,41 +206,42 @@ class _Stream(ABC):
         secs
             The verified window's size.
         """
-        if window_size <= 0:
-            logger.error(f'Invalid window_size {window_size}.')
+        if winsize <= 0:
+            logger.error(f'Invalid window size {winsize}.')
             raise ValueError
-        return window_size
+
+        return winsize
 
     @staticmethod
-    def _check_buffer_size(buffer_size, window_size):
+    def _check_bufsize(bufsize, winsize):
         """
         Check that buffer's size is positive and bigger than the window's size.
 
         Parameters
         ----------
-        buffer_size : float
+        bufsize : float
             The buffer size to verify [secs].
-        window_size : float
-            The window's size to compare to buffer_size [secs].
+        winsize : float
+            The window's size to compare to bufsize [secs].
 
         Returns
         -------
         secs
             The verified buffer size.
         """
-        if buffer_size <= 0 or buffer_size > MAX_BUF_SIZE:
+        if bufsize <= 0 or bufsize > MAX_BUF_SIZE:
             logger.error(
-                f'Improper buffer size {buffer_size:.1f}. '
+                f'Improper buffer size {bufsize:.1f}. '
                 f'Setting to {MAX_BUF_SIZE:.1f}.')
-            buffer_size = MAX_BUF_SIZE
+            bufsize = MAX_BUF_SIZE
 
-        elif buffer_size < window_size:
+        elif bufsize < winsize:
             logger.error(
-                f'Buffer size  {buffer_size:.1f} is smaller than window size. '
-                f'Setting to {window_size:.1f}')
-            buffer_size = window_size
+                f'Buffer size  {bufsize:.1f} is smaller than window size. '
+                f'Setting to {winsize:.1f}')
+            bufsize = winsize
 
-        return buffer_size
+        return bufsize
 
     @staticmethod
     def _convert_sec_to_samples(bufsec, sample_rate):
