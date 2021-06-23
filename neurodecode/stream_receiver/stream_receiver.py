@@ -29,12 +29,12 @@ class StreamReceiver:
     """
 
     def __init__(self, bufsize=1, winsize=1, stream_name=None):
-        self._acquisition_threads = dict()
         self._winsize = StreamReceiver._check_winsize(winsize)
         self._bufsize = StreamReceiver._check_bufsize(bufsize, winsize)
         self._stream_name = StreamReceiver._check_format_stream_name(
             stream_name)
         self._connected = False
+        self._acquisition_threads = dict()
         self.connect()
 
     def connect(self, timeout=10, force=False):
@@ -44,7 +44,7 @@ class StreamReceiver:
         a connection is established.
 
         This function is called while instanciating a StreamReceiver and can be
-        recall to reconnect to the LSL streams
+        recall to reconnect to the LSL streams.
 
         Parameters
         ----------
@@ -67,7 +67,6 @@ class StreamReceiver:
                 f"Looking for server(s): '{', '.join(self._stream_name)}'...")
 
         watchdog = Timer()
-
         while watchdog.sec() <= timeout:
             streamInfos = pylsl.resolve_streams()
             for streamInfo in streamInfos:
@@ -185,6 +184,7 @@ class StreamReceiver:
             logger.error(
                 'The Stream Receiver is not connected to any streams. ')
             raise RuntimeError
+
         if stream_name is None and len(self._streams) == 1:
             stream_name = list(self._streams)[0]
         elif stream_name is None and len(self._streams) > 1:
@@ -245,6 +245,7 @@ class StreamReceiver:
             logger.error(
                 'The Stream Receiver is not connected to any streams. ')
             raise RuntimeError
+
         if stream_name is None and len(self._streams) == 1:
             stream_name = list(self._streams)[0]
         elif stream_name is None and len(self._streams) > 1:
@@ -391,3 +392,11 @@ class StreamReceiver:
     @streams.setter
     def streams(self, streams):
         logger.warning("The connected streams cannot be changed directly.")
+
+    @property
+    def connected(self):
+        return self._connected
+
+    @connected.setter
+    def connected(self, connected):
+        logger.warning("The connected status cannot be changed directly.")
