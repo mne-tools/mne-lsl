@@ -23,6 +23,8 @@ Example:
     nd_stream_player StreamPlayer "D:/Data/sample-raw.fif" 16 'D:/triggerdef_template.ini'
 """
 
+import time
+
 from neurodecode.stream_player import StreamPlayer
 
 if __name__ == '__main__':
@@ -61,5 +63,6 @@ if __name__ == '__main__':
 
     sp = StreamPlayer(server_name, fif_file, chunk_size, trigger_file)
     sp.start()
+    time.sleep(0.5)
     input(">> Press ENTER to stop replaying data \n")
     sp.stop()
