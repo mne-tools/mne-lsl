@@ -117,4 +117,5 @@ def make_dirs(dirname, delete=False):
                 'Directory was not completely removed. '
                 '(Perhaps a Dropbox folder?). Continuing.')
     if not dirname.exists():
+        logger.info(f'Creating: {dirname}')
         os.makedirs(dirname)
