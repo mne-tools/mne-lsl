@@ -1,174 +1,135 @@
+import time
+import pickle
+from pathlib import Path
 import multiprocessing as mp
 
-from ._recorder import _Recorder
 from .. import logger
+from ..utils.io import pcl2fif, make_dirs
+from ..stream_receiver import StreamReceiver, StreamEEG
+from ..stream_receiver._stream import MAX_BUF_SIZE
 
 
 class StreamRecorder:
-    """
-    Class for recording the signals coming from LSL streams.
+    def __init__(self, record_dir, fname=None, stream_name=None):
+        self._record_dir = StreamRecorder._check_record_dir(record_dir)
+        self._fname = StreamRecorder._check_fname(fname)
+        self._stream_name = StreamRecorder._check_stream_name(stream_name)
 
-    Parameters
-    ----------
-    record_dir : str
-        The directory where the data will be saved.
-    logger : Logger
-        The logger where to output info. Default is the NeuroDecode logger.
-    state : mp.Value
-        Multiprocessing sharing variable to stop the recording from another
-        process.
-    queue : mp.Queue
-        Can redirect sys.stdout to a queue (e.g. used for GUI).
-    """
-
-    def __init__(self, record_dir, logger=logger,
-                 state=mp.Value('i', 0), queue=None):
-
-        self._logger = logger
-        self._queue = queue
-
-        if record_dir is None:
-            self._logger.error("No recording directory provided.")
-            raise RuntimeError
-
+        self.eve_file = None # for SOFTWARE triggers
         self._proc = None
-        self._stream_name = None
-        self._record_dir = record_dir
+        self._state = mp.Value('i', 0)
 
-        self._state = state
+    def start(self, verbose=False):
+        pcl_files, self.eve_file = self.create_files()
 
-    def start(self, stream_name=None, eeg_only=False, verbose=False):
-        """
-        Start recording data from LSL network, in a new process.
-
-        Parameters
-        ----------
-        stream_name : str
-            Connect to a server named 'stream_name'. None: no constraint.
-        eeg_only : bool
-            If true, ignore non-EEG servers.
-        verbose : bool
-            IF true, it will print every second the time since the recording
-            start.
-        """
-        self._stream_name = stream_name
-
-        self._proc = mp.Process(target=self._record,
-                                args=(stream_name,
-                                      self._record_dir,
-                                      eeg_only,
-                                      verbose,
-                                      self._logger,
-                                      self._queue,
-                                      self._state))
+        self._proc = mp.Process(
+            target=self._record,
+            args=(self._stream_name, pcl_files, self.eve_file,
+                  self._state, verbose))
         self._proc.start()
 
-        while not self._state.value:  # TODO: What is the goal of this loop??
-            pass
-
-    def wait(self, timeout):
-        """
-        Wait that the data streaming finishes.
-
-        Parameters
-        ----------
-        timeout : float
-            Block until timeout is reached.
-            If None, block until streaming is finished.
-        """
-        self._proc.join(timeout)
-
     def stop(self):
-        """
-        Stop the recording.
-        """
         with self._state.get_lock():
             self._state.value = 0
 
-        self._logger.info('(main) Waiting for recorder process to finish.')
+        logger.info('Waiting for recorder process to finish.')
         self._proc.join(10)
         if self._proc.is_alive():
-            self._logger.error(
-                'Recorder process not finishing. Are you running from Spyder?')
-        self._logger.info('Recording finished.')
+            logger.error(
+                'Recorder process not finishing..')
+            raise RuntimeError
+        logger.info('Recording finished.')
 
-    def _record(self, stream_name, record_dir, eeg_only,
-                verbose, logger, queue, state):
-        """
-        The function launched in a new process.
-        """
-        redirect_stdout_to_queue(logger, queue, 'INFO')
+        self.eve_file = None
+        self._proc = None
 
-        recorder = _Recorder(record_dir, logger, state)
-        recorder.connect(stream_name, eeg_only)
-        recorder.record(verbose)
+    def create_files(self):
+        # Filenames
+        fname = self._fname if self._fname is not None \
+            else time.strftime('%Y%m%d-%H%M%S', time.localtime())
+
+        eve_file = self._record_dir / f'{fname}-eve.txt'
+
+        pcl_files = dict()
+        for stream in self._stream_name:
+            pcl_files[stream] = self._record_dir / f'{fname}-{stream}-raw.pcl'
+
+        # Check writability
+        make_dirs(self._record_dir)
+        for stream in pcl_files:
+            try:
+                with open(pcl_files[stream], 'w') as file:
+                    file.write(
+                        'Data will be written when the recording is finished.')
+            except Exception as error:
+                logger.error(
+                    f"Problem writing to '{pcl_files[stream]}'. "
+                    "Check permissions.")
+                raise error
+
+        logger.info(
+            'Record to files:\n'
+            '\n'.join(str(file) for file in pcl_files.values()))
+
+        return pcl_files, eve_file
+
+    def _record(self, stream_name, pcl_files, eve_file, state, verbose):
+        sr = StreamReceiver(bufsize=MAX_BUF_SIZE, stream_name=stream_name)
+
+        with state.get_lock():
+            state.value = 1
+
+        # Acquisition loop
+        while state.value == 1:
+            sr.acquire()
+
+            if verbose:
+                pass # TODO: Add timing display
+
+        logger.info('Saving raw data ...')
+        for stream in sr.streams:
+            signals, timestamps = sr.get_buffer(stream)
+
+            if isinstance(sr.streams[stream], StreamEEG):
+                signals[:, 1:] *= 1E-6
+
+            data = {
+                'signals': signals,
+                'timestamps': timestamps,
+                'events': None,
+                'sample_rate': sr.streams[stream].sample_rate,
+                'channels': len(sr.streams[stream].ch_list),
+                'ch_names': sr.streams[stream].ch_list,
+                'lsl_time_offset': sr.streams[stream].lsl_time_offset}
+
+            with open(pcl_files[stream], 'wb') as file:
+                pickle.dump(data, file, protocol=pickle.HIGHEST_PROTOCOL)
+
+            logger.info(f"Saved to '{pcl_files[stream]}'")
+
+            if not isinstance(sr.streams[stream], StreamEEG):
+                continue
+            logger.info('Converting raw files into fif.')
+
+            if eve_file.exists():
+                logger.info('Found matching event file, adding events.')
+                pcl2fif(pcl_files[stream], external_event=eve_file)
+            else:
+                pcl2fif(pcl_files[stream], external_event=None)
 
     # --------------------------------------------------------------------
-    @property
-    def process(self):
-        """
-        The process where the recording takes place.
+    @staticmethod
+    def _check_record_dir(record_dir):
+        return Path(record_dir)
 
-        Gives access to all the function associated with mp.Process.
+    @staticmethod
+    def _check_fname(fname):
+        if fname is not None:
+            fname = str(fname)
+        return fname
 
-        Returns
-        -------
-        mp.Process
-        """
-        return self._proc
+    @staticmethod
+    def _check_stream_name(stream_name):
+        return stream_name
 
-    @process.setter
-    def process(self):
-        self._logger.warning("This attribute cannot be changed.")
-
-    @property
-    def stream_name(self):
-        """
-        The provided stream_name to connect to.
-
-        If None, it will connect to all available streams.
-
-        Returns
-        -------
-        str
-        """
-        return self._stream_name
-
-    @stream_name.setter
-    def stream_name(self):
-        self._logger.warning("This attribute cannot be changed.")
-
-    @property
-    def record_dir(self):
-        """
-        The absolute directory where the data are saved.
-
-        Returns
-        -------
-        str
-        """
-        return self._record_dir
-
-    @record_dir.setter
-    def record_dir(self):
-        self._logger.warning("This attribute cannot be changed.")
-
-    @property
-    def state(self):
-        """
-        Multiprocessing sharing variable to stop the recording from another
-        process.
-
-        Returns
-        -------
-        mp.Value
-        """
-        return self._state
-
-    @state.setter
-    def state(self):
-        """
-        Multiprocessing sharing variable to stop the recording from another
-        process.
-        """
-        self._logger.warning("This attribute cannot be changed.")
+    # --------------------------------------------------------------------

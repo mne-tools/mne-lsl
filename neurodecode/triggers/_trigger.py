@@ -15,6 +15,7 @@ class _Trigger(ABC):
     verbose : bool
         If True, display a logger.info message when a trigger is sent.
     """
+
     @abstractmethod
     def __init__(self, verbose=True):
         self.verbose = verbose
