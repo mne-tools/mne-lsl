@@ -1,20 +1,32 @@
 """
 Trigger using software and a .txt file.
-
-TODO: The Software trigger requires an associated StreamRecorder. A recorder
-should be passed as argument in the initialization.
 """
 import pylsl
 
 from .._trigger import _Trigger
 from ... import logger
-from ...utils.lsl import start_client
 
 
 class TriggerSoftware(_Trigger):
-    def __init__(self, verbose=True):
+    """
+    Trigger saving signal value in a .txt file.
+    The SOFTWARE trigger must be created after a stream recorder is started:
+        >>> recorder = StreamRecorder('path to dir')
+        >>> recorder.start()
+        >>> trigger = TriggerSoftware(recorder)
+
+    Parameters
+    ----------
+    recorder : StreamRecorder
+        The neurodecode recorder used.
+    verbose : bool
+        If True, display a logger.info message when a trigger is sent.
+    """
+
+    def __init__(self, recorder, verbose=True):
         super().__init__(verbose)
-        self._evefile = TriggerSoftware._find_evefile()
+        self._recorder = recorder
+        self._evefile = TriggerSoftware._find_evefile(recorder)
         try:
             self._evefile = open(self._evefile, 'a')
         # Close it before if already opened.
@@ -56,14 +68,17 @@ class TriggerSoftware(_Trigger):
 
     # --------------------------------------------------------------------
     @staticmethod
-    def _find_evefile(timeout=10):
+    def _find_evefile(recorder):
         """
         Find the event file name from the on going StreamRecorder.
         """
-        inlet = start_client(server_name='StreamRecorderInfo', timeout=timeout)
-        evefile = inlet.info().source_id()
-        logger.info(f'Event file is: {evefile}')
-        return evefile
+        if recorder.evefile is None:
+            logger.error(
+                'The StreamRecorder must be started before instantiating '
+                'a SOFTWARE trigger.')
+            raise RuntimeError
+
+        return recorder.evefile
 
     # --------------------------------------------------------------------
     @property
