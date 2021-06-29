@@ -73,8 +73,9 @@ class StreamPlayer:
         The function called in the new process.
         Instance a Streamer and start streaming.
         """
-        streamer = Streamer(self.stream_name, self.fif_file, self.chunk_size,
-                            self.trigger_file)
+        streamer = _Streamer(
+            self._stream_name, self._fif_file,
+            self._chunk_size, self._trigger_file)
         streamer.stream(repeat, high_resolution)
 
     # --------------------------------------------------------------------
@@ -173,7 +174,7 @@ class StreamPlayer:
         logger.warning("The stream process cannot be changed directly.")
 
 
-class Streamer:
+class _Streamer:
     """
     Class for playing a recorded file on LSL network.
 
@@ -199,9 +200,9 @@ class Streamer:
         except Exception:
             self._tdef = None
 
-        self.load_data(fif_file)
+        self._load_data(fif_file)
 
-    def load_data(self, fif_file):
+    def _load_data(self, fif_file):
         """
         Load the data to play from a fif file.
         Multiplies all channel except trigger by 1e6 to convert to uV.
@@ -217,11 +218,12 @@ class Streamer:
         self._ch_count = len(self._raw.ch_names)
         idx = np.arange(self.raw._data.shape[0]) != self._tch
         self._raw._data[idx, :] = self._raw.get_data()[idx, :] * 1E6
+        # TODO: Base the scaling on the units in the raw info
 
         self._set_lsl_info(self._stream_name)
         self._outlet = pylsl.StreamOutlet(
             self._sinfo, chunk_size=self._chunk_size)
-        self.show_info()
+        self._show_info()
 
     def _set_lsl_info(self, stream_name):
         """
@@ -239,7 +241,7 @@ class Streamer:
 
         desc = sinfo.desc()
         channel_desc = desc.append_child("channels")
-        for channel in self.raw.ch_names:
+        for channel in self._raw.ch_names:
             channel_desc.append_child('channel')\
                         .append_child_value('label', str(channel))\
                         .append_child_value('type', 'EEG')\
@@ -255,7 +257,7 @@ class Streamer:
 
         self._sinfo = sinfo
 
-    def show_info(self):
+    def _show_info(self):
         """
         Display the informations about the created LSL stream.
         """
@@ -359,54 +361,3 @@ class Streamer:
                         else:
                             logger.info(
                                 f'Events: {event} (Undefined event {event})')
-
-    # --------------------------------------------------------------------
-    @property
-    def raw(self):
-        """
-        The raw data to stream on LSL network.
-        """
-        return self._raw
-
-    @raw.setter
-    def raw(self, raw):
-        logger.warning("The loaded raw cannot be changed directly.")
-
-    @property
-    def events(self):
-        """
-        The mne-compatible events (N x [frame, 0, type]).
-        """
-        return self._events
-
-    @events.setter
-    def events(self, events):
-        logger.warning("The loaded events cannot be changed directly.")
-
-    @property
-    def stream_name(self):
-        """
-        The stream's name, displayed on LSL network.
-        """
-        return self._stream_name
-
-    @stream_name.setter
-    def stream_name(self, stream_name):
-        self._stream_name = str(stream_name)
-        self._set_lsl_info(self._stream_name)
-        self._outlet = pylsl.StreamOutlet(
-            self._sinfo, chunk_size=self._chunk_size)
-        self.show_info()
-
-    @property
-    def chunk_size(self):
-        """
-        The size of a chunk of data [samples].
-        """
-        return self._chunk_size
-
-    @chunk_size.setter
-    def chunk_size(self, chunk_size):
-        self._chunk_size = StreamPlayer._check_chunk_size(chunk_size)
-        self._outlet = pylsl.StreamOutlet(
-            self._sinfo, chunk_size=self._chunk_size)

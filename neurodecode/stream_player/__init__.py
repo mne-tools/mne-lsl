@@ -8,4 +8,4 @@ For Windows users, make sure to use the provided time resolution
 tweak tool (TimerTool) to set to 500us time resolution of the OS.
 """
 
-from .stream_player import StreamPlayer, Streamer
+from .stream_player import StreamPlayer
