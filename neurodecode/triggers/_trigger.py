@@ -18,7 +18,7 @@ class _Trigger(ABC):
 
     @abstractmethod
     def __init__(self, verbose=True):
-        self.verbose = verbose
+        self.verbose = bool(verbose)
 
     @abstractmethod
     def signal(self, value):

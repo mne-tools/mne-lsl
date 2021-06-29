@@ -11,6 +11,8 @@ from serial.tools import list_ports
 from .._trigger import _Trigger
 from ... import logger
 
+BAUD_RATE = 115200
+
 
 class TriggerArduino2LPT(_Trigger):
     """
@@ -28,10 +30,10 @@ class TriggerArduino2LPT(_Trigger):
         super().__init__(verbose)
 
         self._com_port = TriggerArduino2LPT._find_arduino_port()
-        self._connect_arduino(self._com_port, baud_rate=115200)
+        self._connect_arduino(self._com_port, baud_rate=BAUD_RATE)
 
         self._delay = delay / 1000.0
-        self.offtimer = threading.Timer(self._delay, self._signal_off)
+        self._offtimer = threading.Timer(self._delay, self._signal_off)
 
     def _connect_arduino(self, com_port, baud_rate):
         """
@@ -45,7 +47,7 @@ class TriggerArduino2LPT(_Trigger):
             The baud rate, determines the communication speed.
         """
         try:
-            self.ser = serial.Serial(com_port, baud_rate)
+            self._ser = serial.Serial(com_port, baud_rate)
         except serial.SerialException as error:
             logger.error(
                 "Disconnect and reconnect the ARDUINO convertor because "
@@ -59,14 +61,14 @@ class TriggerArduino2LPT(_Trigger):
         """
         Send a trigger value.
         """
-        if self.offtimer.is_alive():
+        if self._offtimer.is_alive():
             logger.warning(
                 'You are sending a new signal before the end of the last '
                 'signal. Signal ignored. Delay required = {self.delay} ms.')
             return False
         self._set_data(value)
         super().signal(value)
-        self.offtimer.start()
+        self._offtimer.start()
         return True
 
     def _signal_off(self):
@@ -75,20 +77,20 @@ class TriggerArduino2LPT(_Trigger):
         only.
         """
         super()._signal_off()
-        self.offtimer = threading.Timer(self._delay, self._signal_off)
+        self._offtimer = threading.Timer(self._delay, self._signal_off)
 
     def _set_data(self, value):
         """
         Set the trigger signal to value.
         """
-        self.ser.write(bytes([value]))
+        self._ser.write(bytes([value]))
 
     def close(self):
         """
         Disconnects the Arduino and free the COM port.
         """
         try:
-            self.ser.close()
+            self._ser.close()
         except Exception:
             pass
 
@@ -120,7 +122,7 @@ class TriggerArduino2LPT(_Trigger):
 
     @com_port.setter
     def com_port(self, com_port):
-        self._connect_arduino(com_port, baud_rate=115200)
+        self._connect_arduino(com_port, baud_rate=BAUD_RATE)
         self._com_port = com_port
 
     @property
@@ -132,9 +134,9 @@ class TriggerArduino2LPT(_Trigger):
 
     @delay.setter
     def delay(self, delay):
-        if not self.offtimer.is_alive():
+        if not self._offtimer.is_alive():
             self._delay = delay / 1000.0
-            self.offtimer = threading.Timer(self._delay, self._signal_off)
+            self._offtimer = threading.Timer(self._delay, self._signal_off)
         else:
             logger.warning(
                 'You are changing the delay while an event has been sent less '

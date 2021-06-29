@@ -26,27 +26,27 @@ class TriggerUSB2LPT(_Trigger):
 
     def __init__(self, delay=50, verbose=True):
         super().__init__(verbose)
-        self.lpt = TriggerUSB2LPT._load_dll()
-        if self.lpt.init() == -1:
+        self._lpt = TriggerUSB2LPT._load_dll()
+        if self._lpt.init() == -1:
             logger.error(
                 'Connecting to LPT port failed. Check the driver status.')
             raise IOError
 
         self._delay = delay / 1000.0
-        self.offtimer = threading.Timer(self._delay, self._signal_off)
+        self._offtimer = threading.Timer(self._delay, self._signal_off)
 
     def signal(self, value):
         """
         Send a trigger value.
         """
-        if self.offtimer.is_alive():
+        if self._offtimer.is_alive():
             logger.warning(
                 'You are sending a new signal before the end of the last '
                 'signal. Signal ignored. Delay required = {self.delay} ms.')
             return False
         self._set_data(value)
         super().signal(value)
-        self.offtimer.start()
+        self._offtimer.start()
         return True
 
     def _signal_off(self):
@@ -55,13 +55,13 @@ class TriggerUSB2LPT(_Trigger):
         only.
         """
         super()._signal_off()
-        self.offtimer = threading.Timer(self._delay, self._signal_off)
+        self._offtimer = threading.Timer(self._delay, self._signal_off)
 
     def _set_data(self, value):
         """
         Set the trigger signal to value.
         """
-        self.lpt.setdata(value)
+        self._lpt.setdata(value)
 
     # --------------------------------------------------------------------
     @staticmethod
@@ -90,9 +90,9 @@ class TriggerUSB2LPT(_Trigger):
 
     @delay.setter
     def delay(self, delay):
-        if not self.offtimer.is_alive():
+        if not self._offtimer.is_alive():
             self._delay = delay / 1000.0
-            self.offtimer = threading.Timer(self._delay, self._signal_off)
+            self._offtimer = threading.Timer(self._delay, self._signal_off)
         else:
             logger.warning(
                 'You are changing the delay while an event has been sent less '
