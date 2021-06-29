@@ -1,9 +1,11 @@
 import time
 import pickle
+import datetime
 from pathlib import Path
 import multiprocessing as mp
 
 from .. import logger
+from ..utils.timer import Timer
 from ..utils.io import pcl2fif, make_dirs
 from ..stream_receiver import StreamReceiver, StreamEEG
 from ..stream_receiver._stream import MAX_BUF_SIZE
@@ -15,7 +17,7 @@ class StreamRecorder:
         self._fname = StreamRecorder._check_fname(fname)
         self._stream_name = stream_name
 
-        self._eve_file = None # for SOFTWARE triggers
+        self._eve_file = None  # for SOFTWARE triggers
         self._process = None
         self._state = mp.Value('i', 0)
 
@@ -28,6 +30,10 @@ class StreamRecorder:
             args=(self._record_dir, self._fname, self._eve_file,
                   self._stream_name, self._state, verbose))
         self._process.start()
+
+        # Wait for process to start
+        while self._state.value == 0:
+            pass
 
     def stop(self):
         with self._state.get_lock():
@@ -161,12 +167,20 @@ class _Recorder:
         with self._state.get_lock():
             self._state.value = 1
 
+        if self._verbose:
+            previous_time = -1 # init to -1 to start log at 00:00:00
+            verbose_timer = Timer()
+
         # Acquisition loop
         while self._state.value == 1:
             sr.acquire()
 
             if self._verbose:
-                pass # TODO: Add timing display
+                if verbose_timer.sec() - previous_time >= 1:
+                    previous_time = verbose_timer.sec()
+                    duration = str(datetime.timedelta(
+                        seconds=int(verbose_timer.sec())))
+                    logger.info(f'RECORDING {duration}')
 
         self._save(sr, pcl_files)
 
@@ -193,7 +207,7 @@ class _Recorder:
                 raise error
 
         logger.info(
-            'Record to files:\n' # TODO: This line is not logged?
+            'Record to files: \n' +
             '\n'.join(str(file) for file in pcl_files.values()))
 
     def _save(self, sr, pcl_files):
