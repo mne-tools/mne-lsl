@@ -15,7 +15,7 @@ class TriggerLPT(_Trigger):
 
     Parameters
     ----------
-    portaddr : hex
+    portaddr : hex | int
         The port address in hexadecimal format (standard: 0x278, 0x378).
     delay : int
         The delay in milliseconds until which a new trigger cannot be sent.
@@ -25,31 +25,29 @@ class TriggerLPT(_Trigger):
 
     def __init__(self, portaddr, delay=50, verbose=True):
         super().__init__(verbose)
-        if portaddr not in [0x278, 0x378]:
-            logger.warning(f'LPT port address {portaddr} is unusual.')
-        self.portaddr = portaddr
+        self._portaddr = TriggerLPT._check_portaddr(portaddr)
 
-        self.lpt = TriggerLPT._load_dll()
-        if self.lpt.init() == -1:
+        self._lpt = TriggerLPT._load_dll()
+        if self._lpt.init() == -1:
             logger.error(
                 'Connecting to LPT port failed. Check the driver status.')
             raise IOError
 
         self._delay = delay / 1000.0
-        self.offtimer = threading.Timer(self._delay, self._signal_off)
+        self._offtimer = threading.Timer(self._delay, self._signal_off)
 
     def signal(self, value):
         """
         Send a trigger value.
         """
-        if self.offtimer.is_alive():
+        if self._offtimer.is_alive():
             logger.warning(
                 'You are sending a new signal before the end of the last '
                 'signal. Signal ignored. Delay required = {self.delay} ms.')
             return False
         self._set_data(value)
         super().signal(value)
-        self.offtimer.start()
+        self._offtimer.start()
         return True
 
     def _signal_off(self):
@@ -58,17 +56,30 @@ class TriggerLPT(_Trigger):
         only.
         """
         super()._signal_off()
-        self.offtimer = threading.Timer(self._delay, self._signal_off)
+        self._offtimer = threading.Timer(self._delay, self._signal_off)
 
     def _set_data(self, value):
         """
         Set the trigger signal to value.
         """
-        self.lpt.setdata(self.portaddr, value)
+        self._lpt.setdata(self._portaddr, value)
 
     # --------------------------------------------------------------------
     @staticmethod
+    def _check_portaddr(portaddr):
+        """
+        Checks the portaddr value against usual values.
+        """
+        if portaddr not in [0x278, 0x378]:
+            logger.warning(f'LPT port address {portaddr} is unusual.')
+
+        return int(portaddr)
+
+    @staticmethod
     def _load_dll():
+        """
+        Load the correct .dll.
+        """
         if ctypes.sizeof(ctypes.c_voidp) == 4:
             extension = '32.dll'
         else:
@@ -85,6 +96,19 @@ class TriggerLPT(_Trigger):
 
     # --------------------------------------------------------------------
     @property
+    def portaddr(self):
+        return self._portaddr
+
+    @portaddr.setter
+    def portaddr(self, portaddr):
+        if not self._offtimer.is_alive():
+            self._portaddr = TriggerLPT._check_portaddr(portaddr)
+        else:
+            logger.warning(
+                'You are changing the port while an event has been sent less '
+                'than {self.delay} ms ago. Skipping.')
+
+    @property
     def delay(self):
         """
         The delay to wait between 2 .signal() call in milliseconds.
@@ -93,9 +117,9 @@ class TriggerLPT(_Trigger):
 
     @delay.setter
     def delay(self, delay):
-        if not self.offtimer.is_alive():
+        if not self._offtimer.is_alive():
             self._delay = delay / 1000.0
-            self.offtimer = threading.Timer(self._delay, self._signal_off)
+            self._offtimer = threading.Timer(self._delay, self._signal_off)
         else:
             logger.warning(
                 'You are changing the delay while an event has been sent less '

@@ -32,13 +32,8 @@ class TriggerDef:
         config = ConfigParser(inline_comment_prefixes=('#', ';'))
         config.optionxform = str
         config.read(str(self._ini_file))
-        self._create_attributes(config.items('events'))
 
-    def _create_attributes(self, items):
-        """
-        Fill the class attributes with the pairs string-integer.
-        """
-        for key, value in items:
+        for key, value in config.items('events'):
             value = int(value)
             setattr(self, key, value)
             self._by_name[key] = value
