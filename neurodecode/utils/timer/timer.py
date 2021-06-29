@@ -8,7 +8,7 @@ class Timer:
     """
 
     def __init__(self, autoreset=False):
-        self.autoreset = autoreset
+        self._autoreset = bool(autoreset)
         self.reset()
 
     def sec(self):
@@ -16,7 +16,7 @@ class Timer:
         Provide the time since reset in seconds.
         """
         read = time.time() - self.ref
-        if self.autoreset:
+        if self._autoreset:
             self.reset()
         return read
 
@@ -46,5 +46,13 @@ class Timer:
 
         if timer_sec < sec:
             time.sleep(sec - timer_sec)
-            if self.autoreset:
+            if self._autoreset:
                 self.reset()
+
+    @property
+    def autoreset(self):
+        return self._autoreset
+
+    @autoreset.setter
+    def autoreset(self, autoreset):
+        self._autoreset = bool(autoreset)

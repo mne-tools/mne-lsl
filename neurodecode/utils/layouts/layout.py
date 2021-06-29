@@ -229,7 +229,7 @@ class Layout:
         else:
             logger.error(
                 'The montage must be provided as a supported string or '
-                'as a MNE DigMontage. ')
+                'as an MNE DigMontage. ')
             raise TypeError
 
         return montage
