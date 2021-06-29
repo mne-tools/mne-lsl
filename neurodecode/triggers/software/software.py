@@ -5,6 +5,7 @@ import pylsl
 
 from .._trigger import _Trigger
 from ... import logger
+from ...stream_recorder import StreamRecorder
 
 
 class TriggerSoftware(_Trigger):
@@ -25,7 +26,7 @@ class TriggerSoftware(_Trigger):
 
     def __init__(self, recorder, verbose=True):
         super().__init__(verbose)
-        self._recorder = recorder
+        self._recorder = TriggerSoftware._check_recorder(recorder)
         self._evefile = TriggerSoftware._find_evefile(recorder)
         try:
             self._evefile = open(self._evefile, 'a')
@@ -68,6 +69,16 @@ class TriggerSoftware(_Trigger):
 
     # --------------------------------------------------------------------
     @staticmethod
+    def _check_recorder(recorder):
+        if not isinstance(recorder, StreamRecorder):
+            logger.error(
+                'You must pass a StreamRecorder instance to the '
+                'SOFTWARE triggers.')
+            raise TypeError
+
+        return recorder
+
+    @staticmethod
     def _find_evefile(recorder):
         """
         Find the event file name from the on going StreamRecorder.
@@ -81,6 +92,29 @@ class TriggerSoftware(_Trigger):
         return recorder.evefile
 
     # --------------------------------------------------------------------
+    @property
+    def recorder(self):
+        """
+        The neurodecode recorder used.
+        """
+        return self._recorder
+
+    @recorder.setter
+    def recorder(self, recorder):
+        if self._recorder.state == 1:
+            logger.warning(
+                'The recorder linked to the SOFTWARE trigger cannot be'
+                'changed during an ongoing recording.')
+        else:
+            self._recorder = TriggerSoftware._check_recorder(recorder)
+            self._evefile = TriggerSoftware._find_evefile(recorder)
+            try:
+                self._evefile = open(self._evefile, 'a')
+            # Close it before if already opened.
+            except IOError:
+                self._evefile.close()
+                self._evefile = open(self._evefile, 'a')
+
     @property
     def evefile(self):
         """
