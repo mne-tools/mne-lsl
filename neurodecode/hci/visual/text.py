@@ -81,7 +81,7 @@ class Text(_Visual):
                 self._window_size, self._window_center)
             color = _Visual._check_color(color)
 
-            cv2.putText(self.img, text, position, fontFace, fontScale, color,
+            cv2.putText(self._img, text, position, fontFace, fontScale, color,
                         thickness=thickness, lineType=cv2.LINE_AA)
 
     # --------------------------------------------------------------------
