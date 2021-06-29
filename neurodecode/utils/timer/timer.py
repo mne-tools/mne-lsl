@@ -51,6 +51,9 @@ class Timer:
 
     @property
     def autoreset(self):
+        """
+        Autoreset status.
+        """
         return self._autoreset
 
     @autoreset.setter
