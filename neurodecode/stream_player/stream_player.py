@@ -216,7 +216,7 @@ class _Streamer:
         self._tch = find_event_channel(inst=self._raw)
         self._sample_rate = self._raw.info['sfreq']
         self._ch_count = len(self._raw.ch_names)
-        idx = np.arange(self.raw._data.shape[0]) != self._tch
+        idx = np.arange(self._raw._data.shape[0]) != self._tch
         self._raw._data[idx, :] = self._raw.get_data()[idx, :] * 1E6
         # TODO: Base the scaling on the units in the raw info
 
@@ -299,7 +299,7 @@ class _Streamer:
             chunk = self._raw._data[:, idx_current:idx_next]
             data = chunk.transpose().tolist()
 
-            if idx_current >= self.raw._data.shape[1] - self.chunk_size:
+            if idx_current >= self._raw._data.shape[1] - self._chunk_size:
                 finished = True
 
             self._sleep(high_resolution, idx_chunk, t_start, t_chunk)
