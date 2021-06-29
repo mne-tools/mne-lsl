@@ -83,14 +83,14 @@ class Cross(_Visual):
         yP1 = self._position[1] - self._thickness//2
         xP2 = xP1 + self._length
         yP2 = yP1 + self._thickness
-        cv2.rectangle(self.img, (xP1, yP1), (xP2, yP2), self._color, -1)
+        cv2.rectangle(self._img, (xP1, yP1), (xP2, yP2), self._color, -1)
 
         # Vertical rectangle
         xP1 = self._position[0] - self._thickness//2
         yP1 = self._position[1] - self._length//2
         xP2 = xP1 + self._thickness
         yP2 = yP1 + self._length
-        cv2.rectangle(self.img, (xP1, yP1), (xP2, yP2), self._color, -1)
+        cv2.rectangle(self._img, (xP1, yP1), (xP2, yP2), self._color, -1)
 
     # --------------------------------------------------------------------
     @staticmethod

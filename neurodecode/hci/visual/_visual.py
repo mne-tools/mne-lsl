@@ -38,7 +38,7 @@ class _Visual(ABC):
         self._window_center = (self._window_width//2, self._window_height//2)
 
         # Default black background
-        self.img = np.full(
+        self._img = np.full(
             (self._window_height, self._window_width, 3),
             fill_value=(0, 0, 0), dtype=np.uint8)
 
@@ -51,7 +51,7 @@ class _Visual(ABC):
         wait : int
             Wait timer passed to cv2.waitKey(). The timer is defined in ms.
         """
-        cv2.imshow(self.window_name, self.img)
+        cv2.imshow(self.window_name, self._img)
         cv2.waitKey(wait)
 
     def draw_background_uniform(self, background_color):
@@ -59,7 +59,7 @@ class _Visual(ABC):
         Draw a uniform single color background.
         """
         background_color = _Visual._check_color(background_color)
-        self.img = np.full(
+        self._img = np.full(
             (self._window_height, self._window_width, 3),
             fill_value=background_color, dtype=np.uint8)
 
@@ -85,7 +85,7 @@ class _Visual(ABC):
             stripes_shape = [self._window_height, self._window_width, 3]
             stripes_shape[axis] = stripes_size
 
-            self.img[tuple(slc)] = np.full(
+            self._img[tuple(slc)] = np.full(
                 tuple(stripes_shape), fill_value=color, dtype=np.uint8)
 
         if extra != 0:
@@ -93,7 +93,7 @@ class _Visual(ABC):
                               len(stripes_colors)*stripes_size + extra)
             extra_shape = [self._window_height, self._window_width, 3]
             extra_shape[axis] = extra
-            self.img[tuple(slc)] = np.full(
+            self._img[tuple(slc)] = np.full(
                 tuple(extra_shape),
                 fill_value=stripes_colors[-1], dtype=np.uint8)
 
@@ -184,7 +184,7 @@ class _Visual(ABC):
         if window_size[0] < self._window_width:
             start = self._window_center[0] - window_size[0] // 2
             stop = start + window_size[0]
-            self.img = self.img[:, start:stop, :]
+            self._img = self._img[:, start:stop, :]
             self._window_width = window_size[0]
         elif window_size[0] == self._window_width:
             logger.info('Window width unchanged. Skipping.')
@@ -196,7 +196,7 @@ class _Visual(ABC):
         if window_size[1] < self._window_height:
             start = self._window_center[1] - window_size[1] // 2
             stop = start + window_size[1]
-            self.img = self.img[start:stop, :, :]
+            self._img = self._img[start:stop, :, :]
             self._window_height = window_size[1]
         elif window_size[1] == self._window_height:
             logger.info('Window height unchanged. Skipping.')
@@ -207,3 +207,14 @@ class _Visual(ABC):
 
         self._window_size = (self._window_width, self._window_height)
         self._window_center = (self._window_width//2, self._window_height//2)
+
+    @property
+    def img(self):
+        """
+        The image array.
+        """
+        return self._img
+
+    @img.setter
+    def img(self, img):
+        logger.warning('The image array cannot be changed directly.')
