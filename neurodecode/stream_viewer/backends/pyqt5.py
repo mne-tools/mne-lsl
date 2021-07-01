@@ -7,10 +7,13 @@ import numpy as np
 import pyqtgraph as pg
 from PyQt5 import QtCore
 
+from ._backend import _Backend
+from ... import logger
+
 # pg.setConfigOptions(antialias=True)
 
 
-class _BackendPyQt5:
+class _BackendPyQt5(_Backend):
     """
     The PyQt5 backend for neurodecode's StreamViewer.
 
@@ -24,10 +27,8 @@ class _BackendPyQt5:
     # ---------------------------- Init ---------------------------
 
     def __init__(self, scope):
-        self.scope = scope
-        self.backend_initialized = False
-        self.trigger_events = list()
-        self._show_LPT_events = False
+        super().__init__(scope)
+        self._trigger_events = list()
 
     def init_backend(self, geometry, x_scale, y_scale, channels_to_show_idx):
         """
@@ -50,124 +51,122 @@ class _BackendPyQt5:
             The list of channels indices to display, ordered as retrieved from
             LSL.
         """
-        assert len(channels_to_show_idx) <= self.scope.n_channels
-        self.init_variables(x_scale, y_scale, channels_to_show_idx)
+        super().init_backend(geometry, x_scale, y_scale, channels_to_show_idx)
+        self._init_variables(x_scale, y_scale, channels_to_show_idx)
 
         self._win = pg.GraphicsLayoutWidget(
             size=geometry[2:],
-            title=f'Stream Viewer: {self.scope.stream_name}')
+            title=f'Stream Viewer: {self._scope.stream_name}')
 
         self._win.show()
-        self.init_canvas()
-        self.init_plot()
+        self._init_canvas()
+        self._init_plot()
 
-        self.backend_initialized = True
+        self._backend_initialized = True
         self._timer = QtCore.QTimer(self._win)
-        self._timer.timeout.connect(self.update_loop)
+        self._timer.timeout.connect(self._update_loop)
 
-    def init_variables(self, x_scale, y_scale, channels_to_show_idx):
+    def _init_variables(self, x_scale, y_scale, channels_to_show_idx):
         """
         Initialize variables.
         """
-        self.x_scale = x_scale  # duration in seconds
-        self.y_scale = y_scale  # amplitude scale in uV
-        self.available_colors = np.random.uniform(
-            size=(self.scope.n_channels, 3), low=128, high=230)
-        self.channels_to_show_idx = channels_to_show_idx
-        self.init_n_samples_plot()
+        super()._init_variables(x_scale, y_scale, channels_to_show_idx)
+        self._available_colors = np.random.uniform(
+            size=(self._scope.n_channels, 3), low=128, high=230)
+        self._init_n_samples_plot()
 
-    def init_n_samples_plot(self):
+    def _init_n_samples_plot(self):
         """
         Initialize the number of samples present in the plotting window, and
         the duration difference between the plotting window with the buffer.
         """
-        self.delta_with_buffer = self.scope.duration_buffer - self.x_scale
-        self.n_samples_plot = math.ceil(self.x_scale * self.scope.sample_rate)
+        self._delta_with_buffer = self._scope.duration_buffer - self._x_scale
+        self._n_samples_plot = math.ceil(self._x_scale * self._scope.sample_rate)
 
-    def init_canvas(self):
+    def _init_canvas(self):
         """
         Initialize the plot handler with the associated labels and settings.
         """
         self._plot_handler = self._win.addPlot()  # pyqtgraph.PlotItem
-        subsampling_ratio = self.scope.sample_rate / 64
+        subsampling_ratio = self._scope.sample_rate / 64
         self._plot_handler.setDownsampling(ds=subsampling_ratio,
                                            auto=None, mode='mean')
 
         self._plot_handler.setMouseEnabled(x=False, y=False)
 
-        self.init_range()
-        self.init_y_axis()
-        self.init_x_axis()
+        self._init_range()
+        self._init_y_axis()
+        self._init_x_axis()
 
-    def init_range(self):
+    def _init_range(self):
         """
         Initialize the signal range and the plot window duration.
         """
-        self.y_range = [1.5*self.y_scale,
-                        -self.y_scale*(len(self.channels_to_show_idx)+1)]
+        y_range = [
+            1.5*self._y_scale,
+            -self._y_scale*(len(self._channels_to_show_idx)+1)]
         self._plot_handler.setRange(
-            xRange=[0, self.x_scale],
-            yRange=self.y_range)
+            xRange=[0, self._x_scale],
+            yRange=y_range)
         self._plot_handler.disableAutoRange()
         self._plot_handler.showGrid(y=True)
 
-    def init_y_axis(self):
+    def _init_y_axis(self):
         """
         Initialize the Y-axis and its label and ticks.
         """
-        yticks = [(-k*self.y_scale, self.scope.channels_labels[idx])
-                  for k, idx in enumerate(self.channels_to_show_idx)]
+        yticks = [(-k*self._y_scale, self._scope.channels_labels[idx])
+                  for k, idx in enumerate(self._channels_to_show_idx)]
         ticks = [yticks, []]  # [major, minor]
         self._plot_handler.getAxis('left').setTicks(ticks)
         self._plot_handler.setLabel(
-            axis='left', text=f'Scale (uV): {self.y_scale}')
+            axis='left', text=f'Scale (uV): {self._y_scale}')
 
-    def init_x_axis(self):
+    def _init_x_axis(self):
         """
         Initialize the X-axis and its label.
         """
-        self.x_arr = np.arange(self.n_samples_plot) / self.scope.sample_rate
+        self._x_arr = np.arange(self._n_samples_plot) / self._scope.sample_rate
         self._plot_handler.setLabel(axis='bottom', text='Time (s)')
 
-    # ------------------------- Init plot -------------------------
-    def init_plot(self):
+    def _init_plot(self):
         """
         Initialize the plot by adding a PlotDataItem for every shown channel.
         """
-        self.init_plotting_channel_offset()
+        self._init_plotting_channel_offset()
         self._plot_handler.clear()
-        self.plots = dict()
-        for k, idx in enumerate(self.channels_to_show_idx):
+        self._plots = dict()
+        for k, idx in enumerate(self._channels_to_show_idx):
             # Add PlotDataItem
-            self.plots[idx] = self._plot_handler.plot(
-                x=self.x_arr,
-                y=self.scope.data_buffer[idx, -
-                                         self.n_samples_plot:]+self.offset[k],
-                pen=pg.mkColor(self.available_colors[idx, :]))
+            self._plots[idx] = self._plot_handler.plot(
+                x=self._x_arr,
+                y=self._scope.data_buffer[idx, -
+                                         self._n_samples_plot:]+self._offset[k],
+                pen=pg.mkColor(self._available_colors[idx, :]))
 
-    def init_plotting_channel_offset(self):
+    def _init_plotting_channel_offset(self):
         """
         As all channels are plotted on the same plot handler / window, an
         offset is computed to vertically shift each channel.
         """
-        self.offset = np.arange(
-            0, -len(self.channels_to_show_idx)*self.y_scale, -self.y_scale)
+        self._offset = np.arange(
+            0, -len(self._channels_to_show_idx)*self._y_scale, -self._y_scale)
 
     # ------------------------ Trigger Events ----------------------
-    def update_LPT_events(self, trigger_arr):
+    def _update_LPT_events(self, trigger_arr):
         """
         Check if new LPT events (on the trigger channel) have entered the
-        buffer. New events are added to self.trigger_events and displayed if
+        buffer. New events are added to self._trigger_events and displayed if
         needed.
         """
         events_trigger_arr_idx = np.where(trigger_arr != 0)[0]
         events_values = trigger_arr[events_trigger_arr_idx]
 
         for k, ev_value in enumerate(events_values):
-            position_buffer = self.scope.duration_buffer - \
+            position_buffer = self._scope.duration_buffer - \
                 (trigger_arr.shape[0] - events_trigger_arr_idx[k]
-                 )/self.scope.sample_rate
-            position_plot = position_buffer - self.delta_with_buffer
+                 )/self._scope.sample_rate
+            position_plot = position_buffer - self._delta_with_buffer
 
             event = _TriggerEvent(
                 event_type='LPT',
@@ -175,26 +174,26 @@ class _BackendPyQt5:
                 position_buffer=position_buffer,
                 position_plot=position_plot,
                 plot_handler=self._plot_handler,
-                plot_y_scale=self.y_scale)
+                plot_y_scale=self._y_scale)
 
             if position_plot >= 0:
                 if event.event_type == 'LPT' and self._show_LPT_events:
                     event.addEventPlot()
 
-            self.trigger_events.append(event)
+            self._trigger_events.append(event)
 
-    def clean_up_events(self):
+    def _clean_up_events(self):
         """
         Hide events exiting the plotting window and remove events exiting the
         buffer.
         """
-        for event in self.trigger_events:
+        for event in self._trigger_events:
             if event.position_plot < 0:
                 event.removeEventPlot()
 
-        for k in range(len(self.trigger_events)-1, -1, -1):
-            if self.trigger_events[k].position_buffer < 0:
-                del self.trigger_events[k]
+        for k in range(len(self._trigger_events)-1, -1, -1):
+            if self._trigger_events[k].position_buffer < 0:
+                del self._trigger_events[k]
 
     # -------------------------- Main Loop -------------------------
     def start_timer(self):
@@ -203,48 +202,50 @@ class _BackendPyQt5:
         """
         self._timer.start(20)
 
-    def update_loop(self):
+    def _update_loop(self):
         """
         Main update loop retrieving data from the scope's buffer and updating
         the Canvas.
         """
-        self.scope.update_loop()
-        if len(self.scope._ts_list) > 0:
-            for k, idx in enumerate(self.channels_to_show_idx):
-                self.plots[idx].setData(
-                    x=self.x_arr,
-                    y=self.scope.data_buffer[idx, -self.n_samples_plot:] +
-                    self.offset[k])
+        super()._update_loop()
+
+        if len(self._scope.ts_list) > 0:
+            for k, idx in enumerate(self._channels_to_show_idx):
+                self._plots[idx].setData(
+                    x=self._x_arr,
+                    y=self._scope.data_buffer[idx, -self._n_samples_plot:] +
+                    self._offset[k])
 
             # Update existing events position
-            for event in self.trigger_events:
+            for event in self._trigger_events:
                 event.update_position(
                     event.position_buffer -
-                    len(self.scope._ts_list) / self.scope.sample_rate,
+                    len(self._scope.ts_list) / self._scope.sample_rate,
                     event.position_plot -
-                    len(self.scope._ts_list) / self.scope.sample_rate)
+                    len(self._scope.ts_list) / self._scope.sample_rate)
             # Add new events entering the buffer
-            self.update_LPT_events(
-                self.scope.trigger_buffer[-len(self.scope._ts_list):])
+            self._update_LPT_events(
+                self._scope.trigger_buffer[-len(self._scope.ts_list):])
             # Hide/Remove events exiting window and buffer
-            self.clean_up_events()
+            self._clean_up_events()
 
     # ------------------------ Update program ----------------------
+    # TODO: Moved as setters
     def update_x_scale(self, new_x_scale):
         """
         Called when the user changes the X-axis range/scale, i.e. the duration
         of the plotting window.
         """
-        if self.backend_initialized:
-            self.x_scale = new_x_scale
-            self.init_n_samples_plot()
-            self.init_range()
-            self.init_x_axis()
+        if self._backend_initialized:
+            self._x_scale = new_x_scale
+            self._init_n_samples_plot()
+            self._init_range()
+            self._init_x_axis()
 
-            for event in self.trigger_events:
+            for event in self._trigger_events:
                 event.update_position(
                     event.position_buffer,
-                    event.position_buffer - self.delta_with_buffer)
+                    event.position_buffer - self._delta_with_buffer)
                 if event.position_plot >= 0:
                     if event.event_type == 'LPT' and self._show_LPT_events:
                         event.addEventPlot()
@@ -255,45 +256,45 @@ class _BackendPyQt5:
         """
         Called when the user changes the signal range/scale.
         """
-        if self.backend_initialized:
-            self.y_scale = new_y_scale
-            self.init_range()
-            self.init_y_axis()
-            self.init_plotting_channel_offset()
+        if self._backend_initialized:
+            self._y_scale = new_y_scale
+            self._init_range()
+            self._init_y_axis()
+            self._init_plotting_channel_offset()
 
-            for event in self.trigger_events:
-                event.update_scales(self.y_scale)
+            for event in self._trigger_events:
+                event.y_scale = self._y_scale
 
     def update_channels_to_show_idx(self, new_channels_to_show_idx):
         """
         Called when the user changes the selection of channels.
         """
-        if self.backend_initialized:
-            plots2remove = [idx for idx in self.channels_to_show_idx
+        if self._backend_initialized:
+            plots2remove = [idx for idx in self._channels_to_show_idx
                             if idx not in new_channels_to_show_idx]
             plots2add = [idx for idx in new_channels_to_show_idx
-                         if idx not in self.channels_to_show_idx]
+                         if idx not in self._channels_to_show_idx]
 
-            self.channels_to_show_idx = new_channels_to_show_idx
-            self.init_range()
-            self.init_y_axis()
-            self.init_plotting_channel_offset()
+            self._channels_to_show_idx = new_channels_to_show_idx
+            self._init_range()
+            self._init_y_axis()
+            self._init_plotting_channel_offset()
 
             for idx in plots2remove:
-                self._plot_handler.removeItem(self.plots[idx])
-                del self.plots[idx]
+                self._plot_handler.removeItem(self._plots[idx])
+                del self._plots[idx]
             for k, idx in enumerate(plots2add):
-                self.plots[idx] = self._plot_handler.plot(
-                    x=self.x_arr,
-                    y=self.scope.data_buffer[
-                        idx, -self.n_samples_plot:]+self.offset[k],
-                    pen=pg.mkColor(self.available_colors[idx, :]))
+                self._plots[idx] = self._plot_handler.plot(
+                    x=self._x_arr,
+                    y=self._scope.data_buffer[
+                        idx, -self._n_samples_plot:] + self._offset[k],
+                    pen=pg.mkColor(self._available_colors[idx, :]))
 
     def update_show_LPT_events(self):
         """
         Called when the user ticks or untick the show_LPT_events box.
         """
-        for event in self.trigger_events:
+        for event in self._trigger_events:
             if event.position_plot >= 0 and event.event_type == 'LPT':
                 if self._show_LPT_events:
                     event.addEventPlot()
@@ -335,13 +336,13 @@ class _TriggerEvent:
     def __init__(self, event_type, event_value, position_buffer, position_plot,
                  plot_handler, plot_y_scale):
         assert event_type in self.pens.keys()
-        self.event_type = event_type
-        self.event_value = event_value
-        self.position_buffer = position_buffer  # In time (s)
-        self.position_plot = position_plot  # In time (s)
+        self._event_type = event_type
+        self._event_value = event_value
+        self._position_buffer = position_buffer  # In time (s)
+        self._position_plot = position_plot  # In time (s)
 
-        self.plot_handler = plot_handler
-        self.plot_y_scale = plot_y_scale
+        self._plot_handler = plot_handler
+        self._plot_y_scale = plot_y_scale
 
         self.lineItem = None
         self.textItem = None
@@ -353,30 +354,24 @@ class _TriggerEvent:
         """
         if not self.plotted:
             self.lineItem = pg.InfiniteLine(
-                pos=self.position_plot, pen=self.pens[self.event_type])
-            self.plot_handler.addItem(self.lineItem)
+                pos=self._position_plot, pen=self.pens[self._event_type])
+            self._plot_handler.addItem(self.lineItem)
 
-            self.textItem = pg.TextItem(str(self.event_value),
+            self.textItem = pg.TextItem(str(self._event_value),
                                         anchor=(0.5, 1),
                                         fill=(0, 0, 0),
-                                        color=self.pens[self.event_type])
-            self.textItem.setPos(self.position_plot, 1.5*self.plot_y_scale)
-            self.plot_handler.addItem(self.textItem)
+                                        color=self.pens[self._event_type])
+            self.textItem.setPos(self._position_plot, 1.5*self._plot_y_scale)
+            self._plot_handler.addItem(self.textItem)
             self.plotted = True
 
-    def update_scales(self, plot_y_scale):
-        """
-        Update the signal range/scale used to position the TextItem.
-        """
-        self.plot_y_scale = plot_y_scale
-        self._update()
-
+    # TODO: Move as setter
     def update_position(self, position_buffer, position_plot):
         """
         Update the position on the plotting window and in the buffer.
         """
-        self.position_buffer = position_buffer
-        self.position_plot = position_plot
+        self._position_buffer = position_buffer
+        self._position_plot = position_plot
         self._update()
 
     def _update(self):
@@ -384,17 +379,17 @@ class _TriggerEvent:
         Updates the plot handler.
         """
         if self.lineItem is not None:
-            self.lineItem.setValue(self.position_plot)
+            self.lineItem.setValue(self._position_plot)
         if self.textItem is not None:
-            self.textItem.setPos(self.position_plot, 1.5*self.plot_y_scale)
+            self.textItem.setPos(self._position_plot, 1.5*self._plot_y_scale)
 
     def removeEventPlot(self):
         """
         Remove the event from the plot handler.
         """
         if self.plotted:
-            self.plot_handler.removeItem(self.lineItem)
-            self.plot_handler.removeItem(self.textItem)
+            self._plot_handler.removeItem(self.lineItem)
+            self._plot_handler.removeItem(self.textItem)
             self.lineItem = None
             self.textItem = None
             self.plotted = False
@@ -404,3 +399,35 @@ class _TriggerEvent:
             self.removeEventPlot()
         except Exception:
             pass
+
+    @property
+    def event_type(self):
+        return self._event_type
+
+    @property
+    def position_buffer(self):
+        return self._position_buffer
+
+    @position_buffer.setter
+    def position_buffer(self, position_buffer):
+        logger.warning('This attribute cannot be changed directly')
+
+    @property
+    def position_plot(self):
+        return self._position_plot
+
+    @position_plot.setter
+    def position_plot(self, position_plot):
+        logger.warning('This attribute cannot be changed directly')
+
+    @property
+    def plot_y_scale(self):
+        """
+        The signal range/scale used to position the TextItem.
+        """
+        return self.__plot_y_scale
+
+    @plot_y_scale.setter
+    def plot_y_scale(self, plot_y_scale):
+        self._plot_y_scale = plot_y_scale
+        self._update()

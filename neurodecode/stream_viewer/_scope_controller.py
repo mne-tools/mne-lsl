@@ -5,6 +5,7 @@ from configparser import RawConfigParser
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import (QMainWindow, QHeaderView,
                              QTableWidgetItem, QFileDialog)
+
 try:
     from .backends import _BackendVispy, _BackendPyQt5
 except Exception:
@@ -29,43 +30,41 @@ class _ScopeControllerUI(QMainWindow):
         If None, load the first backend in the order: Vispy, PyQt5.
     """
 
-    def __init__(self, scope, backend=None):
+    def __init__(self, scope, backend='pyqt5'):
         super().__init__()
+        backend = _ScopeControllerUI._check_backend(backend)
 
         # Select the backend
-        if backend == 'vispy' or backend is None:
+        if backend == 'vispy':
             try:
-                self.backend = _BackendVispy(scope)
+                self._backend = _BackendVispy(scope)
             except Exception:
                 logger.warning("Could not use the backend 'Vispy'. "
                                "Resorting to 'PyQt5'.")
-                self.backend = _BackendPyQt5(scope)
+                self._backend = _BackendPyQt5(scope)
         elif backend == 'pyqt5':
-            self.backend = _BackendPyQt5(scope)
-        else:
-            logger.error(f"StreamViewer backend '{backend}' not supported."
-                         "Supported: 'pyqt5', 'vispy'.")
+            self._backend = _BackendPyQt5(scope)
 
         # Load UI
-        self.scope = scope
-        self.load_ui()
+        self._scope = scope
+        self._load_ui()
 
         # Load and set default configuration
-        self.set_init_configuration('settings_scope_eeg.ini')
+        self._set_init_configuration('settings_scope_eeg.ini')
 
         # Init backend
-        self.init_backend()
+        self._init_backend()
 
-    def load_ui(self):
+    def _load_ui(self):
         """
         Loads the UI created with QtCreator.
         """
         # Load
-        self.ui = UI_MainWindow(self)
-        self.connect_signals_to_slots()
+        self._ui = UI_MainWindow(self)
+        self._connect_signals_to_slots()
 
         # Fill additional informations
-        self._fill_list_signal_y_scale(self.scope.signal_y_scales.keys())
+        self._fill_list_signal_y_scale(self._scope.signal_y_scales.keys())
         self._fill_table_channels()
 
         # Set position on the screen
@@ -90,37 +89,37 @@ class _ScopeControllerUI(QMainWindow):
             The default selected item in the drop-down menu.
         """
         for y_scale in y_scales:
-            self.ui.comboBox_signal_y_scale.addItem(str(y_scale))
-            self.ui.comboBox_signal_y_scale.setCurrentIndex(init_idx)
+            self._ui.comboBox_signal_y_scale.addItem(str(y_scale))
+            self._ui.comboBox_signal_y_scale.setCurrentIndex(init_idx)
 
     def _fill_table_channels(self):
         """
         Fill the table widget with the channel names.
         """
-        self._nb_table_columns = 8 if self.scope.n_channels > 64 else 4
+        self._nb_table_columns = 8 if self._scope.n_channels > 64 else 4
         self._nb_table_rows = math.ceil(
-            self.scope.n_channels / self._nb_table_columns)
-        self.ui.table_channels.setRowCount(self._nb_table_rows)
-        self.ui.table_channels.setColumnCount(self._nb_table_columns)
+            self._scope.n_channels / self._nb_table_columns)
+        self._ui.table_channels.setRowCount(self._nb_table_rows)
+        self._ui.table_channels.setColumnCount(self._nb_table_columns)
 
-        for idx in range(self.scope.n_channels):
+        for idx in range(self._scope.n_channels):
             row = idx // self._nb_table_columns
             col = idx % self._nb_table_columns
 
-            self.ui.table_channels.setItem(
+            self._ui.table_channels.setItem(
                 row, col, QTableWidgetItem(idx))
-            self.ui.table_channels.item(row, col).setTextAlignment(
+            self._ui.table_channels.item(row, col).setTextAlignment(
                 QtCore.Qt.AlignCenter)
-            self.ui.table_channels.item(row, col).setText(
-                self.scope.channels_labels[idx])
-            self.ui.table_channels.item(row, col).setSelected(True)
+            self._ui.table_channels.item(row, col).setText(
+                self._scope.channels_labels[idx])
+            self._ui.table_channels.item(row, col).setSelected(True)
 
-        self.ui.table_channels.verticalHeader().setSectionResizeMode(
+        self._ui.table_channels.verticalHeader().setSectionResizeMode(
             QHeaderView.Stretch)
-        self.ui.table_channels.horizontalHeader().setSectionResizeMode(
+        self._ui.table_channels.horizontalHeader().setSectionResizeMode(
             QHeaderView.Stretch)
 
-    def set_init_configuration(self, file):
+    def _set_init_configuration(self, file):
         """
         Load and set a default configuration for the GUI.
         """
@@ -132,61 +131,61 @@ class _ScopeControllerUI(QMainWindow):
         # Y-Scale (amplitude)
         try:
             scale = float(scope_settings.get("plot", "signal_y_scale"))
-            init_idx = list(self.scope.signal_y_scales.values()).index(scale)
-            self.ui.comboBox_signal_y_scale.setCurrentIndex(init_idx)
+            init_idx = list(self._scope.signal_y_scales.values()).index(scale)
+            self._ui.comboBox_signal_y_scale.setCurrentIndex(init_idx)
         except Exception:
-            self.ui.comboBox_signal_y_scale.setCurrentIndex(0)
+            self._ui.comboBox_signal_y_scale.setCurrentIndex(0)
 
         # X-Scale (time)
         try:
-            self.ui.spinBox_signal_x_scale.setValue(int(
+            self._ui.spinBox_signal_x_scale.setValue(int(
                 scope_settings.get("plot", "time_plot")))
         except Exception:
-            self.ui.spinBox_signal_x_scale.setValue(10)  # 10s by default
+            self._ui.spinBox_signal_x_scale.setValue(10)  # 10s by default
 
         # BP/CAR Filters
         try:
-            self.ui.checkBox_car.setChecked(bool(
+            self._ui.checkBox_car.setChecked(bool(
                 scope_settings.get("filtering", "apply_car_filter")))
         except Exception:
-            self.ui.checkBox_car.setChecked(False)
+            self._ui.checkBox_car.setChecked(False)
 
         try:
-            self.ui.checkBox_bandpass.setChecked(bool(
+            self._ui.checkBox_bandpass.setChecked(bool(
                 scope_settings.get("filtering", "apply_bandpass_filter")))
         except Exception:
-            self.ui.checkBox_bandpass.setChecked(False)
+            self._ui.checkBox_bandpass.setChecked(False)
 
         try:
-            self.ui.doubleSpinBox_bandpass_low.setValue(float(
+            self._ui.doubleSpinBox_bandpass_low.setValue(float(
                 scope_settings.get(
                     "filtering", "bandpass_cutoff_frequency").split(' ')[0]))
-            self.ui.doubleSpinBox_bandpass_high.setValue(float(
+            self._ui.doubleSpinBox_bandpass_high.setValue(float(
                 scope_settings.get(
                     "filtering", "bandpass_cutoff_frequency").split(' ')[1]))
         except Exception:
             # Default to [1, 40] Hz.
-            self.ui.doubleSpinBox_bandpass_low.setValue(1.)
-            self.ui.doubleSpinBox_bandpass_high.setValue(40.)
+            self._ui.doubleSpinBox_bandpass_low.setValue(1.)
+            self._ui.doubleSpinBox_bandpass_high.setValue(40.)
 
-        self.ui.doubleSpinBox_bandpass_high.setMinimum(
-            self.ui.doubleSpinBox_bandpass_low.value()+1)
-        self.ui.doubleSpinBox_bandpass_low.setMaximum(
-            self.ui.doubleSpinBox_bandpass_high.value()-1)
-        self.scope.init_bandpass_filter(
-            low=self.ui.doubleSpinBox_bandpass_low.value(),
-            high=self.ui.doubleSpinBox_bandpass_high.value())
+        self._ui.doubleSpinBox_bandpass_high.setMinimum(
+            self._ui.doubleSpinBox_bandpass_low.value()+1)
+        self._ui.doubleSpinBox_bandpass_low.setMaximum(
+            self._ui.doubleSpinBox_bandpass_high.value()-1)
+        self._scope.init_bandpass_filter(
+            low=self._ui.doubleSpinBox_bandpass_low.value(),
+            high=self._ui.doubleSpinBox_bandpass_high.value())
 
         # Events
         try:
-            self.ui.checkBox_show_LPT_events.setChecked(
+            self._ui.checkBox_show_LPT_events.setChecked(
                 bool(scope_settings.get("plot", "show_LPT_events")))
         except Exception:
-            self.ui.checkBox_show_LPT_events.setChecked(False)
+            self._ui.checkBox_show_LPT_events.setChecked(False)
 
-        self.ui.statusBar.showMessage("[Not recording]")
+        self._ui.statusBar.showMessage("[Not recording]")
 
-    def init_backend(self):
+    def _init_backend(self):
         """
         Initialize the backend.
 
@@ -197,112 +196,111 @@ class _ScopeControllerUI(QMainWindow):
             - Creation of the instance (with all the associated methods)
             - Initialization (with all the associated variables)
         """
-        x_scale = self.ui.spinBox_signal_x_scale.value()
-        y_scale_idx = self.ui.comboBox_signal_y_scale.currentIndex()
-        y_scale = list(self.scope.signal_y_scales.values())[y_scale_idx]
+        x_scale = self._ui.spinBox_signal_x_scale.value()
+        y_scale_idx = self._ui.comboBox_signal_y_scale.currentIndex()
+        y_scale = list(self._scope.signal_y_scales.values())[y_scale_idx]
         geometry = (self.geometry().x() + self.width(), self.geometry().y(),
                     self.width() * 2, self.height())
-        self.backend.init_backend(
+        self._backend.init_backend(
             geometry, x_scale, y_scale, self.channels_to_show_idx)
-        self.backend.start_timer()
+        self._backend.start_timer()
 
     # -------------------------------------------------------------------
     # --------------------------- EVENT HANDLERS ------------------------
     # -------------------------------------------------------------------
 
-    def connect_signals_to_slots(self):
+    def _connect_signals_to_slots(self):
         """
         Event handler. Connect QT signals to slots.
         """
         # Scales
-        self.ui.comboBox_signal_y_scale.activated.connect(
+        self._ui.comboBox_signal_y_scale.activated.connect(
             self.onActivated_comboBox_signal_y_scale)
-        self.ui.spinBox_signal_x_scale.valueChanged.connect(
+        self._ui.spinBox_signal_x_scale.valueChanged.connect(
             self.onValueChanged_spinBox_signal_x_scale)
 
         # CAR / Filters
-        self.ui.checkBox_car.stateChanged.connect(
+        self._ui.checkBox_car.stateChanged.connect(
             self.onClicked_checkBox_car)
-        self.ui.checkBox_bandpass.stateChanged.connect(
+        self._ui.checkBox_bandpass.stateChanged.connect(
             self.onClicked_checkBox_bandpass)
-        self.ui.doubleSpinBox_bandpass_low.valueChanged.connect(
+        self._ui.doubleSpinBox_bandpass_low.valueChanged.connect(
             self.onValueChanged_doubleSpinBox_bandpass_low)
-        self.ui.doubleSpinBox_bandpass_high.valueChanged.connect(
+        self._ui.doubleSpinBox_bandpass_high.valueChanged.connect(
             self.onValueChanged_doubleSpinBox_bandpass_high)
 
         # Events
-        self.ui.checkBox_show_LPT_events.stateChanged.connect(
+        self._ui.checkBox_show_LPT_events.stateChanged.connect(
             self.onClicked_checkBox_show_LPT_events)
 
         # Recording
-        self.ui.pushButton_start_recording.clicked.connect(
+        self._ui.pushButton_start_recording.clicked.connect(
             self.onClicked_pushButton_start_recording)
-        self.ui.pushButton_stop_recording.clicked.connect(
+        self._ui.pushButton_stop_recording.clicked.connect(
             self.onClicked_pushButton_stop_recording)
-        self.ui.pushButton_set_recording_dir.clicked.connect(
+        self._ui.pushButton_set_recording_dir.clicked.connect(
             self.onClicked_pushButton_set_recording_dir)
 
         # Channel table
-        self.ui.table_channels.itemSelectionChanged.connect(
+        self._ui.table_channels.itemSelectionChanged.connect(
             self.onSelectionChanged_table_channels)
 
     @QtCore.pyqtSlot()
     def onActivated_comboBox_signal_y_scale(self):
-        y_scale = list(self.scope.signal_y_scales.values())[
-            self.ui.comboBox_signal_y_scale.currentIndex()]
-        self.backend.update_y_scale(float(y_scale))
+        y_scale = list(self._scope.signal_y_scales.values())[
+            self._ui.comboBox_signal_y_scale.currentIndex()]
+        self._backend.update_y_scale(float(y_scale))
 
     @QtCore.pyqtSlot()
     def onValueChanged_spinBox_signal_x_scale(self):
-        self.backend.update_x_scale(self.ui.spinBox_signal_x_scale.value())
+        self._backend.update_x_scale(self._ui.spinBox_signal_x_scale.value())
 
     @QtCore.pyqtSlot()
     def onClicked_checkBox_car(self):
-        self.scope._apply_car = bool(
-            self.ui.checkBox_car.isChecked())
+        self._scope.apply_car = self._ui.checkBox_car.isChecked()
 
     @QtCore.pyqtSlot()
     def onClicked_checkBox_bandpass(self):
-        self.scope._apply_bandpass = bool(
-            self.ui.checkBox_bandpass.isChecked())
+        self._scope.apply_bandpass = self._ui.checkBox_bandpass.isChecked()
 
     @QtCore.pyqtSlot()
     def onValueChanged_doubleSpinBox_bandpass_low(self):
-        self.ui.doubleSpinBox_bandpass_high.setMinimum(
-            self.ui.doubleSpinBox_bandpass_low.value()+1)
-        self.scope.init_bandpass_filter(
-            low=self.ui.doubleSpinBox_bandpass_low.value(),
-            high=self.ui.doubleSpinBox_bandpass_high.value())
+        self._ui.doubleSpinBox_bandpass_high.setMinimum(
+            self._ui.doubleSpinBox_bandpass_low.value()+1)
+        self._scope.init_bandpass_filter(
+            low=self._ui.doubleSpinBox_bandpass_low.value(),
+            high=self._ui.doubleSpinBox_bandpass_high.value())
 
     @QtCore.pyqtSlot()
     def onValueChanged_doubleSpinBox_bandpass_high(self):
-        self.ui.doubleSpinBox_bandpass_low.setMaximum(
-            self.ui.doubleSpinBox_bandpass_high.value()-1)
-        self.scope.init_bandpass_filter(
-            low=self.ui.doubleSpinBox_bandpass_low.value(),
-            high=self.ui.doubleSpinBox_bandpass_high.value())
+        self._ui.doubleSpinBox_bandpass_low.setMaximum(
+            self._ui.doubleSpinBox_bandpass_high.value()-1)
+        self._scope.init_bandpass_filter(
+            low=self._ui.doubleSpinBox_bandpass_low.value(),
+            high=self._ui.doubleSpinBox_bandpass_high.value())
 
     @QtCore.pyqtSlot()
     def onClicked_checkBox_show_LPT_events(self):
-        self.backend._show_LPT_events = bool(
-            self.ui.checkBox_show_LPT_events.isChecked())
-        self.backend.update_show_LPT_events()
+        self._backend._show_LPT_events = bool(
+            self._ui.checkBox_show_LPT_events.isChecked())
+        self._backend.update_show_LPT_events()
 
     @QtCore.pyqtSlot()
     def onClicked_pushButton_start_recording(self):
-        record_dir = self.ui.lineEdit_recording_dir.text()
-        self.recorder = StreamRecorder(record_dir, logger)
-        self.recorder.start(stream_name=self.scope.stream_name, verbose=False)
-        self.ui.pushButton_stop_recording.setEnabled(True)
-        self.ui.pushButton_start_recording.setEnabled(False)
-        self.ui.statusBar.showMessage(f"[Recording to '{record_dir}']")
+        record_dir = self._ui.lineEdit_recording_dir.text()
+        self.recorder = StreamRecorder(
+            record_dir, stream_name=self._scope.stream_name)
+        self.recorder.start(fif_subdir=True, verbose=False)
+        self._ui.pushButton_stop_recording.setEnabled(True)
+        self._ui.pushButton_start_recording.setEnabled(False)
+        self._ui.statusBar.showMessage(f"[Recording to '{record_dir}']")
 
     @QtCore.pyqtSlot()
     def onClicked_pushButton_stop_recording(self):
         self.recorder.stop()
-        self.ui.pushButton_start_recording.setEnabled(True)
-        self.ui.pushButton_stop_recording.setEnabled(False)
-        self.ui.statusBar.showMessage("[Not recording]")
+        self._ui.pushButton_start_recording.setEnabled(True)
+        self._ui.pushButton_stop_recording.setEnabled(False)
+        self._ui.statusBar.showMessage("[Not recording]")
 
     @QtCore.pyqtSlot()
     def onClicked_pushButton_set_recording_dir(self):
@@ -311,24 +309,69 @@ class _ScopeControllerUI(QMainWindow):
             caption="Choose the recording directory", directory=defaultPath)
 
         if path_name:
-            self.ui.lineEdit_recording_dir.setText(path_name)
-            self.ui.pushButton_start_recording.setEnabled(True)
+            self._ui.lineEdit_recording_dir.setText(path_name)
+            self._ui.pushButton_start_recording.setEnabled(True)
 
     @QtCore.pyqtSlot()
     def onSelectionChanged_table_channels(self):
-        selected = self.ui.table_channels.selectedItems()
+        selected = self._ui.table_channels.selectedItems()
         self.channels_to_show_idx = [
             item.row()*self._nb_table_columns + item.column()
             for item in selected]
 
-        self.scope.channels_to_show_idx = self.channels_to_show_idx
-        self.backend.update_channels_to_show_idx(self.channels_to_show_idx)
+        self._scope.channels_to_show_idx = self.channels_to_show_idx
+        self._backend.update_channels_to_show_idx(self.channels_to_show_idx)
 
     def closeEvent(self, event):
         """
         Event called when closing the _ScopeControllerUI window.
         """
-        if self.ui.pushButton_stop_recording.isEnabled():
+        if self._ui.pushButton_stop_recording.isEnabled():
             self.onClicked_pushButton_stop_recording()
-        self.backend.close()
+        self._backend.close()
         event.accept()
+
+    # --------------------------------------------------------------------
+    @staticmethod
+    def _check_backend(backend):
+        """
+        Checks that the requested backend is supported.
+        """
+        SUPPORTED_BACKENDS = ['vispy', 'pyqt5']
+
+        if isinstance(backend, str):
+            backend = backend.lower().strip()
+            if backend in SUPPORTED_BACKENDS:
+                return backend
+            else:
+                logger.warning(
+                    f"Selected backend '{backend}' is not supported. "
+                    "Default to 'pyqt5'.")
+                return 'pyqt5'
+
+        else:
+            logger.warning(
+                "Selected backend is not a string. Default to 'pyqt5'.")
+            return 'pyqt5'
+
+    # --------------------------------------------------------------------
+    @property
+    def scope(self):
+        """
+        The measuring scope.
+        """
+        return self._scope
+
+    @property
+    def backend(self):
+        """
+        The display backend.
+        """
+        return self._backend
+
+    @property
+    def ui(self):
+        """
+        The control UI.
+        """
+        return self._ui

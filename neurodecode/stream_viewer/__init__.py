@@ -12,11 +12,6 @@ TODO:
         recorded file.
         - Reorganize / Improve GUI.
 
-    Scope:
-        - Set the class _Scope as an abstract class.
-        - For the EEG scope, select the trigger channel through the
-        utils.preprocess.events.find_event_channel function.
-
     Vispy backend:
         - Add channels names + axis labels
         - Add trigger events (Common _TriggerEvent class for every backends?)
