@@ -11,6 +11,8 @@ from vispy import app
 from vispy import gloo
 vispy.use("pyqt5")
 
+from ._backend import _Backend
+
 
 VERT_SHADER = """
 #version 120
@@ -58,7 +60,7 @@ void main() {
 """
 
 
-class _BackendVispy(app.Canvas):
+class _BackendVispy(_Backend, app.Canvas):
     """
     The Vispy backend for neurodecode's StreamViewer.
 
@@ -72,10 +74,7 @@ class _BackendVispy(app.Canvas):
     # ---------------------------- Init ---------------------------
 
     def __init__(self, scope):
-        self.scope = scope
-        self.backend_initialized = False
-        self._show_LPT_events = False
-        self._show_Key_events = False
+        super().__init__(scope)
 
     def init_backend(self, geometry, x_scale, y_scale, channels_to_show_idx):
         """
@@ -98,42 +97,40 @@ class _BackendVispy(app.Canvas):
             The list of channels indices to display, ordered as retrieved from
             LSL.
         """
-        assert len(channels_to_show_idx) <= self.scope.n_channels
-        self.init_variables(x_scale, y_scale, channels_to_show_idx)
-        self.init_program_variables()
-        self.init_gloo(geometry)
+        super().init_backend(geometry, x_scale, y_scale, channels_to_show_idx)
+        self._init_variables(x_scale, y_scale, channels_to_show_idx)
+        self._init_program_variables()
+        self._init_gloo(geometry)
         self.show()
 
-    def init_variables(self, x_scale, y_scale, channels_to_show_idx):
+    def _init_variables(self, x_scale, y_scale, channels_to_show_idx):
         """
         Initialize variables.
         """
-        self.x_scale = x_scale  # duration in seconds
-        self.y_scale = y_scale  # amplitude scale in uV
-        self.available_colors = np.random.uniform(
-            size=(self.scope.n_channels, 3), low=.5, high=.9)
-        self.channels_to_show_idx = channels_to_show_idx
-        self.init_nrows_ncols()
-        self.init_n_samples_plot()
+        super()._init_variables(x_scale, y_scale, channels_to_show_idx)
+        self._available_colors = np.random.uniform(
+            size=(self._scope.n_channels, 3), low=.5, high=.9)
+        self._init_nrows_ncols()
+        self._init_n_samples_plot()
 
-    def init_nrows_ncols(self):
+    def _init_nrows_ncols(self):
         """
         Initialize the number of rows and columns on which the channels are
         displayed.
         """
-        self.nrows = len(self.channels_to_show_idx)
+        self.nrows = len(self._channels_to_show_idx)
         self.ncols = 1
 
-    def init_n_samples_plot(self):
+    def _init_n_samples_plot(self):
         """
         Initialize the number of samples present in the plotting window, and
         the duration difference between the plotting window with the buffer.
         """
-        self.delta_with_buffer = self.scope.duration_buffer - self.x_scale
-        self.n_samples_plot = math.ceil(self.x_scale * self.scope.sample_rate)
+        self._delta_with_buffer = self._scope.duration_buffer - self._x_scale
+        self._n_samples_plot = math.ceil(self._x_scale * self._scope.sample_rate)
 
     # ------------------------ Init program -----------------------
-    def init_program_variables(self):
+    def _init_program_variables(self):
         """
         Initialize the variables of the Vispy program. The variables are:
             a_color : the color of every vertex
@@ -144,75 +141,75 @@ class _BackendVispy(app.Canvas):
 
         Initialize the timer calling the main update loop every 20 ms.
         """
-        self.init_a_color()
-        self.init_a_index()
-        self.init_u_scale()
-        self.init_u_size()
-        self.init_u_n()
+        self._init_a_color()
+        self._init_a_index()
+        self._init_u_scale()
+        self._init_u_size()
+        self._init_u_n()
 
-        self.backend_initialized = True
-        self._timer = app.Timer(0.020, connect=self.update_loop, start=False)
+        self._backend_initialized = True
+        self._timer = app.Timer(0.020, connect=self._update_loop, start=False)
 
-    def init_a_color(self):
+    def _init_a_color(self):
         """
         Initialize the vertex the colors.
         """
-        self.a_color = np.repeat(
-            self.available_colors[self.channels_to_show_idx, :],
-            self.n_samples_plot, axis=0).astype(np.float32)
+        self._a_color = np.repeat(
+            self._available_colors[self._channels_to_show_idx, :],
+            self._n_samples_plot, axis=0).astype(np.float32)
 
-    def init_a_index(self):
+    def _init_a_index(self):
         """
         Initialize the vertex positions on the Canvas.
         """
-        self.a_index = np.c_[
+        self._a_index = np.c_[
             np.repeat(
                 np.repeat(np.arange(self.ncols),
                           self.nrows),
-                self.n_samples_plot),
+                self._n_samples_plot),
             np.repeat(
                 np.tile(np.arange(self.nrows),
                         self.ncols),
-                self.n_samples_plot),
+                self._n_samples_plot),
             np.tile(
-                np.arange(self.n_samples_plot),
+                np.arange(self._n_samples_plot),
                 self.nrows*self.ncols)].astype(np.float32)
 
-    def init_u_scale(self):
+    def _init_u_scale(self):
         """
         Initialize the X/Y scale/range.
         """
-        self.u_scale = (1., 1/20)
+        self._u_scale = (1., 1/20)
 
-    def init_u_size(self):
+    def _init_u_size(self):
         """
         Initialize the number of rows and columns.
         """
-        self.u_size = (self.nrows, self.ncols)
+        self._u_size = (self.nrows, self.ncols)
 
-    def init_u_n(self):
+    def _init_u_n(self):
         """
         Initilaize the number of sample per signal.
         """
-        self.u_n = self.n_samples_plot
+        self._u_n = self._n_samples_plot
 
-    def init_gloo(self, geometry):
+    def _init_gloo(self, geometry):
         """
         Initialize the Canvas and the Vispy gloo.
         """
         app.Canvas.__init__(
-            self, title=f'Stream Viewer: {self.scope.stream_name}',
+            self, title=f'Stream Viewer: {self._scope.stream_name}',
             size=geometry[2:], position=geometry[:2],
             keys='interactive')
-        self.program = gloo.Program(VERT_SHADER, FRAG_SHADER)
-        self.program['a_position'] = self.scope.data_buffer[
-            self.channels_to_show_idx,
-            -self.n_samples_plot:].ravel().astype(np.float32)
-        self.program['a_color'] = self.a_color
-        self.program['a_index'] = self.a_index
-        self.program['u_scale'] = self.u_scale
-        self.program['u_size'] = self.u_size
-        self.program['u_n'] = self.u_n
+        self._program = gloo.Program(VERT_SHADER, FRAG_SHADER)
+        self._program['a_position'] = self._scope.data_buffer[
+            self._channels_to_show_idx,
+            -self._n_samples_plot:].ravel().astype(np.float32)
+        self._program['a_color'] = self._a_color
+        self._program['a_index'] = self._a_index
+        self._program['u_scale'] = self._u_scale
+        self._program['u_size'] = self._u_size
+        self._program['u_n'] = self._u_n
         gloo.set_viewport(0, 0, *self.physical_size)
         gloo.set_state(clear_color='black', blend=True,
                        blend_func=('src_alpha', 'one_minus_src_alpha'))
@@ -224,63 +221,64 @@ class _BackendVispy(app.Canvas):
         """
         self._timer.start()
 
-    def update_loop(self, event):
+    def _update_loop(self, event):
         """
         Main update loop retrieving data from the scope's buffer and updating
         the Canvas.
         """
-        self.scope.update_loop()
+        super()._update_loop()
 
-        if len(self.scope._ts_list) > 0:
-            self.program['a_position'].set_data(
-                self.scope.data_buffer[
-                    self.channels_to_show_idx,
-                    -self.n_samples_plot:].ravel().astype(np.float32))
+        if len(self._scope.ts_list) > 0:
+            self._program['a_position'].set_data(
+                self._scope.data_buffer[
+                    self._channels_to_show_idx,
+                    -self._n_samples_plot:].ravel().astype(np.float32))
             self.update()
 
     # ------------------------ Update program ----------------------
+    # TODO: Moved as setters
     def update_x_scale(self, new_x_scale):
         """
         Called when the user changes the X-axis range/scale, i.e. the duration
         of the plotting window.
         """
-        if self.backend_initialized:
-            self.x_scale = new_x_scale
-            self.init_n_samples_plot()
-            self.init_a_color()
-            self.init_a_index()
-            self.init_u_n()
+        if self._backend_initialized:
+            self._x_scale = new_x_scale
+            self._init_n_samples_plot()
+            self._init_a_color()
+            self._init_a_index()
+            self._init_u_n()
 
-            self.program['a_color'].set_data(self.a_color)
-            self.program['a_index'].set_data(self.a_index)
-            self.program['u_n'] = self.u_n
+            self._program['a_color'].set_data(self._a_color)
+            self._program['a_index'].set_data(self._a_index)
+            self._program['u_n'] = self._u_n
             self.update()
 
     def update_y_scale(self, new_y_scale):
         """
         Called when the user changes the signal range/scale.
         """
-        if self.backend_initialized:
-            self.y_scale = new_y_scale
-            self.init_u_scale()
+        if self._backend_initialized:
+            self._y_scale = new_y_scale
+            self._init_u_scale()
 
-            self.program['u_scale'] = self.u_scale
+            self._program['u_scale'] = self._u_scale
             self.update()
 
     def update_channels_to_show_idx(self, new_channels_to_show_idx):
         """
         Called when the user changes the selection of channels.
         """
-        if self.backend_initialized:
-            self.channels_to_show_idx = new_channels_to_show_idx
-            self.init_nrows_ncols()
-            self.init_a_color()
-            self.init_a_index()
-            self.init_u_size()
+        if self._backend_initialized:
+            self._channels_to_show_idx = new_channels_to_show_idx
+            self._init_nrows_ncols()
+            self._init_a_color()
+            self._init_a_index()
+            self._init_u_size()
 
-            self.program['a_color'].set_data(self.a_color)
-            self.program['a_index'].set_data(self.a_index)
-            self.program['u_size'] = self.u_size
+            self._program['a_color'].set_data(self._a_color)
+            self._program['a_index'].set_data(self._a_index)
+            self._program['u_size'] = self._u_size
             self.update()
 
     def update_show_LPT_events(self):
@@ -298,7 +296,7 @@ class _BackendVispy(app.Canvas):
 
     def on_draw(self, event):
         gloo.clear()
-        self.program.draw('line_strip')
+        self._program.draw('line_strip')
 
     def close(self):
         """
