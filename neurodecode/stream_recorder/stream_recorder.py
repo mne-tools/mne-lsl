@@ -83,14 +83,15 @@ class StreamRecorder:
         self._eve_file = None
         self._process = None
 
-    def _record(self, record_dir, fname, eve_file,
+    def _record(self, record_dir, fname, eve_file, fif_subdir,
                 stream_name, state, verbose):
         """
         The function called in the new process.
         Instance a _Recorder and start recording.
         """
         recorder = _Recorder(
-            record_dir, fname, eve_file, stream_name, state, verbose)
+            record_dir, fname, eve_file, fif_subdir,
+            stream_name, state, verbose)
         recorder.record()
 
     # --------------------------------------------------------------------
