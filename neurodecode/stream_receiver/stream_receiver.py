@@ -76,9 +76,6 @@ class StreamReceiver:
                    streamInfo.name() not in self._stream_name:
                     logger.info(f'Stream {streamInfo.name()} skipped.')
                     continue
-                # TODO: To be removed.
-                if streamInfo.name() == 'StreamRecorderInfo':
-                    continue
 
                 # EEG stream
                 if streamInfo.type().lower() == "eeg":
