@@ -29,7 +29,7 @@ class TriggerMock(_Trigger):
         """
         Reset trigger signal to 0.
         """
-        super()._signal_off()
+        self._set_data(0)
 
     def _set_data(self, value):
         """

@@ -163,7 +163,3 @@ class Sound(_Sound):
         The sound's original file name.
         """
         return self._fname
-
-    @fname.setter
-    def fname(self, fname):
-        logger.warning("The sound's file name cannot be changed directly.")

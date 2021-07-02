@@ -264,17 +264,9 @@ class Layout:
         """
         return self._ch_names
 
-    @ch_names.setter
-    def ch_names(self, ch_names):
-        logger.warning('This attribute can not be changed directly.')
-
     @property
     def ch_types(self):
         """
         The list of channels' type in the order received from LSL.
         """
         return self._ch_types
-
-    @ch_types.setter
-    def ch_types(self, ch_types):
-        logger.warning('This attribute can not be changed directly.')

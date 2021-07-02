@@ -1,7 +1,7 @@
 """
 Module for signal acquisition.
 
-Acquire signals from LSL streams, used by other modules such as StreamViewer
+Acquire signals from LSL streams. Used by other modules such as StreamViewer
 and StreamRecorder.
 """
 
