@@ -18,22 +18,15 @@ class _Trigger(ABC):
 
     @abstractmethod
     def __init__(self, verbose=True):
-        self.verbose = bool(verbose)
+        self._verbose = bool(verbose)
 
     @abstractmethod
     def signal(self, value):
         """
         Send a trigger value.
         """
-        if self.verbose:
+        if self._verbose:
             logger.info(f'Sending trigger {value}.')
-
-    @abstractmethod
-    def _signal_off(self):
-        """
-        Reset trigger signal to 0.
-        """
-        self._set_data(0)
 
     @abstractmethod
     def _set_data(self, value):
@@ -41,3 +34,12 @@ class _Trigger(ABC):
         Set the trigger signal to value.
         """
         pass
+
+    # --------------------------------------------------------------------
+    @property
+    def verbose(self):
+        return self._verbose
+
+    @verbose.setter
+    def verbose(self, verbose):
+        self._verbose = bool(verbose)

@@ -184,10 +184,6 @@ class StreamRecorder:
         """
         return self._eve_file
 
-    @eve_file.setter
-    def eve_file(self, eve_file):
-        logger.warning("The event file cannot be changed directly.")
-
     @property
     def state(self):
         """
@@ -197,20 +193,12 @@ class StreamRecorder:
         """
         return self._state
 
-    @state.setter
-    def state(self, state):
-        logger.warning("The state cannot be changed directly.")
-
     @property
     def process(self):
         """
         The launched process.
         """
         return self._process
-
-    @process.setter
-    def process(self, process):
-        logger.warning("The recorder process cannot be changed directly.")
 
 
 class _Recorder:

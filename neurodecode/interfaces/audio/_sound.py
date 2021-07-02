@@ -189,7 +189,3 @@ class _Sound(ABC):
         The sound's signal.
         """
         return self._signal
-
-    @signal.setter
-    def signal(self, signal):
-        logger.warning("The sound signal cannot be changed directly.")

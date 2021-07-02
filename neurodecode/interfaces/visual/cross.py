@@ -241,9 +241,3 @@ class Cross(_Visual):
         coordinates.
         """
         return self._position
-
-    @position.setter
-    def position(self, position):
-        logger.warning(
-            'Changing the cross position from the initialized position '
-            'is not supported. Skipping.')

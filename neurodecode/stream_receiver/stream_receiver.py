@@ -386,14 +386,6 @@ class StreamReceiver:
         """
         return self._streams
 
-    @streams.setter
-    def streams(self, streams):
-        logger.warning("The connected streams cannot be changed directly.")
-
     @property
     def connected(self):
         return self._connected
-
-    @connected.setter
-    def connected(self, connected):
-        logger.warning("The connected status cannot be changed directly.")

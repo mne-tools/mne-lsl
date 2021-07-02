@@ -55,7 +55,7 @@ class TriggerLPT(_Trigger):
         Reset trigger signal to 0 and reset offtimer as Threads are one-call
         only.
         """
-        super()._signal_off()
+        self._set_data(0)
         self._offtimer = threading.Timer(self._delay, self._signal_off)
 
     def _set_data(self, value):

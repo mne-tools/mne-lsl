@@ -169,10 +169,6 @@ class StreamPlayer:
         """
         return self._process
 
-    @process.setter
-    def process(self, process):
-        logger.warning("The stream process cannot be changed directly.")
-
 
 class _Streamer:
     """
