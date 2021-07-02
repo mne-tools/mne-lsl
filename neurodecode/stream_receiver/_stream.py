@@ -120,6 +120,7 @@ class _Stream(ABC):
                 f'LSL server {self._name}({self._serial}) synchronized '
                 f'[offset={self._lsl_time_offset:.3f}]')
 
+    @abstractmethod
     def acquire(self):
         """
         Pull data from the stream's inlet and fill the buffer.
@@ -270,31 +271,12 @@ class _Stream(ABC):
         """
         return self._name
 
-    @name.setter
-    def name(self, name):
-        logger.warning("The stream's name cannot be changed.")
-
     @property
     def serial(self):
         """
         The stream's serial number.
         """
         return self._serial
-
-    @serial.setter
-    def serial(self, serial):
-        logger.warning("The stream's serial cannot be changed.")
-
-    @property
-    def sample_rate(self):
-        """
-        The stream's sampling rate.
-        """
-        return self._sample_rate
-
-    @sample_rate.setter
-    def sample_rate(self, sample_rate):
-        logger.warning("The stream's sampling rate cannot be changed.")
 
     @property
     def streamInfo(self):
@@ -303,9 +285,12 @@ class _Stream(ABC):
         """
         return self._streamInfo
 
-    @streamInfo.setter
-    def streamInfo(self, streamInfo):
-        logger.warning("The stream's info cannot be changed.")
+    @property
+    def sample_rate(self):
+        """
+        The stream's sampling rate.
+        """
+        return self._sample_rate
 
     @property
     def ch_list(self):
@@ -314,20 +299,12 @@ class _Stream(ABC):
         """
         return self._ch_list
 
-    @ch_list.setter
-    def ch_list(self, ch_list):
-        logger.warning("The channels' names list cannot be changed.")
-
     @property
     def buffer(self):
         """
         The buffer containing the data and the timestamps.
         """
         return self._buffer
-
-    @buffer.setter
-    def buffer(self, buffer):
-        logger.warning("The buffer cannot be changed.")
 
     @property
     def blocking(self):
@@ -361,10 +338,6 @@ class _Stream(ABC):
         running time instead of LSL time.
         """
         return self._lsl_time_offset
-
-    @lsl_time_offset.setter
-    def lsl_time_offset(self, lsl_time_offset):
-        logger.warning("This attribute cannot be changed.")
 
 
 class StreamMarker(_Stream):
