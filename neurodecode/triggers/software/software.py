@@ -47,12 +47,6 @@ class TriggerSoftware(_Trigger):
         super().signal(value)
         return True
 
-    def _signal_off(self):
-        """
-        Reset trigger signal to 0. Not needed for SOFTWARE triggers.
-        """
-        pass
-
     def _set_data(self, value):
         """
         Set the trigger signal to value.
@@ -103,29 +97,9 @@ class TriggerSoftware(_Trigger):
         """
         return self._recorder
 
-    @recorder.setter
-    def recorder(self, recorder):
-        if self._recorder.state == 1:
-            logger.warning(
-                'The recorder linked to the SOFTWARE trigger cannot be'
-                'changed during an ongoing recording.')
-        else:
-            self._recorder = TriggerSoftware._check_recorder(recorder)
-            self._eve_file = TriggerSoftware._find_eve_file(recorder)
-            try:
-                self._eve_file = open(self._eve_file, 'a')
-            # Close it before if already opened.
-            except IOError:
-                self._eve_file.close()
-                self._eve_file = open(self._eve_file, 'a')
-
     @property
     def eve_file(self):
         """
         The event .txt file.
         """
         return self._eve_file
-
-    @eve_file.setter
-    def eve_file(self, eve_file):
-        logger.warning('This attribute cannot be changed directly.')

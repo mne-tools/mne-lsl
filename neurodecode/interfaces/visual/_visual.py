@@ -214,7 +214,3 @@ class _Visual(ABC):
         The image array.
         """
         return self._img
-
-    @img.setter
-    def img(self, img):
-        logger.warning('The image array cannot be changed directly.')

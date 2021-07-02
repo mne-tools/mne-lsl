@@ -1,6 +1,3 @@
-from .. import logger
-
-
 class Buffer():
     """
     Class representing the stream's buffer.
@@ -54,20 +51,12 @@ class Buffer():
         """
         return self._winsize
 
-    @winsize.setter
-    def winsize(self, winsize):
-        logger.warning("This attribute cannot be changed.")
-
     @property
     def bufsize(self):
         """
         The buffer's size [samples].
         """
         return self._bufsize
-
-    @bufsize.setter
-    def bufsize(self, bufsize):
-        logger.warning("This attribute cannot be changed.")
 
     @property
     def data(self):
@@ -76,17 +65,9 @@ class Buffer():
         """
         return self._data
 
-    @data.setter
-    def data(self, data):
-        logger.warning("This attribute cannot be changed.")
-
     @property
     def timestamps(self):
         """
         Data's timestamps [samples].
         """
         return self._timestamps
-
-    @timestamps.setter
-    def timestamps(self, timestamps):
-        logger.warning("This attribute cannot be changed.")

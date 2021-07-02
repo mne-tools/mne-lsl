@@ -65,17 +65,9 @@ class TriggerDef:
         """
         return self._by_name
 
-    @by_name.setter
-    def by_name(self, new):
-        logger.warning("Cannot modify this attribute manually.")
-
     @property
     def by_value(self):
         """
         A dictionnary with integers keys and string values.
         """
         return self._by_value
-
-    @by_value.setter
-    def by_value(self, new):
-        logger.warning("Cannot modify this attribute manually.")
