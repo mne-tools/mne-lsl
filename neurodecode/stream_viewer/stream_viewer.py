@@ -2,8 +2,8 @@ import sys
 import time
 from PyQt5.QtWidgets import QApplication
 
-from ._scope import ScopeEEG
-from ._scope_controller import _ScopeControllerUI
+from .scope.scope_eeg import ScopeEEG
+from .scope_controller._scope_controller import _ScopeControllerUI
 from .. import logger
 from ..stream_receiver import StreamReceiver, StreamEEG
 from ..utils.lsl import search_lsl
