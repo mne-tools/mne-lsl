@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import (QWidget, QCheckBox, QLabel, QComboBox,
                              QPushButton, QSpinBox, QDoubleSpinBox,
                              QFrame, QLineEdit, QTableWidget, QStatusBar)
 
-from ._scope import _BUFFER_DURATION
+from ..scope._scope import _BUFFER_DURATION
 
 
 class UI_MainWindow(object):

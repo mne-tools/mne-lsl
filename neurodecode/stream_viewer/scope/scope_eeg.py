@@ -1,95 +1,10 @@
-import math
-from abc import ABC, abstractmethod
-
 import numpy as np
 from scipy.signal import butter, sosfilt, sosfilt_zi
 
-from ..utils.preprocess.events import find_event_channel
+from ._scope import _Scope
+from ...utils.preprocess.events import find_event_channel
 
 BP_ORDER = 2
-_BUFFER_DURATION = 30  # seconds
-
-
-class _Scope(ABC):
-    """
-    Class representing a base scope.
-
-    Parameters
-    ----------
-    stream_receiver : neurodecode.stream_receiver.StreamReceiver
-        The connected stream receiver.
-    stream_name : str
-        The stream to connect to.
-    """
-
-    # ---------------------------- INIT ----------------------------
-    @abstractmethod
-    def __init__(self, stream_receiver, stream_name):
-        assert stream_name in stream_receiver.streams.keys()
-        self._sr = stream_receiver
-        self._stream_name = stream_name
-        self._init_infos()
-        self._init_buffer(_BUFFER_DURATION)
-
-    @abstractmethod
-    def _init_infos(self):
-        """
-        Extract basic stream informations.
-        """
-        self._sample_rate = int(
-            self._sr.streams[self._stream_name].sample_rate)
-
-    @abstractmethod
-    def _init_buffer(self, duration_buffer):
-        """
-        Initialize buffer(s).
-        """
-        self._duration_buffer = duration_buffer
-        self._n_samples_buffer = math.ceil(duration_buffer * self._sample_rate)
-        self.ts_list = list()
-
-    # -------------------------- Main Loop -------------------------
-    @abstractmethod
-    def update_loop(self):
-        """
-        Main update loop acquiring data from the LSL stream and filling the
-        scope's buffer.
-        """
-        self._read_lsl_stream()
-
-    @abstractmethod
-    def _read_lsl_stream(self):
-        """
-        Acquires data from the connected LSL stream.
-        """
-        self._sr.acquire()
-        self._data_acquired, self.ts_list = self._sr.get_buffer()
-        self._sr.reset_buffer()
-
-        if len(self.ts_list) == 0:
-            return
-
-    # --------------------------------------------------------------------
-    @property
-    def stream_name(self):
-        """
-        The name of the connected stream.
-        """
-        return self._stream_name
-
-    @property
-    def sample_rate(self):
-        """
-        The sample rate of the connected stream.
-        """
-        return self._sample_rate
-
-    @property
-    def duration_buffer(self):
-        """
-        The duration of the scope's buffer.
-        """
-        return self._duration_buffer
 
 
 class ScopeEEG(_Scope):
@@ -107,14 +22,8 @@ class ScopeEEG(_Scope):
     # ---------------------------- INIT ----------------------------
     def __init__(self, stream_receiver, stream_name):
         super().__init__(stream_receiver, stream_name)
-        self._init_signal_y_scales()
-        self._init_variables()
 
-    def _init_infos(self):
-        """
-        Extract basic stream informations.
-        """
-        super()._init_infos()
+        # Infos
         tch = find_event_channel(
             ch_names=self._sr.streams[self._stream_name].ch_list)
         if tch is None:
@@ -126,32 +35,21 @@ class ScopeEEG(_Scope):
                     self._sr.streams[self._stream_name].ch_list) if k != tch]
         self._n_channels = len(self._channels_labels)
 
-    def _init_signal_y_scales(self):
-        """
-        The available signal scale/range values as a dictionnary {key: value}
-        with key a representative string and value in uV.
-        """
+        # Buffers
+        self.trigger_buffer = np.zeros(self._n_samples_buffer)
+        self.data_buffer = np.zeros((self._n_channels, self._n_samples_buffer),
+                                    dtype=np.float32)
+
+        # Y-scale
         self._signal_y_scales = {'1uV': 1, '10uV': 10, '25uV': 25,
                                  '50uV': 50, '100uV': 100, '250uV': 250,
                                  '500uV': 500, '1mV': 1000, '2.5mV': 2500,
                                  '100mV': 100000}
 
-    def _init_variables(self):
-        """
-        Initialize variables.
-        """
+        # Variables
         self._apply_car = False
         self._apply_bandpass = False
         self.channels_to_show_idx = list(range(self._n_channels))
-
-    def _init_buffer(self, duration_buffer):
-        """
-        Initialize buffer(s).
-        """
-        super()._init_buffer(duration_buffer)
-        self.trigger_buffer = np.zeros(self._n_samples_buffer)
-        self.data_buffer = np.zeros((self._n_channels, self._n_samples_buffer),
-                                    dtype=np.float32)
 
     def init_bandpass_filter(self, low, high):
         """
@@ -179,7 +77,7 @@ class ScopeEEG(_Scope):
         Main update loop acquiring data from the LSL stream and filling the
         scope's buffer.
         """
-        super().update_loop()
+        self._read_lsl_stream()
         if len(self.ts_list) > 0:
             self._filter_signal()
             self._filter_trigger()
