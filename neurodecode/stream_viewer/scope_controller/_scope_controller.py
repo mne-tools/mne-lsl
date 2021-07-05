@@ -7,9 +7,10 @@ from PyQt5.QtWidgets import (QMainWindow, QHeaderView,
                              QTableWidgetItem, QFileDialog)
 
 try:
-    from ..backends import _BackendVispy, _BackendPyQt5
-except Exception:
-    from ..backends import _BackendPyQt5
+    from ..backends import _BackendVispy
+except ImportError:
+    pass
+from ..backends import _BackendPyQt5
 from ._ui_scope_controller import UI_MainWindow
 from ...stream_recorder import StreamRecorder
 from ... import logger
@@ -33,17 +34,7 @@ class _ScopeControllerUI(QMainWindow):
     def __init__(self, scope, backend='pyqt5'):
         super().__init__()
         backend = _ScopeControllerUI._check_backend(backend)
-
-        # Select the backend
-        if backend == 'vispy':
-            try:
-                self._backend = _BackendVispy(scope)
-            except Exception:
-                logger.warning("Could not use the backend 'Vispy'. "
-                               "Resorting to 'PyQt5'.")
-                self._backend = _BackendPyQt5(scope)
-        elif backend == 'pyqt5':
-            self._backend = _BackendPyQt5(scope)
+        self._backend = backend(scope)
 
         # Load UI
         self._scope = scope
@@ -337,22 +328,34 @@ class _ScopeControllerUI(QMainWindow):
         """
         Checks that the requested backend is supported.
         """
-        SUPPORTED_BACKENDS = ['vispy', 'pyqt5']
+        SUPPORTED_BACKENDS = dict()
+        try:
+            SUPPORTED_BACKEND['vispy'] = _BackendVispy
+        except NameError:
+            pass
+        try:
+            SUPPORTED_BACKENDS['pyqt5'] = _BackendPyQt5
+        except NameError:
+            pass
+
+        if len(SUPPORTED_BACKENDS) == 0:
+            logger.error('The StreamViewer did not find an installed backend.')
+            raise RuntimeError
 
         if isinstance(backend, str):
             backend = backend.lower().strip()
             if backend in SUPPORTED_BACKENDS:
-                return backend
+                return SUPPORTED_BACKENDS[backend]
             else:
                 logger.warning(
                     f"Selected backend '{backend}' is not supported. "
                     "Default to 'pyqt5'.")
-                return 'pyqt5'
+                return SUPPORTED_BACKENDS['pyqt5']
 
         else:
             logger.warning(
                 "Selected backend is not a string. Default to 'pyqt5'.")
-            return 'pyqt5'
+            return SUPPORTED_BACKENDS['pyqt5']
 
     # --------------------------------------------------------------------
     @property
