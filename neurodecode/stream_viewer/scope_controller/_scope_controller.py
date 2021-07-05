@@ -7,12 +7,12 @@ from PyQt5.QtWidgets import (QMainWindow, QHeaderView,
                              QTableWidgetItem, QFileDialog)
 
 try:
-    from .backends import _BackendVispy, _BackendPyQt5
+    from ..backends import _BackendVispy, _BackendPyQt5
 except Exception:
-    from .backends import _BackendPyQt5
+    from ..backends import _BackendPyQt5
 from ._ui_scope_controller import UI_MainWindow
-from ..stream_recorder import StreamRecorder
-from .. import logger
+from ...stream_recorder import StreamRecorder
+from ... import logger
 
 
 class _ScopeControllerUI(QMainWindow):
