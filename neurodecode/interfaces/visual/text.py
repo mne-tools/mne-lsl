@@ -1,9 +1,3 @@
-"""
-Created on Wed Jun 16 22:50:41 2021
-
-@author: Mathieu Scheltienne
-"""
-
 import cv2
 
 from ._visual import _Visual
