@@ -10,24 +10,6 @@ class Text(_Visual):
 
     Parameters
     ----------
-    text : str
-        The text to display.
-    fontFace : cv2 font
-        The font to use to write the text.
-    fontScale : int
-        The scale of the font.
-    color : str | tuple | list
-        The color used to write the text. Either a matplotlib color string or
-        a (Blue, Green, Red) tuple of int8 set between 0 and 255.
-    thickness : int
-        The text line thickness in pixel.
-    position : str | tuple | list
-        The position of the bottom left corner of the text.
-        Either the string 'center' or 'centered' to position the text in the
-        center of the window; or a 2-length of positive integer sequence
-        defining the position of the bottom left corner of the text in the
-        window. The position is defined in cv2 coordinates, with (0, 0) being
-        the top left corner of the window.
     window_name : str
         The name of the window in which the visual is displayed.
     window_size : tuple | list | None
@@ -35,11 +17,8 @@ class Text(_Visual):
         available monitors, or a 2-length of positive integer sequence.
     """
 
-    def __init__(self, text, fontFace=cv2.FONT_HERSHEY_DUPLEX, fontScale=2,
-                 color='white', thickness=2, position='centered',
-                 window_name='Visual', window_size=None):
+    def __init__(self, window_name='Visual', window_size=None):
         super().__init__(window_name, window_size)
-        self.putText(text, fontFace, fontScale, color, thickness, position)
 
     def putText(self, text, fontFace=cv2.FONT_HERSHEY_DUPLEX, fontScale=2,
                 color='white', thickness=2, position='centered'):
@@ -72,7 +51,7 @@ class Text(_Visual):
                 text, fontFace, fontScale, thickness)[0]
             position = Text._check_position(
                 position, textWidth, textHeight,
-                self._window_size, self._window_center)
+                self.window_size, self.window_center)
             color = _Visual._check_color(color)
 
             cv2.putText(self._img, text, position, fontFace, fontScale, color,
