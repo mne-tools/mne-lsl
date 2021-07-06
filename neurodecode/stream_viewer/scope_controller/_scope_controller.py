@@ -55,7 +55,7 @@ class _ScopeControllerUI(QMainWindow):
         self._connect_signals_to_slots()
 
         # Fill additional informations
-        self._fill_list_signal_y_scale(self._scope.signal_y_scales.keys())
+        self._fill_list_signal_y_scale(self._scope.signal_y_scales)
         self._fill_table_channels()
 
         # Set position on the screen
@@ -68,7 +68,7 @@ class _ScopeControllerUI(QMainWindow):
         # Display
         self.show()
 
-    def _fill_list_signal_y_scale(self, y_scales, init_idx=0):
+    def _fill_list_signal_y_scale(self, y_scales):
         """
         Fill the drop-down menu to select the signal range.
 
@@ -76,12 +76,9 @@ class _ScopeControllerUI(QMainWindow):
         ----------
         y_scales : list of str
             The list of items to place in the drop-down menu.
-        init_idx : int
-            The default selected item in the drop-down menu.
         """
         for y_scale in y_scales:
             self._ui.comboBox_signal_y_scale.addItem(str(y_scale))
-            self._ui.comboBox_signal_y_scale.setCurrentIndex(init_idx)
 
     def _fill_table_channels(self):
         """
