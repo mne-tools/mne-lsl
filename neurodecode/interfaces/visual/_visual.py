@@ -1,9 +1,3 @@
-"""
-Created on Tue Jun 15 16:14:39 2021
-
-@author: Mathieu Scheltienne
-"""
-
 from abc import ABC, abstractmethod
 
 import cv2
@@ -29,7 +23,7 @@ class _Visual(ABC):
 
     @abstractmethod
     def __init__(self, window_name='Visual', window_size=None):
-        self.window_name = str(window_name)
+        self._window_name = str(window_name)
 
         # Size attributes
         self._window_size = _Visual._check_window_size(window_size)
@@ -51,8 +45,14 @@ class _Visual(ABC):
         wait : int
             Wait timer passed to cv2.waitKey(). The timer is defined in ms.
         """
-        cv2.imshow(self.window_name, self._img)
+        cv2.imshow(self._window_name, self._img)
         cv2.waitKey(wait)
+
+    def close(self):
+        """
+        Close the visual.
+        """
+        cv2.destroyWindow(self._window_name)
 
     def draw_background_uniform(self, background_color):
         """
@@ -171,42 +171,18 @@ class _Visual(ABC):
 
     # --------------------------------------------------------------------
     @property
+    def window_name(self):
+        """
+        The window name.
+        """
+        return self._window_name
+
+    @property
     def window_size(self):
         """
         The window size (width x height).
         """
         return self._window_size
-
-    @window_size.setter
-    def window_size(self, window_size):
-        window_size = _Visual._check_window_size(window_size)
-
-        if window_size[0] < self._window_width:
-            start = self._window_center[0] - window_size[0] // 2
-            stop = start + window_size[0]
-            self._img = self._img[:, start:stop, :]
-            self._window_width = window_size[0]
-        elif window_size[0] == self._window_width:
-            logger.info('Window width unchanged. Skipping.')
-        elif window_size[0] > self._window_width:
-            logger.warning(
-                'Window width entered is larger than the current width. '
-                'Cannot resize. Skipping.')
-
-        if window_size[1] < self._window_height:
-            start = self._window_center[1] - window_size[1] // 2
-            stop = start + window_size[1]
-            self._img = self._img[start:stop, :, :]
-            self._window_height = window_size[1]
-        elif window_size[1] == self._window_height:
-            logger.info('Window height unchanged. Skipping.')
-        elif window_size[1] > self._window_height:
-            logger.warning(
-                'Window height entered is larger than the current height. '
-                'Cannot resize. Skipping.')
-
-        self._window_size = (self._window_width, self._window_height)
-        self._window_center = (self._window_width//2, self._window_height//2)
 
     @property
     def img(self):
