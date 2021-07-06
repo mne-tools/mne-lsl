@@ -10,20 +10,6 @@ class Cross(_Visual):
 
     Parameters
     ----------
-    length : int
-        The number of pixels used to draw the length of the cross.
-    thickness : int
-        The number of pixels used to draw the thickness of the cross.
-    color : str | tuple | list
-        The color used to fill the cross. Either a matplotlib color string or
-        a (Blue, Green, Red) tuple of int8 set between 0 and 255.
-    position : str | tuple | list
-        The position of the center of the cross.
-        Either the string 'center' or 'centered' to position the cross in the
-        center of the window; or a 2-length of positive integer sequence
-        defining the position of the center of the cross in the window.
-        The position is defined in cv2 coordinates, with (0, 0) being the top
-        left corner of the window.
     window_name : str
         The name of the window in which the visual is displayed.
     window_size : tuple | list | None
@@ -31,10 +17,8 @@ class Cross(_Visual):
         available monitors, or a 2-length of positive integer sequence.
     """
 
-    def __init__(self, length, thickness, color='white',
-                 position='centered', window_name='Visual', window_size=None):
+    def __init__(self, window_name='Visual', window_size=None):
         super().__init__(window_name, window_size)
-        self.putCross(length, thickness, color, position)
 
     def putCross(self, length, thickness, color, position):
         """
@@ -62,21 +46,21 @@ class Cross(_Visual):
         thickness : int
             The number of pixels used to draw the thickness of the cross.
         color : str | tuple | list
-            The color used to fill the cross. Either a matplotlib color string or
-            a (Blue, Green, Red) tuple of int8 set between 0 and 255.
+            The color used to fill the cross. Either a matplotlib color string
+            or a (Blue, Green, Red) tuple of int8 set between 0 and 255.
         position : str | tuple | list
             The position of the center of the cross.
-            Either the string 'center' or 'centered' to position the cross in the
-            center of the window; or a 2-length of positive integer sequence
-            defining the position of the center of the cross in the window.
-            The position is defined in cv2 coordinates, with (0, 0) being the top
-            left corner of the window.
+            Either the string 'center' or 'centered' to position the cross in
+            the center of the window; or a 2-length of positive integer
+            sequence defining the position of the center of the cross in the
+            window. The position is defined in cv2 coordinates, with (0, 0)
+            being the top left corner of the window.
         """
-        length = Cross._check_length(length, self._window_size)
+        length = Cross._check_length(length, self.window_size)
         thickness = Cross._check_thickness(thickness, length)
         color = _Visual._check_color(color)
         position = Cross._check_position(
-            position, length, self._window_size, self._window_center)
+            position, length, self.window_size, self.window_center)
 
         # Horizontal rectangle
         xP1 = position[0] - length//2
