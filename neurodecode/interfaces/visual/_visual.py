@@ -55,28 +55,28 @@ class _Visual(ABC):
         """
         cv2.destroyWindow(self._window_name)
 
-    def draw_background_uniform(self, background_color):
+    def draw_background_uniform(self, color):
         """
         Draw a uniform single color background.
 
         Parameters
         ----------
-        background_color : str | tuple | list
+        color : str | tuple | list
             The color of the background as a matplotlib string or a (B, G, R)
             tuple.
         """
-        background_color = _Visual._check_color(background_color)
+        color = _Visual._check_color(color)
         self._img = np.full(
             (self._window_height, self._window_width, 3),
-            fill_value=background_color, dtype=np.uint8)
+            fill_value=color, dtype=np.uint8)
 
-    def draw_background_stripes(self, stripes_colors, axis=0):
+    def draw_background_stripes(self, color, axis=0):
         """
         Draw a multi-color background composed of stripes along the given axis.
 
         Parameters
         ----------
-        stripes_colors : str | tuple | list
+        color : str | tuple | list
             The color of the background as a list of matplotlib string or a
             list of (B, G, R) tuple. A string input corresponds to a single
             color stripe, i.e. a uniform background.
@@ -84,19 +84,19 @@ class _Visual(ABC):
             0 - Horizontal stripes
             1 - Vertical stripes
         """
-        stripes_colors = _Visual._check_color(stripes_colors)
+        color = _Visual._check_color(color)
         if axis == 0:
-            stripes_size = self._window_height // len(stripes_colors)
-            extra = self._window_height % len(stripes_colors)
+            stripes_size = self._window_height // len(color)
+            extra = self._window_height % len(color)
         elif axis == 1:
-            stripes_size = self._window_width // len(stripes_colors)
-            extra = self._window_width % len(stripes_colors)
+            stripes_size = self._window_width // len(color)
+            extra = self._window_width % len(color)
         else:
             logger.error(
                 'Axis must be 0 (horizontal stripes) or 1 (vertical stripes).')
             raise ValueError
 
-        for k, color in enumerate(stripes_colors):
+        for k, color in enumerate(color):
             slc = [slice(None)] * 2
             slc[axis] = slice(k*stripes_size, (k+1)*stripes_size)
             stripes_shape = [self._window_height, self._window_width, 3]
@@ -106,13 +106,13 @@ class _Visual(ABC):
                 tuple(stripes_shape), fill_value=color, dtype=np.uint8)
 
         if extra != 0:
-            slc[axis] = slice(len(stripes_colors)*stripes_size,
-                              len(stripes_colors)*stripes_size + extra)
+            slc[axis] = slice(len(color)*stripes_size,
+                              len(color)*stripes_size + extra)
             extra_shape = [self._window_height, self._window_width, 3]
             extra_shape[axis] = extra
             self._img[tuple(slc)] = np.full(
                 tuple(extra_shape),
-                fill_value=stripes_colors[-1], dtype=np.uint8)
+                fill_value=color[-1], dtype=np.uint8)
 
     # --------------------------------------------------------------------
     @staticmethod
