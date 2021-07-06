@@ -18,7 +18,8 @@ class _Visual(ABC):
         The name of the window in which the visual is displayed.
     window_size : tuple | list | None
         Either None to automatically select a window size based on the
-        available monitors, or a 2-length of positive integer sequence.
+        available monitors, or a 2-length of positive integer sequence, as
+        (width, height).
     """
 
     @abstractmethod
@@ -57,6 +58,12 @@ class _Visual(ABC):
     def draw_background_uniform(self, background_color):
         """
         Draw a uniform single color background.
+
+        Parameters
+        ----------
+        background_color : str | tuple | list
+            The color of the background as a matplotlib string or a (B, G, R)
+            tuple.
         """
         background_color = _Visual._check_color(background_color)
         self._img = np.full(
@@ -66,6 +73,16 @@ class _Visual(ABC):
     def draw_background_stripes(self, stripes_colors, axis=0):
         """
         Draw a multi-color background composed of stripes along the given axis.
+
+        Parameters
+        ----------
+        stripes_colors : str | tuple | list
+            The color of the background as a list of matplotlib string or a
+            list of (B, G, R) tuple. A string input corresponds to a single
+            color stripe, i.e. a uniform background.
+        axis : int
+            0 - Horizontal stripes
+            1 - Vertical stripes
         """
         stripes_colors = _Visual._check_color(stripes_colors)
         if axis == 0:
@@ -141,6 +158,10 @@ class _Visual(ABC):
             r, g, b, _ = colors.to_rgba(color)
             bgr_color = [int(c*255) for c in (b, g, r)]
 
+        elif isinstance(color, (tuple, list)) and len(color) == 3 and \
+                all(0 <= col <= 255 for col in color):
+            bgr_color = color
+
         elif isinstance(color, (tuple, list)):
             bgr_color = list()
             for col in color:
@@ -183,6 +204,13 @@ class _Visual(ABC):
         The window size (width x height).
         """
         return self._window_size
+
+    @property
+    def window_center(self):
+        """
+        The window center position.
+        """
+        return self._window_center
 
     @property
     def img(self):
