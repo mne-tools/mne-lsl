@@ -11,7 +11,7 @@ class Text(_Visual):
     Parameters
     ----------
     window_name : str
-        The name of the window in which the visual is displayed.
+        Name of the window in which the visual is displayed.
     window_size : tuple | list | None
         Either None to automatically select a window size based on the
         available monitors, or a 2-length of positive integer sequence.
@@ -28,18 +28,18 @@ class Text(_Visual):
         Parameters
         ----------
         text : str
-            The text to display.
+            Text to display.
         fontFace : cv2 font
-            The font to use to write the text.
+            Font to use to write the text.
         fontScale : int
-            The scale of the font.
-        color : str | tuple | list
-            The color used to write the text. Either a matplotlib color string
+            Scale of the font.
+        color : str | tuple
+            Color used to write the text. Either a matplotlib color string
             or a (Blue, Green, Red) tuple of int8 set between 0 and 255.
         thickness : int
-            The text line thickness in pixel.
+            Text line thickness in pixel.
         position : str | tuple | list
-            The position of the bottom left corner of the text.
+            Position of the bottom left corner of the text.
             Either the string 'center' or 'centered' to position the text in
             the center of the window; or a 2-length of positive integer
             sequence defining the position of the bottom left corner of the

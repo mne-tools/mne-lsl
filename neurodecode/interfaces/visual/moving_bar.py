@@ -15,7 +15,7 @@ class MovingBar(_Visual):
     Parameters
     ----------
     window_name : str
-        The name of the window in which the visual is displayed.
+        Name of the window in which the visual is displayed.
     window_size : tuple | list | None
         Either None to automatically select a window size based on the
         available monitors, or a 2-length of positive integer sequence.
@@ -25,18 +25,21 @@ class MovingBar(_Visual):
         super().__init__(window_name, window_size)
         self._backup_img = None
 
-    def putBar(self, axis, position, length, width, color):
+    def putBar(self, length, width, color, position=0, axis=0):
         """
         Backup the visual and draw the bar on top.
 
         Parameters
         ----------
-        axis : int | str
-            The axis along which the bar is moving:
-                0 - horizontal bar along vertical axis.
-                1 - vertical bar along horizontal axis.
+        length : int
+            Number of pixels used to draw the length of the bar.
+        width : int
+            Number of pixels used to draw the width of the bar.
+        color : str | tuple
+            Color used to fill the bar. Either a matplotlib color string
+            or a (Blue, Green, Red) tuple of int8 set between 0 and 255.
         position : int | float
-            The relative position of the bar along the given axis.
+            Relative position of the bar along the given axis.
             Along the vertical axis:
                 -1 corresponds to the top of the window.
                 1 corresponds to the bottom of the window.
@@ -44,24 +47,23 @@ class MovingBar(_Visual):
                 -1 corresponds to the left of the window.
                 1 corresponds to the right of the window.
             0 corresponds to the center of the window.
-        length : int
-            The number of pixels used to draw the length of the bar.
-        width : int
-            The number of pixels used to draw the width of the bar.
-        color : str | tuple | list
-            The color used to fill the bar. Either a matplotlib color string
-            or a (Blue, Green, Red) tuple of int8 set between 0 and 255.
+        axis : int | str
+            Axis along which the bar is moving:
+                0, 'vertical', 'v'      - horizontal bar along vertical axis.
+                1, 'horizontal', 'h'    - vertical bar along horizontal axis.
         """
         if self._backup_img is None:
             self._backup_img = copy.deepcopy(self._img)
         else:
             self._reset()
 
-        self._axis = MovingBar._check_axis(axis)
         self._position = MovingBar._check_position(position)
+        self._axis = _Visual._check_axis(axis)
+
         self._length = MovingBar._check_length(
             length, self._axis, self.window_size)
-        self._width = MovingBar._check_width(width, self._length)
+        self._width = MovingBar._check_width(
+            width, self._length, self._axis, self.window_size)
         self._color = _Visual._check_color(color)
 
         self._putBar()
@@ -70,12 +72,12 @@ class MovingBar(_Visual):
         """
         Draw the bar rectangle.
 
-        - Horizontal bar
+        - Axis = 0 - Horizontal bar along vertical axis.
         P1 ---------------
         |                |
         --------------- P2
 
-        - Vertical bar
+        - Axis = 1 - Vertical bar along horizontal axis
         P1 ---
         |    |
         |    |
@@ -108,33 +110,41 @@ class MovingBar(_Visual):
 
     # --------------------------------------------------------------------
     @staticmethod
-    def _check_axis(axis):
+    def _check_length(length, axis, window_size):
         """
-        Checks that the axis is valid and converts it to integer (0, 1).
+        Checks that the length is strictly positive and shorter than the
+        window dimension along the relevant axis.
         """
-        if isinstance(axis, str):
-            axis = axis.lower().strip()
-            if axis not in ['horizontal', 'h', 'vertical', 'v']:
-                logger.error(
-                    "The attribute axis can be set as the string "
-                    f"'vertical' or 'horizontal'. Provided '{axis}'.")
-                raise ValueError
-            if axis.startswith('v'):
-                axis = 0
-            elif axis.startswith('h'):
-                axis = 1
-        elif isinstance(axis, (bool, int, float)):
-            axis = int(axis)
-            if axis not in (0, 1):
-                logger.error(
-                    "The attribute axis can be set as an int, 0 for "
-                    f"vertical and 1 for horizontal. Provided {axis}.")
-                raise ValueError
-        else:
-            logger.error('Unrecognized axis.')
-            raise TypeError
+        length = int(length)
+        if length <= 0:
+            logger.error('The length must be a strictly positive integer.')
+            raise ValueError
+        if window_size[axis] < length:
+            logger.error(
+                'The length must be smaller than the window dimension.')
+            raise ValueError
 
-        return axis
+        return length
+
+    @staticmethod
+    def _check_width(width, length, axis, window_size):
+        """
+        Checks that the width is strictly positive and shorter than the length,
+        and shorter than the window dimension along the relevant axis.
+        """
+        width = int(width)
+        if width <= 0:
+            logger.error('The width must be a strictly positive integer.')
+            raise ValueError
+        if length < width:
+            logger.error('The width must be smaller than the length.')
+            raise ValueError
+        if window_size[(axis + 1) % 2] < length:
+            logger.error(
+                'The width must be smaller than the window dimension.')
+            raise ValueError
+
+        return width
 
     @staticmethod
     def _check_position(position):
@@ -151,38 +161,6 @@ class MovingBar(_Visual):
             logger.error(
                 'The bar position must be a value between -1 and 1 inc.')
             raise TypeError
-
-    @staticmethod
-    def _check_length(length, axis, window_size):
-        """
-        Checks that the length is strictly positive and shorter than the
-        window dimension along the given axis.
-        """
-        length = int(length)
-        if length <= 0:
-            logger.error('The length must be a strictly positive integer.')
-            raise ValueError
-        if window_size[axis] < length:
-            logger.error(
-                'The length must be smaller than the window dimension.')
-            raise ValueError
-
-        return length
-
-    @staticmethod
-    def _check_width(width, length):
-        """
-        Checks that the width is strictly positive and shorter than the length.
-        """
-        width = int(width)
-        if width <= 0:
-            logger.error('The width must be a strictly positive integer.')
-            raise ValueError
-        if length < width:
-            logger.error('The width must be larger than the length.')
-            raise ValueError
-
-        return width
 
     @staticmethod
     def _convert_position_to_pixel(position, axis, window_size, window_center):
@@ -216,17 +194,43 @@ class MovingBar(_Visual):
 
     # --------------------------------------------------------------------
     @property
-    def axis(self):
+    def length(self):
         """
-        The axis on which the bar is moving.
-        0 - Horizontal bar along vertical axis.
-        1 - Vertical bar along horizonal axis.
+        The length of the bar in pixel.
         """
-        return self._axis
+        return self._length
 
-    @axis.setter
-    def axis(self, axis):
-        self._axis = MovingBar._check_axis(axis)
+    @length.setter
+    def length(self, length):
+        self._length = MovingBar._check_length(
+            length, self._axis, self.window_size)
+        self._reset()
+        self._putBar()
+
+    @property
+    def width(self):
+        """
+        The width of the bar in pixel.
+        """
+        return self._width
+
+    @width.setter
+    def width(self, width):
+        self._width = MovingBar._check_width(
+            width, self._length, self._axis, self.window_size)
+        self._reset()
+        self._putBar()
+
+    @property
+    def color(self):
+        """
+        The color of the bar.
+        """
+        return self._color
+
+    @color.setter
+    def color(self, color):
+        self._color = _Visual._check_color(color)
         self._reset()
         self._putBar()
 
@@ -244,41 +248,16 @@ class MovingBar(_Visual):
         self._putBar()
 
     @property
-    def length(self):
+    def axis(self):
         """
-        The length of the bar.
+        The axis on which the bar is moving.
+            0 - Horizontal bar along vertical axis.
+            1 - Vertical bar along horizonal axis.
         """
-        return self._length
+        return self._axis
 
-    @length.setter
-    def length(self, length):
-        self._length = MovingBar._check_length(
-            length, self._axis, self.window_size)
-        self._reset()
-        self._putBar()
-
-    @property
-    def width(self):
-        """
-        The width of the bar.
-        """
-        return self._width
-
-    @width.setter
-    def width(self, width):
-        self._width = MovingBar._check_width(width, self._length)
-        self._reset()
-        self._putBar()
-
-    @property
-    def color(self):
-        """
-        The color of the bar.
-        """
-        return self._color
-
-    @color.setter
-    def color(self, color):
-        self._color = _Visual._check_color(color)
+    @axis.setter
+    def axis(self, axis):
+        self._axis = _Visual._check_axis(axis)
         self._reset()
         self._putBar()
