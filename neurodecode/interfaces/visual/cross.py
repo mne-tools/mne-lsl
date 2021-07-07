@@ -11,7 +11,7 @@ class Cross(_Visual):
     Parameters
     ----------
     window_name : str
-        The name of the window in which the visual is displayed.
+        Name of the window in which the visual is displayed.
     window_size : tuple | list | None
         Either None to automatically select a window size based on the
         available monitors, or a 2-length of positive integer sequence.
@@ -42,14 +42,14 @@ class Cross(_Visual):
         Parameters
         ----------
         length : int
-            The number of pixels used to draw the length of the cross.
+            Number of pixels used to draw the length of the cross.
         thickness : int
-            The number of pixels used to draw the thickness of the cross.
-        color : str | tuple | list
-            The color used to fill the cross. Either a matplotlib color string
+            Number of pixels used to draw the thickness of the cross.
+        color : str | tuple
+            Color used to fill the cross. Either a matplotlib color string
             or a (Blue, Green, Red) tuple of int8 set between 0 and 255.
         position : str | tuple | list
-            The position of the center of the cross.
+            Position of the center of the cross.
             Either the string 'center' or 'centered' to position the cross in
             the center of the window; or a 2-length of positive integer
             sequence defining the position of the center of the cross in the
