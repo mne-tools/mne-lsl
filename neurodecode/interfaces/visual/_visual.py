@@ -15,7 +15,7 @@ class _Visual(ABC):
     Parameters
     ----------
     window_name : str
-        The name of the window in which the visual is displayed.
+        Name of the window in which the visual is displayed.
     window_size : tuple | list | None
         Either None to automatically select a window size based on the
         available monitors, or a 2-length of positive integer sequence, as
@@ -36,6 +36,7 @@ class _Visual(ABC):
         self._img = np.full(
             (self._window_height, self._window_width, 3),
             fill_value=(0, 0, 0), dtype=np.uint8)
+        self._background = [0, 0, 0]
 
     def show(self, wait=1):
         """
@@ -55,64 +56,21 @@ class _Visual(ABC):
         """
         cv2.destroyWindow(self._window_name)
 
-    def draw_background_uniform(self, color):
+    def draw_background(self, color):
         """
         Draw a uniform single color background.
 
         Parameters
         ----------
         color : str | tuple | list
-            The color of the background as a matplotlib string or a (B, G, R)
+            Color of the background as a matplotlib string or a (B, G, R)
             tuple.
         """
         color = _Visual._check_color(color)
         self._img = np.full(
             (self._window_height, self._window_width, 3),
             fill_value=color, dtype=np.uint8)
-
-    def draw_background_stripes(self, color, axis=0):
-        """
-        Draw a multi-color background composed of stripes along the given axis.
-
-        Parameters
-        ----------
-        color : str | tuple | list
-            The color of the background as a list of matplotlib string or a
-            list of (B, G, R) tuple. A string input corresponds to a single
-            color stripe, i.e. a uniform background.
-        axis : int
-            0 - Horizontal stripes
-            1 - Vertical stripes
-        """
-        color = _Visual._check_color(color)
-        if axis == 0:
-            stripes_size = self._window_height // len(color)
-            extra = self._window_height % len(color)
-        elif axis == 1:
-            stripes_size = self._window_width // len(color)
-            extra = self._window_width % len(color)
-        else:
-            logger.error(
-                'Axis must be 0 (horizontal stripes) or 1 (vertical stripes).')
-            raise ValueError
-
-        for k, color in enumerate(color):
-            slc = [slice(None)] * 2
-            slc[axis] = slice(k*stripes_size, (k+1)*stripes_size)
-            stripes_shape = [self._window_height, self._window_width, 3]
-            stripes_shape[axis] = stripes_size
-
-            self._img[tuple(slc)] = np.full(
-                tuple(stripes_shape), fill_value=color, dtype=np.uint8)
-
-        if extra != 0:
-            slc[axis] = slice(len(color)*stripes_size,
-                              len(color)*stripes_size + extra)
-            extra_shape = [self._window_height, self._window_width, 3]
-            extra_shape[axis] = extra
-            self._img[tuple(slc)] = np.full(
-                tuple(extra_shape),
-                fill_value=color[-1], dtype=np.uint8)
+        self._background = color
 
     # --------------------------------------------------------------------
     @staticmethod
@@ -152,43 +110,62 @@ class _Visual(ABC):
     @staticmethod
     def _check_color(color):
         """
-        Checks if a color or a list of colors is valid and converts it to BGR.
+        Checks if a color is valid and converts it to BGR.
         """
         if isinstance(color, str):
             r, g, b, _ = colors.to_rgba(color)
             bgr_color = [int(c*255) for c in (b, g, r)]
 
-        elif isinstance(color, (tuple, list)) and len(color) == 3 and \
-                all(0 <= col <= 255 for col in color):
-            bgr_color = color
-
-        elif isinstance(color, (tuple, list)):
-            bgr_color = list()
-            for col in color:
-                if isinstance(col, str):
-                    try:
-                        r, g, b, _ = colors.to_rgba(col)
-                    except ValueError:
-                        logger.warning(
-                            f"Color '{col}' is not supported. Skipping.")
-                    bgr_color.append([int(c*255) for c in (b, g, r)])
-                elif isinstance(col, (list, tuple)) and len(col) == 3 and \
-                        all(0 <= c <= 255 for c in col):
-                    bgr_color.append(col)
-                else:
-                    logger.warning(
-                        f"Color '{col}' is not supported. Skipping.")
-
-            if len(bgr_color) == 0:
+        elif isinstance(color, (tuple, list)) and len(color) == 3:
+            if not all(isinstance(c, (float, int)) for c in color):
                 logger.error(
-                    'None of the color provided was supported.')
+                    'BGR color tuple must be provided as a 3-length sequence '
+                    'of integers between 0 and 255.')
+                raise TypeError
+            if not all(0 <= c <= 255 for c in color):
+                logger.error(
+                    'BGR color tuple must be provided as a 3-length sequence '
+                    'of integers between 0 and 255.')
                 raise ValueError
+
+            bgr_color = [int(c) for c in color]
 
         else:
             logger.error('Unrecognized color format.')
             raise TypeError
 
         return bgr_color
+
+    @staticmethod
+    def _check_axis(axis):
+        """
+        Checks that the axis is valid and converts it to integer (0, 1).
+            0 - Vertical
+            1 - Horizontal
+        """
+        if isinstance(axis, str):
+            axis = axis.lower().strip()
+            if axis not in ['horizontal', 'h', 'vertical', 'v']:
+                logger.error(
+                    "The attribute axis can be set as the string "
+                    f"'vertical' or 'horizontal'. Provided '{axis}'.")
+                raise ValueError
+            if axis.startswith('v'):
+                axis = 0
+            elif axis.startswith('h'):
+                axis = 1
+        elif isinstance(axis, (bool, int, float)):
+            axis = int(axis)
+            if axis not in (0, 1):
+                logger.error(
+                    "The attribute axis can be set as an int, 0 for "
+                    f"vertical and 1 for horizontal. Provided {axis}.")
+                raise ValueError
+        else:
+            logger.error('Unrecognized axis.')
+            raise TypeError
+
+        return axis
 
     # --------------------------------------------------------------------
     @property
@@ -218,3 +195,14 @@ class _Visual(ABC):
         The image array.
         """
         return self._img
+
+    @property
+    def background(self):
+        """
+        The background color.
+        """
+        return self._background
+
+    @background.setter
+    def background(self, background):
+        self.draw_background(background)
