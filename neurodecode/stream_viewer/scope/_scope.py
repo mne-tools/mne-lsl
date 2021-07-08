@@ -11,9 +11,9 @@ class _Scope(ABC):
     Parameters
     ----------
     stream_receiver : neurodecode.stream_receiver.StreamReceiver
-        The connected stream receiver.
+        Connected stream receiver.
     stream_name : str
-        The stream to connect to.
+        Stream to connect to.
     """
 
     # ---------------------------- INIT ----------------------------
@@ -23,14 +23,17 @@ class _Scope(ABC):
         self._sr = stream_receiver
         self._stream_name = stream_name
 
-        # Infos
+        # Infos from stream
         self._sample_rate = int(
             self._sr.streams[self._stream_name].sample_rate)
 
-        # Buffers
+        # Variables
         self._duration_buffer = _BUFFER_DURATION
-        self._n_samples_buffer = math.ceil(_BUFFER_DURATION * self._sample_rate)
-        self.ts_list = list()
+        self._duration_buffer_samples = math.ceil(
+            _BUFFER_DURATION*self._sample_rate)
+
+        # Buffers
+        self._ts_list = list()
 
     # -------------------------- Main Loop -------------------------
     @abstractmethod
@@ -47,30 +50,44 @@ class _Scope(ABC):
         Acquires data from the connected LSL stream.
         """
         self._sr.acquire()
-        self._data_acquired, self.ts_list = self._sr.get_buffer()
+        self._data_acquired, self._ts_list = self._sr.get_buffer()
         self._sr.reset_buffer()
 
-        if len(self.ts_list) == 0:
+        if len(self._ts_list) == 0:
             return
 
     # --------------------------------------------------------------------
     @property
     def stream_name(self):
         """
-        The name of the connected stream.
+        Name of the connected stream.
         """
         return self._stream_name
 
     @property
     def sample_rate(self):
         """
-        The sample rate of the connected stream.
+        Sample rate of the connected stream [Hz].
         """
         return self._sample_rate
 
     @property
     def duration_buffer(self):
         """
-        The duration of the scope's buffer.
+        Duration of the scope's buffer [seconds].
         """
         return self._duration_buffer
+
+    @property
+    def duration_buffer_samples(self):
+        """
+        Duration of the scope's buffer [samples].
+        """
+        return self._duration_buffer_samples
+
+    @property
+    def ts_list(self):
+        """
+        Timestamps buffer [samples, ].
+        """
+        return self._ts_list

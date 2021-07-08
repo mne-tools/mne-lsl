@@ -16,41 +16,7 @@ class _Backend(ABC):
     @abstractmethod
     def __init__(self, scope):
         self._scope = scope
-        self._show_LPT_events = False
-        self._backend_initialized = False
-
-    @abstractmethod
-    def init_backend(self, geometry, x_scale, y_scale, channels_to_show_idx):
-        """
-        Initialize the backend.
-
-        The backend requires the _ScopeControllerUI to be fully
-        initialized and setup. Thus the backend is initialized in 2 steps:
-            - Creation of the instance (with all the associated methods)
-            - Initialization (with all the associated variables)
-
-        Parameters
-        ----------
-        geometry : tuple | list
-            The window geometry as (pos_x, pos_y, size_x, size_y).
-        x_scale : int
-            The plotting duration, i.e. the scale/range of the x-axis.
-        y_scale : float
-            The signal scale/range in uV.
-        channels_to_show_idx : tuple | list
-            The list of channels indices to display, ordered as retrieved from
-            LSL.
-        """
-        assert len(channels_to_show_idx) <= self._scope.n_channels
-
-    @abstractmethod
-    def _init_variables(self, x_scale, y_scale, channels_to_show_idx):
-        """
-        Initialize variables.
-        """
-        self._x_scale = x_scale  # duration in seconds
-        self._y_scale = y_scale  # amplitude scale in uV
-        self._channels_to_show_idx = channels_to_show_idx
+        self._show_LPT_trigger_events = False
 
     # -------------------------- Main Loop -------------------------
     @abstractmethod
@@ -87,20 +53,15 @@ class _Backend(ABC):
         return self._scope
 
     @property
-    def backend_initialized(self):
-        return self._backend_initialized
-
-    # ------------------------ Update program ----------------------
-    @property
-    def x_scale(self):
+    def xRange(self):
         """
         The X-axis range/scale, i.e. the duration of the plotting window.
         """
-        return self._x_scale
+        return self._xRange
 
-    @x_scale.setter
+    @xRange.setter
     @abstractmethod
-    def x_scale(self, x_scale):
+    def xRange(self, xRange):
         """
         Called when the user changes the X-axis range/scale, i.e. the duration
         of the plotting window.
@@ -108,45 +69,45 @@ class _Backend(ABC):
         pass
 
     @property
-    def y_scale(self):
+    def yRange(self):
         """
         The signal range/scale.
         """
-        return self._y_scale
+        return self._yRange
 
-    @y_scale.setter
+    @yRange.setter
     @abstractmethod
-    def y_scale(self, y_scale):
+    def yRange(self, yRange):
         """
         Called when the user changes the signal range/scale.
         """
         pass
 
     @property
-    def channels_to_show_idx(self):
+    def selected_channels(self):
         """
         The selected channels.
         """
-        return self._channels_to_show_idx
+        return self._selected_channels
 
-    @channels_to_show_idx.setter
+    @selected_channels.setter
     @abstractmethod
-    def channels_to_show_idx(self, channels_to_show_idx):
+    def selected_channels(self, selected_channels):
         """
         Called when the user changes the selection of channels.
         """
         pass
 
     @property
-    def show_LPT_events(self):
+    def show_LPT_trigger_events(self):
         """
         Tick/Untick status of the show_LPT_events box.
         """
-        return self._show_LPT_events
+        return self._show_LPT_trigger_events
 
-    @show_LPT_events.setter
+    @show_LPT_trigger_events.setter
     @abstractmethod
-    def show_LPT_events(self, show_LPT_events):
+    def show_LPT_trigger_events(self, show_LPT_trigger_events):
         """
         Called when the user ticks or untick the show_LPT_events box.
         """

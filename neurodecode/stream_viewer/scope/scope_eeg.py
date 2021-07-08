@@ -14,16 +14,16 @@ class ScopeEEG(_Scope):
     Parameters
     ----------
     stream_receiver : neurodecode.stream_receiver.StreamReceiver
-        The connected stream receiver.
+        Connected stream receiver.
     stream_name : str
-        The stream to connect to.
+        Stream to connect to.
     """
 
     # ---------------------------- INIT ----------------------------
     def __init__(self, stream_receiver, stream_name):
         super().__init__(stream_receiver, stream_name)
 
-        # Infos
+        # Infos from stream
         tch = find_event_channel(
             ch_names=self._sr.streams[self._stream_name].ch_list)
         if tch is None:
@@ -33,28 +33,23 @@ class ScopeEEG(_Scope):
             self._channels_labels = \
                 [channel for k, channel in enumerate(
                     self._sr.streams[self._stream_name].ch_list) if k != tch]
-        self._n_channels = len(self._channels_labels)
-
-        # Buffers
-        self.trigger_buffer = np.zeros(self._n_samples_buffer)
-        self.data_buffer = np.zeros((self._n_channels, self._n_samples_buffer),
-                                    dtype=np.float32)
-
-        # Y-scale
-        self._signal_y_scales = {'1uV': 1, '10uV': 10, '25uV': 25,
-                                 '50uV': 50, '100uV': 100, '250uV': 250,
-                                 '500uV': 500, '1mV': 1000, '2.5mV': 2500,
-                                 '100mV': 100000}
+        self._nb_channels = len(self._channels_labels)
 
         # Variables
         self._apply_car = False
         self._apply_bandpass = False
-        self.channels_to_show_idx = list(range(self._n_channels))
+        self._selected_channels = list(range(self._nb_channels))
+
+        # Buffers
+        self._trigger_buffer = np.zeros(self._duration_buffer_samples)
+        self._data_buffer = np.zeros(
+            (self._nb_channels, self._duration_buffer_samples),
+            dtype=np.float32)
 
     def init_bandpass_filter(self, low, high):
         """
         Initialize the bandpass filter. The filter is a butter filter of order
-        neurodecode.stream_viewer._scope.BP_ORDER
+        BP_ORDER.
 
         Parameters
         ----------
@@ -78,17 +73,17 @@ class ScopeEEG(_Scope):
         scope's buffer.
         """
         self._read_lsl_stream()
-        if len(self.ts_list) > 0:
+        if len(self._ts_list) > 0:
             self._filter_signal()
             self._filter_trigger()
             # shape (channels, samples)
-            self.data_buffer = np.roll(self.data_buffer, -len(self.ts_list),
+            self._data_buffer = np.roll(self._data_buffer, -len(self._ts_list),
                                        axis=1)
-            self.data_buffer[:, -len(self.ts_list):] = self._data_acquired.T
+            self._data_buffer[:, -len(self._ts_list):] = self._data_acquired.T
             # shape (samples, )
-            self.trigger_buffer = np.roll(
-                self.trigger_buffer, -len(self.ts_list))
-            self.trigger_buffer[-len(self.ts_list):] = self._trigger_acquired
+            self._trigger_buffer = np.roll(
+                self._trigger_buffer, -len(self._ts_list))
+            self._trigger_buffer[-len(self._ts_list):] = self._trigger_acquired
 
     def _read_lsl_stream(self):
         """
@@ -99,7 +94,7 @@ class ScopeEEG(_Scope):
         # Remove trigger ch - shapes (samples, ) and (samples, channels)
         self._trigger_acquired = self._data_acquired[:, 0]
         self._data_acquired = self._data_acquired[:, 1:].reshape(
-            (-1, self._n_channels))
+            (-1, self._nb_channels))
 
     def _filter_signal(self):
         """
@@ -112,9 +107,9 @@ class ScopeEEG(_Scope):
             self._data_acquired, self._zi = sosfilt(
                 self._sos, self._data_acquired, 0, self._zi)
 
-        if self._apply_car and len(self.channels_to_show_idx) >= 2:
+        if self._apply_car and len(self._selected_channels) >= 2:
             car_ch = np.mean(
-                self._data_acquired[:, self.channels_to_show_idx], axis=1)
+                self._data_acquired[:, self._selected_channels], axis=1)
             self._data_acquired -= car_ch.reshape((-1, 1))
 
     def _filter_trigger(self, tol=0.05):
@@ -126,6 +121,22 @@ class ScopeEEG(_Scope):
             np.abs(np.diff(self._trigger_acquired, prepend=[0])) <= tol] = 0
 
     # --------------------------------------------------------------------
+    @property
+    def channels_labels(self):
+        """
+        List of the channel labels present in the connected stream.
+        The TRIGGER channel is removed.
+        """
+        return self._channels_labels
+
+    @property
+    def nb_channels(self):
+        """
+        Number of channels present in the connected stream.
+        The TRIGGER channel is removed.
+        """
+        return self._nb_channels
+
     @property
     def apply_car(self):
         """
@@ -149,21 +160,26 @@ class ScopeEEG(_Scope):
         self._apply_bandpass = bool(apply_bandpass)
 
     @property
-    def channels_labels(self):
+    def selected_channels(self):
         """
-        List of the channel labels present in the connected stream.
-        The TRIGGER channel is removed.
+        List of indices of the selected channels.
         """
-        return self._channels_labels
+        return self._selected_channels
+
+    @selected_channels.setter
+    def selected_channels(self, selected_channels):
+        self._selected_channels = selected_channels
 
     @property
-    def n_channels(self):
+    def data_buffer(self):
         """
-        Number of channels present in the connected stream.
-        The TRIGGER channel is removed.
+        Data buffer [channels, samples].
         """
-        return self._n_channels
+        return self._data_buffer
 
     @property
-    def signal_y_scales(self):
-        return self._signal_y_scales
+    def trigger_buffer(self):
+        """
+        Trigger buffer [samples, ].
+        """
+        return self._trigger_buffer
