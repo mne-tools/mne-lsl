@@ -3,7 +3,7 @@ import time
 from PyQt5.QtWidgets import QApplication
 
 from .scope.scope_eeg import ScopeEEG
-from .scope_controller._scope_controller import _ScopeControllerUI
+from .control_gui.control_eeg import ControlGUI_EEG
 from .. import logger
 from ..stream_receiver import StreamReceiver, StreamEEG
 from ..utils.lsl import search_lsl
@@ -17,7 +17,7 @@ class StreamViewer:
 
     Supports 2 backends:
         'pyqt5': fully functional.
-        'vispy': signal displayed with limited control and information.
+        'vispy': in progress.
 
     Parameters
     ----------
@@ -35,49 +35,84 @@ class StreamViewer:
 
         If stream infos are not provided, look for available streams on the
         network.
-        """
-        if self._stream_name is None:
-            self._stream_name = search_lsl(ignore_markers=True)
 
-        if isinstance(backend, str):
-            backend = backend.lower().strip()
+        Parameters
+        ----------
+        bufsize : int | float
+            Buffer/window size of the attached StreamReceiver. The default,
+            0.2 should work in most cases.
+        backend : str
+            Selected backend for plotting. Supports:
+                - 'pyqt5': fully functional.
+                - 'vispy': in progress.
+        """
+        backend = StreamViewer._check_backend(backend)
 
         logger.info(f'Connecting to the stream: {self.stream_name}')
-        self.sr = StreamReceiver(bufsize=bufsize, winsize=bufsize,
+        self._sr = StreamReceiver(bufsize=bufsize, winsize=bufsize,
                                  stream_name=self._stream_name)
-        self.sr.streams[self._stream_name].blocking = False
+        self._sr.streams[self._stream_name].blocking = False
         time.sleep(bufsize)  # Delay to fill the LSL buffer.
 
-        if isinstance(self.sr.streams[self._stream_name], StreamEEG):
-            self._scope = ScopeEEG(self.sr, self._stream_name)
+        if isinstance(self._sr.streams[self._stream_name], StreamEEG):
+            self._scope = ScopeEEG(self._sr, self._stream_name)
+            app = QApplication(sys.argv)
+            self._ui = ControlGUI_EEG(self._scope, backend)
+            sys.exit(app.exec_())
         else:
             logger.error(
                 'Unsupported stream type '
-                f'{type(self.sr.streams[self._stream_name])}')
-
-        app = QApplication(sys.argv)
-        self._ui = _ScopeControllerUI(self._scope, backend)
-        sys.exit(app.exec_())
+                f'{type(self._sr.streams[self._stream_name])}')
 
     # --------------------------------------------------------------------
     @staticmethod
     def _check_stream_name(stream_name):
+        """
+        Checks that the stream name is valid or search for a valid stream on
+        the network.
+        """
         if stream_name is not None and not isinstance(stream_name, str):
             logger.error(
                 'The stream name must be either None to prompt the user or a '
                 'string.')
             raise ValueError
+        elif stream_name is None:
+            stream_name = search_lsl(ignore_markers=True)
 
         return stream_name
+
+    @staticmethod
+    def _check_backend(backend):
+        """
+        Checks that the backend is a string.
+        """
+        return backend.lower().strip()
 
     # --------------------------------------------------------------------
     @property
     def stream_name(self):
         """
-        The connected stream's name.
+        Connected stream's name.
         """
         return self._stream_name
 
-    @stream_name.setter
-    def stream_name(self, stream_name):
-        logger.warning("The connected streams cannot be changed.")
+    @property
+    def sr(self):
+        """
+        Connected StreamReceiver.
+        """
+        return self._sr
+
+    @property
+    def scope(self):
+        """
+        Connected scope.
+        """
+        return self._scope
+
+    @property
+    def ui(self):
+        """
+        Connected UI interface.
+        """
+        return self._ui
