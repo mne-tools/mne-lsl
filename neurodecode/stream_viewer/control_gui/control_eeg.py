@@ -17,7 +17,7 @@ class ControlGUI_EEG(_ControlGUI):
 
     Parameters
     ----------
-    scope : neurodecode.stream_viewer._scope._Scope
+    scope : stream_viewer.scope._scope._Scope
         Scope connected to a stream receiver acquiring the data and applying
         filtering. The scope has a buffer of _scope._BUFFER_DURATION.
     backend : str
@@ -132,6 +132,7 @@ class ControlGUI_EEG(_ControlGUI):
 
         # BP Filters
         self._ui.checkBox_bandpass.setChecked(True)
+        self._ui.checkBox_bandpass.setEnabled(False)
         try:
             self._ui.doubleSpinBox_bandpass_low.setValue(float(
                 scope_settings.get(
