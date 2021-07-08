@@ -101,7 +101,7 @@ class _Backend(ABC):
     @property
     def show_LPT_trigger_events(self):
         """
-        Tick/Untick status of the show_LPT_events box.
+        Tick/Untick status of the show_LPT_trigger_events box.
         """
         return self._show_LPT_trigger_events
 
@@ -109,6 +109,6 @@ class _Backend(ABC):
     @abstractmethod
     def show_LPT_trigger_events(self, show_LPT_trigger_events):
         """
-        Called when the user ticks or untick the show_LPT_events box.
+        Called when the user ticks or untick the show_LPT_trigger_events box.
         """
         pass
