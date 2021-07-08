@@ -1,7 +1,5 @@
 from abc import ABC, abstractmethod
 
-from ... import logger
-
 
 class _Backend(ABC):
     """
@@ -70,36 +68,6 @@ class _Backend(ABC):
         """
         self._scope.update_loop()
 
-    # ------------------------ Update program ----------------------
-    @abstractmethod
-    def update_x_scale(self, new_x_scale):
-        """
-        Called when the user changes the X-axis range/scale, i.e. the duration
-        of the plotting window.
-        """
-        pass
-
-    @abstractmethod
-    def update_y_scale(self, new_y_scale):
-        """
-        Called when the user changes the signal range/scale.
-        """
-        pass
-
-    @abstractmethod
-    def update_channels_to_show_idx(self, new_channels_to_show_idx):
-        """
-        Called when the user changes the selection of channels.
-        """
-        pass
-
-    @abstractmethod
-    def update_show_LPT_events(self):
-        """
-        Called when the user ticks or untick the show_LPT_events box.
-        """
-        pass
-
     # --------------------------- Events ---------------------------
     @abstractmethod
     def close(self):
@@ -118,26 +86,68 @@ class _Backend(ABC):
         """
         return self._scope
 
-    @scope.setter
-    def scope(self, scope):
-        logger.warning('The scope cannot be changed.')
-
     @property
     def backend_initialized(self):
         return self._backend_initialized
 
+    # ------------------------ Update program ----------------------
     @property
     def x_scale(self):
+        """
+        The X-axis range/scale, i.e. the duration of the plotting window.
+        """
         return self._x_scale
+
+    @x_scale.setter
+    @abstractmethod
+    def x_scale(self, x_scale):
+        """
+        Called when the user changes the X-axis range/scale, i.e. the duration
+        of the plotting window.
+        """
+        pass
 
     @property
     def y_scale(self):
+        """
+        The signal range/scale.
+        """
         return self._y_scale
+
+    @y_scale.setter
+    @abstractmethod
+    def y_scale(self, y_scale):
+        """
+        Called when the user changes the signal range/scale.
+        """
+        pass
 
     @property
     def channels_to_show_idx(self):
+        """
+        The selected channels.
+        """
         return self._channels_to_show_idx
+
+    @channels_to_show_idx.setter
+    @abstractmethod
+    def channels_to_show_idx(self, channels_to_show_idx):
+        """
+        Called when the user changes the selection of channels.
+        """
+        pass
 
     @property
     def show_LPT_events(self):
+        """
+        Tick/Untick status of the show_LPT_events box.
+        """
         return self._show_LPT_events
+
+    @show_LPT_events.setter
+    @abstractmethod
+    def show_LPT_events(self, show_LPT_events):
+        """
+        Called when the user ticks or untick the show_LPT_events box.
+        """
+        pass
