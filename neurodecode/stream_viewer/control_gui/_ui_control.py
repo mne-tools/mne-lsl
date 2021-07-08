@@ -21,27 +21,27 @@ class UI_MainWindow(object):
         MainWindow.setCentralWidget(self.MainWidget)
 
         # Y-Scale of the signal
-        self.comboBox_signal_y_scale = QComboBox(self.MainWidget)
-        self.comboBox_signal_y_scale.setGeometry(QRect(10, 20, 85, 27))
-        self.comboBox_signal_y_scale.setObjectName("comboBox_signal_y_scale")
+        self.comboBox_signal_yRange = QComboBox(self.MainWidget)
+        self.comboBox_signal_yRange.setGeometry(QRect(10, 20, 85, 27))
+        self.comboBox_signal_yRange.setObjectName("comboBox_signal_yRange")
 
-        self.label_signal_y_scale = QLabel(self.MainWidget)
-        self.label_signal_y_scale.setGeometry(QRect(10, 60, 67, 17))
-        self.label_signal_y_scale.setObjectName("label_signal_y_scale")
-        self.label_signal_y_scale.setText("Time (s)")
+        self.label_signal_yRange = QLabel(self.MainWidget)
+        self.label_signal_yRange.setGeometry(QRect(10, 60, 67, 17))
+        self.label_signal_yRange.setObjectName("label_signal_yRange")
+        self.label_signal_yRange.setText("Time (s)")
 
         # X-Scale of the signal
-        self.spinBox_signal_x_scale = QSpinBox(self.MainWidget) # Integers
-        self.spinBox_signal_x_scale.setGeometry(QRect(10, 80, 85, 27))
-        self.spinBox_signal_x_scale.setMinimum(1)
-        self.spinBox_signal_x_scale.setMaximum(int(_BUFFER_DURATION))
-        self.spinBox_signal_x_scale.setProperty("value", 10) # Default 10s
-        self.spinBox_signal_x_scale.setObjectName("spinBox_signal_x_scale")
+        self.spinBox_signal_xRange = QSpinBox(self.MainWidget) # Integers
+        self.spinBox_signal_xRange.setGeometry(QRect(10, 80, 85, 27))
+        self.spinBox_signal_xRange.setMinimum(1)
+        self.spinBox_signal_xRange.setMaximum(int(_BUFFER_DURATION))
+        self.spinBox_signal_xRange.setProperty("value", 10) # Default 10s
+        self.spinBox_signal_xRange.setObjectName("spinBox_signal_xRange")
 
-        self.label_signal_x_scale = QLabel(self.MainWidget)
-        self.label_signal_x_scale.setGeometry(QRect(10, 0, 67, 17))
-        self.label_signal_x_scale.setObjectName("label_signal_x_scale")
-        self.label_signal_x_scale.setText("Scale")
+        self.label_signal_xRange = QLabel(self.MainWidget)
+        self.label_signal_xRange.setGeometry(QRect(10, 0, 67, 17))
+        self.label_signal_xRange.setObjectName("label_signal_xRange")
+        self.label_signal_xRange.setText("Scale")
 
         # CAR
         self.checkBox_car = QCheckBox(self.MainWidget)
@@ -74,10 +74,10 @@ class UI_MainWindow(object):
         self.doubleSpinBox_bandpass_high.setObjectName("doubleSpinBox_bandpass_high")
 
         # Show LPT events
-        self.checkBox_show_LPT_events = QCheckBox(self.MainWidget)
-        self.checkBox_show_LPT_events.setGeometry(QRect(120, 80, 151, 22))
-        self.checkBox_show_LPT_events.setObjectName("checkBox_show_LPT_events")
-        self.checkBox_show_LPT_events.setText("Show LPT events")
+        self.checkBox_show_LPT_trigger_events = QCheckBox(self.MainWidget)
+        self.checkBox_show_LPT_trigger_events.setGeometry(QRect(120, 80, 151, 22))
+        self.checkBox_show_LPT_trigger_events.setObjectName("checkBox_show_LPT_trigger_events")
+        self.checkBox_show_LPT_trigger_events.setText("Show LPT events")
 
         # Lines
         self.line1 = QFrame(self.MainWidget)
