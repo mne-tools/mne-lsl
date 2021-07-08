@@ -1,3 +1,5 @@
+import copy
+import numpy as np
 from abc import ABC, abstractmethod
 
 
@@ -8,15 +10,27 @@ class _Backend(ABC):
     Parameters
     ----------
     scope : neurodecode.stream_viewer._scope._Scope
-        The scope connected to a stream receiver acquiring the data and
-        applying filtering. The scope has a buffer of _scope._BUFFER_DURATION
-        (default: 30s).
+        Scope connected to a stream receiver acquiring the data and applying
+        filtering. The scope has a buffer of _BUFFER_DURATION (default: 30s).
+    geometry : tuple | list
+        Window geometry as (pos_x, pos_y, size_x, size_y).
+    xRange : int
+        Range of the x-axis (plotting time duration) in seconds.
+    yRange : float
+        Range of the y-axis (amplitude) in uV.
     """
 
     @abstractmethod
-    def __init__(self, scope):
+    def __init__(self, scope, geometry, xRange, yRange):
         self._scope = scope
+
+        # Variables
+        self._xRange = xRange  # duration in seconds
+        self._yRange = yRange  # amplitude range in uV
+        self._available_colors = np.random.uniform(
+            size=(self._scope.nb_channels, 3), low=128, high=230)
         self._show_LPT_trigger_events = False
+        self._selected_channels = copy.deepcopy(self._scope.selected_channels)
 
     # -------------------------- Main Loop -------------------------
     @abstractmethod

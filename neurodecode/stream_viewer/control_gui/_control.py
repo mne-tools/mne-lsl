@@ -21,7 +21,7 @@ class _ControlGUI(QMainWindow, ABC, metaclass=_metaclass_ControlGUI):
 
     Parameters
     ----------
-    scope : neurodecode.stream_viewer._scope._Scope
+    scope : stream_viewer.scope._scope._Scope
         Scope connected to a stream receiver acquiring the data and applying
         filtering. The scope has a buffer of _scope._BUFFER_DURATION.
     backend : str
