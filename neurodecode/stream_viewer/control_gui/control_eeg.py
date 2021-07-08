@@ -252,7 +252,7 @@ class ControlGUI_EEG(_ControlGUI):
 
     @QtCore.pyqtSlot()
     def onClicked_checkBox_show_LPT_trigger_events(self):
-        self._backend.show_LPT_events = bool(
+        self._backend.show_LPT_trigger_events = bool(
             self._ui.checkBox_show_LPT_trigger_events.isChecked())
 
     @QtCore.pyqtSlot()
