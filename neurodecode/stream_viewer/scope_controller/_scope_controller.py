@@ -196,7 +196,6 @@ class _ScopeControllerUI(QMainWindow):
     # -------------------------------------------------------------------
     # --------------------------- EVENT HANDLERS ------------------------
     # -------------------------------------------------------------------
-
     def _connect_signals_to_slots(self):
         """
         Event handler. Connect QT signals to slots.
@@ -237,11 +236,11 @@ class _ScopeControllerUI(QMainWindow):
     def onActivated_comboBox_signal_y_scale(self):
         y_scale = list(self._scope.signal_y_scales.values())[
             self._ui.comboBox_signal_y_scale.currentIndex()]
-        self._backend.update_y_scale(float(y_scale))
+        self._backend.y_scale = float(y_scale)
 
     @QtCore.pyqtSlot()
     def onValueChanged_spinBox_signal_x_scale(self):
-        self._backend.update_x_scale(self._ui.spinBox_signal_x_scale.value())
+        self._backend.x_scale = self._ui.spinBox_signal_x_scale.value()
 
     @QtCore.pyqtSlot()
     def onClicked_checkBox_car(self):
@@ -269,23 +268,22 @@ class _ScopeControllerUI(QMainWindow):
 
     @QtCore.pyqtSlot()
     def onClicked_checkBox_show_LPT_events(self):
-        self._backend._show_LPT_events = bool(
+        self._backend.show_LPT_events = bool(
             self._ui.checkBox_show_LPT_events.isChecked())
-        self._backend.update_show_LPT_events()
 
     @QtCore.pyqtSlot()
     def onClicked_pushButton_start_recording(self):
         record_dir = self._ui.lineEdit_recording_dir.text()
-        self.recorder = StreamRecorder(
+        self._recorder = StreamRecorder(
             record_dir, stream_name=self._scope.stream_name)
-        self.recorder.start(fif_subdir=True, verbose=False)
+        self._recorder.start(fif_subdir=True, verbose=False)
         self._ui.pushButton_stop_recording.setEnabled(True)
         self._ui.pushButton_start_recording.setEnabled(False)
         self._ui.statusBar.showMessage(f"[Recording to '{record_dir}']")
 
     @QtCore.pyqtSlot()
     def onClicked_pushButton_stop_recording(self):
-        self.recorder.stop()
+        self._recorder.stop()
         self._ui.pushButton_start_recording.setEnabled(True)
         self._ui.pushButton_stop_recording.setEnabled(False)
         self._ui.statusBar.showMessage("[Not recording]")
@@ -308,7 +306,7 @@ class _ScopeControllerUI(QMainWindow):
             for item in selected]
 
         self._scope.channels_to_show_idx = self.channels_to_show_idx
-        self._backend.update_channels_to_show_idx(self.channels_to_show_idx)
+        self._backend.channels_to_show_idx = self.channels_to_show_idx
 
     def closeEvent(self, event):
         """

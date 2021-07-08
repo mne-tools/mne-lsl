@@ -229,15 +229,19 @@ class _BackendPyQt5(_Backend):
             # Hide/Remove events exiting window and buffer
             self._clean_up_events()
 
+    # --------------------------- Events ---------------------------
+    def close(self):
+        """
+        Stops the update loop and close the window.
+        """
+        self._timer.stop()
+        self._win.close()
+
     # ------------------------ Update program ----------------------
-    # TODO: Moved as setters
-    def update_x_scale(self, new_x_scale):
-        """
-        Called when the user changes the X-axis range/scale, i.e. the duration
-        of the plotting window.
-        """
+    @_Backend.x_scale.setter
+    def x_scale(self, x_scale):
         if self._backend_initialized:
-            self._x_scale = new_x_scale
+            self._x_scale = x_scale
             self._init_n_samples_plot()
             self._init_range()
             self._init_x_axis()
@@ -252,12 +256,10 @@ class _BackendPyQt5(_Backend):
                 else:
                     event.removeEventPlot()
 
-    def update_y_scale(self, new_y_scale):
-        """
-        Called when the user changes the signal range/scale.
-        """
+    @_Backend.y_scale.setter
+    def y_scale(self, y_scale):
         if self._backend_initialized:
-            self._y_scale = new_y_scale
+            self._y_scale = y_scale
             self._init_range()
             self._init_y_axis()
             self._init_plotting_channel_offset()
@@ -265,17 +267,15 @@ class _BackendPyQt5(_Backend):
             for event in self._trigger_events:
                 event.y_scale = self._y_scale
 
-    def update_channels_to_show_idx(self, new_channels_to_show_idx):
-        """
-        Called when the user changes the selection of channels.
-        """
+    @_Backend.channels_to_show_idx.setter
+    def channels_to_show_idx(self, channels_to_show_idx):
         if self._backend_initialized:
             plots2remove = [idx for idx in self._channels_to_show_idx
-                            if idx not in new_channels_to_show_idx]
-            plots2add = [idx for idx in new_channels_to_show_idx
+                            if idx not in channels_to_show_idx]
+            plots2add = [idx for idx in channels_to_show_idx
                          if idx not in self._channels_to_show_idx]
 
-            self._channels_to_show_idx = new_channels_to_show_idx
+            self._channels_to_show_idx = channels_to_show_idx
             self._init_range()
             self._init_y_axis()
             self._init_plotting_channel_offset()
@@ -290,25 +290,15 @@ class _BackendPyQt5(_Backend):
                         idx, -self._n_samples_plot:] + self._offset[k],
                     pen=pg.mkColor(self._available_colors[idx, :]))
 
-    def update_show_LPT_events(self):
-        """
-        Called when the user ticks or untick the show_LPT_events box.
-        """
+    @_Backend.show_LPT_events.setter
+    def show_LPT_events(self, show_LPT_events):
+        self._show_LPT_events = show_LPT_events
         for event in self._trigger_events:
             if event.position_plot >= 0 and event.event_type == 'LPT':
                 if self._show_LPT_events:
                     event.addEventPlot()
                 else:
                     event.removeEventPlot()
-
-    # --------------------------- Events ---------------------------
-    def close(self):
-        """
-        Stops the update loop and close the window.
-        """
-        self._timer.stop()
-        self._win.close()
-
 
 class _TriggerEvent:
     """
@@ -344,26 +334,26 @@ class _TriggerEvent:
         self._plot_handler = plot_handler
         self._plot_y_scale = plot_y_scale
 
-        self.lineItem = None
-        self.textItem = None
-        self.plotted = False
+        self._lineItem = None
+        self._textItem = None
+        self._plotted = False
 
     def addEventPlot(self):
         """
         Plots the event on the handler.
         """
-        if not self.plotted:
-            self.lineItem = pg.InfiniteLine(
+        if not self._plotted:
+            self._lineItem = pg.InfiniteLine(
                 pos=self._position_plot, pen=self.pens[self._event_type])
-            self._plot_handler.addItem(self.lineItem)
+            self._plot_handler.addItem(self._lineItem)
 
-            self.textItem = pg.TextItem(str(self._event_value),
+            self._textItem = pg.TextItem(str(self._event_value),
                                         anchor=(0.5, 1),
                                         fill=(0, 0, 0),
                                         color=self.pens[self._event_type])
-            self.textItem.setPos(self._position_plot, 1.5*self._plot_y_scale)
-            self._plot_handler.addItem(self.textItem)
-            self.plotted = True
+            self._textItem.setPos(self._position_plot, 1.5*self._plot_y_scale)
+            self._plot_handler.addItem(self._textItem)
+            self._plotted = True
 
     # TODO: Move as setter
     def update_position(self, position_buffer, position_plot):
@@ -378,21 +368,21 @@ class _TriggerEvent:
         """
         Updates the plot handler.
         """
-        if self.lineItem is not None:
-            self.lineItem.setValue(self._position_plot)
-        if self.textItem is not None:
-            self.textItem.setPos(self._position_plot, 1.5*self._plot_y_scale)
+        if self._lineItem is not None:
+            self._lineItem.setValue(self._position_plot)
+        if self._textItem is not None:
+            self._textItem.setPos(self._position_plot, 1.5*self._plot_y_scale)
 
     def removeEventPlot(self):
         """
         Remove the event from the plot handler.
         """
-        if self.plotted:
-            self._plot_handler.removeItem(self.lineItem)
-            self._plot_handler.removeItem(self.textItem)
-            self.lineItem = None
-            self.textItem = None
-            self.plotted = False
+        if self._plotted:
+            self._plot_handler.removeItem(self._lineItem)
+            self._plot_handler.removeItem(self._textItem)
+            self._lineItem = None
+            self._textItem = None
+            self._plotted = False
 
     def __del__(self):
         try:
@@ -402,23 +392,38 @@ class _TriggerEvent:
 
     @property
     def event_type(self):
+        """
+        Event type.
+        """
         return self._event_type
 
     @property
-    def position_buffer(self):
-        return self._position_buffer
+    def event_value(self):
+        """
+        Event value.
+        """
+        return self._event_value
 
-    @position_buffer.setter
-    def position_buffer(self, position_buffer):
-        logger.warning('This attribute cannot be changed directly')
+    @property
+    def plotted(self):
+        """
+        True if the event is displayed, else False.
+        """
+        return self._plotted
+
+    @property
+    def position_buffer(self):
+        """
+        Position in the buffer.
+        """
+        return self._position_buffer
 
     @property
     def position_plot(self):
+        """
+        Position in the plotting window.
+        """
         return self._position_plot
-
-    @position_plot.setter
-    def position_plot(self, position_plot):
-        logger.warning('This attribute cannot be changed directly')
 
     @property
     def plot_y_scale(self):
