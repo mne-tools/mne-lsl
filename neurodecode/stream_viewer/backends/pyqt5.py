@@ -1,7 +1,6 @@
 """
 PyQt5 Canvas for Neurodecode's StreamViewer.
 """
-import copy
 import math
 import numpy as np
 
@@ -20,21 +19,22 @@ class _BackendPyQt5(_Backend):
     Parameters
     ----------
     scope : neurodecode.stream_viewer._scope._Scope
-        The scope connected to a stream receiver acquiring the data and
-        applying filtering. The scope has a buffer of _scope._BUFFER_DURATION
-        (default: 30s).
+        Scope connected to a stream receiver acquiring the data and applying
+        filtering. The scope has a buffer of _BUFFER_DURATION (default: 30s).
+    geometry : tuple | list
+        Window geometry as (pos_x, pos_y, size_x, size_y).
+    xRange : int
+        Range of the x-axis (plotting time duration) in seconds.
+    yRange : float
+        Range of the y-axis (amplitude) in uV.
     """
-    # ---------------------------- Init ---------------------------
 
+    # ---------------------------- Init ---------------------------
     def __init__(self, scope, geometry, xRange, yRange):
-        super().__init__(scope)
+        super().__init__(scope, geometry, xRange, yRange)
         self._trigger_events = list()
 
         # Variables
-        self._xRange = xRange  # duration in seconds
-        self._yRange = yRange  # amplitude range in uV
-        self._available_colors = np.random.uniform(
-            size=(self._scope.nb_channels, 3), low=128, high=230)
         self._init_variables()
 
         # Canvas
@@ -59,7 +59,6 @@ class _BackendPyQt5(_Backend):
                 y=self._scope.data_buffer[
                     idx, -self._duration_plot_samples:]+self._offset[k],
                 pen=pg.mkColor(self._available_colors[idx, :]))
-        self._selected_channels = copy.deepcopy(self._scope.selected_channels)
 
         # Timer
         self._timer = QtCore.QTimer(self._win)
