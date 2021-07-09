@@ -96,7 +96,6 @@ class _BackendVispy(_Backend, app.Canvas):
         Initialize variables depending on xRange, yRange and selected_channels.
         """
         # xRange
-        self._delta_with_buffer = self._scope.duration_buffer - self._xRange
         self._duration_plot_samples = math.ceil(
             self._xRange*self._scope.sample_rate)
 
