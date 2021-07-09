@@ -79,11 +79,11 @@ class _BackendVispy(_Backend, app.Canvas):
     # ---------------------------- Init ---------------------------
 
     def __init__(self, scope, geometry, xRange, yRange):
-        super().__init__(scope)
+        super().__init__(scope, geometry, xRange, yRange)
 
         # Variables
         self._available_colors = np.random.uniform(
-            size=(self._scope.n_channels, 3), low=.5, high=.9)
+            size=(self._scope.nb_channels, 3), low=.5, high=.9)
         self._init_variables()
         self._init_program_variables()
 
@@ -224,7 +224,7 @@ class _BackendVispy(_Backend, app.Canvas):
         Stops the update loop and close the window.
         """
         self._timer.stop()
-        super().close()
+        app.Canvas.close(self)
 
     # ------------------------ Update program ----------------------
     @_Backend.xRange.setter
