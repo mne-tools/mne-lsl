@@ -61,16 +61,16 @@ def dir_fix_default_event_values(fif_dir, recursive, default_value=-1,
     Parameters
     ----------
     fif_dir : str
-         The path to the directory containing fif files.
+         Path to the directory containing fif files.
     recursive : bool
-        If true, search recursively.
+        If True, search recursively.
     default_value : int
         Trigger channel default value to replace with 0. The default is -1.
     out_dir : str | None
-        The path to the output directory. If None, the directory
-        'event_fixed' is used.
+        Path to the output directory. If None, the directory
+        'fif_dir/event_fixed' is used.
     overwrite : bool
-        If true, overwrite previously corrected files.
+        If True, overwrite previously corrected files.
     """
     fif_dir = Path(fif_dir)
     if not fif_dir.exists():

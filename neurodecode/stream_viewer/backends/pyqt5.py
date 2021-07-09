@@ -112,7 +112,7 @@ class _BackendPyQt5(_Backend):
         for k, ev_value in enumerate(events_values):
             position_buffer = self._scope.duration_buffer - \
                 (trigger_arr.shape[0] - events_trigger_arr_idx[k]) \
-                    / self._scope.sample_rate
+                / self._scope.sample_rate
             position_plot = position_buffer - self._delta_with_buffer
 
             event = _TriggerEvent(
@@ -240,6 +240,7 @@ class _BackendPyQt5(_Backend):
                 else:
                     event.removeEventPlot()
 
+
 class _TriggerEvent:
     """
     Class defining a trigger event.
@@ -247,19 +248,19 @@ class _TriggerEvent:
     Parameters
     ----------
     event_type : str
-        The type of event. Supported: 'LPT'.
+        Type of event. Supported: 'LPT'.
     event_value : int | float
-        The value of the event displayed in the TextItem.
+        Value of the event displayed in the TextItem.
     position_buffer : float
-        The time at which the event is positionned in the buffer where:
+        Time at which the event is positionned in the buffer where:
             0 represents the older events exiting the buffer.
             _BUFFER_DURATION represents the newer events entering the buffer.
     position_plot : float
-        The time at which the event is positionned in the plotting window.
+        Time at which the event is positionned in the plotting window.
     plot_handler : pyqtgraph.PlotItem
-        The plot handler.
+        Plot handler.
     plot_yRange : int | float
-        The currently set signal range/scale.
+        Currently set signal range/scale.
     """
     pens = {'LPT': pg.mkColor(0, 255, 0)}
 
@@ -288,9 +289,9 @@ class _TriggerEvent:
             self._plot_handler.addItem(self._lineItem)
 
             self._textItem = pg.TextItem(str(self._event_value),
-                                        anchor=(0.5, 1),
-                                        fill=(0, 0, 0),
-                                        color=self.pens[self._event_type])
+                                         anchor=(0.5, 1),
+                                         fill=(0, 0, 0),
+                                         color=self.pens[self._event_type])
             self._textItem.setPos(self._position_plot, 1.5*self.plot_yRange)
             self._plot_handler.addItem(self._textItem)
             self._plotted = True
@@ -368,7 +369,7 @@ class _TriggerEvent:
     @property
     def plot_yRange(self):
         """
-        The signal range/scale used to position the TextItem.
+        Signal range/scale used to position the TextItem.
         """
         return self._plot_yRange
 

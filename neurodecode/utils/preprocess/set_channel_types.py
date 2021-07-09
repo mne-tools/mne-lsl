@@ -16,8 +16,8 @@ def set_channel_types(raw, mapping):
     ----------
     raw : mne.io.Raw | mne.io.RawArray
         MNE instance of Raw.
-    new_channel_names : list
-        The list of the new channel names.
+    mapping : dict
+        Mapping of the new channel names:types.
     """
     raw.set_channel_types(mapping)
 
@@ -33,16 +33,16 @@ def dir_set_channel_types(fif_dir, recursive, mapping,
     Parameters
     ----------
     fif_dir : str
-         The path to the directory containing fif files.
+        Path to the directory containing fif files.
     recursive : bool
-        If true, search recursively.
+        If True, search recursively.
     mapping : dict
-        The channel type mapping.
+        Mapping of the new channel names:types.
     out_dir : str | None
-        The path to the output directory. If None, the directory
-        'corrected' is used.
+        Path to the output directory. If None, the directory
+        'fif_dir/corrected' is used.
     overwrite : bool
-        If true, overwrite previously corrected files.
+        If True, overwrite previously corrected files.
     """
     fif_dir = Path(fif_dir)
     if not fif_dir.exists():

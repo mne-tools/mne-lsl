@@ -14,6 +14,7 @@ class TriggerMock(_Trigger):
     verbose : bool
         If True, display a logger.info message when a trigger is sent.
     """
+
     def __init__(self, verbose=True):
         super().__init__(verbose)
 

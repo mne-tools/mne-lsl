@@ -63,12 +63,12 @@ def dir_write_set(fif_dir, recursive, out_dir=None):
     Parameters
     ----------
     fif_dir : str
-         The path to the directory containing fif files.
+         Path to the directory containing fif files.
     recursive : bool
         If true, search recursively.
     out_dir : str | None
-        The path to the output directory. If None, the directory
-        f'fif_dir/fif2set' is used.
+        Path to the output directory. If None, the directory
+        'fif_dir/fif2set' is used.
     """
     fif_dir = Path(fif_dir)
     if not fif_dir.exists():

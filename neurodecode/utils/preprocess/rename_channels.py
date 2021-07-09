@@ -15,7 +15,7 @@ def rename_channels(inst, new_channel_names, **kwargs):
     inst : mne.io.Raw | mne.io.RawArray | mne.Epochs | mne.Evoked
         MNE instance of Raw | Epochs | Evoked.
     new_channel_names : list
-        The list of the new channel names.
+        List of the new channel names.
     **kwargs : Additional arguments are passed to mne.rename_channels()
         c.f. https://mne.tools/stable/generated/mne.rename_channels.html
     """
@@ -46,16 +46,16 @@ def dir_rename_channels(fif_dir, recursive, new_channel_names,
     Parameters
     ----------
     fif_dir : str
-         The path to the directory containing fif files.
+        Path to the directory containing fif files.
     recursive : bool
-        If true, search recursively.
+        If True, search recursively.
     new_channel_names : list
-        The list of the new channel names.
+        List of the new channel names.
     out_dir : str | None
-        The path to the output directory. If None, the directory
-        f'fif_dir/renamed' is used.
+        Path to the output directory. If None, the directory
+        'fif_dir/renamed' is used.
     overwrite : bool
-        If true, overwrite previously corrected files.
+        If True, overwrite previously corrected files.
     **kwargs : Additional arguments are passed to mne.rename_channels()
     """
     fif_dir = Path(fif_dir)

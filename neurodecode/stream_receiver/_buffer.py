@@ -8,13 +8,12 @@ class Buffer():
     bufsize : int
         Buffer's size [samples].
     winsize : int
-        To extract the latest winsize samples from the buffer [samples].
+        Window's size [samples]. Must be smaller than the buffer's size.
     """
 
     def __init__(self, bufsize, winsize):
-
-        self._winsize = winsize
         self._bufsize = bufsize
+        self._winsize = winsize
 
         self._data = []
         self._timestamps = []
@@ -26,9 +25,9 @@ class Buffer():
         Parameters
         -----------
         data : list
-            The received data [samples x channels].
+            Received data [samples x channels].
         tslist : list
-            The data's timestamps [samples].
+            Data's timestamps [samples].
         """
         self._data.extend(data)
         self._timestamps.extend(tslist)
@@ -45,18 +44,18 @@ class Buffer():
         self._timestamps = []
 
     @property
-    def winsize(self):
-        """
-        The window's size [samples].
-        """
-        return self._winsize
-
-    @property
     def bufsize(self):
         """
-        The buffer's size [samples].
+        Buffer's size [samples].
         """
         return self._bufsize
+
+    @property
+    def winsize(self):
+        """
+        Window's size [samples].
+        """
+        return self._winsize
 
     @property
     def data(self):

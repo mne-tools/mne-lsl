@@ -21,7 +21,7 @@ class TriggerArduino2LPT(_Trigger):
     Parameters
     ----------
     delay : int
-        The delay in milliseconds until which a new trigger cannot be sent.
+        Delay in milliseconds until which a new trigger cannot be sent.
     verbose : bool
         If True, display a logger.info message when a trigger is sent.
     """
@@ -42,9 +42,9 @@ class TriggerArduino2LPT(_Trigger):
         Parameters
         ----------
         com_port : str
-            The Arduino COM port.
+            Qrduino COM port.
         baud_rate : int
-            The baud rate, determines the communication speed.
+            Baud rate, determines the communication speed.
         """
         try:
             self._ser = serial.Serial(com_port, baud_rate)
@@ -116,7 +116,7 @@ class TriggerArduino2LPT(_Trigger):
     @property
     def com_port(self):
         """
-        The COM port to use.
+        COM port to use.
         """
         return self._com_port
 
@@ -128,7 +128,7 @@ class TriggerArduino2LPT(_Trigger):
     @property
     def delay(self):
         """
-        The delay to wait between 2 .signal() call in milliseconds.
+        Delay to wait between 2 .signal() call in milliseconds.
         """
         return self._delay * 1000.0
 

@@ -12,15 +12,16 @@ def get_file_list(path, fullpath=True, recursive=False):
     Parameters
     ----------
     path : str
-        The directory containing the files
+        Directory containing the files to list.
     fullpath : bool
         If True, returns the file's absolute path
     recursive : bool
-        If true, search recursively
+        If True, search recursively
 
     Returns
     -------
-    list : The file's list.
+    list
+        File's list.
     """
     path = Path(path)
     if not path.exists():
@@ -60,7 +61,7 @@ def get_dir_list(path, recursive=False, no_child=False):
     Parameters
     ----------
     path : str
-        The directory to look at
+        Directory contianing the directories to list.
     recusrive : bool
         If True, search recursively.
     no_child : bool
@@ -68,7 +69,8 @@ def get_dir_list(path, recursive=False, no_child=False):
 
     Returns
     -------
-    list : The directories' list
+    list
+        Directories' list
     """
     path = Path(path)
     if not path.exists():
@@ -104,7 +106,7 @@ def make_dirs(dirname, delete=False):
     Parameters
     ----------
     dirname : str
-        The name of the new directory
+        Name of the new directory.
     delete : bool
         If True, if the directory already exists, it will be deleted
     """

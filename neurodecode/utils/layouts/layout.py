@@ -99,16 +99,16 @@ class Layout:
     Parameters
     ----------
     name : str
-        The name of the cap. Supported cap names have associated channel names
-        and channel types saved in NeuroDecode.
+        Name of the cap. Supported cap names have associated channel names and
+        channel types saved in NeuroDecode.
     montage : str | DigMontage
-        The montage used by the layout.
+        Montage used by the layout.
         https://mne.tools/stable/generated/mne.io.Raw.html#mne.io.Raw.set_montage
     ch_names : list | None
-        The list of channels' name in the order receied from LSL.
+        List of channels' name in the order receied from LSL.
         If None, looks for a known list based on the layout name.
     ch_types : list | str | None
-        The list of channels' type in the order received from LSL.
+        List of channels' type in the order received from LSL.
         If None, looks for a known list based on the layout name.
     """
 
@@ -143,9 +143,9 @@ class Layout:
         Parameters
         ----------
         ch_names : list
-            The list of channels' name to add.
+            List of channels' name to add.
         ch_types : list | str
-            The list of channels' type to add.
+            List of corresponding channels' type to add.
         """
         ch_names = Layout._check_ch_names(ch_names)
         ch_types = Layout._check_ch_types(ch_names, ch_types)
@@ -160,9 +160,9 @@ class Layout:
         Parameters
         ----------
         ch_names : list
-            The list of channels' name to remove.
+            List of channels' name to remove.
         """
-        raise NotImplementedError # TODO: Implement channel removal.
+        raise NotImplementedError  # TODO: Implement channel removal.
 
     # --------------------------------------------------------------------
     @staticmethod
@@ -238,7 +238,7 @@ class Layout:
     @property
     def name(self):
         """
-        The name of the layout.
+        Name of the layout.
         """
         return self._name
 
@@ -249,7 +249,7 @@ class Layout:
     @property
     def montage(self):
         """
-        The montage used by the layout.
+        Montage used by the layout.
         """
         return self._montage
 
@@ -260,13 +260,13 @@ class Layout:
     @property
     def ch_names(self):
         """
-        The list of channels' name in the order receied from LSL.
+        List of channels' name in the order receied from LSL.
         """
         return self._ch_names
 
     @property
     def ch_types(self):
         """
-        The list of channels' type in the order received from LSL.
+        List of channels' type in the order received from LSL.
         """
         return self._ch_types

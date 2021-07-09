@@ -19,7 +19,7 @@ class TriggerUSB2LPT(_Trigger):
     Parameters
     ----------
     delay : int
-        The delay in milliseconds until which a new trigger cannot be sent.
+        Delay in milliseconds until which a new trigger cannot be sent.
     verbose : bool
         If True, display a logger.info message when a trigger is sent.
     """
@@ -84,7 +84,7 @@ class TriggerUSB2LPT(_Trigger):
     @property
     def delay(self):
         """
-        The delay to wait between 2 .signal() call in milliseconds.
+        Delay to wait between 2 .signal() call in milliseconds.
         """
         return self._delay * 1000.0
 
