@@ -261,7 +261,7 @@ class ControlGUI_EEG(_ControlGUI):
         record_dir = self._ui.lineEdit_recording_dir.text()
         self._recorder = StreamRecorder(
             record_dir, stream_name=self._scope.stream_name)
-        self._recorder.start(fif_subdir=True, verbose=False)
+        self._recorder.start(fif_subdir=True, blocking=False, verbose=False)
         self._ui.pushButton_stop_recording.setEnabled(True)
         self._ui.pushButton_start_recording.setEnabled(False)
         self._ui.statusBar.showMessage(f"[Recording to '{record_dir}']")
