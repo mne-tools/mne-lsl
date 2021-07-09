@@ -67,67 +67,39 @@ class _BackendVispy(_Backend, app.Canvas):
     Parameters
     ----------
     scope : neurodecode.stream_viewer._scope._Scope
-        The scope connected to a stream receiver acquiring the data and
-        applying filtering. The scope has a buffer of _scope._BUFFER_DURATION
-        (default: 30s).
+        Scope connected to a stream receiver acquiring the data and applying
+        filtering. The scope has a buffer of _BUFFER_DURATION (default: 30s).
+    geometry : tuple | list
+        Window geometry as (pos_x, pos_y, size_x, size_y).
+    xRange : int
+        Range of the x-axis (plotting time duration) in seconds.
+    yRange : float
+        Range of the y-axis (amplitude) in uV.
     """
     # ---------------------------- Init ---------------------------
 
-    def __init__(self, scope):
+    def __init__(self, scope, geometry, xRange, yRange):
         super().__init__(scope)
 
-    def init_backend(self, geometry, x_scale, y_scale, channels_to_show_idx):
-        """
-        Initialize the backend.
-
-        The backend requires the _ScopeControllerUI to be fully
-        initialized and setup. Thus the backend is initialized in 2 steps:
-            - Creation of the instance (with all the associated methods)
-            - Initialization (with all the associated variables)
-
-        Parameters
-        ----------
-        geometry : tuple | list
-            The window geometry as (pos_x, pos_y, size_x, size_y).
-        x_scale : int
-            The plotting duration, i.e. the scale/range of the x-axis.
-        y_scale : float
-            The signal scale/range in uV.
-        channels_to_show_idx : tuple | list
-            The list of channels indices to display, ordered as retrieved from
-            LSL.
-        """
-        super().init_backend(geometry, x_scale, y_scale, channels_to_show_idx)
-        self._init_variables(x_scale, y_scale, channels_to_show_idx)
+        # Variables
+        self._available_colors = np.random.uniform(
+            size=(self._scope.n_channels, 3), low=.5, high=.9)
+        self._init_variables()
         self._init_program_variables()
+
+        # Canvas
         self._init_gloo(geometry)
         self.show()
 
-    def _init_variables(self, x_scale, y_scale, channels_to_show_idx):
-        """
-        Initialize variables.
-        """
-        super()._init_variables(x_scale, y_scale, channels_to_show_idx)
-        self._available_colors = np.random.uniform(
-            size=(self._scope.n_channels, 3), low=.5, high=.9)
-        self._init_nrows_ncols()
-        self._init_n_samples_plot()
+    def _init_variables(self):
+        # xRange
+        self._delta_with_buffer = self._scope.duration_buffer - self._xRange
+        self._duration_plot_samples = math.ceil(
+            self._xRange*self._scope.sample_rate)
 
-    def _init_nrows_ncols(self):
-        """
-        Initialize the number of rows and columns on which the channels are
-        displayed.
-        """
-        self.nrows = len(self._channels_to_show_idx)
-        self.ncols = 1
-
-    def _init_n_samples_plot(self):
-        """
-        Initialize the number of samples present in the plotting window, and
-        the duration difference between the plotting window with the buffer.
-        """
-        self._delta_with_buffer = self._scope.duration_buffer - self._x_scale
-        self._n_samples_plot = math.ceil(self._x_scale * self._scope.sample_rate)
+        # Number of channels
+        self._nrows = len(self._scope.selected_channels)
+        self._ncols = 1
 
     # ------------------------ Init program -----------------------
     def _init_program_variables(self):
@@ -147,7 +119,6 @@ class _BackendVispy(_Backend, app.Canvas):
         self._init_u_size()
         self._init_u_n()
 
-        self._backend_initialized = True
         self._timer = app.Timer(0.020, connect=self._update_loop, start=False)
 
     def _init_a_color(self):
@@ -155,8 +126,8 @@ class _BackendVispy(_Backend, app.Canvas):
         Initialize the vertex the colors.
         """
         self._a_color = np.repeat(
-            self._available_colors[self._channels_to_show_idx, :],
-            self._n_samples_plot, axis=0).astype(np.float32)
+            self._available_colors[self._scope.selected_channels, :],
+            self._duration_plot_samples, axis=0).astype(np.float32)
 
     def _init_a_index(self):
         """
@@ -164,34 +135,34 @@ class _BackendVispy(_Backend, app.Canvas):
         """
         self._a_index = np.c_[
             np.repeat(
-                np.repeat(np.arange(self.ncols),
-                          self.nrows),
-                self._n_samples_plot),
+                np.repeat(np.arange(self._ncols),
+                          self._nrows),
+                self._duration_plot_samples),
             np.repeat(
-                np.tile(np.arange(self.nrows),
-                        self.ncols),
-                self._n_samples_plot),
+                np.tile(np.arange(self._nrows),
+                        self._ncols),
+                self._duration_plot_samples),
             np.tile(
-                np.arange(self._n_samples_plot),
-                self.nrows*self.ncols)].astype(np.float32)
+                np.arange(self._duration_plot_samples),
+                self._nrows*self._ncols)].astype(np.float32)
 
     def _init_u_scale(self):
         """
         Initialize the X/Y scale/range.
         """
-        self._u_scale = (1., 1/20)
+        self._u_scale = (1., 1/self._yRange)
 
     def _init_u_size(self):
         """
         Initialize the number of rows and columns.
         """
-        self._u_size = (self.nrows, self.ncols)
+        self._u_size = (self._nrows, self._ncols)
 
     def _init_u_n(self):
         """
         Initilaize the number of sample per signal.
         """
-        self._u_n = self._n_samples_plot
+        self._u_n = self._duration_plot_samples
 
     def _init_gloo(self, geometry):
         """
@@ -203,8 +174,8 @@ class _BackendVispy(_Backend, app.Canvas):
             keys='interactive')
         self._program = gloo.Program(VERT_SHADER, FRAG_SHADER)
         self._program['a_position'] = self._scope.data_buffer[
-            self._channels_to_show_idx,
-            -self._n_samples_plot:].ravel().astype(np.float32)
+            self._scope.selected_channels,
+            -self._duration_plot_samples:].ravel().astype(np.float32)
         self._program['a_color'] = self._a_color
         self._program['a_index'] = self._a_index
         self._program['u_scale'] = self._u_scale
@@ -231,61 +202,9 @@ class _BackendVispy(_Backend, app.Canvas):
         if len(self._scope.ts_list) > 0:
             self._program['a_position'].set_data(
                 self._scope.data_buffer[
-                    self._channels_to_show_idx,
-                    -self._n_samples_plot:].ravel().astype(np.float32))
+                    self._scope.selected_channels,
+                    -self._duration_plot_samples:].ravel().astype(np.float32))
             self.update()
-
-    # ------------------------ Update program ----------------------
-    # TODO: Moved as setters
-    def update_x_scale(self, new_x_scale):
-        """
-        Called when the user changes the X-axis range/scale, i.e. the duration
-        of the plotting window.
-        """
-        if self._backend_initialized:
-            self._x_scale = new_x_scale
-            self._init_n_samples_plot()
-            self._init_a_color()
-            self._init_a_index()
-            self._init_u_n()
-
-            self._program['a_color'].set_data(self._a_color)
-            self._program['a_index'].set_data(self._a_index)
-            self._program['u_n'] = self._u_n
-            self.update()
-
-    def update_y_scale(self, new_y_scale):
-        """
-        Called when the user changes the signal range/scale.
-        """
-        if self._backend_initialized:
-            self._y_scale = new_y_scale
-            self._init_u_scale()
-
-            self._program['u_scale'] = self._u_scale
-            self.update()
-
-    def update_channels_to_show_idx(self, new_channels_to_show_idx):
-        """
-        Called when the user changes the selection of channels.
-        """
-        if self._backend_initialized:
-            self._channels_to_show_idx = new_channels_to_show_idx
-            self._init_nrows_ncols()
-            self._init_a_color()
-            self._init_a_index()
-            self._init_u_size()
-
-            self._program['a_color'].set_data(self._a_color)
-            self._program['a_index'].set_data(self._a_index)
-            self._program['u_size'] = self._u_size
-            self.update()
-
-    def update_show_LPT_events(self):
-        """
-        Called when the user ticks or untick the show_LPT_events box.
-        """
-        pass
 
     # --------------------------- Events ---------------------------
     def on_resize(self, event):
@@ -304,3 +223,42 @@ class _BackendVispy(_Backend, app.Canvas):
         """
         self._timer.stop()
         super().close()
+
+    # ------------------------ Update program ----------------------
+    @_Backend.xRange.setter
+    def xRange(self, xRange):
+        self._xRange = xRange
+        self._init_variables()
+        self._init_a_color()
+        self._init_a_index()
+        self._init_u_n()
+
+        self._program['a_color'].set_data(self._a_color)
+        self._program['a_index'].set_data(self._a_index)
+        self._program['u_n'] = self._u_n
+        self.update()
+
+    @_Backend.yRange.setter
+    def yRange(self, yRange):
+        self._yRange = yRange
+        self._init_u_scale()
+
+        self._program['u_scale'] = self._u_scale
+        self.update()
+
+    @_Backend.selected_channels.setter
+    def selected_channels(self, selected_channels):
+        self._selected_channels = selected_channels
+        self._init_variables()
+        self._init_a_color()
+        self._init_a_index()
+        self._init_u_size()
+
+        self._program['a_color'].set_data(self._a_color)
+        self._program['a_index'].set_data(self._a_index)
+        self._program['u_size'] = self._u_size
+        self.update()
+
+    @_Backend.show_LPT_trigger_events.setter
+    def show_LPT_trigger_events(self, show_LPT_trigger_events):
+        self._show_LPT_trigger_events = show_LPT_trigger_events
