@@ -38,19 +38,21 @@ class StreamRecorder:
         self._process = None
         self._state = mp.Value('i', 0)
 
-    def start(self, fif_subdir=True, verbose=False):
+    def start(self, fif_subdir=True, blocking=True, verbose=False):
         """
         Start the recording in a new process. The function is exited when the
         new process started recording data.
 
         Parameters
         ----------
-        verbose : bool
-            If True, a timer showing since when the recorder started is
-            displayed every seconds.
         fif_subdir : bool
             If True, the .pcl files are converting to .fif in a subdirectory
             'fif': record_dir/fif/... instead of record_dir.
+        blocking : bool
+            If True, waits for the child process to start recording data.
+        verbose : bool
+            If True, a timer showing since when the recorder started is
+            displayed every seconds.
         """
         fname, self._eve_file = StreamRecorder._create_fname(
             self._record_dir, self._fname)
@@ -61,9 +63,9 @@ class StreamRecorder:
                   self._stream_name, self._state, bool(verbose)))
         self._process.start()
 
-        # Wait for process to start
-        while self._state.value == 0:
-            pass
+        if blocking:
+            while self._state.value == 0:
+                pass
 
     def stop(self):
         """
