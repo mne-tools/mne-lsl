@@ -106,7 +106,7 @@ class _ControlGUI(QMainWindow, ABC, metaclass=_metaclass_ControlGUI):
         """
         SUPPORTED_BACKENDS = dict()
         try:
-            SUPPORTED_BACKEND['vispy'] = _BackendVispy
+            SUPPORTED_BACKENDS['vispy'] = _BackendVispy
         except NameError:
             pass
         try:

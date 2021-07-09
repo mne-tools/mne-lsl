@@ -16,7 +16,6 @@ TODO:
         - Add channels names + axis labels
         - Add trigger events (Common _TriggerEvent class for every backends?)
         - Fix position when creating the window
-        - Define second value of u_scale based on the y_scale.
         - Fix the non-fatal errors raised.
 
     PyQt5 backend:
