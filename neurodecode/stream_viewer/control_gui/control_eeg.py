@@ -3,12 +3,10 @@ from pathlib import Path
 from configparser import RawConfigParser
 
 from PyQt5 import QtCore
-from PyQt5.QtWidgets import QHeaderView, QTableWidgetItem, QFileDialog
+from PyQt5.QtWidgets import QHeaderView, QTableWidgetItem
 
 from ._control import _ControlGUI
 from ._ui_control import UI_MainWindow
-
-from ...stream_recorder import StreamRecorder
 
 
 class ControlGUI_EEG(_ControlGUI):
@@ -184,6 +182,7 @@ class ControlGUI_EEG(_ControlGUI):
         """
         Event handler. Connect QT signals to slots.
         """
+        super()._connect_signals_to_slots()
         # Scales
         self._ui.comboBox_signal_yRange.activated.connect(
             self.onActivated_comboBox_signal_yRange)
@@ -203,14 +202,6 @@ class ControlGUI_EEG(_ControlGUI):
         # Trigger events
         self._ui.checkBox_show_LPT_trigger_events.stateChanged.connect(
             self.onClicked_checkBox_show_LPT_trigger_events)
-
-        # Recording
-        self._ui.pushButton_start_recording.clicked.connect(
-            self.onClicked_pushButton_start_recording)
-        self._ui.pushButton_stop_recording.clicked.connect(
-            self.onClicked_pushButton_stop_recording)
-        self._ui.pushButton_set_recording_dir.clicked.connect(
-            self.onClicked_pushButton_set_recording_dir)
 
         # Channel table
         self._ui.table_channels.itemSelectionChanged.connect(
@@ -255,33 +246,6 @@ class ControlGUI_EEG(_ControlGUI):
     def onClicked_checkBox_show_LPT_trigger_events(self):
         self._backend.show_LPT_trigger_events = bool(
             self._ui.checkBox_show_LPT_trigger_events.isChecked())
-
-    @QtCore.pyqtSlot()
-    def onClicked_pushButton_start_recording(self):
-        record_dir = self._ui.lineEdit_recording_dir.text()
-        self._recorder = StreamRecorder(
-            record_dir, stream_name=self._scope.stream_name)
-        self._recorder.start(fif_subdir=True, blocking=False, verbose=False)
-        self._ui.pushButton_stop_recording.setEnabled(True)
-        self._ui.pushButton_start_recording.setEnabled(False)
-        self._ui.statusBar.showMessage(f"[Recording to '{record_dir}']")
-
-    @QtCore.pyqtSlot()
-    def onClicked_pushButton_stop_recording(self):
-        self._recorder.stop()
-        self._ui.pushButton_start_recording.setEnabled(True)
-        self._ui.pushButton_stop_recording.setEnabled(False)
-        self._ui.statusBar.showMessage("[Not recording]")
-
-    @QtCore.pyqtSlot()
-    def onClicked_pushButton_set_recording_dir(self):
-        defaultPath = str(Path.home())
-        path_name = QFileDialog.getExistingDirectory(
-            caption="Choose the recording directory", directory=defaultPath)
-
-        if path_name:
-            self._ui.lineEdit_recording_dir.setText(path_name)
-            self._ui.pushButton_start_recording.setEnabled(True)
 
     @QtCore.pyqtSlot()
     def onSelectionChanged_table_channels(self):
