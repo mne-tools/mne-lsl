@@ -196,7 +196,7 @@ class MovingBar(_Visual):
     @property
     def length(self):
         """
-        The length of the bar in pixel.
+        Length of the bar in pixel.
         """
         return self._length
 
@@ -210,7 +210,7 @@ class MovingBar(_Visual):
     @property
     def width(self):
         """
-        The width of the bar in pixel.
+        Width of the bar in pixel.
         """
         return self._width
 
@@ -224,7 +224,7 @@ class MovingBar(_Visual):
     @property
     def color(self):
         """
-        The color of the bar.
+        Color of the bar.
         """
         return self._color
 
@@ -237,7 +237,7 @@ class MovingBar(_Visual):
     @property
     def position(self):
         """
-        The position between -1 and 1 of the bar on the given axis.
+        Position between -1 and 1 of the bar on the given axis.
         """
         return self._position
 
@@ -250,7 +250,7 @@ class MovingBar(_Visual):
     @property
     def axis(self):
         """
-        The axis on which the bar is moving.
+        Axis on which the bar is moving.
             0 - Horizontal bar along vertical axis.
             1 - Vertical bar along horizonal axis.
         """

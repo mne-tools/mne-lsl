@@ -87,7 +87,7 @@ def preprocess(inst, transformations):
     inst : mne.io.Raw | mne.io.RawArray | mne.Epochs | mne.Evoked
         MNE instance of Raw | Epochs | Evoked.
     transformations : dict
-        The dict containing the transformations and arguments to pass to each
+        Dict containing the transformations and arguments to pass to each
         transformation.
             key: str
                 The name of the transformation function.
@@ -159,11 +159,11 @@ def dir_preprocess(fif_dir, recursive, transformations,
     Parameters
     ----------
     fif_dir : str
-         The path to the directory containing fif files.
+        Path to the directory containing fif files.
     recursive : bool
-        If true, search recursively.
+        If True, search recursively.
     transformations : dict
-        The dict containing the transformations and arguments to pass to each
+        Dict containing the transformations and arguments to pass to each
         transformation.
             key: str
                 The name of the transformation function.
@@ -178,10 +178,10 @@ def dir_preprocess(fif_dir, recursive, transformations,
                 'set_eeg_reference': ['average', 'CPz']
             }
     out_dir : str | None
-        The path to the output directory. If None, the directory
-        f'fif_dir/preprocessed' is used.
+        Path to the output directory. If None, the directory
+        'fif_dir/preprocessed' is used.
     overwrite : bool
-        If true, overwrite previously corrected files.
+        If True, overwrite previously corrected files.
     """
     fif_dir = Path(fif_dir)
     if not fif_dir.exists():

@@ -15,7 +15,7 @@ def current_source_density(inst, montage=None, **kwargs):
     inst : mne.io.Raw | mne.io.RawArray | mne.Epochs | mne.Evoked
         MNE instance of Raw | Epochs | Evoked.
     montage : str | DigMontage
-        The montage to used, e.g. 'standard_1020'.
+        Montage to used, e.g. 'standard_1020'.
         c.f. https://mne.tools/stable/generated/mne.io.Raw.html#mne.io.Raw.set_montage
     **kwargs : Additional arguments are passed to
         mne.preprocessing.compute_current_source_density()
@@ -53,17 +53,17 @@ def dir_current_source_density(fif_dir, recursive, montage=None,
     Parameters
     ----------
     fif_dir : str
-         The path to the directory containing fif files.
+        Path to the directory containing fif files.
     recursive : bool
-        If true, search recursively.
+        If True, search recursively.
     montage : str | DigMontage
-        The montage to used, e.g. 'standard_1020'.
+        Montage to used, e.g. 'standard_1020'.
         c.f. https://mne.tools/stable/generated/mne.io.Raw.html#mne.io.Raw.set_montage
     out_dir : str | None
-        The path to the output directory. If None, the directory
-        f'fif_dir/csd' is used.
+        Path to the output directory. If None, the directory
+        'fif_dir/csd' is used.
     overwrite : bool
-        If true, overwrite previously corrected files.
+        If True, overwrite previously corrected files.
     **kwargs : Additional arguments are passed to
         mne.preprocessing.compute_current_source_density()
     """

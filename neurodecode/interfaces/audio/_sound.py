@@ -22,12 +22,12 @@ class _Sound(ABC):
         If an int or a float is provided, the sound will use only one channel
         (mono). If a 2-length sequence is provided, the sound will use 2
         channels (stereo).
-        The volume of each channel is given between 0 and 100. For stereo, the
+        Volume of each channel, given between 0 and 100. For stereo, the
         volume is given as [L, R].
     sample_rate : int, optional
         Sampling frequency of the sound. The default is 44100 kHz.
     duration : float, optional
-        The duration of the sound. The default is 1.0 second.
+        Duration of the sound. The default is 1.0 second.
     """
 
     @abstractmethod
@@ -141,7 +141,7 @@ class _Sound(ABC):
     @property
     def volume(self):
         """
-        The sound's volume(s).
+        Sound's volume(s).
         """
         return self._volume
 
@@ -154,7 +154,7 @@ class _Sound(ABC):
     @property
     def sample_rate(self):
         """
-        The sound's sampling rate.
+        Sound's sampling rate.
         """
         return self._sample_rate
 
@@ -170,7 +170,7 @@ class _Sound(ABC):
     @property
     def duration(self):
         """
-        The sound's duration (seconds).
+        Sound's duration (seconds).
         """
         return self._duration
 
@@ -186,6 +186,6 @@ class _Sound(ABC):
     @property
     def signal(self):
         """
-        The sound's signal.
+        Sound's signal.
         """
         return self._signal

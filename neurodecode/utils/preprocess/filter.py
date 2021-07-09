@@ -55,9 +55,9 @@ def dir_notch_filter(fif_dir, recursive, freqs, picks=None,
     Parameters
     ----------
     fif_dir : str
-         The path to the directory containing fif files.
+        Path to the directory containing fif files.
     recursive : bool
-        If true, search recursively.
+        If True, search recursively.
     freqs : list | numpy.ndarray
         Specific frequencies to filter out from data.
             np.arange(50, 251, 50) for EU powerline noise.
@@ -69,10 +69,10 @@ def dir_notch_filter(fif_dir, recursive, freqs, picks=None,
             picks='eeg'
             picks=['eog', 'ecg']
     out_dir : str | None
-        The path to the output directory. If None, the directory
-        f'fif_dir/notched' is used.
+        Path to the output directory. If None, the directory
+        'fif_dir/notched' is used.
     overwrite : bool
-        If true, overwrite previously corrected files.
+        If True, overwrite previously corrected files.
     **kwargs : Additional arguments are passed to raw.notch_filter()
     """
     fif_dir = Path(fif_dir)
@@ -161,9 +161,9 @@ def dir_spectral_filter(fif_dir, recursive, l_freq, h_freq, picks=None,
     Parameters
     ----------
     fif_dir : str
-         The path to the directory containing fif files.
+        Path to the directory containing fif files.
     recursive : bool
-        If true, search recursively.
+        If True, search recursively.
     l_freq : float | None
         For FIR filters, the lower pass-band edge;.
         For IIR filters, the lower cutoff frequency.
@@ -179,10 +179,10 @@ def dir_spectral_filter(fif_dir, recursive, l_freq, h_freq, picks=None,
             picks='eeg'
             picks=['eog', 'ecg']
     out_dir : str | None
-        The path to the output directory. If None, the directory
-        f'fif_dir/filtered' is used.
+        Path to the output directory. If None, the directory
+        'fif_dir/filtered' is used.
     overwrite : bool
-        If true, overwrite previously corrected files.
+        If True, overwrite previously corrected files.
     **kwargs : Additional arguments are passed to raw.filter()
     """
     fif_dir = Path(fif_dir)
@@ -238,7 +238,7 @@ def laplacian_filter(inst, montage=None, **kwargs):
     inst : mne.io.Raw | mne.io.RawArray | mne.Epochs | mne.Evoked
         MNE instance of Raw | Epochs | Evoked.
     montage : str | DigMontage
-        The montage to used, e.g. 'standard_1020'.
+        Montage to used, e.g. 'standard_1020'.
         c.f. https://mne.tools/stable/generated/mne.io.Raw.html#mne.io.Raw.set_montage
     **kwargs : Additional arguments are passed to
         mne.preprocessing.compute_current_source_density()
@@ -266,17 +266,17 @@ def dir_laplacian_filter(fif_dir, recursive, montage=None,
     Parameters
     ----------
     fif_dir : str
-         The path to the directory containing fif files.
+        Path to the directory containing fif files.
     recursive : bool
-        If true, search recursively.
+        If True, search recursively.
     montage : str | DigMontage
-        The montage to used, e.g. 'standard_1020'.
+        Montage to used, e.g. 'standard_1020'.
         c.f. https://mne.tools/stable/generated/mne.io.Raw.html#mne.io.Raw.set_montage
     out_dir : str | None
-        The path to the output directory. If None, the directory
-        f'fif_dir/csd' is used.
+        Ppath to the output directory. If None, the directory
+        'fif_dir/csd' is used.
     overwrite : bool
-        If true, overwrite previously corrected files.
+        If True, overwrite previously corrected files.
     **kwargs : Additional arguments are passed to
         mne.preprocessing.compute_current_source_density()
     """

@@ -18,7 +18,7 @@ def resample(inst, sfreq, **kwargs):
     inst : inst : mne.io.Raw | mne.io.RawArray | mne.Epochs | mne.Evoked
         MNE instance of Raw | Epochs | Evoked.
     sfreq : float
-        Tne desired sampling rate in Hz.
+        Desired sampling rate in Hz.
     **kwargs : Additional arguments are passed to inst.resample().
         c.f. https://mne.tools/stable/generated/mne.io.Raw.html#mne.io.Raw.resample
     """
@@ -37,16 +37,16 @@ def dir_resample(fif_dir, recursive, sfreq,
     Parameters
     ----------
     fif_dir : str
-         The path to the directory containing fif files.
+        Path to the directory containing fif files.
     recursive : bool
-        If true, search recursively.
+        If True, search recursively.
     sfreq : float
-        Tne desired sampling rate in Hz.
+        Desired sampling rate in Hz.
     out_dir : str | None
-        The path to the output directory. If None, the directory
-        f'fif_resampled_{sfreq}' is used.
+        Path to the output directory. If None, the directory
+        'fif_resampled_{sfreq}' is used.
     overwrite : bool
-        If true, overwrite previously corrected files.
+        If True, overwrite previously corrected files.
     **kwargs : Additional arguments are passed to inst.resample().
     """
     fif_dir = Path(fif_dir)

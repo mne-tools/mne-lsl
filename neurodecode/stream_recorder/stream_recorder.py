@@ -18,9 +18,9 @@ class StreamRecorder:
     Parameters
     ----------
     record_dir : str | pathlib.Path
-        The directory where the data will be saved.
+        Directory where the data will be saved.
     fname : str | None
-        The file name stem used to create the files:
+        File name stem used to create the files:
             PCL: '{fname}-[stream]-raw.pcl'
             FIF: '{fname}-[stream]-raw.fif'
             (optional) SOFTWARE trigger events: '{fname}-eve.txt'
@@ -134,7 +134,7 @@ class StreamRecorder:
     @property
     def record_dir(self):
         """
-        The directory where the data will be saved.
+        Directory where the data will be saved.
         """
         return self._record_dir
 
@@ -150,7 +150,7 @@ class StreamRecorder:
     @property
     def fname(self):
         """
-        The file name stem.
+        File name stem.
         """
         return self._fname
 
@@ -182,14 +182,14 @@ class StreamRecorder:
     @property
     def eve_file(self):
         """
-        The path to the event file for SOFTWARE triggers.
+        Path to the event file for SOFTWARE triggers.
         """
         return self._eve_file
 
     @property
     def state(self):
         """
-        The state of the recorder:
+        Recording state of the recorder:
             0 - Not recording.
             1 - Recording.
         """
@@ -198,7 +198,7 @@ class StreamRecorder:
     @property
     def process(self):
         """
-        The launched process.
+        Launched process.
         """
         return self._process
 
@@ -211,13 +211,13 @@ class _Recorder:
     Parameters
     ----------
     record_dir : str | pathlib.Path
-        The directory where the data will be saved.
+        Directory where the data will be saved.
     fname : str | None
-        The file name stem used to create the files:
+        File name stem used to create the files:
             PCL: '{fname}-[stream]-raw.pcl'
             FIF: '{fname}-[stream]-raw.fif'
     eve_file : str | pathlib.Path
-        The path to the event file for SOFTWARE triggers.
+        Path to the event file for SOFTWARE triggers.
     fif_subdir : bool
         If True, the .pcl files are converting to .fif in a subdirectory
         'fif': record_dir/fif/... instead of record_dir.
@@ -225,13 +225,13 @@ class _Recorder:
         Servers' name or list of servers' name to connect to.
         None: no constraint.
     state : mp.Value
-        The state of the recorder:
+        Recording state of the recorder:
             0 - Not recording.
             1 - Recording.
         This variable is used to stop the recording from another process.
     verbose : bool
-        If True, a timer showing since when the recorder started is
-        displayed every seconds.
+        If True, a timer showing since when the recorder started is displayed
+        every seconds.
     """
 
     def __init__(self, record_dir, fname, eve_file, fif_subdir,

@@ -13,8 +13,8 @@ class TriggerDef:
 
     Parameters
     ----------
-    ini_file : str
-        The path of the ini file
+    ini_file : str | pathlib.Path
+        Path of the ini file.
     """
 
     def __init__(self, ini_file):
