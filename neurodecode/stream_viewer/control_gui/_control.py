@@ -1,6 +1,8 @@
+from pathlib import Path
 from abc import ABC, abstractmethod
 
-from PyQt5.QtWidgets import QMainWindow
+from PyQt5 import QtCore
+from PyQt5.QtWidgets import QMainWindow, QFileDialog
 
 try:
     from ..backends import _BackendVispy
@@ -9,6 +11,7 @@ except ImportError:
 from ..backends import _BackendPyQt5
 
 from ... import logger
+from ...stream_recorder import StreamRecorder
 
 
 class _metaclass_ControlGUI(type(QMainWindow), type(ABC)):
@@ -53,12 +56,47 @@ class _ControlGUI(QMainWindow, ABC, metaclass=_metaclass_ControlGUI):
         """
         event.accept()
 
+    # --------------------------------------------------------------------
     @abstractmethod
     def _connect_signals_to_slots(self):
         """
         Event handler. Connect QT signals to slots.
         """
-        pass
+        # Recording
+        self._ui.pushButton_start_recording.clicked.connect(
+            self.onClicked_pushButton_start_recording)
+        self._ui.pushButton_stop_recording.clicked.connect(
+            self.onClicked_pushButton_stop_recording)
+        self._ui.pushButton_set_recording_dir.clicked.connect(
+            self.onClicked_pushButton_set_recording_dir)
+
+    @QtCore.pyqtSlot()
+    def onClicked_pushButton_start_recording(self):
+        record_dir = self._ui.lineEdit_recording_dir.text()
+        self._recorder = StreamRecorder(
+            record_dir, stream_name=self._scope.stream_name)
+        self._recorder.start(fif_subdir=True, blocking=False, verbose=False)
+        self._ui.pushButton_stop_recording.setEnabled(True)
+        self._ui.pushButton_start_recording.setEnabled(False)
+        self._ui.statusBar.showMessage(f"[Recording to '{record_dir}']")
+
+    @QtCore.pyqtSlot()
+    def onClicked_pushButton_stop_recording(self):
+        if self._recorder.state.value == 1:
+            self._recorder.stop()
+            self._ui.pushButton_start_recording.setEnabled(True)
+            self._ui.pushButton_stop_recording.setEnabled(False)
+            self._ui.statusBar.showMessage("[Not recording]")
+
+    @QtCore.pyqtSlot()
+    def onClicked_pushButton_set_recording_dir(self):
+        defaultPath = str(Path.home())
+        path_name = QFileDialog.getExistingDirectory(
+            caption="Choose the recording directory", directory=defaultPath)
+
+        if path_name:
+            self._ui.lineEdit_recording_dir.setText(path_name)
+            self._ui.pushButton_start_recording.setEnabled(True)
 
     # --------------------------------------------------------------------
     @staticmethod
