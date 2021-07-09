@@ -92,6 +92,9 @@ class _BackendVispy(_Backend, app.Canvas):
         self.show()
 
     def _init_variables(self):
+        """
+        Initialize variables depending on xRange, yRange and selected_channels.
+        """
         # xRange
         self._delta_with_buffer = self._scope.duration_buffer - self._xRange
         self._duration_plot_samples = math.ceil(
@@ -227,6 +230,10 @@ class _BackendVispy(_Backend, app.Canvas):
     # ------------------------ Update program ----------------------
     @_Backend.xRange.setter
     def xRange(self, xRange):
+        """
+        Called when the user changes the X-axis range/scale, i.e. the duration
+        of the plotting window.
+        """
         self._xRange = xRange
         self._init_variables()
         self._init_a_color()
@@ -240,6 +247,9 @@ class _BackendVispy(_Backend, app.Canvas):
 
     @_Backend.yRange.setter
     def yRange(self, yRange):
+        """
+        Called when the user changes the signal range/scale.
+        """
         self._yRange = yRange
         self._init_u_scale()
 
@@ -248,6 +258,9 @@ class _BackendVispy(_Backend, app.Canvas):
 
     @_Backend.selected_channels.setter
     def selected_channels(self, selected_channels):
+        """
+        Called when the user changes the selection of channels.
+        """
         self._selected_channels = selected_channels
         self._init_variables()
         self._init_a_color()
@@ -261,4 +274,7 @@ class _BackendVispy(_Backend, app.Canvas):
 
     @_Backend.show_LPT_trigger_events.setter
     def show_LPT_trigger_events(self, show_LPT_trigger_events):
+        """
+        Called when the user ticks or untick the show_LPT_trigger_events box.
+        """
         self._show_LPT_trigger_events = show_LPT_trigger_events

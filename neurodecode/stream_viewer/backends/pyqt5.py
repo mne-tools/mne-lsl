@@ -67,6 +67,9 @@ class _BackendPyQt5(_Backend):
         self._timer.timeout.connect(self._update_loop)
 
     def _init_variables(self):
+        """
+        Initialize variables depending on xRange, yRange and selected_channels.
+        """
         # xRange
         self._delta_with_buffer = self._scope.duration_buffer - self._xRange
         self._duration_plot_samples = math.ceil(
@@ -78,6 +81,9 @@ class _BackendPyQt5(_Backend):
             -self._yRange)
 
     def _init_canvas(self):
+        """
+        Initialize the drawing canvas.
+        """
         # Ranges
         yRange = [
             1.5*self._yRange,
@@ -189,6 +195,10 @@ class _BackendPyQt5(_Backend):
     # ------------------------ Update program ----------------------
     @_Backend.xRange.setter
     def xRange(self, xRange):
+        """
+        Called when the user changes the X-axis range/scale, i.e. the duration
+        of the plotting window.
+        """
         self._xRange = xRange
         self._init_variables()
         self._init_canvas()
@@ -205,6 +215,9 @@ class _BackendPyQt5(_Backend):
 
     @_Backend.yRange.setter
     def yRange(self, yRange):
+        """
+        Called when the user changes the signal range/scale.
+        """
         self._yRange = yRange
         self._init_variables()
         self._init_canvas()
@@ -214,6 +227,9 @@ class _BackendPyQt5(_Backend):
 
     @_Backend.selected_channels.setter
     def selected_channels(self, selected_channels):
+        """
+        Called when the user changes the selection of channels.
+        """
         plots2remove = [idx for idx in self._selected_channels
                         if idx not in selected_channels]
         plots2add = [idx for idx in selected_channels
@@ -234,6 +250,9 @@ class _BackendPyQt5(_Backend):
 
     @_Backend.show_LPT_trigger_events.setter
     def show_LPT_trigger_events(self, show_LPT_trigger_events):
+        """
+        Called when the user ticks or untick the show_LPT_trigger_events box.
+        """
         self._show_LPT_trigger_events = show_LPT_trigger_events
         for event in self._trigger_events:
             if event.position_plot >= 0 and event.event_type == 'LPT':
