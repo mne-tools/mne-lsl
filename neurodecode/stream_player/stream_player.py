@@ -17,18 +17,14 @@ class StreamPlayer:
     Parameters
     ----------
     stream_name : str
-        The stream's name, displayed on LSL network.
+        Stream's server name, displayed on LSL network.
     fif_file : str
-        The absolute path to the .fif file to play.
+        Path to the .fif file to play.
     chunk_size : int
-        The number of samples to send at once (usually 16-32 is good enough).
-    trigger_file : str
-        The absolute path to the file containing the table converting event
-        numbers into event strings.
-
-    Notes
-    -----
-    It instances a Streamer in a new process and call Streamer.stream().
+        Number of samples to send at once (usually 16-32 is good enough).
+    trigger_file : str | None
+        Path to the file containing the table converting event numbers into
+        event strings.
     """
 
     def __init__(self, stream_name, fif_file, chunk_size,
@@ -43,12 +39,12 @@ class StreamPlayer:
     def start(self, repeat=np.float('inf'), high_resolution=False):
         """
         Start streaming data on LSL network in a new process by calling
-        stream().
+        _Streamer.stream().
 
         Parameters
         ----------
         repeat : float
-            The number of times to replay the data.
+            Number of times to replay the data.
         high_resolution : bool
             If True, it uses perf_counter() instead of sleep() for higher time
             resolution. However, it uses more CPU.
@@ -100,7 +96,7 @@ class StreamPlayer:
     @property
     def stream_name(self):
         """
-        The stream's name, displayed on LSL network.
+        Stream's server name, displayed on LSL network.
         """
         return self._stream_name
 
@@ -116,7 +112,7 @@ class StreamPlayer:
     @property
     def fif_file(self):
         """
-        The absolute path to the .fif file to play.
+        Path to the .fif file to play.
         """
         return self._fif_file
 
@@ -132,7 +128,7 @@ class StreamPlayer:
     @property
     def chunk_size(self):
         """
-        The size of a chunk of data [samples].
+        Size of a chunk of data [samples].
         """
         return self._chunk_size
 
@@ -148,7 +144,7 @@ class StreamPlayer:
     @property
     def trigger_file(self):
         """
-        The absolute path to the file containing the table converting event
+        Path to the file containing the table converting event
         numbers into event strings.
         """
         return self._trigger_file
@@ -165,7 +161,7 @@ class StreamPlayer:
     @property
     def process(self):
         """
-        The launched process.
+        Launched process.
         """
         return self._process
 
@@ -177,14 +173,14 @@ class _Streamer:
     Parameters
     ----------
     stream_name : str
-        The stream's name, displayed on LSL network.
+        Stream's server name, displayed on LSL network.
     fif_file : str
-        The absolute path to the .fif file to play.
+        Path to the .fif file to play.
     chunk_size : int
-        The number of samples to send at once (usually 16-32 is good enough).
+        Number of samples to send at once (usually 16-32 is good enough).
     trigger_file : str
-        The absolute path to the file containing the table converting event
-        numbers into event strings.
+        Path to the file containing the table converting event numbers into
+        event strings.
     """
 
     def __init__(self, stream_name, fif_file, chunk_size, trigger_file=None):
@@ -206,7 +202,7 @@ class _Streamer:
         Parameters
         ----------
         fif_file : str
-            The absolute path to the .fif file to play.
+            Path to the .fif file to play.
         """
         self._raw, self._events = read_raw_fif(fif_file)
         self._tch = find_event_channel(inst=self._raw)
@@ -228,7 +224,7 @@ class _Streamer:
         Parameters
         ----------
         stream_name : str
-            The stream's name, displayed on LSL network.
+            Stream's server name, displayed on LSL network.
         """
         sinfo = pylsl.StreamInfo(
             stream_name, channel_count=self._ch_count,
@@ -272,7 +268,7 @@ class _Streamer:
         Parameters
         ----------
         repeat : int
-            The number of times to replay the data (Default=inf).
+            Number of times to replay the data (Default=inf).
         high_resolution : bool
             If True, it uses perf_counter() instead of sleep() for higher time
             resolution. However, it uses more CPU.

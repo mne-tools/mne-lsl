@@ -15,7 +15,7 @@ def set_montage(inst, montage, **kwargs):
     inst : mne.io.Raw | mne.io.RawArray | mne.Epochs | mne.Evoked
         MNE instance of Raw | Epochs | Evoked.
     montage : str | DigMontage
-        The montage to used, e.g. 'standard_1020'.
+        Montage to used, e.g. 'standard_1020'.
     **kwargs : Additional arguments are passed to inst.set_montage()
         c.f. https://mne.tools/stable/generated/mne.io.Raw.html#mne.io.Raw.set_montage
     """
@@ -33,16 +33,16 @@ def dir_set_montage(fif_dir, recursive, montage,
     Parameters
     ----------
     fif_dir : str
-         The path to the directory containing fif files.
+        Path to the directory containing fif files.
     recursive : bool
-        If true, search recursively.
-    new_channel_names : list
-        The list of the new channel names.
+        If True, search recursively.
+    montage : str | DigMontage
+        Montage to used, e.g. 'standard_1020'.
     out_dir : str | None
-        The path to the output directory. If None, the directory
-        f'fif_dir/with_montage' is used.
+        Path to the output directory. If None, the directory
+        'fif_dir/with_montage' is used.
     overwrite : bool
-        If true, overwrite previously corrected files.
+        If True, overwrite previously corrected files.
     """
     fif_dir = Path(fif_dir)
     if not fif_dir.exists():

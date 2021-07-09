@@ -26,11 +26,11 @@ def pcl2fif(filename, out_dir=None, external_event=None,
     Parameters
     ----------
     filename : str
-        The pickle file path to convert to fif format.
+        Pickle file path to convert to fif format.
     out_dir : str
         Saving directory. If None, it will be the directory of the .pkl file.
     external_event : str
-        Event file path in text formatm following mne event struct.
+        Event file path in text format, following MNE event structure.
         Each row should be: index 0 event
     precision : str
         Data matrix format. [single|double|int|short], 'single' improves
@@ -87,7 +87,7 @@ def _format_pcl_to_mne_RawArray(data):
     Returns
     -------
     mne.io.raw
-        The mne raw structure.
+        MNE raw structure.
     """
     if isinstance(data['signals'], list):
         signals_raw = np.array(data['signals'][0]).T    # to channels x samples
@@ -153,16 +153,17 @@ def _event_timestamps_to_indices(raw_timestamps, eventfile, offset):
     Parameters
     ----------
     raw_timestamps : list
-        The whole data's timestamps (mne: start at 0.0 sec).
+        Data's timestamps (MNE: start at 0.0 sec).
     eventfile : str
         Event file containing the events, indexed with LSL timestamps.
     offset : float
-        The first sample's LSL timestamp, to start at 0.0 sec.
+        LSL timestamp of the first sample, to start at 0.0 sec.
 
     Returns
     -------
-    np.array
-        The events [shape=(n_events, 3)]; used as input to raw.add_events().
+    events : np.array
+        MNE-compatible events [shape=(n_events, 3)]
+        Used as input to raw.add_events().
     """
 
     ts_min = min(raw_timestamps)
@@ -193,11 +194,12 @@ def _add_events_from_txt(raw, events_index, stim_channel='TRIGGER',
     Parameters
     ----------
     raw : mne.io.raw
-        The mne raw data structure.
+        MNE raw data structure.
     events_index : np.array
-        The events [shape=(n_events, 3)]; used as input to raw.add_events().
+        MNE-compatible events [shape=(n_events, 3)].
+        Used as input to raw.add_events().
     stim_channel : str
-        The stin channel to add the events.
+        Stim channel where the vents are added.
     replace : bool
         If True the old events on the stim channel are removed before adding
         the new ones.
@@ -224,9 +226,9 @@ def any2fif(filename, out_dir=None, overwrite=True, precision='double'):
     Parameters
     ----------
     filename : str
-        The pickle file path to convert to fif format.
+        File path to convert to fif format.
     out_dir : str
-        Saving directory. If None, it will be the directory of the .pkl file.
+        Saving directory. If None, it will be the directory of filename.
     overwrite : bool
         If true, overwrite previously converted files with the same name.
     precision : str
@@ -273,13 +275,13 @@ def dir_any2fif(directory, recursive, out_dir=None, overwrite=False, **kwargs):
 
     Parameters
     ----------
-    fif_dir : str
-         The path to the directory containing fif files.
+    directory : str
+         Path to the directory containing files to convert.
     recursive : bool
         If true, search recursively.
     out_dir : str | None
-        The path to the output directory. If None, the directory
-        'corrected' is used.
+        Path to the output directory. If None, the directory
+        directoy/'corrected' is used.
     overwrite : bool
         If true, overwrite previously corrected files.
     **kwargs : Additional arguments are passed to any2fif().

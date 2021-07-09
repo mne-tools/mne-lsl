@@ -60,16 +60,15 @@ class _Backend(ABC):
     @property
     def scope(self):
         """
-        The scope connected to a stream receiver acquiring the data and
-        applying filtering. The scope has a buffer of BUFFER_DURATION
-        (default: 30s).
+        Scope connected to a stream receiver acquiring the data and applying
+        filtering. The scope has a buffer of BUFFER_DURATION (default: 30s).
         """
         return self._scope
 
     @property
     def xRange(self):
         """
-        The X-axis range/scale, i.e. the duration of the plotting window.
+        X-axis range/scale, i.e. the duration of the plotting window.
         """
         return self._xRange
 
@@ -85,7 +84,7 @@ class _Backend(ABC):
     @property
     def yRange(self):
         """
-        The signal range/scale.
+        Y-axis range/scale, i.e. the signal amplitude.
         """
         return self._yRange
 
@@ -100,7 +99,7 @@ class _Backend(ABC):
     @property
     def selected_channels(self):
         """
-        The selected channels.
+        Selected channels.
         """
         return self._selected_channels
 

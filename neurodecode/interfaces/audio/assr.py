@@ -24,7 +24,7 @@ class ASSR(_Sound):
         If an int or a float is provided, the sound will use only one channel
         (mono). If a 2-length sequence is provided, the sound will use 2
         channels (stereo).
-        The volume of each channel is given between 0 and 100. For stereo, the
+        Volume of each channel, given between 0 and 100. For stereo, the
         volume is given as [L, R].
     frequency_carrier : int
         Carrier frequency in Hz.
@@ -42,10 +42,9 @@ class ASSR(_Sound):
                 signal = M(t)*cos(2*pi*fc*t)
                 M(t) = sin(2*pi*fm*t)
     sample_rate : int, optional
-        Sampling frequency of the sound.
-        The default is 44100 kHz.
+        Sampling frequency of the sound. The default is 44100 kHz.
     duration : float, optional
-        The duration of the sound. The default is 1.0 second.
+        Duration of the sound. The default is 1.0 second.
     """
 
     def __init__(self, volume, frequency_carrier=1000,
@@ -129,7 +128,7 @@ class ASSR(_Sound):
     @property
     def frequency_carrier(self):
         """
-        The sound's carrier frequency.
+        Sound's carrier frequency.
         """
         return self._frequency_carrier
 
@@ -142,7 +141,7 @@ class ASSR(_Sound):
     @property
     def frequency_modulation(self):
         """
-        The sound's modulation frequency.
+        Sound's modulation frequency.
         """
         return self._frequency_modulation
 
@@ -155,7 +154,7 @@ class ASSR(_Sound):
     @property
     def method(self):
         """
-        The sound's modulation method.
+        Sound's modulation method.
         """
         return self._method
 

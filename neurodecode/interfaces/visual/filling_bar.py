@@ -25,7 +25,7 @@ class FillingBar(_Visual):
         self._backup_img = None
 
     def putBar(self, length, width, margin, color, fill_color,
-               fill_length=0, axis=0):
+               fill_perc=0, axis=0):
         """
         Backup the visual and draw the bar on top.
 
@@ -36,7 +36,7 @@ class FillingBar(_Visual):
         width : int
             Number of pixels used to draw the width of the bar.
         margin : int
-            margin in pixel between the filling bar and the containing bar.
+            Margin in pixel between the filling bar and the containing bar.
             The containing bar lengthxwidth is set as:
                 (length+margin, width+margin)
         color : str | tuple
@@ -45,12 +45,12 @@ class FillingBar(_Visual):
         fill_color : str | tuple
             Color used to fill the bar. Either a matplotlib color string or a
             (Blue, Green, Red) tuple of int8 set between 0 and 255.
-        fill_length : float
+        fill_perc : float
             Percentage between 0 and 1 of bar filling.
                 0 - not filled
                 1 - fully filled
             As the bar fills on both side simultaneously, the percentage filled
-            is length//2 * fill_length.
+            is length//2 * fill_perc.
         axis : int | str
             Axis along which the bar is moving:
                 0, 'vertical', 'v'      - vertical bar
@@ -69,7 +69,7 @@ class FillingBar(_Visual):
         self._margin = margin
         self._color = _Visual._check_color(color)
         self._fill_color = _Visual._check_color(fill_color)
-        self._fill_length = FillingBar._check_fill_length(fill_length)
+        self._fill_perc = FillingBar._check_fill_perc(fill_perc)
 
         self._putBar()
 
@@ -106,18 +106,18 @@ class FillingBar(_Visual):
         cv2.rectangle(self._img, (xP1, yP1), (xP2, yP2), self._color, -1)
 
         # Internal smaller rectangle filling the external rectangle
-        fill_length = FillingBar._convert_fill_length_to_pixel(
-            self._fill_length, self._length)
-        if fill_length != 0:
+        fill_perc = FillingBar._convert_fill_perc_to_pixel(
+            self.fill_perc, self._length)
+        if fill_perc != 0:
             if self._axis == 0:
                 xP1 = self.window_center[0] - self._width//2
-                yP1 = self.window_center[1] - fill_length
+                yP1 = self.window_center[1] - fill_perc
                 xP2 = xP1 + self._width
-                yP2 = yP1 + 2*fill_length
+                yP2 = yP1 + 2*fill_perc
             elif self._axis == 1:
-                xP1 = self.window_center[0] - fill_length
+                xP1 = self.window_center[0] - fill_perc
                 yP1 = self.window_center[1] - self._width//2
-                xP2 = xP1 + 2*fill_length
+                xP2 = xP1 + 2*fill_perc
                 yP2 = yP1 + self._width
 
             cv2.rectangle(
@@ -183,34 +183,34 @@ class FillingBar(_Visual):
         return width, margin
 
     @staticmethod
-    def _check_fill_length(fill_length):
+    def _check_fill_perc(fill_perc):
         """
         Checks that the fill length is provided as percentage between 0 and 1.
         """
-        if not isinstance(fill_length, (float, int)):
+        if not isinstance(fill_perc, (float, int)):
             logger.error('The fill length must be provided between 0 and 1.')
             raise TypeError
-        if not (0 <= fill_length <= 1):
+        if not (0 <= fill_perc <= 1):
             logger.error('The fill length must be provided between 0 and 1.')
             raise ValueError
 
-        return fill_length
+        return fill_perc
 
     @staticmethod
-    def _convert_fill_length_to_pixel(fill_length, length):
+    def _convert_fill_perc_to_pixel(fill_perc, length):
         """
         Convert the fill length between 0 and 1 to the fill length in pixel.
             0 - Not filled
             1 - Fully filled
         Expresses the % of length//2 filled.
         """
-        return int((length//2) * fill_length)
+        return int((length//2) * fill_perc)
 
     # --------------------------------------------------------------------
     @property
     def length(self):
         """
-        The length of the bar in pixel.
+        Length of the bar in pixel.
         """
         return self._length
 
@@ -224,7 +224,7 @@ class FillingBar(_Visual):
     @property
     def width(self):
         """
-        The width of the bar in pixel.
+        Width of the bar in pixel.
         """
         return self._width
 
@@ -238,7 +238,7 @@ class FillingBar(_Visual):
     @property
     def margin(self):
         """
-        The margin in pixel between the bar and its filled content.
+        Margin in pixel between the bar and its filled content.
         """
         return self._margin
 
@@ -255,7 +255,7 @@ class FillingBar(_Visual):
     @property
     def color(self):
         """
-        The color of the bar background.
+        Color of the bar background.
         """
         return self._color
 
@@ -268,7 +268,7 @@ class FillingBar(_Visual):
     @property
     def fill_color(self):
         """
-        The color to fill the bar.
+        Color to fill the bar.
         """
         return self._fill_color
 
@@ -279,22 +279,22 @@ class FillingBar(_Visual):
         self._putBar()
 
     @property
-    def fill_length(self):
+    def fill_perc(self):
         """
-        The length filled in percent between 0 and 1.
+        Length filled in percent between 0 and 1.
         """
-        return self._fill_length
+        return self._fill_perc
 
-    @fill_length.setter
-    def fill_length(self, fill_length):
-        self._fill_length = FillingBar._check_fill_length(fill_length)
+    @fill_perc.setter
+    def fill_perc(self, fill_perc):
+        self._fill_perc = FillingBar._check_fill_perc(fill_perc)
         self._reset()
         self._putBar()
 
     @property
     def axis(self):
         """
-        The axis on which the bar is moving.
+        Axis on which the bar is moving.
             0 - Vertical bar filling along the vertical axis.
             1 - Horizontal bar filling along the horizontal axis.
         """

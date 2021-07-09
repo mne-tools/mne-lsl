@@ -22,11 +22,11 @@ def start_server(server_name, n_channels=1, channel_format='string',
     n_channels : int
         Number of channels.
     channel_format : str
-        The channels' format.
+        Channels' format.
             ('string', 'float32', 'double64', 'int8', 'int16',
              'int32', 'int64')
     nominal_srate : float | pylsl.IRREGULAR_RATE
-        Sampling rate in Hz.
+        Sampling rate [Hz].
     stype : str
         Signal type. Available type can be found here:
         https://github.com/sccn/xdf/wiki/Meta-Data#stream-content-types
@@ -97,9 +97,9 @@ def list_lsl_streams(ignore_markers=False):
     Returns
     -------
     stream_list : list
-        The list of the found stream name.
+        List of the found stream name.
     streamInfos : list
-        The list of pylsl.StreamInfo corresponding.
+        List of the corresponding pylsl.StreamInfo.
     """
     stream_list = []
     streamInfos = pylsl.resolve_streams()
@@ -134,7 +134,8 @@ def search_lsl(ignore_markers=False, timeout=10):
 
     Returns
     -------
-    str : The selected stream name.
+    stream_name : str
+        Selected stream name.
     """
     watchdog = Timer()
     while watchdog.sec() <= timeout:
@@ -175,11 +176,11 @@ def lsl_channel_list(inlet):
     Parameters
     ----------
     inlet : pylsl.StreamInlet
-        The inlet to extract channels list from.
+        Inlet to extract the channels list from.
 
     Returns:
     --------
-    list
+    ch_list : list
         List of channels name [name1, name2, ... ]
     """
     if not isinstance(inlet, pylsl.StreamInlet):

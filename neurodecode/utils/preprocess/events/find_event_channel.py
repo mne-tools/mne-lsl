@@ -11,13 +11,14 @@ def find_event_channel(inst=None, ch_names=None):
     Parameters
     ----------
     inst : mne.io.Raw | numpy.ndarray (n_channels x n_samples)
-        The data
+        Data instance.
     ch_names : list
-        The channels name list
+        Channels name list.
 
     Returns:
     --------
-    int : The event channel index or None if not found.
+    int | None
+        Event channel index or None if not found.
     """
     valid_trigger_ch_names = ['TRIGGER', 'STI', 'TRG', 'CH_Event']
 

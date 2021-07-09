@@ -50,9 +50,9 @@ def dir_set_eeg_reference(fif_dir, recursive, ref_channels, ref_old=None,
     Parameters
     ----------
     fif_dir : str
-         The path to the directory containing fif files.
+        Path to the directory containing fif files.
     recursive : bool
-        If true, search recursively.
+        If True, search recursively.
     ref_channels : list of str | str
         Can be:
         - The name(s) of the channel(s) used to construct the reference.
@@ -62,10 +62,10 @@ def dir_set_eeg_reference(fif_dir, recursive, ref_channels, ref_old=None,
     ref_old : list of str | str
         Channel(s) to recover.
     out_dir : str | None
-        The path to the output directory. If None, the directory
-        'rereferenced' is used.
+        Path to the output directory. If None, the directory
+        'fif_dir/rereferenced' is used.
     overwrite : bool
-        If true, overwrite previously corrected files.
+        If True, overwrite previously corrected files.
     **kwargs : Additional arguments are passed to mne.set_eeg_reference()
         c.f. https://mne.tools/dev/generated/mne.set_eeg_reference.html
     """

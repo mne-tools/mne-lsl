@@ -54,9 +54,9 @@ class ScopeEEG(_Scope):
         Parameters
         ----------
         low : int | float
-            The frequency at which the signal is high-passed.
+            Frequency at which the signal is high-passed.
         high : int | float
-            The frequency at which the signal is low-passed.
+            Frequency at which the signal is low-passed.
         """
         bp_low = low / (0.5 * self._sample_rate)
         bp_high = high / (0.5 * self._sample_rate)
@@ -78,7 +78,7 @@ class ScopeEEG(_Scope):
             self._filter_trigger()
             # shape (channels, samples)
             self._data_buffer = np.roll(self._data_buffer, -len(self._ts_list),
-                                       axis=1)
+                                        axis=1)
             self._data_buffer[:, -len(self._ts_list):] = self._data_acquired.T
             # shape (samples, )
             self._trigger_buffer = np.roll(

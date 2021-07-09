@@ -40,7 +40,7 @@ class Timer:
         Parameters
         ----------
         sec : float
-            The time to sleep in seconds.
+            Time to sleep in seconds.
         """
         timer_sec = self.sec()
 
