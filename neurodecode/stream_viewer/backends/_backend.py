@@ -27,8 +27,7 @@ class _Backend(ABC):
         # Variables
         self._xRange = xRange  # duration in seconds
         self._yRange = yRange  # amplitude range in uV
-        self._available_colors = np.random.uniform(
-            size=(self._scope.nb_channels, 3), low=128, high=230)
+
         self._show_LPT_trigger_events = False
         self._selected_channels = copy.deepcopy(self._scope.selected_channels)
 

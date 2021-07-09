@@ -35,6 +35,8 @@ class _BackendPyQt5(_Backend):
         self._trigger_events = list()
 
         # Variables
+        self._available_colors = np.random.uniform(
+            size=(self._scope.nb_channels, 3), low=128, high=230)
         self._init_variables()
 
         # Canvas
