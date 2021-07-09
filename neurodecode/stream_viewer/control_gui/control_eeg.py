@@ -75,7 +75,7 @@ class ControlGUI_EEG(_ControlGUI):
                          self.geometry().height())
         self.setFixedSize(self.geometry().width(),
                           self.geometry().height())
-        self.show() # Display
+        self.show()  # Display
 
     def _load_configuration(self, file):
         """
@@ -95,13 +95,13 @@ class ControlGUI_EEG(_ControlGUI):
             self._yRange = float(scope_settings.get("plot", "yRange"))
             if not self._yRange in self._yRanges.values:
                 raise ValueError
-        except Exception: # Default to 25 uV
+        except Exception:  # Default to 25 uV
             self._yRange = 25.
 
         # xRange (time)
         try:
             self._xRange = int(scope_settings.get("plot", "xRange"))
-        except Exception: # Default to 10s
+        except Exception:  # Default to 10s
             self._xRange = 10
 
     def _set_configuration(self, file):
@@ -120,7 +120,7 @@ class ControlGUI_EEG(_ControlGUI):
         # xRange
         try:
             self._ui.spinBox_signal_xRange.setValue(self._xRange)
-        except: # 10s by default
+        except:  # 10s by default
             self._ui.spinBox_signal_xRange.setValue(10)
 
         # CAR

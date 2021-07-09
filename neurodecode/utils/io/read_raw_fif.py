@@ -14,17 +14,19 @@ def read_raw_fif(fname, events_ext=None, preload=True):
 
     Parameters
     ----------
-    fname : str
-        The (absolute) .fif file path.
-    events_ext : str
-        The txt file containing external events.
+    fname : str | pathlib.Path
+        Path to the .fif file.
+    events_ext : str | pathlib.Path
+        Path to the .txt file containing external events.
     preload : bool
         Preload data into memory for data manipulation and faster indexing.
 
     Returns:
     --------
-    mne.io.Raw : MNE raw data with the trigger channel at index 0.
-    np.array : mne-compatible events numpy array object (N x [frame, 0, type])
+    raw : mne.io.Raw
+        MNE raw data with the trigger channel at index 0.
+    events : np.array
+        MNE-compatible events numpy array object (N x [frame, 0, type])
     """
     fname = Path(fname)
 
@@ -66,13 +68,15 @@ def read_raw_fif_multi(src):
 
     Parameters
     ----------
-    src : str
+    src : str | list | tuple
         The directory or a files list/tuple.
 
     Returns
     -------
-    mne.io.Raw : MNE raw data with the trigger channel at index 0.
-    np.array : mne-compatible events numpy array object (N x [frame, 0, type])
+    raw : mne.io.Raw
+        MNE raw data with the trigger channel at index 0.
+    events : np.array
+        MNE-compatible events numpy array object (N x [frame, 0, type])
     """
     if isinstance(src, str):
         src = Path(src)

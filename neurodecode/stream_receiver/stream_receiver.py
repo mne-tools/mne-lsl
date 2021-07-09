@@ -18,11 +18,11 @@ class StreamReceiver:
 
     Parameters
     ----------
-    bufsize : int
-        The buffer's size [secs]. 1-day is the maximum size.
+    bufsize : int | float
+        Buffer's size [secs]. MAX_BUF_SIZE (def: 1-day) is the maximum size.
         Large buffer may lead to a delay if not pulled frequently.
-    winsize : int
-        To extract the latest winsize samples from the buffer [secs].
+    winsize : int | float
+        Window's size [secs]. Must be smaller than the buffer's size.
     stream_name : list | str | None
         Servers' name or list of servers' name to connect to.
         None: no constraint.
@@ -48,7 +48,7 @@ class StreamReceiver:
 
         Parameters
         ----------
-        timeout : int
+        timeout : int | float
             Timeout duration in seconds after which the search is abandonned.
         force : bool
             If True, force reconnect if the Stream Receiver was already
@@ -122,7 +122,8 @@ class StreamReceiver:
         Parameters
         ----------
         stream_name : str | list | None
-            The name of the stream to disconnect.
+            Servers' name or list of servers' name to disconnect.
+            If None, disconnect from all streams.
         """
         stream_name = StreamReceiver._check_format_stream_name(stream_name)
         if stream_name is None:
@@ -166,16 +167,16 @@ class StreamReceiver:
         Parameters
         ----------
         stream_name : str | None
-            The name of the stream to extract from.
+            Name of the stream to extract from.
             Can be set to None if the StreamReceiver is connected to a single
             stream.
 
         Returns
         -------
         data : np.array
-             The data [samples x channels]
+             Data [samples x channels].
         timestamps : np.array
-             The timestamps [samples]
+             Data's timestamps [samples].
         """
         if not self._connected:
             logger.error(
@@ -227,16 +228,16 @@ class StreamReceiver:
         Parameters
         ----------
         stream_name : str | None
-            The name of the stream to extract from.
+            Name of the stream to extract from.
             Can be set to None if the StreamReceiver is connected to a single
             stream.
 
         Returns
         -------
         data : np.array
-            The data [samples x channels]
+             Data [samples x channels].
         timestamps : np.array
-            The timestamps [samples]
+             Data's timestamps [samples].
         """
         if not self._connected:
             logger.error(
@@ -270,13 +271,12 @@ class StreamReceiver:
     def reset_buffer(self, stream_name=None):
         """
         Clear the stream's buffer.
-        If stream_name is a list, applied to all streams in the list.
-        If stream_name is None, applied to all streams.
 
         Parameters
         ----------
         stream_name : str | list | None
-            The name of the stream to reset its buffer.
+            Name of the stream(s) to reset its buffer.
+            If None, reset all stream's buffer.
         """
         stream_name = StreamReceiver._check_format_stream_name(stream_name)
         if stream_name is None:
@@ -336,7 +336,7 @@ class StreamReceiver:
     @property
     def bufsize(self):
         """
-        The buffer size in seconds.
+        Buffer's size [sec].
         """
         return self._bufsize
 
@@ -348,7 +348,7 @@ class StreamReceiver:
     @property
     def winsize(self):
         """
-        The window size in seconds.
+        Window's size [sec].
         """
         return self._winsize
 
@@ -361,7 +361,7 @@ class StreamReceiver:
     @property
     def stream_name(self):
         """
-        The connected stream's name.
+        Connected stream's name.
         """
         return self._stream_name
 
@@ -382,7 +382,7 @@ class StreamReceiver:
     @property
     def streams(self):
         """
-        The connected streams dictionnary: {stream_name: _Stream}.
+        Connected streams dictionnary: {stream_name: _Stream}.
         """
         return self._streams
 

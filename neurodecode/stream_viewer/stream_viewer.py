@@ -1,5 +1,6 @@
 import sys
 import time
+
 from PyQt5.QtWidgets import QApplication
 
 from .scope.scope_eeg import ScopeEEG
@@ -50,7 +51,7 @@ class StreamViewer:
 
         logger.info(f'Connecting to the stream: {self.stream_name}')
         self._sr = StreamReceiver(bufsize=bufsize, winsize=bufsize,
-                                 stream_name=self._stream_name)
+                                  stream_name=self._stream_name)
         self._sr.streams[self._stream_name].blocking = False
         time.sleep(bufsize)  # Delay to fill the LSL buffer.
 

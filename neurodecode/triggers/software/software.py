@@ -23,7 +23,7 @@ class TriggerSoftware(_Trigger):
     Parameters
     ----------
     recorder : StreamRecorder
-        The neurodecode recorder used.
+        Neurodecode stream recorder used.
     verbose : bool
         If True, display a logger.info message when a trigger is sent.
     """
@@ -93,13 +93,13 @@ class TriggerSoftware(_Trigger):
     @property
     def recorder(self):
         """
-        The neurodecode recorder used.
+        Neurodecode's recorder used.
         """
         return self._recorder
 
     @property
     def eve_file(self):
         """
-        The event .txt file.
+        Event .txt file.
         """
         return self._eve_file

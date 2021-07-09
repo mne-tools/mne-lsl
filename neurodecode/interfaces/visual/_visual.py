@@ -45,7 +45,7 @@ class _Visual(ABC):
         Parameters
         ----------
         wait : int
-            Wait timer passed to cv2.waitKey(). The timer is defined in ms.
+            Wait timer passed to cv2.waitKey() [ms].
         """
         cv2.imshow(self._window_name, self._img)
         cv2.waitKey(wait)
@@ -171,35 +171,35 @@ class _Visual(ABC):
     @property
     def window_name(self):
         """
-        The window name.
+        Window's name.
         """
         return self._window_name
 
     @property
     def window_size(self):
         """
-        The window size (width x height).
+        Window's size (width x height).
         """
         return self._window_size
 
     @property
     def window_center(self):
         """
-        The window center position.
+        Window's center position.
         """
         return self._window_center
 
     @property
     def img(self):
         """
-        The image array.
+        Image array.
         """
         return self._img
 
     @property
     def background(self):
         """
-        The background color.
+        Background color.
         """
         return self._background
 

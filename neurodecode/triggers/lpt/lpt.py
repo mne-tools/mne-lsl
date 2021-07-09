@@ -16,9 +16,9 @@ class TriggerLPT(_Trigger):
     Parameters
     ----------
     portaddr : hex | int
-        The port address in hexadecimal format (standard: 0x278, 0x378).
+        Port address in hexadecimal format (standard: 0x278, 0x378).
     delay : int
-        The delay in milliseconds until which a new trigger cannot be sent.
+        Delay in milliseconds until which a new trigger cannot be sent.
     verbose : bool
         If True, display a logger.info message when a trigger is sent.
     """
@@ -97,6 +97,9 @@ class TriggerLPT(_Trigger):
     # --------------------------------------------------------------------
     @property
     def portaddr(self):
+        """
+        Port address.
+        """
         return self._portaddr
 
     @portaddr.setter
@@ -111,7 +114,7 @@ class TriggerLPT(_Trigger):
     @property
     def delay(self):
         """
-        The delay to wait between 2 .signal() call in milliseconds.
+        Delay to wait between 2 .signal() call in milliseconds.
         """
         return self._delay * 1000.0
 

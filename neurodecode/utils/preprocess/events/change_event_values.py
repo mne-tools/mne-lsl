@@ -16,11 +16,11 @@ def change_event_values_arr(timearr, event_value_old, event_value_new):
     Parameters
     ----------
     timearr : numpy.ndarray (n_samples, )
-        Channel sample array.
+        Trigger channel array.
     event_value_old : int
-        The old event value.
+        Old event value.
     event_value_new : int
-        The new event value.
+        New event value.
 
     Returns
     -------
@@ -43,9 +43,9 @@ def change_event_values(raw, event_value_old, event_value_new):
     raw : mne.io.Raw
         MNE instance of Raw.
     event_value_old : int
-        The old event value.
+        Old event value.
     event_value_new : int
-        The new event value.
+        New event value.
     """
     tch = find_event_channel(inst=raw, ch_names=None)
     if tch is None:
@@ -78,19 +78,19 @@ def dir_change_event_values(fif_dir, recursive, event_value_old,
     Parameters
     ----------
     fif_dir : str
-         The path to the directory containing fif files.
+        Path to the directory containing fif files.
     recursive : bool
-        If true, search recursively.
+        If True, search recursively.
     event_value_old : int
-        The old event value.
+        Old event value.
     event_value_new : int
-        The new event value.
+        New event value.
     out_dir : str | None
-        The path to the output directory. If None, the directory
-        f'fif_dir/event_{event_value_old}_changed_to_{event_value_new}'
+        Path to the output directory. If None, the directory
+        'fif_dir/event_{event_value_old}_changed_to_{event_value_new}'
         is used.
     overwrite : bool
-        If true, overwrite previously corrected files.
+        If True, overwrite previously corrected files.
     """
     fif_dir = Path(fif_dir)
     if not fif_dir.exists():

@@ -11,7 +11,7 @@ from ..utils.timer import Timer
 from ..utils.preprocess.events import find_event_channel
 from ..utils.lsl import lsl_channel_list
 
-_MAX_PYLSL_STREAM_BUFSIZE = 10  # max 10 sec of data buffered
+_MAX_PYLSL_STREAM_BUFSIZE = 10  # max 10 sec of data buffered for LSL
 MAX_BUF_SIZE = 86400  # 24h max buffer length
 HIGH_LSL_OFFSET_THRESHOLD = 0.1  # Threshold above which the offset is high
 
@@ -24,11 +24,11 @@ class _Stream(ABC):
     ----------
     streamInfo : LSL StreamInfo.
         Contain all the info from the LSL stream to connect to.
-    bufsize : int
-        The buffer's size [secs]. 1-day is the maximum size.
+    bufsize : int | float
+        Buffer's size [secs]. MAX_BUF_SIZE (def: 1-day) is the maximum size.
         Large buffer may lead to a delay if not pulled frequently.
-    winsize : int
-        To extract the latest winsize samples from the buffer [secs].
+    winsize : int | float
+        Window's size [secs]. Must be smaller than the buffer's size.
     """
 
     @abstractmethod
@@ -128,9 +128,9 @@ class _Stream(ABC):
         Returns
         -------
         chunk : list
-            data [samples x channels]
+            Data [samples x channels]
         tslist : list
-            timestamps [samples]
+            Acquired timestamps [samples]
         """
         chunk = []
         tslist = []
@@ -152,7 +152,7 @@ class _Stream(ABC):
                     received = True
                     tslist = self._correct_lsl_offset(tslist)
                     break
-                time.sleep(0.0005) # TODO: test without
+                time.sleep(0.0005)  # TODO: test without
             else:
                 # Give up and return empty values to avoid deadlock
                 logger.error(
@@ -162,7 +162,7 @@ class _Stream(ABC):
 
         return chunk, tslist
 
-    def _compute_offset(self, timestamps):
+    def _compute_offset(self, tslist):
         """
         Compute the LSL offset coming from some devices.
 
@@ -171,25 +171,25 @@ class _Stream(ABC):
 
         Parameters
         ----------
-        timestamps : list
-            The acquired timestamps.
+        tslist : list
+            Acquired timestamps.
         """
-        self._lsl_time_offset = timestamps[-1] - pylsl.local_clock()
+        self._lsl_time_offset = tslist[-1] - pylsl.local_clock()
         return self._lsl_time_offset
 
-    def _correct_lsl_offset(self, timestamps):
+    def _correct_lsl_offset(self, tslist):
         """
         Correct the timestamps if there is a high LSL offset.
 
         Parameters
         ----------
-        timestamps : list
-            The timestamps from the last
+        tslist : list
+            Acquired timestamps.
         """
         if abs(self._lsl_time_offset) > HIGH_LSL_OFFSET_THRESHOLD:
-            timestamps = [t - self._lsl_time_offset for t in timestamps]
+            tslist = [t - self._lsl_time_offset for t in tslist]
 
-        return timestamps
+        return tslist
 
     # --------------------------------------------------------------------
     @staticmethod
@@ -200,12 +200,7 @@ class _Stream(ABC):
         Parameters
         ----------
         winsize : float
-            The window size to verify [secs].
-
-        Returns
-        -------
-        secs
-            The verified window's size.
+            Window size [secs].
         """
         if winsize <= 0:
             logger.error(f'Invalid window size {winsize}.')
@@ -221,14 +216,9 @@ class _Stream(ABC):
         Parameters
         ----------
         bufsize : float
-            The buffer size to verify [secs].
+            Buffer's size [secs].
         winsize : float
-            The window's size to compare to bufsize [secs].
-
-        Returns
-        -------
-        secs
-            The verified buffer size.
+            Window's size to compare to bufsize [secs].
         """
         if bufsize <= 0 or bufsize > MAX_BUF_SIZE:
             logger.error(
@@ -252,14 +242,15 @@ class _Stream(ABC):
         Parameters
         ----------
         bufsec : float
-            The buffer_size's size [secs].
+            Buffer_size's size [secs].
         sample_rate : float
-             The sampling rate of the LSL server.
+             Sampling rate of the LSL server.
              If irregular sampling rate, empirical number of samples per sec.
+
         Returns
         -------
-        samples : int
-            The converted buffer_size's size.
+        int
+            Buffer_size's size [samples].
         """
         return round(bufsec * sample_rate)
 
@@ -267,42 +258,42 @@ class _Stream(ABC):
     @property
     def name(self):
         """
-        The stream's name.
+        Stream's name.
         """
         return self._name
 
     @property
     def serial(self):
         """
-        The stream's serial number.
+        Stream's serial number.
         """
         return self._serial
 
     @property
     def streamInfo(self):
         """
-        The stream info received from the LSL inlet.
+        Stream info received from the LSL inlet.
         """
         return self._streamInfo
 
     @property
     def sample_rate(self):
         """
-        The stream's sampling rate.
+        Stream's sampling rate.
         """
         return self._sample_rate
 
     @property
     def ch_list(self):
         """
-        The channels' name list.
+        Channels' name list.
         """
         return self._ch_list
 
     @property
     def buffer(self):
         """
-        The buffer containing the data and the timestamps.
+        Buffer containing the data and the timestamps.
         """
         return self._buffer
 
@@ -349,13 +340,13 @@ class StreamMarker(_Stream):
 
     Parameters
     -----------
-    streamInfo : LSL StreamInfo
+    streamInfo : LSL StreamInfo.
         Contain all the info from the LSL stream to connect to.
-    bufsize : int
-        The buffer's size [secs]. 1-day is the maximum size.
+    bufsize : int | float
+        Buffer's size [secs]. MAX_BUF_SIZE (def: 1-day) is the maximum size.
         Large buffer may lead to a delay if not pulled frequently.
-    winsize : int
-        To extract the latest winsize samples from the buffer [secs].
+    winsize : int | float
+        Window's size [secs]. Must be smaller than the buffer's size.
     """
 
     def __init__(self, streamInfo, bufsize=1, winsize=1):
@@ -382,13 +373,13 @@ class StreamEEG(_Stream):
 
     Parameters
     -----------
-    streamInfo : LSL StreamInfo
+    streamInfo : LSL StreamInfo.
         Contain all the info from the LSL stream to connect to.
-    bufsize : int
-        The buffer's size [secs]. 1-day is the maximum size.
+    bufsize : int | float
+        Buffer's size [secs]. MAX_BUF_SIZE (def: 1-day) is the maximum size.
         Large buffer may lead to a delay if not pulled frequently.
-    winsize : int
-        To extract the latest winsize samples from the buffer [secs].
+    winsize : int | float
+        Window's size [secs]. Must be smaller than the buffer's size.
     """
 
     def __init__(self, streamInfo, bufsize=1, winsize=1):
@@ -400,7 +391,6 @@ class StreamEEG(_Stream):
     def _create_ch_name_list(self):
         """
         Create the channel info.
-
         Trigger channel will always move to the first position.
         """
         super()._create_ch_name_list()
@@ -428,7 +418,7 @@ class StreamEEG(_Stream):
             self._lsl_tr_channel = 23
 
         elif 'openvibeSignal' in self._name:
-            self._multiplier = 10E6 # TODO: Test if this is correct or should be 1E6
+            self._multiplier = 10E6  # TODO: Test if this is correct or should be 1E6
             self._lsl_tr_channel = find_event_channel(ch_names=self._ch_list)
 
         elif 'openvibeMarkers' in self._name:
@@ -449,7 +439,8 @@ class StreamEEG(_Stream):
         if len(chunk) == 0:
             return
 
-        data = np.array(chunk) # TODO: Is it not more efficient to keep working on lists?
+        # TODO: Is it not more efficient to keep working on lists?
+        data = np.array(chunk)
 
         # BioSemi has pull-up resistor instead of pull-down
         if 'BioSemi' in self._name and self._lsl_tr_channel is not None:
@@ -481,7 +472,7 @@ class StreamEEG(_Stream):
     @property
     def multiplier(self):
         """
-        The scaling factor applied to the data.
+        Scaling factor applied to the data.
         """
         return self._multiplier
 

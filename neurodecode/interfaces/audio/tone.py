@@ -23,14 +23,14 @@ class Tone(_Sound):
         If an int or a float is provided, the sound will use only one channel
         (mono). If a 2-length sequence is provided, the sound will use 2
         channels (stereo).
-        The volume of each channel is given between 0 and 100. For stereo, the
+        Volume of each channel, given between 0 and 100. For stereo, the
         volume is given as [L, R].
     frequency : int
         Pure tone frequency. The default is 440 Hz (La - A440).
     sample_rate : int, optional
         Sampling frequency of the sound. The default is 44100 kHz.
     duration : float, optional
-        The duration of the sound. The default is 1.0 second.
+        Duration of the sound. The default is 1.0 second.
     """
 
     def __init__(self, volume, frequency=440, sample_rate=44100, duration=1.0):
@@ -67,7 +67,7 @@ class Tone(_Sound):
     @property
     def frequency(self):
         """
-        The sound's pure tone frequency.
+        Sound's pure tone frequency.
         """
         return self._frequency
 

@@ -22,8 +22,9 @@ class Sound(_Sound):
     Parameters
     ----------
     fname : str | pathlib.Path
-        The path to the supported audio file to load.
+        Path to the supported audio file to load.
     """
+
     def __init__(self, fname):
         self._fname = Sound._check_file(fname)
 
@@ -127,9 +128,9 @@ class Sound(_Sound):
     def _compute_volume(signal):
         """
         Volume modifications is not supported for loaded sounds.
-        Returns [50] * number of channels.
+        Returns [1] * number of channels.
         """
-        return [100] * signal.shape[1]
+        return [1] * signal.shape[1]
 
     @staticmethod
     def _valid_trim_duration(trim_duration, sound_duration):
