@@ -1,5 +1,6 @@
-import cv2
 import copy
+
+import cv2
 
 from ._visual import _Visual
 from ... import logger
