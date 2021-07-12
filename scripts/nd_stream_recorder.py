@@ -39,10 +39,10 @@ if __name__ == '__main__':
         record_dir = sys.argv[1]
 
     if len(sys.argv) == 1:
-        record_dir = str(
-            Path(input(">> Provide the path to save the .fif file: \n>> ")))
+        record_dir = str(Path(input(
+            ">> Provide the directory path to save the .fif file: \n>> ")))
 
-    recorder = StreamRecorder(record_dir)
-    recorder.start(stream_name=stream_name, eeg_only=False, verbose=True)
+    recorder = StreamRecorder(record_dir, stream_name=stream_name)
+    recorder.start(verbose=True)
     input(">> Press ENTER to stop the recording \n")
     recorder.stop()

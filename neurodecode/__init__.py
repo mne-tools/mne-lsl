@@ -1,6 +1,9 @@
 """
 NeuroDecode provides a real-time brain signal decoding framework.
 """
+
+from ._version import __version__
+
 import logging
 
 from .logger import init_logger
