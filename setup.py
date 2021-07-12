@@ -27,6 +27,8 @@ DESCRIPTION = short_description
 LONG_DESCRIPTION = long_description
 AUTHOR = 'Kyuhwa Lee, Arnaud Desvachez, Mathieu Scheltienne'
 AUTHOR_EMAIL = 'lee.kyuh@gmail.com, arnaud.desvachez@gmail.com, mathieu.scheltienne@gmail.com'
+MAINTAINER = 'Mathieu Scheltienne'
+MAINTAINER_EMAIL = 'mathieu.scheltienne@gmail.com'
 URL = 'https://github.com/mscheltienne/NeuroDecode'
 LICENSE = 'LGPL-2.1 - The GNU General Public License'
 DOWNLOAD_URL = 'https://github.com/mscheltienne/NeuroDecode'
@@ -58,6 +60,8 @@ setup(
     version=VERSION,
     author=AUTHOR,
     author_email=AUTHOR_EMAIL,
+    maintainer=MAINTAINER,
+    maintainer_email=MAINTAINER_EMAIL,
     license=LICENSE,
     url=URL,
     description=DESCRIPTION,
@@ -72,7 +76,7 @@ setup(
         'Operating System :: Unix',
         'Operating System :: MacOS',
         'Programming Language :: Python :: 3 :: Only',
-        'Development Status :: 5 - Production/Stable',
+        'Development Status :: 4 - Beta',
         'Natural Language :: English'
         ],
     keywords='neuroscience neuroimaging EEG LSL real-time brain',
