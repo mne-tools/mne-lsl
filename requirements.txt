@@ -1,0 +1,13 @@
+# requirements for full NeuroDecode functionality.
+matplotlib
+mne
+numpy
+opencv-python
+pylsl
+pyqt5
+pyqtgraph
+pyserial
+scipy
+screeninfo
+sounddevice
+vispy
