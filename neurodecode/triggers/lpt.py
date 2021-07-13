@@ -24,7 +24,7 @@ class TriggerLPT(_Trigger):
         If True, display a logger.info message when a trigger is sent.
     """
 
-    def __init__(self, portaddr, delay=50, verbose=True):
+    def __init__(self, portaddr: int, delay:int = 50, verbose: bool = True):
         super().__init__(verbose)
         self._portaddr = TriggerLPT._check_portaddr(portaddr)
 
@@ -37,7 +37,7 @@ class TriggerLPT(_Trigger):
         self._delay = delay / 1000.0
         self._offtimer = threading.Timer(self._delay, self._signal_off)
 
-    def signal(self, value):
+    def signal(self, value: int) -> bool:
         """
         Send a trigger value.
         """
@@ -59,7 +59,7 @@ class TriggerLPT(_Trigger):
         self._set_data(0)
         self._offtimer = threading.Timer(self._delay, self._signal_off)
 
-    def _set_data(self, value):
+    def _set_data(self, value: int):
         """
         Set the trigger signal to value.
         """
@@ -67,7 +67,7 @@ class TriggerLPT(_Trigger):
 
     # --------------------------------------------------------------------
     @staticmethod
-    def _check_portaddr(portaddr):
+    def _check_portaddr(portaddr: int) -> int:
         """
         Checks the portaddr value against usual values.
         """
@@ -106,7 +106,7 @@ class TriggerLPT(_Trigger):
         return self._portaddr
 
     @portaddr.setter
-    def portaddr(self, portaddr):
+    def portaddr(self, portaddr: int):
         if not self._offtimer.is_alive():
             self._portaddr = TriggerLPT._check_portaddr(portaddr)
         else:
@@ -122,7 +122,7 @@ class TriggerLPT(_Trigger):
         return self._delay * 1000.0
 
     @delay.setter
-    def delay(self, delay):
+    def delay(self, delay: int):
         if not self._offtimer.is_alive():
             self._delay = delay / 1000.0
             self._offtimer = threading.Timer(self._delay, self._signal_off)
@@ -145,7 +145,7 @@ class TriggerUSB2LPT(_Trigger):
         If True, display a logger.info message when a trigger is sent.
     """
 
-    def __init__(self, delay=50, verbose=True):
+    def __init__(self, delay: int = 50, verbose: bool = True):
         super().__init__(verbose)
         self._lpt = TriggerUSB2LPT._load_dll()
         if self._lpt.init() == -1:
@@ -156,7 +156,7 @@ class TriggerUSB2LPT(_Trigger):
         self._delay = delay / 1000.0
         self._offtimer = threading.Timer(self._delay, self._signal_off)
 
-    def signal(self, value):
+    def signal(self, value:int) -> bool:
         """
         Send a trigger value.
         """
@@ -178,7 +178,7 @@ class TriggerUSB2LPT(_Trigger):
         self._set_data(0)
         self._offtimer = threading.Timer(self._delay, self._signal_off)
 
-    def _set_data(self, value):
+    def _set_data(self, value: int):
         """
         Set the trigger signal to value.
         """
@@ -215,7 +215,7 @@ class TriggerUSB2LPT(_Trigger):
         return self._delay * 1000.0
 
     @delay.setter
-    def delay(self, delay):
+    def delay(self, delay: int):
         if not self._offtimer.is_alive():
             self._delay = delay / 1000.0
             self._offtimer = threading.Timer(self._delay, self._signal_off)
@@ -239,7 +239,7 @@ class TriggerArduino2LPT(_Trigger):
     """
     BAUD_RATE = 115200
 
-    def __init__(self, delay=50, verbose=True):
+    def __init__(self, delay: int = 50, verbose: bool = True):
         import_optional_dependency(
             "serial", extra="Install pyserial for ARDUINO support.")
         super().__init__(verbose)
@@ -250,7 +250,7 @@ class TriggerArduino2LPT(_Trigger):
         self._delay = delay / 1000.0
         self._offtimer = threading.Timer(self._delay, self._signal_off)
 
-    def _connect_arduino(self, com_port, baud_rate):
+    def _connect_arduino(self, com_port: str, baud_rate: int):
         """
         Connect to the Arduino LPT converter.
 
@@ -274,7 +274,7 @@ class TriggerArduino2LPT(_Trigger):
         time.sleep(1)
         logger.info(f'Connected to {com_port}.')
 
-    def signal(self, value):
+    def signal(self, value: int) -> bool:
         """
         Send a trigger value.
         """
@@ -296,7 +296,7 @@ class TriggerArduino2LPT(_Trigger):
         self._set_data(0)
         self._offtimer = threading.Timer(self._delay, self._signal_off)
 
-    def _set_data(self, value):
+    def _set_data(self, value: int):
         """
         Set the trigger signal to value.
         """
@@ -316,7 +316,7 @@ class TriggerArduino2LPT(_Trigger):
 
     # --------------------------------------------------------------------
     @staticmethod
-    def _find_arduino_port():
+    def _find_arduino_port() -> str:
         """
         Automatic Arduino COM port detection.
         """
