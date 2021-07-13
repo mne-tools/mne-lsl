@@ -3,9 +3,9 @@ Trigger using software and a .txt file.
 """
 import pylsl
 
-from .._trigger import _Trigger
-from ... import logger
-from ...stream_recorder import StreamRecorder
+from ._trigger import _Trigger
+from .. import logger
+from ..stream_recorder import StreamRecorder
 
 
 class TriggerSoftware(_Trigger):
