@@ -15,10 +15,10 @@ class TriggerMock(_Trigger):
         If True, display a logger.info message when a trigger is sent.
     """
 
-    def __init__(self, verbose=True):
+    def __init__(self, verbose: bool = True):
         super().__init__(verbose)
 
-    def signal(self, value):
+    def signal(self, value: int) -> bool:
         """
         Send a trigger value.
         """
@@ -32,7 +32,7 @@ class TriggerMock(_Trigger):
         """
         self._set_data(0)
 
-    def _set_data(self, value):
+    def _set_data(self, value: int):
         """
         Set the trigger signal to value.
         """

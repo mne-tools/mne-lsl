@@ -28,7 +28,7 @@ class TriggerSoftware(_Trigger):
         If True, display a logger.info message when a trigger is sent.
     """
 
-    def __init__(self, recorder, verbose=True):
+    def __init__(self, recorder, verbose: bool = True):
         super().__init__(verbose)
         self._recorder = TriggerSoftware._check_recorder(recorder)
         self._eve_file = TriggerSoftware._find_eve_file(recorder)
@@ -39,7 +39,7 @@ class TriggerSoftware(_Trigger):
             self._eve_file.close()
             self._eve_file = open(self._eve_file, 'a')
 
-    def signal(self, value):
+    def signal(self, value: int) -> bool:
         """
         Send a trigger value.
         """
@@ -47,7 +47,7 @@ class TriggerSoftware(_Trigger):
         super().signal(value)
         return True
 
-    def _set_data(self, value):
+    def _set_data(self, value: int):
         """
         Set the trigger signal to value.
         """
