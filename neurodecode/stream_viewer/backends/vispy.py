@@ -5,13 +5,14 @@ https://github.com/vispy/vispy/blob/main/examples/demo/gloo/realtime_signals.py
 """
 import math
 
-import vispy
 import numpy as np
-from vispy import app
-from vispy import gloo
-vispy.use("pyqt5")
 
 from ._backend import _Backend
+from ...utils.io._imports import import_optional_dependency
+
+vispy = import_optional_dependency(
+    "vispy", extra="Install Vispy for backend support.")
+vispy.use("pyqt5")
 
 
 VERT_SHADER = """
@@ -60,7 +61,7 @@ void main() {
 """
 
 
-class _BackendVispy(_Backend, app.Canvas):
+class _BackendVispy(_Backend, vispy.app.Canvas):
     """
     The Vispy backend for neurodecode's StreamViewer.
 
@@ -121,7 +122,8 @@ class _BackendVispy(_Backend, app.Canvas):
         self._init_u_size()
         self._init_u_n()
 
-        self._timer = app.Timer(0.020, connect=self._update_loop, start=False)
+        self._timer = vispy.app.Timer(
+            0.020, connect=self._update_loop, start=False)
 
     def _init_a_color(self):
         """
@@ -170,11 +172,11 @@ class _BackendVispy(_Backend, app.Canvas):
         """
         Initialize the Canvas and the Vispy gloo.
         """
-        app.Canvas.__init__(
+        vispy.app.Canvas.__init__(
             self, title=f'Stream Viewer: {self._scope.stream_name}',
             size=geometry[2:], position=geometry[:2],
             keys='interactive')
-        self._program = gloo.Program(VERT_SHADER, FRAG_SHADER)
+        self._program = vispy.gloo.Program(VERT_SHADER, FRAG_SHADER)
         self._program['a_position'] = self._scope.data_buffer[
             self._scope.selected_channels,
             -self._duration_plot_samples:].ravel().astype(np.float32)
@@ -183,9 +185,10 @@ class _BackendVispy(_Backend, app.Canvas):
         self._program['u_scale'] = self._u_scale
         self._program['u_size'] = self._u_size
         self._program['u_n'] = self._u_n
-        gloo.set_viewport(0, 0, *self.physical_size)
-        gloo.set_state(clear_color='black', blend=True,
-                       blend_func=('src_alpha', 'one_minus_src_alpha'))
+        vispy.gloo.set_viewport(0, 0, *self.physical_size)
+        vispy.gloo.set_state(
+            clear_color='black', blend=True,
+            blend_func=('src_alpha', 'one_minus_src_alpha'))
 
     # -------------------------- Main Loop -------------------------
     def start_timer(self):
@@ -213,10 +216,10 @@ class _BackendVispy(_Backend, app.Canvas):
         """
         Called when the window is resized.
         """
-        gloo.set_viewport(0, 0, *event.physical_size)
+        vispy.gloo.set_viewport(0, 0, *event.physical_size)
 
     def on_draw(self, event):
-        gloo.clear()
+        vispy.gloo.clear()
         self._program.draw('line_strip')
 
     def close(self):
@@ -224,7 +227,7 @@ class _BackendVispy(_Backend, app.Canvas):
         Stops the update loop and close the window.
         """
         self._timer.stop()
-        app.Canvas.close(self)
+        vispy.app.Canvas.close(self)
 
     # ------------------------ Update program ----------------------
     @_Backend.xRange.setter

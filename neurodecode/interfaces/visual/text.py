@@ -1,7 +1,9 @@
-import cv2
-
 from ._visual import _Visual
 from ... import logger
+from ...utils.io._imports import import_optional_dependency
+
+cv2 = import_optional_dependency(
+    "cv2", extra="Install matplotlib for visual(s) support.")
 
 
 class Text(_Visual):
