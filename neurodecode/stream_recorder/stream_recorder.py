@@ -6,7 +6,8 @@ import multiprocessing as mp
 
 from .. import logger
 from ..utils.timer import Timer
-from ..utils.io import pcl2fif, make_dirs
+from ..utils.io import pcl2fif
+from ..utils.io._file_dir import make_dirs
 from ..stream_receiver import StreamReceiver, StreamEEG
 from ..stream_receiver._stream import MAX_BUF_SIZE
 

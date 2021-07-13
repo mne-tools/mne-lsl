@@ -2,7 +2,7 @@ from pathlib import Path
 
 import mne
 
-from .. import io
+from ..io._file_dir import get_file_list, make_dirs
 from ... import logger
 
 
@@ -78,14 +78,13 @@ def dir_current_source_density(fif_dir, recursive, montage=None,
     if out_dir is None:
         out_dir = 'csd'
         if not (fif_dir / out_dir).is_dir():
-            io.make_dirs(fif_dir / out_dir)
+            make_dirs(fif_dir / out_dir)
     else:
         out_dir = Path(out_dir)
         if not out_dir.is_dir():
-            io.make_dirs(out_dir)
+            make_dirs(out_dir)
 
-    for fif_file in io.get_file_list(fif_dir, fullpath=True,
-                                     recursive=recursive):
+    for fif_file in get_file_list(fif_dir, fullpath=True, recursive=recursive):
         fif_file = Path(fif_file)
 
         if fif_file.suffix != '.fif':
@@ -98,7 +97,7 @@ def dir_current_source_density(fif_dir, recursive, montage=None,
 
         relative = fif_file.relative_to(fif_dir).parent
         if not (fif_dir / out_dir / relative).is_dir():
-            io.make_dirs(fif_dir / out_dir / relative)
+            make_dirs(fif_dir / out_dir / relative)
 
         logger.info(
             f"Exporting to '{fif_dir / out_dir / relative / fif_file.name}'")

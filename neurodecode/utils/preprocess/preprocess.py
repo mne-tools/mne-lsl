@@ -15,7 +15,7 @@ from .events import change_event_values
 from .events.brainvision import fix_default_event_values
 from .set_montage import set_montage
 
-from .. import io
+from ..io._file_dir import get_file_list, make_dirs
 from ... import logger
 
 # -------------- List of available functions --------------
@@ -194,14 +194,13 @@ def dir_preprocess(fif_dir, recursive, transformations,
     if out_dir is None:
         out_dir = 'preprocessed'
         if not (fif_dir / out_dir).is_dir():
-            io.make_dirs(fif_dir / out_dir)
+            make_dirs(fif_dir / out_dir)
     else:
         out_dir = Path(out_dir)
         if not out_dir.is_dir():
-            io.make_dirs(out_dir)
+            make_dirs(out_dir)
 
-    for fif_file in io.get_file_list(fif_dir, fullpath=True,
-                                     recursive=recursive):
+    for fif_file in get_file_list(fif_dir, fullpath=True, recursive=recursive):
         fif_file = Path(fif_file)
 
         if any(fif_file.name.endswith(ending) for ending in EXT[BaseRaw]):
@@ -217,7 +216,7 @@ def dir_preprocess(fif_dir, recursive, transformations,
 
         relative = fif_file.relative_to(fif_dir).parent
         if not (fif_dir / out_dir / relative).is_dir():
-            io.make_dirs(fif_dir / out_dir / relative)
+            make_dirs(fif_dir / out_dir / relative)
 
         logger.info(
             f"Exporting to '{fif_dir / out_dir / relative / fif_file.name}'")

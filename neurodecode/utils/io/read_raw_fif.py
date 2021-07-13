@@ -3,7 +3,7 @@ from pathlib import Path
 import mne
 import numpy as np
 
-from .io_file_dir import get_file_list
+from ._file_dir import get_file_list
 from ..preprocess.events import find_event_channel
 from ... import logger
 

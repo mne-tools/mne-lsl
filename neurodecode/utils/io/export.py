@@ -10,7 +10,7 @@ import mne
 from scipy.io import savemat
 from numpy.core.records import fromarrays
 
-from .io_file_dir import get_file_list, make_dirs
+from ._file_dir import get_file_list, make_dirs
 from ... import logger
 
 
