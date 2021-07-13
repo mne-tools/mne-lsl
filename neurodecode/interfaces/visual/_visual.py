@@ -1,11 +1,16 @@
 from abc import ABC, abstractmethod
 
-import cv2
 import numpy as np
-from matplotlib import colors
-from screeninfo import get_monitors
 
 from ... import logger
+from ...utils.io._imports import import_optional_dependency
+
+colors = import_optional_dependency(
+    "matplotlib.colors", extra="Install matplotlib for visual(s) support.")
+cv2 = import_optional_dependency(
+    "cv2", extra="Install matplotlib for visual(s) support.")
+screeninfo = import_optional_dependency(
+    "screeninfo", extra="Install screeninfo for visual(s) support.")
 
 
 class _Visual(ABC):
@@ -96,8 +101,10 @@ class _Visual(ABC):
                 raise ValueError
         else:
             try:
-                width = min(monitor.width for monitor in get_monitors())
-                height = min(monitor.height for monitor in get_monitors())
+                width = min(
+                    monitor.width for monitor in screeninfo.get_monitors())
+                height = min(
+                    monitor.height for monitor in screeninfo.get_monitors())
             except ValueError as headless:
                 logger.error(
                     'Automatic window size selection does not work for '

@@ -5,6 +5,7 @@ import itertools
 from pathlib import Path
 from setuptools import setup, find_packages
 
+
 # Version
 version = None
 with open(Path(__file__).parent/'neurodecode'/'_version.py', 'r') as file:
@@ -22,9 +23,9 @@ short_description = """NeuroDecode real-time framework for online neuroscience r
 long_description_file = Path('README.md')
 with open(long_description_file, 'r') as file:
     long_description = file.read()
-if long_description_file.ext == '.md':
+if long_description_file.suffix == '.md':
     long_description_content_type='text/markdown'
-elif long_description_file.ext == '.rst':
+elif long_description_file.suffix == '.rst':
     long_description_content_type='text/x-rst'
 else:
     long_description_content_type='text/plain'

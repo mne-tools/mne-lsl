@@ -6,10 +6,13 @@ Base class for sound delivery.
 from abc import ABC, abstractmethod
 
 import numpy as np
-import sounddevice as sd
 from scipy.io import wavfile
 
 from ... import logger
+from ...utils.io._imports import import_optional_dependency
+
+sd = import_optional_dependency(
+    "sounddevice", extra="Install sounddevice for audio/sound support.")
 
 
 class _Sound(ABC):

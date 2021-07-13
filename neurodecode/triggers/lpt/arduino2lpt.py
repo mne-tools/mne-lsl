@@ -5,11 +5,12 @@ here: https://github.com/fcbg-hnp/arduino-trigger
 import time
 import threading
 
-import serial
-from serial.tools import list_ports
-
 from .._trigger import _Trigger
 from ... import logger
+from ...utils.io._imports import import_optional_dependency
+
+serial = import_optional_dependency(
+    "serial", extra="Install pyserial for ARDUINO support.")
 
 BAUD_RATE = 115200
 
@@ -104,7 +105,7 @@ class TriggerArduino2LPT(_Trigger):
         Automatic Arduino COM port detection.
         """
         com_port = None
-        for arduino in list_ports.grep(regexp='Arduino'):
+        for arduino in serial.tools.list_ports.grep(regexp='Arduino'):
             logger.info(f'Found {arduino}')
             com_port = arduino.device
             break
