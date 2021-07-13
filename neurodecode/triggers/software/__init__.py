@@ -1,1 +1,0 @@
-from .software import TriggerSoftware
