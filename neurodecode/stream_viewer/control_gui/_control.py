@@ -5,10 +5,10 @@ from PyQt5 import QtCore
 from PyQt5.QtWidgets import QMainWindow, QFileDialog
 
 try:
-    from ..backends import _BackendVispy
-except ImportError:
+    from ..backends.vispy import _BackendVispy
+except ModuleNotFoundError:
     pass
-from ..backends import _BackendPyQt5
+from ..backends.pyqt5 import _BackendPyQt5
 
 from ... import logger
 from ...stream_recorder import StreamRecorder
@@ -104,34 +104,47 @@ class _ControlGUI(QMainWindow, ABC, metaclass=_metaclass_ControlGUI):
         """
         Checks that the requested backend is supported.
         """
+        DEFAULT = ['pyqt5', 'vispy'] # Default order
         SUPPORTED_BACKENDS = dict()
         try:
             SUPPORTED_BACKENDS['vispy'] = _BackendVispy
         except NameError:
-            pass
+            SUPPORTED_BACKENDS['vispy'] = None
         try:
             SUPPORTED_BACKENDS['pyqt5'] = _BackendPyQt5
         except NameError:
-            pass
+            SUPPORTED_BACKENDS['pyqt5'] = None
+        assert set(DEFAULT) == set(SUPPORTED_BACKENDS)
 
-        if len(SUPPORTED_BACKENDS) == 0:
+        if all(backend is None for backend in SUPPORTED_BACKENDS.values()):
             logger.error('The StreamViewer did not find an installed backend.')
             raise RuntimeError
 
         if isinstance(backend, str):
             backend = backend.lower().strip()
             if backend in SUPPORTED_BACKENDS:
+                if SUPPORTED_BACKENDS[backend] is None:
+                    logger.error(
+                        f"Selected backend '{backend}' is not installed. "
+                        f"Default to first backend in the order {DEFAULT}.")
+                    for default_backend in DEFAULT:
+                        if default_backend is not None:
+                            return SUPPORTED_BACKENDS[default_backend]
                 return SUPPORTED_BACKENDS[backend]
             else:
-                logger.warning(
+                logger.error(
                     f"Selected backend '{backend}' is not supported. "
-                    "Default to 'pyqt5'.")
-                return SUPPORTED_BACKENDS['pyqt5']
-
+                    f"Default to first backend in the order {DEFAULT}.")
+                for default_backend in DEFAULT:
+                    if default_backend is not None:
+                        return SUPPORTED_BACKENDS[default_backend]
         else:
             logger.warning(
-                "Selected backend is not a string. Default to 'pyqt5'.")
-            return SUPPORTED_BACKENDS['pyqt5']
+                "Selected backend is not a string. "
+                f"Default to first backend in the order {DEFAULT}.")
+            for default_backend in DEFAULT:
+                if default_backend is not None:
+                    return SUPPORTED_BACKENDS[default_backend]
 
     # --------------------------------------------------------------------
     @property

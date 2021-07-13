@@ -5,4 +5,4 @@ opencv-python:          Visuals
 pyserial:               TriggerArduino2LPT
 screeninfo:             Visuals
 sounddevice:            Audio
-vispy:                  ViewerBackend
+vispy:                  VispyBackend
