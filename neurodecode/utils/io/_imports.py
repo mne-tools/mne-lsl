@@ -17,8 +17,7 @@ def import_optional_dependency(
     """
     Import an optional dependency.
     By default, if a dependency is missing an ImportError with a nice
-    message will be raised. If a dependency is present, but too old,
-    we raise.
+    message will be raised.
 
     Parameters
     ----------
