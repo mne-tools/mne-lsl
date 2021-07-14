@@ -1,3 +1,19 @@
+"""
+Acquires signals from LSL server and save them to '-raw.fif' files in a
+record directory.
+
+Command-line arguments:
+    -d --directory      Path to the record directory (str, path)
+    -f --filename       Filename stem (str)
+    -s --stream_name    Stream name (str)
+If no argument is provided, records in the current directory.
+
+Example:
+    nd_stream_recorder -d "D:/Data"
+    nd_stream_recorder -d "D:/Data" -f test
+    nd_stream_recorder -d "D:/Data" -f test -s openvibeSignals
+"""
+
 import argparse
 
 from pathlib import Path
