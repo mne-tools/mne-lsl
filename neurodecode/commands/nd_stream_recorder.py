@@ -6,20 +6,31 @@ from neurodecode.stream_recorder import StreamRecorder
 
 
 def run():
-    parser = argparse.ArgumentParser(prog='StreamRecorder')
+    parser = argparse.ArgumentParser(
+        prog='StreamRecorder',
+        description='Starts recording data from stream(s) on LSL network.')
     parser.add_argument(
-        '-d', nargs='?', help='help for -d: Directory to save data.')
+        '-d', '--directory', type=str, metavar='str',
+        help='directory where the recorded data is saved.', default=Path.cwd())
     parser.add_argument(
-        '-f', nargs='?', help='help for -f: Filename stem.')
+        '-f', '--filename', type=str, metavar='str',
+        help='filename stem used to create the recorded files.')
     parser.add_argument(
-        '-s', nargs='?', help='help for -s: Stream name(s) to record.')
+        '-s', '--stream_name', type=str, metavar='str',
+        help='stream(s) to record.')
 
     args = parser.parse_args()
-    record_dir = Path(args.d)
-    fname = args.f
-    stream_name = args.s
+
+    record_dir = args.directory
+    fname = args.filename
+    stream_name = args.stream_name
 
     recorder = StreamRecorder(record_dir, fname, stream_name)
     recorder.start(verbose=True)
     input(">> Press ENTER to stop the recording \n")
     recorder.stop()
+
+
+def main():
+    """Entrypoint for nd_stream_recorder usage."""
+    run()
