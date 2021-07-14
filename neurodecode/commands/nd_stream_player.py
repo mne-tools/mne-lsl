@@ -1,3 +1,19 @@
+"""
+Stream a recorded fif file on LSL network.
+
+Command-line arguments:
+    #1                  Stream name (str)
+    #2                  Raw FIF file to stream (str, path)
+    -c --chunk_size     Chunk size (int)
+    -t --trigger_file   Trigger file (str, path)
+
+the '-raw.fif' file to play.
+Example:
+    nd_stream_player StreamPlayer "D:/Data/sample-raw.fif"
+    nd_stream_player StreamPlayer "D:/Data/sample-raw.fif" -c 16
+    nd_stream_player StreamPlayer "D:/Data/sample-raw.fif" -c 16 -t 'D:/triggerdef_template.ini'
+"""
+
 import time
 import argparse
 
