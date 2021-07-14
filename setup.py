@@ -31,7 +31,7 @@ else:
     long_description_content_type='text/plain'
 
 # Variables
-NAME = 'NeuroDecode'
+NAME = 'neurodecode'
 DESCRIPTION = short_description
 LONG_DESCRIPTION = long_description
 LONG_DESCRIPTION_CONTENT_TYPE=long_description_content_type
