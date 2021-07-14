@@ -121,10 +121,13 @@ setup(
     python_requires='>=3.6',
     install_requires=install_requires,
     extras_require=extras_require,
-    packages=find_packages(where="neurodecode"),
+    packages=find_packages(),
     entry_points={
         'console_scripts': [
-              'nd = neurodecode.commands.main:main',
+            'nd = neurodecode.commands.main:main',
+            'nd_stream_player = neurodecode.commands.nd_stream_player:main',
+            'nd_stream_recorder = neurodecode.commands.nd_stream_recorder:main',
+            'nd_stream_viewer = neurodecode.commands.nd_stream_viewer:main'
           ]
         }
 )
