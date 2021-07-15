@@ -1,87 +1,105 @@
 """
 Neurodecode's logger.
-TODO: Add file handler.
 """
 import sys
 import logging
 
-# log level options provided by neurodecode
-LOG_LEVELS = {
-    'DEBUG': logging.DEBUG,
-    'INFO': logging.INFO,
-    'WARNING': logging.WARNING,
-    'ERROR': logging.ERROR
-}
+
+logger = logging.getLogger('neurodecode')
+logger.propagate = False  # don't propagate (in case of multiple imports)
 
 
-def init_logger(logger, verbosity='INFO'):
+def init_logger(verbosity='INFO'):
     """
     Initialize a logger. Assign sys.stdout as a handler of the logger.
 
     Parameters
     ----------
-    logger : logging.Logger
-    verbosity : str
-        The logger verbosity. Supported: 'DEBUG', 'INFO', 'WARNING', 'ERROR'.
+    verbosity : int | str
+        Logger verbosity.
     """
-    if not logger.hasHandlers():
-        logger.setLevel(verbosity)
-        add_logger_handler(logger, sys.stdout, verbosity=verbosity)
+    set_log_level(verbosity)
+    add_stream_handler(sys.stdout, verbosity)
 
 
-def add_logger_handler(logger, stream, verbosity='INFO'):
+def add_stream_handler(stream, verbosity='INFO'):
     """
     Add a handler to the logger. The handler redirects the logger output to
     the stream.
 
     Parameters
     ----------
-    logger : logging.Logger
     stream : The output stream, e.g. sys.stdout
+    verbosity : int | str
+        Handler verbosity.
     """
-    c_handler = logging.StreamHandler(stream)
-    c_handler.setFormatter(neurodecodeFormatter())
-    logger.addHandler(c_handler)
-
-    set_log_level(logger, verbosity, -1)
-
-    return logger
+    handler = logging.StreamHandler(stream)
+    handler.setFormatter(NeurodecodeFormatter())
+    logger.addHandler(handler)
+    set_handler_log_level(verbosity, -1)
 
 
-def set_log_level(logger, verbosity, handler_id=0):
+def add_file_handler(filename, mode='a', verbosity='INFO'):
+    """
+    Add a file handler to the logger.- The handler saves the logs to file.
+
+    Parameters
+    ----------
+    filename : str | pathlib.Path
+    mode : str
+        Mode in which the file is openned.
+    verbosity : int | str
+        Handler verbosity.
+    """
+    handler = logging.FileHandler(filename, mode)
+    handler.setFormatter(NeurodecodeFormatter())
+    logger.addHandler(handler)
+    set_handler_log_level(verbosity, -1)
+
+def set_handler_log_level(verbosity, handler_id=0):
     """
     Set the log level for a specific handler.
     First handler (ID 0) is always stdout, followed by user-defined handlers.
 
     Parameters
     ----------
-    logger : logging.Logger
-    verbosity : str
-        The logger verbosity. Supported: 'DEBUG', 'INFO', 'WARNING', 'ERROR'.
+    verbosity : int | str
+        Logger verbosity.
     handler_id : int
-        The ID of the handler among 'logger.handlers'.
+        ID of the handler among 'logger.handlers'.
     """
-    logger.handlers[handler_id].level = LOG_LEVELS[verbosity]
+    logger.handlers[handler_id].setLevel = verbosity
 
 
-class neurodecodeFormatter(logging.Formatter):
+def set_log_level(verbosity):
     """
-    Format string Syntax for Neurodecode.
+    Set the log level for the logger.
 
     Parameters
     ----------
-    fmt : str
-        Format string syntax. The default is '%(levelno)s: %(message)s'
+    verbosity : int | str
+        Logger verbosity.
     """
+    logger.setLevel(verbosity)
 
+
+class NeurodecodeFormatter(logging.Formatter):
+    """
+    Format string Syntax for Neurodecode.
+    """
     # Format string syntax for the different Log levels
-    fmt_debug = "[%(module)s:%(funcName)s:%(lineno)d] DEBUG: %(message)s (%(asctime)s)"
-    fmt_info = "[%(module)s.%(funcName)s] %(message)s"
-    fmt_warning = "[%(module)s.%(funcName)s] WARNING: %(message)s"
-    fmt_error = "[%(module)s:%(funcName)s:%(lineno)d] ERROR: %(message)s"
+    _formatters = dict()
+    _formatters[logging.DEBUG] = logging.Formatter(
+        fmt="[%(module)s:%(funcName)s:%(lineno)d] %(levelname)s: %(message)s (%(asctime)s)")
+    _formatters[logging.INFO] = logging.Formatter(
+        fmt="[%(module)s.%(funcName)s] %(levelname)s: %(message)s")
+    _formatters[logging.WARNING] = logging.Formatter(
+        fmt="[%(module)s.%(funcName)s] %(levelname)s: %(message)s")
+    _formatters[logging.ERROR] = logging.Formatter(
+        fmt="[%(module)s:%(funcName)s:%(lineno)d] %(levelname)s: %(message)s")
 
-    def __init__(self, fmt='%(levelno)s: %(message)s'):
-        super().__init__(fmt)
+    def __init__(self):
+        super().__init__(fmt='%(levelname): %(message)s')
 
     def format(self, record):
         """
@@ -91,15 +109,16 @@ class neurodecodeFormatter(logging.Formatter):
         ----------
         record : logging.LogRecord
         """
-        if record.levelno == LOG_LEVELS['DEBUG']:
-            self._fmt = self.fmt_debug
-        elif record.levelno == LOG_LEVELS['INFO']:
-            self._fmt = self.fmt_info
-        elif record.levelno == LOG_LEVELS['WARNING']:
-            self._fmt = self.fmt_warning
-        elif record.levelno >= LOG_LEVELS['ERROR']:
-            self._fmt = self.fmt_error
+        if record.levelno <= logging.DEBUG:
+            return self._formatters[logging.DEBUG].format(record)
+        elif record.levelno <= logging.INFO:
+            return self._formatters[logging.INFO].format(record)
+        elif record.levelno <= logging.WARNING:
+            return self._formatters[logging.WARNING].format(record)
+        else:
+            return self._formatters[logging.ERROR].format(record)
 
-        self._style = logging.PercentStyle(self._fmt)
+        return super().format(record)
 
-        return logging.Formatter.format(self, record)
+
+init_logger()
