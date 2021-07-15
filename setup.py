@@ -122,6 +122,7 @@ setup(
     install_requires=install_requires,
     extras_require=extras_require,
     packages=find_packages(),
+    include_package_data=True,
     entry_points={
         'console_scripts': [
             'nd = neurodecode.commands.main:main',
@@ -130,4 +131,4 @@ setup(
             'nd_stream_viewer = neurodecode.commands.nd_stream_viewer:main'
           ]
         }
-)
+    )

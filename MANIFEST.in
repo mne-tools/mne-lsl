@@ -1,0 +1,2 @@
+recursive-include neurodecode/stream_viewer/control_gui/settings *
+recursive-include neurodecode/triggers/lpt_libs *
