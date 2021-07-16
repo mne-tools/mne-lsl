@@ -1,6 +1,8 @@
 import math
 from abc import ABC, abstractmethod
 
+from ... import logger
+
 _BUFFER_DURATION = 30  # seconds
 
 
@@ -35,6 +37,11 @@ class _Scope(ABC):
         # Buffers
         self._ts_list = list()
 
+        logger.debug('Scope connected to %s' % self._stream_name)
+        logger.debug('Data sample rate is %f' % self._sample_rate)
+        logger.debug(
+            'Scope buffer duration is %d seconds' % self._duration_buffer)
+
     # -------------------------- Main Loop -------------------------
     @abstractmethod
     def update_loop(self):
@@ -53,8 +60,8 @@ class _Scope(ABC):
         self._data_acquired, self._ts_list = self._sr.get_buffer()
         self._sr.reset_buffer()
 
-        if len(self._ts_list) == 0:
-            return
+        if len(self._ts_list) > 0:
+            logger.debug('Signal acquired by the scope.')
 
     # --------------------------------------------------------------------
     @property

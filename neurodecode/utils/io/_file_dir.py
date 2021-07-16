@@ -117,7 +117,7 @@ def make_dirs(dirname, delete=False):
         except OSError:
             logger.error(
                 'Directory was not completely removed. '
-                '(Perhaps a Dropbox folder?). Continuing.')
+                '(Perhaps a Dropbox folder?). Continuing.', exc_info=True)
     if not dirname.exists():
         logger.info(f'Creating: {dirname}')
         os.makedirs(dirname)

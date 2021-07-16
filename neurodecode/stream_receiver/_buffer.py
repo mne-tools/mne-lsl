@@ -1,3 +1,6 @@
+from .. import logger
+
+
 class Buffer():
     """
     Class representing the stream's buffer.
@@ -31,6 +34,7 @@ class Buffer():
         """
         self._data.extend(data)
         self._timestamps.extend(tslist)
+        logger.debug('Buffer filled with %d points.' % len(tslist))
 
         if len(self._timestamps) > self._bufsize:
             self._data = self._data[-self._bufsize:]
@@ -42,6 +46,7 @@ class Buffer():
         """
         self._data = []
         self._timestamps = []
+        logger.debug('Buffer reset.')
 
     @property
     def bufsize(self):
