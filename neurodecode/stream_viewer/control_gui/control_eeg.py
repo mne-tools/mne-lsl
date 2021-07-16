@@ -43,7 +43,7 @@ class ControlGUI_EEG(_ControlGUI):
 
         for yRange in self._yRanges:
             self._ui.comboBox_signal_yRange.addItem(str(yRange))
-            logger.debug('y-scale option %d added.' % yRange)
+            logger.debug(f'y-scale option {yRange} added.')
 
         # Set table channels row/col
         self._nb_table_columns = 8 if self._scope.nb_channels > 64 else 4
