@@ -108,10 +108,11 @@ nd_stream_player StreamPlayer "D:/Data/data-raw.fif" -c 16 -t "D:/triggerdef.ini
 ## StreamViewer
 The stream viewer creates a 2-window GUI composed of a control GUI and a plotter GUI to display the data acquired from an LSL server in real-time.
 
-**CLI:** The stream viewer can be called by command-line in a terminal by using either `nd stream_viewer` or `nd_stream_viewer` followed by the optional argument `-s` for the `stream_name`. If no stream name is provided, a prompt will ask the user to select the desired non-marker stream to display.
+**CLI:** The stream viewer can be called by command-line in a terminal by using either `nd stream_viewer` or `nd_stream_viewer` followed by the optional argument `-s` and `-b` respectively for the `stream_name` and `backend`. If no stream name is provided, a prompt will ask the user to select the desired non-marker stream to display. The supported backends are `pyqt5` (default) and `vispy` (incomplete).
 ```
 nd_stream_viewer
 nd_stream_viewer -s StreamPlayer
+nd_stream_viewer -s StreamPlayer -b vispy
 ```
 # Additional modules
 NeuroDecode includes 2 additional modules: `triggers` and `interfaces`.
