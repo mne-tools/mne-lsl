@@ -36,4 +36,5 @@ class TriggerMock(_Trigger):
         """
         Set the trigger signal to value.
         """
+        super()._set_data(value)
         logger.info(f'MOCK trigger set to {value}')

@@ -194,10 +194,13 @@ class StreamReceiver:
             self._acquisition_threads[stream_name].join()
         except KeyError as error:
             logger.error(
-                f"The Stream Receiver is not connected to '{stream_name}'.")
+                f"The Stream Receiver is not connected to '{stream_name}'.",
+                exc_info=True)
             raise error
         except AttributeError as error:
-            logger.warning('.acquire() must be called before .get_buffer().')
+            logger.warning(
+                '.acquire() must be called before .get_buffer().',
+                exc_info=True)
             raise error
 
         winsize = self._streams[stream_name].buffer.winsize

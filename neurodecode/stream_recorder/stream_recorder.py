@@ -57,6 +57,8 @@ class StreamRecorder:
         """
         fname, self._eve_file = StreamRecorder._create_fname(
             self._record_dir, self._fname)
+        logger.debug("Filename stem is '%s'." % fname)
+        logger.debug("Event file name is '%s'." % self._eve_file)
 
         self._process = mp.Process(
             target=self._record,
@@ -335,7 +337,7 @@ class _Recorder:
             except Exception as error:
                 logger.error(
                     f"Problem writing to '{pcl_files[stream]}'. "
-                    "Check permissions.")
+                    "Check permissions.", exc_info=True)
                 raise error
 
         logger.info(

@@ -310,4 +310,4 @@ def dir_any2fif(directory, recursive, out_dir=None, overwrite=False, **kwargs):
             any2fif(file, out_dir, overwrite, **kwargs)
             logger.info(f"Converted '{file}'.")
         except Exception:
-            logger.error(f"Error converting '{file}'.")
+            logger.error(f"Error converting '{file}'.", exc_info=True)
