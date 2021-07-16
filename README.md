@@ -78,7 +78,7 @@ time.sleep(10)
 recorder.stop()
 ```
 When the argument `record_dir` is set to None, the current folder obtained with `pathlib.Path.cwd()` is used.
-When the argument `fname` is set to None, the created files' stem uses the start datetime.
+When the argument `fname` is set to None, the created files' stem use the start datetime.
 
 **CLI:** The stream recorder can be called by command-line in a terminal by using either `nd stream_recorder` or `nd_stream_recorder` followed by the optional arguments `-d`, `-f`, `-s` respectively for `record_dir`, `fname`, and `stream_name`.
 ```
@@ -108,7 +108,7 @@ nd_stream_player StreamPlayer "D:/Data/data-raw.fif" -c 16 -t "D:/triggerdef.ini
 ## StreamViewer
 The stream viewer creates a 2-window GUI composed of a control GUI and a plotter GUI to display the data acquired from an LSL server in real-time.
 
-**CLI:** The stream viewer can be called by command-line in a terminal by using either `nd stream_viewer` or `nd_stream_viewer` followed by the optional argument `-s` for the `stream_name`. If no stream name is provided, a prompt will ask the user to select the desired non-markers stream to display.
+**CLI:** The stream viewer can be called by command-line in a terminal by using either `nd stream_viewer` or `nd_stream_viewer` followed by the optional argument `-s` for the `stream_name`. If no stream name is provided, a prompt will ask the user to select the desired non-marker stream to display.
 ```
 nd_stream_viewer
 nd_stream_viewer -s StreamPlayer
