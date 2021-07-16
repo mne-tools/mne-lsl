@@ -124,7 +124,7 @@ class _ControlGUI(QMainWindow, ABC, metaclass=_metaclass_ControlGUI):
             backend = backend.lower().strip()
             if backend in SUPPORTED_BACKENDS:
                 if SUPPORTED_BACKENDS[backend] is None:
-                    logger.error(
+                    logger.warning(
                         f"Selected backend '{backend}' is not installed. "
                         f"Default to first backend in the order {DEFAULT}.")
                     for default_backend in DEFAULT:
@@ -132,7 +132,7 @@ class _ControlGUI(QMainWindow, ABC, metaclass=_metaclass_ControlGUI):
                             return SUPPORTED_BACKENDS[default_backend]
                 return SUPPORTED_BACKENDS[backend]
             else:
-                logger.error(
+                logger.warning(
                     f"Selected backend '{backend}' is not supported. "
                     f"Default to first backend in the order {DEFAULT}.")
                 for default_backend in DEFAULT:

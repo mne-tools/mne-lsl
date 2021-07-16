@@ -36,7 +36,9 @@ class TriggerSoftware(_Trigger):
             self._eve_file = open(self._eve_file, 'a')
         # Close it before if already opened.
         except IOError:
-            self._eve_file.close()
+            logger.debug(
+                "IOError raised when opening file '%s'." % self._eve_file)
+            self._eve_file.close() # TODO: Isn't this a string?
             self._eve_file = open(self._eve_file, 'a')
 
     def signal(self, value: int) -> bool:
@@ -51,6 +53,7 @@ class TriggerSoftware(_Trigger):
         """
         Set the trigger signal to value.
         """
+        super()._set_data(value)
         self._eve_file.write('%.6f\t0\t%d\n' % (pylsl.local_clock(), value))
 
     def close(self):

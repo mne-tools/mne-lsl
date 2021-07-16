@@ -430,6 +430,8 @@ class StreamEEG(_Stream):
         else:
             self._lsl_tr_channel = find_event_channel(ch_names=self._ch_list)
 
+        logger.debug('Trigger channel idx: %d' % self._lsl_tr_channel)
+
     def acquire(self):
         """
         Pull data from the stream's inlet and fill the buffer.

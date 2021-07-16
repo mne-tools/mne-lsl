@@ -60,7 +60,7 @@ class StreamPlayer:
         """
         if self._process is not None and self._process.is_alive():
             logger.info(
-                f"Stop streaming data from: '{self.stream_name}'.")
+                f"Stop streaming data from: '{self._stream_name}'.")
             self._process.kill()
             self._process = None
 

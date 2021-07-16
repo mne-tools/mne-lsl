@@ -27,6 +27,7 @@ class TriggerLPT(_Trigger):
     def __init__(self, portaddr: int, delay:int = 50, verbose: bool = True):
         super().__init__(verbose)
         self._portaddr = TriggerLPT._check_portaddr(portaddr)
+        logger.debug("LPT port address: %d" % self._portaddr)
 
         self._lpt = TriggerLPT._load_dll()
         if self._lpt.init() == -1:
@@ -63,6 +64,7 @@ class TriggerLPT(_Trigger):
         """
         Set the trigger signal to value.
         """
+        super()._set_data(value)
         self._lpt.setdata(self._portaddr, value)
 
     # --------------------------------------------------------------------
@@ -182,6 +184,7 @@ class TriggerUSB2LPT(_Trigger):
         """
         Set the trigger signal to value.
         """
+        super()._set_data(value)
         self._lpt.setdata(value)
 
     # --------------------------------------------------------------------
@@ -268,7 +271,7 @@ class TriggerArduino2LPT(_Trigger):
         except serial.SerialException as error:
             logger.error(
                 "Disconnect and reconnect the ARDUINO convertor because "
-                f"{error}")
+                f"{error}", exc_info=True)
             raise Exception from error
 
         time.sleep(1)
@@ -300,6 +303,7 @@ class TriggerArduino2LPT(_Trigger):
         """
         Set the trigger signal to value.
         """
+        super()._set_data(value)
         self._ser.write(bytes([value]))
 
     def close(self):

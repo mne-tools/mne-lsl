@@ -3,6 +3,8 @@ from scipy.signal import butter, sosfilt, sosfilt_zi
 
 from ._scope import _Scope
 from ...utils.preprocess.events import find_event_channel
+from ... import logger
+
 
 BP_ORDER = 2
 
@@ -102,6 +104,7 @@ class ScopeEEG(_Scope):
         """
         if self._apply_bandpass:
             if self._zi is None:
+                logger.debug('Initialize ZI coefficient for BP.')
                 # Multiply by DC offset
                 self._zi = self._zi_coeff*np.mean(self._data_acquired, axis=0)
             self._data_acquired, self._zi = sosfilt(
