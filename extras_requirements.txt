@@ -1,8 +1,11 @@
 # Extra requirements for full NeuroDecode functionalities.
-# FORMAT: package[version_required]: tag1, tag2, ...
-matplotlib:             Visuals
-opencv-python:          Visuals
-pyserial:               TriggerArduino2LPT
-screeninfo:             Visuals
-sounddevice:            Audio
-vispy:                  VispyBackend
+# FORMAT: package[version_required]      # tag1, tag2, ...
+# Examples:
+# numpy>=1.20          # xyz, xyz_2
+
+matplotlib             # visuals
+opencv-python          # visuals
+pyserial               # trigger_arduino2lpt
+screeninfo             # visuals
+sounddevice            # audio
+vispy                  # vispy_backend

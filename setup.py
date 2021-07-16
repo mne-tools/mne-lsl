@@ -60,28 +60,29 @@ def get_requirements(path):
 
     return install_requires
 
+
 def get_extras_requirements(path, add_all=True):
     """Map extra dependencies to the functionalities."""
     extras_require = dict()
     with open(path, 'r') as file:
         for line in file:
-            if line.startswith('#'):
-                continue
             line = line.strip()
-            if ':' in line:
-                req, tags = line.split(':')
-                for tag in tags.split(','):
-                    tag = tag.strip()
-                    if tag not in extras_require:
-                        extras_require[tag] = [req.strip()]
-                    else:
-                        extras_require[tag].append(req.strip())
+            if line.startswith('#') or len(line) == 0:
+                continue
+            req, tags = line.split('#')
+            for tag in tags.split(','):
+                tag = tag.strip()
+                if tag not in extras_require:
+                    extras_require[tag] = [req.strip()]
+                else:
+                    extras_require[tag].append(req.strip())
 
     # add tag `all` at the end
     if add_all:
         extras_require['all'] = set(itertools.chain(*extras_require.values()))
 
     return extras_require
+
 
 install_requires = get_requirements('requirements.txt')
 extras_require = get_extras_requirements(
