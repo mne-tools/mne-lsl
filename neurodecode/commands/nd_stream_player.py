@@ -11,7 +11,7 @@ the '-raw.fif' file to play.
 Example:
     nd_stream_player StreamPlayer "D:/Data/sample-raw.fif"
     nd_stream_player StreamPlayer "D:/Data/sample-raw.fif" -c 16
-    nd_stream_player StreamPlayer "D:/Data/sample-raw.fif" -c 16 -t 'D:/triggerdef_template.ini'
+    nd_stream_player StreamPlayer "D:/Data/sample-raw.fif" -c 16 -t "D:/triggerdef_template.ini"
 """
 
 import time
