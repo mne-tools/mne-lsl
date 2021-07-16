@@ -3,9 +3,9 @@
 # Examples:
 # numpy>=1.20          # xyz, xyz_2
 
-matplotlib             # visuals
-opencv-python          # visuals
+matplotlib             # visual
+opencv-python          # visual
 pyserial               # trigger_arduino2lpt
-screeninfo             # visuals
+screeninfo             # visual
 sounddevice            # audio
 vispy                  # vispy_backend
