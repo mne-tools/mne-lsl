@@ -430,7 +430,10 @@ class StreamEEG(_Stream):
         else:
             self._lsl_tr_channel = find_event_channel(ch_names=self._ch_list)
 
-        logger.debug('Trigger channel idx: %d' % self._lsl_tr_channel)
+        if self._lsl_tr_channel is not None:
+            logger.debug('Trigger channel idx: %d' % self._lsl_tr_channel)
+        else:
+            logger.debug('Trigger channel was not found.')
 
     def acquire(self):
         """
