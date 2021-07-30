@@ -335,6 +335,8 @@ class TriggerArduino2LPT(_Trigger):
             logger.error('No arduino found.')
             raise IOError
 
+        return com_port
+
     # --------------------------------------------------------------------
     @property
     def com_port(self):
