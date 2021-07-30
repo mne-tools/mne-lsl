@@ -27,14 +27,14 @@ def run():
         help='stream to display/plot.')
     parser.add_argument(
         '-b', '--backend', type=str, metavar='str',
-        help='selected plot backend.')
+        help='selected plot backend.', default='pyqt5')
 
     args = parser.parse_args()
     stream_name = args.stream_name
     backend = args.backend
 
     stream_viewer = StreamViewer(stream_name)
-    stream_viewer.start(backend)
+    stream_viewer.start(backend=backend)
 
 
 def main():
