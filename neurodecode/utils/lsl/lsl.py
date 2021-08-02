@@ -142,6 +142,9 @@ def search_lsl(ignore_markers=False, timeout=10):
         stream_list, streamInfos = list_lsl_streams(ignore_markers)
         if len(stream_list) != 0:
             break
+    else:
+        logger.error('Timeout. No LSL stream found.')
+        return None
 
     logger.info('-- List of servers --')
     for i, stream_name in enumerate(stream_list):
