@@ -79,6 +79,9 @@ class StreamViewer:
             raise ValueError
         elif stream_name is None:
             stream_name = search_lsl(ignore_markers=True)
+            if stream_name is None:
+                logger.error('No LSL stream found.')
+                raise ValueError
 
         return stream_name
 
