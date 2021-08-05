@@ -131,7 +131,7 @@ class _BackendVispy(_Backend, vispy.app.Canvas):
         """
         self._a_color = np.repeat(
             self._available_colors[self._scope.selected_channels, :],
-            self._duration_plot_samples, axis=0).astype(np.float32)
+            self._duration_plot_samples, axis=0).astype(np.float32, copy=False)
 
     def _init_a_index(self):
         """
@@ -148,7 +148,7 @@ class _BackendVispy(_Backend, vispy.app.Canvas):
                 self._duration_plot_samples),
             np.tile(
                 np.arange(self._duration_plot_samples),
-                self._nrows*self._ncols)].astype(np.float32)
+                self._nrows*self._ncols)].astype(np.float32, copy=False)
 
     def _init_u_scale(self):
         """
@@ -179,7 +179,8 @@ class _BackendVispy(_Backend, vispy.app.Canvas):
         self._program = vispy.gloo.Program(VERT_SHADER, FRAG_SHADER)
         self._program['a_position'] = self._scope.data_buffer[
             self._scope.selected_channels,
-            -self._duration_plot_samples:].ravel().astype(np.float32)
+            -self._duration_plot_samples:].ravel().astype(
+                np.float32, copy=False)
         self._program['a_color'] = self._a_color
         self._program['a_index'] = self._a_index
         self._program['u_scale'] = self._u_scale
@@ -208,7 +209,8 @@ class _BackendVispy(_Backend, vispy.app.Canvas):
             self._program['a_position'].set_data(
                 self._scope.data_buffer[
                     self._scope.selected_channels,
-                    -self._duration_plot_samples:].ravel().astype(np.float32))
+                    -self._duration_plot_samples:].ravel().astype(
+                        np.float32, copy=False))
             self.update()
 
     # --------------------------- Events ---------------------------

@@ -451,8 +451,8 @@ class StreamEEG(_Stream):
         if 'BioSemi' in self._name and self._lsl_tr_channel is not None:
             datatype = data.dtype
             data[:, self._lsl_tr_channel] = (
-                np.bitwise_and(255, data[:, self._lsl_tr_channel].astype(int))
-                - 1).astype(datatype)
+                np.bitwise_and(255, data[:, self._lsl_tr_channel].astype(
+                    int, copy=False)) - 1).astype(datatype, copy=False)
 
         # multiply values (to change unit)
         if self._multiplier != 1:
