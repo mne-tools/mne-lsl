@@ -2,7 +2,7 @@ import numpy as np
 from scipy.signal import butter, sosfilt, sosfilt_zi
 
 from ._scope import _Scope
-from ...utils.preprocess.events import find_event_channel
+from ...utils import find_event_channel
 from ... import logger
 
 

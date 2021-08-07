@@ -4,7 +4,7 @@ import mne
 import numpy as np
 
 from ._file_dir import get_file_list
-from ..preprocess.events import find_event_channel
+from .. import find_event_channel
 from ... import logger
 
 
@@ -23,7 +23,7 @@ def read_raw_fif(fname, events_ext=None, preload=True):
 
     Returns:
     --------
-    raw : mne.io.Raw
+    raw : Raw
         MNE raw data with the trigger channel at index 0.
     events : np.array
         MNE-compatible events numpy array object (N x [frame, 0, type])
@@ -73,7 +73,7 @@ def read_raw_fif_multi(src):
 
     Returns
     -------
-    raw : mne.io.Raw
+    raw : Raw
         MNE raw data with the trigger channel at index 0.
     events : np.array
         MNE-compatible events numpy array object (N x [frame, 0, type])
