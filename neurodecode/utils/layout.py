@@ -8,7 +8,7 @@ Provide a class to contain:
 from mne.io.pick import get_channel_type_constants
 from mne.channels.montage import DigMontage, _BUILT_IN_MONTAGES
 
-from ... import logger
+from .. import logger
 
 
 CAP = {
