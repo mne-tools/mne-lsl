@@ -8,7 +8,7 @@ import numpy as np
 from ._buffer import Buffer
 from .. import logger
 from ..utils.timer import Timer
-from ..utils.preprocess.events import find_event_channel
+from ..utils import find_event_channel
 from ..utils.lsl import lsl_channel_list
 
 _MAX_PYLSL_STREAM_BUFSIZE = 10  # max 10 sec of data buffered for LSL

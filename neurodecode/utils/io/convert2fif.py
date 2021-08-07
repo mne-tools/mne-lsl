@@ -9,7 +9,7 @@ import numpy as np
 from mne.io._read_raw import supported
 
 from ._file_dir import get_file_list, make_dirs
-from ..preprocess.events import find_event_channel
+from .. import find_event_channel
 from ... import logger
 
 
@@ -86,7 +86,7 @@ def _format_pcl_to_mne_RawArray(data):
 
     Returns
     -------
-    mne.io.raw
+    Raw
         MNE raw structure.
     """
     if isinstance(data['signals'], list):
