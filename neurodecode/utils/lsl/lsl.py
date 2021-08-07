@@ -5,7 +5,7 @@ import xml.etree.ElementTree as ET
 
 import pylsl
 
-from ..timer import Timer
+from .. import Timer
 from ... import logger
 
 
