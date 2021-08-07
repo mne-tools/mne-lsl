@@ -10,7 +10,7 @@ def find_event_channel(inst=None, ch_names=None):
 
     Parameters
     ----------
-    inst : mne.io.Raw | numpy.ndarray (n_channels x n_samples)
+    inst : Raw | numpy.ndarray (n_channels x n_samples)
         Data instance.
     ch_names : list
         Channels name list.

@@ -24,7 +24,7 @@ def write_set(raw, fname):
 
     Parameters
     ----------
-    raw : mne.io.Raw | mne.io.RawArray
+    raw : Raw | mne.io.RawArray
         MNE instance of Raw.
     fname : str
         Name/Path of the '.set' file created.
