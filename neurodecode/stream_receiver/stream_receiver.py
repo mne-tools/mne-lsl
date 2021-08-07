@@ -5,7 +5,7 @@ import numpy as np
 
 from ._stream import StreamEEG, StreamMarker
 from .. import logger
-from ..utils.timer import Timer
+from ..utils import Timer
 
 
 class StreamReceiver:

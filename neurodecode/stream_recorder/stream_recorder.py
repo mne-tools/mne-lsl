@@ -5,7 +5,7 @@ from pathlib import Path
 import multiprocessing as mp
 
 from .. import logger
-from ..utils.timer import Timer
+from ..utils import Timer
 from ..utils.io import pcl2fif
 from ..utils.io._file_dir import make_dirs
 from ..stream_receiver import StreamReceiver, StreamEEG
