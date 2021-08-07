@@ -7,7 +7,7 @@ import numpy as np
 from .. import logger
 from ..triggers import TriggerDef
 from ..utils.io import read_raw_fif
-from ..utils.preprocess.events import find_event_channel
+from ..utils import find_event_channel
 
 
 class StreamPlayer:
