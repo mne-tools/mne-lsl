@@ -7,7 +7,7 @@ import numpy as np
 
 from ._buffer import Buffer
 from .. import logger
-from ..utils.timer import Timer
+from ..utils import Timer
 from ..utils import find_event_channel
 from ..utils.lsl import lsl_channel_list
 
