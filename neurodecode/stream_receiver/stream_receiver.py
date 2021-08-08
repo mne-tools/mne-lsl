@@ -6,8 +6,10 @@ import numpy as np
 from ._stream import StreamEEG, StreamMarker
 from .. import logger
 from ..utils import Timer
+from ..utils.docs import fill_doc
 
 
+@fill_doc
 class StreamReceiver:
     """
     Class for data acquisition from LSL streams.
@@ -23,9 +25,7 @@ class StreamReceiver:
         Large buffer may lead to a delay if not pulled frequently.
     winsize : int | float
         Window's size [secs]. Must be smaller than the buffer's size.
-    stream_name : list | str | None
-        Servers' name or list of servers' name to connect to.
-        None: no constraint.
+    %(stream_name)s
     """
 
     def __init__(self, bufsize=1, winsize=1, stream_name=None):
