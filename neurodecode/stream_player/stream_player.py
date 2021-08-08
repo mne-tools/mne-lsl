@@ -204,7 +204,7 @@ class _Streamer:
         fif_file : str
             Path to the .fif file to play.
         """
-        self._raw, self._events = read_raw_fif(fif_file)
+        self._raw, _ = read_raw_fif(fif_file)
         self._tch = find_event_channel(inst=self._raw)
         self._sample_rate = self._raw.info['sfreq']
         self._ch_count = len(self._raw.ch_names)
