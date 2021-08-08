@@ -5,8 +5,8 @@ import xml.etree.ElementTree as ET
 
 import pylsl
 
-from .. import Timer
-from ... import logger
+from . import Timer
+from .. import logger
 
 
 def start_server(server_name, n_channels=1, channel_format='string',
