@@ -18,17 +18,17 @@ mne.set_log_level('ERROR')
 # ------------------------- Stream Recorder PCL -------------------------
 
 
-def pcl2fif(filename, out_dir=None, external_event=None,
+def pcl2fif(fname, out_dir=None, external_event=None,
             precision='double', replace=False):
     """
     Convert NeuroDecode Python pickle format to mne.io.raw.
 
     Parameters
     ----------
-    filename : str
+    fname : str
         Pickle file path to convert to fif format.
     out_dir : str
-        Saving directory. If None, it will be the directory of the .pkl file.
+        Saving directory. If None, it will be the directory fname.parent/'fif'.
     external_event : str
         Event file path in text format, following MNE event structure.
         Each row should be: index 0 event
@@ -39,24 +39,24 @@ def pcl2fif(filename, out_dir=None, external_event=None,
         If true, previous events will be overwritten by the new ones from the
         external events file.
     """
-    filename = Path(filename)
-    if not filename.is_file():
-        logger.error(f"File '{filename}' not found.")
+    fname = Path(fname)
+    if not fname.is_file():
+        logger.error(f"File '{fname}' not found.")
         raise IOError
-    if filename.suffix != '.pcl':
-        logger.error(f"File '{filename}' is not '.pcl'.")
+    if fname.suffix != '.pcl':
+        logger.error(f"File '{fname}' is not '.pcl'.")
         raise IOError
 
     if out_dir is not None:
         out_dir = Path(out_dir)
     else:
-        out_dir = filename.parent / 'fif'
+        out_dir = fname.parent / 'fif'
     make_dirs(out_dir)
 
-    fiffile = out_dir / str(filename.stem + '.fif')
+    fiffile = out_dir / str(fname.stem + '.fif')
 
     # Load from file
-    with open(filename, 'rb') as file:
+    with open(fname, 'rb') as file:
         data = pickle.load(file)
 
     # MNE format
@@ -217,7 +217,7 @@ def _add_events_from_txt(raw, events_index, stim_channel='TRIGGER',
 supported['.pcl'] = pcl2fif
 
 
-def any2fif(filename, out_dir=None, overwrite=True, precision='double'):
+def any2fif(fname, out_dir=None, overwrite=True, precision='double'):
     """
     Generic file format converter to mne.io.raw.
     Uses mne.io.read_raw():
@@ -225,43 +225,43 @@ def any2fif(filename, out_dir=None, overwrite=True, precision='double'):
 
     Parameters
     ----------
-    filename : str
+    fname : str
         File path to convert to fif format.
     out_dir : str
-        Saving directory. If None, it will be the directory of filename.
+        Saving directory. If None, it will be the directory fname.parent/'fif'.
     overwrite : bool
         If true, overwrite previously converted files with the same name.
     precision : str
         Data matrix format. [single|double|int|short], 'single' improves
         backward compatability.
     """
-    filename = Path(filename)
-    if not filename.is_file():
-        logger.error(f"File '{filename}' not found.")
+    fname = Path(fname)
+    if not fname.is_file():
+        logger.error(f"File '{fname}' not found.")
         raise IOError
-    if filename.suffix not in supported:
-        logger.error(f'File type {filename.suffix} is not supported.')
+    if fname.suffix not in supported:
+        logger.error(f'File type {fname.suffix} is not supported.')
         raise IOError
 
-    if filename.suffix == '.pcl':
-        eve_file = filename.parent / (filename.stem[:-4] + 'eve.txt')
+    if fname.suffix == '.pcl':
+        eve_file = fname.parent / (fname.stem[:-4] + 'eve.txt')
         if eve_file.exists():
             logger.info(f"Adding events from '{eve_file}'")
         else:
             logger.info(f"No SOFTWARE event file '{eve_file}'")
             eve_file = None
 
-        pcl2fif(filename, out_dir=out_dir, external_event=eve_file,
+        pcl2fif(fname, out_dir=out_dir, external_event=eve_file,
                 precision=precision, replace=False)
 
     else:
         if out_dir is not None:
             out_dir = Path(out_dir)
         else:
-            out_dir = filename.parent / 'fif'
+            out_dir = fname.parent / 'fif'
         make_dirs(out_dir)
 
-        fiffile = out_dir / filename.stem + '.fif'
+        fiffile = out_dir / fname.stem + '.fif'
 
-        raw = mne.io.read_raw(filename)
+        raw = mne.io.read_raw(fname)
         raw.save(fiffile, verbose=False, overwrite=overwrite, fmt=precision)
