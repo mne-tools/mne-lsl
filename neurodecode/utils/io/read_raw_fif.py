@@ -12,9 +12,9 @@ def read_raw_fif(fname, events_ext=None, preload=True):
 
     Parameters
     ----------
-    fname : str | pathlib.Path
+    fname : str | Path
         Path to the .fif file.
-    events_ext : str | pathlib.Path
+    events_ext : str | Path
         Path to the .txt file containing external events.
     preload : bool
         Preload data into memory for data manipulation and faster indexing.
