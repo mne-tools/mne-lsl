@@ -13,7 +13,7 @@ class TriggerDef:
 
     Parameters
     ----------
-    ini_file : str | pathlib.Path
+    ini_file : str | Path
         Path of the ini file.
     """
 

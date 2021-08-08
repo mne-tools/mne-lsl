@@ -21,7 +21,7 @@ class Sound(_Sound):
 
     Parameters
     ----------
-    fname : str | pathlib.Path
+    fname : str | Path
         Path to the supported audio file to load.
     """
 

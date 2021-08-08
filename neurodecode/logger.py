@@ -45,7 +45,7 @@ def add_file_handler(filename, mode='a', verbosity='INFO'):
 
     Parameters
     ----------
-    filename : str | pathlib.Path
+    filename : str | Path
     mode : str
         Mode in which the file is openned.
     verbosity : int | str
