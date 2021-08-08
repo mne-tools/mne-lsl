@@ -15,11 +15,10 @@ from ... import logger
 
 mne.set_log_level('ERROR')
 
+
 # ------------------------- Stream Recorder PCL -------------------------
-
-
 def pcl2fif(fname, out_dir=None, external_event=None,
-            precision='double', replace=False):
+            precision='double', replace=False, overwrite=True):
     """
     Convert NeuroDecode Python pickle format to mne.io.raw.
 
@@ -38,6 +37,8 @@ def pcl2fif(fname, out_dir=None, external_event=None,
     replace : bool
         If true, previous events will be overwritten by the new ones from the
         external events file.
+    overwrite : bool
+        If true, overwrite the previous file.
     """
     fname = Path(fname)
     if not fname.is_file():
@@ -70,7 +71,7 @@ def pcl2fif(fname, out_dir=None, external_event=None,
             raw, events_index, stim_channel='TRIGGER', replace=replace)
 
     # Save
-    raw.save(fiffile, verbose=False, overwrite=True, fmt=precision)
+    raw.save(fiffile, verbose=False, overwrite=overwrite, fmt=precision)
     logger.info(f"Data saved to: '{fiffile}'")
 
 
@@ -86,7 +87,7 @@ def _format_pcl_to_mne_RawArray(data):
 
     Returns
     -------
-    Raw
+    raw : Raw
         MNE raw structure.
     """
     if isinstance(data['signals'], list):
@@ -252,7 +253,7 @@ def any2fif(fname, out_dir=None, overwrite=True, precision='double'):
             eve_file = None
 
         pcl2fif(fname, out_dir=out_dir, external_event=eve_file,
-                precision=precision, replace=False)
+                precision=precision, replace=False, overwrite=overwrite)
 
     else:
         if out_dir is not None:
