@@ -53,11 +53,11 @@ window_size : list | None
 # interfaces.visual color
 color_var = 'color'
 color_types = 'str | tuple'
-color_format = """as a matplotlib string or a (B, G, R) tuple of int8 set
-between 0 and 255"""
+color_format = 'as a matplotlib string or a (B, G, R) tuple of int8 set ' + \
+               'between 0 and 255'
 docdict['visual_color_background'] = f"""
 {color_var} : {color_types}
-    Color of the background {color_format}."""
+    Color used to draw the background {color_format}."""
 docdict['visual_color_text'] = f"""
 {color_var} : {color_types}
     Color used to write the text {color_format}."""
@@ -156,6 +156,8 @@ def fill_doc(f):
         docdict_indented[icount] = indented = {}
         for name, dstr in docdict.items():
             lines = dstr.splitlines()
+            while lines[0] == '':
+                lines.pop(0)
             try:
                 newlines = [lines[0]]
                 for line in lines[1:]:
