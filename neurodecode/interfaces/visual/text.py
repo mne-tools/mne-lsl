@@ -1,25 +1,25 @@
 from ._visual import _Visual
 from ... import logger
+from ...utils.docs import fill_doc
 
 import cv2
 
 
+@fill_doc
 class Text(_Visual):
     """
     Class to display a text.
 
     Parameters
     ----------
-    window_name : str
-        Name of the window in which the visual is displayed.
-    window_size : tuple | list | None
-        Either None to automatically select a window size based on the
-        available monitors, or a 2-length of positive integer sequence.
+    %(visual_window_name)s
+    %(visual_window_size)s
     """
 
     def __init__(self, window_name='Visual', window_size=None):
         super().__init__(window_name, window_size)
 
+    @fill_doc
     def putText(self, text, fontFace=cv2.FONT_HERSHEY_DUPLEX, fontScale=2,
                 color='white', thickness=2, position='centered'):
         """
@@ -33,18 +33,10 @@ class Text(_Visual):
             Font to use to write the text.
         fontScale : int
             Scale of the font.
-        color : str | tuple
-            Color used to write the text. Either a matplotlib color string
-            or a (Blue, Green, Red) tuple of int8 set between 0 and 255.
+        %(visual_color_text)s
         thickness : int
             Text line thickness in pixel.
-        position : str | tuple | list
-            Position of the bottom left corner of the text.
-            Either the string 'center' or 'centered' to position the text in
-            the center of the window; or a 2-length of positive integer
-            sequence defining the position of the bottom left corner of the
-            text in the window. The position is defined in cv2 coordinates,
-            with (0, 0) being the top left corner of the window.
+        %(visual_position_text)s
         """
         if text != '':
             textWidth, textHeight = cv2.getTextSize(

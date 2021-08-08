@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 import numpy as np
 
 from ... import logger
+from ...utils.docs import fill_doc
 from ...utils._imports import import_optional_dependency
 
 colors = import_optional_dependency(
@@ -13,18 +14,15 @@ screeninfo = import_optional_dependency(
     "screeninfo", extra="Install screeninfo for visual(s) support.")
 
 
+@fill_doc
 class _Visual(ABC):
     """
     Base visual class.
 
     Parameters
     ----------
-    window_name : str
-        Name of the window in which the visual is displayed.
-    window_size : tuple | list | None
-        Either None to automatically select a window size based on the
-        available monitors, or a 2-length of positive integer sequence, as
-        (width, height).
+    %(visual_window_name)s
+    %(visual_window_size)s
     """
 
     @abstractmethod
@@ -61,15 +59,14 @@ class _Visual(ABC):
         """
         cv2.destroyWindow(self._window_name)
 
+    @fill_doc
     def draw_background(self, color):
         """
         Draw a uniform single color background.
 
         Parameters
         ----------
-        color : str | tuple | list
-            Color of the background as a matplotlib string or a (B, G, R)
-            tuple.
+        %(visual_color_background)s
         """
         color = _Visual._check_color(color)
         self._img = np.full(

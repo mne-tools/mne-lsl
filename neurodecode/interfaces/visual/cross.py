@@ -1,25 +1,25 @@
 from ._visual import _Visual
 from ... import logger
+from ...utils.docs import fill_doc
 
 import cv2
 
 
+@fill_doc
 class Cross(_Visual):
     """
     Class to display a cross, e.g. a fixation cross.
 
     Parameters
     ----------
-    window_name : str
-        Name of the window in which the visual is displayed.
-    window_size : tuple | list | None
-        Either None to automatically select a window size based on the
-        available monitors, or a 2-length of positive integer sequence.
+    %(visual_window_name)s
+    %(visual_window_size)s
     """
 
     def __init__(self, window_name='Visual', window_size=None):
         super().__init__(window_name, window_size)
 
+    @fill_doc
     def putCross(self, length, thickness, color, position):
         """
         Draw a cross composed of 2 rectangles defined by length and thickness.
@@ -41,20 +41,10 @@ class Cross(_Visual):
 
         Parameters
         ----------
-        length : int
-            Number of pixels used to draw the length of the cross.
-        thickness : int
-            Number of pixels used to draw the thickness of the cross.
-        color : str | tuple
-            Color used to fill the cross. Either a matplotlib color string
-            or a (Blue, Green, Red) tuple of int8 set between 0 and 255.
-        position : str | tuple | list
-            Position of the center of the cross.
-            Either the string 'center' or 'centered' to position the cross in
-            the center of the window; or a 2-length of positive integer
-            sequence defining the position of the center of the cross in the
-            window. The position is defined in cv2 coordinates, with (0, 0)
-            being the top left corner of the window.
+        %(visual_length_cross)s
+        %(visual_thickness_cross)s
+        %(visual_color_cross)s
+        %(visual_position_cross)s
         """
         length = Cross._check_length(length, self.window_size)
         thickness = Cross._check_thickness(thickness, length)

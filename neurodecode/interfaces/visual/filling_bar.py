@@ -2,10 +2,12 @@ import copy
 
 from ._visual import _Visual
 from ... import logger
+from ...utils.docs import fill_doc
 
 import cv2
 
 
+@fill_doc
 class FillingBar(_Visual):
     """
     Class to display a centered bar which can fill/unfill along a given axis.
@@ -14,17 +16,15 @@ class FillingBar(_Visual):
 
     Parameters
     ----------
-    window_name : str
-        Name of the window in which the visual is displayed.
-    window_size : tuple | list | None
-        Either None to automatically select a window size based on the
-        available monitors, or a 2-length of positive integer sequence.
+    %(visual_window_name)s
+    %(visual_window_size)s
     """
 
     def __init__(self, window_name='Visual', window_size=None):
         super().__init__(window_name, window_size)
         self._backup_img = None
 
+    @fill_doc
     def putBar(self, length, width, margin, color, fill_color,
                fill_perc=0, axis=0):
         """
@@ -32,20 +32,14 @@ class FillingBar(_Visual):
 
         Parameters
         ----------
-        length : int
-            Number of pixels used to draw the length of the bar.
-        width : int
-            Number of pixels used to draw the width of the bar.
+        %(visual_length_bar)s
+        %(visual_width_bar)s
         margin : int
             Margin in pixel between the filling bar and the containing bar.
-            The containing bar lengthxwidth is set as:
+            The containing bar (length x width) is set as:
                 (length+margin, width+margin)
-        color : str | tuple
-            Color used to draw the bar background. Either a matplotlib color
-            string or a (Blue, Green, Red) tuple of int8 set between 0 and 255.
-        fill_color : str | tuple
-            Color used to fill the bar. Either a matplotlib color string or a
-            (Blue, Green, Red) tuple of int8 set between 0 and 255.
+        %(visual_color_filling_bar)s
+        %(visual_fill_color_filling_bar)s
         fill_perc : float
             Percentage between 0 and 1 of bar filling.
                 0 - not filled

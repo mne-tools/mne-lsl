@@ -2,10 +2,12 @@ import copy
 
 from ._visual import _Visual
 from ... import logger
+from ...utils.docs import fill_doc
 
 import cv2
 
 
+@fill_doc
 class MovingBar(_Visual):
     """
     Class to display a centered moving bar along the vertical or horizontal
@@ -13,30 +15,24 @@ class MovingBar(_Visual):
 
     Parameters
     ----------
-    window_name : str
-        Name of the window in which the visual is displayed.
-    window_size : tuple | list | None
-        Either None to automatically select a window size based on the
-        available monitors, or a 2-length of positive integer sequence.
+    %(visual_window_name)s
+    %(visual_window_size)s
     """
 
     def __init__(self, window_name='Visual', window_size=None):
         super().__init__(window_name, window_size)
         self._backup_img = None
 
+    @fill_doc
     def putBar(self, length, width, color, position=0, axis=0):
         """
         Backup the visual and draw the bar on top.
 
         Parameters
         ----------
-        length : int
-            Number of pixels used to draw the length of the bar.
-        width : int
-            Number of pixels used to draw the width of the bar.
-        color : str | tuple
-            Color used to fill the bar. Either a matplotlib color string
-            or a (Blue, Green, Red) tuple of int8 set between 0 and 255.
+        %(visual_length_bar)s
+        %(visual_width_bar)s
+        %(visual_color_moving_bar)s
         position : int | float
             Relative position of the bar along the given axis.
             Along the vertical axis:
