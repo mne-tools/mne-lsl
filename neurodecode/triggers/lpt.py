@@ -7,7 +7,7 @@ from pathlib import Path
 
 from ._trigger import _Trigger
 from .. import logger
-from ..utils.docs import fill_doc
+from ..utils._docs import fill_doc
 from ..utils._imports import import_optional_dependency
 
 

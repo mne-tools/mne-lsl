@@ -6,7 +6,7 @@ import numpy as np
 from ._stream import StreamEEG, StreamMarker
 from .. import logger
 from ..utils import Timer
-from ..utils.docs import fill_doc
+from ..utils._docs import fill_doc
 
 
 @fill_doc

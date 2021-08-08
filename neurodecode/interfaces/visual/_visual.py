@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 import numpy as np
 
 from ... import logger
-from ...utils.docs import fill_doc
+from ...utils._docs import fill_doc
 from ...utils._imports import import_optional_dependency
 
 colors = import_optional_dependency(
