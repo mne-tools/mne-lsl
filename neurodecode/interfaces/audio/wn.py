@@ -5,7 +5,7 @@ White Noise sound.
 import numpy as np
 
 from ._sound import _Sound
-from ...utils.docs import fill_doc
+from ...utils._docs import fill_doc
 
 
 @fill_doc
