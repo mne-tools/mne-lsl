@@ -1,36 +1,29 @@
 """
-White Noise
-
-@author: Mathieu Scheltienne
+Pure tone sound.
 """
 
 import numpy as np
 
 from ._sound import _Sound
 from ... import logger
+from ...utils.docs import fill_doc
 
 
+@fill_doc
 class Tone(_Sound):
     """
     Pure tone stimuli at the frequency f (Hz).
-    The equation is sin(2*pi*f*time).
+    The equation is ``sin(2*pi*f*time)``.
 
     Example: A 440 - La 440 - Tone(f=440)
 
     Parameters
     ----------
-    volume : list | int | float, optional
-        If an int or a float is provided, the sound will use only one channel
-        (mono). If a 2-length sequence is provided, the sound will use 2
-        channels (stereo).
-        Volume of each channel, given between 0 and 100. For stereo, the
-        volume is given as [L, R].
+    %(audio_volume)s
     frequency : int
         Pure tone frequency. The default is 440 Hz (La - A440).
-    sample_rate : int, optional
-        Sampling frequency of the sound. The default is 44100 kHz.
-    duration : float, optional
-        Duration of the sound. The default is 1.0 second.
+    %(audio_sample_rate)s
+    %(audio_duration)s
     """
 
     def __init__(self, volume, frequency=440, sample_rate=44100, duration=1.0):

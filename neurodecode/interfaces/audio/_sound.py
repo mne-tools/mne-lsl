@@ -1,7 +1,5 @@
 """
 Base class for sound delivery.
-
-@author: Mathieu Scheltienne
 """
 from abc import ABC, abstractmethod
 
@@ -9,28 +7,23 @@ import numpy as np
 from scipy.io import wavfile
 
 from ... import logger
+from ...utils.docs import fill_doc
 from ...utils._imports import import_optional_dependency
 
 sd = import_optional_dependency(
     "sounddevice", extra="Install sounddevice for audio/sound support.")
 
 
+@fill_doc
 class _Sound(ABC):
     """
     Base audio stimulus class.
 
     Parameters
     ----------
-    volume : list | int | float, optional
-        If an int or a float is provided, the sound will use only one channel
-        (mono). If a 2-length sequence is provided, the sound will use 2
-        channels (stereo).
-        Volume of each channel, given between 0 and 100. For stereo, the
-        volume is given as [L, R].
-    sample_rate : int, optional
-        Sampling frequency of the sound. The default is 44100 kHz.
-    duration : float, optional
-        Duration of the sound. The default is 1.0 second.
+    %(audio_volume)s
+    %(audio_sample_rate)s
+    %(audio_duration)s
     """
 
     @abstractmethod
