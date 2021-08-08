@@ -6,12 +6,14 @@ import multiprocessing as mp
 
 from .. import logger
 from ..utils import Timer
+from ..utils.docs import fill_doc
 from ..utils.io import pcl2fif
 from ..utils.io._file_dir import make_dirs
 from ..stream_receiver import StreamReceiver, StreamEEG
 from ..stream_receiver._stream import MAX_BUF_SIZE
 
 
+@fill_doc
 class StreamRecorder:
     """
     Class for recording the signals coming from LSL streams.
@@ -25,9 +27,7 @@ class StreamRecorder:
             PCL: '{fname}-[stream]-raw.pcl'
             FIF: '{fname}-[stream]-raw.fif'
             (optional) SOFTWARE trigger events: '{fname}-eve.txt'
-    stream_name : list | str | None
-        Servers' name or list of servers' name to connect to.
-        None: no constraint.
+    %(stream_name)s
     """
 
     def __init__(self, record_dir=None, fname=None, stream_name=None):
@@ -206,6 +206,7 @@ class StreamRecorder:
         return self._process
 
 
+@fill_doc
 class _Recorder:
     """
     Class creating the .pcl files, recording data through a StreamReceiver
@@ -224,9 +225,7 @@ class _Recorder:
     fif_subdir : bool
         If True, the .pcl files are converting to .fif in a subdirectory
         'fif': record_dir/fif/... instead of record_dir.
-    stream_name : list | str | None
-        Servers' name or list of servers' name to connect to.
-        None: no constraint.
+    %(stream_name)s
     state : mp.Value
         Recording state of the recorder:
             0 - Not recording.
