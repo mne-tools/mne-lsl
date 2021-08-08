@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 import numpy as np
 
 from ... import logger
-from ...utils.io._imports import import_optional_dependency
+from ...utils._imports import import_optional_dependency
 
 colors = import_optional_dependency(
     "matplotlib.colors", extra="Install matplotlib for visual(s) support.")
