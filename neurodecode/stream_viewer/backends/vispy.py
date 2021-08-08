@@ -8,7 +8,7 @@ import math
 import numpy as np
 
 from ._backend import _Backend
-from ...utils.io._imports import import_optional_dependency
+from ...utils._imports import import_optional_dependency
 
 vispy = import_optional_dependency(
     "vispy", extra="Install Vispy for backend support.")
