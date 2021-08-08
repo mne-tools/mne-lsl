@@ -1,4 +1,7 @@
-"""Optional dependency import. Inspired from pandas."""
+"""
+Optional dependency import. Inspired from pandas.
+https://pandas.pydata.org/
+"""
 
 import importlib
 
