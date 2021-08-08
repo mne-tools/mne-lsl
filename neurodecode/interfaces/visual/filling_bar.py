@@ -2,7 +2,7 @@ import copy
 
 from ._visual import _Visual
 from ... import logger
-from ...utils.docs import fill_doc
+from ...utils._docs import fill_doc
 
 import cv2
 

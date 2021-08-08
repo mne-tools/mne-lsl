@@ -4,7 +4,7 @@ Base class for triggers.
 from abc import ABC, abstractmethod
 
 from .. import logger
-from ..utils.docs import fill_doc
+from ..utils._docs import fill_doc
 
 
 @fill_doc

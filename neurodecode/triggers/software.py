@@ -5,7 +5,7 @@ import pylsl
 
 from ._trigger import _Trigger
 from .. import logger
-from ..utils.docs import fill_doc
+from ..utils._docs import fill_doc
 from ..stream_recorder import StreamRecorder
 
 

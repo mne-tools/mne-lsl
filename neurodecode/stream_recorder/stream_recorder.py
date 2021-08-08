@@ -6,7 +6,7 @@ import multiprocessing as mp
 
 from .. import logger
 from ..utils import Timer
-from ..utils.docs import fill_doc
+from ..utils._docs import fill_doc
 from ..utils.io import pcl2fif
 from ..utils.io._file_dir import make_dirs
 from ..stream_receiver import StreamReceiver, StreamEEG
