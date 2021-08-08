@@ -39,19 +39,19 @@ def add_stream_handler(stream, verbosity='INFO'):
     set_handler_log_level(verbosity, -1)
 
 
-def add_file_handler(filename, mode='a', verbosity='INFO'):
+def add_file_handler(fname, mode='a', verbosity='INFO'):
     """
     Add a file handler to the logger.- The handler saves the logs to file.
 
     Parameters
     ----------
-    filename : str | Path
+    fname : str | Path
     mode : str
         Mode in which the file is openned.
     verbosity : int | str
         Handler verbosity.
     """
-    handler = logging.FileHandler(filename, mode)
+    handler = logging.FileHandler(fname, mode)
     handler.setFormatter(NeurodecodeFormatter())
     logger.addHandler(handler)
     set_handler_log_level(verbosity, -1)
