@@ -13,8 +13,8 @@ from ..stream_recorder import StreamRecorder
 class TriggerSoftware(_Trigger):
     """
     Trigger saving signal value in a .txt file.
-    The SOFTWARE trigger must be created after a stream recorder is started
-    and close/deleted before a stream recorder is stopped.
+    Software trigger instance must be created after a stream recorder is
+    started and close/deleted before a stream recorder is stopped.
         >>> recorder = StreamRecorder('path to dir')
         >>> recorder.start()
         >>> trigger = TriggerSoftware(recorder)
