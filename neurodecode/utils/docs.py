@@ -9,11 +9,13 @@ import sys
 # ------------------------- Documentation dictionary -------------------------
 docdict = dict()
 
+# -----------------------------------------------
 docdict['stream_name'] = """
 stream_name : list | str | None
     Servers' name or list of servers' name to connect to.
     None: no constraint."""
 
+# -----------------------------------------------
 # Triggers
 docdict['trigger_verbose'] = """
 verbose : bool
@@ -22,6 +24,7 @@ docdict['trigger_lpt_delay'] = """
 delay : int
     Delay in milliseconds until which a new trigger cannot be sent."""
 
+# -----------------------------------------------
 # interfaces.audio
 docdict['audio_volume'] = """
 volume : list | int | float
@@ -36,7 +39,87 @@ docdict['audio_duration'] = """
 duration : float, optional
     Duration of the sound. The default is 1.0 second."""
 
+# -----------------------------------------------
 # interfaces.visual
+docdict['visual_window_name'] = """
+window_name : str
+    Name of the window in which the visual is displayed."""
+docdict['visual_window_size'] = """
+window_size : list | None
+    Either None to automatically select a window size based on the available
+    monitors, or a 2-length of positive integer sequence, as (width, height).
+"""
+
+# interfaces.visual color
+color_var = 'color'
+color_types = 'str | tuple'
+color_format = """as a matplotlib string or a (B, G, R) tuple of int8 set
+between 0 and 255"""
+docdict['visual_color_background'] = f"""
+{color_var} : {color_types}
+    Color of the background {color_format}."""
+docdict['visual_color_text'] = f"""
+{color_var} : {color_types}
+    Color used to write the text {color_format}."""
+docdict['visual_color_cross'] = f"""
+{color_var} : {color_types}
+    Color used to fill the cross {color_format}."""
+docdict['visual_color_moving_bar'] = f"""
+{color_var} : {color_types}
+    Color used to fill the bar {color_format}."""
+docdict['visual_color_filling_bar'] = f"""
+{color_var} : {color_types}
+    Color used to draw the bar background {color_format}."""
+docdict['visual_fill_color_filling_bar'] = f"""
+fill_color : {color_types}
+    Color used to fill the bar {color_format}."""
+
+# interfaces.visual dimension
+var_types = 'int'
+
+var = 'thickness'
+base = f'Number of pixels used to draw the {var} of the'
+docdict[f'visual_{var}_cross'] = f"""
+{var} : {var_types}
+    {base} cross."""
+
+var = 'length'
+base = f'Number of pixels used to draw the {var} of the'
+docdict[f'visual_{var}_cross'] = f"""
+{var} : {var_types}
+    {base} cross."""
+docdict[f'visual_{var}_bar'] = f"""
+{var} : {var_types}
+    {base} bar."""
+
+var = 'width'
+base = f'Number of pixels used to draw the {var} of the'
+docdict[f'visual_{var}_bar'] = f"""
+{var} : {var_types}
+    {base} bar."""
+
+# interfaces.visual position
+inst = 'cross'
+anchor = 'Position of the center of the cross'
+docdict['visual_position_cross'] = f"""
+position : str | list
+    {anchor}.
+    Either the string 'center' or 'centered' to position the {inst} in the
+    center of the window; or a 2-length sequence of positive integer defining
+    the {anchor.lower()} in the window. The position is defined in cv2
+    coordinates, with (0, 0) being the top left corner of the window.
+"""
+inst = 'text'
+anchor = 'Position of the bottom left corner of the text'
+docdict['visual_position_text'] = f"""
+position : str | list
+    {anchor}.
+    Either the string 'center' or 'centered' to position the {inst} in the
+    center of the window; or a 2-length sequence of positive integer defining
+    the {anchor.lower()} in the window. The position is defined in cv2
+    coordinates, with (0, 0) being the top left corner of the window.
+"""
+
 
 # ------------------------- Documentation functions --------------------------
 docdict_indented = {}
