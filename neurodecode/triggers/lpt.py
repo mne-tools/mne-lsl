@@ -7,9 +7,11 @@ from pathlib import Path
 
 from ._trigger import _Trigger
 from .. import logger
+from ..utils.docs import fill_doc
 from ..utils._imports import import_optional_dependency
 
 
+@fill_doc
 class TriggerLPT(_Trigger):
     """
     Trigger using the LPT port on the motherboard.
@@ -18,10 +20,8 @@ class TriggerLPT(_Trigger):
     ----------
     portaddr : hex | int
         Port address in hexadecimal format (standard: 0x278, 0x378).
-    delay : int
-        Delay in milliseconds until which a new trigger cannot be sent.
-    verbose : bool
-        If True, display a logger.info message when a trigger is sent.
+    %(trigger_lpt_delay)s
+    %(trigger_verbose)s
     """
 
     def __init__(self, portaddr: int, delay:int = 50, verbose: bool = True):
@@ -134,6 +134,7 @@ class TriggerLPT(_Trigger):
                 'than {self.delay} ms ago. Skipping.')
 
 
+@fill_doc
 class TriggerUSB2LPT(_Trigger):
     """
     Trigger using a USB to LPT converter. Drivers can be found here:
@@ -141,10 +142,8 @@ class TriggerUSB2LPT(_Trigger):
 
     Parameters
     ----------
-    delay : int
-        Delay in milliseconds until which a new trigger cannot be sent.
-    verbose : bool
-        If True, display a logger.info message when a trigger is sent.
+    %(trigger_lpt_delay)s
+    %(trigger_verbose)s
     """
 
     def __init__(self, delay: int = 50, verbose: bool = True):
@@ -228,6 +227,7 @@ class TriggerUSB2LPT(_Trigger):
                 'than {self.delay} ms ago. Skipping.')
 
 
+@fill_doc
 class TriggerArduino2LPT(_Trigger):
     """
     Trigger using an ARDUINO to LPT converter. Design of the converter can be
@@ -235,10 +235,8 @@ class TriggerArduino2LPT(_Trigger):
 
     Parameters
     ----------
-    delay : int
-        Delay in milliseconds until which a new trigger cannot be sent.
-    verbose : bool
-        If True, display a logger.info message when a trigger is sent.
+    %(trigger_lpt_delay)s
+    %(trigger_verbose)s
     """
     BAUD_RATE = 115200
 
