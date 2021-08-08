@@ -5,9 +5,11 @@ import pylsl
 
 from ._trigger import _Trigger
 from .. import logger
+from ..utils.docs import fill_doc
 from ..stream_recorder import StreamRecorder
 
 
+@fill_doc
 class TriggerSoftware(_Trigger):
     """
     Trigger saving signal value in a .txt file.
@@ -24,8 +26,7 @@ class TriggerSoftware(_Trigger):
     ----------
     recorder : StreamRecorder
         Neurodecode stream recorder used.
-    verbose : bool
-        If True, display a logger.info message when a trigger is sent.
+    %(trigger_verbose)s
     """
 
     def __init__(self, recorder, verbose: bool = True):

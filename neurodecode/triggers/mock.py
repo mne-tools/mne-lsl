@@ -3,16 +3,17 @@ Mock trigger.
 """
 from ._trigger import _Trigger
 from .. import logger
+from ..utils.docs import fill_doc
 
 
+@fill_doc
 class TriggerMock(_Trigger):
     """
     Mock trigger class.
 
     Parameters
     ----------
-    verbose : bool
-        If True, display a logger.info message when a trigger is sent.
+    %(trigger_verbose)s
     """
 
     def __init__(self, verbose: bool = True):
