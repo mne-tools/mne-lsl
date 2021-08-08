@@ -7,7 +7,7 @@ from pathlib import Path
 
 from ._trigger import _Trigger
 from .. import logger
-from ..utils.io._imports import import_optional_dependency
+from ..utils._imports import import_optional_dependency
 
 
 class TriggerLPT(_Trigger):
