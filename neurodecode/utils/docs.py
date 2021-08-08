@@ -9,11 +9,18 @@ import sys
 # ------------------------- Documentation dictionary -------------------------
 docdict = dict()
 
-
 docdict['stream_name'] = """
 stream_name : list | str | None
     Servers' name or list of servers' name to connect to.
     None: no constraint."""
+
+# Triggers
+docdict['trigger_verbose'] = """
+verbose : bool
+    If True, display a logger.info message when a trigger is sent."""
+docdict['trigger_lpt_delay'] = """
+delay : int
+    Delay in milliseconds until which a new trigger cannot be sent."""
 
 
 # ------------------------- Documentation functions --------------------------
