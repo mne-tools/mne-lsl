@@ -18,7 +18,7 @@ class StreamRecorder:
 
     Parameters
     ----------
-    record_dir : str | pathlib.Path
+    record_dir : str | Path
         Directory where the data will be saved.
     fname : str | None
         File name stem used to create the files:
@@ -213,13 +213,13 @@ class _Recorder:
 
     Parameters
     ----------
-    record_dir : str | pathlib.Path
+    record_dir : str | Path
         Directory where the data will be saved.
     fname : str | None
         File name stem used to create the files:
             PCL: '{fname}-[stream]-raw.pcl'
             FIF: '{fname}-[stream]-raw.fif'
-    eve_file : str | pathlib.Path
+    eve_file : str | Path
         Path to the event file for SOFTWARE triggers.
     fif_subdir : bool
         If True, the .pcl files are converting to .fif in a subdirectory
