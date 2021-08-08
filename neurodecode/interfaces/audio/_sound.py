@@ -9,7 +9,7 @@ import numpy as np
 from scipy.io import wavfile
 
 from ... import logger
-from ...utils.io._imports import import_optional_dependency
+from ...utils._imports import import_optional_dependency
 
 sd = import_optional_dependency(
     "sounddevice", extra="Install sounddevice for audio/sound support.")
