@@ -9,6 +9,6 @@ For exporting, it supports:
     - EEGLAB: '.set'
 """
 
-from .convert2fif import pcl2fif, any2fif, dir_any2fif
-from .export import write_set, dir_write_set
-from .read_raw_fif import read_raw_fif, read_raw_fif_multi
+from .convert2fif import pcl2fif, any2fif
+from .export import write_set
+from .read_raw_fif import read_raw_fif
