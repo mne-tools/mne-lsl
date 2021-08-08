@@ -8,7 +8,7 @@ import mne
 import numpy as np
 from mne.io._read_raw import supported
 
-from ._file_dir import get_file_list, make_dirs
+from ._file_dir import make_dirs
 from .. import find_event_channel
 from ... import logger
 
