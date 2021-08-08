@@ -1,7 +1,5 @@
 """
 Sound loaded from a file.
-
-@author: Mathieu Scheltienne
 """
 from pathlib import Path
 

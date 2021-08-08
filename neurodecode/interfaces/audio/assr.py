@@ -1,15 +1,15 @@
 """
-Auditory Steady State Response Stimuli
-
-@author: Mathieu Scheltienne
+Auditory Steady State Response Stimuli.
 """
 
 import numpy as np
 
 from ._sound import _Sound
 from ... import logger
+from ...utils.docs import fill_doc
 
 
+@fill_doc
 class ASSR(_Sound):
     """
     Auditory Steady State Response Stimuli.
@@ -20,31 +20,24 @@ class ASSR(_Sound):
 
     Parameters
     ----------
-    volume : list | int | float, optional
-        If an int or a float is provided, the sound will use only one channel
-        (mono). If a 2-length sequence is provided, the sound will use 2
-        channels (stereo).
-        Volume of each channel, given between 0 and 100. For stereo, the
-        volume is given as [L, R].
+    %(audio_volume)s
     frequency_carrier : int
         Carrier frequency in Hz.
     frequency_modulation : int
         Modulatiom frequency in Hz.
     method : str
         Either 'conventional' or 'dsbsc'.
-        'conventional':
+        ``'conventional'``:
             Also called 'classical AM', the equation used is:
-                signal = (1 - M(t)) * cos(2*pi*fc*t)
-                M(t) = cos(2*pi*fm*t)
-        'dsbsc':
+                ``signal = (1 - M(t)) * cos(2*pi*fc*t)``
+                ``M(t) = cos(2*pi*fm*t)``
+        ``'dsbsc'``:
             Also called 'double side band suppressed carrier', the equation
             used is:
-                signal = M(t)*cos(2*pi*fc*t)
-                M(t) = sin(2*pi*fm*t)
-    sample_rate : int, optional
-        Sampling frequency of the sound. The default is 44100 kHz.
-    duration : float, optional
-        Duration of the sound. The default is 1.0 second.
+                ``signal = M(t)*cos(2*pi*fc*t)``
+                ``M(t) = sin(2*pi*fm*t)``
+    %(audio_sample_rate)s
+    %(audio_duration)s
     """
 
     def __init__(self, volume, frequency_carrier=1000,

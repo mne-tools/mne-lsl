@@ -22,6 +22,21 @@ docdict['trigger_lpt_delay'] = """
 delay : int
     Delay in milliseconds until which a new trigger cannot be sent."""
 
+# interfaces.audio
+docdict['audio_volume'] = """
+volume : list | int | float
+    If an int or a float is provided, the sound will use only one channel
+    (mono). If a 2-length sequence is provided, the sound will use 2 channels
+    (stereo). Volume of each channel, given between 0 and 100. For stereo, the
+    volume is given as [L, R]."""
+docdict['audio_sample_rate'] = """
+sample_rate : int, optional
+    Sampling frequency of the sound. The default is 44100 kHz."""
+docdict['audio_duration'] = """
+duration : float, optional
+    Duration of the sound. The default is 1.0 second."""
+
+# interfaces.visual
 
 # ------------------------- Documentation functions --------------------------
 docdict_indented = {}
