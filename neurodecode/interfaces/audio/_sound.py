@@ -7,7 +7,7 @@ import numpy as np
 from scipy.io import wavfile
 
 from ... import logger
-from ...utils.docs import fill_doc
+from ...utils._docs import fill_doc
 from ...utils._imports import import_optional_dependency
 
 sd = import_optional_dependency(
