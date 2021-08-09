@@ -119,7 +119,7 @@ class TriggerLPT(_Trigger):
     @property
     def delay(self):
         """
-        Delay to wait between 2 .signal() call in milliseconds.
+        Delay to wait between 2 ``.signal()`` call in milliseconds.
         """
         return self._delay * 1000.0
 
@@ -190,7 +190,7 @@ class TriggerUSB2LPT(_Trigger):
     @staticmethod
     def _load_dll():
         """
-        Load the correct .dll.
+        Load the correct ``.dll``.
         """
         import ctypes
 
@@ -212,7 +212,7 @@ class TriggerUSB2LPT(_Trigger):
     @property
     def delay(self):
         """
-        Delay to wait between 2 .signal() call in milliseconds.
+        Delay to wait between 2 ``.signal()`` call in milliseconds.
         """
         return self._delay * 1000.0
 
@@ -258,7 +258,7 @@ class TriggerArduino2LPT(_Trigger):
         Parameters
         ----------
         com_port : str
-            Qrduino COM port.
+            Arduino COM port.
         baud_rate : int
             Baud rate, determines the communication speed.
         """
@@ -351,7 +351,7 @@ class TriggerArduino2LPT(_Trigger):
     @property
     def delay(self):
         """
-        Delay to wait between 2 .signal() call in milliseconds.
+        Delay to wait between 2 ``.signal()`` call in milliseconds.
         """
         return self._delay * 1000.0
 

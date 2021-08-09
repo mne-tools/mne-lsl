@@ -83,7 +83,7 @@ class TriggerSoftware(_Trigger):
     @staticmethod
     def _find_eve_file(recorder):
         """
-        Find the event file name from the on going StreamRecorder.
+        Find the event file name from the on going ``StreamRecorder``.
         """
         if recorder.eve_file is None:
             logger.error(
@@ -104,6 +104,6 @@ class TriggerSoftware(_Trigger):
     @property
     def eve_file(self):
         """
-        Event .txt file.
+        Event ``.ini`` file.
         """
         return self._eve_file

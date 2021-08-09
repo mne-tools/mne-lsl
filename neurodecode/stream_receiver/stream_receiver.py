@@ -40,8 +40,8 @@ class StreamReceiver:
         appropriate ones. If a LSL stream fullfills the requirements (name...),
         a connection is established.
 
-        This function is called while instanciating a StreamReceiver and can be
-        recall to reconnect to the LSL streams.
+        This function is called while instanciating a ``StreamReceiver`` and
+        can be recall to reconnect to the LSL streams.
 
         Parameters
         ----------
@@ -112,15 +112,15 @@ class StreamReceiver:
 
     def disconnect(self, stream_name=None):
         """
-        Disconnects the stream 'stream_name' from the StreamReceiver.
-        If stream_name is a list, disconnects all streams in the list.
-        If stream_name is None, disconnects all streams.
+        Disconnects the stream ``'stream_name'`` from the ``StreamReceiver``.
+        If ``stream_name`` is a list, disconnects all streams in the list.
+        If ``stream_name`` is ``None``, disconnects all streams.
 
         Parameters
         ----------
         stream_name : str | list | None
             Servers' name or list of servers' name to disconnect from.
-            If None, disconnect from all streams.
+            If ``None``, disconnect from all streams.
         """
         stream_name = StreamReceiver._check_format_stream_name(stream_name)
         if stream_name is None:
@@ -268,7 +268,7 @@ class StreamReceiver:
         ----------
         stream_name : str | list | None
             Name of the stream(s) to reset its buffer.
-            If None, reset all stream's buffer.
+            If ``None``, reset all stream's buffer.
         """
         stream_name = StreamReceiver._check_format_stream_name(stream_name)
         if stream_name is None:

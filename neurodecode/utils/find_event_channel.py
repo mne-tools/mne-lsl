@@ -6,7 +6,7 @@ def find_event_channel(inst=None, ch_names=None):
     Find the event channel using heuristics.
 
     Disclaimer: Not 100% guaranteed to find it.
-    If raw is None, ch_names must be given.
+    If ``raw`` is ``None``, ``ch_names`` must be given.
 
     Parameters
     ----------
@@ -18,7 +18,7 @@ def find_event_channel(inst=None, ch_names=None):
     Returns:
     --------
     int | None
-        Event channel index or None if not found.
+        Event channel index or ``None`` if not found.
     """
     valid_trigger_ch_names = ['TRIGGER', 'STI', 'TRG', 'CH_Event']
 

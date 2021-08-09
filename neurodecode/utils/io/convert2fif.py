@@ -20,25 +20,26 @@ mne.set_log_level('ERROR')
 def pcl2fif(fname, out_dir=None, external_event=None,
             precision='double', replace=False, overwrite=True):
     """
-    Convert NeuroDecode Python pickle format to mne.io.raw.
+    Convert NeuroDecode Python pickle format to ``mne.io.raw``.
 
     Parameters
     ----------
     fname : str
-        Pickle file path to convert to fif format.
+        Pickle file path to convert to ``.fif`` format.
     out_dir : str
-        Saving directory. If None, it will be the directory fname.parent/'fif'.
+        Saving directory. If ``None``, it will be the directory
+        ``fname.parent/'fif'.``
     external_event : str
         Event file path in text format, following MNE event structure.
-        Each row should be: index 0 event
+        Each row should be: ``index 0 event``
     precision : str
-        Data matrix format. [single|double|int|short], 'single' improves
+        Data matrix format. [single|double|int|short], ``'single'`` improves
         backward compatability.
     replace : bool
-        If true, previous events will be overwritten by the new ones from the
-        external events file.
+        If ``True``, previous events will be overwritten by the new ones from
+        the external events file.
     overwrite : bool
-        If true, overwrite the previous file.
+        If ``True``, overwrite the previous file.
     """
     fname = Path(fname)
     if not fname.is_file():
@@ -77,13 +78,13 @@ def pcl2fif(fname, out_dir=None, external_event=None,
 
 def _format_pcl_to_mne_RawArray(data):
     """
-    Format the raw data to the mne rawArray structure.
+    Format the raw data to the ``mne`` ``rawArray`` structure.
     Data must be recorded with NeuroDecode StreamRecorder.
 
     Parameters
     ----------
     data : dict
-        Data loaded from the pcl file.
+        Data loaded from the ``.pcl`` file.
 
     Returns
     -------
@@ -163,7 +164,7 @@ def _event_timestamps_to_indices(raw_timestamps, eventfile, offset):
     Returns
     -------
     events : np.array
-        MNE-compatible events [shape=(n_events, 3)]
+        MNE-compatible events ``[shape=(n_events, 3)]``
         Used as input to raw.add_events().
     """
 
@@ -190,20 +191,20 @@ def _event_timestamps_to_indices(raw_timestamps, eventfile, offset):
 def _add_events_from_txt(raw, events_index, stim_channel='TRIGGER',
                          replace=False):
     """
-    Merge the events extracted from a txt file to the trigger channel.
+    Merge the events extracted from a ``.txt`` file to the trigger channel.
 
     Parameters
     ----------
     raw : mne.io.raw
         MNE raw data structure.
     events_index : np.array
-        MNE-compatible events [shape=(n_events, 3)].
-        Used as input to raw.add_events().
+        MNE-compatible events ``[shape=(n_events, 3)]``.
+        Used as input to ``raw.add_events()``.
     stim_channel : str
-        Stim channel where the vents are added.
+        Stim channel where the events are added.
     replace : bool
-        If True the old events on the stim channel are removed before adding
-        the new ones.
+        If ``True``, the old events on the stim channel are removed before
+        adding the new ones.
     """
     if len(events_index) == 0:
         logger.warning('No events were found in the event file.')
@@ -220,20 +221,21 @@ supported['.pcl'] = pcl2fif
 
 def any2fif(fname, out_dir=None, overwrite=True, precision='double'):
     """
-    Generic file format converter to mne.io.raw.
-    Uses mne.io.read_raw():
+    Generic file format converter to ``mne.io.raw``.
+    Uses ``mne.io.read_raw()``:
         https://mne.tools/stable/generated/mne.io.read_raw.html
 
     Parameters
     ----------
     fname : str
-        File path to convert to fif format.
+        File path to convert to ``.fif`` format.
     out_dir : str
-        Saving directory. If None, it will be the directory fname.parent/'fif'.
+        Saving directory. If ``None``, it will be the directory
+        ``fname.parent/'fif'.``
     overwrite : bool
-        If true, overwrite previously converted files with the same name.
+        If ``True``, overwrite previously converted files with the same name.
     precision : str
-        Data matrix format. [single|double|int|short], 'single' improves
+        Data matrix format. [single|double|int|short], ``'single'`` improves
         backward compatability.
     """
     fname = Path(fname)

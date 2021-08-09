@@ -2,7 +2,7 @@
 Export fif raw data to different format.
 
 Supported:
-    - EEGLAB '.set'
+    - EEGLAB ``'.set'``
 """
 from scipy.io import savemat
 from numpy.core.records import fromarrays
@@ -11,7 +11,7 @@ from numpy.core.records import fromarrays
 # ----------------------------- EEG LAB -----------------------------
 def write_set(raw, fname):
     """
-    Export raw to EEGLAB .set file.
+    Export raw to EEGLAB ``.set`` file.
 
     Source: MNELAB
     https://github.com/cbrnr/mnelab/blob/main/mnelab/io/writers.py
@@ -21,7 +21,7 @@ def write_set(raw, fname):
     raw : Raw
         MNE instance of Raw.
     fname : str | Path
-        Name/Path of the '.set' file created.
+        Name/Path of the ``'.set'`` file created.
     """
     data = raw.get_data() * 1e6  # convert to microvolts
     sample_rate = raw.info["sfreq"]

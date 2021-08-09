@@ -13,27 +13,27 @@ docdict = dict()
 docdict['stream_name'] = """
 stream_name : list | str | None
     Servers' name or list of servers' name to connect to.
-    None: no constraint."""
+    ``None``: no constraint."""
 
 # -----------------------------------------------
 # Receiver
 docdict['receiver_get_stream_name'] = """
 stream_name : str | None
     Name of the stream to extract from.
-    Can be set to None if the StreamReceiver is connected to a single
+    Can be set to ``None`` if the StreamReceiver is connected to a single
     stream."""
 docdict['receiver_data'] = """
 data : np.array
-     Data [samples x channels]."""
+     Data ``[samples x channels]``."""
 docdict['receiver_timestamps'] = """
 timestamps : np.array
-     Data's timestamps [samples]."""
+     Data's timestamps ``[samples]``."""
 docdict['receiver_streamInfo'] = """
 streamInfo : LSL StreamInfo.
     Contain all the info from the LSL stream to connect to."""
 docdict['receiver_bufsize'] = """
 bufsize : int | float
-    Buffer's size [secs]. MAX_BUF_SIZE (def: 1-day) is the maximum size.
+    Buffer's size [secs]. ``MAX_BUF_SIZE`` (def: 1-day) is the maximum size.
     Large buffer may lead to a delay if not pulled frequently."""
 docdict['receiver_winsize'] = """
 winsize : int | float
@@ -50,16 +50,16 @@ record_dir : str | Path
 docdict['recorder_fname'] = """
 fname : str | None
     File name stem used to create the files:
-        PCL: '{fname}-[stream]-raw.pcl'
-        FIF: '{fname}-[stream]-raw.fif'
-        (optional) SOFTWARE trigger events: '{fname}-eve.txt'"""
+        PCL: ``'{fname}-[stream]-raw.pcl'``
+        FIF: ``'{fname}-[stream]-raw.fif'``
+        (optional) SOFTWARE trigger events: ``'{fname}-eve.txt'``"""
 docdict['recorder_fif_subdir'] = """
 fif_subdir : bool
-    If True, the .pcl files are converted to .fif in a subdirectory
-    'fif': record_dir/fif/... instead of record_dir."""
+    If True, the ``.pcl`` files are converted to ``.fif`` in a subdirectory
+    ``'fif': record_dir/fif/...`` instead of ``record_dir``."""
 docdict['recorder_verbose'] = """
 verbose : bool
-    If True, a timer showing since when the recorder started is displayed
+    If ``True``, a timer showing since when the recorder started is displayed
     every seconds."""
 
 # -----------------------------------------------
@@ -69,42 +69,42 @@ stream_name : str
     Stream's server name, displayed on LSL network."""
 docdict['player_fif_file'] = """
 fif_file : str | Path
-    Path to the .fif file to play."""
+    Path to the ``.fif`` file to play."""
 docdict['player_chunk_size'] = """
 chunk_size : int
-    Number of samples to send at once (usually 16-32 is good enough)."""
+    Number of samples to send at once (usually ``16-32`` is good enough)."""
 docdict['player_repeat'] = """
 repeat : int
-    Number of times to replay the data (default=inf)."""
+    Number of times to replay the data (``default=inf``)."""
 docdict['player_high_resolution'] = """
 high_resolution : bool
-    If True, it uses perf_counter() instead of sleep() for higher time
-    resolution. However, it uses more CPU."""
+    If ``True``, it uses ``perf_counter()`` instead of ``sleep()`` for higher
+    time resolution. However, it uses more CPU."""
 
 # -----------------------------------------------
 # Triggers
 docdict['trigger_verbose'] = """
 verbose : bool
-    If True, display a logger.info message when a trigger is sent."""
+    If ``True``, display a ``logger.info`` message when a trigger is sent."""
 docdict['trigger_lpt_delay'] = """
 delay : int
     Delay in milliseconds until which a new trigger cannot be sent."""
 docdict['trigger_file'] = """
 trigger_file : str | Path | None
-    Path to the ini file containing the table converting event numbers into
-    event strings."""
+    Path to the ``.ini`` file containing the table converting event numbers
+    into event strings."""
 
 # -----------------------------------------------
 # interfaces.audio
 docdict['audio_volume'] = """
 volume : list | int | float
-    If an int or a float is provided, the sound will use only one channel
-    (mono). If a 2-length sequence is provided, the sound will use 2 channels
-    (stereo). Volume of each channel, given between 0 and 100. For stereo, the
-    volume is given as [L, R]."""
+    If an ``int`` or a ``float`` is provided, the sound will use only one
+    channel (mono). If a 2-length sequence is provided, the sound will use
+    2 channels (stereo). Volume of each channel, given between ``0`` and
+    ``100``. For stereo, the volume is given as ``[L, R]``."""
 docdict['audio_sample_rate'] = """
 sample_rate : int, optional
-    Sampling frequency of the sound. The default is 44100 kHz."""
+    Sampling frequency of the sound. The default is ``44100 kHz``."""
 docdict['audio_duration'] = """
 duration : float, optional
     Duration of the sound. The default is 1.0 second."""
@@ -116,15 +116,16 @@ window_name : str
     Name of the window in which the visual is displayed."""
 docdict['visual_window_size'] = """
 window_size : list | None
-    Either None to automatically select a window size based on the available
-    monitors, or a 2-length of positive integer sequence, as (width, height).
+    Either ``None`` to automatically select a window size based on the
+    available monitors, or a 2-length of positive integer sequence, as
+    ``(width, height)``.
 """
 
 # interfaces.visual color
 color_var = 'color'
 color_types = 'str | tuple'
-color_format = 'as a matplotlib string or a (B, G, R) tuple of int8 set ' + \
-               'between 0 and 255'
+color_format = 'as a matplotlib string or a ``(B, G, R)`` tuple of int8 set '+\
+               'between ``0`` and ``255``'
 docdict['visual_color_background'] = f"""
 {color_var} : {color_types}
     Color used to draw the background {color_format}."""
@@ -174,20 +175,22 @@ anchor = 'Position of the center of the cross'
 docdict['visual_position_cross'] = f"""
 position : str | list
     {anchor}.
-    Either the string 'center' or 'centered' to position the {inst} in the
-    center of the window; or a 2-length sequence of positive integer defining
-    the {anchor.lower()} in the window. The position is defined in cv2
-    coordinates, with (0, 0) being the top left corner of the window.
+    Either the string ``'center'`` or ``'centered'`` to position the {inst} in
+    the center of the window; or a 2-length sequence of positive integer
+    defining the {anchor.lower()} in the window. The position is defined in
+    opencv coordinates, with ``(0, 0)`` being the top left corner of the
+    window.
 """
 inst = 'text'
 anchor = 'Position of the bottom left corner of the text'
 docdict['visual_position_text'] = f"""
 position : str | list
     {anchor}.
-    Either the string 'center' or 'centered' to position the {inst} in the
-    center of the window; or a 2-length sequence of positive integer defining
-    the {anchor.lower()} in the window. The position is defined in cv2
-    coordinates, with (0, 0) being the top left corner of the window.
+    Either the string ``'center'`` or ``'centered'`` to position the {inst} in
+    the center of the window; or a 2-length sequence of positive integer
+    defining the {anchor.lower()} in the window. The position is defined in
+    opencv coordinates, with ``(0, 0)`` being the top left corner of the
+    window.
 """
 
 
