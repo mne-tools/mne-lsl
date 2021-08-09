@@ -5,7 +5,7 @@ import pylsl
 
 from ._trigger import _Trigger
 from .. import logger
-from ..utils._docs import fill_doc
+from ..utils._docs import fill_doc, copy_doc
 from ..stream_recorder import StreamRecorder
 
 
@@ -42,14 +42,13 @@ class TriggerSoftware(_Trigger):
             self._eve_file.close() # TODO: Isn't this a string?
             self._eve_file = open(self._eve_file, 'a')
 
+    @copy_doc(_Trigger.signal)
     def signal(self, value: int) -> bool:
-        """
-        Send a trigger value.
-        """
         self._set_data(value)
         super().signal(value)
         return True
 
+    @copy_doc(_Trigger._set_data)
     def _set_data(self, value: int):
         """
         Set the trigger signal to value.
