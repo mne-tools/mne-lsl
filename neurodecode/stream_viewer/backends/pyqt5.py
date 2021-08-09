@@ -8,7 +8,7 @@ import pyqtgraph as pg
 from PyQt5 import QtCore
 
 from ._backend import _Backend
-from ...utils._docs import fill_doc
+from ...utils._docs import fill_doc, copy_doc
 
 # pg.setConfigOptions(antialias=True)
 
@@ -149,17 +149,12 @@ class _BackendPyQt5(_Backend):
                 del self._trigger_events[k]
 
     # -------------------------- Main Loop -------------------------
+    @copy_doc(_Backend.start_timer)
     def start_timer(self):
-        """
-        Start the update loop on a 20ms timer.
-        """
         self._timer.start(20)
 
+    @copy_doc(_Backend._update_loop)
     def _update_loop(self):
-        """
-        Main update loop retrieving data from the scope's buffer and updating
-        the Canvas.
-        """
         super()._update_loop()
 
         if len(self._scope.ts_list) > 0:
@@ -183,20 +178,15 @@ class _BackendPyQt5(_Backend):
             self._clean_up_trigger_events()
 
     # --------------------------- Events ---------------------------
+    @copy_doc(_Backend.close)
     def close(self):
-        """
-        Stops the update loop and close the window.
-        """
         self._timer.stop()
         self._win.close()
 
     # ------------------------ Update program ----------------------
     @_Backend.xRange.setter
+    @copy_doc(_Backend.xRange.setter)
     def xRange(self, xRange):
-        """
-        Called when the user changes the X-axis range/scale, i.e. the duration
-        of the plotting window.
-        """
         self._xRange = xRange
         self._init_variables()
         self._init_canvas()
@@ -212,10 +202,8 @@ class _BackendPyQt5(_Backend):
                 event.removeEventPlot()
 
     @_Backend.yRange.setter
+    @copy_doc(_Backend.yRange.setter)
     def yRange(self, yRange):
-        """
-        Called when the user changes the signal range/scale.
-        """
         self._yRange = yRange
         self._init_variables()
         self._init_canvas()
@@ -224,10 +212,8 @@ class _BackendPyQt5(_Backend):
             event.yRange = self._yRange
 
     @_Backend.selected_channels.setter
+    @copy_doc(_Backend.selected_channels.setter)
     def selected_channels(self, selected_channels):
-        """
-        Called when the user changes the selection of channels.
-        """
         plots2remove = [idx for idx in self._selected_channels
                         if idx not in selected_channels]
         plots2add = [idx for idx in selected_channels
@@ -247,11 +233,8 @@ class _BackendPyQt5(_Backend):
                 pen=pg.mkColor(self._available_colors[idx, :]))
 
     @_Backend.show_LPT_trigger_events.setter
+    @copy_doc(_Backend.show_LPT_trigger_events.setter)
     def show_LPT_trigger_events(self, show_LPT_trigger_events):
-        """
-        Called when the user ticks or untick the ``show_LPT_trigger_events``
-        box.
-        """
         self._show_LPT_trigger_events = show_LPT_trigger_events
         for event in self._trigger_events:
             if event.position_plot >= 0 and event.event_type == 'LPT':
