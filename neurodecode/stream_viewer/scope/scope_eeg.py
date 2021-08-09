@@ -2,23 +2,23 @@ import numpy as np
 from scipy.signal import butter, sosfilt, sosfilt_zi
 
 from ._scope import _Scope
-from ...utils import find_event_channel
 from ... import logger
+from ...utils._docs import fill_doc
+from ...utils import find_event_channel
 
 
 BP_ORDER = 2
 
 
+@fill_doc
 class ScopeEEG(_Scope):
     """
     Class representing an EEG scope.
 
     Parameters
     ----------
-    stream_receiver : neurodecode.stream_receiver.StreamReceiver
-        Connected stream receiver.
-    stream_name : str
-        Stream to connect to.
+    %(viewer_scope_stream_receiver)s
+    %(viewer_scope_stream_name)s
     """
 
     # ---------------------------- INIT ----------------------------
@@ -136,7 +136,7 @@ class ScopeEEG(_Scope):
     def nb_channels(self):
         """
         Number of channels present in the connected stream.
-        The TRIGGER channel is removed.
+        The ``TRIGGER`` channel is removed.
         """
         return self._nb_channels
 
@@ -154,7 +154,7 @@ class ScopeEEG(_Scope):
     @property
     def apply_bandpass(self):
         """
-        Boolean. Applies bandpass filter if True.
+        Boolean. Applies bandpass filter if ``True``.
         """
         return self._apply_bandpass
 

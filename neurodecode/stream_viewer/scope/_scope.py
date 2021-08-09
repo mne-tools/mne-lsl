@@ -2,20 +2,20 @@ import math
 from abc import ABC, abstractmethod
 
 from ... import logger
+from ...utils._docs import fill_doc
 
 _BUFFER_DURATION = 30  # seconds
 
 
+@fill_doc
 class _Scope(ABC):
     """
     Class representing a base scope.
 
     Parameters
     ----------
-    stream_receiver : neurodecode.stream_receiver.StreamReceiver
-        Connected stream receiver.
-    stream_name : str
-        Stream to connect to.
+    %(viewer_scope_stream_receiver)s
+    %(viewer_scope_stream_name)s
     """
 
     # ---------------------------- INIT ----------------------------
