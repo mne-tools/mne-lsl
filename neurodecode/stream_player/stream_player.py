@@ -8,8 +8,10 @@ from .. import logger
 from ..triggers import TriggerDef
 from ..utils.io import read_raw_fif
 from ..utils import find_event_channel
+from ..utils._docs import fill_doc
 
 
+@fill_doc
 class StreamPlayer:
     """
     Class for playing a recorded file on LSL network in another process.
@@ -22,9 +24,7 @@ class StreamPlayer:
         Path to the .fif file to play.
     chunk_size : int
         Number of samples to send at once (usually 16-32 is good enough).
-    trigger_file : str | None
-        Path to the file containing the table converting event numbers into
-        event strings.
+    %(trigger_file)s
     """
 
     def __init__(self, stream_name, fif_file, chunk_size,
