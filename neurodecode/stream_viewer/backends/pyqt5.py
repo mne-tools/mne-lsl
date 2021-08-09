@@ -8,25 +8,22 @@ import pyqtgraph as pg
 from PyQt5 import QtCore
 
 from ._backend import _Backend
+from ...utils._docs import fill_doc
 
 # pg.setConfigOptions(antialias=True)
 
 
+@fill_doc
 class _BackendPyQt5(_Backend):
     """
     The PyQt5 backend for neurodecode's StreamViewer.
 
     Parameters
     ----------
-    scope : neurodecode.stream_viewer._scope._Scope
-        Scope connected to a stream receiver acquiring the data and applying
-        filtering. The scope has a buffer of _BUFFER_DURATION (default: 30s).
-    geometry : tuple | list
-        Window geometry as (pos_x, pos_y, size_x, size_y).
-    xRange : int
-        Range of the x-axis (plotting time duration) in seconds.
-    yRange : float
-        Range of the y-axis (amplitude) in uV.
+    %(viewer_scope)s
+    %(viewer_backend_geometry)s
+    %(viewer_backend_xRange)s
+    %(viewer_backend_yRange)s
     """
 
     # ---------------------------- Init ---------------------------
@@ -68,7 +65,8 @@ class _BackendPyQt5(_Backend):
 
     def _init_variables(self):
         """
-        Initialize variables depending on xRange, yRange and selected_channels.
+        Initialize variables depending on ``xRange``, ``yRange`` and
+        ``selected_channels``.
         """
         # xRange
         self._delta_with_buffer = self._scope.duration_buffer - self._xRange
@@ -111,8 +109,8 @@ class _BackendPyQt5(_Backend):
     def _update_LPT_trigger_events(self, trigger_arr):
         """
         Check if new LPT events (on the trigger channel) have entered the
-        buffer. New events are added to self._trigger_events and displayed if
-        needed.
+        buffer. New events are added to ``self._trigger_events`` and displayed
+        if needed.
         """
         events_trigger_arr_idx = np.where(trigger_arr != 0)[0]
         events_values = trigger_arr[events_trigger_arr_idx]
@@ -251,7 +249,8 @@ class _BackendPyQt5(_Backend):
     @_Backend.show_LPT_trigger_events.setter
     def show_LPT_trigger_events(self, show_LPT_trigger_events):
         """
-        Called when the user ticks or untick the show_LPT_trigger_events box.
+        Called when the user ticks or untick the ``show_LPT_trigger_events``
+        box.
         """
         self._show_LPT_trigger_events = show_LPT_trigger_events
         for event in self._trigger_events:
@@ -269,13 +268,14 @@ class _TriggerEvent:
     Parameters
     ----------
     event_type : str
-        Type of event. Supported: 'LPT'.
+        Type of event. Supported: ``'LPT'``.
     event_value : int | float
         Value of the event displayed in the TextItem.
     position_buffer : float
         Time at which the event is positionned in the buffer where:
-            0 represents the older events exiting the buffer.
-            _BUFFER_DURATION represents the newer events entering the buffer.
+            ``0`` represents the older events exiting the buffer.
+            ``_BUFFER_DURATION`` represents the newer events entering the
+            buffer.
     position_plot : float
         Time at which the event is positionned in the plotting window.
     plot_handler : pyqtgraph.PlotItem
@@ -369,7 +369,7 @@ class _TriggerEvent:
     @property
     def plotted(self):
         """
-        True if the event is displayed, else False.
+        ``True`` if the event is displayed, else ``False``.
         """
         return self._plotted
 
@@ -390,7 +390,7 @@ class _TriggerEvent:
     @property
     def plot_yRange(self):
         """
-        Signal range/scale used to position the TextItem.
+        Signal range/scale used to position the ``TextItem``.
         """
         return self._plot_yRange
 

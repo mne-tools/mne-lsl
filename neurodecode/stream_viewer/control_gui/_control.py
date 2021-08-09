@@ -11,6 +11,7 @@ except ModuleNotFoundError:
 from ..backends.pyqt5 import _BackendPyQt5
 
 from ... import logger
+from ...utils._docs import fill_doc
 from ...stream_recorder import StreamRecorder
 
 
@@ -18,17 +19,15 @@ class _metaclass_ControlGUI(type(QMainWindow), type(ABC)):
     pass
 
 
+@fill_doc
 class _ControlGUI(QMainWindow, ABC, metaclass=_metaclass_ControlGUI):
     """
     Class representing a base controller GUI.
 
     Parameters
     ----------
-    scope : stream_viewer.scope._scope._Scope
-        Scope connected to a stream receiver acquiring the data and applying
-        filtering. The scope has a buffer of _scope._BUFFER_DURATION.
-    backend : str
-        One of the supported backend's name. Supported 'vispy', 'pyqt5'.
+    %(viewer_scope)s
+    %(viewer_backend)s
     """
 
     @abstractmethod
