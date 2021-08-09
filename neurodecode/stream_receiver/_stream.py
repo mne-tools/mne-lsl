@@ -10,25 +10,23 @@ from .. import logger
 from ..utils import Timer
 from ..utils import find_event_channel
 from ..utils.lsl import lsl_channel_list
+from ..utils._docs import fill_doc
 
 _MAX_PYLSL_STREAM_BUFSIZE = 10  # max 10 sec of data buffered for LSL
 MAX_BUF_SIZE = 86400  # 24h max buffer length
 HIGH_LSL_OFFSET_THRESHOLD = 0.1  # Threshold above which the offset is high
 
 
+@fill_doc
 class _Stream(ABC):
     """
     Abstract class representing a base receiver's stream.
 
     Parameters
     ----------
-    streamInfo : LSL StreamInfo.
-        Contain all the info from the LSL stream to connect to.
-    bufsize : int | float
-        Buffer's size [secs]. MAX_BUF_SIZE (def: 1-day) is the maximum size.
-        Large buffer may lead to a delay if not pulled frequently.
-    winsize : int | float
-        Window's size [secs]. Must be smaller than the buffer's size.
+    %(receiver_streamInfo)s
+    %(receiver_bufsize)s
+    %(receiver_winsize)s
     """
 
     @abstractmethod
@@ -121,6 +119,7 @@ class _Stream(ABC):
                 f'[offset={self._lsl_time_offset:.3f}]')
 
     @abstractmethod
+    @fill_doc
     def acquire(self):
         """
         Pull data from the stream's inlet and fill the buffer.
@@ -129,8 +128,7 @@ class _Stream(ABC):
         -------
         chunk : list
             Data [samples x channels]
-        tslist : list
-            Acquired timestamps [samples]
+        %(receiver_tslist)s
         """
         chunk = []
         tslist = []
@@ -162,6 +160,7 @@ class _Stream(ABC):
 
         return chunk, tslist
 
+    @fill_doc
     def _compute_offset(self, tslist):
         """
         Compute the LSL offset coming from some devices.
@@ -171,20 +170,19 @@ class _Stream(ABC):
 
         Parameters
         ----------
-        tslist : list
-            Acquired timestamps.
+        %(receiver_tslist)s
         """
         self._lsl_time_offset = tslist[-1] - pylsl.local_clock()
         return self._lsl_time_offset
 
+    @fill_doc
     def _correct_lsl_offset(self, tslist):
         """
         Correct the timestamps if there is a high LSL offset.
 
         Parameters
         ----------
-        tslist : list
-            Acquired timestamps.
+        %(receiver_tslist)s
         """
         if abs(self._lsl_time_offset) > HIGH_LSL_OFFSET_THRESHOLD:
             tslist = [t - self._lsl_time_offset for t in tslist]
@@ -193,14 +191,14 @@ class _Stream(ABC):
 
     # --------------------------------------------------------------------
     @staticmethod
+    @fill_doc
     def _check_winsize(winsize):
         """
         Check that the window size is positive.
 
         Parameters
         ----------
-        winsize : float
-            Window size [secs].
+        %(receiver_winsize)s
         """
         if winsize <= 0:
             logger.error(f'Invalid window size {winsize}.')
@@ -209,16 +207,15 @@ class _Stream(ABC):
         return winsize
 
     @staticmethod
+    @fill_doc
     def _check_bufsize(bufsize, winsize):
         """
         Check that buffer's size is positive and bigger than the window's size.
 
         Parameters
         ----------
-        bufsize : float
-            Buffer's size [secs].
-        winsize : float
-            Window's size to compare to bufsize [secs].
+        %(receiver_bufsize)s
+        %(receiver_winsize)s
         """
         if bufsize <= 0 or bufsize > MAX_BUF_SIZE:
             logger.error(
@@ -235,14 +232,14 @@ class _Stream(ABC):
         return bufsize
 
     @staticmethod
+    @fill_doc
     def _convert_sec_to_samples(bufsec, sample_rate):
         """
         Convert a buffer's/window's size from sec to samples.
 
         Parameters
         ----------
-        bufsec : float
-            Buffer_size's size [secs].
+        %(receiver_bufsize)s
         sample_rate : float
              Sampling rate of the LSL server.
              If irregular sampling rate, empirical number of samples per sec.
@@ -331,6 +328,7 @@ class _Stream(ABC):
         return self._lsl_time_offset
 
 
+@fill_doc
 class StreamMarker(_Stream):
     """
     Class representing a receiver's markers stream.
@@ -340,13 +338,9 @@ class StreamMarker(_Stream):
 
     Parameters
     -----------
-    streamInfo : LSL StreamInfo.
-        Contain all the info from the LSL stream to connect to.
-    bufsize : int | float
-        Buffer's size [secs]. MAX_BUF_SIZE (def: 1-day) is the maximum size.
-        Large buffer may lead to a delay if not pulled frequently.
-    winsize : int | float
-        Window's size [secs]. Must be smaller than the buffer's size.
+    %(receiver_streamInfo)s
+    %(receiver_bufsize)s
+    %(receiver_winsize)s
     """
 
     def __init__(self, streamInfo, bufsize=1, winsize=1):
@@ -365,6 +359,7 @@ class StreamMarker(_Stream):
         self._buffer.fill(chunk, tslist)
 
 
+@fill_doc
 class StreamEEG(_Stream):
     """
     Class representing a receiver's EEG stream.
@@ -373,13 +368,9 @@ class StreamEEG(_Stream):
 
     Parameters
     -----------
-    streamInfo : LSL StreamInfo.
-        Contain all the info from the LSL stream to connect to.
-    bufsize : int | float
-        Buffer's size [secs]. MAX_BUF_SIZE (def: 1-day) is the maximum size.
-        Large buffer may lead to a delay if not pulled frequently.
-    winsize : int | float
-        Window's size [secs]. Must be smaller than the buffer's size.
+    %(receiver_streamInfo)s
+    %(receiver_bufsize)s
+    %(receiver_winsize)s
     """
 
     def __init__(self, streamInfo, bufsize=1, winsize=1):
