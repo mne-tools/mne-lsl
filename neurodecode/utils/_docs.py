@@ -16,6 +16,25 @@ stream_name : list | str | None
     None: no constraint."""
 
 # -----------------------------------------------
+# Stream Player
+docdict['player_stream_name'] = """
+stream_name : str
+    Stream's server name, displayed on LSL network."""
+docdict['player_fif_file'] = """
+fif_file : str | Path
+    Path to the .fif file to play."""
+docdict['player_chunk_size'] = """
+chunk_size : int
+    Number of samples to send at once (usually 16-32 is good enough)."""
+docdict['player_repeat'] = """
+repeat : int
+    Number of times to replay the data (default=inf)."""
+docdict['player_high_resolution'] = """
+high_resolution : bool
+    If True, it uses perf_counter() instead of sleep() for higher time
+    resolution. However, it uses more CPU."""
+
+# -----------------------------------------------
 # Triggers
 docdict['trigger_verbose'] = """
 verbose : bool
