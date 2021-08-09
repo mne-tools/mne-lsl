@@ -26,7 +26,7 @@ class ASSR(_Sound):
     frequency_modulation : int
         Modulatiom frequency in Hz.
     method : str
-        Either 'conventional' or 'dsbsc'.
+        Either ``'conventional'`` or ``'dsbsc'``.
         ``'conventional'``:
             Also called 'classical AM', the equation used is:
                 ``signal = (1 - M(t)) * cos(2*pi*fc*t)``
@@ -79,7 +79,7 @@ class ASSR(_Sound):
     @staticmethod
     def _check_method(method):
         """
-        Checks that the method is either 'conventional' or 'dsbsc'.
+        Checks that the method is either ``'conventional'`` or ``'dsbsc'``.
         """
         method = method.lower().strip()
         if method not in ('conventional', 'dsbsc'):

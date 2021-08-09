@@ -56,8 +56,8 @@ class Text(_Visual):
         """
         Checks that the inputted position of the bottom left corner of the
         text allows the text to fit in the window.
-        The position is given as (X, Y) in cv2 coordinates, with (0, 0) being
-        the top left corner of the window.
+        The position is given as ``(X, Y)`` in opencv coordinates, with
+        ``(0, 0)`` being the top left corner of the window.
         """
         if isinstance(position, str):
             position = position.lower().strip()

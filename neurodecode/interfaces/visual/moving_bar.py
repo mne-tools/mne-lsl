@@ -36,16 +36,16 @@ class MovingBar(_Visual):
         position : int | float
             Relative position of the bar along the given axis.
             Along the vertical axis:
-                -1 corresponds to the top of the window.
-                1 corresponds to the bottom of the window.
+                - -1: corresponds to the top of the window.
+                - 1: corresponds to the bottom of the window.
             Along the horizontal axis:
-                -1 corresponds to the left of the window.
-                1 corresponds to the right of the window.
+                - -1: corresponds to the left of the window.
+                - 1: corresponds to the right of the window.
             0 corresponds to the center of the window.
         axis : int | str
             Axis along which the bar is moving:
-                0, 'vertical', 'v'      - horizontal bar along vertical axis.
-                1, 'horizontal', 'h'    - vertical bar along horizontal axis.
+                - 0: 'vertical', 'v'      - horizontal bar along vertical axis.
+                - 1: 'horizontal', 'h'    - vertical bar along horizontal axis.
         """
         if self._backup_img is None:
             self._backup_img = copy.deepcopy(self._img)
@@ -144,7 +144,7 @@ class MovingBar(_Visual):
     @staticmethod
     def _check_position(position):
         """
-        Checks that the position given is between -1 and 1.
+        Checks that the position given is between ``-1`` and ``1``.
         """
         if isinstance(position, (int, float)):
             if -1 <= position <= 1:
@@ -160,8 +160,8 @@ class MovingBar(_Visual):
     @staticmethod
     def _convert_position_to_pixel(position, axis, window_size, window_center):
         """
-        Convert the relative position between -1 and 1 to an absolute position
-        based on the window_size and window_center.
+        Convert the relative position between ``-1`` and ``1`` to an absolute
+        position based on the window_size and window_center.
         """
         # horizontal bar moving up and down
         if axis == 0:
@@ -232,7 +232,7 @@ class MovingBar(_Visual):
     @property
     def position(self):
         """
-        Position between -1 and 1 of the bar on the given axis.
+        Position between ``-1`` and ``1`` of the bar on the given axis.
         """
         return self._position
 
@@ -246,8 +246,8 @@ class MovingBar(_Visual):
     def axis(self):
         """
         Axis on which the bar is moving.
-            0 - Horizontal bar along vertical axis.
-            1 - Vertical bar along horizonal axis.
+            - 0: Horizontal bar along vertical axis.
+            - 1: Vertical bar along horizonal axis.
         """
         return self._axis
 

@@ -10,8 +10,8 @@ class TriggerDef:
     """
     Class for reading event's pairs (string-integer) from ini file.
 
-    The class will also have as attributes self.event_str = event_int for all
-    pairs.
+    The class will also have as attributes ``self.event_str = event_int`` for
+    all pairs.
 
     Parameters
     ----------
@@ -28,7 +28,7 @@ class TriggerDef:
 
     def _extract_from_ini(self):
         """
-        Load the .ini file.
+        Load the ``.ini`` file.
         """
         config = ConfigParser(inline_comment_prefixes=('#', ';'))
         config.optionxform = str
@@ -77,7 +77,7 @@ class TriggerDef:
     @staticmethod
     def _check_trigger_file(trigger_file):
         """
-        Checks that the provided file exists and ends with .ini.
+        Checks that the provided file exists and ends with ``.ini``.
         """
         if trigger_file is None:
             return None

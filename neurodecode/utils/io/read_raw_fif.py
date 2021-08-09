@@ -8,14 +8,14 @@ from .. import find_event_channel
 
 def read_raw_fif(fname, events_ext=None, preload=True):
     """
-    Load data from a .fif file.
+    Load data from a ``.fif`` file.
 
     Parameters
     ----------
     fname : str | Path
-        Path to the .fif file.
+        Path to the ``.fif`` file.
     events_ext : str | Path
-        Path to the .txt file containing external events.
+        Path to the ``.txt`` file containing external events.
     preload : bool
         Preload data into memory for data manipulation and faster indexing.
 

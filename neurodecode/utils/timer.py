@@ -4,7 +4,7 @@ import time
 class Timer:
     """
     Timer class.
-    If autoreset=True, timer is reset after any member function call.
+    If ``autoreset=True``, timer is reset after any member function call.
     """
 
     def __init__(self, autoreset=False):
@@ -35,7 +35,7 @@ class Timer:
     def sleep_atleast(self, sec):
         """
         Sleep up to sec seconds.
-        It's more convenient if autoreset=True.
+        It's more convenient if ``autoreset=True``.
 
         Parameters
         ----------

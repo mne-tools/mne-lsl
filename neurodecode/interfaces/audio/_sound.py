@@ -62,13 +62,14 @@ class _Sound(ABC):
 
     def write(self, fname):
         """
-        Save a sound signal into a wav file with scipy.io.wavfile.write().
+        Save a sound signal into a ``.wav`` file with
+        ``scipy.io.wavfile.write()``.
 
         Parameters
         ----------
         fname : str, path
             Path to the file where the sound signal is saved. The extension
-            should be '.wav'.
+            should be ``'.wav'``.
         """
         wavfile.write(fname, self._sample_rate, self._signal)
 
@@ -77,9 +78,9 @@ class _Sound(ABC):
     def _check_volume(volume):
         """
         Checks that the volume is either:
-            - 1 number, 1-item iterable for mono
-            - 2 numbers in a 2-item iterable for stereo
-        Checks that the volume value is between [0, 100].
+            - 1 number, 1-item iterable for mono.
+            - 2 numbers in a 2-item iterable for stereo.
+        Checks that the volume value is between ``[0, 100]``.
         """
         if isinstance(volume, (int, float)):
             volume = [volume]
