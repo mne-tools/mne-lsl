@@ -235,7 +235,7 @@ class _Stream(ABC):
     @fill_doc
     def _convert_sec_to_samples(bufsec, sample_rate):
         """
-        Convert a buffer's/window's size from sec to samples.
+        Convert a buffer's/window's size from ``sec`` to ``samples``.
 
         Parameters
         ----------

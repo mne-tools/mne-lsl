@@ -48,7 +48,7 @@ class _Visual(ABC):
         Parameters
         ----------
         wait : int
-            Wait timer passed to cv2.waitKey() [ms].
+            Wait timer passed to ``cv2.waitKey()`` [ms].
         """
         cv2.imshow(self._window_name, self._img)
         cv2.waitKey(wait)
@@ -144,8 +144,8 @@ class _Visual(ABC):
     def _check_axis(axis):
         """
         Checks that the axis is valid and converts it to integer (0, 1).
-            0 - Vertical
-            1 - Horizontal
+            - 0: Vertical
+            - 1: Horizontal
         """
         if isinstance(axis, str):
             axis = axis.lower().strip()

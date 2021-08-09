@@ -71,7 +71,7 @@ def available_layouts(verbose=False):
     Parameters
     ----------
     verbose : bool
-        If True, display the available layout in the logger.
+        If True, display the available layout in the logger as info.
     """
     if verbose:
         logger.info('-- Available layouts --')
@@ -106,10 +106,10 @@ class Layout:
         https://mne.tools/stable/generated/mne.io.Raw.html#mne.io.Raw.set_montage
     ch_names : list | None
         List of channels' name in the order receied from LSL.
-        If None, looks for a known list based on the layout name.
+        If ``None``, looks for a known list based on the layout ``name``.
     ch_types : list | str | None
         List of channels' type in the order received from LSL.
-        If None, looks for a known list based on the layout name.
+        If ``None``, looks for a known list based on the layout ``name``.
     """
 
     def __init__(self, name, montage=None, ch_names=None, ch_types=None):
