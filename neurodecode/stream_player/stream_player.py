@@ -37,7 +37,7 @@ class StreamPlayer:
     def start(self, repeat=np.float('inf'), high_resolution=False):
         """
         Start streaming data on LSL network in a new process by calling
-        _Streamer.stream().
+        ``_Streamer.stream()``.
 
         Parameters
         ----------
@@ -107,7 +107,7 @@ class StreamPlayer:
     @property
     def fif_file(self):
         """
-        Path to the .fif file to play.
+        Path to the ``.fif`` file to play.
         """
         return self._fif_file
 
@@ -139,8 +139,8 @@ class StreamPlayer:
     @property
     def trigger_file(self):
         """
-        Path to the file containing the table converting event
-        numbers into event strings.
+        Path to the file containing the table converting event numbers into
+        event strings.
         """
         return self._trigger_file
 
@@ -190,8 +190,8 @@ class _Streamer:
 
     def _load_data(self, fif_file):
         """
-        Load the data to play from a fif file.
-        Multiplies all channel except trigger by 1e6 to convert to uV.
+        Load the data to play from a ``.fif`` file.
+        Multiplies all channel except trigger by ``1e6`` to convert to uV.
 
         Parameters
         ----------

@@ -23,8 +23,8 @@ def start_server(server_name, n_channels=1, channel_format='string',
         Number of channels.
     channel_format : str
         Channels' format.
-            ('string', 'float32', 'double64', 'int8', 'int16',
-             'int32', 'int64')
+        ``('string', 'float32', 'double64',
+           'int8', 'int16', 'int32', 'int64')``
     nominal_srate : float | pylsl.IRREGULAR_RATE
         Sampling rate [Hz].
     stype : str
@@ -92,14 +92,14 @@ def list_lsl_streams(ignore_markers=False):
     Parameters
     ----------
     ignore_markers : bool
-        If True, ignore streams with Marker type.
+        If ``True``, ignore streams with Marker type.
 
     Returns
     -------
     stream_list : list
         List of the found stream name.
     streamInfos : list
-        List of the corresponding pylsl.StreamInfo.
+        List of the corresponding ``pylsl.StreamInfo``.
     """
     stream_list = []
     streamInfos = pylsl.resolve_streams()
@@ -127,7 +127,7 @@ def search_lsl(ignore_markers=False, timeout=10):
     Parameters
     ----------
     ignore_markers : bool
-        If True, ignore streams with Marker type.
+        If ``True``, ignore streams with Marker type.
     timeout : int
         Timeout duration in seconds after which the search of an LSL stream
         is interrupted.

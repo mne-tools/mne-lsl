@@ -37,19 +37,19 @@ class FillingBar(_Visual):
         margin : int
             Margin in pixel between the filling bar and the containing bar.
             The containing bar (length x width) is set as:
-                (length+margin, width+margin)
+                ``(length+margin, width+margin)``
         %(visual_color_filling_bar)s
         %(visual_fill_color_filling_bar)s
         fill_perc : float
-            Percentage between 0 and 1 of bar filling.
-                0 - not filled
-                1 - fully filled
+            Percentage between ``0`` and ``1`` of bar filling.
+                - 0: not filled
+                - 1: fully filled
             As the bar fills on both side simultaneously, the percentage filled
-            is length//2 * fill_perc.
+            is ``length//2 * fill_perc``.
         axis : int | str
             Axis along which the bar is moving:
-                0, 'vertical', 'v'      - vertical bar
-                1, 'horizontal', 'h'    - horizontal bar
+                - 0: 'vertical', 'v'      - vertical bar
+                - 1: 'horizontal', 'h'    - horizontal bar
         """
         if self._backup_img is None:
             self._backup_img = copy.deepcopy(self._img)
@@ -180,7 +180,8 @@ class FillingBar(_Visual):
     @staticmethod
     def _check_fill_perc(fill_perc):
         """
-        Checks that the fill length is provided as percentage between 0 and 1.
+        Checks that the fill length is provided as percentage between ``0``
+        and ``1``.
         """
         if not isinstance(fill_perc, (float, int)):
             logger.error('The fill length must be provided between 0 and 1.')
@@ -194,9 +195,10 @@ class FillingBar(_Visual):
     @staticmethod
     def _convert_fill_perc_to_pixel(fill_perc, length):
         """
-        Convert the fill length between 0 and 1 to the fill length in pixel.
-            0 - Not filled
-            1 - Fully filled
+        Convert the fill length between ``0`` and ``1`` to the fill length in
+        pixel.
+            - 0: Not filled
+            - 1: Fully filled
         Expresses the % of length//2 filled.
         """
         return int((length//2) * fill_perc)
@@ -290,8 +292,8 @@ class FillingBar(_Visual):
     def axis(self):
         """
         Axis on which the bar is moving.
-            0 - Vertical bar filling along the vertical axis.
-            1 - Horizontal bar filling along the horizontal axis.
+            - 0: Vertical bar filling along the vertical axis.
+            - 1: Horizontal bar filling along the horizontal axis.
         """
         return self._axis
 
