@@ -290,3 +290,47 @@ def _indentcount_lines(lines):
     if indent == sys.maxsize:
         return 0
     return indent
+
+
+def copy_doc(source):
+    """Copy the docstring from another function (decorator).
+
+    The docstring of the source function is prepepended to the docstring of the
+    function wrapped by this decorator.
+
+    This is useful when inheriting from a class and overloading a method. This
+    decorator can be used to copy the docstring of the original method.
+
+    Parameters
+    ----------
+    source : function
+        Function to copy the docstring from
+
+    Returns
+    -------
+    wrapper : function
+        The decorated function
+
+    Examples
+    --------
+    >>> class A:
+    ...     def m1():
+    ...         '''Docstring for m1'''
+    ...         pass
+    >>> class B (A):
+    ...     @copy_doc(A.m1)
+    ...     def m1():
+    ...         ''' this gets appended'''
+    ...         pass
+    >>> print(B.m1.__doc__)
+    Docstring for m1 this gets appended
+    """
+    def wrapper(func):
+        if source.__doc__ is None or len(source.__doc__) == 0:
+            raise ValueError('Cannot copy docstring: docstring was empty.')
+        doc = source.__doc__
+        if func.__doc__ is not None:
+            doc += func.__doc__
+        func.__doc__ = doc
+        return func
+    return wrapper
