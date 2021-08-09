@@ -20,13 +20,8 @@ class StreamRecorder:
 
     Parameters
     ----------
-    record_dir : str | Path
-        Directory where the data will be saved.
-    fname : str | None
-        File name stem used to create the files:
-            PCL: '{fname}-[stream]-raw.pcl'
-            FIF: '{fname}-[stream]-raw.fif'
-            (optional) SOFTWARE trigger events: '{fname}-eve.txt'
+    %(recorder_record_dir)s
+    %(recorder_fname)s
     %(stream_name)s
     """
 
@@ -39,6 +34,7 @@ class StreamRecorder:
         self._process = None
         self._state = mp.Value('i', 0)
 
+    @fill_doc
     def start(self, fif_subdir=True, blocking=True, verbose=False):
         """
         Start the recording in a new process. The function is exited when the
@@ -46,14 +42,10 @@ class StreamRecorder:
 
         Parameters
         ----------
-        fif_subdir : bool
-            If True, the .pcl files are converting to .fif in a subdirectory
-            'fif': record_dir/fif/... instead of record_dir.
+        %(recorder_fif_subdir)s
         blocking : bool
             If True, waits for the child process to start recording data.
-        verbose : bool
-            If True, a timer showing since when the recorder started is
-            displayed every seconds.
+        %(recorder_verbose)s
         """
         fname, self._eve_file = StreamRecorder._create_fname(
             self._record_dir, self._fname)
@@ -214,26 +206,18 @@ class _Recorder:
 
     Parameters
     ----------
-    record_dir : str | Path
-        Directory where the data will be saved.
-    fname : str | None
-        File name stem used to create the files:
-            PCL: '{fname}-[stream]-raw.pcl'
-            FIF: '{fname}-[stream]-raw.fif'
+    %(recorder_record_dir)s
+    %(recorder_fname)s
     eve_file : str | Path
         Path to the event file for SOFTWARE triggers.
-    fif_subdir : bool
-        If True, the .pcl files are converting to .fif in a subdirectory
-        'fif': record_dir/fif/... instead of record_dir.
+    %(recorder_fif_subdir)s
     %(stream_name)s
     state : mp.Value
         Recording state of the recorder:
             0 - Not recording.
             1 - Recording.
         This variable is used to stop the recording from another process.
-    verbose : bool
-        If True, a timer showing since when the recorder started is displayed
-        every seconds.
+    %(recorder_verbose)s
     """
 
     def __init__(self, record_dir, fname, eve_file, fif_subdir,
