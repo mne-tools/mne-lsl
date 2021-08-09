@@ -6,7 +6,7 @@ import numpy as np
 
 from ._sound import _Sound
 from ... import logger
-from ...utils._docs import fill_doc
+from ...utils._docs import fill_doc, copy_doc
 
 
 @fill_doc
@@ -51,10 +51,8 @@ class ASSR(_Sound):
             frequency_modulation)
         super().__init__(volume, sample_rate, duration)
 
+    @copy_doc(_Sound._set_signal)
     def _set_signal(self):
-        """
-        Sets the signal to output.
-        """
         if self._method == 'conventional':
             assr_amplitude = (1-np.cos(
                 2*np.pi*self._frequency_modulation*self._time_arr))
