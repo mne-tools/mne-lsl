@@ -8,6 +8,7 @@ import math
 import numpy as np
 
 from ._backend import _Backend
+from ...utils._docs import fill_doc
 from ...utils._imports import import_optional_dependency
 
 vispy = import_optional_dependency(
@@ -61,21 +62,17 @@ void main() {
 """
 
 
+@fill_doc
 class _BackendVispy(_Backend, vispy.app.Canvas):
     """
-    The Vispy backend for neurodecode's StreamViewer.
+    The Vispy backend for neurodecode's Stream Viewer.
 
     Parameters
     ----------
-    scope : neurodecode.stream_viewer._scope._Scope
-        Scope connected to a stream receiver acquiring the data and applying
-        filtering. The scope has a buffer of _BUFFER_DURATION (default: 30s).
-    geometry : tuple | list
-        Window geometry as (pos_x, pos_y, size_x, size_y).
-    xRange : int
-        Range of the x-axis (plotting time duration) in seconds.
-    yRange : float
-        Range of the y-axis (amplitude) in uV.
+    %(viewer_scope)s
+    %(viewer_backend_geometry)s
+    %(viewer_backend_xRange)s
+    %(viewer_backend_yRange)s
     """
     # ---------------------------- Init ---------------------------
 
@@ -94,7 +91,8 @@ class _BackendVispy(_Backend, vispy.app.Canvas):
 
     def _init_variables(self):
         """
-        Initialize variables depending on xRange, yRange and selected_channels.
+        Initialize variables depending on ``xRange``, ``yRange`` and
+        ``selected_channels``.
         """
         # xRange
         self._duration_plot_samples = math.ceil(
@@ -108,11 +106,11 @@ class _BackendVispy(_Backend, vispy.app.Canvas):
     def _init_program_variables(self):
         """
         Initialize the variables of the Vispy program. The variables are:
-            a_color : the color of every vertex
-            a_index : the position of every vertex
-            u_scale : the (x, y) scaling
-            u_size : the number of rows and columns as (row, col).
-            u_n : the number of samples per
+            - ``a_color`` : the color of every vertex
+            - ``a_index`` : the position of every vertex
+            - ``u_scale`` : the (x, y) scaling
+            - ``u_size`` : the number of rows and columns as (row, col).
+            - ``u_n`` : the number of samples per
 
         Initialize the timer calling the main update loop every 20 ms.
         """
@@ -279,6 +277,7 @@ class _BackendVispy(_Backend, vispy.app.Canvas):
     @_Backend.show_LPT_trigger_events.setter
     def show_LPT_trigger_events(self, show_LPT_trigger_events):
         """
-        Called when the user ticks or untick the show_LPT_trigger_events box.
+        Called when the user ticks or untick the ``show_LPT_trigger_events``
+        box.
         """
         self._show_LPT_trigger_events = show_LPT_trigger_events

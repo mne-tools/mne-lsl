@@ -8,19 +8,18 @@ from PyQt5.QtWidgets import QHeaderView, QTableWidgetItem
 from ._control import _ControlGUI
 from ._ui_control import UI_MainWindow
 from ... import logger
+from ...utils._docs import fill_doc
 
 
+@fill_doc
 class ControlGUI_EEG(_ControlGUI):
     """
     Controller GUI for EEG LSL Stream.
 
     Parameters
     ----------
-    scope : stream_viewer.scope._scope._Scope
-        Scope connected to a stream receiver acquiring the data and applying
-        filtering. The scope has a buffer of _scope._BUFFER_DURATION.
-    backend : str
-        One of the supported backend's name. Supported 'vispy', 'pyqt5'.
+    %(viewer_scope)s
+    %(viewer_backend)s
     """
 
     def __init__(self, scope, backend):

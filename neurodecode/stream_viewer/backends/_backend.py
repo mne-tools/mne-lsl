@@ -1,22 +1,20 @@
 import copy
 from abc import ABC, abstractmethod
 
+from ...utils._docs import fill_doc
 
+
+@fill_doc
 class _Backend(ABC):
     """
     Class representing a base backend.
 
     Parameters
     ----------
-    scope : neurodecode.stream_viewer._scope._Scope
-        Scope connected to a stream receiver acquiring the data and applying
-        filtering. The scope has a buffer of _BUFFER_DURATION (default: 30s).
-    geometry : tuple | list
-        Window geometry as (pos_x, pos_y, size_x, size_y).
-    xRange : int
-        Range of the x-axis (plotting time duration) in seconds.
-    yRange : float
-        Range of the y-axis (amplitude) in uV.
+    %(viewer_scope)s
+    %(viewer_backend_geometry)s
+    %(viewer_backend_xRange)s
+    %(viewer_backend_yRange)s
     """
 
     @abstractmethod
@@ -59,7 +57,8 @@ class _Backend(ABC):
     def scope(self):
         """
         Scope connected to a stream receiver acquiring the data and applying
-        filtering. The scope has a buffer of BUFFER_DURATION (default: 30s).
+        filtering. The scope has a buffer of ``BUFFER_DURATION`` seconds
+        (default: 30s).
         """
         return self._scope
 
@@ -112,7 +111,7 @@ class _Backend(ABC):
     @property
     def show_LPT_trigger_events(self):
         """
-        Tick/Untick status of the show_LPT_trigger_events box.
+        Tick/Untick status of the ``show_LPT_trigger_events`` box.
         """
         return self._show_LPT_trigger_events
 
@@ -120,6 +119,7 @@ class _Backend(ABC):
     @abstractmethod
     def show_LPT_trigger_events(self, show_LPT_trigger_events):
         """
-        Called when the user ticks or untick the show_LPT_trigger_events box.
+        Called when the user ticks or untick the ``show_LPT_trigger_events``
+        box.
         """
         pass

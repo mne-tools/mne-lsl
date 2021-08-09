@@ -82,6 +82,31 @@ high_resolution : bool
     time resolution. However, it uses more CPU."""
 
 # -----------------------------------------------
+# Stream Viewer
+docdict['viewer_scope'] = """
+scope : Scope
+    Scope connected to a stream receiver acquiring the data and applying
+    filtering. The scope has a buffer of ``_BUFFER_DURATION`` seconds
+    (default: 30s)."""
+docdict['viewer_backend_geometry'] = """
+geometry : tuple | list
+    Window geometry as ``(pos_x, pos_y, size_x, size_y)``."""
+docdict['viewer_backend_xRange'] = """
+xRange : int
+    Range of the x-axis (plotting time duration) in seconds."""
+docdict['viewer_backend_yRange'] = """yRange : float
+    Range of the y-axis (amplitude) in uV."""
+docdict['viewer_backend'] = """
+backend : str
+    One of the supported backend's name. Supported ``'vispy'``, ``'pyqt5'``."""
+docdict['viewer_scope_stream_receiver'] = """
+stream_receiver : StreamReceiver
+    Connected stream receiver."""
+docdict['viewer_scope_stream_name'] = """
+stream_name : str
+    Stream to connect to."""
+
+# -----------------------------------------------
 # Triggers
 docdict['trigger_verbose'] = """
 verbose : bool
