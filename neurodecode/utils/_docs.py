@@ -23,6 +23,10 @@ verbose : bool
 docdict['trigger_lpt_delay'] = """
 delay : int
     Delay in milliseconds until which a new trigger cannot be sent."""
+docdict['trigger_file'] = """
+trigger_file : str | Path | None
+    Path to the ini file containing the table converting event numbers into
+    event strings."""
 
 # -----------------------------------------------
 # interfaces.audio
