@@ -3,7 +3,7 @@ Mock trigger.
 """
 from ._trigger import _Trigger
 from .. import logger
-from ..utils._docs import fill_doc
+from ..utils._docs import fill_doc, copy_doc
 
 
 @fill_doc
@@ -19,10 +19,8 @@ class TriggerMock(_Trigger):
     def __init__(self, verbose: bool = True):
         super().__init__(verbose)
 
+    @copy_doc(_Trigger.signal)
     def signal(self, value: int) -> bool:
-        """
-        Send a trigger value.
-        """
         self._set_data(value)
         super().signal(value)
         return True
@@ -33,9 +31,7 @@ class TriggerMock(_Trigger):
         """
         self._set_data(0)
 
+    @copy_doc(_Trigger._set_data)
     def _set_data(self, value: int):
-        """
-        Set the trigger signal to value.
-        """
         super()._set_data(value)
         logger.info(f'MOCK trigger set to {value}')

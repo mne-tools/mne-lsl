@@ -7,7 +7,7 @@ from pathlib import Path
 
 from ._trigger import _Trigger
 from .. import logger
-from ..utils._docs import fill_doc
+from ..utils._docs import fill_doc, copy_doc
 from ..utils._imports import import_optional_dependency
 
 
@@ -38,10 +38,8 @@ class TriggerLPT(_Trigger):
         self._delay = delay / 1000.0
         self._offtimer = threading.Timer(self._delay, self._signal_off)
 
+    @copy_doc(_Trigger.signal)
     def signal(self, value: int) -> bool:
-        """
-        Send a trigger value.
-        """
         if self._offtimer.is_alive():
             logger.warning(
                 'You are sending a new signal before the end of the last '
@@ -60,10 +58,8 @@ class TriggerLPT(_Trigger):
         self._set_data(0)
         self._offtimer = threading.Timer(self._delay, self._signal_off)
 
+    @copy_doc(_Trigger._set_data)
     def _set_data(self, value: int):
-        """
-        Set the trigger signal to value.
-        """
         super()._set_data(value)
         self._lpt.setdata(self._portaddr, value)
 
@@ -157,10 +153,8 @@ class TriggerUSB2LPT(_Trigger):
         self._delay = delay / 1000.0
         self._offtimer = threading.Timer(self._delay, self._signal_off)
 
+    @copy_doc(_Trigger.signal)
     def signal(self, value:int) -> bool:
-        """
-        Send a trigger value.
-        """
         if self._offtimer.is_alive():
             logger.warning(
                 'You are sending a new signal before the end of the last '
@@ -171,18 +165,13 @@ class TriggerUSB2LPT(_Trigger):
         self._offtimer.start()
         return True
 
+    @copy_doc(TriggerLPT._signal_off)
     def _signal_off(self):
-        """
-        Reset trigger signal to 0 and reset offtimer as Threads are one-call
-        only.
-        """
         self._set_data(0)
         self._offtimer = threading.Timer(self._delay, self._signal_off)
 
+    @copy_doc(_Trigger._set_data)
     def _set_data(self, value: int):
-        """
-        Set the trigger signal to value.
-        """
         super()._set_data(value)
         self._lpt.setdata(value)
 
@@ -210,10 +199,8 @@ class TriggerUSB2LPT(_Trigger):
 
     # --------------------------------------------------------------------
     @property
+    @copy_doc(TriggerLPT.delay)
     def delay(self):
-        """
-        Delay to wait between 2 ``.signal()`` call in milliseconds.
-        """
         return self._delay * 1000.0
 
     @delay.setter
@@ -275,10 +262,8 @@ class TriggerArduino2LPT(_Trigger):
         time.sleep(1)
         logger.info(f'Connected to {com_port}.')
 
+    @copy_doc(_Trigger.signal)
     def signal(self, value: int) -> bool:
-        """
-        Send a trigger value.
-        """
         if self._offtimer.is_alive():
             logger.warning(
                 'You are sending a new signal before the end of the last '
@@ -289,14 +274,12 @@ class TriggerArduino2LPT(_Trigger):
         self._offtimer.start()
         return True
 
+    @copy_doc(TriggerLPT._signal_off)
     def _signal_off(self):
-        """
-        Reset trigger signal to 0 and reset offtimer as Threads are one-call
-        only.
-        """
         self._set_data(0)
         self._offtimer = threading.Timer(self._delay, self._signal_off)
 
+    @copy_doc(_Trigger._set_data)
     def _set_data(self, value: int):
         """
         Set the trigger signal to value.
@@ -349,10 +332,8 @@ class TriggerArduino2LPT(_Trigger):
         self._com_port = com_port
 
     @property
+    @copy_doc(TriggerLPT.delay)
     def delay(self):
-        """
-        Delay to wait between 2 ``.signal()`` call in milliseconds.
-        """
         return self._delay * 1000.0
 
     @delay.setter
