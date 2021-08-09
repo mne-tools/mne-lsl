@@ -2,8 +2,10 @@ from pathlib import Path
 from configparser import ConfigParser
 
 from .. import logger
+from ..utils._docs import fill_doc
 
 
+@fill_doc
 class TriggerDef:
     """
     Class for reading event's pairs (string-integer) from ini file.
@@ -13,17 +15,16 @@ class TriggerDef:
 
     Parameters
     ----------
-    ini_file : str | Path
-        Path of the ini file.
+    %(trigger_file)s
     """
 
-    def __init__(self, ini_file):
-        self._ini_file = Path(ini_file)
-        TriggerDef._check_ini_path(self._ini_file)
+    def __init__(self, trigger_file=None):
+        self._trigger_file = TriggerDef._check_trigger_file(trigger_file)
 
         self._by_name = dict()
         self._by_value = dict()
-        self._extract_from_ini()
+        if self._trigger_file is not None:
+            self._extract_from_ini()
 
     def _extract_from_ini(self):
         """
@@ -31,7 +32,7 @@ class TriggerDef:
         """
         config = ConfigParser(inline_comment_prefixes=('#', ';'))
         config.optionxform = str
-        config.read(str(self._ini_file))
+        config.read(str(self._trigger_file))
 
         for key, value in config.items('events'):
             value = int(value)
@@ -39,23 +40,61 @@ class TriggerDef:
             self._by_name[key] = value
             self._by_value[value] = key
 
+    def add_event(self, name, value, overwrite=False):
+        """
+        Add an event to the trigger definition instance.
+
+        Parameters
+        ----------
+        name : str
+            Name of the event
+        value : int
+            Value of the event
+        overwrite : bool
+            If True, overwrite previous event with the same name.
+        """
+        value = int(value)
+        if name in self._by_name and self._by_name[name] == value:
+            logger.info(
+                f'The event {name} is already set with the value {value}.')
+            return
+        elif name in self._by_name and self._by_name[name] != value:
+            if not overwrite:
+                logger.warning(
+                    f'The event {name} is already set with the value {value}. '
+                    'Skipping.')
+                return
+            else:
+                logger.info(
+                    f'The event {name} is already set with the value {value}. '
+                    'Overwriting.')
+
+        setattr(self, name, value)
+        self._by_name[name] = value
+        self._by_value[value] = name
+
     # --------------------------------------------------------------------
     @staticmethod
-    def _check_ini_path(ini_file):
+    def _check_trigger_file(trigger_file):
         """
         Checks that the provided file exists and ends with .ini.
         """
-        if ini_file.exists():
-            logger.info(f"Found trigger definition file '{ini_file}'")
+        if trigger_file is None:
+            return None
+        trigger_file = Path(trigger_file)
+        if trigger_file.exists():
+            logger.info(f"Found trigger definition file '{trigger_file}'")
         else:
             logger.error(
-                f"Trigger event definition file '{ini_file}' not found.")
+                f"Trigger event definition file '{trigger_file}' not found.")
             raise IOError
 
-        if ini_file.suffix != '.ini':
+        if trigger_file.suffix != '.ini':
             logger.error(
                 "Trigger event definition file format must be '.ini'.")
             raise IOError
+
+        return trigger_file
 
     # --------------------------------------------------------------------
     @property
