@@ -18,12 +18,9 @@ class StreamPlayer:
 
     Parameters
     ----------
-    stream_name : str
-        Stream's server name, displayed on LSL network.
-    fif_file : str
-        Path to the .fif file to play.
-    chunk_size : int
-        Number of samples to send at once (usually 16-32 is good enough).
+    %(player_stream_name)s
+    %(player_fif_file)s
+    %(player_chunk_size)s
     %(trigger_file)s
     """
 
@@ -36,6 +33,7 @@ class StreamPlayer:
         self._trigger_file = trigger_file
         self._process = None
 
+    @fill_doc
     def start(self, repeat=np.float('inf'), high_resolution=False):
         """
         Start streaming data on LSL network in a new process by calling
@@ -43,11 +41,8 @@ class StreamPlayer:
 
         Parameters
         ----------
-        repeat : float
-            Number of times to replay the data.
-        high_resolution : bool
-            If True, it uses perf_counter() instead of sleep() for higher time
-            resolution. However, it uses more CPU.
+        %(player_repeat)s
+        %(player_high_resolution)s
         """
         logger.info('Streaming started.')
         self._process = mp.Process(target=self._stream,
@@ -166,31 +161,30 @@ class StreamPlayer:
         return self._process
 
 
+@fill_doc
 class _Streamer:
     """
     Class for playing a recorded file on LSL network.
 
     Parameters
     ----------
-    stream_name : str
-        Stream's server name, displayed on LSL network.
-    fif_file : str
-        Path to the .fif file to play.
-    chunk_size : int
-        Number of samples to send at once (usually 16-32 is good enough).
-    trigger_file : str
-        Path to the file containing the table converting event numbers into
-        event strings.
+    %(player_stream_name)s
+    %(player_fif_file)s
+    %(player_chunk_size)s
+    %(trigger_file)s
     """
 
     def __init__(self, stream_name, fif_file, chunk_size, trigger_file=None):
         self._stream_name = str(stream_name)
         self._chunk_size = StreamPlayer._check_chunk_size(chunk_size)
 
-        try:
-            self._tdef = TriggerDef(trigger_file)
-        except Exception:
+        if trigger_file is None:
             self._tdef = None
+        else:
+            try:
+                self._tdef = TriggerDef(trigger_file)
+            except Exception:
+                self._tdef = None
 
         self._load_data(fif_file)
 
@@ -201,8 +195,7 @@ class _Streamer:
 
         Parameters
         ----------
-        fif_file : str
-            Path to the .fif file to play.
+        %(player_fif_file)s
         """
         self._raw, _ = read_raw_fif(fif_file)
         self._tch = find_event_channel(inst=self._raw)
@@ -223,8 +216,7 @@ class _Streamer:
 
         Parameters
         ----------
-        stream_name : str
-            Stream's server name, displayed on LSL network.
+        %(player_stream_name)s
         """
         sinfo = pylsl.StreamInfo(
             stream_name, channel_count=self._ch_count,
@@ -267,11 +259,8 @@ class _Streamer:
 
         Parameters
         ----------
-        repeat : int
-            Number of times to replay the data (Default=inf).
-        high_resolution : bool
-            If True, it uses perf_counter() instead of sleep() for higher time
-            resolution. However, it uses more CPU.
+        %(player_repeat)s
+        %(player_high_resolution)s
         """
         idx_chunk = 0
         t_chunk = self._chunk_size / self._sample_rate
