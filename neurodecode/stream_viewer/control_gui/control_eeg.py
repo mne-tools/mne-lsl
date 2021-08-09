@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import QHeaderView, QTableWidgetItem
 from ._control import _ControlGUI
 from ._ui_control import UI_MainWindow
 from ... import logger
-from ...utils._docs import fill_doc
+from ...utils._docs import fill_doc, copy_doc
 
 
 @fill_doc
@@ -173,10 +173,8 @@ class ControlGUI_EEG(_ControlGUI):
         # Status bar
         self._ui.statusBar.showMessage("[Not recording]")
 
+    @copy_doc(_ControlGUI._init_backend)
     def _init_backend(self, backend):
-        """
-        Initialize the backend.
-        """
         backend = _ControlGUI._check_backend(backend)
         geometry = (self.geometry().x()+self.width(), self.geometry().y(),
                     self.width()*2, self.height())
@@ -184,10 +182,8 @@ class ControlGUI_EEG(_ControlGUI):
             self._scope, geometry, self._xRange, self._yRange)
 
     # --------------------------------------------------------------------
+    @copy_doc(_ControlGUI._connect_signals_to_slots)
     def _connect_signals_to_slots(self):
-        """
-        Event handler. Connect QT signals to slots.
-        """
         super()._connect_signals_to_slots()
         # Scales
         self._ui.comboBox_signal_yRange.activated.connect(
@@ -288,17 +284,13 @@ class ControlGUI_EEG(_ControlGUI):
 
     # --------------------------------------------------------------------
     @property
+    @copy_doc(_ControlGUI.backend)
     def backend(self):
-        """
-        Display backend.
-        """
         return self._backend
 
     @property
+    @copy_doc(_ControlGUI.ui)
     def ui(self):
-        """
-        Control UI.
-        """
         return self._ui
 
     @property

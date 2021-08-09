@@ -3,7 +3,7 @@ from scipy.signal import butter, sosfilt, sosfilt_zi
 
 from ._scope import _Scope
 from ... import logger
-from ...utils._docs import fill_doc
+from ...utils._docs import fill_doc, copy_doc
 from ...utils import find_event_channel
 
 
@@ -69,11 +69,8 @@ class ScopeEEG(_Scope):
         self._zi = None
 
     # -------------------------- Main Loop -------------------------
+    @copy_doc(_Scope.update_loop)
     def update_loop(self):
-        """
-        Main update loop acquiring data from the LSL stream and filling the
-        scope's buffer.
-        """
         self._read_lsl_stream()
         if len(self._ts_list) > 0:
             self._filter_signal()
@@ -87,10 +84,11 @@ class ScopeEEG(_Scope):
                 self._trigger_buffer, -len(self._ts_list))
             self._trigger_buffer[-len(self._ts_list):] = self._trigger_acquired
 
+    @copy_doc(_Scope._read_lsl_stream)
     def _read_lsl_stream(self):
         """
-        Acquires data from the connected LSL stream. The acquired data is
-        splitted between the trigger channel and the data channels.
+         The acquired data is splitted between the trigger channel and the data
+        channels.
         """
         super()._read_lsl_stream()
         # Remove trigger ch - shapes (samples, ) and (samples, channels)
