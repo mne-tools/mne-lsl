@@ -6,7 +6,7 @@ import numpy as np
 
 from ._sound import _Sound
 from ... import logger
-from ...utils._docs import fill_doc
+from ...utils._docs import fill_doc, copy_doc
 
 
 @fill_doc
@@ -31,10 +31,8 @@ class Tone(_Sound):
         self._frequency = Tone._check_frequency(frequency)
         super().__init__(volume, sample_rate, duration)
 
+    @copy_doc(_Sound._set_signal)
     def _set_signal(self):
-        """
-        Sets the signal to output.
-        """
         tone_arr = np.sin(2*np.pi*self._frequency*self._time_arr)
 
         self._signal[:, 0] = tone_arr * self._volume[0] / 100

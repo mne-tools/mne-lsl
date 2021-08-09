@@ -9,6 +9,7 @@ from scipy.signal import resample
 
 from ._sound import _Sound
 from ... import logger
+from ...utils._docs import copy_doc
 
 SUPPORTED = ('.wav')
 
@@ -43,10 +44,8 @@ class Sound(_Sound):
             f'Sample rate: {self._sample_rate} Hz, '
             f'Duration: {np.round(self._duration, 2)} seconds.')
 
+    @copy_doc(_Sound._set_signal)
     def _set_signal(self):
-        """
-        Sets the signal to output.
-        """
         slc = (slice(None, self._trim_samples), slice(None))
         self._signal = self._original_signal[slc]
 
