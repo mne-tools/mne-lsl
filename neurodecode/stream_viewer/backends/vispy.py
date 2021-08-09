@@ -8,7 +8,7 @@ import math
 import numpy as np
 
 from ._backend import _Backend
-from ...utils._docs import fill_doc
+from ...utils._docs import fill_doc, copy_doc
 from ...utils._imports import import_optional_dependency
 
 vispy = import_optional_dependency(
@@ -190,17 +190,12 @@ class _BackendVispy(_Backend, vispy.app.Canvas):
             blend_func=('src_alpha', 'one_minus_src_alpha'))
 
     # -------------------------- Main Loop -------------------------
+    @copy_doc(_Backend.start_timer)
     def start_timer(self):
-        """
-        Start the update loop on a 20ms timer.
-        """
         self._timer.start()
 
+    @copy_doc(_Backend._update_loop)
     def _update_loop(self, event):
-        """
-        Main update loop retrieving data from the scope's buffer and updating
-        the Canvas.
-        """
         super()._update_loop()
 
         if len(self._scope.ts_list) > 0:
@@ -222,20 +217,15 @@ class _BackendVispy(_Backend, vispy.app.Canvas):
         vispy.gloo.clear()
         self._program.draw('line_strip')
 
+    @copy_doc(_Backend.close)
     def close(self):
-        """
-        Stops the update loop and close the window.
-        """
         self._timer.stop()
         vispy.app.Canvas.close(self)
 
     # ------------------------ Update program ----------------------
     @_Backend.xRange.setter
+    @copy_doc(_Backend.xRange.setter)
     def xRange(self, xRange):
-        """
-        Called when the user changes the X-axis range/scale, i.e. the duration
-        of the plotting window.
-        """
         self._xRange = xRange
         self._init_variables()
         self._init_a_color()
@@ -248,10 +238,8 @@ class _BackendVispy(_Backend, vispy.app.Canvas):
         self.update()
 
     @_Backend.yRange.setter
+    @copy_doc(_Backend.yRange.setter)
     def yRange(self, yRange):
-        """
-        Called when the user changes the signal range/scale.
-        """
         self._yRange = yRange
         self._init_u_scale()
 
@@ -259,10 +247,8 @@ class _BackendVispy(_Backend, vispy.app.Canvas):
         self.update()
 
     @_Backend.selected_channels.setter
+    @copy_doc(_Backend.selected_channels.setter)
     def selected_channels(self, selected_channels):
-        """
-        Called when the user changes the selection of channels.
-        """
         self._selected_channels = selected_channels
         self._init_variables()
         self._init_a_color()
@@ -275,9 +261,6 @@ class _BackendVispy(_Backend, vispy.app.Canvas):
         self.update()
 
     @_Backend.show_LPT_trigger_events.setter
+    @copy_doc(_Backend.show_LPT_trigger_events.setter)
     def show_LPT_trigger_events(self, show_LPT_trigger_events):
-        """
-        Called when the user ticks or untick the ``show_LPT_trigger_events``
-        box.
-        """
         self._show_LPT_trigger_events = show_LPT_trigger_events
