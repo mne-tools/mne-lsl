@@ -317,7 +317,7 @@ def copy_doc(source):
     ...     def m1():
     ...         '''Docstring for m1'''
     ...         pass
-    >>> class B (A):
+    >>> class B(A):
     ...     @copy_doc(A.m1)
     ...     def m1():
     ...         ''' this gets appended'''
