@@ -20,11 +20,8 @@ class StreamReceiver:
 
     Parameters
     ----------
-    bufsize : int | float
-        Buffer's size [secs]. MAX_BUF_SIZE (def: 1-day) is the maximum size.
-        Large buffer may lead to a delay if not pulled frequently.
-    winsize : int | float
-        Window's size [secs]. Must be smaller than the buffer's size.
+    %(receiver_bufsize)s
+    %(receiver_winsize)s
     %(stream_name)s
     """
 
@@ -122,7 +119,7 @@ class StreamReceiver:
         Parameters
         ----------
         stream_name : str | list | None
-            Servers' name or list of servers' name to disconnect.
+            Servers' name or list of servers' name to disconnect from.
             If None, disconnect from all streams.
         """
         stream_name = StreamReceiver._check_format_stream_name(stream_name)
@@ -159,6 +156,7 @@ class StreamReceiver:
             thread.start()
             self._acquisition_threads[stream] = thread
 
+    @fill_doc
     def get_window(self, stream_name=None):
         """
         Get the latest window from a stream's buffer.
@@ -166,17 +164,12 @@ class StreamReceiver:
 
         Parameters
         ----------
-        stream_name : str | None
-            Name of the stream to extract from.
-            Can be set to None if the StreamReceiver is connected to a single
-            stream.
+        %(receiver_get_stream_name)s
 
         Returns
         -------
-        data : np.array
-             Data [samples x channels].
-        timestamps : np.array
-             Data's timestamps [samples].
+        %(receiver_data)s
+        %(receiver_timestamps)s
         """
         if not self._connected:
             logger.error(
@@ -223,6 +216,7 @@ class StreamReceiver:
             return (np.empty((0, len(self._streams[stream_name].ch_list))),
                     np.array([]))
 
+    @fill_doc
     def get_buffer(self, stream_name=None):
         """
         Get the entire buffer of a stream in numpy format.
@@ -230,17 +224,12 @@ class StreamReceiver:
 
         Parameters
         ----------
-        stream_name : str | None
-            Name of the stream to extract from.
-            Can be set to None if the StreamReceiver is connected to a single
-            stream.
+        %(receiver_get_stream_name)s
 
         Returns
         -------
-        data : np.array
-             Data [samples x channels].
-        timestamps : np.array
-             Data's timestamps [samples].
+        %(receiver_data)s
+        %(receiver_timestamps)s
         """
         if not self._connected:
             logger.error(
@@ -391,4 +380,7 @@ class StreamReceiver:
 
     @property
     def connected(self):
+        """
+        Connected status.
+        """
         return self._connected

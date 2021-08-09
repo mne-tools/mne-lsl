@@ -1,4 +1,5 @@
 from .. import logger
+from ..utils._docs import fill_doc
 
 
 class Buffer():
@@ -21,6 +22,7 @@ class Buffer():
         self._data = []
         self._timestamps = []
 
+    @fill_doc
     def fill(self, data, tslist):
         """
         Fill the data and timestamps to the buffer.
@@ -29,8 +31,7 @@ class Buffer():
         -----------
         data : list
             Received data [samples x channels].
-        tslist : list
-            Data's timestamps [samples].
+        %(receiver_tslist)s
         """
         self._data.extend(data)
         self._timestamps.extend(tslist)
