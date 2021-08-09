@@ -10,7 +10,7 @@ from .. import logger
 from ..utils import Timer
 from ..utils import find_event_channel
 from ..utils.lsl import lsl_channel_list
-from ..utils._docs import fill_doc
+from ..utils._docs import fill_doc, copy_doc
 
 _MAX_PYLSL_STREAM_BUFSIZE = 10  # max 10 sec of data buffered for LSL
 MAX_BUF_SIZE = 86400  # 24h max buffer length
@@ -379,10 +379,10 @@ class StreamEEG(_Stream):
         # self._multiplier = 10 ** -6  # change uV -> V unit
         self._multiplier = 1
 
+    @copy_doc(_Stream._create_ch_name_list)
     def _create_ch_name_list(self):
         """
-        Create the channel info.
-        Trigger channel will always move to the first position.
+         Trigger channel will always move to the first position.
         """
         super()._create_ch_name_list()
 
