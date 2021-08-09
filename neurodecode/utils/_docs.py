@@ -16,6 +16,33 @@ stream_name : list | str | None
     None: no constraint."""
 
 # -----------------------------------------------
+# Receiver
+docdict['receiver_get_stream_name'] = """
+stream_name : str | None
+    Name of the stream to extract from.
+    Can be set to None if the StreamReceiver is connected to a single
+    stream."""
+docdict['receiver_data'] = """
+data : np.array
+     Data [samples x channels]."""
+docdict['receiver_timestamps'] = """
+timestamps : np.array
+     Data's timestamps [samples]."""
+docdict['receiver_streamInfo'] = """
+streamInfo : LSL StreamInfo.
+    Contain all the info from the LSL stream to connect to."""
+docdict['receiver_bufsize'] = """
+bufsize : int | float
+    Buffer's size [secs]. MAX_BUF_SIZE (def: 1-day) is the maximum size.
+    Large buffer may lead to a delay if not pulled frequently."""
+docdict['receiver_winsize'] = """
+winsize : int | float
+    Window's size [secs]. Must be smaller than the buffer's size."""
+docdict['receiver_tslist'] = """
+tslist : list
+    Data's timestamps [samples]."""
+
+# -----------------------------------------------
 # Stream Player
 docdict['player_stream_name'] = """
 stream_name : str
