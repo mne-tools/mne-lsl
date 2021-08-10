@@ -125,14 +125,15 @@ class Sound(_Sound):
     def _compute_volume(signal):
         """
         Volume modifications is not supported for loaded sounds.
-        Returns [1] * number of channels.
+        Returns ``[1] * number of channels``.
         """
         return [1] * signal.shape[1]
 
     @staticmethod
     def _valid_trim_duration(trim_duration, sound_duration):
         """
-        Returns True if trim_duration is smaller than sound_duration.
+        Returns ``True`` if ``trim_duration`` is smaller than
+        ``sound_duration``.
         """
         if sound_duration <= trim_duration:
             logger.warning(

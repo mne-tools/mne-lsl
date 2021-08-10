@@ -20,7 +20,7 @@ stream_name : list | str | None
 docdict['receiver_get_stream_name'] = """
 stream_name : str | None
     Name of the stream to extract from.
-    Can be set to ``None`` if the StreamReceiver is connected to a single
+    Can be set to ``None`` if the `StreamReceiver` is connected to a single
     stream."""
 docdict['receiver_data'] = """
 data : np.array
@@ -55,8 +55,8 @@ fname : str | None
         (optional) SOFTWARE trigger events: ``'{fname}-eve.txt'``"""
 docdict['recorder_fif_subdir'] = """
 fif_subdir : bool
-    If True, the ``.pcl`` files are converted to ``.fif`` in a subdirectory
-    ``'fif': record_dir/fif/...`` instead of ``record_dir``."""
+    If ``True``, the ``.pcl`` files are converted to ``.fif`` in a
+    subdirectory ``'fif': record_dir/fif/...`` instead of ``record_dir``."""
 docdict['recorder_verbose'] = """
 verbose : bool
     If ``True``, a timer showing since when the recorder started is displayed
@@ -85,7 +85,7 @@ high_resolution : bool
 # Stream Viewer
 docdict['viewer_scope'] = """
 scope : Scope
-    Scope connected to a stream receiver acquiring the data and applying
+    Scope connected to a `StreamReceiver` acquiring the data and applying
     filtering. The scope has a buffer of ``_BUFFER_DURATION`` seconds
     (default: 30s)."""
 docdict['viewer_backend_geometry'] = """
@@ -101,7 +101,7 @@ backend : str
     One of the supported backend's name. Supported ``'vispy'``, ``'pyqt5'``."""
 docdict['viewer_scope_stream_receiver'] = """
 stream_receiver : StreamReceiver
-    Connected stream receiver."""
+    Connected `StreamReceiver`."""
 docdict['viewer_scope_stream_name'] = """
 stream_name : str
     Stream to connect to."""
@@ -125,14 +125,14 @@ docdict['audio_volume'] = """
 volume : list | int | float
     If an ``int`` or a ``float`` is provided, the sound will use only one
     channel (mono). If a 2-length sequence is provided, the sound will use
-    2 channels (stereo). Volume of each channel, given between ``0`` and
+    2 channels (stereo). Volume of each channel is given between ``0`` and
     ``100``. For stereo, the volume is given as ``[L, R]``."""
 docdict['audio_sample_rate'] = """
 sample_rate : int, optional
     Sampling frequency of the sound. The default is ``44100 kHz``."""
 docdict['audio_duration'] = """
 duration : float, optional
-    Duration of the sound. The default is 1.0 second."""
+    Duration of the sound. The default is ``1.0 second``."""
 
 # -----------------------------------------------
 # interfaces.visual
@@ -147,52 +147,28 @@ window_size : list | None
 """
 
 # interfaces.visual color
-color_var = 'color'
-color_types = 'str | tuple'
-color_format = 'as a matplotlib string or a ``(B, G, R)`` tuple of int8 set '+\
-               'between ``0`` and ``255``'
-docdict['visual_color_background'] = f"""
-{color_var} : {color_types}
-    Color used to draw the background {color_format}."""
-docdict['visual_color_text'] = f"""
-{color_var} : {color_types}
-    Color used to write the text {color_format}."""
-docdict['visual_color_cross'] = f"""
-{color_var} : {color_types}
-    Color used to fill the cross {color_format}."""
-docdict['visual_color_moving_bar'] = f"""
-{color_var} : {color_types}
-    Color used to fill the bar {color_format}."""
-docdict['visual_color_filling_bar'] = f"""
-{color_var} : {color_types}
-    Color used to draw the bar background {color_format}."""
-docdict['visual_fill_color_filling_bar'] = f"""
-fill_color : {color_types}
-    Color used to fill the bar {color_format}."""
+color_base = """
+color : str | tuple
+    Color used to {} as a matplotlib string or a ``(B, G, R)``
+    tuple of int8 set between ``0`` and ``255``."""
+docdict['visual_color_background'] = color_base.format('draw the background')
+docdict['visual_color_text'] = color_base.format('write the text')
+docdict['visual_color_cross'] = color_base.format('fill the cross')
+docdict['visual_color_moving_bar'] = color_base.format('fill the bar')
+docdict['visual_color_filling_bar'] = \
+    color_base.format('draw the bar background')
+docdict['visual_fill_color_filling_bar'] = color_base.format('fill the bar')
 
 # interfaces.visual dimension
-var_types = 'int'
-
-var = 'thickness'
-base = f'Number of pixels used to draw the {var} of the'
-docdict[f'visual_{var}_cross'] = f"""
-{var} : {var_types}
-    {base} cross."""
-
-var = 'length'
-base = f'Number of pixels used to draw the {var} of the'
-docdict[f'visual_{var}_cross'] = f"""
-{var} : {var_types}
-    {base} cross."""
-docdict[f'visual_{var}_bar'] = f"""
-{var} : {var_types}
-    {base} bar."""
-
-var = 'width'
-base = f'Number of pixels used to draw the {var} of the'
-docdict[f'visual_{var}_bar'] = f"""
-{var} : {var_types}
-    {base} bar."""
+base = """
+{var} : int
+    Number of pixels used to draw the {var} of the {elt}."""
+docdict['visual_thickness_cross'] = \
+    base.format(**{'var': 'thickness', 'elt': 'cross'})
+docdict['visual_length_cross'] = \
+    base.format(**{'var': 'length', 'elt': 'cross'})
+docdict['visual_width_bar'] = base.format(**{'var': 'width', 'elt': 'bar'})
+docdict['visual_length_bar'] = base.format(**{'var': 'length', 'elt': 'bar'})
 
 # interfaces.visual position
 inst = 'cross'
@@ -293,7 +269,8 @@ def _indentcount_lines(lines):
 
 
 def copy_doc(source):
-    """Copy the docstring from another function (decorator).
+    """
+    Copy the docstring from another function (decorator).
 
     The docstring of the source function is prepepended to the docstring of the
     function wrapped by this decorator.

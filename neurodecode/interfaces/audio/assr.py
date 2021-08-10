@@ -13,7 +13,8 @@ from ...utils._docs import fill_doc, copy_doc
 class ASSR(_Sound):
     """
     Auditory Steady State Response Stimuli.
-    Composed of a carrier frequency 'fc' which is amplitude modulated at 'fm'.
+    Composed of a carrier frequency ``fc`` which is amplitude modulated at
+    ``fm``.
 
     By default, a 1000 Hz carrier frequency modulated at 40 Hz through
     conventional modulation.
@@ -28,11 +29,11 @@ class ASSR(_Sound):
     method : str
         Either ``'conventional'`` or ``'dsbsc'``.
         ``'conventional'``:
-            Also called 'classical AM', the equation used is:
+            Also called ``classical AM``, the equation used is:
                 ``signal = (1 - M(t)) * cos(2*pi*fc*t)``
                 ``M(t) = cos(2*pi*fm*t)``
         ``'dsbsc'``:
-            Also called 'double side band suppressed carrier', the equation
+            Also called ``double side band suppressed carrier``, the equation
             used is:
                 ``signal = M(t)*cos(2*pi*fc*t)``
                 ``M(t) = sin(2*pi*fm*t)``

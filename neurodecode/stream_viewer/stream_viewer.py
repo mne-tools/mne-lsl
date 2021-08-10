@@ -12,7 +12,7 @@ from ..utils.lsl import search_lsl
 
 class StreamViewer:
     """
-    StreamViewer instance. The stream viewer will connect to only one LSL
+    `StreamViewer` instance. The stream viewer will connect to only one LSL
     stream. If ``stream_name`` is set to ``None``, an automatic search is
     performed followed by a prompt if multiple non-markers streams are found.
 
@@ -103,7 +103,7 @@ class StreamViewer:
     @property
     def sr(self):
         """
-        Connected StreamReceiver.
+        Connected `StreamReceiver`.
         """
         return self._sr
 

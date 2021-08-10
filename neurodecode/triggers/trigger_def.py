@@ -8,7 +8,7 @@ from ..utils._docs import fill_doc
 @fill_doc
 class TriggerDef:
     """
-    Class for reading event's pairs (string-integer) from ini file.
+    Class for reading event's pairs (string-integer) from ``.ini`` file.
 
     The class will also have as attributes ``self.event_str = event_int`` for
     all pairs.
@@ -78,6 +78,7 @@ class TriggerDef:
     def _check_trigger_file(trigger_file):
         """
         Checks that the provided file exists and ends with ``.ini``.
+        Else returns ``None``.
         """
         if trigger_file is None:
             return None
@@ -87,12 +88,12 @@ class TriggerDef:
         else:
             logger.error(
                 f"Trigger event definition file '{trigger_file}' not found.")
-            raise IOError
+            return None
 
         if trigger_file.suffix != '.ini':
             logger.error(
                 "Trigger event definition file format must be '.ini'.")
-            raise IOError
+            return None
 
         return trigger_file
 
