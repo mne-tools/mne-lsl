@@ -16,7 +16,7 @@ from ...utils._docs import fill_doc, copy_doc
 @fill_doc
 class _BackendPyQt5(_Backend):
     """
-    The PyQt5 backend for neurodecode's StreamViewer.
+    The PyQt5 backend for neurodecode's `StreamViewer`.
 
     Parameters
     ----------
@@ -253,7 +253,7 @@ class _TriggerEvent:
     event_type : str
         Type of event. Supported: ``'LPT'``.
     event_value : int | float
-        Value of the event displayed in the TextItem.
+        Value of the event displayed in the ``TextItem``.
     position_buffer : float
         Time at which the event is positionned in the buffer where:
             ``0`` represents the older events exiting the buffer.
