@@ -103,7 +103,7 @@ class _ControlGUI(QMainWindow, ABC, metaclass=_metaclass_ControlGUI):
         """
         Checks that the requested backend is supported.
         """
-        DEFAULT = ['pyqt5', 'vispy'] # Default order
+        DEFAULT = ['pyqt5', 'vispy']  # Default order
         SUPPORTED_BACKENDS = dict()
         try:
             SUPPORTED_BACKENDS['vispy'] = _BackendVispy
