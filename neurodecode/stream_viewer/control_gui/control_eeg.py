@@ -97,7 +97,7 @@ class ControlGUI_EEG(_ControlGUI):
                          '10mV': 10000}
         try:
             self._yRange = float(scope_settings.get("plot", "yRange"))
-            if not self._yRange in self._yRanges.values:
+            if self._yRange not in self._yRanges.values:
                 raise ValueError
         except Exception:  # Default to 25 uV
             self._yRange = 25.
@@ -124,7 +124,7 @@ class ControlGUI_EEG(_ControlGUI):
         # xRange
         try:
             self._ui.spinBox_signal_xRange.setValue(self._xRange)
-        except:  # 10s by default
+        except Exception:  # 10s by default
             self._ui.spinBox_signal_xRange.setValue(10)
 
         # CAR

@@ -24,7 +24,7 @@ class TriggerLPT(_Trigger):
     %(trigger_verbose)s
     """
 
-    def __init__(self, portaddr: int, delay:int = 50, verbose: bool = True):
+    def __init__(self, portaddr: int, delay: int = 50, verbose: bool = True):
         super().__init__(verbose)
         self._portaddr = TriggerLPT._check_portaddr(portaddr)
         logger.debug("LPT port address: %d" % self._portaddr)
@@ -154,7 +154,7 @@ class TriggerUSB2LPT(_Trigger):
         self._offtimer = threading.Timer(self._delay, self._signal_off)
 
     @copy_doc(_Trigger.signal)
-    def signal(self, value:int) -> bool:
+    def signal(self, value: int) -> bool:
         if self._offtimer.is_alive():
             logger.warning(
                 'You are sending a new signal before the end of the last '
