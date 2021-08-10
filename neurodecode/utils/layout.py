@@ -71,7 +71,7 @@ def available_layouts(verbose=False):
     Parameters
     ----------
     verbose : bool
-        If True, display the available layout in the logger as info.
+        If ``True``, display the available layout in the logger as info.
     """
     if verbose:
         logger.info('-- Available layouts --')
@@ -168,7 +168,7 @@ class Layout:
     @staticmethod
     def _check_ch_names(ch_names):
         """
-        Checks that the channels names are a list of strings.
+        Check that the channels names are a list of strings.
         """
         if not isinstance(ch_names, (list, tuple)):
             logger.error('The channel names must be provided as a list.')
@@ -178,6 +178,9 @@ class Layout:
 
     @staticmethod
     def _check_ch_types(ch_names, ch_types):
+        """
+        Check that all the provided channels types are supported.
+        """
         supported = get_channel_type_constants(include_defaults=True)
         if isinstance(ch_types, str):
             ch_types = ch_types.strip().lower()
@@ -204,6 +207,10 @@ class Layout:
 
     @staticmethod
     def _check_ch_number(ch_names, ch_types):
+        """
+        Check that the number of channels names match the number of channel
+        types.
+        """
         if len(ch_names) != len(ch_types):
             logger.error(
                 f"The number of channels provided {len(ch_names)} does "
@@ -212,6 +219,9 @@ class Layout:
 
     @staticmethod
     def _check_montage(montage):
+        """
+        Check that the montage is supported.
+        """
         if montage is None:
             return montage
 

@@ -12,9 +12,9 @@ from ..stream_recorder import StreamRecorder
 @fill_doc
 class TriggerSoftware(_Trigger):
     """
-    Trigger saving signal value in a .txt file.
-    Software trigger instance must be created after a stream recorder is
-    started and close/deleted before a stream recorder is stopped.
+    Trigger saving signal value in a ``.txt`` file.
+    Software trigger instance must be created after a `StreamRecorder` is
+    started and close/deleted before a `StreamRecorder` is stopped.
         >>> recorder = StreamRecorder('path to dir')
         >>> recorder.start()
         >>> trigger = TriggerSoftware(recorder)
@@ -25,7 +25,7 @@ class TriggerSoftware(_Trigger):
     Parameters
     ----------
     recorder : StreamRecorder
-        Neurodecode stream recorder used.
+        Neurodecode `StreamRecorder` used.
     %(trigger_verbose)s
     """
 
@@ -82,7 +82,7 @@ class TriggerSoftware(_Trigger):
     @staticmethod
     def _find_eve_file(recorder):
         """
-        Find the event file name from the on going ``StreamRecorder``.
+        Find the event file name from the on going `StreamRecorder`.
         """
         if recorder.eve_file is None:
             logger.error(
@@ -96,7 +96,7 @@ class TriggerSoftware(_Trigger):
     @property
     def recorder(self):
         """
-        Neurodecode's recorder used.
+        Neurodecode's `StreamRecorder` used.
         """
         return self._recorder
 

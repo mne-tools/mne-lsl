@@ -37,7 +37,7 @@ class StreamPlayer:
     def start(self, repeat=np.float('inf'), high_resolution=False):
         """
         Start streaming data on LSL network in a new process by calling
-        ``_Streamer.stream()``.
+        `_Streamer.stream`.
 
         Parameters
         ----------
@@ -62,7 +62,7 @@ class StreamPlayer:
     def _stream(self, repeat, high_resolution):
         """
         The function called in the new process.
-        Instance a Streamer and start streaming.
+        Instance a `_Streamer` and start streaming.
         """
         streamer = _Streamer(
             self._stream_name, self._fif_file,
@@ -73,7 +73,7 @@ class StreamPlayer:
     @staticmethod
     def _check_chunk_size(chunk_size):
         """
-        Checks that the chunk size is a strictly positive integer.
+        Checks that ``chunk_size is`` a strictly positive integer.
         """
         chunk_size = int(chunk_size)
         if chunk_size <= 0:

@@ -43,7 +43,7 @@ class _Visual(ABC):
 
     def show(self, wait=1):
         """
-        Show the visual with cv2.imshow() and cv2.waitKey().
+        Show the visual with ``cv2.imshow()`` and ``cv2.waitKey()``.
 
         Parameters
         ----------
@@ -79,7 +79,7 @@ class _Visual(ABC):
     def _check_window_size(window_size):
         """
         Checks if the window size is valid or set it as the minimum
-        (width, height) supported by any connected monitor.
+        ``(width, height)`` supported by any connected monitor.
         """
         if window_size is not None:
             window_size = tuple(int(size) for size in window_size)
@@ -143,9 +143,9 @@ class _Visual(ABC):
     @staticmethod
     def _check_axis(axis):
         """
-        Checks that the axis is valid and converts it to integer (0, 1).
-            - 0: Vertical
-            - 1: Horizontal
+        Checks that the axis is valid and converts it to integer ``(0, 1)``.
+            - ``0``: Vertical
+            - ``1``: Horizontal
         """
         if isinstance(axis, str):
             axis = axis.lower().strip()

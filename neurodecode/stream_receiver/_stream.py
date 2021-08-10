@@ -20,7 +20,7 @@ HIGH_LSL_OFFSET_THRESHOLD = 0.1  # Threshold above which the offset is high
 @fill_doc
 class _Stream(ABC):
     """
-    Abstract class representing a base receiver's stream.
+    Abstract class representing a base `StreamReceiver` stream.
 
     Parameters
     ----------
@@ -194,7 +194,7 @@ class _Stream(ABC):
     @fill_doc
     def _check_winsize(winsize):
         """
-        Check that the window size is positive.
+        Check that ``winsize`` is positive.
 
         Parameters
         ----------
@@ -210,7 +210,7 @@ class _Stream(ABC):
     @fill_doc
     def _check_bufsize(bufsize, winsize):
         """
-        Check that buffer's size is positive and bigger than the window's size.
+        Check that ``bufsize`` is positive and bigger than ``winsize``.
 
         Parameters
         ----------
@@ -297,7 +297,7 @@ class _Stream(ABC):
     @property
     def blocking(self):
         """
-        If True, the stream wait to receive data.
+        If ``True``, the stream wait to receive data.
         """
         return self._blocking
 
@@ -308,7 +308,7 @@ class _Stream(ABC):
     @property
     def blocking_time(self):
         """
-        If blocking is True, how long to wait to receive data in seconds.
+        If blocking is ``True``, how long to wait to receive data in seconds.
         """
         return self._blocking_time
 
@@ -331,7 +331,7 @@ class _Stream(ABC):
 @fill_doc
 class StreamMarker(_Stream):
     """
-    Class representing a receiver's markers stream.
+    Class representing a `StreamReceiver` markers stream.
 
     Notice the irregular sampling rate.
     This stream is instanciated as non-blocking.
