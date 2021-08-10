@@ -128,10 +128,10 @@ volume : list | int | float
     2 channels (stereo). Volume of each channel is given between ``0`` and
     ``100``. For stereo, the volume is given as ``[L, R]``."""
 docdict['audio_sample_rate'] = """
-sample_rate : int, optional
+sample_rate : int
     Sampling frequency of the sound. The default is ``44100 kHz``."""
 docdict['audio_duration'] = """
-duration : float, optional
+duration : float
     Duration of the sound. The default is ``1.0 second``."""
 
 # -----------------------------------------------
