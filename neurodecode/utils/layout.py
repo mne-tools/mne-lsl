@@ -11,7 +11,7 @@ from mne.channels.montage import DigMontage, _BUILT_IN_MONTAGES
 from .. import logger
 
 
-CAP = {
+CH_NAMES = {
     'GTEC_16': ['TRIGGER', 'Fz', 'FC3', 'FC1', 'FCz', 'FC2', 'FC4', 'C3',
                 'C1', 'Cz', 'C2', 'C4', 'CP3', 'CP1', 'CPz', 'CP2', 'CP4'],
 
@@ -75,20 +75,20 @@ def available_layouts(verbose=False):
     """
     if verbose:
         logger.info('-- Available layouts --')
-        for name in CAP:
+        for name in CH_NAMES:
             if CH_TYPES.get(name) is not None:
-                if len(CAP[name]) == len(CH_TYPES[name]):
+                if len(CH_NAMES[name]) == len(CH_TYPES[name]):
                     logger.info(f'  | {name}')
                 else:
                     logger.warning(
                         f"  | Error with '{name}': "
-                        "len() differs in CAP and CH_TYPES.")
+                        "len() differs in CH_NAMES and CH_TYPES.")
             else:
                 logger.warning(f"  | Error with '{name}': "
                                "KeyError in CH_TYPES.")
 
-    return [name for name in CAP if CH_TYPES.get(name) is not None and
-            len(CAP[name]) == len(CH_TYPES[name])]
+    return [name for name in CH_NAMES if CH_TYPES.get(name) is not None and
+            len(CH_NAMES[name]) == len(CH_TYPES[name])]
 
 
 class Layout:
@@ -99,15 +99,15 @@ class Layout:
     Parameters
     ----------
     name : str
-        Name of the cap. Supported cap names have associated channel names and
-        channel types saved in NeuroDecode.
+        Name of the layout. Supported layout names have associated channel
+        names and channel types saved in NeuroDecode.
     montage : str | DigMontage
         Montage used by the layout.
         https://mne.tools/stable/generated/mne.io.Raw.html#mne.io.Raw.set_montage
-    ch_names : list | None
-        List of channels' name in the order receied from LSL.
+    ch_names : str | list | None
+        Channel's name or list of channels' name in the order receied from LSL.
         If ``None``, looks for a known list based on the layout ``name``.
-    ch_types : list | str | None
+    ch_types : str | list | None
         List of channels' type in the order received from LSL.
         If ``None``, looks for a known list based on the layout ``name``.
     """
@@ -123,12 +123,12 @@ class Layout:
 
         else:
             try:
-                ch_names = Layout._check_ch_names(CAP[name])
+                ch_names = Layout._check_ch_names(CH_NAMES[name])
                 ch_types = Layout._check_ch_types(ch_names, CH_TYPES[name])
                 Layout._check_ch_number(ch_names, ch_types)
             except KeyError as error:
                 logger.warning(
-                    "The provided cap name is not yet included. "
+                    "The provided layout name is not yet included. "
                     "Add it first to NeuroDecode or provided the arguments "
                     "'ch_names' and 'ch_types'.")
                 raise KeyError from error
@@ -142,10 +142,11 @@ class Layout:
 
         Parameters
         ----------
-        ch_names : list
-            List of channels' name to add.
-        ch_types : list | str
-            List of corresponding channels' type to add.
+        ch_names : str | list
+            Channel's name or list of channels' name to add.
+        ch_types : str | list
+            List of corresponding channels' type to add. If a string is
+            provided, the channel type is applied to all channels.
         """
         ch_names = Layout._check_ch_names(ch_names)
         ch_types = Layout._check_ch_types(ch_names, ch_types)
@@ -159,10 +160,18 @@ class Layout:
 
         Parameters
         ----------
-        ch_names : list
-            List of channels' name to remove.
+        ch_names : str |list
+            Channel's name or list of channels' name to remove.
         """
-        raise NotImplementedError  # TODO: Implement channel removal.
+        ch_names = Layout._check_ch_names(ch_names)
+        for ch in ch_names:
+            if ch not in self._ch_names:
+                logger.warning(f'Channel {ch} is not in the layout. Skipping.')
+                continue
+            idx = self._ch_names.index(ch)
+            del self._ch_names[idx]
+            del self._ch_types[idx]
+            assert len(self._ch_names) == len(self._ch_types)
 
     # --------------------------------------------------------------------
     @staticmethod
@@ -170,6 +179,8 @@ class Layout:
         """
         Check that the channels names are a list of strings.
         """
+        if isinstance(ch_names, str):
+            ch_names = [ch_names]
         if not isinstance(ch_names, (list, tuple)):
             logger.error('The channel names must be provided as a list.')
             raise TypeError
