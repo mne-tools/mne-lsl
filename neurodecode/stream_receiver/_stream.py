@@ -409,7 +409,8 @@ class StreamEEG(_Stream):
             self._lsl_tr_channel = 23
 
         elif 'openvibeSignal' in self._name:
-            self._multiplier = 10E6  # TODO: Test if this is correct or should be 1E6
+            # TODO: Test if this is correct or should be 1E6
+            self._multiplier = 10E6
             self._lsl_tr_channel = find_event_channel(ch_names=self._ch_list)
 
         elif 'openvibeMarkers' in self._name:
