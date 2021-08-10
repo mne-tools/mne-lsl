@@ -42,14 +42,14 @@ class FillingBar(_Visual):
         %(visual_fill_color_filling_bar)s
         fill_perc : float
             Percentage between ``0`` and ``1`` of bar filling.
-                - 0: not filled
-                - 1: fully filled
+                - ``0``: not filled
+                - ``1``: fully filled
             As the bar fills on both side simultaneously, the percentage filled
             is ``length//2 * fill_perc``.
         axis : int | str
             Axis along which the bar is moving:
-                - 0: 'vertical', 'v'      - vertical bar
-                - 1: 'horizontal', 'h'    - horizontal bar
+                - ``0`` | ``'vertical'`` | ``'v'``      - vertical bar
+                - ``1`` | ``'horizontal'`` | ``'h'``    - horizontal bar
         """
         if self._backup_img is None:
             self._backup_img = copy.deepcopy(self._img)
@@ -72,12 +72,12 @@ class FillingBar(_Visual):
         """
         Draw the bar rectangle and fill rectangle.
 
-        - Axis = 1 - Horizontal bar
+        - Axis = ``1`` - Horizontal bar
         P1 ---------------
         |                |
         --------------- P2
 
-        - Axis = 0 - Vertical bar
+        - Axis = ``0`` - Vertical bar
         P1 ---
         |    |
         |    |
@@ -128,8 +128,9 @@ class FillingBar(_Visual):
     @staticmethod
     def _check_length_margin(length, margin, axis, window_size):
         """
-        Checks that the length and margin are strictly positive and add up to
-        a shorter dimension than the window dimension along the relevant axis.
+        Checks that the ``length`` and ``margin`` are strictly positive and add
+        up to a shorter dimension than the window dimension along the relevant
+        ``axis``.
         """
         length = int(length)
         margin = int(margin)
@@ -155,8 +156,9 @@ class FillingBar(_Visual):
     @staticmethod
     def _check_width_margin(width, margin, length, axis, window_size):
         """
-        Checks that the width is strictly positive and shorter than the length,
-        and shorter than the window dimension along the relevant axis.
+        Checks that the ``width`` is strictly positive and shorter than the
+        ``length``, and shorter than the window dimension along the relevant
+        ``axis``.
         """
         width = int(width)
         margin = int(margin)
@@ -278,7 +280,7 @@ class FillingBar(_Visual):
     @property
     def fill_perc(self):
         """
-        Length filled in percent between 0 and 1.
+        Length filled in percent between ``0`` and ``1``.
         """
         return self._fill_perc
 
@@ -292,8 +294,8 @@ class FillingBar(_Visual):
     def axis(self):
         """
         Axis on which the bar is moving.
-            - 0: Vertical bar filling along the vertical axis.
-            - 1: Horizontal bar filling along the horizontal axis.
+            - ``0``: Vertical bar filling along the vertical axis.
+            - ``1``: Horizontal bar filling along the horizontal axis.
         """
         return self._axis
 

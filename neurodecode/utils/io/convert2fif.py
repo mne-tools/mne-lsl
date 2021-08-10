@@ -28,7 +28,7 @@ def pcl2fif(fname, out_dir=None, external_event=None,
         Pickle file path to convert to ``.fif`` format.
     out_dir : str
         Saving directory. If ``None``, it will be the directory
-        ``fname.parent/'fif'.``
+        ``fname.parent/'fif'``.
     external_event : str
         Event file path in text format, following MNE event structure.
         Each row should be: ``index 0 event``
@@ -165,7 +165,7 @@ def _event_timestamps_to_indices(raw_timestamps, eventfile, offset):
     -------
     events : np.array
         MNE-compatible events ``[shape=(n_events, 3)]``
-        Used as input to raw.add_events().
+        Used as input to ``raw.add_events``.
     """
 
     ts_min = min(raw_timestamps)
@@ -199,7 +199,7 @@ def _add_events_from_txt(raw, events_index, stim_channel='TRIGGER',
         MNE raw data structure.
     events_index : np.array
         MNE-compatible events ``[shape=(n_events, 3)]``.
-        Used as input to ``raw.add_events()``.
+        Used as input to ``raw.add_events``.
     stim_channel : str
         Stim channel where the events are added.
     replace : bool
@@ -222,7 +222,7 @@ supported['.pcl'] = pcl2fif
 def any2fif(fname, out_dir=None, overwrite=True, precision='double'):
     """
     Generic file format converter to ``mne.io.raw``.
-    Uses ``mne.io.read_raw()``:
+    Uses ``mne.io.read_raw``:
         https://mne.tools/stable/generated/mne.io.read_raw.html
 
     Parameters

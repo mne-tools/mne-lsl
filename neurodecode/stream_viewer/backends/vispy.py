@@ -65,7 +65,7 @@ void main() {
 @fill_doc
 class _BackendVispy(_Backend, vispy.app.Canvas):
     """
-    The Vispy backend for neurodecode's Stream Viewer.
+    The Vispy backend for neurodecode's `StreamViewer`.
 
     Parameters
     ----------
@@ -108,9 +108,9 @@ class _BackendVispy(_Backend, vispy.app.Canvas):
         Initialize the variables of the Vispy program. The variables are:
             - ``a_color`` : the color of every vertex
             - ``a_index`` : the position of every vertex
-            - ``u_scale`` : the (x, y) scaling
-            - ``u_size`` : the number of rows and columns as (row, col).
-            - ``u_n`` : the number of samples per
+            - ``u_scale`` : the ``(x, y)`` scaling
+            - ``u_size`` : the number of rows and columns as ``(row, col)``.
+            - ``u_n`` : the number of samples
 
         Initialize the timer calling the main update loop every 20 ms.
         """
@@ -125,7 +125,7 @@ class _BackendVispy(_Backend, vispy.app.Canvas):
 
     def _init_a_color(self):
         """
-        Initialize the vertex the colors.
+        Initialize the vertex colors.
         """
         self._a_color = np.repeat(
             self._available_colors[self._scope.selected_channels, :],
@@ -162,7 +162,7 @@ class _BackendVispy(_Backend, vispy.app.Canvas):
 
     def _init_u_n(self):
         """
-        Initilaize the number of sample per signal.
+        Initilaize the number of samples.
         """
         self._u_n = self._duration_plot_samples
 

@@ -32,7 +32,7 @@ class _Backend(ABC):
     @abstractmethod
     def start_timer(self):
         """
-        Start the update loop on a 20ms timer.
+        Start the update loop on a 20 ms timer.
         """
         pass
 
@@ -56,7 +56,7 @@ class _Backend(ABC):
     @property
     def scope(self):
         """
-        Scope connected to a stream receiver acquiring the data and applying
+        Scope connected to a `StreamReceiver` acquiring the data and applying
         filtering. The scope has a buffer of ``BUFFER_DURATION`` seconds
         (default: 30s).
         """

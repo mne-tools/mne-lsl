@@ -40,15 +40,15 @@ class StreamReceiver:
         appropriate ones. If a LSL stream fullfills the requirements (name...),
         a connection is established.
 
-        This function is called while instanciating a ``StreamReceiver`` and
-        can be recall to reconnect to the LSL streams.
+        This function is called while instanciating a `StreamReceiver` and can
+        be recall to reconnect to the LSL streams.
 
         Parameters
         ----------
         timeout : int | float
             Timeout duration in seconds after which the search is abandonned.
         force : bool
-            If True, force reconnect if the Stream Receiver was already
+            If True, force reconnect if the `StreamReceiver` was already
             connected.
         """
         if not force and self._connected:
@@ -112,7 +112,7 @@ class StreamReceiver:
 
     def disconnect(self, stream_name=None):
         """
-        Disconnects the stream ``'stream_name'`` from the ``StreamReceiver``.
+        Disconnects the stream ``stream_name`` from the `StreamReceiver`.
         If ``stream_name`` is a list, disconnects all streams in the list.
         If ``stream_name`` is ``None``, disconnects all streams.
 
@@ -284,7 +284,7 @@ class StreamReceiver:
     @staticmethod
     def _check_winsize(winsize):
         """
-        Check that the window size is positive.
+        Check that ``winsize`` is positive.
         """
         if winsize <= 0:
             logger.error(f'Invalid window size {winsize}.')
@@ -295,7 +295,7 @@ class StreamReceiver:
     @staticmethod
     def _check_bufsize(bufsize, winsize):
         """
-        Check that buffer's size is positive and bigger than the window's size.
+        Check that ``bufsize`` is positive and bigger than the ``winsize``.
         """
         if bufsize <= 0:
             logger.error(f'Invalid buffer size {bufsize}.')
@@ -311,6 +311,9 @@ class StreamReceiver:
 
     @staticmethod
     def _check_format_stream_name(stream_name):
+        """
+        Check the format of ``stream_name``.
+        """
         if isinstance(stream_name, (list, tuple)):
             stream_name = list(stream_name)
             if not all(isinstance(name, str) for name in stream_name):
@@ -374,7 +377,7 @@ class StreamReceiver:
     @property
     def streams(self):
         """
-        Connected streams dictionnary: {stream_name: _Stream}.
+        Connected streams dictionnary: ``{stream_name: _Stream}``.
         """
         return self._streams
 

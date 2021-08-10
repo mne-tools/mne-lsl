@@ -18,7 +18,7 @@ def import_optional_dependency(
         raise_error: bool = True):
     """
     Import an optional dependency.
-    By default, if a dependency is missing an ImportError with a nice
+    By default, if a dependency is missing an ``ImportError`` with a nice
     message will be raised.
 
     Parameters
@@ -26,19 +26,19 @@ def import_optional_dependency(
     name : str
         The module name.
     extra : str
-        Additional text to include in the ImportError message.
+        Additional text to include in the ``ImportError`` message.
     raise_error : bool
         What to do when a dependency is not found.
-        * True : Raise an ImportError.
-        * False: If the module is not installed, return None, otherwise,
+        * True : Raise an ``ImportError``.
+        * False: If the module is not installed, return ``None``, otherwise,
           return the module.
 
     Returns
     -------
     maybe_module : Optional[ModuleType]
         The imported module when found.
-        None is returned when the package is not found and `raise_error`
-        is False.
+        ``None`` is returned when the package is not found and ``raise_error``
+        is ``False``.
     """
     package_name = INSTALL_MAPPING.get(name)
     install_name = package_name if package_name is not None else name

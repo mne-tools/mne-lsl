@@ -22,22 +22,23 @@ class Cross(_Visual):
     @fill_doc
     def putCross(self, length, thickness, color, position):
         """
-        Draw a cross composed of 2 rectangles defined by length and thickness.
-        The rectangles are positionned to form a cross by overlapping.
+        Draw a cross composed of 2 rectangles defined by ``length`` and
+        ``thickness``. The rectangles are positionned to form a cross by
+        overlapping.
 
         - Horizontal rectangle
-        P1 ---------------
+        P1 --------------
         |                |
-        --------------- P2
+         -------------- P2
 
         - Vertical rectangle
-        P1 ---
+        P1 --
         |    |
         |    |
         |    |
         |    |
         |    |
-        --- P2
+         -- P2
 
         Parameters
         ----------
@@ -70,8 +71,8 @@ class Cross(_Visual):
     @staticmethod
     def _check_length(length, window_size):
         """
-        Checks that the length is a strictly positive integer shorter than the
-        width or the height of the window.
+        Checks that the ``length`` is a strictly positive integer shorter than
+        the ``width`` or the ``height`` of the window.
         """
         length = int(length)
         if length <= 0:
@@ -89,8 +90,8 @@ class Cross(_Visual):
     @staticmethod
     def _check_thickness(thickness, length):
         """
-        Checks that the thickness is a strictly positive integer shorter than
-        length.
+        Checks that the ``thickness`` is a strictly positive integer shorter
+        than ``length``.
         """
         thickness = int(thickness)
         if thickness <= 0:
