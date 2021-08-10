@@ -39,7 +39,7 @@ class TriggerSoftware(_Trigger):
         except IOError:
             logger.debug(
                 "IOError raised when opening file '%s'." % self._eve_file)
-            self._eve_file.close() # TODO: Isn't this a string?
+            self._eve_file.close()  # TODO: Isn't this a string?
             self._eve_file = open(self._eve_file, 'a')
 
     @copy_doc(_Trigger.signal)
