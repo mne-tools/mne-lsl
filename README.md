@@ -16,14 +16,6 @@ NeuroDecode supports `python >= 3.6` and requires:
 - pyqt5
 - pyqtgraph
 
-Optional dependencies for `neurodecode.interfaces.visual`:
-- matplotlib
-- opencv-python
-- screeninfo
-
-Optional dependencies for `neurodecode.interfaces.audio`:
-- sounddevice
-
 Optional dependencies for trigger via an [Arduino to LPT converter](https://github.com/fcbg-hnp/arduino-trigger):
 - pyserial
 
@@ -31,8 +23,6 @@ Optional dependencies for StreamViewer alternative backends:
 - vispy
 
 NeuroDecode can be installed in normal mode with `python setup.py install` or in developement mode with `python setup.py develop`. Optional dependencies can be installed using the keywords:
-- visual
-- audio
 - trigger_arduino2lpt
 - vispy_backend
 
@@ -149,7 +139,6 @@ trigger.close()
 recorder.stop()
 ```
 Note that closing the trigger before stopping the recording may not be required for all kind of triggers.
-## Interfaces
-Interfaces includes function to interact with a participant. Currently it supports auditory stimuli with predefined sounds in `neurodecode.interfaces.audio` and visual stimuli/feedback with predefined visuals in `neurodecode.interfaces.visual`.
+
 # Copyright and license
 The codes are released under [GNU Lesser General Public License](https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html).
