@@ -16,7 +16,7 @@ stream_name : list | str | None
     ``None``: no constraint."""
 
 # -----------------------------------------------
-# Receiver
+# Stream Receiver
 docdict['receiver_get_stream_name'] = """
 stream_name : str | None
     Name of the stream to extract from.
