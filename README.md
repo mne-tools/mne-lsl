@@ -104,8 +104,7 @@ nd_stream_viewer
 nd_stream_viewer -s StreamPlayer
 nd_stream_viewer -s StreamPlayer -b vispy
 ```
-# Additional modules
-NeuroDecode includes 2 additional modules: `triggers` and `interfaces`.
+
 ## Triggers
 Triggers includes functions to mark time event by sending a trigger which will be saved on the *TRIGGER* channel of the on-going recording. Triggers can be achieved either through hardware or through software.
 
