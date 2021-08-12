@@ -83,13 +83,13 @@ class _BackendPyQt5(_Backend):
         Initialize the drawing canvas.
         """
         # Ranges
+        self._plot_handler.disableAutoRange()
         yRange = [
             1.5*self._yRange,
             -self._yRange*(len(self._scope.selected_channels)+1)]
         self._plot_handler.setRange(
             xRange=[0, self._xRange],
             yRange=yRange)
-        self._plot_handler.disableAutoRange()
         self._plot_handler.showGrid(y=True)
 
         # Y-axis
