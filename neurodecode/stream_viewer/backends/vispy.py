@@ -176,7 +176,7 @@ class _BackendVispy(_Backend, vispy.app.Canvas):
             keys='interactive')
         self._program = vispy.gloo.Program(VERT_SHADER, FRAG_SHADER)
         self._program['a_position'] = self._scope.data_buffer[
-            self._scope.selected_channels,
+            self._scope.selected_channels[::-1],
             -self._duration_plot_samples:].ravel().astype(
                 np.float32, copy=False)
         self._program['a_color'] = self._a_color
@@ -201,7 +201,7 @@ class _BackendVispy(_Backend, vispy.app.Canvas):
         if len(self._scope.ts_list) > 0:
             self._program['a_position'].set_data(
                 self._scope.data_buffer[
-                    self._scope.selected_channels,
+                    self._scope.selected_channels[::-1],
                     -self._duration_plot_samples:].ravel().astype(
                         np.float32, copy=False))
             self.update()

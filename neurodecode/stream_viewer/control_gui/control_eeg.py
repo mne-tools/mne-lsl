@@ -268,9 +268,9 @@ class ControlGUI_EEG(_ControlGUI):
     @QtCore.pyqtSlot()
     def onSelectionChanged_table_channels(self):
         selected = self._ui.table_channels.selectedItems()
-        self._scope.selected_channels = [
+        self._scope.selected_channels = sorted([
             item.row()*self._nb_table_columns + item.column()
-            for item in selected]
+            for item in selected])
         self._backend.selected_channels = self._scope.selected_channels
 
     def closeEvent(self, event):
