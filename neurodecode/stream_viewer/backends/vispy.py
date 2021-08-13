@@ -62,24 +62,6 @@ void main() {
 }
 """
 
-# -------------------------------- Events ------------------------------------
-VERT_SHADER_events = """
-attribute vec2 a_position;
-attribute vec3 a_color;
-varying vec4 v_color;
-void main(void) {
-    gl_Position = vec4(a_position, 0.0, 1.0);
-    v_color = vec4(a_color, 1.);
-}
-"""
-
-FRAG_SHADER_events = """
-varying vec4 v_color;
-void main() {
-    gl_FragColor = v_color;
-}
-"""
-
 
 @fill_doc
 class _BackendVispy(_Backend, vispy.app.Canvas):
@@ -210,15 +192,6 @@ class _BackendVispy(_Backend, vispy.app.Canvas):
         self._program_data['u_size'] = self._u_size
         self._program_data['u_n'] = self._u_n
 
-        # Event program
-        self._program_events = vispy.gloo.Program(
-            VERT_SHADER_events, FRAG_SHADER_events)
-        self._program_events['a_color'] = \
-            np.array([[0., 1.0, 0.],
-                      [0., 1.0, 0.]]).astype(np.float32, copy=False)
-        self._program_events['a_position'] = \
-            np.array([[0., 1.], [0., -1.]]).astype(np.float32, copy=False)
-
         vispy.gloo.set_viewport(0, 0, *self.physical_size)
         vispy.gloo.set_state(
             clear_color='black', blend=True,
@@ -263,8 +236,6 @@ class _BackendVispy(_Backend, vispy.app.Canvas):
                     self._scope.selected_channels[::-1],
                     -self._duration_plot_samples:].ravel().astype(
                         np.float32, copy=False))
-            self._program_events['a_position'] = \
-                np.array([[0., 1.], [0., -1.]]).astype(np.float32, copy=False)
 
             # Update existing events position
             for event in self._trigger_events:
@@ -291,7 +262,6 @@ class _BackendVispy(_Backend, vispy.app.Canvas):
     def on_draw(self, event):
         vispy.gloo.clear()
         self._program_data.draw('line_strip')
-        self._program_events.draw('line_strip')
 
     @copy_doc(_Backend.close)
     def close(self):
