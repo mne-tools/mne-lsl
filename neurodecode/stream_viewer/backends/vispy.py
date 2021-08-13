@@ -36,12 +36,12 @@ void main() {
     float nrows = u_size.x;
     float ncols = u_size.y;
     // Compute the x coordinate from the time index.
-    float x = -1 + 2*a_index.z / (u_n-1);
+    float x = -0.9 + 1.9*a_index.z / (u_n-1);
     vec2 position = vec2(x - (1 - 1 / u_scale.x), a_position);
     // Find the affine transformation for the subplots.
-    vec2 a = vec2(1./ncols, 1./nrows)*.9;
+    vec2 a = vec2(1./ncols, 1./nrows);
     vec2 b = vec2(-1 + 2*(a_index.x+.5) / ncols,
-                  -1 + 2*(a_index.y+.5) / nrows);
+                  -0.9 + 1.8*(a_index.y+0.5) / nrows);
     // Apply the static subplot transformation + scaling.
     gl_Position = vec4(a*u_scale*position+b, 0.0, 1.0);
     v_color = vec4(a_color, 1.);
