@@ -134,7 +134,7 @@ class TriggerLPT(_Trigger):
 class TriggerUSB2LPT(_Trigger):
     """
     Trigger using a USB to LPT converter. Drivers can be found here:
-    https://www-user.tu-chemnitz.de/~heha/bastelecke/Rund%20um%20den%20PC/USB2LPT/
+    %(trigger_lpt_usb2lpt_link)s
 
     Parameters
     ----------
@@ -218,7 +218,7 @@ class TriggerUSB2LPT(_Trigger):
 class TriggerArduino2LPT(_Trigger):
     """
     Trigger using an ARDUINO to LPT converter. Design of the converter can be
-    found here: https://github.com/fcbg-hnp/arduino-trigger
+    found here: %(trigger_lpt_arduino2lpt_link)s
 
     Parameters
     ----------

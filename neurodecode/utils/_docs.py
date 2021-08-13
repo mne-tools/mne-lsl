@@ -114,6 +114,8 @@ verbose : bool
 docdict['trigger_lpt_delay'] = """
 delay : int
     Delay in milliseconds until which a new trigger cannot be sent."""
+docdict['trigger_lpt_usb2lpt_link'] = 'https://www-user.tu-chemnitz.de/~heha/bastelecke/Rund%20um%20den%20PC/USB2LPT/'
+docdict['trigger_lpt_arduino2lpt_link'] = 'https://github.com/fcbg-hnp/arduino-trigger'
 docdict['trigger_file'] = """
 trigger_file : str | Path | None
     Path to the ``.ini`` file containing the table converting event numbers
