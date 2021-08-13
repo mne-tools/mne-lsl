@@ -76,7 +76,7 @@ void main(void) {
 FRAG_SHADER_events = """
 varying vec4 v_color;
 void main() {
-    gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+    gl_FragColor = v_color;
 }
 """
 
@@ -209,10 +209,10 @@ class _BackendVispy(_Backend, vispy.app.Canvas):
         self._program_data['u_n'] = self._u_n
 
         # Event program
-        # self._program_events = vispy.gloo.Program(
-        #     VERT_SHADER_events, FRAG_SHADER_events)
-        # self._program_events['a_color'] = np.array([[0, 1, 0], [0, 1, 0]])
-        # self._program_events['a_position'] = np.array([[0, 0], [1, 1]])
+        self._program_events = vispy.gloo.Program(
+            VERT_SHADER_events, FRAG_SHADER_events)
+        self._program_events['a_color'] = np.array([[0, 1, 0], [0, 1, 0]])
+        self._program_events['a_position'] = np.array([[0, 200], [0, 0]])
 
         vispy.gloo.set_viewport(0, 0, *self.physical_size)
         vispy.gloo.set_state(
@@ -246,7 +246,7 @@ class _BackendVispy(_Backend, vispy.app.Canvas):
     def on_draw(self, event):
         vispy.gloo.clear()
         self._program_data.draw('line_strip')
-        # self._program_events.draw('line_strip')
+        self._program_events.draw('line_strip')
 
     @copy_doc(_Backend.close)
     def close(self):
