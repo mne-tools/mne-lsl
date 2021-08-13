@@ -16,7 +16,8 @@ vispy = import_optional_dependency(
 vispy.use("pyqt5")
 
 
-VERT_SHADER = """
+# --------------------------------- Data -------------------------------------
+VERT_SHADER_data = """
 #version 120
 // y coordinate of the position.
 attribute float a_position;
@@ -49,7 +50,7 @@ void main() {
 }
 """
 
-FRAG_SHADER = """
+FRAG_SHADER_data = """
 #version 120
 varying vec4 v_color;
 varying vec3 v_index;
@@ -58,6 +59,24 @@ void main() {
     // Discard the fragments between the signals (emulate glMultiDrawArrays).
     if ((fract(v_index.x) > 0.) || (fract(v_index.y) > 0.))
         discard;
+}
+"""
+
+# -------------------------------- Events ------------------------------------
+VERT_SHADER_events = """
+attribute vec2 a_position;
+attribute vec3 a_color;
+varying vec4 v_color;
+void main(void) {
+    gl_Position = vec4(a_position, 0.0, 1.0);
+    v_color = vec4(a_color, 1.);
+}
+"""
+
+FRAG_SHADER_events = """
+varying vec4 v_color;
+void main() {
+    gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
 }
 """
 
@@ -166,6 +185,7 @@ class _BackendVispy(_Backend, vispy.app.Canvas):
         """
         self._u_n = self._duration_plot_samples
 
+    # --------------------------- Canvas ---------------------------
     def _init_gloo(self, geometry):
         """
         Initialize the Canvas and the Vispy gloo.
@@ -174,16 +194,26 @@ class _BackendVispy(_Backend, vispy.app.Canvas):
             self, title=f'Stream Viewer: {self._scope.stream_name}',
             size=geometry[2:], position=geometry[:2],
             keys='interactive')
-        self._program = vispy.gloo.Program(VERT_SHADER, FRAG_SHADER)
-        self._program['a_position'] = self._scope.data_buffer[
+
+        # Data program
+        self._program_data = vispy.gloo.Program(
+            VERT_SHADER_data, FRAG_SHADER_data)
+        self._program_data['a_position'] = self._scope.data_buffer[
             self._scope.selected_channels[::-1],
             -self._duration_plot_samples:].ravel().astype(
                 np.float32, copy=False)
-        self._program['a_color'] = self._a_color
-        self._program['a_index'] = self._a_index
-        self._program['u_scale'] = self._u_scale
-        self._program['u_size'] = self._u_size
-        self._program['u_n'] = self._u_n
+        self._program_data['a_color'] = self._a_color
+        self._program_data['a_index'] = self._a_index
+        self._program_data['u_scale'] = self._u_scale
+        self._program_data['u_size'] = self._u_size
+        self._program_data['u_n'] = self._u_n
+
+        # Event program
+        # self._program_events = vispy.gloo.Program(
+        #     VERT_SHADER_events, FRAG_SHADER_events)
+        # self._program_events['a_color'] = np.array([[0, 1, 0], [0, 1, 0]])
+        # self._program_events['a_position'] = np.array([[0, 0], [1, 1]])
+
         vispy.gloo.set_viewport(0, 0, *self.physical_size)
         vispy.gloo.set_state(
             clear_color='black', blend=True,
@@ -199,7 +229,7 @@ class _BackendVispy(_Backend, vispy.app.Canvas):
         super()._update_loop()
 
         if len(self._scope.ts_list) > 0:
-            self._program['a_position'].set_data(
+            self._program_data['a_position'].set_data(
                 self._scope.data_buffer[
                     self._scope.selected_channels[::-1],
                     -self._duration_plot_samples:].ravel().astype(
@@ -215,7 +245,8 @@ class _BackendVispy(_Backend, vispy.app.Canvas):
 
     def on_draw(self, event):
         vispy.gloo.clear()
-        self._program.draw('line_strip')
+        self._program_data.draw('line_strip')
+        # self._program_events.draw('line_strip')
 
     @copy_doc(_Backend.close)
     def close(self):
@@ -232,9 +263,9 @@ class _BackendVispy(_Backend, vispy.app.Canvas):
         self._init_a_index()
         self._init_u_n()
 
-        self._program['a_color'].set_data(self._a_color)
-        self._program['a_index'].set_data(self._a_index)
-        self._program['u_n'] = self._u_n
+        self._program_data['a_color'].set_data(self._a_color)
+        self._program_data['a_index'].set_data(self._a_index)
+        self._program_data['u_n'] = self._u_n
         self.update()
 
     @_Backend.yRange.setter
@@ -243,7 +274,7 @@ class _BackendVispy(_Backend, vispy.app.Canvas):
         self._yRange = yRange
         self._init_u_scale()
 
-        self._program['u_scale'] = self._u_scale
+        self._program_data['u_scale'] = self._u_scale
         self.update()
 
     @_Backend.selected_channels.setter
@@ -255,9 +286,9 @@ class _BackendVispy(_Backend, vispy.app.Canvas):
         self._init_a_index()
         self._init_u_size()
 
-        self._program['a_color'].set_data(self._a_color)
-        self._program['a_index'].set_data(self._a_index)
-        self._program['u_size'] = self._u_size
+        self._program_data['a_color'].set_data(self._a_color)
+        self._program_data['a_index'].set_data(self._a_index)
+        self._program_data['u_size'] = self._u_size
         self.update()
 
     @_Backend.show_LPT_trigger_events.setter
