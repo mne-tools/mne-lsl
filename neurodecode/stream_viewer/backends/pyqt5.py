@@ -115,7 +115,7 @@ class _BackendPyQt5(_Backend):
         events_trigger_arr_idx = np.where(trigger_arr != 0)[0]
         events_values = trigger_arr[events_trigger_arr_idx]
 
-        for k, ev_value in enumerate(events_values):
+        for k, event_value in enumerate(events_values):
             position_buffer = self._scope.duration_buffer - \
                 (trigger_arr.shape[0] - events_trigger_arr_idx[k]) \
                 / self._scope.sample_rate
@@ -123,7 +123,7 @@ class _BackendPyQt5(_Backend):
 
             event = _TriggerEvent(
                 event_type='LPT',
-                event_value=ev_value,
+                event_value=event_value,
                 position_buffer=position_buffer,
                 position_plot=position_plot,
                 plot_handler=self._plot_handler,
