@@ -266,11 +266,11 @@ class _TriggerEvent:
     plot_yRange : int | float
         Currently set signal range/scale.
     """
-    pens = {'LPT': pg.mkColor(0, 255, 0)}
+    colors = {'LPT': pg.mkColor(0, 255, 0)}
 
     def __init__(self, event_type, event_value, position_buffer, position_plot,
                  plot_handler, plot_yRange):
-        assert event_type in self.pens.keys()
+        assert event_type in self.colors.keys()
         self._event_type = event_type
         self._event_value = event_value
         self._position_buffer = position_buffer  # In time (s)
@@ -289,13 +289,13 @@ class _TriggerEvent:
         """
         if not self._plotted:
             self._lineItem = pg.InfiniteLine(
-                pos=self._position_plot, pen=self.pens[self._event_type])
+                pos=self._position_plot, pen=self.colors[self._event_type])
             self._plot_handler.addItem(self._lineItem)
 
             self._textItem = pg.TextItem(str(self._event_value),
                                          anchor=(0.5, 1),
                                          fill=(0, 0, 0),
-                                         color=self.pens[self._event_type])
+                                         color=self.colors[self._event_type])
             self._textItem.setPos(self._position_plot, 1.5*self.plot_yRange)
             self._plot_handler.addItem(self._textItem)
             self._plotted = True
