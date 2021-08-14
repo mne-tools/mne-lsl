@@ -7,7 +7,7 @@ import numpy as np
 import pyqtgraph as pg
 from PyQt5 import QtCore
 
-from ._backend import _Backend
+from ._backend import _Backend, _Event
 from ...utils._docs import fill_doc, copy_doc
 
 # pg.setConfigOptions(antialias=True)
@@ -63,15 +63,9 @@ class _BackendPyQt5(_Backend):
         self._timer = QtCore.QTimer(self._win)
         self._timer.timeout.connect(self._update_loop)
 
+    @copy_doc(_Backend._init_variables)
     def _init_variables(self):
-        """
-        Initialize variables depending on ``xRange``, ``yRange`` and
-        ``selected_channels``.
-        """
-        # xRange
-        self._delta_with_buffer = self._scope.duration_buffer - self._xRange
-        self._duration_plot_samples = math.ceil(
-            self._xRange*self._scope.sample_rate)
+        super()._init_variables()
 
         # yRange
         self._offset = np.arange(
@@ -106,12 +100,8 @@ class _BackendPyQt5(_Backend):
         self._plot_handler.setLabel(axis='bottom', text='Time (s)')
 
     # ------------------------ Trigger Events ----------------------
+    @copy_doc(_Backend._update_LPT_trigger_events)
     def _update_LPT_trigger_events(self, trigger_arr):
-        """
-        Check if new LPT events (on the trigger channel) have entered the
-        buffer. New events are added to ``self._trigger_events`` and displayed
-        if needed.
-        """
         events_trigger_arr_idx = np.where(trigger_arr != 0)[0]
         events_values = trigger_arr[events_trigger_arr_idx]
 
@@ -135,18 +125,15 @@ class _BackendPyQt5(_Backend):
 
             self._trigger_events.append(event)
 
+    @copy_doc(_Backend._clean_up_trigger_events)
     def _clean_up_trigger_events(self):
         """
-        Hide events exiting the plotting window and remove events exiting the
-        buffer.
+         Hide events exiting the plotting window.
         """
+        super()._clean_up_trigger_events()
         for event in self._trigger_events:
             if event.position_plot < 0:
                 event.removeEventPlot()
-
-        for k in range(len(self._trigger_events)-1, -1, -1):
-            if self._trigger_events[k].position_buffer < 0:
-                del self._trigger_events[k]
 
     # -------------------------- Main Loop -------------------------
     @copy_doc(_Backend.start_timer)
@@ -166,11 +153,8 @@ class _BackendPyQt5(_Backend):
 
             # Update existing events position
             for event in self._trigger_events:
-                event.update_position(
-                    event.position_buffer -
-                    len(self._scope.ts_list) / self._scope.sample_rate,
-                    event.position_plot -
-                    len(self._scope.ts_list) / self._scope.sample_rate)
+                event.position_buffer = event.position_buffer \
+                    - len(self._scope.ts_list) / self._scope.sample_rate
             # Add new events entering the buffer
             self._update_LPT_trigger_events(
                 self._scope.trigger_buffer[-len(self._scope.ts_list):])
@@ -192,9 +176,7 @@ class _BackendPyQt5(_Backend):
         self._init_canvas()
 
         for event in self._trigger_events:
-            event.update_position(
-                event.position_buffer,
-                event.position_buffer - self._delta_with_buffer)
+            event.position_plot = event.position_buffer-self._delta_with_buffer
             if event.position_plot >= 0:
                 if event.event_type == 'LPT' and self._show_LPT_trigger_events:
                     event.addEventPlot()
@@ -244,23 +226,17 @@ class _BackendPyQt5(_Backend):
                     event.removeEventPlot()
 
 
-class _TriggerEvent:
+@fill_doc
+class _TriggerEvent(_Event):
     """
-    Class defining a trigger event.
+    Class defining a trigger event for the pyqt5 backend.
 
     Parameters
     ----------
-    event_type : str
-        Type of event. Supported: ``'LPT'``.
-    event_value : int | float
-        Value of the event displayed in the ``TextItem``.
-    position_buffer : float
-        Time at which the event is positionned in the buffer where:
-            ``0`` represents the older events exiting the buffer.
-            ``_BUFFER_DURATION`` represents the newer events entering the
-            buffer.
-    position_plot : float
-        Time at which the event is positionned in the plotting window.
+    %(viewer_event_type)s
+    %(viewer_event_value)s
+    %(viewer_position_buffer)s
+    %(viewer_position_plot)s
     plot_handler : pyqtgraph.PlotItem
         Plot handler.
     plot_yRange : int | float
@@ -270,12 +246,8 @@ class _TriggerEvent:
 
     def __init__(self, event_type, event_value, position_buffer, position_plot,
                  plot_handler, plot_yRange):
-        assert event_type in self.colors.keys()
-        self._event_type = event_type
-        self._event_value = event_value
-        self._position_buffer = position_buffer  # In time (s)
-        self._position_plot = position_plot  # In time (s)
-
+        super().__init__(event_type, event_value,
+                         position_buffer, position_plot)
         self._plot_handler = plot_handler
         self._plot_yRange = plot_yRange
 
@@ -300,24 +272,6 @@ class _TriggerEvent:
             self._plot_handler.addItem(self._textItem)
             self._plotted = True
 
-    # TODO: Move as setter
-    def update_position(self, position_buffer, position_plot):
-        """
-        Update the position on the plotting window and in the buffer.
-        """
-        self._position_buffer = position_buffer
-        self._position_plot = position_plot
-        self._update()
-
-    def _update(self):
-        """
-        Updates the plot handler.
-        """
-        if self._lineItem is not None:
-            self._lineItem.setValue(self._position_plot)
-        if self._textItem is not None:
-            self._textItem.setPos(self._position_plot, 1.5*self.plot_yRange)
-
     def removeEventPlot(self):
         """
         Remove the event from the plot handler.
@@ -329,6 +283,15 @@ class _TriggerEvent:
             self._textItem = None
             self._plotted = False
 
+    def _update(self):
+        """
+        Updates the plot handler.
+        """
+        if self._lineItem is not None:
+            self._lineItem.setValue(self._position_plot)
+        if self._textItem is not None:
+            self._textItem.setPos(self._position_plot, 1.5*self.plot_yRange)
+
     def __del__(self):
         try:
             self.removeEventPlot()
@@ -336,18 +299,26 @@ class _TriggerEvent:
             pass
 
     @property
+    @copy_doc(_Event.event_type)
     def event_type(self):
-        """
-        Event type.
-        """
         return self._event_type
 
     @property
+    @copy_doc(_Event.event_value)
     def event_value(self):
-        """
-        Event value.
-        """
         return self._event_value
+
+    @_Event.position_buffer.setter
+    @copy_doc(_Event.position_buffer.setter)
+    def position_buffer(self, position_buffer):
+        _Event.position_buffer.__set__(self, position_buffer)
+        self._update()
+
+    @_Event.position_plot.setter
+    @copy_doc(_Event.position_plot.setter)
+    def position_plot(self, position_plot):
+        _Event.position_plot.__set__(self, position_plot)
+        self._update()
 
     @property
     def plotted(self):
@@ -355,20 +326,6 @@ class _TriggerEvent:
         ``True`` if the event is displayed, else ``False``.
         """
         return self._plotted
-
-    @property
-    def position_buffer(self):
-        """
-        Position in the buffer.
-        """
-        return self._position_buffer
-
-    @property
-    def position_plot(self):
-        """
-        Position in the plotting window.
-        """
-        return self._position_plot
 
     @property
     def plot_yRange(self):
@@ -379,5 +336,8 @@ class _TriggerEvent:
 
     @plot_yRange.setter
     def plot_yRange(self, plot_yRange):
+        """
+        Impacts the position of the ``textItem``.
+        """
         self._plot_yRange = plot_yRange
         self._update()
