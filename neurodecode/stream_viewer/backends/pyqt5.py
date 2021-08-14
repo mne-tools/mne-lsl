@@ -1,7 +1,6 @@
 """
 PyQt5 Canvas for Neurodecode's StreamViewer.
 """
-import math
 import numpy as np
 
 import pyqtgraph as pg
