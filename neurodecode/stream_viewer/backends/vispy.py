@@ -7,7 +7,7 @@ import math
 
 import numpy as np
 
-from ._backend import _Backend
+from ._backend import _Backend, _Event
 from ...utils._docs import fill_doc, copy_doc
 from ...utils._imports import import_optional_dependency
 
@@ -91,15 +91,9 @@ class _BackendVispy(_Backend, vispy.app.Canvas):
         self._init_gloo(geometry)
         self.show()
 
+    @copy_doc(_Backend._init_variables)
     def _init_variables(self):
-        """
-        Initialize variables depending on ``xRange``, ``yRange`` and
-        ``selected_channels``.
-        """
-        # xRange
-        self._delta_with_buffer = self._scope.duration_buffer - self._xRange
-        self._duration_plot_samples = math.ceil(
-            self._xRange*self._scope.sample_rate)
+        super()._init_variables()
 
         # Number of channels
         self._nrows = len(self._scope.selected_channels)
@@ -198,6 +192,7 @@ class _BackendVispy(_Backend, vispy.app.Canvas):
             blend_func=('src_alpha', 'one_minus_src_alpha'))
 
     # ------------------------ Trigger Events ----------------------
+    @copy_doc(_Backend._update_LPT_trigger_events)
     def _update_LPT_trigger_events(self, trigger_arr):
         events_trigger_arr_idx = np.where(trigger_arr != 0)[0]
         events_values = trigger_arr[events_trigger_arr_idx]
@@ -215,11 +210,6 @@ class _BackendVispy(_Backend, vispy.app.Canvas):
                 position_plot=position_plot)
 
             self._trigger_events.append(event)
-
-    def _clean_up_trigger_events(self):
-        for k in range(len(self._trigger_events)-1, -1, -1):
-            if self._trigger_events[k].position_buffer < 0:
-                del self._trigger_events[k]
 
     # -------------------------- Main Loop -------------------------
     @copy_doc(_Backend.start_timer)
@@ -239,11 +229,8 @@ class _BackendVispy(_Backend, vispy.app.Canvas):
 
             # Update existing events position
             for event in self._trigger_events:
-                event.update_position(
-                    event.position_buffer -
-                    len(self._scope.ts_list) / self._scope.sample_rate,
-                    event.position_plot -
-                    len(self._scope.ts_list) / self._scope.sample_rate)
+                event.position_buffer = event.position_buffer \
+                    - len(self._scope.ts_list) / self._scope.sample_rate
             # Add new events entering the buffer
             self._update_LPT_trigger_events(
                 self._scope.trigger_buffer[-len(self._scope.ts_list):])
@@ -281,6 +268,10 @@ class _BackendVispy(_Backend, vispy.app.Canvas):
         self._program_data['a_color'].set_data(self._a_color)
         self._program_data['a_index'].set_data(self._a_index)
         self._program_data['u_n'] = self._u_n
+
+        for event in self._trigger_events:
+            event.position_plot = event.position_buffer-self._delta_with_buffer
+
         self.update()
 
     @_Backend.yRange.setter
@@ -312,69 +303,21 @@ class _BackendVispy(_Backend, vispy.app.Canvas):
         self._show_LPT_trigger_events = show_LPT_trigger_events
 
 
-class _TriggerEvent:
+@fill_doc
+class _TriggerEvent(_Event):
     """
-    Class defining a trigger event.
+    Class defining a trigger event for the vispy backend.
 
     Parameters
     ----------
-    event_type : str
-        Type of event. Supported: ``'LPT'``.
-    event_value : int | float
-        Value of the event displayed in the ``TextItem``.
-    position_buffer : float
-        Time at which the event is positionned in the buffer where:
-            ``0`` represents the older events exiting the buffer.
-            ``_BUFFER_DURATION`` represents the newer events entering the
-            buffer.
-    position_plot : float
-        Time at which the event is positionned in the plotting window.
-    plot_handler : pyqtgraph.PlotItem
-        Plot handler.
-    plot_yRange : int | float
-        Currently set signal range/scale.
+    %(viewer_event_type)s
+    %(viewer_event_value)s
+    %(viewer_position_buffer)s
+    %(viewer_position_plot)s
     """
     colors = {'LPT': np.array([0., 1.0, 0.], dtype=np.float32)}
 
     def __init__(self, event_type, event_value,
                  position_buffer, position_plot):
-        self._event_type = event_type
-        self._event_value = event_value
-        self._position_buffer = position_buffer  # In time (s)
-        self._position_plot = position_plot  # In time (s)
-
-    # TODO: Move as setter
-    def update_position(self, position_buffer, position_plot):
-        """
-        Update the position on the plotting window and in the buffer.
-        """
-        self._position_buffer = position_buffer
-        self._position_plot = position_plot
-
-    @property
-    def event_type(self):
-        """
-        Event type.
-        """
-        return self._event_type
-
-    @property
-    def event_value(self):
-        """
-        Event value.
-        """
-        return self._event_value
-
-    @property
-    def position_buffer(self):
-        """
-        Position in the buffer.
-        """
-        return self._position_buffer
-
-    @property
-    def position_plot(self):
-        """
-        Position in the plotting window.
-        """
-        return self._position_plot
+        super().__init__(event_type, event_value,
+                         position_buffer, position_plot)

@@ -105,6 +105,24 @@ stream_receiver : StreamReceiver
 docdict['viewer_scope_stream_name'] = """
 stream_name : str
     Stream to connect to."""
+docdict['viewer_event_type'] = """
+event_type : str
+    Type of event. Supported: ``'LPT'``."""
+docdict['viewer_event_value'] = """
+event_value : int
+    Value of the event."""
+docdict['viewer_position_buffer'] = """
+position_buffer : float
+    Time (seconds) at which the event is positionned in the buffer where:
+        ``0`` represents the older events exiting the buffer.
+        ``_BUFFER_DURATION`` represents the newer events entering the
+        buffer."""
+docdict['viewer_position_plot'] = """
+position_plot : float
+    Time (seconds) at which the event is positionned in the plotting window
+    where:
+        ``0`` represents the older events exiting the window.
+        ``xRange`` represents the newer events entering the window."""
 
 # -----------------------------------------------
 # Triggers
