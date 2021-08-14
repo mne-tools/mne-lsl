@@ -1,6 +1,8 @@
 import copy
 from abc import ABC, abstractmethod
 
+import math
+
 from ...utils._docs import fill_doc
 
 
@@ -27,6 +29,34 @@ class _Backend(ABC):
 
         self._show_LPT_trigger_events = False
         self._selected_channels = copy.deepcopy(self._scope.selected_channels)
+
+    def _init_variables(self):
+        """
+        Initialize variables depending on ``xRange``, ``yRange`` and
+        ``selected_channels``.
+        """
+        # xRange
+        self._delta_with_buffer = self._scope.duration_buffer - self._xRange
+        self._duration_plot_samples = math.ceil(
+            self._xRange*self._scope.sample_rate)
+
+    # ------------------------ Trigger Events ----------------------
+    @abstractmethod
+    def _update_LPT_trigger_events(self, trigger_arr):
+        """
+        Check if new LPT events (on the trigger channel) have entered the
+        buffer. New events are added to ``self._trigger_events`` and displayed
+        if needed.
+        """
+        pass
+
+    def _clean_up_trigger_events(self):
+        """
+        Remove events exiting the buffer.
+        """
+        for k in range(len(self._trigger_events)-1, -1, -1):
+            if self._trigger_events[k].position_buffer < 0:
+                del self._trigger_events[k]
 
     # -------------------------- Main Loop -------------------------
     @abstractmethod
@@ -123,3 +153,71 @@ class _Backend(ABC):
         box.
         """
         pass
+
+
+@fill_doc
+class _Event(ABC):
+    """
+    Base class defining a trigger event.
+
+    Parameters
+    ----------
+    %(viewer_event_type)s
+    %(viewer_event_value)s
+    %(viewer_position_buffer)s
+    %(viewer_position_plot)s
+    """
+    _supported = ['LPT']
+
+    @abstractmethod
+    def __init__(self, event_type, event_value,
+                 position_buffer, position_plot):
+        assert event_type in self._supported
+        self._event_type = event_type
+        self._event_value = event_value
+        self._position_buffer = position_buffer  # In time (s)
+        self._position_plot = position_plot  # In time (s)
+
+    @property
+    def event_type(self):
+        """
+        Event type.
+        """
+        return self._event_type
+
+    @property
+    def event_value(self):
+        """
+        Event value.
+        """
+        return self._event_value
+
+    @property
+    def position_buffer(self):
+        """
+        Position in the buffer.
+        """
+        return self._position_buffer
+
+    @position_buffer.setter
+    def position_buffer(self, position_buffer):
+        """
+        Update both position in the buffer and the plotting window.
+        """
+        delta = self._position_buffer - position_buffer
+        self._position_buffer = position_buffer
+        self._position_plot -= delta
+
+    @property
+    def position_plot(self):
+        """
+        Position in the plotting window.
+        """
+        return self._position_plot
+
+    @position_plot.setter
+    def position_plot(self, position_plot):
+        """
+        Update only the position in the plotting window.
+        """
+        self._position_plot = position_plot
