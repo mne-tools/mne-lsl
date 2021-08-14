@@ -3,8 +3,6 @@ Vispy Canvas for Neurodecode's StreamViewer.
 Code adapted from Vispy official example:
 https://github.com/vispy/vispy/blob/main/examples/demo/gloo/realtime_signals.py
 """
-import math
-
 import numpy as np
 
 from ._backend import _Backend, _Event
