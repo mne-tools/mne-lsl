@@ -17,7 +17,7 @@ class StreamViewer:
     performed followed by a prompt if multiple non-markers streams are found.
 
     Supports 2 backends:
-        - ``'pyqt5'``: fully functional.
+        - ``'pyqtgraph'``: fully functional.
         - ``'vispy'``: in progress.
 
     Parameters
@@ -30,7 +30,7 @@ class StreamViewer:
     def __init__(self, stream_name=None):
         self._stream_name = StreamViewer._check_stream_name(stream_name)
 
-    def start(self, bufsize=0.2, backend='pyqt5'):
+    def start(self, bufsize=0.2, backend='pyqtgraph'):
         """
         Connect to the selected amplifier and plot the streamed data.
 
@@ -44,7 +44,7 @@ class StreamViewer:
             ``0.2`` should work in most cases.
         backend : str
             Selected backend for plotting. Supports:
-                - ``'pyqt5'``: fully functional.
+                - ``'pyqtgraph'``: fully functional.
                 - ``'vispy'``: in progress.
         """
         backend = StreamViewer._check_backend(backend)

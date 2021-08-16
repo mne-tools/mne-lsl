@@ -13,9 +13,9 @@ from ...utils._docs import fill_doc, copy_doc
 
 
 @fill_doc
-class _BackendPyQt5(_Backend):
+class _BackendPyQtGraph(_Backend):
     """
-    The PyQt5 backend for BSL's `StreamViewer`.
+    PyQtGraph backend for BSL's `StreamViewer`.
 
     Parameters
     ----------
@@ -228,7 +228,7 @@ class _BackendPyQt5(_Backend):
 @fill_doc
 class _TriggerEvent(_Event):
     """
-    Class defining a trigger event for the pyqt5 backend.
+    Class defining a trigger event for the pyqtgraph backend.
 
     Parameters
     ----------

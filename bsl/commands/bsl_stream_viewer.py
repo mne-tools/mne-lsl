@@ -5,7 +5,7 @@ spectral filtering and common average filtering option.
 Command-line arguments:
     -s --stream_name    Stream name (str)
     -b --backend        Select plot backend (str).
-                        Supported: pyqt5, vispy
+                        Supported: pyqtgraph, vispy
 
 Example:
     bsl_stream_viewer
@@ -27,7 +27,7 @@ def run():
         help='stream to display/plot.')
     parser.add_argument(
         '-b', '--backend', type=str, metavar='str',
-        help='selected plot backend.', default='pyqt5')
+        help='selected plot backend.', default='pyqtgraph')
 
     args = parser.parse_args()
     stream_name = args.stream_name
