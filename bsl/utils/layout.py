@@ -100,7 +100,7 @@ class Layout:
     ----------
     name : str
         Name of the layout. Supported layout names have associated channel
-        names and channel types saved in NeuroDecode.
+        names and channel types saved in BSL.
     montage : str | DigMontage
         Montage used by the layout.
         https://mne.tools/stable/generated/mne.io.Raw.html#mne.io.Raw.set_montage
@@ -129,7 +129,7 @@ class Layout:
             except KeyError as error:
                 logger.warning(
                     "The provided layout name is not yet included. "
-                    "Add it first to NeuroDecode or provided the arguments "
+                    "Add it first to BSL or provide the arguments "
                     "'ch_names' and 'ch_types'.")
                 raise KeyError from error
 

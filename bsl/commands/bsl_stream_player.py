@@ -1,5 +1,5 @@
 """
-Stream a recorded fif file on LSL network.
+Stream a recorded .fif file on LSL network.
 
 Command-line arguments:
     #1                  Stream name (str)
@@ -9,9 +9,9 @@ Command-line arguments:
 
 the '-raw.fif' file to play.
 Example:
-    nd_stream_player StreamPlayer "D:/Data/sample-raw.fif"
-    nd_stream_player StreamPlayer "D:/Data/sample-raw.fif" -c 16
-    nd_stream_player StreamPlayer "D:/Data/sample-raw.fif" -c 16 -t "D:/triggerdef_template.ini"
+    bsl_stream_player StreamPlayer "D:/Data/sample-raw.fif"
+    bsl_stream_player StreamPlayer "D:/Data/sample-raw.fif" -c 16
+    bsl_stream_player StreamPlayer "D:/Data/sample-raw.fif" -c 16 -t "D:/triggerdef_template.ini"
 """
 
 import time
@@ -19,7 +19,7 @@ import argparse
 
 from pathlib import Path
 
-from neurodecode.stream_player import StreamPlayer
+from bsl import StreamPlayer
 
 
 def run():
@@ -54,5 +54,5 @@ def run():
 
 
 def main():
-    """Entrypoint for nd_stream_player usage."""
+    """Entrypoint for bsl_stream_player usage."""
     run()

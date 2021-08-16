@@ -1,6 +1,6 @@
 """
 Visualize LSL stream on the network. The signal is visualizd in real time with
-spectral filtering, common average filtering option and real-time FFT.
+spectral filtering and common average filtering option.
 
 Command-line arguments:
     -s --stream_name    Stream name (str)
@@ -8,14 +8,14 @@ Command-line arguments:
                         Supported: pyqt5, vispy
 
 Example:
-    nd_stream_viewer
-    nd_stream_viewer -s StreamPlayer
-    nd_stream_viewer -s StreamPlayer -b vispy
+    bsl_stream_viewer
+    bsl_stream_viewer -s StreamPlayer
+    bsl_stream_viewer -s StreamPlayer -b vispy
 """
 
 import argparse
 
-from neurodecode.stream_viewer import StreamViewer
+from bsl import StreamViewer
 
 
 def run():
@@ -38,5 +38,5 @@ def run():
 
 
 def main():
-    """Entrypoint for nd_stream_viewer usage."""
+    """Entrypoint for bsl_stream_viewer usage."""
     run()
