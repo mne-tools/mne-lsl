@@ -27,6 +27,10 @@ return_raw : bool
     By default (False), data is returned as a numpy array of shape
     (samples, channels). If set to True, the stream receiver will attempt to
     return MNE raw instances."""
+docdict['receiver_get_verbose'] = """
+verbose : bool
+    If True (default), a warning will be issued when the method returns empty
+    arrays. If False, this warning will be skipped."""
 docdict['receiver_data'] = """
 data : np.array
      Data ``[samples x channels]``."""
