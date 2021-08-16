@@ -1,5 +1,6 @@
 from threading import Thread
 
+import mne
 import pylsl
 import numpy as np
 
@@ -32,6 +33,7 @@ class StreamReceiver:
             stream_name)
         self._connected = False
         self._acquisition_threads = dict()
+        self._mne_infos = dict()
         self.connect()
 
     def connect(self, timeout=10, force=False):
@@ -96,6 +98,16 @@ class StreamReceiver:
             if stream not in self._acquisition_threads:
                 self._acquisition_threads[stream] = None
 
+            if stream not in self._mne_infos:
+                if isinstance(self._streams[stream], StreamEEG):
+                    ch_names = self._streams[stream].ch_list
+                    sfreq = self._streams[stream].sample_rate
+                    ch_types = ['eeg'] * len(ch_names)
+                    self._mne_infos[stream] = mne.create_info(
+                        ch_names, sfreq, ch_types)
+                else:
+                    self._mne_infos[stream] = None
+
         self.show_info()
         logger.info('Ready to receive data from the connected streams.')
         return True
@@ -157,7 +169,7 @@ class StreamReceiver:
             self._acquisition_threads[stream] = thread
 
     @fill_doc
-    def get_window(self, stream_name=None):
+    def get_window(self, stream_name=None, return_raw=False):
         """
         Get the latest window from a stream's buffer.
         If several streams are connected, specify the name.
@@ -165,11 +177,16 @@ class StreamReceiver:
         Parameters
         ----------
         %(receiver_get_stream_name)s
+        %(receiver_get_return_raw)s
 
         Returns
         -------
         %(receiver_data)s
         %(receiver_timestamps)s
+
+        Notes
+        -----
+        %(receiver_get_unit)s
         """
         if not self._connected:
             logger.error(
@@ -197,39 +214,55 @@ class StreamReceiver:
             raise error
 
         winsize = self._streams[stream_name].buffer.winsize
-
         try:
-            window = self._streams[
-                stream_name].buffer.data[-winsize:]
-            timestamps = self._streams[
-                stream_name].buffer.timestamps[-winsize:]
+            window = np.array(self._streams[
+                stream_name].buffer.data[-winsize:])
+            timestamps = np.array(self._streams[
+                stream_name].buffer.timestamps[-winsize:])
         except IndexError:
             logger.warning(
                 f"The buffer of {stream_name} does not contain enough "
                 "samples. Returning the available samples.")
-            window = self._streams[stream_name].buffer.data[:]
-            timestamps = self._streams[stream_name].buffer.timestamps[:]
+            window = np.array(self._streams[stream_name].buffer.data)
+            timestamps = np.array(self._streams[stream_name].buffer.timestamps)
 
         if len(timestamps) > 0:
-            return (np.array(window), np.array(timestamps))
+            if bool(return_raw) and self._mne_infos[stream_name] is not None:
+                window = mne.io.RawArray(
+                    window.T, self._mne_infos[stream_name])
+                window._filenames = [f'BSL {stream_name}']
+            elif bool(return_raw) and self._mne_infos[stream_name] is None:
+                logger.warning(
+                    f'The LSL stream {stream_name} can not be converted to'
+                    'MNE raw instance. Returning numpy arrays.')
         else:
-            return (np.empty((0, len(self._streams[stream_name].ch_list))),
-                    np.array([]))
+            logger.warning(
+                f'The LSL stream {stream_name} did not return any data.'
+                'Returning empty numpy arrays.')
+            window = np.empty((0, len(self._streams[stream_name].ch_list)))
+            timestamps = np.array([])
+
+        return window, timestamps
 
     @fill_doc
-    def get_buffer(self, stream_name=None):
+    def get_buffer(self, stream_name=None, return_raw=False):
         """
-        Get the entire buffer of a stream in numpy format.
+        Get the entire buffer of a stream.
         If several streams are connected, specify the name.
 
         Parameters
         ----------
         %(receiver_get_stream_name)s
+        %(receiver_get_return_raw)s
 
         Returns
         -------
         %(receiver_data)s
         %(receiver_timestamps)s
+
+        Notes
+        -----
+        %(receiver_get_unit)s
         """
         if not self._connected:
             logger.error(
@@ -253,12 +286,25 @@ class StreamReceiver:
             logger.warning('.acquire() must be called before .get_buffer().')
             raise error
 
+        window = np.array(self._streams[stream_name].buffer.data)
+        timestamps = np.array(self._streams[stream_name].buffer.timestamps)
         if len(self._streams[stream_name].buffer.timestamps) > 0:
-            return (np.array(self._streams[stream_name].buffer.data),
-                    np.array(self._streams[stream_name].buffer.timestamps))
+            if bool(return_raw) and self._mne_infos[stream_name] is not None:
+                window = mne.io.RawArray(
+                    window.T, self._mne_infos[stream_name])
+                window._filenames = [f'BSL {stream_name}']
+            elif bool(return_raw) and self._mne_infos[stream_name] is None:
+                logger.warning(
+                    f'The LSL stream {stream_name} can not be converted to'
+                    'MNE raw instance. Returning numpy arrays.')
         else:
-            return (np.empty((0, len(self._streams[stream_name].ch_list))),
-                    np.array([]))
+            logger.warning(
+                f'The LSL stream {stream_name} did not return any data.'
+                'Returning empty numpy arrays.')
+            window = np.empty((0, len(self._streams[stream_name].ch_list)))
+            timestamps = np.array([])
+
+        return window, timestamps
 
     def reset_buffer(self, stream_name=None):
         """
@@ -380,6 +426,13 @@ class StreamReceiver:
         Connected streams dictionnary: ``{stream_name: _Stream}``.
         """
         return self._streams
+
+    @property
+    def mne_infos(self):
+        """
+        Dictionnary containing the MNE info for the compatible streams.
+        """
+        return self._mne_infos
 
     @property
     def connected(self):
