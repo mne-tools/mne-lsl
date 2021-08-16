@@ -22,12 +22,22 @@ stream_name : str | None
     Name of the stream to extract from.
     Can be set to ``None`` if the `StreamReceiver` is connected to a single
     stream."""
+docdict['receiver_get_return_raw'] = """
+return_raw : bool
+    By default (False), data is returned as a numpy array of shape
+    (samples, channels). If set to True, the stream receiver will attempt to
+    return MNE raw instances."""
 docdict['receiver_data'] = """
 data : np.array
      Data ``[samples x channels]``."""
 docdict['receiver_timestamps'] = """
 timestamps : np.array
      Data's timestamps ``[samples]``."""
+docdict['receiver_get_unit'] = """
+The method ``.get_`` return a raw data array in the unit streamed by the LSL
+outlet. For conversion, the corresponding multiplier must be set for each
+stream, with e.g. for a stream in uV to convert to V:
+    ``sr.streams['stream_to_convert'].multiplier = 1e-6``."""
 docdict['receiver_streamInfo'] = """
 streamInfo : LSL StreamInfo.
     Contain all the info from the LSL stream to connect to."""
