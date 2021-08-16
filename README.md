@@ -1,5 +1,5 @@
 
-# Introduction
+# Brain Streaming Layer (BSL)
 
 **BrainStreamingLayer** provides a real-time brain signal streaming framework.
 **BSL** is a wrapper around the python interface to the Lab Streaming Layer
