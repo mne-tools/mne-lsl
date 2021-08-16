@@ -1,6 +1,7 @@
 """
-NeuroDecode provides a real-time brain signal decoding framework.
+BSL provides a real-time brain signal streaming framework.
 """
+
 from ._version import __version__
 from .logger import logger, set_log_level
 from .stream_receiver import StreamReceiver

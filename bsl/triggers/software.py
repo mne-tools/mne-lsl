@@ -25,7 +25,7 @@ class TriggerSoftware(_Trigger):
     Parameters
     ----------
     recorder : StreamRecorder
-        Neurodecode `StreamRecorder` used.
+        BSL's `StreamRecorder` used.
     %(trigger_verbose)s
     """
 
@@ -96,7 +96,7 @@ class TriggerSoftware(_Trigger):
     @property
     def recorder(self):
         """
-        Neurodecode's `StreamRecorder` used.
+        BSL's `StreamRecorder` used.
         """
         return self._recorder
 

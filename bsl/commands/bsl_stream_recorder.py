@@ -9,16 +9,16 @@ Command-line arguments:
 If no argument is provided, records in the current directory.
 
 Example:
-    nd_stream_recorder -d "D:/Data"
-    nd_stream_recorder -d "D:/Data" -f test
-    nd_stream_recorder -d "D:/Data" -f test -s openvibeSignals
+    bsl_stream_recorder -d "D:/Data"
+    bsl_stream_recorder -d "D:/Data" -f test
+    bsl_stream_recorder -d "D:/Data" -f test -s openvibeSignals
 """
 
 import argparse
 
 from pathlib import Path
 
-from neurodecode.stream_recorder import StreamRecorder
+from bsl import StreamRecorder
 
 
 def run():
@@ -48,5 +48,5 @@ def run():
 
 
 def main():
-    """Entrypoint for nd_stream_recorder usage."""
+    """Entrypoint for bsl_stream_recorder usage."""
     run()
