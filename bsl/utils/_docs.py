@@ -27,6 +27,10 @@ return_raw : bool
     By default (False), data is returned as a numpy array of shape
     (samples, channels). If set to True, the stream receiver will attempt to
     return MNE raw instances."""
+docdict['receiver_get_verbose'] = """
+verbose : bool
+    If True (default), a warning will be issued when the method returns empty
+    arrays. If False, this warning will be skipped."""
 docdict['receiver_data'] = """
 data : np.array
      Data ``[samples x channels]``."""
@@ -108,7 +112,8 @@ docdict['viewer_backend_yRange'] = """yRange : float
     Range of the y-axis (amplitude) in uV."""
 docdict['viewer_backend'] = """
 backend : str
-    One of the supported backend's name. Supported ``'vispy'``, ``'pyqt5'``."""
+    One of the supported backend's name. Supported ``'vispy'``,
+    ``'pyqtgraph'``."""
 docdict['viewer_scope_stream_receiver'] = """
 stream_receiver : StreamReceiver
     Connected `StreamReceiver`."""
