@@ -20,7 +20,7 @@ mne.set_log_level('ERROR')
 def pcl2fif(fname, out_dir=None, external_event=None,
             precision='double', replace=False, overwrite=True):
     """
-    Convert NeuroDecode Python pickle format to ``mne.io.raw``.
+    Convert BSL Python pickle format to ``mne.io.raw``.
 
     Parameters
     ----------
@@ -79,7 +79,7 @@ def pcl2fif(fname, out_dir=None, external_event=None,
 def _format_pcl_to_mne_RawArray(data):
     """
     Format the raw data to the ``mne`` ``rawArray`` structure.
-    Data must be recorded with NeuroDecode StreamRecorder.
+    Data must be recorded with BSL StreamRecorder.
 
     Parameters
     ----------
@@ -215,7 +215,7 @@ def _add_events_from_txt(raw, events_index, stim_channel='TRIGGER',
 
 
 # ------------------------- General converter -------------------------
-# Edit readers with NeuroDecode '.pcl' reader.
+# Edit readers with BSL '.pcl' reader.
 supported['.pcl'] = pcl2fif
 
 

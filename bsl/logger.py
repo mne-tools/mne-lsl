@@ -1,11 +1,11 @@
 """
-Neurodecode's logger.
+BSL's logger.
 """
 import sys
 import logging
 
 
-logger = logging.getLogger('neurodecode')
+logger = logging.getLogger('bsl')
 logger.propagate = False  # don't propagate (in case of multiple imports)
 
 
@@ -34,14 +34,14 @@ def add_stream_handler(stream, verbosity='INFO'):
         Handler verbosity.
     """
     handler = logging.StreamHandler(stream)
-    handler.setFormatter(NeurodecodeFormatter())
+    handler.setFormatter(BSLformatter())
     logger.addHandler(handler)
     set_handler_log_level(verbosity, -1)
 
 
 def add_file_handler(fname, mode='a', verbosity='INFO'):
     """
-    Add a file handler to the logger.- The handler saves the logs to file.
+    Add a file handler to the logger. The handler saves the logs to file.
 
     Parameters
     ----------
@@ -52,9 +52,10 @@ def add_file_handler(fname, mode='a', verbosity='INFO'):
         Handler verbosity.
     """
     handler = logging.FileHandler(fname, mode)
-    handler.setFormatter(NeurodecodeFormatter())
+    handler.setFormatter(BSLformatter())
     logger.addHandler(handler)
     set_handler_log_level(verbosity, -1)
+
 
 def set_handler_log_level(verbosity, handler_id=0):
     """
@@ -83,9 +84,9 @@ def set_log_level(verbosity):
     logger.setLevel(verbosity)
 
 
-class NeurodecodeFormatter(logging.Formatter):
+class BSLformatter(logging.Formatter):
     """
-    Format string Syntax for Neurodecode.
+    Format string Syntax for BSL.
     """
     # Format string syntax for the different Log levels
     _formatters = dict()

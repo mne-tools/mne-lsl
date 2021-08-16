@@ -1,5 +1,5 @@
 """
-PyQt5 Canvas for Neurodecode's StreamViewer.
+PyQt5 Canvas for BSL's StreamViewer.
 """
 import numpy as np
 
@@ -15,7 +15,7 @@ from ...utils._docs import fill_doc, copy_doc
 @fill_doc
 class _BackendPyQt5(_Backend):
     """
-    The PyQt5 backend for neurodecode's `StreamViewer`.
+    The PyQt5 backend for BSL's `StreamViewer`.
 
     Parameters
     ----------

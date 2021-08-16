@@ -236,7 +236,7 @@ class _Streamer:
             .append_child_value('is_slave', 'false')
 
         desc.append_child('acquisition')\
-            .append_child_value('manufacturer', 'NeuroDecode')\
+            .append_child_value('manufacturer', 'BSL')\
             .append_child_value('serial_number', 'N/A')
 
         self._sinfo = sinfo

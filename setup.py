@@ -8,7 +8,7 @@ from setuptools import setup, find_packages
 
 # Version
 version = None
-with open(Path(__file__).parent/'neurodecode'/'_version.py', 'r') as file:
+with open(Path(__file__).parent/'bsl'/'_version.py', 'r') as file:
     for line in file:
         line = line.strip()
         if line.startswith('__version__'):
@@ -19,7 +19,7 @@ if version is None:
     raise RuntimeError('Could not determine version.')
 
 # Descriptions
-short_description = """NeuroDecode real-time framework for online neuroscience research through LSL-compatible devices."""
+short_description = """BrainStreamingLayer real-time framework for online neuroscience research through LSL-compatible devices."""
 long_description_file = Path('README.md')
 with open(long_description_file, 'r') as file:
     long_description = file.read()
@@ -31,7 +31,7 @@ else:
     long_description_content_type='text/plain'
 
 # Variables
-NAME = 'neurodecode'
+NAME = 'bsl'
 DESCRIPTION = short_description
 LONG_DESCRIPTION = long_description
 LONG_DESCRIPTION_CONTENT_TYPE=long_description_content_type
@@ -39,9 +39,9 @@ AUTHOR = 'Kyuhwa Lee, Arnaud Desvachez, Mathieu Scheltienne'
 AUTHOR_EMAIL = 'lee.kyuh@gmail.com, arnaud.desvachez@gmail.com, mathieu.scheltienne@gmail.com'
 MAINTAINER = 'Mathieu Scheltienne'
 MAINTAINER_EMAIL = 'mathieu.scheltienne@gmail.com'
-URL = 'https://github.com/mscheltienne/NeuroDecode'
+URL = 'https://github.com/bsl-tools/bsl'
 LICENSE = 'LGPL-2.1 - The GNU General Public License'
-DOWNLOAD_URL = 'https://github.com/mscheltienne/NeuroDecode'
+DOWNLOAD_URL = 'https://github.com/bsl-tools/bsl'
 VERSION = version
 
 
@@ -115,8 +115,9 @@ setup(
         ],
     keywords='neuroscience neuroimaging EEG LSL real-time brain',
     project_urls={
-        'Documentation': 'https://github.com/mscheltienne/NeuroDecode',
-        'Source': 'https://github.com/mscheltienne/NeuroDecode'
+        'Documentation': 'https://github.com/bsl-tools/bsl',
+        'Source': 'https://github.com/bsl-tools/bsl',
+        'Tracker': 'https://github.com/bsl-tools/bsl/issues'
         },
     platforms='any',
     python_requires='>=3.6',
@@ -126,10 +127,10 @@ setup(
     include_package_data=True,
     entry_points={
         'console_scripts': [
-            'nd = neurodecode.commands.main:main',
-            'nd_stream_player = neurodecode.commands.nd_stream_player:main',
-            'nd_stream_recorder = neurodecode.commands.nd_stream_recorder:main',
-            'nd_stream_viewer = neurodecode.commands.nd_stream_viewer:main'
+            'bsl = bsl.commands.main:main',
+            'bsl_stream_player = bsl.commands.bsl_stream_player:main',
+            'bsl_stream_recorder = bsl.commands.bsl_stream_recorder:main',
+            'bsl_stream_viewer = bsl.commands.bsl_stream_viewer:main'
           ]
         }
     )
