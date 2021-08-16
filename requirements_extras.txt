@@ -1,4 +1,4 @@
-# Extra requirements for full NeuroDecode functionalities.
+# Extra requirements for full BrainStreamingLayer functionalities.
 # FORMAT: package[version_required]      # tag1, tag2, ...
 # Examples:
 # numpy>=1.20          # xyz, xyz_2

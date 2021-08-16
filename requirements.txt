@@ -1,4 +1,4 @@
-# requirements for minimal NeuroDecode functionality.
+# requirements for minimal BrainStreamingLayer functionality.
 mne
 numpy
 pylsl

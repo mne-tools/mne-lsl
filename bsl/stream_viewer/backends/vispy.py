@@ -1,5 +1,5 @@
 """
-Vispy Canvas for Neurodecode's StreamViewer.
+Vispy Canvas for BSL's StreamViewer.
 Code adapted from Vispy official example:
 https://github.com/vispy/vispy/blob/main/examples/demo/gloo/realtime_signals.py
 """
@@ -64,7 +64,7 @@ void main() {
 @fill_doc
 class _BackendVispy(_Backend, vispy.app.Canvas):
     """
-    The Vispy backend for neurodecode's `StreamViewer`.
+    The Vispy backend for BSL's `StreamViewer`.
 
     Parameters
     ----------
