@@ -8,7 +8,7 @@ try:
     from ..backends.vispy import _BackendVispy
 except ModuleNotFoundError:
     pass
-from ..backends.pyqt5 import _BackendPyQt5
+from ..backends.pyqtgraph import _BackendPyQtGraph
 
 from ... import logger
 from ...utils._docs import fill_doc
@@ -103,16 +103,16 @@ class _ControlGUI(QMainWindow, ABC, metaclass=_metaclass_ControlGUI):
         """
         Checks that the requested backend is supported.
         """
-        DEFAULT = ['pyqt5', 'vispy']  # Default order
+        DEFAULT = ['pyqtgraph', 'vispy']  # Default order
         SUPPORTED_BACKENDS = dict()
         try:
             SUPPORTED_BACKENDS['vispy'] = _BackendVispy
         except NameError:
             SUPPORTED_BACKENDS['vispy'] = None
         try:
-            SUPPORTED_BACKENDS['pyqt5'] = _BackendPyQt5
+            SUPPORTED_BACKENDS['pyqtgraph'] = _BackendPyQtGraph
         except NameError:
-            SUPPORTED_BACKENDS['pyqt5'] = None
+            SUPPORTED_BACKENDS['pyqtgraph'] = None
         assert set(DEFAULT) == set(SUPPORTED_BACKENDS)
 
         if all(backend is None for backend in SUPPORTED_BACKENDS.values()):
