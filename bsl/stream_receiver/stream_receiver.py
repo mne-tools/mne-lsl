@@ -1,5 +1,6 @@
 from threading import Thread
 
+import mne
 import pylsl
 import numpy as np
 
@@ -32,6 +33,7 @@ class StreamReceiver:
             stream_name)
         self._connected = False
         self._acquisition_threads = dict()
+        self._mne_infos = dict()
         self.connect()
 
     def connect(self, timeout=10, force=False):
@@ -95,6 +97,16 @@ class StreamReceiver:
         for stream in self._streams:
             if stream not in self._acquisition_threads:
                 self._acquisition_threads[stream] = None
+
+            if stream not in self._mne_infos:
+                if isinstance(self._streams[stream], StreamEEG):
+                    ch_names = self._streams[stream].ch_list
+                    sfreq = self._streams[stream].sample_rate
+                    ch_types = ['eeg'] * len(ch_names)
+                    self._mne_infos[stream] = mne.create_info(
+                        ch_names, sfreq, ch_types)
+                else:
+                    self._mne_infos[stream] = None
 
         self.show_info()
         logger.info('Ready to receive data from the connected streams.')
@@ -380,6 +392,13 @@ class StreamReceiver:
         Connected streams dictionnary: ``{stream_name: _Stream}``.
         """
         return self._streams
+
+    @property
+    def mne_infos(self):
+        """
+        Dictionnary containing the MNE info for the compatible streams.
+        """
+        return self._mne_infos
 
     @property
     def connected(self):
