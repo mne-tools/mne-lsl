@@ -43,10 +43,6 @@ installed using the keywords:
 - trigger_arduino2lpt
 - vispy_backend
 
-TODO:
-- [ ] Add BSL to Pypi for pip install
-- [ ] Add BSL to conda-forge for conda install
-
 # Documentation
 BSL is centered around 4 main modules: `stream_receiver`, `stream_recorder`,
 `stream_player` and `stream_viewer`.
