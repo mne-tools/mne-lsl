@@ -110,7 +110,6 @@ setup(
         'Operating System :: Unix',
         'Operating System :: MacOS',
         'Programming Language :: Python :: 3 :: Only',
-        'Development Status :: 4 - Beta',
         'Natural Language :: English'
         ],
     keywords='neuroscience neuroimaging EEG LSL real-time brain',
