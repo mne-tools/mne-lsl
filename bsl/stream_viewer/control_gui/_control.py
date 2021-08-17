@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import QMainWindow, QFileDialog
 
 try:
     from ..backends.vispy import _BackendVispy
-except ModuleNotFoundError:
+except ImportError:
     pass
 from ..backends.pyqtgraph import _BackendPyQtGraph
 
