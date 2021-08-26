@@ -18,9 +18,9 @@ from bsl import StreamPlayer
 
 #%%
 
-# Define the path to a .fif file recorded with the Stream Recorder. All
-# channels except the trigger channel are multiplied by 1e6 to convert from
-# Volts to uVolts.
+# Define the path to a .fif file recorded with the Stream Recorder.
+# As currently, the only data stream supported is EEG, all channels except the
+# trigger channel are multiplied by 1e6 to convert from Volts to uVolts.
 #
 # Define a name for the LSL stream.
 
