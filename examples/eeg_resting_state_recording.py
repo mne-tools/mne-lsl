@@ -84,7 +84,7 @@ def resting_state_with_verbose(directory, stream_name, duration):
     trigger.close()
     recorder.stop()
 
-# %%
+#%%
 
 # Call in `__main__` the function. The StreamRecorder starts a new process,
 # which can not be done outside `__main__` on Windows.
