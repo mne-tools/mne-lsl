@@ -24,8 +24,8 @@ class StreamPlayer:
     %(trigger_file)s
     """
 
-    def __init__(self, stream_name, fif_file, chunk_size,
-                 trigger_file=None):
+    def __init__(self, stream_name, fif_file,
+                 chunk_size=16, trigger_file=None):
 
         self._stream_name = str(stream_name)
         self._fif_file = fif_file
