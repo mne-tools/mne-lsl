@@ -72,7 +72,7 @@ def resting_state_with_verbose(directory, stream_name, duration):
     """
     recorder = StreamRecorder(directory)
     recorder.start(fif_subdir=False, verbose=False)
-    trigger = TriggerSoftware(recorder=recorder, verbose=False)
+    trigger = TriggerSoftware(recorder=recorder, verbose=True)
     timer = Timer()
     previous_time_printed = 0
     trigger.signal(1)
