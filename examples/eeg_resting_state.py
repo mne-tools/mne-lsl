@@ -87,7 +87,7 @@ def resting_state_with_verbose(directory, stream_name, duration):
 # %%
 
 # Call in `__main__` the function. The StreamRecorder starts a new process,
-# which can not be done outside `__main__` in Windows.
+# which can not be done outside `__main__` on Windows.
 # See: https://docs.python.org/2/library/multiprocessing.html#windows
 
 if __name__ == '__main__':
