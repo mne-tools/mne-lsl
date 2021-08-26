@@ -1,7 +1,7 @@
 """
-===========================
-EEG Resting-State recording
-===========================
+=======================
+Resting-State recording
+=======================
 A resting-state recording is a simple offline recording during which the brain
 activity of a subject is measured in the absence of any stimulus or task.
 """
