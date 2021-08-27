@@ -22,7 +22,7 @@ from bsl.utils import Timer
 
 #%%
 
-# Start a mock LSL stream with a Stream Player.
+# Start a mock LSL stream with a Stream Player for this example purpose.
 # Call in `__main__` because the Stream Player starts a new process, which can
 # not be done outside `__main__` on Windows.
 # See: https://docs.python.org/2/library/multiprocessing.html#windows
