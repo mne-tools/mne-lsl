@@ -8,3 +8,4 @@ from .stream_receiver import StreamReceiver
 from .stream_recorder import StreamRecorder
 from .stream_player import StreamPlayer
 from .stream_viewer import StreamViewer
+from . import datasets
