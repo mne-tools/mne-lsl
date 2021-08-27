@@ -16,9 +16,21 @@ import time
 import datetime
 from pathlib import Path
 
-from bsl import StreamRecorder
+from bsl import StreamRecorder, StreamPlayer, datasets
 from bsl.triggers.software import TriggerSoftware
 from bsl.utils import Timer
+
+#%%
+
+# Start a mock LSL stream with a Stream Player for this example purpose.
+# Call in `__main__` because the Stream Player starts a new process, which can
+# not be done outside `__main__` on Windows.
+# See: https://docs.python.org/2/library/multiprocessing.html#windows
+
+sample_data_raw_file = datasets.sample.data_path()
+if __name__ == '__main__':
+    player = StreamPlayer('StreamPlayer', sample_data_raw_file)
+    player.start()
 
 #%%
 
@@ -93,3 +105,10 @@ def resting_state_with_verbose(directory, stream_name, duration):
 if __name__ == '__main__':
     resting_state(directory, stream_name, duration)
     # resting_state_with_verbose(directory, stream_name, duration)
+
+#%%
+
+# Stop the mock LSL stream.
+
+if __name__ == '__main__':
+    player.stop()
