@@ -17,9 +17,21 @@ from pathlib import Path
 import numpy as np
 from matplotlib import pyplot as plt
 
-from bsl import StreamRecorder, StreamReceiver
+from bsl import StreamRecorder, StreamReceiver, StreamPlayer, datasets
 from bsl.triggers.software import TriggerSoftware
 from bsl.utils import Timer
+
+#%%
+
+# Start a mock LSL stream with a Stream Player for this example purpose.
+# Call in `__main__` because the Stream Player starts a new process, which can
+# not be done outside `__main__` on Windows.
+# See: https://docs.python.org/2/library/multiprocessing.html#windows
+
+sample_data_raw_file = datasets.sample.data_path()
+if __name__ == '__main__':
+    player = StreamPlayer('MyStream', sample_data_raw_file)
+    player.start()
 
 #%%
 
@@ -36,10 +48,13 @@ directory = Path.cwd()
 
 # Define a stream receiver and retrieves the window size in samples based on
 # the stream info.
+#
+# Requires the stream player to be active, and thus, is called in `__main__`.
 
-receiver = StreamReceiver(
-    bufsize=window_size, winsize=window_size, stream_name=stream_name)
-window_size_samples = receiver.streams[stream_name].buffer.winsize
+if __name__ == '__main__':
+    receiver = StreamReceiver(
+        bufsize=window_size, winsize=window_size, stream_name=stream_name)
+    window_size_samples = receiver.streams[stream_name].buffer.winsize
 
 #%%
 
@@ -50,12 +65,15 @@ window_size_samples = receiver.streams[stream_name].buffer.winsize
 # neurofeedback study.
 #
 # Define the variables required for computing the alpha power.
+#
+# Requires the stream player to be active, and thus, is called in `__main__`.
 
-frequencies = np.fft.rfftfreq(
-    n=window_size_samples,
-    d=1./receiver.streams[stream_name].sample_rate)
-alpha_band = np.where(np.logical_and(8<=frequencies, frequencies<=13))[0]
-fft_window = np.hanning(window_size_samples)
+if __name__ == '__main__':
+    frequencies = np.fft.rfftfreq(
+        n=window_size_samples,
+        d=1./receiver.streams[stream_name].sample_rate)
+    alpha_band = np.where(np.logical_and(8<=frequencies, frequencies<=13))[0]
+    fft_window = np.hanning(window_size_samples)
 
 #%%
 
@@ -160,6 +178,13 @@ def my_online_paradigm():
 
 if __name__ == '__main__':
     alphas, timings = my_online_paradigm()
+
+#%%
+
+# Stop the mock LSL stream.
+
+if __name__ == '__main__':
+    player.stop()
 
 #%%
 
