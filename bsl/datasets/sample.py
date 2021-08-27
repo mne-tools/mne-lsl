@@ -7,6 +7,7 @@ from pathlib import Path
 
 from ._fetching import fetch_file, _hashfunc
 from .. import logger
+from ..utils.io._file_dir import make_dirs
 
 
 MD5 = '8925f81af22390fd17bb3341d553430f'
@@ -20,6 +21,7 @@ def data_path():
     directory in the folder bsl-datasets.
     """
     path = Path('~/bsl-datasets/eeg/resting-state-sample-raw.fif').expanduser()
+    make_dirs(path.parent)
 
     logger.debug('URL:   %s' % (URL,))
     logger.debug('Hash:  %s' % (MD5,))
