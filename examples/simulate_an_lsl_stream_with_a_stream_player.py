@@ -14,18 +14,18 @@ to connect to a stream.
 
 import time
 
-from bsl import StreamPlayer
+from bsl import StreamPlayer, datasets
 
 #%%
 
+# Define a name for the LSL stream.
 # Define the path to a .fif file recorded with the Stream Recorder.
 # As currently, the only data stream supported is EEG, all channels except the
 # trigger channel are multiplied by 1e6 to convert from Volts to uVolts.
-#
-# Define a name for the LSL stream.
 
-sample_data_raw_file = r'path to -raw.fif'
 stream_name = 'MyStreamPlayer'
+sample_data_raw_file = datasets.sample.data_path()
+print (sample_data_raw_file)
 
 #%%
 
