@@ -45,7 +45,8 @@ def fetch_file(url, file_name, print_destination=True, resume=True,
                               len(hash_) != 32) and hash_type == 'md5':
         raise ValueError('Bad hash value given, should be a 32-character '
                          'string:\n%s' % (hash_,))
-    temp_file_name = Path(file_name).with_suffix('.part')
+    file_name = Path(file_name)
+    temp_file_name = file_name.with_suffix(file_name.suffix+'.part')
     scheme = parse.urlparse(url).scheme
     if scheme not in ('http', 'https'):
         raise NotImplementedError('Cannot use scheme %r' % (scheme,))
