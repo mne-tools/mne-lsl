@@ -124,4 +124,5 @@ sphinx_gallery_conf = {
     'plot_gallery': 'True',  # Avoid annoying Unicode/bool default warning
     'remove_config_comments': True,
     'abort_on_example_error': False,
+    'filename_pattern': '/'
 }
