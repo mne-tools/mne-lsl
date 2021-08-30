@@ -16,7 +16,7 @@ import bsl
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-sys.path.append(Path(__file__).parent.parent.parent / 'bsl')
+sys.path.append(Path(__file__).parent.parent / 'bsl')
 
 # -- Project information -----------------------------------------------------
 
@@ -28,7 +28,6 @@ author = 'K. Lee, A. Desvachez, M. Scheltienne'
 
 # The full version, including alpha/beta/rc tags
 release = bsl.__version__
-
 
 # -- General configuration ---------------------------------------------------
 
@@ -47,7 +46,7 @@ templates_path = ['_templates']
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ['_includes']
+exclude_patterns = ['_includes', 'Thumbs.db', '.DS_Store']
 
 # The suffix of source filenames.
 source_suffix = '.rst'
@@ -69,6 +68,7 @@ default_role = "py:obj"
 # A list of ignored prefixes for module index sorting.
 modindex_common_prefix = ['bsl.']
 
+# Generate autosummary even if no references
 autosummary_generate = True
 
 # -- Options for HTML output -------------------------------------------------
@@ -113,3 +113,15 @@ html_copy_source = False
 
 # If true, "Created using Sphinx" is shown in the HTML footer. Default is True.
 html_show_sphinx = False
+
+# -- Sphinx-gallery configuration --------------------------------------------
+
+sphinx_gallery_conf = {
+    'doc_module': 'bsl',
+    'reference_url': dict(bsl=None),
+    'examples_dirs': '../examples',
+    'gallery_dirs': 'auto_examples',
+    'plot_gallery': 'True',  # Avoid annoying Unicode/bool default warning
+    'remove_config_comments': True,
+    'abort_on_example_error': False,
+}
