@@ -17,3 +17,8 @@ from a terminal.
 
 .. toctree::
     :maxdepth: 2
+
+    stream_classes
+    triggers
+    datasets
+    utils

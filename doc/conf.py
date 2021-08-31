@@ -37,6 +37,8 @@ release = bsl.__version__
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
+    'sphinx.ext.coverage',
+    'sphinx.ext.napoleon',
     'sphinx_gallery.gen_gallery'
 ]
 
@@ -126,3 +128,9 @@ sphinx_gallery_conf = {
     'abort_on_example_error': False,
     'filename_pattern': '/'
 }
+
+# -- Other extension configuration -------------------------------------------
+
+# autodoc / autosummary
+autosummary_generate = True
+autodoc_default_options = {'inherited-members': None}
