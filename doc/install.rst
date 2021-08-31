@@ -29,14 +29,15 @@ Optional dependencies
 
 BSL installs the following dependencies:
 
-- numpy
-- scipy
-- mne
-- pylsl
-- pyqt5
-- pyqtgraph
+- `numpy <https://numpy.org/>`_
+- `scipy <https://www.scipy.org/>`_
+- `mne <https://mne.tools/stable/index.html>`_
+- `pylsl <https://github.com/labstreaminglayer/liblsl-Python>`_
+- `pyqt5 <https://www.riverbankcomputing.com/software/pyqt/>`_
+- `pyqtgraph <https://www.pyqtgraph.org/>`_
 
 Additionnal functionalities requires:
 
-- pyserial: for the trigger using an LPT to Arduino converter
-- vispy: for the Stream Viewer vispy backend
+- `pyserial <https://github.com/pyserial/pyserial>`_: for the trigger using an
+  LPT to Arduino converter.
+- `vispy <https://vispy.org/>`_: for the Stream Viewer vispy backend.
