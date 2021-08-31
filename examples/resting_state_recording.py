@@ -49,7 +49,7 @@ stream_name = None
 # Define the duration of the resting-state recording in seconds.
 # Typical resting-state recordings last several minutes.
 
-duration = 10
+duration = 5
 
 #%%
 #

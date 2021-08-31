@@ -81,8 +81,8 @@ if __name__ == '__main__':
 #
 # Define the settings of the online paradigm loop.
 
-n_cycles = 3  # 3 alternation of rest/regulation phases
-phase_duration = 5  # in seconds
+n_cycles = 2  # 2 alternation of rest/regulation phases
+phase_duration = 2  # in seconds
 paradigm_timer = Timer()  # timer used to switch between phases
 phase_timer = Timer()  # timer used within a phase to count the duration
 
@@ -92,7 +92,7 @@ phase_timer = Timer()  # timer used within a phase to count the duration
 # `(timing, event)`. The timing are offset by 1 to give a little headroom to
 # the script and to avoid clipping the first phase.
 
-offset = 1  # offset to avoid clipping the first phase
+offset = 0.2  # offset to avoid clipping the first phase
 events = [(offset, 'rest'), (offset+phase_duration, 'regulation')]
 
 #%%
@@ -186,6 +186,7 @@ if __name__ == '__main__':
 # Stop the mock LSL stream.
 
 if __name__ == '__main__':
+    del receiver
     player.stop()
 
 #%%

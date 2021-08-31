@@ -37,7 +37,7 @@ print (sample_data_raw_file)
 if __name__ == '__main__':
     player = StreamPlayer(stream_name, sample_data_raw_file)
     player.start()
-    time.sleep(30)  # fix 30 seconds duration.
+    time.sleep(3)  # fix 3 seconds duration.
     player.stop()
 
 #%%
