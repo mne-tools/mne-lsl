@@ -4,6 +4,8 @@
 # list see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
+import os
+import re
 import sys
 from pathlib import Path
 from datetime import datetime, timezone
@@ -126,7 +128,7 @@ sphinx_gallery_conf = {
     'plot_gallery': 'True',  # Avoid annoying Unicode/bool default warning
     'remove_config_comments': True,
     'abort_on_example_error': False,
-    'filename_pattern': '/'
+    'filename_pattern': re.escape(os.sep)
 }
 
 # -- Other extension configuration -------------------------------------------
