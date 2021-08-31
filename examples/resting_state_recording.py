@@ -11,7 +11,7 @@ activity of a subject is measured in the absence of any stimulus or task.
 # License: LGPL-2.1
 
 #%%
-#
+
 import time
 import datetime
 from pathlib import Path
