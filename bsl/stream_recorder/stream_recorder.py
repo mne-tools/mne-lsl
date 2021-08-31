@@ -44,7 +44,7 @@ class StreamRecorder:
         ----------
         %(recorder_fif_subdir)s
         blocking : bool
-            If ``True`, waits for the child process to start recording data.
+            If ``True``, waits for the child process to start recording data.
         %(recorder_verbose)s
         """
         fname, self._eve_file = StreamRecorder._create_fname(

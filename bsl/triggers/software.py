@@ -15,12 +15,15 @@ class TriggerSoftware(_Trigger):
     Trigger saving signal value in a ``.txt`` file.
     Software trigger instance must be created after a `StreamRecorder` is
     started and close/deleted before a `StreamRecorder` is stopped.
-        >>> recorder = StreamRecorder('path to dir')
-        >>> recorder.start()
-        >>> trigger = TriggerSoftware(recorder)
-        >>> # do stuff
-        >>> trigger.close() # OR >>> del trigger
-        >>> recorder.stop()
+
+    .. code-block:: python
+
+        recorder = StreamRecorder('path to dir')
+        recorder.start()
+        trigger = TriggerSoftware(recorder)
+        # do stuff
+        trigger.close() # OR >>> del trigger
+        recorder.stop()
 
     Parameters
     ----------

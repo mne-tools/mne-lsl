@@ -33,15 +33,18 @@ verbose : bool
     arrays. If False, this warning will be skipped."""
 docdict['receiver_data'] = """
 data : np.array
-     Data ``[samples x channels]``."""
+    Data ``[samples x channels]``."""
 docdict['receiver_timestamps'] = """
 timestamps : np.array
-     Data's timestamps ``[samples]``."""
+    Data's timestamps ``[samples]``."""
 docdict['receiver_get_unit'] = """
 The method ``.get_`` return a raw data array in the unit streamed by the LSL
 outlet. For conversion, the corresponding multiplier must be set for each
 stream, with e.g. for a stream in uV to convert to V:
-    ``sr.streams['stream_to_convert'].multiplier = 1e-6``."""
+
+.. code-block:: python
+
+    sr.streams['stream_to_convert'].multiplier = 1e-6"""
 docdict['receiver_streamInfo'] = """
 streamInfo : LSL StreamInfo.
     Contain all the info from the LSL stream to connect to."""
@@ -54,7 +57,7 @@ winsize : int | float
     Window's size [secs]. Must be smaller than the buffer's size."""
 docdict['receiver_tslist'] = """
 tslist : list
-    Data's timestamps [samples]."""
+    Data's timestamps ``[samples]``."""
 
 # -----------------------------------------------
 # Stream Recorder

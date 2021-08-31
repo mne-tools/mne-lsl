@@ -22,9 +22,8 @@ def start_server(server_name, n_channels=1, channel_format='string',
     n_channels : int
         Number of channels.
     channel_format : str
-        Channels' format.
-        ``('string', 'float32', 'double64',
-           'int8', 'int16', 'int32', 'int64')``
+        Channels' format, e.g.
+        ``'string', 'float32', 'double64', 'int8', 'int16', 'int32', 'int64'``
     nominal_srate : float | pylsl.IRREGULAR_RATE
         Sampling rate [Hz].
     stype : str

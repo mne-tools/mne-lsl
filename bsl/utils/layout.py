@@ -160,7 +160,7 @@ class Layout:
 
         Parameters
         ----------
-        ch_names : str |list
+        ch_names : str | list
             Channel's name or list of channels' name to remove.
         """
         ch_names = Layout._check_ch_names(ch_names)
