@@ -21,3 +21,4 @@ Brain Streaming Layer Homepage
    Install<install>
    Examples<generated_examples/index>
    API Reference<api_reference>
+   Command Line<command_line>
