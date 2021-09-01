@@ -55,8 +55,8 @@ With the optional arguments:
 
  | If the path to the record directory is not provided, starts in the current
    directory.
- | If the file name stem is not provided, a stem is generated based on the current
-   datetime.
+ | If the file name stem is not provided, a stem is generated based on the
+   current datetime.
  | If the stream to record is not provided, record all streams.
 
 .. _stream_viewer:
@@ -76,7 +76,6 @@ With the optional arguments:
 - `-s`, `--stream_name`: stream to visualize.
 - `-b`, `--backend`: visualization backend.
 
- | If the stream to visualize is not provided, a prompt will let the user
-   select one of the available streams on the networek.
- | If the backend is not provided, the default backend `pyqtgraph` will be
-   used.
+ | If the stream to visualize is not provided, a prompt let the user select one
+   of the available streams on the network.
+ | If the backend is not provided, the default backend `pyqtgraph` is used.
