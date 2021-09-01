@@ -43,7 +43,7 @@ extensions = [
     'sphinx.ext.napoleon',
     'sphinx.ext.intersphinx',
     'sphinx_gallery.gen_gallery'
-]
+    ]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = []
@@ -141,5 +141,6 @@ autodoc_default_options = {'inherited-members': None}
 # Add intersphinx mappings
 intersphinx_mapping = {
     'python': ('http://docs.python.org/3', None),
-    'mne': ('https://mne.tools/stable/', None)
+    'mne': ('https://mne.tools/stable/', None),
+    'numpy': ('https://numpy.org/doc/stable/', None)
     }
