@@ -19,5 +19,5 @@ Brain Streaming Layer Homepage
    :hidden:
 
    Install<install>
-   Examples<auto_examples/index>
+   Examples<generated_examples/index>
    API Reference<api_reference>

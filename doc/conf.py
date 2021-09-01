@@ -45,12 +45,12 @@ extensions = [
 ]
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = []
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ['_includes', 'Thumbs.db', '.DS_Store']
+exclude_patterns = ['Thumbs.db', '.DS_Store']
 
 # The suffix of source filenames.
 source_suffix = '.rst'
@@ -124,7 +124,7 @@ sphinx_gallery_conf = {
     'doc_module': 'bsl',
     'reference_url': dict(bsl=None),
     'examples_dirs': '../examples',
-    'gallery_dirs': 'auto_examples',
+    'gallery_dirs': 'generated_examples',
     'plot_gallery': 'True',  # Avoid annoying Unicode/bool default warning
     'remove_config_comments': True,
     'abort_on_example_error': False,

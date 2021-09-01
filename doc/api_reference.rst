@@ -18,7 +18,7 @@ from a terminal.
 .. toctree::
     :maxdepth: 2
 
-    stream_classes
-    triggers
-    datasets
-    utils
+    api/stream_classes
+    api/triggers
+    api/datasets
+    api/utils
