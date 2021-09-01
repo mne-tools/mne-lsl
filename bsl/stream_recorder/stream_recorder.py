@@ -37,8 +37,7 @@ class StreamRecorder:
     @fill_doc
     def start(self, fif_subdir=True, blocking=True, verbose=False):
         """
-        Start the recording in a new process. The function is exited when the
-        new process started recording data.
+        Start the recording in a new process.
 
         Parameters
         ----------
@@ -203,14 +202,16 @@ class StreamRecorder:
 class _Recorder:
     """
     Class creating the ``.pcl`` files, recording data through a
-    `StreamReceiver` and saving the data in the ``.pcl`` and ``.fif`` files.
+    :class:`~bsl.StreamReceiver` and saving the data in the ``.pcl`` and
+    ``.fif`` files.
 
     Parameters
     ----------
     %(recorder_record_dir)s
     %(recorder_fname)s
     eve_file : str | Path
-        Path to the event file for SOFTWARE triggers.
+        Path to the event file for
+        :class:`~bsl.triggers.software.TriggerSoftware`.
     %(recorder_fif_subdir)s
     %(stream_name)s
     state : mp.Value
@@ -233,7 +234,8 @@ class _Recorder:
 
     def record(self):
         """
-        Instantiate a `StreamReceiver`, create the files, record and save.
+        Instantiate a :class:`~bsl.StreamReceiver`, create the files, record
+        and save.
         """
         sr = StreamReceiver(
             bufsize=MAX_BUF_SIZE, stream_name=self._stream_name)
@@ -261,8 +263,8 @@ class _Recorder:
 
     def _save(self, sr, pcl_files):
         """
-        Save the data in the `StreamReceiver` buffer to the ``.pcl`` and
-        ``.fif`` files.
+        Save the data in the :class:`~bsl.StreamReceiver` buffer to the
+        ``.pcl`` and ``.fif`` files.
         """
         logger.info('Saving raw data ...')
         for stream in sr.streams:

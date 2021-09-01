@@ -20,13 +20,13 @@ stream_name : list | str | None
 docdict['receiver_get_stream_name'] = """
 stream_name : str | None
     Name of the stream to extract from.
-    Can be set to ``None`` if the `StreamReceiver` is connected to a single
-    stream."""
+    Can be set to ``None`` if the :class:`~bsl.StreamReceiver` is connected to
+    a single stream."""
 docdict['receiver_get_return_raw'] = """
 return_raw : bool
     By default (False), data is returned as a numpy array of shape
-    (samples, channels). If set to True, the stream receiver will attempt to
-    return MNE raw instances."""
+    (samples, channels). If set to True, the :class:`~bsl.StreamReceiver` will
+    attempt to return MNE :class:`~mne.io.Raw` instances."""
 docdict['receiver_get_verbose'] = """
 verbose : bool
     If True (default), a warning will be issued when the method returns empty
@@ -95,15 +95,16 @@ repeat : int
     Number of times to replay the data (``default=inf``)."""
 docdict['player_high_resolution'] = """
 high_resolution : bool
-    If ``True``, it uses ``perf_counter()`` instead of ``sleep()`` for higher
-    time resolution. However, it uses more CPU."""
+    If ``True``, it uses :func:`~time.perf_counter()` instead of
+    :func:`~time.sleep()` for higher time resolution. However, it uses more
+    CPU."""
 
 # -----------------------------------------------
 # Stream Viewer
 docdict['viewer_scope'] = """
 scope : Scope
-    Scope connected to a `StreamReceiver` acquiring the data and applying
-    filtering. The scope has a buffer of ``_BUFFER_DURATION`` seconds
+    Scope connected to a :class:`~bsl.StreamReceiver` acquiring the data and
+    applying filtering. The scope has a buffer of ``_BUFFER_DURATION`` seconds
     (default: 30s)."""
 docdict['viewer_backend_geometry'] = """
 geometry : tuple | list
@@ -118,8 +119,8 @@ backend : str
     One of the supported backend's name. Supported ``'vispy'``,
     ``'pyqtgraph'``."""
 docdict['viewer_scope_stream_receiver'] = """
-stream_receiver : StreamReceiver
-    Connected `StreamReceiver`."""
+stream_receiver : :class:`~bsl.StreamReceiver`
+    Connected :class:`~bsl.StreamReceiver`."""
 docdict['viewer_scope_stream_name'] = """
 stream_name : str
     Stream to connect to."""

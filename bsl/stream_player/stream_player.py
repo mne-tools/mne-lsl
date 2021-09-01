@@ -36,8 +36,7 @@ class StreamPlayer:
     @fill_doc
     def start(self, repeat=np.float('inf'), high_resolution=False):
         """
-        Start streaming data on LSL network in a new process by calling
-        `_Streamer.stream`.
+        Start streaming data on LSL network in a new process.
 
         Parameters
         ----------
@@ -123,7 +122,7 @@ class StreamPlayer:
     @property
     def chunk_size(self):
         """
-        Size of a chunk of data [samples].
+        Size of a chunk of data ``[samples]``.
         """
         return self._chunk_size
 

@@ -20,7 +20,7 @@ mne.set_log_level('ERROR')
 def pcl2fif(fname, out_dir=None, external_event=None,
             precision='double', replace=False, overwrite=True):
     """
-    Convert BSL Python pickle format to ``mne.io.raw``.
+    Convert BSL Python pickle format to MNE :class:`~mne.io.Raw`.
 
     Parameters
     ----------
@@ -78,7 +78,7 @@ def pcl2fif(fname, out_dir=None, external_event=None,
 
 def _format_pcl_to_mne_RawArray(data):
     """
-    Format the raw data to the ``mne`` ``rawArray`` structure.
+    Format the raw data to the MNE :class:`~mne.io.RawArray` structure.
     Data must be recorded with BSL StreamRecorder.
 
     Parameters
@@ -165,7 +165,7 @@ def _event_timestamps_to_indices(raw_timestamps, eventfile, offset):
     -------
     events : np.array
         MNE-compatible events ``[shape=(n_events, 3)]``
-        Used as input to ``raw.add_events``.
+        Used as input to :class:`mne.io.Raw.add_events`.
     """
 
     ts_min = min(raw_timestamps)
@@ -195,8 +195,8 @@ def _add_events_from_txt(raw, events_index, stim_channel='TRIGGER',
 
     Parameters
     ----------
-    raw : mne.io.raw
-        MNE raw data structure.
+    raw : :class:`~mne.io.Raw`
+        MNE :class:`~mne.io.Raw` instance.
     events_index : np.array
         MNE-compatible events ``[shape=(n_events, 3)]``.
         Used as input to ``raw.add_events``.
@@ -221,9 +221,8 @@ supported['.pcl'] = pcl2fif
 
 def any2fif(fname, out_dir=None, overwrite=True, precision='double'):
     """
-    Generic file format converter to ``mne.io.raw``.
-    Uses ``mne.io.read_raw``:
-        https://mne.tools/stable/generated/mne.io.read_raw.html
+    Generic file format converter to :class:`mne.io.Raw`.
+    Uses :func:`mne.io.read_raw`.
 
     Parameters
     ----------

@@ -115,7 +115,7 @@ class TriggerLPT(_Trigger):
     @property
     def delay(self):
         """
-        Delay to wait between 2 ``.signal()`` call in milliseconds.
+        Delay to wait between two ``.signal()`` call in milliseconds.
         """
         return self._delay * 1000.0
 

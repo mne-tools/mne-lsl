@@ -42,16 +42,17 @@ class StreamReceiver:
         appropriate ones. If a LSL stream fullfills the requirements (name...),
         a connection is established.
 
-        This function is called while instanciating a `StreamReceiver` and can
-        be recall to reconnect to the LSL streams.
+        This function is called while instanciating a
+        :class:`~bsl.StreamReceiver` and can be recall to reconnect to the LSL
+        streams.
 
         Parameters
         ----------
         timeout : int | float
             Timeout duration in seconds after which the search is abandonned.
         force : bool
-            If True, force reconnect if the `StreamReceiver` was already
-            connected.
+            If True, force reconnect if the :class:`~bsl.StreamReceiver` was
+            already connected.
         """
         if not force and self._connected:
             return True
@@ -124,7 +125,8 @@ class StreamReceiver:
 
     def disconnect(self, stream_name=None):
         """
-        Disconnects the stream ``stream_name`` from the `StreamReceiver`.
+        Disconnects the stream ``stream_name`` from the
+        :class:`~bsl.StreamReceiver`.
         If ``stream_name`` is a list, disconnects all streams in the list.
         If ``stream_name`` is ``None``, disconnects all streams.
 
@@ -381,7 +383,7 @@ class StreamReceiver:
     @property
     def bufsize(self):
         """
-        Buffer's size [sec].
+        Buffer's size ``[sec]``.
         """
         return self._bufsize
 
@@ -393,7 +395,7 @@ class StreamReceiver:
     @property
     def winsize(self):
         """
-        Window's size [sec].
+        Window's size ``[sec]``.
         """
         return self._winsize
 
@@ -434,7 +436,8 @@ class StreamReceiver:
     @property
     def mne_infos(self):
         """
-        Dictionnary containing the MNE info for the compatible streams.
+        Dictionnary containing the :class:`mne.Info` for the compatible
+        streams.
         """
         return self._mne_infos
 

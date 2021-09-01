@@ -11,15 +11,15 @@ from numpy.core.records import fromarrays
 # ----------------------------- EEG LAB -----------------------------
 def write_set(raw, fname):
     """
-    Export raw to EEGLAB ``.set`` file.
+    Export :class:`~mne.io.Raw` to EEGLAB ``.set`` file.
 
     Source: MNELAB
     https://github.com/cbrnr/mnelab/blob/main/mnelab/io/writers.py
 
     Parameters
     ----------
-    raw : Raw
-        MNE instance of Raw.
+    raw : :class:`~mne.io.Raw`
+        MNE :class:`~mne.io.Raw` instance.
     fname : str | Path
         Name/Path of the ``'.set'`` file created.
     """

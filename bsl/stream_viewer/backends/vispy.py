@@ -64,7 +64,7 @@ void main() {
 @fill_doc
 class _BackendVispy(_Backend, vispy.app.Canvas):
     """
-    The Vispy backend for BSL's `StreamViewer`.
+    The Vispy backend for BSL's :class:`~bsl.StreamViewer`.
 
     Parameters
     ----------

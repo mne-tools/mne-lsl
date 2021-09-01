@@ -18,7 +18,7 @@ def data_path():
     """
     Return the path to the sample dataset.
     If the dataset is not locally present, it is downloaded in the user home
-    directory in the folder bsl-datasets.
+    directory in the folder ``bsl-datasets``.
     """
     path = Path('~/bsl_data/eeg/resting-state-sample-raw.fif').expanduser()
     make_dirs(path.parent)

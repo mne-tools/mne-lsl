@@ -20,7 +20,7 @@ HIGH_LSL_OFFSET_THRESHOLD = 0.1  # Threshold above which the offset is high
 @fill_doc
 class _Stream(ABC):
     """
-    Abstract class representing a base `StreamReceiver` stream.
+    Abstract class representing a base :class:`~bsl.StreamReceiver` stream.
 
     Parameters
     ----------
@@ -127,7 +127,7 @@ class _Stream(ABC):
         Returns
         -------
         chunk : list
-            Data [samples x channels]
+            Data ``[samples x channels]``
         %(receiver_tslist)s
         """
         chunk = []
@@ -331,7 +331,7 @@ class _Stream(ABC):
 @fill_doc
 class StreamMarker(_Stream):
     """
-    Class representing a `StreamReceiver` markers stream.
+    Class representing a :class:`~bsl.StreamReceiver` markers stream.
 
     Notice the irregular sampling rate.
     This stream is instanciated as non-blocking.
@@ -362,7 +362,7 @@ class StreamMarker(_Stream):
 @fill_doc
 class StreamEEG(_Stream):
     """
-    Class representing a receiver's EEG stream.
+    Class representing a :class:`~bsl.StreamReceiver` EEG stream.
 
     This stream is instanciated as blocking.
 

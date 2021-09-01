@@ -174,13 +174,13 @@ class ScopeEEG(_Scope):
     @property
     def data_buffer(self):
         """
-        Data buffer [channels, samples].
+        Data buffer ``[channels, samples]``.
         """
         return self._data_buffer
 
     @property
     def trigger_buffer(self):
         """
-        Trigger buffer [samples, ].
+        Trigger buffer ``[samples, ]``.
         """
         return self._trigger_buffer

@@ -15,7 +15,7 @@ from ...utils._docs import fill_doc, copy_doc
 @fill_doc
 class _BackendPyQtGraph(_Backend):
     """
-    PyQtGraph backend for BSL's `StreamViewer`.
+    PyQtGraph backend for BSL's :class:`~bsl.StreamViewer`.
 
     Parameters
     ----------
@@ -336,7 +336,7 @@ class _TriggerEvent(_Event):
     @plot_yRange.setter
     def plot_yRange(self, plot_yRange):
         """
-        Impacts the position of the ``textItem``.
+        Impacts the position of the ``TextItem``.
         """
         self._plot_yRange = plot_yRange
         self._update()

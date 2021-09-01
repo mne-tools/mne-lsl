@@ -13,8 +13,9 @@ from ..stream_recorder import StreamRecorder
 class TriggerSoftware(_Trigger):
     """
     Trigger saving signal value in a ``.txt`` file.
-    Software trigger instance must be created after a `StreamRecorder` is
-    started and close/deleted before a `StreamRecorder` is stopped.
+    Software trigger instance must be created after a
+    :class:`~bsl.StreamRecorder` is started and close/deleted before a
+    :class:`~bsl.StreamRecorder` is stopped.
 
     .. code-block:: python
 
@@ -27,8 +28,8 @@ class TriggerSoftware(_Trigger):
 
     Parameters
     ----------
-    recorder : StreamRecorder
-        BSL's `StreamRecorder` used.
+    recorder : :class:`~bsl.StreamRecorder`
+        BSL's :class:`~bsl.StreamRecorder` used.
     %(trigger_verbose)s
     """
 
@@ -85,7 +86,8 @@ class TriggerSoftware(_Trigger):
     @staticmethod
     def _find_eve_file(recorder):
         """
-        Find the event file name from the on going `StreamRecorder`.
+        Find the event file name from the on going
+        :class:`~bsl.StreamRecorder`.
         """
         if recorder.eve_file is None:
             logger.error(
@@ -99,7 +101,7 @@ class TriggerSoftware(_Trigger):
     @property
     def recorder(self):
         """
-        BSL's `StreamRecorder` used.
+        BSL's :class:`~bsl.StreamRecorder` used.
         """
         return self._recorder
 

@@ -21,8 +21,8 @@ def read_raw_fif(fname, events_ext=None, preload=True):
 
     Returns:
     --------
-    raw : Raw
-        MNE raw data.
+    raw : :class:`~mne.io.Raw`
+        MNE :class:`~mne.io.Raw` instance.
     events : np.array
         MNE-compatible events numpy array object (N x [frame, 0, type])
     """

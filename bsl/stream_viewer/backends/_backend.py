@@ -86,9 +86,9 @@ class _Backend(ABC):
     @property
     def scope(self):
         """
-        Scope connected to a `StreamReceiver` acquiring the data and applying
-        filtering. The scope has a buffer of ``BUFFER_DURATION`` seconds
-        (default: 30s).
+        Scope connected to a :class:`~bsl.StreamReceiver` acquiring the data
+        and applying filtering. The scope has a buffer of ``BUFFER_DURATION``
+        seconds (default: 30s).
         """
         return self._scope
 

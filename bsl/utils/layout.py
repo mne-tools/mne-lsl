@@ -94,7 +94,8 @@ def available_layouts(verbose=False):
 class Layout:
     """
     Class containing the layout (Cap + AUX) information.
-    Supports: GTEC_16, BIOSEMI_64, SMARTBCI_24, ANTNEURO_64, DSI_24.
+    Supports: ``GTEC_16``, ``BIOSEMI_64``, ``SMARTBCI_24``, ``ANTNEURO_64``,
+    ``DSI_24``.
 
     Parameters
     ----------
@@ -102,8 +103,7 @@ class Layout:
         Name of the layout. Supported layout names have associated channel
         names and channel types saved in BSL.
     montage : str | DigMontage
-        Montage used by the layout.
-        https://mne.tools/stable/generated/mne.io.Raw.html#mne.io.Raw.set_montage
+        Montage used by the layout set with :meth:`mne.io.Raw.set_montage`.
     ch_names : str | list | None
         Channel's name or list of channels' name in the order receied from LSL.
         If ``None``, looks for a known list based on the layout ``name``.

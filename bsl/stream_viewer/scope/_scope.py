@@ -74,27 +74,27 @@ class _Scope(ABC):
     @property
     def sample_rate(self):
         """
-        Sample rate of the connected stream [Hz].
+        Sample rate of the connected stream ``[Hz]``.
         """
         return self._sample_rate
 
     @property
     def duration_buffer(self):
         """
-        Duration of the scope's buffer [seconds].
+        Duration of the scope's buffer ``[seconds]``.
         """
         return self._duration_buffer
 
     @property
     def duration_buffer_samples(self):
         """
-        Duration of the scope's buffer [samples].
+        Duration of the scope's buffer ``[samples]``.
         """
         return self._duration_buffer_samples
 
     @property
     def ts_list(self):
         """
-        Timestamps buffer [samples, ].
+        Timestamps buffer ``[samples, ]``.
         """
         return self._ts_list
