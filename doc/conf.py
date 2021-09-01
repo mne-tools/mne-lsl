@@ -41,6 +41,7 @@ extensions = [
     'sphinx.ext.autosummary',
     'sphinx.ext.coverage',
     'sphinx.ext.napoleon',
+    'sphinx.ext.intersphinx',
     'sphinx_gallery.gen_gallery'
 ]
 
@@ -129,10 +130,15 @@ sphinx_gallery_conf = {
     'remove_config_comments': True,
     'abort_on_example_error': False,
     'filename_pattern': re.escape(os.sep)
-}
+    }
 
 # -- Other extension configuration -------------------------------------------
 
 # autodoc / autosummary
 autosummary_generate = True
 autodoc_default_options = {'inherited-members': None}
+
+# Add intersphinx mappings
+intersphinx_mapping = {
+    'python': ('http://docs.python.org/3', None),
+    }
