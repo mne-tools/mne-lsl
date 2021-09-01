@@ -20,25 +20,25 @@ mne.set_log_level('ERROR')
 def pcl2fif(fname, out_dir=None, external_event=None,
             precision='double', replace=False, overwrite=True):
     """
-    Convert BSL Python pickle format to MNE :class:`~mne.io.Raw`.
+    Convert BSL Python pickle format to MNE `~mne.io.Raw`.
 
     Parameters
     ----------
-    fname : str
+    fname : `str` | `~pathlib.Path`
         Pickle file path to convert to ``.fif`` format.
-    out_dir : str
-        Saving directory. If ``None``, it will be the directory
+    out_dir : `str` | `~pathlib.Path`
+        Saving directory. If `None`, it will be the directory
         ``fname.parent/'fif'``.
-    external_event : str
+    external_event : `str`
         Event file path in text format, following MNE event structure.
         Each row should be: ``index 0 event``
-    precision : str
-        Data matrix format. [single|double|int|short], ``'single'`` improves
-        backward compatability.
-    replace : bool
-        If ``True``, previous events will be overwritten by the new ones from
+    precision : `str`
+        Data matrix format. ``[single|double|int|short]``, ``'single'``
+        improves backward compatability.
+    replace : `bool`
+        If `True`, previous events will be overwritten by the new ones from
         the external events file.
-    overwrite : bool
+    overwrite : `bool`
         If ``True``, overwrite the previous file.
     """
     fname = Path(fname)
@@ -78,13 +78,13 @@ def pcl2fif(fname, out_dir=None, external_event=None,
 
 def _format_pcl_to_mne_RawArray(data):
     """
-    Format the raw data to the MNE :class:`~mne.io.RawArray` structure.
+    Format the raw data to the MNE RawArray structure.
     Data must be recorded with BSL StreamRecorder.
 
     Parameters
     ----------
     data : dict
-        Data loaded from the ``.pcl`` file.
+        Data loaded from the .pcl file.
 
     Returns
     -------
@@ -164,7 +164,7 @@ def _event_timestamps_to_indices(raw_timestamps, eventfile, offset):
     Returns
     -------
     events : np.array
-        MNE-compatible events ``[shape=(n_events, 3)]``
+        MNE-compatible events [shape=(n_events, 3)]
         Used as input to :class:`mne.io.Raw.add_events`.
     """
 
@@ -191,19 +191,19 @@ def _event_timestamps_to_indices(raw_timestamps, eventfile, offset):
 def _add_events_from_txt(raw, events_index, stim_channel='TRIGGER',
                          replace=False):
     """
-    Merge the events extracted from a ``.txt`` file to the trigger channel.
+    Merge the events extracted from a .txt file to the trigger channel.
 
     Parameters
     ----------
-    raw : :class:`~mne.io.Raw`
-        MNE :class:`~mne.io.Raw` instance.
+    raw : mne.io.Raw
+        MNE Raw instance.
     events_index : np.array
-        MNE-compatible events ``[shape=(n_events, 3)]``.
-        Used as input to ``raw.add_events``.
+        MNE-compatible events [shape=(n_events, 3)].
+        Used as input to raw.add_events.
     stim_channel : str
         Stim channel where the events are added.
     replace : bool
-        If ``True``, the old events on the stim channel are removed before
+        If True, the old events on the stim channel are removed before
         adding the new ones.
     """
     if len(events_index) == 0:
@@ -226,16 +226,16 @@ def any2fif(fname, out_dir=None, overwrite=True, precision='double'):
 
     Parameters
     ----------
-    fname : str
+    fname : `str` | `~pathlib.Path`
         File path to convert to ``.fif`` format.
-    out_dir : str
-        Saving directory. If ``None``, it will be the directory
+    out_dir : `str` | `~pathlib.Path`
+        Saving directory. If `None`, it will be the directory
         ``fname.parent/'fif'.``
-    overwrite : bool
+    overwrite : `bool`
         If ``True``, overwrite previously converted files with the same name.
-    precision : str
-        Data matrix format. [single|double|int|short], ``'single'`` improves
-        backward compatability.
+    precision : `str`
+        Data matrix format. ``[single|double|int|short]``, ``'single'``
+        improves backward compatability.
     """
     fname = Path(fname)
     if not fname.is_file():

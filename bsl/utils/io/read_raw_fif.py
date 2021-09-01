@@ -12,18 +12,18 @@ def read_raw_fif(fname, events_ext=None, preload=True):
 
     Parameters
     ----------
-    fname : str | Path
+    fname : `str` | `~pathlib.Path`
         Path to the ``.fif`` file.
-    events_ext : str | Path
+    events_ext : `str` | `~pathlib.Path`
         Path to the ``.txt`` file containing external events.
-    preload : bool
+    preload : `bool`
         Preload data into memory for data manipulation and faster indexing.
 
     Returns:
     --------
-    raw : :class:`~mne.io.Raw`
-        MNE :class:`~mne.io.Raw` instance.
-    events : np.array
+    raw : `~mne.io.Raw`
+        MNE `~mne.io.Raw` instance.
+    events : `~numpy.array`
         MNE-compatible events numpy array object (N x [frame, 0, type])
     """
     fname = Path(fname)

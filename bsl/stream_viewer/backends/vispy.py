@@ -64,7 +64,7 @@ void main() {
 @fill_doc
 class _BackendVispy(_Backend, vispy.app.Canvas):
     """
-    The Vispy backend for BSL's :class:`~bsl.StreamViewer`.
+    The Vispy backend for BSL's StreamViewer.
 
     Parameters
     ----------
@@ -101,11 +101,11 @@ class _BackendVispy(_Backend, vispy.app.Canvas):
     def _init_program_variables(self):
         """
         Initialize the variables of the Vispy program. The variables are:
-            - ``a_color`` : the color of every vertex
-            - ``a_index`` : the position of every vertex
-            - ``u_scale`` : the ``(x, y)`` scaling
-            - ``u_size`` : the number of rows and columns as ``(row, col)``.
-            - ``u_n`` : the number of samples
+            - a_color : the color of every vertex
+            - a_index : the position of every vertex
+            - u_scale : the (x, y) scaling
+            - u_size : the number of rows and columns as (row, col).
+            - u_n : the number of samples
 
         Initialize the timer calling the main update loop every 20 ms.
         """

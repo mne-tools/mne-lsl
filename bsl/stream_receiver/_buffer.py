@@ -10,9 +10,9 @@ class Buffer():
     Parameters
     ----------
     bufsize : int
-        Buffer's size ``[samples]``.
+        Buffer's size [samples].
     winsize : int
-        Window's size ``[samples]``. Must be smaller than the buffer's size.
+        Window's size [samples]. Must be smaller than the buffer's size.
     """
 
     def __init__(self, bufsize, winsize):
@@ -52,27 +52,27 @@ class Buffer():
     @property
     def bufsize(self):
         """
-        Buffer's size ``[samples]``.
+        Buffer's size [samples].
         """
         return self._bufsize
 
     @property
     def winsize(self):
         """
-        Window's size ``[samples]``.
+        Window's size [samples].
         """
         return self._winsize
 
     @property
     def data(self):
         """
-        Buffer's data ``[samples x channels]``.
+        Buffer's data [samples x channels].
         """
         return self._data
 
     @property
     def timestamps(self):
         """
-        Data's timestamps ``[samples]``.
+        Data's timestamps [samples].
         """
         return self._timestamps

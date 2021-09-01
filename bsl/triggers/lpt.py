@@ -18,7 +18,7 @@ class TriggerLPT(_Trigger):
 
     Parameters
     ----------
-    portaddr : hex | int
+    portaddr : hex | `int`
         Port address in hexadecimal format (standard: ``0x278``, ``0x378``).
     %(trigger_lpt_delay)s
     %(trigger_verbose)s
@@ -52,8 +52,8 @@ class TriggerLPT(_Trigger):
 
     def _signal_off(self):
         """
-        Reset trigger signal to ``0`` and reset offtimer as Threads are
-        one-call only.
+        Reset trigger signal to 0 and reset offtimer as Threads are one-call
+        only.
         """
         self._set_data(0)
         self._offtimer = threading.Timer(self._delay, self._signal_off)
@@ -67,7 +67,7 @@ class TriggerLPT(_Trigger):
     @staticmethod
     def _check_portaddr(portaddr: int) -> int:
         """
-        Checks the ``portaddr`` value against usual values.
+        Checks the portaddr value against usual values.
         """
         if portaddr not in [0x278, 0x378]:
             logger.warning(f'LPT port address {portaddr} is unusual.')
@@ -77,7 +77,7 @@ class TriggerLPT(_Trigger):
     @staticmethod
     def _load_dll():
         """
-        Load the correct ``.dll``.
+        Load the correct .dll.
         """
         import ctypes
 
@@ -179,7 +179,7 @@ class TriggerUSB2LPT(_Trigger):
     @staticmethod
     def _load_dll():
         """
-        Load the correct ``.dll``.
+        Load the correct .dll.
         """
         import ctypes
 
@@ -244,9 +244,9 @@ class TriggerArduino2LPT(_Trigger):
 
         Parameters
         ----------
-        com_port : str
+        com_port : `str`
             Arduino COM port.
-        baud_rate : int
+        baud_rate : `int`
             Baud rate, determines the communication speed.
         """
         import serial

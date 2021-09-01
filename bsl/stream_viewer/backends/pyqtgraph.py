@@ -15,7 +15,7 @@ from ...utils._docs import fill_doc, copy_doc
 @fill_doc
 class _BackendPyQtGraph(_Backend):
     """
-    PyQtGraph backend for BSL's :class:`~bsl.StreamViewer`.
+    PyQtGraph backend for BSL's StreamViewer.
 
     Parameters
     ----------
@@ -322,21 +322,21 @@ class _TriggerEvent(_Event):
     @property
     def plotted(self):
         """
-        ``True`` if the event is displayed, else ``False``.
+        True if the event is displayed, else False.
         """
         return self._plotted
 
     @property
     def plot_yRange(self):
         """
-        Signal range/scale used to position the ``TextItem``.
+        Signal range/scale used to position the TextItem.
         """
         return self._plot_yRange
 
     @plot_yRange.setter
     def plot_yRange(self, plot_yRange):
         """
-        Impacts the position of the ``TextItem``.
+        Impacts the position of the TextItem.
         """
         self._plot_yRange = plot_yRange
         self._update()

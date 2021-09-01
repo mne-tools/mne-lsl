@@ -61,7 +61,7 @@ class StreamPlayer:
     def _stream(self, repeat, high_resolution):
         """
         The function called in the new process.
-        Instance a `_Streamer` and start streaming.
+        Instance a _Streamer and start streaming.
         """
         streamer = _Streamer(
             self._stream_name, self._fif_file,
@@ -72,7 +72,7 @@ class StreamPlayer:
     @staticmethod
     def _check_chunk_size(chunk_size):
         """
-        Checks that ``chunk_size is`` a strictly positive integer.
+        Checks that chunk_size is a strictly positive integer.
         """
         chunk_size = int(chunk_size)
         if chunk_size <= 0:
@@ -189,8 +189,8 @@ class _Streamer:
 
     def _load_data(self, fif_file):
         """
-        Load the data to play from a ``.fif`` file.
-        Multiplies all channel except trigger by ``1e6`` to convert to uV.
+        Load the data to play from a .fif file.
+        Multiplies all channel except trigger by 1e6 to convert to uV.
 
         Parameters
         ----------

@@ -32,8 +32,7 @@ class _Backend(ABC):
 
     def _init_variables(self):
         """
-        Initialize variables depending on ``xRange``, ``yRange`` and
-        ``selected_channels``.
+        Initialize variables depending on xRange, yRange and selected_channels.
         """
         # xRange
         self._delta_with_buffer = self._scope.duration_buffer - self._xRange
@@ -45,7 +44,7 @@ class _Backend(ABC):
     def _update_LPT_trigger_events(self, trigger_arr):
         """
         Check if new LPT events (on the trigger channel) have entered the
-        buffer. New events are added to ``self._trigger_events`` and displayed
+        buffer. New events are added to self._trigger_events and displayed
         if needed.
         """
         pass
@@ -86,9 +85,9 @@ class _Backend(ABC):
     @property
     def scope(self):
         """
-        Scope connected to a :class:`~bsl.StreamReceiver` acquiring the data
-        and applying filtering. The scope has a buffer of ``BUFFER_DURATION``
-        seconds (default: 30s).
+        Scope connected to a StreamReceiver acquiring the data and applying
+        filtering. The scope has a buffer of BUFFER_DURATION seconds
+        (default: 30s).
         """
         return self._scope
 
@@ -141,7 +140,7 @@ class _Backend(ABC):
     @property
     def show_LPT_trigger_events(self):
         """
-        Tick/Untick status of the ``show_LPT_trigger_events`` box.
+        Tick/Untick status of the show_LPT_trigger_events box.
         """
         return self._show_LPT_trigger_events
 
@@ -149,7 +148,7 @@ class _Backend(ABC):
     @abstractmethod
     def show_LPT_trigger_events(self, show_LPT_trigger_events):
         """
-        Called when the user ticks or untick the ``show_LPT_trigger_events``
+        Called when the user ticks or untick the show_LPT_trigger_events
         box.
         """
         pass

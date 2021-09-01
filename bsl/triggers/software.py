@@ -14,8 +14,8 @@ class TriggerSoftware(_Trigger):
     """
     Trigger saving signal value in a ``.txt`` file.
     Software trigger instance must be created after a
-    :class:`~bsl.StreamRecorder` is started and close/deleted before a
-    :class:`~bsl.StreamRecorder` is stopped.
+    `~bsl.StreamRecorder` is started and close/deleted before a
+    `~bsl.StreamRecorder` is stopped.
 
     .. code-block:: python
 
@@ -28,8 +28,8 @@ class TriggerSoftware(_Trigger):
 
     Parameters
     ----------
-    recorder : :class:`~bsl.StreamRecorder`
-        BSL's :class:`~bsl.StreamRecorder` used.
+    recorder : `~bsl.StreamRecorder`
+        BSL's `~bsl.StreamRecorder` used.
     %(trigger_verbose)s
     """
 
@@ -75,6 +75,9 @@ class TriggerSoftware(_Trigger):
     # --------------------------------------------------------------------
     @staticmethod
     def _check_recorder(recorder):
+        """
+        Check that the provided recorder is indeed a StreamRecorder.
+        """
         if not isinstance(recorder, StreamRecorder):
             logger.error(
                 'You must pass a StreamRecorder instance to the '
@@ -86,8 +89,7 @@ class TriggerSoftware(_Trigger):
     @staticmethod
     def _find_eve_file(recorder):
         """
-        Find the event file name from the on going
-        :class:`~bsl.StreamRecorder`.
+        Find the event file name from the on going StreamRecorder.
         """
         if recorder.eve_file is None:
             logger.error(

@@ -51,7 +51,7 @@ class ScopeEEG(_Scope):
     def init_bandpass_filter(self, low, high):
         """
         Initialize the bandpass filter. The filter is a butter filter of order
-        ``BP_ORDER`` (default 2).
+        BP_ORDER (default 2).
 
         Parameters
         ----------
@@ -126,7 +126,7 @@ class ScopeEEG(_Scope):
     def channels_labels(self):
         """
         List of the channel labels present in the connected stream.
-        The ``TRIGGER`` channel is removed.
+        The TRIGGER channel is removed.
         """
         return self._channels_labels
 
@@ -134,14 +134,14 @@ class ScopeEEG(_Scope):
     def nb_channels(self):
         """
         Number of channels present in the connected stream.
-        The ``TRIGGER`` channel is removed.
+        The TRIGGER channel is removed.
         """
         return self._nb_channels
 
     @property
     def apply_car(self):
         """
-        Boolean. Applies CAR if ``True``.
+        Boolean. Applies CAR if True.
         """
         return self._apply_car
 
@@ -152,7 +152,7 @@ class ScopeEEG(_Scope):
     @property
     def apply_bandpass(self):
         """
-        Boolean. Applies bandpass filter if ``True``.
+        Boolean. Applies bandpass filter if True.
         """
         return self._apply_bandpass
 
@@ -174,13 +174,13 @@ class ScopeEEG(_Scope):
     @property
     def data_buffer(self):
         """
-        Data buffer ``[channels, samples]``.
+        Data buffer (channels, samples).
         """
         return self._data_buffer
 
     @property
     def trigger_buffer(self):
         """
-        Trigger buffer ``[samples, ]``.
+        Trigger buffer (samples, ).
         """
         return self._trigger_buffer

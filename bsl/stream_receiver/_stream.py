@@ -20,7 +20,7 @@ HIGH_LSL_OFFSET_THRESHOLD = 0.1  # Threshold above which the offset is high
 @fill_doc
 class _Stream(ABC):
     """
-    Abstract class representing a base :class:`~bsl.StreamReceiver` stream.
+    Abstract class representing a base StreamReceiver stream.
 
     Parameters
     ----------
@@ -127,7 +127,7 @@ class _Stream(ABC):
         Returns
         -------
         chunk : list
-            Data ``[samples x channels]``
+            Data [samples x channels]
         %(receiver_tslist)s
         """
         chunk = []
@@ -194,7 +194,7 @@ class _Stream(ABC):
     @fill_doc
     def _check_winsize(winsize):
         """
-        Check that ``winsize`` is positive.
+        Check that winsize is positive.
 
         Parameters
         ----------
@@ -210,7 +210,7 @@ class _Stream(ABC):
     @fill_doc
     def _check_bufsize(bufsize, winsize):
         """
-        Check that ``bufsize`` is positive and bigger than ``winsize``.
+        Check that bufsize is positive and bigger than winsize.
 
         Parameters
         ----------
@@ -235,7 +235,7 @@ class _Stream(ABC):
     @fill_doc
     def _convert_sec_to_samples(bufsec, sample_rate):
         """
-        Convert a buffer's/window's size from ``sec`` to ``samples``.
+        Convert a buffer's/window's size from sec to samples.
 
         Parameters
         ----------
@@ -297,7 +297,7 @@ class _Stream(ABC):
     @property
     def blocking(self):
         """
-        If ``True``, the stream wait to receive data.
+        If True, the stream wait to receive data.
         """
         return self._blocking
 
@@ -308,7 +308,7 @@ class _Stream(ABC):
     @property
     def blocking_time(self):
         """
-        If blocking is ``True``, how long to wait to receive data in seconds.
+        If blocking is True, how long to wait to receive data in seconds.
         """
         return self._blocking_time
 
@@ -331,7 +331,7 @@ class _Stream(ABC):
 @fill_doc
 class StreamMarker(_Stream):
     """
-    Class representing a :class:`~bsl.StreamReceiver` markers stream.
+    Class representing a StreamReceiver markers stream.
 
     Notice the irregular sampling rate.
     This stream is instanciated as non-blocking.
@@ -362,7 +362,7 @@ class StreamMarker(_Stream):
 @fill_doc
 class StreamEEG(_Stream):
     """
-    Class representing a :class:`~bsl.StreamReceiver` EEG stream.
+    Class representing a StreamReceiver EEG stream.
 
     This stream is instanciated as blocking.
 

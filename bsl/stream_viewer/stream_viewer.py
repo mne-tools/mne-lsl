@@ -14,7 +14,7 @@ class StreamViewer:
     """
     Class for visualizing the signals coming from an LSL stream. The stream
     viewer will connect to only one LSL stream. If ``stream_name`` is set to
-    ``None``, an automatic search is performed followed by a prompt if multiple
+    `None`, an automatic search is performed followed by a prompt if multiple
     non-markers streams are found.
 
     Supports 2 backends:
@@ -23,9 +23,9 @@ class StreamViewer:
 
     Parameters
     ----------
-    stream_name : str | None
+    stream_name : `str` | `None`
         Servers' name to connect to.
-        ``None``: prompts the user.
+        `None`: prompts the user.
     """
 
     def __init__(self, stream_name=None):
@@ -40,10 +40,10 @@ class StreamViewer:
 
         Parameters
         ----------
-        bufsize : int | float
-            Buffer/window size of the attached :class:`~bsl.StreamReceiver`.
+        bufsize : `int` | `float`
+            Buffer/window size of the attached `~bsl.StreamReceiver`.
             The default ``0.2`` should work in most cases.
-        backend : str
+        backend : `str`
             Selected backend for plotting. Supports:
                 - ``'pyqtgraph'``: fully functional.
                 - ``'vispy'``: in progress.
@@ -70,8 +70,8 @@ class StreamViewer:
     @staticmethod
     def _check_stream_name(stream_name):
         """
-        Checks that the ``stream_name`` is valid or search for a valid stream
-        on the network.
+        Checks that the stream_name is valid or search for a valid stream on
+        the network.
         """
         if stream_name is not None and not isinstance(stream_name, str):
             logger.error(
@@ -104,7 +104,7 @@ class StreamViewer:
     @property
     def sr(self):
         """
-        Connected :class:`~bsl.StreamReceiver`.
+        Connected `~bsl.StreamReceiver`.
         """
         return self._sr
 
