@@ -141,4 +141,5 @@ autodoc_default_options = {'inherited-members': None}
 # Add intersphinx mappings
 intersphinx_mapping = {
     'python': ('http://docs.python.org/3', None),
+    'mne': ('https://mne.tools/stable/', None)
     }
