@@ -7,7 +7,8 @@ Install instructions
 BSL requires Python version 3.6 or higher. BSL is available on GitHub and on
 Pypi.
 
-- GitHub: Clone the main repository and install with ``setup.py``:
+- **GitHub**: Clone the `main repository <https://github.com/bsl-tools/bsl>`_
+  and install with ``setup.py``:
 
   .. code-block:: console
 
@@ -15,13 +16,13 @@ Pypi.
 
   For the developer mode, use ``develop`` instead of ``install``.
 
-- Pypi: Install BSL using ``pip``:
+- **Pypi**: Install BSL using ``pip``:
 
   .. code-block:: console
 
       $ pip install bsl
 
-- Conda: Not yet available.
+- **Conda**: Not yet available.
 
 =====================
 Optional dependencies
