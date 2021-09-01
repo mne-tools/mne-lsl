@@ -260,6 +260,9 @@ class Layout:
     def name(self):
         """
         Name of the layout.
+
+        :setter: Change the layout's name.
+        :type: `str`
         """
         return self._name
 
@@ -271,6 +274,9 @@ class Layout:
     def montage(self):
         """
         Montage used by the layout.
+
+        :setter: Change the montage if valid.
+        :type: `str` | `~mne.channels.DigMontage`
         """
         return self._montage
 
@@ -282,6 +288,8 @@ class Layout:
     def ch_names(self):
         """
         List of channels' name in the order receied from LSL.
+
+        :type: `list`
         """
         return self._ch_names
 
@@ -289,5 +297,7 @@ class Layout:
     def ch_types(self):
         """
         List of channels' type in the order received from LSL.
+
+        :type: `list`
         """
         return self._ch_types

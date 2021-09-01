@@ -100,6 +100,9 @@ class TriggerLPT(_Trigger):
     def portaddr(self):
         """
         Port address.
+
+        :setter: Change the port adress if an event has not been sent recently.
+        :type: `int`
         """
         return self._portaddr
 
@@ -116,6 +119,9 @@ class TriggerLPT(_Trigger):
     def delay(self):
         """
         Delay to wait between two ``.signal()`` call in milliseconds.
+
+        :setter: Change the delay if an event has not been sent recently.
+        :type: `float`
         """
         return self._delay * 1000.0
 
@@ -323,6 +329,9 @@ class TriggerArduino2LPT(_Trigger):
     def com_port(self):
         """
         COM port to use.
+
+        :setter: Change the COM port and connect the trigger.
+        :type: `str`
         """
         return self._com_port
 

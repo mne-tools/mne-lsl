@@ -57,6 +57,8 @@ class Timer:
     def autoreset(self):
         """
         Autoreset status.
+
+        :type: `bool`
         """
         return self._autoreset
 

@@ -103,7 +103,9 @@ class TriggerSoftware(_Trigger):
     @property
     def recorder(self):
         """
-        BSL's :class:`~bsl.StreamRecorder` used.
+        BSL's `~bsl.StreamRecorder` used.
+
+        :type: `~bsl.StreamRecorder`
         """
         return self._recorder
 
@@ -111,5 +113,7 @@ class TriggerSoftware(_Trigger):
     def eve_file(self):
         """
         Event ``.ini`` file.
+
+        :type: `~pathlib.Path`
         """
         return self._eve_file

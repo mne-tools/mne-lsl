@@ -101,13 +101,17 @@ class TriggerDef:
     @property
     def by_name(self):
         """
-        A dictionnary with string keys and integers value.
+        A dictionary with string keys and integers value.
+
+        :type: `dict`
         """
         return self._by_name
 
     @property
     def by_value(self):
         """
-        A dictionnary with integers keys and string values.
+        A dictionary with integers keys and string values.
+
+        :type: `dict`
         """
         return self._by_value

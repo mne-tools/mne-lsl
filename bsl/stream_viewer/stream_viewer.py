@@ -98,6 +98,8 @@ class StreamViewer:
     def stream_name(self):
         """
         Connected stream's name.
+
+        :type: `str`
         """
         return self._stream_name
 
@@ -105,19 +107,7 @@ class StreamViewer:
     def sr(self):
         """
         Connected `~bsl.StreamReceiver`.
+
+        :type: `~bsl.StreamReceiver`
         """
         return self._sr
-
-    @property
-    def scope(self):
-        """
-        Connected scope.
-        """
-        return self._scope
-
-    @property
-    def ui(self):
-        """
-        Connected UI interface.
-        """
-        return self._ui

@@ -206,6 +206,8 @@ class StreamRecorder:
     def process(self):
         """
         Launched process.
+
+        :type: `mp.Process`
         """
         return self._process
 
