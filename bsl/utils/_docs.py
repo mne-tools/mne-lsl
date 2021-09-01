@@ -38,9 +38,9 @@ docdict['receiver_timestamps'] = """
 timestamps : `~numpy.array`
     Data's timestamps ``(samples, )``."""
 docdict['receiver_get_unit'] = """
-The method ``.get_`` return a raw data array in the unit streamed by the LSL
-outlet. For conversion, the corresponding multiplier must be set for each
-stream, with e.g. for a stream in uV to convert to V:
+Returns a raw data array in the unit streamed by the LSL outlet. For
+conversion, the corresponding multiplier must be set for each stream, with e.g.
+for a stream in uV to convert to V:
 
 .. code-block:: python
 
