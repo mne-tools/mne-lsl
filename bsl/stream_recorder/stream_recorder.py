@@ -128,13 +128,16 @@ class StreamRecorder:
     @property
     def record_dir(self):
         """
-        Directory where the data will be saved.
+        Path to the directory where the data will be saved.
+
+        :setter: Change the path if a recording is not on-going.
+        :type: `str` | `~pathlib.Path`
         """
         return self._record_dir
 
     @record_dir.setter
     def record_dir(self, record_dir):
-        if self._state == 1:
+        if self._state.value == 1:
             logger.warning(
                 'The recording directory cannot be changed during an '
                 'ongoing recording.')
@@ -144,13 +147,16 @@ class StreamRecorder:
     @property
     def fname(self):
         """
-        File name stem.
+        Set file name stem.
+
+        :setter: Change the file name stem if a recording is not on-going.
+        :type: `str`
         """
         return self._fname
 
     @fname.setter
     def fname(self, fname):
-        if self._state == 1:
+        if self._state.value == 1:
             logger.warning(
                 'The file name cannot be changed during an '
                 'ongoing recording.')
@@ -161,12 +167,15 @@ class StreamRecorder:
     def stream_name(self):
         """
         Servers' name or list of servers' name to connect to.
+
+        :setter: Change the stream to record if a recording is not on-going.
+        :type: `str` | `list`
         """
         return self._stream_name
 
     @stream_name.setter
     def stream_name(self, stream_name):
-        if self._state == 1:
+        if self._state.value == 1:
             logger.warning(
                 'The stream name(s) to connect to cannot be changed during an '
                 'ongoing recording.')
@@ -177,6 +186,8 @@ class StreamRecorder:
     def eve_file(self):
         """
         Path to the event file for `~bsl.triggers.software.TriggerSoftware`.
+
+        :type: `~pathlib.Path`
         """
         return self._eve_file
 
@@ -186,6 +197,8 @@ class StreamRecorder:
         Recording state of the recorder:
             - ``0``: Not recording.
             - ``1``: Recording.
+
+        :type: `mp.Value`
         """
         return self._state
 

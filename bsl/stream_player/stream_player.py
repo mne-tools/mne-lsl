@@ -91,6 +91,9 @@ class StreamPlayer:
     def stream_name(self):
         """
         Stream's server name, displayed on LSL network.
+
+        :setter: Change the server's name if a stream is not on-going.
+        :type: `str`
         """
         return self._stream_name
 
@@ -107,6 +110,9 @@ class StreamPlayer:
     def fif_file(self):
         """
         Path to the ``.fif`` file to play.
+
+        :setter: Change the file to stream if a stream is not on-going.
+        :type: `str` | `~pathlib.Path`
         """
         return self._fif_file
 
@@ -123,6 +129,9 @@ class StreamPlayer:
     def chunk_size(self):
         """
         Size of a chunk of data ``[samples]``.
+
+        :setter: Change the chunk size if a stream is not on-going.
+        :type: `int`
         """
         return self._chunk_size
 
@@ -140,6 +149,9 @@ class StreamPlayer:
         """
         Path to the file containing the table converting event numbers into
         event strings.
+
+        :setter: Change the trigger file if a stream is not on-going.
+        :type: `str` | `~pathlib.Path`
         """
         return self._trigger_file
 

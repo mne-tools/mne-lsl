@@ -382,6 +382,9 @@ class StreamReceiver:
     def bufsize(self):
         """
         Buffer's size ``[sec]``.
+
+        :setter: Checks that the bufsize is valid.
+        :type: `int` | `float`
         """
         return self._bufsize
 
@@ -394,6 +397,9 @@ class StreamReceiver:
     def winsize(self):
         """
         Window's size ``[sec]``.
+
+        :setter: Checks that the winsize is smaller than the bufsize.
+        :type: `int` | `float`
         """
         return self._winsize
 
@@ -407,6 +413,10 @@ class StreamReceiver:
     def stream_name(self):
         """
         Connected stream's name.
+
+        :setter: Try to connect to the new stream(s), revert to old stream(s)
+            if failed.
+        :type: `list` | `None`
         """
         return self._stream_name
 
@@ -427,14 +437,18 @@ class StreamReceiver:
     @property
     def streams(self):
         """
-        Connected streams dictionnary: ``{stream_name: _Stream}``.
+        Connected streams dictionary ``{stream_name: _Stream}``.
+
+        :type: `dict`
         """
         return self._streams
 
     @property
     def mne_infos(self):
         """
-        Dictionnary containing the `mne.Info` for the compatible streams.
+        Dictionary containing the `mne.Info` for the compatible streams.
+
+        :type: `dict`
         """
         return self._mne_infos
 
@@ -442,5 +456,7 @@ class StreamReceiver:
     def connected(self):
         """
         Connected status.
+
+        :type: `bool`
         """
         return self._connected
