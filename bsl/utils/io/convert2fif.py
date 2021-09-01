@@ -165,7 +165,7 @@ def _event_timestamps_to_indices(raw_timestamps, eventfile, offset):
     -------
     events : np.array
         MNE-compatible events [shape=(n_events, 3)]
-        Used as input to :class:`mne.io.Raw.add_events`.
+        Used as input to mne.io.Raw.add_events.
     """
 
     ts_min = min(raw_timestamps)
@@ -221,8 +221,8 @@ supported['.pcl'] = pcl2fif
 
 def any2fif(fname, out_dir=None, overwrite=True, precision='double'):
     """
-    Generic file format converter to :class:`mne.io.Raw`.
-    Uses :func:`mne.io.read_raw`.
+    Generic file format converter to `mne.io.Raw`.
+    Uses `mne.io.read_raw`.
 
     Parameters
     ----------
