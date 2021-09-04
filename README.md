@@ -44,6 +44,9 @@ installed using the keywords:
 - vispy_backend
 
 # Documentation
+
+[**Documentation website.**](https://bsl-tools.github.io/)
+
 BSL is centered around 4 main modules: `stream_receiver`, `stream_recorder`,
 `stream_player` and `stream_viewer`.
 
