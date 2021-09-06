@@ -35,6 +35,10 @@ With the optional arguments:
 - `-t`, `--trigger_file`: path, trigger file mapping events id to strings,
   loaded by :class:`~bsl.triggers.trigger_def.TriggerDef`.
 
+.. image:: _static/cli/stream_player.png
+   :alt: StreamPlayer
+   :align: center
+
 .. _stream_recorder:
 
 ==============
@@ -59,6 +63,10 @@ With the optional arguments:
    current datetime.
  | If the stream to record is not provided, record all streams.
 
+.. image:: _static/cli/stream_recorder.png
+   :alt: StreamRecorder
+   :align: center
+
 .. _stream_viewer:
 
 ============
@@ -79,3 +87,19 @@ With the optional arguments:
  | If the stream to visualize is not provided, a prompt let the user select one
    of the available streams on the network.
  | If the backend is not provided, the default backend `pyqtgraph` is used.
+
+The :class:`~bsl.StreamViewer` opens 2 windows:
+
+- A controller to select the channels to plot and set different plotting
+  parameters.
+
+.. image:: _static/cli/stream_viewer_controller.png
+   :alt: StreamViewer-Controller
+   :align: center
+
+- A plotting window using the specified backend displaying the signal in
+  real-time.
+
+.. image:: _static/cli/stream_viewer_backend.png
+   :alt: StreamViewer-Backend
+   :align: center
