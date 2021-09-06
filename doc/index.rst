@@ -10,6 +10,13 @@
 Brain Streaming Layer Homepage
 ==============================
 
+.. LOGO
+
+.. image:: _static/icon-with-name/icon-with-name.svg
+   :alt: MNE-Python
+   :class: logo
+   :align: center
+
 .. rst-class:: h4 text-center font-weight-light my-4
 
    Open-source Python package for a real-time brain signal streaming framework
