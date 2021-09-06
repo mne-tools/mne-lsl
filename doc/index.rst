@@ -20,7 +20,8 @@ Brain Streaming Layer Homepage
 .. rst-class:: h4 text-center font-weight-light my-4
 
    Open-source Python package for a real-time brain signal streaming framework
-   based around the Lab Streaming Layer (LSL).
+   based around the `Lab Streaming Layer (LSL)
+   <https://labstreaminglayer.readthedocs.io/info/intro.html>`_.
 
 .. toctree::
    :hidden:
