@@ -15,8 +15,8 @@ def find_event_channel(inst=None, ch_names=None):
     ch_names : `list`
         Channels name list.
 
-    Returns:
-    --------
+    Returns
+    -------
     `int` | `None`
         Event channel index or `None` if not found.
     """

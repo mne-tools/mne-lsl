@@ -169,7 +169,7 @@ class StreamPlayer:
         """
         Launched process.
 
-        :type: `mp.Process`
+        :type: `multiprocessing.Process`
         """
         return self._process
 

@@ -19,8 +19,8 @@ def read_raw_fif(fname, events_ext=None, preload=True):
     preload : `bool`
         Preload data into memory for data manipulation and faster indexing.
 
-    Returns:
-    --------
+    Returns
+    -------
     raw : `~mne.io.Raw`
         MNE `~mne.io.Raw` instance.
     events : `~numpy.array`

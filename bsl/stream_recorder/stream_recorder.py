@@ -198,7 +198,7 @@ class StreamRecorder:
             - ``0``: Not recording.
             - ``1``: Recording.
 
-        :type: `mp.Value`
+        :type: `multiprocessing.Value`
         """
         return self._state
 
@@ -207,7 +207,7 @@ class StreamRecorder:
         """
         Launched process.
 
-        :type: `mp.Process`
+        :type: `multiprocessing.Process`
         """
         return self._process
 
