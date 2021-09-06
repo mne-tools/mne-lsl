@@ -13,7 +13,7 @@ Brain Streaming Layer Homepage
 .. LOGO
 
 .. image:: _static/icon-with-name/icon-with-name.svg
-   :alt: MNE-Python
+   :alt: BSL
    :class: logo
    :align: center
 
