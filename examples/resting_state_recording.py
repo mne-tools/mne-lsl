@@ -40,7 +40,7 @@ if __name__ == '__main__':
 # stream.
 
 directory = Path('~/bsl_data/examples').expanduser()
-os.makedirs(directory)
+os.makedirs(directory, exist_ok=True)
 stream_name = None
 
 #%%

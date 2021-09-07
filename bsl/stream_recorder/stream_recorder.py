@@ -320,7 +320,7 @@ class _Recorder:
         """
         Create the .pcl files and check writability.
         """
-        os.makedirs(record_dir)
+        os.makedirs(record_dir, exist_ok=True)
 
         pcl_files = dict()
         for stream in sr.streams:
