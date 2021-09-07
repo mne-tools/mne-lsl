@@ -42,16 +42,16 @@ class StreamReceiver:
         appropriate ones. If a LSL stream fullfills the requirements (name...),
         a connection is established.
 
-        This function is called while instanciating a `StreamReceiver` and can
-        be recall to reconnect to the LSL streams.
+        This function is called while instanciating a `~bsl.StreamReceiver`
+        and can be recall to reconnect to the LSL streams.
 
         Parameters
         ----------
-        timeout : int | float
+        timeout : `int` | `float`
             Timeout duration in seconds after which the search is abandonned.
-        force : bool
-            If True, force reconnect if the `StreamReceiver` was already
-            connected.
+        force : `bool`
+            If ``True``, force reconnect if the `~bsl.StreamReceiver` was
+            already connected.
         """
         if not force and self._connected:
             return True
@@ -124,15 +124,15 @@ class StreamReceiver:
 
     def disconnect(self, stream_name=None):
         """
-        Disconnects the stream ``stream_name`` from the `StreamReceiver`.
-        If ``stream_name`` is a list, disconnects all streams in the list.
-        If ``stream_name`` is ``None``, disconnects all streams.
+        Disconnects the stream ``stream_name`` from the `~bsl.StreamReceiver`.
+        If ``stream_name`` is a `list`, disconnects all streams in the list.
+        If ``stream_name`` is `None`, disconnects all streams.
 
         Parameters
         ----------
-        stream_name : str | list | None
+        stream_name : `str` | `list` | `None`
             Servers' name or list of servers' name to disconnect from.
-            If ``None``, disconnect from all streams.
+            If `None`, disconnect from all streams.
         """
         stream_name = StreamReceiver._check_format_stream_name(stream_name)
         if stream_name is None:
@@ -316,9 +316,9 @@ class StreamReceiver:
 
         Parameters
         ----------
-        stream_name : str | list | None
+        stream_name : `str` | `list` | `None`
             Name of the stream(s) to reset its buffer.
-            If ``None``, reset all stream's buffer.
+            If `None`, reset all stream's buffer.
         """
         stream_name = StreamReceiver._check_format_stream_name(stream_name)
         if stream_name is None:
@@ -334,7 +334,7 @@ class StreamReceiver:
     @staticmethod
     def _check_winsize(winsize):
         """
-        Check that ``winsize`` is positive.
+        Check that winsize is positive.
         """
         if winsize <= 0:
             logger.error(f'Invalid window size {winsize}.')
@@ -345,7 +345,7 @@ class StreamReceiver:
     @staticmethod
     def _check_bufsize(bufsize, winsize):
         """
-        Check that ``bufsize`` is positive and bigger than the ``winsize``.
+        Check that bufsize is positive and bigger than the winsize.
         """
         if bufsize <= 0:
             logger.error(f'Invalid buffer size {bufsize}.')
@@ -362,7 +362,7 @@ class StreamReceiver:
     @staticmethod
     def _check_format_stream_name(stream_name):
         """
-        Check the format of ``stream_name``.
+        Check the format of stream_name.
         """
         if isinstance(stream_name, (list, tuple)):
             stream_name = list(stream_name)
@@ -381,7 +381,10 @@ class StreamReceiver:
     @property
     def bufsize(self):
         """
-        Buffer's size [sec].
+        Buffer's size ``[sec]``.
+
+        :setter: Checks that the bufsize is valid.
+        :type: `int` | `float`
         """
         return self._bufsize
 
@@ -393,7 +396,10 @@ class StreamReceiver:
     @property
     def winsize(self):
         """
-        Window's size [sec].
+        Window's size ``[sec]``.
+
+        :setter: Checks that the winsize is smaller than the bufsize.
+        :type: `int` | `float`
         """
         return self._winsize
 
@@ -407,6 +413,10 @@ class StreamReceiver:
     def stream_name(self):
         """
         Connected stream's name.
+
+        :setter: Try to connect to the new stream(s), revert to old stream(s)
+            if failed.
+        :type: `list` | `None`
         """
         return self._stream_name
 
@@ -427,14 +437,18 @@ class StreamReceiver:
     @property
     def streams(self):
         """
-        Connected streams dictionnary: ``{stream_name: _Stream}``.
+        Connected streams dictionary ``{stream_name: _Stream}``.
+
+        :type: `dict`
         """
         return self._streams
 
     @property
     def mne_infos(self):
         """
-        Dictionnary containing the MNE info for the compatible streams.
+        Dictionary containing the `mne.Info` for the compatible streams.
+
+        :type: `dict`
         """
         return self._mne_infos
 
@@ -442,5 +456,7 @@ class StreamReceiver:
     def connected(self):
         """
         Connected status.
+
+        :type: `bool`
         """
         return self._connected

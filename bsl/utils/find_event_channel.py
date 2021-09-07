@@ -6,19 +6,19 @@ def find_event_channel(inst=None, ch_names=None):
     Find the event channel using heuristics.
 
     Disclaimer: Not 100% guaranteed to find it.
-    If ``raw`` is ``None``, ``ch_names`` must be given.
+    If ``raw`` is `None`, ``ch_names`` must be given.
 
     Parameters
     ----------
-    inst : Raw | numpy.ndarray (n_channels x n_samples)
+    inst : `~mne.io.Raw` | `~numpy.array` ``(n_channels, n_samples)``
         Data instance.
-    ch_names : list
+    ch_names : `list`
         Channels name list.
 
-    Returns:
-    --------
-    int | None
-        Event channel index or ``None`` if not found.
+    Returns
+    -------
+    `int` | `None`
+        Event channel index or `None` if not found.
     """
     valid_trigger_ch_names = ['TRIGGER', 'STI', 'TRG', 'CH_Event']
 

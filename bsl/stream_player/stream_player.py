@@ -36,8 +36,7 @@ class StreamPlayer:
     @fill_doc
     def start(self, repeat=np.float('inf'), high_resolution=False):
         """
-        Start streaming data on LSL network in a new process by calling
-        `_Streamer.stream`.
+        Start streaming data on LSL network in a new process.
 
         Parameters
         ----------
@@ -62,7 +61,7 @@ class StreamPlayer:
     def _stream(self, repeat, high_resolution):
         """
         The function called in the new process.
-        Instance a `_Streamer` and start streaming.
+        Instance a _Streamer and start streaming.
         """
         streamer = _Streamer(
             self._stream_name, self._fif_file,
@@ -73,7 +72,7 @@ class StreamPlayer:
     @staticmethod
     def _check_chunk_size(chunk_size):
         """
-        Checks that ``chunk_size is`` a strictly positive integer.
+        Checks that chunk_size is a strictly positive integer.
         """
         chunk_size = int(chunk_size)
         if chunk_size <= 0:
@@ -92,6 +91,9 @@ class StreamPlayer:
     def stream_name(self):
         """
         Stream's server name, displayed on LSL network.
+
+        :setter: Change the server's name if a stream is not on-going.
+        :type: `str`
         """
         return self._stream_name
 
@@ -108,6 +110,9 @@ class StreamPlayer:
     def fif_file(self):
         """
         Path to the ``.fif`` file to play.
+
+        :setter: Change the file to stream if a stream is not on-going.
+        :type: `str` | `~pathlib.Path`
         """
         return self._fif_file
 
@@ -123,7 +128,10 @@ class StreamPlayer:
     @property
     def chunk_size(self):
         """
-        Size of a chunk of data [samples].
+        Size of a chunk of data ``[samples]``.
+
+        :setter: Change the chunk size if a stream is not on-going.
+        :type: `int`
         """
         return self._chunk_size
 
@@ -141,6 +149,9 @@ class StreamPlayer:
         """
         Path to the file containing the table converting event numbers into
         event strings.
+
+        :setter: Change the trigger file if a stream is not on-going.
+        :type: `str` | `~pathlib.Path`
         """
         return self._trigger_file
 
@@ -157,6 +168,8 @@ class StreamPlayer:
     def process(self):
         """
         Launched process.
+
+        :type: `multiprocessing.Process`
         """
         return self._process
 
@@ -190,8 +203,8 @@ class _Streamer:
 
     def _load_data(self, fif_file):
         """
-        Load the data to play from a ``.fif`` file.
-        Multiplies all channel except trigger by ``1e6`` to convert to uV.
+        Load the data to play from a .fif file.
+        Multiplies all channel except trigger by 1e6 to convert to uV.
 
         Parameters
         ----------

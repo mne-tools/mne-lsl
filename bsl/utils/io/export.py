@@ -11,16 +11,16 @@ from numpy.core.records import fromarrays
 # ----------------------------- EEG LAB -----------------------------
 def write_set(raw, fname):
     """
-    Export raw to EEGLAB ``.set`` file.
+    Export `~mne.io.Raw` to EEGLAB ``.set`` file.
 
     Source: MNELAB
     https://github.com/cbrnr/mnelab/blob/main/mnelab/io/writers.py
 
     Parameters
     ----------
-    raw : Raw
-        MNE instance of Raw.
-    fname : str | Path
+    raw : `~mne.io.Raw`
+        MNE `~mne.io.Raw` instance.
+    fname : `str` | `~pathlib.Path`
         Name/Path of the ``'.set'`` file created.
     """
     data = raw.get_data() * 1e6  # convert to microvolts
