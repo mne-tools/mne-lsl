@@ -70,7 +70,7 @@ def available_layouts(verbose=False):
 
     Parameters
     ----------
-    verbose : bool
+    verbose : `bool`
         If ``True``, display the available layout in the logger as info.
     """
     if verbose:
@@ -94,22 +94,22 @@ def available_layouts(verbose=False):
 class Layout:
     """
     Class containing the layout (Cap + AUX) information.
-    Supports: GTEC_16, BIOSEMI_64, SMARTBCI_24, ANTNEURO_64, DSI_24.
+    Supports: ``GTEC_16``, ``BIOSEMI_64``, ``SMARTBCI_24``, ``ANTNEURO_64``,
+    ``DSI_24``.
 
     Parameters
     ----------
-    name : str
+    name : `str`
         Name of the layout. Supported layout names have associated channel
         names and channel types saved in BSL.
-    montage : str | DigMontage
-        Montage used by the layout.
-        https://mne.tools/stable/generated/mne.io.Raw.html#mne.io.Raw.set_montage
-    ch_names : str | list | None
+    montage : `str` | `~mne.channels.DigMontage`
+        Montage used by the layout set with `mne.io.Raw.set_montage`.
+    ch_names : `str` | `list` | `None`
         Channel's name or list of channels' name in the order receied from LSL.
-        If ``None``, looks for a known list based on the layout ``name``.
-    ch_types : str | list | None
+        If `None`, looks for a known list based on the layout ``name``.
+    ch_types : `str` | `list` | `None`
         List of channels' type in the order received from LSL.
-        If ``None``, looks for a known list based on the layout ``name``.
+        If `None`, looks for a known list based on the layout ``name``.
     """
 
     def __init__(self, name, montage=None, ch_names=None, ch_types=None):
@@ -142,9 +142,9 @@ class Layout:
 
         Parameters
         ----------
-        ch_names : str | list
+        ch_names : `str` | `list`
             Channel's name or list of channels' name to add.
-        ch_types : str | list
+        ch_types : `str` | `list`
             List of corresponding channels' type to add. If a string is
             provided, the channel type is applied to all channels.
         """
@@ -160,7 +160,7 @@ class Layout:
 
         Parameters
         ----------
-        ch_names : str |list
+        ch_names : `str` | `list`
             Channel's name or list of channels' name to remove.
         """
         ch_names = Layout._check_ch_names(ch_names)
@@ -260,6 +260,9 @@ class Layout:
     def name(self):
         """
         Name of the layout.
+
+        :setter: Change the layout's name.
+        :type: `str`
         """
         return self._name
 
@@ -271,6 +274,9 @@ class Layout:
     def montage(self):
         """
         Montage used by the layout.
+
+        :setter: Change the montage if valid.
+        :type: `str` | `~mne.channels.DigMontage`
         """
         return self._montage
 
@@ -282,6 +288,8 @@ class Layout:
     def ch_names(self):
         """
         List of channels' name in the order receied from LSL.
+
+        :type: `list`
         """
         return self._ch_names
 
@@ -289,5 +297,7 @@ class Layout:
     def ch_types(self):
         """
         List of channels' type in the order received from LSL.
+
+        :type: `list`
         """
         return self._ch_types

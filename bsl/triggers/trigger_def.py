@@ -28,7 +28,7 @@ class TriggerDef:
 
     def _extract_from_ini(self):
         """
-        Load the ``.ini`` file.
+        Load the .ini file.
         """
         config = ConfigParser(inline_comment_prefixes=('#', ';'))
         config.optionxform = str
@@ -46,12 +46,12 @@ class TriggerDef:
 
         Parameters
         ----------
-        name : str
+        name : `str`
             Name of the event
-        value : int
+        value : `int`
             Value of the event
-        overwrite : bool
-            If True, overwrite previous event with the same name.
+        overwrite : `bool`
+            If ``True``, overwrite previous event with the same name.
         """
         value = int(value)
         if name in self._by_name and self._by_name[name] == value:
@@ -77,8 +77,8 @@ class TriggerDef:
     @staticmethod
     def _check_trigger_file(trigger_file):
         """
-        Checks that the provided file exists and ends with ``.ini``.
-        Else returns ``None``.
+        Checks that the provided file exists and ends with .ini. Else returns
+        None.
         """
         if trigger_file is None:
             return None
@@ -101,13 +101,17 @@ class TriggerDef:
     @property
     def by_name(self):
         """
-        A dictionnary with string keys and integers value.
+        A dictionary with string keys and integers value.
+
+        :type: `dict`
         """
         return self._by_name
 
     @property
     def by_value(self):
         """
-        A dictionnary with integers keys and string values.
+        A dictionary with integers keys and string values.
+
+        :type: `dict`
         """
         return self._by_value

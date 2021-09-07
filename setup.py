@@ -114,7 +114,7 @@ setup(
         ],
     keywords='neuroscience neuroimaging EEG LSL real-time brain',
     project_urls={
-        'Documentation': 'https://github.com/bsl-tools/bsl',
+        'Documentation': 'https://bsl-tools.github.io/',
         'Source': 'https://github.com/bsl-tools/bsl',
         'Tracker': 'https://github.com/bsl-tools/bsl/issues'
         },
