@@ -20,7 +20,8 @@ from .. import logger
 
 def fetch_file(url, file_name, print_destination=True, resume=True,
                hash_=None, hash_type='md5', timeout=30.):
-    """Load requested file, downloading it if needed or requested.
+    """
+    Load requested file, downloading it if needed or requested.
 
     Parameters
     ----------

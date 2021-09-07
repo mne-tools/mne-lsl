@@ -13,19 +13,23 @@ from ..stream_recorder import StreamRecorder
 class TriggerSoftware(_Trigger):
     """
     Trigger saving signal value in a ``.txt`` file.
-    Software trigger instance must be created after a `StreamRecorder` is
-    started and close/deleted before a `StreamRecorder` is stopped.
-        >>> recorder = StreamRecorder('path to dir')
-        >>> recorder.start()
-        >>> trigger = TriggerSoftware(recorder)
-        >>> # do stuff
-        >>> trigger.close() # OR >>> del trigger
-        >>> recorder.stop()
+    Software trigger instance must be created after a
+    `~bsl.StreamRecorder` is started and close/deleted before a
+    `~bsl.StreamRecorder` is stopped.
+
+    .. code-block:: python
+
+        recorder = StreamRecorder('path to dir')
+        recorder.start()
+        trigger = TriggerSoftware(recorder)
+        # do stuff
+        trigger.close() # OR >>> del trigger
+        recorder.stop()
 
     Parameters
     ----------
-    recorder : StreamRecorder
-        BSL's `StreamRecorder` used.
+    recorder : `~bsl.StreamRecorder`
+        BSL's `~bsl.StreamRecorder` used.
     %(trigger_verbose)s
     """
 
@@ -71,6 +75,9 @@ class TriggerSoftware(_Trigger):
     # --------------------------------------------------------------------
     @staticmethod
     def _check_recorder(recorder):
+        """
+        Check that the provided recorder is indeed a StreamRecorder.
+        """
         if not isinstance(recorder, StreamRecorder):
             logger.error(
                 'You must pass a StreamRecorder instance to the '
@@ -82,7 +89,7 @@ class TriggerSoftware(_Trigger):
     @staticmethod
     def _find_eve_file(recorder):
         """
-        Find the event file name from the on going `StreamRecorder`.
+        Find the event file name from the on going StreamRecorder.
         """
         if recorder.eve_file is None:
             logger.error(
@@ -96,7 +103,9 @@ class TriggerSoftware(_Trigger):
     @property
     def recorder(self):
         """
-        BSL's `StreamRecorder` used.
+        BSL's `~bsl.StreamRecorder` used.
+
+        :type: `~bsl.StreamRecorder`
         """
         return self._recorder
 
@@ -104,5 +113,7 @@ class TriggerSoftware(_Trigger):
     def eve_file(self):
         """
         Event ``.ini`` file.
+
+        :type: `~pathlib.Path`
         """
         return self._eve_file

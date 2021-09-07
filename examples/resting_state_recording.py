@@ -19,9 +19,10 @@ from pathlib import Path
 from bsl import StreamRecorder, StreamPlayer, datasets
 from bsl.triggers.software import TriggerSoftware
 from bsl.utils import Timer
+from bsl.utils.io._file_dir import make_dirs
 
 #%%
-
+#
 # Start a mock LSL stream with a Stream Player for this example purpose.
 # Call in `__main__` because the Stream Player starts a new process, which can
 # not be done outside `__main__` on Windows.
@@ -33,24 +34,25 @@ if __name__ == '__main__':
     player.start()
 
 #%%
-
+#
 # Define the directory used by the recorder and the name of the streams to
 # connect to. Without specifying the argument `stream_name`, the recorder will
 # connect to every LSL stream available and save one .pcl and one .fif file per
 # stream.
 
-directory = Path.cwd()
+directory = Path('~/bsl_data/examples').expanduser()
+make_dirs(directory)
 stream_name = None
 
 #%%
-
+#
 # Define the duration of the resting-state recording in seconds.
 # Typical resting-state recordings last several minutes.
 
-duration = 10
+duration = 5
 
 #%%
-
+#
 # Define in a function the paradigm.
 # - Define a recorder and start it.
 # - Define a trigger.
@@ -74,7 +76,7 @@ def resting_state(directory, stream_name, duration):
     recorder.stop()
 
 #%%
-
+#
 # Alternative paradigm function which prints every seconds to keep track of the
 # progression. The `time.sleep()` is replaced with a while loop.
 
@@ -97,7 +99,7 @@ def resting_state_with_verbose(directory, stream_name, duration):
     recorder.stop()
 
 #%%
-
+#
 # Call in `__main__` the function. The StreamRecorder starts a new process,
 # which can not be done outside `__main__` on Windows.
 # See: https://docs.python.org/2/library/multiprocessing.html#windows
@@ -107,7 +109,7 @@ if __name__ == '__main__':
     # resting_state_with_verbose(directory, stream_name, duration)
 
 #%%
-
+#
 # Stop the mock LSL stream.
 
 if __name__ == '__main__':

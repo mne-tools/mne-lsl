@@ -20,9 +20,10 @@ from matplotlib import pyplot as plt
 from bsl import StreamRecorder, StreamReceiver, StreamPlayer, datasets
 from bsl.triggers.software import TriggerSoftware
 from bsl.utils import Timer
+from bsl.utils.io._file_dir import make_dirs
 
 #%%
-
+#
 # Start a mock LSL stream with a Stream Player for this example purpose.
 # Call in `__main__` because the Stream Player starts a new process, which can
 # not be done outside `__main__` on Windows.
@@ -34,7 +35,7 @@ if __name__ == '__main__':
     player.start()
 
 #%%
-
+#
 # Define the name of the stream to connect to and the window size which will
 # be retrieved and analyzed in real-time. Paradigms using multiple sync streams
 # are possible but more difficult to design.
@@ -42,10 +43,11 @@ if __name__ == '__main__':
 
 stream_name = 'MyStream'
 window_size = 1  # in seconds
-directory = Path.cwd()
+directory = Path('~/bsl_data/examples').expanduser()
+make_dirs(directory)
 
 #%%
-
+#
 # Define a stream receiver and retrieves the window size in samples based on
 # the stream info.
 #
@@ -57,7 +59,7 @@ if __name__ == '__main__':
     window_size_samples = receiver.streams[stream_name].buffer.winsize
 
 #%%
-
+#
 # For the purpose of this example, we will assume a paradigm where 2 phases,
 # rest (1) and regulation (2), of 5 seconds each, alternates 3 times. During
 # the regulation phase, the subject is asked to try to regulate his alpha
@@ -76,11 +78,11 @@ if __name__ == '__main__':
     fft_window = np.hanning(window_size_samples)
 
 #%%
-
+#
 # Define the settings of the online paradigm loop.
 
-n_cycles = 3  # 3 alternation of rest/regulation phases
-phase_duration = 5  # in seconds
+n_cycles = 2  # 2 alternation of rest/regulation phases
+phase_duration = 2  # in seconds
 paradigm_timer = Timer()  # timer used to switch between phases
 phase_timer = Timer()  # timer used within a phase to count the duration
 
@@ -90,18 +92,18 @@ phase_timer = Timer()  # timer used within a phase to count the duration
 # `(timing, event)`. The timing are offset by 1 to give a little headroom to
 # the script and to avoid clipping the first phase.
 
-offset = 1  # offset to avoid clipping the first phase
+offset = 0.2  # offset to avoid clipping the first phase
 events = [(offset, 'rest'), (offset+phase_duration, 'regulation')]
 
 #%%
-
+#
 # Define the value which will be used by the trigger to mark the beginning of
 # each phase.
 
 trigger_values = {'rest': 1, 'regulation': 2}
 
 #%%
-
+#
 # Define in a function the paradigm.
 # - Define a recorder and start it.
 # - Define a trigger.
@@ -171,7 +173,7 @@ def my_online_paradigm():
     return alphas, timings
 
 #%%
-
+#
 # Call in `__main__` the function. The StreamRecorder starts a new process,
 # which can not be done outside `__main__` on Windows.
 # See: https://docs.python.org/2/library/multiprocessing.html#windows
@@ -180,14 +182,15 @@ if __name__ == '__main__':
     alphas, timings = my_online_paradigm()
 
 #%%
-
+#
 # Stop the mock LSL stream.
 
 if __name__ == '__main__':
+    del receiver
     player.stop()
 
 #%%
-
+#
 # Depending on the CPU, on the current CPU load, on the processing apply, the
 # number of acquired window (points) may vary.
 

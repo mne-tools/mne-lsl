@@ -14,7 +14,7 @@ def make_dirs(dirname, delete=False):
     dirname : str | Path
         Name of the new directory.
     delete : bool
-        If ``True`` and the directory already exists, it will be deleted.
+        If True and the directory already exists, it will be deleted.
     """
     dirname = Path(dirname)
     if dirname.exists() and delete:

@@ -17,20 +17,19 @@ def start_server(server_name, n_channels=1, channel_format='string',
 
     Parameters
     ----------
-    server_name : str
+    server_name : `str`
         Name of the server.
-    n_channels : int
+    n_channels : `int`
         Number of channels.
-    channel_format : str
-        Channels' format.
-        ``('string', 'float32', 'double64',
-           'int8', 'int16', 'int32', 'int64')``
-    nominal_srate : float | pylsl.IRREGULAR_RATE
-        Sampling rate [Hz].
-    stype : str
+    channel_format : `str`
+        Channels' format, e.g.
+        ``'string', 'float32', 'double64', 'int8', 'int16', 'int32', 'int64'``
+    nominal_srate : `float` | pylsl.IRREGULAR_RATE
+        Sampling rate ``[Hz]``.
+    stype : `str`
         Signal type. Available type can be found here:
         https://github.com/sccn/xdf/wiki/Meta-Data#stream-content-types
-    source_id : str
+    source_id : `str`
         Unique identifier of the device or source of the data, if available
         (such as the serial number). If ``None``, set to server name.
 
@@ -57,9 +56,9 @@ def start_client(stream_name, timeout=10):
 
     Parameters
     ----------
-    stream_name: str
+    stream_name: `str`
         Name of the stream to search.
-    timeout : int
+    timeout : `int`
         Timeout duration in seconds after which the search of an LSL outlet
         is interrupted.
 
@@ -91,14 +90,14 @@ def list_lsl_streams(ignore_markers=False):
 
     Parameters
     ----------
-    ignore_markers : bool
+    ignore_markers : `bool`
         If ``True``, ignore streams with Marker type.
 
     Returns
     -------
-    stream_list : list
+    stream_list : `list`
         List of the found stream name.
-    streamInfos : list
+    streamInfos : `list`
         List of the corresponding ``pylsl.StreamInfo``.
     """
     stream_list = []
@@ -126,15 +125,15 @@ def search_lsl(ignore_markers=False, timeout=10):
 
     Parameters
     ----------
-    ignore_markers : bool
+    ignore_markers : `bool`
         If ``True``, ignore streams with Marker type.
-    timeout : int
+    timeout : `int`
         Timeout duration in seconds after which the search of an LSL stream
         is interrupted.
 
     Returns
     -------
-    stream_name : str
+    stream_name : `str`
         Selected stream name.
     """
     watchdog = Timer()
@@ -183,7 +182,7 @@ def lsl_channel_list(inlet):
 
     Returns:
     --------
-    ch_list : list
+    ch_list : `list`
         List of channels name [name1, name2, ... ]
     """
     if not isinstance(inlet, pylsl.StreamInlet):
