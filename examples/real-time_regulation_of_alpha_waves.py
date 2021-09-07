@@ -44,7 +44,7 @@ if __name__ == '__main__':
 stream_name = 'MyStream'
 window_size = 1  # in seconds
 directory = Path('~/bsl_data/examples').expanduser()
-os.makedirs(directory)
+os.makedirs(directory, exist_ok=True)
 
 #%%
 #
