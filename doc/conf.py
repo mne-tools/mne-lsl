@@ -142,5 +142,10 @@ autodoc_default_options = {'inherited-members': None}
 intersphinx_mapping = {
     'python': ('http://docs.python.org/3', None),
     'mne': ('https://mne.tools/stable/', None),
-    'numpy': ('https://numpy.org/doc/stable/', None)
+    'numpy': ('https://numpy.org/doc/stable/', None),
+    'scipy': ('https://scipy.github.io/devdocs', None),
+    'matplotlib': ('https://matplotlib.org', None),
+    'sklearn': ('https://scikit-learn.org/stable', None),
+    'pandas': ('https://pandas.pydata.org/pandas-docs/stable', None),
+    'vispy': ('https://vispy.org/', None),
     }
