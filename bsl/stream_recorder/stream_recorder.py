@@ -1,3 +1,4 @@
+import os
 import time
 import pickle
 import datetime
@@ -8,7 +9,6 @@ from .. import logger
 from ..utils import Timer
 from ..utils._docs import fill_doc
 from ..utils.io import pcl2fif
-from ..utils.io._file_dir import make_dirs
 from ..stream_receiver import StreamReceiver, StreamEEG
 from ..stream_receiver._stream import MAX_BUF_SIZE
 
@@ -320,7 +320,7 @@ class _Recorder:
         """
         Create the .pcl files and check writability.
         """
-        make_dirs(record_dir)
+        os.makedirs(record_dir)
 
         pcl_files = dict()
         for stream in sr.streams:

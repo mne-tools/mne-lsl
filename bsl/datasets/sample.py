@@ -3,11 +3,11 @@ Sample dataset of a 64 channel resting-state EEG recording of 40 seconds using
 an ANT Neuro amplifier.
 """
 
+import os
 from pathlib import Path
 
 from ._fetching import fetch_file, _hashfunc
 from .. import logger
-from ..utils.io._file_dir import make_dirs
 
 
 MD5 = '8925f81af22390fd17bb3341d553430f'
@@ -21,7 +21,7 @@ def data_path():
     If the dataset is not locally present, it is downloaded in the user home
     directory in the folder ``bsl-datasets``.
     """
-    make_dirs(PATH.parent)
+    os.makedirs(PATH.parent)
 
     logger.debug('URL:   %s' % (URL,))
     logger.debug('Hash:  %s' % (MD5,))
