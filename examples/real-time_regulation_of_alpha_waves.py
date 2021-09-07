@@ -12,6 +12,7 @@ This example will focus on a simple paradigm to regulate the alpha waves.
 # License: LGPL-2.1
 
 #%%
+import os
 from pathlib import Path
 
 import numpy as np
@@ -20,7 +21,6 @@ from matplotlib import pyplot as plt
 from bsl import StreamRecorder, StreamReceiver, StreamPlayer, datasets
 from bsl.triggers.software import TriggerSoftware
 from bsl.utils import Timer
-from bsl.utils.io._file_dir import make_dirs
 
 #%%
 #
@@ -44,7 +44,7 @@ if __name__ == '__main__':
 stream_name = 'MyStream'
 window_size = 1  # in seconds
 directory = Path('~/bsl_data/examples').expanduser()
-make_dirs(directory)
+os.makedirs(directory)
 
 #%%
 #
