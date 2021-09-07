@@ -37,14 +37,13 @@ class StreamRecorder:
     @fill_doc
     def start(self, fif_subdir=True, blocking=True, verbose=False):
         """
-        Start the recording in a new process. The function is exited when the
-        new process started recording data.
+        Start the recording in a new process.
 
         Parameters
         ----------
         %(recorder_fif_subdir)s
-        blocking : bool
-            If ``True`, waits for the child process to start recording data.
+        blocking : `bool`
+            If ``True``, waits for the child process to start recording data.
         %(recorder_verbose)s
         """
         fname, self._eve_file = StreamRecorder._create_fname(
@@ -84,7 +83,7 @@ class StreamRecorder:
                 stream_name, state, verbose):
         """
         The function called in the new process.
-        Instance a `_Recorder` and start recording.
+        Instance a _Recorder and start recording.
         """
         recorder = _Recorder(
             record_dir, fname, eve_file, fif_subdir,
@@ -95,8 +94,8 @@ class StreamRecorder:
     @staticmethod
     def _check_record_dir(record_dir):
         """
-        Converts ``record_dir`` to a Path, or select the current working
-        directory if ``record_dir`` is ``None``.
+        Converts record_dir to a Path, or select the current working directory
+        if record_dir is None.
         """
         if record_dir is None:
             record_dir = Path.cwd()
@@ -107,7 +106,7 @@ class StreamRecorder:
     @staticmethod
     def _check_fname(fname):
         """
-        Checks that the file name stem is a string or ``None``.
+        Checks that the file name stem is a string or None.
         """
         if fname is not None:
             fname = str(fname)
@@ -116,8 +115,7 @@ class StreamRecorder:
     @staticmethod
     def _create_fname(record_dir, fname):
         """
-        Creates the file name path using the current datetime if ``fname`` is
-        ``None``.
+        Creates the file name path using the current datetime if fname is None.
         """
         fname = fname if fname is not None \
             else time.strftime('%Y%m%d-%H%M%S', time.localtime())
@@ -130,13 +128,16 @@ class StreamRecorder:
     @property
     def record_dir(self):
         """
-        Directory where the data will be saved.
+        Path to the directory where the data will be saved.
+
+        :setter: Change the path if a recording is not on-going.
+        :type: `str` | `~pathlib.Path`
         """
         return self._record_dir
 
     @record_dir.setter
     def record_dir(self, record_dir):
-        if self._state == 1:
+        if self._state.value == 1:
             logger.warning(
                 'The recording directory cannot be changed during an '
                 'ongoing recording.')
@@ -146,13 +147,16 @@ class StreamRecorder:
     @property
     def fname(self):
         """
-        File name stem.
+        Set file name stem.
+
+        :setter: Change the file name stem if a recording is not on-going.
+        :type: `str`
         """
         return self._fname
 
     @fname.setter
     def fname(self, fname):
-        if self._state == 1:
+        if self._state.value == 1:
             logger.warning(
                 'The file name cannot be changed during an '
                 'ongoing recording.')
@@ -163,12 +167,15 @@ class StreamRecorder:
     def stream_name(self):
         """
         Servers' name or list of servers' name to connect to.
+
+        :setter: Change the stream to record if a recording is not on-going.
+        :type: `str` | `list`
         """
         return self._stream_name
 
     @stream_name.setter
     def stream_name(self, stream_name):
-        if self._state == 1:
+        if self._state.value == 1:
             logger.warning(
                 'The stream name(s) to connect to cannot be changed during an '
                 'ongoing recording.')
@@ -178,7 +185,9 @@ class StreamRecorder:
     @property
     def eve_file(self):
         """
-        Path to the event file for ``SOFTWARE`` triggers.
+        Path to the event file for `~bsl.triggers.software.TriggerSoftware`.
+
+        :type: `~pathlib.Path`
         """
         return self._eve_file
 
@@ -188,6 +197,8 @@ class StreamRecorder:
         Recording state of the recorder:
             - ``0``: Not recording.
             - ``1``: Recording.
+
+        :type: `multiprocessing.Value`
         """
         return self._state
 
@@ -195,6 +206,8 @@ class StreamRecorder:
     def process(self):
         """
         Launched process.
+
+        :type: `multiprocessing.Process`
         """
         return self._process
 
@@ -202,21 +215,21 @@ class StreamRecorder:
 @fill_doc
 class _Recorder:
     """
-    Class creating the ``.pcl`` files, recording data through a
-    `StreamReceiver` and saving the data in the ``.pcl`` and ``.fif`` files.
+    Class creating the .pcl files, recording data through a StreamReceiver and
+    saving the data in the .pcl and .fif files.
 
     Parameters
     ----------
     %(recorder_record_dir)s
     %(recorder_fname)s
     eve_file : str | Path
-        Path to the event file for SOFTWARE triggers.
+        Path to the event file for TriggerSoftware.
     %(recorder_fif_subdir)s
     %(stream_name)s
     state : mp.Value
         Recording state of the recorder:
-            - ``0``: Not recording.
-            - ``1``: Recording.
+            - 0: Not recording.
+            - 1: Recording.
         This variable is used to stop the recording from another process.
     %(recorder_verbose)s
     """
@@ -233,7 +246,7 @@ class _Recorder:
 
     def record(self):
         """
-        Instantiate a `StreamReceiver`, create the files, record and save.
+        Instantiate a StreamReceiver, create the files, record and save.
         """
         sr = StreamReceiver(
             bufsize=MAX_BUF_SIZE, stream_name=self._stream_name)
@@ -261,8 +274,7 @@ class _Recorder:
 
     def _save(self, sr, pcl_files):
         """
-        Save the data in the `StreamReceiver` buffer to the ``.pcl`` and
-        ``.fif`` files.
+        Save the data in the StreamReceiver buffer to the .pcl and .fif files.
         """
         logger.info('Saving raw data ...')
         for stream in sr.streams:
@@ -306,7 +318,7 @@ class _Recorder:
     @staticmethod
     def _create_files(record_dir, fname, sr):
         """
-        Create the ``.pcl`` files and check writability.
+        Create the .pcl files and check writability.
         """
         make_dirs(record_dir)
 
