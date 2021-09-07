@@ -21,7 +21,7 @@ def data_path():
     If the dataset is not locally present, it is downloaded in the user home
     directory in the folder ``bsl-datasets``.
     """
-    os.makedirs(PATH.parent)
+    os.makedirs(PATH.parent, exist_ok=True)
 
     logger.debug('URL:   %s' % (URL,))
     logger.debug('Hash:  %s' % (MD5,))
