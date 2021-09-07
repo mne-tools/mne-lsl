@@ -1,6 +1,7 @@
 """
 Convert known file format to FIF.
 """
+import os
 import pickle
 from pathlib import Path
 
@@ -8,7 +9,6 @@ import mne
 import numpy as np
 from mne.io._read_raw import supported
 
-from ._file_dir import make_dirs
 from .. import find_event_channel
 from ... import logger
 
@@ -53,7 +53,7 @@ def pcl2fif(fname, out_dir=None, external_event=None,
         out_dir = Path(out_dir)
     else:
         out_dir = fname.parent / 'fif'
-    make_dirs(out_dir)
+    os.makedirs(out_dir)
 
     fiffile = out_dir / str(fname.stem + '.fif')
 
@@ -261,7 +261,7 @@ def any2fif(fname, out_dir=None, overwrite=True, precision='double'):
             out_dir = Path(out_dir)
         else:
             out_dir = fname.parent / 'fif'
-        make_dirs(out_dir)
+        os.makedirs(out_dir)
 
         fiffile = out_dir / fname.stem + '.fif'
 

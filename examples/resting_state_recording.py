@@ -11,7 +11,7 @@ activity of a subject is measured in the absence of any stimulus or task.
 # License: LGPL-2.1
 
 #%%
-
+import os
 import time
 import datetime
 from pathlib import Path
@@ -19,7 +19,6 @@ from pathlib import Path
 from bsl import StreamRecorder, StreamPlayer, datasets
 from bsl.triggers.software import TriggerSoftware
 from bsl.utils import Timer
-from bsl.utils.io._file_dir import make_dirs
 
 #%%
 #
@@ -41,7 +40,7 @@ if __name__ == '__main__':
 # stream.
 
 directory = Path('~/bsl_data/examples').expanduser()
-make_dirs(directory)
+os.makedirs(directory)
 stream_name = None
 
 #%%
