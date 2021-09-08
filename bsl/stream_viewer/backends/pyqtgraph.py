@@ -116,7 +116,7 @@ class _BackendPyQtGraph(_Backend):
                 position_buffer=position_buffer,
                 position_plot=position_plot,
                 plot_handler=self._plot_handler,
-                plot_yRange=self._yRange)
+                yRange=self._yRange)
 
             if position_plot >= 0:
                 if event.event_type == 'LPT' and self._show_LPT_trigger_events:
@@ -238,17 +238,17 @@ class _TriggerEvent(_Event):
     %(viewer_position_plot)s
     plot_handler : pyqtgraph.PlotItem
         Plot handler.
-    plot_yRange : int | float
+    yRange : int | float
         Currently set signal range/scale.
     """
     colors = {'LPT': pg.mkColor(0, 255, 0)}
 
     def __init__(self, event_type, event_value, position_buffer, position_plot,
-                 plot_handler, plot_yRange):
+                 plot_handler, yRange):
         super().__init__(event_type, event_value,
                          position_buffer, position_plot)
         self._plot_handler = plot_handler
-        self._plot_yRange = plot_yRange
+        self._yRange = yRange
 
         self._lineItem = None
         self._textItem = None
@@ -264,10 +264,10 @@ class _TriggerEvent(_Event):
             self._plot_handler.addItem(self._lineItem)
 
             self._textItem = pg.TextItem(str(self._event_value),
-                                         anchor=(0.5, 1),
+                                         anchor=(0.5, 0.5),
                                          fill=(0, 0, 0),
                                          color=self.colors[self._event_type])
-            self._textItem.setPos(self._position_plot, 1.5*self.plot_yRange)
+            self._textItem.setPos(self._position_plot, 1.5*self._yRange)
             self._plot_handler.addItem(self._textItem)
             self._plotted = True
 
@@ -289,7 +289,7 @@ class _TriggerEvent(_Event):
         if self._lineItem is not None:
             self._lineItem.setValue(self._position_plot)
         if self._textItem is not None:
-            self._textItem.setPos(self._position_plot, 1.5*self.plot_yRange)
+            self._textItem.setPos(self._position_plot, 1.5*self._yRange)
 
     def __del__(self):
         try:
@@ -327,16 +327,16 @@ class _TriggerEvent(_Event):
         return self._plotted
 
     @property
-    def plot_yRange(self):
+    def yRange(self):
         """
         Signal range/scale used to position the TextItem.
         """
-        return self._plot_yRange
+        return self._yRange
 
-    @plot_yRange.setter
-    def plot_yRange(self, plot_yRange):
+    @yRange.setter
+    def yRange(self, yRange):
         """
         Impacts the position of the TextItem.
         """
-        self._plot_yRange = plot_yRange
+        self._yRange = yRange
         self._update()
