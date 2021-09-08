@@ -6,7 +6,9 @@ Triggers
 .. autosummary::
    :toctree: generated/
 
-   mock
-   lpt
-   software
    trigger_def
+   mock
+   software
+   lpt.TriggerLPT
+   lpt.TriggerUSB2LPT
+   lpt.TriggerArduino2LPT

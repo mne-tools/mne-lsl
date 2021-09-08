@@ -224,7 +224,7 @@ class TriggerUSB2LPT(_Trigger):
 class TriggerArduino2LPT(_Trigger):
     """
     Trigger using an ARDUINO to LPT converter. Design of the converter can be
-    found here: %(trigger_lpt_arduino2lpt_link)s
+    found here: :ref:`arduino2lpt`.
 
     Parameters
     ----------
