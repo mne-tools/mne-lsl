@@ -1,9 +1,7 @@
 import time
 import pickle
-from pathlib import Path
 
 import mne
-import pytest
 
 from bsl import StreamRecorder
 from bsl.datasets import sample
