@@ -24,7 +24,7 @@ def _check_recorder_fname_exists(record_dir, eve_file, stream, fif_subdir):
 
 def _check_recorder_files(dataset, record_duration, record_dir, eve_file,
                           stream, fif_subdir):
-    """Checks the file recorded files content."""
+    """Checks the recorded files content."""
     fname_stem = eve_file.stem.split('-eve')[0]
     fname_pcl = record_dir / f'{fname_stem}-{stream}-raw.pcl'
     if fif_subdir:
@@ -39,7 +39,7 @@ def _check_recorder_files(dataset, record_duration, record_dir, eve_file,
     assert raw.info['sfreq'] == raw_pcl['sample_rate'] == raw_fif.info['sfreq']
     assert raw_pcl['signals'].shape[::-1] == raw_fif.get_data().shape
     # some delay is introduce by the process operations
-    assert raw_fif.n_times / raw_fif.info['sfreq'] - record_duration < 0.2
+    assert 0 <= raw_fif.n_times / raw_fif.info['sfreq'] - record_duration < 0.2
 
 
 @requires_sample_dataset
