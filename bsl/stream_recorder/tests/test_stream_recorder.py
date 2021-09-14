@@ -68,18 +68,48 @@ def test_recording_multiple_streams(tmp_path):
 
 
 @requires_sample_dataset
-def test_record_dir_setter(tmp_path):
-    """Test changing the record dir before and during an on-going recording."""
+def test_property_setter(tmp_path):
+    """Test changing the properties before and during an on-going recording."""
     stream = 'StreamPlayer'
     with Stream(stream, sample):
         recorder = StreamRecorder(record_dir=Path.cwd())
+        # Before recording start
         assert recorder.record_dir == Path.cwd()
+        assert recorder.fname is None
+        assert recorder.stream_name is None
         recorder.record_dir = tmp_path
+        recorder.fname = 'test'
+        recorder.stream_name = stream
+
+        # Start
         recorder.start(fif_subdir=False, blocking=True, verbose=False)
+        # Should fail to change anything
         recorder.record_dir = Path.cwd()
+        recorder.fname = 'blabla'
+        recorder.stream_name = 'imaginary stream'
         assert recorder.record_dir == tmp_path
+        assert recorder.fname == 'test'
+        assert recorder.stream_name == stream
+        # Stop
+        eve_file = recorder.eve_file
+        time.sleep(2)
+        recorder.stop()
+        # Checks
+        assert eve_file.stem.split('-eve')[0] == 'test'
+        _check_recorder_fname_exists(tmp_path, eve_file, stream,
+                                     fif_subdir=False)
+
+        # Change values
+        recorder.record_dir = tmp_path / 'test'
+        recorder.fname = None
+        recorder.stream_name = None
+        # Start
+        recorder.start(fif_subdir=False, blocking=True, verbose=False)
+        # Stop
         eve_file = recorder.eve_file
         time.sleep(2)
         recorder.stop()
 
-    _check_recorder_fname_exists(tmp_path, eve_file, stream, fif_subdir=False)
+        # Checks
+        _check_recorder_fname_exists(tmp_path / 'test', eve_file, stream,
+                                      fif_subdir=False)
