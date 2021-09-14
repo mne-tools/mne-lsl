@@ -111,5 +111,6 @@ def test_property_setter(tmp_path):
         recorder.stop()
 
         # Checks
+        assert eve_file.stem.split('-eve')[0] != 'test'
         _check_recorder_fname_exists(tmp_path / 'test', eve_file, stream,
                                       fif_subdir=False)
