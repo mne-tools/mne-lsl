@@ -27,9 +27,9 @@ def data_path():
     logger.debug('Hash:  %s' % (MD5,))
     logger.debug('Path:  %s' % (PATH,))
 
-    if PATH.exists() and _hashfunc(PATH) == MD5:
+    if PATH.exists() and _hashfunc(PATH, hash_type='md5') == MD5:
         download = False
-    elif PATH.exists() and not _hashfunc(PATH) == MD5:
+    elif PATH.exists() and not _hashfunc(PATH, hash_type='md5') == MD5:
         logger.warning(
             'Dataset existing but with different hash. Re-downloading.')
         download = True
