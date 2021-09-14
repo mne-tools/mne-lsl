@@ -41,11 +41,23 @@ def fetch_file(url, file_name, print_destination=True, resume=True,
     timeout : float
         The URL open timeout.
     """
-
-    if hash_ is not None and (not isinstance(hash_, str) or
-                              len(hash_) != 32) and hash_type == 'md5':
-        raise ValueError('Bad hash value given, should be a 32-character '
-                         'string:\n%s' % (hash_,))
+    if hash_ is not None:
+        if not isinstance(hash_, str):
+            raise ValueError(
+                'Bad hash value given, should be a string. Given: %s.'
+                % type(hash_))
+        if hash_type == 'md5' and len(hash_) != 32:
+            raise ValueError(
+                'Bad hash value given, should be a 32-character string:\n%s'
+                % hash_)
+        if hash_type == 'sha1' and len(hash_) != 40:
+            raise ValueError(
+                'Bad hash value given, should be a 40-character string:\n%s'
+                % hash_)
+        if hash_type not in ['md5', 'sha1']:
+            raise ValueError(
+                "Unsupported hash type %s.\nSupported: 'md5', 'sha1'."
+                % hash_type)
     file_name = Path(file_name)
     temp_file_name = file_name.with_suffix(file_name.suffix+'.part')
     scheme = parse.urlparse(url).scheme
@@ -102,6 +114,8 @@ def _hashfunc(fname, block_size=1048576, hash_type="md5"):
         hasher = hashlib.md5()
     elif hash_type == "sha1":
         hasher = hashlib.sha1()
+    else:
+        raise ValueError("Unsupported hash type. Supported: 'md5', 'sha1'.")
     with open(fname, 'rb') as fid:
         while True:
             data = fid.read(block_size)
