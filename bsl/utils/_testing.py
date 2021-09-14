@@ -4,7 +4,7 @@ import requests
 
 import pytest
 
-from bsl import StreamPlayer
+from .. import StreamPlayer
 
 
 def requires_good_network(function):
