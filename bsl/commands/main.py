@@ -13,7 +13,7 @@ def main():
     bsl_root = Path(__file__).parent.parent
     valid_commands = sorted(
         glob.glob(str(bsl_root/'commands'/'bsl_*.py')))
-    valid_commands = [file.split(os.path.sep)[-1][3:-3]
+    valid_commands = [file.split(os.path.sep)[-1][4:-3]
                       for file in valid_commands]
 
     def print_help():
