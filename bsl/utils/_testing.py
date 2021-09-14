@@ -51,5 +51,5 @@ def requires_module(function, name, call=None):
 
 requires_good_network = partial(
     requires_module, name='good network connection',
-    call='if int(os.environ.get("MNE_SKIP_NETWORK_TESTS", 0)):\n'
+    call='if int(os.environ.get("BSL_SKIP_NETWORK_TESTS", 0)):\n'
          '    raise ImportError')
