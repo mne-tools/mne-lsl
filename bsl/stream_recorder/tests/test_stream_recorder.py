@@ -49,7 +49,7 @@ def test_recording(tmp_path):
     stream = 'StreamPlayer'
     record_duration = 2  # seconds
     dataset = sample
-    with Stream(stream, sample):
+    with Stream(stream, dataset):
         recorder = StreamRecorder(record_dir=tmp_path)
         recorder.start(fif_subdir=False, blocking=True, verbose=False)
         eve_file = recorder.eve_file
@@ -64,7 +64,47 @@ def test_recording(tmp_path):
 @requires_sample_dataset
 def test_recording_multiple_streams(tmp_path):
     """Test multi-stream recording capabilities of the stream recorder."""
-    pass
+    record_duration = 2  # seconds
+    dataset = sample
+    with Stream('StreamPlayer1', dataset), Stream('StreamPlayer2', dataset):
+        # Record only StreamPlayer1
+        recorder = StreamRecorder(record_dir=tmp_path / 'only1',
+                                  stream_name='StreamPlayer1')
+        recorder.start(fif_subdir=False, blocking=True, verbose=False)
+        eve_file = recorder.eve_file
+        time.sleep(record_duration)
+        recorder.stop()
+        _check_recorder_fname_exists(tmp_path / 'only1', eve_file,
+                                     'StreamPlayer1', fif_subdir=False)
+        _check_recorder_files(dataset, record_duration, tmp_path / 'only1',
+                              eve_file, 'StreamPlayer1', fif_subdir=False)
+
+        # Record only StreamPlayer2
+        recorder.stream_name = 'StreamPlayer2'
+        recorder.start(fif_subdir=False, blocking=True, verbose=False)
+        eve_file = recorder.eve_file
+        time.sleep(record_duration)
+        recorder.stop()
+        _check_recorder_fname_exists(tmp_path / 'only1', eve_file,
+                                     'StreamPlayer2', fif_subdir=False)
+        _check_recorder_files(dataset, record_duration, tmp_path / 'only1',
+                              eve_file, 'StreamPlayer2', fif_subdir=False)
+
+        # Record both
+        recorder.record_dir = tmp_path
+        recorder.stream_name = None
+        recorder.start(fif_subdir=False, blocking=True, verbose=False)
+        eve_file = recorder.eve_file
+        time.sleep(record_duration)
+        recorder.stop()
+        _check_recorder_fname_exists(tmp_path, eve_file,
+                                     'StreamPlayer1', fif_subdir=False)
+        _check_recorder_fname_exists(tmp_path, eve_file,
+                                     'StreamPlayer2', fif_subdir=False)
+        _check_recorder_files(dataset, record_duration, tmp_path,
+                              eve_file, 'StreamPlayer1', fif_subdir=False)
+        _check_recorder_files(dataset, record_duration, tmp_path,
+                              eve_file, 'StreamPlayer2', fif_subdir=False)
 
 
 @requires_sample_dataset
