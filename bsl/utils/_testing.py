@@ -1,9 +1,10 @@
 """Utility function for testing. Inspired from MNE."""
 
 import os
-import pytest
 from functools import partial
 from contextlib import contextmanager
+
+import pytest
 
 
 @contextmanager
