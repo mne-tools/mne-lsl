@@ -8,7 +8,7 @@ from importlib import import_module
 import bsl
 
 
-def main():
+def run():
     """Entrypoint for bsl <command> usage."""
     bsl_root = Path(__file__).parent.parent
     valid_commands = sorted(
@@ -17,7 +17,7 @@ def main():
                       for file in valid_commands]
 
     def print_help():
-        print("Usage : BrainStreamingLayer command options\n")
+        print("Usage: BrainStreamingLayer command options\n")
         print("Accepted commands:\n")
         for command in valid_commands:
             print("\t- %s" % command)
