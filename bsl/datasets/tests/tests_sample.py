@@ -5,8 +5,8 @@ from bsl.utils._testing import requires_good_network
 
 @requires_good_network
 def test_data_path():
-    """Test that the return path exist and match the desired dataset."""
+    """Test that the path exist and match the desired dataset."""
     path = sample.data_path()
-    hashsum = _hashfunc(path, hash_type='md5')
     assert path.exists()
-    assert hashsum == sample.MD5
+    assert _hashfunc(path, hash_type='md5') == sample.MD5
+    assert _hashfunc(path, hash_type='sha1') == sample.SHA1
