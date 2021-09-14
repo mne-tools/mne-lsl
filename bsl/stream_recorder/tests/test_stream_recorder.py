@@ -1,6 +1,5 @@
 import time
 import pickle
-import logging
 from pathlib import Path
 
 import mne
@@ -57,8 +56,8 @@ def test_recording(tmp_path):
         recorder.stop()
 
     _check_recorder_fname_exists(tmp_path, eve_file, stream, fif_subdir=False)
-    _check_recorder_files(dataset, record_duration, tmp_path, eve_file,
-                          stream, fif_subdir=False)
+    _check_recorder_files(dataset, record_duration, tmp_path,
+                          eve_file, stream, fif_subdir=False)
 
 
 @requires_sample_dataset
