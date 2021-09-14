@@ -11,8 +11,8 @@ WRONG_HASH = {'md5': '12345678912345678912345678912345',
               'sha1': '1234567891234567891234567891234567891234'}
 
 
-@pytest.mark.parametrize('hash_type', ('md5', 'sha1'))
 @requires_good_network
+@pytest.mark.parametrize('hash_type', ('md5', 'sha1'))
 def test_fetch_file(tmp_path, hash_type):
     """Test file download."""
     fetch_file(URL, tmp_path / 'README.md',
