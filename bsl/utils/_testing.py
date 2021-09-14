@@ -1,56 +1,53 @@
 """Utility function for testing. Inspired from MNE."""
 
-import os
-from functools import partial
-from contextlib import contextmanager
+import sys
+import requests
+from io import StringIO
 
 import pytest
 
 
-@contextmanager
-def modified_env(**kwargs):
-    """
-    Use a modified os.environ with temporarily replaced key/value pairs.
-
-    Parameters
-    ----------
-    **kwargs : dict
-        The key/value pairs of environment variables to replace.
-    """
-    orig_env = dict()
-    for key, val in kwargs.items():
-        orig_env[key] = os.getenv(key)
-        if val is not None:
-            if isinstance(val, str):
-                os.environ[key] = val
-        elif key in os.environ:
-            del os.environ[key]
+def requires_good_network(function):
+    """Decorator to skip a test if a network connection is not available."""
     try:
-        yield
-    finally:
-        for key, val in orig_env.items():
-            if val is not None:
-                os.environ[key] = val
-            elif key in os.environ:
-                del os.environ[key]
-
-
-def requires_module(function, name, call=None):
-    """Skip a test if package is not available (decorator)."""
-    call = ('import %s' % name) if call is None else call
-    reason = 'Test %s skipped, requires %s.' % (function.__name__, name)
-    try:
-        exec(call) in globals(), locals()
-    except Exception as exc:
-        if len(str(exc)) > 0 and str(exc) != 'No module named %s' % name:
-            reason += ' Got exception (%s)' % (exc,)
-        skip = True
-    else:
+        requests.get('https://github.com/', timeout=1)
         skip = False
+    except ConnectionError:
+        skip = True
+    name = function.__name__
+    reason = 'Test %s skipped, requires a good network connection.' % name
     return pytest.mark.skipif(skip, reason=reason)(function)
 
 
-requires_good_network = partial(
-    requires_module, name='good network connection',
-    call='if int(os.environ.get("BSL_SKIP_NETWORK_TESTS", 0)):\n'
-         '    raise ImportError')
+class ClosingStringIO(StringIO):
+    """StringIO that closes after getvalue()."""
+
+    def getvalue(self, close=True):
+        """Get the value."""
+        out = super().getvalue()
+        if close:
+            self.close()
+        return out
+
+
+class ArgvSetter:
+    """Context manager to temporarily set sys.argv."""
+
+    def __init__(self, args=(), disable_stdout=True, disable_stderr=True):
+        self.argv = list(('python',) + args)
+        self.stdout = ClosingStringIO() if disable_stdout else sys.stdout
+        self.stderr = ClosingStringIO() if disable_stderr else sys.stderr
+
+    def __enter__(self):
+        self.orig_argv = sys.argv
+        sys.argv = self.argv
+        self.orig_stdout = sys.stdout
+        sys.stdout = self.stdout
+        self.orig_stderr = sys.stderr
+        sys.stderr = self.stderr
+        return self
+
+    def __exit__(self, *args):
+        sys.argv = self.orig_argv
+        sys.stdout = self.orig_stdout
+        sys.stderr = self.orig_stderr
