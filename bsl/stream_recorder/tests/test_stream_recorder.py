@@ -73,6 +73,7 @@ def test_record_dir_setter(tmp_path, caplog):
     stream = 'StreamPlayer'
     with Stream(stream, sample):
         recorder = StreamRecorder(record_dir=Path.cwd())
+        assert recorder.record_dir == Path.cwd()
         recorder.record_dir = tmp_path
         recorder.start(fif_subdir=False, blocking=True, verbose=False)
         recorder.record_dir = Path.cwd()
