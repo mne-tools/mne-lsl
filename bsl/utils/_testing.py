@@ -49,7 +49,7 @@ requires_sample_dataset = partial(_requires_dataset_or_good_network,
                                   dataset=sample)
 
 
-class TestStream:
+class Stream:
     """Context manager to create a test stream.
     dataset must have a `.data_path()` method. Compatible with MNE."""
 
