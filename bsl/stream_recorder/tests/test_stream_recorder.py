@@ -68,7 +68,7 @@ def test_recording_multiple_streams(tmp_path):
 
 
 @requires_sample_dataset
-def test_record_dir_setter(tmp_path, caplog):
+def test_record_dir_setter(tmp_path):
     """Test changing the record dir before and during an on-going recording."""
     stream = 'StreamPlayer'
     with Stream(stream, sample):
