@@ -18,7 +18,6 @@ def test_fetch_file(tmp_path, hash_type):
     fetch_file(URL, tmp_path / 'README.md',
                hash_=HASH[hash_type], hash_type=hash_type)
     # Test wrong hash value
-    wrong_hash = '12345678912345678912345678912345'
     with pytest.raises(RuntimeError, match='Hash mismatch for downloaded'):
         fetch_file(URL, tmp_path / 'README3.md',
                    hash_=WRONG_HASH[hash_type], hash_type=hash_type)
