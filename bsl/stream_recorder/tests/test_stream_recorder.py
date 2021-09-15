@@ -153,3 +153,29 @@ def test_property_setter(tmp_path):
         assert eve_file.stem.split('-eve')[0] != 'test'
         _check_recorder_fname_exists(tmp_path / 'test', eve_file, stream,
                                       fif_subdir=False)
+
+
+@requires_sample_dataset
+def test_arg_fif_subdir(tmp_path):
+    """Test argument fif_subdir."""
+    record_duration = 2  # seconds
+    dataset = sample
+    with Stream('StreamPlayer', dataset):
+        recorder = StreamRecorder(record_dir=tmp_path)
+        recorder.start(fif_subdir=False, blocking=True, verbose=False)
+        eve_file = recorder.eve_file
+        time.sleep(record_duration)
+        recorder.stop()
+        _check_recorder_fname_exists(tmp_path, eve_file,
+                                     'StreamPlayer', fif_subdir=False)
+        _check_recorder_files(dataset, record_duration, tmp_path,
+                              eve_file, 'StreamPlayer', fif_subdir=False)
+
+        recorder.start(fif_subdir=True, blocking=True, verbose=False)
+        eve_file = recorder.eve_file
+        time.sleep(record_duration)
+        recorder.stop()
+        _check_recorder_fname_exists(tmp_path, eve_file,
+                                     'StreamPlayer', fif_subdir=True)
+        _check_recorder_files(dataset, record_duration, tmp_path,
+                              eve_file, 'StreamPlayer', fif_subdir=True)
