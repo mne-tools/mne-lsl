@@ -1,5 +1,6 @@
 """Utility function for testing. Inspired from MNE."""
 
+import time
 import requests
 from pathlib import Path
 from functools import partial
@@ -66,6 +67,8 @@ class Stream:
         self.sp = StreamPlayer(self.stream_name, self.fif_file,
                                self.chunk_size, self.trigger_file)
         self.sp.start(repeat=self.repeat, high_resolution=self.high_resolution)
+        time.sleep(2)  # wait for stream player to start
 
     def __exit__(self, *args):
         self.sp.stop()
+        del self.sp
