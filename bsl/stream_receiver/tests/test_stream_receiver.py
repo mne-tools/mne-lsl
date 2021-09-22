@@ -109,8 +109,7 @@ def test_receiver_multi_streams():
         assert not sr.connected
 
         # test when no stream is connected
-        with pytest.raises(RuntimeError,
-                           match='Stream Receiver is not connected'):
+        with pytest.raises(RuntimeError):
             sr.acquire()
             sr.get_window()
             sr.get_buffer()
@@ -127,10 +126,10 @@ def test_receiver_multi_streams():
 
         # test get_xxx methods
         sr.acquire()
-        with pytest.raises(KeyError, match='Stream Receiver is not connected'):
+        with pytest.raises(KeyError):
             sr.get_window(stream_name='random fake stream')
             sr.get_buffer(stream_name='random fake stream')
-        with pytest.raises(RuntimeError, match='is connected to multiple'):
+        with pytest.raises(RuntimeError):
             sr.get_window(stream_name=None)
             sr.get_buffer(stream_name=None)
 
