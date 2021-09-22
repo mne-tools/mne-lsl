@@ -4,9 +4,9 @@ from bsl.stream_receiver._buffer import Buffer
 def test_buffer():
     """Test Buffer class used by the StreamReceiver."""
     # buffer creation
-    b = Buffer(bufsize=100, winsize=100)
+    b = Buffer(bufsize=100, winsize=80)
     assert b.bufsize == 100
-    assert b.winsize == 100
+    assert b.winsize == 80
     assert len(b.data) == 0
     assert len(b.timestamps) == 0
 
