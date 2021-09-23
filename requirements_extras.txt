@@ -5,6 +5,7 @@
 
 pyserial               # trigger_arduino2lpt
 vispy                  # vispy_backend
-sphinx                 # doc
-pydata-sphinx-theme    # doc
-sphinx-gallery         # doc
+sphinx                 # doc, doc-build, documentation
+pydata-sphinx-theme    # doc, doc-build, documentation
+sphinx-gallery         # doc, doc-build, documentation
+pytest                 # test, testing
