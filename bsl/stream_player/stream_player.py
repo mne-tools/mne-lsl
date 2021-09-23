@@ -1,12 +1,12 @@
 import time
 import multiprocessing as mp
 
+import mne
 import pylsl
 import numpy as np
 
 from .. import logger
 from ..triggers import TriggerDef
-from ..utils.io import read_raw_fif
 from ..utils import find_event_channel
 from ..utils._docs import fill_doc
 
@@ -210,7 +210,7 @@ class _Streamer:
         ----------
         %(player_fif_file)s
         """
-        self._raw, _ = read_raw_fif(fif_file)
+        self._raw = mne.io.read_raw_fif(fif_file, preload=True)
         self._tch = find_event_channel(inst=self._raw)
         self._sample_rate = self._raw.info['sfreq']
         self._ch_count = len(self._raw.ch_names)
