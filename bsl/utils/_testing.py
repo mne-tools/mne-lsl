@@ -56,7 +56,9 @@ def requires_lpt(function):
     ext = '32.dll' if ctypes.sizeof(ctypes.c_voidp) == 4 else '64.dll'
     dllname = 'LptControl_Desktop' + ext
     dll = Path(__file__).parent.parent / 'triggers' / 'lpt_libs' / dllname
-    if not dll.exists():
+    try:
+        lpt = ctypes.cdll.LoadLibrary(str(dll))
+    except:
         return pytest.mark.skipif(True, reason='LPT dll not found.')(function)
     lpt = ctypes.cdll.LoadLibrary(str(dll))
     for portaddr in [0x278, 0x378]:
@@ -73,9 +75,10 @@ def requires_usb2lpt(function):
     ext = '32.dll' if ctypes.sizeof(ctypes.c_voidp) == 4 else '64.dll'
     dllname = 'LptControl_USB2LPT' + ext
     dll = Path(__file__).parent.parent / 'triggers' / 'lpt_libs' / dllname
-    if not dll.exists():
+    try:
+        lpt = ctypes.cdll.LoadLibrary(str(dll))
+    except:
         return pytest.mark.skipif(True, reason='LPT dll not found.')(function)
-    lpt = ctypes.cdll.LoadLibrary(str(dll))
     try:
         lpt.setdata(1)
         return function
