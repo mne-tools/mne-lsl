@@ -19,6 +19,7 @@ from bsl import StreamViewer
 
 
 def run():
+    """Entrypoint for bsl_stream_viewer usage."""
     parser = argparse.ArgumentParser(
         prog='StreamViewer',
         description='Starts a real-time viewer for a stream on LSL network.')
@@ -35,8 +36,3 @@ def run():
 
     stream_viewer = StreamViewer(stream_name)
     stream_viewer.start(backend=backend)
-
-
-def main():
-    """Entrypoint for bsl_stream_viewer usage."""
-    run()

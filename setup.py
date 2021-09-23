@@ -126,10 +126,10 @@ setup(
     include_package_data=True,
     entry_points={
         'console_scripts': [
-            'bsl = bsl.commands.main:main',
-            'bsl_stream_player = bsl.commands.bsl_stream_player:main',
-            'bsl_stream_recorder = bsl.commands.bsl_stream_recorder:main',
-            'bsl_stream_viewer = bsl.commands.bsl_stream_viewer:main'
+            'bsl = bsl.commands.main:run',
+            'bsl_stream_player = bsl.commands.bsl_stream_player:run',
+            'bsl_stream_recorder = bsl.commands.bsl_stream_recorder:run',
+            'bsl_stream_viewer = bsl.commands.bsl_stream_viewer:run'
           ]
         }
     )

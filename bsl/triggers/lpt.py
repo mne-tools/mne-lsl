@@ -2,6 +2,7 @@
 Trigger using an LPT port.
 """
 import time
+import ctypes
 import threading
 from pathlib import Path
 
@@ -79,13 +80,8 @@ class TriggerLPT(_Trigger):
         """
         Load the correct .dll.
         """
-        import ctypes
-
-        if ctypes.sizeof(ctypes.c_voidp) == 4:
-            extension = '32.dll'
-        else:
-            extension = '64.dll'
-        dllname = 'LptControl_Desktop' + extension
+        ext = '32.dll' if ctypes.sizeof(ctypes.c_voidp) == 4 else '64.dll'
+        dllname = 'LptControl_Desktop' + ext
         dllpath = Path(__file__).parent / 'lpt_libs' / dllname
 
         if not dllpath.exists():
@@ -187,13 +183,8 @@ class TriggerUSB2LPT(_Trigger):
         """
         Load the correct .dll.
         """
-        import ctypes
-
-        if ctypes.sizeof(ctypes.c_voidp) == 4:
-            extension = '32.dll'
-        else:
-            extension = '64.dll'
-        dllname = 'LptControl_USB2LPT' + extension
+        ext = '32.dll' if ctypes.sizeof(ctypes.c_voidp) == 4 else '64.dll'
+        dllname = 'LptControl_USB2LPT' + ext
         dllpath = Path(__file__).parent / 'lpt_libs' / dllname
 
         if not dllpath.exists():
