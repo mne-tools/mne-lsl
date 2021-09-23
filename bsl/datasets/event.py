@@ -12,7 +12,7 @@ from .. import logger
 MD5 = '553f24ecb5c8e67ebe597e6e71d7fcdc'
 SHA1 = 'b841bbba374586434916e70403703388fc67ac74'
 URL = 'https://github.com/bsl-tools/bsl-datasets/raw/main/events/events.ini'
-PATH = Path('~/bsl_data/triggers/events.ini').expanduser()
+PATH = Path('~/bsl_data/events/events.ini').expanduser()
 
 
 def data_path():
