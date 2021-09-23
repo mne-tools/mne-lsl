@@ -10,5 +10,4 @@ For exporting, it supports:
 """
 
 from .convert2fif import pcl2fif, any2fif
-from .export import write_set
 from .read_raw_fif import read_raw_fif
