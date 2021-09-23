@@ -40,7 +40,7 @@ def test_receiver():
             len(sr.streams[stream].ch_list)
         assert window.shape[0] == len(timestamps_window) == \
             round(sr.streams[stream].sample_rate * 0.2)
-        assert buffer.shape[0] == len(timestamps_buffer)== \
+        assert buffer.shape[0] == len(timestamps_buffer) == \
             round(sr.streams[stream].sample_rate * 1)
 
         window2, timestamps_window2 = sr.get_window()
