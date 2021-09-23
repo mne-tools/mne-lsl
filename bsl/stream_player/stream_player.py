@@ -34,7 +34,7 @@ class StreamPlayer:
         self._process = None
 
     @fill_doc
-    def start(self, repeat=np.float('inf'), high_resolution=False):
+    def start(self, repeat=float('inf'), high_resolution=False):
         """
         Start streaming data on LSL network in a new process.
 
@@ -266,7 +266,7 @@ class _Streamer:
             logger.info(f'{i} {channel}')
         logger.info(f'Trigger channel : {self._tch}')
 
-    def stream(self, repeat=np.float('inf'), high_resolution=False):
+    def stream(self, repeat=float('inf'), high_resolution=False):
         """
         Stream data on LSL network.
 
