@@ -1,3 +1,5 @@
+import time
+
 import mne
 
 from bsl import StreamRecorder, logger, set_log_level
