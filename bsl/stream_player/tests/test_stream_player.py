@@ -2,14 +2,15 @@ import time
 import pylsl
 
 from bsl import StreamPlayer, logger, set_log_level
-from bsl.datasets import sample
-from bsl.utils._testing import requires_sample_dataset
+from bsl.datasets import sample, event
+from bsl.utils._testing import requires_sample_dataset, requires_event_dataset
 
 
 set_log_level('INFO')
 logger.propagate = True
 
 
+@requires_event_dataset
 @requires_sample_dataset
 def test_stream_player(caplog):
     """Test stream player capabilities."""
@@ -32,7 +33,8 @@ def test_stream_player(caplog):
     sp.chunk_size = 32
     assert sp.chunk_size == 32
 
-    # TODO: Add trigger_file test once its added to datasets
+    sp.trigger_file = event.data_path()
+    assert sp.trigger_file == event.data_path()
 
     # Test property setters
     sp.start(high_resolution=False)
@@ -42,6 +44,8 @@ def test_stream_player(caplog):
     assert 'Stop the stream before changing the FIF file' in caplog.text
     sp.chunk_size = 16
     assert 'Stop the stream before changing the chunk size' in caplog.text
+    sp.trigger_file = None
+    assert 'Stop the stream before changing the trigger file' in caplog.text
     sp.stop()
 
     # Test high_resolution
