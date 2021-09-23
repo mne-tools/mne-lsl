@@ -50,7 +50,7 @@ def _requires_dataset_or_good_network(function, dataset):
 requires_sample_dataset = partial(_requires_dataset_or_good_network,
                                   dataset=sample)
 requires_event_dataset = partial(_requires_dataset_or_good_network,
-                                  dataset=event)
+                                 dataset=event)
 
 
 def requires_lpt(function):
@@ -60,14 +60,14 @@ def requires_lpt(function):
     dll = Path(__file__).parent.parent / 'triggers' / 'lpt_libs' / dllname
     try:
         lpt = ctypes.cdll.LoadLibrary(str(dll))
-    except:
+    except Exception:
         return pytest.mark.skipif(True, reason='LPT dll not found.')(function)
     lpt = ctypes.cdll.LoadLibrary(str(dll))
     for portaddr in [0x278, 0x378]:
         try:
             lpt.setdata(portaddr, 1)
             return function
-        except:
+        except Exception:
             pass
     return pytest.mark.skipif(True, reason='LPT port not found.')(function)
 
@@ -79,12 +79,12 @@ def requires_usb2lpt(function):
     dll = Path(__file__).parent.parent / 'triggers' / 'lpt_libs' / dllname
     try:
         lpt = ctypes.cdll.LoadLibrary(str(dll))
-    except:
+    except Exception:
         return pytest.mark.skipif(True, reason='LPT dll not found.')(function)
     try:
         lpt.setdata(1)
         return function
-    except:
+    except Exception:
         pass
     return pytest.mark.skipif(True, reason='LPT port not found.')(function)
 
@@ -101,7 +101,7 @@ def requires_arduino2lpt(function):
             ser.write(bytes([1]))
             ser.close()
             return function
-        except:
+        except Exception:
             pass
     return pytest.mark.skipif(
         True, reason='Arduino to LPT not found.')(function)
