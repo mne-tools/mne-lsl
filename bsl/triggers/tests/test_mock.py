@@ -1,6 +1,7 @@
 from bsl import logger, set_log_level
 from bsl.triggers.mock import TriggerMock
 
+
 set_log_level('INFO')
 logger.propagate = True
 
