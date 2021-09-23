@@ -9,7 +9,7 @@ from functools import partial
 import pytest
 
 from .. import StreamPlayer
-from ..datasets import sample
+from ..datasets import sample, event
 from ..datasets._fetching import _hashfunc
 
 
@@ -49,6 +49,8 @@ def _requires_dataset_or_good_network(function, dataset):
 
 requires_sample_dataset = partial(_requires_dataset_or_good_network,
                                   dataset=sample)
+requires_event_dataset = partial(_requires_dataset_or_good_network,
+                                  dataset=event)
 
 
 def requires_lpt(function):
