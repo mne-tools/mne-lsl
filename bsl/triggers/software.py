@@ -39,12 +39,8 @@ class TriggerSoftware(_Trigger):
         self._eve_file = TriggerSoftware._find_eve_file(recorder)
         try:
             self._eve_file = open(self._eve_file, 'a')
-        # Close it before if already opened.
-        except IOError:
-            logger.debug(
-                "IOError raised when opening file '%s'." % self._eve_file)
-            self._eve_file.close()  # TODO: Isn't this a string?
-            self._eve_file = open(self._eve_file, 'a')
+        except Exception as err:
+            raise err(f'Could not open {self._eve_file} in append mode.')
 
     @copy_doc(_Trigger.signal)
     def signal(self, value: int) -> bool:
