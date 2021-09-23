@@ -1,5 +1,3 @@
-# Brain Streaming Layer (BSL)
-
 ![BSL logo](doc/_static/icon-with-name/icon-with-name.svg)
 
 **BrainStreamingLayer** provides a real-time brain signal streaming framework.
