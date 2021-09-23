@@ -23,6 +23,7 @@ from bsl import StreamPlayer
 
 
 def run():
+    """Entrypoint for bsl_stream_player usage."""
     parser = argparse.ArgumentParser(
         prog='StreamPlayer',
         description='Starts streaming data from a .fif on the network.')
@@ -51,8 +52,3 @@ def run():
     time.sleep(0.5)
     input(">> Press ENTER to stop replaying data \n")
     sp.stop()
-
-
-def main():
-    """Entrypoint for bsl_stream_player usage."""
-    run()

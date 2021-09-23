@@ -73,6 +73,9 @@ class TriggerDef:
         self._by_name[name] = value
         self._by_value[value] = name
 
+    # TODO: Add remove_event
+    # TODO: Define __setattr__ to take care of changing existing pairs
+
     # --------------------------------------------------------------------
     @staticmethod
     def _check_trigger_file(trigger_file):

@@ -22,6 +22,7 @@ from bsl import StreamRecorder
 
 
 def run():
+    """Entrypoint for bsl_stream_recorder usage."""
     parser = argparse.ArgumentParser(
         prog='StreamRecorder',
         description='Starts recording data from stream(s) on LSL network.')
@@ -45,8 +46,3 @@ def run():
     recorder.start(verbose=True)
     input(">> Press ENTER to stop the recording \n")
     recorder.stop()
-
-
-def main():
-    """Entrypoint for bsl_stream_recorder usage."""
-    run()

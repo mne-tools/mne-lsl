@@ -11,6 +11,7 @@ from .. import logger
 
 
 MD5 = '8925f81af22390fd17bb3341d553430f'
+SHA1 = '65dbf592fa6e18cee049f244ca53c504ddabacc1'
 URL = 'https://github.com/bsl-tools/bsl-datasets/raw/main/eeg/resting-state-sample-raw.fif'
 PATH = Path('~/bsl_data/eeg/resting-state-sample-raw.fif').expanduser()
 
@@ -27,9 +28,9 @@ def data_path():
     logger.debug('Hash:  %s' % (MD5,))
     logger.debug('Path:  %s' % (PATH,))
 
-    if PATH.exists() and _hashfunc(PATH) == MD5:
+    if PATH.exists() and _hashfunc(PATH, hash_type='md5') == MD5:
         download = False
-    elif PATH.exists() and not _hashfunc(PATH) == MD5:
+    elif PATH.exists() and not _hashfunc(PATH, hash_type='md5') == MD5:
         logger.warning(
             'Dataset existing but with different hash. Re-downloading.')
         download = True

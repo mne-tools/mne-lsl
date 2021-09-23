@@ -36,7 +36,7 @@ class StreamReceiver:
         self._mne_infos = dict()
         self.connect()
 
-    def connect(self, timeout=10, force=False):
+    def connect(self, timeout=5, force=False):
         """
         Search for the available streams on the LSL network and connect to the
         appropriate ones. If a LSL stream fullfills the requirements (name...),
@@ -55,7 +55,7 @@ class StreamReceiver:
         """
         if not force and self._connected:
             return True
-
+        self._connected = False
         self._streams = dict()
 
         if self._stream_name is None:
