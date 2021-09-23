@@ -20,18 +20,14 @@ def test_trigger_software(tmp_path):
         assert trigger.verbose
         trigger.verbose = False
 
-        trigger.signal(1)
+        assert trigger.signal(1)
         time.sleep(0.1)
-        trigger.signal(2)
-        time.sleep(0.1)
-        trigger.signal(3)
-        time.sleep(0.1)
-        trigger.signal(4)
+        assert trigger.signal(2)
 
         trigger.close()
         recorder.stop()
 
     raw = mne.io.read_raw_fif(tmp_path / 'test-StreamPlayer-raw.fif')
     events = mne.find_events(raw, stim_channel='TRIGGER')
-    assert events.shape == (4, 3)
-    assert (events[:, 2] == [1, 2, 3, 4]).all()
+    assert events.shape == (2, 3)
+    assert (events[:, 2] == [1, 2]).all()
