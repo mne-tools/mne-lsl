@@ -7,14 +7,6 @@ Utils
    :toctree: generated/
 
    find_event_channel
+   io
    lsl
    timer
-
-.. currentmodule:: bsl.utils.io
-
-.. autosummary::
-   :toctree: generated/
-
-    read_raw_fif
-    convert2fif
-    export
