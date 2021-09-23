@@ -8,10 +8,13 @@ from ..utils._docs import fill_doc
 @fill_doc
 class TriggerDef:
     """
-    Class for reading event's pairs (string-integer) from ``.ini`` file.
+    Class used to store pairs (str: int) of events name and events value. Each
+    name and each value is unique. The pairs can be read from a ``.ini`` file
+    or edited manually with `~bsl.triggers.TriggerDef.add_event` and
+    `~bsl.triggers.TriggerDef.remove_event`.
 
-    The class will also have as attributes ``self.event_str = event_int`` for
-    all pairs.
+    The class will expose the name as attributes ``self.event_str = event_int``
+    for all pairs.
 
     Parameters
     ----------
@@ -34,11 +37,17 @@ class TriggerDef:
         config.optionxform = str
         config.read(str(self._trigger_file))
 
-        for key, value in config.items('events'):
+        for name, value in config.items('events'):
             value = int(value)
-            setattr(self, key, value)
-            self._by_name[key] = value
-            self._by_value[value] = key
+            if name in self._by_name:
+                logger.info(f'Event name {name} already exists.')
+                continue
+            if value in self._by_value:
+                logger.info(f'Event value {value} already exists.')
+                continue
+            setattr(self, name, value)
+            self._by_name[name] = value
+            self._by_value[value] = name
 
     def add_event(self, name, value, overwrite=False):
         """
@@ -51,30 +60,65 @@ class TriggerDef:
         value : `int`
             Value of the event
         overwrite : `bool`
-            If ``True``, overwrite previous event with the same name.
+            If ``True``, overwrite previous event with the same name or value.
         """
         value = int(value)
-        if name in self._by_name and self._by_name[name] == value:
-            logger.info(
-                f'The event {name} is already set with the value {value}.')
+        if name in self._by_name and not overwrite:
+            logger.info(f'Event name {name} already exists.')
             return
-        elif name in self._by_name and self._by_name[name] != value:
-            if not overwrite:
-                logger.warning(
-                    f'The event {name} is already set with the value {value}. '
-                    'Skipping.')
-                return
-            else:
-                logger.info(
-                    f'The event {name} is already set with the value {value}. '
-                    'Overwriting.')
+        if value in self._by_value and not overwrite:
+            logger.info(f'Event value {value} already exists.')
+            return
+
+        if name in self._by_name:
+            self.remove_event(name)
+        if value in self._by_value:
+            self.remove_event(value)
 
         setattr(self, name, value)
         self._by_name[name] = value
         self._by_value[value] = name
 
-    # TODO: Add remove_event
-    # TODO: Define __setattr__ to take care of changing existing pairs
+    def remove_event(self, event):
+        """
+        Remove an event from the trigger definition instance.
+        The event can be given by name (str) or by value (int).
+
+        Parameters
+        ----------
+        event : `str` | `int`
+            If a `str` is provided, assumes event is the name.
+            If a `int` is provided, assumes event is the value.
+        """
+        if isinstance(event, str):
+            if event not in self._by_name:
+                logger.info(f'Event name {event} not found.')
+                return
+            value = self._by_name[event]
+            delattr(self, event)
+            del self._by_name[event]
+            del self._by_value[value]
+        elif isinstance(event, (int, float)):
+            event = int(event)
+            if event not in self._by_value:
+                logger.info(f'Event value {event} not found.')
+                return
+            name = self._by_value[event]
+            delattr(self, name)
+            del self._by_name[name]
+            del self._by_value[event]
+        else:
+            raise TypeError(
+                f'Supported event types are (str, int), not {type(event)}.')
+
+    def __repr__(self):
+        """Representation of the stored events."""
+        if len(self._by_name) == 0:
+            return 'TriggerDef: No event found.'
+        repr_ = f'TriggerDef: {len(self._by_name)} events.\n'
+        for name, value in self._by_name.items():
+            repr_ += f'  {name}: {value}\n'
+        return repr_
 
     # --------------------------------------------------------------------
     @staticmethod
