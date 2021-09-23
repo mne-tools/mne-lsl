@@ -1,6 +1,7 @@
 """Utility function for testing. Inspired from MNE."""
 
 import time
+import ctypes
 import requests
 from pathlib import Path
 from functools import partial
@@ -48,6 +49,57 @@ def _requires_dataset_or_good_network(function, dataset):
 
 requires_sample_dataset = partial(_requires_dataset_or_good_network,
                                   dataset=sample)
+
+
+def requires_lpt(function):
+    """Decorator to skip a test if a build-in LPT port is not available."""
+    ext = '32.dll' if ctypes.sizeof(ctypes.c_voidp) == 4 else '64.dll'
+    dllname = 'LptControl_Desktop' + ext
+    dll = Path(__file__).parent.parent / 'triggers' / 'lpt_libs' / dllname
+    if not dll.exists():
+        return pytest.mark.skipif(True, reason='LPT dll not found.')(function)
+    lpt = ctypes.cdll.LoadLibrary(str(dll))
+    for portaddr in [0x278, 0x378]:
+        try:
+            lpt.setdata(portaddr, 1)
+            return function
+        except:
+            pass
+    return pytest.mark.skipif(True, reason='LPT port not found.')(function)
+
+
+def requires_usb2lpt(function):
+    """Decorator to skip a test if a USB to LPT converter is not available."""
+    ext = '32.dll' if ctypes.sizeof(ctypes.c_voidp) == 4 else '64.dll'
+    dllname = 'LptControl_USB2LPT' + ext
+    dll = Path(__file__).parent.parent / 'triggers' / 'lpt_libs' / dllname
+    if not dll.exists():
+        return pytest.mark.skipif(True, reason='LPT dll not found.')(function)
+    lpt = ctypes.cdll.LoadLibrary(str(dll))
+    try:
+        lpt.setdata(1)
+        return function
+    except:
+        pass
+    return pytest.mark.skipif(True, reason='LPT port not found.')(function)
+
+
+def requires_arduino2lpt(function):
+    """Decorator to skip a test if an Arduino to LPT converter is not
+    available."""
+    import serial
+    from serial.tools import list_ports
+    for arduino in list_ports.grep(regexp='Arduino'):
+        try:
+            ser = serial.Serial(arduino.device, 115200)
+            time.sleep(0.2)
+            ser.write(bytes([1]))
+            ser.close()
+            return function
+        except:
+            pass
+    return pytest.mark.skipif(
+        True, reason='Arduino to LPT not found.')(function)
 
 
 class Stream:
