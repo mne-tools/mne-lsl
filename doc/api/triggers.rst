@@ -7,8 +7,8 @@ Triggers
    :toctree: generated/
 
    trigger_def
-   mock
-   software
+   mock.TriggerMock
+   software.TriggerSoftware
    lpt.TriggerLPT
    lpt.TriggerUSB2LPT
    lpt.TriggerArduino2LPT

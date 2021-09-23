@@ -7,3 +7,4 @@ Datasets
    :toctree: generated/
 
    sample
+   event
