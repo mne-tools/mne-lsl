@@ -45,6 +45,7 @@ class _BackendPyQtGraph(_Backend):
         self._plot_handler.setDownsampling(ds=subsampling_ratio,
                                            auto=None, mode='mean')
         self._plot_handler.setMouseEnabled(x=False, y=False)
+        self._plot_handler.setMenuEnabled(False)
         self._init_canvas()
 
         # Plots
