@@ -41,6 +41,8 @@ developement mode with `python setup.py develop`. Optional dependencies can be
 installed using the keywords:
 - trigger_arduino2lpt
 - vispy_backend
+- doc
+- test
 
 # Documentation
 
@@ -69,6 +71,9 @@ data, timestamps = sr.get_window(stream_name='StreamPlayer')
 The data and its timestamps are returned as numpy array:
 - `data.shape = (samples, channels)`
 - `timestamps.shape = (samples, )`
+
+The data can be returned as an MNE raw instance if `return_raw` is set to
+`True`.
 
 ## StreamRecorder
 The stream recorder connects to one or more LSL streams and periodically
