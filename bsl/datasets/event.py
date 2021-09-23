@@ -1,6 +1,5 @@
 """
-Sample dataset of a 64 channel resting-state EEG recording of 40 seconds using
-an ANT Neuro amplifier.
+Sample trigger definition file.
 """
 
 import os
@@ -10,15 +9,15 @@ from ._fetching import fetch_file, _hashfunc
 from .. import logger
 
 
-MD5 = '8925f81af22390fd17bb3341d553430f'
-SHA1 = '65dbf592fa6e18cee049f244ca53c504ddabacc1'
-URL = 'https://github.com/bsl-tools/bsl-datasets/raw/main/eeg/resting-state-sample-raw.fif'
-PATH = Path('~/bsl_data/eeg/resting-state-sample-raw.fif').expanduser()
+MD5 = '553f24ecb5c8e67ebe597e6e71d7fcdc'
+SHA1 = 'b841bbba374586434916e70403703388fc67ac74'
+URL = 'https://github.com/bsl-tools/bsl-datasets/raw/main/events/events.ini'
+PATH = Path('~/bsl_data/triggers/events.ini').expanduser()
 
 
 def data_path():
     """
-    Return the path to the sample dataset.
+    Return the path to the sample trigger event file.
     If the dataset is not locally present, it is downloaded in the user home
     directory in the folder ``bsl-data``.
     """

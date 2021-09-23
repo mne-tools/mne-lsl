@@ -1,5 +1,7 @@
 from bsl import logger, set_log_level
+from bsl.datasets import event
 from bsl.triggers import TriggerDef
+from bsl.utils._testing import requires_event_dataset
 
 
 set_log_level('INFO')
@@ -16,6 +18,7 @@ def _check_pair(tdef, name, value):
     assert getattr(tdef, name) == value
 
 
+@requires_event_dataset
 def test_trigger_def(caplog):
     """Test trigger def class."""
     # Test with trigger_file = None
@@ -70,6 +73,17 @@ def test_trigger_def(caplog):
     assert 2 not in tdef._by_value
     assert not hasattr(tdef, 'rest')
 
-    # TODO: Test with file and test _extract_from_ini.
-    # Add example .ini file to datasets.
-    # Add example using trigger def and .ini file.
+    # Test with .ini file
+    tdef = TriggerDef(event.data_path())
+    assert tdef._by_name['rest'] == 1
+    assert tdef._by_name['stim_left'] == 2
+    assert tdef._by_name['stim_right'] == 3
+    assert tdef._by_name['feedback'] == 4
+    assert tdef._by_name['start'] == 5
+    assert tdef._by_name['stop'] == 6
+    assert tdef._by_value[1] == 'rest'
+    assert tdef._by_value[2] == 'stim_left'
+    assert tdef._by_value[3] == 'stim_right'
+    assert tdef._by_value[4] == 'feedback'
+    assert tdef._by_value[5] == 'start'
+    assert tdef._by_value[6] == 'stop'
