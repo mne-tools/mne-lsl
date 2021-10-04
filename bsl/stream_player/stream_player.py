@@ -259,7 +259,7 @@ class _Streamer:
         Display the informations about the created LSL stream.
         """
         logger.info(f'Stream name: {self._stream_name}')
-        logger.info(f'Sampling frequency {self._sample_rate = :.3f} Hz')
+        logger.info(f'Sampling frequency {self._sample_rate:.3f} Hz')
         logger.info(f'Number of channels : {self._ch_count}')
         logger.info(f'Chunk size : {self._chunk_size}')
         for i, channel in enumerate(self._raw.ch_names):
