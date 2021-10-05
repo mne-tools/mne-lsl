@@ -84,7 +84,7 @@ class StreamPlayer:
             else:
                 logger.warning(
                     'Argument repeat must be a strictly positive integer. '
-                    'Provided: {repeat} -> Changing to +inf.')
+                    f'Provided: {repeat} -> Changing to +inf.')
                 return float('inf')
 
     @staticmethod
@@ -99,10 +99,17 @@ class StreamPlayer:
         elif isinstance(trigger_def, (str, Path)):
             trigger_def = Path(trigger_def)
             if not trigger_def.exists():
+                logger.warning(
+                    'Argument trigger_def is a path that does not exist. '
+                    f'Provided {trigger_def} -> Ignoring.')
                 return None
             trigger_def = TriggerDef(trigger_def)
             return trigger_def
         else:
+            logger.warning(
+                'Argument trigger_def was not a TriggerDef instance or a path '
+                'to a trigger definition ini file. '
+                f'Provided {type(trigger_def)} -> Ignoring.')
             return None
 
     @staticmethod
