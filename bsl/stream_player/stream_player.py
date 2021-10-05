@@ -130,7 +130,7 @@ class StreamPlayer:
                 'The chunk size is different from the usual 16 or 32.')
         if invalid:
             logger.warning(
-                'Argument repeat must be a strictly positive integer. '
+                'Argument chunk_size must be a strictly positive integer. '
                 f'Provided: {chunk_size} -> Changing to 16.')
             return 16
         else:
