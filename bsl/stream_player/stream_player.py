@@ -156,19 +156,18 @@ class StreamPlayer:
         """
         Checks that chunk_size is a strictly positive integer.
         """
-        invalid = False
         try:
             chunk_size = int(chunk_size)
-            if chunk_size <= 0:
-                invalid = True
+            valid = True
         except:
-            invalid = True
+            valid = False
+        valid = True if (valid and 0 < chunk_size) else False
 
-        if not invalid and chunk_size not in (16, 32):
+        if valid and chunk_size not in (16, 32):
             logger.warning(
                 'The chunk size %s is different from the usual '
                 'values 16 or 32.', chunk_size)
-        if invalid:
+        if not valid:
             logger.error(
                 'Argument chunk_size must be a strictly positive integer. '
                 'Provided: %s -> Changing to 16.', chunk_size)
