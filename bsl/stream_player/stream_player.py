@@ -40,14 +40,28 @@ class StreamPlayer:
         self._state = mp.Value('i', 0)
 
     @fill_doc
-    def start(self):
+    def start(self, blocking=True):
         """
         Start streaming data on LSL network in a new process.
+
+        Parameters
+        ----------
+        blocking : `bool`
+            If ``True``, waits for the child process to start streaming data.
         """
+        raw = mne.io.read_raw_fif(self._fif_file, preload=True, verbose=False)
+
         logger.info('Streaming started.')
-        self._process = mp.Process(target=self._stream,
-                                   args=(self._repeat, self._high_resolution))
+        self._process = mp.Process(
+            target=self._stream,
+            args=(self._stream_name, raw, self._repeat,
+                  self._trigger_def, self._chunk_size, self._high_resolution,
+                  self._state))
         self._process.start()
+
+        if blocking:
+            while self._state.value == 0:
+                pass
 
     def stop(self):
         """
@@ -59,15 +73,16 @@ class StreamPlayer:
             self._process.kill()
             self._process = None
 
-    def _stream(self, repeat, high_resolution):
+    def _stream(self, stream_name, raw, repeat, trigger_def, chunk_size,
+                high_resolution, state):
         """
         The function called in the new process.
         Instance a _Streamer and start streaming.
         """
         streamer = _Streamer(
-            self._stream_name, self._fif_file,
-            self._chunk_size, self._trigger_def)
-        streamer.stream(repeat, high_resolution)
+            stream_name, raw, repeat, trigger_def, chunk_size,
+            high_resolution, state)
+        streamer.stream()
 
     # --------------------------------------------------------------------
     @staticmethod
@@ -76,7 +91,7 @@ class StreamPlayer:
         Check if the provided fif_file is valid.
         """
         try:
-            mne.io.read_raw_fif(fif_file, preload=False)
+            mne.io.read_raw_fif(fif_file, preload=False, verbose=None)
             return fif_file
         except Exception:
             raise ValueError(
@@ -242,84 +257,34 @@ class _Streamer:
     %(trigger_file)s
     """
 
-    def __init__(self, stream_name, fif_file, chunk_size, trigger_file=None):
-        self._stream_name = str(stream_name)
-        self._chunk_size = StreamPlayer._check_chunk_size(chunk_size)
+    def __init__(self, stream_name, raw, repeat, trigger_def,
+                 chunk_size, high_resolution, state):
+        self._stream_name = stream_name
+        self._raw = raw
+        self._repeat = repeat
+        self._trigger_def = trigger_def
+        self._chunk_size = chunk_size
+        self._high_resolution = high_resolution
+        self._state = state
 
-        if trigger_file is None:
-            self._tdef = None
-        else:
-            try:
-                self._tdef = TriggerDef(trigger_file)
-            except Exception:
-                self._tdef = None
-
-        self._load_data(fif_file)
-
-    def _load_data(self, fif_file):
-        """
-        Load the data to play from a .fif file.
-        Multiplies all channel except trigger by 1e6 to convert to uV.
-
-        Parameters
-        ----------
-        %(player_fif_file)s
-        """
-        self._raw = mne.io.read_raw_fif(fif_file, preload=True)
-        self._tch = find_event_channel(inst=self._raw)
-        self._sample_rate = self._raw.info['sfreq']
-        self._ch_count = len(self._raw.ch_names)
-        idx = np.arange(self._raw._data.shape[0]) != self._tch
-        self._raw._data[idx, :] = self._raw.get_data()[idx, :] * 1E6
-        # TODO: Base the scaling on the units in the raw info
-
-        self._set_lsl_info(self._stream_name)
+        self._sinfo = _Streamer._create_lsl_info(
+            stream_name=self._stream_name,
+            channel_count=len(self._raw.ch_names),
+            nominal_srate=self._raw.info['sfreq'],
+            ch_names=self._raw.ch_names)
+        self._scale_raw_data()
         self._outlet = pylsl.StreamOutlet(
             self._sinfo, chunk_size=self._chunk_size)
-        self._show_info()
 
-    def _set_lsl_info(self, stream_name):
+    def _scale_raw_data(self):
         """
-        Set the LSL server's infos needed to create the LSL stream.
+        Assumes raw data is in Volt and convert to microvolts.
 
-        Parameters
-        ----------
-        %(player_stream_name)s
+        # TODO: Base the scaling on the units in the raw info
         """
-        sinfo = pylsl.StreamInfo(
-            stream_name, channel_count=self._ch_count,
-            channel_format='float32', nominal_srate=self._sample_rate,
-            type='EEG', source_id=stream_name)
-
-        desc = sinfo.desc()
-        channel_desc = desc.append_child("channels")
-        for channel in self._raw.ch_names:
-            channel_desc.append_child('channel')\
-                        .append_child_value('label', str(channel))\
-                        .append_child_value('type', 'EEG')\
-                        .append_child_value('unit', 'microvolts')
-
-        desc.append_child('amplifier')\
-            .append_child('settings')\
-            .append_child_value('is_slave', 'false')
-
-        desc.append_child('acquisition')\
-            .append_child_value('manufacturer', 'BSL')\
-            .append_child_value('serial_number', 'N/A')
-
-        self._sinfo = sinfo
-
-    def _show_info(self):
-        """
-        Display the informations about the created LSL stream.
-        """
-        logger.info(f'Stream name: {self._stream_name}')
-        logger.info(f'Sampling frequency {self._sample_rate:.3f} Hz')
-        logger.info(f'Number of channels : {self._ch_count}')
-        logger.info(f'Chunk size : {self._chunk_size}')
-        for i, channel in enumerate(self._raw.ch_names):
-            logger.info(f'{i} {channel}')
-        logger.info(f'Trigger channel : {self._tch}')
+        tch = find_event_channel(inst=self._raw)
+        idx = np.arange(self._raw._data.shape[0]) != tch
+        self._raw._data[idx, :] = self._raw.get_data()[idx, :] * 1E6
 
     def stream(self, repeat=float('inf'), high_resolution=False):
         """
@@ -410,3 +375,32 @@ class _Streamer:
                         else:
                             logger.info(
                                 f'Events: {event} (Undefined event {event})')
+
+    # --------------------------------------------------------------------
+    @staticmethod
+    def _create_lsl_info(stream_name, channel_count, nominal_srate, ch_names):
+        """
+        Extract information from raw and set the LSL server's information
+        needed to create the LSL stream.
+        """
+        sinfo = pylsl.StreamInfo(
+            stream_name, channel_count=channel_count, channel_format='float32',
+            nominal_srate=nominal_srate, type='EEG', source_id=stream_name)
+
+        desc = sinfo.desc()
+        channel_desc = desc.append_child("channels")
+        for channel in ch_names:
+            channel_desc.append_child('channel')\
+                        .append_child_value('label', str(channel))\
+                        .append_child_value('type', 'EEG')\
+                        .append_child_value('unit', 'microvolts')
+
+        desc.append_child('amplifier')\
+            .append_child('settings')\
+            .append_child_value('is_slave', 'false')
+
+        desc.append_child('acquisition')\
+            .append_child_value('manufacturer', 'BSL')\
+            .append_child_value('serial_number', 'N/A')
+
+        return sinfo
