@@ -32,6 +32,7 @@ class StreamPlayer:
         self._chunk_size = StreamPlayer._check_chunk_size(chunk_size)
         self._trigger_file = trigger_file
         self._process = None
+        self._state = mp.Value('i', 0)
 
     @fill_doc
     def start(self, repeat=float('inf'), high_resolution=False):
@@ -136,6 +137,17 @@ class StreamPlayer:
         :type: `multiprocessing.Process`
         """
         return self._process
+
+    @property
+    def state(self):
+        """
+        Streaming state of the player:
+            - ``0``: Not streaming.
+            - ``1``: Streaming.
+
+        :type: `multiprocessing.Value`
+        """
+        return self._state
 
 
 @fill_doc
