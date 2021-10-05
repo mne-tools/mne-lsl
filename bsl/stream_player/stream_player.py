@@ -97,15 +97,6 @@ class StreamPlayer:
         """
         return self._stream_name
 
-    @stream_name.setter
-    def stream_name(self, stream_name):
-        if self._process is None:
-            self._stream_name = str(stream_name)
-        else:
-            logger.error(
-                f'StreamPlayer is currently streaming on {self._stream_name}. '
-                'Stop the stream before changing the name. Skipping.')
-
     @property
     def fif_file(self):
         """
@@ -115,15 +106,6 @@ class StreamPlayer:
         :type: `str` | `~pathlib.Path`
         """
         return self._fif_file
-
-    @fif_file.setter
-    def fif_file(self, fif_file):
-        if self._process is None:
-            self._fif_file = fif_file
-        else:
-            logger.error(
-                f'StreamPlayer is currently streaming on {self._stream_name}. '
-                'Stop the stream before changing the FIF file. Skipping.')
 
     @property
     def chunk_size(self):
@@ -135,15 +117,6 @@ class StreamPlayer:
         """
         return self._chunk_size
 
-    @chunk_size.setter
-    def chunk_size(self, chunk_size):
-        if self._process is None:
-            self._chunk_size = StreamPlayer._check_chunk_size(chunk_size)
-        else:
-            logger.error(
-                f'StreamPlayer is currently streaming on {self._stream_name}. '
-                'Stop the stream before changing the chunk size. Skipping.')
-
     @property
     def trigger_file(self):
         """
@@ -154,15 +127,6 @@ class StreamPlayer:
         :type: `str` | `~pathlib.Path`
         """
         return self._trigger_file
-
-    @trigger_file.setter
-    def trigger_file(self, trigger_file):
-        if self._process is None:
-            self._trigger_file = trigger_file
-        else:
-            logger.error(
-                f'StreamPlayer is currently streaming on {self._stream_name}. '
-                'Stop the stream before changing the trigger file. Skipping.')
 
     @property
     def process(self):
