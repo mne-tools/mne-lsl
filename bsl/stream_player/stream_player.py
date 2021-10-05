@@ -67,7 +67,7 @@ class StreamPlayer:
         Stop the streaming, by terminating the process.
         """
         if self._process is None:
-            logger.warning('StreamPlayer was not stareted. Skipping.')
+            logger.warning('StreamPlayer was not started. Skipping.')
             return
 
         with self._state.get_lock():
@@ -80,7 +80,8 @@ class StreamPlayer:
         if self._process.is_alive():
             logger.error('StreamPlayer process not finishing.. killing.')
             self._process.kill()
-            self._process = None
+
+        self._process = None
 
     def _stream(self, stream_name, raw, repeat, trigger_def, chunk_size,
                 high_resolution, state):
