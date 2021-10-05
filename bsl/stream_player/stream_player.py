@@ -81,7 +81,7 @@ class StreamPlayer:
         except Exception:
             raise ValueError(
                 'Argument fif_file must be a path to a valid MNE raw file. '
-                f'Provided: {fif_file}.')
+                'Provided: %s.', fif_file)
 
     @staticmethod
     def _check_repeat(repeat):
@@ -97,7 +97,7 @@ class StreamPlayer:
             else:
                 logger.error(
                     'Argument repeat must be a strictly positive integer. '
-                    f'Provided: {repeat} -> Changing to +inf.')
+                    'Provided: %s -> Changing to +inf.', repeat)
                 return float('inf')
 
     @staticmethod
@@ -114,7 +114,7 @@ class StreamPlayer:
             if not trigger_def.exists():
                 logger.error(
                     'Argument trigger_def is a path that does not exist. '
-                    f'Provided: {trigger_def} -> Ignoring.')
+                    'Provided: %s -> Ignoring.', trigger_def)
                 return None
             trigger_def = TriggerDef(trigger_def)
             return trigger_def
@@ -122,7 +122,7 @@ class StreamPlayer:
             logger.error(
                 'Argument trigger_def was not a TriggerDef instance or a path '
                 'to a trigger definition ini file. '
-                f'Provided: {type(trigger_def)} -> Ignoring.')
+                'Provided: %s -> Ignoring.', type(trigger_def))
             return None
 
     @staticmethod
@@ -140,12 +140,12 @@ class StreamPlayer:
 
         if not invalid and chunk_size not in (16, 32):
             logger.warning(
-                f'The chunk size {chunk_size} is different from the usual '
-                'values 16 or 32.')
+                'The chunk size %s is different from the usual '
+                'values 16 or 32.', chunk_size)
         if invalid:
             logger.error(
                 'Argument chunk_size must be a strictly positive integer. '
-                f'Provided: {chunk_size} -> Changing to 16.')
+                'Provided: %s -> Changing to 16.', chunk_size)
             return 16
         else:
             return chunk_size
