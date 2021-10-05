@@ -117,17 +117,24 @@ class StreamPlayer:
         """
         Checks that chunk_size is a strictly positive integer.
         """
-        chunk_size = int(chunk_size)
-        if chunk_size <= 0:
-            logger.error(
-                'The chunk size must be a positive integer. Usual: 16, 32.')
-            raise ValueError
+        invalid = False
+        try:
+            chunk_size = int(chunk_size)
+            if chunk_size <= 0:
+                invalid = True
+        except:
+            invalid = True
 
-        if chunk_size not in (16, 32):
+        if not invalid and chunk_size not in (16, 32):
             logger.warning(
                 'The chunk size is different from the usual 16 or 32.')
-
-        return chunk_size
+        if invalid:
+            logger.warning(
+                'Argument repeat must be a strictly positive integer. '
+                f'Provided: {chunk_size} -> Changing to 16.')
+            return 16
+        else:
+            return chunk_size
 
     # --------------------------------------------------------------------
     @property
