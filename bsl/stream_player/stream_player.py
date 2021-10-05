@@ -20,33 +20,32 @@ class StreamPlayer:
     ----------
     %(player_stream_name)s
     %(player_fif_file)s
-    %(player_chunk_size)s
+    %(player_repeat)s
     %(trigger_file)s
+    %(player_chunk_size)s
+    %(player_high_resolution)s
     """
 
-    def __init__(self, stream_name, fif_file,
-                 chunk_size=16, trigger_file=None):
-
+    def __init__(self, stream_name, fif_file, repeat=float('inf'),
+                 trigger_file=None, chunk_size=16, high_resolution=False):
         self._stream_name = str(stream_name)
         self._fif_file = fif_file
-        self._chunk_size = StreamPlayer._check_chunk_size(chunk_size)
+        self._repeat = repeat
         self._trigger_file = trigger_file
+        self._chunk_size = StreamPlayer._check_chunk_size(chunk_size)
+        self._high_resolution = high_resolution
+
         self._process = None
         self._state = mp.Value('i', 0)
 
     @fill_doc
-    def start(self, repeat=float('inf'), high_resolution=False):
+    def start(self):
         """
         Start streaming data on LSL network in a new process.
-
-        Parameters
-        ----------
-        %(player_repeat)s
-        %(player_high_resolution)s
         """
         logger.info('Streaming started.')
         self._process = mp.Process(target=self._stream,
-                                   args=(repeat, high_resolution))
+                                   args=(self._repeat, self._high_resolution))
         self._process.start()
 
     def stop(self):
@@ -93,7 +92,6 @@ class StreamPlayer:
         """
         Stream's server name, displayed on LSL network.
 
-        :setter: Change the server's name if a stream is not on-going.
         :type: `str`
         """
         return self._stream_name
@@ -103,20 +101,20 @@ class StreamPlayer:
         """
         Path to the ``.fif`` file to play.
 
-        :setter: Change the file to stream if a stream is not on-going.
         :type: `str` | `~pathlib.Path`
         """
         return self._fif_file
 
     @property
-    def chunk_size(self):
+    def repeat(self):
         """
-        Size of a chunk of data ``[samples]``.
+        Number of times the stream player will loop on the FIF file before
+        interrupting. Default ``float('inf')`` can be passed to never interrupt
+        streaming.
 
-        :setter: Change the chunk size if a stream is not on-going.
-        :type: `int`
+        :type: `int` | ``float('ìnf')``
         """
-        return self._chunk_size
+        return self._repeat
 
     @property
     def trigger_file(self):
@@ -124,10 +122,27 @@ class StreamPlayer:
         Path to the file containing the table converting event numbers into
         event strings.
 
-        :setter: Change the trigger file if a stream is not on-going.
         :type: `str` | `~pathlib.Path`
         """
         return self._trigger_file
+
+    @property
+    def chunk_size(self):
+        """
+        Size of a chunk of data ``[samples]``.
+
+        :type: `int`
+        """
+        return self._chunk_size
+
+    @property
+    def high_resolution(self):
+        """
+        If True, use an high resolution counter instead of a sleep.
+
+        :type: `bool`
+        """
+        return self._high_resolution
 
     @property
     def process(self):
