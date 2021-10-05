@@ -39,7 +39,6 @@ class StreamPlayer:
         self._process = None
         self._state = mp.Value('i', 0)
 
-    @fill_doc
     def start(self, blocking=True):
         """
         Start streaming data on LSL network in a new process.
