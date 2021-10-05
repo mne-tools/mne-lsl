@@ -122,6 +122,8 @@ class StreamPlayer:
         definition file, in which case it is loader and pass as a TriggerDef,
         or a TriggerDef instance. Else sets it as None.
         """
+        if trigger_def is None:
+            return trigger_def
         if isinstance(trigger_def, TriggerDef):
             return trigger_def
         elif isinstance(trigger_def, (str, Path)):
@@ -291,7 +293,7 @@ class _Streamer:
         Stream data on LSL network.
         """
         idx_chunk = 0
-        t_chunk = self._chunk_size / self._sample_rate
+        t_chunk = self._chunk_size / self._raw.info['sfreq']
         finished = False
 
         if self._high_resolution:
