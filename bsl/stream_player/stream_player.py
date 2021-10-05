@@ -272,6 +272,7 @@ class _Streamer:
             channel_count=len(self._raw.ch_names),
             nominal_srate=self._raw.info['sfreq'],
             ch_names=self._raw.ch_names)
+        self._tch = find_event_channel(inst=self._raw)
         self._scale_raw_data()
         self._outlet = pylsl.StreamOutlet(
             self._sinfo, chunk_size=self._chunk_size)
@@ -282,31 +283,29 @@ class _Streamer:
 
         # TODO: Base the scaling on the units in the raw info
         """
-        tch = find_event_channel(inst=self._raw)
-        idx = np.arange(self._raw._data.shape[0]) != tch
+        idx = np.arange(self._raw._data.shape[0]) != self._tch
         self._raw._data[idx, :] = self._raw.get_data()[idx, :] * 1E6
 
-    def stream(self, repeat=float('inf'), high_resolution=False):
+    def stream(self):
         """
         Stream data on LSL network.
-
-        Parameters
-        ----------
-        %(player_repeat)s
-        %(player_high_resolution)s
         """
         idx_chunk = 0
         t_chunk = self._chunk_size / self._sample_rate
         finished = False
 
-        if high_resolution:
+        if self._high_resolution:
             t_start = time.perf_counter()
         else:
             t_start = time.time()
 
-        # start streaming
         played = 0
-        while True:
+
+        with self._state.get_lock():
+            self._state.value = 1
+
+        # Streaming loop
+        while self._state.value == 1:
 
             idx_current = idx_chunk * self._chunk_size
             idx_next = idx_current + self._chunk_size
@@ -316,7 +315,8 @@ class _Streamer:
             if idx_current >= self._raw._data.shape[1] - self._chunk_size:
                 finished = True
 
-            self._sleep(high_resolution, idx_chunk, t_start, t_chunk)
+            _Streamer._sleep(self._high_resolution, idx_chunk, t_start,
+                             t_chunk)
 
             self._outlet.push_chunk(data)
             logger.debug(
@@ -329,32 +329,17 @@ class _Streamer:
             if finished:
                 idx_chunk = 0
                 finished = False
-                if high_resolution:
+                if self._high_resolution:
                     t_start = time.perf_counter()
                 else:
                     t_start = time.time()
                 played += 1
 
-                if played < repeat:
+                if played < self._repeat:
                     logger.info('Reached the end of data. Restarting.')
                 else:
                     logger.info('Reached the end of data. Stopping.')
                     break
-
-    def _sleep(self, high_resolution, idx_chunk, t_start, t_chunk):
-        """
-        Determine the time to sleep.
-        """
-        if high_resolution:
-            # if a resolution over 2 KHz is needed
-            t_sleep_until = t_start + idx_chunk * t_chunk
-            while time.perf_counter() < t_sleep_until:
-                pass
-        else:
-            # time.sleep() can have 500 us resolution.
-            t_wait = t_start + idx_chunk * t_chunk - time.time()
-            if t_wait > 0.001:
-                time.sleep(t_wait)
 
     def _log_event(self, chunk):
         """
@@ -364,11 +349,11 @@ class _Streamer:
             event_values = set(chunk[self._tch]) - set([0])
 
             if len(event_values) > 0:
-                if self._tdef is None:
+                if self._trigger_def is None:
                     logger.info(f'Events: {event_values}')
                 else:
                     for event in event_values:
-                        if event in self._tdef.by_value:
+                        if event in self._trigger_def.by_value:
                             logger.info(
                                 f'Events: {event} '
                                 f'({self._tdef.by_value[event]})')
@@ -404,3 +389,19 @@ class _Streamer:
             .append_child_value('serial_number', 'N/A')
 
         return sinfo
+
+    @staticmethod
+    def _sleep(high_resolution, idx_chunk, t_start, t_chunk):
+        """
+        Determine the time to sleep.
+        """
+        # if a resolution over 2 KHz is needed.
+        if high_resolution:
+            t_sleep_until = t_start + idx_chunk * t_chunk
+            while time.perf_counter() < t_sleep_until:
+                pass
+        # time.sleep() can have 500 us resolution.
+        else:
+            t_wait = t_start + idx_chunk * t_chunk - time.time()
+            if t_wait > 0.001:
+                time.sleep(t_wait)
