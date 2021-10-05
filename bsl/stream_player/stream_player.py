@@ -30,7 +30,7 @@ class StreamPlayer:
     def __init__(self, stream_name, fif_file, repeat=float('inf'),
                  trigger_def=None, chunk_size=16, high_resolution=False):
         self._stream_name = str(stream_name)
-        self._fif_file = fif_file
+        self._fif_file = StreamPlayer._check_fif_file(fif_file)
         self._repeat = StreamPlayer._check_repeat(repeat)
         self._trigger_def = StreamPlayer._check_trigger_def(trigger_def)
         self._chunk_size = StreamPlayer._check_chunk_size(chunk_size)
@@ -71,6 +71,19 @@ class StreamPlayer:
 
     # --------------------------------------------------------------------
     @staticmethod
+    def _check_fif_file(fif_file):
+        """
+        Check if the provided fif_file is valid.
+        """
+        try:
+            mne.io.read_raw_fif(fif_file, preload=False)
+            return fif_file
+        except Exception:
+            raise ValueError(
+                'Argument fif_file must be a path to a valid MNE raw file. '
+                f'Provided: {fif_file}.')
+
+    @staticmethod
     def _check_repeat(repeat):
         """
         Checks that repeat is either infinity or a strictly positive integer.
@@ -101,7 +114,7 @@ class StreamPlayer:
             if not trigger_def.exists():
                 logger.error(
                     'Argument trigger_def is a path that does not exist. '
-                    f'Provided {trigger_def} -> Ignoring.')
+                    f'Provided: {trigger_def} -> Ignoring.')
                 return None
             trigger_def = TriggerDef(trigger_def)
             return trigger_def
@@ -109,7 +122,7 @@ class StreamPlayer:
             logger.error(
                 'Argument trigger_def was not a TriggerDef instance or a path '
                 'to a trigger definition ini file. '
-                f'Provided {type(trigger_def)} -> Ignoring.')
+                f'Provided: {type(trigger_def)} -> Ignoring.')
             return None
 
     @staticmethod
