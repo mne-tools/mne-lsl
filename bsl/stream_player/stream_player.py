@@ -31,7 +31,7 @@ class StreamPlayer:
                  trigger_def=None, chunk_size=16, high_resolution=False):
         self._stream_name = str(stream_name)
         self._fif_file = fif_file
-        self._repeat = repeat
+        self._repeat = StreamPlayer._check_repeat(repeat)
         self._trigger_def = StreamPlayer._check_trigger_def(trigger_def)
         self._chunk_size = StreamPlayer._check_chunk_size(chunk_size)
         self._high_resolution = bool(high_resolution)
@@ -70,6 +70,23 @@ class StreamPlayer:
         streamer.stream(repeat, high_resolution)
 
     # --------------------------------------------------------------------
+    @staticmethod
+    def _check_repeat(repeat):
+        """
+        Checks that repeat is either infinity or a strictly positive integer.
+        """
+        if repeat == float('inf'):
+            return repeat
+        elif isinstance(repeat, (int, float)):
+            repeat = int(repeat)
+            if 0 < repeat:
+                return repeat
+            else:
+                logger.warning(
+                    'Argument repeat must be a strictly positive integer. '
+                    'Provided: {repeat} -> Changing to +inf.')
+                return float('inf')
+
     @staticmethod
     def _check_trigger_def(trigger_def):
         """
