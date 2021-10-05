@@ -1,4 +1,5 @@
 import time
+from pathlib import Path
 import multiprocessing as mp
 
 import mne
@@ -21,19 +22,19 @@ class StreamPlayer:
     %(player_stream_name)s
     %(player_fif_file)s
     %(player_repeat)s
-    %(trigger_file)s
+    %(trigger_file)s  # TODO change doc.
     %(player_chunk_size)s
     %(player_high_resolution)s
     """
 
     def __init__(self, stream_name, fif_file, repeat=float('inf'),
-                 trigger_file=None, chunk_size=16, high_resolution=False):
+                 trigger_def=None, chunk_size=16, high_resolution=False):
         self._stream_name = str(stream_name)
         self._fif_file = fif_file
         self._repeat = repeat
-        self._trigger_file = trigger_file
+        self._trigger_def = StreamPlayer._check_trigger_def(trigger_def)
         self._chunk_size = StreamPlayer._check_chunk_size(chunk_size)
-        self._high_resolution = high_resolution
+        self._high_resolution = bool(high_resolution)
 
         self._process = None
         self._state = mp.Value('i', 0)
@@ -65,10 +66,28 @@ class StreamPlayer:
         """
         streamer = _Streamer(
             self._stream_name, self._fif_file,
-            self._chunk_size, self._trigger_file)
+            self._chunk_size, self._trigger_def)
         streamer.stream(repeat, high_resolution)
 
     # --------------------------------------------------------------------
+    @staticmethod
+    def _check_trigger_def(trigger_def):
+        """
+        Checks that the trigger file is either a path to a valid trigger
+        definition file, in which case it is loader and pass as a TriggerDef,
+        or a TriggerDef instance. Else sets it as None.
+        """
+        if isinstance(trigger_def, TriggerDef):
+            return trigger_def
+        elif isinstance(trigger_def, (str, Path)):
+            trigger_def = Path(trigger_def)
+            if not trigger_def.exists():
+                return None
+            trigger_def = TriggerDef(trigger_def)
+            return trigger_def
+        else:
+            return None
+
     @staticmethod
     def _check_chunk_size(chunk_size):
         """
