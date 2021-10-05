@@ -82,7 +82,7 @@ class StreamPlayer:
             if 0 < repeat:
                 return repeat
             else:
-                logger.warning(
+                logger.error(
                     'Argument repeat must be a strictly positive integer. '
                     f'Provided: {repeat} -> Changing to +inf.')
                 return float('inf')
@@ -99,14 +99,14 @@ class StreamPlayer:
         elif isinstance(trigger_def, (str, Path)):
             trigger_def = Path(trigger_def)
             if not trigger_def.exists():
-                logger.warning(
+                logger.error(
                     'Argument trigger_def is a path that does not exist. '
                     f'Provided {trigger_def} -> Ignoring.')
                 return None
             trigger_def = TriggerDef(trigger_def)
             return trigger_def
         else:
-            logger.warning(
+            logger.error(
                 'Argument trigger_def was not a TriggerDef instance or a path '
                 'to a trigger definition ini file. '
                 f'Provided {type(trigger_def)} -> Ignoring.')
@@ -127,9 +127,10 @@ class StreamPlayer:
 
         if not invalid and chunk_size not in (16, 32):
             logger.warning(
-                'The chunk size is different from the usual 16 or 32.')
+                f'The chunk size {chunk_size} is different from the usual '
+                'values 16 or 32.')
         if invalid:
-            logger.warning(
+            logger.error(
                 'Argument chunk_size must be a strictly positive integer. '
                 f'Provided: {chunk_size} -> Changing to 16.')
             return 16
