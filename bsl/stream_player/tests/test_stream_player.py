@@ -18,6 +18,13 @@ def test_stream_player_default(caplog):
     pass
 
 
+@requires_event_dataset
+@requires_sample_dataset
+def test_stream_player_trigger_def():
+    """Test stream player capabilities with a trigger_def file provided."""
+    pass
+
+
 @requires_sample_dataset
 def test_stream_player_properties():
     """Test the stream_player properties."""
@@ -41,13 +48,6 @@ def test_stream_player_properties():
         sp.trigger_def = TriggerDef()
         sp.chunk_size = 8
         sp.high_resolution = True
-
-
-@requires_event_dataset
-@requires_sample_dataset
-def test_stream_player_trigger_def():
-    """Test stream player capabilities with a trigger_def file provided."""
-    pass
 
 
 def test_stream_player_invalid_fif_file():

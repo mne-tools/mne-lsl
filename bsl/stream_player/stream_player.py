@@ -206,14 +206,13 @@ class StreamPlayer:
         return self._repeat
 
     @property
-    def trigger_file(self):
+    def trigger_def(self):
         """
-        Path to the file containing the table converting event numbers into
-        event strings.
+        Trigger def instance converting event numbers into event strings.
 
-        :type: `str` | `~pathlib.Path`
+        :type: `~bsl.triggers.TriggerDef`
         """
-        return self._trigger_file
+        return self._trigger_def
 
     @property
     def chunk_size(self):
