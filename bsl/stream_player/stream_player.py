@@ -67,9 +67,19 @@ class StreamPlayer:
         """
         Stop the streaming, by terminating the process.
         """
-        if self._process is not None and self._process.is_alive():
-            logger.info(
-                f"Stop streaming data from: '{self._stream_name}'.")
+        if self._process is None:
+            logger.warning('StreamPlayer was not stareted. Skipping.')
+            return
+
+        with self._state.get_lock():
+            self._state.value = 0
+
+        logger.info('Waiting for StreamPlayer %s process to finish.',
+                    self._stream_name)
+        self._process.join(10)
+
+        if self._process.is_alive():
+            logger.error('StreamPlayer process not finishing.. killing.')
             self._process.kill()
             self._process = None
 
