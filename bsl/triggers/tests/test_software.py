@@ -3,15 +3,15 @@ import time
 import mne
 
 from bsl import StreamRecorder
-from bsl.datasets import sample
+from bsl.datasets import eeg_resting_state
 from bsl.triggers.software import TriggerSoftware
-from bsl.utils._testing import Stream, requires_sample_dataset
+from bsl.utils._testing import Stream, requires_eeg_resting_state_dataset
 
 
-@requires_sample_dataset
+@requires_eeg_resting_state_dataset
 def test_trigger_software(tmp_path):
     """Test software triggers."""
-    with Stream('StreamPlayer', sample):
+    with Stream('StreamPlayer', eeg_resting_state):
         recorder = StreamRecorder(record_dir=tmp_path, fname='test',
                                   stream_name='StreamPlayer')
         recorder.start(fif_subdir=False)

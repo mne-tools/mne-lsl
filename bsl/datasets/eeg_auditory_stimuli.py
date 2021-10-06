@@ -1,5 +1,6 @@
 """
-Sample trigger definition file.
+Sample dataset of a 64 channel EEG recording of 4 minutes including 75 rest
+events of 1 second and 75 auditory stimuli events of 0.8 seconds.
 """
 
 import os
@@ -9,17 +10,17 @@ from ._fetching import fetch_file, _hashfunc
 from .. import logger
 
 
-MD5 = '553f24ecb5c8e67ebe597e6e71d7fcdc'
-SHA1 = 'b841bbba374586434916e70403703388fc67ac74'
-URL = 'https://github.com/bsl-tools/bsl-datasets/raw/main/events/events.ini'
-PATH = Path('~/bsl_data/events/events.ini').expanduser()
+MD5 = ''
+SHA1 = ''
+URL = 'https://github.com/bsl-tools/bsl-datasets/raw/main/eeg_sample/auditory_stimuli-raw.fif'
+PATH = Path('~/bsl_data/eeg_sample/auditory_stimuli-raw.fif').expanduser()
 
 
 def data_path():
     """
-    Return the path to the sample trigger event file.
+    Return the path to the sample dataset.
     If the dataset is not locally present, it is downloaded in the user home
-    directory in the folder ``bsl-data``.
+    directory in the folder ``bsl_data``.
     """
     os.makedirs(PATH.parent, exist_ok=True)
 
