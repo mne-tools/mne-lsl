@@ -365,7 +365,8 @@ class _Streamer:
                     logger.info('Reached the end of data. Restarting.')
                 else:
                     logger.info('Reached the end of data. Stopping.')
-                    break
+                    with self._state.get_lock():
+                        self._state.value = 0
 
     def _log_event(self, chunk):
         """
