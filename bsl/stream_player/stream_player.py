@@ -125,6 +125,11 @@ class StreamPlayer:
                     'Argument repeat must be a strictly positive integer. '
                     'Provided: %s -> Changing to +inf.', repeat)
                 return float('inf')
+        else:
+            logger.error(
+                'Argument repeat must be a strictly positive integer. '
+                'Provided: %s -> Changing to +inf.', repeat)
+            return float('inf')
 
     @staticmethod
     def _check_trigger_def(trigger_def):
@@ -135,7 +140,7 @@ class StreamPlayer:
         """
         if trigger_def is None:
             return trigger_def
-        if isinstance(trigger_def, TriggerDef):
+        elif isinstance(trigger_def, TriggerDef):
             return trigger_def
         elif isinstance(trigger_def, (str, Path)):
             trigger_def = Path(trigger_def)
@@ -148,7 +153,7 @@ class StreamPlayer:
             return trigger_def
         else:
             logger.error(
-                'Argument trigger_def was not a TriggerDef instance or a path '
+                'Argument trigger_def must be a TriggerDef instance or a path '
                 'to a trigger definition ini file. '
                 'Provided: %s -> Ignoring.', type(trigger_def))
             return None
@@ -158,24 +163,29 @@ class StreamPlayer:
         """
         Checks that chunk_size is a strictly positive integer.
         """
-        try:
-            chunk_size = int(chunk_size)
-            valid = True
-        except:
-            valid = False
-        valid = True if (valid and 0 < chunk_size) else False
-
-        if valid and chunk_size not in (16, 32):
-            logger.warning(
-                'The chunk size %s is different from the usual '
-                'values 16 or 32.', chunk_size)
-        if not valid:
+        if isinstance(chunk_size, (int, float)):
+            try:
+                chunk_size = int(chunk_size)
+            except OverflowError:
+                logger.error(
+                    'Argument chunk_size must be a strictly positive integer. '
+                    'Provided: %s -> Changing to 16.', chunk_size)
+                return 16
+            if chunk_size <= 0:
+                logger.error(
+                    'Argument chunk_size must be a strictly positive integer. '
+                    'Provided: %s -> Changing to 16.', chunk_size)
+                return 16
+            if chunk_size not in (16, 32):
+                logger.warning(
+                    'The chunk size %i is different from the usual '
+                    'values 16 or 32.', chunk_size)
+            return chunk_size
+        else:
             logger.error(
                 'Argument chunk_size must be a strictly positive integer. '
                 'Provided: %s -> Changing to 16.', chunk_size)
             return 16
-        else:
-            return chunk_size
 
     # --------------------------------------------------------------------
     @property

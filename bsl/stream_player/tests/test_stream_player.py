@@ -1,5 +1,6 @@
 import time
 from pathlib import Path
+import multiprocessing as mp
 
 import mne
 import pylsl
@@ -77,6 +78,19 @@ def test_stream_player_triggers():
 
 
 @requires_sample_dataset
+def test_stream_player_high_resolution():
+    """Test stream player high-resolution capabilities."""
+    sp = StreamPlayer(stream_name='StreamPlayer', fif_file=sample.data_path(),
+                      high_resolution=True)
+    assert sp.high_resolution is True
+    sp.start()
+    assert sp.high_resolution is True
+    time.sleep(0.1)
+    sp.stop()
+    assert sp.high_resolution is True
+
+
+@requires_sample_dataset
 def test_stream_player_properties():
     """Test the stream_player properties."""
     sp = StreamPlayer(stream_name='StreamPlayer', fif_file=sample.data_path(),
@@ -94,17 +108,41 @@ def test_stream_player_properties():
     # Check setters
     with pytest.raises(AttributeError, match="can't set attribute"):
         sp.stream_name = 'new name'
+    with pytest.raises(AttributeError, match="can't set attribute"):
         sp.fif_file = 'new fif file'
+    with pytest.raises(AttributeError, match="can't set attribute"):
         sp.repeat = 10
+    with pytest.raises(AttributeError, match="can't set attribute"):
         sp.trigger_def = TriggerDef()
+    with pytest.raises(AttributeError, match="can't set attribute"):
         sp.chunk_size = 8
+    with pytest.raises(AttributeError, match="can't set attribute"):
         sp.high_resolution = True
+
+    # Process and state
+    assert sp.process is None
+    assert isinstance(sp.state, mp.sharedctypes.Synchronized)
+    assert sp.state.value == 0
+
+    with pytest.raises(AttributeError, match="can't set attribute"):
+        sp.process = 5
+    with pytest.raises(AttributeError, match="can't set attribute"):
+        sp.state = 5
+
+    sp.start()
+    assert isinstance(sp.process, mp.context.Process)
+    assert sp.state.value == 1
+
+    sp.stop()
+    assert sp.process is None
+    assert sp.state.value == 0
 
 
 def test_stream_player_invalid_fif_file():
     """Test that initialization fails if argument fif_file is invalid."""
     with pytest.raises(ValueError, match='Argument fif_file must be'):
         StreamPlayer(stream_name='StreamPlayer', fif_file='non-existing-path')
+    with pytest.raises(ValueError, match='Argument fif_file must be'):
         StreamPlayer(stream_name='StreamPlayer', fif_file=5)
 
 
@@ -132,6 +170,14 @@ def test_stream_player_checker_repeat(caplog):
                       repeat=-5)
     assert ('Argument repeat must be a strictly positive integer. '
             'Provided: %s -> Changing to +inf.' % -5) in caplog.text
+    assert sp.repeat == float('inf')
+
+    # Not convertible to integer
+    caplog.clear()
+    sp = StreamPlayer(stream_name='StreamPlayer', fif_file=sample.data_path(),
+                      repeat=[1, 2])
+    assert ('Argument repeat must be a strictly positive integer. '
+            'Provided: %s -> Changing to +inf.' % str([1, 2])) in caplog.text
     assert sp.repeat == float('inf')
 
 
@@ -174,7 +220,7 @@ def test_stream_player_checker_trigger_def(caplog):
     caplog.clear()
     sp = StreamPlayer(stream_name='StreamPlayer', fif_file=sample.data_path(),
                       trigger_def=5)
-    assert ('Argument trigger_def was not a TriggerDef instance or a path '
+    assert ('Argument trigger_def must be a TriggerDef instance or a path '
             'to a trigger definition ini file. '
             'Provided: %s -> Ignoring.' % type(5)) in caplog.text
     assert sp.trigger_def is None
@@ -212,4 +258,20 @@ def test_stream_player_checker_chunk_size(caplog):
                       chunk_size=-8)
     assert ('Argument chunk_size must be a strictly positive integer. '
             'Provided: %s -> Changing to 16.' % -8) in caplog.text
+    assert sp.chunk_size == 16
+
+    # Not convertible to integer
+    caplog.clear()
+    sp = StreamPlayer(stream_name='StreamPlayer', fif_file=sample.data_path(),
+                      chunk_size=[1, 2])
+    assert ('Argument chunk_size must be a strictly positive integer. '
+            'Provided: %s -> Changing to 16.' % str([1, 2])) in caplog.text
+    assert sp.chunk_size == 16
+
+    # Infinite
+    caplog.clear()
+    sp = StreamPlayer(stream_name='StreamPlayer', fif_file=sample.data_path(),
+                      chunk_size=float('inf'))
+    assert ('Argument chunk_size must be a strictly positive integer. '
+            'Provided: %s -> Changing to 16.' % float('inf')) in caplog.text
     assert sp.chunk_size == 16
