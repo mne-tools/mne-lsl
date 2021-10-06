@@ -8,7 +8,6 @@ from functools import partial
 
 import pytest
 
-from .. import StreamPlayer
 from ..datasets import (eeg_resting_state, eeg_resting_state_short,
                         eeg_auditory_stimuli, trigger_def)
 from ..datasets._fetching import _hashfunc
@@ -110,27 +109,3 @@ def requires_arduino2lpt(function):
             pass
     return pytest.mark.skipif(
         True, reason='Arduino to LPT not found.')(function)
-
-
-class Stream:
-    """Context manager to create a test stream.
-    dataset must have a `.data_path()` method. Compatible with MNE."""
-
-    def __init__(self, stream_name, dataset, chunk_size=16, trigger_file=None,
-                 repeat=float('inf'), high_resolution=False):
-        self.stream_name = stream_name
-        self.fif_file = dataset.data_path()
-        self.repeat = repeat
-        self.trigger_def = trigger_def
-        self.chunk_size = chunk_size
-        self.high_resolution = high_resolution
-
-    def __enter__(self):
-        self.sp = StreamPlayer(self.stream_name, self.fif_file, self.repeat,
-                               self.trigger_def, self.chunk_size,
-                               self.high_resolution)
-        self.sp.start()
-
-    def __exit__(self, *args):
-        self.sp.stop()
-        del self.sp
