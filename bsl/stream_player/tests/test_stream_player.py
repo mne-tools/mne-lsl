@@ -75,24 +75,41 @@ def test_stream_player_default(caplog):
 
 
 @requires_eeg_resting_state_short_dataset
-def test_stream_player_repeat(caplog):
+def test_stream_player_repeat():
     """Test stream player replay capabilities."""
     sp = StreamPlayer(stream_name='StreamPlayer',
                       fif_file=eeg_resting_state_short.data_path(),
-                      repeat=1)
+                      repeat=2)
     sp.start()
+    assert sp.state.value == 1
     time.sleep(2.1)
-    assert 'Reached the end of data. Restarting.' in caplog.text
-    caplog.clear()
+    assert sp.state.value == 1
     time.sleep(2.1)
-    assert 'Reached the end of data. Stopping.' in caplog.text
+    assert sp.state.value == 0
 
 
-@requires_trigger_def_dataset
 @requires_eeg_auditory_stimuli_dataset
-def test_stream_player_triggers():
+def test_stream_player_trigger_def():
     """Test stream player trigger display capabilities."""
-    pass
+    stream_name = 'StreamPlayer'
+    fif_file = eeg_auditory_stimuli.data_path()
+
+    # Without TriggerDef
+    sp = StreamPlayer(stream_name=stream_name, fif_file=fif_file,
+                      trigger_def=None)
+    sp.start()
+    time.sleep(2)
+    sp.stop()
+
+    # With created TriggerDef
+    trigger_def = TriggerDef()
+    trigger_def.add_event('rest', 1)
+    trigger_def.add_event('stim', 4)
+    sp = StreamPlayer(stream_name=stream_name, fif_file=fif_file,
+                      trigger_def=trigger_def)
+    sp.start()
+    time.sleep(2)
+    sp.stop()
 
 
 @requires_eeg_resting_state_dataset
