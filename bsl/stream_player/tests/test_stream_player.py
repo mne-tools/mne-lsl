@@ -75,9 +75,17 @@ def test_stream_player_default(caplog):
 
 
 @requires_eeg_resting_state_short_dataset
-def test_stream_player_looping():
+def test_stream_player_repeat(caplog):
     """Test stream player replay capabilities."""
-    pass
+    sp = StreamPlayer(stream_name='StreamPlayer',
+                      fif_file=eeg_resting_state_short.data_path(),
+                      repeat=1)
+    sp.start()
+    time.sleep(2.1)
+    assert 'Reached the end of data. Restarting.' in caplog.text
+    caplog.clear()
+    time.sleep(2.1)
+    assert 'Reached the end of data. Stopping.' in caplog.text
 
 
 @requires_trigger_def_dataset
