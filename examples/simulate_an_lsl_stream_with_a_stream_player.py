@@ -24,7 +24,7 @@ from bsl import StreamPlayer, datasets
 # trigger channel are multiplied by 1e6 to convert from Volts to uVolts.
 
 stream_name = 'MyStreamPlayer'
-sample_data_raw_file = datasets.sample.data_path()
+sample_data_raw_file = datasets.eeg_resting_state.data_path()
 print (sample_data_raw_file)
 
 #%%
