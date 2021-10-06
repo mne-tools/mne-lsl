@@ -105,6 +105,15 @@ class StreamPlayer:
         streamer.stream()
 
     # --------------------------------------------------------------------
+    def __enter__(self):
+        """Context manager entry point."""
+        self.start(blocking=True)
+
+    def __exit__(self, exc_type, exc_value, exc_tracebac):
+        """Context manager exit point."""
+        self.stop()
+
+    # --------------------------------------------------------------------
     @staticmethod
     def _check_fif_file(fif_file):
         """
