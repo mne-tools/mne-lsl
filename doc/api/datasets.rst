@@ -6,5 +6,7 @@ Datasets
 .. autosummary::
    :toctree: generated/
 
-   sample
-   event
+   eeg_resting_state
+   eeg_resting_state_short
+   eeg_auditory_stimuli
+   trigger_def
