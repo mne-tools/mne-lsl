@@ -192,6 +192,15 @@ class StreamRecorder:
         return self._eve_file
 
     @property
+    def process(self):
+        """
+        Launched process.
+
+        :type: `multiprocessing.Process`
+        """
+        return self._process
+
+    @property
     def state(self):
         """
         Recording state of the recorder:
@@ -201,15 +210,6 @@ class StreamRecorder:
         :type: `multiprocessing.Value`
         """
         return self._state
-
-    @property
-    def process(self):
-        """
-        Launched process.
-
-        :type: `multiprocessing.Process`
-        """
-        return self._process
 
 
 @fill_doc
