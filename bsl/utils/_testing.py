@@ -53,7 +53,7 @@ requires_eeg_auditory_stimuli_dataset = partial(
 requires_eeg_resting_state_dataset = partial(
     _requires_dataset_or_good_network, dataset=eeg_resting_state)
 requires_eeg_resting_state_short_dataset = partial(
-    _requires_dataset_or_good_network, dataset=eeg_resting_state)
+    _requires_dataset_or_good_network, dataset=eeg_resting_state_short)
 requires_trigger_def_dataset = partial(
     _requires_dataset_or_good_network, dataset=trigger_def)
 
@@ -120,16 +120,16 @@ class Stream:
                  repeat=float('inf'), high_resolution=False):
         self.stream_name = stream_name
         self.fif_file = dataset.data_path()
-        self.chunk_size = chunk_size
-        self.trigger_file = trigger_file
         self.repeat = repeat
+        self.trigger_def = trigger_def
+        self.chunk_size = chunk_size
         self.high_resolution = high_resolution
 
     def __enter__(self):
-        self.sp = StreamPlayer(self.stream_name, self.fif_file,
-                               self.chunk_size, self.trigger_file)
-        self.sp.start(repeat=self.repeat, high_resolution=self.high_resolution)
-        time.sleep(2)  # wait for stream player to start
+        self.sp = StreamPlayer(self.stream_name, self.fif_file, self.repeat,
+                               self.trigger_def, self.chunk_size,
+                               self.high_resolution)
+        self.sp.start()
 
     def __exit__(self, *args):
         self.sp.stop()
