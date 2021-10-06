@@ -4,9 +4,9 @@ from pathlib import Path
 
 import mne
 
-from bsl import StreamRecorder
+from bsl import StreamRecorder, StreamPlayer
 from bsl.datasets import eeg_resting_state
-from bsl.utils._testing import Stream, requires_eeg_resting_state_dataset
+from bsl.utils._testing import requires_eeg_resting_state_dataset
 
 
 def _check_recorder_fname_exists(record_dir, eve_file, stream, fif_subdir):
@@ -48,7 +48,7 @@ def test_recording(tmp_path):
     stream = 'StreamPlayer'
     record_duration = 2  # seconds
     dataset = eeg_resting_state
-    with Stream(stream, dataset):
+    with StreamPlayer(stream, dataset.data_path()):
         recorder = StreamRecorder(record_dir=tmp_path)
         recorder.start(fif_subdir=False, blocking=True, verbose=False)
         eve_file = recorder.eve_file
@@ -65,7 +65,8 @@ def test_recording_multiple_streams(tmp_path):
     """Test multi-stream recording capabilities of the stream recorder."""
     record_duration = 2  # seconds
     dataset = eeg_resting_state
-    with Stream('StreamPlayer1', dataset), Stream('StreamPlayer2', dataset):
+    with StreamPlayer('StreamPlayer1', dataset.data_path()), \
+         StreamPlayer('StreamPlayer2', dataset.data_path()):
         # Record only StreamPlayer1
         recorder = StreamRecorder(record_dir=tmp_path / 'only1',
                                   stream_name='StreamPlayer1')
@@ -110,7 +111,7 @@ def test_recording_multiple_streams(tmp_path):
 def test_property_setter(tmp_path):
     """Test changing the properties before and during an on-going recording."""
     stream = 'StreamPlayer'
-    with Stream(stream, eeg_resting_state):
+    with StreamPlayer(stream, eeg_resting_state.data_path()):
         recorder = StreamRecorder(record_dir=Path.cwd())
         # Before recording start
         assert recorder.record_dir == Path.cwd()
@@ -160,7 +161,7 @@ def test_arg_fif_subdir(tmp_path):
     """Test argument fif_subdir."""
     record_duration = 2  # seconds
     dataset = eeg_resting_state
-    with Stream('StreamPlayer', dataset):
+    with StreamPlayer('StreamPlayer', dataset.data_path()):
         recorder = StreamRecorder(record_dir=tmp_path)
         recorder.start(fif_subdir=False, blocking=True, verbose=False)
         eve_file = recorder.eve_file

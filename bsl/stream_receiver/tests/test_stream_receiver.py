@@ -3,17 +3,16 @@ import time
 import pytest
 import numpy as np
 
-from bsl import StreamReceiver
+from bsl import StreamReceiver, StreamPlayer
 from bsl.datasets import eeg_resting_state
-from bsl.utils._testing import Stream, requires_eeg_resting_state_dataset
+from bsl.utils._testing import requires_eeg_resting_state_dataset
 
 
 @requires_eeg_resting_state_dataset
 def test_receiver():
     """Test receiver functionalities."""
-    dataset = eeg_resting_state
     stream = 'StreamPlayer'
-    with Stream(stream, dataset):
+    with StreamPlayer(stream, eeg_resting_state.data_path()):
         sr = StreamReceiver(bufsize=1, winsize=0.2)
         assert stream in sr.streams
 
@@ -81,8 +80,8 @@ def test_receiver():
 @requires_eeg_resting_state_dataset
 def test_receiver_multi_streams():
     """Test StreamReceiver multi-streams functionalities."""
-    dataset = eeg_resting_state
-    with Stream('StreamPlayer1', dataset), Stream('StreamPlayer2', dataset):
+    with StreamPlayer('StreamPlayer1', eeg_resting_state.data_path()), \
+         StreamPlayer('StreamPlayer2', eeg_resting_state.data_path()):
         # test connect to only one
         sr = StreamReceiver(bufsize=1, winsize=0.2,
                             stream_name='StreamPlayer1')
