@@ -27,7 +27,7 @@ from bsl.utils import Timer
 # not be done outside `__main__` on Windows.
 # See: https://docs.python.org/2/library/multiprocessing.html#windows
 
-sample_data_raw_file = datasets.sample.data_path()
+sample_data_raw_file = datasets.eeg_resting_state.data_path()
 if __name__ == '__main__':
     player = StreamPlayer('StreamPlayer', sample_data_raw_file)
     player.start()
