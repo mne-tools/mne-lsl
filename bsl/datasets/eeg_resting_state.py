@@ -12,15 +12,15 @@ from .. import logger
 
 MD5 = '8925f81af22390fd17bb3341d553430f'
 SHA1 = '65dbf592fa6e18cee049f244ca53c504ddabacc1'
-URL = 'https://github.com/bsl-tools/bsl-datasets/raw/main/eeg/resting-state-sample-raw.fif'
-PATH = Path('~/bsl_data/eeg/resting-state-sample-raw.fif').expanduser()
+URL = 'https://github.com/bsl-tools/bsl-datasets/raw/main/eeg_sample/resting_state-raw.fif'
+PATH = Path('~/bsl_data/eeg_sample/resting_state-raw.fif').expanduser()
 
 
 def data_path():
     """
     Return the path to the sample dataset.
     If the dataset is not locally present, it is downloaded in the user home
-    directory in the folder ``bsl-data``.
+    directory in the folder ``bsl_data``.
     """
     os.makedirs(PATH.parent, exist_ok=True)
 

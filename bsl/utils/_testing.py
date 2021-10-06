@@ -9,7 +9,8 @@ from functools import partial
 import pytest
 
 from .. import StreamPlayer
-from ..datasets import sample, event
+from ..datasets import (eeg_resting_state, eeg_resting_state_short,
+                        eeg_auditory_stimuli, trigger_def)
 from ..datasets._fetching import _hashfunc
 
 
@@ -47,10 +48,14 @@ def _requires_dataset_or_good_network(function, dataset):
         return function
 
 
-requires_sample_dataset = partial(_requires_dataset_or_good_network,
-                                  dataset=sample)
-requires_event_dataset = partial(_requires_dataset_or_good_network,
-                                 dataset=event)
+requires_eeg_auditory_stimuli_dataset = partial(
+    _requires_dataset_or_good_network, dataset=eeg_auditory_stimuli)
+requires_eeg_resting_state_dataset = partial(
+    _requires_dataset_or_good_network, dataset=eeg_resting_state)
+requires_eeg_resting_state_short_dataset = partial(
+    _requires_dataset_or_good_network, dataset=eeg_resting_state)
+requires_trigger_def_dataset = partial(
+    _requires_dataset_or_good_network, dataset=trigger_def)
 
 
 def requires_lpt(function):
