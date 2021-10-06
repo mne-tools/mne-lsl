@@ -105,10 +105,10 @@ def lsl_channel_list(inlet):
     inlet : pylsl.StreamInlet
         Inlet to extract the channels list from.
 
-    Returns:
-    --------
+    Returns
+    -------
     ch_list : `list`
-        List of channels name [name1, name2, ... ]
+        List of channels name ``[name1, name2, ... ]``.
     """
     if not isinstance(inlet, pylsl.StreamInlet):
         logger.error(f'Wrong input type {type(inlet)}')
