@@ -101,6 +101,7 @@ class StreamPlayer:
         Check if the provided fif_file is valid.
         """
         try:
+            fif_file = Path(fif_file)
             mne.io.read_raw_fif(fif_file, preload=False, verbose=None)
             return fif_file
         except Exception:
