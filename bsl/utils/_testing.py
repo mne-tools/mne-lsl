@@ -42,7 +42,7 @@ def _requires_dataset_or_good_network(function, dataset):
             raise ValueError('Unsupported dataset.')
 
     if download:
-        requires_good_network(function)
+        return requires_good_network(function)
     else:
         return function
 
