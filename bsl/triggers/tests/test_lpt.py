@@ -3,10 +3,11 @@ import time
 import mne
 
 from bsl import StreamRecorder, logger, set_log_level
-from bsl.datasets import sample
+from bsl.datasets import eeg_resting_state
 from bsl.triggers.lpt import TriggerLPT, TriggerUSB2LPT, TriggerArduino2LPT
-from bsl.utils._testing import (Stream, requires_sample_dataset, requires_lpt,
-                                requires_usb2lpt, requires_arduino2lpt)
+from bsl.utils._testing import (Stream, requires_eeg_resting_state_dataset,
+                                requires_lpt, requires_usb2lpt,
+                                requires_arduino2lpt)
 
 
 set_log_level('INFO')
@@ -16,7 +17,7 @@ logger.propagate = True
 
 
 @requires_lpt
-@requires_sample_dataset
+@requires_eeg_resting_state_dataset
 def test_lpt(tmp_path, portaddr):
     """Testing for build-in LPT port."""
     # TODO
@@ -24,11 +25,11 @@ def test_lpt(tmp_path, portaddr):
 
 
 @requires_usb2lpt
-@requires_sample_dataset
+@requires_eeg_resting_state_dataset
 def test_usblpt(tmp_path, caplog):
     """Testing for USB to LPT converter."""
     # Test trigger
-    with Stream('StreamPlayer', sample):
+    with Stream('StreamPlayer', eeg_resting_state):
         recorder = StreamRecorder(record_dir=tmp_path, fname='test',
                                   stream_name='StreamPlayer')
         recorder.start(fif_subdir=False)
@@ -68,11 +69,11 @@ def test_usblpt(tmp_path, caplog):
 
 
 @requires_arduino2lpt
-@requires_sample_dataset
+@requires_eeg_resting_state_dataset
 def test_arduino2lpt(tmp_path, caplog):
     """Testing for Arduino to LPT converter."""
     # Test trigger
-    with Stream('StreamPlayer', sample):
+    with Stream('StreamPlayer', eeg_resting_state):
         recorder = StreamRecorder(record_dir=tmp_path, fname='test',
                                   stream_name='StreamPlayer')
         recorder.start(fif_subdir=False)

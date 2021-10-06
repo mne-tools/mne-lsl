@@ -5,8 +5,8 @@ from pathlib import Path
 import mne
 
 from bsl import StreamRecorder
-from bsl.datasets import sample
-from bsl.utils._testing import Stream, requires_sample_dataset
+from bsl.datasets import eeg_resting_state
+from bsl.utils._testing import Stream, requires_eeg_resting_state_dataset
 
 
 def _check_recorder_fname_exists(record_dir, eve_file, stream, fif_subdir):
@@ -42,12 +42,12 @@ def _check_recorder_files(dataset, record_duration, record_dir, eve_file,
     assert 0 <= raw_fif.n_times / raw_fif.info['sfreq'] - record_duration < 0.2
 
 
-@requires_sample_dataset
+@requires_eeg_resting_state_dataset
 def test_recording(tmp_path):
     """Test recording capability of the stream recorder."""
     stream = 'StreamPlayer'
     record_duration = 2  # seconds
-    dataset = sample
+    dataset = eeg_resting_state
     with Stream(stream, dataset):
         recorder = StreamRecorder(record_dir=tmp_path)
         recorder.start(fif_subdir=False, blocking=True, verbose=False)
@@ -60,11 +60,11 @@ def test_recording(tmp_path):
                           eve_file, stream, fif_subdir=False)
 
 
-@requires_sample_dataset
+@requires_eeg_resting_state_dataset
 def test_recording_multiple_streams(tmp_path):
     """Test multi-stream recording capabilities of the stream recorder."""
     record_duration = 2  # seconds
-    dataset = sample
+    dataset = eeg_resting_state
     with Stream('StreamPlayer1', dataset), Stream('StreamPlayer2', dataset):
         # Record only StreamPlayer1
         recorder = StreamRecorder(record_dir=tmp_path / 'only1',
@@ -106,11 +106,11 @@ def test_recording_multiple_streams(tmp_path):
                               eve_file, 'StreamPlayer2', fif_subdir=False)
 
 
-@requires_sample_dataset
+@requires_eeg_resting_state_dataset
 def test_property_setter(tmp_path):
     """Test changing the properties before and during an on-going recording."""
     stream = 'StreamPlayer'
-    with Stream(stream, sample):
+    with Stream(stream, eeg_resting_state):
         recorder = StreamRecorder(record_dir=Path.cwd())
         # Before recording start
         assert recorder.record_dir == Path.cwd()
@@ -155,11 +155,11 @@ def test_property_setter(tmp_path):
                                      fif_subdir=False)
 
 
-@requires_sample_dataset
+@requires_eeg_resting_state_dataset
 def test_arg_fif_subdir(tmp_path):
     """Test argument fif_subdir."""
     record_duration = 2  # seconds
-    dataset = sample
+    dataset = eeg_resting_state
     with Stream('StreamPlayer', dataset):
         recorder = StreamRecorder(record_dir=tmp_path)
         recorder.start(fif_subdir=False, blocking=True, verbose=False)
