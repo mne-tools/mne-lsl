@@ -18,7 +18,22 @@ class TriggerDef:
 
     Parameters
     ----------
-    %(trigger_file)s
+    trigger_file : `str` | `~pathlib.Path` | `None`
+        Path to the ``.ini`` file containing the table converting event numbers
+        into event strings.
+
+        .. note:: The ``.ini`` file is read with ``configparser`` and has to be
+                  structured as follows:
+
+                      [events]
+                      event_str_1 = event_id_1   # comment
+                      event_str_2 = event_id_2   # comment
+
+                  Example:
+
+                      [events]
+                      rest = 1
+                      stim = 2
     """
 
     def __init__(self, trigger_file=None):

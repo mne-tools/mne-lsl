@@ -9,22 +9,32 @@ import numpy as np
 from .. import logger
 from ..triggers import TriggerDef
 from ..utils import find_event_channel
-from ..utils._docs import fill_doc
 
 
-@fill_doc
 class StreamPlayer:
     """
     Class for playing a recorded file on LSL network in another process.
 
     Parameters
     ----------
-    %(player_stream_name)s
-    %(player_fif_file)s
-    %(player_repeat)s
-    %(trigger_file)s  # TODO change doc.
-    %(player_chunk_size)s
-    %(player_high_resolution)s
+    stream_name : `str`
+        Stream's server name, displayed on LSL network.
+    fif_file : `str` | `~pathlib.Path`
+        Path to the compatible raw ``.fif`` file to play.
+    repeat : `int` | ``float('inf')``
+        Number of times the stream player will loop on the FIF file before
+        interrupting. Default ``float('inf')`` can be passed to never interrupt
+        streaming.
+    trigger_def : `None` | `str` | `~pathlib.Path` | `~bsl.triggers.TriggerDef`
+        If not None, a `~bsl.triggers.TriggerDef` instance is used to log
+        events with a descriptive string instead of their ID. If not `None`,
+        either a `~bsl.triggers.TriggerDef` instance or the path to a valid
+        path to a ``.ini`` file passed to `~bsl.triggers.TriggerDef`.
+    chunk_size : `int`
+        Number of samples to send at once (usually ``16-32`` is good enough).
+    high_resolution : `bool`
+        If ``True``, it uses `~time.perf_counter()` instead of `~time.sleep()`
+        for higher time resolution. However, it uses more CPU.
     """
 
     def __init__(self, stream_name, fif_file, repeat=float('inf'),
@@ -200,7 +210,7 @@ class StreamPlayer:
     @property
     def fif_file(self):
         """
-        Path to the ``.fif`` file to play.
+        Path to the compatible raw ``.fif`` file to play.
 
         :type: `str` | `~pathlib.Path`
         """
@@ -220,7 +230,8 @@ class StreamPlayer:
     @property
     def trigger_def(self):
         """
-        Trigger def instance converting event numbers into event strings.
+        Either `None` or `~bsl.triggers.TriggerDef` instance converting event
+        numbers into event strings.
 
         :type: `~bsl.triggers.TriggerDef`
         """
@@ -229,7 +240,8 @@ class StreamPlayer:
     @property
     def chunk_size(self):
         """
-        Size of a chunk of data ``[samples]``.
+        Number of samples to send at once (usually ``16-32`` is good enough)
+        ``[samples]``.
 
         :type: `int`
         """
@@ -238,7 +250,8 @@ class StreamPlayer:
     @property
     def high_resolution(self):
         """
-        If True, use an high resolution counter instead of a sleep.
+        If ``True``, it uses `~time.perf_counter()` instead of `~time.sleep()`
+        for higher time resolution. However, it uses more CPU.
 
         :type: `bool`
         """
@@ -247,7 +260,7 @@ class StreamPlayer:
     @property
     def process(self):
         """
-        Launched process.
+        Launched streaming process.
 
         :type: `multiprocessing.Process`
         """
@@ -265,17 +278,9 @@ class StreamPlayer:
         return self._state
 
 
-@fill_doc
 class _Streamer:
     """
     Class for playing a recorded file on LSL network.
-
-    Parameters
-    ----------
-    %(player_stream_name)s
-    %(player_fif_file)s
-    %(player_chunk_size)s
-    %(trigger_file)s
     """
 
     def __init__(self, stream_name, raw, repeat, trigger_def,
