@@ -5,8 +5,8 @@ from bsl.utils._testing import requires_good_network
 
 
 URL = 'https://raw.githubusercontent.com/bsl-tools/bsl/master/README.md'
-HASH = {'md5': 'e22af16b9c517a0fd21f51569ccb6fa9',
-        'sha1': 'd28f7fa7fcc06b5d9e42a9d35deb15535e9c8162'}
+HASH = {'md5': '665cfaaaed5ed3cbffbabe0f482f0ec3',
+        'sha1': '625fde952c1641def40879caba95cadce5543ffe'}
 WRONG_HASH = {'md5': '12345678912345678912345678912345',
               'sha1': '1234567891234567891234567891234567891234'}
 
