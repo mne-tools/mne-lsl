@@ -7,20 +7,24 @@ import pylsl
 import pytest
 
 from bsl import StreamPlayer, logger, set_log_level
-from bsl.datasets import sample, event
+from bsl.datasets import (eeg_auditory_stimuli, eeg_resting_state,
+                          eeg_resting_state_short, trigger_def)
 from bsl.triggers import TriggerDef
-from bsl.utils._testing import requires_sample_dataset, requires_event_dataset
+from bsl.utils._testing import (requires_eeg_auditory_stimuli_dataset,
+                                requires_eeg_resting_state_dataset,
+                                requires_eeg_resting_state_short_dataset,
+                                requires_trigger_def_dataset)
 
 
 set_log_level('INFO')
 logger.propagate = True
 
 
-@requires_sample_dataset
+@requires_eeg_resting_state_dataset
 def test_stream_player_default(caplog):
     """Test stream player default capabilities."""
     stream_name = 'StreamPlayer'
-    fif_file = sample.data_path()
+    fif_file = eeg_resting_state.data_path()
     raw = mne.io.read_raw_fif(fif_file, preload=True)
 
     # Test start
@@ -70,17 +74,24 @@ def test_stream_player_default(caplog):
     assert 'StreamPlayer was not started. Skipping.' in caplog.text
 
 
-@requires_event_dataset
-@requires_sample_dataset
+@requires_eeg_resting_state_short_dataset
+def test_stream_player_looping():
+    """Test stream player replay capabilities."""
+    pass
+
+
+@requires_trigger_def_dataset
+@requires_eeg_auditory_stimuli_dataset
 def test_stream_player_triggers():
     """Test stream player trigger display capabilities."""
     pass
 
 
-@requires_sample_dataset
+@requires_eeg_resting_state_dataset
 def test_stream_player_high_resolution():
     """Test stream player high-resolution capabilities."""
-    sp = StreamPlayer(stream_name='StreamPlayer', fif_file=sample.data_path(),
+    sp = StreamPlayer(stream_name='StreamPlayer',
+                      fif_file=eeg_resting_state.data_path(),
                       high_resolution=True)
     assert sp.high_resolution is True
     sp.start()
@@ -90,16 +101,19 @@ def test_stream_player_high_resolution():
     assert sp.high_resolution is True
 
 
-@requires_sample_dataset
+@requires_eeg_resting_state_dataset
 def test_stream_player_properties():
     """Test the stream_player properties."""
-    sp = StreamPlayer(stream_name='StreamPlayer', fif_file=sample.data_path(),
-                      repeat=float('inf'), trigger_def=None, chunk_size=16,
+    sp = StreamPlayer(stream_name='StreamPlayer',
+                      fif_file=eeg_resting_state.data_path(),
+                      repeat=float('inf'),
+                      trigger_def=None,
+                      chunk_size=16,
                       high_resolution=False)
 
     # Check getters
     assert sp.stream_name == 'StreamPlayer'
-    assert sp.fif_file == sample.data_path()
+    assert sp.fif_file == eeg_resting_state.data_path()
     assert sp.repeat == float('inf')
     assert sp.trigger_def is None
     assert sp.chunk_size == 16
@@ -146,27 +160,30 @@ def test_stream_player_invalid_fif_file():
         StreamPlayer(stream_name='StreamPlayer', fif_file=5)
 
 
-@requires_sample_dataset
+@requires_eeg_resting_state_dataset
 def test_stream_player_checker_repeat(caplog):
     """Test the checker for argument repeat."""
+    stream_name = 'StreamPlayer'
+    fif_file = eeg_resting_state.data_path()
+
     # Default
-    sp = StreamPlayer(stream_name='StreamPlayer', fif_file=sample.data_path(),
+    sp = StreamPlayer(stream_name=stream_name, fif_file=fif_file,
                       repeat=float('inf'))
     assert sp.repeat == float('inf')
 
     # Positive integer
-    sp = StreamPlayer(stream_name='StreamPlayer', fif_file=sample.data_path(),
+    sp = StreamPlayer(stream_name=stream_name, fif_file=fif_file,
                       repeat=5)
     assert sp.repeat == 5
 
     # Positive float
-    sp = StreamPlayer(stream_name='StreamPlayer', fif_file=sample.data_path(),
+    sp = StreamPlayer(stream_name=stream_name, fif_file=fif_file,
                       repeat=5.)
     assert isinstance(sp.repeat, int) and sp.repeat == 5
 
     # Negative number
     caplog.clear()
-    sp = StreamPlayer(stream_name='StreamPlayer', fif_file=sample.data_path(),
+    sp = StreamPlayer(stream_name=stream_name, fif_file=fif_file,
                       repeat=-5)
     assert ('Argument repeat must be a strictly positive integer. '
             'Provided: %s -> Changing to +inf.' % -5) in caplog.text
@@ -174,43 +191,47 @@ def test_stream_player_checker_repeat(caplog):
 
     # Not convertible to integer
     caplog.clear()
-    sp = StreamPlayer(stream_name='StreamPlayer', fif_file=sample.data_path(),
+    sp = StreamPlayer(stream_name=stream_name, fif_file=fif_file,
                       repeat=[1, 2])
     assert ('Argument repeat must be a strictly positive integer. '
             'Provided: %s -> Changing to +inf.' % str([1, 2])) in caplog.text
     assert sp.repeat == float('inf')
 
 
-@requires_event_dataset
-@requires_sample_dataset
+@requires_trigger_def_dataset
+@requires_eeg_resting_state_dataset
 def test_stream_player_checker_trigger_def(caplog):
     """Test the checker for argument trigger_def."""
+    stream_name = 'StreamPlayer'
+    fif_file = eeg_resting_state.data_path()
+    trigger_file = trigger_def.data_path()
+
     # Default
-    sp = StreamPlayer(stream_name='StreamPlayer', fif_file=sample.data_path(),
+    sp = StreamPlayer(stream_name=stream_name, fif_file=fif_file,
                       trigger_def=None)
     assert sp.trigger_def is None
 
     # TriggerDef instance
-    sp = StreamPlayer(stream_name='StreamPlayer', fif_file=sample.data_path(),
+    sp = StreamPlayer(stream_name=stream_name, fif_file=fif_file,
                       trigger_def=TriggerDef(trigger_file=None))
     assert isinstance(sp.trigger_def, TriggerDef)
-    sp = StreamPlayer(stream_name='StreamPlayer', fif_file=sample.data_path(),
-                      trigger_def=TriggerDef(trigger_file=event.data_path()))
+    sp = StreamPlayer(stream_name=stream_name, fif_file=fif_file,
+                      trigger_def=TriggerDef(trigger_file=trigger_file))
     assert isinstance(sp.trigger_def, TriggerDef)
 
     # Path as a string
-    sp = StreamPlayer(stream_name='StreamPlayer', fif_file=sample.data_path(),
-                      trigger_def=str(event.data_path()))
+    sp = StreamPlayer(stream_name=stream_name, fif_file=fif_file,
+                      trigger_def=str(trigger_file))
     assert isinstance(sp.trigger_def, TriggerDef)
 
     # Path as a Path object
-    sp = StreamPlayer(stream_name='StreamPlayer', fif_file=sample.data_path(),
-                      trigger_def=Path(event.data_path()))
+    sp = StreamPlayer(stream_name=stream_name, fif_file=fif_file,
+                      trigger_def=Path(trigger_file))
     assert isinstance(sp.trigger_def, TriggerDef)
 
     # Path to a non-existing file
     caplog.clear()
-    sp = StreamPlayer(stream_name='StreamPlayer', fif_file=sample.data_path(),
+    sp = StreamPlayer(stream_name=stream_name, fif_file=fif_file,
                       trigger_def='non-existing-path')
     assert ('Argument trigger_def is a path that does not exist. '
             'Provided: %s -> Ignoring.' % 'non-existing-path') in caplog.text
@@ -218,7 +239,7 @@ def test_stream_player_checker_trigger_def(caplog):
 
     # Invalid type
     caplog.clear()
-    sp = StreamPlayer(stream_name='StreamPlayer', fif_file=sample.data_path(),
+    sp = StreamPlayer(stream_name=stream_name, fif_file=fif_file,
                       trigger_def=5)
     assert ('Argument trigger_def must be a TriggerDef instance or a path '
             'to a trigger definition ini file. '
@@ -226,27 +247,30 @@ def test_stream_player_checker_trigger_def(caplog):
     assert sp.trigger_def is None
 
 
-@requires_sample_dataset
+@requires_eeg_resting_state_dataset
 def test_stream_player_checker_chunk_size(caplog):
     """Test the checker for argument chunk_size."""
+    stream_name = 'StreamPlayer'
+    fif_file = eeg_resting_state.data_path()
+
     # Default
-    sp = StreamPlayer(stream_name='StreamPlayer', fif_file=sample.data_path(),
+    sp = StreamPlayer(stream_name=stream_name, fif_file=fif_file,
                       chunk_size=16)
     assert sp.chunk_size == 16
 
     # Positive integer
-    sp = StreamPlayer(stream_name='StreamPlayer', fif_file=sample.data_path(),
+    sp = StreamPlayer(stream_name=stream_name, fif_file=fif_file,
                       chunk_size=32)
     assert sp.chunk_size == 32
 
     # Positive float
-    sp = StreamPlayer(stream_name='StreamPlayer', fif_file=sample.data_path(),
+    sp = StreamPlayer(stream_name=stream_name, fif_file=fif_file,
                       chunk_size=32.)
     assert isinstance(sp.chunk_size, int) and sp.chunk_size == 32
 
     # Positive non-usual integer
     caplog.clear()
-    sp = StreamPlayer(stream_name='StreamPlayer', fif_file=sample.data_path(),
+    sp = StreamPlayer(stream_name=stream_name, fif_file=fif_file,
                       chunk_size=8)
     assert ('The chunk size %s is different from the usual '
             'values 16 or 32.' % 8) in caplog.text
@@ -254,7 +278,7 @@ def test_stream_player_checker_chunk_size(caplog):
 
     # Negative number
     caplog.clear()
-    sp = StreamPlayer(stream_name='StreamPlayer', fif_file=sample.data_path(),
+    sp = StreamPlayer(stream_name=stream_name, fif_file=fif_file,
                       chunk_size=-8)
     assert ('Argument chunk_size must be a strictly positive integer. '
             'Provided: %s -> Changing to 16.' % -8) in caplog.text
@@ -262,7 +286,7 @@ def test_stream_player_checker_chunk_size(caplog):
 
     # Not convertible to integer
     caplog.clear()
-    sp = StreamPlayer(stream_name='StreamPlayer', fif_file=sample.data_path(),
+    sp = StreamPlayer(stream_name=stream_name, fif_file=fif_file,
                       chunk_size=[1, 2])
     assert ('Argument chunk_size must be a strictly positive integer. '
             'Provided: %s -> Changing to 16.' % str([1, 2])) in caplog.text
@@ -270,7 +294,7 @@ def test_stream_player_checker_chunk_size(caplog):
 
     # Infinite
     caplog.clear()
-    sp = StreamPlayer(stream_name='StreamPlayer', fif_file=sample.data_path(),
+    sp = StreamPlayer(stream_name=stream_name, fif_file=fif_file,
                       chunk_size=float('inf'))
     assert ('Argument chunk_size must be a strictly positive integer. '
             'Provided: %s -> Changing to 16.' % float('inf')) in caplog.text
