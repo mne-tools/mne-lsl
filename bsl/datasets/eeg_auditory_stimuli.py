@@ -10,8 +10,8 @@ from ._fetching import fetch_file, _hashfunc
 from .. import logger
 
 
-MD5 = ''
-SHA1 = ''
+MD5 = '615998e1bb4f1d8986293e5692358bde'
+SHA1 = '4e9f90e54cc8ab884c8be6337394abd566b09600'
 URL = 'https://github.com/bsl-tools/bsl-datasets/raw/main/eeg_sample/auditory_stimuli-raw.fif'
 PATH = Path('~/bsl_data/eeg_sample/auditory_stimuli-raw.fif').expanduser()
 
