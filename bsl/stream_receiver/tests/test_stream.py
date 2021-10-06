@@ -2,9 +2,9 @@ import mne
 import time
 import pylsl
 
-from bsl.datasets import sample
+from bsl.datasets import eeg_resting_state
 from bsl.stream_receiver._stream import StreamMarker, StreamEEG
-from bsl.utils._testing import Stream, requires_sample_dataset
+from bsl.utils._testing import Stream, requires_eeg_resting_state_dataset
 
 
 def test_stream_marker():
@@ -13,10 +13,10 @@ def test_stream_marker():
     pass
 
 
-@requires_sample_dataset
+@requires_eeg_resting_state_dataset
 def test_stream_eeg():
     """Test StreamEEG class used by the StreamReceiver."""
-    dataset = sample
+    dataset = eeg_resting_state
     raw = mne.io.read_raw_fif(fname=dataset.data_path(), preload=True)
     with Stream('StreamPlayer', dataset):
         streamInfos = pylsl.resolve_streams()

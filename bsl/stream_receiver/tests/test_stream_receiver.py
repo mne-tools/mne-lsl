@@ -4,14 +4,14 @@ import pytest
 import numpy as np
 
 from bsl import StreamReceiver
-from bsl.datasets import sample
-from bsl.utils._testing import Stream, requires_sample_dataset
+from bsl.datasets import eeg_resting_state
+from bsl.utils._testing import Stream, requires_eeg_resting_state_dataset
 
 
-@requires_sample_dataset
+@requires_eeg_resting_state_dataset
 def test_receiver():
     """Test receiver functionalities."""
-    dataset = sample
+    dataset = eeg_resting_state
     stream = 'StreamPlayer'
     with Stream(stream, dataset):
         sr = StreamReceiver(bufsize=1, winsize=0.2)
@@ -78,10 +78,10 @@ def test_receiver():
         assert stream in sr.streams
 
 
-@requires_sample_dataset
+@requires_eeg_resting_state_dataset
 def test_receiver_multi_streams():
     """Test StreamReceiver multi-streams functionalities."""
-    dataset = sample
+    dataset = eeg_resting_state
     with Stream('StreamPlayer1', dataset), Stream('StreamPlayer2', dataset):
         # test connect to only one
         sr = StreamReceiver(bufsize=1, winsize=0.2,
