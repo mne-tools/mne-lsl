@@ -1,6 +1,6 @@
 """
-Sample dataset of a 64 channel resting-state EEG recording of 2 seconds using
-an ANT Neuro amplifier.
+Sample EEG dataset recorded on ANT Neuro Amplifier with 64 electrodes. This is
+a resting-state recording lasting 2 seconds.
 """
 
 import os
@@ -18,9 +18,10 @@ PATH = Path('~/bsl_data/eeg_sample/resting_state_short-raw.fif').expanduser()
 
 def data_path():
     """
-    Return the path to the sample dataset.
+    Path to a sample EEG dataset recorded on ANT Neuro Amplifier with 64
+    electrodes. This is a resting-state recording lasting 2 seconds.
     If the dataset is not locally present, it is downloaded in the user home
-    directory in the folder ``bsl_data``.
+    directory in the folder ``bsl_data/eeg_sample``.
     """
     os.makedirs(PATH.parent, exist_ok=True)
 
