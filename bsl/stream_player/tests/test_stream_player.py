@@ -71,8 +71,8 @@ def test_stream_player_default(caplog):
 
 @requires_event_dataset
 @requires_sample_dataset
-def test_stream_player_trigger_def():
-    """Test stream player capabilities with a trigger_def file provided."""
+def test_stream_player_triggers():
+    """Test stream player trigger display capabilities."""
     pass
 
 
