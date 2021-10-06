@@ -4,20 +4,20 @@ Stream a recorded .fif file on LSL network.
 Command-line arguments:
     #1                  Stream name (str)
     #2                  Raw FIF file to stream (str, path)
+    -r --repeat         Number of repeat (int), default inf.
+    -t --trigger_def    TriggerDef compatible file (str, path)
     -c --chunk_size     Chunk size (int)
-    -t --trigger_file   Trigger file (str, path)
+    --high_resolution   Flag to use high resolution counter instead of sleep.
 
-the '-raw.fif' file to play.
-Example:
+Examples:
     bsl_stream_player StreamPlayer "D:/Data/sample-raw.fif"
-    bsl_stream_player StreamPlayer "D:/Data/sample-raw.fif" -c 16
-    bsl_stream_player StreamPlayer "D:/Data/sample-raw.fif" -c 16 -t "D:/triggerdef_template.ini"
+    bsl_stream_player StreamPlayer "D:/Data/sample-raw.fif" -r 5
+    bsl_stream_player StreamPlayer "D:/Data/sample-raw.fif" -r 5 -c 16
+    bsl_stream_player StreamPlayer "D:/Data/sample-raw.fif" -c 32 -t "D:/triggerdef_template.ini"
+    bsl_stream_player StreamPlayer "D:/Data/sample-raw.fif" --high_resolution
 """
 
-import time
 import argparse
-
-from pathlib import Path
 
 from bsl import StreamPlayer
 
@@ -34,21 +34,22 @@ def run():
         'fif_file', type=str,
         help='path to the FIF File to stream on LSL network.')
     parser.add_argument(
+        '-r', '--repeat', type=int, metavar='int',
+        help='number of time the fif file is repeated.', default=float('inf'))
+    parser.add_argument(
+        '-t', '--trigger_def', type=str, metavar='str',
+        help='path to a TriggerDef compatible file.', default=None)
+    parser.add_argument(
         '-c', '--chunk_size', type=int, metavar='int',
         help='chunk size, usually 16 or 32.', default=16)
     parser.add_argument(
-        '-t', '--trigger_file', type=str, metavar='str',
-        help='path to the trigger file.', default=None)
+        '--high_resolution', type=bool, metavar='bool', action='store_true',
+        help='use time.perf_counter() instead of time.sleep()')
 
     args = parser.parse_args()
 
-    server_name = args.stream_name
-    fif_file = Path(args.fif_file)
-    chunk_size = int(args.chunk_size)
-    trigger_file = args.trigger_file
-
-    sp = StreamPlayer(server_name, fif_file, chunk_size, trigger_file)
+    sp = StreamPlayer(args.stream_name, args.fif_file, args.repeat,
+                      args.trigger_def, args.chunk_size, args.high_resolution)
     sp.start()
-    time.sleep(0.5)
     input(">> Press ENTER to stop replaying data \n")
     sp.stop()
