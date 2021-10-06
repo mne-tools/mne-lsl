@@ -8,28 +8,32 @@ from ..utils._docs import fill_doc
 @fill_doc
 class TriggerDef:
     """
-    Class used to store pairs (str: int) of events name and events value. Each
-    name and each value is unique. The pairs can be read from a ``.ini`` file
-    or edited manually with `~bsl.triggers.TriggerDef.add_event` and
-    `~bsl.triggers.TriggerDef.remove_event`.
+    Class used to store pairs {`str`: `int`} of events name and events value.
+    Each name and each value is unique. The pairs can be read from a ``.ini``
+    file or edited manually with `TriggerDef.add_event` and
+    `TriggerDef.remove_event`.
 
     The class will expose the name as attributes ``self.event_str = event_int``
     for all pairs.
 
     Parameters
     ----------
-    trigger_file : `str` | `~pathlib.Path` | `None`
+    trigger_file : `None` | `str` | `~pathlib.Path`
         Path to the ``.ini`` file containing the table converting event numbers
         into event strings.
 
         .. note:: The ``.ini`` file is read with ``configparser`` and has to be
                   structured as follows:
 
+                  .. code-block:: python
+
                       [events]
                       event_str_1 = event_id_1   # comment
                       event_str_2 = event_id_2   # comment
 
                   Example:
+
+                  .. code-block:: python
 
                       [events]
                       rest = 1

@@ -25,15 +25,15 @@ class StreamPlayer:
         Number of times the stream player will loop on the FIF file before
         interrupting. Default ``float('inf')`` can be passed to never interrupt
         streaming.
-    trigger_def : `None` | `str` | `~pathlib.Path` | `~bsl.triggers.TriggerDef`
-        If not None, a `~bsl.triggers.TriggerDef` instance is used to log
-        events with a descriptive string instead of their ID. If not `None`,
-        either a `~bsl.triggers.TriggerDef` instance or the path to a valid
-        path to a ``.ini`` file passed to `~bsl.triggers.TriggerDef`.
+    trigger_def : `None` | `str` | `~pathlib.Path` | :class:`.TriggerDef`
+        If not None, a :class:`.TriggerDef` instance is used to log events with
+        a descriptive string instead of their ID. If not `None`, either a
+        :class:`.TriggerDef` instance or the path to a valid path to a ``.ini``
+        file passed to :class:`.TriggerDef`.
     chunk_size : `int`
         Number of samples to send at once (usually ``16-32`` is good enough).
     high_resolution : `bool`
-        If ``True``, it uses `~time.perf_counter()` instead of `~time.sleep()`
+        If ``True``, it uses `~time.perf_counter` instead of `~time.sleep`
         for higher time resolution. However, it uses more CPU.
     """
 
@@ -230,10 +230,10 @@ class StreamPlayer:
     @property
     def trigger_def(self):
         """
-        Either `None` or `~bsl.triggers.TriggerDef` instance converting event
-        numbers into event strings.
+        Either `None` or :class:`.TriggerDef` instance converting event numbers
+        into event strings.
 
-        :type: `~bsl.triggers.TriggerDef`
+        :type: :class:`.TriggerDef`
         """
         return self._trigger_def
 
@@ -250,7 +250,7 @@ class StreamPlayer:
     @property
     def high_resolution(self):
         """
-        If ``True``, it uses `~time.perf_counter()` instead of `~time.sleep()`
+        If ``True``, it uses `~time.perf_counter` instead of `~time.sleep`
         for higher time resolution. However, it uses more CPU.
 
         :type: `bool`
