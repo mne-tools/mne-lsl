@@ -90,8 +90,9 @@ class StreamPlayer:
         self._process.join(10)
 
         if self._process.is_alive():
-            logger.error('StreamPlayer process not finishing.. killing.')
+            logger.error('StreamPlayer process not finishing..')
             self._process.kill()
+            raise RuntimeError
 
         self._process = None
 
