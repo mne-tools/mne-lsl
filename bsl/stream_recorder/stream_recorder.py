@@ -23,43 +23,47 @@ class StreamRecorder:
     %(recorder_record_dir)s
     %(recorder_fname)s
     %(stream_name)s
+    %(recorder_fif_subdir)s
+    %(recorder_verbose)s
     """
 
-    def __init__(self, record_dir=None, fname=None, stream_name=None):
+    def __init__(self, record_dir=None, fname=None, stream_name=None,
+                 fif_subdir=True, verbose=False):
         self._record_dir = StreamRecorder._check_record_dir(record_dir)
         self._fname = StreamRecorder._check_fname(fname)
         self._stream_name = stream_name
+        self._fif_subdir = bool(fif_subdir)
+        self._verbose = bool(verbose)
 
         self._eve_file = None  # for SOFTWARE triggers
         self._process = None
         self._state = mp.Value('i', 0)
 
-    @fill_doc
-    def start(self, fif_subdir=True, blocking=True, verbose=False):
+    def start(self, blocking=True):
         """
         Start the recording in a new process.
 
         Parameters
         ----------
-        %(recorder_fif_subdir)s
         blocking : `bool`
             If ``True``, waits for the child process to start recording data.
-        %(recorder_verbose)s
         """
         fname, self._eve_file = StreamRecorder._create_fname(
             self._record_dir, self._fname)
-        logger.debug("File name stem is '%s'." % fname)
-        logger.debug("Event file name is '%s'." % self._eve_file)
+        logger.debug("File name stem is '%s'.", fname)
+        logger.debug("Event file name is '%s'.", self._eve_file)
 
         self._process = mp.Process(
             target=self._record,
-            args=(self._record_dir, fname, self._eve_file, bool(fif_subdir),
-                  self._stream_name, self._state, bool(verbose)))
+            args=(self._record_dir, fname, self._eve_file, self._fif_subdir,
+                  self._stream_name, self._state, self._verbose))
         self._process.start()
 
         if blocking:
             while self._state.value == 0:
                 pass
+
+        self.__repr__()
 
     def stop(self):
         """
@@ -71,8 +75,8 @@ class StreamRecorder:
         logger.info('Waiting for recorder process to finish.')
         self._process.join(10)
         if self._process.is_alive():
-            logger.error(
-                'Recorder process not finishing..')
+            logger.error('Recorder process not finishing..')
+            self._process.kill()
             raise RuntimeError
         logger.info('Recording finished.')
 
@@ -91,6 +95,20 @@ class StreamRecorder:
         recorder.record()
 
     # --------------------------------------------------------------------
+    def __enter__(self):
+        """Context manager entry point."""
+        self.start(blocking=True)
+
+    def __exit__(self, exc_type, exc_value, exc_tracebac):
+        """Context manager exit point."""
+        self.stop()
+
+    def __repr__(self):
+        """Representation of the instance."""
+        status = 'ON' if self._state.value == 1 else 'OFF'
+        return f'<{self._stream_name} | {status} | {self._record_dir}>'
+
+    # --------------------------------------------------------------------
     @staticmethod
     def _check_record_dir(record_dir):
         """
@@ -100,7 +118,12 @@ class StreamRecorder:
         if record_dir is None:
             record_dir = Path.cwd()
         else:
-            record_dir = Path(record_dir)
+            try:
+                record_dir = Path(record_dir)
+            except Exception:
+                raise ValueError(
+                    'Argument record_dir must be a path to a valid directory. '
+                    'Provided: %s' % record_dir)
         return record_dir
 
     @staticmethod
@@ -109,7 +132,12 @@ class StreamRecorder:
         Checks that the file name stem is a string or None.
         """
         if fname is not None:
-            fname = str(fname)
+            try:
+                fname = str(fname)
+            except Exception:
+                raise ValueError(
+                    'Argument fname must be a valid string or have a valid '
+                    'string representation.')
         return fname
 
     @staticmethod
@@ -119,7 +147,6 @@ class StreamRecorder:
         """
         fname = fname if fname is not None \
             else time.strftime('%Y%m%d-%H%M%S', time.localtime())
-
         eve_file = record_dir / f'{fname}-eve.txt'
 
         return fname, eve_file
@@ -135,15 +162,6 @@ class StreamRecorder:
         """
         return self._record_dir
 
-    @record_dir.setter
-    def record_dir(self, record_dir):
-        if self._state.value == 1:
-            logger.warning(
-                'The recording directory cannot be changed during an '
-                'ongoing recording.')
-        else:
-            self._record_dir = StreamRecorder._check_record_dir(record_dir)
-
     @property
     def fname(self):
         """
@@ -153,15 +171,6 @@ class StreamRecorder:
         :type: `str`
         """
         return self._fname
-
-    @fname.setter
-    def fname(self, fname):
-        if self._state.value == 1:
-            logger.warning(
-                'The file name cannot be changed during an '
-                'ongoing recording.')
-        else:
-            self._fname = StreamRecorder._check_fname(fname)
 
     @property
     def stream_name(self):
@@ -173,14 +182,23 @@ class StreamRecorder:
         """
         return self._stream_name
 
-    @stream_name.setter
-    def stream_name(self, stream_name):
-        if self._state.value == 1:
-            logger.warning(
-                'The stream name(s) to connect to cannot be changed during an '
-                'ongoing recording.')
-        else:
-            self._stream_name = stream_name
+    @property
+    def fif_subdir(self):
+        """
+        If True, fif file are saved in a subdirectory.
+
+        :type: `bool`
+        """
+        return self._fif_subdir
+
+    @property
+    def verbose(self):
+        """
+        If True, a timer is logged in the console.
+
+        :type: `bool`
+        """
+        return self._verbose
 
     @property
     def eve_file(self):
