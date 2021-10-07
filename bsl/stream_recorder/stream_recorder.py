@@ -55,8 +55,8 @@ class StreamRecorder:
 
         self._process = mp.Process(
             target=self._record,
-            args=(self._record_dir, fname, self._eve_file, self._fif_subdir,
-                  self._stream_name, self._state, self._verbose))
+            args=(self._record_dir, fname, self._stream_name, self._fif_subdir,
+                  self._verbose, self._eve_file, self._state))
         self._process.start()
 
         if blocking:
@@ -87,15 +87,14 @@ class StreamRecorder:
         self._eve_file = None
         self._process = None
 
-    def _record(self, record_dir, fname, eve_file, fif_subdir,
-                stream_name, state, verbose):
+    def _record(self, record_dir, fname, stream_name, fif_subdir, verbose,
+                eve_file, state):
         """
         The function called in the new process.
         Instance a _Recorder and start recording.
         """
-        recorder = _Recorder(
-            record_dir, fname, eve_file, fif_subdir,
-            stream_name, state, verbose)
+        recorder = _Recorder(record_dir, fname, stream_name, fif_subdir,
+                             verbose, eve_file, state)
         recorder.record()
 
     # --------------------------------------------------------------------
@@ -244,27 +243,27 @@ class _Recorder:
     ----------
     %(recorder_record_dir)s
     %(recorder_fname)s
-    eve_file : str | Path
-        Path to the event file for TriggerSoftware.
-    %(recorder_fif_subdir)s
     %(stream_name)s
+    %(recorder_fif_subdir)s
+    %(recorder_verbose)s
     state : mp.Value
         Recording state of the recorder:
             - 0: Not recording.
             - 1: Recording.
         This variable is used to stop the recording from another process.
-    %(recorder_verbose)s
+    eve_file : str | Path
+        Path to the event file for TriggerSoftware.
     """
 
-    def __init__(self, record_dir, fname, eve_file, fif_subdir,
-                 stream_name, state, verbose):
+    def __init__(self, record_dir, fname, stream_name, fif_subdir, verbose,
+                 eve_file, state):
         self._record_dir = record_dir
         self._fname = fname
-        self._eve_file = eve_file
-        self._fif_subdir = fif_subdir
         self._stream_name = stream_name
-        self._state = state
+        self._fif_subdir = fif_subdir
         self._verbose = verbose
+        self._eve_file = eve_file
+        self._state = state
 
     def record(self):
         """
@@ -290,7 +289,7 @@ class _Recorder:
                     previous_time = verbose_timer.sec()
                     duration = str(datetime.timedelta(
                         seconds=int(verbose_timer.sec())))
-                    logger.info(f'RECORDING {duration}')
+                    logger.info('RECORDING %s', duration)
 
         self._save(sr, pcl_files)
 
@@ -298,7 +297,7 @@ class _Recorder:
         """
         Save the data in the StreamReceiver buffer to the .pcl and .fif files.
         """
-        logger.info('Saving raw data ...')
+        logger.info('Saving raw data..')
         for stream in sr.streams:
             signals, timestamps = sr.get_buffer(stream)
 
@@ -317,7 +316,7 @@ class _Recorder:
             with open(pcl_files[stream], 'wb') as file:
                 pickle.dump(data, file, protocol=pickle.HIGHEST_PROTOCOL)
 
-            logger.info(f"Saved to '{pcl_files[stream]}'")
+            logger.info("Saved to '%s'", pcl_files[stream])
 
             if not isinstance(sr.streams[stream], StreamEEG):
                 continue
@@ -354,10 +353,8 @@ class _Recorder:
                     file.write(
                         'Data will be written when the recording is finished.')
             except Exception as error:
-                logger.error(
-                    f"Problem writing to '{pcl_files[stream]}'. "
-                    "Check permissions.", exc_info=True)
-                raise error
+                raise error("Could not write to '%s'. Check permissions"
+                            % {pcl_files[stream]})
 
         logger.info(
             'Record to files: \n' +
