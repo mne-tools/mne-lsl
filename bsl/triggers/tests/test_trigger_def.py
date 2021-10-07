@@ -1,7 +1,12 @@
+from configparser import ConfigParser
+
+import pytest
+
 from bsl import logger, set_log_level
-from bsl.datasets import trigger_def
+from bsl.datasets import trigger_def, eeg_resting_state
 from bsl.triggers import TriggerDef
-from bsl.utils._testing import requires_trigger_def_dataset
+from bsl.utils._testing import (requires_trigger_def_dataset,
+                                requires_eeg_resting_state_dataset)
 
 
 set_log_level('INFO')
@@ -18,9 +23,8 @@ def _check_pair(tdef, name, value):
     assert getattr(tdef, name) == value
 
 
-@requires_trigger_def_dataset
 def test_trigger_def(caplog):
-    """Test trigger def class."""
+    """Test default behavior."""
     # Test with trigger_file = None
     tdef = TriggerDef()
     assert tdef._by_name == tdef.by_name == {}
@@ -31,10 +35,11 @@ def test_trigger_def(caplog):
     _check_pair(tdef, 'stim', 1)
 
     # Test add existing event (name)
+    caplog.clear()
     tdef.add_event('stim', 2, overwrite=False)
     _check_pair(tdef, 'stim', 1)
     assert 2 not in tdef._by_value
-    assert 'Event name stim already exists.' in caplog.text
+    assert 'Event name stim already exists. Skipping.' in caplog.text
 
     # Test add existing event (name - overwrite)
     tdef.add_event('stim', 2, overwrite=True)
@@ -42,10 +47,11 @@ def test_trigger_def(caplog):
     assert 1 not in tdef._by_value
 
     # Test add existing event (value)
+    caplog.clear()
     tdef.add_event('rest', 2, overwrite=False)
     _check_pair(tdef, 'stim', 2)
     assert 'rest' not in tdef._by_name
-    assert 'Event value 2 already exists.' in caplog.text
+    assert 'Event value 2 already exists. Skipping.' in caplog.text
 
     # Test add existing event (value - overwrite)
     tdef.add_event('rest', 2, overwrite=True)
@@ -53,10 +59,12 @@ def test_trigger_def(caplog):
     assert 'stim' not in tdef._by_name
 
     # Test remove non-existing event (name)
+    caplog.clear()
     tdef.remove_event('stim')
     assert 'Event name stim not found.' in caplog.text
 
     # Test remove non-existing event (value)
+    caplog.clear()
     tdef.remove_event(5)
     assert 'Event value 5 not found.' in caplog.text
 
@@ -73,17 +81,97 @@ def test_trigger_def(caplog):
     assert 2 not in tdef._by_value
     assert not hasattr(tdef, 'rest')
 
-    # Test with .ini file
+
+@requires_trigger_def_dataset
+@requires_eeg_resting_state_dataset
+def test_read_ini(caplog, tmp_path):
+    """Test reading from a .ini file."""
+    # Valid file
     tdef = TriggerDef(trigger_def.data_path())
-    assert tdef._by_name['rest'] == 1
-    assert tdef._by_name['stim_left'] == 2
-    assert tdef._by_name['stim_right'] == 3
-    assert tdef._by_name['feedback'] == 4
-    assert tdef._by_name['start'] == 5
-    assert tdef._by_name['stop'] == 6
-    assert tdef._by_value[1] == 'rest'
-    assert tdef._by_value[2] == 'stim_left'
-    assert tdef._by_value[3] == 'stim_right'
-    assert tdef._by_value[4] == 'feedback'
-    assert tdef._by_value[5] == 'start'
-    assert tdef._by_value[6] == 'stop'
+    assert tdef._by_name == {'rest': 1,
+                             'stim_left': 2,
+                             'stim_right': 3,
+                             'feedback': 4,
+                             'start': 5,
+                             'stop': 6}
+    assert tdef._by_value == {1: 'rest',
+                              2: 'stim_left',
+                              3: 'stim_right',
+                              4: 'feedback',
+                              5: 'start',
+                              6: 'stop'}
+
+    # Valid .ini file with duplicate values
+    caplog.clear()
+    config = ConfigParser()
+    config['events'] = {'stim': 1, 'rest': 1}
+    with open(tmp_path / 'test.ini', 'w') as configfile:
+        config.write(configfile)
+    tdef = TriggerDef(tmp_path / 'test.ini')
+    assert 'Event value %s already exists. Skipping.' % 1 in caplog.text
+    assert tdef._by_name == {'stim': 1}
+    assert tdef._by_value == {1: 'stim'}
+
+    # Invalid file
+    caplog.clear()
+    tdef = TriggerDef(5)
+    assert tdef._trigger_file is None
+    assert ('Argument trigger_file could not be interpreted as a Path. '
+            'Provided: %s' % 5) in caplog.text
+
+    caplog.clear()
+    tdef = TriggerDef(eeg_resting_state.data_path())
+    assert tdef._trigger_file is None
+    assert ('Argument trigger_file must be a valid Path to a .ini file. '
+            'Provided: %s' % '.fif') in caplog.text
+
+    caplog.clear()
+    tdef = TriggerDef('non-existing-path')
+    assert tdef._trigger_file is None
+    assert ("Trigger event definition file '%s' not found."
+            % 'non-existing-path') in caplog.text
+
+
+def test_write_ini(tmp_path):
+    """Test write to a .ini file."""
+    # Valid file
+    tdef = TriggerDef()
+    tdef.add_event('stim', 1, overwrite=False)
+    tdef.add_event('rest', 2, overwrite=False)
+    tdef.write_ini(tmp_path / 'test_write.ini')
+
+    # Invalid file
+    trigger_file = 5
+    with pytest.raises(ValueError,
+                       match='Argument trigger_file could not be interpreted '
+                             'as a Path. Provided: %s' % trigger_file):
+        tdef.write_ini(trigger_file)
+
+    trigger_file = tmp_path / 'test_write.txt'
+    with pytest.raises(ValueError,
+                       match='Argument trigger_file must end with .ini. '
+                             'Provided: %s' % trigger_file.suffix):
+        tdef.write_ini(trigger_file)
+
+
+@requires_trigger_def_dataset
+def test_properties():
+    """Test the properties."""
+    tdef = TriggerDef(trigger_def.data_path())
+    assert tdef._by_name == tdef.by_name == {'rest': 1,
+                                             'stim_left': 2,
+                                             'stim_right': 3,
+                                             'feedback': 4,
+                                             'start': 5,
+                                             'stop': 6}
+    assert tdef._by_value == tdef.by_value == {1: 'rest',
+                                               2: 'stim_left',
+                                               3: 'stim_right',
+                                               4: 'feedback',
+                                               5: 'start',
+                                               6: 'stop'}
+
+    with pytest.raises(AttributeError, match="can't set attribute"):
+        tdef.by_name = dict()
+    with pytest.raises(AttributeError, match="can't set attribute"):
+        tdef.by_value = dict()
