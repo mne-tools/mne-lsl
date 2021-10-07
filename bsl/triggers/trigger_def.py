@@ -1,11 +1,10 @@
+import os
 from pathlib import Path
 from configparser import ConfigParser
 
 from .. import logger
-from ..utils._docs import fill_doc
 
 
-@fill_doc
 class TriggerDef:
     """
     Class used to store pairs {`str`: `int`} of events name and events value.
@@ -41,32 +40,73 @@ class TriggerDef:
     """
 
     def __init__(self, trigger_file=None):
-        self._trigger_file = TriggerDef._check_trigger_file(trigger_file)
-
         self._by_name = dict()
         self._by_value = dict()
-        if self._trigger_file is not None:
-            self._extract_from_ini()
+        self.read_ini(trigger_file)
 
-    def _extract_from_ini(self):
+    def read_ini(self, trigger_file):
         """
-        Load the .ini file.
+        Read events from a ``.ini`` trigger definition file.
+
+        .. note:: The ``.ini`` file is read with ``configparser`` and has to be
+                  structured as follows:
+
+                  .. code-block:: python
+
+                      [events]
+                      event_str_1 = event_id_1   # comment
+                      event_str_2 = event_id_2   # comment
+
+                  Example:
+
+                  .. code-block:: python
+
+                      [events]
+                      rest = 1
+                      stim = 2
+
+        Parameters
+        ----------
+        trigger_file : `str` | `~pathlib.Path`
+            Path to the ``.ini`` file containing the table converting event numbers
+            into event strings.
         """
+        self._trigger_file = TriggerDef._check_trigger_file(trigger_file)
+        if self._trigger_file is None:
+            return
+
         config = ConfigParser(inline_comment_prefixes=('#', ';'))
         config.optionxform = str
         config.read(str(self._trigger_file))
 
         for name, value in config.items('events'):
             value = int(value)
-            if name in self._by_name:
-                logger.info(f'Event name {name} already exists.')
-                continue
             if value in self._by_value:
-                logger.info(f'Event value {value} already exists.')
+                logger.info('Event value %s already exists. Skipping.', value)
                 continue
             setattr(self, name, value)
             self._by_name[name] = value
             self._by_value[value] = name
+
+    def write_ini(self, trigger_file):
+        """
+        Write events to a ``.ini`` trigger definition file.
+
+        .. note:: The ``.ini`` file is writen with ``configparser`` and is
+                  structured as follows:
+
+                  .. code-block:: python
+
+                      [events]
+                      event_str_1 = event_id_1
+                      event_str_2 = event_id_2
+        """
+        trigger_file = TriggerDef._check_write_to_trigger_file(trigger_file)
+
+        config = ConfigParser()
+        config['events'] = self._by_name
+        with open(trigger_file, 'w') as configfile:
+            config.write(configfile)
 
     def add_event(self, name, value, overwrite=False):
         """
@@ -83,10 +123,10 @@ class TriggerDef:
         """
         value = int(value)
         if name in self._by_name and not overwrite:
-            logger.info(f'Event name {name} already exists.')
+            logger.info('Event name %s already exists. Skipping.', name)
             return
         if value in self._by_value and not overwrite:
-            logger.info(f'Event value {value} already exists.')
+            logger.info('Event value %s already exists. Skipping.', value)
             return
 
         if name in self._by_name:
@@ -111,7 +151,7 @@ class TriggerDef:
         """
         if isinstance(event, str):
             if event not in self._by_name:
-                logger.info(f'Event name {event} not found.')
+                logger.info('Event name %s not found.', event)
                 return
             value = self._by_name[event]
             delattr(self, event)
@@ -120,7 +160,7 @@ class TriggerDef:
         elif isinstance(event, (int, float)):
             event = int(event)
             if event not in self._by_value:
-                logger.info(f'Event value {event} not found.')
+                logger.info('Event value %s not found.', event)
                 return
             name = self._by_value[event]
             delattr(self, name)
@@ -128,7 +168,7 @@ class TriggerDef:
             del self._by_value[event]
         else:
             raise TypeError(
-                f'Supported event types are (str, int), not {type(event)}.')
+                'Supported event types are (str, int), not %s.', type(event))
 
     def __repr__(self):
         """Representation of the stored events."""
@@ -148,19 +188,48 @@ class TriggerDef:
         """
         if trigger_file is None:
             return None
-        trigger_file = Path(trigger_file)
-        if trigger_file.exists():
-            logger.info(f"Found trigger definition file '{trigger_file}'")
+
+        try:
+            trigger_file = Path(trigger_file)
+        except Exception:
+            logger.error(
+                'Argument trigger_file could not be interpreted as a Path. '
+                'Provided: %s', trigger_file)
+            return None
+
+        if trigger_file.exists() and trigger_file.suffix == '.ini':
+            logger.info(
+                "Found trigger definition file '%s'", trigger_file.name)
+            return trigger_file
+        elif trigger_file.exists() and trigger_file.suffix != '.ini':
+            logger.error(
+                'Argument trigger_file must be a valid Path to a .ini file. '
+                'Provided: %s', trigger_file.suffix)
+            return None
         else:
             logger.error(
-                f"Trigger event definition file '{trigger_file}' not found.")
+                "Trigger event definition file '%s' not found.", trigger_file)
             return None
+
+    @staticmethod
+    def _check_write_to_trigger_file(trigger_file):
+        """
+        Checks that the directory exists and that the file name ends with
+        .ini.
+        """
+        try:
+            trigger_file = Path(trigger_file)
+        except Exception:
+            raise ValueError(
+                'Argument trigger_file could not be interpreted as a Path. '
+                'Provided: %s' % trigger_file)
 
         if trigger_file.suffix != '.ini':
-            logger.error(
-                "Trigger event definition file format must be '.ini'.")
-            return None
+            raise ValueError(
+                'Argument trigger_file must end with .ini. '
+                'Provided: %s' % trigger_file.suffix)
 
+        os.makedirs(trigger_file.parent, exist_ok=True)
         return trigger_file
 
     # --------------------------------------------------------------------
