@@ -338,3 +338,29 @@ def test_checker_fname(tmp_path):
     assert recorder.fname is None
     recorder = StreamRecorder(record_dir=tmp_path, fname='test')
     assert recorder.fname == 'test'
+
+
+@requires_eeg_resting_state_dataset
+def test_representation(tmp_path):
+    """Test the representation method."""
+    with StreamPlayer('StreamPlayer', eeg_resting_state.data_path()):
+        recorder = StreamRecorder(record_dir=tmp_path, fname=None)
+        expected = f'<All streams | OFF | {tmp_path}>'
+        assert recorder.__repr__() == expected
+        recorder.start()
+        expected = f'<All streams | ON | {tmp_path}>'
+        assert recorder.__repr__() == expected
+        recorder.stop()
+        expected = f'<All streams | OFF | {tmp_path}>'
+        assert recorder.__repr__() == expected
+
+        recorder = StreamRecorder(record_dir=tmp_path, fname=None,
+                                  stream_name='StreamPlayer')
+        expected = f'<StreamPlayer | OFF | {tmp_path}>'
+        assert recorder.__repr__() == expected
+        recorder.start()
+        expected = f'<StreamPlayer | ON | {tmp_path}>'
+        assert recorder.__repr__() == expected
+        recorder.stop()
+        expected = f'<StreamPlayer | OFF | {tmp_path}>'
+        assert recorder.__repr__() == expected

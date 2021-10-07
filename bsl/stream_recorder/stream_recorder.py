@@ -109,7 +109,9 @@ class StreamRecorder:
     def __repr__(self):
         """Representation of the instance."""
         status = 'ON' if self._state.value == 1 else 'OFF'
-        return f'<{self._stream_name} | {status} | {self._record_dir}>'
+        streams = self._stream_name if self._stream_name is not None \
+            else 'All streams'
+        return f'<{streams} | {status} | {self._record_dir}>'
 
     # --------------------------------------------------------------------
     @staticmethod
