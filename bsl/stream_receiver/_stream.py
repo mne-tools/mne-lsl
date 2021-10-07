@@ -31,7 +31,6 @@ class _Stream(ABC):
 
     @abstractmethod
     def __init__(self, streamInfo, bufsize, winsize):
-
         winsize = _Stream._check_winsize(winsize)
         bufsize = _Stream._check_bufsize(bufsize, winsize)
 
@@ -103,7 +102,6 @@ class _Stream(ABC):
                     f'(v{self._streamInfo.version()}).')
         logger.info(f'Source sampling rate: {self._sample_rate}')
         logger.info(f'Channels: {self._streamInfo.channel_count()}')
-        logger.info(f'{self._ch_list}')
 
         # Check for high LSL offset
         if self._lsl_time_offset is None:
@@ -201,8 +199,7 @@ class _Stream(ABC):
         %(receiver_winsize)s
         """
         if winsize <= 0:
-            logger.error(f'Invalid window size {winsize}.')
-            raise ValueError
+            raise ValueError(f'Invalid window size {winsize}.')
 
         return winsize
 
@@ -226,7 +223,7 @@ class _Stream(ABC):
         elif bufsize < winsize:
             logger.error(
                 f'Buffer size  {bufsize:.1f} is smaller than window size. '
-                f'Setting to {winsize:.1f}')
+                f'Setting to {winsize:.1f}.')
             bufsize = winsize
 
         return bufsize
@@ -253,20 +250,6 @@ class _Stream(ABC):
 
     # --------------------------------------------------------------------
     @property
-    def name(self):
-        """
-        Stream's name.
-        """
-        return self._name
-
-    @property
-    def serial(self):
-        """
-        Stream's serial number.
-        """
-        return self._serial
-
-    @property
     def streamInfo(self):
         """
         Stream info received from the LSL inlet.
@@ -281,40 +264,32 @@ class _Stream(ABC):
         return self._sample_rate
 
     @property
+    def name(self):
+        """
+        Stream's name.
+        """
+        return self._name
+
+    @property
+    def serial(self):
+        """
+        Stream's serial number.
+        """
+        return self._serial
+
+    @property
+    def is_slave(self):
+        """
+        Value stored in LSL ['amplifier']['settings']['is_slave'].
+        """
+        return self._is_slave
+
+    @property
     def ch_list(self):
         """
         Channels' name list.
         """
         return self._ch_list
-
-    @property
-    def buffer(self):
-        """
-        Buffer containing the data and the timestamps.
-        """
-        return self._buffer
-
-    @property
-    def blocking(self):
-        """
-        If True, the stream wait to receive data.
-        """
-        return self._blocking
-
-    @blocking.setter
-    def blocking(self, blocking):
-        self._blocking = bool(blocking)
-
-    @property
-    def blocking_time(self):
-        """
-        If blocking is True, how long to wait to receive data in seconds.
-        """
-        return self._blocking_time
-
-    @blocking_time.setter
-    def blocking_time(self, blocking_time):
-        self._blocking_time = blocking_time
 
     @property
     def lsl_time_offset(self):
@@ -326,6 +301,41 @@ class _Stream(ABC):
         running time instead of LSL time.
         """
         return self._lsl_time_offset
+
+    @property
+    def blocking(self):
+        """
+        If True, the stream wait to receive data.
+
+        :setter: Change the blocking status.
+        :type: `bool`
+        """
+        return self._blocking
+
+    @blocking.setter
+    def blocking(self, blocking):
+        self._blocking = bool(blocking)
+
+    @property
+    def blocking_time(self):
+        """
+        If blocking is True, how long to wait to receive data in seconds.
+
+        :setter: Change the blocking time duration (seconds).
+        :type: `float`
+        """
+        return self._blocking_time
+
+    @blocking_time.setter
+    def blocking_time(self, blocking_time):
+        self._blocking_time = float(blocking_time)
+
+    @property
+    def buffer(self):
+        """
+        Buffer containing the data and the timestamps.
+        """
+        return self._buffer
 
 
 @fill_doc
@@ -347,16 +357,14 @@ class StreamMarker(_Stream):
         super().__init__(streamInfo, bufsize, winsize)
 
         self._blocking = False
-        self._blocking_time = np.Inf
+        self._blocking_time = float('inf')
 
     def acquire(self):
         """
         Pull data from the stream's inlet and fill the buffer.
         """
         chunk, tslist = super().acquire()
-
-        # Fill its buffer
-        self._buffer.fill(chunk, tslist)
+        self._buffer.fill(chunk, tslist)  # Fill its buffer
 
 
 @fill_doc
@@ -376,8 +384,8 @@ class StreamEEG(_Stream):
     def __init__(self, streamInfo, bufsize=1, winsize=1):
         super().__init__(streamInfo, bufsize, winsize)
 
-        # self._multiplier = 10 ** -6  # change uV -> V unit
-        self._multiplier = 1
+        # self._scaling_factor = 10 ** -6  # change uV -> V unit
+        self._scaling_factor = 1
 
     @copy_doc(_Stream._create_ch_name_list)
     def _create_ch_name_list(self):
@@ -410,7 +418,7 @@ class StreamEEG(_Stream):
 
         elif 'openvibeSignal' in self._name:
             # TODO: Test if this is correct or should be 1E6
-            self._multiplier = 10E6
+            self._scaling_factor = 10E6
             self._lsl_tr_channel = find_event_channel(ch_names=self._ch_list)
 
         elif 'openvibeMarkers' in self._name:
@@ -423,7 +431,7 @@ class StreamEEG(_Stream):
             self._lsl_tr_channel = find_event_channel(ch_names=self._ch_list)
 
         if self._lsl_tr_channel is not None:
-            logger.debug('Trigger channel idx: %d' % self._lsl_tr_channel)
+            logger.debug('Trigger channel idx: %d', self._lsl_tr_channel)
         else:
             logger.debug('Trigger channel was not found.')
 
@@ -447,8 +455,8 @@ class StreamEEG(_Stream):
                     int, copy=False)) - 1).astype(datatype, copy=False)
 
         # multiply values (to change unit)
-        if self._multiplier != 1:
-            data[:, self._lsl_eeg_channels] *= self._multiplier
+        if self._scaling_factor != 1:
+            data[:, self._lsl_eeg_channels] *= self._scaling_factor
 
         if self._lsl_tr_channel is not None:
             # move trigger channel to 0 and add back to the buffer
@@ -467,12 +475,15 @@ class StreamEEG(_Stream):
 
     # --------------------------------------------------------------------
     @property
-    def multiplier(self):
+    def scaling_factor(self):
         """
-        Scaling factor applied to the data.
-        """
-        return self._multiplier
+        Scaling factor applied to the data to convert to the desired unit.
 
-    @multiplier.setter
-    def multiplier(self, multiplier):
-        self._multiplier = multiplier
+        :setter: Change the scaling factor applied to the data.
+        :type: `float`
+        """
+        return self._scaling_factor
+
+    @scaling_factor.setter
+    def scaling_factor(self, scaling_factor):
+        self._scaling_factor = scaling_factor
