@@ -52,9 +52,11 @@ def test_stream_player(caplog):
     assert len(chunk) == len(tslist) ==  int(raw.info['sfreq'])
 
     # Test stop
+    caplog.clear()
     sp.stop()
     assert ('Waiting for StreamPlayer %s process to finish.'
             % 'StreamPlayer') in caplog.text
+    assert 'Streaming finished.' in caplog.text
     assert sp.process is None
 
     # Test restart/stop
@@ -72,6 +74,17 @@ def test_stream_player(caplog):
     caplog.clear()
     sp.stop()
     assert 'StreamPlayer was not started. Skipping.' in caplog.text
+
+    # Test context manager
+    caplog.clear()
+    with StreamPlayer(stream_name=stream_name, fif_file=fif_file):
+        assert 'Streaming started.' in caplog.text
+        streams = pylsl.resolve_streams()
+        assert stream_name in [stream.name() for stream in streams]
+        time.sleep(0.5)
+    assert ('Waiting for StreamPlayer %s process to finish.'
+            % 'StreamPlayer') in caplog.text
+    assert 'Streaming finished.' in caplog.text
 
 
 @requires_eeg_resting_state_short_dataset
