@@ -1,11 +1,16 @@
-import mne
 import time
+
+import mne
 import pytest
 import numpy as np
 
-from bsl import StreamReceiver, StreamPlayer
+from bsl import StreamReceiver, StreamPlayer, logger, set_log_level
 from bsl.datasets import eeg_resting_state
 from bsl.utils._testing import requires_eeg_resting_state_dataset
+
+
+set_log_level('INFO')
+logger.propagate = True
 
 
 @requires_eeg_resting_state_dataset
@@ -59,23 +64,6 @@ def test_receiver():
         assert window.info['sfreq'] == info['sfreq']
         window.info._check_consistency()
 
-        # test properties setters
-        sr.bufsize = 2
-        assert sr.bufsize == 2
-        assert sr.connected
-        assert sr.streams[stream].buffer.bufsize == \
-            round(2 * sr.streams[stream].sample_rate)
-
-        sr.winsize = 2
-        assert sr.winsize == 2
-        assert sr.connected
-        assert sr.streams[stream].buffer.winsize == \
-            round(2 * sr.streams[stream].sample_rate)
-
-        sr.stream_name = 'random fake stream'
-        assert sr.connected
-        assert stream in sr.streams
-
 
 @requires_eeg_resting_state_dataset
 def test_receiver_multi_streams():
@@ -108,7 +96,8 @@ def test_receiver_multi_streams():
         assert not sr.connected
 
         # test when no stream is connected
-        with pytest.raises(RuntimeError):
+        with pytest.raises(RuntimeError,
+                           match='StreamReceiver is not connected to any'):
             sr.acquire()
             sr.get_window()
             sr.get_buffer()
@@ -125,10 +114,12 @@ def test_receiver_multi_streams():
 
         # test get_xxx methods
         sr.acquire()
-        with pytest.raises(KeyError):
+        with pytest.raises(KeyError,
+                           match='StreamReceiver is not connected to'):
             sr.get_window(stream_name='random fake stream')
             sr.get_buffer(stream_name='random fake stream')
-        with pytest.raises(RuntimeError):
+        with pytest.raises(RuntimeError,
+                           match='StreamReceiver is connected to multiple'):
             sr.get_window(stream_name=None)
             sr.get_buffer(stream_name=None)
 

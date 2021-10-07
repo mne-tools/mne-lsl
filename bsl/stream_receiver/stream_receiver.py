@@ -154,9 +154,8 @@ class StreamReceiver:
         Read data from the streams and fill their buffer using threading.
         """
         if not self._connected:
-            logger.error(
-                'The Stream Receiver is not connected to any streams. ')
-            raise RuntimeError
+            raise RuntimeError('StreamReceiver is not connected to any '
+                               'streams.')
 
         for stream in self._streams:
             if self._acquisition_threads[stream] is not None and \
@@ -169,7 +168,7 @@ class StreamReceiver:
             self._acquisition_threads[stream] = thread
 
     @fill_doc
-    def get_window(self, stream_name=None, return_raw=False, verbose=True):
+    def get_window(self, stream_name=None, return_raw=False):
         """
         Get the latest window from a stream's buffer.
         If several streams are connected, specify the name.
@@ -178,7 +177,6 @@ class StreamReceiver:
         ----------
         %(receiver_get_stream_name)s
         %(receiver_get_return_raw)s
-        %(receiver_get_verbose)s
 
         Returns
         -------
@@ -190,29 +188,24 @@ class StreamReceiver:
         %(receiver_get_unit)s
         """
         if not self._connected:
-            logger.error(
-                'The Stream Receiver is not connected to any streams. ')
-            raise RuntimeError
+            raise RuntimeError('StreamReceiver is not connected to any '
+                               'streams.')
 
         if stream_name is None and len(self._streams) == 1:
             stream_name = list(self._streams)[0]
         elif stream_name is None and len(self._streams) > 1:
-            logger.error('The Stream Receiver is connected to multiple '
-                         'streams. Please provide the stream_name argument. ')
-            raise RuntimeError
+            raise RuntimeError(
+                'StreamReceiver is connected to multiple streams. Please '
+                'provide the stream_name argument.')
 
         try:
             self._acquisition_threads[stream_name].join()
-        except KeyError as error:
-            logger.error(
-                f"The Stream Receiver is not connected to '{stream_name}'.",
-                exc_info=True)
-            raise error
-        except AttributeError as error:
-            logger.warning(
-                '.acquire() must be called before .get_buffer().',
-                exc_info=True)
-            raise error
+        except KeyError:
+            raise KeyError("StreamReceiver is not connected to '%s'."
+                           % stream_name)
+        except AttributeError:
+            raise AttributeError(
+                '.acquire() must be called before .get_buffer().')
 
         winsize = self._streams[stream_name].buffer.winsize
         try:
@@ -222,8 +215,8 @@ class StreamReceiver:
                 stream_name].buffer.timestamps[-winsize:])
         except IndexError:
             logger.warning(
-                f"The buffer of {stream_name} does not contain enough "
-                "samples. Returning the available samples.")
+                'The buffer of does not contain enough samples. Returning the '
+                'available samples.', stream_name)
             window = np.array(self._streams[stream_name].buffer.data)
             timestamps = np.array(self._streams[stream_name].buffer.timestamps)
 
@@ -234,20 +227,19 @@ class StreamReceiver:
                 window._filenames = [f'BSL {stream_name}']
             elif bool(return_raw) and self._mne_infos[stream_name] is None:
                 logger.warning(
-                    f'The LSL stream {stream_name} can not be converted to'
-                    'MNE raw instance. Returning numpy arrays.')
+                    'The LSL stream %s can not be converted to MNE raw '
+                    'instance. Returning numpy arrays.', stream_name)
         else:
-            if verbose:
-                logger.warning(
-                    f'The LSL stream {stream_name} did not return any data.'
-                    'Returning empty numpy arrays.')
+            logger.warning(
+                'The LSL stream %s did not return any data.'
+                'Returning empty numpy arrays.', stream_name)
             window = np.empty((0, len(self._streams[stream_name].ch_list)))
             timestamps = np.array([])
 
         return window, timestamps
 
     @fill_doc
-    def get_buffer(self, stream_name=None, return_raw=False, verbose=True):
+    def get_buffer(self, stream_name=None, return_raw=False):
         """
         Get the entire buffer of a stream.
         If several streams are connected, specify the name.
@@ -256,7 +248,6 @@ class StreamReceiver:
         ----------
         %(receiver_get_stream_name)s
         %(receiver_get_return_raw)s
-        %(receiver_get_verbose)s
 
         Returns
         -------
@@ -268,26 +259,24 @@ class StreamReceiver:
         %(receiver_get_unit)s
         """
         if not self._connected:
-            logger.error(
-                'The Stream Receiver is not connected to any streams. ')
-            raise RuntimeError
+            raise RuntimeError('StreamReceiver is not connected to any '
+                               'streams.')
 
         if stream_name is None and len(self._streams) == 1:
             stream_name = list(self._streams)[0]
         elif stream_name is None and len(self._streams) > 1:
-            logger.error('The Stream Receiver is connected to multiple '
-                         'streams. Please provide the stream_name argument. ')
-            raise RuntimeError
+            raise RuntimeError(
+                'StreamReceiver is connected to multiple streams. Please '
+                'provide the stream_name argument.')
 
         try:
             self._acquisition_threads[stream_name].join()
-        except KeyError as error:
-            logger.error(
-                f"The Stream Receiver is not connected to '{stream_name}'.")
-            raise error
-        except AttributeError as error:
-            logger.warning('.acquire() must be called before .get_buffer().')
-            raise error
+        except KeyError:
+            raise KeyError("StreamReceiver is not connected to '%s'."
+                           % stream_name)
+        except AttributeError:
+            raise AttributeError(
+                '.acquire() must be called before .get_buffer().')
 
         window = np.array(self._streams[stream_name].buffer.data)
         timestamps = np.array(self._streams[stream_name].buffer.timestamps)
@@ -298,13 +287,12 @@ class StreamReceiver:
                 window._filenames = [f'BSL {stream_name}']
             elif bool(return_raw) and self._mne_infos[stream_name] is None:
                 logger.warning(
-                    f'The LSL stream {stream_name} can not be converted to'
-                    'MNE raw instance. Returning numpy arrays.')
+                    'The LSL stream %s can not be converted to MNE raw '
+                    'instance. Returning numpy arrays.', stream_name)
         else:
-            if verbose:
-                logger.warning(
-                    f'The LSL stream {stream_name} did not return any data.'
-                    'Returning empty numpy arrays.')
+            logger.warning(
+                'The LSL stream %s did not return any data.'
+                'Returning empty numpy arrays.', stream_name)
             window = np.empty((0, len(self._streams[stream_name].ch_list)))
             timestamps = np.array([])
 
@@ -379,69 +367,40 @@ class StreamReceiver:
 
     # --------------------------------------------------------------------
     @property
-    def bufsize(self):
-        """
-        Buffer's size ``[sec]``.
-
-        :setter: Checks that the bufsize is valid.
-        :type: `int` | `float`
-        """
-        return self._bufsize
-
-    @bufsize.setter
-    def bufsize(self, bufsize):
-        self._bufsize = StreamReceiver._check_bufsize(bufsize, self._winsize)
-        self.connect(force=True)
-
-    @property
     def winsize(self):
         """
         Window's size ``[sec]``.
 
-        :setter: Checks that the winsize is smaller than the bufsize.
         :type: `int` | `float`
         """
         return self._winsize
 
-    @winsize.setter
-    def winsize(self, winsize):
-        self._winsize = StreamReceiver._check_winsize(winsize)
-        self._bufsize = StreamReceiver._check_bufsize(self._bufsize, winsize)
-        self.connect(force=True)
+    @property
+    def bufsize(self):
+        """
+        Buffer's size ``[sec]``.
+
+        :type: `int` | `float`
+        """
+        return self._bufsize
 
     @property
     def stream_name(self):
         """
         Connected stream's name.
 
-        :setter: Try to connect to the new stream(s), revert to old stream(s)
-            if failed.
         :type: `list` | `None`
         """
         return self._stream_name
 
-    @stream_name.setter
-    def stream_name(self, stream_name):
-        old_stream_name = self._stream_name
-        self._stream_name = StreamReceiver._check_format_stream_name(
-            stream_name)
-        self.connect(force=True)
-
-        if not self._connected:
-            logger.error(
-                'The Stream Receiver could not connect to the new stream '
-                'names. Reconnecting to the old stream names.')
-            self._stream_name = old_stream_name
-            self.connect(force=True)
-
     @property
-    def streams(self):
+    def connected(self):
         """
-        Connected streams dictionary ``{stream_name: _Stream}``.
+        Connected status.
 
-        :type: `dict`
+        :type: `bool`
         """
-        return self._streams
+        return self._connected
 
     @property
     def mne_infos(self):
@@ -453,10 +412,10 @@ class StreamReceiver:
         return self._mne_infos
 
     @property
-    def connected(self):
+    def streams(self):
         """
-        Connected status.
+        Connected streams dictionary ``{stream_name: _Stream}``.
 
-        :type: `bool`
+        :type: `dict`
         """
-        return self._connected
+        return self._streams
