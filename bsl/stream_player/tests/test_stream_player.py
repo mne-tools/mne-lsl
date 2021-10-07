@@ -21,7 +21,7 @@ logger.propagate = True
 
 
 @requires_eeg_resting_state_dataset
-def test_stream_player_default(caplog):
+def test_stream_player(caplog):
     """Test stream player default capabilities."""
     stream_name = 'StreamPlayer'
     fif_file = eeg_resting_state.data_path()
@@ -75,7 +75,7 @@ def test_stream_player_default(caplog):
 
 
 @requires_eeg_resting_state_short_dataset
-def test_stream_player_repeat():
+def test_arg_repeat():
     """Test stream player replay capabilities."""
     sp = StreamPlayer(stream_name='StreamPlayer',
                       fif_file=eeg_resting_state_short.data_path(),
@@ -89,7 +89,7 @@ def test_stream_player_repeat():
 
 
 @requires_eeg_auditory_stimuli_dataset
-def test_stream_player_trigger_def():
+def test_arg_trigger_def():
     """Test stream player trigger display capabilities."""
     stream_name = 'StreamPlayer'
     fif_file = eeg_auditory_stimuli.data_path()
@@ -122,7 +122,7 @@ def test_stream_player_trigger_def():
 
 
 @requires_eeg_resting_state_dataset
-def test_stream_player_high_resolution():
+def test_arg_high_resolution():
     """Test stream player high-resolution capabilities."""
     sp = StreamPlayer(stream_name='StreamPlayer',
                       fif_file=eeg_resting_state.data_path(),
@@ -136,7 +136,7 @@ def test_stream_player_high_resolution():
 
 
 @requires_eeg_resting_state_dataset
-def test_stream_player_properties():
+def test_properties():
     """Test the stream_player properties."""
     sp = StreamPlayer(stream_name='StreamPlayer',
                       fif_file=eeg_resting_state.data_path(),
@@ -186,7 +186,7 @@ def test_stream_player_properties():
     assert sp.state.value == 0
 
 
-def test_stream_player_invalid_fif_file():
+def test_invalid_fif_file():
     """Test that initialization fails if argument fif_file is invalid."""
     with pytest.raises(ValueError, match='Argument fif_file must be'):
         StreamPlayer(stream_name='StreamPlayer', fif_file='non-existing-path')
@@ -195,7 +195,7 @@ def test_stream_player_invalid_fif_file():
 
 
 @requires_eeg_resting_state_dataset
-def test_stream_player_checker_repeat(caplog):
+def test_checker_repeat(caplog):
     """Test the checker for argument repeat."""
     stream_name = 'StreamPlayer'
     fif_file = eeg_resting_state.data_path()
@@ -234,7 +234,7 @@ def test_stream_player_checker_repeat(caplog):
 
 @requires_trigger_def_dataset
 @requires_eeg_resting_state_dataset
-def test_stream_player_checker_trigger_def(caplog):
+def test_checker_trigger_def(caplog):
     """Test the checker for argument trigger_def."""
     stream_name = 'StreamPlayer'
     fif_file = eeg_resting_state.data_path()
@@ -282,7 +282,7 @@ def test_stream_player_checker_trigger_def(caplog):
 
 
 @requires_eeg_resting_state_dataset
-def test_stream_player_checker_chunk_size(caplog):
+def test_checker_chunk_size(caplog):
     """Test the checker for argument chunk_size."""
     stream_name = 'StreamPlayer'
     fif_file = eeg_resting_state.data_path()
