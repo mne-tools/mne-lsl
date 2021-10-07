@@ -81,11 +81,8 @@ class TriggerDef:
 
         for name, value in config.items('events'):
             value = int(value)
-            if name in self._by_name:
-                logger.info(f'Event name {name} already exists.')
-                continue
             if value in self._by_value:
-                logger.info(f'Event value {value} already exists.')
+                logger.info('Event value %s already exists. Skipping.', value)
                 continue
             setattr(self, name, value)
             self._by_name[name] = value
@@ -126,10 +123,10 @@ class TriggerDef:
         """
         value = int(value)
         if name in self._by_name and not overwrite:
-            logger.info(f'Event name {name} already exists.')
+            logger.info('Event name %s already exists. Skipping.', name)
             return
         if value in self._by_value and not overwrite:
-            logger.info(f'Event value {value} already exists.')
+            logger.info('Event value %s already exists. Skipping.', value)
             return
 
         if name in self._by_name:
@@ -154,7 +151,7 @@ class TriggerDef:
         """
         if isinstance(event, str):
             if event not in self._by_name:
-                logger.info(f'Event name {event} not found.')
+                logger.info('Event name %s not found.', event)
                 return
             value = self._by_name[event]
             delattr(self, event)
@@ -163,7 +160,7 @@ class TriggerDef:
         elif isinstance(event, (int, float)):
             event = int(event)
             if event not in self._by_value:
-                logger.info(f'Event value {event} not found.')
+                logger.info('Event value %s not found.', event)
                 return
             name = self._by_value[event]
             delattr(self, name)
@@ -171,7 +168,7 @@ class TriggerDef:
             del self._by_value[event]
         else:
             raise TypeError(
-                f'Supported event types are (str, int), not {type(event)}.')
+                'Supported event types are (str, int), not %s.', type(event))
 
     def __repr__(self):
         """Representation of the stored events."""
@@ -196,7 +193,7 @@ class TriggerDef:
             trigger_file = Path(trigger_file)
         except Exception:
             logger.error(
-                'Argument trigger_file could not be interpreted as a Path'
+                'Argument trigger_file could not be interpreted as a Path. '
                 'Provided: %s', trigger_file)
             return None
 
@@ -206,7 +203,7 @@ class TriggerDef:
             return trigger_file
         elif trigger_file.exists() and trigger_file.suffix != '.ini':
             logger.error(
-                'Argument trigger_file must be a valid Path to a .ini file.'
+                'Argument trigger_file must be a valid Path to a .ini file. '
                 'Provided: %s', trigger_file.suffix)
             return None
         else:
@@ -224,13 +221,13 @@ class TriggerDef:
             trigger_file = Path(trigger_file)
         except Exception:
             raise ValueError(
-                'Argument trigger_file could not be interpreted as a Path'
-                'Provided: %s', trigger_file)
+                'Argument trigger_file could not be interpreted as a Path. '
+                'Provided: %s' % trigger_file)
 
         if trigger_file.suffix != '.ini':
             raise ValueError(
                 'Argument trigger_file must end with .ini. '
-                'Provided: %s', trigger_file.suffix)
+                'Provided: %s' % trigger_file.suffix)
 
         os.makedirs(trigger_file.parent, exist_ok=True)
         return trigger_file
