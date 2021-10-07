@@ -158,9 +158,8 @@ class StreamRecorder:
     @property
     def record_dir(self):
         """
-        Path to the directory where the data will be saved.
+        Path to the directory where data will be saved.
 
-        :setter: Change the path if a recording is not on-going.
         :type: `str` | `~pathlib.Path`
         """
         return self._record_dir
@@ -168,9 +167,16 @@ class StreamRecorder:
     @property
     def fname(self):
         """
-        Set file name stem.
+        File name stem used to create the files. The StreamRecorder creates 2 f
+        iles plus an optional third if a software trigger was used, respecting
+        the following naming:
 
-        :setter: Change the file name stem if a recording is not on-going.
+        .. code-block:: python
+
+            PCL: '{fname}-[stream_name]-raw.pcl'
+            FIF: '{fname}-[stream_name]-raw.fif'
+            (optional) SOFTWARE trigger events: '{fname}-eve.txt'
+
         :type: `str`
         """
         return self._fname
@@ -180,7 +186,6 @@ class StreamRecorder:
         """
         Servers' name or list of servers' name to connect to.
 
-        :setter: Change the stream to record if a recording is not on-going.
         :type: `str` | `list`
         """
         return self._stream_name
@@ -188,7 +193,8 @@ class StreamRecorder:
     @property
     def fif_subdir(self):
         """
-        If True, fif file are saved in a subdirectory.
+        If ``True``, the ``.pcl`` files are converted to ``.fif`` in a
+        subdirectory ``'fif': record_dir/fif/...`` instead of ``record_dir``.
 
         :type: `bool`
         """
@@ -197,7 +203,8 @@ class StreamRecorder:
     @property
     def verbose(self):
         """
-        If True, a timer is logged in the console.
+        If ``True``, a timer showing since when the recorder started is
+        displayed every seconds.
 
         :type: `bool`
         """
