@@ -333,3 +333,18 @@ def test_stream_player_checker_chunk_size(caplog):
     assert ('Argument chunk_size must be a strictly positive integer. '
             'Provided: %s -> Changing to 16.' % float('inf')) in caplog.text
     assert sp.chunk_size == 16
+
+
+@requires_eeg_resting_state_dataset
+def test_representation():
+    """Test the representation method."""
+    sp = StreamPlayer(stream_name='StreamPlayer',
+                      fif_file=eeg_resting_state.data_path())
+    expected = f'<StreamPlayer | OFF | {eeg_resting_state.data_path()}>'
+    assert sp.__repr__ == expected
+    sp.start()
+    expected = f'<StreamPlayer | ON | {eeg_resting_state.data_path()}>'
+    assert sp.__repr__ == expected
+    sp.stop()
+    expected = f'<StreamPlayer | OFF | {eeg_resting_state.data_path()}>'
+    assert sp.__repr__ == expected
