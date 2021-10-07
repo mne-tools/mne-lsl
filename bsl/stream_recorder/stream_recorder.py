@@ -167,8 +167,8 @@ class StreamRecorder:
     @property
     def fname(self):
         """
-        File name stem used to create the files. The StreamRecorder creates 2 f
-        iles plus an optional third if a software trigger was used, respecting
+        File name stem used to create the files. The StreamRecorder creates 2
+        files plus an optional third if a software trigger was used, respecting
         the following naming:
 
         .. code-block:: python
