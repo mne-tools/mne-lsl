@@ -72,6 +72,8 @@ class StreamPlayer:
             while self._state.value == 0:
                 pass
 
+        self.__repr__()
+
     def stop(self):
         """
         Stop the streaming, by terminating the process.
@@ -112,6 +114,11 @@ class StreamPlayer:
     def __exit__(self, exc_type, exc_value, exc_tracebac):
         """Context manager exit point."""
         self.stop()
+
+    def __repr__(self):
+        """Representation of the instance."""
+        status = 'ON' if self._state.value == 1 else 'OFF'
+        return f'<{self._stream_name} | {status} | {self._fif_file}>'
 
     # --------------------------------------------------------------------
     @staticmethod
