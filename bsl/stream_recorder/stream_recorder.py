@@ -23,72 +23,93 @@ class StreamRecorder:
     %(recorder_record_dir)s
     %(recorder_fname)s
     %(stream_name)s
+    %(recorder_fif_subdir)s
+    %(recorder_verbose)s
     """
 
-    def __init__(self, record_dir=None, fname=None, stream_name=None):
+    def __init__(self, record_dir=None, fname=None, stream_name=None,
+                 fif_subdir=True, verbose=False):
         self._record_dir = StreamRecorder._check_record_dir(record_dir)
         self._fname = StreamRecorder._check_fname(fname)
         self._stream_name = stream_name
+        self._fif_subdir = bool(fif_subdir)
+        self._verbose = bool(verbose)
 
         self._eve_file = None  # for SOFTWARE triggers
         self._process = None
         self._state = mp.Value('i', 0)
 
-    @fill_doc
-    def start(self, fif_subdir=True, blocking=True, verbose=False):
+    def start(self, blocking=True):
         """
         Start the recording in a new process.
 
         Parameters
         ----------
-        %(recorder_fif_subdir)s
         blocking : `bool`
             If ``True``, waits for the child process to start recording data.
-        %(recorder_verbose)s
         """
         fname, self._eve_file = StreamRecorder._create_fname(
             self._record_dir, self._fname)
-        logger.debug("File name stem is '%s'." % fname)
-        logger.debug("Event file name is '%s'." % self._eve_file)
+        logger.debug("File name stem is '%s'.", fname)
+        logger.debug("Event file name is '%s'.", self._eve_file)
 
         self._process = mp.Process(
             target=self._record,
-            args=(self._record_dir, fname, self._eve_file, bool(fif_subdir),
-                  self._stream_name, self._state, bool(verbose)))
+            args=(self._record_dir, fname, self._stream_name, self._fif_subdir,
+                  self._verbose, self._eve_file, self._state))
         self._process.start()
 
         if blocking:
             while self._state.value == 0:
                 pass
 
+        self.__repr__()
+
     def stop(self):
         """
         Stops the recording.
         """
+        if self._process is None:
+            logger.warning('StreamRecorder was not started. Skipping.')
+            return
+
         with self._state.get_lock():
             self._state.value = 0
 
-        logger.info('Waiting for recorder process to finish.')
+        logger.info('Waiting for StreamRecorder process to finish.')
         self._process.join(10)
         if self._process.is_alive():
-            logger.error(
-                'Recorder process not finishing..')
+            logger.error('Recorder process not finishing..')
+            self._process.kill()
             raise RuntimeError
         logger.info('Recording finished.')
 
         self._eve_file = None
         self._process = None
 
-    def _record(self, record_dir, fname, eve_file, fif_subdir,
-                stream_name, state, verbose):
+    def _record(self, record_dir, fname, stream_name, fif_subdir, verbose,
+                eve_file, state):
         """
         The function called in the new process.
         Instance a _Recorder and start recording.
         """
-        recorder = _Recorder(
-            record_dir, fname, eve_file, fif_subdir,
-            stream_name, state, verbose)
+        recorder = _Recorder(record_dir, fname, stream_name, fif_subdir,
+                             verbose, eve_file, state)
         recorder.record()
+
+    # --------------------------------------------------------------------
+    def __enter__(self):
+        """Context manager entry point."""
+        self.start(blocking=True)
+
+    def __exit__(self, exc_type, exc_value, exc_tracebac):
+        """Context manager exit point."""
+        self.stop()
+
+    def __repr__(self):
+        """Representation of the instance."""
+        status = 'ON' if self._state.value == 1 else 'OFF'
+        return f'<{self._stream_name} | {status} | {self._record_dir}>'
 
     # --------------------------------------------------------------------
     @staticmethod
@@ -100,7 +121,12 @@ class StreamRecorder:
         if record_dir is None:
             record_dir = Path.cwd()
         else:
-            record_dir = Path(record_dir)
+            try:
+                record_dir = Path(record_dir)
+            except Exception:
+                raise ValueError(
+                    'Argument record_dir must be a path to a valid directory. '
+                    'Provided: %s' % record_dir)
         return record_dir
 
     @staticmethod
@@ -109,7 +135,12 @@ class StreamRecorder:
         Checks that the file name stem is a string or None.
         """
         if fname is not None:
-            fname = str(fname)
+            try:
+                fname = str(fname)
+            except Exception:
+                raise ValueError(
+                    'Argument fname must be a valid string or have a valid '
+                    'string representation.')
         return fname
 
     @staticmethod
@@ -119,7 +150,6 @@ class StreamRecorder:
         """
         fname = fname if fname is not None \
             else time.strftime('%Y%m%d-%H%M%S', time.localtime())
-
         eve_file = record_dir / f'{fname}-eve.txt'
 
         return fname, eve_file
@@ -128,59 +158,57 @@ class StreamRecorder:
     @property
     def record_dir(self):
         """
-        Path to the directory where the data will be saved.
+        Path to the directory where data will be saved.
 
-        :setter: Change the path if a recording is not on-going.
         :type: `str` | `~pathlib.Path`
         """
         return self._record_dir
 
-    @record_dir.setter
-    def record_dir(self, record_dir):
-        if self._state.value == 1:
-            logger.warning(
-                'The recording directory cannot be changed during an '
-                'ongoing recording.')
-        else:
-            self._record_dir = StreamRecorder._check_record_dir(record_dir)
-
     @property
     def fname(self):
         """
-        Set file name stem.
+        File name stem used to create the files. The StreamRecorder creates 2
+        files plus an optional third if a software trigger was used, respecting
+        the following naming:
 
-        :setter: Change the file name stem if a recording is not on-going.
+        .. code-block:: python
+
+            PCL: '{fname}-[stream_name]-raw.pcl'
+            FIF: '{fname}-[stream_name]-raw.fif'
+            (optional) SOFTWARE trigger events: '{fname}-eve.txt'
+
         :type: `str`
         """
         return self._fname
-
-    @fname.setter
-    def fname(self, fname):
-        if self._state.value == 1:
-            logger.warning(
-                'The file name cannot be changed during an '
-                'ongoing recording.')
-        else:
-            self._fname = StreamRecorder._check_fname(fname)
 
     @property
     def stream_name(self):
         """
         Servers' name or list of servers' name to connect to.
 
-        :setter: Change the stream to record if a recording is not on-going.
         :type: `str` | `list`
         """
         return self._stream_name
 
-    @stream_name.setter
-    def stream_name(self, stream_name):
-        if self._state.value == 1:
-            logger.warning(
-                'The stream name(s) to connect to cannot be changed during an '
-                'ongoing recording.')
-        else:
-            self._stream_name = stream_name
+    @property
+    def fif_subdir(self):
+        """
+        If ``True``, the ``.pcl`` files are converted to ``.fif`` in a
+        subdirectory ``'fif': record_dir/fif/...`` instead of ``record_dir``.
+
+        :type: `bool`
+        """
+        return self._fif_subdir
+
+    @property
+    def verbose(self):
+        """
+        If ``True``, a timer showing since when the recorder started is
+        displayed every seconds.
+
+        :type: `bool`
+        """
+        return self._verbose
 
     @property
     def eve_file(self):
@@ -222,27 +250,27 @@ class _Recorder:
     ----------
     %(recorder_record_dir)s
     %(recorder_fname)s
-    eve_file : str | Path
-        Path to the event file for TriggerSoftware.
-    %(recorder_fif_subdir)s
     %(stream_name)s
+    %(recorder_fif_subdir)s
+    %(recorder_verbose)s
     state : mp.Value
         Recording state of the recorder:
             - 0: Not recording.
             - 1: Recording.
         This variable is used to stop the recording from another process.
-    %(recorder_verbose)s
+    eve_file : str | Path
+        Path to the event file for TriggerSoftware.
     """
 
-    def __init__(self, record_dir, fname, eve_file, fif_subdir,
-                 stream_name, state, verbose):
+    def __init__(self, record_dir, fname, stream_name, fif_subdir, verbose,
+                 eve_file, state):
         self._record_dir = record_dir
         self._fname = fname
-        self._eve_file = eve_file
-        self._fif_subdir = fif_subdir
         self._stream_name = stream_name
-        self._state = state
+        self._fif_subdir = fif_subdir
         self._verbose = verbose
+        self._eve_file = eve_file
+        self._state = state
 
     def record(self):
         """
@@ -268,7 +296,7 @@ class _Recorder:
                     previous_time = verbose_timer.sec()
                     duration = str(datetime.timedelta(
                         seconds=int(verbose_timer.sec())))
-                    logger.info(f'RECORDING {duration}')
+                    logger.info('RECORDING %s', duration)
 
         self._save(sr, pcl_files)
 
@@ -276,7 +304,7 @@ class _Recorder:
         """
         Save the data in the StreamReceiver buffer to the .pcl and .fif files.
         """
-        logger.info('Saving raw data ...')
+        logger.info('Saving raw data..')
         for stream in sr.streams:
             signals, timestamps = sr.get_buffer(stream)
 
@@ -295,7 +323,7 @@ class _Recorder:
             with open(pcl_files[stream], 'wb') as file:
                 pickle.dump(data, file, protocol=pickle.HIGHEST_PROTOCOL)
 
-            logger.info(f"Saved to '{pcl_files[stream]}'")
+            logger.info("Saved to '%s'", pcl_files[stream])
 
             if not isinstance(sr.streams[stream], StreamEEG):
                 continue
@@ -332,10 +360,8 @@ class _Recorder:
                     file.write(
                         'Data will be written when the recording is finished.')
             except Exception as error:
-                logger.error(
-                    f"Problem writing to '{pcl_files[stream]}'. "
-                    "Check permissions.", exc_info=True)
-                raise error
+                raise error("Could not write to '%s'. Check permissions"
+                            % {pcl_files[stream]})
 
         logger.info(
             'Record to files: \n' +
