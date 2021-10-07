@@ -44,7 +44,7 @@ def run():
         help='chunk size, usually 16 or 32.', default=16)
     parser.add_argument(
         '--high_resolution', action='store_true',
-        help='use time.perf_counter() instead of time.sleep()')
+        help='use time.perf_counter() instead of time.sleep().')
 
     args = parser.parse_args()
 
