@@ -19,18 +19,14 @@ stream_name : `list` | `str` | `None`
 # Stream Receiver
 docdict['receiver_get_stream_name'] = """
 stream_name : `str` | `None`
-    Name of the stream to extract from.
-    Can be set to `None` if the `~bsl.StreamReceiver` is connected to a single
-    stream."""
+    Name of the stream from which data is retrieved.
+    Can be set to `None` (default) if the `~bsl.StreamReceiver` is connected to
+    a single stream."""
 docdict['receiver_get_return_raw'] = """
 return_raw : `bool`
     By default (``False``), data is returned as a `~numpy.array` of shape
-    ``(samples, channels)`. If set to ``True``, the `~bsl.StreamReceiver` will
-    attempt to return MNE `~mne.io.Raw` instances."""
-docdict['receiver_get_verbose'] = """
-verbose : `bool`
-    If ``True`` (default), a warning will be issued when the method returns
-    empty `~numpy.array`. If ``False``, this warning will be skipped."""
+    ``(samples, channels)``. If set to ``True``, the `~bsl.StreamReceiver` will
+    attempt to return data as a MNE `~mne.io.Raw` instances."""
 docdict['receiver_data'] = """
 data : `~numpy.array`
     Data ``(samples, channels)``."""
@@ -38,13 +34,13 @@ docdict['receiver_timestamps'] = """
 timestamps : `~numpy.array`
     Data's timestamps ``(samples, )``."""
 docdict['receiver_get_unit'] = """
-Returns a raw data array in the unit streamed by the LSL outlet. For
-conversion, the corresponding multiplier must be set for each stream, with e.g.
-for a stream in uV to convert to V:
+Returns a raw data array in the unit streamed by the LSL outlet. For conversion
+the corresponding scaling factor must be set for each stream, with e.g. for a
+stream in uV to convert to V:
 
 .. code-block:: python
 
-    sr.streams['stream_to_convert'].multiplier = 1e-6"""
+    sr.streams['stream_to_convert'].scaling_factor = 1e-6"""
 docdict['receiver_bufsize'] = """
 bufsize : `int` | `float`
     Buffer's size ``[secs]``. ``MAX_BUF_SIZE`` (def: 1-day) is the maximum
