@@ -79,9 +79,9 @@ fname : `None` | `str`
 
     .. code-block:: python
 
-        PCL: ``'{fname}-[stream]-raw.pcl'``
-        FIF: ``'{fname}-[stream]-raw.fif'``
-        (optional) SOFTWARE trigger events: ``'{fname}-eve.txt'``
+        PCL: '{fname}-[stream_name]-raw.pcl'
+        FIF: '{fname}-[stream_name]-raw.fif'
+        (optional) SOFTWARE trigger events: '{fname}-eve.txt'
 """
 docdict['recorder_fif_subdir'] = """
 fif_subdir : `bool`
