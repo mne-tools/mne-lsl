@@ -5,9 +5,13 @@ from pathlib import Path
 import mne
 import pytest
 
-from bsl import StreamRecorder, StreamPlayer
+from bsl import StreamRecorder, StreamPlayer, logger, set_log_level
 from bsl.datasets import eeg_resting_state
 from bsl.utils._testing import requires_eeg_resting_state_dataset
+
+
+set_log_level('INFO')
+logger.propagate = True
 
 
 def _check_recorded_files(record_dir, eve_file, stream, fif_subdir):
@@ -195,7 +199,7 @@ def test_arg_fif_subdir(tmp_path):
         recorder = StreamRecorder(record_dir=tmp_path, fif_subdir=fif_subdir,
                                   verbose=False)
         assert recorder._fif_subdir is True
-        recorder.start(fblocking=True)
+        recorder.start(blocking=True)
         eve_file = recorder.eve_file
         time.sleep(record_duration)
         recorder.stop()
