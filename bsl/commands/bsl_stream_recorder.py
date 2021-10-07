@@ -6,12 +6,16 @@ Command-line arguments:
     -d --directory      Path to the record directory (str, path)
     -f --fname          File name stem (str)
     -s --stream_name    Stream name (str)
+    --fif_subdir        Flag to save .fif in a subdirectory.
+    --verbose           Flag to display a timer every recorded second.
 If no argument is provided, records in the current directory.
 
 Example:
     bsl_stream_recorder -d "D:/Data"
     bsl_stream_recorder -d "D:/Data" -f test
     bsl_stream_recorder -d "D:/Data" -f test -s openvibeSignals
+    bsl_stream_recorder -d "D:/Data" -f test -s openvibeSignals --fif_subdir
+    bsl_stream_recorder -d "D:/Data" -f test -s openvibeSignals --verbose
 """
 
 import argparse
@@ -35,14 +39,17 @@ def run():
     parser.add_argument(
         '-s', '--stream_name', type=str, metavar='str',
         help='stream(s) to record.')
+    parser.add_argument(
+        '--fif_subdir', action='store_true',
+        help='save .fif in a subdirectory.')
+    parser.add_argument(
+        '--verbose', action='store_true',
+        help='display a timer every recorded second.')
 
     args = parser.parse_args()
 
-    record_dir = args.directory
-    fname = args.fname
-    stream_name = args.stream_name
-
-    recorder = StreamRecorder(record_dir, fname, stream_name)
-    recorder.start(verbose=True)
+    recorder = StreamRecorder(args.directory, args.fname, args.stream_name,
+                              args.fif_subdir, args.verbose)
+    recorder.start()
     input(">> Press ENTER to stop the recording \n")
     recorder.stop()

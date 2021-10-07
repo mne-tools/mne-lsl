@@ -88,10 +88,11 @@ class StreamPlayer:
         logger.info('Waiting for StreamPlayer %s process to finish.',
                     self._stream_name)
         self._process.join(10)
-
         if self._process.is_alive():
-            logger.error('StreamPlayer process not finishing.. killing.')
+            logger.error('StreamPlayer process not finishing..')
             self._process.kill()
+            raise RuntimeError
+        logger.info('Streaming finished.')
 
         self._process = None
 

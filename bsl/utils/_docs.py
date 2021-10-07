@@ -64,14 +64,25 @@ tslist : list
 # -----------------------------------------------
 # Stream Recorder
 docdict['recorder_record_dir'] = """
-record_dir : `str` | `~pathlib.Path`
-    Directory where the data will be saved."""
+record_dir : `None` | `str` | `~pathlib.Path`
+    Path to the directory where data will be saved.
+
+    .. note:: If the directory does not exist, it is created.
+
+    .. note:: If None, the current working directory is used.
+"""
 docdict['recorder_fname'] = """
-fname : `str` | `None`
-    File name stem used to create the files:
-        PCL: ``'{fname}-[stream]-raw.pcl'``
-        FIF: ``'{fname}-[stream]-raw.fif'``
-        (optional) SOFTWARE trigger events: ``'{fname}-eve.txt'``"""
+fname : `None` | `str`
+    File name stem used to create the files. The StreamRecorder creates 2 files
+    plus an optional third if a software trigger was used, respecting the
+    following naming:
+
+    .. code-block:: python
+
+        PCL: '{fname}-[stream_name]-raw.pcl'
+        FIF: '{fname}-[stream_name]-raw.fif'
+        (optional) SOFTWARE trigger events: '{fname}-eve.txt'
+"""
 docdict['recorder_fif_subdir'] = """
 fif_subdir : `bool`
     If ``True``, the ``.pcl`` files are converted to ``.fif`` in a
