@@ -69,10 +69,14 @@ class StreamRecorder:
         """
         Stops the recording.
         """
+        if self._process is None:
+            logger.warning('StreamRecorder was not started. Skipping.')
+            return
+
         with self._state.get_lock():
             self._state.value = 0
 
-        logger.info('Waiting for recorder process to finish.')
+        logger.info('Waiting for StreamRecorder process to finish.')
         self._process.join(10)
         if self._process.is_alive():
             logger.error('Recorder process not finishing..')
