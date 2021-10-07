@@ -111,6 +111,15 @@ def test_stream_player_trigger_def():
     time.sleep(2)
     sp.stop()
 
+    # With creatred TriggerDef missing an event
+    trigger_def = TriggerDef()
+    trigger_def.add_event('rest', 1)
+    sp = StreamPlayer(stream_name=stream_name, fif_file=fif_file,
+                      trigger_def=trigger_def)
+    sp.start()
+    time.sleep(2)
+    sp.stop()
+
 
 @requires_eeg_resting_state_dataset
 def test_stream_player_high_resolution():
