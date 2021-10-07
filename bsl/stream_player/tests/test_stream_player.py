@@ -150,7 +150,7 @@ def test_arg_high_resolution():
 
 @requires_eeg_resting_state_dataset
 def test_properties():
-    """Test the stream_player properties."""
+    """Test the StreamPlayer properties."""
     sp = StreamPlayer(stream_name='StreamPlayer',
                       fif_file=eeg_resting_state.data_path(),
                       repeat=float('inf'),
