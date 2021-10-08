@@ -4,11 +4,12 @@
 Install instructions
 ====================
 
-BSL requires Python version `3.6` or higher. BSL is available on GitHub and on
-Pypi.
+BSL requires Python version `3.6` or higher. BSL is available on
+`GitHub <https://github.com/bsl-tools/bsl>`_ and on
+`Pypi <https://pypi.org/project/bsl/>`_.
 
 - **GitHub**: Clone the `main repository <https://github.com/bsl-tools/bsl>`_
-  and install with ``setup.py``:
+  and install with ``setup.py``
 
   .. code-block:: console
 
@@ -16,7 +17,7 @@ Pypi.
 
   For the developer mode, use ``develop`` instead of ``install``.
 
-- **Pypi**: Install BSL using ``pip``:
+- **Pypi**: Install BSL using ``pip``
 
   .. code-block:: console
 
@@ -40,5 +41,5 @@ BSL installs the following dependencies:
 Additionnal functionalities requires:
 
 - `pyserial <https://github.com/pyserial/pyserial>`_: for the trigger using an
-  LPT to Arduino converter.
-- `vispy <https://vispy.org/>`_: for the Stream Viewer vispy backend.
+  :ref:`arduino2lpt`.
+- `vispy <https://vispy.org/>`_: for the `~bsl.StreamViewer` vispy backend.
