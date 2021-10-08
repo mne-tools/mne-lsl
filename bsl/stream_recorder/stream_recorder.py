@@ -111,7 +111,7 @@ class StreamRecorder:
         status = 'ON' if self._state.value == 1 else 'OFF'
         streams = self._stream_name if self._stream_name is not None \
             else 'All streams'
-        return f'<{streams} | {status} | {self._record_dir}>'
+        return f'<Recorder: {streams} | {status} | {self._record_dir}>'
 
     # --------------------------------------------------------------------
     @staticmethod
