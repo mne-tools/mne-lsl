@@ -27,16 +27,17 @@ class StreamReceiver:
     """
 
     def __init__(self, bufsize=1, winsize=1, stream_name=None):
-        self._winsize = StreamReceiver._check_winsize(winsize)
-        self._bufsize = StreamReceiver._check_bufsize(bufsize, winsize)
-        self._stream_name = StreamReceiver._check_format_stream_name(
-            stream_name)
         self._connected = False
+        self._streams = dict()
         self._acquisition_threads = dict()
         self._mne_infos = dict()
-        self.connect()
 
-    def connect(self, timeout=5, force=False):
+        self._winsize = StreamReceiver._check_winsize(winsize)
+        self._bufsize = StreamReceiver._check_bufsize(bufsize, self._winsize)
+        self.connect(stream_name)
+
+    @fill_doc
+    def connect(self, stream_name=None, timeout=5, force=False):
         """
         Search for the available streams on the LSL network and connect to the
         appropriate ones. If a LSL stream fullfills the requirements (name...),
@@ -47,6 +48,7 @@ class StreamReceiver:
 
         Parameters
         ----------
+        %(stream_name)s
         timeout : `int` | `float`
             Timeout duration in seconds after which the search is abandonned.
         force : `bool`
@@ -55,6 +57,13 @@ class StreamReceiver:
         """
         if not force and self._connected:
             return True
+
+        stream_name = StreamReceiver._check_format_stream_name(stream_name)
+        if stream_name is not None and force and self._connected:
+            self._stream_name.extend(stream_name)
+        else:
+            self._stream_name = stream_name
+
         self._connected = False
         self._streams = dict()
 
@@ -134,6 +143,9 @@ class StreamReceiver:
             Servers' name or list of servers' name to disconnect from.
             If `None`, disconnect from all streams.
         """
+        if not self._connected:
+            return
+
         stream_name = StreamReceiver._check_format_stream_name(stream_name)
         if stream_name is None:
             stream_name = list(self._streams)
@@ -145,6 +157,9 @@ class StreamReceiver:
             self._streams[stream]._inlet.close_stream()
             del self._streams[stream]
             del self._acquisition_threads[stream]
+            if self._stream_name is not None:
+                idx = self._stream_name.index(stream)
+                del self._stream_name[idx]
 
         if len(self._streams) == 0:
             self._connected = False
@@ -205,20 +220,16 @@ class StreamReceiver:
                            % stream_name)
         except AttributeError:
             raise AttributeError(
-                '.acquire() must be called before .get_buffer().')
+                '.acquire() must be called before .get_window().')
 
         winsize = self._streams[stream_name].buffer.winsize
-        try:
-            window = np.array(self._streams[
-                stream_name].buffer.data[-winsize:])
-            timestamps = np.array(self._streams[
-                stream_name].buffer.timestamps[-winsize:])
-        except IndexError:
+        window = np.array(self._streams[stream_name].buffer.data[-winsize:])
+        timestamps = np.array(self._streams[
+            stream_name].buffer.timestamps[-winsize:])
+        if len(timestamps) != winsize:
             logger.warning(
-                'The buffer of does not contain enough samples. Returning the '
-                'available samples.', stream_name)
-            window = np.array(self._streams[stream_name].buffer.data)
-            timestamps = np.array(self._streams[stream_name].buffer.timestamps)
+                'The buffer of %s does not contain enough samples. Returning '
+                'the available samples.', stream_name)
 
         if len(timestamps) > 0:
             if bool(return_raw) and self._mne_infos[stream_name] is not None:
@@ -319,33 +330,63 @@ class StreamReceiver:
             self._streams[stream].buffer.reset_buffer()
 
     # --------------------------------------------------------------------
-    @staticmethod
-    def _check_winsize(winsize):
-        """
-        Check that winsize is positive.
-        """
-        if winsize <= 0:
-            logger.error(f'Invalid window size {winsize}.')
-            raise ValueError
+    def __del__(self):
+        """Destructor method."""
+        self.disconnect()
 
-        return winsize
+    def __repr__(self):
+        """Representation of the instance."""
+        status = 'ON' if self._connected else 'OFF'
+        if self._connected:
+            streams = str(tuple(self._streams))
+        else:
+            streams = 'ALL' if self._stream_name is None \
+                else str(tuple(self._stream_name))
+        repr_str = f'<{streams} | {status} | buf: {self._bufsize}s ' + \
+            f'- win: {self._winsize}s>'
+        return repr_str
 
+    # --------------------------------------------------------------------
     @staticmethod
     def _check_bufsize(bufsize, winsize):
         """
         Check that bufsize is positive and bigger than the winsize.
         """
-        if bufsize <= 0:
-            logger.error(f'Invalid buffer size {bufsize}.')
-            raise ValueError
-
-        if bufsize < winsize:
-            logger.error(
-                f'Buffer size  {bufsize:.1f} is smaller than window size. '
-                f'Setting to {winsize:.1f}')
-            bufsize = winsize
+        if isinstance(bufsize, (int, float)):
+            bufsize = float(bufsize)
+            if bufsize <= 0:
+                raise ValueError(
+                    'Argument bufsize must be a strictly positive int or a '
+                    'float. Provided: %s' % bufsize)
+            if bufsize < winsize:
+                logger.error(
+                    'Buffer size %.2f is smaller than window size. '
+                    'Setting to %.2f.', bufsize, winsize)
+                bufsize = winsize
+        else:
+            raise TypeError(
+                'Argument bufsize must be a strictly positive int or a float. '
+                'Provided: %s' % type(bufsize))
 
         return bufsize
+
+    @staticmethod
+    def _check_winsize(winsize):
+        """
+        Check that winsize is positive.
+        """
+        if isinstance(winsize, (int, float)):
+            winsize = float(winsize)
+            if winsize <= 0:
+                raise ValueError(
+                    'Argument winsize must be a strictly positive int or a '
+                    'float. Provided: %s' % winsize)
+        else:
+            raise TypeError(
+                'Argument winsize must be a strictly positive int or a float. '
+                'Provided: %s' % type(winsize))
+
+        return winsize
 
     @staticmethod
     def _check_format_stream_name(stream_name):
@@ -355,12 +396,17 @@ class StreamReceiver:
         if isinstance(stream_name, (list, tuple)):
             stream_name = list(stream_name)
             if not all(isinstance(name, str) for name in stream_name):
-                logger.error(
-                    'Stream name must be a string or a list of strings.')
-                raise TypeError
+                raise TypeError(
+                    'Argument stream_name must be a string or a list of '
+                    'strings. Provided: %s' % stream_name)
         elif isinstance(stream_name, str):
             stream_name = [stream_name]
+        elif stream_name is None:
+            stream_name = None
         else:
+            logger.error(
+                'Argument stream_name must be a string or a list of strings. '
+                'Provided: %s -> Changing to None.', stream_name)
             stream_name = None
 
         return stream_name
@@ -389,7 +435,7 @@ class StreamReceiver:
         """
         Connected stream's name.
 
-        :type: `list` | `None`
+        :type: `None` | `list`
         """
         return self._stream_name
 
