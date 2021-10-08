@@ -13,8 +13,8 @@ def test_trigger_software(tmp_path):
     """Test software triggers."""
     with StreamPlayer('StreamPlayer', eeg_resting_state.data_path()):
         recorder = StreamRecorder(record_dir=tmp_path, fname='test',
-                                  stream_name='StreamPlayer')
-        recorder.start(fif_subdir=False)
+                                  stream_name='StreamPlayer', fif_subdir=False)
+        recorder.start()
 
         trigger = TriggerSoftware(recorder, verbose=True)
         assert trigger.verbose
