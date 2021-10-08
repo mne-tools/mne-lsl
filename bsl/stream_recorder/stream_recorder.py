@@ -63,7 +63,7 @@ class StreamRecorder:
             while self._state.value == 0:
                 pass
 
-        self.__repr__()
+        logger.info(self.__repr__())
 
     def stop(self):
         """
