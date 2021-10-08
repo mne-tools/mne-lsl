@@ -119,7 +119,7 @@ class StreamPlayer:
     def __repr__(self):
         """Representation of the instance."""
         status = 'ON' if self._state.value == 1 else 'OFF'
-        return f'<{self._stream_name} | {status} | {self._fif_file}>'
+        return f'<Player: {self._stream_name} | {status} | {self._fif_file}>'
 
     # --------------------------------------------------------------------
     @staticmethod
