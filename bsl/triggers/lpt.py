@@ -17,6 +17,12 @@ class TriggerLPT(_Trigger):
     """
     Trigger using the LPT port on the motherboard.
 
+    .. warning:: This class has been adapted from NeuroDecode and has not been
+                 tested because computers with build-in LPT port are not common
+                 anymore. PCIe-LPT card have not been tested either.
+                 When possible, prefer the :ref:`arduino2lpt` or the
+                 `~bsl.triggers.software.TriggerSoftware`.
+
     Parameters
     ----------
     portaddr : hex | `int`
@@ -137,6 +143,11 @@ class TriggerUSB2LPT(_Trigger):
     """
     Trigger using a USB to LPT converter. Drivers can be found here:
     %(trigger_lpt_usb2lpt_link)s
+
+    .. warning:: This class has been adapted from NeuroDecode and has not been
+                 tested.
+                 When possible, prefer the :ref:`arduino2lpt` or the
+                 `~bsl.triggers.software.TriggerSoftware`.
 
     Parameters
     ----------
