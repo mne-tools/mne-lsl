@@ -340,10 +340,10 @@ class StreamReceiver:
         if self._connected:
             streams = str(tuple(self._streams))
         else:
-            streams = 'ALL' if self._stream_name is None \
+            streams = '()' if self._stream_name is None \
                 else str(tuple(self._stream_name))
-        repr_str = f'<{streams} | {status} | buf: {self._bufsize}s ' + \
-            f'- win: {self._winsize}s>'
+        repr_str = f'<Receiver: {streams} | {status} | ' + \
+                   f'buf: {self._bufsize}s - win: {self._winsize}s>'
         return repr_str
 
     # --------------------------------------------------------------------

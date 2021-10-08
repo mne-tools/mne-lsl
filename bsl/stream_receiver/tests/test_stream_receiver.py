@@ -433,20 +433,20 @@ def test_representation():
     """Test the representation method."""
     with StreamPlayer('StreamPlayer', eeg_resting_state.data_path()):
         sr = StreamReceiver(bufsize=1, winsize=0.2)
-        expected = "<('StreamPlayer',) | ON | buf: 1.0s - win: 0.2s>"
+        expected = "<Receiver: ('StreamPlayer',) | ON | buf: 1.0s - win: 0.2s>"
         assert sr.__repr__() == expected
 
         sr.disconnect()
-        expected = "<ALL | OFF | buf: 1.0s - win: 0.2s>"
+        expected = "<Receiver: () | OFF | buf: 1.0s - win: 0.2s>"
         assert sr.__repr__() == expected
 
         # Explicit stream name.
         sr.connect(stream_name='StreamPlayer')
-        expected = "<('StreamPlayer',) | ON | buf: 1.0s - win: 0.2s>"
+        expected = "<Receiver: ('StreamPlayer',) | ON | buf: 1.0s - win: 0.2s>"
         assert sr.__repr__() == expected
 
         sr.disconnect()
-        expected = "<() | OFF | buf: 1.0s - win: 0.2s>"
+        expected = "<Receiver: () | OFF | buf: 1.0s - win: 0.2s>"
         assert sr.__repr__() == expected
 
         del sr
