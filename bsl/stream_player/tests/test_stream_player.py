@@ -353,11 +353,11 @@ def test_representation():
     """Test the representation method."""
     sp = StreamPlayer(stream_name='StreamPlayer',
                       fif_file=eeg_resting_state.data_path())
-    expected = f'<StreamPlayer | OFF | {eeg_resting_state.data_path()}>'
+    expected = f'<Player: StreamPlayer | OFF | {eeg_resting_state.data_path()}>'
     assert sp.__repr__() == expected
     sp.start()
-    expected = f'<StreamPlayer | ON | {eeg_resting_state.data_path()}>'
+    expected = f'<Player: StreamPlayer | ON | {eeg_resting_state.data_path()}>'
     assert sp.__repr__() == expected
     sp.stop()
-    expected = f'<StreamPlayer | OFF | {eeg_resting_state.data_path()}>'
+    expected = f'<Player: StreamPlayer | OFF | {eeg_resting_state.data_path()}>'
     assert sp.__repr__() == expected
