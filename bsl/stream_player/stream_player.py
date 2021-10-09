@@ -394,16 +394,17 @@ class _Streamer:
 
             if len(event_values) > 0:
                 if self._trigger_def is None:
-                    logger.info(f'Events: {event_values}')
+                    logger.info('Events: %s', event_values)
                 else:
-                    for event in event_values:
-                        if event in self._trigger_def.by_value:
+                    for event_value in event_values:
+                        if event_value in self._trigger_def.by_value:
                             logger.info(
-                                f'Events: {event} '
-                                f'({self._tdef.by_value[event]})')
+                                'Events: %s (%s)',
+                                event_value, self._tdef.by_value[event_value])
                         else:
                             logger.info(
-                                f'Events: {event} (Undefined event {event})')
+                                'Events: %s (Undefined event)',
+                                event_value)
 
     # --------------------------------------------------------------------
     @staticmethod
