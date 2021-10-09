@@ -2,114 +2,157 @@
 =======================
 Resting-State recording
 =======================
+
 A resting-state recording is a simple offline recording during which the brain
-activity of a subject is measured in the absence of any stimulus or task.
+activity of a subject is measured in the absence of any stimulus or task. A
+resting-state recording can be designed with a `~bsl.StreamRecorder`.
 """
+
+#%%
 
 # Authors: Mathieu Scheltienne <mathieu.scheltienne@gmail.com>
 #
 # License: LGPL-2.1
 
 #%%
+# .. warning::
+#
+#     Both `~bsl.StreamPlayer` and `~bsl.StreamRecorder` create a new process
+#     to stream or record data. On Windows, mutliprocessing suffers a couple of
+#     restrictions. The entry-point of a multiprocessing program should be
+#     protected with ``if __name__ == '__main__':`` to ensure it can safely
+#     import and run the module. More information on the
+#     :xref:`doc multiprocessing windows`.
+
+#%%
+#
+# This example will use a sample EEG resting-state dataset that can be retrieve
+# with `~bsl.datasets`. The dataset is stored in the user home directory, in
+# the folder ``bsl_data``.
+
+#%%
+
 import os
 import time
-import datetime
 from pathlib import Path
 
-from bsl import StreamRecorder, StreamPlayer, datasets
+import mne
+
+from bsl import StreamPlayer, StreamRecorder, datasets
 from bsl.triggers.software import TriggerSoftware
-from bsl.utils import Timer
 
 #%%
 #
-# Start a mock LSL stream with a Stream Player for this example purpose.
-# Call in `__main__` because the Stream Player starts a new process, which can
-# not be done outside `__main__` on Windows.
-# See: https://docs.python.org/2/library/multiprocessing.html#windows
+# To simulate an actual signal coming from an LSL stream, a `~bsl.StreamPlayer`
+# is used with a 40 second resting-state recording.
 
-sample_data_raw_file = datasets.eeg_resting_state.data_path()
-if __name__ == '__main__':
-    player = StreamPlayer('StreamPlayer', sample_data_raw_file)
-    player.start()
+stream_name = 'StreamPlayer'
+fif_file = datasets.eeg_resting_state.data_path()
+player = StreamPlayer(stream_name, fif_file)
+player.start()
 
 #%%
 #
-# Define the directory used by the recorder and the name of the streams to
-# connect to. Without specifying the argument `stream_name`, the recorder will
-# connect to every LSL stream available and save one .pcl and one .fif file per
-# stream.
+# For this example, the folder ``bsl_data/examples`` located in the user home
+# directory will be used to stored recorded files. To ensure its existence,
+# `os.makedirs` is used.
 
-directory = Path('~/bsl_data/examples').expanduser()
-os.makedirs(directory, exist_ok=True)
-stream_name = None
+record_dir = Path('~/bsl_data/examples').expanduser()
+os.makedirs(record_dir, exist_ok=True)
 
 #%%
 #
-# Define the duration of the resting-state recording in seconds.
-# Typical resting-state recordings last several minutes.
+# For this simple offline recording, the goal is to start a
+# `~bsl.StreamRecorder`, send a trigger to mark the beginning of the
+# resting-state recording, wait for a defined duration, and stop the recording.
+#
+# By default, a `~bsl.StreamRecorder` does not require any argument. The
+# current working directory is used to record data from all available streams
+# in files named based on the date/time timestamp at which the recorder is
+# started.
+#
+# To record only part of the available streams, with a specific file name and
+# in a specific directory, the arguments ``record_dir``, ``fname`` and
+# ``stream_name`` must be provided.
+#
+# For this example, the directory used to store recordings is
+# ``bsl_data/examples`` and the file name will start with
+# ``example-resting-state``.
+#
+# .. note::
+#
+#     By defaul, the `~bsl.StreamRecorder.start` method is blocking and will
+#     wait for the recording to start. This behavior can be changed with the
+#     ``blocking`` argument.
 
-duration = 5
+recorder = StreamRecorder(record_dir, fname='example-resting-state')
+recorder.start()
+print (recorder)
 
 #%%
 #
-# Define in a function the paradigm.
-# - Define a recorder and start it.
-# - Define a trigger.
-# - Send a signal on the trigger and wait for the duration.
-# - Close the trigger and stop the recorder.
+# Now that the recorder is started and is acquiring data, a trigger to mark
+# the beginning of the segment of interest is created. For this example, a
+# `~bsl.triggers.software.TriggerSoftware` is used, but this example would be
+# equally valid with a different type of trigger.
 #
-# The software trigger used in this example requires an active stream recorder
-# to link to. Other types of trigger may be used, may be defined before the
-# recorder, and may not need to be closed.
+# .. note::
+#
+#     `~bsl.triggers.software.TriggerSoftware` must be created after a
+#     `~bsl.StreamRecorder` is started and close/deleted before a
+#     `~bsl.StreamRecorder` is stopped.
+#
+#     .. code-block:: python
+#
+#         recorder = StreamRecorder()
+#         recorder.start()
+#         trigger = TriggerSoftware(recorder)
+#         # do stuff
+#         trigger.close() # OR >>> del trigger
+#         recorder.stop()
+#
+#     All triggers do not need an active `~bsl.StreamRecorder` to be created.
 
-def resting_state(directory, stream_name, duration):
-    """
-    Function called in __main__.
-    """
-    recorder = StreamRecorder(directory)
-    recorder.start(fif_subdir=False, verbose=False)
-    trigger = TriggerSoftware(recorder=recorder, verbose=False)
-    trigger.signal(1)
-    time.sleep(duration)
-    trigger.close()
-    recorder.stop()
+trigger = TriggerSoftware(recorder, verbose=True)
 
 #%%
 #
-# Alternative paradigm function which prints every seconds to keep track of the
-# progression. The `time.sleep()` is replaced with a while loop.
+# To mark the beginning of the segment of interest in the recording, a signal
+# is sent on the trigger. For this example, the event value (1) is used.
 
-def resting_state_with_verbose(directory, stream_name, duration):
-    """
-    Function called in __main__.
-    """
-    recorder = StreamRecorder(directory)
-    recorder.start(fif_subdir=False, verbose=False)
-    trigger = TriggerSoftware(recorder=recorder, verbose=True)
-    timer = Timer()
-    previous_time_printed = 0
-    trigger.signal(1)
-    timer.reset()
-    while timer.sec() <= duration:
-        if previous_time_printed+1 <= timer.sec():
-            previous_time_printed += 1
-            print (datetime.timedelta(seconds=previous_time_printed))
-    trigger.close()
-    recorder.stop()
+trigger.signal(1)
 
 #%%
 #
-# Call in `__main__` the function. The StreamRecorder starts a new process,
-# which can not be done outside `__main__` on Windows.
-# See: https://docs.python.org/2/library/multiprocessing.html#windows
+# Finally, after the appropriate duration, the recording is interrupted.
+#
+# .. note::
+#
+#     `~bsl.triggers.software.TriggerSoftware` must be closed or deleted before
+#     the recorder is stopped. All triggers do not need to be closed or deleted
+#     before the recorder is stopped.
 
-if __name__ == '__main__':
-    resting_state(directory, stream_name, duration)
-    # resting_state_with_verbose(directory, stream_name, duration)
+time.sleep(2)  # 2 seconds duration
+trigger.close()
+recorder.stop()
+print (recorder)
+
+#%%
+#
+# A `~bsl.StreamRecorder` records data in ``.pcl`` format. This file can be
+# open with `pickle.load`, and is automatically converted to a `~mne.io.Raw`
+# FIF file in a subdirectory ``fif``. The recorded files name syntax is:
+# - If ``fname`` is not provided: ``[date/time timestamp]-[stream]-raw.fif``
+# - If ``fname`` is provided: ``[fname]-[stream]-raw.fif``
+# Where stream is the name of the recorded LSL stream. Thus, one file is
+# created for each stream being recorded.
+
+fname = record_dir / 'fif' / 'example-resting-state-StreamPlayer-raw.fif'
+raw = mne.io.read_raw_fif(fname, preload=True)
+print (raw)
 
 #%%
 #
 # Stop the mock LSL stream.
 
-if __name__ == '__main__':
-    player.stop()
+player.stop()
