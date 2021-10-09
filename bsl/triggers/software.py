@@ -4,7 +4,6 @@ Trigger using software and a .txt file.
 import pylsl
 
 from ._trigger import _Trigger
-from .. import logger
 from ..utils._docs import fill_doc, copy_doc
 from ..stream_recorder import StreamRecorder
 
@@ -39,8 +38,8 @@ class TriggerSoftware(_Trigger):
         self._eve_file = TriggerSoftware._find_eve_file(recorder)
         try:
             self._eve_file = open(self._eve_file, 'a')
-        except Exception as err:
-            raise err(f'Could not open {self._eve_file} in append mode.')
+        except Exception:
+            raise
 
     @copy_doc(_Trigger.signal)
     def signal(self, value: int) -> bool:
@@ -75,10 +74,9 @@ class TriggerSoftware(_Trigger):
         Check that the provided recorder is indeed a StreamRecorder.
         """
         if not isinstance(recorder, StreamRecorder):
-            logger.error(
+            raise TypeError(
                 'You must pass a StreamRecorder instance to the '
                 'SOFTWARE triggers.')
-            raise TypeError
 
         return recorder
 
@@ -88,10 +86,9 @@ class TriggerSoftware(_Trigger):
         Find the event file name from the on going StreamRecorder.
         """
         if recorder.eve_file is None:
-            logger.error(
+            raise RuntimeError(
                 'The StreamRecorder must be started before instantiating '
                 'a SOFTWARE trigger.')
-            raise RuntimeError
 
         return recorder.eve_file
 
