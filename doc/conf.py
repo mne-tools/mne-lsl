@@ -42,6 +42,7 @@ extensions = [
     'sphinx.ext.coverage',
     'sphinx.ext.napoleon',
     'sphinx.ext.intersphinx',
+    'sphinx.ext.extlinks',
     'sphinx_gallery.gen_gallery'
     ]
 
@@ -148,4 +149,11 @@ intersphinx_mapping = {
     'sklearn': ('https://scikit-learn.org/stable', None),
     'pandas': ('https://pandas.pydata.org/pandas-docs/stable', None),
     'vispy': ('https://vispy.org/', None),
+    }
+
+# extlink
+extlinks = {
+    "doc multiprocessing windows":
+        ('https://docs.python.org/2/library/multiprocessing.html#windows',
+         'documentation for multiprocessing on Windows')
     }
