@@ -1,7 +1,7 @@
 """
-===========================================
-Simulate an LSL stream with a Stream Player
-===========================================
+====================================
+StreamPlayer: simulate an LSL stream
+====================================
 
 Testing designs for online paradigm can be difficult. Access to hardware
 measuring real-time brain signals can be limited and time-consuming. With a
@@ -23,13 +23,12 @@ and experiment designs.
 #     restrictions. The entry-point of a multiprocessing program should be
 #     protected with ``if __name__ == '__main__':`` to ensure it can safely
 #     import and run the module. More information on the
-#     :xref:`doc multiprocessing windows`.
-
-#%%
+#     `documentation for multiprocessing on Windows
+#     <https://docs.python.org/2/library/multiprocessing.html#windows>`_.
 #
 # This example will use a sample EEG resting-state dataset that can be retrieve
-# with `~bsl.datasets`. The dataset is stored in the user home directory, in
-# the folder ``bsl_data``.
+# with :ref:`bsl.datasets<datasets>`. The dataset is stored in the user home
+# directory, in the folder ``bsl_data``.
 
 #%%
 
@@ -45,6 +44,7 @@ from bsl.triggers import TriggerDef
 # ^^^^^^^^^^^^^^^^^^^^^^^
 #
 # A `~bsl.StreamPlayer` requires at least 2 arguments:
+#
 # - ``stream_name``, indicating a the name of the stream on the LSL network.
 # - ``fif_file``, path to a valid `~mne.io.Raw` fif file.
 
@@ -54,7 +54,7 @@ print (fif_file)
 
 #%%
 #
-# To create an LSL stream, instanciate a `~bsl.StreamPlayer` and use the
+# To create an LSL stream, create a `~bsl.StreamPlayer` and use the
 # `~bsl.StreamPlayer.start` method.
 #
 # .. note::
@@ -94,8 +94,8 @@ print (streams)
 #%%
 #
 # Finally, a `~bsl.StreamPlayer` can be called from the terminal with a command
-# line. This is the recommanded way of starting a StreamPlayer, especially with
-# user data. Assuming the current working directory is ``bsl_data``:
+# line. This is the recommanded way of starting a `~bsl.StreamPlayer`.
+# Example assuming the current working directory is ``bsl_data``:
 #
 # .. code-block:: console
 #
@@ -108,6 +108,7 @@ print (streams)
 # ^^^^^^^^^^^^^^^^^^^^
 #
 # A `~bsl.StreamPlayer` has 4 optional arguments:
+#
 # - ``repeat``, indicating the number of time the data in the file is repeated.
 # - ``trigger_def``, either the path to a :class:`.TriggerDef` definition file
 #   or a :class:`.TriggerDef` instance, improving the logging of events found
@@ -116,14 +117,14 @@ print (streams)
 #   outlet.
 # - ``high_resolution``, indicating if `~time.sleep` or `~time.perf_counter` is
 #   used to wait between 2 push on the LSL outlet.
-#
+
 #%%
 # repeat
 # """"""
 #
-# ``repeat`` is set by default to ``+inf``, restarting streaming data from the
-# beginning of the `~mne.io.Raw` fif file each time it reached the end. To
-# limit the number of replay, an `int` can be passed.
+# ``repeat`` is set by default to ``+inf``, returning to the beginning of the
+# data in the `~mne.io.Raw` fif file each time the entire file has been 2
+# streamed. To limit the number of replay, an `int` can be passed.
 #
 # .. note::
 #
@@ -151,7 +152,7 @@ print (player)
 # :class:`.TriggerDef` can be used to assign a user-readable string to an event
 # id. Providing a valid :class:`.TriggerDef` to a `~bsl.StreamPlayer` improves
 # the logging of events found on the ``TRIGGER`` channel.
-
+#
 # .. note::
 #
 #     `~bsl.datasets.eeg_auditory_stimuli` contains an alternation of rest
@@ -168,6 +169,7 @@ time.sleep(4)
 
 # stop
 player.stop()
+print (player)
 
 #%%
 #
@@ -187,6 +189,7 @@ time.sleep(4)
 
 # stop
 player.stop()
+print (player)
 
 #%%
 #
@@ -194,7 +197,7 @@ player.stop()
 #
 #     A path to a valid ``.ini`` trigger definition file can be passed instead
 #     of a :class:`.TriggerDef` instance. The file is read with
-#     ``configparser`` and has to be structured as follows:
+#     `configparser` and has to be structured as follows:
 #
 #     .. code-block:: python
 #

@@ -1,7 +1,7 @@
 """
-=======================
-Resting-State recording
-=======================
+=======================================
+StreamRecorder: resting-state recording
+=======================================
 
 A resting-state recording is a simple offline recording during which the brain
 activity of a subject is measured in the absence of any stimulus or task. A
@@ -22,13 +22,12 @@ resting-state recording can be designed with a `~bsl.StreamRecorder`.
 #     restrictions. The entry-point of a multiprocessing program should be
 #     protected with ``if __name__ == '__main__':`` to ensure it can safely
 #     import and run the module. More information on the
-#     :xref:`doc multiprocessing windows`.
-
-#%%
+#     `documentation for multiprocessing on Windows
+#     <https://docs.python.org/2/library/multiprocessing.html#windows>`_.
 #
 # This example will use a sample EEG resting-state dataset that can be retrieve
-# with `~bsl.datasets`. The dataset is stored in the user home directory, in
-# the folder ``bsl_data``.
+# with :ref:`bsl.datasets<datasets>`. The dataset is stored in the user home
+# directory, in the folder ``bsl_data``.
 
 #%%
 
@@ -50,6 +49,7 @@ stream_name = 'StreamPlayer'
 fif_file = datasets.eeg_resting_state.data_path()
 player = StreamPlayer(stream_name, fif_file)
 player.start()
+print (player)
 
 #%%
 #
@@ -63,8 +63,9 @@ os.makedirs(record_dir, exist_ok=True)
 #%%
 #
 # For this simple offline recording, the goal is to start a
-# `~bsl.StreamRecorder`, send a trigger to mark the beginning of the
-# resting-state recording, wait for a defined duration, and stop the recording.
+# `~bsl.StreamRecorder`, send an event on a trigger to mark the beginning of
+# the resting-state recording, wait for a defined duration, and stop the
+# recording.
 #
 # By default, a `~bsl.StreamRecorder` does not require any argument. The
 # current working directory is used to record data from all available streams
@@ -91,15 +92,15 @@ print (recorder)
 
 #%%
 #
-# Now that the recorder is started and is acquiring data, a trigger to mark
-# the beginning of the segment of interest is created. For this example, a
-# `~bsl.triggers.software.TriggerSoftware` is used, but this example would be
-# equally valid with a different type of trigger.
+# Now that a `~bsl.StreamRecorder` is started and is acquiring data, a trigger
+# to mark the beginning of the segment of interest is created. For this
+# example, a `~bsl.triggers.software.TriggerSoftware` is used, but this example
+# would be equally valid with a different type of trigger.
 #
 # .. note::
 #
 #     `~bsl.triggers.software.TriggerSoftware` must be created after a
-#     `~bsl.StreamRecorder` is started and close/deleted before a
+#     `~bsl.StreamRecorder` is started and closed/deleted before a
 #     `~bsl.StreamRecorder` is stopped.
 #
 #     .. code-block:: python
@@ -142,14 +143,36 @@ print (recorder)
 # A `~bsl.StreamRecorder` records data in ``.pcl`` format. This file can be
 # open with `pickle.load`, and is automatically converted to a `~mne.io.Raw`
 # FIF file in a subdirectory ``fif``. The recorded files name syntax is:
+#
 # - If ``fname`` is not provided: ``[date/time timestamp]-[stream]-raw.fif``
 # - If ``fname`` is provided: ``[fname]-[stream]-raw.fif``
-# Where stream is the name of the recorded LSL stream. Thus, one file is
+#
+# Where ``stream`` is the name of the recorded LSL stream. Thus, one file is
 # created for each stream being recorded.
 
 fname = record_dir / 'fif' / 'example-resting-state-StreamPlayer-raw.fif'
 raw = mne.io.read_raw_fif(fname, preload=True)
 print (raw)
+events = mne.find_events(raw, stim_channel='TRIGGER')
+print (events)
+
+#%%
+#
+# As for the `~bsl.StreamPlayer`, the `~bsl.StreamRecorder` can be used as a
+# context manager. The context manager takes care of starting and stopping the
+# recording.
+
+with StreamRecorder(record_dir):
+    time.sleep(1)
+
+#%%
+#
+# As for the `~bsl.StreamPlayer`, the `~bsl.StreamRecorder` can be started via
+# command-line. Example assuming the current working directory is ``bsl_data``:
+#
+# .. code-block:: console
+#
+#     $ bsl_stream_recorder examples
 
 #%%
 #
