@@ -21,7 +21,7 @@ class TriggerDef:
         Path to the ``.ini`` file containing the table converting event numbers
         into event strings.
 
-        .. note:: The ``.ini`` file is read with ``configparser`` and has to be
+        .. note:: The ``.ini`` file is read with `configparser` and has to be
                   structured as follows:
 
                   .. code-block:: python
@@ -48,7 +48,7 @@ class TriggerDef:
         """
         Read events from a ``.ini`` trigger definition file.
 
-        .. note:: The ``.ini`` file is read with ``configparser`` and has to be
+        .. note:: The ``.ini`` file is read with `configparser` and has to be
                   structured as follows:
 
                   .. code-block:: python
