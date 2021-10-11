@@ -400,7 +400,8 @@ class _Streamer:
                         if event_value in self._trigger_def.by_value:
                             logger.info(
                                 'Events: %s (%s)',
-                                event_value, self._tdef.by_value[event_value])
+                                event_value,
+                                self._trigger_def.by_value[event_value])
                         else:
                             logger.info(
                                 'Events: %s (Undefined event)',
