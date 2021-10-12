@@ -131,7 +131,7 @@ sphinx_gallery_conf = {
     'abort_on_example_error': False,
     'filename_pattern': re.escape(os.sep),
     'line_numbers': False,
-    'download_all_examples': True,
+    'download_all_examples': False,
     'matplotlib_animations': True
     }
 
