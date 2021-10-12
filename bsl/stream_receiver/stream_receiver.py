@@ -183,7 +183,7 @@ class StreamReceiver:
             self._acquisition_threads[stream] = thread
 
     @fill_doc
-    def get_window(self, stream_name=None, return_raw=False):
+    def get_window(self, stream_name=None, return_raw=False, verbose=True):
         """
         Get the latest window from a stream's buffer.
         If several streams are connected, specify the name.
@@ -192,6 +192,7 @@ class StreamReceiver:
         ----------
         %(receiver_get_stream_name)s
         %(receiver_get_return_raw)s
+        %(receiver_get_verbose)s
 
         Returns
         -------
@@ -241,16 +242,17 @@ class StreamReceiver:
                     'The LSL stream %s can not be converted to MNE raw '
                     'instance. Returning numpy arrays.', stream_name)
         else:
-            logger.warning(
-                'The LSL stream %s did not return any data.'
-                'Returning empty numpy arrays.', stream_name)
+            if verbose:  # Needed for StreamViewer
+                logger.warning(
+                    'The LSL stream %s did not return any data.'
+                    'Returning empty numpy arrays.', stream_name)
             window = np.empty((0, len(self._streams[stream_name].ch_list)))
             timestamps = np.array([])
 
         return window, timestamps
 
     @fill_doc
-    def get_buffer(self, stream_name=None, return_raw=False):
+    def get_buffer(self, stream_name=None, return_raw=False, verbose=True):
         """
         Get the entire buffer of a stream.
         If several streams are connected, specify the name.
@@ -259,6 +261,7 @@ class StreamReceiver:
         ----------
         %(receiver_get_stream_name)s
         %(receiver_get_return_raw)s
+        %(receiver_get_verbose)s
 
         Returns
         -------
@@ -301,9 +304,10 @@ class StreamReceiver:
                     'The LSL stream %s can not be converted to MNE raw '
                     'instance. Returning numpy arrays.', stream_name)
         else:
-            logger.warning(
-                'The LSL stream %s did not return any data.'
-                'Returning empty numpy arrays.', stream_name)
+            if verbose:  # Needed for StreamViewer
+                logger.warning(
+                    'The LSL stream %s did not return any data.'
+                    'Returning empty numpy arrays.', stream_name)
             window = np.empty((0, len(self._streams[stream_name].ch_list)))
             timestamps = np.array([])
 
