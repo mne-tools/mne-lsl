@@ -35,7 +35,7 @@ With the optional arguments:
 - `-t`, `--trigger_file`: path, trigger file mapping events id to strings,
   loaded by :class:`~bsl.triggers.trigger_def.TriggerDef`.
 
-.. image:: _static/cli/stream_player.png
+.. image:: _static/stream_player/stream_player_cli.gif
    :alt: StreamPlayer
    :align: center
 
