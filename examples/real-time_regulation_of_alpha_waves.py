@@ -177,7 +177,7 @@ phase_duration = 3  # in seconds
 
 record_dir = Path('~/bsl_data/examples').expanduser()
 os.makedirs(record_dir, exist_ok=True)
-recorder = StreamRecorder(record_dir, fname='example-real-time')
+recorder = StreamRecorder(record_dir, fname='example_real_time')
 recorder.start()
 print (recorder)
 trigger = TriggerSoftware(recorder, verbose=True)
@@ -277,7 +277,7 @@ for k in range(len(alphas)):
 #
 # The saved `~mne.io.Raw` instance can then be loaded and analyzed.
 
-fname = record_dir / 'fif' / 'example-resting-state-StreamPlayer-raw.fif'
+fname = record_dir / 'fif' / 'example_real_time-StreamPlayer-raw.fif'
 raw = mne.io.read_raw_fif(fname, preload=True)
 print (raw)
 events = mne.find_events(raw, stim_channel='TRIGGER')
