@@ -26,14 +26,19 @@ The :class:`~bsl.StreamPlayer` can be called from the command-line with:
 
 With the positional arguments:
 
-- `stream_name`: str, name of the LSL stream displayed on the network.
-- `fif_file`: path, recorded fif file by the StreamRecorder.
+- ``stream_name``: str, name of the LSL stream displayed on the network.
+- ``fif_file``: path, recorded fif file by the StreamRecorder.
 
 With the optional arguments:
 
-- `-c`, `--chunk_size`: int, chunk size pushed on the outlet. Default 16.
-- `-t`, `--trigger_file`: path, trigger file mapping events id to strings,
+- ``r``, ``--repeat``: int, number of time the file is repeated.
+  Default ``+inf``.
+- ``-t``, ``--trigger_def``: path, trigger file mapping events id to strings,
   loaded by :class:`~bsl.triggers.trigger_def.TriggerDef`.
+- ``-c``, ``--chunk_size``: int, chunk size pushed on the outlet. Default
+  ``16``.
+- ``--high_resolution``: bool flag, uses `time.perf_counter` instead of
+  `time.sleep`.
 
 .. image:: _static/stream_player/stream_player_cli.gif
    :alt: StreamPlayer
@@ -53,15 +58,24 @@ The :class:`~bsl.StreamRecorder` can be called from the command-line with:
 
 With the optional arguments:
 
-- `-d`, `--directory`: path to the record directory.
-- `-f`, `--fname`: file name stem.
-- `-s`, `--stream_name`: stream to record.
+- ``-d``, ``--directory``: path to the record directory.
+- ``-f``, ``--fname``: file name stem.
+- ``-s``, ``--stream_name``: stream to record.
+- ``--fif_subdir``: bool flag, saves in a ``fif`` subdirectory.
+- ``--verbose``: bool flag, displays a timer every recorded second.
 
- | If the path to the record directory is not provided, starts in the current
-   directory.
- | If the file name stem is not provided, a stem is generated based on the
-   current datetime.
- | If the stream to record is not provided, record all streams.
+.. note::
+
+    If ``directory`` is not provided, the current working directory is used.
+
+.. note::
+
+    If ``fname`` is not provided, a stem is generated based on the current
+    datetime.
+
+.. note::
+
+    If ``stream_name`` is not provided, all available streams are recorded.
 
 .. image:: _static/stream_recorder/stream_recorder_cli.gif
    :alt: StreamRecorder
@@ -81,12 +95,17 @@ The :class:`~bsl.StreamViewer` can be called from the command-line with:
 
 With the optional arguments:
 
-- `-s`, `--stream_name`: stream to visualize.
-- `-b`, `--backend`: visualization backend.
+- ``-s``, ``--stream_name``: stream to visualize.
+- ``-b``, ``--backend``: visualization backend.
 
- | If the stream to visualize is not provided, a prompt let the user select one
-   of the available streams on the network.
- | If the backend is not provided, the default backend `pyqtgraph` is used.
+.. note::
+
+    If ``stream_name`` is not provided, a prompt is displayed to select a
+    stream among the available ones.
+
+.. note::
+
+    If ``backend`` is not provided, the default backend `pyqtgraph` is used.
 
 The :class:`~bsl.StreamViewer` opens 2 windows:
 
