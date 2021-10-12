@@ -41,6 +41,10 @@ stream in uV to convert to V:
 .. code-block:: python
 
     sr.streams['stream_to_convert'].scaling_factor = 1e-6"""
+docdict['receiver_get_verbose'] = """
+verbose : `bool`
+    If ``True`` (default), a warning will be issued when the method returns
+    empty `~numpy.array`. If ``False``, this warning will be skipped."""
 docdict['receiver_bufsize'] = """
 bufsize : `int` | `float`
     Buffer's size ``[secs]``. ``MAX_BUF_SIZE`` (def: 1-day) is the maximum
