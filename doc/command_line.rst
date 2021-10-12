@@ -63,7 +63,7 @@ With the optional arguments:
    current datetime.
  | If the stream to record is not provided, record all streams.
 
-.. image:: _static/cli/stream_recorder.png
+.. image:: _static/stream_recorder/stream_recorder_cli.gif
    :alt: StreamRecorder
    :align: center
 
@@ -92,14 +92,9 @@ The :class:`~bsl.StreamViewer` opens 2 windows:
 
 - A controller to select the channels to plot and set different plotting
   parameters.
-
-.. image:: _static/cli/stream_viewer_controller.png
-   :alt: StreamViewer-Controller
-   :align: center
-
 - A plotting window using the specified backend displaying the signal in
   real-time.
 
-.. image:: _static/cli/stream_viewer_backend.png
-   :alt: StreamViewer-Backend
+.. image:: _static/stream_viewer/stream_viewer.gif
+   :alt: StreamViewer
    :align: center
