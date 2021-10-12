@@ -102,6 +102,10 @@ print (streams)
 #     $ bsl_stream_player StreamPlayer eeg_sample\resting_state-raw.fif
 #
 # Hitting ``ENTER`` will stop the `~bsl.StreamPlayer`.
+#
+# .. image:: ../_static/stream_player/stream_player_cli.gif
+#    :alt: StreamPlayer
+#    :align: center
 
 #%%
 # Additional arguments
