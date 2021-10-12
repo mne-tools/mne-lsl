@@ -86,8 +86,9 @@ import time
 from bsl import StreamRecorder
 
 # Connects to all available streams
-recorder = StreamRecorder(record_dir=None, fname=None, stream_name=None)
-recorder.start(verbose=True)
+recorder = StreamRecorder(record_dir=None, fname=None, stream_name=None,
+                          verbose=True)
+recorder.start()
 time.sleep(10)
 recorder.stop()
 ```
@@ -98,7 +99,7 @@ When the argument `record_dir` is set to None, the current folder obtained with
 **CLI:** The stream recorder can be called by command-line in a terminal by
 using either `bsl stream_recorder` or `bsl_stream_recorder` followed by the
 optional arguments `-d`, `-f`, `-s` respectively for `record_dir`, `fname`,
-and `stream_name`.
+and `stream_name`, and the optional flags `--fif_subdir` and `--verbose`.
 ```
 bsl_stream_recorder -d "D:/Data"
 bsl_stream_recorder -d "D:/Data" -f test
@@ -121,8 +122,9 @@ sp.stop()
 ```
 **CLI:**  The stream player can be called by command-line in a terminal by
 using either `bsl stream_player` or `bsl_stream_player` followed by positional
-arguments `stream_name` and `fif_file` and the optional arguments `-c` and `-t`
-respectively for `chunk_size` and `trigger_file`.
+arguments `stream_name` and `fif_file` and the optional arguments `-r`, `-c`,
+`-t` respectively for `repeat`, `chunk_size` and `trigger_def`, and the
+optional flag `--high_resolution`.
 ```
 bsl_stream_player StreamPlayer "D:/Data/data-raw.fif"
 bsl_stream_player StreamPlayer "D:/Data/data-raw.fif" -c 16
