@@ -15,6 +15,8 @@ and experiment designs.
 #
 # License: LGPL-2.1
 
+# sphinx_gallery_thumbnail_path = '_static/stream_player/stream_player_cli.gif'
+
 #%%
 # .. warning::
 #

@@ -14,6 +14,8 @@ resting-state recording can be designed with a `~bsl.StreamRecorder`.
 #
 # License: LGPL-2.1
 
+# sphinx_gallery_thumbnail_path = '_static/stream_recorder/stream_recorder_cli.gif'
+
 #%%
 # .. warning::
 #
