@@ -173,6 +173,10 @@ with StreamRecorder(record_dir):
 # .. code-block:: console
 #
 #     $ bsl_stream_recorder examples
+#
+# .. image:: ../_static/stream_recorder/stream_recorder_cli.gif
+#    :alt: StreamRecorder
+#    :align: center
 
 #%%
 #
