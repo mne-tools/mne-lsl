@@ -55,6 +55,8 @@ fif_file = datasets.eeg_resting_state.data_path()
 print (fif_file)
 
 #%%
+# Instance
+# """"""""
 #
 # To create an LSL stream, create a `~bsl.StreamPlayer` and use the
 # `~bsl.StreamPlayer.start` method.
@@ -84,6 +86,8 @@ player.stop()
 print (player)
 
 #%%
+# Context manager
+# """""""""""""""
 #
 # A `~bsl.StreamPlayer` can also be used as a context manager with a ``with``
 # statement. The context manager takes care of starting and stopping the LSL
@@ -94,6 +98,8 @@ with StreamPlayer(stream_name, fif_file):
 print (streams)
 
 #%%
+# CLI
+# """
 #
 # Finally, a `~bsl.StreamPlayer` can be called from the terminal with a command
 # line. This is the recommanded way of starting a `~bsl.StreamPlayer`.
