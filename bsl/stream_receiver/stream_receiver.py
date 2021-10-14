@@ -314,9 +314,6 @@ class StreamReceiver:
         Get the entire buffer of the only connected stream.
         This method is intended for use by the StreamViewer.
         """
-        if not self._connected:
-            raise RuntimeError('StreamReceiver is not connected to any '
-                               'streams.')
         stream_name = list(self._streams)[0]
         self._acquisition_threads[stream_name].join()
         window = np.array(self._streams[stream_name].buffer.data)
