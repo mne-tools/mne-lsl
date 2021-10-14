@@ -57,7 +57,7 @@ class _Scope(ABC):
         Acquires data from the connected LSL stream.
         """
         self._sr.acquire()
-        self._data_acquired, self._ts_list = self._sr.get_buffer(verbose=False)
+        self._data_acquired, self._ts_list = self._sr._get_buffer()
         self._sr.reset_buffer()
 
         if len(self._ts_list) > 0:
