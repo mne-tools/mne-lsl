@@ -309,6 +309,23 @@ class StreamReceiver:
 
         return window, timestamps
 
+    def _get_buffer(self):
+        """
+        Get the entire buffer of the only connected stream.
+        This method is intended for use by the StreamViewer.
+        """
+        if not self._connected:
+            raise RuntimeError('StreamReceiver is not connected to any '
+                               'streams.')
+        stream_name = list(self._streams)[0]
+        self._acquisition_threads[stream_name].join()
+        window = np.array(self._streams[stream_name].buffer.data)
+        timestamps = np.array(self._streams[stream_name].buffer.timestamps)
+        if len(self._streams[stream_name].buffer.timestamps) == 0:
+            window = np.empty((0, len(self._streams[stream_name].ch_list)))
+            timestamps = np.array([])
+        return window, timestamps
+
     def reset_buffer(self, stream_name=None):
         """
         Clear the stream's buffer.
