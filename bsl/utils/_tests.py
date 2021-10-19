@@ -66,7 +66,6 @@ def requires_lpt(function):
         lpt = ctypes.cdll.LoadLibrary(str(dll))
     except Exception:
         return pytest.mark.skipif(True, reason='LPT dll not found.')(function)
-    lpt = ctypes.cdll.LoadLibrary(str(dll))
     for portaddr in [0x278, 0x378]:
         try:
             lpt.setdata(portaddr, 1)
@@ -89,8 +88,7 @@ def requires_usb2lpt(function):
         lpt.setdata(1)
         return function
     except Exception:
-        pass
-    return pytest.mark.skipif(True, reason='LPT port not found.')(function)
+        return pytest.mark.skipif(True, reason='LPT port not found.')(function)
 
 
 def requires_arduino2lpt(function):
