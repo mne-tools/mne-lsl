@@ -59,7 +59,7 @@ _types = {
 }
 
 
-def _check_type(item, types=None, item_name=None, type_name=None):
+def _check_type(item, types=None, item_name=None):
     """
     Check that item is an instance of types.
 
@@ -73,9 +73,6 @@ def _check_type(item, types=None, item_name=None, type_name=None):
             ('int', 'str', 'numeric', 'path-like', 'callable')
     item_name : str | None
         Name of the item to show inside the error message.
-    type_name : str | None
-        Possible types to show inside the error message that the checked item
-        can be.
 
     Raises
     ------
@@ -87,17 +84,16 @@ def _check_type(item, types=None, item_name=None, type_name=None):
                        for type_ in types), ())
 
     if not isinstance(item, check_types):
-        if type_name is None:
-            type_name = ['None' if cls_ is None else cls_.__name__
-                         if not isinstance(cls_, str) else cls_
-                         for cls_ in types]
-            if len(type_name) == 1:
-                type_name = type_name[0]
-            elif len(type_name) == 2:
-                type_name = ' or '.join(type_name)
-            else:
-                type_name[-1] = 'or ' + type_name[-1]
-                type_name = ', '.join(type_name)
+        type_name = ['None' if cls_ is None else cls_.__name__
+                     if not isinstance(cls_, str) else cls_
+                     for cls_ in types]
+        if len(type_name) == 1:
+            type_name = type_name[0]
+        elif len(type_name) == 2:
+            type_name = ' or '.join(type_name)
+        else:
+            type_name[-1] = 'or ' + type_name[-1]
+            type_name = ', '.join(type_name)
         _item_name = 'Item' if item_name is None else item_name
         raise TypeError(f"{_item_name} must be an instance of {type_name}, "
                         f"got {type(item)} instead.")

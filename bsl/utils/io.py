@@ -43,11 +43,9 @@ def pcl2fif(fname, out_dir=None, external_event=None,
     """
     fname = Path(fname)
     if not fname.is_file():
-        logger.error(f"File '{fname}' not found.")
-        raise IOError
+        raise IOError('File %s not found.' % fname)
     if fname.suffix != '.pcl':
-        logger.error(f"File '{fname}' is not '.pcl'.")
-        raise IOError
+        raise IOError("File type %s is not '.pcl'." % fname.suffix)
 
     if out_dir is not None:
         out_dir = Path(out_dir)
@@ -239,11 +237,9 @@ def any2fif(fname, out_dir=None, overwrite=True, precision='double'):
     """
     fname = Path(fname)
     if not fname.is_file():
-        logger.error(f"File '{fname}' not found.")
-        raise IOError
+        raise IOError('File %s not found.' % fname)
     if fname.suffix not in supported:
-        logger.error(f'File type {fname.suffix} is not supported.')
-        raise IOError
+        raise IOError('File type %s is not supported.' % fname.suffix)
 
     if fname.suffix == '.pcl':
         eve_file = fname.parent / (fname.stem[:-4] + 'eve.txt')
