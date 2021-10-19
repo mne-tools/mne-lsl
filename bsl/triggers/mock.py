@@ -3,6 +3,7 @@ Mock trigger.
 """
 from ._trigger import _Trigger
 from .. import logger
+from ..utils._checks import _check_type
 from ..utils._docs import fill_doc, copy_doc
 
 
@@ -21,6 +22,7 @@ class TriggerMock(_Trigger):
 
     @copy_doc(_Trigger.signal)
     def signal(self, value: int) -> bool:
+        _check_type(value, ('int', ), 'value')
         self._set_data(value)
         super().signal(value)
         return True

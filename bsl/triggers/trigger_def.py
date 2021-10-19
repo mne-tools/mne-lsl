@@ -3,6 +3,7 @@ from pathlib import Path
 from configparser import ConfigParser
 
 from .. import logger
+from ..utils._checks import _check_type
 
 
 class TriggerDef:
@@ -121,6 +122,8 @@ class TriggerDef:
         overwrite : `bool`
             If ``True``, overwrite previous event with the same name or value.
         """
+        _check_type(name, (str, ), 'name')
+        _check_type(value, ('int', ), 'value')
         value = int(value)
         if name in self._by_name and not overwrite:
             logger.info('Event name %s already exists. Skipping.', name)
@@ -149,6 +152,7 @@ class TriggerDef:
             If a `str` is provided, assumes event is the name.
             If a `int` is provided, assumes event is the value.
         """
+        _check_type(event, (str, 'numeric'), 'event')
         if isinstance(event, str):
             if event not in self._by_name:
                 logger.info('Event name %s not found.', event)
@@ -166,9 +170,6 @@ class TriggerDef:
             delattr(self, name)
             del self._by_name[name]
             del self._by_value[event]
-        else:
-            raise TypeError(
-                'Supported event types are (str, int), not %s.', type(event))
 
     def __repr__(self):
         """Representation of the stored events."""
@@ -186,16 +187,12 @@ class TriggerDef:
         Checks that the provided file exists and ends with .ini. Else returns
         None.
         """
+        _check_type(trigger_file, (None, 'path-like'), 'trigger_file')
+
         if trigger_file is None:
             return None
-
-        try:
+        else:
             trigger_file = Path(trigger_file)
-        except Exception:
-            logger.error(
-                'Argument trigger_file could not be interpreted as a Path. '
-                'Provided: %s', trigger_file)
-            return None
 
         if trigger_file.exists() and trigger_file.suffix == '.ini':
             logger.info(
@@ -217,13 +214,9 @@ class TriggerDef:
         Checks that the directory exists and that the file name ends with
         .ini.
         """
-        try:
-            trigger_file = Path(trigger_file)
-        except Exception:
-            raise ValueError(
-                'Argument trigger_file could not be interpreted as a Path. '
-                'Provided: %s' % trigger_file)
+        _check_type(trigger_file, ('path-like', ), 'trigger_file')
 
+        trigger_file = Path(trigger_file)
         if trigger_file.suffix != '.ini':
             raise ValueError(
                 'Argument trigger_file must end with .ini. '
