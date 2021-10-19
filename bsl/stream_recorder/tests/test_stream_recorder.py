@@ -7,7 +7,7 @@ import pytest
 
 from bsl import StreamRecorder, StreamPlayer, logger, set_log_level
 from bsl.datasets import eeg_resting_state
-from bsl.utils._testing import requires_eeg_resting_state_dataset
+from bsl.utils._tests import requires_eeg_resting_state_dataset
 
 
 set_log_level('INFO')
@@ -316,6 +316,16 @@ def test_properties(tmp_path):
             recorder.verbose = True
 
 
+def test_checker_arguments(tmp_path):
+    """Test the argument error checking."""
+    with pytest.raises(TypeError, match='stream_name must be an instance of'):
+        StreamRecorder(record_dir=tmp_path, stream_name=101)
+    with pytest.raises(TypeError, match='fif_subdir must be an instance of'):
+        StreamRecorder(record_dir=tmp_path, fif_subdir=1)
+    with pytest.raises(TypeError, match='verbose must be an instance of'):
+        StreamRecorder(record_dir=tmp_path, verbose=1)
+
+
 def test_checker_record_dir(tmp_path):
     """Test the checker for argument record_dir."""
     # Valid
@@ -325,10 +335,8 @@ def test_checker_record_dir(tmp_path):
     assert recorder.record_dir == tmp_path
 
     # Invalid
-    with pytest.raises(ValueError, match='Argument record_dir must be a path '
-                                         'to a valid directory. Provided: %s'
-                                         % 5):
-        recorder = StreamRecorder(record_dir=5)
+    with pytest.raises(TypeError, match='record_dir must be an instance of'):
+        StreamRecorder(record_dir=101)
 
 
 def test_checker_fname(tmp_path):
@@ -338,6 +346,10 @@ def test_checker_fname(tmp_path):
     assert recorder.fname is None
     recorder = StreamRecorder(record_dir=tmp_path, fname='test')
     assert recorder.fname == 'test'
+
+    # Invalid
+    with pytest.raises(TypeError, match='fname must be an instance of'):
+        StreamRecorder(record_dir=tmp_path, fname=101)
 
 
 @requires_eeg_resting_state_dataset

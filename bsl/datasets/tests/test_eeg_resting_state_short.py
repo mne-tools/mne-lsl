@@ -1,6 +1,6 @@
 from bsl.datasets import eeg_resting_state_short
 from bsl.datasets._fetching import _hashfunc
-from bsl.utils._testing import requires_good_network
+from bsl.utils._tests import requires_good_network
 
 
 @requires_good_network

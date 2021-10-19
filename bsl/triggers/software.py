@@ -4,6 +4,7 @@ Trigger using software and a .txt file.
 import pylsl
 
 from ._trigger import _Trigger
+from ..utils._checks import _check_type
 from ..utils._docs import fill_doc, copy_doc
 from ..stream_recorder import StreamRecorder
 
@@ -43,6 +44,7 @@ class TriggerSoftware(_Trigger):
 
     @copy_doc(_Trigger.signal)
     def signal(self, value: int) -> bool:
+        _check_type(value, ('int', ), 'value')
         self._set_data(value)
         super().signal(value)
         return True
@@ -73,11 +75,7 @@ class TriggerSoftware(_Trigger):
         """
         Check that the provided recorder is indeed a StreamRecorder.
         """
-        if not isinstance(recorder, StreamRecorder):
-            raise TypeError(
-                'You must pass a StreamRecorder instance to the '
-                'SOFTWARE triggers.')
-
+        _check_type(recorder, (StreamRecorder, ), 'recorder')
         return recorder
 
     @staticmethod

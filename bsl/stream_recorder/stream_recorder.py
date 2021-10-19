@@ -8,6 +8,7 @@ import multiprocessing as mp
 from .. import logger
 from ..utils import Timer
 from ..utils._docs import fill_doc
+from ..utils._checks import _check_type
 from ..utils.io import pcl2fif
 from ..stream_receiver import StreamReceiver, StreamEEG
 from ..stream_receiver._stream import MAX_BUF_SIZE
@@ -31,9 +32,12 @@ class StreamRecorder:
                  fif_subdir=True, verbose=False):
         self._record_dir = StreamRecorder._check_record_dir(record_dir)
         self._fname = StreamRecorder._check_fname(fname)
+        _check_type(stream_name, (None, str, list, tuple), 'stream_name')
         self._stream_name = stream_name
-        self._fif_subdir = bool(fif_subdir)
-        self._verbose = bool(verbose)
+        _check_type(fif_subdir, (bool, ), 'fif_subdir')
+        self._fif_subdir = fif_subdir
+        _check_type(verbose, (bool, ), 'verbose')
+        self._verbose = verbose
 
         self._eve_file = None  # for SOFTWARE triggers
         self._process = None
@@ -48,6 +52,7 @@ class StreamRecorder:
         blocking : `bool`
             If ``True``, waits for the child process to start recording data.
         """
+        _check_type(blocking, (bool, ), 'blocking')
         fname, self._eve_file = StreamRecorder._create_fname(
             self._record_dir, self._fname)
         logger.debug("File name stem is '%s'.", fname)
@@ -120,15 +125,11 @@ class StreamRecorder:
         Converts record_dir to a Path, or select the current working directory
         if record_dir is None.
         """
+        _check_type(record_dir, (None, 'path-like'), 'record_dir')
         if record_dir is None:
             record_dir = Path.cwd()
         else:
-            try:
-                record_dir = Path(record_dir)
-            except Exception:
-                raise ValueError(
-                    'Argument record_dir must be a path to a valid directory. '
-                    'Provided: %s' % record_dir)
+            record_dir = Path(record_dir)
         return record_dir
 
     @staticmethod
@@ -136,13 +137,7 @@ class StreamRecorder:
         """
         Checks that the file name stem is a string or None.
         """
-        if fname is not None:
-            try:
-                fname = str(fname)
-            except Exception:
-                raise ValueError(
-                    'Argument fname must be a valid string or have a valid '
-                    'string representation.')
+        _check_type(fname, (None, str), 'fname')
         return fname
 
     @staticmethod

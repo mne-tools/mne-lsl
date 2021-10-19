@@ -5,8 +5,8 @@ import pytest
 from bsl import logger, set_log_level
 from bsl.datasets import trigger_def, eeg_resting_state
 from bsl.triggers import TriggerDef
-from bsl.utils._testing import (requires_trigger_def_dataset,
-                                requires_eeg_resting_state_dataset)
+from bsl.utils._tests import (requires_trigger_def_dataset,
+                              requires_eeg_resting_state_dataset)
 
 
 set_log_level('INFO')
@@ -113,11 +113,8 @@ def test_read_ini(caplog, tmp_path):
     assert tdef._by_value == {1: 'stim'}
 
     # Invalid file
-    caplog.clear()
-    tdef = TriggerDef(5)
-    assert tdef._trigger_file is None
-    assert ('Argument trigger_file could not be interpreted as a Path. '
-            'Provided: %s' % 5) in caplog.text
+    with pytest.raises(TypeError, match='trigger_file must be an instance of'):
+        tdef = TriggerDef(101)
 
     caplog.clear()
     tdef = TriggerDef(eeg_resting_state.data_path())
@@ -141,10 +138,8 @@ def test_write_ini(tmp_path):
     tdef.write_ini(tmp_path / 'test_write.ini')
 
     # Invalid file
-    trigger_file = 5
-    with pytest.raises(ValueError,
-                       match='Argument trigger_file could not be interpreted '
-                             'as a Path. Provided: %s' % trigger_file):
+    trigger_file = 101
+    with pytest.raises(TypeError, match='trigger_file must be an instance of'):
         tdef.write_ini(trigger_file)
 
     trigger_file = tmp_path / 'test_write.txt'
