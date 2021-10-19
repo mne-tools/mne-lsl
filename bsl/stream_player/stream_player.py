@@ -9,6 +9,7 @@ import numpy as np
 from .. import logger
 from ..triggers import TriggerDef
 from ..utils import find_event_channel
+from ..utils._checks import _check_type
 
 
 class StreamPlayer:
@@ -39,12 +40,14 @@ class StreamPlayer:
 
     def __init__(self, stream_name, fif_file, repeat=float('inf'),
                  trigger_def=None, chunk_size=16, high_resolution=False):
+        _check_type(stream_name, (str, ), 'stream_name')
         self._stream_name = str(stream_name)
         self._fif_file = StreamPlayer._check_fif_file(fif_file)
         self._repeat = StreamPlayer._check_repeat(repeat)
         self._trigger_def = StreamPlayer._check_trigger_def(trigger_def)
         self._chunk_size = StreamPlayer._check_chunk_size(chunk_size)
-        self._high_resolution = bool(high_resolution)
+        _check_type(high_resolution, (bool, ), 'high_resolution')
+        self._high_resolution = high_resolution
 
         self._process = None
         self._state = mp.Value('i', 0)
@@ -58,6 +61,7 @@ class StreamPlayer:
         blocking : `bool`
             If ``True``, waits for the child process to start streaming data.
         """
+        _check_type(blocking, (bool, ), 'blocking')
         raw = mne.io.read_raw_fif(self._fif_file, preload=True, verbose=False)
 
         logger.info('Streaming started.')
@@ -127,14 +131,9 @@ class StreamPlayer:
         """
         Check if the provided fif_file is valid.
         """
-        try:
-            fif_file = Path(fif_file)
-            mne.io.read_raw_fif(fif_file, preload=False, verbose=None)
-            return fif_file
-        except Exception:
-            raise ValueError(
-                'Argument fif_file must be a path to a valid MNE raw file. '
-                'Provided: %s.', fif_file)
+        _check_type(fif_file, ('path-like', ), 'fif_file')
+        mne.io.read_raw_fif(fif_file, preload=False, verbose=None)
+        return Path(fif_file)
 
     @staticmethod
     def _check_repeat(repeat):
@@ -143,76 +142,49 @@ class StreamPlayer:
         """
         if repeat == float('inf'):
             return repeat
-        elif isinstance(repeat, (int, float)):
-            repeat = int(repeat)
-            if 0 < repeat:
-                return repeat
-            else:
-                logger.error(
-                    'Argument repeat must be a strictly positive integer. '
-                    'Provided: %s -> Changing to +inf.', repeat)
-                return float('inf')
+        _check_type(repeat, ('int', ), 'repeat')
+        repeat = int(repeat)
+        if 0 < repeat:
+            return repeat
         else:
-            logger.error(
-                'Argument repeat must be a strictly positive integer. '
-                'Provided: %s -> Changing to +inf.', repeat)
-            return float('inf')
+            raise ValueError('Argument repeat must be a strictly positive '
+                             'integer. Provided: %i' % repeat)
 
     @staticmethod
     def _check_trigger_def(trigger_def):
         """
         Checks that the trigger file is either a path to a valid trigger
         definition file, in which case it is loader and pass as a TriggerDef,
-        or a TriggerDef instance. Else sets it as None.
+        or a TriggerDef instance.
         """
-        if trigger_def is None:
-            return trigger_def
-        elif isinstance(trigger_def, TriggerDef):
-            return trigger_def
-        elif isinstance(trigger_def, (str, Path)):
-            trigger_def = Path(trigger_def)
-            if not trigger_def.exists():
-                logger.error(
-                    'Argument trigger_def is a path that does not exist. '
-                    'Provided: %s -> Ignoring.', trigger_def)
-                return None
-            trigger_def = TriggerDef(trigger_def)
+        _check_type(trigger_def, (None, TriggerDef, 'path-like'),
+                    'trigger_def')
+        if isinstance(trigger_def, (type(None), TriggerDef)):
             return trigger_def
         else:
-            logger.error(
-                'Argument trigger_def must be a TriggerDef instance or a path '
-                'to a trigger definition ini file. '
-                'Provided: %s -> Ignoring.', type(trigger_def))
-            return None
+            trigger_def = Path(trigger_def)
+            if not trigger_def.exists():
+                raise ValueError('Argument trigger_def is a path that does not '
+                                 'exist. Provided: %s' % trigger_def)
+            trigger_def = TriggerDef(trigger_def)
+            return trigger_def
 
     @staticmethod
     def _check_chunk_size(chunk_size):
         """
         Checks that chunk_size is a strictly positive integer.
         """
-        if isinstance(chunk_size, (int, float)):
-            try:
-                chunk_size = int(chunk_size)
-            except OverflowError:
-                logger.error(
-                    'Argument chunk_size must be a strictly positive integer. '
-                    'Provided: %s -> Changing to 16.', chunk_size)
-                return 16
-            if chunk_size <= 0:
-                logger.error(
-                    'Argument chunk_size must be a strictly positive integer. '
-                    'Provided: %s -> Changing to 16.', chunk_size)
-                return 16
+        _check_type(chunk_size, ('int', ), 'chunk_size')
+        chunk_size = int(chunk_size)
+        if 0 < chunk_size:
             if chunk_size not in (16, 32):
                 logger.warning(
                     'The chunk size %i is different from the usual '
                     'values 16 or 32.', chunk_size)
             return chunk_size
         else:
-            logger.error(
-                'Argument chunk_size must be a strictly positive integer. '
-                'Provided: %s -> Changing to 16.', chunk_size)
-            return 16
+            raise ValueError('Argument chunk_size must be a strictly positive '
+                             'integer. Provided: %i' % chunk_size)
 
     # --------------------------------------------------------------------
     @property
