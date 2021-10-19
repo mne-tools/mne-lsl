@@ -5,9 +5,9 @@ import mne
 from bsl import StreamRecorder, StreamPlayer, logger, set_log_level
 from bsl.datasets import eeg_resting_state
 from bsl.triggers.lpt import TriggerLPT, TriggerUSB2LPT, TriggerArduino2LPT
-from bsl.utils._testing import (requires_eeg_resting_state_dataset,
-                                requires_lpt, requires_usb2lpt,
-                                requires_arduino2lpt)
+from bsl.utils._tests import (requires_eeg_resting_state_dataset,
+                              requires_lpt, requires_usb2lpt,
+                              requires_arduino2lpt)
 
 
 set_log_level('INFO')

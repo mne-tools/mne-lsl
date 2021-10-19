@@ -5,8 +5,8 @@ import pytest
 from bsl import logger, set_log_level
 from bsl.datasets import trigger_def, eeg_resting_state
 from bsl.triggers import TriggerDef
-from bsl.utils._testing import (requires_trigger_def_dataset,
-                                requires_eeg_resting_state_dataset)
+from bsl.utils._tests import (requires_trigger_def_dataset,
+                              requires_eeg_resting_state_dataset)
 
 
 set_log_level('INFO')
