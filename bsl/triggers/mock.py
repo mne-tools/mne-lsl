@@ -36,4 +36,4 @@ class TriggerMock(_Trigger):
     @copy_doc(_Trigger._set_data)
     def _set_data(self, value: int):
         super()._set_data(value)
-        logger.info(f'MOCK trigger set to {value}')
+        logger.info('MOCK trigger set to %i', value)
