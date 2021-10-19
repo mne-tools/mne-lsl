@@ -10,8 +10,10 @@ def find_event_channel(inst=None, ch_names=None):  # noqa: E501
     """
     Find the event channel using heuristics.
 
-    Disclaimer: Not 100% guaranteed to find it.
-    If ``inst`` is `None`, ``ch_names`` must be given.
+    .. warning::
+
+        Not 100% guaranteed to find it.
+        If ``inst`` is `None`, ``ch_names`` must be given.
 
     Parameters
     ----------
