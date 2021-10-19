@@ -199,16 +199,35 @@ def test_properties():
     assert sp.state.value == 0
 
 
-def test_invalid_fif_file():
-    """Test that initialization fails if argument fif_file is invalid."""
-    with pytest.raises(ValueError, match='Argument fif_file must be'):
-        StreamPlayer(stream_name='StreamPlayer', fif_file='non-existing-path')
-    with pytest.raises(ValueError, match='Argument fif_file must be'):
-        StreamPlayer(stream_name='StreamPlayer', fif_file=5)
+@requires_eeg_resting_state_dataset
+def test_checker_arguments():
+    """Test the argument error checking."""
+    stream_name = 'StreamPlayer'
+    fif_file = eeg_resting_state.data_path()
+
+    with pytest.raises(TypeError,
+                       match='high_resolution must be an instance of'):
+        StreamPlayer(stream_name=stream_name, fif_file=fif_file,
+                     high_resolution=1)
+
+
+def test_checker_fif_file():
+    """Test the checker for argument fif file."""
+    stream_name = 'StreamPlayer'
+
+    with pytest.raises(TypeError,
+                       match='fif_file must be an instance of'):
+        StreamPlayer(stream_name=stream_name, fif_file=5)
+    with pytest.raises(FileNotFoundError, match='fname does not exist'):
+        StreamPlayer(stream_name=stream_name, fif_file='101-file')
+    with pytest.raises(ValueError, match='No raw data in'):
+        path = Path(mne.datasets.sample.data_path())
+        fif_file = path/'MEG'/'sample'/'sample_audvis-no-filter-ave.fif'
+        StreamPlayer(stream_name=stream_name, fif_file=fif_file)
 
 
 @requires_eeg_resting_state_dataset
-def test_checker_repeat(caplog):
+def test_checker_repeat():
     """Test the checker for argument repeat."""
     stream_name = 'StreamPlayer'
     fif_file = eeg_resting_state.data_path()
@@ -220,34 +239,29 @@ def test_checker_repeat(caplog):
 
     # Positive integer
     sp = StreamPlayer(stream_name=stream_name, fif_file=fif_file,
-                      repeat=5)
-    assert sp.repeat == 5
+                      repeat=101)
+    assert sp.repeat == 101
 
     # Positive float
-    sp = StreamPlayer(stream_name=stream_name, fif_file=fif_file,
-                      repeat=5.)
-    assert isinstance(sp.repeat, int) and sp.repeat == 5
+    with pytest.raises(TypeError, match='repeat must be an instance of'):
+        StreamPlayer(stream_name=stream_name, fif_file=fif_file,
+                     repeat=101.)
 
-    # Negative number
-    caplog.clear()
-    sp = StreamPlayer(stream_name=stream_name, fif_file=fif_file,
-                      repeat=-5)
-    assert ('Argument repeat must be a strictly positive integer. '
-            'Provided: %s -> Changing to +inf.' % -5) in caplog.text
-    assert sp.repeat == float('inf')
+    # Negative integer
+    with pytest.raises(ValueError, match='Argument repeat must be a strictly '
+                                         'positive integer. Provided: -101'):
+        sp = StreamPlayer(stream_name=stream_name, fif_file=fif_file,
+                          repeat=-101)
 
-    # Not convertible to integer
-    caplog.clear()
-    sp = StreamPlayer(stream_name=stream_name, fif_file=fif_file,
-                      repeat=[1, 2])
-    assert ('Argument repeat must be a strictly positive integer. '
-            'Provided: %s -> Changing to +inf.' % str([1, 2])) in caplog.text
-    assert sp.repeat == float('inf')
+    # Not integer
+    with pytest.raises(TypeError, match='repeat must be an instance of'):
+        StreamPlayer(stream_name=stream_name, fif_file=fif_file,
+                     repeat=[1, 0, 1])
 
 
 @requires_trigger_def_dataset
 @requires_eeg_resting_state_dataset
-def test_checker_trigger_def(caplog):
+def test_checker_trigger_def():
     """Test the checker for argument trigger_def."""
     stream_name = 'StreamPlayer'
     fif_file = eeg_resting_state.data_path()
@@ -266,32 +280,16 @@ def test_checker_trigger_def(caplog):
                       trigger_def=TriggerDef(trigger_file=trigger_file))
     assert isinstance(sp.trigger_def, TriggerDef)
 
-    # Path as a string
-    sp = StreamPlayer(stream_name=stream_name, fif_file=fif_file,
-                      trigger_def=str(trigger_file))
-    assert isinstance(sp.trigger_def, TriggerDef)
-
-    # Path as a Path object
-    sp = StreamPlayer(stream_name=stream_name, fif_file=fif_file,
-                      trigger_def=Path(trigger_file))
-    assert isinstance(sp.trigger_def, TriggerDef)
-
     # Path to a non-existing file
-    caplog.clear()
-    sp = StreamPlayer(stream_name=stream_name, fif_file=fif_file,
-                      trigger_def='non-existing-path')
-    assert ('Argument trigger_def is a path that does not exist. '
-            'Provided: %s -> Ignoring.' % 'non-existing-path') in caplog.text
-    assert sp.trigger_def is None
+    with pytest.raises(ValueError, match='Argument trigger_def is a path that '
+                                         'does not exist. Provided: 101-path'):
+        StreamPlayer(stream_name=stream_name, fif_file=fif_file,
+                     trigger_def='101-path')
 
     # Invalid type
-    caplog.clear()
-    sp = StreamPlayer(stream_name=stream_name, fif_file=fif_file,
-                      trigger_def=5)
-    assert ('Argument trigger_def must be a TriggerDef instance or a path '
-            'to a trigger definition ini file. '
-            'Provided: %s -> Ignoring.' % type(5)) in caplog.text
-    assert sp.trigger_def is None
+    with pytest.raises(TypeError, match='trigger_def must be an instance of'):
+        StreamPlayer(stream_name=stream_name, fif_file=fif_file,
+                          trigger_def=101)
 
 
 @requires_eeg_resting_state_dataset
@@ -311,9 +309,9 @@ def test_checker_chunk_size(caplog):
     assert sp.chunk_size == 32
 
     # Positive float
-    sp = StreamPlayer(stream_name=stream_name, fif_file=fif_file,
-                      chunk_size=32.)
-    assert isinstance(sp.chunk_size, int) and sp.chunk_size == 32
+    with pytest.raises(TypeError, match='chunk_size must be an instance of'):
+        StreamPlayer(stream_name=stream_name, fif_file=fif_file,
+                     chunk_size=32.)
 
     # Positive non-usual integer
     caplog.clear()
@@ -324,28 +322,21 @@ def test_checker_chunk_size(caplog):
     assert sp.chunk_size == 8
 
     # Negative number
-    caplog.clear()
-    sp = StreamPlayer(stream_name=stream_name, fif_file=fif_file,
-                      chunk_size=-8)
-    assert ('Argument chunk_size must be a strictly positive integer. '
-            'Provided: %s -> Changing to 16.' % -8) in caplog.text
-    assert sp.chunk_size == 16
+    with pytest.raises(ValueError,
+                       match='Argument chunk_size must be a strictly positive '
+                             'integer. Provided: -101'):
+        StreamPlayer(stream_name=stream_name, fif_file=fif_file,
+                     chunk_size=-101)
 
-    # Not convertible to integer
-    caplog.clear()
-    sp = StreamPlayer(stream_name=stream_name, fif_file=fif_file,
-                      chunk_size=[1, 2])
-    assert ('Argument chunk_size must be a strictly positive integer. '
-            'Provided: %s -> Changing to 16.' % str([1, 2])) in caplog.text
-    assert sp.chunk_size == 16
+    # Invalid type
+    with pytest.raises(TypeError, match='chunk_size must be an instance of'):
+        StreamPlayer(stream_name=stream_name, fif_file=fif_file,
+                     chunk_size=[1, 0, 1])
 
     # Infinite
-    caplog.clear()
-    sp = StreamPlayer(stream_name=stream_name, fif_file=fif_file,
-                      chunk_size=float('inf'))
-    assert ('Argument chunk_size must be a strictly positive integer. '
-            'Provided: %s -> Changing to 16.' % float('inf')) in caplog.text
-    assert sp.chunk_size == 16
+    with pytest.raises(TypeError, match='chunk_size must be an instance of'):
+        StreamPlayer(stream_name=stream_name, fif_file=fif_file,
+                     chunk_size=float('inf'))
 
 
 @requires_eeg_resting_state_dataset
