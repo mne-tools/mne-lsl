@@ -8,6 +8,7 @@ from ._stream import StreamEEG, StreamMarker
 from .. import logger
 from ..utils import Timer
 from ..utils._docs import fill_doc
+from ..utils._checks import _check_type
 
 
 @fill_doc
@@ -55,6 +56,9 @@ class StreamReceiver:
             If ``True``, force reconnect if the `~bsl.StreamReceiver` was
             already connected.
         """
+        _check_type(timeout, ('numeric', ), 'timeout')
+        _check_type(force, (bool, ), 'force')
+
         if not force and self._connected:
             return True
 
@@ -72,7 +76,7 @@ class StreamReceiver:
                 "Looking for available LSL streaming servers...")
         else:
             logger.info(
-                f"Looking for server(s): '{', '.join(self._stream_name)}'...")
+                "Looking for server(s): '%s'...", ', '.join(self._stream_name))
 
         watchdog = Timer()
         while watchdog.sec() <= timeout:
@@ -82,7 +86,7 @@ class StreamReceiver:
                 # connect to a specific amp only?
                 if self._stream_name is not None and \
                    streamInfo.name() not in self._stream_name:
-                    logger.info(f'Stream {streamInfo.name()} skipped.')
+                    logger.info('Stream %s skipped.', streamInfo.name())
                     continue
 
                 # EEG stream
@@ -128,7 +132,7 @@ class StreamReceiver:
         for stream in self._streams:
             logger.info("--------------------------------"
                         "--------------------------------")
-            logger.info(f"The stream {stream} is connected to:")
+            logger.info("The stream %s is connected to:", stream)
             self._streams[stream].show_info()
 
     def disconnect(self, stream_name=None):
@@ -366,21 +370,17 @@ class StreamReceiver:
         """
         Check that bufsize is positive and bigger than the winsize.
         """
-        if isinstance(bufsize, (int, float)):
-            bufsize = float(bufsize)
-            if bufsize <= 0:
-                raise ValueError(
-                    'Argument bufsize must be a strictly positive int or a '
-                    'float. Provided: %s' % bufsize)
-            if bufsize < winsize:
-                logger.error(
-                    'Buffer size %.2f is smaller than window size. '
-                    'Setting to %.2f.', bufsize, winsize)
-                bufsize = winsize
-        else:
-            raise TypeError(
-                'Argument bufsize must be a strictly positive int or a float. '
-                'Provided: %s' % type(bufsize))
+        _check_type(bufsize, ('numeric', ), 'bufsize')
+        bufsize = float(bufsize)
+        if bufsize <= 0:
+            raise ValueError(
+                'Argument bufsize must be a strictly positive int or a '
+                'float. Provided: %s' % bufsize)
+        if bufsize < winsize:
+            logger.error(
+                'Buffer size %.2f is smaller than window size. '
+                'Setting to %.2f.', bufsize, winsize)
+            bufsize = winsize
 
         return bufsize
 
@@ -389,16 +389,12 @@ class StreamReceiver:
         """
         Check that winsize is positive.
         """
-        if isinstance(winsize, (int, float)):
-            winsize = float(winsize)
-            if winsize <= 0:
-                raise ValueError(
-                    'Argument winsize must be a strictly positive int or a '
-                    'float. Provided: %s' % winsize)
-        else:
-            raise TypeError(
-                'Argument winsize must be a strictly positive int or a float. '
-                'Provided: %s' % type(winsize))
+        _check_type(winsize, ('numeric', ), 'winsize')
+        winsize = float(winsize)
+        if winsize <= 0:
+            raise ValueError(
+                'Argument winsize must be a strictly positive int or a '
+                'float. Provided: %s' % winsize)
 
         return winsize
 
@@ -407,6 +403,7 @@ class StreamReceiver:
         """
         Check the format of stream_name.
         """
+        _check_type(stream_name, (None, str, list, tuple), 'stream_name')
         if isinstance(stream_name, (list, tuple)):
             stream_name = list(stream_name)
             if not all(isinstance(name, str) for name in stream_name):
@@ -415,13 +412,6 @@ class StreamReceiver:
                     'strings. Provided: %s' % stream_name)
         elif isinstance(stream_name, str):
             stream_name = [stream_name]
-        elif stream_name is None:
-            stream_name = None
-        else:
-            logger.error(
-                'Argument stream_name must be a string or a list of strings. '
-                'Provided: %s -> Changing to None.', stream_name)
-            stream_name = None
 
         return stream_name
 
