@@ -52,7 +52,6 @@ class _Callable:
 
 
 _types = {
-    'str': (str, ),
     'numeric': (np.floating, float, _IntLike()),
     'path-like': (str, Path, os.PathLike),
     'int': (_IntLike(), ),
