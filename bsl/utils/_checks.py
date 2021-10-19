@@ -68,7 +68,7 @@ def _check_type(item, types=None, item_name=None, type_name=None):
     ----------
     item : object
         Item to check.
-    types : type | str | tuple of types | tuple of str
+    types : tuple of types | tuple of str
         Types to be checked against.
         If str, must be one of:
             ('int', 'str', 'numeric', 'path-like', 'callable')
@@ -83,8 +83,6 @@ def _check_type(item, types=None, item_name=None, type_name=None):
     TypeError
         When the type of the item is not one of the valid options.
     """
-    if not isinstance(types, (list, tuple)):
-        types = tuple(types)
     check_types = sum(((type(None), ) if type_ is None else (type_, )
                        if not isinstance(type_, str) else _types[type_]
                        for type_ in types), ())
