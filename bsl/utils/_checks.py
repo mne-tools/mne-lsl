@@ -5,6 +5,21 @@ from pathlib import Path
 import numpy as np
 
 
+def _ensure_int(x, name='unknown', must_be='an int'):
+    """Ensure a variable is an integer."""
+    # This is preferred over numbers.Integral, see:
+    # https://github.com/scipy/scipy/pull/7351#issuecomment-299713159
+    try:
+        # someone passing True/False is much more likely to be an error than
+        # intentional usage
+        if isinstance(x, bool):
+            raise TypeError()
+        x = int(operator.index(x))
+    except TypeError:
+        raise TypeError('%s must be %s, got %s' % (name, must_be, type(x)))
+    return x
+
+
 class _IntLike(object):
     @classmethod
     def __instancecheck__(cls, other):
@@ -29,21 +44,6 @@ _multi = {
     'int-like': (_IntLike(), ),
     'callable': (_Callable(), ),
 }
-
-
-def _ensure_int(x, name='unknown', must_be='an int'):
-    """Ensure a variable is an integer."""
-    # This is preferred over numbers.Integral, see:
-    # https://github.com/scipy/scipy/pull/7351#issuecomment-299713159
-    try:
-        # someone passing True/False is much more likely to be an error than
-        # intentional usage
-        if isinstance(x, bool):
-            raise TypeError()
-        x = int(operator.index(x))
-    except TypeError:
-        raise TypeError('%s must be %s, got %s' % (name, must_be, type(x)))
-    return x
 
 
 def _check_type(item, types=None, item_name=None, type_name=None):
