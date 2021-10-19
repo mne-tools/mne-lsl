@@ -1,3 +1,5 @@
+"""Utility functions for checking types and values. Inspired from MNE."""
+
 import os
 import operator
 from pathlib import Path
@@ -5,8 +7,20 @@ from pathlib import Path
 import numpy as np
 
 
-def _ensure_int(x, name='unknown', must_be='an int'):
-    """Ensure a variable is an integer."""
+def _ensure_int(x, name='unknown'):
+    """
+    Ensure a variable is an integer.
+
+    Parameters
+    ----------
+    x : Variable to test.
+    name : str
+        Variable name displayed in the error.
+
+    Returns
+    -------
+    x : Variable tested.
+    """
     # This is preferred over numbers.Integral, see:
     # https://github.com/scipy/scipy/pull/7351#issuecomment-299713159
     try:
@@ -16,11 +30,11 @@ def _ensure_int(x, name='unknown', must_be='an int'):
             raise TypeError()
         x = int(operator.index(x))
     except TypeError:
-        raise TypeError('%s must be %s, got %s' % (name, must_be, type(x)))
+        raise TypeError('%s must be an int, got %s' % (name, type(x)))
     return x
 
 
-class _IntLike(object):
+class _IntLike:
     @classmethod
     def __instancecheck__(cls, other):
         try:
@@ -31,52 +45,50 @@ class _IntLike(object):
             return True
 
 
-class _Callable(object):
+class _Callable:
     @classmethod
     def __instancecheck__(cls, other):
         return callable(other)
 
 
-_multi = {
+_types = {
     'str': (str, ),
     'numeric': (np.floating, float, _IntLike()),
     'path-like': (str, Path, os.PathLike),
-    'int-like': (_IntLike(), ),
+    'int': (_IntLike(), ),
     'callable': (_Callable(), ),
 }
 
 
 def _check_type(item, types=None, item_name=None, type_name=None):
-    """Validate that `item` is an instance of `types`.
+    """
+    Check that item is an instance of types.
 
     Parameters
     ----------
     item : object
-        The thing to be checked.
+        Item to check.
     types : type | str | tuple of types | tuple of str
-         The types to be checked against.
-         If str, must be one of {'int', 'int-like', 'str', 'numeric', 'info',
-         'path-like', 'callable'}.
-         If a tuple of str is passed, use 'int-like' and not 'int' for
-         integers.
+        Types to be checked against.
+        If str, must be one of:
+            ('int', 'str', 'numeric', 'path-like', 'callable')
     item_name : str | None
         Name of the item to show inside the error message.
     type_name : str | None
         Possible types to show inside the error message that the checked item
         can be.
+
+    Raises
+    ------
+    TypeError
+        When the type of the item is not one of the valid options.
     """
-    if types == "int":
-        _ensure_int(item, name=item_name)
-        return  # terminate prematurely
-    elif types == "info":
-        from mne.io import Info as types
-
     if not isinstance(types, (list, tuple)):
-        types = [types]
-
-    check_types = sum(((type(None),) if type_ is None else (type_,)
-                       if not isinstance(type_, str) else _multi[type_]
+        types = tuple(types)
+    check_types = sum(((type(None), ) if type_ is None else (type_, )
+                       if not isinstance(type_, str) else _types[type_]
                        for type_ in types), ())
+
     if not isinstance(item, check_types):
         if type_name is None:
             type_name = ['None' if cls_ is None else cls_.__name__
@@ -94,20 +106,18 @@ def _check_type(item, types=None, item_name=None, type_name=None):
                         f"got {type(item)} instead.")
 
 
-def _check_value(parameter, value, allowed_values, extra=''):
-    """Check the value of a parameter against a list of valid options.
-
-    Return the value if it is valid, otherwise raise a ValueError with a
-    readable error message.
+def _check_value(item, allowed_values, item_name, extra=''):
+    """
+    Check the value of a parameter against a list of valid options.
 
     Parameters
     ----------
-    parameter : str
-        The name of the parameter to check. This is used in the error message.
-    value : any type
-        The value of the parameter to check.
-    allowed_values : list
-        The list of allowed values for the parameter.
+    item : object
+        Item to check.
+    allowed_values : tuple of objects
+        Allowed values to be checked against.
+    item_name : str
+        Name of the item to show inside the error message.
     extra : str
         Extra string to append to the invalid value sentence, e.g.
         "when using ico mode".
@@ -115,26 +125,21 @@ def _check_value(parameter, value, allowed_values, extra=''):
     Raises
     ------
     ValueError
-        When the value of the parameter is not one of the valid options.
-
-    Returns
-    -------
-    value : any type
-        The value if it is valid.
+        When the value of the item is not one of the valid options.
     """
-    if value in allowed_values:
-        return value
-
-    # Prepare a nice error message for the user
-    extra = ' ' + extra if extra else extra
-    msg = ("Invalid value for the '{parameter}' parameter{extra}. "
-           '{options}, but got {value!r} instead.')
-    allowed_values = list(allowed_values)  # e.g., if a dict was given
-    if len(allowed_values) == 1:
-        options = f'The only allowed value is {repr(allowed_values[0])}'
-    else:
-        options = 'Allowed values are '
-        options += ', '.join([f'{repr(v)}' for v in allowed_values[:-1]])
-        options += f', and {repr(allowed_values[-1])}'
-    raise ValueError(msg.format(parameter=parameter, options=options,
-                                value=value, extra=extra))
+    if item not in allowed_values:
+        extra = ' ' + extra if extra else extra
+        msg = ("Invalid value for the '{item_name}' parameter{extra}. "
+               '{options}, but got {item!r} instead.')
+        allowed_values = tuple(allowed_values)  # e.g., if a dict was given
+        if len(allowed_values) == 1:
+            options = 'The only allowed value is %s' % repr(allowed_values[0])
+        elif len(allowed_values) == 2:
+            options = 'Allowed values are %s and %s' % \
+                (repr(allowed_values[0]), repr(allowed_values[1]))
+        else:
+            options = 'Allowed values are '
+            options += ', '.join([f'{repr(v)}' for v in allowed_values[:-1]])
+            options += f', and {repr(allowed_values[-1])}'
+        raise ValueError(msg.format(item_name=item_name, options=options,
+                                    item=item, extra=extra))
