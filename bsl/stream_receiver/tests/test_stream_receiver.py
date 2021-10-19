@@ -347,14 +347,12 @@ def test_checker_bufsize(caplog):
         # Invalid value
         with pytest.raises(ValueError,
                             match='Argument bufsize must be a strictly positive'
-                                  ' int or a float. Provided: %s' % -5):
-            StreamReceiver(bufsize=-5, winsize=0.2)
+                                  ' int or a float. Provided: %s' % -101):
+            StreamReceiver(bufsize=-101, winsize=0.2)
 
         # Invalid type
-        with pytest.raises(TypeError,
-                            match='Argument bufsize must be a strictly positive'
-                                  ' int or a float. Provided: %s' % type([1])):
-            StreamReceiver(bufsize=[1], winsize=0.2)
+        with pytest.raises(TypeError, match='bufsize must be an instance of'):
+            StreamReceiver(bufsize=[101], winsize=0.2)
 
         # Smaller than winsize
         caplog.clear()
@@ -382,14 +380,12 @@ def test_checker_winsize():
         # Invalid value
         with pytest.raises(ValueError,
                            match='Argument winsize must be a strictly positive'
-                                 ' int or a float. Provided: %s' % -5):
-            StreamReceiver(bufsize=1, winsize=-5)
+                                 ' int or a float. Provided: %s' % -101):
+            StreamReceiver(bufsize=1, winsize=-101)
 
         # Invalid type
-        with pytest.raises(TypeError,
-                           match='Argument winsize must be a strictly positive'
-                                 ' int or a float. Provided: %s' % type([1])):
-            StreamReceiver(bufsize=1, winsize=[1])
+        with pytest.raises(TypeError, match='winsize must be an instance of'):
+            StreamReceiver(bufsize=1, winsize=[101])
 
 
 @requires_eeg_resting_state_dataset
@@ -412,20 +408,23 @@ def test_checker_stream_name(caplog):
         assert sr.stream_name == ['StreamPlayer']
         del sr
 
+        # Valid - tuple of str
+        sr = StreamReceiver(bufsize=1, winsize=0.2,
+                            stream_name=('StreamPlayer', ))
+        assert sr.stream_name == ['StreamPlayer']
+        del sr
+
         # Invalid - list of 'not str'
         with pytest.raises(TypeError,
                            match=re.escape(
                                'Argument stream_name must be a string or a '
-                               'list of strings. Provided: [1, 2]')):
-            StreamReceiver(bufsize=1, winsize=0.2, stream_name=[1, 2])
+                               'list of strings. Provided: [1, 0, 1]')):
+            StreamReceiver(bufsize=1, winsize=0.2, stream_name=[1, 0, 1])
 
         # Invalid type
-        caplog.clear()
-        sr = StreamReceiver(bufsize=1, winsize=0.2, stream_name=5)
-        assert sr.stream_name is None
-        assert ('Argument stream_name must be a string or a list of strings. '
-                'Provided: %s -> Changing to None.' % 5) in caplog.text
-        del sr
+        with pytest.raises(TypeError,
+                           match='stream_name must be an instance of'):
+            StreamReceiver(bufsize=1, winsize=0.2, stream_name=101)
 
 
 @requires_eeg_resting_state_dataset
