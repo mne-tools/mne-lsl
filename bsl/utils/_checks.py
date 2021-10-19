@@ -59,7 +59,7 @@ _types = {
 }
 
 
-def _check_type(item, types=None, item_name=None):
+def _check_type(item, types, item_name=None):
     """
     Check that item is an instance of types.
 
