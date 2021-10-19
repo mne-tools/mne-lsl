@@ -5,7 +5,7 @@ import mne
 from bsl import StreamRecorder, StreamPlayer
 from bsl.datasets import eeg_resting_state
 from bsl.triggers.software import TriggerSoftware
-from bsl.utils._testing import requires_eeg_resting_state_dataset
+from bsl.utils._tests import requires_eeg_resting_state_dataset
 
 
 @requires_eeg_resting_state_dataset

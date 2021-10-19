@@ -1,3 +1,5 @@
+import pytest
+
 from bsl import logger, set_log_level
 from bsl.triggers.mock import TriggerMock
 
@@ -15,3 +17,7 @@ def test_trigger_mock(caplog):
     assert 'MOCK trigger set to 1' in caplog.text
     assert trigger.signal(2)
     assert 'MOCK trigger set to 2' in caplog.text
+
+    with pytest.raises(TypeError, match='value must be an instance of'):
+        trigger.signal(3.0)
+    assert 'MOCK trigger set to 3.0' not in caplog.text
