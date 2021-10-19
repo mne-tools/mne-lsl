@@ -1,4 +1,4 @@
-"""Utility function for testing. Inspired from MNE."""
+"""Utility functions for testing. Inspired from MNE."""
 
 import time
 import ctypes
