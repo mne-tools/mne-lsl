@@ -1,13 +1,14 @@
 import time
 
 import mne
+import pytest
 
 from bsl import StreamRecorder, StreamPlayer, logger, set_log_level
 from bsl.datasets import eeg_resting_state
 from bsl.triggers.lpt import TriggerLPT, TriggerUSB2LPT, TriggerArduino2LPT
-from bsl.utils._testing import (requires_eeg_resting_state_dataset,
-                                requires_lpt, requires_usb2lpt,
-                                requires_arduino2lpt)
+from bsl.utils._tests import (requires_eeg_resting_state_dataset,
+                              requires_lpt, requires_usb2lpt,
+                              requires_arduino2lpt)
 
 
 set_log_level('INFO')
@@ -66,11 +67,6 @@ def test_arduino2lpt(tmp_path, caplog):
 
     # Test property setters
     time.sleep(0.2)
-    trigger.delay = 50
-    assert trigger.delay == 50
-    assert trigger.signal(1)
-    time.sleep(0.05)
-    assert trigger.signal(2)
-    trigger.delay = 1000
-    assert trigger.delay == 50
-    assert 'delay while an event' in caplog.text
+    with pytest.raises(AttributeError, match="can't set attribute"):
+        trigger.delay = 50
+    assert trigger.delay == 100

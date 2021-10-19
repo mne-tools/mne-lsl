@@ -10,7 +10,9 @@ from .. import logger
 from ..utils import Timer
 from ..utils import find_event_channel
 from ..utils.lsl import lsl_channel_list
+from ..utils._checks import _check_type
 from ..utils._docs import fill_doc, copy_doc
+
 
 _MAX_PYLSL_STREAM_BUFSIZE = 10  # max 10 sec of data buffered for LSL
 MAX_BUF_SIZE = 86400  # 24h max buffer length
@@ -198,8 +200,9 @@ class _Stream(ABC):
         ----------
         %(receiver_winsize)s
         """
+        _check_type(winsize, ('numeric', ), 'winsize')
         if winsize <= 0:
-            raise ValueError(f'Invalid window size {winsize}.')
+            raise ValueError('Invalid window size %s.' % winsize)
 
         return winsize
 
@@ -214,12 +217,13 @@ class _Stream(ABC):
         %(receiver_bufsize)s
         %(receiver_winsize)s
         """
+        _check_type(bufsize, ('numeric', ), 'bufsize')
+
         if bufsize <= 0 or bufsize > MAX_BUF_SIZE:
             logger.error(
                 f'Improper buffer size {bufsize:.1f}. '
                 f'Setting to {MAX_BUF_SIZE:.1f}.')
             bufsize = MAX_BUF_SIZE
-
         elif bufsize < winsize:
             logger.error(
                 f'Buffer size  {bufsize:.1f} is smaller than window size. '
@@ -486,4 +490,5 @@ class StreamEEG(_Stream):
 
     @scaling_factor.setter
     def scaling_factor(self, scaling_factor):
+        _check_type(scaling_factor, ('numeric', ), 'scaling_factor')
         self._scaling_factor = scaling_factor
