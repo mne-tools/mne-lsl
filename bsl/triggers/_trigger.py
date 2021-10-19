@@ -5,6 +5,7 @@ from abc import ABC, abstractmethod
 
 from .. import logger
 from ..utils._docs import fill_doc
+from ..utils._checks import _check_type
 
 
 @fill_doc
@@ -19,7 +20,8 @@ class _Trigger(ABC):
 
     @abstractmethod
     def __init__(self, verbose: bool = True):
-        self._verbose = bool(verbose)
+        _check_type(verbose, (bool, ), 'verbose')
+        self._verbose = verbose
 
     @abstractmethod
     def signal(self, value: int):
@@ -45,4 +47,5 @@ class _Trigger(ABC):
 
     @verbose.setter
     def verbose(self, verbose: bool):
-        self._verbose = bool(verbose)
+        _check_type(verbose, (bool, ), 'verbose')
+        self._verbose = verbose

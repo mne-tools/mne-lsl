@@ -1,7 +1,7 @@
 import pytest
 
 from bsl.datasets._fetching import fetch_file
-from bsl.utils._testing import requires_good_network
+from bsl.utils._tests import requires_good_network
 
 
 URL = 'https://raw.githubusercontent.com/bsl-tools/bsl/master/README.md'
