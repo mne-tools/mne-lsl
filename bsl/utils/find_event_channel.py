@@ -1,6 +1,5 @@
 import numpy as np
 from mne.io import BaseRaw
-from mne.evoked import Evoked
 from mne.epochs import BaseEpochs
 
 from ._checks import _check_type
@@ -14,7 +13,8 @@ def find_event_channel(inst=None, ch_names=None):  # noqa: E501
 
         Not 100% guaranteed to find it.
         If ``inst`` is `None`, ``ch_names`` must be given.
-        If ``inst`` is an MNE instance, ``ch_names`` is ignored.
+        If ``inst`` is an MNE instance, ``ch_names`` is ignored if some
+        channels types are ``'stim'``.
 
     Parameters
     ----------
@@ -29,52 +29,38 @@ def find_event_channel(inst=None, ch_names=None):  # noqa: E501
         Event channel index, list of event channel indexes or `None` if not
         found.
     """
-    _check_type(inst, (None, np.ndarray, BaseRaw, BaseEpochs, Evoked), 'inst')
+    _check_type(inst, (None, np.ndarray, BaseRaw, BaseEpochs), 'inst')
     _check_type(ch_names, (None, list, tuple), 'ch_names')
 
-    valid_trigger_ch_names = ['TRIGGER', 'STI', 'TRG', 'CH_Event']
-    tchs = list()
+    # numpy array + ch_names
+    if isinstance(inst, np.ndarray) and ch_names is not None:
+        tchs = _search_in_ch_names(ch_names)
 
-    # For numpy array
-    if isinstance(inst, np.ndarray):
-        if ch_names is not None:
-            for ch_name in ch_names:
-                if any(trigger_ch_name in ch_name
-                       for trigger_ch_name in valid_trigger_ch_names):
-                    tchs.append(ch_names.index(ch_name))
-        else:
-            # data range between 0 and 255 and all integers?
-            for ch_idx in range(inst.shape[0]):
-                all_ints = (inst[ch_idx].astype(int, copy=False) == \
-                            inst[ch_idx]).all()
-                max255 = max(inst[ch_idx]) <= 255
-                min0 = min(inst[ch_idx]) == 0
-                if all_ints and max255 and min0:
-                    tchs.append(ch_idx)
+    # numpy array without ch_names
+    elif isinstance(inst, np.ndarray) and ch_names is None:
+        # data range between 0 and 255 and all integers?
+        tchs = [idx for idx in range(inst.shape[0])
+                if (inst[idx].astype(int, copy=False) == inst[idx]).all()
+                and max(inst[idx]) <= 255 and min(inst[idx]) == 0]
 
     # For MNE raw/epochs
-    elif hasattr(inst, 'ch_names'):
-        stim_types = [idx for idx, type_ in enumerate(inst.get_channel_types())
-                      if type_ == 'stim']
-        if len(stim_types) != 0:
-            tchs.extend(stim_types)
-        else:
-            for ch_name in inst.ch_names:
-                if any(trigger_ch_name in ch_name
-                       for trigger_ch_name in valid_trigger_ch_names):
-                    tchs.append(inst.ch_names.index(ch_name))
+    elif isinstance(inst, (BaseRaw, BaseEpochs)) and ch_names is not None:
+        tchs = [idx for idx, type_ in enumerate(inst.get_channel_types())
+                if type_ == 'stim']
+        if len(tchs) == 0:
+            tchs = _search_in_ch_names(inst.ch_names)
+
+    elif isinstance(inst, (BaseRaw, BaseEpochs)) and ch_names is None:
+        tchs = [idx for idx, type_ in enumerate(inst.get_channel_types())
+                if type_ == 'stim']
+        if len(tchs) == 0:
+            tchs = _search_in_ch_names(ch_names)
 
     # For unknown data type
-    else:
+    elif inst is None:
         if ch_names is None:
             raise ValueError('ch_names cannot be None when inst is None.')
-        for ch_name in ch_names:
-            if any(trigger_ch_name in ch_name
-                   for trigger_ch_name in valid_trigger_ch_names):
-                tchs.append(ch_names.index(ch_name))
-
-    # clean up
-    tchs = list(set(tchs))
+        tchs = _search_in_ch_names(ch_names)
 
     if len(tchs) == 0:
         return None
@@ -82,3 +68,16 @@ def find_event_channel(inst=None, ch_names=None):  # noqa: E501
         return tchs[0]
     else:
         return tchs
+
+
+def _search_in_ch_names(ch_names):
+    """Search trigger channel by name in a list of valid names."""
+    valid_trigger_ch_names = ['TRIGGER', 'STI', 'TRG', 'CH_Event']
+
+    tchs = list()
+    for idx, ch_name in enumerate(ch_names):
+        if any(trigger_ch_name in ch_name
+               for trigger_ch_name in valid_trigger_ch_names):
+            tchs.append(idx)
+
+    return tchs
