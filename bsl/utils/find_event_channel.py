@@ -43,18 +43,19 @@ def find_event_channel(inst=None, ch_names=None):  # noqa: E501
                 if (inst[idx].astype(int, copy=False) == inst[idx]).all()
                 and max(inst[idx]) <= 255 and min(inst[idx]) == 0]
 
-    # For MNE raw/epochs
+    # For MNE raw/epochs + ch_names
     elif isinstance(inst, (BaseRaw, BaseEpochs)) and ch_names is not None:
         tchs = [idx for idx, type_ in enumerate(inst.get_channel_types())
                 if type_ == 'stim']
         if len(tchs) == 0:
-            tchs = _search_in_ch_names(inst.ch_names)
+            tchs = _search_in_ch_names(ch_names)
 
+    # For MNE raw/epochs without ch_names
     elif isinstance(inst, (BaseRaw, BaseEpochs)) and ch_names is None:
         tchs = [idx for idx, type_ in enumerate(inst.get_channel_types())
                 if type_ == 'stim']
         if len(tchs) == 0:
-            tchs = _search_in_ch_names(ch_names)
+            tchs = _search_in_ch_names(inst.ch_names)
 
     # For unknown data type
     elif inst is None:
@@ -62,6 +63,7 @@ def find_event_channel(inst=None, ch_names=None):  # noqa: E501
             raise ValueError('ch_names cannot be None when inst is None.')
         tchs = _search_in_ch_names(ch_names)
 
+    # output
     if len(tchs) == 0:
         return None
     elif len(tchs) == 1:
