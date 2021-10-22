@@ -109,7 +109,7 @@ def _format_pcl_to_mne_RawArray(data):
     if trig_ch is None:
         # Add a event channel to index 0 for consistency.
         logger.warning(
-            'No event channel was not found. '
+            'Event channel was not found. '
             'Adding a blank event channel to index 0.')
         eventch = np.zeros([1, signals_raw.shape[1]])
         signals = np.concatenate((eventch, signals_raw), axis=0)
