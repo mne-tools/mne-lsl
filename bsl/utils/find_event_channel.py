@@ -5,7 +5,7 @@ from mne.epochs import BaseEpochs
 from ._checks import _check_type
 
 
-def find_event_channel(inst=None, ch_names=None):  # noqa: E501
+def find_event_channel(inst=None, ch_names=None):
     """
     Find the event channel using heuristics.
 
@@ -18,8 +18,9 @@ def find_event_channel(inst=None, ch_names=None):  # noqa: E501
 
     Parameters
     ----------
-    inst : `None` | `~mne.io.Raw` | `~mne.Epochs` | `~numpy.array` ``(n_channels, n_samples)``
-        Data instance.
+    inst : `None` | `~mne.io.Raw` | `~mne.Epochs` | `~numpy.array`
+        Data instance. If a `~numpy.array` is provided, the shape must be
+        ``(n_channels, n_samples)``.
     ch_names : `None` | `list`
         Channels name list.
 
