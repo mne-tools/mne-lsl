@@ -113,7 +113,7 @@ def test_read_ini(caplog, tmp_path):
     assert tdef._by_value == {1: 'stim'}
 
     # Invalid file
-    with pytest.raises(TypeError, match='trigger_file must be an instance of'):
+    with pytest.raises(TypeError, match="'trigger_file' must be an instance"):
         tdef = TriggerDef(101)
 
     caplog.clear()
@@ -139,7 +139,7 @@ def test_write_ini(tmp_path):
 
     # Invalid file
     trigger_file = 101
-    with pytest.raises(TypeError, match='trigger_file must be an instance of'):
+    with pytest.raises(TypeError, match="'trigger_file' must be an instance"):
         tdef.write_ini(trigger_file)
 
     trigger_file = tmp_path / 'test_write.txt'

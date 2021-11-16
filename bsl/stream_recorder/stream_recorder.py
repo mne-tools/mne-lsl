@@ -32,11 +32,12 @@ class StreamRecorder:
                  fif_subdir=True, verbose=False):
         self._record_dir = StreamRecorder._check_record_dir(record_dir)
         self._fname = StreamRecorder._check_fname(fname)
-        _check_type(stream_name, (None, str, list, tuple), 'stream_name')
+        _check_type(stream_name, (None, str, list, tuple),
+                    item_name='stream_name')
         self._stream_name = stream_name
-        _check_type(fif_subdir, (bool, ), 'fif_subdir')
+        _check_type(fif_subdir, (bool, ), item_name='fif_subdir')
         self._fif_subdir = fif_subdir
-        _check_type(verbose, (bool, ), 'verbose')
+        _check_type(verbose, (bool, ), item_name='verbose')
         self._verbose = verbose
 
         self._eve_file = None  # for SOFTWARE triggers
@@ -52,7 +53,7 @@ class StreamRecorder:
         blocking : `bool`
             If ``True``, waits for the child process to start recording data.
         """
-        _check_type(blocking, (bool, ), 'blocking')
+        _check_type(blocking, (bool, ), item_name='blocking')
         fname, self._eve_file = StreamRecorder._create_fname(
             self._record_dir, self._fname)
         logger.debug("File name stem is '%s'.", fname)
@@ -125,7 +126,7 @@ class StreamRecorder:
         Converts record_dir to a Path, or select the current working directory
         if record_dir is None.
         """
-        _check_type(record_dir, (None, 'path-like'), 'record_dir')
+        _check_type(record_dir, (None, 'path-like'), item_name='record_dir')
         if record_dir is None:
             record_dir = Path.cwd()
         else:
@@ -137,7 +138,7 @@ class StreamRecorder:
         """
         Checks that the file name stem is a string or None.
         """
-        _check_type(fname, (None, str), 'fname')
+        _check_type(fname, (None, str), item_name='fname')
         return fname
 
     @staticmethod

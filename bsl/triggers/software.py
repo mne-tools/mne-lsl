@@ -44,7 +44,7 @@ class TriggerSoftware(_Trigger):
 
     @copy_doc(_Trigger.signal)
     def signal(self, value: int) -> bool:
-        _check_type(value, ('int', ), 'value')
+        _check_type(value, ('int', ), item_name='value')
         self._set_data(value)
         super().signal(value)
         return True
@@ -75,7 +75,7 @@ class TriggerSoftware(_Trigger):
         """
         Check that the provided recorder is indeed a StreamRecorder.
         """
-        _check_type(recorder, (StreamRecorder, ), 'recorder')
+        _check_type(recorder, (StreamRecorder, ), item_name='recorder')
         return recorder
 
     @staticmethod

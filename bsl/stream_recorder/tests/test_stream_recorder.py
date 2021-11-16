@@ -318,11 +318,11 @@ def test_properties(tmp_path):
 
 def test_checker_arguments(tmp_path):
     """Test the argument error checking."""
-    with pytest.raises(TypeError, match='stream_name must be an instance of'):
+    with pytest.raises(TypeError, match="'stream_name' must be an instance"):
         StreamRecorder(record_dir=tmp_path, stream_name=101)
-    with pytest.raises(TypeError, match='fif_subdir must be an instance of'):
+    with pytest.raises(TypeError, match="'fif_subdir' must be an instance"):
         StreamRecorder(record_dir=tmp_path, fif_subdir=1)
-    with pytest.raises(TypeError, match='verbose must be an instance of'):
+    with pytest.raises(TypeError, match="'verbose' must be an instance"):
         StreamRecorder(record_dir=tmp_path, verbose=1)
 
 
@@ -335,7 +335,7 @@ def test_checker_record_dir(tmp_path):
     assert recorder.record_dir == tmp_path
 
     # Invalid
-    with pytest.raises(TypeError, match='record_dir must be an instance of'):
+    with pytest.raises(TypeError, match="'record_dir' must be an instance"):
         StreamRecorder(record_dir=101)
 
 
@@ -348,7 +348,7 @@ def test_checker_fname(tmp_path):
     assert recorder.fname == 'test'
 
     # Invalid
-    with pytest.raises(TypeError, match='fname must be an instance of'):
+    with pytest.raises(TypeError, match="'fname' must be an instance of"):
         StreamRecorder(record_dir=tmp_path, fname=101)
 
 

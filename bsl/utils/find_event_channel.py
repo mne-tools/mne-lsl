@@ -27,8 +27,9 @@ def find_event_channel(inst=None, ch_names=None):  # noqa: E501
     `int` | `None`
         Event channel index or `None` if not found.
     """
-    _check_type(inst, (None, np.ndarray, BaseRaw, BaseEpochs, Evoked), 'inst')
-    _check_type(ch_names, (None, list, tuple), 'ch_names')
+    _check_type(inst, (None, np.ndarray, BaseRaw, BaseEpochs, Evoked),
+                item_name='inst')
+    _check_type(ch_names, (None, list, tuple), item_name='ch_names')
 
     valid_trigger_ch_names = ['TRIGGER', 'STI', 'TRG', 'CH_Event']
 
