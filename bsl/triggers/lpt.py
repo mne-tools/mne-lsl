@@ -34,7 +34,7 @@ class TriggerLPT(_Trigger):
 
     def __init__(self, portaddr: int, delay: int = 50, verbose: bool = True):
         self._portaddr = TriggerLPT._check_portaddr(portaddr)
-        _check_type(delay, 'int', 'delay')
+        _check_type(delay, ('int', ), item_name='delay')
         super().__init__(verbose)
 
         logger.debug("LPT port address: %d" % self._portaddr)
@@ -50,7 +50,7 @@ class TriggerLPT(_Trigger):
 
     @copy_doc(_Trigger.signal)
     def signal(self, value: int) -> bool:
-        _check_type(value, ('int', ), 'value')
+        _check_type(value, ('int', ), item_name='value')
         if self._offtimer.is_alive():
             logger.warning(
                 'You are sending a new signal before the end of the last '
@@ -80,7 +80,7 @@ class TriggerLPT(_Trigger):
         """
         Checks the portaddr value against usual values.
         """
-        _check_type(portaddr, ('int', ), 'portaddr')
+        _check_type(portaddr, ('int', ), item_name='portaddr')
         if portaddr not in [0x278, 0x378]:
             logger.warning('LPT port address %s is unusual.', portaddr)
 
@@ -140,7 +140,7 @@ class TriggerUSB2LPT(_Trigger):
     """
 
     def __init__(self, delay: int = 50, verbose: bool = True):
-        _check_type(delay, 'int', 'delay')
+        _check_type(delay, ('int', ), item_name='delay')
         super().__init__(verbose)
         self._lpt = TriggerUSB2LPT._load_dll()
         if self._lpt.init() == -1:
@@ -153,7 +153,7 @@ class TriggerUSB2LPT(_Trigger):
 
     @copy_doc(_Trigger.signal)
     def signal(self, value: int) -> bool:
-        _check_type(value, ('int', ), 'value')
+        _check_type(value, ('int', ), item_name='value')
         if self._offtimer.is_alive():
             logger.warning(
                 'You are sending a new signal before the end of the last '
@@ -214,7 +214,7 @@ class TriggerArduino2LPT(_Trigger):
     def __init__(self, delay: int = 50, verbose: bool = True):
         import_optional_dependency(
             "serial", extra="Install pyserial for ARDUINO support.")
-        _check_type(delay, 'int', 'delay')
+        _check_type(delay, ('int', ), item_name='delay')
         super().__init__(verbose)
 
         self._com_port = TriggerArduino2LPT._find_arduino_port()
@@ -249,7 +249,7 @@ class TriggerArduino2LPT(_Trigger):
 
     @copy_doc(_Trigger.signal)
     def signal(self, value: int) -> bool:
-        _check_type(value, ('int', ), 'value')
+        _check_type(value, ('int', ), item_name='value')
         if self._offtimer.is_alive():
             logger.warning(
                 'You are sending a new signal before the end of the last '

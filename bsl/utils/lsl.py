@@ -26,7 +26,7 @@ def list_lsl_streams(ignore_markers=False):
     streamInfos : `list`
         List of the corresponding ``pylsl.StreamInfo``.
     """
-    _check_type(ignore_markers, (bool, ), 'ignore_markers')
+    _check_type(ignore_markers, (bool, ), item_name='ignore_markers')
 
     stream_list = []
     streamInfos = pylsl.resolve_streams()
@@ -64,8 +64,8 @@ def search_lsl(ignore_markers=False, timeout=10):
     stream_name : `str`
         Selected stream name.
     """
-    _check_type(ignore_markers, (bool, ), 'ignore_markers')
-    _check_type(timeout, ('numeric', ), 'timeout')
+    _check_type(ignore_markers, (bool, ), item_name='ignore_markers')
+    _check_type(timeout, ('numeric', ), item_name='timeout')
     assert 0 < timeout
 
     watchdog = Timer()
@@ -117,7 +117,7 @@ def lsl_channel_list(inlet):
     ch_list : `list`
         List of channels name ``[name1, name2, ... ]``.
     """
-    _check_type(inlet, (pylsl.StreamInlet, ), 'inlet')
+    _check_type(inlet, (pylsl.StreamInlet, ), item_name='inlet')
 
     xml_str = inlet.info().as_xml()
     root = ET.fromstring(xml_str)

@@ -19,12 +19,15 @@ def test_trigger_software(tmp_path):
         trigger = TriggerSoftware(recorder, verbose=True)
         assert trigger.verbose
         trigger.verbose = False
+        time.sleep(0.5)
 
         assert trigger.signal(1)
         time.sleep(0.1)
         assert trigger.signal(2)
 
+        time.sleep(0.5)
         trigger.close()
+        time.sleep(0.5)
         recorder.stop()
 
     raw = mne.io.read_raw_fif(tmp_path / 'test-StreamPlayer-raw.fif')
