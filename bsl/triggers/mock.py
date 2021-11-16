@@ -22,7 +22,7 @@ class TriggerMock(_Trigger):
 
     @copy_doc(_Trigger.signal)
     def signal(self, value: int) -> bool:
-        _check_type(value, ('int', ), 'value')
+        _check_type(value, ('int', ), item_name='value')
         self._set_data(value)
         super().signal(value)
         return True

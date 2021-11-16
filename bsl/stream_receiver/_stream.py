@@ -200,7 +200,7 @@ class _Stream(ABC):
         ----------
         %(receiver_winsize)s
         """
-        _check_type(winsize, ('numeric', ), 'winsize')
+        _check_type(winsize, ('numeric', ), item_name='winsize')
         if winsize <= 0:
             raise ValueError('Invalid window size %s.' % winsize)
 
@@ -217,7 +217,7 @@ class _Stream(ABC):
         %(receiver_bufsize)s
         %(receiver_winsize)s
         """
-        _check_type(bufsize, ('numeric', ), 'bufsize')
+        _check_type(bufsize, ('numeric', ), item_name='bufsize')
 
         if bufsize <= 0 or bufsize > MAX_BUF_SIZE:
             logger.error(
@@ -490,5 +490,8 @@ class StreamEEG(_Stream):
 
     @scaling_factor.setter
     def scaling_factor(self, scaling_factor):
-        _check_type(scaling_factor, ('numeric', ), 'scaling_factor')
+        _check_type(scaling_factor, ('numeric', ), item_name='scaling_factor')
+        if scaling_factor <= 0:
+            raise ValueError('Property scaling_factor must be a strictly '
+                             'positive number. Provided: %s' % scaling_factor)
         self._scaling_factor = scaling_factor
