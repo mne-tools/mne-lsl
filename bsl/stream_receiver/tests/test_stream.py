@@ -87,7 +87,6 @@ def test_stream_eeg(caplog):
     """Test StreamEEG class used by the StreamReceiver."""
     # Default
     with StreamPlayer('StreamPlayer', eeg_resting_state.data_path()):
-
         streamInfos = pylsl.resolve_streams()
         for streamInfo in streamInfos:
             if streamInfo.name() == 'StreamPlayer':
@@ -110,6 +109,14 @@ def test_stream_eeg(caplog):
         assert stream.scaling_factor == stream._scaling_factor == 1e-6
         stream.scaling_factor = 1
         assert stream.scaling_factor == stream._scaling_factor == 1
+        with pytest.raises(ValueError,
+                           match='Property scaling_factor must be a strictly '
+                                 'positive number. Provided: 0'):
+            stream.scaling_factor = 0
+        with pytest.raises(ValueError,
+                           match='Property scaling_factor must be a strictly '
+                                 'positive number. Provided: -1'):
+            stream.scaling_factor = -1
 
         # test acquire and bufsize/winsize
         time.sleep(1.1)

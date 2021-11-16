@@ -43,6 +43,7 @@ def test_arduino2lpt(tmp_path, caplog):
                                   stream_name='StreamPlayer', fif_subdir=False)
 
         trigger = TriggerArduino2LPT(verbose=True)
+        time.sleep(0.5)
         assert trigger.verbose
         trigger.verbose = False
 
@@ -51,6 +52,7 @@ def test_arduino2lpt(tmp_path, caplog):
         assert trigger.signal(2)
 
         trigger.close()
+        time.sleep(0.5)
         recorder.stop()
 
     raw = mne.io.read_raw_fif(tmp_path / 'test-StreamPlayer-raw.fif')

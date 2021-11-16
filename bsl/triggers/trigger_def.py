@@ -122,9 +122,9 @@ class TriggerDef:
         overwrite : `bool`
             If ``True``, overwrite previous event with the same name or value.
         """
-        _check_type(name, (str, ), 'name')
-        _check_type(value, ('int', ), 'value')
-        value = int(value)
+        _check_type(name, (str, ), item_name='name')
+        _check_type(value, ('int', ), item_name='value')
+        _check_type(overwrite, (bool, ), item_name='overwrite')
         if name in self._by_name and not overwrite:
             logger.info('Event name %s already exists. Skipping.', name)
             return
@@ -152,7 +152,7 @@ class TriggerDef:
             If a `str` is provided, assumes event is the name.
             If a `int` is provided, assumes event is the value.
         """
-        _check_type(event, (str, 'numeric'), 'event')
+        _check_type(event, (str, 'numeric'), item_name='event')
         if isinstance(event, str):
             if event not in self._by_name:
                 logger.info('Event name %s not found.', event)
@@ -187,7 +187,8 @@ class TriggerDef:
         Checks that the provided file exists and ends with .ini. Else returns
         None.
         """
-        _check_type(trigger_file, (None, 'path-like'), 'trigger_file')
+        _check_type(trigger_file, (None, 'path-like'),
+                    item_name='trigger_file')
 
         if trigger_file is None:
             return None
@@ -214,7 +215,7 @@ class TriggerDef:
         Checks that the directory exists and that the file name ends with
         .ini.
         """
-        _check_type(trigger_file, ('path-like', ), 'trigger_file')
+        _check_type(trigger_file, ('path-like', ), item_name='trigger_file')
 
         trigger_file = Path(trigger_file)
         if trigger_file.suffix != '.ini':
