@@ -40,13 +40,13 @@ class StreamPlayer:
 
     def __init__(self, stream_name, fif_file, repeat=float('inf'),
                  trigger_def=None, chunk_size=16, high_resolution=False):
-        _check_type(stream_name, (str, ), 'stream_name')
-        self._stream_name = str(stream_name)
+        _check_type(stream_name, (str, ), item_name='stream_name')
+        self._stream_name = stream_name
         self._fif_file = StreamPlayer._check_fif_file(fif_file)
         self._repeat = StreamPlayer._check_repeat(repeat)
         self._trigger_def = StreamPlayer._check_trigger_def(trigger_def)
         self._chunk_size = StreamPlayer._check_chunk_size(chunk_size)
-        _check_type(high_resolution, (bool, ), 'high_resolution')
+        _check_type(high_resolution, (bool, ), item_name='high_resolution')
         self._high_resolution = high_resolution
 
         self._process = None
@@ -61,7 +61,7 @@ class StreamPlayer:
         blocking : `bool`
             If ``True``, waits for the child process to start streaming data.
         """
-        _check_type(blocking, (bool, ), 'blocking')
+        _check_type(blocking, (bool, ), item_name='blocking')
         raw = mne.io.read_raw_fif(self._fif_file, preload=True, verbose=False)
 
         logger.info('Streaming started.')
@@ -131,7 +131,7 @@ class StreamPlayer:
         """
         Check if the provided fif_file is valid.
         """
-        _check_type(fif_file, ('path-like', ), 'fif_file')
+        _check_type(fif_file, ('path-like', ), item_name='fif_file')
         mne.io.read_raw_fif(fif_file, preload=False, verbose=None)
         return Path(fif_file)
 
@@ -142,13 +142,11 @@ class StreamPlayer:
         """
         if repeat == float('inf'):
             return repeat
-        _check_type(repeat, ('int', ), 'repeat')
-        repeat = int(repeat)
-        if 0 < repeat:
-            return repeat
-        else:
+        _check_type(repeat, ('int', ), item_name='repeat')
+        if repeat <= 0:
             raise ValueError('Argument repeat must be a strictly positive '
                              'integer. Provided: %i' % repeat)
+        return repeat
 
     @staticmethod
     def _check_trigger_def(trigger_def):
@@ -158,7 +156,7 @@ class StreamPlayer:
         or a TriggerDef instance.
         """
         _check_type(trigger_def, (None, TriggerDef, 'path-like'),
-                    'trigger_def')
+                    item_name='trigger_def')
         if isinstance(trigger_def, (type(None), TriggerDef)):
             return trigger_def
         else:
@@ -174,17 +172,15 @@ class StreamPlayer:
         """
         Checks that chunk_size is a strictly positive integer.
         """
-        _check_type(chunk_size, ('int', ), 'chunk_size')
-        chunk_size = int(chunk_size)
-        if 0 < chunk_size:
-            if chunk_size not in (16, 32):
-                logger.warning(
-                    'The chunk size %i is different from the usual '
-                    'values 16 or 32.', chunk_size)
-            return chunk_size
-        else:
+        _check_type(chunk_size, ('int', ), item_name='chunk_size')
+        if chunk_size <= 0:
             raise ValueError('Argument chunk_size must be a strictly positive '
                              'integer. Provided: %i' % chunk_size)
+        if chunk_size not in (16, 32):
+            logger.warning(
+                'The chunk size %i is different from the usual '
+                'values 16 or 32.', chunk_size)
+        return chunk_size
 
     # --------------------------------------------------------------------
     @property

@@ -351,7 +351,7 @@ def test_checker_bufsize(caplog):
             StreamReceiver(bufsize=-101, winsize=0.2)
 
         # Invalid type
-        with pytest.raises(TypeError, match='bufsize must be an instance of'):
+        with pytest.raises(TypeError, match="'bufsize' must be an instance"):
             StreamReceiver(bufsize=[101], winsize=0.2)
 
         # Smaller than winsize
@@ -384,7 +384,7 @@ def test_checker_winsize():
             StreamReceiver(bufsize=1, winsize=-101)
 
         # Invalid type
-        with pytest.raises(TypeError, match='winsize must be an instance of'):
+        with pytest.raises(TypeError, match="'winsize' must be an instance"):
             StreamReceiver(bufsize=1, winsize=[101])
 
 
@@ -423,7 +423,7 @@ def test_checker_stream_name(caplog):
 
         # Invalid type
         with pytest.raises(TypeError,
-                           match='stream_name must be an instance of'):
+                           match="'stream_name' must be an instance"):
             StreamReceiver(bufsize=1, winsize=0.2, stream_name=101)
 
 
