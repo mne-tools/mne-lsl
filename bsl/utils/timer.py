@@ -14,9 +14,7 @@ class Timer:
     """
 
     def __init__(self, autoreset=False):
-        _check_type(autoreset, (bool, ), 'autoreset')
-
-        self._autoreset = bool(autoreset)
+        self.autoreset = autoreset
         self.reset()
 
     def sec(self):
@@ -68,5 +66,5 @@ class Timer:
 
     @autoreset.setter
     def autoreset(self, autoreset):
-        _check_type(autoreset, (bool, ), 'autoreset')
+        _check_type(autoreset, (bool, ), item_name='autoreset')
         self._autoreset = autoreset

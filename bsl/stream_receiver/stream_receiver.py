@@ -56,8 +56,8 @@ class StreamReceiver:
             If ``True``, force reconnect if the `~bsl.StreamReceiver` was
             already connected.
         """
-        _check_type(timeout, ('numeric', ), 'timeout')
-        _check_type(force, (bool, ), 'force')
+        _check_type(timeout, ('numeric', ), item_name='timeout')
+        _check_type(force, (bool, ), item_name='force')
 
         if not force and self._connected:
             return True
@@ -370,7 +370,7 @@ class StreamReceiver:
         """
         Check that bufsize is positive and bigger than the winsize.
         """
-        _check_type(bufsize, ('numeric', ), 'bufsize')
+        _check_type(bufsize, ('numeric', ), item_name='bufsize')
         bufsize = float(bufsize)
         if bufsize <= 0:
             raise ValueError(
@@ -389,7 +389,7 @@ class StreamReceiver:
         """
         Check that winsize is positive.
         """
-        _check_type(winsize, ('numeric', ), 'winsize')
+        _check_type(winsize, ('numeric', ), item_name='winsize')
         winsize = float(winsize)
         if winsize <= 0:
             raise ValueError(
@@ -403,7 +403,8 @@ class StreamReceiver:
         """
         Check the format of stream_name.
         """
-        _check_type(stream_name, (None, str, list, tuple), 'stream_name')
+        _check_type(stream_name, (None, str, list, tuple),
+                    item_name='stream_name')
         if isinstance(stream_name, (list, tuple)):
             stream_name = list(stream_name)
             if not all(isinstance(name, str) for name in stream_name):

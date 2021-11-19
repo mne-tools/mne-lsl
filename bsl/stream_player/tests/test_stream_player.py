@@ -206,7 +206,7 @@ def test_checker_arguments():
     fif_file = eeg_resting_state.data_path()
 
     with pytest.raises(TypeError,
-                       match='high_resolution must be an instance of'):
+                       match="'high_resolution' must be an instance"):
         StreamPlayer(stream_name=stream_name, fif_file=fif_file,
                      high_resolution=1)
 
@@ -216,7 +216,7 @@ def test_checker_fif_file():
     stream_name = 'StreamPlayer'
 
     with pytest.raises(TypeError,
-                       match='fif_file must be an instance of'):
+                       match="'fif_file' must be an instance"):
         StreamPlayer(stream_name=stream_name, fif_file=5)
     with pytest.raises(FileNotFoundError, match='fname does not exist'):
         StreamPlayer(stream_name=stream_name, fif_file='101-file')
@@ -243,7 +243,7 @@ def test_checker_repeat():
     assert sp.repeat == 101
 
     # Positive float
-    with pytest.raises(TypeError, match='repeat must be an instance of'):
+    with pytest.raises(TypeError, match="'repeat' must be an instance"):
         StreamPlayer(stream_name=stream_name, fif_file=fif_file,
                      repeat=101.)
 
@@ -254,7 +254,7 @@ def test_checker_repeat():
                           repeat=-101)
 
     # Not integer
-    with pytest.raises(TypeError, match='repeat must be an instance of'):
+    with pytest.raises(TypeError, match="'repeat' must be an instance"):
         StreamPlayer(stream_name=stream_name, fif_file=fif_file,
                      repeat=[1, 0, 1])
 
@@ -287,7 +287,7 @@ def test_checker_trigger_def():
                      trigger_def='101-path')
 
     # Invalid type
-    with pytest.raises(TypeError, match='trigger_def must be an instance of'):
+    with pytest.raises(TypeError, match="'trigger_def' must be an instance"):
         StreamPlayer(stream_name=stream_name, fif_file=fif_file,
                           trigger_def=101)
 
@@ -309,7 +309,7 @@ def test_checker_chunk_size(caplog):
     assert sp.chunk_size == 32
 
     # Positive float
-    with pytest.raises(TypeError, match='chunk_size must be an instance of'):
+    with pytest.raises(TypeError, match="'chunk_size' must be an instance"):
         StreamPlayer(stream_name=stream_name, fif_file=fif_file,
                      chunk_size=32.)
 
@@ -329,12 +329,12 @@ def test_checker_chunk_size(caplog):
                      chunk_size=-101)
 
     # Invalid type
-    with pytest.raises(TypeError, match='chunk_size must be an instance of'):
+    with pytest.raises(TypeError, match="'chunk_size' must be an instance"):
         StreamPlayer(stream_name=stream_name, fif_file=fif_file,
                      chunk_size=[1, 0, 1])
 
     # Infinite
-    with pytest.raises(TypeError, match='chunk_size must be an instance of'):
+    with pytest.raises(TypeError, match="'chunk_size' must be an instance"):
         StreamPlayer(stream_name=stream_name, fif_file=fif_file,
                      chunk_size=float('inf'))
 

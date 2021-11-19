@@ -8,7 +8,7 @@ from .control_gui.control_eeg import ControlGUI_EEG
 from .. import logger
 from ..stream_receiver import StreamReceiver, StreamEEG
 from ..utils.lsl import search_lsl
-from ..utils._checks import _check_type
+from ..utils._checks import _check_type, _check_value
 
 
 class StreamViewer:
@@ -74,7 +74,7 @@ class StreamViewer:
         Checks that the stream_name is valid or search for a valid stream on
         the network.
         """
-        _check_type(stream_name, (None, str), 'stream_name')
+        _check_type(stream_name, (None, str), item_name='stream_name')
         if stream_name is None:
             stream_name = search_lsl(ignore_markers=True)
             if stream_name is None:
@@ -86,8 +86,10 @@ class StreamViewer:
         """
         Checks that the backend is a string.
         """
-        _check_type(backend, (str, ), 'backend')
-        return backend.lower().strip()
+        _check_type(backend, (str, ), item_name='backend')
+        backend = backend.lower().strip()
+        _check_value(backend, ('pyqtgraph', 'vispy'))
+        return backend
 
     # --------------------------------------------------------------------
     @property

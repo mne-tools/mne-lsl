@@ -20,8 +20,7 @@ class _Trigger(ABC):
 
     @abstractmethod
     def __init__(self, verbose: bool = True):
-        _check_type(verbose, (bool, ), 'verbose')
-        self._verbose = verbose
+        self.verbose = verbose
 
     @abstractmethod
     def signal(self, value: int):
@@ -47,5 +46,5 @@ class _Trigger(ABC):
 
     @verbose.setter
     def verbose(self, verbose: bool):
-        _check_type(verbose, (bool, ), 'verbose')
+        _check_type(verbose, (bool, ), item_name='verbose')
         self._verbose = verbose
