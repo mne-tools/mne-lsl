@@ -28,13 +28,14 @@ class ScopeEEG(_Scope):
         # Infos from stream
         tch = find_event_channel(
             ch_names=self._sr.streams[self._stream_name].ch_list)
-        if tch is None:
-            self._channels_labels = \
-                self._sr.streams[self._stream_name].ch_list
-        else:
-            self._channels_labels = \
-                [channel for k, channel in enumerate(
-                    self._sr.streams[self._stream_name].ch_list) if k != tch]
+        # TODO: patch to be improved for multi-trig channel recording
+        if isinstance(tch, list):
+            tch = tch[0]
+        assert tch is not None  # sanity-check
+
+        self._channels_labels = \
+            [channel for k, channel in enumerate(
+                self._sr.streams[self._stream_name].ch_list) if k != tch]
         self._nb_channels = len(self._channels_labels)
 
         # Variables

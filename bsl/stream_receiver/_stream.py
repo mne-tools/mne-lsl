@@ -434,6 +434,10 @@ class StreamEEG(_Stream):
         else:
             self._lsl_tr_channel = find_event_channel(ch_names=self._ch_list)
 
+        # TODO: patch to be improved for multi-trig channel recording
+        if isinstance(self._lsl_tr_channel, list):
+            self._lsl_tr_channel = self._lsl_tr_channel[0]
+
         if self._lsl_tr_channel is not None:
             logger.debug('Trigger channel idx: %d', self._lsl_tr_channel)
         else:

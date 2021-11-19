@@ -284,6 +284,9 @@ class _Streamer:
             nominal_srate=self._raw.info['sfreq'],
             ch_names=self._raw.ch_names)
         self._tch = find_event_channel(inst=self._raw)
+        # TODO: patch to be improved for multi-trig channel recording
+        if isinstance(self._tch, list):
+            self._tch = self._tch[0]
         self._scale_raw_data()
         self._outlet = pylsl.StreamOutlet(
             self._sinfo, chunk_size=self._chunk_size)
