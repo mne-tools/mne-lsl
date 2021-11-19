@@ -69,8 +69,8 @@ class TriggerDef:
         Parameters
         ----------
         trigger_file : `str` | `~pathlib.Path`
-            Path to the ``.ini`` file containing the table converting event numbers
-            into event strings.
+            Path to the ``.ini`` file containing the table converting event
+            numbers into event strings.
         """
         self._trigger_file = TriggerDef._check_trigger_file(trigger_file)
         if self._trigger_file is None:
