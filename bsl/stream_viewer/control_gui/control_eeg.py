@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import QHeaderView, QTableWidgetItem
 
 from ._control import _ControlGUI
 from ._ui_control import UI_MainWindow
-from ... import logger
+from ...utils._logs import logger
 from ...utils._docs import fill_doc, copy_doc
 
 
