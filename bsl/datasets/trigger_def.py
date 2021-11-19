@@ -11,7 +11,7 @@ from ..utils._logs import logger
 
 MD5 = '553f24ecb5c8e67ebe597e6e71d7fcdc'
 SHA1 = 'b841bbba374586434916e70403703388fc67ac74'
-URL = 'https://github.com/bsl-tools/bsl-datasets/raw/main/trigger_def/trigger_def.ini'
+URL = 'https://github.com/bsl-tools/bsl-datasets/raw/main/trigger_def/trigger_def.ini'  # noqa: E501
 PATH = Path('~/bsl_data/trigger_def/trigger_def.ini').expanduser()
 
 
