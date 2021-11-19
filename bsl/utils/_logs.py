@@ -91,7 +91,8 @@ class BSLformatter(logging.Formatter):
     # Format string syntax for the different Log levels
     _formatters = dict()
     _formatters[logging.DEBUG] = logging.Formatter(
-        fmt="[%(module)s:%(funcName)s:%(lineno)d] %(levelname)s: %(message)s (%(asctime)s)")
+        fmt="[%(module)s:%(funcName)s:%(lineno)d] %(levelname)s: "
+            "%(message)s (%(asctime)s)")
     _formatters[logging.INFO] = logging.Formatter(
         fmt="[%(module)s.%(funcName)s] %(levelname)s: %(message)s")
     _formatters[logging.WARNING] = logging.Formatter(
