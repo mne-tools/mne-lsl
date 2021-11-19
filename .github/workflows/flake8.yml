@@ -5,13 +5,7 @@ name: 'flake8'
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.number }}-${{ github.event.ref }}
   cancel-in-progress: true
-on:
-  push:
-    paths:
-      - '*.py'
-  pull_request:
-    paths:
-      - '*.py'
+on: [push, pull_request]
 
 jobs:
   style:
