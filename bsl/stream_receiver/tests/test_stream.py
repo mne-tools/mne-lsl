@@ -16,7 +16,8 @@ logger.propagate = True
 
 
 def _check_stream_properties(stream, streamInfo, stream_name, serial, is_slave,
-                             lsl_time_offset, blocking, blocking_time, dataset):
+                             lsl_time_offset, blocking, blocking_time,
+                             dataset):
     """Check all the _Stream properties from a given stream."""
     raw = mne.io.read_raw_fif(fname=dataset.data_path(),
                               preload=True)
