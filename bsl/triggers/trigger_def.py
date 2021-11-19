@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 from configparser import ConfigParser
 
-from .. import logger
+from ..utils._logs import logger
 from ..utils._checks import _check_type
 
 

@@ -3,7 +3,7 @@ Base class for triggers.
 """
 from abc import ABC, abstractmethod
 
-from .. import logger
+from ..utils._logs import logger
 from ..utils._docs import fill_doc
 from ..utils._checks import _check_type
 

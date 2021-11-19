@@ -6,8 +6,8 @@ import pylsl
 import numpy as np
 
 from ._buffer import Buffer
-from .. import logger
 from ..utils import Timer
+from ..utils._logs import logger
 from ..utils import find_event_channel
 from ..utils.lsl import lsl_channel_list
 from ..utils._checks import _check_type
