@@ -71,7 +71,7 @@ def pcl2fif(fname, out_dir=None, external_event=None,
 
     # Save
     raw.save(fiffile, verbose=False, overwrite=overwrite, fmt=precision)
-    logger.info(f"Data saved to: '{fiffile}'")
+    logger.info("Data saved to: '%s'", fiffile)
 
 
 def _format_pcl_to_mne_RawArray(data):
@@ -109,7 +109,7 @@ def _format_pcl_to_mne_RawArray(data):
     if trig_ch is None:
         # Add a event channel to index 0 for consistency.
         logger.warning(
-            'No event channel was not found. '
+            'Event channel was not found. '
             'Adding a blank event channel to index 0.')
         eventch = np.zeros([1, signals_raw.shape[1]])
         signals = np.concatenate((eventch, signals_raw), axis=0)
@@ -123,7 +123,7 @@ def _format_pcl_to_mne_RawArray(data):
         num_eeg_channels = data['channels'] - 1
 
     else:
-        logger.info(f'Moving event channel{trig_ch} to 0.')
+        logger.info('Moving event channel %s to 0.', trig_ch)
         signals = np.concatenate((signals_raw[[trig_ch]],
                                   signals_raw[:trig_ch],
                                   signals_raw[trig_ch + 1:]),
@@ -135,7 +135,7 @@ def _format_pcl_to_mne_RawArray(data):
         ch_names.insert(trig_ch, 'TRIGGER')
         logger.info('New channel list:')
         for channel in ch_names:
-            logger.info(f'{channel}')
+            logger.info('%s', channel)
 
     ch_info = ['stim'] + ['eeg'] * num_eeg_channels
     info = mne.create_info(ch_names, sample_rate, ch_info)
@@ -207,7 +207,7 @@ def _add_events_from_txt(raw, events_index, stim_channel='TRIGGER',
     if len(events_index) == 0:
         logger.warning('No events were found in the event file.')
     else:
-        logger.info(f'Found {len(events_index)} events')
+        logger.info('Found %i events', len(events_index))
         raw.add_events(events_index, stim_channel=stim_channel,
                        replace=replace)
 
@@ -244,9 +244,9 @@ def any2fif(fname, out_dir=None, overwrite=True, precision='double'):
     if fname.suffix == '.pcl':
         eve_file = fname.parent / (fname.stem[:-4] + 'eve.txt')
         if eve_file.exists():
-            logger.info(f"Adding events from '{eve_file}'")
+            logger.info("Adding events from '%s'", eve_file)
         else:
-            logger.info(f"No SOFTWARE event file '{eve_file}'")
+            logger.info("No SOFTWARE event file '%s'", eve_file)
             eve_file = None
 
         pcl2fif(fname, out_dir=out_dir, external_event=eve_file,
