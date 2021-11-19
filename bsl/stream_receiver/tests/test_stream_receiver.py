@@ -347,9 +347,9 @@ def test_checker_bufsize(caplog):
 
         # Invalid value
         with pytest.raises(ValueError,
-                            match='Argument bufsize must be a strictly'
-                                  ' positive int or a float. '
-                                  'Provided: %s' % -101):
+                           match='Argument bufsize must be a strictly'
+                                 ' positive int or a float. '
+                                 'Provided: %s' % -101):
             StreamReceiver(bufsize=-101, winsize=0.2)
 
         # Invalid type

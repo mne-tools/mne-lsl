@@ -13,7 +13,6 @@ Examples:
     bsl_stream_player StreamPlayer "D:/Data/sample-raw.fif"
     bsl_stream_player StreamPlayer "D:/Data/sample-raw.fif" -r 5
     bsl_stream_player StreamPlayer "D:/Data/sample-raw.fif" -r 5 -c 16
-    bsl_stream_player StreamPlayer "D:/Data/sample-raw.fif" -c 32 -t "D:/triggerdef_template.ini"
     bsl_stream_player StreamPlayer "D:/Data/sample-raw.fif" --high_resolution
 """
 
