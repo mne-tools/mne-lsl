@@ -7,7 +7,7 @@ import pylsl
 
 from . import Timer
 from ._checks import _check_type
-from .. import logger
+from ._logs import logger
 
 
 def list_lsl_streams(ignore_markers=False):

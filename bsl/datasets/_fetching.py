@@ -15,7 +15,7 @@ from mne.utils.progressbar import ProgressBar
 from urllib import parse, request
 from urllib.error import HTTPError, URLError
 
-from .. import logger
+from ..utils._logs import logger
 
 
 def fetch_file(url, file_name, print_destination=True, resume=True,

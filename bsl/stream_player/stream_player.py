@@ -6,8 +6,8 @@ import mne
 import pylsl
 import numpy as np
 
-from .. import logger
 from ..triggers import TriggerDef
+from ..utils._logs import logger
 from ..utils import find_event_channel
 from ..utils._checks import _check_type
 
