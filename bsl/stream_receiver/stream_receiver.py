@@ -5,8 +5,8 @@ import pylsl
 import numpy as np
 
 from ._stream import StreamEEG, StreamMarker
-from .. import logger
 from ..utils import Timer
+from ..utils._logs import logger
 from ..utils._docs import fill_doc
 from ..utils._checks import _check_type
 
