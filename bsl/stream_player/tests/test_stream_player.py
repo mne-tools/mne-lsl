@@ -49,7 +49,7 @@ def test_stream_player(caplog):
     time.sleep(1)
     chunk, tslist = inlet.pull_chunk(
         timeout=0.0, max_samples=int(raw.info['sfreq']))
-    assert len(chunk) == len(tslist) ==  int(raw.info['sfreq'])
+    assert len(chunk) == len(tslist) == int(raw.info['sfreq'])
 
     # Test stop
     caplog.clear()
@@ -289,7 +289,7 @@ def test_checker_trigger_def():
     # Invalid type
     with pytest.raises(TypeError, match="'trigger_def' must be an instance"):
         StreamPlayer(stream_name=stream_name, fif_file=fif_file,
-                          trigger_def=101)
+                     trigger_def=101)
 
 
 @requires_eeg_resting_state_dataset
@@ -342,13 +342,13 @@ def test_checker_chunk_size(caplog):
 @requires_eeg_resting_state_dataset
 def test_representation():
     """Test the representation method."""
-    sp = StreamPlayer(stream_name='StreamPlayer',
-                      fif_file=eeg_resting_state.data_path())
-    expected = f'<Player: StreamPlayer | OFF | {eeg_resting_state.data_path()}>'
+    fif_file=eeg_resting_state.data_path()
+    sp = StreamPlayer(stream_name='StreamPlayer', fif_file=fif_file)
+    expected = f'<Player: StreamPlayer | OFF | {fif_file}>'
     assert sp.__repr__() == expected
     sp.start()
-    expected = f'<Player: StreamPlayer | ON | {eeg_resting_state.data_path()}>'
+    expected = f'<Player: StreamPlayer | ON | {fif_file}>'
     assert sp.__repr__() == expected
     sp.stop()
-    expected = f'<Player: StreamPlayer | OFF | {eeg_resting_state.data_path()}>'
+    expected = f'<Player: StreamPlayer | OFF | {fif_file}>'
     assert sp.__repr__() == expected

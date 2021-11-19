@@ -110,8 +110,10 @@ def test_properties():
         assert scope.channels_labels == scope._channels_labels == \
             raw.ch_names[1:]
         assert scope.nb_channels == scope._nb_channels == len(raw.ch_names[1:])
-        assert scope.apply_car == scope._apply_car == False
-        assert scope.apply_bandpass == scope._apply_bandpass == False
+        assert scope.apply_car == scope._apply_car
+        assert not scope.apply_car
+        assert scope.apply_bandpass == scope._apply_bandpass
+        assert not scope.apply_bandpass
         assert scope.selected_channels == scope._selected_channels == \
             list(range(scope.nb_channels))
         assert (scope.data_buffer == scope._data_buffer).all()
@@ -132,9 +134,9 @@ def test_properties():
         with pytest.raises(AttributeError, match="can't set attribute"):
             scope.nb_channels = 101
         scope.apply_car = True
-        assert scope.apply_car == True
+        assert scope.apply_car
         scope.apply_bandpass = True
-        assert scope.apply_bandpass == True
+        assert scope.apply_bandpass
         scope.selected_channels = list(range(scope.nb_channels // 2))
         assert scope.selected_channels == list(range(scope.nb_channels // 2))
         with pytest.raises(AttributeError, match="can't set attribute"):

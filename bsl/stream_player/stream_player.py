@@ -162,8 +162,8 @@ class StreamPlayer:
         else:
             trigger_def = Path(trigger_def)
             if not trigger_def.exists():
-                raise ValueError('Argument trigger_def is a path that does not '
-                                 'exist. Provided: %s' % trigger_def)
+                raise ValueError('Argument trigger_def is a path that does '
+                                 'not exist. Provided: %s' % trigger_def)
             trigger_def = TriggerDef(trigger_def)
             return trigger_def
 
