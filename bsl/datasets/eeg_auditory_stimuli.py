@@ -13,7 +13,7 @@ from ..utils._logs import logger
 
 MD5 = 'ea0d40643bdc1c88e2b808c7128a0eba'
 SHA1 = 'd86e0ad1d53224a41e06b918e5d709615e2da32a'
-URL = 'https://github.com/bsl-tools/bsl-datasets/raw/main/eeg_sample/auditory_stimuli-raw.fif'
+URL = 'https://github.com/bsl-tools/bsl-datasets/raw/main/eeg_sample/auditory_stimuli-raw.fif'  # noqa: E501
 PATH = Path('~/bsl_data/eeg_sample/auditory_stimuli-raw.fif').expanduser()
 
 

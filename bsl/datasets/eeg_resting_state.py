@@ -12,7 +12,7 @@ from ..utils._logs import logger
 
 MD5 = '8925f81af22390fd17bb3341d553430f'
 SHA1 = '65dbf592fa6e18cee049f244ca53c504ddabacc1'
-URL = 'https://github.com/bsl-tools/bsl-datasets/raw/main/eeg_sample/resting_state-raw.fif'
+URL = 'https://github.com/bsl-tools/bsl-datasets/raw/main/eeg_sample/resting_state-raw.fif'  # noqa: E501
 PATH = Path('~/bsl_data/eeg_sample/resting_state-raw.fif').expanduser()
 
 
