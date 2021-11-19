@@ -104,6 +104,9 @@ def _format_pcl_to_mne_RawArray(data):
 
     # search for the trigger channel
     trig_ch = find_event_channel(signals_raw, ch_names)
+    # TODO: patch to be improved for multi-trig channel recording
+    if isinstance(trig_ch, list):
+        trig_ch = trig_ch[0]
 
     # move trigger channel to index 0
     if trig_ch is None:
