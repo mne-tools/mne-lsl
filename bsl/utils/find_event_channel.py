@@ -30,7 +30,8 @@ def find_event_channel(inst=None, ch_names=None):
         Event channel index, list of event channel indexes or `None` if not
         found.
     """
-    _check_type(inst, (None, np.ndarray, BaseRaw, BaseEpochs), item_name='inst')
+    _check_type(inst, (None, np.ndarray, BaseRaw, BaseEpochs),
+                item_name='inst')
     _check_type(ch_names, (None, list, tuple), item_name='ch_names')
 
     # numpy array + ch_names
