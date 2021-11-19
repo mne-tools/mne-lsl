@@ -161,7 +161,8 @@ def test_properties():
         assert sr.winsize == sr._winsize == 0.2
         assert sr.bufsize == sr._bufsize == 1
         assert sr.stream_name is None
-        assert sr.connected == sr._connected == True
+        assert sr.connected == sr._connected
+        assert sr.connectd
         assert sr.mne_infos == sr._mne_infos
         assert isinstance(sr.mne_infos, dict)
         assert len(sr.mne_infos) == 1
@@ -201,8 +202,8 @@ def test_get_method_warning_and_errors(caplog):
         # Disconnect and acquire
         sr.disconnect()
         with pytest.raises(RuntimeError,
-                            match='StreamReceiver is not connected to any '
-                                  'streams.'):
+                           match='StreamReceiver is not connected to any '
+                                 'streams.'):
             sr.acquire()
 
         # Acquire, disconnect and get.
@@ -212,12 +213,12 @@ def test_get_method_warning_and_errors(caplog):
         time.sleep(0.05)
         sr.disconnect()
         with pytest.raises(RuntimeError,
-                            match='StreamReceiver is not connected to any '
-                                  'streams.'):
+                           match='StreamReceiver is not connected to any '
+                           'streams.'):
             sr.get_window()
         with pytest.raises(RuntimeError,
-                            match='StreamReceiver is not connected to any '
-                                  'streams.'):
+                           match='StreamReceiver is not connected to any '
+                                 'streams.'):
             sr.get_buffer()
 
         # multiple streams
@@ -225,14 +226,14 @@ def test_get_method_warning_and_errors(caplog):
         time.sleep(1)
         sr.acquire()
         with pytest.raises(RuntimeError,
-                            match='StreamReceiver is connected to multiple '
-                                  'streams. Please provide the stream_name '
-                                  'argument.'):
+                           match='StreamReceiver is connected to multiple '
+                                 'streams. Please provide the stream_name '
+                                 'argument.'):
             sr.get_window()
         with pytest.raises(RuntimeError,
-                            match='StreamReceiver is connected to multiple '
-                                  'streams. Please provide the stream_name '
-                                  'argument.'):
+                           match='StreamReceiver is connected to multiple '
+                                 'streams. Please provide the stream_name '
+                                 'argument.'):
             sr.get_buffer()
 
         # stream_name not in streams
@@ -346,8 +347,9 @@ def test_checker_bufsize(caplog):
 
         # Invalid value
         with pytest.raises(ValueError,
-                            match='Argument bufsize must be a strictly positive'
-                                  ' int or a float. Provided: %s' % -101):
+                            match='Argument bufsize must be a strictly'
+                                  ' positive int or a float. '
+                                  'Provided: %s' % -101):
             StreamReceiver(bufsize=-101, winsize=0.2)
 
         # Invalid type
