@@ -18,14 +18,13 @@ jobs:
         with:
           python-version: '3.9'
           architecture: 'x64'
-      - run: |
+      - name: Install flake8
+        run: |
           python -m pip install --upgrade pip setuptools wheel
           python -m pip install flake8
       - name: Setup flake8 annotations
         uses: rbialon/flake8-annotations@v1
       - name: Run flake8
-        uses: suo/flake8-github-action@releases/v1
-        with:
-          checkName: 'flake8'  # NOTE: this needs to be the same as the job name
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: py-actions/flake8@v1
+        path: "bsl"
+        exclude: "bsl/stream_viewer/control_gui/_ui_control.py"
