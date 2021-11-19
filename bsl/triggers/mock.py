@@ -2,7 +2,7 @@
 Mock trigger.
 """
 from ._trigger import _Trigger
-from .. import logger
+from ..utils._logs import logger
 from ..utils._checks import _check_type
 from ..utils._docs import fill_doc, copy_doc
 

@@ -5,11 +5,11 @@ import datetime
 from pathlib import Path
 import multiprocessing as mp
 
-from .. import logger
 from ..utils import Timer
+from ..utils.io import pcl2fif
+from ..utils._logs import logger
 from ..utils._docs import fill_doc
 from ..utils._checks import _check_type
-from ..utils.io import pcl2fif
 from ..stream_receiver import StreamReceiver, StreamEEG
 from ..stream_receiver._stream import MAX_BUF_SIZE
 

@@ -10,7 +10,7 @@ except ImportError:
     pass
 from ..backends.pyqtgraph import _BackendPyQtGraph
 
-from ... import logger
+from ...utils._logs import logger
 from ...utils._docs import fill_doc
 from ...stream_recorder import StreamRecorder
 
