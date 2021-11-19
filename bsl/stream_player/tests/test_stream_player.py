@@ -342,7 +342,7 @@ def test_checker_chunk_size(caplog):
 @requires_eeg_resting_state_dataset
 def test_representation():
     """Test the representation method."""
-    fif_file=eeg_resting_state.data_path()
+    fif_file = eeg_resting_state.data_path()
     sp = StreamPlayer(stream_name='StreamPlayer', fif_file=fif_file)
     expected = f'<Player: StreamPlayer | OFF | {fif_file}>'
     assert sp.__repr__() == expected
