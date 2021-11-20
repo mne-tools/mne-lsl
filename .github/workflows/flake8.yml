@@ -13,10 +13,11 @@ on:
 
 jobs:
   style:
-    timeout-minutes: 90
+    timeout-minutes: 10
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v2
       - name: Setup Python 3.9
         uses: actions/setup-python@v2
         with:
