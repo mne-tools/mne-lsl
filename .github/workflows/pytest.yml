@@ -39,7 +39,7 @@ jobs:
       - name: 'Cache testing data'
         uses: actions/cache@v2
           with:
-            key: bsl_data
+            key: ${{ matrix.os }}-bsl_data
             path: ~/bsl_data
       - name: Download testing data
         run: python -c 'import bsl; bsl.datasets._download_all_datasets()'
