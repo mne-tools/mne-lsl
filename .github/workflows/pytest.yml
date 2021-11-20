@@ -17,6 +17,7 @@ on:
 
 jobs:
   pytest:
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
@@ -27,7 +28,8 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v2
       - name: Setup Python 3.9
         uses: actions/setup-python@v2
         with:
