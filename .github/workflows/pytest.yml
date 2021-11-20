@@ -38,7 +38,8 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip setuptools wheel
-          python -m pip install -r requirements.txt -r requirements_extras.txt
+          python -m pip install -r requirements.txt
+          python -m pip install vispy pytest pytest-cov
       - name: 'Cache BSL testing dataset'
         uses: actions/cache@v2
         with:
@@ -46,15 +47,5 @@ jobs:
           path: ~/bsl_data
       - name: Download BSL testing dataset
         run: python -c 'import bsl; bsl.datasets._download_all_datasets()'
-      - name: 'Cache MNE sample dataset'
-        uses: actions/cache@v2
-        with:
-          key: ${{ matrix.os }}-mne_data
-          path: ~/mne_data
-      - name: Download MNE sample dataset
-        # bug with MNE verbose -> tqdm is required for now
-        run:
-          python -m pip install mne tqdm
-          python -c 'import mne; mne.datasets.sample.data_path(download=True, verbose=None)'
       - name: Run pytest
         run: pytest bsl
