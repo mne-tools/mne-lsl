@@ -21,7 +21,7 @@ from bsl import StreamViewer
 def run():
     """Entrypoint for bsl_stream_viewer usage."""
     parser = argparse.ArgumentParser(
-        prog='StreamViewer',
+        prog='BSL StreamViewer',
         description='Starts a real-time viewer for a stream on LSL network.')
     parser.add_argument(
         '-s', '--stream_name', type=str, metavar='str',

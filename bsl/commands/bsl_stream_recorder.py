@@ -28,7 +28,7 @@ from bsl import StreamRecorder
 def run():
     """Entrypoint for bsl_stream_recorder usage."""
     parser = argparse.ArgumentParser(
-        prog='StreamRecorder',
+        prog='BSL StreamRecorder',
         description='Starts recording data from stream(s) on LSL network.')
     parser.add_argument(
         '-d', '--directory', type=str, metavar='str',
