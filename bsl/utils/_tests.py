@@ -94,8 +94,12 @@ def requires_usb2lpt(function):
 def requires_arduino2lpt(function):
     """Decorator to skip a test if an Arduino to LPT converter is not
     available."""
-    import serial
-    from serial.tools import list_ports
+    try:
+        import serial
+        from serial.tools import list_ports
+    except ModuleNotFoundError:
+        return pytest.mark.skipif(
+            True, reason='pyserial not installed.')(function)
     for arduino in list_ports.grep(regexp='Arduino'):
         try:
             ser = serial.Serial(arduino.device, 115200)
