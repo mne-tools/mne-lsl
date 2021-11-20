@@ -162,7 +162,7 @@ def test_properties():
         assert sr.bufsize == sr._bufsize == 1
         assert sr.stream_name is None
         assert sr.connected == sr._connected
-        assert sr.connectd
+        assert sr.connected
         assert sr.mne_infos == sr._mne_infos
         assert isinstance(sr.mne_infos, dict)
         assert len(sr.mne_infos) == 1
