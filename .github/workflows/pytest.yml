@@ -52,6 +52,9 @@ jobs:
           key: ${{ matrix.os }}-mne_data
           path: ~/mne_data
       - name: Download MNE sample dataset
-        run: python -c 'import mne; mne.datasets.sample.data_path(download=True, verbose=None)'
+        # bug with MNE verbose -> tqdm is required for now
+        run:
+          python -m pip install tqdm
+          python -c 'import mne; mne.datasets.sample.data_path(download=True, verbose=None)'
       - name: Run pytest
         run: pytest bsl
