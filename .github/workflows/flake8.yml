@@ -8,11 +8,11 @@ concurrency:
 on:
   pull_request:
     paths:
-      - '*.py'
+      - '**.py'
   push:
     branches: [master]
     paths:
-      - '*.py'
+      - '**.py'
   workflow_dispatch:
 
 jobs:
