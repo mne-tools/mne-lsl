@@ -1,5 +1,4 @@
 import time
-from pathlib import Path
 import multiprocessing as mp
 
 import mne
@@ -220,11 +219,6 @@ def test_checker_fif_file():
         StreamPlayer(stream_name=stream_name, fif_file=5)
     with pytest.raises(FileNotFoundError, match='fname does not exist'):
         StreamPlayer(stream_name=stream_name, fif_file='101-file')
-    with pytest.raises(ValueError, match='No raw data in'):
-        path = Path(mne.datasets.sample.data_path())
-        fif_file = path/'MEG'/'sample'/'sample_audvis-no-filter-ave.fif'
-        StreamPlayer(stream_name=stream_name, fif_file=fif_file)
-
 
 @requires_eeg_resting_state_dataset
 def test_checker_repeat():
