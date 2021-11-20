@@ -24,7 +24,7 @@ from bsl import StreamPlayer
 def run():
     """Entrypoint for bsl_stream_player usage."""
     parser = argparse.ArgumentParser(
-        prog='StreamPlayer',
+        prog='BSL StreamPlayer',
         description='Starts streaming data from a .fif on the network.')
     parser.add_argument(
         'stream_name', type=str,
