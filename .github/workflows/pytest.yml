@@ -38,9 +38,9 @@ jobs:
           python -m pip install -r requirements.txt -r requirements_extras.txt
       - name: 'Cache testing data'
         uses: actions/cache@v2
-          with:
-            key: ${{ matrix.os }}-bsl_data
-            path: ~/bsl_data
+        with:
+          key: ${{ matrix.os }}-bsl_data
+          path: ~/bsl_data
       - name: Download testing data
         run: python -c 'import bsl; bsl.datasets._download_all_datasets()'
       - name: Run pytest
