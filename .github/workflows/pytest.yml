@@ -54,7 +54,7 @@ jobs:
       - name: Download MNE sample dataset
         # bug with MNE verbose -> tqdm is required for now
         run:
-          python -m pip install tqdm
+          python -m pip install mne tqdm
           python -c 'import mne; mne.datasets.sample.data_path(download=True, verbose=None)'
       - name: Run pytest
         run: pytest bsl
