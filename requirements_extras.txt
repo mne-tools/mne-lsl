@@ -10,4 +10,3 @@ pydata-sphinx-theme    # doc, doc-build, documentation
 sphinx-gallery         # doc, doc-build, documentation
 pytest                 # test, testing
 pytest-cov             # test, testing
-pooch                  # test, testing
