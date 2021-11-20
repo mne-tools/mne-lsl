@@ -52,6 +52,6 @@ jobs:
           key: ${{ matrix.os }}-mne_data
           path: ~/mne_data
       - name: Download MNE sample dataset
-        run: python -c 'import mne; mne.datasets.sample.data_path(download=True, verbose=False)'
+        run: python -c 'import mne; mne.datasets.sample.data_path(download=True, verbose=None)'
       - name: Run pytest
         run: pytest bsl
