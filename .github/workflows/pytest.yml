@@ -39,12 +39,19 @@ jobs:
         run: |
           python -m pip install --upgrade pip setuptools wheel
           python -m pip install -r requirements.txt -r requirements_extras.txt
-      - name: 'Cache testing data'
+      - name: 'Cache BSL testing data'
         uses: actions/cache@v2
         with:
           key: ${{ matrix.os }}-bsl_data
           path: ~/bsl_data
-      - name: Download testing data
+      - name: 'Cache MNE sample dataset'
+        uses: actions/cache@v2
+        with:
+          key: ${{ matrix.os }}-mne_data
+          path: ~/mne_data
+      - name: Download BSL testing data
         run: python -c 'import bsl; bsl.datasets._download_all_datasets()'
+      - name: Download MNE sample data
+        run: python -c 'import mne; mne.datasets.sample.data_path(download=True)'
       - name: Run pytest
         run: pytest bsl
