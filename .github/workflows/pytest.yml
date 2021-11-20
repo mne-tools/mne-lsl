@@ -44,13 +44,13 @@ jobs:
         with:
           key: ${{ matrix.os }}-bsl_data
           path: ~/bsl_data
+      - name: Download BSL testing data
+        run: python -c 'import bsl; bsl.datasets._download_all_datasets()'
       - name: 'Cache MNE sample dataset'
         uses: actions/cache@v2
         with:
           key: ${{ matrix.os }}-mne_data
           path: ~/mne_data
-      - name: Download BSL testing data
-        run: python -c 'import bsl; bsl.datasets._download_all_datasets()'
       - name: Download MNE sample data
         run: python -c 'import mne; mne.datasets.sample.data_path(download=True)'
       - name: Run pytest
