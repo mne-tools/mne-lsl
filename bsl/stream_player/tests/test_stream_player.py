@@ -220,6 +220,7 @@ def test_checker_fif_file():
     with pytest.raises(FileNotFoundError, match='fname does not exist'):
         StreamPlayer(stream_name=stream_name, fif_file='101-file')
 
+
 @requires_eeg_resting_state_dataset
 def test_checker_repeat():
     """Test the checker for argument repeat."""
