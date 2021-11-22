@@ -22,7 +22,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu, windows]
-    name: pytest ${{ matrix.os }}
+    name: ${{ matrix.os }}
     runs-on: ${{ matrix.os }}-latest
     env:
       LSL_RELEASE_URL: 'https://github.com/sccn/liblsl/releases/download/v1.14.1b9'
