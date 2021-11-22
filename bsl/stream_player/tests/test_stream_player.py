@@ -45,7 +45,7 @@ def test_stream_player(caplog):
         timeout=0.0, max_samples=int(raw.info['sfreq']))
     assert len(chunk) == len(tslist)
     assert 0 < len(chunk) < int(raw.info['sfreq'])
-    time.sleep(1)
+    time.sleep(1.2)
     chunk, tslist = inlet.pull_chunk(
         timeout=0.0, max_samples=int(raw.info['sfreq']))
     assert len(chunk) == len(tslist) == int(raw.info['sfreq'])
