@@ -21,7 +21,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu, windows, macos]
+        os: [ubuntu, windows]
     name: pytest ${{ matrix.os }}
     runs-on: ${{ matrix.os }}-latest
     env:
