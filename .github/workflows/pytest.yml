@@ -40,11 +40,6 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           python -m pip install -r requirements.txt
           python -m pip install vispy pytest pytest-cov requests
-      - if: ${{ matrix.os == 'ubuntu'}}
-        name: Download liblsl (optional)
-        uses: wei/wget@v1
-        with:
-          args: -O /opt/hostedtoolcache/Python/3.9.8/x64/lib/python3.9/site-packages/pylsl/lib/liblsl.so https://github.com/sccn/liblsl/releases/download/v1.15.0/liblsl-1.15.0-manylinux2010_x64.so
       - name: 'Cache BSL testing dataset'
         uses: actions/cache@v2
         with:
