@@ -40,6 +40,12 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           python -m pip install -r requirements.txt
           python -m pip install vispy pytest pytest-cov requests
+      - name: Install liblsl (Ubuntu)
+        if: ${{ matrix.os == 'ubuntu'}}
+        run: |
+          sudo apt install -y libpugixml-dev
+          curl -L ${LSL_RELEASE_URL}/liblsl-${LSL_RELEASE}-$(lsb_release -sc)_amd64.deb -o liblsl.deb
+          sudo apt install ./liblsl.deb
       - name: 'Cache BSL testing dataset'
         uses: actions/cache@v2
         with:
