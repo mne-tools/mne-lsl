@@ -40,12 +40,12 @@ def test_stream_player(caplog):
     idx = [stream.name() for stream in streams].index(stream_name)
     inlet = pylsl.StreamInlet(streams[idx], max_buflen=int(raw.info['sfreq']))
     inlet.open_stream()
-    time.sleep(0.2)
+    time.sleep(0.1)
     chunk, tslist = inlet.pull_chunk(
         timeout=0.0, max_samples=int(raw.info['sfreq']))
     assert len(chunk) == len(tslist)
     assert 0 < len(chunk) < int(raw.info['sfreq'])
-    time.sleep(1.2)
+    time.sleep(1)
     chunk, tslist = inlet.pull_chunk(
         timeout=0.0, max_samples=int(raw.info['sfreq']))
     assert len(chunk) == len(tslist) == int(raw.info['sfreq'])
