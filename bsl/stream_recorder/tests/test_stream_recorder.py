@@ -44,7 +44,7 @@ def _check_recorded_files_content(record_dir,  eve_file, stream, fif_subdir,
     assert raw.info['sfreq'] == raw_pcl['sample_rate'] == raw_fif.info['sfreq']
     assert raw_pcl['signals'].shape[::-1] == raw_fif.get_data().shape
     # some delay is introduce by the process operations
-    assert abs(raw_fif.n_times / raw_fif.info['sfreq'] - record_duration) < 0.1
+    assert abs(raw_fif.n_times / raw_fif.info['sfreq'] - record_duration) < 0.2
 
 
 @requires_eeg_resting_state_dataset
