@@ -29,7 +29,7 @@ class StreamRecorder:
     """
 
     def __init__(self, record_dir=None, fname=None, stream_name=None,
-                 fif_subdir=True, verbose=False):
+                 fif_subdir=True, *, verbose=False):
         self._record_dir = StreamRecorder._check_record_dir(record_dir)
         self._fname = StreamRecorder._check_fname(fname)
         _check_type(stream_name, (None, str, list, tuple),
