@@ -17,7 +17,7 @@ class TriggerMock(_Trigger):
     %(trigger_verbose)s
     """
 
-    def __init__(self, verbose: bool = True):
+    def __init__(self, *, verbose: bool = True):
         super().__init__(verbose)
 
     @copy_doc(_Trigger.signal)
