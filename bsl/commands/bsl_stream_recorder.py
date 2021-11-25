@@ -49,7 +49,7 @@ def run():
     args = parser.parse_args()
 
     recorder = StreamRecorder(args.directory, args.fname, args.stream_name,
-                              args.fif_subdir, args.verbose)
+                              args.fif_subdir, verbose=args.verbose)
     recorder.start()
     input(">> Press ENTER to stop the recording \n")
     recorder.stop()

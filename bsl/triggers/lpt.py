@@ -32,7 +32,8 @@ class TriggerLPT(_Trigger):
     %(trigger_verbose)s
     """
 
-    def __init__(self, portaddr: int, delay: int = 50, verbose: bool = True):
+    def __init__(self, portaddr: int, delay: int = 50, *,
+                 verbose: bool = True):
         self._portaddr = TriggerLPT._check_portaddr(portaddr)
         _check_type(delay, ('int', ), item_name='delay')
         super().__init__(verbose)
@@ -139,7 +140,7 @@ class TriggerUSB2LPT(_Trigger):
     %(trigger_verbose)s
     """
 
-    def __init__(self, delay: int = 50, verbose: bool = True):
+    def __init__(self, delay: int = 50, *, verbose: bool = True):
         _check_type(delay, ('int', ), item_name='delay')
         super().__init__(verbose)
         self._lpt = TriggerUSB2LPT._load_dll()
@@ -211,7 +212,7 @@ class TriggerArduino2LPT(_Trigger):
     """
     BAUD_RATE = 115200
 
-    def __init__(self, delay: int = 50, verbose: bool = True):
+    def __init__(self, delay: int = 50, *, verbose: bool = True):
         import_optional_dependency(
             "serial", extra="Install pyserial for ARDUINO support.")
         _check_type(delay, ('int', ), item_name='delay')

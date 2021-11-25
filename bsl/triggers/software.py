@@ -33,7 +33,7 @@ class TriggerSoftware(_Trigger):
     %(trigger_verbose)s
     """
 
-    def __init__(self, recorder, verbose: bool = True):
+    def __init__(self, recorder, *, verbose: bool = True):
         super().__init__(verbose)
         self._recorder = TriggerSoftware._check_recorder(recorder)
         self._eve_file = TriggerSoftware._find_eve_file(recorder)
