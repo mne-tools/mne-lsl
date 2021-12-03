@@ -54,11 +54,11 @@ First of all, make sure that the path to the desired version of Python is presen
 
 - Right click on `This PC` App and select `Properties`
 - Scroll down the `About` section and select `Advanced system settings`
-.. image:: _static\install\Advanced_system_settings.png
-   :width: 600
+    .. image:: doc\_static\install\Advanced_system_settings.png
+       :width: 300
 - Click on `Environmental Variables` and verify that the the Python path (ex. C:\Users\User\Programs\Python\Python38\Scripts) is in the Environmental system variable `Path`.
-.. image:: _static\install\Environmental_variables.png
-   :width: 600
+    .. image:: doc\_static\install\Environmental_variables.png
+       :width: 300
 From the Terminal go to the working directory and clone the `main repository <https://github.com/bsl-tools/bsl>`_:
 
     .. code-block:: console
@@ -104,7 +104,7 @@ Check that everything works:
 
 The stream viewer should be visualize:
 
-.. image:: _static\install\bsl_stream_viewer.png
+.. image:: doc\_static\install\bsl_stream_viewer.png
    :width: 600
    
     
