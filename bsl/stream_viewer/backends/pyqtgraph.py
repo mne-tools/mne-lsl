@@ -438,9 +438,10 @@ class Annotation:
             self._plotted=True
 
     def remove(self):
-        self._plot_handler.getViewBox().scene().removeItem(self._rect)
-        self._rect = None
-        self._plotted = False
+        if self._plotted:
+            self._plot_handler.getViewBox().scene().removeItem(self._rect)
+            self._rect = None
+            self._plotted = False
 
     def _update(self):
         if self._rect is not None:
