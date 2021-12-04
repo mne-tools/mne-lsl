@@ -81,6 +81,7 @@ class _ControlGUI(QMainWindow, ABC, metaclass=_metaclass_ControlGUI):
             pass
         self._recorder_annotation_file = open(
             str(self._recorder.eve_file).replace('-eve', '-annotation'), 'a')
+        self._backend._recorder_annotation_file = self._recorder_annotation_file
         self._ui.pushButton_stop_recording.setEnabled(True)
         self._ui.pushButton_start_recording.setEnabled(False)
         self._ui.statusBar.showMessage(f"[Recording to '{record_dir}']")

@@ -121,9 +121,10 @@ class _BackendPyQtGraph(_Backend):
             onset, duration, description = self._queueTimeStamps.get()
             if self._recorder_annotation_file is not None:
                 self._recorder_annotation_file.write(
-                    "%s %s %s" % (onset, duration.x(), description))
+                    "%s %s %s\n" % (onset, duration.x(), description))
             ## write in the .txt file
             self._queueTimeStamps.task_done()
+
     # ------------------------ Trigger Events ----------------------
     @copy_doc(_Backend._update_LPT_trigger_events)
     def _update_LPT_trigger_events(self, trigger_arr):
