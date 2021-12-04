@@ -259,8 +259,8 @@ class ControlGUI_EEG(_ControlGUI):
         text, ok = QInputDialog.getText(self, 'Add label', 'Add your new label:')
 
         if ok:
-            print("text", text)
             self._labels.append(str(text))
+            self._ui.comboBox_label.addItem(str(text))
 
     @QtCore.pyqtSlot()
     def onValueChanged_doubleSpinBox_bandpass_low(self):
