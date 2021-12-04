@@ -258,17 +258,6 @@ class _BackendPyQtGraph(_Backend):
             self._annotations.append(annotation)
             self._first_click_position = None
 
-
-        # if mouseClickEvent.button() == 1:
-        #     x = mouseClickEvent.scenePos().x()
-        #     print("button 1")
-        # elif mouseClickEvent.button() == 2:
-        #     x = mouseClickEvent.scenePos().x()
-        #     print("button 2")
-
-        # viewBox = self._plot_handler.getViewBox()
-        # x = viewBox.mapSceneToView(mouseClickEvent.scenePos()).x()
-
     # ------------------------ Update program ----------------------
     @_Backend.xRange.setter
     @copy_doc(_Backend.xRange.setter)
