@@ -178,7 +178,6 @@ class _BackendPyQtGraph(_Backend):
             self._clean_up_trigger_events()
 
             for annot in self._annotations:
-                print (annot.position_buffer.x(), annot.position_plot.x())
                 annot.position_buffer = QPointF(
                     annot.position_buffer.x()
                         - len(self._scope.ts_list) / self._scope.sample_rate,
