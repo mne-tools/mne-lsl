@@ -44,7 +44,7 @@ from bsl.triggers.software import TriggerSoftware
 #%%
 #
 # To simulate an actual signal coming from an LSL stream, a `~bsl.StreamPlayer`
-# is used with a 40 second resting-state recording.
+# is used with a 40 seconds resting-state recording.
 
 stream_name = 'StreamPlayer'
 fif_file = datasets.eeg_resting_state.data_path()

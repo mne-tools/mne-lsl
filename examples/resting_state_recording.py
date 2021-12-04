@@ -29,7 +29,7 @@ resting-state recording can be designed with a `~bsl.StreamRecorder`.
 #
 # This example will use a sample EEG resting-state dataset that can be retrieve
 # with :ref:`bsl.datasets<datasets>`. The dataset is stored in the user home
-# directory, in the folder ``bsl_data``.
+# directory  (ex. C:\\Users\\User), in the folder ``bsl_data``.
 
 #%%
 
@@ -45,7 +45,7 @@ from bsl.triggers.software import TriggerSoftware
 #%%
 #
 # To simulate an actual signal coming from an LSL stream, a `~bsl.StreamPlayer`
-# is used with a 40 second resting-state recording.
+# is used with a 40 seconds resting-state recording.
 
 stream_name = 'StreamPlayer'
 fif_file = datasets.eeg_resting_state.data_path()
@@ -56,7 +56,7 @@ print (player)
 #%%
 #
 # For this example, the folder ``bsl_data/examples`` located in the user home
-# directory will be used to stored recorded files. To ensure its existence,
+# directory (ex. C:\\Users\\User\\bsl_data\\examples) will be used to stored recorded files. To ensure its existence,
 # `os.makedirs` is used.
 
 record_dir = Path('~/bsl_data/examples').expanduser()
@@ -84,7 +84,7 @@ os.makedirs(record_dir, exist_ok=True)
 #
 # .. note::
 #
-#     By defaul, the `~bsl.StreamRecorder.start` method is blocking and will
+#     By default, the `~bsl.StreamRecorder.start` method is blocking and will
 #     wait for the recording to start. This behavior can be changed with the
 #     ``blocking`` argument.
 
@@ -170,17 +170,23 @@ with StreamRecorder(record_dir):
 #%%
 #
 # As for the `~bsl.StreamPlayer`, the `~bsl.StreamRecorder` can be started via
-# command-line. Example assuming the current working directory is ``bsl_data``:
+# command-line when a LSL stream is streamed. Example assuming the current working directory is ``bsl_data``:
 #
 # .. code-block:: console
 #
-#     $ bsl_stream_recorder examples
+#     $ bsl_stream_recorder -d record_dir -f fname -s stream_name
 #
 # .. image:: ../_static/stream_recorder/stream_recorder_cli.gif
 #    :alt: StreamRecorder
 #    :align: center
-
-#%%
+#
+# | The LSL stream can be simulated running the `~bsl.StreamPlayer` in a different terminal. In this case, run before the `~bsl.StreamPlayer` and then the `~bsl.StreamRecorder`.
+#   Example assuming the current working directory is ``bsl_data``:
+#
+#  .. code-block:: console
+#
+#     $ cd eeg_sample
+#     $ bsl_stream_player stream_name resting_state-raw.fif
 #
 # Stop the mock LSL stream.
 

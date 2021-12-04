@@ -48,18 +48,23 @@ Additional functionalities requires:
 Installation Example
 =====================
 
-Python version `3.8.10`
+| Python version `3.8.10`
+| Windows 10 Operating System
 
-First of all, make sure that the path to the desired version of Python is present in the `Path` Environment Variable:
+**Step 1:** Make sure that the path to the desired version of Python is present in the `Path` Environment Variable of the PC:
 
 - Right click on `This PC` App and select `Properties`
 - Scroll down the `About` section and select `Advanced system settings`
-    .. image:: doc\_static\install\Advanced_system_settings.png
-       :width: 300
-- Click on `Environmental Variables` and verify that the the Python path (ex. C:\Users\User\Programs\Python\Python38\Scripts) is in the Environmental system variable `Path`.
-    .. image:: doc\_static\install\Environmental_variables.png
-       :width: 300
-From the Terminal go to the working directory and clone the `main repository <https://github.com/bsl-tools/bsl>`_:
+.. image:: _static/install/Advanced_system_settings.png
+   :align: center
+   :width: 400
+
+- Click on `Environmental Variables` and verify that the the Python path (ex. C:\\Users\\User\\Programs\\Python\\Python38\\Scripts) is in the Environmental system variable `Path`
+.. image:: _static/install/Environmental_variables.png
+   :align: center
+   :width: 300
+|
+**Step 2:** From the Terminal go to the working directory and clone the `main repository <https://github.com/bsl-tools/bsl>`_:
 
     .. code-block:: console
 
@@ -77,16 +82,17 @@ Install bsl with ``setup.py`` in developer mode:
     
        $ python setup.py develop
 
-Check that everything works:
+**Step 3:** Check that everything works:
 
-- Download a dataset:
+- Download a dataset with Python Console:
 
     .. code-block:: console
     
        $ import bsl
        $ bsl.datasets.eeg_resting_state.data_path()
 
-- Run bsl stream player:
+- Run the `~bsl.StreamPlayer` from the terminal using the `resting_state-raw.fif` file located in the user home
+  directory's subfolder `bsl_data\eeg_sample` (ex. C:\\Users\\User\\bsl_data\\eeg_sample) :
     
     .. code-block:: console
     
@@ -95,16 +101,17 @@ Check that everything works:
        $ cd eeg_sample
        $ bsl_stream_player testStream resting_state-raw.fif
 
-- Run bsl stream viewer in a different terminal:
+- Run the `~bsl.StreamViewer` from a different terminal:
 
     .. code-block:: console
     
-       $ bsl_stream _viewer
+       $ bsl_stream_viewer
 
 
-The stream viewer should be visualize:
+The stream viewer should be visualized:
 
-.. image:: doc\_static\install\bsl_stream_viewer.png
+.. image:: _static/install/bsl_stream_viewer.png
+   :align: center
    :width: 600
    
     
