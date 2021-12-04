@@ -466,7 +466,6 @@ class Annotation:
                 QPointF(position_right, self._viewBox.height()))
             self._rect = self._plot_handler.getViewBox().scene().addRect(
                 rectangle, pg.mkColor(0, 255, 0), pg.mkBrush(0, 255, 0, 50))
-            print (self._rect, type(self._rect))
             self._plotted=True
 
     def remove(self):
@@ -477,11 +476,20 @@ class Annotation:
 
     def _update(self):
         if self._rect is not None:
-            new_pos = self._viewBox.mapViewToScene(self._position_plot).x()
-            # self._rect.translate(dx=position_dx, dy=0)
-            new_pos -= self._rect.rect().width()
+            borderR_pos = self._viewBox.mapViewToScene(self._position_plot).x()
+            borderL_pos = borderR_pos - self._rect.rect().width()
+            borderL_time = self._viewBox.mapSceneToView(
+                QPointF(borderL_pos, 0)).x()
+
             rect = self._rect.rect()
-            rect.moveTo(new_pos, 0)
+            if borderL_time <= 0:
+                x1 = self._viewBox.mapViewToScene(QPointF(0, 0)).x()
+                y1 = 0
+                x2 = borderR_pos
+                y2 = rect.height()
+                rect.setCoords(x1, y1, x2, y2)
+            else:
+                rect.moveTo(borderL_pos, 0)
             self._rect.setRect(rect)
 
     @property
