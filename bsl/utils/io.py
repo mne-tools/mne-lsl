@@ -17,7 +17,7 @@ mne.set_log_level('ERROR')
 
 
 # ------------------------- Stream Recorder PCL -------------------------
-def pcl2fif(fname, out_dir=None, external_event=None,
+def pcl2fif(fname, out_dir=None, external_event=None, external_annotation=None,
             precision='double', replace=False, overwrite=True):
     """
     Convert BSL Python pickle format to MNE `~mne.io.Raw`.
@@ -68,6 +68,12 @@ def pcl2fif(fname, out_dir=None, external_event=None,
             raw.times, external_event, data["timestamps"][0])
         _add_events_from_txt(
             raw, events_index, stim_channel='TRIGGER', replace=replace)
+
+    # Add annotation from txt file
+    if external_annotation is not None:
+        annotations = _read_annotations(raw.times, external_annotation,
+                                        data["timestamps"][0])
+        raw.set_annotations(annotations)
 
     # Save
     raw.save(fiffile, verbose=False, overwrite=overwrite, fmt=precision)
@@ -187,6 +193,19 @@ def _event_timestamps_to_indices(raw_timestamps, eventfile, offset):
                 events.append([next_index, 0, event_value])
 
     return events
+
+
+def _read_annotations(raw_timestamps, annotation_file, offset):
+    onsets, durations, descriptions = list(), list(), list()
+    with open(annotation_file, 'r') as file:
+        for line in file:
+            data = line.strip().split()
+            onsets.append(float(data[0]) - offset)
+            durations.append(float(data[1]))
+            descriptions.append(data[2])
+
+    annotations = mne.Annotations(onsets, durations, descriptions)
+    return annotations
 
 
 def _add_events_from_txt(raw, events_index, stim_channel='TRIGGER',
