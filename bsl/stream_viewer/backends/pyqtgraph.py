@@ -178,7 +178,7 @@ class _BackendPyQtGraph(_Backend):
             self._clean_up_trigger_events()
 
             for annot in self._annotations:
-                print (annot.position_buffer.x())
+                print (annot.position_buffer.x(), annot.position_plot.x())
                 annot.position_buffer = QPointF(
                     annot.position_buffer.x()
                         - len(self._scope.ts_list) / self._scope.sample_rate,
@@ -206,7 +206,9 @@ class _BackendPyQtGraph(_Backend):
             self._first_click_position = viewBox.mapSceneToView(
                 mouseClickEvent.scenePos())
         else:
-            position_plot = position_buffer = \
+            position_buffer = \
+                viewBox.mapSceneToView(mouseClickEvent.scenePos())
+            position_plot = \
                 viewBox.mapSceneToView(mouseClickEvent.scenePos())
             duration = position_plot - self._first_click_position
             position_buffer.setX(position_buffer.x() + self._delta_with_buffer)
