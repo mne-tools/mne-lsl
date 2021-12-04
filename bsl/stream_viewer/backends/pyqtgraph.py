@@ -73,7 +73,8 @@ class _BackendPyQtGraph(_Backend):
 
         # Queue initializing
         self._queueTimeStamps = queue.Queue()
-        self._thread = threading.Thread(target= self._queuing, args=(), daemon=False)
+        self._thread = threading.Thread(target= self._queuing, args=(),
+                                        daemon=True)
         self._thread.start()
 
     @copy_doc(_Backend._init_variables)
@@ -208,8 +209,6 @@ class _BackendPyQtGraph(_Backend):
     @copy_doc(_Backend.close)
     def close(self):
         self._timer.stop()
-        self._queueTimeStamps.join()
-        self._thread.join()
         self._win.close()
 
 

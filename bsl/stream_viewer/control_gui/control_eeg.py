@@ -279,6 +279,8 @@ class ControlGUI_EEG(_ControlGUI):
         """
         if self._ui.pushButton_stop_recording.isEnabled():
             self.onClicked_pushButton_stop_recording()
+        self._backend._queueTimeStamps.join()
+        self._backend._thread.join(1)
         self._backend.close()
         super().closeEvent(event)
 
