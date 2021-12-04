@@ -124,7 +124,7 @@ class _BackendPyQtGraph(_Backend):
             onset, duration, description = self._queueTimeStamps.get()
             if self._recorder_annotation_file is not None:
                 self._recorder_annotation_file.write(
-                    "%s %s %s\n" % (onset, duration.x(), self._label))
+                    "%s %s %s\n" % (onset, duration.x(), description))
             ## write in the .txt file
             self._queueTimeStamps.task_done()
 
@@ -222,13 +222,16 @@ class _BackendPyQtGraph(_Backend):
         if mouseClickEvent.button() != 1 or not self._annotation_On:
             return
 
+        pens = {'bad': pg.mkColor(255, 0, 255),
+                'bad_muscle': pg.mkColor(0, 255, 255)}
+
         viewBox = self._plot_handler.getViewBox()
 
         if self._first_click_position is None:
             self._first_click_position = viewBox.mapSceneToView(
                 mouseClickEvent.scenePos())
             self._lineItem = pg.InfiniteLine(
-                pos=self._first_click_position.x(), pen=pg.mkColor(0, 255, 0))
+                pos=self._first_click_position.x(), pen=pens[self._label])
             self._plot_handler.addItem(self._lineItem)
 
         else:
@@ -243,11 +246,12 @@ class _BackendPyQtGraph(_Backend):
                 position_buffer=position_buffer,
                 position_plot=position_plot,
                 duration=duration,
-                annotation_description='bad',
+                annotation_description=self._label,
                 viewBox=viewBox)
 
             onset = int(position_buffer.x() * self._scope.sample_rate)
-            self._queueTimeStamps.put([self._scope._timestamps_buffer[onset], duration, "bad"])
+            self._queueTimeStamps.put([self._scope._timestamps_buffer[onset],
+                                       duration, self._label])
 
             self._plot_handler.removeItem(self._lineItem)
             annotation.add()
@@ -280,6 +284,13 @@ class _BackendPyQtGraph(_Backend):
                     event.addEventPlot()
             else:
                 event.removeEventPlot()
+
+        for annot in self._annotations:
+            annot.position_plot.setX(annot.position_buffer.x() - self._delta_with_buffer)
+            if annot.position_plot.x() >= 0:
+                annot.add()
+            else:
+                annot.remove()
 
     @_Backend.yRange.setter
     @copy_doc(_Backend.yRange.setter)
@@ -442,6 +453,12 @@ class _TriggerEvent(_Event):
 
 
 class Annotation:
+
+    pens = {'bad': pg.mkColor(255, 0, 255),
+              'bad_muscle': pg.mkColor(0, 255, 255)}
+    brushs = {'bad': pg.mkBrush(255, 0, 255, 50),
+              'bad_muscle': pg.mkBrush(0, 255, 255, 50)}
+
     def __init__(self, plot_handler, position_buffer, position_plot, duration,
                  annotation_description, viewBox):
         self._plot_handler = plot_handler
@@ -465,7 +482,8 @@ class Annotation:
                 QPointF(position_left, 0),
                 QPointF(position_right, self._viewBox.height()))
             self._rect = self._plot_handler.getViewBox().scene().addRect(
-                rectangle, pg.mkColor(0, 255, 0), pg.mkBrush(0, 255, 0, 50))
+                rectangle, self.pens[self._annotation_description],
+                self.brushs[self._annotation_description])
             self._plotted=True
 
     def remove(self):
