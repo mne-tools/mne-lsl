@@ -142,6 +142,15 @@ class _BackendPyQtGraph(_Backend):
             if event.position_plot < 0:
                 event.removeEventPlot()
 
+    def _clean_up_annotations(self):
+        for k in range(len(self._annotations)-1, -1, -1):
+            if self._annotations[k].position_buffer.x() < 0:
+                del self._annotations[k]
+
+        for annot in self._annotations:
+            if annot.position_plot.x() < 0:
+                annot.remove()
+
     # -------------------------- Main Loop -------------------------
     @copy_doc(_Backend.start_timer)
     def start_timer(self):
@@ -169,15 +178,17 @@ class _BackendPyQtGraph(_Backend):
             self._clean_up_trigger_events()
 
             for annot in self._annotations:
+                print (annot.position_buffer.x())
                 annot.position_buffer = QPointF(
                     annot.position_buffer.x()
                         - len(self._scope.ts_list) / self._scope.sample_rate,
                         0)
             if self._first_click_position is not None:
-                print (self._first_click_position.x())
                 self._first_click_position.setX(
                     self._first_click_position.x() -
                     len(self._scope.ts_list) / self._scope.sample_rate)
+
+            self._clean_up_annotations()
 
     # --------------------------- Events ---------------------------
     @copy_doc(_Backend.close)
@@ -195,15 +206,17 @@ class _BackendPyQtGraph(_Backend):
             self._first_click_position = viewBox.mapSceneToView(
                 mouseClickEvent.scenePos())
         else:
-            position = viewBox.mapSceneToView(mouseClickEvent.scenePos())
-            duration = position - self._first_click_position
-            print (position, duration)
-            annotation = Annotation(self._plot_handler,
-                                    position_buffer=position,
-                                    position_plot=position,
-                                    duration=duration,
-                                    annotation_description='bad',
-                                    viewBox=viewBox)
+            position_plot = position_buffer = \
+                viewBox.mapSceneToView(mouseClickEvent.scenePos())
+            duration = position_plot - self._first_click_position
+            position_buffer.setX(position_buffer.x() + self._delta_with_buffer)
+            annotation = Annotation(
+                self._plot_handler,
+                position_buffer=position_buffer,
+                position_plot=position_plot,
+                duration=duration,
+                annotation_description='bad',
+                viewBox=viewBox)
             annotation.add()
             self._annotations.append(annotation)
             self._first_click_position = None
@@ -454,3 +467,9 @@ class Annotation:
     @position_plot.setter
     def position_plot(self, position_plot):
         self._position_plot = position_plot
+
+    def __del__(self):
+        try:
+            self.remove()
+        except Exception:
+            pass
