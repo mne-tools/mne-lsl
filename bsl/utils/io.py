@@ -33,7 +33,7 @@ def pcl2fif(fname, out_dir=None, external_event=None, external_annotation=None,
         Event file path in text format, following MNE event structure.
         Each row should be: ``index 0 event``
     external_annotation : `str`
-        Annotation file path in json format.
+        Annotation file path in text format.
     precision : `str`
         Data matrix format. ``[single|double|int|short]``, ``'single'``
         improves backward compatability.
