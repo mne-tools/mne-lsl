@@ -91,12 +91,12 @@ class _ControlGUI(QMainWindow, ABC, metaclass=_metaclass_ControlGUI):
     @QtCore.pyqtSlot()
     def onClicked_pushButton_stop_recording(self):
         if self._recorder.state.value == 1:
-            self._recorder.stop()
             try:
                 self._recorder_annotation_file.close()
                 self._backend._recorder_annotation_file = None
             except:
                 pass
+            self._recorder.stop()
             self._ui.pushButton_start_recording.setEnabled(True)
             self._ui.pushButton_stop_recording.setEnabled(False)
             self._ui.statusBar.showMessage("[Not recording]")

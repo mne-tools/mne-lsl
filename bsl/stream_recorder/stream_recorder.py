@@ -336,12 +336,12 @@ class _Recorder:
                 if self._eve_file.exists() else None
             annotation_file = Path(
                 str(self._eve_file).replace('-eve', '-annotation'))
-            external_annotations = annotation_file \
+            external_annotation = annotation_file \
                 if annotation_file.exists() else None
 
             pcl2fif(
                 pcl_files[stream], out_dir, external_event=external_event,
-                external_annotations=external_annotations)
+                external_annotation=external_annotation)
 
     # --------------------------------------------------------------------
     @staticmethod

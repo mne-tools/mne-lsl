@@ -71,7 +71,7 @@ def pcl2fif(fname, out_dir=None, external_event=None, external_annotation=None,
 
     # Add annotation from txt file
     if external_annotation is not None:
-        annotations = _read_annotations(raw.times, external_annotation,
+        annotations = _read_annotations(external_annotation,
                                         data["timestamps"][0])
         raw.set_annotations(annotations)
 
@@ -195,7 +195,7 @@ def _event_timestamps_to_indices(raw_timestamps, eventfile, offset):
     return events
 
 
-def _read_annotations(raw_timestamps, annotation_file, offset):
+def _read_annotations(annotation_file, offset):
     onsets, durations, descriptions = list(), list(), list()
     with open(annotation_file, 'r') as file:
         for line in file:
