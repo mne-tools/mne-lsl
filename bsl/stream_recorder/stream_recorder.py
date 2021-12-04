@@ -332,13 +332,16 @@ class _Recorder:
             else:
                 out_dir = self._record_dir
 
-            if self._eve_file.exists():
-                logger.info('Found matching event file, adding events.')
-                pcl2fif(
-                    pcl_files[stream], out_dir, external_event=self._eve_file)
-            else:
-                pcl2fif(
-                    pcl_files[stream], out_dir, external_event=None)
+            external_event = self._eve_file \
+                if self._eve_file.exists() else None
+            annotation_file = Path(
+                str(self._eve_file).replace('-eve', '-annotation'))
+            external_annotations = annotation_file \
+                if annotation_file.exists() else None
+
+            pcl2fif(
+                pcl_files[stream], out_dir, external_event=external_event,
+                external_annotations=external_annotations)
 
     # --------------------------------------------------------------------
     @staticmethod

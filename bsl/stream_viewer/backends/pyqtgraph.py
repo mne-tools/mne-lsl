@@ -5,9 +5,11 @@ import numpy as np
 
 import pyqtgraph as pg
 from PyQt5 import QtCore
+from PyQt5.QtCore import QPointF
 
 from ._backend import _Backend, _Event
 from ...utils._docs import fill_doc, copy_doc
+import threading, queue
 
 # pg.setConfigOptions(antialias=True)
 
@@ -29,6 +31,7 @@ class _BackendPyQtGraph(_Backend):
     def __init__(self, scope, geometry, xRange, yRange):
         super().__init__(scope, geometry, xRange, yRange)
         self._trigger_events = list()
+        self._annotations = list()
 
         # Variables
         self._available_colors = np.random.uniform(
@@ -62,6 +65,21 @@ class _BackendPyQtGraph(_Backend):
         # Timer
         self._timer = QtCore.QTimer(self._win)
         self._timer.timeout.connect(self._update_loop)
+
+        # Connect
+        self._first_click_position = None
+        self._plot_handler.getViewBox().scene().sigMouseClicked.connect(
+            self.mouse_clicked)
+
+        # Queue initializing
+        self._queueTimeStamps = queue.Queue()
+        self._thread = threading.Thread(target= self._queuing, args=(),
+                                        daemon=True)
+        self._thread.start()
+        self._recorder_annotation_file = None
+
+        # bool
+        self._annotation_On = False
 
     @copy_doc(_Backend._init_variables)
     def _init_variables(self):
@@ -99,6 +117,17 @@ class _BackendPyQtGraph(_Backend):
             / self._scope.sample_rate
         self._plot_handler.setLabel(axis='bottom', text='Time (s)')
 
+    # ----------------------------- Queue --------------------------
+    def _queuing(self):
+        while True:
+            ## get the first timestamp that entered the buffer
+            onset, duration, description = self._queueTimeStamps.get()
+            if self._recorder_annotation_file is not None:
+                self._recorder_annotation_file.write(
+                    "%s %s %s\n" % (onset, duration.x(), description))
+            ## write in the .txt file
+            self._queueTimeStamps.task_done()
+
     # ------------------------ Trigger Events ----------------------
     @copy_doc(_Backend._update_LPT_trigger_events)
     def _update_LPT_trigger_events(self, trigger_arr):
@@ -135,6 +164,15 @@ class _BackendPyQtGraph(_Backend):
             if event.position_plot < 0:
                 event.removeEventPlot()
 
+    def _clean_up_annotations(self):
+        for k in range(len(self._annotations)-1, -1, -1):
+            if self._annotations[k].position_buffer.x() < 0:
+                del self._annotations[k]
+
+        for annot in self._annotations:
+            if annot.position_plot.x() < 0:
+                annot.remove()
+
     # -------------------------- Main Loop -------------------------
     @copy_doc(_Backend.start_timer)
     def start_timer(self):
@@ -161,11 +199,71 @@ class _BackendPyQtGraph(_Backend):
             # Hide/Remove events exiting window and buffer
             self._clean_up_trigger_events()
 
+            for annot in self._annotations:
+                annot.position_buffer = QPointF(
+                    annot.position_buffer.x()
+                        - len(self._scope.ts_list) / self._scope.sample_rate,
+                        0)
+            if self._first_click_position is not None:
+                self._first_click_position.setX(
+                    self._first_click_position.x() -
+                    len(self._scope.ts_list) / self._scope.sample_rate)
+
+
+            self._clean_up_annotations()
+
     # --------------------------- Events ---------------------------
     @copy_doc(_Backend.close)
     def close(self):
         self._timer.stop()
         self._win.close()
+
+
+    def mouse_clicked(self, mouseClickEvent):
+        if mouseClickEvent.button() != 1 or not self._annotation_On:
+            return
+
+        viewBox = self._plot_handler.getViewBox()
+
+        if self._first_click_position is None:
+            self._first_click_position = viewBox.mapSceneToView(
+                mouseClickEvent.scenePos())
+        else:
+            position_buffer = \
+                viewBox.mapSceneToView(mouseClickEvent.scenePos())
+            position_plot = \
+                viewBox.mapSceneToView(mouseClickEvent.scenePos())
+            duration = position_plot - self._first_click_position
+            position_buffer.setX(position_buffer.x() + self._delta_with_buffer)
+            annotation = Annotation(
+                self._plot_handler,
+                position_buffer=position_buffer,
+                position_plot=position_plot,
+                duration=duration,
+                annotation_description='bad',
+                viewBox=viewBox)
+
+            #new_pos = viewBox.mapViewToScene(position_buffer).x()
+            print("position_buffer.x()", position_buffer.x())
+            onset = int(position_buffer.x() * self._scope.sample_rate)
+            print("self._scope._timestamps_buffer[-onset])", self._scope._timestamps_buffer[onset])
+            print("onset ", onset)
+            self._queueTimeStamps.put([onset, duration, "bad"])
+
+            annotation.add()
+            self._annotations.append(annotation)
+            self._first_click_position = None
+
+
+        # if mouseClickEvent.button() == 1:
+        #     x = mouseClickEvent.scenePos().x()
+        #     print("button 1")
+        # elif mouseClickEvent.button() == 2:
+        #     x = mouseClickEvent.scenePos().x()
+        #     print("button 2")
+
+        # viewBox = self._plot_handler.getViewBox()
+        # x = viewBox.mapSceneToView(mouseClickEvent.scenePos()).x()
 
     # ------------------------ Update program ----------------------
     @_Backend.xRange.setter
@@ -341,3 +439,72 @@ class _TriggerEvent(_Event):
         """
         self._yRange = yRange
         self._update()
+
+
+class Annotation:
+    def __init__(self, plot_handler, position_buffer, position_plot, duration,
+                 annotation_description, viewBox):
+        self._plot_handler = plot_handler
+        self._position_buffer = position_buffer
+        self._position_plot = position_plot
+        self._duration = duration
+        self._annotation_description = annotation_description
+        self._viewBox = viewBox
+
+        self._rect = None
+        self._plotted = False
+
+    def add(self):
+        if not self._plotted:
+            position_left = self._viewBox.mapViewToScene(
+                self._position_plot - self._duration).x()
+            position_right = self._viewBox.mapViewToScene(
+                self._position_plot).x()
+
+            rectangle = QtCore.QRectF(
+                QPointF(position_left, 0),
+                QPointF(position_right, self._viewBox.height()))
+            self._rect = self._plot_handler.getViewBox().scene().addRect(
+                rectangle, pg.mkColor(0, 255, 0), pg.mkBrush(0, 255, 0, 50))
+            print (self._rect, type(self._rect))
+            self._plotted=True
+
+    def remove(self):
+        if self._plotted:
+            self._plot_handler.getViewBox().scene().removeItem(self._rect)
+            self._rect = None
+            self._plotted = False
+
+    def _update(self):
+        if self._rect is not None:
+            new_pos = self._viewBox.mapViewToScene(self._position_plot).x()
+            # self._rect.translate(dx=position_dx, dy=0)
+            new_pos -= self._rect.rect().width()
+            rect = self._rect.rect()
+            rect.moveTo(new_pos, 0)
+            self._rect.setRect(rect)
+
+    @property
+    def position_buffer(self):
+        return self._position_buffer
+
+    @position_buffer.setter
+    def position_buffer(self, position_buffer):
+        delta = self._position_buffer.x() - position_buffer.x()
+        self._position_buffer = position_buffer
+        self._position_plot.setX(self._position_plot.x() - delta)
+        self._update()
+
+    @property
+    def position_plot(self):
+        return self._position_plot
+
+    @position_plot.setter
+    def position_plot(self, position_plot):
+        self._position_plot = position_plot
+
+    def __del__(self):
+        try:
+            self.remove()
+        except Exception:
+            pass

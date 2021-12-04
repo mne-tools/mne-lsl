@@ -48,6 +48,7 @@ class ScopeEEG(_Scope):
         self._data_buffer = np.zeros(
             (self._nb_channels, self._duration_buffer_samples),
             dtype=np.float32)
+        self._timestamps_buffer = np.zeros(self._duration_buffer_samples)
 
     def init_bandpass_filter(self, low, high):
         """
@@ -84,6 +85,10 @@ class ScopeEEG(_Scope):
             self._trigger_buffer = np.roll(
                 self._trigger_buffer, -len(self._ts_list))
             self._trigger_buffer[-len(self._ts_list):] = self._trigger_acquired
+            # shape (samples, )
+            self._timestamps_buffer = np.roll(
+                self._timestamps_buffer, -len(self._ts_list))
+            self._timestamps_buffer[-len(self._ts_list):] = self._ts_list
 
     @copy_doc(_Scope._read_lsl_stream)
     def _read_lsl_stream(self):
