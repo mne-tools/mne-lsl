@@ -9,6 +9,7 @@ from PyQt5.QtCore import QPointF
 
 from ._backend import _Backend, _Event
 from ...utils._docs import fill_doc, copy_doc
+import threading, queue
 
 # pg.setConfigOptions(antialias=True)
 
@@ -70,6 +71,11 @@ class _BackendPyQtGraph(_Backend):
         self._plot_handler.getViewBox().scene().sigMouseClicked.connect(
             self.mouse_clicked)
 
+        # Queue initializing
+        self._queueTimeStamps = queue.Queue()
+        self._thread = threading.Thread(target= self._queuing, args=(), daemon=False)
+        self._thread.start()
+
     @copy_doc(_Backend._init_variables)
     def _init_variables(self):
         super()._init_variables()
@@ -106,6 +112,14 @@ class _BackendPyQtGraph(_Backend):
             / self._scope.sample_rate
         self._plot_handler.setLabel(axis='bottom', text='Time (s)')
 
+    # ----------------------------- Queue --------------------------
+    def _queuing(self):
+        while True:
+            ## get the first timestamp that entered the buffer
+            onset, duration, description = self._queueTimeStamps.get()
+            print("onset, duration, description", onset, duration, description)
+            ## write in the .txt file
+            self._queueTimeStamps.task_done()
     # ------------------------ Trigger Events ----------------------
     @copy_doc(_Backend._update_LPT_trigger_events)
     def _update_LPT_trigger_events(self, trigger_arr):
@@ -187,13 +201,17 @@ class _BackendPyQtGraph(_Backend):
                     self._first_click_position.x() -
                     len(self._scope.ts_list) / self._scope.sample_rate)
 
+
             self._clean_up_annotations()
 
     # --------------------------- Events ---------------------------
     @copy_doc(_Backend.close)
     def close(self):
         self._timer.stop()
+        self._queueTimeStamps.join()
+        self._thread.join()
         self._win.close()
+
 
     def mouse_clicked(self, mouseClickEvent):
         if mouseClickEvent.button() != 1:
@@ -218,9 +236,18 @@ class _BackendPyQtGraph(_Backend):
                 duration=duration,
                 annotation_description='bad',
                 viewBox=viewBox)
+
+            #new_pos = viewBox.mapViewToScene(position_buffer).x()
+            print("position_buffer.x()", position_buffer.x())
+            onset = int(position_buffer.x() * self._scope.sample_rate)
+            print("self._scope._timestamps_buffer[-onset])", self._scope._timestamps_buffer[onset])
+            print("onset ", onset)
+            self._queueTimeStamps.put([onset, duration, "bad"])
+
             annotation.add()
             self._annotations.append(annotation)
             self._first_click_position = None
+
 
         # if mouseClickEvent.button() == 1:
         #     x = mouseClickEvent.scenePos().x()
