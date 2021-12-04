@@ -180,6 +180,8 @@ class ControlGUI_EEG(_ControlGUI):
                     self.width()*2, self.height())
         self._backend = backend(
             self._scope, geometry, self._xRange, self._yRange)
+        self._backend._recorder_annotation_file = \
+            self._recorder_annotation_file
 
     # --------------------------------------------------------------------
     @copy_doc(_ControlGUI._connect_signals_to_slots)

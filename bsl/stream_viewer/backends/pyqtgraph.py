@@ -76,6 +76,7 @@ class _BackendPyQtGraph(_Backend):
         self._thread = threading.Thread(target= self._queuing, args=(),
                                         daemon=True)
         self._thread.start()
+        self._recorder_annotation_file = None
 
     @copy_doc(_Backend._init_variables)
     def _init_variables(self):
@@ -118,7 +119,9 @@ class _BackendPyQtGraph(_Backend):
         while True:
             ## get the first timestamp that entered the buffer
             onset, duration, description = self._queueTimeStamps.get()
-            print("onset, duration, description", onset, duration, description)
+            if self._recorder_annotation_file is not None:
+                self._recorder_annotation_file.write(
+                    "%s %s %s" % (onset, duration.x(), description))
             ## write in the .txt file
             self._queueTimeStamps.task_done()
     # ------------------------ Trigger Events ----------------------

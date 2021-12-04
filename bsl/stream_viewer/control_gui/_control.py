@@ -34,6 +34,7 @@ class _ControlGUI(QMainWindow, ABC, metaclass=_metaclass_ControlGUI):
     def __init__(self, scope, backend):
         super().__init__()
         self._scope = scope
+        self._recorder_annotation_file = None
 
     @abstractmethod
     def _load_gui(self):
@@ -73,8 +74,13 @@ class _ControlGUI(QMainWindow, ABC, metaclass=_metaclass_ControlGUI):
     def onClicked_pushButton_start_recording(self):
         record_dir = self._ui.lineEdit_recording_dir.text()
         self._recorder = StreamRecorder(
-            record_dir, stream_name=self._scope.stream_name)
-        self._recorder.start(fif_subdir=True, blocking=False, verbose=False)
+            record_dir, stream_name=self._scope.stream_name, fif_subdir=True,
+            verbose=False)
+        self._recorder.start(blocking=False)
+        while self._recorder.eve_file is None:
+            pass
+        self._recorder_annotation_file = open(
+            str(self._recorder.eve_file).replace('-eve', '-annotation'), 'a')
         self._ui.pushButton_stop_recording.setEnabled(True)
         self._ui.pushButton_start_recording.setEnabled(False)
         self._ui.statusBar.showMessage(f"[Recording to '{record_dir}']")
@@ -83,6 +89,11 @@ class _ControlGUI(QMainWindow, ABC, metaclass=_metaclass_ControlGUI):
     def onClicked_pushButton_stop_recording(self):
         if self._recorder.state.value == 1:
             self._recorder.stop()
+            try:
+                self._recorder_annotation_file.close()
+                self._backend._recorder_annotation_file = None
+            except:
+                pass
             self._ui.pushButton_start_recording.setEnabled(True)
             self._ui.pushButton_stop_recording.setEnabled(False)
             self._ui.statusBar.showMessage("[Not recording]")
