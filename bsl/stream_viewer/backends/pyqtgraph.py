@@ -78,6 +78,9 @@ class _BackendPyQtGraph(_Backend):
         self._thread.start()
         self._recorder_annotation_file = None
 
+        # bool
+        self._annotation_On = False
+
     @copy_doc(_Backend._init_variables)
     def _init_variables(self):
         super()._init_variables()
@@ -217,7 +220,7 @@ class _BackendPyQtGraph(_Backend):
 
 
     def mouse_clicked(self, mouseClickEvent):
-        if mouseClickEvent.button() != 1:
+        if mouseClickEvent.button() != 1 or not self._annotation_On:
             return
 
         viewBox = self._plot_handler.getViewBox()

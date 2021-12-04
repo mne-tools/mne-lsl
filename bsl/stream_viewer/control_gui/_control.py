@@ -86,6 +86,8 @@ class _ControlGUI(QMainWindow, ABC, metaclass=_metaclass_ControlGUI):
         self._ui.pushButton_start_recording.setEnabled(False)
         self._ui.statusBar.showMessage(f"[Recording to '{record_dir}']")
 
+        self._backend._annotation_On = True
+
     @QtCore.pyqtSlot()
     def onClicked_pushButton_stop_recording(self):
         if self._recorder.state.value == 1:
@@ -98,6 +100,8 @@ class _ControlGUI(QMainWindow, ABC, metaclass=_metaclass_ControlGUI):
             self._ui.pushButton_start_recording.setEnabled(True)
             self._ui.pushButton_stop_recording.setEnabled(False)
             self._ui.statusBar.showMessage("[Not recording]")
+
+        self._backend._annotation_On = False
 
     @QtCore.pyqtSlot()
     def onClicked_pushButton_set_recording_dir(self):
