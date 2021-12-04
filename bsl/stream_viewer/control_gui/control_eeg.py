@@ -3,7 +3,7 @@ from pathlib import Path
 from configparser import RawConfigParser
 
 from PyQt5 import QtCore
-from PyQt5.QtWidgets import QHeaderView, QTableWidgetItem
+from PyQt5.QtWidgets import QHeaderView, QTableWidgetItem, QInputDialog
 
 from ._control import _ControlGUI
 from ._ui_control import UI_MainWindow
@@ -225,6 +225,11 @@ class ControlGUI_EEG(_ControlGUI):
         self._ui.comboBox_label.activated.connect(
             self.onActivated_comboBox_label)
 
+        # add Label
+        self._ui.pushButton_addLabel.clicked.connect(
+            self.onClicked_pushButton_addLabel
+        )
+
     @QtCore.pyqtSlot()
     def onActivated_comboBox_signal_yRange(self):
         self._yRange = float(list(self._yRanges.values())[
@@ -248,6 +253,14 @@ class ControlGUI_EEG(_ControlGUI):
         self._scope.apply_bandpass = self._ui.checkBox_bandpass.isChecked()
         logger.debug(
             'BP checkbox: %s' % self._ui.checkBox_bandpass.isChecked())
+
+    @QtCore.pyqtSlot()
+    def onClicked_pushButton_addLabel(self):
+        text, ok = QInputDialog.getText(self, 'Add label', 'Add your new label:')
+
+        if ok:
+            print("text", text)
+            self._labels.append(str(text))
 
     @QtCore.pyqtSlot()
     def onValueChanged_doubleSpinBox_bandpass_low(self):

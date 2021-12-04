@@ -81,7 +81,7 @@ class UI_MainWindow(object):
 
         #Label
         self.comboBox_label = QComboBox(self.MainWidget)
-        self.comboBox_label.setGeometry(QRect(180, 90, 100, 27))
+        self.comboBox_label.setGeometry(QRect(160, 90, 100, 27))
         self.comboBox_label.setObjectName("comboBox_label")
         self.comboBox_label.setEnabled(False)
 
@@ -89,6 +89,13 @@ class UI_MainWindow(object):
         self.label_label.setGeometry(QRect(120, 90, 85, 27))
         self.label_label.setObjectName("label_label")
         self.label_label.setText("Labels")
+
+        # Add Label
+        self.pushButton_addLabel = QPushButton(self.MainWidget)
+        self.pushButton_addLabel.setGeometry(QRect(265, 90, 27, 27))
+        self.pushButton_addLabel.setObjectName("pushButton_start_recording")
+        self.pushButton_addLabel.setText("+")
+        self.pushButton_addLabel.setEnabled(True)
 
         # Lines
         self.line1 = QFrame(self.MainWidget)

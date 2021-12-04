@@ -2,7 +2,8 @@ from pathlib import Path
 from abc import ABC, abstractmethod
 
 from PyQt5 import QtCore
-from PyQt5.QtWidgets import QMainWindow, QFileDialog
+from PyQt5.QtWidgets import QMainWindow, QFileDialog, QInputDialog
+
 
 try:
     from ..backends.vispy import _BackendVispy
@@ -70,6 +71,7 @@ class _ControlGUI(QMainWindow, ABC, metaclass=_metaclass_ControlGUI):
         self._ui.pushButton_set_recording_dir.clicked.connect(
             self.onClicked_pushButton_set_recording_dir)
 
+
     @QtCore.pyqtSlot()
     def onClicked_pushButton_start_recording(self):
         record_dir = self._ui.lineEdit_recording_dir.text()
@@ -114,6 +116,8 @@ class _ControlGUI(QMainWindow, ABC, metaclass=_metaclass_ControlGUI):
             self._ui.lineEdit_recording_dir.setText(path_name)
             self._ui.pushButton_start_recording.setEnabled(True)
             self._ui.comboBox_label.setEnabled(True)
+
+
 
     # --------------------------------------------------------------------
     @staticmethod
