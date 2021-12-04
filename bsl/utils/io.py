@@ -17,7 +17,7 @@ mne.set_log_level('ERROR')
 
 
 # ------------------------- Stream Recorder PCL -------------------------
-def pcl2fif(fname, out_dir=None, external_event=None,
+def pcl2fif(fname, out_dir=None, external_event=None, external_annotation=None,
             precision='double', replace=False, overwrite=True):
     """
     Convert BSL Python pickle format to MNE `~mne.io.Raw`.
@@ -32,6 +32,8 @@ def pcl2fif(fname, out_dir=None, external_event=None,
     external_event : `str`
         Event file path in text format, following MNE event structure.
         Each row should be: ``index 0 event``
+    external_annotation : `str`
+        Annotation file path in json format.
     precision : `str`
         Data matrix format. ``[single|double|int|short]``, ``'single'``
         improves backward compatability.
@@ -68,6 +70,10 @@ def pcl2fif(fname, out_dir=None, external_event=None,
             raw.times, external_event, data["timestamps"][0])
         _add_events_from_txt(
             raw, events_index, stim_channel='TRIGGER', replace=replace)
+
+    # Add annotation from json file
+    if external_annotation is not None:
+        pass
 
     # Save
     raw.save(fiffile, verbose=False, overwrite=overwrite, fmt=precision)
