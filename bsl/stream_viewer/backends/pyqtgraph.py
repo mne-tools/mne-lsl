@@ -205,10 +205,9 @@ class _BackendPyQtGraph(_Backend):
                         - len(self._scope.ts_list) / self._scope.sample_rate,
                         0)
             if self._first_click_position is not None:
-                self._first_click_position.setX(
-                    self._first_click_position.x() -
-                    len(self._scope.ts_list) / self._scope.sample_rate)
-
+                position = self._first_click_position.x() - len(self._scope.ts_list) / self._scope.sample_rate
+                self._first_click_position.setX(position)
+                self._lineItem.setValue(position)
 
             self._clean_up_annotations()
 
@@ -228,6 +227,10 @@ class _BackendPyQtGraph(_Backend):
         if self._first_click_position is None:
             self._first_click_position = viewBox.mapSceneToView(
                 mouseClickEvent.scenePos())
+            self._lineItem = pg.InfiniteLine(
+                pos=self._first_click_position.x(), pen=pg.mkColor(0, 255, 0))
+            self._plot_handler.addItem(self._lineItem)
+
         else:
             position_buffer = \
                 viewBox.mapSceneToView(mouseClickEvent.scenePos())
@@ -243,13 +246,10 @@ class _BackendPyQtGraph(_Backend):
                 annotation_description='bad',
                 viewBox=viewBox)
 
-            #new_pos = viewBox.mapViewToScene(position_buffer).x()
-            print("position_buffer.x()", position_buffer.x())
             onset = int(position_buffer.x() * self._scope.sample_rate)
-            print("self._scope._timestamps_buffer[-onset])", self._scope._timestamps_buffer[onset])
-            print("onset ", onset)
-            self._queueTimeStamps.put([onset, duration, "bad"])
+            self._queueTimeStamps.put([self._scope._timestamps_buffer[onset], duration, "bad"])
 
+            self._plot_handler.removeItem(self._lineItem)
             annotation.add()
             self._annotations.append(annotation)
             self._first_click_position = None
