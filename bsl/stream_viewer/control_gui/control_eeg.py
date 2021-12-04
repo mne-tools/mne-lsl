@@ -44,6 +44,9 @@ class ControlGUI_EEG(_ControlGUI):
             self._ui.comboBox_signal_yRange.addItem(str(yRange))
             logger.debug(f'y-scale option {yRange} added.')
 
+        for label in self._labels:
+            self._ui.comboBox_label.addItem(str(label))
+
         # Set table channels row/col
         self._nb_table_columns = 8 if self._scope.nb_channels > 64 else 4
         self._nb_table_rows = math.ceil(
@@ -107,6 +110,9 @@ class ControlGUI_EEG(_ControlGUI):
             self._xRange = int(scope_settings.get("plot", "xRange"))
         except Exception:  # Default to 10s
             self._xRange = 10
+
+        # Label
+        self._labels = ['bad', 'bad_muscle']
 
     def _set_configuration(self, file):
         """
@@ -173,6 +179,10 @@ class ControlGUI_EEG(_ControlGUI):
         # Status bar
         self._ui.statusBar.showMessage("[Not recording]")
 
+        # Label
+        self._ui.comboBox_label.setCurrentIndex(0)
+        self._backend._label = self._labels[0]
+
     @copy_doc(_ControlGUI._init_backend)
     def _init_backend(self, backend):
         backend = _ControlGUI._check_backend(backend)
@@ -210,6 +220,10 @@ class ControlGUI_EEG(_ControlGUI):
         # Channel table
         self._ui.table_channels.itemSelectionChanged.connect(
             self.onSelectionChanged_table_channels)
+
+        # Label
+        self._ui.comboBox_label.activated.connect(
+            self.onActivated_comboBox_label)
 
     @QtCore.pyqtSlot()
     def onActivated_comboBox_signal_yRange(self):
@@ -274,6 +288,12 @@ class ControlGUI_EEG(_ControlGUI):
             item.row()*self._nb_table_columns + item.column()
             for item in selected])
         self._backend.selected_channels = self._scope.selected_channels
+
+    @QtCore.pyqtSlot()
+    def onActivated_comboBox_label(self):
+        self._label = str(self._labels[
+            self._ui.comboBox_label.currentIndex()])
+        self._backend._label = self._label
 
     def closeEvent(self, event):
         """

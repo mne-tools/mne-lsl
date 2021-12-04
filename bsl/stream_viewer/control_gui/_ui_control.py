@@ -75,9 +75,20 @@ class UI_MainWindow(object):
 
         # Show LPT events
         self.checkBox_show_LPT_trigger_events = QCheckBox(self.MainWidget)
-        self.checkBox_show_LPT_trigger_events.setGeometry(QRect(120, 80, 151, 22))
+        self.checkBox_show_LPT_trigger_events.setGeometry(QRect(120, 65, 151, 22))
         self.checkBox_show_LPT_trigger_events.setObjectName("checkBox_show_LPT_trigger_events")
         self.checkBox_show_LPT_trigger_events.setText("Show LPT events")
+
+        #Label
+        self.comboBox_label = QComboBox(self.MainWidget)
+        self.comboBox_label.setGeometry(QRect(180, 90, 100, 27))
+        self.comboBox_label.setObjectName("comboBox_label")
+        self.comboBox_label.setEnabled(False)
+
+        self.label_label = QLabel(self.MainWidget)
+        self.label_label.setGeometry(QRect(120, 90, 85, 27))
+        self.label_label.setObjectName("label_label")
+        self.label_label.setText("Labels")
 
         # Lines
         self.line1 = QFrame(self.MainWidget)

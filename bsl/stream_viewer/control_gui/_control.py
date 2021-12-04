@@ -102,6 +102,7 @@ class _ControlGUI(QMainWindow, ABC, metaclass=_metaclass_ControlGUI):
             self._ui.statusBar.showMessage("[Not recording]")
 
         self._backend._annotation_On = False
+        self._ui.comboBox_label.setEnabled(False)
 
     @QtCore.pyqtSlot()
     def onClicked_pushButton_set_recording_dir(self):
@@ -112,6 +113,7 @@ class _ControlGUI(QMainWindow, ABC, metaclass=_metaclass_ControlGUI):
         if path_name:
             self._ui.lineEdit_recording_dir.setText(path_name)
             self._ui.pushButton_start_recording.setEnabled(True)
+            self._ui.comboBox_label.setEnabled(True)
 
     # --------------------------------------------------------------------
     @staticmethod

@@ -124,7 +124,7 @@ class _BackendPyQtGraph(_Backend):
             onset, duration, description = self._queueTimeStamps.get()
             if self._recorder_annotation_file is not None:
                 self._recorder_annotation_file.write(
-                    "%s %s %s\n" % (onset, duration.x(), description))
+                    "%s %s %s\n" % (onset, duration.x(), self._label))
             ## write in the .txt file
             self._queueTimeStamps.task_done()
 
