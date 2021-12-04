@@ -182,6 +182,7 @@ class ControlGUI_EEG(_ControlGUI):
         # Label
         self._ui.comboBox_label.setCurrentIndex(0)
         self._backend._label = self._labels[0]
+        self._backend._labels = self._labels
 
     @copy_doc(_ControlGUI._init_backend)
     def _init_backend(self, backend):

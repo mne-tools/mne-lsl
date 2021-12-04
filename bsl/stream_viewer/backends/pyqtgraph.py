@@ -225,13 +225,18 @@ class _BackendPyQtGraph(_Backend):
         pens = {'bad': pg.mkColor(255, 0, 255),
                 'bad_muscle': pg.mkColor(0, 255, 255)}
 
+        try:
+            pen = pens[self._label]
+        except KeyError:
+            pen = pg.mkColor(255, 0, 0)
+
         viewBox = self._plot_handler.getViewBox()
 
         if self._first_click_position is None:
             self._first_click_position = viewBox.mapSceneToView(
                 mouseClickEvent.scenePos())
             self._lineItem = pg.InfiniteLine(
-                pos=self._first_click_position.x(), pen=pens[self._label])
+                pos=self._first_click_position.x(), pen=pen)
             self._plot_handler.addItem(self._lineItem)
 
         else:
@@ -461,6 +466,13 @@ class Annotation:
         self._plotted = False
 
     def add(self):
+        try:
+            pen = self.pens[self._annotation_description]
+            brush = self.brushs[self._annotation_description]
+        except KeyError:
+            pen = pg.mkColor(255, 0, 0)
+            brush = pg.mkBrush(255, 0, 0, 50)
+
         if not self._plotted:
             position_left = self._viewBox.mapViewToScene(
                 self._position_plot - self._duration).x()
@@ -471,8 +483,7 @@ class Annotation:
                 QPointF(position_left, 0),
                 QPointF(position_right, self._viewBox.height()))
             self._rect = self._plot_handler.getViewBox().scene().addRect(
-                rectangle, self.pens[self._annotation_description],
-                self.brushs[self._annotation_description])
+                rectangle, pen, brush)
             self._plotted=True
 
     def remove(self):
