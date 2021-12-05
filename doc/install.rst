@@ -44,75 +44,93 @@ Additional functionalities requires:
   :ref:`arduino2lpt`.
 - `vispy <https://vispy.org/>`_: for the `~bsl.StreamViewer` vispy backend.
 
-=====================
-Installation Example
-=====================
+=============================
+Installation and test example
+=============================
 
-| Python version `3.8.10`
-| Windows 10 Operating System
+| Python version ``3.8.10``
+| Operating System: ``Windows 10``
 
-**Step 1:** Make sure that the path to the desired version of Python is present in the `Path` Environment Variable of the PC:
+**Step 1:** Make sure that the path to the Python installation folder
+``Python38`` and ``Python38\Scripts`` present in the ``Path`` environment
+variable of the PC:
 
-- Right click on `This PC` App and select `Properties`
-- Scroll down the `About` section and select `Advanced system settings`
-.. image:: _static/install/Advanced_system_settings.png
+- In the start menu, right click on ``This PC`` App and select ``Properties``
+- Under ``Related settings``, click on ``Advanced system settings``
+
+.. image:: _static/install/advanced_system_settings.png
    :align: center
    :width: 400
 
-- Click on `Environmental Variables` and verify that the the Python path (ex. C:\\Users\\User\\Programs\\Python\\Python38\\Scripts) is in the Environmental system variable `Path`
-.. image:: _static/install/Environmental_variables.png
+- Select ``Environmental Variables``
+
+.. image:: _static/install/environmental_variables.png
    :align: center
    :width: 300
-|
-**Step 2:** From the Terminal go to the working directory and clone the `main repository <https://github.com/bsl-tools/bsl>`_:
 
-    .. code-block:: console
+- Check that the the Python installation folder path (e.g.
+  ``C:\Program Files\Python38\``) and the Python scripts folder (e.g.
+  ``C:\Program Files\Python38\Scripts\``) are in the environment variable
+  ``Path``, either user or system-wide.
 
-        $ git clone https://github.com/bsl-tools/bsl
+| **Step 2:** Install BSL with ``pip``:
 
-Enter to `bsl` folder:
+  .. code-block:: console
 
-    .. code-block:: console
-    
-       $ cd bsl
-       
-Install bsl with ``setup.py`` in developer mode:
+      $ pip install bsl
 
-    .. code-block:: console
-    
-       $ python setup.py develop
+Alternatively clone the main repository in the current directory and install
+BSL:
+
+  .. code-block:: console
+
+      $ git clone https://github.com/bsl-tools/bsl
+      $ cd bsl
+      $ python setup.py install
 
 **Step 3:** Check that everything works:
 
-- Download a dataset with Python Console:
+- Test that ``pylsl`` was correctly installed with the core ``liblsl``.
 
-    .. code-block:: console
-    
-       $ import bsl
-       $ bsl.datasets.eeg_resting_state.data_path()
+  .. code-block:: python
 
-- Run the `~bsl.StreamPlayer` from the terminal using the `resting_state-raw.fif` file located in the user home
-  directory's subfolder `bsl_data\eeg_sample` (ex. C:\\Users\\User\\bsl_data\\eeg_sample) :
-    
-    .. code-block:: console
-    
-       $ cd C:\Users\User
-       $ cd bsl_data
-       $ cd eeg_sample
-       $ bsl_stream_player testStream resting_state-raw.fif
+      import pylsl
 
-- Run the `~bsl.StreamViewer` from a different terminal:
+- Download a sample :ref:`bsl.datasets<datasets>`:
 
-    .. code-block:: console
-    
-       $ bsl_stream_viewer
+  .. code-block:: python
 
+      import bsl
+      dataset = bsl.datasets.eeg_resting_state.data_path()
+      print (dataset)  # displays the path to the -raw.fif dataset
 
-The stream viewer should be visualized:
+- Run a `~bsl.StreamPlayer` either from a python console or from terminal using
+  the downloaded sample dataset ``resting_state-raw.fif``.
 
-.. image:: _static/install/bsl_stream_viewer.png
+  In a python console:
+
+  .. code-block:: python
+
+      import bsl
+      dataset = bsl.datasets.eeg_resting_state.data_path()
+      player = StreamPlayer('TestStream', dataset)
+      player.start()
+
+  In terminal, navigate to the folder containing the dataset
+  (``~/bsl_data/eeg_sample``):
+
+  .. code-block:: console
+
+      $ bsl_stream_player TestStream resting_state-raw.fif
+
+- Run a `~bsl.StreamViewer` from a different terminal:
+
+  .. code-block:: console
+
+      $ bsl_stream_viewer
+
+The `~bsl.StreamViewer` should load and display:
+
+.. image:: _static/stream_viewer/stream_viewer.gif
+   :alt: StreamViewer
    :align: center
-   :width: 600
-   
-    
-    

@@ -26,7 +26,7 @@ signals to compute a given metric can be designed with a `~bsl.StreamReceiver`.
 #
 # This example will use a sample EEG resting-state dataset that can be retrieve
 # with :ref:`bsl.datasets<datasets>`. The dataset is stored in the user home
-# directory, in the folder ``bsl_data``.
+# directory in the folder ``bsl_data`` (e.g. ``C:\Users\User\bsl_data``).
 
 #%%
 import os
