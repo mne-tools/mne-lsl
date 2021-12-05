@@ -29,7 +29,7 @@ resting-state recording can be designed with a `~bsl.StreamRecorder`.
 #
 # This example will use a sample EEG resting-state dataset that can be retrieve
 # with :ref:`bsl.datasets<datasets>`. The dataset is stored in the user home
-# directory  (ex. C:\\Users\\User), in the folder ``bsl_data``.
+# directory in the folder ``bsl_data`` (e.g. ``C:\Users\User\bsl_data``).
 
 #%%
 
@@ -56,11 +56,12 @@ print (player)
 #%%
 #
 # For this example, the folder ``bsl_data/examples`` located in the user home
-# directory (ex. C:\\Users\\User\\bsl_data\\examples) will be used to stored recorded files. To ensure its existence,
+# directory will be used to stored recorded files. To ensure its existence,
 # `os.makedirs` is used.
 
 record_dir = Path('~/bsl_data/examples').expanduser()
 os.makedirs(record_dir, exist_ok=True)
+print (record_dir)
 
 #%%
 #
@@ -74,8 +75,8 @@ os.makedirs(record_dir, exist_ok=True)
 # in files named based on the date/time timestamp at which the recorder is
 # started.
 #
-# To record only part of the available streams, with a specific file name and
-# in a specific directory, the arguments ``record_dir``, ``fname`` and
+# To record only a subset of the available streams with a specific file name
+# and in a specific directory, the arguments ``record_dir``, ``fname`` and
 # ``stream_name`` must be provided.
 #
 # For this example, the directory used to store recordings is
@@ -170,24 +171,24 @@ with StreamRecorder(record_dir):
 #%%
 #
 # As for the `~bsl.StreamPlayer`, the `~bsl.StreamRecorder` can be started via
-# command-line when a LSL stream is streamed. Example assuming the current working directory is ``bsl_data``:
+# command-line when a LSL stream is accessible on the network.
+#
+# Example assuming:
+#
+# - the current working directory is ``bsl_data`` in the user home directory
+# - the stream to connect to is named ``MyStream``
+# - the recorded file naming scheme is ``test-[stream]-raw.fif``, i.e.
+#   ``test-MyStream-raw.fif``
 #
 # .. code-block:: console
 #
-#     $ bsl_stream_recorder -d record_dir -f fname -s stream_name
+#     $ bsl_stream_recorder -d examples -f test -s MyStream
 #
 # .. image:: ../_static/stream_recorder/stream_recorder_cli.gif
 #    :alt: StreamRecorder
 #    :align: center
-#
-# | The LSL stream can be simulated running the `~bsl.StreamPlayer` in a different terminal. In this case, run before the `~bsl.StreamPlayer` and then the `~bsl.StreamRecorder`.
-#   Example assuming the current working directory is ``bsl_data``:
-#
-#  .. code-block:: console
-#
-#     $ cd eeg_sample
-#     $ bsl_stream_player stream_name resting_state-raw.fif
-#
-# Stop the mock LSL stream.
+
+#%%
+# | Stop the mock LSL stream used in this example.
 
 player.stop()

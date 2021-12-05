@@ -2,6 +2,6 @@
 mne
 numpy
 pylsl
-pyqt5==5.14.2
-pyqtgraph<=12.8.1
+pyqt5
+pyqtgraph
 scipy
