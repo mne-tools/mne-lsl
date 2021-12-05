@@ -140,3 +140,4 @@ doc/_build/
 doc/generated_examples/
 doc/generated/
 doc/api/generated/
+.idea
