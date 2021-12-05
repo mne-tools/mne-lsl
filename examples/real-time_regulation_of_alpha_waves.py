@@ -26,7 +26,7 @@ signals to compute a given metric can be designed with a `~bsl.StreamReceiver`.
 #
 # This example will use a sample EEG resting-state dataset that can be retrieve
 # with :ref:`bsl.datasets<datasets>`. The dataset is stored in the user home
-# directory, in the folder ``bsl_data``.
+# directory in the folder ``bsl_data`` (e.g. ``C:\Users\User\bsl_data``).
 
 #%%
 import os
@@ -44,7 +44,7 @@ from bsl.triggers.software import TriggerSoftware
 #%%
 #
 # To simulate an actual signal coming from an LSL stream, a `~bsl.StreamPlayer`
-# is used with a 40 second resting-state recording.
+# is used with a 40 seconds resting-state recording.
 
 stream_name = 'StreamPlayer'
 fif_file = datasets.eeg_resting_state.data_path()
