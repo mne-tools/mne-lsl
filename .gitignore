@@ -70,7 +70,10 @@ instance/
 .scrapy
 
 # Sphinx documentation
-docs/_build/
+doc/_build/
+doc/generated_examples/
+doc/generated/
+doc/api/generated/
 
 # PyBuilder
 target/
@@ -129,15 +132,13 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# ----------------------------------------------------------------------------
+# PyCharm
+.idea/
+bsl/.idea/
+
+# macOS
 .DS_Store
+
+# pickles
 *.pcl
 *.pickle
-__pycache__
-
-# ----------------------------------------------------------------------------
-doc/_build/
-doc/generated_examples/
-doc/generated/
-doc/api/generated/
-.idea
