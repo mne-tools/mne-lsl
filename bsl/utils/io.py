@@ -29,9 +29,12 @@ def pcl2fif(fname, out_dir=None, external_event=None, external_annotation=None,
     out_dir : `str` | `~pathlib.Path`
         Saving directory. If `None`, it will be the directory
         ``fname.parent/'fif'``.
-    external_event : `str`
-        Event file path in text format, following MNE event structure.
-        Each row should be: ``index 0 event``
+    external_event : `str` | `~pathlib.Path`
+        Event file path in text format, following MNE event structure. Each row
+        should be: ``index 0 event``.
+    external_annotation : `str` | `~pathlib.Path`
+        Annotation file path in text format, following MNE annotation
+        structure. Each row should be: ``onset duration description``.
     precision : `str`
         Data matrix format. ``[single|double|int|short]``, ``'single'``
         improves backward compatability.
@@ -64,16 +67,17 @@ def pcl2fif(fname, out_dir=None, external_event=None, external_annotation=None,
 
     # Add events from txt file
     if external_event is not None:
-        events_index = _event_timestamps_to_indices(
-            raw.times, external_event, data["timestamps"][0])
-        _add_events_from_txt(
-            raw, events_index, stim_channel='TRIGGER', replace=replace)
+        events = _load_events_from_txt(raw.times, external_event,
+                                       data["timestamps"][0])
+        if 0 < len(events):
+            raw.add_events(events, stim_channel='TRIGGER', replace=replace)
 
     # Add annotation from txt file
     if external_annotation is not None:
-        annotations = _read_annotations(external_annotation,
-                                        data["timestamps"][0])
-        raw.set_annotations(annotations)
+        annotations = _load_annotations_from_txt(external_annotation,
+                                                 data["timestamps"][0])
+        if 0 < len(annotations):
+            raw.set_annotations(annotations)
 
     # Save
     raw.save(fiffile, verbose=False, overwrite=overwrite, fmt=precision)
@@ -84,16 +88,6 @@ def _format_pcl_to_mne_RawArray(data):
     """
     Format the raw data to the MNE RawArray structure.
     Data must be recorded with BSL StreamRecorder.
-
-    Parameters
-    ----------
-    data : dict
-        Data loaded from the .pcl file.
-
-    Returns
-    -------
-    raw : Raw
-        MNE raw structure.
     """
     if isinstance(data['signals'], list):
         signals_raw = np.array(data['signals'][0]).T    # to channels x samples
@@ -155,47 +149,37 @@ def _format_pcl_to_mne_RawArray(data):
     return raw
 
 
-def _event_timestamps_to_indices(raw_timestamps, eventfile, offset):
+def _load_events_from_txt(raw_times, eve_file, offset):
     """
-    Convert LSL timestamps to sample indices for separetely recorded events.
-
-    Parameters
-    ----------
-    raw_timestamps : list
-        Data's timestamps (MNE: start at 0.0 sec).
-    eventfile : str
-        Event file containing the events, indexed with LSL timestamps.
-    offset : float
-        LSL timestamp of the first sample, to start at 0.0 sec.
-
-    Returns
-    -------
-    events : np.array
-        MNE-compatible events [shape=(n_events, 3)]
-        Used as input to mne.io.Raw.add_events.
+    Load events delivered by the software trigger from the event txt file, and
+    convert LSL timestamps to indices.
     """
 
-    ts_min = min(raw_timestamps)
-    ts_max = max(raw_timestamps)
+    ts_min = min(raw_times)
+    ts_max = max(raw_times)
     events = []
 
-    with open(eventfile) as file:
+    with open(eve_file, 'r') as file:
         for line in file:
             data = line.strip().split('\t')
             event_ts = float(data[0]) - offset
             event_value = int(data[2])
-            next_index = np.searchsorted(raw_timestamps, event_ts)
-            if next_index >= len(raw_timestamps):
+            next_index = np.searchsorted(raw_times, event_ts)
+            if next_index >= len(raw_times):
                 logger.warning(
                     'Event %d at time %.3f is out of time range (%.3f - %.3f).'
                     % (event_value, event_ts, ts_min, ts_max))
             else:
                 events.append([next_index, 0, event_value])
 
-    return events
+    return np.array(events)
 
 
-def _read_annotations(annotation_file, offset):
+def _load_annotations_from_txt(annotation_file, offset):
+    """
+    Load annotations marked with the StreamViewer from the annotation txt file.
+    """
+
     onsets, durations, descriptions = list(), list(), list()
     with open(annotation_file, 'r') as file:
         for line in file:
@@ -204,34 +188,7 @@ def _read_annotations(annotation_file, offset):
             durations.append(float(data[1]))
             descriptions.append(data[2])
 
-    annotations = mne.Annotations(onsets, durations, descriptions)
-    return annotations
-
-
-def _add_events_from_txt(raw, events_index, stim_channel='TRIGGER',
-                         replace=False):
-    """
-    Merge the events extracted from a .txt file to the trigger channel.
-
-    Parameters
-    ----------
-    raw : mne.io.Raw
-        MNE Raw instance.
-    events_index : np.array
-        MNE-compatible events [shape=(n_events, 3)].
-        Used as input to raw.add_events.
-    stim_channel : str
-        Stim channel where the events are added.
-    replace : bool
-        If True, the old events on the stim channel are removed before
-        adding the new ones.
-    """
-    if len(events_index) == 0:
-        logger.warning('No events were found in the event file.')
-    else:
-        logger.info('Found %i events', len(events_index))
-        raw.add_events(events_index, stim_channel=stim_channel,
-                       replace=replace)
+    return mne.Annotations(onsets, durations, descriptions)
 
 
 # ------------------------- General converter -------------------------

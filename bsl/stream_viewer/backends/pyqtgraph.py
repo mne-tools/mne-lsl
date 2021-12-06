@@ -4,8 +4,7 @@ PyQt5 Canvas for BSL's StreamViewer.
 import numpy as np
 
 import pyqtgraph as pg
-from PyQt5 import QtCore
-from PyQt5.QtCore import QPointF
+from PyQt5.QtCore import QPointF, QTimer, QRectF
 
 from ._backend import _Backend, _Event
 from ...utils._docs import fill_doc, copy_doc
@@ -62,24 +61,21 @@ class _BackendPyQtGraph(_Backend):
                     idx, -self._duration_plot_samples:]+self._offset[k],
                 pen=pg.mkColor(self._available_colors[idx, :]))
 
-        # Timer
-        self._timer = QtCore.QTimer(self._win)
-        self._timer.timeout.connect(self._update_loop)
-
         # Connect
-        self._first_click_position = None
-        self._plot_handler.getViewBox().scene().sigMouseClicked.connect(
-            self.mouse_clicked)
+        self._connect_signals_to_slots()
 
-        # Queue initializing
+        # Annotations
+        self._first_click_position = None
+        self._annotation_On = False
         self._queueTimeStamps = queue.Queue()
         self._thread = threading.Thread(target= self._queuing, args=(),
                                         daemon=True)
         self._thread.start()
         self._recorder_annotation_file = None
 
-        # bool
-        self._annotation_On = False
+        # Timer
+        self._timer = QTimer(self._win)
+        self._timer.timeout.connect(self._update_loop)
 
     @copy_doc(_Backend._init_variables)
     def _init_variables(self):
@@ -116,62 +112,6 @@ class _BackendPyQtGraph(_Backend):
         self._x_arr = np.arange(self._duration_plot_samples) \
             / self._scope.sample_rate
         self._plot_handler.setLabel(axis='bottom', text='Time (s)')
-
-    # ----------------------------- Queue --------------------------
-    def _queuing(self):
-        while True:
-            ## get the first timestamp that entered the buffer
-            onset, duration, description = self._queueTimeStamps.get()
-            if self._recorder_annotation_file is not None:
-                self._recorder_annotation_file.write(
-                    "%s %s %s\n" % (onset, duration.x(), description))
-            ## write in the .txt file
-            self._queueTimeStamps.task_done()
-
-    # ------------------------ Trigger Events ----------------------
-    @copy_doc(_Backend._update_LPT_trigger_events)
-    def _update_LPT_trigger_events(self, trigger_arr):
-        events_trigger_arr_idx = np.where(trigger_arr != 0)[0]
-        events_values = trigger_arr[events_trigger_arr_idx]
-
-        for k, event_value in enumerate(events_values):
-            position_buffer = self._scope.duration_buffer - \
-                (trigger_arr.shape[0] - events_trigger_arr_idx[k]) \
-                / self._scope.sample_rate
-            position_plot = position_buffer - self._delta_with_buffer
-
-            event = _TriggerEvent(
-                event_type='LPT',
-                event_value=event_value,
-                position_buffer=position_buffer,
-                position_plot=position_plot,
-                plot_handler=self._plot_handler,
-                yRange=self._yRange)
-
-            if position_plot >= 0:
-                if event.event_type == 'LPT' and self._show_LPT_trigger_events:
-                    event.addEventPlot()
-
-            self._trigger_events.append(event)
-
-    @copy_doc(_Backend._clean_up_trigger_events)
-    def _clean_up_trigger_events(self):
-        """
-         Hide events exiting the plotting window.
-        """
-        super()._clean_up_trigger_events()
-        for event in self._trigger_events:
-            if event.position_plot < 0:
-                event.removeEventPlot()
-
-    def _clean_up_annotations(self):
-        for k in range(len(self._annotations)-1, -1, -1):
-            if self._annotations[k].position_buffer.x() < 0:
-                del self._annotations[k]
-
-        for annot in self._annotations:
-            if annot.position_plot.x() < 0:
-                annot.remove()
 
     # -------------------------- Main Loop -------------------------
     @copy_doc(_Backend.start_timer)
@@ -211,12 +151,74 @@ class _BackendPyQtGraph(_Backend):
 
             self._clean_up_annotations()
 
+    # -------------------------- Annotations -----------------------
+    def _queuing(self):
+        while True:
+            ## get the first timestamp that entered the buffer
+            onset, duration, description = self._queueTimeStamps.get()
+            if self._recorder_annotation_file is not None:
+                self._recorder_annotation_file.write(
+                    "%s %s %s\n" % (onset, duration.x(), description))
+            ## write in the .txt file
+            self._queueTimeStamps.task_done()
+
+    def _clean_up_annotations(self):
+        for k in range(len(self._annotations)-1, -1, -1):
+            if self._annotations[k].position_buffer.x() < 0:
+                del self._annotations[k]
+
+        for annot in self._annotations:
+            if annot.position_plot.x() < 0:
+                annot.remove()
+
+    # ------------------------ Trigger Events ----------------------
+    @copy_doc(_Backend._update_LPT_trigger_events)
+    def _update_LPT_trigger_events(self, trigger_arr):
+        events_trigger_arr_idx = np.where(trigger_arr != 0)[0]
+        events_values = trigger_arr[events_trigger_arr_idx]
+
+        for k, event_value in enumerate(events_values):
+            position_buffer = self._scope.duration_buffer - \
+                (trigger_arr.shape[0] - events_trigger_arr_idx[k]) \
+                / self._scope.sample_rate
+            position_plot = position_buffer - self._delta_with_buffer
+
+            event = _TriggerEvent(
+                event_type='LPT',
+                event_value=event_value,
+                position_buffer=position_buffer,
+                position_plot=position_plot,
+                plot_handler=self._plot_handler,
+                yRange=self._yRange)
+
+            if position_plot >= 0:
+                if event.event_type == 'LPT' and self._show_LPT_trigger_events:
+                    event.addEventPlot()
+
+            self._trigger_events.append(event)
+
+    @copy_doc(_Backend._clean_up_trigger_events)
+    def _clean_up_trigger_events(self):
+        """
+         Hide events exiting the plotting window.
+        """
+        super()._clean_up_trigger_events()
+        for event in self._trigger_events:
+            if event.position_plot < 0:
+                event.removeEventPlot()
+
     # --------------------------- Events ---------------------------
     @copy_doc(_Backend.close)
     def close(self):
         self._timer.stop()
         self._win.close()
 
+    def _connect_signals_to_slots(self):
+        """
+        Event handler. Connect QT signals to slots.
+        """
+        self._plot_handler.getViewBox().scene().sigMouseClicked.connect(
+            self.mouse_clicked)
 
     def mouse_clicked(self, mouseClickEvent):
         if mouseClickEvent.button() != 1 or not self._annotation_On:
@@ -479,7 +481,7 @@ class Annotation:
             position_right = self._viewBox.mapViewToScene(
                 self._position_plot).x()
 
-            rectangle = QtCore.QRectF(
+            rectangle = QRectF(
                 QPointF(position_left, 0),
                 QPointF(position_right, self._viewBox.height()))
             self._rect = self._plot_handler.getViewBox().scene().addRect(

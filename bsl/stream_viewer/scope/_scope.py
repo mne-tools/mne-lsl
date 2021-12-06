@@ -1,6 +1,8 @@
 import math
 from abc import ABC, abstractmethod
 
+import numpy as np
+
 from ...utils._logs import logger
 from ...utils._docs import fill_doc
 
@@ -33,9 +35,10 @@ class _Scope(ABC):
         self._duration_buffer = _BUFFER_DURATION
         self._duration_buffer_samples = math.ceil(
             _BUFFER_DURATION*self._sample_rate)
+        self._ts_list = list()  # samples that have just been acquired
 
         # Buffers
-        self._ts_list = list()
+        self._timestamps_buffer = np.zeros(self._duration_buffer_samples)
 
         logger.debug('Scope connected to %s' % self._stream_name)
         logger.debug('Data sample rate is %f' % self._sample_rate)
@@ -49,7 +52,14 @@ class _Scope(ABC):
         Main update loop acquiring data from the LSL stream and filling the
         scope's buffer.
         """
-        pass
+        self._read_lsl_stream()
+        if len(self._ts_list) == 0:
+            return  # no new samples
+
+        # shape (samples, )
+        self._timestamps_buffer = np.roll(
+            self._timestamps_buffer, -len(self._ts_list))
+        self._timestamps_buffer[-len(self._ts_list):] = self._ts_list
 
     @abstractmethod
     def _read_lsl_stream(self):

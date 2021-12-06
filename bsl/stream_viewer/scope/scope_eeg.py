@@ -48,7 +48,6 @@ class ScopeEEG(_Scope):
         self._data_buffer = np.zeros(
             (self._nb_channels, self._duration_buffer_samples),
             dtype=np.float32)
-        self._timestamps_buffer = np.zeros(self._duration_buffer_samples)
 
     def init_bandpass_filter(self, low, high):
         """
@@ -73,22 +72,18 @@ class ScopeEEG(_Scope):
     # -------------------------- Main Loop -------------------------
     @copy_doc(_Scope.update_loop)
     def update_loop(self):
-        self._read_lsl_stream()
-        if len(self._ts_list) > 0:
-            self._filter_signal()
-            self._filter_trigger()
-            # shape (channels, samples)
-            self._data_buffer = np.roll(self._data_buffer, -len(self._ts_list),
-                                        axis=1)
-            self._data_buffer[:, -len(self._ts_list):] = self._data_acquired.T
-            # shape (samples, )
-            self._trigger_buffer = np.roll(
-                self._trigger_buffer, -len(self._ts_list))
-            self._trigger_buffer[-len(self._ts_list):] = self._trigger_acquired
-            # shape (samples, )
-            self._timestamps_buffer = np.roll(
-                self._timestamps_buffer, -len(self._ts_list))
-            self._timestamps_buffer[-len(self._ts_list):] = self._ts_list
+        super().update_loop()
+
+        self._filter_signal()
+        self._filter_trigger()
+        # shape (channels, samples)
+        self._data_buffer = np.roll(self._data_buffer, -len(self._ts_list),
+                                    axis=1)
+        self._data_buffer[:, -len(self._ts_list):] = self._data_acquired.T
+        # shape (samples, )
+        self._trigger_buffer = np.roll(
+            self._trigger_buffer, -len(self._ts_list))
+        self._trigger_buffer[-len(self._ts_list):] = self._trigger_acquired
 
     @copy_doc(_Scope._read_lsl_stream)
     def _read_lsl_stream(self):

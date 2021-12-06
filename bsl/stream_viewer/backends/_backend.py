@@ -81,7 +81,7 @@ class _Backend(ABC):
         """
         pass
 
-    # --------------------------------------------------------------------
+    # ------------------------- Properties -------------------------
     @property
     def scope(self):
         """
@@ -169,14 +169,15 @@ class _Event(ABC):
     _supported = ['LPT']
 
     @abstractmethod
-    def __init__(self, event_type, event_value,
-                 position_buffer, position_plot):
+    def __init__(self, event_type, event_value, position_buffer,
+                 position_plot):
         assert event_type in self._supported
         self._event_type = event_type
         self._event_value = event_value
         self._position_buffer = position_buffer  # In time (s)
         self._position_plot = position_plot  # In time (s)
 
+    # ------------------------- Properties -------------------------
     @property
     def event_type(self):
         """
@@ -220,3 +221,87 @@ class _Event(ABC):
         Update only the position in the plotting window.
         """
         self._position_plot = position_plot
+
+
+class Annotation:
+    """
+    Base class defining an annotation.
+
+    Parameters
+    ----------
+    """
+
+    @abstractmethod
+    def __init__(self, description, duration, position_buffer, position_plot):
+        self._description = description
+        self._duration = duration
+        self._position_buffer = position_buffer  # In time (s)
+        self._position_plot = position_plot  # In time (s)
+
+        self._plotted = False
+
+    @abstractmethod
+    def addAnnotationOnPlot(self):
+        """
+        Add annotation to the plot.
+        """
+        pass
+
+    @abstractmethod
+    def removeAnnotationFromPlot(self):
+        """
+        Remove annotation from the plot.
+        """
+        pass
+
+    # ------------------------- Properties -------------------------
+    @property
+    def description(self):
+        """
+        Description/Label of the annotation.
+        """
+        return self._description
+
+    @property
+    def duration(self):
+        """
+        Duration of the annotation in seconds.
+        """
+        return self._duration
+
+    @property
+    def position_buffer(self):
+        """
+        Position in the buffer.
+        """
+        return self._position_buffer
+
+    @position_buffer.setter
+    def position_buffer(self, position_buffer):
+        """
+        Update both position in the buffer and the plotting window.
+        """
+        delta = self._position_buffer - position_buffer
+        self._position_buffer = position_buffer
+        self._position_plot -= delta
+
+    @property
+    def position_plot(self):
+        """
+        Position in the plotting window.
+        """
+        return self._position_plot
+
+    @position_plot.setter
+    def position_plot(self, position_plot):
+        """
+        Update only the position in the plotting window.
+        """
+        self._position_plot = position_plot
+
+    @property
+    def plotted(self):
+        """
+        True if the annotation is displayed, else False.
+        """
+        return self._plotted

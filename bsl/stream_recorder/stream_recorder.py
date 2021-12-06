@@ -41,6 +41,7 @@ class StreamRecorder:
         self._verbose = verbose
 
         self._eve_file = None  # for SOFTWARE triggers
+        self._annotation_file = None  # for interactive annotations
         self._process = None
         self._state = mp.Value('i', 0)
 
@@ -54,15 +55,16 @@ class StreamRecorder:
             If ``True``, waits for the child process to start recording data.
         """
         _check_type(blocking, (bool, ), item_name='blocking')
-        fname, self._eve_file = StreamRecorder._create_fname(
-            self._record_dir, self._fname)
+        fname, self._eve_file, self._annotation_file = \
+            StreamRecorder._create_fname(self._record_dir, self._fname)
         logger.debug("File name stem is '%s'.", fname)
         logger.debug("Event file name is '%s'.", self._eve_file)
 
         self._process = mp.Process(
             target=self._record,
             args=(self._record_dir, fname, self._stream_name, self._fif_subdir,
-                  self._verbose, self._eve_file, self._state))
+                  self._verbose, self._eve_file, self._annotation_file,
+                  self._state))
         self._process.start()
 
         if blocking:
@@ -94,13 +96,13 @@ class StreamRecorder:
         self._process = None
 
     def _record(self, record_dir, fname, stream_name, fif_subdir, verbose,
-                eve_file, state):
+                eve_file, annotation_file, state):
         """
         The function called in the new process.
         Instance a _Recorder and start recording.
         """
         recorder = _Recorder(record_dir, fname, stream_name, fif_subdir,
-                             verbose, eve_file, state)
+                             verbose, eve_file, annotation_file, state)
         recorder.record()
 
     # --------------------------------------------------------------------
@@ -149,8 +151,9 @@ class StreamRecorder:
         fname = fname if fname is not None \
             else time.strftime('%Y%m%d-%H%M%S', time.localtime())
         eve_file = record_dir / f'{fname}-eve.txt'
+        annotation_file = record_dir / '{fname}-annotation.txt'
 
-        return fname, eve_file
+        return fname, eve_file, annotation_file
 
     # --------------------------------------------------------------------
     @property
@@ -218,6 +221,16 @@ class StreamRecorder:
         return self._eve_file
 
     @property
+    def annotation_file(self):
+        """
+        Path to the annotation file for interactive annotation with
+        `~bsl.StreamViewer`.
+
+        :type: `~pathlib.Path`
+        """
+        return self._annotation_file
+
+    @property
     def process(self):
         """
         Launched process.
@@ -251,23 +264,26 @@ class _Recorder:
     %(stream_name)s
     %(recorder_fif_subdir)s
     %(recorder_verbose)s
+    eve_file : str | Path
+        Path to the event file for TriggerSoftware.
+    annotation_file : str | Path
+        Path to the annotation file.
     state : mp.Value
         Recording state of the recorder:
             - 0: Not recording.
             - 1: Recording.
         This variable is used to stop the recording from another process.
-    eve_file : str | Path
-        Path to the event file for TriggerSoftware.
     """
 
     def __init__(self, record_dir, fname, stream_name, fif_subdir, verbose,
-                 eve_file, state):
+                 eve_file, annotation_file, state):
         self._record_dir = record_dir
         self._fname = fname
         self._stream_name = stream_name
         self._fif_subdir = fif_subdir
         self._verbose = verbose
         self._eve_file = eve_file
+        self._annotation_file = annotation_file
         self._state = state
 
     def record(self):
@@ -334,10 +350,8 @@ class _Recorder:
 
             external_event = self._eve_file \
                 if self._eve_file.exists() else None
-            annotation_file = Path(
-                str(self._eve_file).replace('-eve', '-annotation'))
-            external_annotation = annotation_file \
-                if annotation_file.exists() else None
+            external_annotation = self._annotation_file \
+                if self._annotation_file.exists() else None
 
             pcl2fif(
                 pcl_files[stream], out_dir, external_event=external_event,
