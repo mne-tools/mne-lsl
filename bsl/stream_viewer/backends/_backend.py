@@ -1,7 +1,8 @@
 import copy
-from abc import ABC, abstractmethod
-
 import math
+import queue
+import threading
+from abc import ABC, abstractmethod
 
 from ...utils._docs import fill_doc
 
@@ -30,6 +31,15 @@ class _Backend(ABC):
         self._show_LPT_trigger_events = False
         self._selected_channels = copy.deepcopy(self._scope.selected_channels)
 
+        # Trigger and annotations
+        self._trigger_events = list()
+        self._annotations = list()
+        # if not None, a recorder is started and recording
+        self._recorder_annotation_file = None
+        self._AnnotationQueue = queue.Queue()
+        self._AnnotationThread = threading.Thread(
+            target=self._write_annotation_to_disk, args=(), daemon=True)
+
     def _init_variables(self):
         """
         Initialize variables depending on xRange, yRange and selected_channels.
@@ -38,6 +48,42 @@ class _Backend(ABC):
         self._delta_with_buffer = self._scope.duration_buffer - self._xRange
         self._duration_plot_samples = math.ceil(
             self._xRange*self._scope.sample_rate)
+
+    # -------------------------- Main Loop -------------------------
+    @abstractmethod
+    def start_timer(self):
+        """
+        Start the update loop on a 20 ms timer.
+        """
+        pass
+
+    @abstractmethod
+    def _update_loop(self, *args, **kwargs):
+        """
+        Main update loop retrieving data from the scope's buffer and updating
+        the Canvas.
+        """
+        self._scope.update_loop()
+
+    # -------------------------- Annotations -----------------------
+    def _clean_up_annotations(self):
+        """
+        Remove annotations exiting the buffer.
+        """
+        for k in range(len(self._annotations)-1, -1, -1):
+            if self._annotations[k].position_buffer < 0:
+                del self._annotations[k]
+
+    def _write_annotation_to_disk(self):
+        """
+        Method called in second thread pulling annotations from queue and
+        saving them. Annotations are only saved when they exit the buffer.
+        """
+        if self._recorder_annotation_file is not None:
+            onset, duration, description = self._AnnotationQueue.get()
+            self._recorder_annotation_file.write(
+                "%s %s %s\n" % (onset, duration, description))
+            self._AnnotationQueue.task_done()
 
     # ------------------------ Trigger Events ----------------------
     @abstractmethod
@@ -56,22 +102,6 @@ class _Backend(ABC):
         for k in range(len(self._trigger_events)-1, -1, -1):
             if self._trigger_events[k].position_buffer < 0:
                 del self._trigger_events[k]
-
-    # -------------------------- Main Loop -------------------------
-    @abstractmethod
-    def start_timer(self):
-        """
-        Start the update loop on a 20 ms timer.
-        """
-        pass
-
-    @abstractmethod
-    def _update_loop(self, *args, **kwargs):
-        """
-        Main update loop retrieving data from the scope's buffer and updating
-        the Canvas.
-        """
-        self._scope.update_loop()
 
     # --------------------------- Events ---------------------------
     @abstractmethod
@@ -223,7 +253,7 @@ class _Event(ABC):
         self._position_plot = position_plot
 
 
-class Annotation:
+class _Annotation:
     """
     Base class defining an annotation.
 
@@ -237,7 +267,6 @@ class Annotation:
         self._duration = duration
         self._position_buffer = position_buffer  # In time (s)
         self._position_plot = position_plot  # In time (s)
-
         self._plotted = False
 
     @abstractmethod
@@ -245,14 +274,16 @@ class Annotation:
         """
         Add annotation to the plot.
         """
-        pass
+        if self._plotted:
+            return  # skip, nothing to do
 
     @abstractmethod
     def removeAnnotationFromPlot(self):
         """
         Remove annotation from the plot.
         """
-        pass
+        if not self._plotted:
+            return  # skip, nothing to do
 
     # ------------------------- Properties -------------------------
     @property

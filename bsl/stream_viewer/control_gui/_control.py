@@ -2,7 +2,7 @@ from pathlib import Path
 from abc import ABC, abstractmethod
 
 from PyQt5 import QtCore
-from PyQt5.QtWidgets import QMainWindow, QFileDialog, QInputDialog
+from PyQt5.QtWidgets import QMainWindow, QFileDialog
 
 
 try:
@@ -35,7 +35,6 @@ class _ControlGUI(QMainWindow, ABC, metaclass=_metaclass_ControlGUI):
     def __init__(self, scope, backend):
         super().__init__()
         self._scope = scope
-        self._recorder_annotation_file = None
 
     @abstractmethod
     def _load_gui(self):
@@ -71,7 +70,6 @@ class _ControlGUI(QMainWindow, ABC, metaclass=_metaclass_ControlGUI):
         self._ui.pushButton_set_recording_dir.clicked.connect(
             self.onClicked_pushButton_set_recording_dir)
 
-
     @QtCore.pyqtSlot()
     def onClicked_pushButton_start_recording(self):
         record_dir = self._ui.lineEdit_recording_dir.text()
@@ -79,31 +77,27 @@ class _ControlGUI(QMainWindow, ABC, metaclass=_metaclass_ControlGUI):
             record_dir, stream_name=self._scope.stream_name, fif_subdir=True,
             verbose=False)
         self._recorder.start(blocking=False)
-        while self._recorder.eve_file is None:
-            pass
-        self._recorder_annotation_file = open(
-            str(self._recorder.eve_file).replace('-eve', '-annotation'), 'a')
-        self._backend._recorder_annotation_file = self._recorder_annotation_file
+        while self._recorder._annotation_file is None:
+            pass  # less blocking than blocking=True
+
+        self._backend._recorder_annotation_file = \
+            open(self._recorder._annotation_file, 'a')
+
         self._ui.pushButton_stop_recording.setEnabled(True)
         self._ui.pushButton_start_recording.setEnabled(False)
         self._ui.statusBar.showMessage(f"[Recording to '{record_dir}']")
 
-        self._backend._annotation_On = True
-
     @QtCore.pyqtSlot()
     def onClicked_pushButton_stop_recording(self):
         if self._recorder.state.value == 1:
-            try:
-                self._recorder_annotation_file.close()
-                self._backend._recorder_annotation_file = None
-            except:
-                pass
+            self._backend._AnnotationQueue.join(0.5)
+            self._backend._AnnotationThread.join(0.2)
+            self._backend._recorder_annotation_file.close()
+            self._backend._recorder_annotation_file = None
             self._recorder.stop()
             self._ui.pushButton_start_recording.setEnabled(True)
             self._ui.pushButton_stop_recording.setEnabled(False)
             self._ui.statusBar.showMessage("[Not recording]")
-
-        self._backend._annotation_On = False
         self._ui.comboBox_label.setEnabled(False)
 
     @QtCore.pyqtSlot()
@@ -116,8 +110,6 @@ class _ControlGUI(QMainWindow, ABC, metaclass=_metaclass_ControlGUI):
             self._ui.lineEdit_recording_dir.setText(path_name)
             self._ui.pushButton_start_recording.setEnabled(True)
             self._ui.comboBox_label.setEnabled(True)
-
-
 
     # --------------------------------------------------------------------
     @staticmethod

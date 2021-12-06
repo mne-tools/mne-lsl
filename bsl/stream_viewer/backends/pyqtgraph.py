@@ -2,13 +2,11 @@
 PyQt5 Canvas for BSL's StreamViewer.
 """
 import numpy as np
-
 import pyqtgraph as pg
 from PyQt5.QtCore import QPointF, QTimer, QRectF
 
-from ._backend import _Backend, _Event
+from ._backend import _Backend, _Event, _Annotation
 from ...utils._docs import fill_doc, copy_doc
-import threading, queue
 
 # pg.setConfigOptions(antialias=True)
 
@@ -29,8 +27,6 @@ class _BackendPyQtGraph(_Backend):
     # ---------------------------- Init ---------------------------
     def __init__(self, scope, geometry, xRange, yRange):
         super().__init__(scope, geometry, xRange, yRange)
-        self._trigger_events = list()
-        self._annotations = list()
 
         # Variables
         self._available_colors = np.random.uniform(
@@ -66,12 +62,7 @@ class _BackendPyQtGraph(_Backend):
 
         # Annotations
         self._first_click_position = None
-        self._annotation_On = False
-        self._queueTimeStamps = queue.Queue()
-        self._thread = threading.Thread(target= self._queuing, args=(),
-                                        daemon=True)
-        self._thread.start()
-        self._recorder_annotation_file = None
+        self._AnnotationThread.start()
 
         # Timer
         self._timer = QTimer(self._win)
@@ -152,24 +143,15 @@ class _BackendPyQtGraph(_Backend):
             self._clean_up_annotations()
 
     # -------------------------- Annotations -----------------------
-    def _queuing(self):
-        while True:
-            ## get the first timestamp that entered the buffer
-            onset, duration, description = self._queueTimeStamps.get()
-            if self._recorder_annotation_file is not None:
-                self._recorder_annotation_file.write(
-                    "%s %s %s\n" % (onset, duration.x(), description))
-            ## write in the .txt file
-            self._queueTimeStamps.task_done()
-
+    @copy_doc(_Backend._clean_up_annotations)
     def _clean_up_annotations(self):
-        for k in range(len(self._annotations)-1, -1, -1):
-            if self._annotations[k].position_buffer.x() < 0:
-                del self._annotations[k]
-
+        """
+         Hide annotations exiting the plotting window.
+        """
+        super()._clean_up_annotations()
         for annot in self._annotations:
-            if annot.position_plot.x() < 0:
-                annot.remove()
+            if annot.position_plot < 0:
+                annot.removeAnnotationFromPlot()
 
     # ------------------------ Trigger Events ----------------------
     @copy_doc(_Backend._update_LPT_trigger_events)
@@ -220,32 +202,25 @@ class _BackendPyQtGraph(_Backend):
         self._plot_handler.getViewBox().scene().sigMouseClicked.connect(
             self.mouse_clicked)
 
-    def mouse_clicked(self, mouseClickEvent):
-        if mouseClickEvent.button() != 1 or not self._annotation_On:
+    def mouse_clicked(self, clickEvent):
+        if self._recorder_annotation_file is None or clickEvent.button() != 1:
             return
 
-        pens = {'bad': pg.mkColor(255, 0, 255),
-                'bad_muscle': pg.mkColor(0, 255, 255)}
-
-        try:
-            pen = pens[self._label]
-        except KeyError:
-            pen = pg.mkColor(255, 0, 0)
-
+        pen = pg.mkColor(0, 255, 255)
         viewBox = self._plot_handler.getViewBox()
 
         if self._first_click_position is None:
             self._first_click_position = viewBox.mapSceneToView(
-                mouseClickEvent.scenePos())
+                clickEvent.scenePos())
             self._lineItem = pg.InfiniteLine(
                 pos=self._first_click_position.x(), pen=pen)
             self._plot_handler.addItem(self._lineItem)
 
         else:
             position_buffer = \
-                viewBox.mapSceneToView(mouseClickEvent.scenePos())
+                viewBox.mapSceneToView(clickEvent.scenePos())
             position_plot = \
-                viewBox.mapSceneToView(mouseClickEvent.scenePos())
+                viewBox.mapSceneToView(clickEvent.scenePos())
             duration = position_plot - self._first_click_position
             position_buffer.setX(position_buffer.x() + self._delta_with_buffer)
             annotation = Annotation(
@@ -351,8 +326,8 @@ class _TriggerEvent(_Event):
 
     def __init__(self, event_type, event_value, position_buffer, position_plot,
                  plot_handler, yRange):
-        super().__init__(event_type, event_value,
-                         position_buffer, position_plot)
+        super().__init__(event_type, event_value, position_buffer,
+                         position_plot)
         self._plot_handler = plot_handler
         self._yRange = yRange
 
@@ -433,6 +408,13 @@ class _TriggerEvent(_Event):
         return self._plotted
 
     @property
+    def plot_handler(self):
+        """
+        Plot handler used to display the event.
+        """
+        return self._plot_handler
+
+    @property
     def yRange(self):
         """
         Signal range/scale used to position the TextItem.
@@ -445,6 +427,102 @@ class _TriggerEvent(_Event):
         Impacts the position of the TextItem.
         """
         self._yRange = yRange
+        self._update()
+
+
+class Annot(_Annotation):
+    """
+    Class defining an annotation for the pyqtgraph backend.
+
+    Parameters
+    ----------
+    """
+    pen = pg.mkColor(0, 255, 255)
+    brush = pg.mkBrush(0, 255, 255, 50)
+
+    def __init__(self, description, duration, position_buffer, position_plot,
+                 plot_handler):
+        super().__init__(description, duration, position_buffer, position_plot)
+        self._plot_handler = plot_handler
+        self._rectangle = None
+
+    @copy_doc(_Annotation.addAnnotationOnPlot)
+    def addAnnotationOnPlot(self):
+        super().addAnnotationOnPlot()
+        # retrieve position of edges (seconds)
+        position_left_edge = self._position_plot - self._duration
+        position_right_edge = self._position_plot
+
+        # retrieve height
+        height = self._plot_handler.getViewBox().height()
+
+        # create rectangle
+        rectangle = QRectF(
+            QPointF(position_left_edge, 0),
+            QPointF(position_right_edge, height))
+
+        # add rect to plot handler
+        self._rectangle = self._plot_handler.getViewBox().scene().addRect(
+            rectangle, self.pen, self.brush)
+
+        # change state
+        self.plotted = True
+
+    @copy_doc(_Annotation.removeAnnotationFromPlot)
+    def removeAnnotationFromPlot(self):
+        super().removeAnnotationFromPlot()
+        self._plot_handler.getViewBox().scene().removeItem(self._rectangle)
+        self._rectangle = None
+        self._plotted = False
+
+    def _update(self):
+        """
+        Updates the plot handler.
+        """
+        if self._rectangle is None:
+            return  # skip, nothing to do
+
+        # retrieve rectangle
+        rectangle = self._rectangle.rect()
+        position_left_edge = self._position_plot - self._duration
+
+        # clip with Y-axis
+        if position_left_edge <= 0:
+            _, _, x2, y2 = rectangle.getCoords()
+            rectangle.setCoords(0, 0, x2, y2)
+
+        # move left on the plot
+        else:
+            x1 = self._plot_handler.getViewBox().mapViewToScene(
+                QPointF(self._position_plot, 0)).x() - rectangle.width()
+            rectangle.moveTo(x1, 0)
+
+        # set rectangle
+        self._rectangle.setRect(rectangle)
+
+    @property
+    def plot_handler(self):
+        """
+        Plot handler used to display the event.
+        """
+        return self._plot_handler
+
+    def __del__(self):
+        try:
+            self.removeAnnotationFromPlot()
+        except Exception:
+            pass
+
+    @_Annotation.position_buffer.setter
+    @copy_doc(_Annotation.position_buffer.setter)
+    def position_buffer(self, position_buffer):
+        _Annotation.position_buffer.__set__(self, position_buffer)
+        self._update()
+
+    @_Annotation.position_plot.setter
+    @copy_doc(_Annotation.position_plot.setter)
+    def position_plot(self, position_plot):
+        _Annotation.position_plot.__set__(self, position_plot)
         self._update()
 
 
