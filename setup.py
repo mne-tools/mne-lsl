@@ -20,7 +20,7 @@ if version is None:
 
 # Descriptions
 short_description = """BrainStreamingLayer real-time framework for online neuroscience research through LSL-compatible devices."""
-long_description_file = Path('README.md')
+long_description_file = Path(__file__).parent / 'README.md'
 with open(long_description_file, 'r') as file:
     long_description = file.read()
 if long_description_file.suffix == '.md':
