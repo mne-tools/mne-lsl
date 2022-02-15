@@ -43,7 +43,7 @@ class TriggerDef:
     def __init__(self, trigger_file=None):
         self._by_name = dict()
         self._by_value = dict()
-        self.read_ini(trigger_file)
+        self.read(trigger_file)
 
     def read(self, trigger_file):
         """
