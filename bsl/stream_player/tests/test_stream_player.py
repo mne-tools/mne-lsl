@@ -115,8 +115,8 @@ def test_arg_trigger_def():
 
     # With created TriggerDef
     trigger_def = TriggerDef()
-    trigger_def.add_event('rest', 1)
-    trigger_def.add_event('stim', 4)
+    trigger_def.add('rest', 1)
+    trigger_def.add('stim', 4)
     sp = StreamPlayer(stream_name=stream_name, fif_file=fif_file,
                       trigger_def=trigger_def)
     sp.start()
@@ -125,7 +125,7 @@ def test_arg_trigger_def():
 
     # With creatred TriggerDef missing an event
     trigger_def = TriggerDef()
-    trigger_def.add_event('rest', 1)
+    trigger_def.add('rest', 1)
     sp = StreamPlayer(stream_name=stream_name, fif_file=fif_file,
                       trigger_def=trigger_def)
     sp.start()
