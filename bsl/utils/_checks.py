@@ -36,6 +36,8 @@ def _ensure_int(item, item_name=None):
         raise TypeError("%s must be an int, got %s instead."
                         % (item_name, type(item)))
 
+    return item
+
 
 class _IntLike:
     @classmethod
@@ -101,6 +103,8 @@ def _check_type(item, types, item_name=None):
         raise TypeError(f"{item_name} must be an instance of {type_name}, "
                         f"got {type(item)} instead.")
 
+    return item
+
 
 def _check_value(item, allowed_values, item_name=None, extra=None):
     """
@@ -140,3 +144,5 @@ def _check_value(item, allowed_values, item_name=None, extra=None):
             options += f", and {repr(allowed_values[-1])}"
         raise ValueError(msg.format(item_name=item_name, extra=extra,
                                     options=options, item=item))
+
+    return item
