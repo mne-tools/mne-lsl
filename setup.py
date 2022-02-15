@@ -18,9 +18,10 @@ with open(Path(__file__).parent/'bsl'/'_version.py', 'r') as file:
 if version is None:
     raise RuntimeError('Could not determine version.')
 
+
 # Descriptions
 short_description = """BrainStreamingLayer real-time framework for online neuroscience research through LSL-compatible devices."""
-long_description_file = Path('README.md')
+long_description_file = Path(__file__).parent / 'README.md'
 with open(long_description_file, 'r') as file:
     long_description = file.read()
 if long_description_file.suffix == '.md':
@@ -29,6 +30,7 @@ elif long_description_file.suffix == '.rst':
     long_description_content_type='text/x-rst'
 else:
     long_description_content_type='text/plain'
+
 
 # Variables
 NAME = 'bsl'

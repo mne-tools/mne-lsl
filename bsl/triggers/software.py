@@ -105,6 +105,6 @@ class TriggerSoftware(_Trigger):
         """
         Event ``.ini`` file.
 
-        :type: `~pathlib.Path`
+        :type: `~io.TextIOWrapper`
         """
         return self._eve_file

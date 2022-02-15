@@ -169,8 +169,8 @@ class _Event(ABC):
     _supported = ['LPT']
 
     @abstractmethod
-    def __init__(self, event_type, event_value,
-                 position_buffer, position_plot):
+    def __init__(self, event_type, event_value, position_buffer,
+                 position_plot):
         assert event_type in self._supported
         self._event_type = event_type
         self._event_value = event_value
