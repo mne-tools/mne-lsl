@@ -1,7 +1,7 @@
 import pytest
 
 from bsl import logger, set_log_level
-from bsl.triggers.mock import TriggerMock
+from bsl.triggers import MockTrigger
 
 
 set_log_level('INFO')
@@ -10,7 +10,7 @@ logger.propagate = True
 
 def test_trigger_mock(caplog):
     """Testing for Mock triggers."""
-    trigger = TriggerMock(verbose=True)
+    trigger = MockTrigger(verbose=True)
     assert trigger.verbose
     trigger.verbose = False
     assert trigger.signal(1)
