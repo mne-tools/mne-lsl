@@ -10,8 +10,7 @@ class TriggerDef:
     """
     Class used to store pairs {`str`: `int`} of events name and events value.
     Each name and each value is unique. The pairs can be read from a ``.ini``
-    file or edited manually with `TriggerDef.add_event` and
-    `TriggerDef.remove_event`.
+    file or edited manually with `TriggerDef.add` and `TriggerDef.remove`.
 
     The class will expose the name as attributes ``self.event_str = event_int``
     for all pairs.
@@ -133,9 +132,9 @@ class TriggerDef:
             return
 
         if name in self._by_name:
-            self.remove_event(name)
+            self.remove(name)
         if value in self._by_value:
-            self.remove_event(value)
+            self.remove(value)
 
         setattr(self, name, value)
         self._by_name[name] = value
