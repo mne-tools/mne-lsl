@@ -45,7 +45,7 @@ class TriggerDef:
         self._by_value = dict()
         self.read_ini(trigger_file)
 
-    def read_ini(self, trigger_file):
+    def read(self, trigger_file):
         """
         Read events from a ``.ini`` trigger definition file.
 
@@ -89,7 +89,7 @@ class TriggerDef:
             self._by_name[name] = value
             self._by_value[value] = name
 
-    def write_ini(self, trigger_file):
+    def write(self, trigger_file):
         """
         Write events to a ``.ini`` trigger definition file.
 
@@ -109,7 +109,7 @@ class TriggerDef:
         with open(trigger_file, 'w') as configfile:
             config.write(configfile)
 
-    def add_event(self, name, value, overwrite=False):
+    def add(self, name, value, overwrite=False):
         """
         Add an event to the trigger definition instance.
 
@@ -141,7 +141,7 @@ class TriggerDef:
         self._by_name[name] = value
         self._by_value[value] = name
 
-    def remove_event(self, event):
+    def remove(self, event):
         """
         Remove an event from the trigger definition instance.
         The event can be given by name (str) or by value (int).
