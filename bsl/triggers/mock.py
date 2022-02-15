@@ -8,7 +8,7 @@ from ..utils._docs import fill_doc, copy_doc
 
 
 @fill_doc
-class TriggerMock(_Trigger):
+class MockTrigger(_Trigger):
     """
     Mock trigger class.
 
