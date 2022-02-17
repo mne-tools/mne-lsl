@@ -139,13 +139,6 @@ position_plot : float
 docdict['trigger_verbose'] = """
 verbose : `bool`
     If ``True``, display a ``logger.info`` message when a trigger is sent."""
-docdict['trigger_lpt_delay'] = """
-delay : `int`
-    Delay in milliseconds until which a new trigger cannot be sent."""
-docdict['trigger_lpt_usb2lpt_link'] = \
-    'https://www-user.tu-chemnitz.de/~heha/bastelecke/Rund%20um%20den%20PC/USB2LPT/'  # noqa: E501
-docdict['trigger_lpt_arduino2lpt_link'] = \
-    'https://github.com/fcbg-hnp/arduino-trigger'
 
 # ------------------------- Documentation functions --------------------------
 docdict_indented = dict()

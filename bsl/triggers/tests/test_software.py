@@ -4,7 +4,7 @@ import mne
 
 from bsl import StreamRecorder, StreamPlayer
 from bsl.datasets import eeg_resting_state
-from bsl.triggers.software import TriggerSoftware
+from bsl.triggers import SoftwareTrigger
 from bsl.utils._tests import requires_eeg_resting_state_dataset
 
 
@@ -16,7 +16,7 @@ def test_trigger_software(tmp_path):
                                   stream_name='StreamPlayer', fif_subdir=False)
         recorder.start()
 
-        trigger = TriggerSoftware(recorder, verbose=True)
+        trigger = SoftwareTrigger(recorder, verbose=True)
         assert trigger.verbose
         trigger.verbose = False
         time.sleep(0.5)
