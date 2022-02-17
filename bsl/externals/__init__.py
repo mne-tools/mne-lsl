@@ -12,21 +12,13 @@ try:
     libpaths = pylsl.pylsl.find_liblsl_libraries()
     while True:
         try:
-            libpath = next(libpaths)
-            lib = CDLL(libpath)
+            CDLL(next(libpaths))
         except StopIteration:
             raise StopIteration
         except Exception:
             continue
-        finally:
-            # clean up
-            try:
-                del libpath
-            except NameError:
-                pass
-            try:
-                del lib
-            except NameError:
-                pass
+        break
+    # clean-up
+    del libpaths
 except (ModuleNotFoundError, ImportError, StopIteration):
     pylsl = importlib.import_module(name='.pylsl', package=__name__)
