@@ -1,7 +1,7 @@
 # requirements for minimal BrainStreamingLayer functionality.
-mne
 numpy
+scipy
+mne
 pylsl
 pyqt5
 pyqtgraph
-scipy
