@@ -10,8 +10,7 @@ class TriggerDef:
     """
     Class used to store pairs {`str`: `int`} of events name and events value.
     Each name and each value is unique. The pairs can be read from a ``.ini``
-    file or edited manually with `TriggerDef.add_event` and
-    `TriggerDef.remove_event`.
+    file or edited manually with `TriggerDef.add` and `TriggerDef.remove`.
 
     The class will expose the name as attributes ``self.event_str = event_int``
     for all pairs.
@@ -43,9 +42,9 @@ class TriggerDef:
     def __init__(self, trigger_file=None):
         self._by_name = dict()
         self._by_value = dict()
-        self.read_ini(trigger_file)
+        self.read(trigger_file)
 
-    def read_ini(self, trigger_file):
+    def read(self, trigger_file):
         """
         Read events from a ``.ini`` trigger definition file.
 
@@ -89,7 +88,7 @@ class TriggerDef:
             self._by_name[name] = value
             self._by_value[value] = name
 
-    def write_ini(self, trigger_file):
+    def write(self, trigger_file):
         """
         Write events to a ``.ini`` trigger definition file.
 
@@ -109,7 +108,7 @@ class TriggerDef:
         with open(trigger_file, 'w') as configfile:
             config.write(configfile)
 
-    def add_event(self, name, value, overwrite=False):
+    def add(self, name, value, overwrite=False):
         """
         Add an event to the trigger definition instance.
 
@@ -133,15 +132,15 @@ class TriggerDef:
             return
 
         if name in self._by_name:
-            self.remove_event(name)
+            self.remove(name)
         if value in self._by_value:
-            self.remove_event(value)
+            self.remove(value)
 
         setattr(self, name, value)
         self._by_name[name] = value
         self._by_value[value] = name
 
-    def remove_event(self, event):
+    def remove(self, event):
         """
         Remove an event from the trigger definition instance.
         The event can be given by name (str) or by value (int).

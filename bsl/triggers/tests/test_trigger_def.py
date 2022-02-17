@@ -31,52 +31,52 @@ def test_trigger_def(caplog):
     assert tdef._by_value == tdef.by_value == {}
 
     # Test add_event
-    tdef.add_event('stim', 1, overwrite=False)
+    tdef.add('stim', 1, overwrite=False)
     _check_pair(tdef, 'stim', 1)
 
     # Test add existing event (name)
     caplog.clear()
-    tdef.add_event('stim', 2, overwrite=False)
+    tdef.add('stim', 2, overwrite=False)
     _check_pair(tdef, 'stim', 1)
     assert 2 not in tdef._by_value
     assert 'Event name stim already exists. Skipping.' in caplog.text
 
     # Test add existing event (name - overwrite)
-    tdef.add_event('stim', 2, overwrite=True)
+    tdef.add('stim', 2, overwrite=True)
     _check_pair(tdef, 'stim', 2)
     assert 1 not in tdef._by_value
 
     # Test add existing event (value)
     caplog.clear()
-    tdef.add_event('rest', 2, overwrite=False)
+    tdef.add('rest', 2, overwrite=False)
     _check_pair(tdef, 'stim', 2)
     assert 'rest' not in tdef._by_name
     assert 'Event value 2 already exists. Skipping.' in caplog.text
 
     # Test add existing event (value - overwrite)
-    tdef.add_event('rest', 2, overwrite=True)
+    tdef.add('rest', 2, overwrite=True)
     _check_pair(tdef, 'rest', 2)
     assert 'stim' not in tdef._by_name
 
     # Test remove non-existing event (name)
     caplog.clear()
-    tdef.remove_event('stim')
+    tdef.remove('stim')
     assert 'Event name stim not found.' in caplog.text
 
     # Test remove non-existing event (value)
     caplog.clear()
-    tdef.remove_event(5)
+    tdef.remove(5)
     assert 'Event value 5 not found.' in caplog.text
 
     # Test remove existing event (name)
-    tdef.remove_event('rest')
+    tdef.remove('rest')
     assert 'rest' not in tdef._by_name
     assert 2 not in tdef._by_value
     assert not hasattr(tdef, 'rest')
 
     # Test remove existing event (value)
-    tdef.add_event('rest', 2)
-    tdef.remove_event(2)
+    tdef.add('rest', 2)
+    tdef.remove(2)
     assert 'rest' not in tdef._by_name
     assert 2 not in tdef._by_value
     assert not hasattr(tdef, 'rest')
@@ -133,20 +133,20 @@ def test_write_ini(tmp_path):
     """Test write to a .ini file."""
     # Valid file
     tdef = TriggerDef()
-    tdef.add_event('stim', 1, overwrite=False)
-    tdef.add_event('rest', 2, overwrite=False)
-    tdef.write_ini(tmp_path / 'test_write.ini')
+    tdef.add('stim', 1, overwrite=False)
+    tdef.add('rest', 2, overwrite=False)
+    tdef.write(tmp_path / 'test_write.ini')
 
     # Invalid file
     trigger_file = 101
     with pytest.raises(TypeError, match="'trigger_file' must be an instance"):
-        tdef.write_ini(trigger_file)
+        tdef.write(trigger_file)
 
     trigger_file = tmp_path / 'test_write.txt'
     with pytest.raises(ValueError,
                        match='Argument trigger_file must end with .ini. '
                              'Provided: %s' % trigger_file.suffix):
-        tdef.write_ini(trigger_file)
+        tdef.write(trigger_file)
 
 
 @requires_trigger_def_dataset
