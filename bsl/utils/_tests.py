@@ -1,7 +1,6 @@
 """Utility functions for testing. Inspired from MNE."""
 
 import time
-import ctypes
 import requests
 from pathlib import Path
 from functools import partial
@@ -57,38 +56,15 @@ requires_trigger_def_dataset = partial(
     _requires_dataset_or_good_network, dataset=trigger_def)
 
 
-def requires_lpt(function):
-    """Decorator to skip a test if a build-in LPT port is not available."""
-    ext = '32.dll' if ctypes.sizeof(ctypes.c_voidp) == 4 else '64.dll'
-    dllname = 'LptControl_Desktop' + ext
-    dll = Path(__file__).parent.parent / 'triggers' / 'lpt_libs' / dllname
+def requires_parallel(function):
+    """Decorator to skip a test if a build-in ParallelPort is not available."""
     try:
-        lpt = ctypes.cdll.LoadLibrary(str(dll))
-    except Exception:
-        return pytest.mark.skipif(True, reason='LPT dll not found.')(function)
-    for portaddr in [0x278, 0x378]:
-        try:
-            lpt.setdata(portaddr, 1)
-            return function
-        except Exception:
-            pass
-    return pytest.mark.skipif(True, reason='LPT port not found.')(function)
-
-
-def requires_usb2lpt(function):
-    """Decorator to skip a test if a USB to LPT converter is not available."""
-    ext = '32.dll' if ctypes.sizeof(ctypes.c_voidp) == 4 else '64.dll'
-    dllname = 'LptControl_USB2LPT' + ext
-    dll = Path(__file__).parent.parent / 'triggers' / 'lpt_libs' / dllname
-    try:
-        lpt = ctypes.cdll.LoadLibrary(str(dll))
-    except Exception:
-        return pytest.mark.skipif(True, reason='LPT dll not found.')(function)
-    try:
-        lpt.setdata(1)
-        return function
-    except Exception:
-        return pytest.mark.skipif(True, reason='LPT port not found.')(function)
+        from psychopy.parallel import ParallelPort  # noqa: F401
+    except ModuleNotFoundError:
+        return pytest.mark.skipif(
+            True, reason='psychopy not installed.')(function)
+    return pytest.mark.skipif(
+        True, reason='ParallelPort tests are not supported.')(function)
 
 
 def requires_arduino2lpt(function):
