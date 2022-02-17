@@ -64,7 +64,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu, windows]
+        os: [ubuntu, windows, macos]
     name: ${{ matrix.os }}-externals
     runs-on: ${{ matrix.os }}-latest
     defaults:
