@@ -4,13 +4,13 @@ Trigger using software and a .txt file.
 import pylsl
 
 from ._trigger import _Trigger
+from ..stream_recorder import StreamRecorder
 from ..utils._checks import _check_type
 from ..utils._docs import fill_doc, copy_doc
-from ..stream_recorder import StreamRecorder
 
 
 @fill_doc
-class TriggerSoftware(_Trigger):
+class SoftwareTrigger(_Trigger):
     """
     Trigger saving signal value in a ``.txt`` file.
     Software trigger instance must be created after a
@@ -21,7 +21,7 @@ class TriggerSoftware(_Trigger):
 
         recorder = StreamRecorder('path to dir')
         recorder.start()
-        trigger = TriggerSoftware(recorder)
+        trigger = SoftwareTrigger(recorder)
         # do stuff
         trigger.close() # OR >>> del trigger
         recorder.stop()
@@ -35,8 +35,8 @@ class TriggerSoftware(_Trigger):
 
     def __init__(self, recorder, *, verbose: bool = True):
         super().__init__(verbose)
-        self._recorder = TriggerSoftware._check_recorder(recorder)
-        self._eve_file = TriggerSoftware._find_eve_file(recorder)
+        self._recorder = SoftwareTrigger._check_recorder(recorder)
+        self._eve_file = SoftwareTrigger._find_eve_file(recorder)
         try:
             self._eve_file = open(self._eve_file, 'a')
         except Exception:

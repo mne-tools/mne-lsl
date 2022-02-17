@@ -1,2 +1,1 @@
 recursive-include bsl/stream_viewer/control_gui/settings *
-recursive-include bsl/triggers/lpt_libs *
