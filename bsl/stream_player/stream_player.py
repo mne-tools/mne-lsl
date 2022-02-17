@@ -3,9 +3,9 @@ from pathlib import Path
 import multiprocessing as mp
 
 import mne
-import pylsl
 import numpy as np
 
+from ..externals import pylsl
 from ..triggers import TriggerDef
 from ..utils._logs import logger
 from ..utils import find_event_channel
