@@ -1,5 +1,5 @@
 """
-External packages bundle together with BSL.
+External packages bundled together with BSL.
 """
 import importlib
 from ctypes import CDLL
