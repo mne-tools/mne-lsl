@@ -37,4 +37,4 @@ jobs:
         uses: py-actions/flake8@v1
         with:
           path: "bsl"
-          exclude: ["bsl/stream_viewer/control_gui/_ui_control.py", "bsl/externals/**"]
+          exclude: "[bsl/stream_viewer/control_gui/_ui_control.py, bsl/externals/**]"
