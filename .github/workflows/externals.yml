@@ -39,8 +39,5 @@ jobs:
         run: |
           python -m pip install --upgrade pip setuptools wheel
           python -m pip install -r requirements_testing_externals.txt
-      - name: Prepare for liblsl (Ubuntu)
-        if: ${{ matrix.os == 'ubuntu'}}
-        run: sudo apt install -y libpugixml-dev
       - name: Test pylsl
         run: python -c 'from bsl.externals import pylsl'
