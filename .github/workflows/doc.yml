@@ -33,16 +33,16 @@ jobs:
         with:
           python-version: '3.9'
           architecture: 'x64'
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip setuptools wheel
-          python -m pip install -r requirements.txt
-          python -m pip install -r requirements_extras.txt
       - name: Install liblsl (Ubuntu)
         run: |
           sudo apt install -y libpugixml-dev
           curl -L ${LSL_RELEASE_URL}/liblsl-${LSL_RELEASE}-$(lsb_release -sc)_amd64.deb -o liblsl.deb
           sudo apt install ./liblsl.deb
+      - name: Install BSL
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install .
+          python -m pip install -r requirements_extras.txt
       - name: 'Cache BSL testing dataset'
         uses: actions/cache@v2
         with:
@@ -51,6 +51,6 @@ jobs:
       - name: Download BSL testing dataset
         run: python -c 'import bsl; bsl.datasets._download_all_datasets()'
       - name: 'Build documentation'
-        run: |
-          doc\make clean
-          doc\make html
+        uses: rickstaa/sphinx-action@master
+        with:
+          docs-folder: "./doc"
