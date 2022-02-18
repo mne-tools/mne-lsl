@@ -1,10 +1,10 @@
 from threading import Thread
 
 import mne
-import pylsl
 import numpy as np
 
 from ._stream import StreamEEG, StreamMarker
+from ..externals import pylsl
 from ..utils import Timer
 from ..utils._logs import logger
 from ..utils._docs import fill_doc

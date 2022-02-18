@@ -1,9 +1,8 @@
 """
 Trigger using software and a .txt file.
 """
-import pylsl
-
 from ._trigger import _Trigger
+from ..externals import pylsl
 from ..stream_recorder import StreamRecorder
 from ..utils._checks import _check_type
 from ..utils._docs import fill_doc, copy_doc
