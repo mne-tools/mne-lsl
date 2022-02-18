@@ -1255,6 +1255,7 @@ while True:
     try:
         libpath = next(libpaths)
         lib = CDLL(libpath)
+        break
     except StopIteration:
         raise RuntimeError(
             "Your system configuration is not supported by default by BSL. "
