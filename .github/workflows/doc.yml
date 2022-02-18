@@ -5,7 +5,14 @@ name: doc
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.number }}-${{ github.event.ref }}
   cancel-in-progress: true
-on: [pull_request, push, workflow_dispatch]
+on:
+  pull_request:
+    paths:
+      - '*'
+  push:
+    paths:
+      - '*'
+  workflow_dispatch:
 
 jobs:
   build:
