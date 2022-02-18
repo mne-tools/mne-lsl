@@ -19,6 +19,8 @@ import bsl
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
 sys.path.append(Path(__file__).parent.parent / 'bsl')
+print (Path(__file__).parent / 'sphinxext')
+sys.path.append(Path(__file__).parent / 'sphinxext')
 
 # -- Project information -----------------------------------------------------
 
@@ -43,7 +45,8 @@ extensions = [
     'sphinx.ext.napoleon',
     'sphinx.ext.intersphinx',
     'sphinx_gallery.gen_gallery',
-    'numpydoc'
+    'numpydoc',
+    'sphinx_bootstrap_divs'
     ]
 
 # Add any paths that contain templates here, relative to this directory.

@@ -23,7 +23,7 @@ BSL requires Python version `3.6` or higher. BSL is available on
 
       $ pip install bsl
 
-- **Conda**: Not yet available.
+- **Conda**: A conda-forge distribution is not yet available.
 
 =====================
 Optional dependencies
@@ -40,61 +40,78 @@ BSL installs the following dependencies:
 
 Additional functionalities requires:
 
-- `pyserial <https://github.com/pyserial/pyserial>`_: for the trigger using an
-  :ref:`arduino2lpt`.
+- `psychopy <https://www.psychopy.org/>`_: for the parallel port triggers.
+- `pyserial <https://github.com/pyserial/pyserial>`_: for the parallel port
+  trigger using an :ref:`arduino2lpt`.
 - `vispy <https://vispy.org/>`_: for the `~bsl.StreamViewer` vispy backend.
 
-=============================
-Installation and test example
-=============================
+===========================
+Installing pylsl and liblsl
+===========================
 
-| Python version ``3.8.10``
-| Operating System: ``Windows 10``
+`pylsl <https://github.com/labstreaminglayer/liblsl-Python>`_ requires a binary
+library, called ``liblsl`` to operate. But the binary library might not been
+downloaded alongside `pylsl`.
 
-**Step 1:** Make sure that the path to the Python installation folder
-``Python38`` and ``Python38\Scripts`` present in the ``Path`` environment
-variable of the PC:
+To test if `pylsl <https://github.com/labstreaminglayer/liblsl-Python>`_ is
+working, try the following command in a terminal:
 
-- In the start menu, right click on ``This PC`` App and select ``Properties``
-- Under ``Related settings``, click on ``Advanced system settings``
+.. code-block:: console
 
-.. image:: _static/install/advanced_system_settings.png
-   :align: center
-   :width: 400
+    $ python -c 'import pylsl'
 
-- Select ``Environmental Variables``
+If it didn't raise an error, congratulation, you have a working setup! However,
+if an error is raised, please refer to the instructions below or to the
+`LabStreamingLayer Slack <https://labstreaminglayer.slack.com>`_.
 
-.. image:: _static/install/environmental_variables.png
-   :align: center
-   :width: 300
+.. collapse:: |linux| Linux
 
-- Check that the the Python installation folder path (e.g.
-  ``C:\Program Files\Python38\``) and the Python scripts folder (e.g.
-  ``C:\Program Files\Python38\Scripts\``) are in the environment variable
-  ``Path``, either user or system-wide.
+    Start by installing ``libpugixml-dev``, a light-weight C++ XML processing
+    library.
 
-| **Step 2:** Install BSL with ``pip``:
+    .. code-block:: console
 
-  .. code-block:: console
+        $ sudo apt install -y libpugixml-dev
 
-      $ pip install bsl
+    Fetch the correct binary from the
+    `liblsl release page <https://github.com/sccn/liblsl/releases>`_. If your
+    distribution is not available, the binary library must be build.
 
-Alternatively clone the main repository in the current directory and install
-BSL:
+    At the time of writing, the binary version ``1.15.2`` for Ubuntu 18.04
+    (bionic) and for Ubuntu 20.04 (focal) are available.
 
-  .. code-block:: console
+    Create an environment variable named ``PYLSL_LIB`` that contains the path
+    to the downloaded binary library.
 
-      $ git clone https://github.com/bsl-tools/bsl
-      $ cd bsl
-      $ python setup.py install
+.. collapse:: |apple| macOS
 
-**Step 3:** Check that everything works:
+    Fetch the correct binary from the
+    `liblsl release page <https://github.com/sccn/liblsl/releases>`_.
 
-- Test that ``pylsl`` was correctly installed with the core ``liblsl``.
+    Create an environment variable named ``PYLSL_LIB`` that contains the path
+    to the downloaded binary library.
 
-  .. code-block:: python
+    Alternatively, ``homebrew`` can be used to download and set the binary
+    library with the command:
 
-      import pylsl
+    .. code-block:: console
+
+        $ brew install labstreaminglayer/tap/lsl
+
+.. collapse:: |windows| Windows
+
+    Fetch the correct binary from the
+    `liblsl release page <https://github.com/sccn/liblsl/releases>`_.
+
+    Create an environment variable named ``PYLSL_LIB`` that contains the path
+    to the downloaded binary library.
+
+=====================
+Test the installation
+=====================
+
+To test the installation, you can run a fake stream with a `~bsl.StreamPlayer`
+and display it with a `~bsl.StreamViewer`.
 
 - Download a sample :ref:`bsl.datasets<datasets>`:
 
