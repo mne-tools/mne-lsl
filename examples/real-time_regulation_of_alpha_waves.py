@@ -39,7 +39,7 @@ from matplotlib import pyplot as plt
 
 from bsl import StreamRecorder, StreamReceiver, StreamPlayer, datasets
 from bsl.utils import Timer
-from bsl.triggers.software import TriggerSoftware
+from bsl.triggers.software import SoftwareTrigger
 
 #%%
 #
@@ -155,12 +155,12 @@ phase_duration = 3  # in seconds
 #
 # Acquired data is saved to disk with a `~bsl.StreamRecorder` and the beginning
 # of each phase is marked with a trigger event. For this example, a
-# `~bsl.triggers.software.TriggerSoftware` is used, but this example would be
+# `~bsl.triggers.software.SoftwareTrigger` is used, but this example would be
 # equally valid with a different type of trigger.
 #
 # .. note::
 #
-#     `~bsl.triggers.software.TriggerSoftware` must be created after a
+#     `~bsl.triggers.software.SoftwareTrigger` must be created after a
 #     `~bsl.StreamRecorder` is started and closed/deleted before a
 #     `~bsl.StreamRecorder` is stopped.
 #
@@ -168,7 +168,7 @@ phase_duration = 3  # in seconds
 #
 #         recorder = StreamRecorder()
 #         recorder.start()
-#         trigger = TriggerSoftware(recorder)
+#         trigger = SoftwareTrigger(recorder)
 #         # do stuff
 #         trigger.close() # OR >>> del trigger
 #         recorder.stop()
@@ -180,7 +180,7 @@ os.makedirs(record_dir, exist_ok=True)
 recorder = StreamRecorder(record_dir, fname='example_real_time')
 recorder.start()
 print (recorder)
-trigger = TriggerSoftware(recorder, verbose=True)
+trigger = SoftwareTrigger(recorder, verbose=True)
 
 #%%
 #
