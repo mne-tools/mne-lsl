@@ -1,9 +1,8 @@
 """liblsl version
 
-.deb is the linux (focal) version.
-64.deb is the linux (bionic) version.
+.so are the linux Ubuntu version (bionic: 18.04, focal: 20.04).
 .dylib is the macOS version.
-.dll is the windows 64 bits version.
+.dll are the windows version.
 """
 
 __version__ = '1.15.2'
