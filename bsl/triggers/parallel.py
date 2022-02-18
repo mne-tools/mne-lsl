@@ -16,27 +16,31 @@ class ParallelPortTrigger(_Trigger):
     Parameters
     ----------
     address : int (hex) | str
-        The address of the parallel port on the system.
-        On Linux::
-
-            LPT1 = /dev/parport0
-            LPT2 = /dev/parport1
-            LPT3 = /dev/parport2
-
-        On Windows, commom port addresses::
-
-            LPT1 = 0x0378 or 0x03BC
-            LPT2 = 0x0278 or 0x0378
-            LPT3 = 0x0278
-
-        macOS does not have support for parallel ports.
-
-        If ``'arduino'``, uses an Arduino to LPT converter. Design of the
-        converter can be found here :ref:`arduino2lpt`.
+        The address of the parallel port on the system. If ``'arduino'``, uses
+        an Arduino to LPT converter. Design of the converter can be found here
+        :ref:`arduino2lpt`.
     delay : int
         Delay in milliseconds until which a new trigger cannot be sent. During
         this time, the pins remains in the same state.
     %(trigger_verbose)s
+
+    Notes
+    -----
+    The address is specific to the system. Typical addresses are:
+
+    - On Linux::
+
+          LPT1 = /dev/parport0
+          LPT2 = /dev/parport1
+          LPT3 = /dev/parport2
+
+    - On Windows, commom port addresses::
+
+          LPT1 = 0x0378 or 0x03BC
+          LPT2 = 0x0278 or 0x0378
+          LPT3 = 0x0278
+
+    - macOS does not have support for parallel ports.
     """
 
     def __init__(self, address, delay: int = 50, *, verbose: bool = True):
@@ -144,7 +148,8 @@ class ParallelPortTrigger(_Trigger):
 
     def close(self):
         """
-        Disconnects the parallel port.
+        Disconnects the parallel port. This method should free the parallel
+        port and let other application or python process use it.
         """
         if self._address == 'arduino':
             try:
