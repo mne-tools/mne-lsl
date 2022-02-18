@@ -2,10 +2,10 @@ import math
 import time
 from abc import ABC, abstractmethod
 
-import pylsl
 import numpy as np
 
 from ._buffer import Buffer
+from ..externals import pylsl
 from ..utils import Timer
 from ..utils._logs import logger
 from ..utils import find_event_channel
