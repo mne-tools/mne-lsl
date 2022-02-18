@@ -1224,8 +1224,9 @@ def find_liblsl_libraries():
 
     # Package-wide search
     libbasepath = os.path.join(os.path.dirname(__file__), "lib")
-    for path in os.listdir(libbasepath):
-        if os.path.isfile(path) and path.split('.')[-1] == libsuffix:
+    for file in os.listdir(libbasepath):
+        path = os.path.join(libbasepath, file)
+        if os.path.isfile(path) and file.split('.')[-1] == libsuffix[1:]:
             yield path
 
     # Sytem-wide search, according to docs:
