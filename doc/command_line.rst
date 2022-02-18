@@ -67,15 +67,9 @@ With the optional arguments:
 .. note::
 
     If ``directory`` is not provided, the current working directory is used.
-
-.. note::
-
     If ``fname`` is not provided, a stem is generated based on the current
-    datetime.
-
-.. note::
-
-    If ``stream_name`` is not provided, all available streams are recorded.
+    datetime. If ``stream_name`` is not provided, all available streams are
+    recorded.
 
 .. image:: _static/stream_recorder/stream_recorder_cli.gif
    :alt: StreamRecorder
@@ -101,11 +95,8 @@ With the optional arguments:
 .. note::
 
     If ``stream_name`` is not provided, a prompt is displayed to select a
-    stream among the available ones.
-
-.. note::
-
-    If ``backend`` is not provided, the default backend `pyqtgraph` is used.
+    stream among the available ones. If ``backend`` is not provided, the
+    default backend `pyqtgraph` is used.
 
 The :class:`~bsl.StreamViewer` opens 2 windows:
 
