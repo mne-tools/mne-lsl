@@ -10,15 +10,15 @@ import sys
 from pathlib import Path
 from datetime import datetime, timezone
 
+import bsl
+
 # -- Path setup --------------------------------------------------------------
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-sys.path.append(Path(__file__).parent.parent)
 sys.path.append(Path(__file__).parent.parent / 'bsl')
-import bsl
 
 # -- Project information -----------------------------------------------------
 
