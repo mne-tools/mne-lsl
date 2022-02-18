@@ -1,4 +1,4 @@
-name: pytest
+name: test
 # https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#concurrency
 # https://docs.github.com/en/developers/webhooks-and-events/events/github-event-types#pullrequestevent
 # workflow name, PR number (empty on push), push ref (empty on PR)
