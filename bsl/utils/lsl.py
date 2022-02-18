@@ -3,11 +3,10 @@ LSL wrapper functions for creating a server and a client.
 """
 import xml.etree.ElementTree as ET
 
-import pylsl
-
 from . import Timer
 from ._checks import _check_type
 from ._logs import logger
+from ..externals import pylsl
 
 
 def list_lsl_streams(ignore_markers=False):
