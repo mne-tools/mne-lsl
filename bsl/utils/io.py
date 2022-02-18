@@ -24,12 +24,12 @@ def pcl2fif(fname, out_dir=None, external_event=None,
 
     Parameters
     ----------
-    fname : path-like
+    fname : file-like
         Pickle file path to convert to ``.fif`` format.
     out_dir : path-like
         Saving directory. If `None`, it will be the directory
         ``fname.parent/'fif'``.
-    external_event : path-like
+    external_event : file-like
         Event file path in text format, following MNE event structure. Each row
         should be: ``index 0 event``.
     precision : str
@@ -213,7 +213,7 @@ def any2fif(fname, out_dir=None, overwrite=True, precision='double'):
 
     Parameters
     ----------
-    fname : path-like
+    fname : file-like
         File path to convert to ``.fif`` format.
     out_dir : path-like
         Saving directory. If ``None``, it will be the directory
