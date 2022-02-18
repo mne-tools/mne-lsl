@@ -51,6 +51,6 @@ jobs:
       - name: Download BSL testing dataset
         run: python -c 'import bsl; bsl.datasets._download_all_datasets()'
       - name: 'Build documentation'
-        uses: ammaraskar/sphinx-action@master
-        with:
-          docs-folder: "doc/"
+        run |
+          doc\make clean
+          doc\make html
