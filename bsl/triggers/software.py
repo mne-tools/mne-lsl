@@ -15,20 +15,20 @@ class SoftwareTrigger(_Trigger):
     Software trigger instance must be created after a StreamRecorder is started
     and close/deleted before a StreamRecorder is stopped.
 
-    .. code-block:: python
-
-        recorder = StreamRecorder('path to dir')
-        recorder.start()
-        trigger = SoftwareTrigger(recorder)
-        # do stuff
-        trigger.close() # OR >>> del trigger
-        recorder.stop()
-
     Parameters
     ----------
     recorder : StreamRecorder
         BSL's recorder used.
     %(trigger_verbose)s
+
+    Examples
+    --------
+    >>> recorder = StreamRecorder('path to dir')
+    >>> recorder.start()
+    >>> trigger = SoftwareTrigger(recorder)
+    >>> trigger.signal(1)
+    >>> trigger.close() # OR >>> del trigger
+    >>> recorder.stop()
     """
 
     def __init__(self, recorder, *, verbose: bool = True):
