@@ -17,7 +17,6 @@ from datetime import datetime, timezone
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 
 sys.path.append(str(Path(__file__).parent.parent))
-sys.path.append(str(Path(__file__).parent / 'sphinxext'))
 import bsl
 
 # -- Project information -----------------------------------------------------
@@ -44,7 +43,6 @@ extensions = [
     'sphinx.ext.intersphinx',
     'sphinx_gallery.gen_gallery',
     'numpydoc',
-    'sphinx_bootstrap_divs'
     ]
 
 # Add any paths that contain templates here, relative to this directory.

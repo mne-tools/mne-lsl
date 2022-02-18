@@ -62,42 +62,46 @@ If it didn't raise an error, congratulation, you have a working setup! However,
 if an error is raised, please refer to the instructions below or to the
 `LabStreamingLayer Slack <https://labstreaminglayer.slack.com>`_.
 
-.. collapse:: Linux
+Linux
+-----
 
-    Start by installing ``libpugixml-dev``, a light-weight C++ XML processing
-    library.
+Start by installing ``libpugixml-dev``, a light-weight C++ XML processing
+library.
 
-    .. code-block:: console
+.. code-block:: console
 
-        $ sudo apt install -y libpugixml-dev
+    $ sudo apt install -y libpugixml-dev
 
-    Fetch the correct binary from the `liblsl release page`_. If your
-    distribution is not available, the binary library must be build.
-    At the time of writing, the binary version ``1.15.2`` for Ubuntu 18.04
-    (bionic) and for Ubuntu 20.04 (focal) are available.
-    Create an environment variable named ``PYLSL_LIB`` that contains the path
-    to the downloaded binary library.
+Fetch the correct binary from the `liblsl release page`_. If your
+distribution is not available, the binary library must be build.
+At the time of writing, the binary version ``1.15.2`` for Ubuntu 18.04
+(bionic) and for Ubuntu 20.04 (focal) are available.
+Create an environment variable named ``PYLSL_LIB`` that contains the path
+to the downloaded binary library.
 
-.. collapse:: macOS
+macOS
+-----
 
-    Fetch the correct binary from the `liblsl release page`_. If your
-    distribution is not available, the binary library must be build.
-    Create an environment variable named ``PYLSL_LIB`` that contains the path
-    to the downloaded binary library.
+Fetch the correct binary from the `liblsl release page`_. If your
+distribution is not available, the binary library must be build.
+Create an environment variable named ``PYLSL_LIB`` that contains the path
+to the downloaded binary library.
 
-    Alternatively, ``homebrew`` can be used to download and set the binary
-    library with the command:
+Alternatively, ``homebrew`` can be used to download and set the binary
+library with the command:
 
-    .. code-block:: console
+.. code-block:: console
 
-        $ brew install labstreaminglayer/tap/lsl
+    $ brew install labstreaminglayer/tap/lsl
 
-.. collapse:: Windows
 
-    Fetch the correct binary from the `liblsl release page`_. If your
-    distribution is not available, the binary library must be build.
-    Create an environment variable named ``PYLSL_LIB`` that contains the path
-    to the downloaded binary library.
+Windows
+-------
+
+Fetch the correct binary from the `liblsl release page`_. If your
+distribution is not available, the binary library must be build.
+Create an environment variable named ``PYLSL_LIB`` that contains the path
+to the downloaded binary library.
 
 =====================
 Test the installation
