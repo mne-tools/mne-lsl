@@ -27,7 +27,7 @@ def pcl2fif(fname, out_dir=None, external_event=None,
     fname : file-like
         Pickle file path to convert to ``.fif`` format.
     out_dir : path-like
-        Saving directory. If `None`, it will be the directory
+        Saving directory. If ``None``, it will be the directory
         ``fname.parent/'fif'``.
     external_event : file-like
         Event file path in text format, following MNE event structure. Each row

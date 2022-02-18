@@ -20,13 +20,13 @@ class StreamPlayer:
     ----------
     stream_name : str
         Stream's server name, displayed on LSL network.
-    fif_file : str | file-like
+    fif_file : file-like
         Path to the compatible raw ``.fif`` file to play.
     repeat : int | ``float('inf')``
         Number of times the stream player will loop on the FIF file before
         interrupting. Default ``float('inf')`` can be passed to never interrupt
         streaming.
-    trigger_def : None | str | file-like | TriggerDef
+    trigger_def : None | file-like | TriggerDef
         If not ``None``, a TriggerDef instance is used to log events with a
         descriptive string instead of their ID. If not ``None``, either a
         TriggerDef instance or the path to a valid ``.ini`` file passed to
@@ -215,8 +215,8 @@ class StreamPlayer:
     @property
     def trigger_def(self):
         """
-        Either `None` or :class:`.TriggerDef` instance converting event numbers
-        into event strings.
+        Either ``None`` or TriggerDef instance converting event numbers into
+        event strings.
 
         :type: TriggerDef
         """

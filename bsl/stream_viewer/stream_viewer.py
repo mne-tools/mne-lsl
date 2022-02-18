@@ -15,7 +15,7 @@ class StreamViewer:
     """
     Class for visualizing the signals coming from an LSL stream. The stream
     viewer will connect to only one LSL stream. If ``stream_name`` is set to
-    `None`, an automatic search is performed followed by a prompt if multiple
+    ``None``, an automatic search is performed followed by a prompt if multiple
     non-markers streams are found.
 
     Supports 2 backends:
@@ -43,7 +43,7 @@ class StreamViewer:
         bufsize : int | float
             Buffer/window size of the attached StreamReceiver.
             The default ``0.2`` should work in most cases.
-        backend : `str`
+        backend : str
             Selected backend for plotting. Supports:
                 - ``'pyqtgraph'``: fully functional.
                 - ``'vispy'``: work in progress.

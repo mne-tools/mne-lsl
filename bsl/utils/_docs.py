@@ -20,7 +20,7 @@ stream_name : list | str | None
 docdict['receiver_get_stream_name'] = """
 stream_name : str | None
     Name of the stream from which data is retrieved.
-    Can be set to `None` (default) if the StreamReceiver is connected to a
+    Can be set to ``None`` (default) if the StreamReceiver is connected to a
     single stream."""
 docdict['receiver_get_return_raw'] = """
 return_raw : bool
