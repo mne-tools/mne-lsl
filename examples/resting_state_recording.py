@@ -40,7 +40,7 @@ from pathlib import Path
 import mne
 
 from bsl import StreamPlayer, StreamRecorder, datasets
-from bsl.triggers.software import TriggerSoftware
+from bsl.triggers.software import SoftwareTrigger
 
 #%%
 #
@@ -97,12 +97,12 @@ print (recorder)
 #
 # Now that a `~bsl.StreamRecorder` is started and is acquiring data, a trigger
 # to mark the beginning of the segment of interest is created. For this
-# example, a `~bsl.triggers.software.TriggerSoftware` is used, but this example
+# example, a `~bsl.triggers.software.SoftwareTrigger` is used, but this example
 # would be equally valid with a different type of trigger.
 #
 # .. note::
 #
-#     `~bsl.triggers.software.TriggerSoftware` must be created after a
+#     `~bsl.triggers.software.SoftwareTrigger` must be created after a
 #     `~bsl.StreamRecorder` is started and closed/deleted before a
 #     `~bsl.StreamRecorder` is stopped.
 #
@@ -110,14 +110,14 @@ print (recorder)
 #
 #         recorder = StreamRecorder()
 #         recorder.start()
-#         trigger = TriggerSoftware(recorder)
+#         trigger = SoftwareTrigger(recorder)
 #         # do stuff
 #         trigger.close() # OR >>> del trigger
 #         recorder.stop()
 #
 #     All triggers do not need an active `~bsl.StreamRecorder` to be created.
 
-trigger = TriggerSoftware(recorder, verbose=True)
+trigger = SoftwareTrigger(recorder, verbose=True)
 
 #%%
 #
@@ -132,7 +132,7 @@ trigger.signal(1)
 #
 # .. note::
 #
-#     `~bsl.triggers.software.TriggerSoftware` must be closed or deleted before
+#     `~bsl.triggers.software.SoftwareTrigger` must be closed or deleted before
 #     the recorder is stopped. All triggers do not need to be closed or deleted
 #     before the recorder is stopped.
 
