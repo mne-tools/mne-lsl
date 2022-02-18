@@ -44,6 +44,7 @@ jobs:
           python -m pip install -r requirements.txt
           python -m pip install pyserial vispy
           python -m pip install pytest pytest-cov requests
+          python -m pip install sphinx pydata-sphinx-theme sphinx-gallery numpydoc
       - name: Install liblsl (Ubuntu)
         if: ${{ matrix.os == 'ubuntu'}}
         run: |
