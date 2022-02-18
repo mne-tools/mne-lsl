@@ -49,6 +49,17 @@ Additional functionalities requires:
 Installing pylsl and liblsl
 ===========================
 
+By default, ``BSL`` is distributed with a recent version of ``pylsl`` and
+of ``liblsl`` that should work on Ubuntu 18.04, Ubuntu 20.04, macOS and
+Windows. You can test if your system supports the distributed version by
+running the following command in a terminal:
+
+.. code-block:: console
+
+    $ python -c 'from bsl.externals import pylsl'
+
+If this command doesn't raise an error', then ``BSL`` will be able to run by
+itself. However, if this is not the case, you have to correctly setup `pylsl`_.
 `pylsl`_ requires a binary library, called ``liblsl`` to operate. But the
 binary library might not been downloaded alongside `pylsl`_.
 
