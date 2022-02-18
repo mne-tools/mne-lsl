@@ -42,7 +42,8 @@ extensions = [
     'sphinx.ext.coverage',
     'sphinx.ext.napoleon',
     'sphinx.ext.intersphinx',
-    'sphinx_gallery.gen_gallery'
+    'sphinx_gallery.gen_gallery',
+    'numpydoc'
     ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -151,4 +152,25 @@ intersphinx_mapping = {
     'sklearn': ('https://scikit-learn.org/stable', None),
     'pandas': ('https://pandas.pydata.org/pandas-docs/stable', None),
     'vispy': ('https://vispy.org/', None),
+    }
+
+# numpydoc
+numpydoc_class_members_toctree = False
+numpydoc_attributes_as_param_list = True
+numpydoc_xref_param_type = True
+numpydoc_xref_aliases = {
+    # Python
+    'file-like': ':term:`file-like <python:file object>`',
+    'iterator': ':term:`iterator <python:iterator>`',
+    'path-like': ':term:`path-like`',
+    'array-like': ':term:`array-like`',
+    'Path': ':class:`python:pathlib.Path`',
+    # MNE
+    'Raw': 'mne.io.Raw'
+    # BSL
+    }
+
+numpydoc_xref_ignore = {
+    # words
+    'instance', 'instances', 'of'
     }

@@ -3,12 +3,13 @@
 # Examples:
 # numpy>=1.20          # xyz, xyz_2
 
-pyserial               # parallel
-psychopy               # parallel
+pyserial               # parallel, parallelport, lpt
+psychopy               # parallel, parallelport, lpt
 vispy                  # vispy_backend
 sphinx                 # doc, doc-build, documentation
 pydata-sphinx-theme    # doc, doc-build, documentation
 sphinx-gallery         # doc, doc-build, documentation
+numpydoc               # doc, doc-build, documentation
 pytest                 # test, testing
 pytest-cov             # test, testing
 requests               # test, testing
