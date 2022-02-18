@@ -1,5 +1,5 @@
 """
-Sample trigger definition .ini file.
+Sample trigger definition ``.ini`` file.
 """
 
 import os
@@ -17,7 +17,7 @@ PATH = Path('~/bsl_data/trigger_def/trigger_def.ini').expanduser()
 
 def data_path():
     """
-    Return the path to an example trigger definition .ini file.
+    Return the path to an example trigger definition ``.ini`` file.
     If the dataset is not locally present, it is downloaded in the user home
     directory in the folder ``bsl_data/trigger_def``.
 

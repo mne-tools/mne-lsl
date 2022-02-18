@@ -50,7 +50,7 @@ Installing pylsl and liblsl
 ===========================
 
 By default, ``BSL`` is distributed with a recent version of ``pylsl`` and
-of ``liblsl`` that should work on Ubuntu 18.04, Ubuntu 20.04, macOS and
+``liblsl`` that should work on Ubuntu 18.04, Ubuntu 20.04, macOS and
 Windows. You can test if your system supports the distributed version by
 running the following command in a terminal:
 
@@ -58,7 +58,7 @@ running the following command in a terminal:
 
     $ python -c 'from bsl.externals import pylsl'
 
-If this command doesn't raise an error', then ``BSL`` will be able to run by
+If this command doesn't raise an error, then ``BSL`` will be able to run by
 itself. However, if this is not the case, you have to correctly setup `pylsl`_.
 `pylsl`_ requires a binary library, called ``liblsl`` to operate. But the
 binary library might not been downloaded alongside `pylsl`_.
@@ -86,19 +86,21 @@ library.
 Fetch the correct binary from the `liblsl release page`_. If your
 distribution is not available, the binary library must be build.
 At the time of writing, the binary version ``1.15.2`` for Ubuntu 18.04
-(bionic) and for Ubuntu 20.04 (focal) are available.
-Create an environment variable named ``PYLSL_LIB`` that contains the path
-to the downloaded binary library.
+(bionic) and for Ubuntu 20.04 (focal) are available. Install the downloaded
+``.deb`` library with:
+
+.. code-block:: console
+
+    $ sudo apt install ./liblsl.deb
 
 macOS
 -----
 
-Fetch the correct binary from the `liblsl release page`_. If your
-distribution is not available, the binary library must be build.
-Create an environment variable named ``PYLSL_LIB`` that contains the path
-to the downloaded binary library.
+Fetch the correct binary from the `liblsl release page`_ and retrieve the
+``.dylib`` binary library. Create an environment variable named ``PYLSL_LIB``
+that contains the path to the downloaded binary library.
 
-Alternatively, ``homebrew`` can be used to download and set the binary
+Alternatively, ``homebrew`` can be used to download and install the binary
 library with the command:
 
 .. code-block:: console
@@ -109,10 +111,9 @@ library with the command:
 Windows
 -------
 
-Fetch the correct binary from the `liblsl release page`_. If your
-distribution is not available, the binary library must be build.
-Create an environment variable named ``PYLSL_LIB`` that contains the path
-to the downloaded binary library.
+Fetch the correct binary from the `liblsl release page`_ and retrieve the
+``.dll`` binary library. Create an environment variable named ``PYLSL_LIB``
+that contains the path to the downloaded binary library.
 
 =====================
 Test the installation

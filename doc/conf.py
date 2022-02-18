@@ -167,6 +167,7 @@ numpydoc_xref_aliases = {
     # MNE
     'Info': 'mne.io.Info',
     'Raw': 'mne.io.Raw',
+    'Epochs': 'mne.Epochs',
     # BSL
     'StreamReceiver': 'bsl.StreamReceiver',
     'StreamRecorder': 'bsl.StreamRecorder',
@@ -175,5 +176,5 @@ numpydoc_xref_aliases = {
 
 numpydoc_xref_ignore = {
     # words
-    'instance', 'instances', 'of'
+    'instance', 'instances', 'of', 'or',
     }
