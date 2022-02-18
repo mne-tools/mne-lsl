@@ -47,7 +47,7 @@ extensions = [
     ]
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = []
+templates_path = ['_templates']
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -76,6 +76,7 @@ modindex_common_prefix = ['bsl.']
 
 # Generate autosummary even if no references
 autosummary_generate = True
+autodoc_default_options = {'inherited-members': None}
 
 # -- Options for HTML output -------------------------------------------------
 
