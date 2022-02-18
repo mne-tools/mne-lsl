@@ -2,12 +2,12 @@ import time
 import multiprocessing as mp
 
 import mne
-import pylsl
 import pytest
 
 from bsl import StreamPlayer, logger, set_log_level
 from bsl.datasets import (eeg_auditory_stimuli, eeg_resting_state,
                           eeg_resting_state_short, trigger_def)
+from bsl.externals import pylsl
 from bsl.triggers import TriggerDef
 from bsl.utils._tests import (requires_eeg_auditory_stimuli_dataset,
                               requires_eeg_resting_state_dataset,
