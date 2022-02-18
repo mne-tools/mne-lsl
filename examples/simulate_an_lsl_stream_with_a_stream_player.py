@@ -190,7 +190,7 @@ print (player)
 # corresponding event name if it exists with ``Events: ID (NAME)``.
 
 tdef = TriggerDef()
-tdef.add_event('rest', 1)
+tdef.add('rest', 1)
 
 player = StreamPlayer(stream_name, fif_file, trigger_def=tdef)
 player.start()
@@ -208,7 +208,7 @@ print (player)
 # .. note::
 #
 #     A path to a valid ``.ini`` trigger definition file can be passed instead
-#     of a :class:`.TriggerDef` instance. The file is read with
+#     of a :class:`TriggerDef` instance. The file is read with
 #     `configparser` and has to be structured as follows:
 #
 #     .. code-block:: python
