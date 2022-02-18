@@ -15,7 +15,7 @@ class ParallelPortTrigger(_Trigger):
 
     Parameters
     ----------
-    address : `int` (hex) | `str`
+    address : int (hex) | str
         The address of the parallel port on the system.
         On Linux::
 
@@ -33,7 +33,7 @@ class ParallelPortTrigger(_Trigger):
 
         If ``'arduino'``, uses an Arduino to LPT converter. Design of the
         converter can be found here :ref:`arduino2lpt`.
-    delay : `int`
+    delay : int
         Delay in milliseconds until which a new trigger cannot be sent. During
         this time, the pins remains in the same state.
     %(trigger_verbose)s
@@ -164,15 +164,16 @@ class ParallelPortTrigger(_Trigger):
         """
         Port address.
 
-        :type: `int` | `str`
+        :type: int | str
         """
         return self._address
 
     @property
     def delay(self):
         """
-        Delay to wait between two ``.signal()`` call in milliseconds.
+        Delay to wait between two :meth:`~ParallelPortTrigger.signal` call in
+        milliseconds.
 
-        :type: `float`
+        :type: float
         """
         return self._delay * 1000.0

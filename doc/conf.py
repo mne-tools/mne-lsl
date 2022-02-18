@@ -52,7 +52,7 @@ templates_path = []
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ['Thumbs.db', '.DS_Store']
+exclude_patterns = ['Thumbs.db', '.DS_Store', 'externals']
 
 # The suffix of source filenames.
 source_suffix = '.rst'
@@ -161,13 +161,16 @@ numpydoc_xref_param_type = True
 numpydoc_xref_aliases = {
     # Python
     'file-like': ':term:`file-like <python:file object>`',
-    'iterator': ':term:`iterator <python:iterator>`',
     'path-like': ':term:`path-like`',
-    'array-like': ':term:`array-like`',
     'Path': ':class:`python:pathlib.Path`',
+    'Process': ':class:`python:multiprocessing.Process`',
     # MNE
-    'Raw': 'mne.io.Raw'
+    'Info': 'mne.io.Info',
+    'Raw': 'mne.io.Raw',
     # BSL
+    'StreamReceiver': 'bsl.StreamReceiver',
+    'StreamRecorder': 'bsl.StreamRecorder',
+    'SoftwareTrigger': 'bsl.triggers.SoftwareTrigger'
     }
 
 numpydoc_xref_ignore = {

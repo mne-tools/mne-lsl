@@ -22,6 +22,11 @@ def data_path():
     electrodes. This is a resting-state recording lasting 40 seconds.
     If the dataset is not locally present, it is downloaded in the user home
     directory in the folder ``bsl_data/eeg_sample``.
+
+    Returns
+    -------
+    path : Path
+        Path to the dataset.
     """
     os.makedirs(PATH.parent, exist_ok=True)
 

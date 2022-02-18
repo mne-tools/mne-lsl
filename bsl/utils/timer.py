@@ -9,7 +9,7 @@ class Timer:
 
     Parameters
     ----------
-    autoreset : `bool`
+    autoreset : bool
         If ``autoreset=True``, timer is reset after any member function call.
     """
 
@@ -45,7 +45,7 @@ class Timer:
 
         Parameters
         ----------
-        sec : `float`
+        sec : float
             Time to sleep in seconds.
         """
         timer_sec = self.sec()
@@ -60,7 +60,7 @@ class Timer:
         """
         Autoreset status.
 
-        :type: `bool`
+        :type: bool
         """
         return self._autoreset
 

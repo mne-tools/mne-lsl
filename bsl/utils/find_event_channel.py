@@ -12,22 +12,22 @@ def find_event_channel(inst=None, ch_names=None):
     .. warning::
 
         Not 100% guaranteed to find it.
-        If ``inst`` is `None`, ``ch_names`` must be given.
+        If ``inst`` is ``None``, ``ch_names`` must be given.
         If ``inst`` is an MNE instance, ``ch_names`` is ignored if some
         channels types are ``'stim'``.
 
     Parameters
     ----------
-    inst : `None` | `~mne.io.Raw` | `~mne.Epochs` | `~numpy.array`
+    inst : None | Raw | Epochs | `~numpy.array`
         Data instance. If a `~numpy.array` is provided, the shape must be
         ``(n_channels, n_samples)``.
-    ch_names : `None` | `list`
+    ch_names : None | list
         Channels name list.
 
     Returns
     -------
-    `int` | `list` | `None`
-        Event channel index, list of event channel indexes or `None` if not
+    event_channel : int | list | None
+        Event channel index, list of event channel indexes or ``None`` if not
         found.
     """
     _check_type(inst, (None, np.ndarray, BaseRaw, BaseEpochs),

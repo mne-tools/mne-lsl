@@ -50,7 +50,7 @@ class StreamRecorder:
 
         Parameters
         ----------
-        blocking : `bool`
+        blocking : bool
             If ``True``, waits for the child process to start recording data.
         """
         _check_type(blocking, (bool, ), item_name='blocking')
@@ -158,7 +158,7 @@ class StreamRecorder:
         """
         Path to the directory where data will be saved.
 
-        :type: `str` | `~pathlib.Path`
+        :type: Path
         """
         return self._record_dir
 
@@ -175,7 +175,7 @@ class StreamRecorder:
             FIF: '{fname}-[stream_name]-raw.fif'
             (optional) SOFTWARE trigger events: '{fname}-eve.txt'
 
-        :type: `str`
+        :type: str
         """
         return self._fname
 
@@ -184,7 +184,7 @@ class StreamRecorder:
         """
         Servers' name or list of servers' name to connect to.
 
-        :type: `str` | `list`
+        :type: str | list
         """
         return self._stream_name
 
@@ -194,7 +194,7 @@ class StreamRecorder:
         If ``True``, the ``.pcl`` files are converted to ``.fif`` in a
         subdirectory ``'fif': record_dir/fif/...`` instead of ``record_dir``.
 
-        :type: `bool`
+        :type: bool
         """
         return self._fif_subdir
 
@@ -204,16 +204,16 @@ class StreamRecorder:
         If ``True``, a timer showing since when the recorder started is
         displayed every seconds.
 
-        :type: `bool`
+        :type: bool
         """
         return self._verbose
 
     @property
     def eve_file(self):
         """
-        Path to the event file for `~bsl.triggers.software.TriggerSoftware`.
+        Path to the event file for SoftwareTrigger.
 
-        :type: `~pathlib.Path`
+        :type: Path
         """
         return self._eve_file
 
@@ -222,7 +222,7 @@ class StreamRecorder:
         """
         Launched process.
 
-        :type: `multiprocessing.Process`
+        :type: Process
         """
         return self._process
 
@@ -257,7 +257,7 @@ class _Recorder:
             - 1: Recording.
         This variable is used to stop the recording from another process.
     eve_file : str | Path
-        Path to the event file for TriggerSoftware.
+        Path to the event file for SoftwareTrigger.
     """
 
     def __init__(self, record_dir, fname, stream_name, fif_subdir, verbose,

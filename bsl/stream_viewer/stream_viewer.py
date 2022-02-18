@@ -24,9 +24,8 @@ class StreamViewer:
 
     Parameters
     ----------
-    stream_name : `str` | `None`
-        Servers' name to connect to.
-        `None`: prompts the user.
+    stream_name : str | None
+        Servers' name to connect to. ``None`` will prompt the user.
     """
 
     def __init__(self, stream_name=None):
@@ -41,8 +40,8 @@ class StreamViewer:
 
         Parameters
         ----------
-        bufsize : `int` | `float`
-            Buffer/window size of the attached `~bsl.StreamReceiver`.
+        bufsize : int | float
+            Buffer/window size of the attached StreamReceiver.
             The default ``0.2`` should work in most cases.
         backend : `str`
             Selected backend for plotting. Supports:
@@ -97,15 +96,15 @@ class StreamViewer:
         """
         Connected stream's name.
 
-        :type: `str`
+        :type: str
         """
         return self._stream_name
 
     @property
     def sr(self):
         """
-        Connected `~bsl.StreamReceiver`.
+        Connected StreamReceiver.
 
-        :type: `~bsl.StreamReceiver`
+        :type: StreamReceiver
         """
         return self._sr

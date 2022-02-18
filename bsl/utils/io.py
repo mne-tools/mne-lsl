@@ -20,25 +20,25 @@ mne.set_log_level('ERROR')
 def pcl2fif(fname, out_dir=None, external_event=None,
             precision='double', replace=False, overwrite=True):
     """
-    Convert BSL Python pickle format to MNE `~mne.io.Raw`.
+    Convert BSL pickle format to MNE Raw format.
 
     Parameters
     ----------
-    fname : `str` | `~pathlib.Path`
+    fname : path-like
         Pickle file path to convert to ``.fif`` format.
-    out_dir : `str` | `~pathlib.Path`
+    out_dir : path-like
         Saving directory. If `None`, it will be the directory
         ``fname.parent/'fif'``.
-    external_event : `str` | `~pathlib.Path`
+    external_event : path-like
         Event file path in text format, following MNE event structure. Each row
         should be: ``index 0 event``.
-    precision : `str`
+    precision : str
         Data matrix format. ``[single|double|int|short]``, ``'single'``
         improves backward compatability.
-    replace : `bool`
+    replace : bool
         If `True`, previous events will be overwritten by the new ones from
         the external events file.
-    overwrite : `bool`
+    overwrite : bool
         If ``True``, overwrite the previous file.
     """
     fname = Path(fname)
@@ -182,7 +182,7 @@ def _add_events_from_txt(raw, events_index, stim_channel='TRIGGER',
 
     Parameters
     ----------
-    raw : mne.io.Raw
+    raw : Raw
         MNE Raw instance.
     events_index : np.array
         MNE-compatible events [shape=(n_events, 3)].
@@ -208,19 +208,19 @@ supported['.pcl'] = pcl2fif
 
 def any2fif(fname, out_dir=None, overwrite=True, precision='double'):
     """
-    Generic file format converter to `mne.io.Raw`.
+    Generic file format converter to Raw.
     Uses `mne.io.read_raw`.
 
     Parameters
     ----------
-    fname : `str` | `~pathlib.Path`
+    fname : path-like
         File path to convert to ``.fif`` format.
-    out_dir : `str` | `~pathlib.Path`
-        Saving directory. If `None`, it will be the directory
+    out_dir : path-like
+        Saving directory. If ``None``, it will be the directory
         ``fname.parent/'fif'.``
-    overwrite : `bool`
+    overwrite : bool
         If ``True``, overwrite previously converted files with the same name.
-    precision : `str`
+    precision : str
         Data matrix format. ``[single|double|int|short]``, ``'single'``
         improves backward compatability.
     """

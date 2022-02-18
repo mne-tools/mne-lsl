@@ -12,9 +12,8 @@ from ..utils._docs import fill_doc, copy_doc
 class SoftwareTrigger(_Trigger):
     """
     Trigger saving signal value in a ``.txt`` file.
-    Software trigger instance must be created after a
-    `~bsl.StreamRecorder` is started and close/deleted before a
-    `~bsl.StreamRecorder` is stopped.
+    Software trigger instance must be created after a StreamRecorder is started
+    and close/deleted before a StreamRecorder is stopped.
 
     .. code-block:: python
 
@@ -27,8 +26,8 @@ class SoftwareTrigger(_Trigger):
 
     Parameters
     ----------
-    recorder : `~bsl.StreamRecorder`
-        BSL's `~bsl.StreamRecorder` used.
+    recorder : StreamRecorder
+        BSL's recorder used.
     %(trigger_verbose)s
     """
 
@@ -93,9 +92,9 @@ class SoftwareTrigger(_Trigger):
     @property
     def recorder(self):
         """
-        BSL's `~bsl.StreamRecorder` used.
+        BSL's recorder used.
 
-        :type: `~bsl.StreamRecorder`
+        :type: StreamRecorder
         """
         return self._recorder
 

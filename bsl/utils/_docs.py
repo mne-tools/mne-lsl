@@ -11,22 +11,22 @@ docdict = dict()
 
 # -----------------------------------------------
 docdict['stream_name'] = """
-stream_name : `list` | `str` | `None`
+stream_name : list | str | None
     Servers' name or list of servers' name to connect to.
-    `None`: no constraint."""
+    ``None``: no constraint."""
 
 # -----------------------------------------------
 # Stream Receiver
 docdict['receiver_get_stream_name'] = """
-stream_name : `str` | `None`
+stream_name : str | None
     Name of the stream from which data is retrieved.
-    Can be set to `None` (default) if the `~bsl.StreamReceiver` is connected to
-    a single stream."""
+    Can be set to `None` (default) if the StreamReceiver is connected to a
+    single stream."""
 docdict['receiver_get_return_raw'] = """
-return_raw : `bool`
+return_raw : bool
     By default (``False``), data is returned as a `~numpy.array` of shape
-    ``(samples, channels)``. If set to ``True``, the `~bsl.StreamReceiver` will
-    attempt to return data as a MNE `~mne.io.Raw` instances."""
+    ``(samples, channels)``. If set to ``True``, the StreamReceiver will
+    attempt to return data as a MNE Raw instances."""
 docdict['receiver_data'] = """
 data : `~numpy.array`
     Data ``(samples, channels)``."""
@@ -42,11 +42,11 @@ stream in uV to convert to V:
 
     sr.streams['stream_to_convert'].scaling_factor = 1e-6"""
 docdict['receiver_bufsize'] = """
-bufsize : `int` | `float`
+bufsize : int | float
     Buffer's size ``[secs]``. ``MAX_BUF_SIZE`` (def: 1-day) is the maximum
     size. Large buffer may lead to a delay if not pulled frequently."""
 docdict['receiver_winsize'] = """
-winsize : `int` | `float`
+winsize : int | float
     Window's size ``[secs]``. Must be smaller than the buffer's size."""
 
 # Not read by sphinx autodoc
@@ -60,7 +60,7 @@ tslist : list
 # -----------------------------------------------
 # Stream Recorder
 docdict['recorder_record_dir'] = """
-record_dir : `None` | `str` | `~pathlib.Path`
+record_dir : None | path-like
     Path to the directory where data will be saved.
 
     .. note:: If the directory does not exist, it is created.
@@ -68,7 +68,7 @@ record_dir : `None` | `str` | `~pathlib.Path`
     .. note:: If None, the current working directory is used.
 """
 docdict['recorder_fname'] = """
-fname : `None` | `str`
+fname : None | str
     File name stem used to create the files. The StreamRecorder creates 2 files
     plus an optional third if a software trigger was used, respecting the
     following naming:
@@ -80,11 +80,11 @@ fname : `None` | `str`
         (optional) SOFTWARE trigger events: '{fname}-eve.txt'
 """
 docdict['recorder_fif_subdir'] = """
-fif_subdir : `bool`
+fif_subdir : bool
     If ``True``, the ``.pcl`` files are converted to ``.fif`` in a
     subdirectory ``'fif': record_dir/fif/...`` instead of ``record_dir``."""
 docdict['recorder_verbose'] = """
-verbose : `bool`
+verbose : bool
     If ``True``, a timer showing since when the recorder started is displayed
     every seconds."""
 
@@ -137,7 +137,7 @@ position_plot : float
 # -----------------------------------------------
 # Triggers
 docdict['trigger_verbose'] = """
-verbose : `bool`
+verbose : bool
     If ``True``, display a ``logger.info`` message when a trigger is sent."""
 
 # ------------------------- Documentation functions --------------------------
