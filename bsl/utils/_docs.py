@@ -13,7 +13,7 @@ docdict = dict()
 docdict['stream_name'] = """
 stream_name : list | str | None
     Servers' name or list of servers' name to connect to.
-    ``None``: no constraint."""
+    If ``None``, connects to all the available streams."""
 
 # -----------------------------------------------
 # Stream Receiver
@@ -61,23 +61,18 @@ tslist : list
 # Stream Recorder
 docdict['recorder_record_dir'] = """
 record_dir : None | path-like
-    Path to the directory where data will be saved.
-
-    .. note:: If the directory does not exist, it is created.
-
-    .. note:: If None, the current working directory is used.
+    Path to the directory where data will be saved. If the directory does not
+    exist, it is created. If ``None``, the current working directory is used.
 """
 docdict['recorder_fname'] = """
 fname : None | str
     File name stem used to create the files. The StreamRecorder creates 2 files
     plus an optional third if a software trigger was used, respecting the
-    following naming:
+    following naming::
 
-    .. code-block:: python
-
-        PCL: '{fname}-[stream_name]-raw.pcl'
-        FIF: '{fname}-[stream_name]-raw.fif'
-        (optional) SOFTWARE trigger events: '{fname}-eve.txt'
+      PCL: '{fname}-[stream_name]-raw.pcl'
+      FIF: '{fname}-[stream_name]-raw.fif'
+      (optional) SOFTWARE trigger events: '{fname}-eve.txt'
 """
 docdict['recorder_fif_subdir'] = """
 fif_subdir : bool

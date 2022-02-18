@@ -229,9 +229,10 @@ class StreamRecorder:
     @property
     def state(self):
         """
-        Recording state of the recorder:
-            - ``0``: Not recording.
-            - ``1``: Recording.
+        Recording state of the recorder
+
+        - ``0``: Not recording.
+        - ``1``: Recording.
 
         :type: `multiprocessing.Value`
         """
