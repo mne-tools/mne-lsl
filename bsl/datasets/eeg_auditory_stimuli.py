@@ -24,6 +24,11 @@ def data_path():
     lasting 1 second and 75 auditory stimuli events (4) lasting 0.8 second.
     If the dataset is not locally present, it is downloaded in the user home
     directory in the folder ``bsl_data/eeg_sample``.
+
+    Returns
+    -------
+    path : Path
+        Path to the dataset.
     """
     os.makedirs(PATH.parent, exist_ok=True)
 

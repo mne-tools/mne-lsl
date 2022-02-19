@@ -18,22 +18,22 @@ class StreamPlayer:
 
     Parameters
     ----------
-    stream_name : `str`
+    stream_name : str
         Stream's server name, displayed on LSL network.
-    fif_file : `str` | `~pathlib.Path`
+    fif_file : file-like
         Path to the compatible raw ``.fif`` file to play.
-    repeat : `int` | ``float('inf')``
+    repeat : int | ``float('inf')``
         Number of times the stream player will loop on the FIF file before
         interrupting. Default ``float('inf')`` can be passed to never interrupt
         streaming.
-    trigger_def : `None` | `str` | `~pathlib.Path` | :class:`.TriggerDef`
-        If not None, a :class:`.TriggerDef` instance is used to log events with
-        a descriptive string instead of their ID. If not `None`, either a
-        :class:`.TriggerDef` instance or the path to a valid path to a ``.ini``
-        file passed to :class:`.TriggerDef`.
-    chunk_size : `int`
+    trigger_def : None | file-like | TriggerDef
+        If not ``None``, a TriggerDef instance is used to log events with a
+        descriptive string instead of their ID. If not ``None``, either a
+        TriggerDef instance or the path to a valid ``.ini`` file passed to
+        TriggerDef.
+    chunk_size : int
         Number of samples to send at once (usually ``16-32`` is good enough).
-    high_resolution : `bool`
+    high_resolution : bool
         If ``True``, it uses `~time.perf_counter` instead of `~time.sleep`
         for higher time resolution. However, it uses more CPU.
     """
@@ -58,7 +58,7 @@ class StreamPlayer:
 
         Parameters
         ----------
-        blocking : `bool`
+        blocking : bool
             If ``True``, waits for the child process to start streaming data.
         """
         _check_type(blocking, (bool, ), item_name='blocking')
@@ -188,7 +188,7 @@ class StreamPlayer:
         """
         Stream's server name, displayed on LSL network.
 
-        :type: `str`
+        :type: str
         """
         return self._stream_name
 
@@ -197,7 +197,7 @@ class StreamPlayer:
         """
         Path to the compatible raw ``.fif`` file to play.
 
-        :type: `str` | `~pathlib.Path`
+        :type: str | Path
         """
         return self._fif_file
 
@@ -208,17 +208,17 @@ class StreamPlayer:
         interrupting. Default ``float('inf')`` can be passed to never interrupt
         streaming.
 
-        :type: `int` | ``float('ìnf')``
+        :type: int | ``float('ìnf')``
         """
         return self._repeat
 
     @property
     def trigger_def(self):
         """
-        Either `None` or :class:`.TriggerDef` instance converting event numbers
-        into event strings.
+        Either ``None`` or TriggerDef instance converting event numbers into
+        event strings.
 
-        :type: :class:`.TriggerDef`
+        :type: TriggerDef
         """
         return self._trigger_def
 
@@ -228,7 +228,7 @@ class StreamPlayer:
         Number of samples to send at once (usually ``16-32`` is good enough)
         ``[samples]``.
 
-        :type: `int`
+        :type: int
         """
         return self._chunk_size
 
@@ -238,7 +238,7 @@ class StreamPlayer:
         If ``True``, it uses `~time.perf_counter` instead of `~time.sleep`
         for higher time resolution. However, it uses more CPU.
 
-        :type: `bool`
+        :type: bool
         """
         return self._high_resolution
 
@@ -247,7 +247,7 @@ class StreamPlayer:
         """
         Launched streaming process.
 
-        :type: `multiprocessing.Process`
+        :type: Process
         """
         return self._process
 

@@ -1,12 +1,13 @@
+.. include:: ./links.inc
+
 .. _install:
 
 ====================
 Install instructions
 ====================
 
-BSL requires Python version `3.6` or higher. BSL is available on
-`GitHub <https://github.com/bsl-tools/bsl>`_ and on
-`Pypi <https://pypi.org/project/bsl/>`_.
+BSL requires Python version ``3.6`` or higher. BSL is available on `GitHub`_
+and on `Pypi <https://pypi.org/project/bsl/>`_.
 
 - **GitHub**: Clone the `main repository <https://github.com/bsl-tools/bsl>`_
   and install with ``setup.py``
@@ -23,7 +24,7 @@ BSL requires Python version `3.6` or higher. BSL is available on
 
       $ pip install bsl
 
-- **Conda**: Not yet available.
+- **Conda**: A conda-forge distribution is not yet available.
 
 =====================
 Optional dependencies
@@ -31,70 +32,95 @@ Optional dependencies
 
 BSL installs the following dependencies:
 
-- `numpy <https://numpy.org/>`_
-- `scipy <https://www.scipy.org/>`_
-- `mne <https://mne.tools/stable/index.html>`_
-- `pylsl <https://github.com/labstreaminglayer/liblsl-Python>`_
-- `pyqt5 <https://www.riverbankcomputing.com/software/pyqt/>`_
-- `pyqtgraph <https://www.pyqtgraph.org/>`_
+- `numpy`_
+- `scipy`_
+- `mne`_
+- `pylsl`_
+- `pyqt5`_
+- `pyqtgraph`_
 
 Additional functionalities requires:
 
-- `pyserial <https://github.com/pyserial/pyserial>`_: for the trigger using an
-  :ref:`arduino2lpt`.
+- `psychopy`_: for the parallel port triggers.
+- `pyserial`_: for the parallel port trigger using an :ref:`arduino2lpt`.
 - `vispy <https://vispy.org/>`_: for the `~bsl.StreamViewer` vispy backend.
 
-=============================
-Installation and test example
-=============================
+===========================
+Installing pylsl and liblsl
+===========================
 
-| Python version ``3.8.10``
-| Operating System: ``Windows 10``
+By default, ``BSL`` is distributed with a recent version of ``pylsl`` and
+``liblsl`` that should work on Ubuntu 18.04, Ubuntu 20.04, macOS and
+Windows. You can test if your system supports the distributed version by
+running the following command in a terminal:
 
-**Step 1:** Make sure that the path to the Python installation folder
-``Python38`` and ``Python38\Scripts`` present in the ``Path`` environment
-variable of the PC:
+.. code-block:: console
 
-- In the start menu, right click on ``This PC`` App and select ``Properties``
-- Under ``Related settings``, click on ``Advanced system settings``
+    $ python -c 'from bsl.externals import pylsl'
 
-.. image:: _static/install/advanced_system_settings.png
-   :align: center
-   :width: 400
+If this command doesn't raise an error, then ``BSL`` will be able to run by
+itself. However, if this is not the case, you have to correctly setup `pylsl`_.
+`pylsl`_ requires a binary library, called ``liblsl`` to operate. But the
+binary library might not been downloaded alongside `pylsl`_.
 
-- Select ``Environmental Variables``
+To test if `pylsl`_ is working, try the following command in a terminal:
 
-.. image:: _static/install/environmental_variables.png
-   :align: center
-   :width: 300
+.. code-block:: console
 
-- Check that the the Python installation folder path (e.g.
-  ``C:\Program Files\Python38\``) and the Python scripts folder (e.g.
-  ``C:\Program Files\Python38\Scripts\``) are in the environment variable
-  ``Path``, either user or system-wide.
+    $ python -c 'import pylsl'
 
-| **Step 2:** Install BSL with ``pip``:
+If it didn't raise an error, congratulation, you have a working setup! However,
+if an error is raised, please refer to the instructions below or to the
+`LabStreamingLayer Slack <https://labstreaminglayer.slack.com>`_.
 
-  .. code-block:: console
+Linux
+-----
 
-      $ pip install bsl
+Start by installing ``libpugixml-dev``, a light-weight C++ XML processing
+library.
 
-Alternatively clone the main repository in the current directory and install
-BSL:
+.. code-block:: console
 
-  .. code-block:: console
+    $ sudo apt install -y libpugixml-dev
 
-      $ git clone https://github.com/bsl-tools/bsl
-      $ cd bsl
-      $ python setup.py install
+Fetch the correct binary from the `liblsl release page`_. If your
+distribution is not available, the binary library must be build.
+At the time of writing, the binary version ``1.15.2`` for Ubuntu 18.04
+(bionic) and for Ubuntu 20.04 (focal) are available. Install the downloaded
+``.deb`` library with:
 
-**Step 3:** Check that everything works:
+.. code-block:: console
 
-- Test that ``pylsl`` was correctly installed with the core ``liblsl``.
+    $ sudo apt install ./liblsl.deb
 
-  .. code-block:: python
+macOS
+-----
 
-      import pylsl
+Fetch the correct binary from the `liblsl release page`_ and retrieve the
+``.dylib`` binary library. Create an environment variable named ``PYLSL_LIB``
+that contains the path to the downloaded binary library.
+
+Alternatively, ``homebrew`` can be used to download and install the binary
+library with the command:
+
+.. code-block:: console
+
+    $ brew install labstreaminglayer/tap/lsl
+
+
+Windows
+-------
+
+Fetch the correct binary from the `liblsl release page`_ and retrieve the
+``.dll`` binary library. Create an environment variable named ``PYLSL_LIB``
+that contains the path to the downloaded binary library.
+
+=====================
+Test the installation
+=====================
+
+To test the installation, you can run a fake stream with a `~bsl.StreamPlayer`
+and display it with a `~bsl.StreamViewer`.
 
 - Download a sample :ref:`bsl.datasets<datasets>`:
 

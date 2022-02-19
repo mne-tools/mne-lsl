@@ -312,7 +312,7 @@ class _Stream(ABC):
         If True, the stream wait to receive data.
 
         :setter: Change the blocking status.
-        :type: `bool`
+        :type: bool
         """
         return self._blocking
 
@@ -326,7 +326,7 @@ class _Stream(ABC):
         If blocking is True, how long to wait to receive data in seconds.
 
         :setter: Change the blocking time duration (seconds).
-        :type: `float`
+        :type: float
         """
         return self._blocking_time
 
@@ -488,7 +488,7 @@ class StreamEEG(_Stream):
         Scaling factor applied to the data to convert to the desired unit.
 
         :setter: Change the scaling factor applied to the data.
-        :type: `float`
+        :type: float
         """
         return self._scaling_factor
 
