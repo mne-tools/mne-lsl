@@ -1,0 +1,4 @@
+# requirements for minimal BrainStreamingLayer functionality.
+pytest
+pytest-cov
+requests
