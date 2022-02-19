@@ -8,16 +8,17 @@ from ..utils._checks import _check_type
 
 class TriggerDef:
     """
-    Class used to store pairs {`str`: `int`} of events name and events value.
+    Class used to store pairs {str: int} of events name and events value.
     Each name and each value is unique. The pairs can be read from a ``.ini``
-    file or edited manually with `TriggerDef.add` and `TriggerDef.remove`.
+    file or edited manually with :meth:`TriggerDef.add` and
+    :meth:`TriggerDef.remove`.
 
     The class will expose the name as attributes ``self.event_str = event_int``
     for all pairs.
 
     Parameters
     ----------
-    trigger_file : `None` | `str` | `~pathlib.Path`
+    trigger_file : None | path-like
         Path to the ``.ini`` file containing the table converting event numbers
         into event strings.
 
@@ -67,7 +68,7 @@ class TriggerDef:
 
         Parameters
         ----------
-        trigger_file : `str` | `~pathlib.Path`
+        trigger_file : path-like
             Path to the ``.ini`` file containing the table converting event
             numbers into event strings.
         """
@@ -92,7 +93,7 @@ class TriggerDef:
         """
         Write events to a ``.ini`` trigger definition file.
 
-        .. note:: The ``.ini`` file is writen with ``configparser`` and is
+        .. note:: The ``.ini`` file is writen with `configparser` and is
                   structured as follows:
 
                   .. code-block:: python
@@ -114,11 +115,11 @@ class TriggerDef:
 
         Parameters
         ----------
-        name : `str`
+        name : str
             Name of the event
-        value : `int`
+        value : int
             Value of the event
-        overwrite : `bool`
+        overwrite : bool
             If ``True``, overwrite previous event with the same name or value.
         """
         _check_type(name, (str, ), item_name='name')
@@ -147,9 +148,9 @@ class TriggerDef:
 
         Parameters
         ----------
-        event : `str` | `int`
-            If a `str` is provided, assumes event is the name.
-            If a `int` is provided, assumes event is the value.
+        event : str | int
+            If a str is provided, assumes event is the name.
+            If a int is provided, assumes event is the value.
         """
         _check_type(event, (str, 'numeric'), item_name='event')
         if isinstance(event, str):
@@ -231,7 +232,7 @@ class TriggerDef:
         """
         A dictionary with string keys and integers value.
 
-        :type: `dict`
+        :type: dict
         """
         return self._by_name
 
@@ -240,6 +241,6 @@ class TriggerDef:
         """
         A dictionary with integers keys and string values.
 
-        :type: `dict`
+        :type: dict
         """
         return self._by_value
