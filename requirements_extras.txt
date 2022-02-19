@@ -5,7 +5,6 @@
 
 pyserial               # parallel, parallelport, lpt
 psychopy<=2021.2.3     # parallel, parallelport, lpt
-vispy                  # vispy_backend
 sphinx                 # doc, doc-build, documentation
 pydata-sphinx-theme    # doc, doc-build, documentation
 sphinx-gallery         # doc, doc-build, documentation

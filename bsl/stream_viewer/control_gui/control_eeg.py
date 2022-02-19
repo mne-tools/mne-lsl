@@ -7,6 +7,7 @@ from PyQt5.QtWidgets import QHeaderView, QTableWidgetItem
 
 from ._control import _ControlGUI
 from ._ui_control import UI_MainWindow
+from ..backends.pyqtgraph import _BackendPyQtGraph
 from ...utils._logs import logger
 from ...utils._docs import fill_doc, copy_doc
 
@@ -19,16 +20,15 @@ class ControlGUI_EEG(_ControlGUI):
     Parameters
     ----------
     %(viewer_scope)s
-    %(viewer_backend)s
     """
 
-    def __init__(self, scope, backend):
-        super().__init__(scope, backend)
+    def __init__(self, scope):
+        super().__init__(scope)
         config_file = 'settings_scope_eeg.ini'
 
         self._load_configuration(config_file)
         self._load_gui()
-        self._init_backend(backend)
+        self._init_backend()
         self._connect_signals_to_slots()
         self._set_configuration(config_file)
 
@@ -174,11 +174,10 @@ class ControlGUI_EEG(_ControlGUI):
         self._ui.statusBar.showMessage("[Not recording]")
 
     @copy_doc(_ControlGUI._init_backend)
-    def _init_backend(self, backend):
-        backend = _ControlGUI._check_backend(backend)
+    def _init_backend(self):
         geometry = (self.geometry().x()+self.width(), self.geometry().y(),
                     self.width()*2, self.height())
-        self._backend = backend(
+        self._backend = _BackendPyQtGraph(
             self._scope, geometry, self._xRange, self._yRange)
 
     # --------------------------------------------------------------------
