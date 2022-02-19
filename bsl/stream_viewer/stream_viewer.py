@@ -38,7 +38,8 @@ class StreamViewer:
         ----------
         bufsize : int | float
             Buffer/window size of the attached StreamReceiver.
-            The default ``0.2`` should work in most cases.
+            The default ``0.2`` should work in most cases since data is fetched
+            every 20 ms.
         """
         logger.info(f'Connecting to the stream: {self.stream_name}')
         self._sr = StreamReceiver(bufsize=bufsize, winsize=bufsize,

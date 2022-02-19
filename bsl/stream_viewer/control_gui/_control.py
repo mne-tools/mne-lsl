@@ -35,7 +35,7 @@ class _ControlGUI(QMainWindow, ABC, metaclass=_metaclass_ControlGUI):
         pass
 
     @abstractmethod
-    def _init_backend(self, backend):
+    def _init_backend(self):
         """
         Initialize the backend.
         """

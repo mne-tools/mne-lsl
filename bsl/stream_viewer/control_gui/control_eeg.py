@@ -174,7 +174,7 @@ class ControlGUI_EEG(_ControlGUI):
         self._ui.statusBar.showMessage("[Not recording]")
 
     @copy_doc(_ControlGUI._init_backend)
-    def _init_backend(self, backend):
+    def _init_backend(self):
         geometry = (self.geometry().x()+self.width(), self.geometry().y(),
                     self.width()*2, self.height())
         self._backend = _BackendPyQtGraph(
