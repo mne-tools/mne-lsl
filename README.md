@@ -29,20 +29,17 @@ BSL supports `python >= 3.6` and requires:
 - pyqt5
 - pyqtgraph
 
-Optional dependencies for trigger via an
-[Arduino to LPT converter](https://github.com/fcbg-hnp/arduino-trigger):
-- pyserial
-
-Optional dependencies for StreamViewer alternative backends:
-- vispy
+Optional dependencies for trigger via a parallel port (LPT):
+- pyserial, if the [Arduino to LPT converter](https://github.com/fcbg-hnp/arduino-trigger)
+  is used.
+- psychopy, if the on-board parallel port is used.
 
 BSL can be installed in normal mode with `python setup.py install` or in
 developement mode with `python setup.py develop`. Optional dependencies can be
 installed using the keywords:
-- trigger_arduino2lpt
-- vispy_backend
-- doc
-- test
+- parallel, parallelport, lpt
+- doc, doc-build, documentation
+- test, testing
 
 # Documentation
 
@@ -136,14 +133,12 @@ plotter GUI to display the data acquired from an LSL server in real-time.
 
 **CLI:** The stream viewer can be called by command-line in a terminal by using
 either `bsl stream_viewer` or `bsl_stream_viewer` followed by the optional
-argument `-s` and `-b` respectively for the `stream_name` and `backend`. If no
-stream name is provided, a prompt will ask the user to select the desired
-non-marker stream to display. The supported backends are `pyqt5` (default) and
-`vispy` (incomplete).
+argument `-s` for the `stream_name`. If no stream name is provided, a prompt
+will ask the user to select the desired non-marker stream to display.
 ```
 bsl_stream_viewer
 bsl_stream_viewer -s StreamPlayer
-bsl_stream_viewer -s StreamPlayer -b vispy
+bsl_stream_viewer -s StreamPlayer
 ```
 
 ## Triggers

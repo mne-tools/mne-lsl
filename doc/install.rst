@@ -43,7 +43,6 @@ Additional functionalities requires:
 
 - `psychopy`_: for the parallel port triggers.
 - `pyserial`_: for the parallel port trigger using an :ref:`arduino2lpt`.
-- `vispy <https://vispy.org/>`_: for the `~bsl.StreamViewer` vispy backend.
 
 ===========================
 Installing pylsl and liblsl

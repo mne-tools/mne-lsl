@@ -4,13 +4,6 @@ from abc import ABC, abstractmethod
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import QMainWindow, QFileDialog
 
-try:
-    from ..backends.vispy import _BackendVispy
-except ImportError:
-    pass
-from ..backends.pyqtgraph import _BackendPyQtGraph
-
-from ...utils._logs import logger
 from ...utils._docs import fill_doc
 from ...stream_recorder import StreamRecorder
 
@@ -27,11 +20,10 @@ class _ControlGUI(QMainWindow, ABC, metaclass=_metaclass_ControlGUI):
     Parameters
     ----------
     %(viewer_scope)s
-    %(viewer_backend)s
     """
 
     @abstractmethod
-    def __init__(self, scope, backend):
+    def __init__(self, scope):
         super().__init__()
         self._scope = scope
 
@@ -43,7 +35,7 @@ class _ControlGUI(QMainWindow, ABC, metaclass=_metaclass_ControlGUI):
         pass
 
     @abstractmethod
-    def _init_backend(self, backend):
+    def _init_backend(self):
         """
         Initialize the backend.
         """
@@ -97,54 +89,6 @@ class _ControlGUI(QMainWindow, ABC, metaclass=_metaclass_ControlGUI):
         if path_name:
             self._ui.lineEdit_recording_dir.setText(path_name)
             self._ui.pushButton_start_recording.setEnabled(True)
-
-    # --------------------------------------------------------------------
-    @staticmethod
-    def _check_backend(backend):
-        """
-        Checks that the requested backend is supported.
-        """
-        DEFAULT = ['pyqtgraph', 'vispy']  # Default order
-        SUPPORTED_BACKENDS = dict()
-        try:
-            SUPPORTED_BACKENDS['vispy'] = _BackendVispy
-        except NameError:
-            SUPPORTED_BACKENDS['vispy'] = None
-        try:
-            SUPPORTED_BACKENDS['pyqtgraph'] = _BackendPyQtGraph
-        except NameError:
-            SUPPORTED_BACKENDS['pyqtgraph'] = None
-        assert set(DEFAULT) == set(SUPPORTED_BACKENDS)
-
-        if all(backend is None for backend in SUPPORTED_BACKENDS.values()):
-            logger.error('The StreamViewer did not find an installed backend.')
-            raise RuntimeError
-
-        if isinstance(backend, str):
-            backend = backend.lower().strip()
-            if backend in SUPPORTED_BACKENDS:
-                if SUPPORTED_BACKENDS[backend] is None:
-                    logger.warning(
-                        f"Selected backend '{backend}' is not installed. "
-                        f"Default to first backend in the order {DEFAULT}.")
-                    for default_backend in DEFAULT:
-                        if default_backend is not None:
-                            return SUPPORTED_BACKENDS[default_backend]
-                return SUPPORTED_BACKENDS[backend]
-            else:
-                logger.warning(
-                    f"Selected backend '{backend}' is not supported. "
-                    f"Default to first backend in the order {DEFAULT}.")
-                for default_backend in DEFAULT:
-                    if default_backend is not None:
-                        return SUPPORTED_BACKENDS[default_backend]
-        else:
-            logger.warning(
-                "Selected backend is not a string. "
-                f"Default to first backend in the order {DEFAULT}.")
-            for default_backend in DEFAULT:
-                if default_backend is not None:
-                    return SUPPORTED_BACKENDS[default_backend]
 
     # --------------------------------------------------------------------
     @property
