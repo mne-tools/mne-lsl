@@ -15,14 +15,14 @@ def list_lsl_streams(ignore_markers=False):
 
     Parameters
     ----------
-    ignore_markers : `bool`
+    ignore_markers : bool
         If ``True``, ignore streams with Marker type.
 
     Returns
     -------
-    stream_list : `list`
+    stream_list : list
         List of the found stream name.
-    streamInfos : `list`
+    streamInfos : list
         List of the corresponding ``pylsl.StreamInfo``.
     """
     _check_type(ignore_markers, (bool, ), item_name='ignore_markers')
@@ -52,15 +52,15 @@ def search_lsl(ignore_markers=False, timeout=10):
 
     Parameters
     ----------
-    ignore_markers : `bool`
+    ignore_markers : bool
         If ``True``, ignore streams with Marker type.
-    timeout : `int`
+    timeout : int
         Timeout duration in seconds after which the search of an LSL stream
         is interrupted.
 
     Returns
     -------
-    stream_name : `str`
+    stream_name : str
         Selected stream name.
     """
     _check_type(ignore_markers, (bool, ), item_name='ignore_markers')
@@ -113,7 +113,7 @@ def lsl_channel_list(inlet):
 
     Returns
     -------
-    ch_list : `list`
+    ch_list : list
         List of channels name ``[name1, name2, ... ]``.
     """
     _check_type(inlet, (pylsl.StreamInlet, ), item_name='inlet')
