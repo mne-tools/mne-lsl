@@ -10,15 +10,14 @@ import sys
 from pathlib import Path
 from datetime import datetime, timezone
 
-import bsl
-
 # -- Path setup --------------------------------------------------------------
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-#
-sys.path.append(Path(__file__).parent.parent / 'bsl')
+
+sys.path.append(str(Path(__file__).parent.parent))
+import bsl
 
 # -- Project information -----------------------------------------------------
 
@@ -42,11 +41,12 @@ extensions = [
     'sphinx.ext.coverage',
     'sphinx.ext.napoleon',
     'sphinx.ext.intersphinx',
-    'sphinx_gallery.gen_gallery'
+    'sphinx_gallery.gen_gallery',
+    'numpydoc',
     ]
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = []
+templates_path = ['_templates']
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -75,6 +75,7 @@ modindex_common_prefix = ['bsl.']
 
 # Generate autosummary even if no references
 autosummary_generate = True
+autodoc_default_options = {'inherited-members': None}
 
 # -- Options for HTML output -------------------------------------------------
 
@@ -151,4 +152,29 @@ intersphinx_mapping = {
     'sklearn': ('https://scikit-learn.org/stable', None),
     'pandas': ('https://pandas.pydata.org/pandas-docs/stable', None),
     'vispy': ('https://vispy.org/', None),
+    }
+
+# numpydoc
+numpydoc_class_members_toctree = False
+numpydoc_attributes_as_param_list = True
+numpydoc_xref_param_type = True
+numpydoc_xref_aliases = {
+    # Python
+    'file-like': ':term:`file-like <python:file object>`',
+    'path-like': ':term:`path-like`',
+    'Path': ':class:`python:pathlib.Path`',
+    'Process': ':class:`python:multiprocessing.Process`',
+    # MNE
+    'Info': 'mne.io.Info',
+    'Raw': 'mne.io.Raw',
+    'Epochs': 'mne.Epochs',
+    # BSL
+    'StreamReceiver': 'bsl.StreamReceiver',
+    'StreamRecorder': 'bsl.StreamRecorder',
+    'SoftwareTrigger': 'bsl.triggers.SoftwareTrigger'
+    }
+
+numpydoc_xref_ignore = {
+    # words
+    'instance', 'instances', 'of', 'or',
     }

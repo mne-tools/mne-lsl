@@ -5,8 +5,9 @@ Triggers
 
 .. autosummary::
    :toctree: generated/
+   :template: class.rst
 
-   trigger_def
-   mock.MockTrigger
-   software.SoftwareTrigger
-   parallel.ParallelPortTrigger
+   TriggerDef
+   MockTrigger
+   SoftwareTrigger
+   ParallelPortTrigger
