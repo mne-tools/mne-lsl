@@ -101,9 +101,6 @@ xRange : int
 docdict['viewer_backend_yRange'] = """
 yRange : float
     Range of the y-axis (amplitude) in uV."""
-docdict['viewer_backend'] = """
-backend : str
-    One of the supported backend's name. Supported 'vispy', 'pyqtgraph'."""
 docdict['viewer_scope_stream_receiver'] = """
 stream_receiver : StreamReceiver
     Connected StreamReceiver."""

@@ -8,7 +8,7 @@ from .control_gui.control_eeg import ControlGUI_EEG
 from ..stream_receiver import StreamReceiver, StreamEEG
 from ..utils._logs import logger
 from ..utils.lsl import search_lsl
-from ..utils._checks import _check_type, _check_value
+from ..utils._checks import _check_type
 
 
 class StreamViewer:
@@ -17,10 +17,6 @@ class StreamViewer:
     viewer will connect to only one LSL stream. If ``stream_name`` is set to
     ``None``, an automatic search is performed followed by a prompt if multiple
     non-markers streams are found.
-
-    Supports 2 backends:
-        - ``'pyqtgraph'``: fully functional.
-        - ``'vispy'``: in progress.
 
     Parameters
     ----------
@@ -31,7 +27,7 @@ class StreamViewer:
     def __init__(self, stream_name=None):
         self._stream_name = StreamViewer._check_stream_name(stream_name)
 
-    def start(self, bufsize=0.2, backend='pyqtgraph'):
+    def start(self, bufsize=0.2):
         """
         Connect to the selected amplifier and plot the streamed data.
 
@@ -42,14 +38,9 @@ class StreamViewer:
         ----------
         bufsize : int | float
             Buffer/window size of the attached StreamReceiver.
-            The default ``0.2`` should work in most cases.
-        backend : str
-            Selected backend for plotting. Supports:
-                - ``'pyqtgraph'``: fully functional.
-                - ``'vispy'``: work in progress.
+            The default ``0.2`` should work in most cases since data is fetched
+            every 20 ms.
         """
-        backend = StreamViewer._check_backend(backend)
-
         logger.info(f'Connecting to the stream: {self.stream_name}')
         self._sr = StreamReceiver(bufsize=bufsize, winsize=bufsize,
                                   stream_name=self._stream_name)
@@ -59,7 +50,7 @@ class StreamViewer:
         if isinstance(self._sr.streams[self._stream_name], StreamEEG):
             self._scope = ScopeEEG(self._sr, self._stream_name)
             app = QApplication(sys.argv)
-            self._ui = ControlGUI_EEG(self._scope, backend)
+            self._ui = ControlGUI_EEG(self._scope)
             sys.exit(app.exec_())
         else:
             logger.error(
@@ -79,16 +70,6 @@ class StreamViewer:
             if stream_name is None:
                 raise RuntimeError('No LSL stream found.')
         return stream_name
-
-    @staticmethod
-    def _check_backend(backend):
-        """
-        Checks that the backend is a string.
-        """
-        _check_type(backend, (str, ), item_name='backend')
-        backend = backend.lower().strip()
-        _check_value(backend, ('pyqtgraph', 'vispy'))
-        return backend
 
     # --------------------------------------------------------------------
     @property
