@@ -7,12 +7,10 @@ concurrency:
   cancel-in-progress: true
 on:
   pull_request:
-    paths:
+    branches:
       - '*'
   push:
     branches: [main]
-    paths:
-      - '*'
   workflow_dispatch:
 
 jobs:
