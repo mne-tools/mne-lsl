@@ -41,7 +41,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip setuptools wheel
           python -m pip install .
-          python -m pip install -r requirements_extras.txt
+          python -m pip install -r requirements_ci_doc.txt
       - name: 'Cache BSL testing dataset'
         uses: actions/cache@v2
         with:

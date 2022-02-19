@@ -1,0 +1,5 @@
+# requirements for the documentation build
+sphinx
+pydata-sphinx-theme
+sphinx-gallery
+numpydoc
