@@ -9,4 +9,3 @@ Utils
    find_event_channel
    io
    lsl
-   timer
