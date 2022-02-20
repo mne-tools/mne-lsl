@@ -123,9 +123,9 @@ arguments `stream_name` and `fif_file` and the optional arguments `-r`, `-c`,
 `-t` respectively for `repeat`, `chunk_size` and `trigger_def`, and the
 optional flag `--high_resolution`.
 ```
-bsl_stream_player StreamPlayer "D:/Data/data-raw.fif"
-bsl_stream_player StreamPlayer "D:/Data/data-raw.fif" -c 16
-bsl_stream_player StreamPlayer "D:/Data/data-raw.fif" -c 16 -t "D:/triggerdef.ini"
+bsl_stream_player StreamPlayer data-raw.fif
+bsl_stream_player StreamPlayer data-raw.fif -c 16
+bsl_stream_player StreamPlayer data-raw.fif -c 16 -t triggerdef.ini
 ```
 ## StreamViewer
 The stream viewer creates a 2-window GUI composed of a control GUI and a
@@ -137,7 +137,6 @@ argument `-s` for the `stream_name`. If no stream name is provided, a prompt
 will ask the user to select the desired non-marker stream to display.
 ```
 bsl_stream_viewer
-bsl_stream_viewer -s StreamPlayer
 bsl_stream_viewer -s StreamPlayer
 ```
 
