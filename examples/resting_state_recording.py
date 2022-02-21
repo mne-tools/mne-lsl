@@ -10,7 +10,7 @@ resting-state recording can be designed with a `~bsl.StreamRecorder`.
 
 #%%
 
-# Authors: Mathieu Scheltienne <mathieu.scheltienne@gmail.com>
+# Authors: Mathieu Scheltienne <mathieu.scheltienne@fcbg.ch>
 #
 # License: LGPL-2.1
 
@@ -34,8 +34,8 @@ resting-state recording can be designed with a `~bsl.StreamRecorder`.
 #%%
 
 import os
-import time
 from pathlib import Path
+import time
 
 import mne
 
