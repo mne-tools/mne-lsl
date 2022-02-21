@@ -147,7 +147,7 @@ time.sleep(0.2)  # wait to fill LSL inlet.
 # number of channels is reduced by 1 and the first channel on the
 # ``(samples, channels)`` data array is ignored.
 #
-# For this examnple, the filter is defined between 5 and 10 Hz to emphasize its
+# For this example, the filter is defined between 5 and 10 Hz to emphasize its
 # effect as the dataset streamed is already filtered between (1, 40) Hz.
 
 class Buffer:
