@@ -90,19 +90,17 @@ The :class:`~bsl.StreamViewer` can be called from the command-line with:
 With the optional arguments:
 
 - ``-s``, ``--stream_name``: `str`, stream to visualize.
-- ``-b``, ``--backend``: `str`, visualization backend.
 
 .. note::
 
     If ``stream_name`` is not provided, a prompt is displayed to select a
-    stream among the available ones. If ``backend`` is not provided, the
-    default backend `pyqtgraph` is used.
+    stream among the available ones.
 
 The :class:`~bsl.StreamViewer` opens 2 windows:
 
 - A controller to select the channels to plot and set different plotting
   parameters.
-- A plotting window using the specified backend displaying the signal in
+- A plotting window using the ``pyqtgraph`` backend displaying the signal in
   real-time.
 
 .. image:: _static/stream_viewer/stream_viewer.gif
