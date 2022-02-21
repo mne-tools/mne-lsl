@@ -9,7 +9,7 @@ signals to compute a given metric can be designed with a `~bsl.StreamReceiver`.
 
 #%%
 
-# Authors: Mathieu Scheltienne <mathieu.scheltienne@gmail.com>
+# Authors: Mathieu Scheltienne <mathieu.scheltienne@fcbg.ch>
 #
 # License: LGPL-2.1
 
@@ -30,12 +30,12 @@ signals to compute a given metric can be designed with a `~bsl.StreamReceiver`.
 
 #%%
 import os
-import time
 from pathlib import Path
+import time
 
+from matplotlib import pyplot as plt
 import mne
 import numpy as np
-from matplotlib import pyplot as plt
 
 from bsl import StreamRecorder, StreamReceiver, StreamPlayer, datasets
 from bsl.utils import Timer
