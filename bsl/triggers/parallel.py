@@ -123,7 +123,8 @@ class ParallelPortTrigger(_Trigger):
         if self._offtimer.is_alive():
             logger.warning(
                 'You are sending a new signal before the end of the last '
-                'signal. Signal ignored. Delay required = {self.delay} ms.')
+                'signal. Signal ignored. Delay required = %.1f ms.',
+                self.delay)
             return False
         self._set_data(value)
         super().signal(value)
