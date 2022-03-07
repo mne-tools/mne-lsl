@@ -334,8 +334,8 @@ class _Streamer:
 
             self._outlet.push_chunk(data)
             logger.debug(
-                '[%8.3fs] sent %d samples (LSL %8.3f)'
-                % (time.perf_counter(), len(data), pylsl.local_clock()))
+                '[%8.3fs] sent %d samples (LSL %8.3f)',
+                time.perf_counter(), len(data), pylsl.local_clock())
 
             self._log_event(chunk)
             idx_chunk += 1
