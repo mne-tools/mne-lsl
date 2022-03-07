@@ -28,16 +28,16 @@ class _Trigger(ABC):
         Send a trigger value.
         """
         if self._verbose:
-            logger.info(f'Sending trigger {value}.')
+            logger.info('Sending trigger %s.', value)
         else:
-            logger.debug(f'Sending trigger {value}.')
+            logger.debug('Sending trigger %s.', value)
 
     @abstractmethod
     def _set_data(self, value: int):
         """
         Set the trigger signal to value.
         """
-        logger.debug('Setting data to %d' % value)
+        logger.debug('Setting data to %d.', value)
 
     # --------------------------------------------------------------------
     @property

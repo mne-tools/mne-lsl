@@ -37,10 +37,10 @@ class _Scope(ABC):
         # Buffers
         self._ts_list = list()
 
-        logger.debug('Scope connected to %s' % self._stream_name)
-        logger.debug('Data sample rate is %f' % self._sample_rate)
+        logger.debug('Scope connected to %s', self._stream_name)
+        logger.debug('Data sample rate is %f', self._sample_rate)
         logger.debug(
-            'Scope buffer duration is %d seconds' % self._duration_buffer)
+            'Scope buffer duration is %d seconds', self._duration_buffer)
 
     # -------------------------- Main Loop -------------------------
     @abstractmethod

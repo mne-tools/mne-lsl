@@ -78,7 +78,7 @@ def search_lsl(ignore_markers=False, timeout=10):
 
     logger.info('-- List of servers --')
     for i, stream_name in enumerate(stream_list):
-        logger.info(f'{i}: {stream_name}')
+        logger.info('%i: %s', i, stream_name)
 
     if len(stream_list) == 0:
         logger.error('No LSL stream found on the network.')
@@ -97,7 +97,7 @@ def search_lsl(ignore_markers=False, timeout=10):
     streamInfo = streamInfos[index]
     assert stream_name == streamInfo.name()
 
-    logger.info(f'Selected: {stream_name}')
+    logger.info('Selected: %s', stream_name)
 
     return stream_name
 

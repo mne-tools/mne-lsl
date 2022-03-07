@@ -41,7 +41,7 @@ class StreamViewer:
             The default ``0.2`` should work in most cases since data is fetched
             every 20 ms.
         """
-        logger.info(f'Connecting to the stream: {self.stream_name}')
+        logger.info('Connecting to the stream: %s', self.stream_name)
         self._sr = StreamReceiver(bufsize=bufsize, winsize=bufsize,
                                   stream_name=self._stream_name)
         self._sr.streams[self._stream_name].blocking = False
@@ -54,8 +54,8 @@ class StreamViewer:
             sys.exit(app.exec_())
         else:
             logger.error(
-                'Unsupported stream type '
-                f'{type(self._sr.streams[self._stream_name])}')
+                'Unsupported stream type %s',
+                type(self._sr.streams[self._stream_name]))
 
     # --------------------------------------------------------------------
     @staticmethod

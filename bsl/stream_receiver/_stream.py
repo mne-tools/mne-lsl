@@ -102,8 +102,8 @@ class _Stream(ABC):
                     f'/ type:{self._streamInfo.type()} '
                     f'@ {self._streamInfo.hostname()} '
                     f'(v{self._streamInfo.version()}).')
-        logger.info(f'Source sampling rate: {self._sample_rate}')
-        logger.info(f'Channels: {self._streamInfo.channel_count()}')
+        logger.info('Source sampling rate: %s', self._sample_rate)
+        logger.info('Channels: %s', self._streamInfo.channel_count())
 
         # Check for high LSL offset
         if self._lsl_time_offset is None:
@@ -154,8 +154,9 @@ class _Stream(ABC):
             else:
                 # Give up and return empty values to avoid deadlock
                 logger.error(
-                    f'Timeout occurred [{self._blocking_time}secs] while '
-                    f'acquiring data from {self._name}({self._serial}). ')
+                    'Timeout occurred [%ssecs] while acquiring data '
+                    'from %s(%s). ', self._blocking_time, self._name,
+                    self._serial)
                 received = True
 
         return chunk, tslist
@@ -221,13 +222,13 @@ class _Stream(ABC):
 
         if bufsize <= 0 or bufsize > MAX_BUF_SIZE:
             logger.error(
-                f'Improper buffer size {bufsize:.1f}. '
-                f'Setting to {MAX_BUF_SIZE:.1f}.')
+                'Improper buffer size %.1f. Setting to %.1f.', bufsize,
+                MAX_BUF_SIZE)
             bufsize = MAX_BUF_SIZE
         elif bufsize < winsize:
             logger.error(
-                f'Buffer size  {bufsize:.1f} is smaller than window size. '
-                f'Setting to {winsize:.1f}.')
+                'Buffer size %.1f is smaller than window size. Setting to '
+                '%.1f.', bufsize, winsize)
             bufsize = winsize
 
         return bufsize

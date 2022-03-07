@@ -74,7 +74,7 @@ class ParallelPortTrigger(_Trigger):
         logger.info('ParallelPort trigger is using an Arduino converter.')
         com_port = None
         for arduino in list_ports.grep(regexp='Arduino'):
-            logger.info(f"Found '{arduino}'.")
+            logger.info("Found '%s'.", arduino)
             com_port = arduino.device
             break
         if com_port is None:
@@ -90,7 +90,7 @@ class ParallelPortTrigger(_Trigger):
             raise Exception from error
 
         time.sleep(1)
-        logger.info(f'Connected to {com_port}.')
+        logger.info('Connected to %s.', com_port)
 
     def _connect_pport(self):
         """
@@ -115,7 +115,7 @@ class ParallelPortTrigger(_Trigger):
             raise Exception from error
 
         time.sleep(1)
-        logger.info(f'Connected to {self._address}.')
+        logger.info('Connected to %s.', self._address)
 
     @copy_doc(_Trigger.signal)
     def signal(self, value: int) -> bool:
