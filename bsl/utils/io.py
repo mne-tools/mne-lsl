@@ -167,8 +167,8 @@ def _load_events_from_txt(raw_times, eve_file, offset):
             next_index = np.searchsorted(raw_times, event_ts)
             if next_index >= len(raw_times):
                 logger.warning(
-                    'Event %d at time %.3f is out of time range (%.3f - %.3f).'
-                    % (event_value, event_ts, ts_min, ts_max))
+                    'Event %d at time %.3f is out of time range'
+                    ' (%.3f - %.3f).', event_value, event_ts, ts_min, ts_max)
             else:
                 events.append([next_index, 0, event_value])
 

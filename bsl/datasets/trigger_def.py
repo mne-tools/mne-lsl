@@ -28,9 +28,9 @@ def data_path():
     """
     os.makedirs(PATH.parent, exist_ok=True)
 
-    logger.debug('URL:   %s' % (URL,))
-    logger.debug('Hash:  %s' % (MD5,))
-    logger.debug('Path:  %s' % (PATH,))
+    logger.debug('URL:   %s', URL)
+    logger.debug('Hash:  %s', MD5)
+    logger.debug('Path:  %s', PATH)
 
     if PATH.exists() and _hashfunc(PATH, hash_type='md5') == MD5:
         download = False
