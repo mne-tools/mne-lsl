@@ -78,7 +78,7 @@ def fetch_file(url, file_name, print_destination=True, resume=True,
 
         # check hash sum
         if hash_ is not None:
-            logger.info('Verifying hash %s.' % (hash_,))
+            logger.info('Verifying hash %s.', hash_)
             hashsum = _hashfunc(temp_file_name, hash_type=hash_type)
             if hash_ != hashsum:
                 raise RuntimeError('Hash mismatch for downloaded file %s, '
@@ -86,10 +86,10 @@ def fetch_file(url, file_name, print_destination=True, resume=True,
                                    % (temp_file_name, hash_, hashsum))
         shutil.move(temp_file_name, file_name)
         if print_destination is True:
-            logger.info('File saved as %s.\n' % file_name)
+            logger.info('File saved as %s.\n', file_name)
     except Exception:
-        logger.error('Error while fetching file %s.'
-                     ' Dataset fetching aborted.' % url)
+        logger.error(
+            'Error while fetching file %s. Dataset fetching aborted.', url)
         raise
 
 
@@ -130,7 +130,7 @@ def _get_http(url, temp_file_name, initial_size, timeout):
     response = None
     extra = ''
     if initial_size > 0:
-        logger.debug('  Resuming at %s' % (initial_size,))
+        logger.debug('  Resuming at %s', initial_size)
         req = request.Request(
             url, headers={'Range': 'bytes=%s-' % (initial_size,)})
         try:
@@ -149,7 +149,7 @@ def _get_http(url, temp_file_name, initial_size, timeout):
     file_size = int(response.headers.get('Content-Length', '0').strip())
     file_size += initial_size
     url = response.geturl()
-    logger.info('Downloading %s (%s%s)' % (url, _sizeof_fmt(file_size), extra))
+    logger.info('Downloading %s (%s%s)', url, _sizeof_fmt(file_size), extra)
     del url
     mode = 'ab' if initial_size > 0 else 'wb'
     progress = ProgressBar(file_size, initial_size, unit='B',
