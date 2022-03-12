@@ -61,6 +61,8 @@ class ScopeEEG(_Scope):
         high : int | float
             Frequency at which the signal is low-passed.
         """
+        logger.debug("Bandpass initialization for [%s, %s] Hz..", low, high)
+
         bp_low = low / (0.5 * self._sample_rate)
         bp_high = high / (0.5 * self._sample_rate)
         self._sos = butter(BP_ORDER, [bp_low, bp_high],
@@ -68,6 +70,8 @@ class ScopeEEG(_Scope):
         self._zi_coeff = sosfilt_zi(
             self._sos).reshape((self._sos.shape[0], 2, 1))
         self._zi = None
+
+        logger.debug("Bandpass initialization complete.")
 
     # -------------------------- Main Loop -------------------------
     @copy_doc(_Scope.update_loop)
