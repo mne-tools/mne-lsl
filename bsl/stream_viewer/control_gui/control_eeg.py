@@ -1,6 +1,6 @@
+from configparser import RawConfigParser
 import math
 from pathlib import Path
-from configparser import RawConfigParser
 
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import QHeaderView, QTableWidgetItem
@@ -38,6 +38,8 @@ class ControlGUI_EEG(_ControlGUI):
         """
         Loads the UI created with QtCreator.
         """
+        logger.debug("Loading GUI..")
+
         self._ui = UI_MainWindow(self)
 
         for yRange in self._yRanges:
@@ -81,11 +83,17 @@ class ControlGUI_EEG(_ControlGUI):
                           self.geometry().height())
         self.show()  # Display
 
+        logger.debug("Loading GUI complete.")
+
     def _load_configuration(self, file):
         """
         Load default configuration for the ranges.
         """
+        logger.debug("Loading configuration..")
+
         path2settings_folder = Path(__file__).parent / 'settings'
+        logger.debug("Configuration folder is '%s'.", path2settings_folder)
+        logger.debug("Configuration file is '%s'.", file)
         scope_settings = RawConfigParser(
             allow_no_value=True, inline_comment_prefixes=('#', ';'))
         scope_settings.read(str(path2settings_folder/file))
@@ -98,7 +106,8 @@ class ControlGUI_EEG(_ControlGUI):
         try:
             self._yRange = float(scope_settings.get("plot", "yRange"))
             if self._yRange not in self._yRanges.values:
-                raise ValueError
+                logger.debug("yRange %s is not in valid ranges.", self._yRange)
+                self._yRange = 25.
         except Exception:  # Default to 25 uV
             self._yRange = 25.
 
@@ -106,7 +115,10 @@ class ControlGUI_EEG(_ControlGUI):
         try:
             self._xRange = int(scope_settings.get("plot", "xRange"))
         except Exception:  # Default to 10s
+            logger.debug("xRange value could not be converted to integer.")
             self._xRange = 10
+
+        logger.debug("Loading configuration complete.")
 
     def _set_configuration(self, file):
         """
@@ -210,6 +222,7 @@ class ControlGUI_EEG(_ControlGUI):
 
     @QtCore.pyqtSlot()
     def onActivated_comboBox_signal_yRange(self):
+        logger.debug('yRange event received.')
         self._yRange = float(list(self._yRanges.values())[
             self._ui.comboBox_signal_yRange.currentIndex()])
         self._backend.yRange = self._yRange
@@ -217,23 +230,27 @@ class ControlGUI_EEG(_ControlGUI):
 
     @QtCore.pyqtSlot()
     def onValueChanged_spinBox_signal_xRange(self):
+        logger.debug('xRange event received.')
         self._xRange = int(self._ui.spinBox_signal_xRange.value())
         self._backend.xRange = self._xRange
         logger.debug('x-range set to %d', self._xRange)
 
     @QtCore.pyqtSlot()
     def onClicked_checkBox_car(self):
+        logger.debug('Checkbox for CAR event received.')
         self._scope.apply_car = self._ui.checkBox_car.isChecked()
         logger.debug('CAR checkbox: %s', self._ui.checkBox_car.isChecked())
 
     @QtCore.pyqtSlot()
     def onClicked_checkBox_bandpass(self):
+        logger.debug('Checkbox for BP event received.')
         self._scope.apply_bandpass = self._ui.checkBox_bandpass.isChecked()
         logger.debug(
             'BP checkbox: %s', self._ui.checkBox_bandpass.isChecked())
 
     @QtCore.pyqtSlot()
     def onValueChanged_doubleSpinBox_bandpass_low(self):
+        logger.debug('BP-low event received.')
         self._ui.doubleSpinBox_bandpass_high.setMinimum(
             self._ui.doubleSpinBox_bandpass_low.value()+1)
         self._scope.init_bandpass_filter(
@@ -246,6 +263,7 @@ class ControlGUI_EEG(_ControlGUI):
 
     @QtCore.pyqtSlot()
     def onValueChanged_doubleSpinBox_bandpass_high(self):
+        logger.debug('BP-high event received.')
         self._ui.doubleSpinBox_bandpass_low.setMaximum(
             self._ui.doubleSpinBox_bandpass_high.value()-1)
         self._scope.init_bandpass_filter(
@@ -258,6 +276,7 @@ class ControlGUI_EEG(_ControlGUI):
 
     @QtCore.pyqtSlot()
     def onClicked_checkBox_show_LPT_trigger_events(self):
+        logger.debug('Checkbox for LPT event received.')
         self._backend.show_LPT_trigger_events = bool(
             self._ui.checkBox_show_LPT_trigger_events.isChecked())
         logger.debug(
@@ -266,6 +285,7 @@ class ControlGUI_EEG(_ControlGUI):
 
     @QtCore.pyqtSlot()
     def onSelectionChanged_table_channels(self):
+        logger.debug('Channel selection event received.')
         selected = self._ui.table_channels.selectedItems()
         self._scope.selected_channels = sorted([
             item.row()*self._nb_table_columns + item.column()
@@ -276,6 +296,7 @@ class ControlGUI_EEG(_ControlGUI):
         """
         Event called when closing the _ScopeControllerUI window.
         """
+        logger.debug('Closing event received.')
         if self._ui.pushButton_stop_recording.isEnabled():
             self.onClicked_pushButton_stop_recording()
         self._backend.close()

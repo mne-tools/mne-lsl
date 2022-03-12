@@ -8,6 +8,7 @@ from PyQt5 import QtCore
 
 from ._backend import _Backend, _Event
 from ...utils._docs import fill_doc, copy_doc
+from ...utils._logs import logger
 
 # pg.setConfigOptions(antialias=True)
 
@@ -72,10 +73,15 @@ class _BackendPyQtGraph(_Backend):
             0, -len(self._scope.selected_channels)*self._yRange,
             -self._yRange)
 
+        logger.debug(
+            'Initilization of variables from _BackendPyQtGraph complete.')
+
     def _init_canvas(self):
         """
         Initialize the drawing canvas.
         """
+        logger.debug('Initilization of canvas..')
+
         # Ranges
         self._plot_handler.disableAutoRange()
         yRange = [
@@ -98,6 +104,8 @@ class _BackendPyQtGraph(_Backend):
         self._x_arr = np.arange(self._duration_plot_samples) \
             / self._scope.sample_rate
         self._plot_handler.setLabel(axis='bottom', text='Time (s)')
+
+        logger.debug('Initilization of canvas complete.')
 
     # ------------------------ Trigger Events ----------------------
     @copy_doc(_Backend._update_LPT_trigger_events)
@@ -138,7 +146,9 @@ class _BackendPyQtGraph(_Backend):
     # -------------------------- Main Loop -------------------------
     @copy_doc(_Backend.start_timer)
     def start_timer(self):
+        logger.debug('Update 20 ms timer start requested..')
         self._timer.start(20)
+        logger.debug('Update 20 ms timer has started.')
 
     @copy_doc(_Backend._update_loop)
     def _update_loop(self):

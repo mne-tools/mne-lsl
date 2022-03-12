@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 import math
 
 from ...utils._docs import fill_doc
+from ...utils._logs import logger
 
 
 @fill_doc
@@ -34,10 +35,14 @@ class _Backend(ABC):
         """
         Initialize variables depending on xRange, yRange and selected_channels.
         """
+        logger.debug('Initilization of variables..')
+
         # xRange
         self._delta_with_buffer = self._scope.duration_buffer - self._xRange
         self._duration_plot_samples = math.ceil(
             self._xRange*self._scope.sample_rate)
+
+        logger.debug('Initilization of variables from _Backend complete.')
 
     # ------------------------ Trigger Events ----------------------
     @abstractmethod
