@@ -1,10 +1,11 @@
-from pathlib import Path
 from abc import ABC, abstractmethod
+from pathlib import Path
 
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import QMainWindow, QFileDialog
 
 from ...utils._docs import fill_doc
+from ...utils._logs import logger
 from ...stream_recorder import StreamRecorder
 
 
@@ -63,6 +64,7 @@ class _ControlGUI(QMainWindow, ABC, metaclass=_metaclass_ControlGUI):
 
     @QtCore.pyqtSlot()
     def onClicked_pushButton_start_recording(self):
+        logger.debug('Start recording event received.')
         record_dir = self._ui.lineEdit_recording_dir.text()
         self._recorder = StreamRecorder(
             record_dir, stream_name=self._scope.stream_name, fif_subdir=True,
@@ -74,6 +76,7 @@ class _ControlGUI(QMainWindow, ABC, metaclass=_metaclass_ControlGUI):
 
     @QtCore.pyqtSlot()
     def onClicked_pushButton_stop_recording(self):
+        logger.debug('Stop recording event received.')
         if self._recorder.state.value == 1:
             self._recorder.stop()
             self._ui.pushButton_start_recording.setEnabled(True)
@@ -82,6 +85,7 @@ class _ControlGUI(QMainWindow, ABC, metaclass=_metaclass_ControlGUI):
 
     @QtCore.pyqtSlot()
     def onClicked_pushButton_set_recording_dir(self):
+        logger.debug('Set recording directory event received.')
         defaultPath = str(Path.home())
         path_name = QFileDialog.getExistingDirectory(
             caption="Choose the recording directory", directory=defaultPath)
