@@ -45,8 +45,9 @@ jobs:
       - name: Test pylsl
         run: python -c 'from bsl.externals import pylsl'
       - name: Test psychopy
-        run: python -c 'from bsl.externals import psychopy'
-        run: python -c 'from bsl.externals.psychopy.parallel import ParallelPort'
+        run: |
+          python -c 'from bsl.externals import psychopy'
+          python -c 'from bsl.externals.psychopy.parallel import ParallelPort'
 
   externals-pytest:
     timeout-minutes: 30
