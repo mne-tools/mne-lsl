@@ -38,9 +38,50 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip setuptools wheel
-          python -m pip install -r requirements_ci_externals.txt
+          python -m pip install -r requirements.txt
       - name: Prepare for liblsl (Ubuntu)
         if: ${{ matrix.os == 'ubuntu'}}
         run: sudo apt install -y libpugixml-dev
       - name: Test pylsl
         run: python -c 'from bsl.externals import pylsl'
+      - name: Test psychopy
+        run: python -c 'from bsl.externals import psychopy'
+        run: python -c 'from bsl.externals.psychopy.parallel import ParallelPort'
+
+  externals-pytest:
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu, windows]
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Setup Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+          architecture: 'x64'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install -r requirements.txt
+          python -m pip install -r requirements_ci_externals_pytest.txt
+      - name: Install liblsl (Ubuntu)
+        if: ${{ matrix.os == 'ubuntu'}}
+        run: |
+          sudo apt install -y libpugixml-dev
+      - name: 'Cache BSL testing dataset'
+        uses: actions/cache@v2
+        with:
+          key: ${{ matrix.os }}-bsl_data
+          path: ~/bsl_data
+      - name: Download BSL testing dataset
+        run: python -c 'import bsl; bsl.datasets._download_all_datasets()'
+      - name: Run pytest
+        run: pytest bsl
