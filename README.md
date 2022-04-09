@@ -24,22 +24,36 @@ decoding functionnalities have been dropped.
 BSL supports `python >= 3.6` and requires:
 - numpy
 - scipy
-- pylsl
 - mne
 - pyqt5
 - pyqtgraph
 
+BSL uses `pylsl` to interface with LSL. A version is provided in
+`bsl.externals` and should work 'as is' on most systems. A different version
+of `pylsl` can be installed and will be automatically selected by BSL if
+available.
+
+BSL uses `psychopy` for trigger via an on-board parallel port. A version
+including only the `parallel` module is provided in `bsl.externals` and should
+work 'as is' on most systems. A different version of `psychopy` can be
+installed and will be automatically selected by BSL if available.
+
 Optional dependencies for trigger via a parallel port (LPT):
 - pyserial, if the [Arduino to LPT converter](https://github.com/fcbg-hnp/arduino-trigger)
   is used.
-- psychopy, if the on-board parallel port is used.
 
-BSL can be installed in normal mode with `python setup.py install` or in
-developement mode with `python setup.py develop`. Optional dependencies can be
-installed using the keywords:
+BSL can be installed via `pip` with `pip install bsl`.
+
+BSL can be installed from a cloned repository in normal mode with
+`python setup.py install` or in developement mode with
+`python setup.py develop`. Optional dependencies can be installed using the
+keywords:
 - parallel, parallelport, lpt
 - doc, doc-build, documentation
 - test, testing
+
+Note that the optional dependencies do not include the dependencies present in
+`bsl.externals`.
 
 # Documentation
 

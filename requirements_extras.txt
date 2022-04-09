@@ -4,7 +4,6 @@
 # numpy>=1.20          # xyz, xyz_2
 
 pyserial               # parallel, parallelport, lpt
-psychopy               # parallel, parallelport, lpt
 matplotlib             # doc, doc-build, documentation
 sphinx                 # doc, doc-build, documentation
 sphinx-gallery         # doc, doc-build, documentation
