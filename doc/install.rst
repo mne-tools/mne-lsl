@@ -35,13 +35,11 @@ BSL installs the following dependencies:
 - `numpy`_
 - `scipy`_
 - `mne`_
-- `pylsl`_
 - `pyqt5`_
 - `pyqtgraph`_
 
 Additional functionalities requires:
 
-- `psychopy`_: for the parallel port triggers.
 - `pyserial`_: for the parallel port trigger using an :ref:`arduino2lpt`.
 
 ===========================
@@ -57,19 +55,22 @@ running the following command in a terminal:
 
     $ python -c 'from bsl.externals import pylsl'
 
-If this command doesn't raise an error, then ``BSL`` will be able to run by
-itself. However, if this is not the case, you have to correctly setup `pylsl`_.
-`pylsl`_ requires a binary library, called ``liblsl`` to operate. But the
-binary library might not been downloaded alongside `pylsl`_.
+If you prefer to use a different version, or if the command above raises an
+error, `pylsl`_ can be installed in the same environment as ``BSL``. ``BSL``
+will automaticaly select `pylsl`_ and will prefer the version installed in the
+same environment above the version distributed in ``bsl.externals``.
 
-To test if `pylsl`_ is working, try the following command in a terminal:
+`pylsl`_ requires a binary library called ``liblsl`` to operate. The binary
+library may or may not have been downloaded alongside `pylsl`_. To test if
+an install of `pylsl`_ is working, use the following command in a terminal:
 
 .. code-block:: console
 
     $ python -c 'import pylsl'
 
-If it didn't raise an error, congratulation, you have a working setup! However,
-if an error is raised, please refer to the instructions below or to the
+If this command did not raise an error, congratulation, you have a working
+install of `pylsl`_! However, if an error is raised, please refer to the
+instructions below or to the
 `LabStreamingLayer Slack <https://labstreaminglayer.slack.com>`_.
 
 Linux
@@ -84,7 +85,7 @@ library.
 
 Fetch the correct binary from the `liblsl release page`_. If your
 distribution is not available, the binary library must be build.
-At the time of writing, the binary version ``1.15.2`` for Ubuntu 18.04
+At the time of writing, the binaries version ``1.15.2`` for Ubuntu 18.04
 (bionic) and for Ubuntu 20.04 (focal) are available. Install the downloaded
 ``.deb`` library with:
 
@@ -106,13 +107,26 @@ library with the command:
 
     $ brew install labstreaminglayer/tap/lsl
 
-
 Windows
 -------
 
 Fetch the correct binary from the `liblsl release page`_ and retrieve the
 ``.dll`` binary library. Create an environment variable named ``PYLSL_LIB``
 that contains the path to the downloaded binary library.
+
+===================
+Installing PsychoPy
+===================
+
+The parallel port trigger can either use an on-board parallel port, or an
+:ref:`arduino2lpt` connected via USB. The on-board parallel port requires
+the ``psychopy.parallel`` module. By default, ``BSL`` is distributed with a
+recent version of ``psychopy.parallel`` that should work on most systems.
+
+If you prefer to use a different version, `psychopy`_ can be installed in the
+same environment as ``BSL``. ``BSL`` will automaticaly select `psychopy`_ and
+will prefer the version installed in the same environment above the version
+distributed in ``bsl.externals``.
 
 =====================
 Test the installation
@@ -141,7 +155,7 @@ and display it with a `~bsl.StreamViewer`.
       player = StreamPlayer('TestStream', dataset)
       player.start()
 
-  In terminal, navigate to the folder containing the dataset
+  In a terminal, navigate to the folder containing the dataset
   (``~/bsl_data/eeg_sample``):
 
   .. code-block:: console

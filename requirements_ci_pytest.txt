@@ -1,4 +1,5 @@
 # requirements for minimal BrainStreamingLayer functionality.
+pylsl
 pytest
 pytest-cov
 requests
