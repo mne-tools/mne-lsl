@@ -36,9 +36,8 @@ and experiment designs.
 
 import time
 
-import pylsl
-
 from bsl import StreamPlayer, datasets
+from bsl.externals import pylsl  # distributed version of pylsl
 from bsl.triggers import TriggerDef
 
 #%%
