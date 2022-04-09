@@ -97,11 +97,7 @@ class ParallelPortTrigger(_Trigger):
         Connect to the ParallelPort.
         """
         # Imports
-        import_optional_dependency(
-            "psychopy",
-            extra="Install 'psychopy' for Parallel Port support.")
-
-        from psychopy.parallel import ParallelPort
+        from ..externals.psychopy.parallel import ParallelPort
 
         # Connect to ParallelPort
         logger.info('ParallelPort trigger is using an on-board port.')
