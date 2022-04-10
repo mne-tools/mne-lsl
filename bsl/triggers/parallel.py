@@ -97,12 +97,16 @@ class ParallelPortTrigger(_Trigger):
         Connect to the ParallelPort.
         """
         # Imports
-        from ..externals import psychopy
+        psychopy = import_optional_dependency("psychopy", raise_error=False)
+        if psychopy is None:
+            from ..externals.psychopy.parallel import ParallelPort
+        else:
+            from psychopy.parallel import ParallelPort
 
         # Connect to ParallelPort
         logger.info('ParallelPort trigger is using an on-board port.')
         try:
-            self._port = psychopy.parallel.ParallelPort(self._address)
+            self._port = ParallelPort(self._address)
         except PermissionError as error:
             logger.error(
                 'To fix a PermissionError, try adding your user into the '
