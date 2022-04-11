@@ -102,6 +102,12 @@ class ParallelPortTrigger(_Trigger):
             from ..externals.psychopy.parallel import ParallelPort
         else:
             from psychopy.parallel import ParallelPort
+        if ParallelPort is None:
+            raise RuntimeError(
+                'PsychoPy parallel module has been imported but no parallel '
+                'port driver was found. psychopy.parallel supports Linux with '
+                'pyparallel and Windows with either inpout32, inpout64 or '
+                'dlportio. macOS is not supported.')
 
         # Connect to ParallelPort
         logger.info('ParallelPort trigger is using an on-board port.')
