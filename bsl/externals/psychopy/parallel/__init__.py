@@ -46,10 +46,5 @@ elif sys.platform == 'win32':
         except (OSError, KeyError, NameError):
             ParallelPort = None
             continue
-    if ParallelPort is None:
-        raise RuntimeError("psychopy.parallel has been imported but no "
-                           "parallel port driver found. Install either "
-                           "inpout32, inpoutx64 or dlportio.")
 else:
-    raise RuntimeError("psychopy.parallel has been imported on a Mac "
-                       "(which doesn't have a parallel port?)")
+    ParallelPort = None
