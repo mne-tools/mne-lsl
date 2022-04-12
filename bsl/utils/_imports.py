@@ -8,7 +8,8 @@ import importlib
 # A mapping from import name to package name (on PyPI) when the package name
 # is different.
 INSTALL_MAPPING = {
-    "serial": "pyserial"
+    "serial": "pyserial",
+    "parallel": "pyparallel",
     }
 
 

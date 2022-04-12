@@ -41,6 +41,7 @@ BSL installs the following dependencies:
 Additional functionalities requires:
 
 - `pyserial`_: for the parallel port trigger using an :ref:`arduino2lpt`.
+- `pyparallel`_: for the parallel port trigger using an on-board port on Linux.
 
 ===========================
 Installing pylsl and liblsl
