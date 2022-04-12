@@ -99,6 +99,9 @@ class ParallelPortTrigger(_Trigger):
         # Imports
         psychopy = import_optional_dependency("psychopy", raise_error=False)
         if psychopy is None:
+            import platform
+            if platform.system() == 'Linux':
+                import_optional_dependency("parallel", raise_error=True)
             from ..externals.psychopy.parallel import ParallelPort
         else:
             from psychopy.parallel import ParallelPort

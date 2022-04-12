@@ -3,14 +3,15 @@
 # Examples:
 # numpy>=1.20          # xyz, xyz_2
 
-pyserial               # parallel, parallelport, lpt
-matplotlib             # doc, doc-build, documentation
-sphinx                 # doc, doc-build, documentation
-sphinx-gallery         # doc, doc-build, documentation
-pydata-sphinx-theme    # doc, doc-build, documentation
-numpydoc               # doc, doc-build, documentation
-pytest                 # test, testing
-pytest-cov             # test, testing
-requests               # test, testing
-wheel                  # build, distribution
-twine                  # build, distribution
+pyserial                                        # parallel, parallelport, lpt
+pyparallel; platform_system == "Linux"          # parallel, parallelport, lpt
+matplotlib                                      # doc, doc-build, documentation
+sphinx                                          # doc, doc-build, documentation
+sphinx-gallery                                  # doc, doc-build, documentation
+pydata-sphinx-theme                             # doc, doc-build, documentation
+numpydoc                                        # doc, doc-build, documentation
+pytest                                          # test, testing
+pytest-cov                                      # test, testing
+requests                                        # test, testing
+wheel                                           # build, distribution
+twine                                           # build, distribution

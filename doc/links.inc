@@ -38,6 +38,7 @@
 .. _liblsl: https://github.com/sccn/liblsl/releases
 .. _`liblsl release page`: https://github.com/sccn/liblsl/
 
+
 .. psychopy
 
 .. _psychopy: https://www.psychopy.org/
@@ -57,6 +58,11 @@
 .. pyserial
 
 .. _pyserial: https://github.com/pyserial/pyserial
+
+
+.. pyparallel
+
+.. _pyparallel: https://github.com/pyserial/pyparallel
 
 
 .. Pytest
