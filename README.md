@@ -1,3 +1,5 @@
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
 [![Brain Streaming Layer](https://raw.githubusercontent.com/bsl-tools/bsl/master/doc/_static/icon-with-name/icon-with-name.svg)](https://bsl-tools.github.io/)
 
 **BrainStreamingLayer** provides a real-time brain signal streaming framework.
