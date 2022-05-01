@@ -8,8 +8,8 @@ extend-exclude = '''
     | \.github
     | setup.py
     | pyproject.toml
-    | doc
-    | examples
+    | doc/
+    | examples/
     | bsl/externals/psychopy
     | bsl/externals/pylsl
 )
