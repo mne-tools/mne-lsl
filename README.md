@@ -2,6 +2,7 @@
 [![Imports: isort](https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336)](https://pycqa.github.io/isort/)
 [![Downloads](https://static.pepy.tech/personalized-badge/bsl?period=total&units=international_system&left_color=grey&right_color=blue&left_text=PyPi%20Downloads)](https://pepy.tech/project/bsl)
 [![Downloads](https://static.pepy.tech/personalized-badge/bsl?period=month&units=international_system&left_color=grey&right_color=blue&left_text=PyPi%20Downloads/month)](https://pepy.tech/project/bsl)
+[![PyPI version](https://badge.fury.io/py/bsl.svg)](https://badge.fury.io/py/bsl)
 
 [![Brain Streaming Layer](https://raw.githubusercontent.com/bsl-tools/bsl/master/doc/_static/icon-with-name/icon-with-name.svg)](https://bsl-tools.github.io/)
 
