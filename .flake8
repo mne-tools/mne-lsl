@@ -17,6 +17,7 @@ exclude =
     doc
     bsl/externals/psychopy
     bsl/externals/pylsl
+    bsl/stream_viewer/control_gui
 
 per-file-ignores =
     # __init__.py files are allowed to have unused imports and lines-too-long

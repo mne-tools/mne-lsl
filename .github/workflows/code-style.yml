@@ -40,3 +40,11 @@ jobs:
           exclude: |
             bsl/stream_viewer/control_gui/*
             bsl/externals/**
+      - name: Run black
+        uses: psf/black@stable
+        with:
+          options: "--check --verbose"
+      - name: Run isort
+        uses: jamescurtin/isort-action@master
+        with:
+            requirementsFiles: "requirements.txt"
