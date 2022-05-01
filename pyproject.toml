@@ -8,8 +8,8 @@ extend-exclude = '''
     | \.git
     | setup.py
     | pyproject.toml
-    | examples
     | doc
+    | examples
     | bsl/externals/psychopy
     | bsl/externals/pylsl
 )
@@ -18,3 +18,12 @@ extend-exclude = '''
 [tool.isort]
 profile = "black"
 multi_line_output = 3
+line-length = 79
+py_version = 37
+extend_skip_glob = [
+    'setup.py',
+    'doc/*',
+    'examples/*',
+    'bsl/externals/psychopy/*',
+    'bsl/externals/pylsl/*'
+    ]

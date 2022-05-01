@@ -14,5 +14,6 @@ pytest                                          # test, testing
 pytest-cov                                      # test, testing
 requests                                        # test, testing
 black                                           # test, testing
+isort                                           # test, testing
 wheel                                           # build, distribution
 twine                                           # build, distribution
