@@ -6,8 +6,12 @@ exclude = '''
 (
       __pycache__
     | \.git
-    | \doc
-    | \examples
+    | setup.py
+    | pyproject.toml
+    | examples
+    | doc
+    | bsl/externals/psychopy
+    | bsl/externals/pylsl
 )
 '''
 
