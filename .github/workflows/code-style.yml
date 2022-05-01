@@ -30,7 +30,7 @@ jobs:
       - name: Install flake8
         run: |
           python -m pip install --upgrade pip setuptools wheel
-          python -m pip install flake8
+          python -m pip install flake8 black isort
       - name: Setup flake8 annotations
         uses: rbialon/flake8-annotations@v1
       - name: Run flake8
@@ -40,3 +40,11 @@ jobs:
           exclude: |
             bsl/stream_viewer/control_gui/*
             bsl/externals/**
+      - name: Run black
+        uses: psf/black@stable
+        with:
+          options: "--check --verbose"
+      - name: Run isort
+        uses: jamescurtin/isort-action@master
+        with:
+            requirementsFiles: "requirements.txt"
