@@ -1,1 +1,1 @@
-from .scope_eeg import ScopeEEG  # noqa: F401
+from .scope_eeg import ScopeEEG

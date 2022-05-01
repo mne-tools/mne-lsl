@@ -1,15 +1,14 @@
 """
 BSL's logger.
 """
-import sys
 import logging
+import sys
 
-
-logger = logging.getLogger('bsl')
+logger = logging.getLogger("bsl")
 logger.propagate = False  # don't propagate (in case of multiple imports)
 
 
-def init_logger(verbosity='INFO'):
+def init_logger(verbosity="INFO"):
     """
     Initialize a logger. Assign sys.stdout as a handler of the logger.
 
@@ -22,7 +21,7 @@ def init_logger(verbosity='INFO'):
     add_stream_handler(sys.stdout, verbosity)
 
 
-def add_stream_handler(stream, verbosity='INFO'):
+def add_stream_handler(stream, verbosity="INFO"):
     """
     Add a handler to the logger. The handler redirects the logger output to
     the stream.
@@ -39,7 +38,7 @@ def add_stream_handler(stream, verbosity='INFO'):
     set_handler_log_level(verbosity, -1)
 
 
-def add_file_handler(fname, mode='a', verbosity='INFO'):
+def add_file_handler(fname, mode="a", verbosity="INFO"):
     """
     Add a file handler to the logger. The handler saves the logs to file.
 
@@ -88,20 +87,25 @@ class BSLformatter(logging.Formatter):
     """
     Format string Syntax for BSL.
     """
+
     # Format string syntax for the different Log levels
     _formatters = dict()
     _formatters[logging.DEBUG] = logging.Formatter(
         fmt="[%(module)s:%(funcName)s:%(lineno)d] %(levelname)s: "
-            "%(message)s (%(asctime)s)")
+        "%(message)s (%(asctime)s)"
+    )
     _formatters[logging.INFO] = logging.Formatter(
-        fmt="[%(module)s.%(funcName)s] %(levelname)s: %(message)s")
+        fmt="[%(module)s.%(funcName)s] %(levelname)s: %(message)s"
+    )
     _formatters[logging.WARNING] = logging.Formatter(
-        fmt="[%(module)s.%(funcName)s] %(levelname)s: %(message)s")
+        fmt="[%(module)s.%(funcName)s] %(levelname)s: %(message)s"
+    )
     _formatters[logging.ERROR] = logging.Formatter(
-        fmt="[%(module)s:%(funcName)s:%(lineno)d] %(levelname)s: %(message)s")
+        fmt="[%(module)s:%(funcName)s:%(lineno)d] %(levelname)s: %(message)s"
+    )
 
     def __init__(self):
-        super().__init__(fmt='%(levelname): %(message)s')
+        super().__init__(fmt="%(levelname): %(message)s")
 
     def format(self, record):
         """

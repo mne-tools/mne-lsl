@@ -18,11 +18,16 @@ from bsl import StreamViewer
 def run():
     """Entrypoint for bsl_stream_viewer usage."""
     parser = argparse.ArgumentParser(
-        prog='BSL StreamViewer',
-        description='Starts a real-time viewer for a stream on LSL network.')
+        prog="BSL StreamViewer",
+        description="Starts a real-time viewer for a stream on LSL network.",
+    )
     parser.add_argument(
-        '-s', '--stream_name', type=str, metavar='str',
-        help='stream to display/plot.')
+        "-s",
+        "--stream_name",
+        type=str,
+        metavar="str",
+        help="stream to display/plot.",
+    )
 
     args = parser.parse_args()
     stream_name = args.stream_name

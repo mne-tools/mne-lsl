@@ -5,4 +5,4 @@ Visualize signals in real time with spectral filtering, common average
 filtering options and real-time FFT.
 """
 
-from .stream_viewer import StreamViewer  # noqa: F401
+from .stream_viewer import StreamViewer

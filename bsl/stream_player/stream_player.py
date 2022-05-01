@@ -1,15 +1,15 @@
+import multiprocessing as mp
 import time
 from pathlib import Path
-import multiprocessing as mp
 
 import mne
 import numpy as np
 
 from ..externals import pylsl
 from ..triggers import TriggerDef
-from ..utils._logs import logger
 from ..utils import find_event_channel
 from ..utils._checks import _check_type
+from ..utils._logs import logger
 
 
 class StreamPlayer:
@@ -38,19 +38,26 @@ class StreamPlayer:
         for higher time resolution. However, it uses more CPU.
     """
 
-    def __init__(self, stream_name, fif_file, repeat=float('inf'),
-                 trigger_def=None, chunk_size=16, high_resolution=False):
-        _check_type(stream_name, (str, ), item_name='stream_name')
+    def __init__(
+        self,
+        stream_name,
+        fif_file,
+        repeat=float("inf"),
+        trigger_def=None,
+        chunk_size=16,
+        high_resolution=False,
+    ):
+        _check_type(stream_name, (str,), item_name="stream_name")
         self._stream_name = stream_name
         self._fif_file = StreamPlayer._check_fif_file(fif_file)
         self._repeat = StreamPlayer._check_repeat(repeat)
         self._trigger_def = StreamPlayer._check_trigger_def(trigger_def)
         self._chunk_size = StreamPlayer._check_chunk_size(chunk_size)
-        _check_type(high_resolution, (bool, ), item_name='high_resolution')
+        _check_type(high_resolution, (bool,), item_name="high_resolution")
         self._high_resolution = high_resolution
 
         self._process = None
-        self._state = mp.Value('i', 0)
+        self._state = mp.Value("i", 0)
 
     def start(self, blocking=True):
         """
@@ -61,15 +68,22 @@ class StreamPlayer:
         blocking : bool
             If ``True``, waits for the child process to start streaming data.
         """
-        _check_type(blocking, (bool, ), item_name='blocking')
+        _check_type(blocking, (bool,), item_name="blocking")
         raw = mne.io.read_raw_fif(self._fif_file, preload=True, verbose=False)
 
-        logger.info('Streaming started.')
+        logger.info("Streaming started.")
         self._process = mp.Process(
             target=self._stream,
-            args=(self._stream_name, raw, self._repeat,
-                  self._trigger_def, self._chunk_size, self._high_resolution,
-                  self._state))
+            args=(
+                self._stream_name,
+                raw,
+                self._repeat,
+                self._trigger_def,
+                self._chunk_size,
+                self._high_resolution,
+                self._state,
+            ),
+        )
         self._process.start()
 
         if blocking:
@@ -83,32 +97,47 @@ class StreamPlayer:
         Stop the streaming, by terminating the process.
         """
         if self._process is None:
-            logger.warning('StreamPlayer was not started. Skipping.')
+            logger.warning("StreamPlayer was not started. Skipping.")
             return
 
         with self._state.get_lock():
             self._state.value = 0
 
-        logger.info('Waiting for StreamPlayer %s process to finish.',
-                    self._stream_name)
+        logger.info(
+            "Waiting for StreamPlayer %s process to finish.", self._stream_name
+        )
         self._process.join(10)
         if self._process.is_alive():
-            logger.error('StreamPlayer process not finishing..')
+            logger.error("StreamPlayer process not finishing..")
             self._process.kill()
             raise RuntimeError
-        logger.info('Streaming finished.')
+        logger.info("Streaming finished.")
 
         self._process = None
 
-    def _stream(self, stream_name, raw, repeat, trigger_def, chunk_size,
-                high_resolution, state):
+    def _stream(
+        self,
+        stream_name,
+        raw,
+        repeat,
+        trigger_def,
+        chunk_size,
+        high_resolution,
+        state,
+    ):
         """
         The function called in the new process.
         Instance a _Streamer and start streaming.
         """
         streamer = _Streamer(
-            stream_name, raw, repeat, trigger_def, chunk_size,
-            high_resolution, state)
+            stream_name,
+            raw,
+            repeat,
+            trigger_def,
+            chunk_size,
+            high_resolution,
+            state,
+        )
         streamer.stream()
 
     # --------------------------------------------------------------------
@@ -122,8 +151,8 @@ class StreamPlayer:
 
     def __repr__(self):
         """Representation of the instance."""
-        status = 'ON' if self._state.value == 1 else 'OFF'
-        return f'<Player: {self._stream_name} | {status} | {self._fif_file}>'
+        status = "ON" if self._state.value == 1 else "OFF"
+        return f"<Player: {self._stream_name} | {status} | {self._fif_file}>"
 
     # --------------------------------------------------------------------
     @staticmethod
@@ -131,7 +160,7 @@ class StreamPlayer:
         """
         Check if the provided fif_file is valid.
         """
-        _check_type(fif_file, ('path-like', ), item_name='fif_file')
+        _check_type(fif_file, ("path-like",), item_name="fif_file")
         mne.io.read_raw_fif(fif_file, preload=False, verbose=None)
         return Path(fif_file)
 
@@ -140,12 +169,14 @@ class StreamPlayer:
         """
         Checks that repeat is either infinity or a strictly positive integer.
         """
-        if repeat == float('inf'):
+        if repeat == float("inf"):
             return repeat
-        _check_type(repeat, ('int', ), item_name='repeat')
+        _check_type(repeat, ("int",), item_name="repeat")
         if repeat <= 0:
-            raise ValueError('Argument repeat must be a strictly positive '
-                             'integer. Provided: %i' % repeat)
+            raise ValueError(
+                "Argument repeat must be a strictly positive "
+                "integer. Provided: %i" % repeat
+            )
         return repeat
 
     @staticmethod
@@ -155,15 +186,20 @@ class StreamPlayer:
         definition file, in which case it is loader and pass as a TriggerDef,
         or a TriggerDef instance.
         """
-        _check_type(trigger_def, (None, TriggerDef, 'path-like'),
-                    item_name='trigger_def')
+        _check_type(
+            trigger_def,
+            (None, TriggerDef, "path-like"),
+            item_name="trigger_def",
+        )
         if isinstance(trigger_def, (type(None), TriggerDef)):
             return trigger_def
         else:
             trigger_def = Path(trigger_def)
             if not trigger_def.exists():
-                raise ValueError('Argument trigger_def is a path that does '
-                                 'not exist. Provided: %s' % trigger_def)
+                raise ValueError(
+                    "Argument trigger_def is a path that does "
+                    "not exist. Provided: %s" % trigger_def
+                )
             trigger_def = TriggerDef(trigger_def)
             return trigger_def
 
@@ -172,14 +208,18 @@ class StreamPlayer:
         """
         Checks that chunk_size is a strictly positive integer.
         """
-        _check_type(chunk_size, ('int', ), item_name='chunk_size')
+        _check_type(chunk_size, ("int",), item_name="chunk_size")
         if chunk_size <= 0:
-            raise ValueError('Argument chunk_size must be a strictly positive '
-                             'integer. Provided: %i' % chunk_size)
+            raise ValueError(
+                "Argument chunk_size must be a strictly positive "
+                "integer. Provided: %i" % chunk_size
+            )
         if chunk_size not in (16, 32):
             logger.warning(
-                'The chunk size %i is different from the usual '
-                'values 16 or 32.', chunk_size)
+                "The chunk size %i is different from the usual "
+                "values 16 or 32.",
+                chunk_size,
+            )
         return chunk_size
 
     # --------------------------------------------------------------------
@@ -268,8 +308,16 @@ class _Streamer:
     Class for playing a recorded file on LSL network.
     """
 
-    def __init__(self, stream_name, raw, repeat, trigger_def,
-                 chunk_size, high_resolution, state):
+    def __init__(
+        self,
+        stream_name,
+        raw,
+        repeat,
+        trigger_def,
+        chunk_size,
+        high_resolution,
+        state,
+    ):
         self._stream_name = stream_name
         self._raw = raw
         self._repeat = repeat
@@ -281,15 +329,17 @@ class _Streamer:
         self._sinfo = _Streamer._create_lsl_info(
             stream_name=self._stream_name,
             channel_count=len(self._raw.ch_names),
-            nominal_srate=self._raw.info['sfreq'],
-            ch_names=self._raw.ch_names)
+            nominal_srate=self._raw.info["sfreq"],
+            ch_names=self._raw.ch_names,
+        )
         self._tch = find_event_channel(inst=self._raw)
         # TODO: patch to be improved for multi-trig channel recording
         if isinstance(self._tch, list):
             self._tch = self._tch[0]
         self._scale_raw_data()
         self._outlet = pylsl.StreamOutlet(
-            self._sinfo, chunk_size=self._chunk_size)
+            self._sinfo, chunk_size=self._chunk_size
+        )
 
     def _scale_raw_data(self):
         """
@@ -298,14 +348,14 @@ class _Streamer:
         # TODO: Base the scaling on the units in the raw info
         """
         idx = np.arange(self._raw._data.shape[0]) != self._tch
-        self._raw._data[idx, :] = self._raw.get_data()[idx, :] * 1E6
+        self._raw._data[idx, :] = self._raw.get_data()[idx, :] * 1e6
 
     def stream(self):
         """
         Stream data on LSL network.
         """
         idx_chunk = 0
-        t_chunk = self._chunk_size / self._raw.info['sfreq']
+        t_chunk = self._chunk_size / self._raw.info["sfreq"]
         finished = False
 
         if self._high_resolution:
@@ -329,13 +379,17 @@ class _Streamer:
             if idx_current >= self._raw._data.shape[1] - self._chunk_size:
                 finished = True
 
-            _Streamer._sleep(self._high_resolution, idx_chunk, t_start,
-                             t_chunk)
+            _Streamer._sleep(
+                self._high_resolution, idx_chunk, t_start, t_chunk
+            )
 
             self._outlet.push_chunk(data)
             logger.debug(
-                '[%8.3fs] sent %d samples (LSL %8.3f)',
-                time.perf_counter(), len(data), pylsl.local_clock())
+                "[%8.3fs] sent %d samples (LSL %8.3f)",
+                time.perf_counter(),
+                len(data),
+                pylsl.local_clock(),
+            )
 
             self._log_event(chunk)
             idx_chunk += 1
@@ -350,9 +404,9 @@ class _Streamer:
                 played += 1
 
                 if played < self._repeat:
-                    logger.info('Reached the end of data. Restarting.')
+                    logger.info("Reached the end of data. Restarting.")
                 else:
-                    logger.info('Reached the end of data. Stopping.')
+                    logger.info("Reached the end of data. Stopping.")
                     with self._state.get_lock():
                         self._state.value = 0
 
@@ -365,18 +419,19 @@ class _Streamer:
 
             if len(event_values) > 0:
                 if self._trigger_def is None:
-                    logger.info('Events: %s', event_values)
+                    logger.info("Events: %s", event_values)
                 else:
                     for event_value in event_values:
                         if event_value in self._trigger_def.by_value:
                             logger.info(
-                                'Events: %s (%s)',
+                                "Events: %s (%s)",
                                 event_value,
-                                self._trigger_def.by_value[event_value])
+                                self._trigger_def.by_value[event_value],
+                            )
                         else:
                             logger.info(
-                                'Events: %s (Undefined event)',
-                                event_value)
+                                "Events: %s (Undefined event)", event_value
+                            )
 
     # --------------------------------------------------------------------
     @staticmethod
@@ -386,24 +441,30 @@ class _Streamer:
         needed to create the LSL stream.
         """
         sinfo = pylsl.StreamInfo(
-            stream_name, channel_count=channel_count, channel_format='float32',
-            nominal_srate=nominal_srate, type='EEG', source_id=stream_name)
+            stream_name,
+            channel_count=channel_count,
+            channel_format="float32",
+            nominal_srate=nominal_srate,
+            type="EEG",
+            source_id=stream_name,
+        )
 
         desc = sinfo.desc()
         channel_desc = desc.append_child("channels")
         for channel in ch_names:
-            channel_desc.append_child('channel')\
-                        .append_child_value('label', str(channel))\
-                        .append_child_value('type', 'EEG')\
-                        .append_child_value('unit', 'microvolts')
+            channel_desc.append_child("channel").append_child_value(
+                "label", str(channel)
+            ).append_child_value("type", "EEG").append_child_value(
+                "unit", "microvolts"
+            )
 
-        desc.append_child('amplifier')\
-            .append_child('settings')\
-            .append_child_value('is_slave', 'false')
+        desc.append_child("amplifier").append_child(
+            "settings"
+        ).append_child_value("is_slave", "false")
 
-        desc.append_child('acquisition')\
-            .append_child_value('manufacturer', 'BSL')\
-            .append_child_value('serial_number', 'N/A')
+        desc.append_child("acquisition").append_child_value(
+            "manufacturer", "BSL"
+        ).append_child_value("serial_number", "N/A")
 
         return sinfo
 

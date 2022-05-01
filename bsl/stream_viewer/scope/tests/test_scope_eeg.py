@@ -2,10 +2,10 @@ import math
 import time
 
 import mne
-import pytest
 import numpy as np
+import pytest
 
-from bsl import StreamReceiver, StreamPlayer
+from bsl import StreamPlayer, StreamReceiver
 from bsl.datasets import eeg_resting_state
 from bsl.stream_viewer.scope import ScopeEEG
 from bsl.stream_viewer.scope._scope import _BUFFER_DURATION
@@ -16,21 +16,22 @@ from bsl.utils._tests import requires_eeg_resting_state_dataset
 def test_scope_eeg():
     """Test EEG scope default capabilities."""
     bufsize = 0.2
-    stream_name = 'StreamPlayer'
+    stream_name = "StreamPlayer"
 
     with StreamPlayer(stream_name, eeg_resting_state.data_path()):
-        receiver = StreamReceiver(bufsize=bufsize, winsize=bufsize,
-                                  stream_name=stream_name)
+        receiver = StreamReceiver(
+            bufsize=bufsize, winsize=bufsize, stream_name=stream_name
+        )
         scope = ScopeEEG(receiver, stream_name)
 
         # test init of BP filter
-        assert not hasattr(scope, '_sos')
-        assert not hasattr(scope, '_zi_coeff')
-        assert not hasattr(scope, '_zi')
-        scope.init_bandpass_filter(low=1., high=40.)
-        assert hasattr(scope, '_sos')
-        assert hasattr(scope, '_zi_coeff')
-        assert hasattr(scope, '_zi')
+        assert not hasattr(scope, "_sos")
+        assert not hasattr(scope, "_zi_coeff")
+        assert not hasattr(scope, "_zi")
+        scope.init_bandpass_filter(low=1.0, high=40.0)
+        assert hasattr(scope, "_sos")
+        assert hasattr(scope, "_zi_coeff")
+        assert hasattr(scope, "_zi")
         assert scope._zi is None
 
         # test update loop
@@ -58,7 +59,7 @@ def test_scope_eeg():
 
         # test change BP
         time.sleep(0.2)
-        scope.init_bandpass_filter(low=1., high=20.)
+        scope.init_bandpass_filter(low=1.0, high=20.0)
         assert scope._zi is None
         scope.update_loop()
         assert scope._zi is not None
@@ -66,40 +67,46 @@ def test_scope_eeg():
         # test selection of channel
         time.sleep(0.2)
         n = len(scope._selected_channels)
-        scope._selected_channels = scope._selected_channels[:n//2]
+        scope._selected_channels = scope._selected_channels[: n // 2]
 
 
 @requires_eeg_resting_state_dataset
 def test_buffer_duration():
     """Test the buffer size."""
     bufsize = 0.2
-    stream_name = 'StreamPlayer'
+    stream_name = "StreamPlayer"
 
     raw = mne.io.read_raw_fif(eeg_resting_state.data_path(), preload=False)
-    sfreq = raw.info['sfreq']
+    sfreq = raw.info["sfreq"]
 
     with StreamPlayer(stream_name, eeg_resting_state.data_path()):
-        receiver = StreamReceiver(bufsize=bufsize, winsize=bufsize,
-                                  stream_name=stream_name)
+        receiver = StreamReceiver(
+            bufsize=bufsize, winsize=bufsize, stream_name=stream_name
+        )
         scope = ScopeEEG(receiver, stream_name)
-        assert scope.sample_rate == receiver.streams[stream_name].sample_rate \
+        assert (
+            scope.sample_rate
+            == receiver.streams[stream_name].sample_rate
             == sfreq
+        )
 
         assert scope.duration_buffer == _BUFFER_DURATION
         assert scope.duration_buffer_samples == math.ceil(
-            _BUFFER_DURATION * sfreq)
+            _BUFFER_DURATION * sfreq
+        )
 
 
 @requires_eeg_resting_state_dataset
 def test_properties():
     """Test EEG scope properties."""
     bufsize = 0.2
-    stream_name = 'StreamPlayer'
+    stream_name = "StreamPlayer"
     raw = mne.io.read_raw_fif(eeg_resting_state.data_path(), preload=False)
 
     with StreamPlayer(stream_name, eeg_resting_state.data_path()):
-        receiver = StreamReceiver(bufsize=bufsize, winsize=bufsize,
-                                  stream_name=stream_name)
+        receiver = StreamReceiver(
+            bufsize=bufsize, winsize=bufsize, stream_name=stream_name
+        )
         scope = ScopeEEG(receiver, stream_name)
 
         assert scope.stream_name == scope._stream_name == stream_name
@@ -107,20 +114,24 @@ def test_properties():
         assert scope.duration_buffer == scope._duration_buffer
         assert scope.duration_buffer_samples == scope._duration_buffer_samples
         assert scope.ts_list == scope._ts_list == list()
-        assert scope.channels_labels == scope._channels_labels == \
-            raw.ch_names[1:]
+        assert (
+            scope.channels_labels == scope._channels_labels == raw.ch_names[1:]
+        )
         assert scope.nb_channels == scope._nb_channels == len(raw.ch_names[1:])
         assert scope.apply_car == scope._apply_car
         assert not scope.apply_car
         assert scope.apply_bandpass == scope._apply_bandpass
         assert not scope.apply_bandpass
-        assert scope.selected_channels == scope._selected_channels == \
-            list(range(scope.nb_channels))
+        assert (
+            scope.selected_channels
+            == scope._selected_channels
+            == list(range(scope.nb_channels))
+        )
         assert (scope.data_buffer == scope._data_buffer).all()
         assert (scope.trigger_buffer == scope._trigger_buffer).all()
 
         with pytest.raises(AttributeError, match="can't set attribute"):
-            scope.stream_name = 'new name'
+            scope.stream_name = "new name"
         with pytest.raises(AttributeError, match="can't set attribute"):
             scope.sample_rate = 101
         with pytest.raises(AttributeError, match="can't set attribute"):
@@ -130,7 +141,7 @@ def test_properties():
         with pytest.raises(AttributeError, match="can't set attribute"):
             scope.ts_list = [101]
         with pytest.raises(AttributeError, match="can't set attribute"):
-            scope.channels_labels = ['101']
+            scope.channels_labels = ["101"]
         with pytest.raises(AttributeError, match="can't set attribute"):
             scope.nb_channels = 101
         scope.apply_car = True
@@ -142,6 +153,7 @@ def test_properties():
         with pytest.raises(AttributeError, match="can't set attribute"):
             scope.data_buffer = np.ones(
                 (scope._nb_channels, scope._duration_buffer_samples),
-                dtype=np.float32)
+                dtype=np.float32,
+            )
         with pytest.raises(AttributeError, match="can't set attribute"):
             scope.trigger_buffer = np.ones(scope._duration_buffer_samples)

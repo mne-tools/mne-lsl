@@ -1,26 +1,30 @@
 """Utility functions for testing. Inspired from MNE."""
 
 import time
-import requests
-from pathlib import Path
 from functools import partial
+from pathlib import Path
 
 import pytest
+import requests
 
-from ..datasets import (eeg_resting_state, eeg_resting_state_short,
-                        eeg_auditory_stimuli, trigger_def)
+from ..datasets import (
+    eeg_auditory_stimuli,
+    eeg_resting_state,
+    eeg_resting_state_short,
+    trigger_def,
+)
 from ..datasets._fetching import _hashfunc
 
 
 def requires_good_network(function):
     """Decorator to skip a test if a network connection is not available."""
     try:
-        requests.get('https://github.com/', timeout=1)
+        requests.get("https://github.com/", timeout=1)
         skip = False
     except ConnectionError:
         skip = True
     name = function.__name__
-    reason = f'Test {name} skipped, requires a good network connection.'
+    reason = f"Test {name} skipped, requires a good network connection."
     return pytest.mark.skipif(skip, reason=reason)(function)
 
 
@@ -30,15 +34,19 @@ def _requires_dataset_or_good_network(function, dataset):
     # BSL datasets
     try:
         fname = dataset.PATH
-        download = False if fname.exists() \
-            and _hashfunc(fname, hash_type='md5') == dataset.MD5 else True
+        download = (
+            False
+            if fname.exists()
+            and _hashfunc(fname, hash_type="md5") == dataset.MD5
+            else True
+        )
     except AttributeError:
         # MNE datasets
         try:
             fname = dataset.data_path(download=False)
-            download = False if fname != '' and Path(fname).exists() else True
+            download = False if fname != "" and Path(fname).exists() else True
         except AttributeError:
-            raise ValueError('Unsupported dataset.')
+            raise ValueError("Unsupported dataset.")
 
     if download:
         return requires_good_network(function)
@@ -47,13 +55,17 @@ def _requires_dataset_or_good_network(function, dataset):
 
 
 requires_eeg_auditory_stimuli_dataset = partial(
-    _requires_dataset_or_good_network, dataset=eeg_auditory_stimuli)
+    _requires_dataset_or_good_network, dataset=eeg_auditory_stimuli
+)
 requires_eeg_resting_state_dataset = partial(
-    _requires_dataset_or_good_network, dataset=eeg_resting_state)
+    _requires_dataset_or_good_network, dataset=eeg_resting_state
+)
 requires_eeg_resting_state_short_dataset = partial(
-    _requires_dataset_or_good_network, dataset=eeg_resting_state_short)
+    _requires_dataset_or_good_network, dataset=eeg_resting_state_short
+)
 requires_trigger_def_dataset = partial(
-    _requires_dataset_or_good_network, dataset=trigger_def)
+    _requires_dataset_or_good_network, dataset=trigger_def
+)
 
 
 def requires_parallel(function):
@@ -61,10 +73,12 @@ def requires_parallel(function):
     try:
         from psychopy.parallel import ParallelPort  # noqa: F401
     except ModuleNotFoundError:
-        return pytest.mark.skipif(
-            True, reason='psychopy not installed.')(function)
+        return pytest.mark.skipif(True, reason="psychopy not installed.")(
+            function
+        )
     return pytest.mark.skipif(
-        True, reason='ParallelPort tests are not supported.')(function)
+        True, reason="ParallelPort tests are not supported."
+    )(function)
 
 
 def requires_arduino2lpt(function):
@@ -74,9 +88,10 @@ def requires_arduino2lpt(function):
         import serial
         from serial.tools import list_ports
     except ModuleNotFoundError:
-        return pytest.mark.skipif(
-            True, reason='pyserial not installed.')(function)
-    for arduino in list_ports.grep(regexp='Arduino'):
+        return pytest.mark.skipif(True, reason="pyserial not installed.")(
+            function
+        )
+    for arduino in list_ports.grep(regexp="Arduino"):
         try:
             ser = serial.Serial(arduino.device, 115200)
             time.sleep(0.2)
@@ -85,5 +100,6 @@ def requires_arduino2lpt(function):
             return function
         except Exception:
             pass
-    return pytest.mark.skipif(
-        True, reason='Arduino to LPT not found.')(function)
+    return pytest.mark.skipif(True, reason="Arduino to LPT not found.")(
+        function
+    )
