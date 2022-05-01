@@ -1,5 +1,6 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Imports: isort](https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336)](https://pycqa.github.io/isort/)
+[![PyPI Downloads](https://pepy.tech/badge/bsl)](https://pepy.tech/project/bsl)
 
 [![Brain Streaming Layer](https://raw.githubusercontent.com/bsl-tools/bsl/master/doc/_static/icon-with-name/icon-with-name.svg)](https://bsl-tools.github.io/)
 
