@@ -2,13 +2,12 @@ import re
 import time
 
 import mne
-import pytest
 import numpy as np
+import pytest
 
-from bsl import StreamReceiver, StreamPlayer, logger, set_log_level
+from bsl import StreamPlayer, StreamReceiver, logger, set_log_level
 from bsl.datasets import eeg_resting_state
 from bsl.utils._tests import requires_eeg_resting_state_dataset
-
 
 set_log_level("INFO")
 logger.propagate = True

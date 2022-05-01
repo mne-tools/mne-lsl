@@ -1,11 +1,11 @@
 """
 Trigger using software and a .txt file.
 """
-from ._trigger import _Trigger
 from ..externals import pylsl
 from ..stream_recorder import StreamRecorder
 from ..utils._checks import _check_type
-from ..utils._docs import fill_doc, copy_doc
+from ..utils._docs import copy_doc, fill_doc
+from ._trigger import _Trigger
 
 
 @fill_doc

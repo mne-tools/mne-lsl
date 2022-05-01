@@ -1,6 +1,6 @@
 """Test _docs.py"""
 
-from bsl.utils._docs import fill_doc, copy_doc
+from bsl.utils._docs import copy_doc, fill_doc
 
 
 def test_fill_doc():

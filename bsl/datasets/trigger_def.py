@@ -5,9 +5,8 @@ Sample trigger definition ``.ini`` file.
 import os
 from pathlib import Path
 
-from ._fetching import fetch_file, _hashfunc
 from ..utils._logs import logger
-
+from ._fetching import _hashfunc, fetch_file
 
 MD5 = "553f24ecb5c8e67ebe597e6e71d7fcdc"
 SHA1 = "b841bbba374586434916e70403703388fc67ac74"

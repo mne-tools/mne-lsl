@@ -4,15 +4,13 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 
-from ._buffer import Buffer
 from ..externals import pylsl
-from ..utils import Timer
-from ..utils._logs import logger
-from ..utils import find_event_channel
-from ..utils.lsl import lsl_channel_list
+from ..utils import Timer, find_event_channel
 from ..utils._checks import _check_type
-from ..utils._docs import fill_doc, copy_doc
-
+from ..utils._docs import copy_doc, fill_doc
+from ..utils._logs import logger
+from ..utils.lsl import lsl_channel_list
+from ._buffer import Buffer
 
 _MAX_PYLSL_STREAM_BUFSIZE = 10  # max 10 sec of data buffered for LSL
 MAX_BUF_SIZE = 86400  # 24h max buffer length

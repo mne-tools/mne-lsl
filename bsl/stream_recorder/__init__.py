@@ -7,5 +7,4 @@ analysis library.
 
 from .stream_recorder import StreamRecorder  # noqa: F401
 
-
 __all__ = ["StreamRecorder"]

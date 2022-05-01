@@ -1,17 +1,17 @@
-import os
-import time
-import pickle
 import datetime
-from pathlib import Path
 import multiprocessing as mp
+import os
+import pickle
+import time
+from pathlib import Path
 
-from ..utils import Timer
-from ..utils.io import pcl2fif
-from ..utils._logs import logger
-from ..utils._docs import fill_doc
-from ..utils._checks import _check_type
-from ..stream_receiver import StreamReceiver, StreamEEG
+from ..stream_receiver import StreamEEG, StreamReceiver
 from ..stream_receiver._stream import MAX_BUF_SIZE
+from ..utils import Timer
+from ..utils._checks import _check_type
+from ..utils._docs import fill_doc
+from ..utils._logs import logger
+from ..utils.io import pcl2fif
 
 
 @fill_doc

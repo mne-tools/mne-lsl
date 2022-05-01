@@ -3,12 +3,12 @@ import time
 
 from PyQt5.QtWidgets import QApplication
 
-from .scope.scope_eeg import ScopeEEG
-from .control_gui.control_eeg import ControlGUI_EEG
-from ..stream_receiver import StreamReceiver, StreamEEG
+from ..stream_receiver import StreamEEG, StreamReceiver
+from ..utils._checks import _check_type
 from ..utils._logs import logger
 from ..utils.lsl import search_lsl
-from ..utils._checks import _check_type
+from .control_gui.control_eeg import ControlGUI_EEG
+from .scope.scope_eeg import ScopeEEG
 
 
 class StreamViewer:

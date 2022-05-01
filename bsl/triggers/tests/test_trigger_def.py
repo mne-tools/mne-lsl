@@ -3,13 +3,12 @@ from configparser import ConfigParser
 import pytest
 
 from bsl import logger, set_log_level
-from bsl.datasets import trigger_def, eeg_resting_state
+from bsl.datasets import eeg_resting_state, trigger_def
 from bsl.triggers import TriggerDef
 from bsl.utils._tests import (
-    requires_trigger_def_dataset,
     requires_eeg_resting_state_dataset,
+    requires_trigger_def_dataset,
 )
-
 
 set_log_level("INFO")
 logger.propagate = True

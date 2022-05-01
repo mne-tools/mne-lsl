@@ -7,9 +7,8 @@ recording last 184 seconds and include 75 rest events (1)  lasting 1 second and
 import os
 from pathlib import Path
 
-from ._fetching import fetch_file, _hashfunc
 from ..utils._logs import logger
-
+from ._fetching import _hashfunc, fetch_file
 
 MD5 = "ea0d40643bdc1c88e2b808c7128a0eba"
 SHA1 = "d86e0ad1d53224a41e06b918e5d709615e2da32a"

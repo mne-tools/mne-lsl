@@ -1,6 +1,6 @@
 import numpy as np
-from mne.io import BaseRaw
 from mne.epochs import BaseEpochs
+from mne.io import BaseRaw
 
 from ._checks import _check_type
 

@@ -1,11 +1,10 @@
 import numpy as np
 from scipy.signal import butter, sosfilt, sosfilt_zi
 
-from ._scope import _Scope
-from ...utils._logs import logger
-from ...utils._docs import fill_doc, copy_doc
 from ...utils import find_event_channel
-
+from ...utils._docs import copy_doc, fill_doc
+from ...utils._logs import logger
+from ._scope import _Scope
 
 BP_ORDER = 2
 

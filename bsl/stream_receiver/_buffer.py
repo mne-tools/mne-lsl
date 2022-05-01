@@ -1,5 +1,5 @@
-from ..utils._logs import logger
 from ..utils._docs import fill_doc
+from ..utils._logs import logger
 
 
 class Buffer:

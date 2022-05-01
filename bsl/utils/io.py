@@ -12,7 +12,6 @@ from mne.io._read_raw import supported
 from . import find_event_channel
 from ._logs import logger
 
-
 mne.set_log_level("ERROR")
 
 

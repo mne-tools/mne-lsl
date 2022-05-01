@@ -3,12 +3,12 @@ from threading import Thread
 import mne
 import numpy as np
 
-from ._stream import StreamEEG, StreamMarker
 from ..externals import pylsl
 from ..utils import Timer
-from ..utils._logs import logger
-from ..utils._docs import fill_doc
 from ..utils._checks import _check_type
+from ..utils._docs import fill_doc
+from ..utils._logs import logger
+from ._stream import StreamEEG, StreamMarker
 
 
 @fill_doc

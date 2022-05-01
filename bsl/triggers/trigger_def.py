@@ -1,9 +1,9 @@
 import os
-from pathlib import Path
 from configparser import ConfigParser
+from pathlib import Path
 
-from ..utils._logs import logger
 from ..utils._checks import _check_type
+from ..utils._logs import logger
 
 
 class TriggerDef:

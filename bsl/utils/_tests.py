@@ -1,16 +1,16 @@
 """Utility functions for testing. Inspired from MNE."""
 
 import time
-import requests
-from pathlib import Path
 from functools import partial
+from pathlib import Path
 
 import pytest
+import requests
 
 from ..datasets import (
+    eeg_auditory_stimuli,
     eeg_resting_state,
     eeg_resting_state_short,
-    eeg_auditory_stimuli,
     trigger_def,
 )
 from ..datasets._fetching import _hashfunc

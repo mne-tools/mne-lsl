@@ -1,14 +1,13 @@
-import time
 import pickle
+import time
 from pathlib import Path
 
 import mne
 import pytest
 
-from bsl import StreamRecorder, StreamPlayer, logger, set_log_level
+from bsl import StreamPlayer, StreamRecorder, logger, set_log_level
 from bsl.datasets import eeg_resting_state
 from bsl.utils._tests import requires_eeg_resting_state_dataset
-
 
 set_log_level("INFO")
 logger.propagate = True

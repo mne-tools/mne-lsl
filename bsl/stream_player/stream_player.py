@@ -1,15 +1,15 @@
+import multiprocessing as mp
 import time
 from pathlib import Path
-import multiprocessing as mp
 
 import mne
 import numpy as np
 
 from ..externals import pylsl
 from ..triggers import TriggerDef
-from ..utils._logs import logger
 from ..utils import find_event_channel
 from ..utils._checks import _check_type
+from ..utils._logs import logger
 
 
 class StreamPlayer:

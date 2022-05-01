@@ -2,7 +2,7 @@
 
 import pytest
 
-from bsl.utils._checks import _ensure_int, _check_type, _check_value
+from bsl.utils._checks import _check_type, _check_value, _ensure_int
 
 
 def test_ensure_int():

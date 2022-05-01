@@ -1,9 +1,8 @@
 """
 BSL's logger.
 """
-import sys
 import logging
-
+import sys
 
 logger = logging.getLogger("bsl")
 logger.propagate = False  # don't propagate (in case of multiple imports)

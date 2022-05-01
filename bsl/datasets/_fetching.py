@@ -6,14 +6,15 @@ Adapted from NILEARN:
     https://github.com/nilearn/nilearn
 """
 
-import time
 import hashlib
 import shutil
+import time
 from math import log
 from pathlib import Path
-from mne.utils.progressbar import ProgressBar
 from urllib import parse, request
 from urllib.error import HTTPError, URLError
+
+from mne.utils.progressbar import ProgressBar
 
 from ..utils._logs import logger
 

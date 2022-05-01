@@ -1,17 +1,17 @@
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtCore import QRect, QSize
 from PyQt5.QtWidgets import (
-    QWidget,
     QCheckBox,
-    QLabel,
     QComboBox,
-    QPushButton,
-    QSpinBox,
     QDoubleSpinBox,
     QFrame,
+    QLabel,
     QLineEdit,
-    QTableWidget,
+    QPushButton,
+    QSpinBox,
     QStatusBar,
+    QTableWidget,
+    QWidget,
 )
 
 from ..scope._scope import _BUFFER_DURATION

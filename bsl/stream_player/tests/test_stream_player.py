@@ -1,5 +1,5 @@
-import time
 import multiprocessing as mp
+import time
 
 import mne
 import pytest
@@ -19,7 +19,6 @@ from bsl.utils._tests import (
     requires_eeg_resting_state_short_dataset,
     requires_trigger_def_dataset,
 )
-
 
 set_log_level("INFO")
 logger.propagate = True

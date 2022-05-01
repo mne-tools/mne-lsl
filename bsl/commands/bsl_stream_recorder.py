@@ -19,7 +19,6 @@ Example:
 """
 
 import argparse
-
 from pathlib import Path
 
 from bsl import StreamRecorder

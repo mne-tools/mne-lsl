@@ -2,7 +2,7 @@ import time
 
 import mne
 
-from bsl import StreamRecorder, StreamPlayer
+from bsl import StreamPlayer, StreamRecorder
 from bsl.datasets import eeg_resting_state
 from bsl.triggers import SoftwareTrigger
 from bsl.utils._tests import requires_eeg_resting_state_dataset

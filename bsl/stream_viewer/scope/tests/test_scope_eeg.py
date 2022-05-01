@@ -2,10 +2,10 @@ import math
 import time
 
 import mne
-import pytest
 import numpy as np
+import pytest
 
-from bsl import StreamReceiver, StreamPlayer
+from bsl import StreamPlayer, StreamReceiver
 from bsl.datasets import eeg_resting_state
 from bsl.stream_viewer.scope import ScopeEEG
 from bsl.stream_viewer.scope._scope import _BUFFER_DURATION

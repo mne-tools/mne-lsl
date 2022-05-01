@@ -3,15 +3,14 @@ import time
 import mne
 import pytest
 
-from bsl import StreamRecorder, StreamPlayer, logger, set_log_level
+from bsl import StreamPlayer, StreamRecorder, logger, set_log_level
 from bsl.datasets import eeg_resting_state
 from bsl.triggers import ParallelPortTrigger
 from bsl.utils._tests import (
+    requires_arduino2lpt,
     requires_eeg_resting_state_dataset,
     requires_parallel,
-    requires_arduino2lpt,
 )
-
 
 set_log_level("INFO")
 logger.propagate = True

@@ -1,7 +1,7 @@
 """Utility functions for checking types and values. Inspired from MNE."""
 
-import os
 import operator
+import os
 from pathlib import Path
 
 import numpy as np

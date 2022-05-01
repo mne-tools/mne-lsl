@@ -5,7 +5,6 @@ from . import eeg_resting_state  # noqa: F401
 from . import eeg_resting_state_short  # noqa: F401
 from . import trigger_def  # noqa: F401
 
-
 __all__ = [
     "eeg_auditory_stimuli",
     "eeg_resting_state",

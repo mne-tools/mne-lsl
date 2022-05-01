@@ -3,7 +3,6 @@ import pytest
 from bsl import logger, set_log_level
 from bsl.triggers import MockTrigger
 
-
 set_log_level("INFO")
 logger.propagate = True
 

@@ -5,7 +5,6 @@ import importlib
 
 from ..utils._logs import logger
 
-
 try:
     pylsl = importlib.import_module(name="pylsl")
     logger.debug("Installed 'pylsl' is functional.")

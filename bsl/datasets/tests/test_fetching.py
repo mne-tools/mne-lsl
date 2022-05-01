@@ -3,7 +3,6 @@ import pytest
 from bsl.datasets._fetching import fetch_file
 from bsl.utils._tests import requires_good_network
 
-
 URL = "https://raw.githubusercontent.com/bsl-tools/bsl/master/LICENSE"
 HASH = {
     "md5": "1803fa9c2c3ce8cb06b4861d75310742",

@@ -1,11 +1,11 @@
 import threading
 import time
 
-from ._trigger import _Trigger
-from ..utils._docs import fill_doc, copy_doc
 from ..utils._checks import _check_type
+from ..utils._docs import copy_doc, fill_doc
 from ..utils._imports import import_optional_dependency
 from ..utils._logs import logger
+from ._trigger import _Trigger
 
 
 @fill_doc

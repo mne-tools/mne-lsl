@@ -5,7 +5,6 @@ Inspired from mne.utils.docs.py by Eric Larson <larson.eric.d@gmail.com>
 """
 import sys
 
-
 # ------------------------- Documentation dictionary -------------------------
 docdict = dict()
 

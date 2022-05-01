@@ -2,11 +2,11 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 
 from PyQt5 import QtCore
-from PyQt5.QtWidgets import QMainWindow, QFileDialog
+from PyQt5.QtWidgets import QFileDialog, QMainWindow
 
+from ...stream_recorder import StreamRecorder
 from ...utils._docs import fill_doc
 from ...utils._logs import logger
-from ...stream_recorder import StreamRecorder
 
 
 class _metaclass_ControlGUI(type(QMainWindow), type(ABC)):

@@ -6,10 +6,9 @@ import pytest
 from bsl import StreamPlayer, logger, set_log_level
 from bsl.datasets import eeg_resting_state
 from bsl.externals import pylsl
-from bsl.stream_receiver._stream import StreamMarker, StreamEEG  # noqa: F401
 from bsl.stream_receiver._buffer import Buffer
+from bsl.stream_receiver._stream import StreamEEG, StreamMarker  # noqa: F401
 from bsl.utils._tests import requires_eeg_resting_state_dataset
-
 
 set_log_level("INFO")
 logger.propagate = True

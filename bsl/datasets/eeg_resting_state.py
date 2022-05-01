@@ -6,9 +6,8 @@ a resting-state recording lasting 40 seconds.
 import os
 from pathlib import Path
 
-from ._fetching import fetch_file, _hashfunc
 from ..utils._logs import logger
-
+from ._fetching import _hashfunc, fetch_file
 
 MD5 = "8925f81af22390fd17bb3341d553430f"
 SHA1 = "65dbf592fa6e18cee049f244ca53c504ddabacc1"
