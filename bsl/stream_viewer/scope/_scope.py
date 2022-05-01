@@ -27,20 +27,23 @@ class _Scope(ABC):
 
         # Infos from stream
         self._sample_rate = int(
-            self._sr.streams[self._stream_name].sample_rate)
+            self._sr.streams[self._stream_name].sample_rate
+        )
 
         # Variables
         self._duration_buffer = _BUFFER_DURATION
         self._duration_buffer_samples = math.ceil(
-            _BUFFER_DURATION*self._sample_rate)
+            _BUFFER_DURATION * self._sample_rate
+        )
 
         # Buffers
         self._ts_list = list()
 
-        logger.debug('Scope connected to %s', self._stream_name)
-        logger.debug('Data sample rate is %f', self._sample_rate)
+        logger.debug("Scope connected to %s", self._stream_name)
+        logger.debug("Data sample rate is %f", self._sample_rate)
         logger.debug(
-            'Scope buffer duration is %d seconds', self._duration_buffer)
+            "Scope buffer duration is %d seconds", self._duration_buffer
+        )
 
     # -------------------------- Main Loop -------------------------
     @abstractmethod
@@ -61,7 +64,7 @@ class _Scope(ABC):
         self._sr.reset_buffer()
 
         if len(self._ts_list) > 0:
-            logger.debug('Signal acquired by the scope.')
+            logger.debug("Signal acquired by the scope.")
 
     # --------------------------------------------------------------------
     @property

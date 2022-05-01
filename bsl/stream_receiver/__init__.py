@@ -9,4 +9,4 @@ from ._stream import StreamEEG, StreamMarker  # noqa: F401
 from .stream_receiver import StreamReceiver  # noqa: F401
 
 
-__all__ = ['StreamReceiver', 'StreamEEG', 'StreamMarker']
+__all__ = ["StreamReceiver", "StreamEEG", "StreamMarker"]

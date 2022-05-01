@@ -18,8 +18,15 @@ from urllib.error import HTTPError, URLError
 from ..utils._logs import logger
 
 
-def fetch_file(url, file_name, print_destination=True, resume=True,
-               hash_=None, hash_type='md5', timeout=30.):
+def fetch_file(
+    url,
+    file_name,
+    print_destination=True,
+    resume=True,
+    hash_=None,
+    hash_type="md5",
+    timeout=30.0,
+):
     """
     Load requested file, downloading it if needed or requested.
 
@@ -44,31 +51,35 @@ def fetch_file(url, file_name, print_destination=True, resume=True,
     if hash_ is not None:
         if not isinstance(hash_, str):
             raise ValueError(
-                'Bad hash value given, should be a string. Given: %s.'
-                % type(hash_))
-        if hash_type == 'md5' and len(hash_) != 32:
+                "Bad hash value given, should be a string. Given: %s."
+                % type(hash_)
+            )
+        if hash_type == "md5" and len(hash_) != 32:
             raise ValueError(
-                'Bad hash value given, should be a 32-character string:\n%s'
-                % hash_)
-        if hash_type == 'sha1' and len(hash_) != 40:
+                "Bad hash value given, should be a 32-character string:\n%s"
+                % hash_
+            )
+        if hash_type == "sha1" and len(hash_) != 40:
             raise ValueError(
-                'Bad hash value given, should be a 40-character string:\n%s'
-                % hash_)
-        if hash_type not in ['md5', 'sha1']:
+                "Bad hash value given, should be a 40-character string:\n%s"
+                % hash_
+            )
+        if hash_type not in ["md5", "sha1"]:
             raise ValueError(
                 "Unsupported hash type %s.\nSupported: 'md5', 'sha1'."
-                % hash_type)
+                % hash_type
+            )
     file_name = Path(file_name)
-    temp_file_name = file_name.with_suffix(file_name.suffix+'.part')
+    temp_file_name = file_name.with_suffix(file_name.suffix + ".part")
     scheme = parse.urlparse(url).scheme
-    if scheme not in ('http', 'https'):
-        raise NotImplementedError('Cannot use scheme %r' % (scheme,))
+    if scheme not in ("http", "https"):
+        raise NotImplementedError("Cannot use scheme %r" % (scheme,))
     try:
         # Triage resume
         if not temp_file_name.exists():
             resume = False
         if resume:
-            with open(temp_file_name, 'rb', buffering=0) as local_file:
+            with open(temp_file_name, "rb", buffering=0) as local_file:
                 local_file.seek(0, 2)
                 initial_size = local_file.tell()
             del local_file
@@ -78,18 +89,20 @@ def fetch_file(url, file_name, print_destination=True, resume=True,
 
         # check hash sum
         if hash_ is not None:
-            logger.info('Verifying hash %s.', hash_)
+            logger.info("Verifying hash %s.", hash_)
             hashsum = _hashfunc(temp_file_name, hash_type=hash_type)
             if hash_ != hashsum:
-                raise RuntimeError('Hash mismatch for downloaded file %s, '
-                                   'expected %s but got %s'
-                                   % (temp_file_name, hash_, hashsum))
+                raise RuntimeError(
+                    "Hash mismatch for downloaded file %s, "
+                    "expected %s but got %s" % (temp_file_name, hash_, hashsum)
+                )
         shutil.move(temp_file_name, file_name)
         if print_destination is True:
-            logger.info('File saved as %s.\n', file_name)
+            logger.info("File saved as %s.\n", file_name)
     except Exception:
         logger.error(
-            'Error while fetching file %s. Dataset fetching aborted.', url)
+            "Error while fetching file %s. Dataset fetching aborted.", url
+        )
         raise
 
 
@@ -116,7 +129,7 @@ def _hashfunc(fname, block_size=1048576, hash_type="md5"):
         hasher = hashlib.sha1()
     else:
         raise ValueError("Unsupported hash type. Supported: 'md5', 'sha1'.")
-    with open(fname, 'rb') as fid:
+    with open(fname, "rb") as fid:
         while True:
             data = fid.read(block_size)
             if not data:
@@ -128,33 +141,40 @@ def _hashfunc(fname, block_size=1048576, hash_type="md5"):
 def _get_http(url, temp_file_name, initial_size, timeout):
     """Safely (resume a) download to a file from http(s)."""
     response = None
-    extra = ''
+    extra = ""
     if initial_size > 0:
-        logger.debug('  Resuming at %s', initial_size)
+        logger.debug("  Resuming at %s", initial_size)
         req = request.Request(
-            url, headers={'Range': 'bytes=%s-' % (initial_size,)})
+            url, headers={"Range": "bytes=%s-" % (initial_size,)}
+        )
         try:
             response = request.urlopen(req, timeout=timeout)
-            content_range = response.info().get('Content-Range', None)
-            if (content_range is None or not content_range.startswith(
-                    'bytes %s-' % (initial_size,))):
-                raise IOError('Server does not support resuming')
+            content_range = response.info().get("Content-Range", None)
+            if content_range is None or not content_range.startswith(
+                "bytes %s-" % (initial_size,)
+            ):
+                raise IOError("Server does not support resuming")
         except (KeyError, HTTPError, URLError, IOError):
             initial_size = 0
             response = None
         else:
-            extra = ', resuming at %s' % (_sizeof_fmt(initial_size),)
+            extra = ", resuming at %s" % (_sizeof_fmt(initial_size),)
     if response is None:
         response = request.urlopen(request.Request(url), timeout=timeout)
-    file_size = int(response.headers.get('Content-Length', '0').strip())
+    file_size = int(response.headers.get("Content-Length", "0").strip())
     file_size += initial_size
     url = response.geturl()
-    logger.info('Downloading %s (%s%s)', url, _sizeof_fmt(file_size), extra)
+    logger.info("Downloading %s (%s%s)", url, _sizeof_fmt(file_size), extra)
     del url
-    mode = 'ab' if initial_size > 0 else 'wb'
-    progress = ProgressBar(file_size, initial_size, unit='B',
-                           mesg='Downloading', unit_scale=True,
-                           unit_divisor=1024)
+    mode = "ab" if initial_size > 0 else "wb"
+    progress = ProgressBar(
+        file_size,
+        initial_size,
+        unit="B",
+        mesg="Downloading",
+        unit_scale=True,
+        unit_divisor=1024,
+    )
     del file_size
     chunk_size = 8192  # 2 ** 13
     with open(temp_file_name, mode) as local_file:
@@ -187,16 +207,16 @@ def _sizeof_fmt(num):
         The size in human-readable format.
     """
 
-    units = ['bytes', 'kB', 'MB', 'GB', 'TB', 'PB']
+    units = ["bytes", "kB", "MB", "GB", "TB", "PB"]
     decimals = [0, 0, 1, 2, 2, 2]
     if num > 1:
         exponent = min(int(log(num, 1024)), len(units) - 1)
-        quotient = float(num) / 1024 ** exponent
+        quotient = float(num) / 1024**exponent
         unit = units[exponent]
         num_decimals = decimals[exponent]
-        format_string = '{0:.%sf} {1}' % (num_decimals)
+        format_string = "{0:.%sf} {1}" % (num_decimals)
         return format_string.format(quotient, unit)
     if num == 0:
-        return '0 bytes'
+        return "0 bytes"
     if num == 1:
-        return '1 byte'
+        return "1 byte"

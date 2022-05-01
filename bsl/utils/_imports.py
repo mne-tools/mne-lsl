@@ -10,14 +10,12 @@ import importlib
 INSTALL_MAPPING = {
     "serial": "pyserial",
     "parallel": "pyparallel",
-    }
+}
 
 
 def import_optional_dependency(
-        name: str,
-        extra: str = "",
-        raise_error: bool = True
-        ):
+    name: str, extra: str = "", raise_error: bool = True
+):
     """
     Import an optional dependency.
     By default, if a dependency is missing an ImportError with a nice message
@@ -51,7 +49,8 @@ def import_optional_dependency(
         if raise_error:
             raise ImportError(
                 f"Missing optional dependency '{install_name}'. {extra} "
-                f"Use pip or conda to install {install_name}.")
+                f"Use pip or conda to install {install_name}."
+            )
         else:
             return None
 

@@ -23,7 +23,7 @@ class MockTrigger(_Trigger):
 
     @copy_doc(_Trigger.signal)
     def signal(self, value: int) -> bool:
-        _check_type(value, ('int', ), item_name='value')
+        _check_type(value, ("int",), item_name="value")
         self._set_data(value)
         super().signal(value)
         return True
@@ -37,4 +37,4 @@ class MockTrigger(_Trigger):
     @copy_doc(_Trigger._set_data)
     def _set_data(self, value: int):
         super()._set_data(value)
-        logger.info('MOCK trigger set to %i', value)
+        logger.info("MOCK trigger set to %i", value)

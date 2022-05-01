@@ -13,12 +13,18 @@ from . import find_event_channel
 from ._logs import logger
 
 
-mne.set_log_level('ERROR')
+mne.set_log_level("ERROR")
 
 
 # ------------------------- Stream Recorder PCL -------------------------
-def pcl2fif(fname, out_dir=None, external_event=None,
-            precision='double', replace=False, overwrite=True):
+def pcl2fif(
+    fname,
+    out_dir=None,
+    external_event=None,
+    precision="double",
+    replace=False,
+    overwrite=True,
+):
     """
     Convert BSL pickle format to MNE Raw format.
 
@@ -43,20 +49,20 @@ def pcl2fif(fname, out_dir=None, external_event=None,
     """
     fname = Path(fname)
     if not fname.is_file():
-        raise IOError('File %s not found.' % fname)
-    if fname.suffix != '.pcl':
+        raise IOError("File %s not found." % fname)
+    if fname.suffix != ".pcl":
         raise IOError("File type %s is not '.pcl'." % fname.suffix)
 
     if out_dir is not None:
         out_dir = Path(out_dir)
     else:
-        out_dir = fname.parent / 'fif'
+        out_dir = fname.parent / "fif"
     os.makedirs(out_dir, exist_ok=True)
 
-    fiffile = out_dir / str(fname.stem + '.fif')
+    fiffile = out_dir / str(fname.stem + ".fif")
 
     # Load from file
-    with open(fname, 'rb') as file:
+    with open(fname, "rb") as file:
         data = pickle.load(file)
 
     # MNE format
@@ -64,10 +70,11 @@ def pcl2fif(fname, out_dir=None, external_event=None,
 
     # Add events from txt file
     if external_event is not None:
-        events = _load_events_from_txt(raw.times, external_event,
-                                       data["timestamps"][0])
+        events = _load_events_from_txt(
+            raw.times, external_event, data["timestamps"][0]
+        )
         if 0 < len(events):
-            raw.add_events(events, stim_channel='TRIGGER', replace=replace)
+            raw.add_events(events, stim_channel="TRIGGER", replace=replace)
 
     # Save
     raw.save(fiffile, verbose=False, overwrite=overwrite, fmt=precision)
@@ -89,18 +96,18 @@ def _format_pcl_to_mne_RawArray(data):
     raw : Raw
         MNE raw structure.
     """
-    if isinstance(data['signals'], list):
-        signals_raw = np.array(data['signals'][0]).T    # to channels x samples
+    if isinstance(data["signals"], list):
+        signals_raw = np.array(data["signals"][0]).T  # to channels x samples
     else:
-        signals_raw = data['signals'].T                 # to channels x samples
+        signals_raw = data["signals"].T  # to channels x samples
 
-    sample_rate = data['sample_rate']
+    sample_rate = data["sample_rate"]
 
     # Look for channels name
-    if 'ch_names' not in data:
-        ch_names = [f'CH{x+1}' for x in range(signals_raw.shape[0])]
+    if "ch_names" not in data:
+        ch_names = [f"CH{x+1}" for x in range(signals_raw.shape[0])]
     else:
-        ch_names = data['ch_names']
+        ch_names = data["ch_names"]
 
     # search for the trigger channel
     trig_ch = find_event_channel(signals_raw, ch_names)
@@ -112,35 +119,40 @@ def _format_pcl_to_mne_RawArray(data):
     if trig_ch is None:
         # Add a event channel to index 0 for consistency.
         logger.warning(
-            'Event channel was not found. '
-            'Adding a blank event channel to index 0.')
+            "Event channel was not found. "
+            "Adding a blank event channel to index 0."
+        )
         eventch = np.zeros([1, signals_raw.shape[1]])
         signals = np.concatenate((eventch, signals_raw), axis=0)
         # data['channels'] is not reliable any more
         num_eeg_channels = signals_raw.shape[0]
         trig_ch = 0
-        ch_names = ['TRIGGER'] + ch_names
+        ch_names = ["TRIGGER"] + ch_names
 
     elif trig_ch == 0:
         signals = signals_raw
-        num_eeg_channels = data['channels'] - 1
+        num_eeg_channels = data["channels"] - 1
 
     else:
-        logger.info('Moving event channel %s to 0.', trig_ch)
-        signals = np.concatenate((signals_raw[[trig_ch]],
-                                  signals_raw[:trig_ch],
-                                  signals_raw[trig_ch + 1:]),
-                                 axis=0)
+        logger.info("Moving event channel %s to 0.", trig_ch)
+        signals = np.concatenate(
+            (
+                signals_raw[[trig_ch]],
+                signals_raw[:trig_ch],
+                signals_raw[trig_ch + 1 :],
+            ),
+            axis=0,
+        )
         assert signals_raw.shape == signals.shape
-        num_eeg_channels = data['channels'] - 1
+        num_eeg_channels = data["channels"] - 1
         ch_names.pop(trig_ch)
         trig_ch = 0
-        ch_names.insert(trig_ch, 'TRIGGER')
-        logger.info('New channel list:')
+        ch_names.insert(trig_ch, "TRIGGER")
+        logger.info("New channel list:")
         for channel in ch_names:
-            logger.info('%s', channel)
+            logger.info("%s", channel)
 
-    ch_info = ['stim'] + ['eeg'] * num_eeg_channels
+    ch_info = ["stim"] + ["eeg"] * num_eeg_channels
     info = mne.create_info(ch_names, sample_rate, ch_info)
 
     # create Raw object
@@ -159,24 +171,30 @@ def _load_events_from_txt(raw_times, eve_file, offset):
     ts_max = max(raw_times)
     events = []
 
-    with open(eve_file, 'r') as file:
+    with open(eve_file, "r") as file:
         for line in file:
-            data = line.strip().split('\t')
+            data = line.strip().split("\t")
             event_ts = float(data[0]) - offset
             event_value = int(data[2])
             next_index = np.searchsorted(raw_times, event_ts)
             if next_index >= len(raw_times):
                 logger.warning(
-                    'Event %d at time %.3f is out of time range'
-                    ' (%.3f - %.3f).', event_value, event_ts, ts_min, ts_max)
+                    "Event %d at time %.3f is out of time range"
+                    " (%.3f - %.3f).",
+                    event_value,
+                    event_ts,
+                    ts_min,
+                    ts_max,
+                )
             else:
                 events.append([next_index, 0, event_value])
 
     return np.array(events)
 
 
-def _add_events_from_txt(raw, events_index, stim_channel='TRIGGER',
-                         replace=False):
+def _add_events_from_txt(
+    raw, events_index, stim_channel="TRIGGER", replace=False
+):
     """
     Merge the events extracted from a .txt file to the trigger channel.
 
@@ -194,19 +212,20 @@ def _add_events_from_txt(raw, events_index, stim_channel='TRIGGER',
         adding the new ones.
     """
     if len(events_index) == 0:
-        logger.warning('No events were found in the event file.')
+        logger.warning("No events were found in the event file.")
     else:
-        logger.info('Found %i events', len(events_index))
-        raw.add_events(events_index, stim_channel=stim_channel,
-                       replace=replace)
+        logger.info("Found %i events", len(events_index))
+        raw.add_events(
+            events_index, stim_channel=stim_channel, replace=replace
+        )
 
 
 # ------------------------- General converter -------------------------
 # Edit readers with BSL '.pcl' reader.
-supported['.pcl'] = pcl2fif
+supported[".pcl"] = pcl2fif
 
 
-def any2fif(fname, out_dir=None, overwrite=True, precision='double'):
+def any2fif(fname, out_dir=None, overwrite=True, precision="double"):
     """
     Generic file format converter to Raw.
     Uses `mne.io.read_raw`.
@@ -226,29 +245,35 @@ def any2fif(fname, out_dir=None, overwrite=True, precision='double'):
     """
     fname = Path(fname)
     if not fname.is_file():
-        raise IOError('File %s not found.' % fname)
+        raise IOError("File %s not found." % fname)
     if fname.suffix not in supported:
-        raise IOError('File type %s is not supported.' % fname.suffix)
+        raise IOError("File type %s is not supported." % fname.suffix)
 
-    if fname.suffix == '.pcl':
-        eve_file = fname.parent / (fname.stem[:-4] + 'eve.txt')
+    if fname.suffix == ".pcl":
+        eve_file = fname.parent / (fname.stem[:-4] + "eve.txt")
         if eve_file.exists():
             logger.info("Adding events from '%s'", eve_file)
         else:
             logger.info("No SOFTWARE event file '%s'", eve_file)
             eve_file = None
 
-        pcl2fif(fname, out_dir=out_dir, external_event=eve_file,
-                precision=precision, replace=False, overwrite=overwrite)
+        pcl2fif(
+            fname,
+            out_dir=out_dir,
+            external_event=eve_file,
+            precision=precision,
+            replace=False,
+            overwrite=overwrite,
+        )
 
     else:
         if out_dir is not None:
             out_dir = Path(out_dir)
         else:
-            out_dir = fname.parent / 'fif'
+            out_dir = fname.parent / "fif"
         os.makedirs(out_dir, exist_ok=True)
 
-        fiffile = out_dir / fname.stem + '.fif'
+        fiffile = out_dir / fname.stem + ".fif"
 
         raw = mne.io.read_raw(fname)
         raw.save(fiffile, verbose=False, overwrite=overwrite, fmt=precision)

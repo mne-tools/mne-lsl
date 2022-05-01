@@ -27,15 +27,20 @@ class ScopeEEG(_Scope):
 
         # Infos from stream
         tch = find_event_channel(
-            ch_names=self._sr.streams[self._stream_name].ch_list)
+            ch_names=self._sr.streams[self._stream_name].ch_list
+        )
         # TODO: patch to be improved for multi-trig channel recording
         if isinstance(tch, list):
             tch = tch[0]
         assert tch is not None  # sanity-check
 
-        self._channels_labels = \
-            [channel for k, channel in enumerate(
-                self._sr.streams[self._stream_name].ch_list) if k != tch]
+        self._channels_labels = [
+            channel
+            for k, channel in enumerate(
+                self._sr.streams[self._stream_name].ch_list
+            )
+            if k != tch
+        ]
         self._nb_channels = len(self._channels_labels)
 
         # Variables
@@ -47,7 +52,8 @@ class ScopeEEG(_Scope):
         self._trigger_buffer = np.zeros(self._duration_buffer_samples)
         self._data_buffer = np.zeros(
             (self._nb_channels, self._duration_buffer_samples),
-            dtype=np.float32)
+            dtype=np.float32,
+        )
 
     def init_bandpass_filter(self, low, high):
         """
@@ -65,10 +71,12 @@ class ScopeEEG(_Scope):
 
         bp_low = low / (0.5 * self._sample_rate)
         bp_high = high / (0.5 * self._sample_rate)
-        self._sos = butter(BP_ORDER, [bp_low, bp_high],
-                           btype='band', output='sos')
-        self._zi_coeff = sosfilt_zi(
-            self._sos).reshape((self._sos.shape[0], 2, 1))
+        self._sos = butter(
+            BP_ORDER, [bp_low, bp_high], btype="band", output="sos"
+        )
+        self._zi_coeff = sosfilt_zi(self._sos).reshape(
+            (self._sos.shape[0], 2, 1)
+        )
         self._zi = None
 
         logger.debug("Bandpass initialization complete.")
@@ -81,13 +89,17 @@ class ScopeEEG(_Scope):
             self._filter_signal()
             self._filter_trigger()
             # shape (channels, samples)
-            self._data_buffer = np.roll(self._data_buffer, -len(self._ts_list),
-                                        axis=1)
-            self._data_buffer[:, -len(self._ts_list):] = self._data_acquired.T
+            self._data_buffer = np.roll(
+                self._data_buffer, -len(self._ts_list), axis=1
+            )
+            self._data_buffer[:, -len(self._ts_list) :] = self._data_acquired.T
             # shape (samples, )
             self._trigger_buffer = np.roll(
-                self._trigger_buffer, -len(self._ts_list))
-            self._trigger_buffer[-len(self._ts_list):] = self._trigger_acquired
+                self._trigger_buffer, -len(self._ts_list)
+            )
+            self._trigger_buffer[
+                -len(self._ts_list) :
+            ] = self._trigger_acquired
 
     @copy_doc(_Scope._read_lsl_stream)
     def _read_lsl_stream(self):
@@ -99,7 +111,8 @@ class ScopeEEG(_Scope):
         # Remove trigger ch - shapes (samples, ) and (samples, channels)
         self._trigger_acquired = self._data_acquired[:, 0]
         self._data_acquired = self._data_acquired[:, 1:].reshape(
-            (-1, self._nb_channels))
+            (-1, self._nb_channels)
+        )
 
     def _filter_signal(self):
         """
@@ -107,15 +120,19 @@ class ScopeEEG(_Scope):
         """
         if self._apply_bandpass:
             if self._zi is None:
-                logger.debug('Initialize ZI coefficient for BP.')
+                logger.debug("Initialize ZI coefficient for BP.")
                 # Multiply by DC offset
-                self._zi = self._zi_coeff*np.mean(self._data_acquired, axis=0)
+                self._zi = self._zi_coeff * np.mean(
+                    self._data_acquired, axis=0
+                )
             self._data_acquired, self._zi = sosfilt(
-                self._sos, self._data_acquired, 0, self._zi)
+                self._sos, self._data_acquired, 0, self._zi
+            )
 
         if self._apply_car and len(self._selected_channels) >= 2:
             car_ch = np.mean(
-                self._data_acquired[:, self._selected_channels], axis=1)
+                self._data_acquired[:, self._selected_channels], axis=1
+            )
             self._data_acquired -= car_ch.reshape((-1, 1))
 
     def _filter_trigger(self, tol=0.05):
@@ -124,7 +141,8 @@ class ScopeEEG(_Scope):
         trigger value.
         """
         self._trigger_acquired[
-            np.abs(np.diff(self._trigger_acquired, prepend=[0])) <= tol] = 0
+            np.abs(np.diff(self._trigger_acquired, prepend=[0])) <= tol
+        ] = 0
 
     # --------------------------------------------------------------------
     @property

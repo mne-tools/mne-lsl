@@ -30,9 +30,10 @@ def find_event_channel(inst=None, ch_names=None):
         Event channel index, list of event channel indexes or ``None`` if not
         found.
     """
-    _check_type(inst, (None, np.ndarray, BaseRaw, BaseEpochs),
-                item_name='inst')
-    _check_type(ch_names, (None, list, tuple), item_name='ch_names')
+    _check_type(
+        inst, (None, np.ndarray, BaseRaw, BaseEpochs), item_name="inst"
+    )
+    _check_type(ch_names, (None, list, tuple), item_name="ch_names")
 
     # numpy array + ch_names
     if isinstance(inst, np.ndarray) and ch_names is not None:
@@ -41,28 +42,38 @@ def find_event_channel(inst=None, ch_names=None):
     # numpy array without ch_names
     elif isinstance(inst, np.ndarray) and ch_names is None:
         # data range between 0 and 255 and all integers?
-        tchs = [idx for idx in range(inst.shape[0])
-                if (inst[idx].astype(int, copy=False) == inst[idx]).all()
-                and max(inst[idx]) <= 255 and min(inst[idx]) == 0]
+        tchs = [
+            idx
+            for idx in range(inst.shape[0])
+            if (inst[idx].astype(int, copy=False) == inst[idx]).all()
+            and max(inst[idx]) <= 255
+            and min(inst[idx]) == 0
+        ]
 
     # For MNE raw/epochs + ch_names
     elif isinstance(inst, (BaseRaw, BaseEpochs)) and ch_names is not None:
-        tchs = [idx for idx, type_ in enumerate(inst.get_channel_types())
-                if type_ == 'stim']
+        tchs = [
+            idx
+            for idx, type_ in enumerate(inst.get_channel_types())
+            if type_ == "stim"
+        ]
         if len(tchs) == 0:
             tchs = _search_in_ch_names(ch_names)
 
     # For MNE raw/epochs without ch_names
     elif isinstance(inst, (BaseRaw, BaseEpochs)) and ch_names is None:
-        tchs = [idx for idx, type_ in enumerate(inst.get_channel_types())
-                if type_ == 'stim']
+        tchs = [
+            idx
+            for idx, type_ in enumerate(inst.get_channel_types())
+            if type_ == "stim"
+        ]
         if len(tchs) == 0:
             tchs = _search_in_ch_names(inst.ch_names)
 
     # For unknown data type
     elif inst is None:
         if ch_names is None:
-            raise ValueError('ch_names cannot be None when inst is None.')
+            raise ValueError("ch_names cannot be None when inst is None.")
         tchs = _search_in_ch_names(ch_names)
 
     # output
@@ -76,12 +87,14 @@ def find_event_channel(inst=None, ch_names=None):
 
 def _search_in_ch_names(ch_names):
     """Search trigger channel by name in a list of valid names."""
-    valid_trigger_ch_names = ['TRIGGER', 'STI', 'TRG', 'CH_Event']
+    valid_trigger_ch_names = ["TRIGGER", "STI", "TRG", "CH_Event"]
 
     tchs = list()
     for idx, ch_name in enumerate(ch_names):
-        if any(trigger_ch_name in ch_name
-               for trigger_ch_name in valid_trigger_ch_names):
+        if any(
+            trigger_ch_name in ch_name
+            for trigger_ch_name in valid_trigger_ch_names
+        ):
             tchs.append(idx)
 
     return tchs

@@ -44,15 +44,15 @@ class ParallelPortTrigger(_Trigger):
     """
 
     def __init__(self, address, delay: int = 50, *, verbose: bool = True):
-        _check_type(address, ('int', str), item_name='address')
-        _check_type(delay, ('int', ), item_name='delay')
+        _check_type(address, ("int", str), item_name="address")
+        _check_type(delay, ("int",), item_name="delay")
         super().__init__(verbose)
 
         self._address = address
         self._delay = delay / 1000.0
 
         # Initialize port
-        if self._address == 'arduino':
+        if self._address == "arduino":
             self._connect_arduino()
         else:
             self._connect_pport()
@@ -65,20 +65,21 @@ class ParallelPortTrigger(_Trigger):
         """
         # Imports
         import_optional_dependency(
-            "serial", extra="Install 'pyserial' for ARDUINO support.")
+            "serial", extra="Install 'pyserial' for ARDUINO support."
+        )
 
         from serial import Serial, SerialException
         from serial.tools import list_ports
 
         # Look for arduino
-        logger.info('ParallelPort trigger is using an Arduino converter.')
+        logger.info("ParallelPort trigger is using an Arduino converter.")
         com_port = None
-        for arduino in list_ports.grep(regexp='Arduino'):
+        for arduino in list_ports.grep(regexp="Arduino"):
             logger.info("Found '%s'.", arduino)
             com_port = arduino.device
             break
         if com_port is None:
-            raise IOError('No arduino card was found.')
+            raise IOError("No arduino card was found.")
 
         # Connect to arduino
         try:
@@ -86,11 +87,13 @@ class ParallelPortTrigger(_Trigger):
         except SerialException as error:
             logger.error(
                 "Disconnect and reconnect the ARDUINO convertor because "
-                f"{error}", exc_info=True)
+                f"{error}",
+                exc_info=True,
+            )
             raise Exception from error
 
         time.sleep(1)
-        logger.info('Connected to %s.', com_port)
+        logger.info("Connected to %s.", com_port)
 
     def _connect_pport(self):
         """
@@ -100,40 +103,44 @@ class ParallelPortTrigger(_Trigger):
         psychopy = import_optional_dependency("psychopy", raise_error=False)
         if psychopy is None:
             import platform
-            if platform.system() == 'Linux':
+
+            if platform.system() == "Linux":
                 import_optional_dependency("parallel", raise_error=True)
             from ..externals.psychopy.parallel import ParallelPort
         else:
             from psychopy.parallel import ParallelPort
         if ParallelPort is None:
             raise RuntimeError(
-                'PsychoPy parallel module has been imported but no parallel '
-                'port driver was found. psychopy.parallel supports Linux with '
-                'pyparallel and Windows with either inpout32, inpout64 or '
-                'dlportio. macOS is not supported.')
+                "PsychoPy parallel module has been imported but no parallel "
+                "port driver was found. psychopy.parallel supports Linux with "
+                "pyparallel and Windows with either inpout32, inpout64 or "
+                "dlportio. macOS is not supported."
+            )
 
         # Connect to ParallelPort
-        logger.info('ParallelPort trigger is using an on-board port.')
+        logger.info("ParallelPort trigger is using an on-board port.")
         try:
             self._port = ParallelPort(self._address)
         except PermissionError as error:
             logger.error(
-                'To fix a PermissionError, try adding your user into the '
-                'group with access to the port or try changing the chmod on '
-                'the port.')
+                "To fix a PermissionError, try adding your user into the "
+                "group with access to the port or try changing the chmod on "
+                "the port."
+            )
             raise Exception from error
 
         time.sleep(1)
-        logger.info('Connected to %s.', self._address)
+        logger.info("Connected to %s.", self._address)
 
     @copy_doc(_Trigger.signal)
     def signal(self, value: int) -> bool:
-        _check_type(value, ('int', ), item_name='value')
+        _check_type(value, ("int",), item_name="value")
         if self._offtimer.is_alive():
             logger.warning(
-                'You are sending a new signal before the end of the last '
-                'signal. Signal ignored. Delay required = %.1f ms.',
-                self.delay)
+                "You are sending a new signal before the end of the last "
+                "signal. Signal ignored. Delay required = %.1f ms.",
+                self.delay,
+            )
             return False
         self._set_data(value)
         super().signal(value)
@@ -151,7 +158,7 @@ class ParallelPortTrigger(_Trigger):
     @copy_doc(_Trigger._set_data)
     def _set_data(self, value: int):
         super()._set_data(value)
-        if self._address == 'arduino':
+        if self._address == "arduino":
             self._port.write(bytes([value]))
         else:
             self._port.setData(value)
@@ -161,13 +168,13 @@ class ParallelPortTrigger(_Trigger):
         Disconnects the parallel port. This method should free the parallel
         port and let other application or python process use it.
         """
-        if self._address == 'arduino':
+        if self._address == "arduino":
             try:
                 self._port.close()
             except Exception:
                 pass
         else:
-            if hasattr(self, '_port'):
+            if hasattr(self, "_port"):
                 del self._port
 
     def __del__(self):

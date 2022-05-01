@@ -28,21 +28,29 @@ class StreamRecorder:
     %(recorder_verbose)s
     """
 
-    def __init__(self, record_dir=None, fname=None, stream_name=None,
-                 fif_subdir=True, *, verbose=False):
+    def __init__(
+        self,
+        record_dir=None,
+        fname=None,
+        stream_name=None,
+        fif_subdir=True,
+        *,
+        verbose=False,
+    ):
         self._record_dir = StreamRecorder._check_record_dir(record_dir)
         self._fname = StreamRecorder._check_fname(fname)
-        _check_type(stream_name, (None, str, list, tuple),
-                    item_name='stream_name')
+        _check_type(
+            stream_name, (None, str, list, tuple), item_name="stream_name"
+        )
         self._stream_name = stream_name
-        _check_type(fif_subdir, (bool, ), item_name='fif_subdir')
+        _check_type(fif_subdir, (bool,), item_name="fif_subdir")
         self._fif_subdir = fif_subdir
-        _check_type(verbose, (bool, ), item_name='verbose')
+        _check_type(verbose, (bool,), item_name="verbose")
         self._verbose = verbose
 
         self._eve_file = None  # for SOFTWARE triggers
         self._process = None
-        self._state = mp.Value('i', 0)
+        self._state = mp.Value("i", 0)
 
     def start(self, blocking=True):
         """
@@ -53,16 +61,25 @@ class StreamRecorder:
         blocking : bool
             If ``True``, waits for the child process to start recording data.
         """
-        _check_type(blocking, (bool, ), item_name='blocking')
+        _check_type(blocking, (bool,), item_name="blocking")
         fname, self._eve_file = StreamRecorder._create_fname(
-            self._record_dir, self._fname)
+            self._record_dir, self._fname
+        )
         logger.debug("File name stem is '%s'.", fname)
         logger.debug("Event file name is '%s'.", self._eve_file)
 
         self._process = mp.Process(
             target=self._record,
-            args=(self._record_dir, fname, self._stream_name, self._fif_subdir,
-                  self._verbose, self._eve_file, self._state))
+            args=(
+                self._record_dir,
+                fname,
+                self._stream_name,
+                self._fif_subdir,
+                self._verbose,
+                self._eve_file,
+                self._state,
+            ),
+        )
         self._process.start()
 
         if blocking:
@@ -76,31 +93,46 @@ class StreamRecorder:
         Stops the recording.
         """
         if self._process is None:
-            logger.warning('StreamRecorder was not started. Skipping.')
+            logger.warning("StreamRecorder was not started. Skipping.")
             return
 
         with self._state.get_lock():
             self._state.value = 0
 
-        logger.info('Waiting for StreamRecorder process to finish.')
+        logger.info("Waiting for StreamRecorder process to finish.")
         self._process.join(10)
         if self._process.is_alive():
-            logger.error('Recorder process not finishing..')
+            logger.error("Recorder process not finishing..")
             self._process.kill()
             raise RuntimeError
-        logger.info('Recording finished.')
+        logger.info("Recording finished.")
 
         self._eve_file = None
         self._process = None
 
-    def _record(self, record_dir, fname, stream_name, fif_subdir, verbose,
-                eve_file, state):
+    def _record(
+        self,
+        record_dir,
+        fname,
+        stream_name,
+        fif_subdir,
+        verbose,
+        eve_file,
+        state,
+    ):
         """
         The function called in the new process.
         Instance a _Recorder and start recording.
         """
-        recorder = _Recorder(record_dir, fname, stream_name, fif_subdir,
-                             verbose, eve_file, state)
+        recorder = _Recorder(
+            record_dir,
+            fname,
+            stream_name,
+            fif_subdir,
+            verbose,
+            eve_file,
+            state,
+        )
         recorder.record()
 
     # --------------------------------------------------------------------
@@ -114,10 +146,13 @@ class StreamRecorder:
 
     def __repr__(self):
         """Representation of the instance."""
-        status = 'ON' if self._state.value == 1 else 'OFF'
-        streams = self._stream_name if self._stream_name is not None \
-            else 'All streams'
-        return f'<Recorder: {streams} | {status} | {self._record_dir}>'
+        status = "ON" if self._state.value == 1 else "OFF"
+        streams = (
+            self._stream_name
+            if self._stream_name is not None
+            else "All streams"
+        )
+        return f"<Recorder: {streams} | {status} | {self._record_dir}>"
 
     # --------------------------------------------------------------------
     @staticmethod
@@ -126,7 +161,7 @@ class StreamRecorder:
         Converts record_dir to a Path, or select the current working directory
         if record_dir is None.
         """
-        _check_type(record_dir, (None, 'path-like'), item_name='record_dir')
+        _check_type(record_dir, (None, "path-like"), item_name="record_dir")
         if record_dir is None:
             record_dir = Path.cwd()
         else:
@@ -138,7 +173,7 @@ class StreamRecorder:
         """
         Checks that the file name stem is a string or None.
         """
-        _check_type(fname, (None, str), item_name='fname')
+        _check_type(fname, (None, str), item_name="fname")
         return fname
 
     @staticmethod
@@ -146,9 +181,12 @@ class StreamRecorder:
         """
         Creates the file name path using the current datetime if fname is None.
         """
-        fname = fname if fname is not None \
-            else time.strftime('%Y%m%d-%H%M%S', time.localtime())
-        eve_file = record_dir / f'{fname}-eve.txt'
+        fname = (
+            fname
+            if fname is not None
+            else time.strftime("%Y%m%d-%H%M%S", time.localtime())
+        )
+        eve_file = record_dir / f"{fname}-eve.txt"
 
         return fname, eve_file
 
@@ -261,8 +299,16 @@ class _Recorder:
         Path to the event file for SoftwareTrigger.
     """
 
-    def __init__(self, record_dir, fname, stream_name, fif_subdir, verbose,
-                 eve_file, state):
+    def __init__(
+        self,
+        record_dir,
+        fname,
+        stream_name,
+        fif_subdir,
+        verbose,
+        eve_file,
+        state,
+    ):
         self._record_dir = record_dir
         self._fname = fname
         self._stream_name = stream_name
@@ -276,7 +322,8 @@ class _Recorder:
         Instantiate a StreamReceiver, create the files, record and save.
         """
         sr = StreamReceiver(
-            bufsize=MAX_BUF_SIZE, stream_name=self._stream_name)
+            bufsize=MAX_BUF_SIZE, stream_name=self._stream_name
+        )
         pcl_files = _Recorder._create_files(self._record_dir, self._fname, sr)
 
         with self._state.get_lock():
@@ -293,9 +340,10 @@ class _Recorder:
             if self._verbose:
                 if verbose_timer.sec() - previous_time >= 1:
                     previous_time = verbose_timer.sec()
-                    duration = str(datetime.timedelta(
-                        seconds=int(verbose_timer.sec())))
-                    logger.info('RECORDING %s', duration)
+                    duration = str(
+                        datetime.timedelta(seconds=int(verbose_timer.sec()))
+                    )
+                    logger.info("RECORDING %s", duration)
 
         self._save(sr, pcl_files)
 
@@ -303,30 +351,31 @@ class _Recorder:
         """
         Save the data in the StreamReceiver buffer to the .pcl and .fif files.
         """
-        logger.info('Saving raw data..')
+        logger.info("Saving raw data..")
         for stream in sr.streams:
             signals, timestamps = sr.get_buffer(stream)
 
             if isinstance(sr.streams[stream], StreamEEG):
-                signals[:, 1:] *= 1E-6
+                signals[:, 1:] *= 1e-6
 
             data = {
-                'signals': signals,
-                'timestamps': timestamps,
-                'events': None,
-                'sample_rate': sr.streams[stream].sample_rate,
-                'channels': len(sr.streams[stream].ch_list),
-                'ch_names': sr.streams[stream].ch_list,
-                'lsl_time_offset': sr.streams[stream].lsl_time_offset}
+                "signals": signals,
+                "timestamps": timestamps,
+                "events": None,
+                "sample_rate": sr.streams[stream].sample_rate,
+                "channels": len(sr.streams[stream].ch_list),
+                "ch_names": sr.streams[stream].ch_list,
+                "lsl_time_offset": sr.streams[stream].lsl_time_offset,
+            }
 
-            with open(pcl_files[stream], 'wb') as file:
+            with open(pcl_files[stream], "wb") as file:
                 pickle.dump(data, file, protocol=pickle.HIGHEST_PROTOCOL)
 
             logger.info("Saved to '%s'", pcl_files[stream])
 
             if not isinstance(sr.streams[stream], StreamEEG):
                 continue
-            logger.info('Converting raw files into fif.')
+            logger.info("Converting raw files into fif.")
 
             if self._fif_subdir:
                 out_dir = None
@@ -334,12 +383,12 @@ class _Recorder:
                 out_dir = self._record_dir
 
             if self._eve_file.exists():
-                logger.info('Found matching event file, adding events.')
+                logger.info("Found matching event file, adding events.")
                 pcl2fif(
-                    pcl_files[stream], out_dir, external_event=self._eve_file)
+                    pcl_files[stream], out_dir, external_event=self._eve_file
+                )
             else:
-                pcl2fif(
-                    pcl_files[stream], out_dir, external_event=None)
+                pcl2fif(pcl_files[stream], out_dir, external_event=None)
 
     # --------------------------------------------------------------------
     @staticmethod
@@ -351,19 +400,22 @@ class _Recorder:
 
         pcl_files = dict()
         for stream in sr.streams:
-            pcl_files[stream] = \
-                record_dir / f'{fname}-{stream}-raw.pcl'
+            pcl_files[stream] = record_dir / f"{fname}-{stream}-raw.pcl"
 
             try:
-                with open(pcl_files[stream], 'w') as file:
+                with open(pcl_files[stream], "w") as file:
                     file.write(
-                        'Data will be written when the recording is finished.')
+                        "Data will be written when the recording is finished."
+                    )
             except Exception as error:
-                raise error("Could not write to '%s'. Check permissions"
-                            % {pcl_files[stream]})
+                raise error(
+                    "Could not write to '%s'. Check permissions"
+                    % {pcl_files[stream]}
+                )
 
         logger.info(
-            'Record to files: \n' +
-            '\n'.join(str(file) for file in pcl_files.values()))
+            "Record to files: \n"
+            + "\n".join(str(file) for file in pcl_files.values())
+        )
 
         return pcl_files

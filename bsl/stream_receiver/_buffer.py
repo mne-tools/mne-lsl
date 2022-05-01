@@ -2,7 +2,7 @@ from ..utils._logs import logger
 from ..utils._docs import fill_doc
 
 
-class Buffer():
+class Buffer:
     """
     Class representing the stream's buffer.
     This is not a Python Buffer Interface compatible class.
@@ -35,11 +35,11 @@ class Buffer():
         """
         self._data.extend(data)
         self._timestamps.extend(tslist)
-        logger.debug('Buffer filled with %d points.', len(tslist))
+        logger.debug("Buffer filled with %d points.", len(tslist))
 
         if len(self._timestamps) > self._bufsize:
-            self._data = self._data[-self._bufsize:]
-            self._timestamps = self._timestamps[-self._bufsize:]
+            self._data = self._data[-self._bufsize :]
+            self._timestamps = self._timestamps[-self._bufsize :]
 
     def reset_buffer(self):
         """
@@ -47,7 +47,7 @@ class Buffer():
         """
         self._data = []
         self._timestamps = []
-        logger.debug('Buffer reset.')
+        logger.debug("Buffer reset.")
 
     @property
     def bufsize(self):
