@@ -163,7 +163,7 @@ def fill_doc(f):
         docdict_indented[indent_count] = indented = dict()
 
         for name, docstr in docdict.items():
-            lines = [indent+line if k != 0 else line
+            lines = [indent + line if k != 0 else line
                      for k, line in enumerate(docstr.strip().splitlines())]
             indented[name] = '\n'.join(lines)
 

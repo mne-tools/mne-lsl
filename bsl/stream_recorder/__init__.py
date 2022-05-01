@@ -5,6 +5,6 @@ Record signals into fif format, a standard format mainly used in MNE EEG
 analysis library.
 """
 
-from .stream_recorder import StreamRecorder  # noqa: F401
+from .stream_recorder import StreamRecorder
 
 __all__ = ["StreamRecorder"]

@@ -2,13 +2,13 @@
 BSL provides a real-time brain signal streaming framework.
 """
 
-from . import datasets  # noqa: F401
-from ._version import __version__  # noqa: F401
-from .stream_player import StreamPlayer  # noqa: F401
-from .stream_receiver import StreamReceiver  # noqa: F401
-from .stream_recorder import StreamRecorder  # noqa: F401
-from .stream_viewer import StreamViewer  # noqa: F401
-from .utils._logs import set_log_level  # noqa: F401
+from . import datasets
+from ._version import __version__
+from .stream_player import StreamPlayer
+from .stream_receiver import StreamReceiver
+from .stream_recorder import StreamRecorder
+from .stream_viewer import StreamViewer
+from .utils._logs import set_log_level
 from .utils._logs import (
     add_file_handler,
     add_stream_handler,

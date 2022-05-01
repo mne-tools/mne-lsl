@@ -6,6 +6,6 @@ For Windows users, make sure to use the provided time resolution
 tweak tool (TimerTool) to set to 500us the time resolution of the OS.
 """
 
-from .stream_player import StreamPlayer  # noqa: F401
+from .stream_player import StreamPlayer
 
 __all__ = ["StreamPlayer"]
