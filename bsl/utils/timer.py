@@ -66,5 +66,5 @@ class Timer:
 
     @autoreset.setter
     def autoreset(self, autoreset):
-        _check_type(autoreset, (bool, ), item_name='autoreset')
+        _check_type(autoreset, (bool,), item_name="autoreset")
         self._autoreset = autoreset

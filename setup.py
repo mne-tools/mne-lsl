@@ -121,7 +121,7 @@ setup(
         'Tracker': 'https://github.com/bsl-tools/bsl/issues'
         },
     platforms='any',
-    python_requires='>=3.6',
+    python_requires='>=3.7',
     install_requires=install_requires,
     extras_require=extras_require,
     packages=find_packages(),

@@ -4,15 +4,13 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 
-from ._buffer import Buffer
 from ..externals import pylsl
-from ..utils import Timer
-from ..utils._logs import logger
-from ..utils import find_event_channel
-from ..utils.lsl import lsl_channel_list
+from ..utils import Timer, find_event_channel
 from ..utils._checks import _check_type
-from ..utils._docs import fill_doc, copy_doc
-
+from ..utils._docs import copy_doc, fill_doc
+from ..utils._logs import logger
+from ..utils.lsl import lsl_channel_list
+from ._buffer import Buffer
 
 _MAX_PYLSL_STREAM_BUFSIZE = 10  # max 10 sec of data buffered for LSL
 MAX_BUF_SIZE = 86400  # 24h max buffer length
@@ -44,14 +42,15 @@ class _Stream(ABC):
             samples_per_sec = self._sample_rate
             # max_buflen: seconds
             self._inlet = pylsl.StreamInlet(
-                streamInfo,
-                max_buflen=math.ceil(self._lsl_bufsize))
+                streamInfo, max_buflen=math.ceil(self._lsl_bufsize)
+            )
         else:
             samples_per_sec = 100
             # max_buflen: samples x100
             self._inlet = pylsl.StreamInlet(
                 streamInfo,
-                max_buflen=math.ceil(self._lsl_bufsize*samples_per_sec))
+                max_buflen=math.ceil(self._lsl_bufsize * samples_per_sec),
+            )
         self._inlet.open_stream()
 
         self._extract_stream_info()
@@ -66,7 +65,8 @@ class _Stream(ABC):
         bufsize = _Stream._convert_sec_to_samples(bufsize, samples_per_sec)
         winsize = _Stream._convert_sec_to_samples(winsize, samples_per_sec)
         self._lsl_bufsize = _Stream._convert_sec_to_samples(
-            self._lsl_bufsize, samples_per_sec)
+            self._lsl_bufsize, samples_per_sec
+        )
         self._buffer = Buffer(bufsize, winsize)
 
     def _create_ch_name_list(self):
@@ -76,47 +76,64 @@ class _Stream(ABC):
         self._ch_list = lsl_channel_list(self._inlet)
 
         if not self._ch_list:
-            self._ch_list = [f"ch_{i+1}" for i in range(
-                self._streamInfo.channel_count())]
+            self._ch_list = [
+                f"ch_{i+1}" for i in range(self._streamInfo.channel_count())
+            ]
 
     def _extract_stream_info(self):
         """
         Extract the name, serial number and if it's a slave.
         """
         self._name = self._streamInfo.name()
-        self._serial = self._inlet.info().desc().child(
-            'acquisition').child_value('serial_number')
+        self._serial = (
+            self._inlet.info()
+            .desc()
+            .child("acquisition")
+            .child_value("serial_number")
+        )
 
-        if self._serial == '':
-            self._serial = 'N/A'
+        if self._serial == "":
+            self._serial = "N/A"
 
-        self._is_slave = self._inlet.info().desc().child(
-            'amplifier').child('settings').child(
-                'is_slave').first_child().value() == 'true'
+        self._is_slave = (
+            self._inlet.info()
+            .desc()
+            .child("amplifier")
+            .child("settings")
+            .child("is_slave")
+            .first_child()
+            .value()
+            == "true"
+        )
 
     def show_info(self):
         """
         Display the stream's info.
         """
-        logger.info(f'Server: {self._name}({self._serial}) '
-                    f'/ type:{self._streamInfo.type()} '
-                    f'@ {self._streamInfo.hostname()} '
-                    f'(v{self._streamInfo.version()}).')
-        logger.info('Source sampling rate: %s', self._sample_rate)
-        logger.info('Channels: %s', self._streamInfo.channel_count())
+        logger.info(
+            f"Server: {self._name}({self._serial}) "
+            f"/ type:{self._streamInfo.type()} "
+            f"@ {self._streamInfo.hostname()} "
+            f"(v{self._streamInfo.version()})."
+        )
+        logger.info("Source sampling rate: %s", self._sample_rate)
+        logger.info("Channels: %s", self._streamInfo.channel_count())
 
         # Check for high LSL offset
         if self._lsl_time_offset is None:
             logger.info(
-                'No LSL timestamp offset computed, no data received yet.')
+                "No LSL timestamp offset computed, no data received yet."
+            )
         elif abs(self._lsl_time_offset) > HIGH_LSL_OFFSET_THRESHOLD:
             logger.warning(
-                f'LSL server {self._name}({self._serial}) has a high '
-                f'timestamp offset [offset={self._lsl_time_offset:.3f}].')
+                f"LSL server {self._name}({self._serial}) has a high "
+                f"timestamp offset [offset={self._lsl_time_offset:.3f}]."
+            )
         else:
             logger.info(
-                f'LSL server {self._name}({self._serial}) synchronized '
-                f'[offset={self._lsl_time_offset:.3f}]')
+                f"LSL server {self._name}({self._serial}) synchronized "
+                f"[offset={self._lsl_time_offset:.3f}]"
+            )
 
     @abstractmethod
     @fill_doc
@@ -140,7 +157,8 @@ class _Stream(ABC):
             while self._watchdog.sec() < self._blocking_time:
                 if len(tslist) == 0:
                     chunk, tslist = self._inlet.pull_chunk(
-                        timeout=0.0, max_samples=self._lsl_bufsize)
+                        timeout=0.0, max_samples=self._lsl_bufsize
+                    )
                     if not self._blocking and len(tslist) == 0:
                         received = True
                         break
@@ -154,9 +172,12 @@ class _Stream(ABC):
             else:
                 # Give up and return empty values to avoid deadlock
                 logger.error(
-                    'Timeout occurred [%ssecs] while acquiring data '
-                    'from %s(%s). ', self._blocking_time, self._name,
-                    self._serial)
+                    "Timeout occurred [%ssecs] while acquiring data "
+                    "from %s(%s). ",
+                    self._blocking_time,
+                    self._name,
+                    self._serial,
+                )
                 received = True
 
         return chunk, tslist
@@ -201,9 +222,9 @@ class _Stream(ABC):
         ----------
         %(receiver_winsize)s
         """
-        _check_type(winsize, ('numeric', ), item_name='winsize')
+        _check_type(winsize, ("numeric",), item_name="winsize")
         if winsize <= 0:
-            raise ValueError('Invalid window size %s.' % winsize)
+            raise ValueError("Invalid window size %s." % winsize)
 
         return winsize
 
@@ -218,17 +239,22 @@ class _Stream(ABC):
         %(receiver_bufsize)s
         %(receiver_winsize)s
         """
-        _check_type(bufsize, ('numeric', ), item_name='bufsize')
+        _check_type(bufsize, ("numeric",), item_name="bufsize")
 
         if bufsize <= 0 or bufsize > MAX_BUF_SIZE:
             logger.error(
-                'Improper buffer size %.1f. Setting to %.1f.', bufsize,
-                MAX_BUF_SIZE)
+                "Improper buffer size %.1f. Setting to %.1f.",
+                bufsize,
+                MAX_BUF_SIZE,
+            )
             bufsize = MAX_BUF_SIZE
         elif bufsize < winsize:
             logger.error(
-                'Buffer size %.1f is smaller than window size. Setting to '
-                '%.1f.', bufsize, winsize)
+                "Buffer size %.1f is smaller than window size. Setting to "
+                "%.1f.",
+                bufsize,
+                winsize,
+            )
             bufsize = winsize
 
         return bufsize
@@ -362,7 +388,7 @@ class StreamMarker(_Stream):
         super().__init__(streamInfo, bufsize, winsize)
 
         self._blocking = False
-        self._blocking_time = float('inf')
+        self._blocking_time = float("inf")
 
     def acquire(self):
         """
@@ -395,7 +421,7 @@ class StreamEEG(_Stream):
     @copy_doc(_Stream._create_ch_name_list)
     def _create_ch_name_list(self):
         """
-         Trigger channel will always move to the first position.
+        Trigger channel will always move to the first position.
         """
         super()._create_ch_name_list()
 
@@ -406,30 +432,30 @@ class StreamEEG(_Stream):
             self._ch_list.pop(self._lsl_tr_channel)
             self._lsl_eeg_channels.pop(self._lsl_tr_channel)
 
-        self._ch_list = ['TRIGGER'] + self._ch_list
+        self._ch_list = ["TRIGGER"] + self._ch_list
 
     def _find_lsl_trig_ch(self):
         """
         Look for the trigger channel index at the LSL inlet level.
         """
-        if 'USBamp' in self._name:
+        if "USBamp" in self._name:
             self._lsl_tr_channel = 16
 
-        elif 'BioSemi' in self._name:
+        elif "BioSemi" in self._name:
             self._lsl_tr_channel = 0
 
-        elif 'SmartBCI' in self._name:
+        elif "SmartBCI" in self._name:
             self._lsl_tr_channel = 23
 
-        elif 'openvibeSignal' in self._name:
+        elif "openvibeSignal" in self._name:
             # TODO: Test if this is correct or should be 1E6
-            self._scaling_factor = 10E6
+            self._scaling_factor = 10e6
             self._lsl_tr_channel = find_event_channel(ch_names=self._ch_list)
 
-        elif 'openvibeMarkers' in self._name:
+        elif "openvibeMarkers" in self._name:
             self._lsl_tr_channel = find_event_channel(ch_names=self._ch_list)
 
-        elif 'actiCHamp' in self._name:
+        elif "actiCHamp" in self._name:
             self._lsl_tr_channel = -1
 
         else:
@@ -440,9 +466,9 @@ class StreamEEG(_Stream):
             self._lsl_tr_channel = self._lsl_tr_channel[0]
 
         if self._lsl_tr_channel is not None:
-            logger.debug('Trigger channel idx: %d', self._lsl_tr_channel)
+            logger.debug("Trigger channel idx: %d", self._lsl_tr_channel)
         else:
-            logger.debug('Trigger channel was not found.')
+            logger.debug("Trigger channel was not found.")
 
     def acquire(self):
         """
@@ -457,11 +483,14 @@ class StreamEEG(_Stream):
         data = np.array(chunk)
 
         # BioSemi has pull-up resistor instead of pull-down
-        if 'BioSemi' in self._name and self._lsl_tr_channel is not None:
+        if "BioSemi" in self._name and self._lsl_tr_channel is not None:
             datatype = data.dtype
             data[:, self._lsl_tr_channel] = (
-                np.bitwise_and(255, data[:, self._lsl_tr_channel].astype(
-                    int, copy=False)) - 1).astype(datatype, copy=False)
+                np.bitwise_and(
+                    255, data[:, self._lsl_tr_channel].astype(int, copy=False)
+                )
+                - 1
+            ).astype(datatype, copy=False)
 
         # multiply values (to change unit)
         if self._scaling_factor != 1:
@@ -470,12 +499,21 @@ class StreamEEG(_Stream):
         if self._lsl_tr_channel is not None:
             # move trigger channel to 0 and add back to the buffer
             data = np.concatenate(
-                (data[:, self._lsl_tr_channel].reshape(-1, 1),
-                 data[:, self._lsl_eeg_channels]), axis=1)
+                (
+                    data[:, self._lsl_tr_channel].reshape(-1, 1),
+                    data[:, self._lsl_eeg_channels],
+                ),
+                axis=1,
+            )
         else:
             # add an empty channel with zeros to channel 0
-            data = np.concatenate((np.zeros((data.shape[0], 1)),
-                                   data[:, self._lsl_eeg_channels]), axis=1)
+            data = np.concatenate(
+                (
+                    np.zeros((data.shape[0], 1)),
+                    data[:, self._lsl_eeg_channels],
+                ),
+                axis=1,
+            )
 
         data = data.tolist()
 
@@ -495,8 +533,10 @@ class StreamEEG(_Stream):
 
     @scaling_factor.setter
     def scaling_factor(self, scaling_factor):
-        _check_type(scaling_factor, ('numeric', ), item_name='scaling_factor')
+        _check_type(scaling_factor, ("numeric",), item_name="scaling_factor")
         if scaling_factor <= 0:
-            raise ValueError('Property scaling_factor must be a strictly '
-                             'positive number. Provided: %s' % scaling_factor)
+            raise ValueError(
+                "Property scaling_factor must be a strictly "
+                "positive number. Provided: %s" % scaling_factor
+            )
         self._scaling_factor = scaling_factor

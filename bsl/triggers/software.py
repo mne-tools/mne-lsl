@@ -1,11 +1,11 @@
 """
 Trigger using software and a .txt file.
 """
-from ._trigger import _Trigger
 from ..externals import pylsl
 from ..stream_recorder import StreamRecorder
 from ..utils._checks import _check_type
-from ..utils._docs import fill_doc, copy_doc
+from ..utils._docs import copy_doc, fill_doc
+from ._trigger import _Trigger
 
 
 @fill_doc
@@ -36,13 +36,13 @@ class SoftwareTrigger(_Trigger):
         self._recorder = SoftwareTrigger._check_recorder(recorder)
         self._eve_file = SoftwareTrigger._find_eve_file(recorder)
         try:
-            self._eve_file = open(self._eve_file, 'a')
+            self._eve_file = open(self._eve_file, "a")
         except Exception:
             raise
 
     @copy_doc(_Trigger.signal)
     def signal(self, value: int) -> bool:
-        _check_type(value, ('int', ), item_name='value')
+        _check_type(value, ("int",), item_name="value")
         self._set_data(value)
         super().signal(value)
         return True
@@ -53,7 +53,7 @@ class SoftwareTrigger(_Trigger):
         Set the trigger signal to value.
         """
         super()._set_data(value)
-        self._eve_file.write('%.6f\t0\t%d\n' % (pylsl.local_clock(), value))
+        self._eve_file.write("%.6f\t0\t%d\n" % (pylsl.local_clock(), value))
 
     def close(self):
         """
@@ -73,7 +73,7 @@ class SoftwareTrigger(_Trigger):
         """
         Check that the provided recorder is indeed a StreamRecorder.
         """
-        _check_type(recorder, (StreamRecorder, ), item_name='recorder')
+        _check_type(recorder, (StreamRecorder,), item_name="recorder")
         return recorder
 
     @staticmethod
@@ -83,8 +83,9 @@ class SoftwareTrigger(_Trigger):
         """
         if recorder.eve_file is None:
             raise RuntimeError(
-                'The StreamRecorder must be started before instantiating '
-                'a SOFTWARE trigger.')
+                "The StreamRecorder must be started before instantiating "
+                "a SOFTWARE trigger."
+            )
 
         return recorder.eve_file
 
