@@ -16,7 +16,7 @@ def test_fill_doc():
         """
         pass
 
-    assert 'stream_name : list | str | None' in foo.__doc__
+    assert "stream_name : list | str | None" in foo.__doc__
 
 
 def test_copy_doc():
@@ -32,4 +32,4 @@ def test_copy_doc():
     def foo2(x, y):
         pass
 
-    assert 'My doc.' in foo2.__doc__
+    assert "My doc." in foo2.__doc__
