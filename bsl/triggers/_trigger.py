@@ -28,16 +28,16 @@ class _Trigger(ABC):
         Send a trigger value.
         """
         if self._verbose:
-            logger.info('Sending trigger %s.', value)
+            logger.info("Sending trigger %s.", value)
         else:
-            logger.debug('Sending trigger %s.', value)
+            logger.debug("Sending trigger %s.", value)
 
     @abstractmethod
     def _set_data(self, value: int):
         """
         Set the trigger signal to value.
         """
-        logger.debug('Setting data to %d.', value)
+        logger.debug("Setting data to %d.", value)
 
     # --------------------------------------------------------------------
     @property
@@ -46,5 +46,5 @@ class _Trigger(ABC):
 
     @verbose.setter
     def verbose(self, verbose: bool):
-        _check_type(verbose, (bool, ), item_name='verbose')
+        _check_type(verbose, (bool,), item_name="verbose")
         self._verbose = verbose

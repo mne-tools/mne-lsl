@@ -18,7 +18,7 @@ def test_buffer():
     b.fill(fake_data, fake_timestamps)
     assert len(b.data) == len(b._data) == samples
     assert len(b.timestamps) == len(b._timestamps) == samples
-    assert all(elt == [1]*chs for elt in b.data)
+    assert all(elt == [1] * chs for elt in b.data)
     assert b.timestamps == fake_timestamps
 
     # add elements above buffer limit
@@ -28,8 +28,8 @@ def test_buffer():
     b.fill(fake_data, fake_timestamps)
     assert len(b.data) == len(b._data) == b.bufsize
     assert len(b.timestamps) == len(b._timestamps) == b.bufsize
-    assert all(elt == [1]*chs for elt in b.data[:3])
-    assert all(elt == [2]*chs for elt in b.data[3:])
+    assert all(elt == [1] * chs for elt in b.data[:3])
+    assert all(elt == [2] * chs for elt in b.data[3:])
 
     # reset buffer
     b.reset_buffer()

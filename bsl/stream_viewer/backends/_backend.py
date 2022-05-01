@@ -1,7 +1,6 @@
 import copy
-from abc import ABC, abstractmethod
-
 import math
+from abc import ABC, abstractmethod
 
 from ...utils._docs import fill_doc
 from ...utils._logs import logger
@@ -35,14 +34,15 @@ class _Backend(ABC):
         """
         Initialize variables depending on xRange, yRange and selected_channels.
         """
-        logger.debug('Initilization of variables..')
+        logger.debug("Initilization of variables..")
 
         # xRange
         self._delta_with_buffer = self._scope.duration_buffer - self._xRange
         self._duration_plot_samples = math.ceil(
-            self._xRange*self._scope.sample_rate)
+            self._xRange * self._scope.sample_rate
+        )
 
-        logger.debug('Initilization of variables from _Backend complete.')
+        logger.debug("Initilization of variables from _Backend complete.")
 
     # ------------------------ Trigger Events ----------------------
     @abstractmethod
@@ -58,7 +58,7 @@ class _Backend(ABC):
         """
         Remove events exiting the buffer.
         """
-        for k in range(len(self._trigger_events)-1, -1, -1):
+        for k in range(len(self._trigger_events) - 1, -1, -1):
             if self._trigger_events[k].position_buffer < 0:
                 del self._trigger_events[k]
 
@@ -171,11 +171,13 @@ class _Event(ABC):
     %(viewer_position_buffer)s
     %(viewer_position_plot)s
     """
-    _supported = ['LPT']
+
+    _supported = ["LPT"]
 
     @abstractmethod
-    def __init__(self, event_type, event_value, position_buffer,
-                 position_plot):
+    def __init__(
+        self, event_type, event_value, position_buffer, position_plot
+    ):
         assert event_type in self._supported
         self._event_type = event_type
         self._event_value = event_value

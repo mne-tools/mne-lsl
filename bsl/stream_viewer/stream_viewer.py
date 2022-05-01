@@ -3,12 +3,12 @@ import time
 
 from PyQt5.QtWidgets import QApplication
 
-from .scope.scope_eeg import ScopeEEG
-from .control_gui.control_eeg import ControlGUI_EEG
-from ..stream_receiver import StreamReceiver, StreamEEG
+from ..stream_receiver import StreamEEG, StreamReceiver
+from ..utils._checks import _check_type
 from ..utils._logs import logger
 from ..utils.lsl import search_lsl
-from ..utils._checks import _check_type
+from .control_gui.control_eeg import ControlGUI_EEG
+from .scope.scope_eeg import ScopeEEG
 
 
 class StreamViewer:
@@ -41,9 +41,10 @@ class StreamViewer:
             The default ``0.2`` should work in most cases since data is fetched
             every 20 ms.
         """
-        logger.info('Connecting to the stream: %s', self.stream_name)
-        self._sr = StreamReceiver(bufsize=bufsize, winsize=bufsize,
-                                  stream_name=self._stream_name)
+        logger.info("Connecting to the stream: %s", self.stream_name)
+        self._sr = StreamReceiver(
+            bufsize=bufsize, winsize=bufsize, stream_name=self._stream_name
+        )
         self._sr.streams[self._stream_name].blocking = False
         time.sleep(bufsize)  # Delay to fill the LSL buffer.
 
@@ -54,8 +55,9 @@ class StreamViewer:
             sys.exit(app.exec_())
         else:
             logger.error(
-                'Unsupported stream type %s',
-                type(self._sr.streams[self._stream_name]))
+                "Unsupported stream type %s",
+                type(self._sr.streams[self._stream_name]),
+            )
 
     # --------------------------------------------------------------------
     @staticmethod
@@ -64,11 +66,11 @@ class StreamViewer:
         Checks that the stream_name is valid or search for a valid stream on
         the network.
         """
-        _check_type(stream_name, (None, str), item_name='stream_name')
+        _check_type(stream_name, (None, str), item_name="stream_name")
         if stream_name is None:
             stream_name = search_lsl(ignore_markers=True)
             if stream_name is None:
-                raise RuntimeError('No LSL stream found.')
+                raise RuntimeError("No LSL stream found.")
         return stream_name
 
     # --------------------------------------------------------------------

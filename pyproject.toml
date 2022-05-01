@@ -1,0 +1,29 @@
+[tool.black]
+line-length = 79
+target-version = ['py37']
+include = '\.pyi?$'
+extend-exclude = '''
+(
+      __pycache__
+    | \.github
+    | setup.py
+    | pyproject.toml
+    | doc/
+    | examples/
+    | bsl/externals/psychopy
+    | bsl/externals/pylsl
+)
+'''
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 79
+py_version = 37
+extend_skip_glob = [
+    'setup.py',
+    'doc/*',
+    'examples/*',
+    'bsl/externals/psychopy/*',
+    'bsl/externals/pylsl/*'
+    ]
