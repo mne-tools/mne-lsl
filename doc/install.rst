@@ -6,7 +6,7 @@
 Install instructions
 ====================
 
-BSL requires Python version ``3.6`` or higher. BSL is available on `GitHub`_
+BSL requires Python version ``3.7`` or higher. BSL is available on `GitHub`_
 and on `Pypi <https://pypi.org/project/bsl/>`_.
 
 - **Pypi**: Install BSL using ``pip``

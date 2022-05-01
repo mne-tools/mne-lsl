@@ -21,7 +21,7 @@ The low-level functionnalities have been reworked and improved, while the
 decoding functionnalities have been dropped.
 
 # Installation
-BSL supports `python >= 3.6` and requires:
+BSL supports `python >= 3.7` and requires:
 - numpy
 - scipy
 - mne
