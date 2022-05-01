@@ -5,7 +5,7 @@ include = '\.pyi?$'
 extend-exclude = '''
 (
       __pycache__
-    | \.git
+    | \.github
     | setup.py
     | pyproject.toml
     | doc
