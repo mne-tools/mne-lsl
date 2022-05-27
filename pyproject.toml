@@ -56,7 +56,10 @@ bsl_stream_recorder = 'bsl.commands.bsl_stream_recorder:run'
 bsl_stream_viewer = 'bsl.commands.bsl_stream_viewer:run'
 
 [project.optional-dependencies]
-build = ['build', 'twine']
+build = [
+    'build',
+    'twine'
+]
 doc = [
     'matplotlib',
     'numpydoc',
@@ -64,29 +67,46 @@ doc = [
     'sphinx',
     'sphinx-gallery'
 ]
-parallel = ['pyserial', 'pyparallel; platform_system == "linux"']
-externals = ['pylsl', 'psychopy']
-style = ['black', 'codespell', 'isort', 'flake8', 'pydocstyle[toml]']
-test = ['pytest', 'pytest-cov', 'requests']
-all = [
+parallel = [
+    'pyserial',
+    'pyparallel; platform_system == "linux"'
+]
+externals = [
+    'pylsl',
+    'psychopy'
+]
+style = [
     'black',
-    'build',
     'codespell',
     'isort',
     'flake8',
-    'pydocstyle[toml]',
-    'pylsl'
-    'pyserial',
-    'pyparallel; platform_system == "linux"',
+    'pydocstyle[toml]'
+]
+test = [
     'pytest',
     'pytest-cov',
-    'requests',
+    'requests'
+]
+all = [
+    'build',
     'twine',
     'matplotlib',
     'numpydoc',
     'pydata-sphinx-theme',
     'sphinx',
-    'sphinx-gallery'
+    'sphinx-gallery',
+    'pyserial',
+    'pyparallel; platform_system == "linux"',
+    'pylsl',
+    'psychopy',
+    'black',
+    'codespell',
+    'isort',
+    'flake8',
+    'pydocstyle[toml]',
+    'pytest',
+    'pytest-cov',
+    'requests'
 ]
 
 [project.urls]
