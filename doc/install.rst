@@ -6,7 +6,7 @@
 Install instructions
 ====================
 
-BSL requires Python version ``3.7`` or higher. BSL is available on `GitHub`_
+BSL requires Python version ``3.8`` or higher. BSL is available on `GitHub`_
 and on `Pypi <https://pypi.org/project/bsl/>`_.
 
 - **Pypi**: Install BSL using ``pip``
@@ -18,13 +18,14 @@ and on `Pypi <https://pypi.org/project/bsl/>`_.
 - **Conda**: A conda-forge distribution is not yet available.
 
 - **GitHub**: Clone the `main repository <https://github.com/bsl-tools/bsl>`_
-  and install with ``setup.py``
+  and install with ``pip install .``
 
   .. code-block:: console
 
-      $ python setup.py install
+      $ git clone https://github.com/bsl-tools/bsl
+      $ pip install .
 
-  For the developer mode, use ``develop`` instead of ``install``.
+  For the developer mode, use ``-e`` flag: ``pip install -e .``.
 
 =====================
 Optional dependencies
@@ -42,6 +43,19 @@ Additional functionalities requires:
 
 - `pyserial`_: for the parallel port trigger using an :ref:`arduino2lpt`.
 - `pyparallel`_: for the parallel port trigger using an on-board port on Linux.
+
+The additional functionalities can be installed with the keywords:
+
+- ``build`` for build dependencies
+- ``doc`` for doc rendering dependencies
+- ``externals`` for ``pylsl`` and ``psychopy``
+- ``parallel`` for parallel port trigger dependencies
+- ``style`` for code-style dependencies
+- ``test`` for development test dependencies
+- ``all`` for all of th above.
+
+e.g. ``pip install bsl[parallel]`` will install ``BSL`` with the dependencies
+for parallel port triggers.
 
 ===========================
 Installing pylsl and liblsl
