@@ -58,7 +58,7 @@ running the following command in a terminal:
 
 If you prefer to use a different version, or if the command above raises an
 error, `pylsl`_ can be installed in the same environment as ``BSL``. ``BSL``
-will automaticaly select `pylsl`_ and will prefer the version installed in the
+will automatically select `pylsl`_ and will prefer the version installed in the
 same environment above the version distributed in ``bsl.externals``.
 
 `pylsl`_ requires a binary library called ``liblsl`` to operate. The binary
@@ -125,7 +125,7 @@ the ``psychopy.parallel`` module. By default, ``BSL`` is distributed with a
 recent version of ``psychopy.parallel`` that should work on most systems.
 
 If you prefer to use a different version, `psychopy`_ can be installed in the
-same environment as ``BSL``. ``BSL`` will automaticaly select `psychopy`_ and
+same environment as ``BSL``. ``BSL`` will automatically select `psychopy`_ and
 will prefer the version installed in the same environment above the version
 distributed in ``bsl.externals``.
 

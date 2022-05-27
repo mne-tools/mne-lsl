@@ -34,7 +34,7 @@ class ParallelPortTrigger(_Trigger):
           LPT2 = /dev/parport1
           LPT3 = /dev/parport2
 
-    - On Windows, commom port addresses::
+    - On Windows, common port addresses::
 
           LPT1 = 0x0378 or 0x03BC
           LPT2 = 0x0278 or 0x0378
@@ -86,7 +86,7 @@ class ParallelPortTrigger(_Trigger):
             self._port = Serial(com_port, baud_rate)
         except SerialException as error:
             logger.error(
-                "Disconnect and reconnect the ARDUINO convertor because "
+                "Disconnect and reconnect the ARDUINO converter because "
                 f"{error}",
                 exc_info=True,
             )

@@ -39,7 +39,7 @@ def pcl2fif(
         should be: ``index 0 event``.
     precision : str
         Data matrix format. ``[single|double|int|short]``, ``'single'``
-        improves backward compatability.
+        improves backward compatibility.
     replace : bool
         If `True`, previous events will be overwritten by the new ones from
         the external events file.
@@ -240,7 +240,7 @@ def any2fif(fname, out_dir=None, overwrite=True, precision="double"):
         If ``True``, overwrite previously converted files with the same name.
     precision : str
         Data matrix format. ``[single|double|int|short]``, ``'single'``
-        improves backward compatability.
+        improves backward compatibility.
     """
     fname = Path(fname)
     if not fname.is_file():

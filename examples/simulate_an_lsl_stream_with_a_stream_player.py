@@ -62,9 +62,9 @@ print (fif_file)
 #
 # .. note::
 #
-#     By defaul, the `~bsl.StreamPlayer.start` method is blocking and will wait
-#     for the streaming to start on the network. This behavior can be changed
-#     with the ``blocking`` argument.
+#     By default, the `~bsl.StreamPlayer.start` method is blocking and will
+#     wait for the streaming to start on the network. This behavior can be
+#     changed with the ``blocking`` argument.
 
 player = StreamPlayer(stream_name, fif_file)
 player.start()
@@ -101,7 +101,7 @@ print (streams)
 # """
 #
 # Finally, a `~bsl.StreamPlayer` can be called from the terminal with a command
-# line. This is the recommanded way of starting a `~bsl.StreamPlayer`.
+# line. This is the recommended way of starting a `~bsl.StreamPlayer`.
 # Example assuming the current working directory is ``bsl_data``:
 #
 # .. code-block:: console

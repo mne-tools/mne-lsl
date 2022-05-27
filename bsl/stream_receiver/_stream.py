@@ -371,11 +371,10 @@ class _Stream(ABC):
 
 @fill_doc
 class StreamMarker(_Stream):
-    """
-    Class representing a StreamReceiver markers stream.
+    """Class representing a StreamReceiver markers stream.
 
     Notice the irregular sampling rate.
-    This stream is instanciated as non-blocking.
+    This stream is instantiated as non-blocking.
 
     Parameters
     -----------
@@ -400,10 +399,9 @@ class StreamMarker(_Stream):
 
 @fill_doc
 class StreamEEG(_Stream):
-    """
-    Class representing a StreamReceiver EEG stream.
+    """Class representing a StreamReceiver EEG stream.
 
-    This stream is instanciated as blocking.
+    This stream is instantiated as blocking.
 
     Parameters
     -----------

@@ -21,7 +21,7 @@ logger.propagate = True
 @requires_parallel
 @requires_eeg_resting_state_dataset
 def test_parallel(tmp_path, portaddr):
-    """Testing for build-in parallel port."""
+    """Testing for built-in parallel port."""
     # TODO
     pass
 

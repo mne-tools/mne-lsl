@@ -69,7 +69,7 @@ requires_trigger_def_dataset = partial(
 
 
 def requires_parallel(function):
-    """Decorator to skip a test if a build-in ParallelPort is not available."""
+    """Decorator to skip a test if a built-in ParallelPort is not available."""
     try:
         from psychopy.parallel import ParallelPort  # noqa: F401
     except ModuleNotFoundError:

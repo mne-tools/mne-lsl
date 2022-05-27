@@ -137,7 +137,7 @@ def test_arg_trigger_def():
     time.sleep(2)
     sp.stop()
 
-    # With creatred TriggerDef missing an event
+    # With created TriggerDef missing an event
     trigger_def = TriggerDef()
     trigger_def.add("rest", 1)
     sp = StreamPlayer(

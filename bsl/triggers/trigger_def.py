@@ -93,7 +93,7 @@ class TriggerDef:
         """
         Write events to a ``.ini`` trigger definition file.
 
-        .. note:: The ``.ini`` file is writen with `configparser` and is
+        .. note:: The ``.ini`` file is written with `configparser` and is
                   structured as follows:
 
                   .. code-block:: python

@@ -103,7 +103,7 @@ class ScopeEEG(_Scope):
     @copy_doc(_Scope._read_lsl_stream)
     def _read_lsl_stream(self):
         """
-         The acquired data is splitted between the trigger channel and the data
+         The acquired data is split between the trigger channel and the data
         channels.
         """
         super()._read_lsl_stream()

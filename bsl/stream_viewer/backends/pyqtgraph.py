@@ -79,14 +79,14 @@ class _BackendPyQtGraph(_Backend):
         )
 
         logger.debug(
-            "Initilization of variables from _BackendPyQtGraph complete."
+            "Initialization of variables from _BackendPyQtGraph complete."
         )
 
     def _init_canvas(self):
         """
         Initialize the drawing canvas.
         """
-        logger.debug("Initilization of canvas..")
+        logger.debug("Initialization of canvas..")
 
         # Ranges
         self._plot_handler.disableAutoRange()
@@ -114,7 +114,7 @@ class _BackendPyQtGraph(_Backend):
         )
         self._plot_handler.setLabel(axis="bottom", text="Time (s)")
 
-        logger.debug("Initilization of canvas complete.")
+        logger.debug("Initialization of canvas complete.")
 
     # ------------------------ Trigger Events ----------------------
     @copy_doc(_Backend._update_LPT_trigger_events)

@@ -41,17 +41,17 @@ class StreamReceiver:
     def connect(self, stream_name=None, timeout=5, force=False):
         """
         Search for the available streams on the LSL network and connect to the
-        appropriate ones. If a LSL stream fullfills the requirements (name...),
+        appropriate ones. If a LSL stream fulfills the requirements (name...),
         a connection is established.
 
-        This function is called while instanciating a StreamReceiver and can be
+        This function is called while instantiated a StreamReceiver and can be
         recall to reconnect to the LSL streams.
 
         Parameters
         ----------
         %(stream_name)s
         timeout : int | float
-            Timeout duration in seconds after which the search is abandonned.
+            Timeout duration in seconds after which the search is abandoned.
         force : bool
             If ``True``, force reconnect if the StreamReceiver was already
             connected.
@@ -133,7 +133,7 @@ class StreamReceiver:
 
     def show_info(self):
         """
-        Display the informations about the connected streams.
+        Display the information about the connected streams.
         """
         for stream in self._streams:
             logger.info(

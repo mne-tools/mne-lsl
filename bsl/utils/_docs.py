@@ -160,7 +160,7 @@ docdict[
     "viewer_position_buffer"
 ] = """
 position_buffer : float
-    Time (seconds) at which the event is positionned in the buffer where:
+    Time (seconds) at which the event is positioned in the buffer where:
         0 represents the older events exiting the buffer.
         _BUFFER_DURATION represents the newer events entering the
         buffer."""
@@ -168,7 +168,7 @@ docdict[
     "viewer_position_plot"
 ] = """
 position_plot : float
-    Time (seconds) at which the event is positionned in the plotting window
+    Time (seconds) at which the event is positioned in the plotting window
     where:
         0 represents the older events exiting the window.
         xRange represents the newer events entering the window."""
