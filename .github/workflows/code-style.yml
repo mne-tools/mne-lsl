@@ -49,5 +49,6 @@ jobs:
           check_filenames: true
           check_hidden: true
           skip: './.git,./build,./bsl/externals'
+          ignore_words_list: ser
       - name: Run pydocstyle
         run: pydocstyle .

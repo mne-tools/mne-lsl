@@ -15,7 +15,7 @@ authors = [
     {name = 'Kyuhwa Lee', email = 'lee.kyuh@gmail.com'},
 ]
 maintainers = [
-    {name = 'Mathieu Scheltienne', email = 'mathieu.scheltienne@fcbg.ch'}
+    {name = 'Mathieu Scheltienne', email = 'mathieu.scheltienne@fcbg.ch'},
 ]
 keywords = [
     'python',
@@ -24,7 +24,7 @@ keywords = [
     'EEG',
     'LSL',
     'real-time',
-    'brain'
+    'brain',
 ]
 classifiers = [
     'Operating System :: Microsoft :: Windows',
@@ -46,7 +46,7 @@ dependencies = [
     'scipy',
     'mne>=1.0.0',
     'PyQt5',
-    'pyqtgraph'
+    'pyqtgraph',
 ]
 
 [project.scripts]
@@ -58,34 +58,34 @@ bsl_stream_viewer = 'bsl.commands.bsl_stream_viewer:run'
 [project.optional-dependencies]
 build = [
     'build',
-    'twine'
+    'twine',
 ]
 doc = [
     'matplotlib',
     'numpydoc',
     'pydata-sphinx-theme',
     'sphinx',
-    'sphinx-gallery'
+    'sphinx-gallery',
 ]
 externals = [
     'pylsl',
-    'psychopy'
+    'psychopy',
 ]
 parallel = [
     'pyserial',
-    'pyparallel; platform_system == "linux"'
+    'pyparallel; platform_system == "linux"',
 ]
 style = [
     'black',
     'codespell',
     'isort',
     'flake8',
-    'pydocstyle[toml]'
+    'pydocstyle[toml]',
 ]
 test = [
     'pytest',
     'pytest-cov',
-    'requests'
+    'requests',
 ]
 all = [
     'build',
@@ -106,7 +106,7 @@ all = [
     'pydocstyle[toml]',
     'pytest',
     'pytest-cov',
-    'requests'
+    'requests',
 ]
 
 [project.urls]
