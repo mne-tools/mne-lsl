@@ -154,6 +154,7 @@ extend_skip_glob = [
 
 [tool.pydocstyle]
 convention = 'numpy'
-ignore-decorators = '(copy_doc|property|.*setter|.*getter)'
+ignore-decorators = '(copy_doc|property|.*setter|.*getter|pyqtSlot)'
 match = '^(?!setup|__init__|test_).*\.py'
-match-dir = '^(?!build|dist|\.).*'
+match-dir = '^(?!build|dist|\.|externals).*'
+add_ignore = 'D100,D104,D107'
