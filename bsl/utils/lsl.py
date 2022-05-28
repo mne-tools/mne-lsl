@@ -1,6 +1,5 @@
-"""
-LSL wrapper functions for creating a server and a client.
-"""
+"""LSL wrapper functions for creating a server and a client."""
+
 import xml.etree.ElementTree as ET
 
 from ..externals import pylsl
@@ -10,8 +9,7 @@ from ._logs import logger
 
 
 def list_lsl_streams(ignore_markers=False):
-    """
-    List all the available outlets on LSL network.
+    """List all the available outlets on LSL network.
 
     Parameters
     ----------
@@ -49,9 +47,9 @@ def list_lsl_streams(ignore_markers=False):
 
 
 def search_lsl(ignore_markers=False, timeout=10):
-    """
-    Search and select an available stream on LSL network.
-    Does not open an LSL inlet.
+    """Search and select an available stream on LSL network.
+
+    This function does not open an LSL inlet.
 
     Parameters
     ----------
@@ -107,8 +105,7 @@ def search_lsl(ignore_markers=False, timeout=10):
 
 
 def lsl_channel_list(inlet):
-    """
-    Extract the channels name list from the LSL info.
+    """Extract the channels name list from the LSL info.
 
     Parameters
     ----------

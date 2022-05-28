@@ -1,13 +1,11 @@
-"""
-Convert known file format to FIF.
-"""
+"""Convert BSL file format to FIF."""
+
 import os
 import pickle
 from pathlib import Path
 
 import mne
 import numpy as np
-from mne.io._read_raw import supported
 
 from . import find_event_channel
 from ._logs import logger
@@ -24,8 +22,7 @@ def pcl2fif(
     replace=False,
     overwrite=True,
 ):
-    """
-    Convert BSL pickle format to MNE Raw format.
+    """Convert BSL pickle format to MNE Raw format.
 
     Parameters
     ----------
@@ -81,8 +78,8 @@ def pcl2fif(
 
 
 def _format_pcl_to_mne_RawArray(data):
-    """
-    Format the raw data to the MNE RawArray structure.
+    """Format the raw data to the MNE RawArray structure.
+
     Data must be recorded with BSL StreamRecorder.
 
     Parameters
@@ -160,10 +157,9 @@ def _format_pcl_to_mne_RawArray(data):
     return raw
 
 
-def _load_events_from_txt(raw_times, eve_file, offset):
-    """
-    Load events delivered by the software trigger from the event txt file, and
-    convert LSL timestamps to indices.
+def _load_events_from_txt(raw_times, eve_file, offset):  # noqa
+    """Load events delivered by the software trigger from the event txt file,
+    and convert LSL timestamps to indices.
     """
 
     ts_min = min(raw_times)
@@ -194,8 +190,7 @@ def _load_events_from_txt(raw_times, eve_file, offset):
 def _add_events_from_txt(
     raw, events_index, stim_channel="TRIGGER", replace=False
 ):
-    """
-    Merge the events extracted from a .txt file to the trigger channel.
+    """Merge the events extracted from a .txt file to the trigger channel.
 
     Parameters
     ----------
@@ -217,62 +212,3 @@ def _add_events_from_txt(
         raw.add_events(
             events_index, stim_channel=stim_channel, replace=replace
         )
-
-
-# ------------------------- General converter -------------------------
-# Edit readers with BSL '.pcl' reader.
-supported[".pcl"] = pcl2fif
-
-
-def any2fif(fname, out_dir=None, overwrite=True, precision="double"):
-    """
-    Generic file format converter to Raw.
-    Uses `mne.io.read_raw`.
-
-    Parameters
-    ----------
-    fname : file-like
-        File path to convert to ``.fif`` format.
-    out_dir : path-like
-        Saving directory. If ``None``, it will be the directory
-        ``fname.parent/'fif'.``
-    overwrite : bool
-        If ``True``, overwrite previously converted files with the same name.
-    precision : str
-        Data matrix format. ``[single|double|int|short]``, ``'single'``
-        improves backward compatibility.
-    """
-    fname = Path(fname)
-    if not fname.is_file():
-        raise IOError("File %s not found." % fname)
-    if fname.suffix not in supported:
-        raise IOError("File type %s is not supported." % fname.suffix)
-
-    if fname.suffix == ".pcl":
-        eve_file = fname.parent / (fname.stem[:-4] + "eve.txt")
-        if eve_file.exists():
-            logger.info("Adding events from '%s'", eve_file)
-        else:
-            logger.info("No SOFTWARE event file '%s'", eve_file)
-            eve_file = None
-
-        pcl2fif(
-            fname,
-            out_dir=out_dir,
-            external_event=eve_file,
-            precision=precision,
-            replace=False,
-            overwrite=overwrite,
-        )
-
-    else:
-        if out_dir is not None:
-            out_dir = Path(out_dir)
-        else:
-            out_dir = fname.parent / "fif"
-        os.makedirs(out_dir, exist_ok=True)
-
-        fiffile = out_dir / fname.stem + ".fif"
-
-        raw = mne.io.read_raw(fname)
-        raw.save(fiffile, verbose=False, overwrite=overwrite, fmt=precision)

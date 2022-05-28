@@ -15,7 +15,7 @@ from ..datasets import (
 from ..datasets._fetching import _hashfunc
 
 
-def requires_good_network(function):
+def requires_good_network(function):  # noqa: D401
     """Decorator to skip a test if a network connection is not available."""
     try:
         requests.get("https://github.com/", timeout=1)
@@ -27,9 +27,10 @@ def requires_good_network(function):
     return pytest.mark.skipif(skip, reason=reason)(function)
 
 
-def _requires_dataset_or_good_network(function, dataset):
+def _requires_dataset_or_good_network(function, dataset):  # noqa
     """Decorator to skip a test if a required dataset is absent and it can not
-    be downloaded."""
+    be downloaded.
+    """
     # BSL datasets
     try:
         fname = dataset.PATH
