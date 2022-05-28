@@ -1,6 +1,0 @@
-# requirements for the documentation build
-matplotlib
-sphinx
-pydata-sphinx-theme
-sphinx-gallery
-numpydoc

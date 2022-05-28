@@ -15,8 +15,7 @@ class _metaclass_ControlGUI(type(QMainWindow), type(ABC)):
 
 @fill_doc
 class _ControlGUI(QMainWindow, ABC, metaclass=_metaclass_ControlGUI):
-    """
-    Class representing a base controller GUI.
+    """Class representing a base controller GUI.
 
     Parameters
     ----------
@@ -30,30 +29,22 @@ class _ControlGUI(QMainWindow, ABC, metaclass=_metaclass_ControlGUI):
 
     @abstractmethod
     def _load_gui(self):
-        """
-        Load the GUI.
-        """
+        """Load the GUI."""
         pass
 
     @abstractmethod
     def _init_backend(self):
-        """
-        Initialize the backend.
-        """
+        """Initialize the backend."""
         pass
 
     def closeEvent(self, event):
-        """
-        Event called when closing the GUI.
-        """
+        """Event called when closing the GUI."""
         event.accept()
 
     # --------------------------------------------------------------------
     @abstractmethod
     def _connect_signals_to_slots(self):
-        """
-        Event handler. Connect QT signals to slots.
-        """
+        """Event handler. Connect QT signals to slots."""
         # Recording
         self._ui.pushButton_start_recording.clicked.connect(
             self.onClicked_pushButton_start_recording
@@ -104,23 +95,17 @@ class _ControlGUI(QMainWindow, ABC, metaclass=_metaclass_ControlGUI):
     # --------------------------------------------------------------------
     @property
     def scope(self):
-        """
-        Measuring scope.
-        """
+        """Measuring scope."""
         return self._scope
 
     @property
     @abstractmethod
     def backend(self):
-        """
-        Display backend.
-        """
+        """Display backend."""
         pass
 
     @property
     @abstractmethod
     def ui(self):
-        """
-        Control UI.
-        """
+        """Control UI."""
         pass

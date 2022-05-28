@@ -78,7 +78,7 @@ def create_bandpass_filter(low, high, fs, n):
     low : float
         The lower pass-band edge.
     high : float
-        The upper pass-band ege.
+        The upper pass-band edge.
     fs : float
         Sampling rate of the data.
     n : int

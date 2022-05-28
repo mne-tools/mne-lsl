@@ -14,8 +14,7 @@ from ._ui_control import UI_MainWindow
 
 @fill_doc
 class ControlGUI_EEG(_ControlGUI):
-    """
-    Controller GUI for EEG LSL Stream.
+    """Controller GUI for EEG LSL Stream.
 
     Parameters
     ----------
@@ -35,9 +34,7 @@ class ControlGUI_EEG(_ControlGUI):
         self._backend.start_timer()
 
     def _load_gui(self):
-        """
-        Loads the UI created with QtCreator.
-        """
+        """Load the UI created with QtCreator."""
         logger.debug("Loading GUI..")
 
         self._ui = UI_MainWindow(self)
@@ -91,9 +88,7 @@ class ControlGUI_EEG(_ControlGUI):
         logger.debug("Loading GUI complete.")
 
     def _load_configuration(self, file):
-        """
-        Load default configuration for the ranges.
-        """
+        """Load default configuration for the ranges."""
         logger.debug("Loading configuration..")
 
         path2settings_folder = Path(__file__).parent / "settings"
@@ -135,9 +130,7 @@ class ControlGUI_EEG(_ControlGUI):
         logger.debug("Loading configuration complete.")
 
     def _set_configuration(self, file):
-        """
-        Load and set a default configuration for the GUI.
-        """
+        """Load and set a default configuration for the GUI."""
         path2settings_folder = Path(__file__).parent / "settings"
         scope_settings = RawConfigParser(
             allow_no_value=True, inline_comment_prefixes=("#", ";")
@@ -345,9 +338,7 @@ class ControlGUI_EEG(_ControlGUI):
         self._backend.selected_channels = self._scope.selected_channels
 
     def closeEvent(self, event):
-        """
-        Event called when closing the _ScopeControllerUI window.
-        """
+        """Event called when closing the _ScopeControllerUI window."""
         logger.debug("Closing event received.")
         if self._ui.pushButton_stop_recording.isEnabled():
             self.onClicked_pushButton_stop_recording()
@@ -367,14 +358,10 @@ class ControlGUI_EEG(_ControlGUI):
 
     @property
     def xRange(self):
-        """
-        Selected X range (time) [seconds].
-        """
+        """Selected X range (time) [seconds]."""
         return self._xRange
 
     @property
     def yRange(self):
-        """
-        Selected Y range (amplitude) [uV].
-        """
+        """Selected Y range (amplitude) [uV]."""
         return self._yRange

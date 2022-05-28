@@ -1,6 +1,5 @@
-"""
-Base class for triggers.
-"""
+"""Base class for triggers."""
+
 from abc import ABC, abstractmethod
 
 from ..utils._checks import _check_type
@@ -10,8 +9,7 @@ from ..utils._logs import logger
 
 @fill_doc
 class _Trigger(ABC):
-    """
-    Base trigger class.
+    """Base trigger class.
 
     Parameters
     ----------
@@ -24,8 +22,12 @@ class _Trigger(ABC):
 
     @abstractmethod
     def signal(self, value: int):
-        """
-        Send a trigger value.
+        """Send a trigger value.
+
+        Parameters
+        ----------
+        value : int
+            Value of the trigger.
         """
         if self._verbose:
             logger.info("Sending trigger %s.", value)
@@ -34,9 +36,7 @@ class _Trigger(ABC):
 
     @abstractmethod
     def _set_data(self, value: int):
-        """
-        Set the trigger signal to value.
-        """
+        """Set the trigger signal to value."""
         logger.debug("Setting data to %d.", value)
 
     # --------------------------------------------------------------------

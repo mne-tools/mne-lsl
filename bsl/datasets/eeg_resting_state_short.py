@@ -1,8 +1,3 @@
-"""
-Sample EEG dataset recorded on ANT Neuro Amplifier with 64 electrodes. This is
-a resting-state recording lasting 2 seconds.
-"""
-
 import os
 from pathlib import Path
 
@@ -15,7 +10,7 @@ URL = "https://github.com/bsl-tools/bsl-datasets/raw/main/eeg_sample/resting_sta
 PATH = Path("~/bsl_data/eeg_sample/resting_state_short-raw.fif").expanduser()
 
 
-def data_path():
+def data_path():  # noqa
     """
     Path to a sample EEG dataset recorded on ANT Neuro Amplifier with 64
     electrodes. This is a resting-state recording lasting 2 seconds.

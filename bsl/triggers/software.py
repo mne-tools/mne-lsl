@@ -1,6 +1,5 @@
-"""
-Trigger using software and a .txt file.
-"""
+"""Trigger using software and a .txt file."""
+
 from ..externals import pylsl
 from ..stream_recorder import StreamRecorder
 from ..utils._checks import _check_type
@@ -10,8 +9,8 @@ from ._trigger import _Trigger
 
 @fill_doc
 class SoftwareTrigger(_Trigger):
-    """
-    Trigger saving signal value in a ``.txt`` file.
+    """Trigger saving signal value in a ``.txt`` file.
+
     Software trigger instance must be created after a StreamRecorder is started
     and close/deleted before a StreamRecorder is stopped.
 
@@ -49,38 +48,29 @@ class SoftwareTrigger(_Trigger):
 
     @copy_doc(_Trigger._set_data)
     def _set_data(self, value: int):
-        """
-        Set the trigger signal to value.
-        """
         super()._set_data(value)
         self._eve_file.write("%.6f\t0\t%d\n" % (pylsl.local_clock(), value))
 
     def close(self):
-        """
-        Close the event file.
-        """
+        """Close the event file."""
         try:
             self._eve_file.close()
         except Exception:
             pass
 
-    def __del__(self):
+    def __del__(self):  # noqa: D105
         self.close()
 
     # --------------------------------------------------------------------
     @staticmethod
     def _check_recorder(recorder):
-        """
-        Check that the provided recorder is indeed a StreamRecorder.
-        """
+        """Check that the provided recorder is indeed a StreamRecorder."""
         _check_type(recorder, (StreamRecorder,), item_name="recorder")
         return recorder
 
     @staticmethod
     def _find_eve_file(recorder):
-        """
-        Find the event file name from the on going StreamRecorder.
-        """
+        """Find the event file name from the on going StreamRecorder."""
         if recorder.eve_file is None:
             raise RuntimeError(
                 "The StreamRecorder must be started before instantiating "
@@ -92,8 +82,7 @@ class SoftwareTrigger(_Trigger):
     # --------------------------------------------------------------------
     @property
     def recorder(self):
-        """
-        BSL's recorder used.
+        """BSL's recorder used.
 
         :type: StreamRecorder
         """
@@ -101,8 +90,7 @@ class SoftwareTrigger(_Trigger):
 
     @property
     def eve_file(self):
-        """
-        Event ``.ini`` file.
+        """Event ``.ini`` file.
 
         :type: `~io.TextIOWrapper`
         """
