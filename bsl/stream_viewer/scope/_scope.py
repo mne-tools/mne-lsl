@@ -9,8 +9,7 @@ _BUFFER_DURATION = 30  # seconds
 
 @fill_doc
 class _Scope(ABC):
-    """
-    Class representing a base scope.
+    """Class representing a base scope.
 
     Parameters
     ----------
@@ -47,7 +46,7 @@ class _Scope(ABC):
 
     # -------------------------- Main Loop -------------------------
     @abstractmethod
-    def update_loop(self):
+    def update_loop(self):  # noqa
         """
         Main update loop acquiring data from the LSL stream and filling the
         scope's buffer.
@@ -56,9 +55,7 @@ class _Scope(ABC):
 
     @abstractmethod
     def _read_lsl_stream(self):
-        """
-        Acquires data from the connected LSL stream.
-        """
+        """Acquires data from the connected LSL stream."""
         self._sr.acquire()
         self._data_acquired, self._ts_list = self._sr._get_buffer()
         self._sr.reset_buffer()
@@ -69,35 +66,25 @@ class _Scope(ABC):
     # --------------------------------------------------------------------
     @property
     def stream_name(self):
-        """
-        Name of the connected stream.
-        """
+        """Name of the connected stream."""
         return self._stream_name
 
     @property
     def sample_rate(self):
-        """
-        Sample rate of the connected stream [Hz].
-        """
+        """Sample rate of the connected stream [Hz]."""
         return self._sample_rate
 
     @property
     def duration_buffer(self):
-        """
-        Duration of the scope's buffer [seconds].
-        """
+        """Duration of the scope's buffer [seconds]."""
         return self._duration_buffer
 
     @property
     def duration_buffer_samples(self):
-        """
-        Duration of the scope's buffer [samples].
-        """
+        """Duration of the scope's buffer [samples]."""
         return self._duration_buffer_samples
 
     @property
     def ts_list(self):
-        """
-        Timestamps buffer [samples, ].
-        """
+        """Timestamps buffer [samples, ]."""
         return self._ts_list

@@ -3,8 +3,8 @@ from ..utils._logs import logger
 
 
 class Buffer:
-    """
-    Class representing the stream's buffer.
+    """Class representing the stream's buffer.
+
     This is not a Python Buffer Interface compatible class.
 
     Parameters
@@ -24,11 +24,10 @@ class Buffer:
 
     @fill_doc
     def fill(self, data, tslist):
-        """
-        Fill the data and timestamps to the buffer.
+        """Fill the data and timestamps to the buffer.
 
         Parameters
-        -----------
+        ----------
         data : list
             Received data [samples x channels].
         %(receiver_tslist)s
@@ -42,37 +41,27 @@ class Buffer:
             self._timestamps = self._timestamps[-self._bufsize :]
 
     def reset_buffer(self):
-        """
-        Clear the buffer's data and timestamps.
-        """
+        """Clear the buffer's data and timestamps."""
         self._data = []
         self._timestamps = []
         logger.debug("Buffer reset.")
 
     @property
     def bufsize(self):
-        """
-        Buffer's size [samples].
-        """
+        """Buffer's size [samples]."""
         return self._bufsize
 
     @property
     def winsize(self):
-        """
-        Window's size [samples].
-        """
+        """Window's size [samples]."""
         return self._winsize
 
     @property
     def data(self):
-        """
-        Buffer's data [samples x channels].
-        """
+        """Buffer's data [samples x channels]."""
         return self._data
 
     @property
     def timestamps(self):
-        """
-        Data's timestamps [samples].
-        """
+        """Data's timestamps [samples]."""
         return self._timestamps

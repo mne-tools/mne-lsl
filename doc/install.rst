@@ -6,7 +6,7 @@
 Install instructions
 ====================
 
-BSL requires Python version ``3.7`` or higher. BSL is available on `GitHub`_
+BSL requires Python version ``3.8`` or higher. BSL is available on `GitHub`_
 and on `Pypi <https://pypi.org/project/bsl/>`_.
 
 - **Pypi**: Install BSL using ``pip``
@@ -18,13 +18,14 @@ and on `Pypi <https://pypi.org/project/bsl/>`_.
 - **Conda**: A conda-forge distribution is not yet available.
 
 - **GitHub**: Clone the `main repository <https://github.com/bsl-tools/bsl>`_
-  and install with ``setup.py``
+  and install with ``pip install .``
 
   .. code-block:: console
 
-      $ python setup.py install
+      $ git clone https://github.com/bsl-tools/bsl
+      $ pip install .
 
-  For the developer mode, use ``develop`` instead of ``install``.
+  For the developer mode, use ``-e`` flag: ``pip install -e .``.
 
 =====================
 Optional dependencies
@@ -43,6 +44,19 @@ Additional functionalities requires:
 - `pyserial`_: for the parallel port trigger using an :ref:`arduino2lpt`.
 - `pyparallel`_: for the parallel port trigger using an on-board port on Linux.
 
+The additional functionalities can be installed with the keywords:
+
+- ``build`` for build dependencies
+- ``doc`` for doc rendering dependencies
+- ``externals`` for ``pylsl`` and ``psychopy``
+- ``parallel`` for parallel port trigger dependencies
+- ``style`` for code-style dependencies
+- ``test`` for development test dependencies
+- ``all`` for all of th above.
+
+e.g. ``pip install bsl[parallel]`` will install ``BSL`` with the dependencies
+for parallel port triggers.
+
 ===========================
 Installing pylsl and liblsl
 ===========================
@@ -58,7 +72,7 @@ running the following command in a terminal:
 
 If you prefer to use a different version, or if the command above raises an
 error, `pylsl`_ can be installed in the same environment as ``BSL``. ``BSL``
-will automaticaly select `pylsl`_ and will prefer the version installed in the
+will automatically select `pylsl`_ and will prefer the version installed in the
 same environment above the version distributed in ``bsl.externals``.
 
 `pylsl`_ requires a binary library called ``liblsl`` to operate. The binary
@@ -125,7 +139,7 @@ the ``psychopy.parallel`` module. By default, ``BSL`` is distributed with a
 recent version of ``psychopy.parallel`` that should work on most systems.
 
 If you prefer to use a different version, `psychopy`_ can be installed in the
-same environment as ``BSL``. ``BSL`` will automaticaly select `psychopy`_ and
+same environment as ``BSL``. ``BSL`` will automatically select `psychopy`_ and
 will prefer the version installed in the same environment above the version
 distributed in ``bsl.externals``.
 

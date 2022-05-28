@@ -1,9 +1,3 @@
-"""
-Sample EEG dataset recorded on ANT Neuro Amplifier with 64 electrodes. The
-recording last 184 seconds and include 75 rest events (1)  lasting 1 second and
-75 auditory stimuli events (4) lasting 0.8 second.
-"""
-
 import os
 from pathlib import Path
 
@@ -16,7 +10,7 @@ URL = "https://github.com/bsl-tools/bsl-datasets/raw/main/eeg_sample/auditory_st
 PATH = Path("~/bsl_data/eeg_sample/auditory_stimuli-raw.fif").expanduser()
 
 
-def data_path():
+def data_path():  # noqa
     """
     Path to a sample EEG dataset recorded on ANT Neuro Amplifier with 64
     electrodes. The recording last 184 seconds and include 75 rest events (1)

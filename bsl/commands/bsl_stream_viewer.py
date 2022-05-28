@@ -1,15 +1,3 @@
-"""
-Visualize LSL stream on the network. The signal is visualizd in real time with
-spectral filtering and common average filtering option.
-
-Command-line arguments:
-    -s --stream_name    Stream name (str)
-
-Example:
-    bsl_stream_viewer
-    bsl_stream_viewer -s StreamPlayer
-"""
-
 import argparse
 
 from bsl import StreamViewer

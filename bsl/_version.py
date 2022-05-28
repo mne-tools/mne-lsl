@@ -1,3 +1,5 @@
-"""The version number."""
+"""Version number."""
 
-__version__ = "0.5.0.dev"
+from importlib.metadata import version
+
+__version__ = version(__package__)
