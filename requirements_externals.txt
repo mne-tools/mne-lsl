@@ -1,5 +1,0 @@
-# Extra requirements to use a different version of a package than the provided
-# one in the externals module.
-
-pylsl                  # lsl, labstreaminglayer
-psychopy               # parallel, parallelport, lpt

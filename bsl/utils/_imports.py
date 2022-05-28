@@ -1,22 +1,25 @@
-"""
-Optional dependency import.
+"""Handle optional dependency imports.
+
 Inspired from pandas: https://pandas.pydata.org/
 """
+
 import importlib
 
 # A mapping from import name to package name (on PyPI) when the package name
 # is different.
 INSTALL_MAPPING = {
-    "serial": "pyserial",
     "parallel": "pyparallel",
+    "serial": "pyserial",
 }
 
 
 def import_optional_dependency(
-    name: str, extra: str = "", raise_error: bool = True
+    name: str,
+    extra: str = "",
+    raise_error: bool = True,
 ):
-    """
-    Import an optional dependency.
+    """Import an optional dependency.
+
     By default, if a dependency is missing an ImportError with a nice message
     will be raised.
 
@@ -29,12 +32,11 @@ def import_optional_dependency(
     raise_error : bool
         What to do when a dependency is not found.
         * True : Raise an ImportError.
-        * False: If the module is not installed, return None, otherwise, return
-        the module.
+        * False: Return None.
 
     Returns
     -------
-    maybe_module : Optional[ModuleType]
+    module : Optional[ModuleType]
         The imported module when found.
         None is returned when the package is not found and raise_error is
         False.

@@ -1,23 +1,3 @@
-"""
-Acquires signals from LSL server and save them to '-raw.fif' files in a
-record directory.
-
-Command-line arguments:
-    -d --directory      Path to the record directory (str, path)
-    -f --fname          File name stem (str)
-    -s --stream_name    Stream name (str)
-    --fif_subdir        Flag to save .fif in a subdirectory.
-    --verbose           Flag to display a timer every recorded second.
-If no argument is provided, records in the current directory.
-
-Example:
-    bsl_stream_recorder -d "D:/Data"
-    bsl_stream_recorder -d "D:/Data" -f test
-    bsl_stream_recorder -d "D:/Data" -f test -s openvibeSignals
-    bsl_stream_recorder -d "D:/Data" -f test -s openvibeSignals --fif_subdir
-    bsl_stream_recorder -d "D:/Data" -f test -s openvibeSignals --verbose
-"""
-
 import argparse
 from pathlib import Path
 

@@ -10,8 +10,7 @@ from ._trigger import _Trigger
 
 @fill_doc
 class ParallelPortTrigger(_Trigger):
-    """
-    Trigger using a parallel port (also called LPT port).
+    """Trigger using a parallel port (also called LPT port).
 
     Parameters
     ----------
@@ -34,7 +33,7 @@ class ParallelPortTrigger(_Trigger):
           LPT2 = /dev/parport1
           LPT3 = /dev/parport2
 
-    - On Windows, commom port addresses::
+    - On Windows, common port addresses::
 
           LPT1 = 0x0378 or 0x03BC
           LPT2 = 0x0278 or 0x0378
@@ -60,9 +59,7 @@ class ParallelPortTrigger(_Trigger):
         self._offtimer = threading.Timer(self._delay, self._signal_off)
 
     def _connect_arduino(self, baud_rate: int = 115200):
-        """
-        Connect to the Arduino LPT converter.
-        """
+        """Connect to the Arduino LPT converter."""
         # Imports
         import_optional_dependency(
             "serial", extra="Install 'pyserial' for ARDUINO support."
@@ -86,7 +83,7 @@ class ParallelPortTrigger(_Trigger):
             self._port = Serial(com_port, baud_rate)
         except SerialException as error:
             logger.error(
-                "Disconnect and reconnect the ARDUINO convertor because "
+                "Disconnect and reconnect the ARDUINO converter because "
                 f"{error}",
                 exc_info=True,
             )
@@ -96,9 +93,7 @@ class ParallelPortTrigger(_Trigger):
         logger.info("Connected to %s.", com_port)
 
     def _connect_pport(self):
-        """
-        Connect to the ParallelPort.
-        """
+        """Connect to the ParallelPort."""
         # Imports
         psychopy = import_optional_dependency("psychopy", raise_error=False)
         if psychopy is None:
@@ -147,11 +142,9 @@ class ParallelPortTrigger(_Trigger):
         self._offtimer.start()
         return True
 
-    def _signal_off(self):
-        """
-        Reset trigger signal to 0 and reset offtimer as Threads are one-call
-        only.
-        """
+    def _signal_off(self):  # noqa
+        """Reset trigger signal to 0 and reset offtimer as Threads are one-call
+        only."""
         self._set_data(0)
         self._offtimer = threading.Timer(self._delay, self._signal_off)
 
@@ -164,9 +157,10 @@ class ParallelPortTrigger(_Trigger):
             self._port.setData(value)
 
     def close(self):
-        """
-        Disconnects the parallel port. This method should free the parallel
-        port and let other application or python process use it.
+        """Disconnects the parallel or serial port.
+
+        This method should free the parallel or serial port and let other
+        application or python process use it.
         """
         if self._address == "arduino":
             try:
@@ -177,14 +171,13 @@ class ParallelPortTrigger(_Trigger):
             if hasattr(self, "_port"):
                 del self._port
 
-    def __del__(self):
+    def __del__(self):  # noqa: D105
         self.close()
 
     # --------------------------------------------------------------------
     @property
     def address(self):
-        """
-        Port address.
+        """Port address.
 
         :type: int | str
         """
@@ -192,9 +185,8 @@ class ParallelPortTrigger(_Trigger):
 
     @property
     def delay(self):
-        """
-        Delay to wait between two :meth:`~ParallelPortTrigger.signal` call in
-        milliseconds.
+        """Delay to wait between two :meth:`~ParallelPortTrigger.signal` call
+        in milliseconds.
 
         :type: float
         """

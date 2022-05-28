@@ -10,7 +10,7 @@ BSL propose to use 3 of its main classes from the command line:
 - :ref:`stream_recorder`
 - :ref:`stream_viewer`
 
-For each command, the flag `-h` can be used to obtain additionnal information.
+For each command, the flag `-h` can be used to obtain additional information.
 
 .. _stream_player:
 

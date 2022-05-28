@@ -4,8 +4,7 @@ from ._checks import _check_type
 
 
 class Timer:
-    """
-    Timer class.
+    """Timer class.
 
     Parameters
     ----------
@@ -18,30 +17,22 @@ class Timer:
         self.reset()
 
     def sec(self):
-        """
-        Provide the time since reset in seconds.
-        """
+        """Provide the time since reset in seconds."""
         read = time.time() - self.ref
         if self._autoreset:
             self.reset()
         return read
 
     def msec(self):
-        """
-        Provide the time since reset in milliseconds.
-        """
+        """Provide the time since reset in milliseconds."""
         return self.sec() * 1000.0
 
-    def reset(self):
-        """
-        Reset the timer to zero.
-        """
+    def reset(self) -> None:
+        """Reset the timer to zero."""
         self.ref = time.time()
 
     def sleep_atleast(self, sec):
-        """
-        Sleep up to sec seconds.
-        It's more convenient if ``autoreset=True``.
+        """Sleep up to sec seconds.
 
         Parameters
         ----------
@@ -57,8 +48,7 @@ class Timer:
 
     @property
     def autoreset(self):
-        """
-        Autoreset status.
+        """Autoreset status.
 
         :type: bool
         """

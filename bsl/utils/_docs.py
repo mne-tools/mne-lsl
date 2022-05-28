@@ -1,9 +1,11 @@
-"""
-Fill function docstrings to avoid redundant docstrings in multiple files.
+"""Fill docstrings to avoid redundant docstrings in multiple files.
+
 Inspired from mne: https://mne.tools/stable/index.html
 Inspired from mne.utils.docs.py by Eric Larson <larson.eric.d@gmail.com>
 """
+
 import sys
+from typing import Callable, List
 
 # ------------------------- Documentation dictionary -------------------------
 docdict = dict()
@@ -15,6 +17,15 @@ docdict[
 stream_name : list | str | None
     Servers' name or list of servers' name to connect to.
     If ``None``, connects to all the available streams."""
+docdict[
+    "verbose"
+] = """
+verbose : int | str | bool | None
+    Sets the verbosity level. The verbosity increases gradually between
+    "CRITICAL", "ERROR", "WARNING", "INFO" and "DEBUG".
+    If None is provided, the verbosity is set to "WARNING".
+    If a bool is provided, the verbosity is set to "WARNING" for False and to
+    "INFO" for True."""
 
 # -----------------------------------------------
 # Stream Receiver
@@ -160,7 +171,7 @@ docdict[
     "viewer_position_buffer"
 ] = """
 position_buffer : float
-    Time (seconds) at which the event is positionned in the buffer where:
+    Time (seconds) at which the event is positioned in the buffer where:
         0 represents the older events exiting the buffer.
         _BUFFER_DURATION represents the newer events entering the
         buffer."""
@@ -168,7 +179,7 @@ docdict[
     "viewer_position_plot"
 ] = """
 position_plot : float
-    Time (seconds) at which the event is positionned in the plotting window
+    Time (seconds) at which the event is positioned in the plotting window
     where:
         0 represents the older events exiting the window.
         xRange represents the newer events entering the window."""
@@ -185,19 +196,19 @@ verbose : bool
 docdict_indented = dict()
 
 
-def fill_doc(f):
+def fill_doc(f: Callable) -> Callable:
     """
     Fill a docstring with docdict entries.
 
     Parameters
     ----------
     f : callable
-        The function to fill the docstring of. Will be modified in place.
+        The function to fill the docstring of (modified in place).
 
     Returns
     -------
     f : callable
-        The function, potentially with an updated ``__doc__``.
+        The function, potentially with an updated __doc__.
     """
     docstring = f.__doc__
     if not docstring:
@@ -224,12 +235,12 @@ def fill_doc(f):
     except (TypeError, ValueError, KeyError) as exp:
         funcname = f.__name__
         funcname = docstring.split("\n")[0] if funcname is None else funcname
-        raise RuntimeError("Error documenting %s:\n%s" % (funcname, str(exp)))
+        raise RuntimeError(f"Error documenting {funcname}:\n{str(exp)}")
 
     return f
 
 
-def _indentcount_lines(lines):
+def _indentcount_lines(lines: List[str]) -> int:
     """
     Minimum indent for all lines in line list.
 
@@ -255,7 +266,7 @@ def _indentcount_lines(lines):
     return indent
 
 
-def copy_doc(source):
+def copy_doc(source: Callable) -> Callable:
     """
     Copy the docstring from another function (decorator).
 
@@ -267,13 +278,13 @@ def copy_doc(source):
 
     Parameters
     ----------
-    source : function
-        Function to copy the docstring from
+    source : callable
+        The function to copy the docstring from.
 
     Returns
     -------
-    wrapper : function
-        The decorated function
+    wrapper : callable
+        The decorated function.
 
     Examples
     --------
@@ -292,7 +303,10 @@ def copy_doc(source):
 
     def wrapper(func):
         if source.__doc__ is None or len(source.__doc__) == 0:
-            raise ValueError("Cannot copy docstring: docstring was empty.")
+            raise RuntimeError(
+                f"The docstring from {source.__name__} could not be copied "
+                "because it was empty."
+            )
         doc = source.__doc__
         if func.__doc__ is not None:
             doc += func.__doc__

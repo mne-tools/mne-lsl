@@ -7,8 +7,8 @@ from ..utils._logs import logger
 
 
 class TriggerDef:
-    """
-    Class used to store pairs {str: int} of events name and events value.
+    """Class used to store pairs {str: int} of events name and events value.
+
     Each name and each value is unique. The pairs can be read from a ``.ini``
     file or edited manually with :meth:`TriggerDef.add` and
     :meth:`TriggerDef.remove`.
@@ -46,8 +46,7 @@ class TriggerDef:
         self.read(trigger_file)
 
     def read(self, trigger_file):
-        """
-        Read events from a ``.ini`` trigger definition file.
+        """Read events from a ``.ini`` trigger definition file.
 
         .. note:: The ``.ini`` file is read with `configparser` and has to be
                   structured as follows:
@@ -90,10 +89,9 @@ class TriggerDef:
             self._by_value[value] = name
 
     def write(self, trigger_file):
-        """
-        Write events to a ``.ini`` trigger definition file.
+        """Write events to a ``.ini`` trigger definition file.
 
-        .. note:: The ``.ini`` file is writen with `configparser` and is
+        .. note:: The ``.ini`` file is written with `configparser` and is
                   structured as follows:
 
                   .. code-block:: python
@@ -110,8 +108,7 @@ class TriggerDef:
             config.write(configfile)
 
     def add(self, name, value, overwrite=False):
-        """
-        Add an event to the trigger definition instance.
+        """Add an event to the trigger definition instance.
 
         Parameters
         ----------
@@ -142,8 +139,8 @@ class TriggerDef:
         self._by_value[value] = name
 
     def remove(self, event):
-        """
-        Remove an event from the trigger definition instance.
+        """Remove an event from the trigger definition instance.
+
         The event can be given by name (str) or by value (int).
 
         Parameters
@@ -183,10 +180,7 @@ class TriggerDef:
     # --------------------------------------------------------------------
     @staticmethod
     def _check_trigger_file(trigger_file):
-        """
-        Checks that the provided file exists and ends with .ini. Else returns
-        None.
-        """
+        """Check that the provided file exists and ends with .ini."""
         _check_type(
             trigger_file, (None, "path-like"), item_name="trigger_file"
         )
@@ -215,11 +209,9 @@ class TriggerDef:
             return None
 
     @staticmethod
-    def _check_write_to_trigger_file(trigger_file):
-        """
-        Checks that the directory exists and that the file name ends with
-        .ini.
-        """
+    def _check_write_to_trigger_file(trigger_file):  # noqa
+        """Check that the directory exists and that the file name ends with
+        .ini."""
         _check_type(trigger_file, ("path-like",), item_name="trigger_file")
 
         trigger_file = Path(trigger_file)
@@ -235,8 +227,7 @@ class TriggerDef:
     # --------------------------------------------------------------------
     @property
     def by_name(self):
-        """
-        A dictionary with string keys and integers value.
+        """A dictionary with string keys and integers value.
 
         :type: dict
         """
@@ -244,8 +235,7 @@ class TriggerDef:
 
     @property
     def by_value(self):
-        """
-        A dictionary with integers keys and string values.
+        """A dictionary with integers keys and string values.
 
         :type: dict
         """

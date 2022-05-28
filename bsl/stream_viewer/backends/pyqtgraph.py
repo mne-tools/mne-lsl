@@ -1,6 +1,5 @@
-"""
-PyQt5 Canvas for BSL's StreamViewer.
-"""
+"""PyQt5 Canvas for BSL's StreamViewer."""
+
 import numpy as np
 import pyqtgraph as pg
 from PyQt5 import QtCore
@@ -14,8 +13,7 @@ from ._backend import _Backend, _Event
 
 @fill_doc
 class _BackendPyQtGraph(_Backend):
-    """
-    PyQtGraph backend for BSL's StreamViewer.
+    """PyQtGraph backend for BSL's StreamViewer.
 
     Parameters
     ----------
@@ -79,14 +77,12 @@ class _BackendPyQtGraph(_Backend):
         )
 
         logger.debug(
-            "Initilization of variables from _BackendPyQtGraph complete."
+            "Initialization of variables from _BackendPyQtGraph complete."
         )
 
     def _init_canvas(self):
-        """
-        Initialize the drawing canvas.
-        """
-        logger.debug("Initilization of canvas..")
+        """Initialize the drawing canvas."""
+        logger.debug("Initialization of canvas..")
 
         # Ranges
         self._plot_handler.disableAutoRange()
@@ -114,7 +110,7 @@ class _BackendPyQtGraph(_Backend):
         )
         self._plot_handler.setLabel(axis="bottom", text="Time (s)")
 
-        logger.debug("Initilization of canvas complete.")
+        logger.debug("Initialization of canvas complete.")
 
     # ------------------------ Trigger Events ----------------------
     @copy_doc(_Backend._update_LPT_trigger_events)
@@ -147,9 +143,7 @@ class _BackendPyQtGraph(_Backend):
 
     @copy_doc(_Backend._clean_up_trigger_events)
     def _clean_up_trigger_events(self):
-        """
-        Hide events exiting the plotting window.
-        """
+        """Hide events exiting the plotting window."""
         super()._clean_up_trigger_events()
         for event in self._trigger_events:
             if event.position_plot < 0:
@@ -265,8 +259,7 @@ class _BackendPyQtGraph(_Backend):
 
 @fill_doc
 class _TriggerEvent(_Event):
-    """
-    Class defining a trigger event for the pyqtgraph backend.
+    """Class defining a trigger event for the pyqtgraph backend.
 
     Parameters
     ----------
@@ -302,9 +295,7 @@ class _TriggerEvent(_Event):
         self._plotted = False
 
     def addEventPlot(self):
-        """
-        Plots the event on the handler.
-        """
+        """Plot the event on the handler."""
         if not self._plotted:
             self._lineItem = pg.InfiniteLine(
                 pos=self._position_plot, pen=self.colors[self._event_type]
@@ -322,9 +313,7 @@ class _TriggerEvent(_Event):
             self._plotted = True
 
     def removeEventPlot(self):
-        """
-        Remove the event from the plot handler.
-        """
+        """Remove the event from the plot handler."""
         if self._plotted:
             self._plot_handler.removeItem(self._lineItem)
             self._plot_handler.removeItem(self._textItem)
@@ -333,9 +322,7 @@ class _TriggerEvent(_Event):
             self._plotted = False
 
     def _update(self):
-        """
-        Updates the plot handler.
-        """
+        """Update the plot handler."""
         if self._lineItem is not None:
             self._lineItem.setValue(self._position_plot)
         if self._textItem is not None:
@@ -371,22 +358,16 @@ class _TriggerEvent(_Event):
 
     @property
     def plotted(self):
-        """
-        True if the event is displayed, else False.
-        """
+        """True if the event is displayed, else False."""
         return self._plotted
 
     @property
     def yRange(self):
-        """
-        Signal range/scale used to position the TextItem.
-        """
+        """Signal range/scale used to position the TextItem."""
         return self._yRange
 
     @yRange.setter
     def yRange(self, yRange):
-        """
-        Impacts the position of the TextItem.
-        """
+        """Impacts the position of the TextItem."""
         self._yRange = yRange
         self._update()
