@@ -337,7 +337,7 @@ class _Recorder:  # noqa
         self._save(sr, pcl_files)
 
     def _save(self, sr, pcl_files):
-        """Save the data in the receiver's buffer to the .pcl and .fif files."""
+        """Save the data in the receiver's buffer to the files."""
         logger.info("Saving raw data..")
         for stream in sr.streams:
             signals, timestamps = sr.get_buffer(stream)
