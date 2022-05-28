@@ -1,98 +1,104 @@
-"""
-BSL's logger.
-"""
 import logging
 import sys
+from typing import Callable, Optional, Union
 
-logger = logging.getLogger("bsl")
+from ._checks import _check_verbose
+from ._docs import fill_doc
+
+logger = logging.getLogger(__package__.split(".utils", maxsplit=1)[0])
 logger.propagate = False  # don't propagate (in case of multiple imports)
 
 
-def init_logger(verbosity="INFO"):
-    """
-    Initialize a logger. Assign sys.stdout as a handler of the logger.
+@fill_doc
+def init_logger(verbose: Optional[Union[bool, str, int]] = None) -> None:
+    """Initialize a logger.
+
+    Assign sys.stdout as a handler of the logger.
 
     Parameters
     ----------
-    verbosity : int | str
-        Logger verbosity.
+    %(verbose)s
     """
-    set_log_level(verbosity)
-    add_stream_handler(sys.stdout, verbosity)
+    set_log_level(verbose)
+    add_stream_handler(sys.stdout, verbose)
 
 
-def add_stream_handler(stream, verbosity="INFO"):
-    """
-    Add a handler to the logger. The handler redirects the logger output to
-    the stream.
+@fill_doc
+def add_stream_handler(
+    stream, verbose: Optional[Union[bool, str, int]] = None
+) -> None:
+    """Add a stream handler to the logger.
 
     Parameters
     ----------
     stream : The output stream, e.g. sys.stdout
-    verbosity : int | str
-        Handler verbosity.
+    %(verbose)s
     """
+    verbose = _check_verbose(verbose)
     handler = logging.StreamHandler(stream)
-    handler.setFormatter(BSLformatter())
+    handler.setFormatter(LoggerFormatter())
     logger.addHandler(handler)
-    set_handler_log_level(verbosity, -1)
+    set_handler_log_level(-1, verbose)
 
 
-def add_file_handler(fname, mode="a", verbosity="INFO"):
-    """
-    Add a file handler to the logger. The handler saves the logs to file.
+@fill_doc
+def add_file_handler(
+    fname, mode: str = "a", verbose: Optional[Union[bool, str, int]] = None
+) -> None:
+    """Add a file handler to the logger.
 
     Parameters
     ----------
     fname : str | Path
     mode : str
-        Mode in which the file is openned.
-    verbosity : int | str
-        Handler verbosity.
+        Mode in which the file is opened.
+    %(verbose)s
     """
+    verbose = _check_verbose(verbose)
     handler = logging.FileHandler(fname, mode)
-    handler.setFormatter(BSLformatter())
+    handler.setFormatter(LoggerFormatter())
     logger.addHandler(handler)
-    set_handler_log_level(verbosity, -1)
+    set_handler_log_level(-1, verbose)
 
 
-def set_handler_log_level(verbosity, handler_id=0):
-    """
-    Set the log level for a specific handler.
+@fill_doc
+def set_handler_log_level(
+    handler_id: int, verbose: Union[bool, str, int, None]
+) -> None:
+    """Set the log level for a specific handler.
+
     First handler (ID 0) is always stdout, followed by user-defined handlers.
 
     Parameters
     ----------
-    verbosity : int | str
-        Logger verbosity.
     handler_id : int
         ID of the handler among 'logger.handlers'.
+    %(verbose)s
     """
-    logger.handlers[handler_id].setLevel = verbosity
+    verbose = _check_verbose(verbose)
+    logger.handlers[handler_id].setLevel = verbose
 
 
-def set_log_level(verbosity):
-    """
-    Set the log level for the logger.
+@fill_doc
+def set_log_level(verbose: Union[bool, str, int, None]) -> None:
+    """Set the log level for the logger.
 
     Parameters
     ----------
-    verbosity : int | str
-        Logger verbosity.
+    %(verbose)s
     """
-    logger.setLevel(verbosity)
+    verbose = _check_verbose(verbose)
+    logger.setLevel(verbose)
 
 
-class BSLformatter(logging.Formatter):
-    """
-    Format string Syntax for BSL.
-    """
+class LoggerFormatter(logging.Formatter):
+    """Format string Syntax."""
 
     # Format string syntax for the different Log levels
     _formatters = dict()
     _formatters[logging.DEBUG] = logging.Formatter(
-        fmt="[%(module)s:%(funcName)s:%(lineno)d] %(levelname)s: "
-        "%(message)s (%(asctime)s)"
+        fmt="[%(module)s:%(funcName)s:%(lineno)d] %(levelname)s: %(message)s "
+        "(%(asctime)s)"
     )
     _formatters[logging.INFO] = logging.Formatter(
         fmt="[%(module)s.%(funcName)s] %(levelname)s: %(message)s"
@@ -107,9 +113,8 @@ class BSLformatter(logging.Formatter):
     def __init__(self):
         super().__init__(fmt="%(levelname): %(message)s")
 
-    def format(self, record):
-        """
-        Format the received log record.
+    def format(self, record: logging.LogRecord):
+        """Format the received log record.
 
         Parameters
         ----------
@@ -124,7 +129,27 @@ class BSLformatter(logging.Formatter):
         else:
             return self._formatters[logging.ERROR].format(record)
 
-        return super().format(record)
+
+def verbose(f: Callable) -> Callable:
+    """Set the verbose for the function call from the kwargs.
+
+    Parameters
+    ----------
+    f : callable
+        The function with a verbose argument.
+
+    Returns
+    -------
+    f : callable
+        The function.
+    """
+
+    def wrapper(*args, **kwargs):
+        if "verbose" in kwargs:
+            set_log_level(kwargs["verbose"])
+        return f(*args, **kwargs)
+
+    return wrapper
 
 
 init_logger()

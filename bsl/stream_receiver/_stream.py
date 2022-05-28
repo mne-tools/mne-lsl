@@ -19,8 +19,7 @@ HIGH_LSL_OFFSET_THRESHOLD = 0.1  # Threshold above which the offset is high
 
 @fill_doc
 class _Stream(ABC):
-    """
-    Abstract class representing a base StreamReceiver stream.
+    """Abstract class representing a base StreamReceiver stream.
 
     Parameters
     ----------
@@ -70,9 +69,7 @@ class _Stream(ABC):
         self._buffer = Buffer(bufsize, winsize)
 
     def _create_ch_name_list(self):
-        """
-        Create the channels' name list.
-        """
+        """Create the channels' name list."""
         self._ch_list = lsl_channel_list(self._inlet)
 
         if not self._ch_list:
@@ -81,9 +78,7 @@ class _Stream(ABC):
             ]
 
     def _extract_stream_info(self):
-        """
-        Extract the name, serial number and if it's a slave.
-        """
+        """Extract the name, serial number and if it's a slave."""
         self._name = self._streamInfo.name()
         self._serial = (
             self._inlet.info()
@@ -107,9 +102,7 @@ class _Stream(ABC):
         )
 
     def show_info(self):
-        """
-        Display the stream's info.
-        """
+        """Display the stream's info."""
         logger.info(
             f"Server: {self._name}({self._serial}) "
             f"/ type:{self._streamInfo.type()} "
@@ -138,8 +131,7 @@ class _Stream(ABC):
     @abstractmethod
     @fill_doc
     def acquire(self):
-        """
-        Pull data from the stream's inlet and fill the buffer.
+        """Pull data from the stream's inlet and fill the buffer.
 
         Returns
         -------
@@ -184,8 +176,7 @@ class _Stream(ABC):
 
     @fill_doc
     def _compute_offset(self, tslist):
-        """
-        Compute the LSL offset coming from some devices.
+        """Compute the LSL offset coming from some devices.
 
         It has to be called just after acquiring the data/timestamps in order
         to be valid.
@@ -199,8 +190,7 @@ class _Stream(ABC):
 
     @fill_doc
     def _correct_lsl_offset(self, tslist):
-        """
-        Correct the timestamps if there is a high LSL offset.
+        """Correct the timestamps if there is a high LSL offset.
 
         Parameters
         ----------
@@ -215,8 +205,7 @@ class _Stream(ABC):
     @staticmethod
     @fill_doc
     def _check_winsize(winsize):
-        """
-        Check that winsize is positive.
+        """Check that winsize is positive.
 
         Parameters
         ----------
@@ -231,8 +220,7 @@ class _Stream(ABC):
     @staticmethod
     @fill_doc
     def _check_bufsize(bufsize, winsize):
-        """
-        Check that bufsize is positive and bigger than winsize.
+        """Check that bufsize is positive and bigger than winsize.
 
         Parameters
         ----------
@@ -262,8 +250,7 @@ class _Stream(ABC):
     @staticmethod
     @fill_doc
     def _convert_sec_to_samples(bufsec, sample_rate):
-        """
-        Convert a buffer's/window's size from sec to samples.
+        """Convert a buffer's/window's size from sec to samples.
 
         Parameters
         ----------
@@ -282,44 +269,32 @@ class _Stream(ABC):
     # --------------------------------------------------------------------
     @property
     def streamInfo(self):
-        """
-        Stream info received from the LSL inlet.
-        """
+        """Stream info received from the LSL inlet."""
         return self._streamInfo
 
     @property
     def sample_rate(self):
-        """
-        Stream's sampling rate.
-        """
+        """Stream's sampling rate."""
         return self._sample_rate
 
     @property
     def name(self):
-        """
-        Stream's name.
-        """
+        """Stream's name."""
         return self._name
 
     @property
     def serial(self):
-        """
-        Stream's serial number.
-        """
+        """Stream's serial number."""
         return self._serial
 
     @property
     def is_slave(self):
-        """
-        Value stored in LSL ['amplifier']['settings']['is_slave'].
-        """
+        """Value stored in LSL ['amplifier']['settings']['is_slave']."""
         return self._is_slave
 
     @property
     def ch_list(self):
-        """
-        Channels' name list.
-        """
+        """Channels' name list."""
         return self._ch_list
 
     @property
@@ -335,8 +310,7 @@ class _Stream(ABC):
 
     @property
     def blocking(self):
-        """
-        If True, the stream wait to receive data.
+        """If True, the stream wait to receive data.
 
         :setter: Change the blocking status.
         :type: bool
@@ -349,8 +323,7 @@ class _Stream(ABC):
 
     @property
     def blocking_time(self):
-        """
-        If blocking is True, how long to wait to receive data in seconds.
+        """If blocking is True, how long to wait to receive data in seconds.
 
         :setter: Change the blocking time duration (seconds).
         :type: float
@@ -363,22 +336,19 @@ class _Stream(ABC):
 
     @property
     def buffer(self):
-        """
-        Buffer containing the data and the timestamps.
-        """
+        """Buffer containing the data and the timestamps."""
         return self._buffer
 
 
 @fill_doc
 class StreamMarker(_Stream):
-    """
-    Class representing a StreamReceiver markers stream.
+    """Class representing a StreamReceiver markers stream.
 
     Notice the irregular sampling rate.
-    This stream is instanciated as non-blocking.
+    This stream is instantiated as non-blocking.
 
     Parameters
-    -----------
+    ----------
     %(receiver_streamInfo)s
     %(receiver_bufsize)s
     %(receiver_winsize)s
@@ -391,22 +361,19 @@ class StreamMarker(_Stream):
         self._blocking_time = float("inf")
 
     def acquire(self):
-        """
-        Pull data from the stream's inlet and fill the buffer.
-        """
+        """Pull data from the stream's inlet and fill the buffer."""
         chunk, tslist = super().acquire()
         self._buffer.fill(chunk, tslist)  # Fill its buffer
 
 
 @fill_doc
 class StreamEEG(_Stream):
-    """
-    Class representing a StreamReceiver EEG stream.
+    """Class representing a StreamReceiver EEG stream.
 
-    This stream is instanciated as blocking.
+    This stream is instantiated as blocking.
 
     Parameters
-    -----------
+    ----------
     %(receiver_streamInfo)s
     %(receiver_bufsize)s
     %(receiver_winsize)s
@@ -420,9 +387,7 @@ class StreamEEG(_Stream):
 
     @copy_doc(_Stream._create_ch_name_list)
     def _create_ch_name_list(self):
-        """
-        Trigger channel will always move to the first position.
-        """
+        """Trigger channel will always move to the first position."""
         super()._create_ch_name_list()
 
         self._find_lsl_trig_ch()
@@ -435,9 +400,7 @@ class StreamEEG(_Stream):
         self._ch_list = ["TRIGGER"] + self._ch_list
 
     def _find_lsl_trig_ch(self):
-        """
-        Look for the trigger channel index at the LSL inlet level.
-        """
+        """Look for the trigger channel index at the LSL inlet level."""
         if "USBamp" in self._name:
             self._lsl_tr_channel = 16
 
@@ -471,9 +434,7 @@ class StreamEEG(_Stream):
             logger.debug("Trigger channel was not found.")
 
     def acquire(self):
-        """
-        Pull data from the stream's inlet and fill the buffer.
-        """
+        """Pull data from the stream's inlet and fill the buffer."""
         chunk, tslist = super().acquire()
 
         if len(chunk) == 0:
@@ -523,8 +484,7 @@ class StreamEEG(_Stream):
     # --------------------------------------------------------------------
     @property
     def scaling_factor(self):
-        """
-        Scaling factor applied to the data to convert to the desired unit.
+        """Scaling factor applied to the data to convert to the desired unit.
 
         :setter: Change the scaling factor applied to the data.
         :type: float

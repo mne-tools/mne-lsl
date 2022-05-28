@@ -1,6 +1,5 @@
 """Utility functions for testing. Inspired from MNE."""
 
-import time
 from functools import partial
 from pathlib import Path
 
@@ -16,7 +15,7 @@ from ..datasets import (
 from ..datasets._fetching import _hashfunc
 
 
-def requires_good_network(function):
+def requires_good_network(function):  # noqa: D401
     """Decorator to skip a test if a network connection is not available."""
     try:
         requests.get("https://github.com/", timeout=1)
@@ -28,9 +27,10 @@ def requires_good_network(function):
     return pytest.mark.skipif(skip, reason=reason)(function)
 
 
-def _requires_dataset_or_good_network(function, dataset):
+def _requires_dataset_or_good_network(function, dataset):  # noqa
     """Decorator to skip a test if a required dataset is absent and it can not
-    be downloaded."""
+    be downloaded.
+    """
     # BSL datasets
     try:
         fname = dataset.PATH
@@ -66,40 +66,3 @@ requires_eeg_resting_state_short_dataset = partial(
 requires_trigger_def_dataset = partial(
     _requires_dataset_or_good_network, dataset=trigger_def
 )
-
-
-def requires_parallel(function):
-    """Decorator to skip a test if a build-in ParallelPort is not available."""
-    try:
-        from psychopy.parallel import ParallelPort  # noqa: F401
-    except ModuleNotFoundError:
-        return pytest.mark.skipif(True, reason="psychopy not installed.")(
-            function
-        )
-    return pytest.mark.skipif(
-        True, reason="ParallelPort tests are not supported."
-    )(function)
-
-
-def requires_arduino2lpt(function):
-    """Decorator to skip a test if an Arduino to LPT converter is not
-    available."""
-    try:
-        import serial
-        from serial.tools import list_ports
-    except ModuleNotFoundError:
-        return pytest.mark.skipif(True, reason="pyserial not installed.")(
-            function
-        )
-    for arduino in list_ports.grep(regexp="Arduino"):
-        try:
-            ser = serial.Serial(arduino.device, 115200)
-            time.sleep(0.2)
-            ser.write(bytes([1]))
-            ser.close()
-            return function
-        except Exception:
-            pass
-    return pytest.mark.skipif(True, reason="Arduino to LPT not found.")(
-        function
-    )

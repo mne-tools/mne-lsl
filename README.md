@@ -17,15 +17,15 @@ supported by BSL. Since the data communication is based on TCP, signals can be
 transmitted wirelessly. For more information about LSL, please visit the
 [LSL github](https://github.com/sccn/labstreaminglayer).
 
-**BSL** is based on **NeuroDecode**. The original version developped by
+**BSL** is based on **NeuroDecode**. The original version developed by
 [**Kyuhwa Lee**](https://github.com/dbdq) was recognised at
 [Microsoft Brain Signal Decoding competition](https://github.com/dbdq/microsoft_decoding)
 with the First Prize Award (2016) after achieving high decoding accuracy.
 **BSL** is based on the refactor version by
 [**Arnaud Desvachez**](https://github.com/dnastars) for the
 [Fondation Campus Biotech Geneva (FCBG)](https://github.com/fcbg-hnp).
-The low-level functionnalities have been reworked and improved, while the
-decoding functionnalities have been dropped.
+The low-level functionalities have been reworked and improved, while the
+decoding functionalities have been dropped.
 
 # Installation
 BSL supports `python >= 3.7` and requires:
@@ -52,15 +52,19 @@ Optional dependencies for trigger via a parallel port (LPT):
 BSL can be installed via `pip` with `pip install bsl`.
 
 BSL can be installed from a cloned repository in normal mode with
-`python setup.py install` or in developement mode with
-`python setup.py develop`. Optional dependencies can be installed using the
-keywords:
-- parallel, parallelport, lpt
-- doc, doc-build, documentation
-- test, testing
+`pip install .` or in development mode with `pip install -e .`.
 
-Note that the optional dependencies do not include the dependencies present in
-`bsl.externals`.
+Optional dependencies can be installed using the keywords:
+- build
+- doc
+- externals
+- parallel
+- style
+- test
+- all
+
+For instance, `pip install bsl[parallel]` will install `BSL` with the
+dependencies for parallel port triggers.
 
 # Documentation
 

@@ -1,5 +1,5 @@
-"""
-Function fetching file from URL.
+"""Function fetching file from URL.
+
 Adapted from MNE:
     https://github.com/mne-tools/mne-python
 Adapted from NILEARN:
@@ -28,8 +28,7 @@ def fetch_file(
     hash_type="md5",
     timeout=30.0,
 ):
-    """
-    Load requested file, downloading it if needed or requested.
+    """Load requested file, downloading it if needed or requested.
 
     Parameters
     ----------
@@ -108,8 +107,7 @@ def fetch_file(
 
 
 def _hashfunc(fname, block_size=1048576, hash_type="md5"):
-    """
-    Calculate the hash for a file.
+    """Calculate the hash for a file.
 
     Parameters
     ----------
@@ -123,7 +121,6 @@ def _hashfunc(fname, block_size=1048576, hash_type="md5"):
     hash_ : str
         The hexadecimal digest of the hash.
     """
-
     if hash_type == "md5":
         hasher = hashlib.md5()
     elif hash_type == "sha1":
@@ -194,8 +191,7 @@ def _get_http(url, temp_file_name, initial_size, timeout):
 
 
 def _sizeof_fmt(num):
-    """
-    Turn number of bytes into human-readable str.
+    """Turn number of bytes into human-readable str.
 
     Parameters
     ----------
@@ -207,7 +203,6 @@ def _sizeof_fmt(num):
     size : str
         The size in human-readable format.
     """
-
     units = ["bytes", "kB", "MB", "GB", "TB", "PB"]
     decimals = [0, 0, 1, 2, 2, 2]
     if num > 1:
