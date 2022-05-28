@@ -16,8 +16,7 @@ from ..utils.io import pcl2fif
 
 @fill_doc
 class StreamRecorder:
-    """
-    Class for recording the signals coming from LSL streams.
+    """Class for recording the signals coming from LSL streams.
 
     Parameters
     ----------
@@ -52,9 +51,8 @@ class StreamRecorder:
         self._process = None
         self._state = mp.Value("i", 0)
 
-    def start(self, blocking=True):
-        """
-        Start the recording in a new process.
+    def start(self, blocking=True) -> None:
+        """Start the recording in a new process.
 
         Parameters
         ----------
@@ -88,10 +86,8 @@ class StreamRecorder:
 
         logger.info(self.__repr__())
 
-    def stop(self):
-        """
-        Stops the recording.
-        """
+    def stop(self) -> None:
+        """Stop the recording."""
         if self._process is None:
             logger.warning("StreamRecorder was not started. Skipping.")
             return
@@ -119,10 +115,10 @@ class StreamRecorder:
         verbose,
         eve_file,
         state,
-    ):
-        """
-        The function called in the new process.
-        Instance a _Recorder and start recording.
+    ):  # noqa: D401
+        """Function called in the new process.
+
+        Instantiate a _Recorder and start recording.
         """
         recorder = _Recorder(
             record_dir,
@@ -156,9 +152,9 @@ class StreamRecorder:
 
     # --------------------------------------------------------------------
     @staticmethod
-    def _check_record_dir(record_dir):
+    def _check_record_dir(record_dir):  # noqa
         """
-        Converts record_dir to a Path, or select the current working directory
+        Convert record_dir to a Path, or select the current working directory
         if record_dir is None.
         """
         _check_type(record_dir, (None, "path-like"), item_name="record_dir")
@@ -170,17 +166,13 @@ class StreamRecorder:
 
     @staticmethod
     def _check_fname(fname):
-        """
-        Checks that the file name stem is a string or None.
-        """
+        """Check that the file name stem is a string or None."""
         _check_type(fname, (None, str), item_name="fname")
         return fname
 
     @staticmethod
     def _create_fname(record_dir, fname):
-        """
-        Creates the file name path using the current datetime if fname is None.
-        """
+        """Create the file name path from the datetime if fname is None."""
         fname = (
             fname
             if fname is not None
@@ -193,8 +185,7 @@ class StreamRecorder:
     # --------------------------------------------------------------------
     @property
     def record_dir(self):
-        """
-        Path to the directory where data will be saved.
+        """Path to the directory where data will be saved.
 
         :type: Path
         """
@@ -202,10 +193,10 @@ class StreamRecorder:
 
     @property
     def fname(self):
-        """
-        File name stem used to create the files. The StreamRecorder creates 2
-        files plus an optional third if a software trigger was used, respecting
-        the following naming:
+        """File name stem used to create the files.
+
+        The StreamRecorder creates 2 files plus an optional third if a software
+        trigger was used, respecting the following naming:
 
         .. code-block:: python
 
@@ -278,7 +269,7 @@ class StreamRecorder:
 
 
 @fill_doc
-class _Recorder:
+class _Recorder:  # noqa
     """
     Class creating the .pcl files, recording data through a StreamReceiver and
     saving the data in the .pcl and .fif files.
@@ -318,9 +309,7 @@ class _Recorder:
         self._state = state
 
     def record(self):
-        """
-        Instantiate a StreamReceiver, create the files, record and save.
-        """
+        """Instantiate a StreamReceiver, create the files, record and save."""
         sr = StreamReceiver(
             bufsize=MAX_BUF_SIZE, stream_name=self._stream_name
         )
@@ -348,9 +337,7 @@ class _Recorder:
         self._save(sr, pcl_files)
 
     def _save(self, sr, pcl_files):
-        """
-        Save the data in the StreamReceiver buffer to the .pcl and .fif files.
-        """
+        """Save the data in the receiver's buffer to the .pcl and .fif files."""
         logger.info("Saving raw data..")
         for stream in sr.streams:
             signals, timestamps = sr.get_buffer(stream)
@@ -393,9 +380,7 @@ class _Recorder:
     # --------------------------------------------------------------------
     @staticmethod
     def _create_files(record_dir, fname, sr):
-        """
-        Create the .pcl files and check writability.
-        """
+        """Create the .pcl files and check writability."""
         os.makedirs(record_dir, exist_ok=True)
 
         pcl_files = dict()

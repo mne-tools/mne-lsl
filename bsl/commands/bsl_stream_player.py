@@ -1,21 +1,3 @@
-"""
-Stream a recorded .fif file on LSL network.
-
-Command-line arguments:
-    #1                  Stream name (str)
-    #2                  Raw FIF file to stream (str, path)
-    -r --repeat         Number of repeat (int), default inf.
-    -t --trigger_def    TriggerDef compatible file (str, path)
-    -c --chunk_size     Chunk size (int)
-    --high_resolution   Flag to use high resolution counter instead of sleep.
-
-Examples:
-    bsl_stream_player StreamPlayer "D:/Data/sample-raw.fif"
-    bsl_stream_player StreamPlayer "D:/Data/sample-raw.fif" -r 5
-    bsl_stream_player StreamPlayer "D:/Data/sample-raw.fif" -r 5 -c 16
-    bsl_stream_player StreamPlayer "D:/Data/sample-raw.fif" --high_resolution
-"""
-
 import argparse
 
 from bsl import StreamPlayer

@@ -13,8 +13,7 @@ from ..utils._logs import logger
 
 
 class StreamPlayer:
-    """
-    Class for playing a recorded file on LSL network in another process.
+    """Class for playing a recorded file on LSL network in another process.
 
     Parameters
     ----------
@@ -60,8 +59,7 @@ class StreamPlayer:
         self._state = mp.Value("i", 0)
 
     def start(self, blocking=True):
-        """
-        Start streaming data on LSL network in a new process.
+        """Start streaming data on LSL network in a new process.
 
         Parameters
         ----------
@@ -93,9 +91,7 @@ class StreamPlayer:
         logger.info(self.__repr__())
 
     def stop(self):
-        """
-        Stop the streaming, by terminating the process.
-        """
+        """Stop the streaming by terminating the process."""
         if self._process is None:
             logger.warning("StreamPlayer was not started. Skipping.")
             return
@@ -124,10 +120,10 @@ class StreamPlayer:
         chunk_size,
         high_resolution,
         state,
-    ):
-        """
-        The function called in the new process.
-        Instance a _Streamer and start streaming.
+    ):  # noqa
+        """Function called in the new process.
+
+        Instantiate a _Streamer and start streaming.
         """
         streamer = _Streamer(
             stream_name,
@@ -157,18 +153,14 @@ class StreamPlayer:
     # --------------------------------------------------------------------
     @staticmethod
     def _check_fif_file(fif_file):
-        """
-        Check if the provided fif_file is valid.
-        """
+        """Check if the provided fif_file is valid."""
         _check_type(fif_file, ("path-like",), item_name="fif_file")
         mne.io.read_raw_fif(fif_file, preload=False, verbose=None)
         return Path(fif_file)
 
     @staticmethod
     def _check_repeat(repeat):
-        """
-        Checks that repeat is either infinity or a strictly positive integer.
-        """
+        """Check that repeat is valid."""
         if repeat == float("inf"):
             return repeat
         _check_type(repeat, ("int",), item_name="repeat")
@@ -181,11 +173,7 @@ class StreamPlayer:
 
     @staticmethod
     def _check_trigger_def(trigger_def):
-        """
-        Checks that the trigger file is either a path to a valid trigger
-        definition file, in which case it is loader and pass as a TriggerDef,
-        or a TriggerDef instance.
-        """
+        """Check that trigger_def is valid."""
         _check_type(
             trigger_def,
             (None, TriggerDef, "path-like"),
@@ -205,9 +193,7 @@ class StreamPlayer:
 
     @staticmethod
     def _check_chunk_size(chunk_size):
-        """
-        Checks that chunk_size is a strictly positive integer.
-        """
+        """Check that chunk_size is a strictly positive integer."""
         _check_type(chunk_size, ("int",), item_name="chunk_size")
         if chunk_size <= 0:
             raise ValueError(
@@ -225,8 +211,7 @@ class StreamPlayer:
     # --------------------------------------------------------------------
     @property
     def stream_name(self):
-        """
-        Stream's server name, displayed on LSL network.
+        """Stream's server name, displayed on LSL network.
 
         :type: str
         """
@@ -234,8 +219,7 @@ class StreamPlayer:
 
     @property
     def fif_file(self):
-        """
-        Path to the compatible raw ``.fif`` file to play.
+        """Path to the compatible raw ``.fif`` file to play.
 
         :type: str | Path
         """
@@ -284,8 +268,7 @@ class StreamPlayer:
 
     @property
     def process(self):
-        """
-        Launched streaming process.
+        """Launched streaming process.
 
         :type: Process
         """
@@ -304,9 +287,7 @@ class StreamPlayer:
 
 
 class _Streamer:
-    """
-    Class for playing a recorded file on LSL network.
-    """
+    """Class for playing a recorded file on LSL network."""
 
     def __init__(
         self,
@@ -342,8 +323,7 @@ class _Streamer:
         )
 
     def _scale_raw_data(self):
-        """
-        Assumes raw data is in Volt and convert to microvolts.
+        """Assumes raw data is in Volt and convert to microvolts.
 
         # TODO: Base the scaling on the units in the raw info
         """
@@ -351,9 +331,7 @@ class _Streamer:
         self._raw._data[idx, :] = self._raw.get_data()[idx, :] * 1e6
 
     def stream(self):
-        """
-        Stream data on LSL network.
-        """
+        """Stream data on LSL network."""
         idx_chunk = 0
         t_chunk = self._chunk_size / self._raw.info["sfreq"]
         finished = False
@@ -411,9 +389,7 @@ class _Streamer:
                         self._state.value = 0
 
     def _log_event(self, chunk):
-        """
-        Look for an event on the data chunk and log it.
-        """
+        """Look for an event on the data chunk and log it."""
         if self._tch is not None:
             event_values = set(chunk[self._tch]) - set([0])
 
@@ -435,7 +411,12 @@ class _Streamer:
 
     # --------------------------------------------------------------------
     @staticmethod
-    def _create_lsl_info(stream_name, channel_count, nominal_srate, ch_names):
+    def _create_lsl_info(
+            stream_name,
+            channel_count,
+            nominal_srate,
+            ch_names
+        ):  # noqa
         """
         Extract information from raw and set the LSL server's information
         needed to create the LSL stream.
@@ -470,9 +451,7 @@ class _Streamer:
 
     @staticmethod
     def _sleep(high_resolution, idx_chunk, t_start, t_chunk):
-        """
-        Determine the time to sleep.
-        """
+        """Determine the time to sleep."""
         # if a resolution over 2 KHz is needed.
         if high_resolution:
             t_sleep_until = t_start + idx_chunk * t_chunk

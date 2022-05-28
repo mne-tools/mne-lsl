@@ -13,8 +13,7 @@ from ._stream import StreamEEG, StreamMarker
 
 @fill_doc
 class StreamReceiver:
-    """
-    Class for data acquisition from LSL streams.
+    """Class for data acquisition from LSL streams.
 
     It supports the streams of:
         - EEG
@@ -38,7 +37,7 @@ class StreamReceiver:
         self.connect(stream_name)
 
     @fill_doc
-    def connect(self, stream_name=None, timeout=5, force=False):
+    def connect(self, stream_name=None, timeout=5, force=False):  # noqa
         """
         Search for the available streams on the LSL network and connect to the
         appropriate ones. If a LSL stream fulfills the requirements (name...),
@@ -132,9 +131,7 @@ class StreamReceiver:
         return True
 
     def show_info(self):
-        """
-        Display the information about the connected streams.
-        """
+        """Display the information about the connected streams."""
         for stream in self._streams:
             logger.info(
                 "--------------------------------"
@@ -144,8 +141,8 @@ class StreamReceiver:
             self._streams[stream].show_info()
 
     def disconnect(self, stream_name=None):
-        """
-        Disconnects the stream ``stream_name`` from the StreamReceiver.
+        """Disconnects the stream ``stream_name`` from the StreamReceiver.
+
         If ``stream_name`` is a `list`, disconnects all streams in the list.
         If ``stream_name`` is ``None``, disconnects all streams.
 
@@ -177,9 +174,7 @@ class StreamReceiver:
             self._connected = False
 
     def acquire(self):
-        """
-        Read data from the streams and fill their buffer using threading.
-        """
+        """Read data from the streams and fill their buffer using threading."""
         if not self._connected:
             raise RuntimeError(
                 "StreamReceiver is not connected to any " "streams."
@@ -199,8 +194,8 @@ class StreamReceiver:
 
     @fill_doc
     def get_window(self, stream_name=None, return_raw=False):
-        """
-        Get the latest window from a stream's buffer.
+        """Get the latest window from a stream's buffer.
+
         If several streams are connected, specify the name.
 
         Parameters
@@ -278,8 +273,8 @@ class StreamReceiver:
 
     @fill_doc
     def get_buffer(self, stream_name=None, return_raw=False):
-        """
-        Get the entire buffer of a stream.
+        """Get the entire buffer of a stream.
+
         If several streams are connected, specify the name.
 
         Parameters
@@ -346,8 +341,8 @@ class StreamReceiver:
         return window, timestamps
 
     def _get_buffer(self):
-        """
-        Get the entire buffer of the only connected stream.
+        """Get the entire buffer of the only connected stream.
+
         This method is intended for use by the StreamViewer.
         """
         stream_name = list(self._streams)[0]
@@ -360,8 +355,7 @@ class StreamReceiver:
         return window, timestamps
 
     def reset_buffer(self, stream_name=None):
-        """
-        Clear the stream's buffer.
+        """Clear the stream's buffer.
 
         Parameters
         ----------
@@ -404,9 +398,7 @@ class StreamReceiver:
     # --------------------------------------------------------------------
     @staticmethod
     def _check_bufsize(bufsize, winsize):
-        """
-        Check that bufsize is positive and bigger than the winsize.
-        """
+        """Check that bufsize is positive and bigger than the winsize."""
         _check_type(bufsize, ("numeric",), item_name="bufsize")
         bufsize = float(bufsize)
         if bufsize <= 0:
@@ -427,9 +419,7 @@ class StreamReceiver:
 
     @staticmethod
     def _check_winsize(winsize):
-        """
-        Check that winsize is positive.
-        """
+        """Check that winsize is positive."""
         _check_type(winsize, ("numeric",), item_name="winsize")
         winsize = float(winsize)
         if winsize <= 0:
@@ -442,9 +432,7 @@ class StreamReceiver:
 
     @staticmethod
     def _check_format_stream_name(stream_name):
-        """
-        Check the format of stream_name.
-        """
+        """Check the format of stream_name."""
         _check_type(
             stream_name, (None, str, list, tuple), item_name="stream_name"
         )
@@ -463,8 +451,7 @@ class StreamReceiver:
     # --------------------------------------------------------------------
     @property
     def winsize(self):
-        """
-        Window's size ``[sec]``.
+        """Window's size ``[sec]``.
 
         :type: int | float
         """
@@ -472,8 +459,7 @@ class StreamReceiver:
 
     @property
     def bufsize(self):
-        """
-        Buffer's size ``[sec]``.
+        """Buffer's size ``[sec]``.
 
         :type: int | float
         """
@@ -481,8 +467,7 @@ class StreamReceiver:
 
     @property
     def stream_name(self):
-        """
-        Connected stream's name.
+        """Connected stream's name.
 
         :type: None | list
         """
@@ -490,8 +475,7 @@ class StreamReceiver:
 
     @property
     def connected(self):
-        """
-        Connected status.
+        """Connected status.
 
         :type: bool
         """
@@ -499,8 +483,7 @@ class StreamReceiver:
 
     @property
     def mne_infos(self):
-        """
-        Dictionary containing the Info for the compatible streams.
+        """Dictionary containing the Info for the compatible streams.
 
         :type: dict
         """
@@ -508,8 +491,7 @@ class StreamReceiver:
 
     @property
     def streams(self):
-        """
-        Connected streams dictionary ``{stream_name: _Stream}``.
+        """Connected streams dictionary ``{stream_name: _Stream}``.
 
         :type: dict
         """
