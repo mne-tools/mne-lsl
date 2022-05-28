@@ -4,7 +4,12 @@ import logging
 
 import pytest
 
-from bsl.utils._checks import _check_type, _check_value, _check_verbose, _ensure_int
+from bsl.utils._checks import (
+    _check_type,
+    _check_value,
+    _check_verbose,
+    _ensure_int,
+)
 
 
 def test_ensure_int():

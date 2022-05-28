@@ -11,8 +11,7 @@ BP_ORDER = 2
 
 @fill_doc
 class ScopeEEG(_Scope):
-    """
-    Class representing an EEG scope.
+    """Class representing an EEG scope.
 
     Parameters
     ----------
@@ -55,9 +54,9 @@ class ScopeEEG(_Scope):
         )
 
     def init_bandpass_filter(self, low, high):
-        """
-        Initialize the bandpass filter. The filter is a butter filter of order
-        BP_ORDER (default 2).
+        """Initialize the bandpass filter.
+
+        The filter is a butter filter of order BP_ORDER (default 2).
 
         Parameters
         ----------
@@ -114,9 +113,7 @@ class ScopeEEG(_Scope):
         )
 
     def _filter_signal(self):
-        """
-        Apply bandpass and CAR filter to the signal acquired if needed.
-        """
+        """Apply bandpass and CAR filter to the signal acquired if needed."""
         if self._apply_bandpass:
             if self._zi is None:
                 logger.debug("Initialize ZI coefficient for BP.")
@@ -134,7 +131,7 @@ class ScopeEEG(_Scope):
             )
             self._data_acquired -= car_ch.reshape((-1, 1))
 
-    def _filter_trigger(self, tol=0.05):
+    def _filter_trigger(self, tol=0.05):  # noqa
         """
         Cleans up the trigger signal by removing successive duplicates of a
         trigger value.
@@ -162,9 +159,7 @@ class ScopeEEG(_Scope):
 
     @property
     def apply_car(self):
-        """
-        Boolean. Applies CAR if True.
-        """
+        """Boolean. Applies CAR if True."""
         return self._apply_car
 
     @apply_car.setter
@@ -173,9 +168,7 @@ class ScopeEEG(_Scope):
 
     @property
     def apply_bandpass(self):
-        """
-        Boolean. Applies bandpass filter if True.
-        """
+        """Boolean. Applies bandpass filter if True."""
         return self._apply_bandpass
 
     @apply_bandpass.setter
@@ -184,9 +177,7 @@ class ScopeEEG(_Scope):
 
     @property
     def selected_channels(self):
-        """
-        List of indices of the selected channels.
-        """
+        """List of indices of the selected channels."""
         return self._selected_channels
 
     @selected_channels.setter
@@ -195,14 +186,10 @@ class ScopeEEG(_Scope):
 
     @property
     def data_buffer(self):
-        """
-        Data buffer (channels, samples).
-        """
+        """Data buffer (channels, samples)."""
         return self._data_buffer
 
     @property
     def trigger_buffer(self):
-        """
-        Trigger buffer (samples, ).
-        """
+        """Trigger buffer (samples, )."""
         return self._trigger_buffer

@@ -412,11 +412,8 @@ class _Streamer:
     # --------------------------------------------------------------------
     @staticmethod
     def _create_lsl_info(
-            stream_name,
-            channel_count,
-            nominal_srate,
-            ch_names
-        ):  # noqa
+        stream_name, channel_count, nominal_srate, ch_names
+    ):  # noqa
         """
         Extract information from raw and set the LSL server's information
         needed to create the LSL stream.
