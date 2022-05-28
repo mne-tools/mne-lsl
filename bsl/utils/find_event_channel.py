@@ -6,8 +6,7 @@ from ._checks import _check_type
 
 
 def find_event_channel(inst=None, ch_names=None):
-    """
-    Find the event channel using heuristics.
+    """Find the event channel using heuristics.
 
     .. warning::
 

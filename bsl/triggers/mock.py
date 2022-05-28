@@ -1,6 +1,4 @@
-"""
-Mock trigger.
-"""
+"""Mock trigger."""
 
 from ..utils._checks import _check_type
 from ..utils._docs import copy_doc, fill_doc
@@ -10,8 +8,7 @@ from ._trigger import _Trigger
 
 @fill_doc
 class MockTrigger(_Trigger):
-    """
-    Mock trigger class.
+    """Mock trigger class.
 
     Parameters
     ----------
@@ -29,9 +26,7 @@ class MockTrigger(_Trigger):
         return True
 
     def _signal_off(self):
-        """
-        Reset trigger signal to ``0``.
-        """
+        """Reset trigger signal to ``0``."""
         self._set_data(0)
 
     @copy_doc(_Trigger._set_data)

@@ -8,8 +8,7 @@ from ...utils._logs import logger
 
 @fill_doc
 class _Backend(ABC):
-    """
-    Class representing a base backend.
+    """Class representing a base backend.
 
     Parameters
     ----------
@@ -30,11 +29,11 @@ class _Backend(ABC):
         self._show_LPT_trigger_events = False
         self._selected_channels = copy.deepcopy(self._scope.selected_channels)
 
-    def _init_variables(self):
+    def _init_variables(self):  # noqa
         """
         Initialize variables depending on xRange, yRange and selected_channels.
         """
-        logger.debug("Initilization of variables..")
+        logger.debug("Initialization of variables..")
 
         # xRange
         self._delta_with_buffer = self._scope.duration_buffer - self._xRange
@@ -42,11 +41,11 @@ class _Backend(ABC):
             self._xRange * self._scope.sample_rate
         )
 
-        logger.debug("Initilization of variables from _Backend complete.")
+        logger.debug("Initialization of variables from _Backend complete.")
 
     # ------------------------ Trigger Events ----------------------
     @abstractmethod
-    def _update_LPT_trigger_events(self, trigger_arr):
+    def _update_LPT_trigger_events(self, trigger_arr):  # noqa
         """
         Check if new LPT events (on the trigger channel) have entered the
         buffer. New events are added to self._trigger_events and displayed
@@ -55,9 +54,7 @@ class _Backend(ABC):
         pass
 
     def _clean_up_trigger_events(self):
-        """
-        Remove events exiting the buffer.
-        """
+        """Remove events exiting the buffer."""
         for k in range(len(self._trigger_events) - 1, -1, -1):
             if self._trigger_events[k].position_buffer < 0:
                 del self._trigger_events[k]
@@ -65,13 +62,11 @@ class _Backend(ABC):
     # -------------------------- Main Loop -------------------------
     @abstractmethod
     def start_timer(self):
-        """
-        Start the update loop on a 20 ms timer.
-        """
+        """Start the update loop on a 20 ms timer."""
         pass
 
     @abstractmethod
-    def _update_loop(self, *args, **kwargs):
+    def _update_loop(self, *args, **kwargs):  # noqa
         """
         Main update loop retrieving data from the scope's buffer and updating
         the Canvas.
@@ -81,9 +76,7 @@ class _Backend(ABC):
     # --------------------------- Events ---------------------------
     @abstractmethod
     def close(self):
-        """
-        Stops the update loop and close the window.
-        """
+        """Stop the update loop and close the window."""
         pass
 
     # --------------------------------------------------------------------
@@ -98,9 +91,7 @@ class _Backend(ABC):
 
     @property
     def xRange(self):
-        """
-        X-axis range/scale, i.e. the duration of the plotting window.
-        """
+        """X-axis range/scale, i.e. the duration of the plotting window."""
         return self._xRange
 
     @xRange.setter
@@ -114,39 +105,29 @@ class _Backend(ABC):
 
     @property
     def yRange(self):
-        """
-        Y-axis range/scale, i.e. the signal amplitude.
-        """
+        """Y-axis range/scale, i.e. the signal amplitude."""
         return self._yRange
 
     @yRange.setter
     @abstractmethod
     def yRange(self, yRange):
-        """
-        Called when the user changes the signal range/scale.
-        """
+        """Called when the user changes the signal range/scale."""
         pass
 
     @property
     def selected_channels(self):
-        """
-        Selected channels.
-        """
+        """Selected channels."""
         return self._selected_channels
 
     @selected_channels.setter
     @abstractmethod
     def selected_channels(self, selected_channels):
-        """
-        Called when the user changes the selection of channels.
-        """
+        """Called when the user changes the selection of channels."""
         pass
 
     @property
     def show_LPT_trigger_events(self):
-        """
-        Tick/Untick status of the show_LPT_trigger_events box.
-        """
+        """Tick/Untick status of the show_LPT_trigger_events box."""
         return self._show_LPT_trigger_events
 
     @show_LPT_trigger_events.setter
@@ -161,8 +142,7 @@ class _Backend(ABC):
 
 @fill_doc
 class _Event(ABC):
-    """
-    Base class defining a trigger event.
+    """Base class defining a trigger event.
 
     Parameters
     ----------
@@ -186,44 +166,32 @@ class _Event(ABC):
 
     @property
     def event_type(self):
-        """
-        Event type.
-        """
+        """Event type."""
         return self._event_type
 
     @property
     def event_value(self):
-        """
-        Event value.
-        """
+        """Event value."""
         return self._event_value
 
     @property
     def position_buffer(self):
-        """
-        Position in the buffer.
-        """
+        """Position in the buffer."""
         return self._position_buffer
 
     @position_buffer.setter
     def position_buffer(self, position_buffer):
-        """
-        Update both position in the buffer and the plotting window.
-        """
+        """Update both position in the buffer and the plotting window."""
         delta = self._position_buffer - position_buffer
         self._position_buffer = position_buffer
         self._position_plot -= delta
 
     @property
     def position_plot(self):
-        """
-        Position in the plotting window.
-        """
+        """Position in the plotting window."""
         return self._position_plot
 
     @position_plot.setter
     def position_plot(self, position_plot):
-        """
-        Update only the position in the plotting window.
-        """
+        """Update only the position in the plotting window."""
         self._position_plot = position_plot

@@ -12,11 +12,11 @@ from .scope.scope_eeg import ScopeEEG
 
 
 class StreamViewer:
-    """
-    Class for visualizing the signals coming from an LSL stream. The stream
-    viewer will connect to only one LSL stream. If ``stream_name`` is set to
-    ``None``, an automatic search is performed followed by a prompt if multiple
-    non-markers streams are found.
+    """Class for visualizing the signals coming from an LSL stream.
+
+    The stream viewer will connect to only one LSL stream. If ``stream_name``
+    is set to ``None``, an automatic search is performed followed by a prompt
+    if multiple non-markers streams are found.
 
     Parameters
     ----------
@@ -28,8 +28,7 @@ class StreamViewer:
         self._stream_name = StreamViewer._check_stream_name(stream_name)
 
     def start(self, bufsize=0.2):
-        """
-        Connect to the selected amplifier and plot the streamed data.
+        """Connect to the selected amplifier and plot the streamed data.
 
         If ``stream_name`` is not provided, look for available streams on the
         network.
@@ -61,9 +60,9 @@ class StreamViewer:
 
     # --------------------------------------------------------------------
     @staticmethod
-    def _check_stream_name(stream_name):
+    def _check_stream_name(stream_name):  # noqa
         """
-        Checks that the stream_name is valid or search for a valid stream on
+        Check that the stream_name is valid or search for a valid stream on
         the network.
         """
         _check_type(stream_name, (None, str), item_name="stream_name")
@@ -76,8 +75,7 @@ class StreamViewer:
     # --------------------------------------------------------------------
     @property
     def stream_name(self):
-        """
-        Connected stream's name.
+        """Connected stream's name.
 
         :type: str
         """
@@ -85,8 +83,7 @@ class StreamViewer:
 
     @property
     def sr(self):
-        """
-        Connected StreamReceiver.
+        """Connected StreamReceiver.
 
         :type: StreamReceiver
         """

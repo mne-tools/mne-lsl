@@ -1,6 +1,130 @@
+[build-system]
+requires = ['setuptools >= 61.0.0', 'wheel']
+build-backend = 'setuptools.build_meta'
+
+[project]
+name = 'bsl'
+version = '0.5.0.dev'
+description = 'Real-time framework for online neuroscience research through LSL-compatible devices.'
+readme = 'README.md'
+license = {file = 'LICENSE'}
+requires-python = '>=3.8'
+authors = [
+    {name = 'Mathieu Scheltienne', email = 'mathieu.scheltienne@fcbg.ch'},
+    {name = 'Arnaud Desvachez', email = 'arnaud.desvachez@gmail.com'},
+    {name = 'Kyuhwa Lee', email = 'lee.kyuh@gmail.com'},
+]
+maintainers = [
+    {name = 'Mathieu Scheltienne', email = 'mathieu.scheltienne@fcbg.ch'},
+]
+keywords = [
+    'python',
+    'neuroscience',
+    'neuroimaging',
+    'EEG',
+    'LSL',
+    'real-time',
+    'brain',
+]
+classifiers = [
+    'Operating System :: Microsoft :: Windows',
+    'Operating System :: Unix',
+    'Operating System :: MacOS',
+    'Programming Language :: Python :: 3 :: Only',
+    'Programming Language :: Python :: 3.8',
+    'Programming Language :: Python :: 3.9',
+    'Programming Language :: Python :: 3.10',
+    'Natural Language :: English',
+    'License :: OSI Approved :: BSD License',
+    'Intended Audience :: Science/Research',
+    'Intended Audience :: Developers',
+    'Topic :: Software Development',
+    'Topic :: Scientific/Engineering',
+]
+dependencies = [
+    'numpy',
+    'scipy',
+    'mne>=1.0.0',
+    'PyQt5',
+    'pyqtgraph',
+]
+
+[project.scripts]
+bsl = 'bsl.commands.main:run'
+bsl_stream_player = 'bsl.commands.bsl_stream_player:run'
+bsl_stream_recorder = 'bsl.commands.bsl_stream_recorder:run'
+bsl_stream_viewer = 'bsl.commands.bsl_stream_viewer:run'
+
+[project.optional-dependencies]
+build = [
+    'build',
+    'twine',
+]
+doc = [
+    'matplotlib',
+    'numpydoc',
+    'pydata-sphinx-theme',
+    'sphinx',
+    'sphinx-gallery',
+]
+externals = [
+    'pylsl',
+    'psychopy',
+]
+parallel = [
+    'pyserial',
+    'pyparallel; platform_system == "linux"',
+]
+style = [
+    'black',
+    'codespell',
+    'isort',
+    'flake8',
+    'pydocstyle[toml]',
+]
+test = [
+    'pytest',
+    'pytest-cov',
+    'requests',
+]
+all = [
+    'build',
+    'twine',
+    'matplotlib',
+    'numpydoc',
+    'pydata-sphinx-theme',
+    'sphinx',
+    'sphinx-gallery',
+    'pyserial',
+    'pyparallel; platform_system == "linux"',
+    'pylsl',
+    'psychopy',
+    'black',
+    'codespell',
+    'isort',
+    'flake8',
+    'pydocstyle[toml]',
+    'pytest',
+    'pytest-cov',
+    'requests',
+]
+
+[project.urls]
+homepage = 'https://bsl-tools.github.io/'
+documentation = 'https://bsl-tools.github.io/'
+source = 'https://github.com/bsl-tools/bsl'
+tracker = 'https://github.com/bsl-tools/bsl/issues'
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+include = ['bsl*']
+exclude = ['^.*tests']
+
 [tool.black]
 line-length = 79
-target-version = ['py37']
+target-version = ['py38']
 include = '\.pyi?$'
 extend-exclude = '''
 (
@@ -16,14 +140,21 @@ extend-exclude = '''
 '''
 
 [tool.isort]
-profile = "black"
+profile = 'black'
 multi_line_output = 3
 line_length = 79
-py_version = 37
+py_version = 38
 extend_skip_glob = [
     'setup.py',
     'doc/*',
     'examples/*',
     'bsl/externals/psychopy/*',
     'bsl/externals/pylsl/*'
-    ]
+]
+
+[tool.pydocstyle]
+convention = 'numpy'
+ignore-decorators = '(copy_doc|property|.*setter|.*getter|pyqtSlot)'
+match = '^(?!setup|__init__|test_).*\.py'
+match-dir = '^(?!build|dist|\.|externals|examples).*'
+add_ignore = 'D100,D104,D107'

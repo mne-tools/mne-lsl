@@ -17,11 +17,11 @@ from PyQt5.QtWidgets import (
 from ..scope._scope import _BUFFER_DURATION
 
 
-class UI_MainWindow(object):
+class UI_MainWindow(object):  # noqa
     def __init__(self, MainWindow):
         self.load_ui(MainWindow)
 
-    def load_ui(self, MainWindow):
+    def load_ui(self, MainWindow):  # noqa
         # Set Main window and main widget
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(531, 693)
