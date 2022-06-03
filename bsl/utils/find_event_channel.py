@@ -86,7 +86,13 @@ def find_event_channel(inst=None, ch_names=None):
 
 def _search_in_ch_names(ch_names):
     """Search trigger channel by name in a list of valid names."""
-    valid_trigger_ch_names = ["TRIGGER", "STI", "TRG", "CH_Event"]
+    valid_trigger_ch_names = [
+        "TRIGGER",
+        "STI",
+        "TRG",
+        "CH_Event",
+        "triggerStream",
+    ]
 
     tchs = list()
     for idx, ch_name in enumerate(ch_names):
