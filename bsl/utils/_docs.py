@@ -241,8 +241,7 @@ def fill_doc(f: Callable) -> Callable:
 
 
 def _indentcount_lines(lines: List[str]) -> int:
-    """
-    Minimum indent for all lines in line list.
+    """Minimum indent for all lines in line list.
 
     >>> lines = [' one', '  two', '   three']
     >>> indentcount_lines(lines)
@@ -257,7 +256,9 @@ def _indentcount_lines(lines: List[str]) -> int:
     0
     """
     indent = sys.maxsize
-    for line in lines:
+    for k, line in enumerate(lines):
+        if k == 0:
+            continue
         line_stripped = line.lstrip()
         if line_stripped:
             indent = min(indent, len(line) - len(line_stripped))

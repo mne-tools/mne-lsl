@@ -8,6 +8,8 @@ from typing import Any, Optional, Union
 
 import numpy as np
 
+from ._docs import fill_doc
+
 
 def _ensure_int(item: Any, item_name: Optional[str] = None) -> int:
     """Ensure a variable is an integer.
@@ -177,13 +179,13 @@ def _check_value(
     return item
 
 
+@fill_doc
 def _check_verbose(verbose: Union[bool, str, int, None]) -> int:
     """Check that the value of verbose is valid.
 
     Parameters
     ----------
-    verbose : bool | str | int | None
-        The verbosity level.
+    %(verbose)s
 
     Returns
     -------
