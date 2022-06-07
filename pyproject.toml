@@ -109,6 +109,10 @@ include-package-data = true
 include = ['bsl*']
 exclude = ['bsl*tests']
 
+[tool.setuptools.package-data]
+"bsl.stream_viewer.control_gui.settings" = ["*.ini"]
+"bsl.externals.pylsl.lib" = ["*"]
+
 [tool.black]
 line-length = 79
 target-version = ['py38']
