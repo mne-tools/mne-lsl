@@ -88,25 +88,12 @@ test = [
     'requests',
 ]
 all = [
-    'build',
-    'twine',
-    'matplotlib',
-    'numpydoc',
-    'pydata-sphinx-theme',
-    'sphinx',
-    'sphinx-gallery',
-    'pyserial',
-    'pyparallel; platform_system == "linux"',
-    'pylsl',
-    'psychopy',
-    'black',
-    'codespell',
-    'isort',
-    'flake8',
-    'pydocstyle[toml]',
-    'pytest',
-    'pytest-cov',
-    'requests',
+    'bsl[build]',
+    'bsl[doc]',
+    'bsl[externals]',
+    'bsl[parallel]',
+    'bsl[style]',
+    'bsl[test]',
 ]
 
 [project.urls]
@@ -120,7 +107,7 @@ include-package-data = true
 
 [tool.setuptools.packages.find]
 include = ['bsl*']
-exclude = ['^.*tests']
+exclude = ['bsl*tests']
 
 [tool.black]
 line-length = 79
