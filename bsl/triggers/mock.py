@@ -25,11 +25,11 @@ class MockTrigger(_Trigger):
         super().signal(value)
         return True
 
-    def _signal_off(self):
+    def _signal_off(self) -> None:
         """Reset trigger signal to ``0``."""
         self._set_data(0)
 
     @copy_doc(_Trigger._set_data)
-    def _set_data(self, value: int):
+    def _set_data(self, value: int) -> None:
         super()._set_data(value)
         logger.info("MOCK trigger set to %i", value)

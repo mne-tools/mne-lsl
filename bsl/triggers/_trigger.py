@@ -22,7 +22,7 @@ class _Trigger(ABC, Trigger):
         self.verbose = verbose
 
     @abstractmethod
-    def signal(self, value: int):
+    def signal(self, value: int) -> None:
         """Send a trigger value.
 
         Parameters
@@ -36,13 +36,13 @@ class _Trigger(ABC, Trigger):
             logger.debug("Sending trigger %s.", value)
 
     @abstractmethod
-    def _set_data(self, value: int):
+    def _set_data(self, value: int) -> None:
         """Set the trigger signal to value."""
         logger.debug("Setting data to %d.", value)
 
     # --------------------------------------------------------------------
     @property
-    def verbose(self):
+    def verbose(self) -> bool:
         return self._verbose
 
     @verbose.setter

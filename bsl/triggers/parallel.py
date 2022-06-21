@@ -1,5 +1,6 @@
 import threading
 import time
+from typing import Union
 
 from ..utils._checks import _check_type
 from ..utils._docs import copy_doc, fill_doc
@@ -42,7 +43,7 @@ class ParallelPortTrigger(_Trigger):
     - macOS does not have support for parallel ports.
     """
 
-    def __init__(self, address, delay: int = 50, *, verbose: bool = True):
+    def __init__(self, address: Union[int, str], delay: int = 50, *, verbose: bool = True):
         _check_type(address, ("int", str), item_name="address")
         _check_type(delay, ("int",), item_name="delay")
         super().__init__(verbose)
@@ -58,7 +59,7 @@ class ParallelPortTrigger(_Trigger):
 
         self._offtimer = threading.Timer(self._delay, self._signal_off)
 
-    def _connect_arduino(self, baud_rate: int = 115200):
+    def _connect_arduino(self, baud_rate: int = 115200) -> None:
         """Connect to the Arduino LPT converter."""
         # Imports
         import_optional_dependency(
@@ -92,7 +93,7 @@ class ParallelPortTrigger(_Trigger):
         time.sleep(1)
         logger.info("Connected to %s.", com_port)
 
-    def _connect_pport(self):
+    def _connect_pport(self) -> None:
         """Connect to the ParallelPort."""
         # Imports
         psychopy = import_optional_dependency("psychopy", raise_error=False)
@@ -142,21 +143,23 @@ class ParallelPortTrigger(_Trigger):
         self._offtimer.start()
         return True
 
-    def _signal_off(self):  # noqa
-        """Reset trigger signal to 0 and reset offtimer as Threads are one-call
-        only."""
+    def _signal_off(self) -> None:
+        """Reset trigger signal to 0 and reset offtimer.
+
+        The offtimer reset is required because threads are one-call only.
+        """
         self._set_data(0)
         self._offtimer = threading.Timer(self._delay, self._signal_off)
 
     @copy_doc(_Trigger._set_data)
-    def _set_data(self, value: int):
+    def _set_data(self, value: int) -> None:
         super()._set_data(value)
         if self._address == "arduino":
             self._port.write(bytes([value]))
         else:
             self._port.setData(value)
 
-    def close(self):
+    def close(self) -> None:
         """Disconnects the parallel or serial port.
 
         This method should free the parallel or serial port and let other
@@ -176,7 +179,7 @@ class ParallelPortTrigger(_Trigger):
 
     # --------------------------------------------------------------------
     @property
-    def address(self):
+    def address(self) -> Union[int, str]:
         """Port address.
 
         :type: int | str
@@ -184,7 +187,7 @@ class ParallelPortTrigger(_Trigger):
         return self._address
 
     @property
-    def delay(self):
+    def delay(self) -> float:
         """Delay to wait between two :meth:`~ParallelPortTrigger.signal` call
         in milliseconds.
 
