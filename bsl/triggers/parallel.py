@@ -43,7 +43,13 @@ class ParallelPortTrigger(_Trigger):
     - macOS does not have support for parallel ports.
     """
 
-    def __init__(self, address: Union[int, str], delay: int = 50, *, verbose: bool = True):
+    def __init__(
+        self,
+        address: Union[int, str],
+        delay: int = 50,
+        *,
+        verbose: bool = True,
+    ):
         _check_type(address, ("int", str), item_name="address")
         _check_type(delay, ("int",), item_name="delay")
         super().__init__(verbose)
