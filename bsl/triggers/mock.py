@@ -1,6 +1,5 @@
 """Mock trigger."""
 
-from ..utils._checks import _check_type
 from ..utils._docs import copy_doc, fill_doc
 from ..utils._logs import logger
 from ._trigger import _Trigger
