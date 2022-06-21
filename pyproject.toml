@@ -125,8 +125,8 @@ extend-exclude = '''
     | pyproject.toml
     | doc/
     | examples/
-    | bsl/externals/psychopy
-    | bsl/externals/pylsl
+    | bsl/externals/psychopy/
+    | bsl/externals/pylsl/
 )
 '''
 
