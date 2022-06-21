@@ -6,11 +6,11 @@ from ..utils._checks import _check_type
 from ..utils._docs import copy_doc, fill_doc
 from ..utils._imports import import_optional_dependency
 from ..utils._logs import logger
-from ._trigger import _Trigger
+from ._base import BaseTrigger
 
 
 @fill_doc
-class ParallelPortTrigger(_Trigger):
+class ParallelPortTrigger(BaseTrigger):
     """Trigger using a parallel port (also called LPT port).
 
     Parameters
@@ -134,7 +134,7 @@ class ParallelPortTrigger(_Trigger):
         time.sleep(1)
         logger.info("Connected to %s.", self._address)
 
-    @copy_doc(_Trigger.signal)
+    @copy_doc(BaseTrigger.signal)
     def signal(self, value: int) -> None:
         super().signal(value)
         if self._offtimer.is_alive():
@@ -155,7 +155,7 @@ class ParallelPortTrigger(_Trigger):
         self._set_data(0)
         self._offtimer = threading.Timer(self._delay, self._signal_off)
 
-    @copy_doc(_Trigger._set_data)
+    @copy_doc(BaseTrigger._set_data)
     def _set_data(self, value: int) -> None:
         super()._set_data(value)
         if self._address == "arduino":
