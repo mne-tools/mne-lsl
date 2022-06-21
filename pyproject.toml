@@ -103,7 +103,7 @@ source = 'https://github.com/bsl-tools/bsl'
 tracker = 'https://github.com/bsl-tools/bsl/issues'
 
 [tool.setuptools]
-include-package-data = true
+include-package-data = false
 
 [tool.setuptools.packages.find]
 include = ['bsl*']

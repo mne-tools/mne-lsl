@@ -100,9 +100,8 @@ library.
 
 Fetch the correct binary from the `liblsl release page`_. If your
 distribution is not available, the binary library must be build.
-At the time of writing, the binaries version ``1.15.2`` for Ubuntu 18.04
-(bionic) and for Ubuntu 20.04 (focal) are available. Install the downloaded
-``.deb`` library with:
+At the time of writing, the binaries for Ubuntu 18.04 (bionic) and for Ubuntu
+20.04 (focal) are available. Install the downloaded ``.deb`` library with:
 
 .. code-block:: console
 
