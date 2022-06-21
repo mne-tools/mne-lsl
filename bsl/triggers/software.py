@@ -6,11 +6,11 @@ from ..externals import pylsl
 from ..stream_recorder import StreamRecorder
 from ..utils._checks import _check_type
 from ..utils._docs import copy_doc, fill_doc
-from ._trigger import _Trigger
+from ._base import BaseTrigger
 
 
 @fill_doc
-class SoftwareTrigger(_Trigger):
+class SoftwareTrigger(BaseTrigger):
     """Trigger saving signal value in a ``.txt`` file.
 
     Software trigger instance must be created after a StreamRecorder is started
@@ -42,12 +42,12 @@ class SoftwareTrigger(_Trigger):
         except Exception:
             raise
 
-    @copy_doc(_Trigger.signal)
+    @copy_doc(BaseTrigger.signal)
     def signal(self, value: int) -> None:
         super().signal(value)
         self._set_data(value)
 
-    @copy_doc(_Trigger._set_data)
+    @copy_doc(BaseTrigger._set_data)
     def _set_data(self, value: int) -> None:
         super()._set_data(value)
         self._eve_file.write("%.6f\t0\t%d\n" % (pylsl.local_clock(), value))

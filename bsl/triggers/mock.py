@@ -2,11 +2,11 @@
 
 from ..utils._docs import copy_doc, fill_doc
 from ..utils._logs import logger
-from ._trigger import _Trigger
+from ._base import BaseTrigger
 
 
 @fill_doc
-class MockTrigger(_Trigger):
+class MockTrigger(BaseTrigger):
     """Mock trigger class.
 
     Parameters
@@ -17,7 +17,7 @@ class MockTrigger(_Trigger):
     def __init__(self, *, verbose: bool = True):
         super().__init__(verbose)
 
-    @copy_doc(_Trigger.signal)
+    @copy_doc(BaseTrigger.signal)
     def signal(self, value: int) -> None:
         super().signal(value)
         self._set_data(value)
@@ -26,7 +26,7 @@ class MockTrigger(_Trigger):
         """Reset trigger signal to ``0``."""
         self._set_data(0)
 
-    @copy_doc(_Trigger._set_data)
+    @copy_doc(BaseTrigger._set_data)
     def _set_data(self, value: int) -> None:
         super()._set_data(value)
         logger.info("MOCK trigger set to %i", value)
