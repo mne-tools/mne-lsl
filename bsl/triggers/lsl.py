@@ -50,7 +50,7 @@ class LSLTrigger(_Trigger):
     @copy_doc(_Trigger._set_data)
     def _set_data(self, value: int) -> None:
         super()._set_data(value)
-        self._oulet.push_samples([value])
+        self._oulet.push_sample([value])
 
     def close(self) -> None:
         """Close the LSL outlet."""
