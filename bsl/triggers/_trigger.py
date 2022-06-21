@@ -2,13 +2,14 @@
 
 from abc import ABC, abstractmethod
 
+from ..typing import Trigger
 from ..utils._checks import _check_type
 from ..utils._docs import fill_doc
 from ..utils._logs import logger
 
 
 @fill_doc
-class _Trigger(ABC):
+class _Trigger(ABC, Trigger):
     """Base trigger class.
 
     Parameters
