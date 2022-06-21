@@ -110,7 +110,7 @@ def create_bandpass_filter(low, high, fs, n):
 
 #%%
 # Buffer
-# ^^^^^^^
+# ^^^^^^
 #
 # When creating the filtered buffer, the duration has to be define to create a
 # numpy array of the correct shape and pre-allocate the required space.
@@ -219,7 +219,7 @@ class Buffer:
 
 #%%
 # Testing the filtered buffer
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
 # The filtered buffer must be updated regularly. In this example, the
 # `~bsl.StreamReceiver` buffer has been initialized at 200 ms. Thus, the
