@@ -28,13 +28,14 @@ class SoftwareTrigger(_Trigger):
     >>> recorder.start()
     >>> trigger = SoftwareTrigger(recorder)
     >>> trigger.signal(1)
-    >>> trigger.close() # OR >>> del trigger
+    >>> trigger.close()  # OR >>> del trigger
     >>> recorder.stop()
     """
 
     def __init__(self, recorder: StreamRecorder, *, verbose: bool = True):
         super().__init__(verbose)
-        self._recorder = SoftwareTrigger._check_recorder(recorder)
+        _check_type(recorder, (StreamRecorder,), item_name="recorder")
+        self._recorder = recorder
         self._eve_file = SoftwareTrigger._find_eve_file(recorder)
         try:
             self._eve_file = open(self._eve_file, "a")
@@ -42,11 +43,9 @@ class SoftwareTrigger(_Trigger):
             raise
 
     @copy_doc(_Trigger.signal)
-    def signal(self, value: int) -> bool:
-        _check_type(value, ("int",), item_name="value")
-        self._set_data(value)
+    def signal(self, value: int) -> None:
         super().signal(value)
-        return True
+        self._set_data(value)
 
     @copy_doc(_Trigger._set_data)
     def _set_data(self, value: int) -> None:
@@ -64,12 +63,6 @@ class SoftwareTrigger(_Trigger):
         self.close()
 
     # --------------------------------------------------------------------
-    @staticmethod
-    def _check_recorder(recorder: StreamRecorder) -> StreamRecorder:
-        """Check that the provided recorder is indeed a StreamRecorder."""
-        _check_type(recorder, (StreamRecorder,), item_name="recorder")
-        return recorder
-
     @staticmethod
     def _find_eve_file(recorder: StreamRecorder) -> Path:
         """Find the event file name from the on going StreamRecorder."""

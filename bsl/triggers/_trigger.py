@@ -30,10 +30,9 @@ class _Trigger(ABC, Trigger):
         value : int
             Value of the trigger.
         """
-        if self._verbose:
-            logger.info("Sending trigger %s.", value)
-        else:
-            logger.debug("Sending trigger %s.", value)
+        _check_type(value, ("int",), item_name="value")
+        logger_func = logger.info if self._verbose else logger.debug
+        logger_func("Sending trigger %s.", value)
 
     @abstractmethod
     def _set_data(self, value: int) -> None:

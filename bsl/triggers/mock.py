@@ -19,11 +19,9 @@ class MockTrigger(_Trigger):
         super().__init__(verbose)
 
     @copy_doc(_Trigger.signal)
-    def signal(self, value: int) -> bool:
-        _check_type(value, ("int",), item_name="value")
-        self._set_data(value)
+    def signal(self, value: int) -> None:
         super().signal(value)
-        return True
+        self._set_data(value)
 
     def _signal_off(self) -> None:
         """Reset trigger signal to ``0``."""

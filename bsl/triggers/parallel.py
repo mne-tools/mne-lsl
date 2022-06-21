@@ -135,19 +135,17 @@ class ParallelPortTrigger(_Trigger):
         logger.info("Connected to %s.", self._address)
 
     @copy_doc(_Trigger.signal)
-    def signal(self, value: int) -> bool:
-        _check_type(value, ("int",), item_name="value")
+    def signal(self, value: int) -> None:
+        super().signal(value)
         if self._offtimer.is_alive():
             logger.warning(
                 "You are sending a new signal before the end of the last "
                 "signal. Signal ignored. Delay required = %.1f ms.",
                 self.delay,
             )
-            return False
+            return None
         self._set_data(value)
-        super().signal(value)
         self._offtimer.start()
-        return True
 
     def _signal_off(self) -> None:
         """Reset trigger signal to 0 and reset offtimer.
