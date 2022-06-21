@@ -1,6 +1,6 @@
 """Base class for triggers."""
 
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 
 from ..typing import Trigger
 from ..utils._checks import _check_type
@@ -9,7 +9,7 @@ from ..utils._logs import logger
 
 
 @fill_doc
-class _Trigger(ABC, Trigger):
+class _Trigger(Trigger):
     """Base trigger class.
 
     Parameters

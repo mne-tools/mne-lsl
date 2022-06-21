@@ -2,6 +2,7 @@
 
 from ..externals import pylsl
 from ..utils._checks import _check_type
+from ..utils._docs import copy_doc, fill_doc
 from ._trigger import _Trigger
 
 
@@ -38,7 +39,7 @@ class LSLTrigger(_Trigger):
             channel_format=pylsl.cf_int16,
             source_id=name,
         )
-        self._oulet = pylsl.StreamOulet(self._sinfo)
+        self._oulet = pylsl.StreamOutlet(self._sinfo)
 
     @copy_doc(_Trigger.signal)
     def signal(self, value: int) -> None:
@@ -79,9 +80,9 @@ class LSLTrigger(_Trigger):
         return self._sinfo
 
     @property
-    def oulet(self) -> pylsl.StreamOulet:
+    def oulet(self) -> pylsl.StreamOutlet:
         """LSL stream oulet.
 
-        :type: ``pylsl.StreamOulet``
+        :type: ``pylsl.StreamOutlet``
         """
         return self._outlet
