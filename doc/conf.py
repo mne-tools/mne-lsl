@@ -73,10 +73,6 @@ default_role = "py:obj"
 # A list of ignored prefixes for module index sorting.
 modindex_common_prefix = ['bsl.']
 
-# Generate autosummary even if no references
-autosummary_generate = True
-autodoc_default_options = {'inherited-members': None}
-
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
@@ -96,7 +92,7 @@ html_theme_options = {
     'icon_links_label': 'Quick Links',  # for screen reader
     'use_edit_page_button': False,
     'navigation_with_keys': False,
-    'show_toc_level': 1
+    'show_toc_level': 1,
 }
 
 # The name of an image file (relative to this directory) to place at the top
@@ -133,7 +129,7 @@ sphinx_gallery_conf = {
     'filename_pattern': re.escape(os.sep),
     'line_numbers': False,
     'download_all_examples': False,
-    'matplotlib_animations': True
+    'matplotlib_animations': True,
     }
 
 # -- Other extension configuration -------------------------------------------
@@ -141,6 +137,7 @@ sphinx_gallery_conf = {
 # autodoc / autosummary
 autosummary_generate = True
 autodoc_default_options = {'inherited-members': None}
+autodoc_typehints = 'none'
 
 # Add intersphinx mappings
 intersphinx_mapping = {
@@ -171,7 +168,7 @@ numpydoc_xref_aliases = {
     # BSL
     'StreamReceiver': 'bsl.StreamReceiver',
     'StreamRecorder': 'bsl.StreamRecorder',
-    'SoftwareTrigger': 'bsl.triggers.SoftwareTrigger'
+    'SoftwareTrigger': 'bsl.triggers.SoftwareTrigger',
     }
 
 numpydoc_xref_ignore = {

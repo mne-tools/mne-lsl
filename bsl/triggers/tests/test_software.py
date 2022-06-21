@@ -25,9 +25,9 @@ def test_trigger_software(tmp_path):
         trigger.verbose = False
         time.sleep(0.5)
 
-        assert trigger.signal(1)
+        trigger.signal(1)
         time.sleep(0.1)
-        assert trigger.signal(2)
+        trigger.signal(2)
 
         time.sleep(0.5)
         trigger.close()
