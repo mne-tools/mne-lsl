@@ -39,7 +39,7 @@ class LSLTrigger(BaseTrigger):
             channel_format=pylsl.cf_int16,
             source_id=name,
         )
-        self._oulet = pylsl.StreamOutlet(self._sinfo)
+        self._outlet = pylsl.StreamOutlet(self._sinfo)
 
     @copy_doc(BaseTrigger.signal)
     def signal(self, value: int) -> None:
@@ -50,12 +50,12 @@ class LSLTrigger(BaseTrigger):
     @copy_doc(BaseTrigger._set_data)
     def _set_data(self, value: int) -> None:
         super()._set_data(value)
-        self._oulet.push_sample([value])
+        self._outlet.push_sample([value])
 
     def close(self) -> None:
         """Close the LSL outlet."""
         try:
-            del self._oulet
+            del self._outlet
         except Exception:
             pass
 
@@ -80,8 +80,8 @@ class LSLTrigger(BaseTrigger):
         return self._sinfo
 
     @property
-    def oulet(self) -> pylsl.StreamOutlet:
-        """LSL stream oulet.
+    def outlet(self) -> pylsl.StreamOutlet:
+        """LSL stream outlet.
 
         :type: ``pylsl.StreamOutlet``
         """
