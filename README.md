@@ -7,7 +7,8 @@
 
 [![Brain Streaming Layer](https://raw.githubusercontent.com/bsl-tools/bsl/master/doc/_static/icon-with-name/icon-with-name.svg)](https://bsl-tools.github.io/)
 
-**BrainStreamingLayer** provides a real-time brain signal streaming framework.
+**BrainStreamingLayer** [(Documentation website)](https://bsl-tools.github.io/)
+provides a real-time brain signal streaming framework.
 **BSL** is a wrapper around the python interface to the Lab Streaming Layer
 (LSL). **BSL** goal is to simplify the design of a study using the Lab
 Streaming Layer which provides sub-millisecond time synchronization accuracy.
@@ -67,8 +68,6 @@ For instance, `pip install bsl[parallel]` will install `BSL` with the
 dependencies for parallel port triggers.
 
 # Documentation
-
-[**Documentation website.**](https://bsl-tools.github.io/)
 
 BSL is centered around 4 main modules: `stream_receiver`, `stream_recorder`,
 `stream_player` and `stream_viewer`.
