@@ -91,7 +91,10 @@ class StreamReceiver:
                     continue
 
                 # EEG stream
-                if streamInfo.type().lower() == "eeg":
+                if (
+                    streamInfo.type().lower() == "eeg"
+                    or streamInfo.type().lower() == "signal"
+                ):
                     self._streams[streamInfo.name()] = StreamEEG(
                         streamInfo, self._bufsize, self._winsize
                     )
