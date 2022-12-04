@@ -78,7 +78,7 @@ def _find_liblsl_env() -> Optional[CDLL]:
 
 def _find_liblsl_bsl() -> Optional[CDLL]:
     """Search for the LSL library packaged with BSL."""
-    directory = Path(__file__) / "lib"
+    directory = Path(__file__).parent / "lib"
     lib = None
     for libpath in directory.iterdir():
         if libpath.suffix not in (".so", ".dylib", ".dll"):
