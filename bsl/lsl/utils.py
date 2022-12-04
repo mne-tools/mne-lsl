@@ -4,7 +4,11 @@ from pathlib import Path
 from typing import Optional, Tuple, Union
 
 from .. import logger
-from . import minversion
+
+
+# Minimum liblsl version. The major version is given by version // 100 and the
+# minor version is given by version % 100.
+VERSION_MIN = 115
 
 
 def find_liblsl():
@@ -44,7 +48,7 @@ def _find_liblsl_env() -> Optional[CDLL]:
                 "'PYLSL_LIB' can not be loaded.",
                 libpath,
             )
-        elif version < minversion:
+        elif version < VERSION_MIN:
             logger.warning(
                 "The LIBLSL '%s' provided in the environment variable "
                 "'PYLSL_LIB' is outdated. The version is %i.%i while the "
@@ -52,8 +56,8 @@ def _find_liblsl_env() -> Optional[CDLL]:
                 libpath,
                 version // 100,
                 version % 100,
-                minversion // 100,
-                minversion % 100,
+                VERSION_MIN // 100,
+                VERSION_MIN % 100,
             )
             version = None
     else:
@@ -81,9 +85,9 @@ def _find_liblsl_bsl() -> Optional[CDLL]:
             continue
         try:
             lib = CDLL(libpath)
+            assert VERSION_MIN <= lib.lsl_library_version()
         except Exception:
             continue
-
     return lib
 
 
