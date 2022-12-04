@@ -3,8 +3,8 @@ from ctypes import CDLL
 from pathlib import Path
 from typing import Optional, Tuple, Union
 
-from . import minversion
 from .. import logger
+from . import minversion
 
 
 def find_liblsl():
@@ -18,7 +18,7 @@ def find_liblsl():
         return lib
     else:
         raise RuntimeError(
-            "The liblsl library packaged with BSL could not be laoded. "
+            "The liblsl library packaged with BSL could not be loaded. "
             "Please contact the developers on GitHub."
         )
 
@@ -41,7 +41,8 @@ def _find_liblsl_env() -> Optional[CDLL]:
         if version is None:
             logger.warning(
                 "The LIBLSL '%s' provided in the environment variable "
-                "'PYLSL_LIB' can not be loaded.", libpath
+                "'PYLSL_LIB' can not be loaded.",
+                libpath,
             )
         elif version < minversion:
             logger.warning(
@@ -58,7 +59,8 @@ def _find_liblsl_env() -> Optional[CDLL]:
     else:
         logger.warning(
             "The LIBLSL path '%s' provided in the environment variable "
-            "'PYLSL_LIB' does not exists.", libpath
+            "'PYLSL_LIB' does not exists.",
+            libpath,
         )
         libpath = None
         version = None
