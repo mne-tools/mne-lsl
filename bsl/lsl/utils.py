@@ -13,7 +13,14 @@ def find_liblsl():
     lib = _find_liblsl_env()
     if lib is not None:
         return lib
-    return _find_liblsl_bsl()
+    lib = _find_liblsl_bsl()
+    if lib is not None:
+        return lib
+    else:
+        raise RuntimeError(
+            "The liblsl library packaged with BSL could not be laoded. "
+            "Please contact the developers on GitHub."
+        )
 
 
 def _find_liblsl_env() -> Optional[CDLL]:
@@ -63,9 +70,19 @@ def _find_liblsl_env() -> Optional[CDLL]:
     return lib
 
 
-def _find_liblsl_bsl():
+def _find_liblsl_bsl() -> Optional[CDLL]:
     """Search for the LSL library packaged with BSL."""
-    pass
+    directory = Path(__file__) / "lib"
+    lib = None
+    for libpath in directory.iterdir():
+        if libpath.suffix not in (".so", ".dylib", ".dll"):
+            continue
+        try:
+            lib = CDLL(libpath)
+        except Exception:
+            continue
+
+    return lib
 
 
 def _load_liblsl(libpath: Union[str, Path]) -> Tuple[str, Optional[int]]:
