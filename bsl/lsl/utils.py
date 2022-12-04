@@ -1,8 +1,7 @@
 import os
-from ctypes import CDLL, util
+from ctypes import CDLL
 from pathlib import Path
-from platform import system
-from typing import Dict, Optional, Tuple, Union
+from typing import Optional, Tuple, Union
 
 from . import minversion
 from .. import logger
@@ -11,32 +10,23 @@ from .. import logger
 def find_liblsl():
     """Search for the binary LSL library on the system."""
     # look for the PYLSL_LIB environment variable
-    libpath, version = _find_liblsl_env()
-    if version is not None:
-        assert libpath is not None  # sanity-check
-        lib = CDLL(libpath)
+    lib = _find_liblsl_env()
+    if lib is not None:
         return lib
-
-    else:
-        # look in folder
+    return _find_liblsl_bsl()
 
 
-def _find_liblsl_env() -> Tuple[Optional[str], Optional[int]]:
+def _find_liblsl_env() -> Optional[CDLL]:
     """Search for the LSL library in the environment variable PYLSL_LIB.
 
     Returns
     -------
-    libpath : str | None
-        Path to the binary LSL library, converted to string for the given OS.
-        None if the environment variable PYLSL_LIB does not exists or yields
-        a non-existent path.
-    version : int
-        Version of the binary LSL library.
-        The major version is version // 100.
-        The minor version is version % 100.
+    lib : CDLL | None
+        Loaded binary LSL library. None if the value retrieved in the
+        environment variable was not valid or yielded an invalid library.
     """
     if "PYLSL_LIB" not in os.environ:
-        return None, None
+        return None
 
     libpath = Path(os.environ["PYLSL_LIB"])
     if libpath.exists():
@@ -65,7 +55,17 @@ def _find_liblsl_env() -> Tuple[Optional[str], Optional[int]]:
         )
         libpath = None
         version = None
-    return libpath, version
+    if version is not None:
+        assert libpath is not None  # sanity-check
+        lib = CDLL(libpath)
+    else:
+        lib = None
+    return lib
+
+
+def _find_liblsl_bsl():
+    """Search for the LSL library packaged with BSL."""
+    pass
 
 
 def _load_liblsl(libpath: Union[str, Path]) -> Tuple[str, Optional[int]]:
