@@ -29,6 +29,18 @@ cf_int64 = 7
 # Can not be transmitted.
 cf_undefined = 0
 
+string2fmt = {
+    "float32": cf_float32,
+    "double64": cf_double64,
+    "string": cf_string,
+    "int8": cf_int8,
+    "int16": cf_int16,
+    "int32": cf_int32,
+    "int64": cf_int64,
+}
+
+fmt2string = {value: key for key, value in string2fmt.items()}
+
 # ---------------------
 # Post processing flags
 # ---------------------
