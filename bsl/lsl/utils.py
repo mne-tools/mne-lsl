@@ -28,7 +28,7 @@ def find_liblsl():
 
 
 def _find_liblsl_env() -> Optional[CDLL]:
-    """Search for the LSL library in the environment variable PYLSL_LIB.
+    """Search for the LSL library in the environment variable LSL_LIB.
 
     Returns
     -------
@@ -39,19 +39,19 @@ def _find_liblsl_env() -> Optional[CDLL]:
     if "PYLSL_LIB" not in os.environ:
         return None
 
-    libpath = Path(os.environ["PYLSL_LIB"])
+    libpath = Path(os.environ["LSL_LIB"])
     if libpath.exists():
         libpath, version = _load_liblsl(libpath)
         if version is None:
             logger.warning(
                 "The LIBLSL '%s' provided in the environment variable "
-                "'PYLSL_LIB' can not be loaded.",
+                "'LSL_LIB' can not be loaded.",
                 libpath,
             )
         elif version < VERSION_MIN:
             logger.warning(
                 "The LIBLSL '%s' provided in the environment variable "
-                "'PYLSL_LIB' is outdated. The version is %i.%i while the "
+                "'LSL_LIB' is outdated. The version is %i.%i while the "
                 "minimum version required by BSL is %i.%i.",
                 libpath,
                 version // 100,
@@ -63,7 +63,7 @@ def _find_liblsl_env() -> Optional[CDLL]:
     else:
         logger.warning(
             "The LIBLSL path '%s' provided in the environment variable "
-            "'PYLSL_LIB' does not exists.",
+            "'LSL_LIB' does not exists.",
             libpath,
         )
         libpath = None
