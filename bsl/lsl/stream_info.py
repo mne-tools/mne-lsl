@@ -14,6 +14,7 @@ class _BaseStreamInfo:
             raise RuntimeError(
                 "The StreamInfo could not be created from the description."
             )
+        self._channel_format = lib.lsl_get_channel_format(self.obj)
 
     def __del__(self):
         """Destroy a `~bsl.lsl.StreamInfo`."""
@@ -29,7 +30,7 @@ class _BaseStreamInfo:
 
         All channels in a stream have the same format.
         """
-        return fmt2string[lib.lsl_get_channel_format(self.obj)]
+        return fmt2string[self._channel_format]
 
     @property
     def name(self) -> str:

@@ -5,7 +5,13 @@ import numpy as np
 from numpy.typing import NDArray
 
 from ..utils._docs import copy_doc
-from .constants import cf_string, fmt2push_chunk, fmt2push_sample, fmt2type
+from .constants import (
+    cf_string,
+    fmt2push_chunk,
+    fmt2push_sample,
+    fmt2string,
+    fmt2type,
+)
 from .load_liblsl import lib
 from .stream_info import _BaseStreamInfo
 from .utils import handle_error
@@ -19,7 +25,7 @@ class StreamOutlet:
             raise RuntimeError("The StreamOutlet could not be created.")
 
         # properties from the StreamInfo
-        self._channel_format = sinfo.channel_format
+        self._channel_format = sinfo._channel_format
         self._name = sinfo.name
         self._n_channels = sinfo.n_channels
         self._sfreq = sinfo.sfreq
@@ -45,7 +51,7 @@ class StreamOutlet:
     def push_sample(
         self, x: Union[List, NDArray], timestamp=0.0, pushthrough=True
     ):
-        if isinstance(x, np.ndarray) and len(x.shape) != 1:
+        if isinstance(x, np.ndarray) and x.ndim != 1:
             raise ValueError(
                 "The sample to push 'x' must contain one element per channel. "
                 f"Thus, the shape should be (n_channels,), {x.shape} is "
@@ -115,9 +121,10 @@ class StreamOutlet:
         return bool(lib.lsl_have_consumers(self.obj))
 
     def wait_for_consumers(self, timeout: float) -> bool:
-        """Wait until at least one `~bsl.lsl.StreamInlet` connects.
+        """Wait (block) until at least one `~bsl.lsl.StreamInlet` connects.
 
         Returns True if the wait was successful, False if the timeout expired.
+        The timeout is provided in seconds.
         """
         return bool(lib.lsl_wait_for_consumers(self.obj, c_double(timeout)))
 
@@ -125,7 +132,7 @@ class StreamOutlet:
     @copy_doc(_BaseStreamInfo.channel_format)
     @property
     def channel_format(self) -> str:
-        return self._channel_format
+        return fmt2string[self._channel_format]
 
     @copy_doc(_BaseStreamInfo.n_channels)
     @property
