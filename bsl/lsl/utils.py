@@ -1,8 +1,9 @@
-from ctypes import c_void_p
+from ctypes import c_int, c_void_p
 
 from .load_liblsl import lib
 
 
+# -- XML tree -----------------------------------------------------------------
 class XMLElement:
     """A lightweight XML element tree modeling the .desc() field of StreamInfo.
 
@@ -154,3 +155,37 @@ class XMLElement:
             lib.lsl_remove_child(self.e, rhs.e)
         else:
             lib.lsl_remove_child_n(self.e, rhs)
+
+
+# -- Exception handling -------------------------------------------------------
+class LostError(RuntimeError):
+    pass
+
+
+class InvalidArgumentError(RuntimeError):
+    pass
+
+
+class InternalError(RuntimeError):
+    pass
+
+
+def handle_error(errcode):
+    """Error handler function.
+
+    Translates an error code into an exception.
+    """
+    if type(errcode) is c_int:
+        errcode = errcode.value
+    if errcode == 0:
+        pass  # no error
+    elif errcode == -1:
+        raise TimeoutError("The operation failed due to a timeout.")
+    elif errcode == -2:
+        raise LostError("The stream connection has been lost.")
+    elif errcode == -3:
+        raise InvalidArgumentError("An argument was incorrectly specified.")
+    elif errcode == -4:
+        raise InternalError("An internal error has occurred.")
+    elif errcode < 0:
+        raise RuntimeError("An unknown error has occurred.")

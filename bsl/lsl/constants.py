@@ -1,3 +1,17 @@
+import platform
+import struct
+from ctypes import (
+    c_byte,
+    c_char_p,
+    c_double,
+    c_float,
+    c_int,
+    c_longlong,
+    c_short,
+)
+
+from .load_liblsl import lib
+
 # -----------------
 # Supported formats
 # -----------------
@@ -40,6 +54,73 @@ string2fmt = {
 }
 
 fmt2string = {value: key for key, value in string2fmt.items()}
+fmt2type = [
+    [],
+    c_float,
+    c_double,
+    c_char_p,
+    c_int,
+    c_short,
+    c_byte,
+    c_longlong,
+]
+
+# ------------------------------
+# Handle int64 incompatibilities
+# ------------------------------
+# int64 is not supported on windows and on 32 bits OS
+if struct.calcsize("P") != 4 and platform.system() != "Windows":
+    push_sample_int64 = lib.lsl_push_sample_ltp
+    pull_sample_int64 = lib.lsl_pull_sample_l
+    push_chunk_int64 = lib.lsl_push_chunk_ltp
+    pull_chunk_int64 = lib.lsl_pull_chunk_l
+else:
+
+    def push_sample_int64(*_):
+        raise NotImplementedError(
+            "int64 is not yet supported on your platform."
+        )
+
+    pull_sample_int64 = push_chunk_int64 = pull_chunk_int64 = push_sample_int64
+
+# --------------------
+# Push/Pull properties
+# --------------------
+
+fmt2push_sample = [
+    [],
+    lib.lsl_push_sample_ftp,
+    lib.lsl_push_sample_dtp,
+    lib.lsl_push_sample_strtp,
+    lib.lsl_push_sample_itp,
+    lib.lsl_push_sample_stp,
+    lib.lsl_push_sample_ctp,
+    push_sample_int64,
+]
+try:
+    fmt2push_chunk = [
+        [],
+        lib.lsl_push_chunk_ftp,
+        lib.lsl_push_chunk_dtp,
+        lib.lsl_push_chunk_strtp,
+        lib.lsl_push_chunk_itp,
+        lib.lsl_push_chunk_stp,
+        lib.lsl_push_chunk_ctp,
+        push_chunk_int64,
+    ]
+    fmt2pull_chunk = [
+        [],
+        lib.lsl_pull_chunk_f,
+        lib.lsl_pull_chunk_d,
+        lib.lsl_pull_chunk_str,
+        lib.lsl_pull_chunk_i,
+        lib.lsl_pull_chunk_s,
+        lib.lsl_pull_chunk_c,
+        pull_chunk_int64,
+    ]
+except Exception:  # if not available
+    fmt2push_chunk = [None, None, None, None, None, None, None, None]
+    fmt2pull_chunk = [None, None, None, None, None, None, None, None]
 
 # ---------------------
 # Post processing flags

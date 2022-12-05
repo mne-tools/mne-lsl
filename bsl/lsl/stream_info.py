@@ -16,13 +16,21 @@ class _BaseStreamInfo:
             )
 
     def __del__(self):
-        """Destroy a SreamInfo."""
+        """Destroy a `~bsl.lsl.StreamInfo`."""
         try:
             lib.lsl_destroy_streaminfo(self.obj)
         except Exception:
             pass
 
     # -- Core information, assigned at construction ---------------------------
+    @property
+    def channel_format(self) -> str:
+        """Channel format of a stream.
+
+        All channels in a stream have the same format.
+        """
+        return fmt2string[lib.lsl_get_channel_format(self.obj)]
+
     @property
     def name(self) -> str:
         """Name of the stream.
@@ -32,17 +40,6 @@ class _BaseStreamInfo:
         ambiguity for the recording application and/or the experimenter.
         """
         return lib.lsl_get_name(self.obj).decode("utf-8")
-
-    @property
-    def stype(self) -> str:
-        """Type of the stream.
-
-        The content type is a short string, such as "EEG", "Gaze", ... which
-        describes the content carried by the channel. If a stream contains
-        mixed content, this value should be an empty string and the type should
-        be stored in the description of individual channels.
-        """
-        return lib.lsl_get_type(self.obj).decode("utf-8")
 
     @property
     def n_channels(self) -> int:
@@ -57,17 +54,9 @@ class _BaseStreamInfo:
     def sfreq(self) -> float:
         """Sampling rate of the stream, according to the source (in Hz).
 
-        If a stream is irregularly sampled, the sampling rate is set to 0.
+        If a stream is irregularly sampled, the sampling rate is set to ``0``.
         """
         return lib.lsl_get_nominal_srate(self.obj)
-
-    @property
-    def channel_format(self) -> str:
-        """Channel format of a stream.
-
-        All channels in a stream have the same format.
-        """
-        return fmt2string[lib.lsl_get_channel_format(self.obj)]
 
     @property
     def source_id(self) -> str:
@@ -80,7 +69,44 @@ class _BaseStreamInfo:
         """
         return lib.lsl_get_source_id(self.obj).decode("utf-8")
 
+    @property
+    def stype(self) -> str:
+        """Type of the stream.
+
+        The content type is a short string, such as ``"EEG"``, ``"Gaze"``, ...
+        which describes the content carried by the channel. If a stream
+        contains mixed content, this value should be an empty string and the
+        type should be stored in the description of individual channels.
+        """
+        return lib.lsl_get_type(self.obj).decode("utf-8")
+
     # -- Hosting information, assigned when bound to an outlet/inlet ----------
+    @property
+    def created_at(self) -> float:
+        """Timestamp at which the stream was created.
+
+        This is the time stamps at which the stream was first created, as
+        determined by `~bsl.lsl.local_clock` on the providing machine.
+        """
+        return lib.lsl_get_created_at(self.obj)
+
+    @property
+    def hostname(self) -> str:
+        return lib.lsl_get_hostname(self.obj).decode("utf-8")
+
+    @property
+    def session_id(self) -> str:
+        return lib.lsl_get_session_id(self.obj).decode("utf-8")
+
+    @property
+    def uid(self) -> str:
+        """Unique ID of the `~bsl.lsl.StreamOutlet` instance.
+
+        This ID is guaranteed to be different across multiple instantiations of
+        the same ~bsl.lsl.StreamOutlet`, e.g. after a re-start.
+        """
+        return lib.lsl_get_uid(self.obj).decode("utf-8")
+
     @property
     def version(self) -> int:
         """Version of the binary LSL library.
@@ -90,40 +116,14 @@ class _BaseStreamInfo:
         """
         return lib.lsl_get_version(self.obj)
 
-    @property
-    def created_at(self) -> float:
-        """Creation time stamp of the stream.
-
-        This is the time stamps at which the stream was first craeted, as
-        determined by local_clock() on the providing machine.
-        """
-        return lib.lsl_get_created_at(self.obj)
-
-    @property
-    def uid(self) -> str:
-        """Unique ID of the stream outlet instance.
-
-        This ID is guaranteed to be different across multiple instantiations of
-        the same outlet, e.g. after a re-start.
-        """
-        return lib.lsl_get_uid(self.obj).decode("utf-8")
-
-    @property
-    def session_id(self) -> str:
-        return lib.lsl_get_session_id(self.obj).decode("utf-8")
-
-    @property
-    def hostname(self) -> str:
-        return lib.lsl_get_hostname(self.obj).decode("utf-8")
-
     # -- Data description -----------------------------------------------------
+    @property
+    def as_xml(self):
+        return lib.lsl_get_xml(self.obj).decode("utf-8")
+
     @property
     def desc(self):
         return XMLElement(lib.lsl_get_desc(self.obj))
-
-    @property
-    def as_xml(self):
-        return lib.lsl_get_xml(self.obj).decode('utf-8')
 
 
 class StreamInfo(_BaseStreamInfo):
