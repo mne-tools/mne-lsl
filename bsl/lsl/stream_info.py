@@ -4,6 +4,7 @@ from typing import Union
 from ..utils._checks import _check_type, _check_value
 from .constants import fmt2string, string2fmt
 from .load_liblsl import lib
+from .utils import XMLElement
 
 
 class _BaseStreamInfo:
@@ -118,11 +119,11 @@ class _BaseStreamInfo:
     # -- Data description -----------------------------------------------------
     @property
     def desc(self):
-        pass
+        return XMLElement(lib.lsl_get_desc(self.obj))
 
     @property
     def as_xml(self):
-        pass
+        return lib.lsl_get_xml(self.obj).decode('utf-8')
 
 
 class StreamInfo(_BaseStreamInfo):

@@ -1,4 +1,4 @@
-from . import lib
+from .load_liblsl import lib
 
 
 def library_version() -> int:
