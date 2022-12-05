@@ -114,7 +114,7 @@ class StreamOutlet:
 
         Parameters
         ----------
-        x : list | array of shape (n_channels, n_samples)
+        x : list of list | array of shape (n_channels, n_samples)
             Samples to push, with one element for each channel at every time
             point.
         timestamp : float optional
