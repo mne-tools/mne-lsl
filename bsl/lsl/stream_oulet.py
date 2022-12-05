@@ -49,8 +49,26 @@ class StreamOutlet:
             pass
 
     def push_sample(
-        self, x: Union[List, NDArray], timestamp=0.0, pushthrough=True
-    ):
+        self,
+        x: Union[List, NDArray],
+        timestamp: float = 0.0,
+        pushThrough: bool = True,
+    ) -> None:
+        """Push a sample into the `~bsl.lsl.StreamOutlet`.
+
+        Parameters
+        ----------
+        x : list | array of shape (n_channels,)
+            Sample to push, with one element for each channel.
+        timestamp : float optional
+            The acquisition timestamp of the sample, in agreement with
+            `~bsl.lsl.local_clock`. The default, `0`, uses the current time.
+        pushThrough : bool, optional
+            If True, push the sample through to the receivers instead of
+            buffering it with subsequent samples. Note that the ``chunk_size``
+            defined when creating a `~bsl.lsl.StreamOutlet` takes precedence
+            over the ``pushThrough`` flag.
+        """
         if isinstance(x, np.ndarray) and x.ndim != 1:
             raise ValueError(
                 "The sample to push 'x' must contain one element per channel. "
@@ -71,7 +89,7 @@ class StreamOutlet:
                 self.obj,
                 self._sample_type(*x),
                 c_double(timestamp),
-                c_int(pushthrough),
+                c_int(pushThrough),
             )
         )
 
@@ -117,14 +135,36 @@ class StreamOutlet:
 
         While it does not hurt, there is technically no reason to push samples
         if there is no one connected.
+
+        Returns
+        -------
+        consumers : bool
+            True if at least one consumer is connected.
+
+        Notes
+        -----
+        This function does not filter the search for `bsl.lsl.StreamInlet`. Any
+        application inlet will be recognized.
         """
         return bool(lib.lsl_have_consumers(self.obj))
 
     def wait_for_consumers(self, timeout: float) -> bool:
         """Wait (block) until at least one `~bsl.lsl.StreamInlet` connects.
 
-        Returns True if the wait was successful, False if the timeout expired.
-        The timeout is provided in seconds.
+        Parameters
+        ----------
+        timeout : float
+            Timeout duration in seconds.
+
+        Returns
+        -------
+        success : bool
+            True if the wait was successful, False if the ``timeout`` expired.
+
+         Notes
+         -----
+         This function does not filter the search for `bsl.lsl.StreamInlet`. Any
+         application inlet will be recognized.
         """
         return bool(lib.lsl_wait_for_consumers(self.obj, c_double(timeout)))
 

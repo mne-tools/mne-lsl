@@ -13,7 +13,7 @@ VERSION_MAX = 116
 
 def load_liblsl():
     """Load the binary LSL library on the system."""
-    # look for the PYLSL_LIB environment variable
+    # look for the LSL_LIB environment variable
     lib = _find_liblsl_env()
     if lib is not None:
         return _set_return_types(lib)
@@ -63,7 +63,7 @@ def _find_liblsl_env() -> Optional[CDLL]:
         elif VERSION_MAX < version:
             logger.warning(
                 "The LIBLSL '%s' provided in the environment variable "
-                "'LSL_LIB' is not officialy supported. The version is %i.%i "
+                "'LSL_LIB' is not officially supported. The version is %i.%i "
                 "while the maximum supported version required by BSL is "
                 "%i.%i. Use this version at your own risk.",
                 libpath,
