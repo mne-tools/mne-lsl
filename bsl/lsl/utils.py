@@ -5,9 +5,10 @@ from typing import Optional, Tuple, Union
 
 from .. import logger
 
-# Minimum liblsl version. The major version is given by version // 100 and the
-# minor version is given by version % 100.
+# Minimum/Maximum liblsl version. The major version is given by version // 100
+# and the minor version is given by version % 100.
 VERSION_MIN = 115
+VERSION_MAX = 116
 
 
 def load_liblsl():
@@ -35,20 +36,20 @@ def _find_liblsl_env() -> Optional[CDLL]:
         Loaded binary LSL library. None if the value retrieved in the
         environment variable was not valid or yielded an invalid library.
     """
-    if "PYLSL_LIB" not in os.environ:
+    if "LSL_LIB" not in os.environ:
         return None
 
     libpath = Path(os.environ["LSL_LIB"])
     if libpath.exists():
         libpath, version = _attempt_load_liblsl(libpath)
         if version is None:
-            logger.warning(
+            logger.error(
                 "The LIBLSL '%s' provided in the environment variable "
                 "'LSL_LIB' can not be loaded.",
                 libpath,
             )
         elif version < VERSION_MIN:
-            logger.warning(
+            logger.error(
                 "The LIBLSL '%s' provided in the environment variable "
                 "'LSL_LIB' is outdated. The version is %i.%i while the "
                 "minimum version required by BSL is %i.%i.",
@@ -59,8 +60,20 @@ def _find_liblsl_env() -> Optional[CDLL]:
                 VERSION_MIN % 100,
             )
             version = None
+        elif VERSION_MAX < version:
+            logger.warning(
+                "The LIBLSL '%s' provided in the environment variable "
+                "'LSL_LIB' is not officialy supported. The version is %i.%i "
+                "while the maximum supported version required by BSL is "
+                "%i.%i. Use this version at your own risk.",
+                libpath,
+                version // 100,
+                version % 100,
+                VERSION_MIN // 100,
+                VERSION_MIN % 100,
+            )
     else:
-        logger.warning(
+        logger.error(
             "The LIBLSL path '%s' provided in the environment variable "
             "'LSL_LIB' does not exists.",
             libpath,
