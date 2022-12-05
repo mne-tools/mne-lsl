@@ -10,7 +10,7 @@
 cf_float32 = 1
 # For universal numeric data as long as permitted by network and disk budget.
 # The largest representable integer is 53-bit.
-cf_double64 = 2
+cf_float64 = 2
 # For variable-length ASCII strings or data blobs, such as video frames,
 # complex event descriptions, etc.
 cf_string = 3
@@ -31,7 +31,7 @@ cf_undefined = 0
 
 string2fmt = {
     "float32": cf_float32,
-    "double64": cf_double64,
+    "float64": cf_float64,
     "string": cf_string,
     "int8": cf_int8,
     "int16": cf_int16,

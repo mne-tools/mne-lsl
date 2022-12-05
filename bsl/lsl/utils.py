@@ -121,14 +121,14 @@ class XMLElement:
     def set_name(self, name):
         """Set the element's name.
 
-        Returns False if the node is empty.
+        Return False if the node is empty.
         """
         return bool(lib.lsl_set_name(self.e, str.encode(name)))
 
     def set_value(self, value):
         """Set the element's value.
 
-        Returns False if the node is empty.
+        Return False if the node is empty.
         """
         return bool(lib.lsl_set_value(self.e, str.encode(value)))
 
