@@ -93,10 +93,20 @@ class _BaseStreamInfo:
 
     @property
     def hostname(self) -> str:
+        """Hostname of the providing machine."""
         return lib.lsl_get_hostname(self.obj).decode("utf-8")
 
     @property
     def session_id(self) -> str:
+        """Session ID for the given stream.
+
+        The session ID is an optional human-assigned identifier of the
+        recording session. While it is rarely used, it can be used to prevent
+        concurrent recording activitites on the same sub-network (e.g., in
+        multiple experiment areas) from seeing each other's streams
+        (can be assigned in a configuration file read by liblsl, see also
+        Network Connectivity in the LSL wiki).
+        """
         return lib.lsl_get_session_id(self.obj).decode("utf-8")
 
     @property
@@ -115,15 +125,43 @@ class _BaseStreamInfo:
         The major version is version // 100.
         The minor version is version % 100.
         """
+        # TODO: Check why this is not returning the same version as the lib..
         return lib.lsl_get_version(self.obj)
 
     # -- Data description -----------------------------------------------------
     @property
-    def as_xml(self):
+    def as_xml(self) -> str:
+        """Retrieve the entire stream_info in XML format.
+
+        This yields an XML document (in string form) whose top-level element is
+        <info>. The info element contains one element for each field of the
+        `~bsl.lsl.StreamInfo` class, including:
+        - the core elements <name>, <type>, <channel_count>, <nominal_srate>,
+          <channel_format>, <source_id>
+        - the misc elements <version>, <created_at>, <uid>, <session_id>,
+          <v4address>, <v4data_port>, <v4service_port>, <v6address>,
+          <v6data_port>, <v6service_port>
+        - the extended description element <desc> with user-defined
+          sub-elements.
+        """
         return lib.lsl_get_xml(self.obj).decode("utf-8")
 
     @property
-    def desc(self):
+    def desc(self) -> XMLElement:
+        """"Extended description of the stream.
+
+        It is highly recommended that at least the channel labels are described
+        here. See code examples on the LSL wiki. Other information, such
+        as amplifier settings, measurement units if deviating from defaults,
+        setup information, subject information, etc.. can be specified here, as
+        well. Meta-data recommendations follow the XDF file format project
+        (github.com/sccn/xdf/wiki/Meta-Data or web search for: XDF meta-data).
+
+        Important: if you use a stream content type for which meta-data
+        recommendations exist, please try to lay out your meta-data in
+        agreement with these recommendations for compatibility with other
+        applications.
+        """
         return XMLElement(lib.lsl_get_desc(self.obj))
 
 
