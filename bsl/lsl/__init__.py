@@ -9,5 +9,4 @@ and tested on the OS and version of Python supported by ``BSL``.
 
 from .utils import find_liblsl
 
-
 lib = find_liblsl()

@@ -5,7 +5,6 @@ from typing import Optional, Tuple, Union
 
 from .. import logger
 
-
 # Minimum liblsl version. The major version is given by version // 100 and the
 # minor version is given by version % 100.
 VERSION_MIN = 115
