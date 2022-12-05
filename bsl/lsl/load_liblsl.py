@@ -259,3 +259,7 @@ def _set_return_types(lib: CDLL) -> CDLL:
         )
 
     return lib
+
+
+# load library
+lib = load_liblsl()

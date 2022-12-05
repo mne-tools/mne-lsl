@@ -2,8 +2,8 @@ from ctypes import c_char_p, c_double, c_void_p
 from typing import Union
 
 from ..utils._checks import _check_type, _check_value
-from . import lib
 from .constants import fmt2string, string2fmt
+from .load_liblsl import lib
 
 
 class _BaseStreamInfo:
@@ -108,12 +108,12 @@ class _BaseStreamInfo:
         return lib.lsl_get_uid(self.obj).decode("utf-8")
 
     @property
-    def session_id(self):
-        return lib.lsl_get_session_id(self.obj).decode('utf-8')
+    def session_id(self) -> str:
+        return lib.lsl_get_session_id(self.obj).decode("utf-8")
 
     @property
-    def hostname(self):
-        return lib.lsl_get_hostname(self.obj).decode('utf-8')
+    def hostname(self) -> str:
+        return lib.lsl_get_hostname(self.obj).decode("utf-8")
 
     # -- Data description -----------------------------------------------------
     @property
