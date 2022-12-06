@@ -99,7 +99,7 @@ class StreamReceiver:
                         streamInfo, self._bufsize, self._winsize
                     )
                 # Marker stream
-                elif streamInfo.nominal_srate() == 0:
+                elif streamInfo.sfreq == 0:
                     self._streams[streamInfo.name()] = StreamMarker(
                         streamInfo, self._bufsize, self._winsize
                     )

@@ -33,9 +33,9 @@ class LSLTrigger(BaseTrigger):
         # create outlet
         self._sinfo = StreamInfo(
             name=name,
-            type="Markers",
-            channel_count=1,
-            nominal_srate=0.0,
+            stype="Markers",
+            n_channels=1,
+            sfreq=0.0,
             channel_format="int16",
             source_id=name,
         )
