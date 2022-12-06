@@ -238,8 +238,7 @@ class StreamInlet:
             byref(errcode),
         )
         handle_error(errcode)
-        # return results (note: could offer a more efficient format in the
-        # future, e.g., a numpy array)
+
         num_samples = num_elements / self._n_channels
         if self._channel_format == cf_string:
             samples = [
