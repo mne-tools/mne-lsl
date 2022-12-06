@@ -68,7 +68,6 @@ doc = [
     'sphinx-gallery',
 ]
 externals = [
-    'pylsl',
     'psychopy',
 ]
 parallel = [
