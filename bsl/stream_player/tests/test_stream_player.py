@@ -39,23 +39,23 @@ def test_stream_player(caplog):
 
     # Test stream is in resolved streams
     streams = resolve_streams()
-    assert stream_name in [stream.name() for stream in streams]
+    assert stream_name in [stream.name for stream in streams]
 
     # Test that data is being streamed
-    idx = [stream.name() for stream in streams].index(stream_name)
+    idx = [stream.name for stream in streams].index(stream_name)
     inlet = StreamInlet(streams[idx], max_buflen=int(raw.info["sfreq"]))
     inlet.open_stream()
     time.sleep(0.1)
     chunk, tslist = inlet.pull_chunk(
-        timeout=0.0, max_samples=int(raw.info["sfreq"])
+        timeout=0.0, n_samples=int(raw.info["sfreq"])
     )
-    assert len(chunk) == len(tslist)
+    assert chunk.shape[1] == tslist.shape[0]
     assert 0 < len(chunk) < int(raw.info["sfreq"])
     time.sleep(1)
     chunk, tslist = inlet.pull_chunk(
-        timeout=0.0, max_samples=int(raw.info["sfreq"])
+        timeout=0.0, n_samples=int(raw.info["sfreq"])
     )
-    assert len(chunk) == len(tslist) == int(raw.info["sfreq"])
+    assert chunk.shape[1] == tslist.shape[0] == int(raw.info["sfreq"])
 
     # Test stop
     caplog.clear()
@@ -71,7 +71,7 @@ def test_stream_player(caplog):
     sp.start()
     assert "Streaming started." in caplog.text
     streams = resolve_streams()
-    assert sp.stream_name in [stream.name() for stream in streams]
+    assert sp.stream_name in [stream.name for stream in streams]
     sp.stop()
     assert (
         "Waiting for StreamPlayer %s process to finish." % "StreamPlayer"
@@ -88,7 +88,7 @@ def test_stream_player(caplog):
     with StreamPlayer(stream_name=stream_name, fif_file=fif_file):
         assert "Streaming started." in caplog.text
         streams = resolve_streams()
-        assert stream_name in [stream.name() for stream in streams]
+        assert stream_name in [stream.name for stream in streams]
         time.sleep(0.5)
     assert (
         "Waiting for StreamPlayer %s process to finish." % "StreamPlayer"
