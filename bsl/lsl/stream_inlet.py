@@ -1,6 +1,8 @@
 from ctypes import byref, c_double, c_int, c_void_p
 from typing import Optional
 
+import numpy as np
+
 from ..utils._checks import _check_type
 from ..utils._docs import copy_doc
 from .constants import (
@@ -133,7 +135,30 @@ class StreamInlet:
         handle_error(errcode)
         return result
 
-    def pull_sample(self, timeout: Optional[float] = None, sample=None):
+    def pull_sample(self, timeout: Optional[float] = None):
+        """Pull a single sample from the inlet.
+
+        Parameters
+        ----------
+        timeout : float | None
+            Optional timeout (in seconds) of the operation. By default, timeout
+            is disabled.
+
+        Returns
+        -------
+        sample : list | array of shape (n_channels,) | None
+            If the channel format is ``'string^``, returns a list of values for
+            each channel. Else, returns a numpy array of shape
+            ``(n_channels,)``.
+        timestamp : float | None
+            Acquisition timestamp on the remote machine.
+
+        Notes
+        -----
+        To map the timestamp to the local clock of the client machine, add the
+        estimated time correction returned by
+        `~bsl.lsl.StreamInlet.time_correction`.
+        """
         timeout = StreamInlet._check_timeout(timeout)
 
         errcode = c_int()
@@ -147,25 +172,62 @@ class StreamInlet:
         handle_error(errcode)
 
         if timestamp:
-            sample = [v for v in self._sample]
             if self._channel_format == cf_string:
-                sample = [v.decode("utf-8") for v in sample]
-            return sample, timestamp
+                sample = [v.decode("utf-8") for v in self._sample]
+            else:
+                sample = np.array(self._sample)
         else:
-            return None, None
+            sample = None
+            timestamp = None
+        return sample, timestamp
 
     def pull_chunk(
-        self, timeout: Optional[float] = 0.0, max_samples=1024, dest_obj=None
+        self,
+        timeout: Optional[float] = None,
+        max_samples: int = 1024,
+        dest_obj=None,
     ):
-        timeout = StreamInlet._check_timeout(timeout)
-        # look up a pre-allocated buffer of appropriate length
-        num_channels = self._n_channels
-        max_values = max_samples * num_channels
+        """Pull a chunk of samples from the inlet.
 
+        Parameters
+        ----------
+        timeout : float | None
+            Optional timeout (in seconds) of the operation. By default, timeout
+            is disabled.
+        max_samples : int
+            Maximum number of samples to return.
+        dest_obj : Buffer
+            A python object that supports the buffer interface. If this
+            argument is provided, the the destination object will be updated
+            in place and the samples returned by this method will be None.
+            The timestamps are returned regardless of this argument.
+            A numpy buffer must use ``order='C'``.
+
+        Returns
+        -------
+        samples : list of list | array of shape (n_channels, n_samples) |
+            If the channel format is ``'string^``, returns a list of list of
+            values for each channel and sample. Else, returns a numpy array of
+            shape ``(n_channels, n_samples)``.
+        timestamps : array of shape (n_samples,) | None
+            Acquisition timestamps on the remote machine.
+        """
+        timeout = StreamInlet._check_timeout(timeout)
+        if not isinstance(max_samples, int):
+            max_samples = int(max_samples)
+        if max_samples <= 0:
+            raise ValueError(
+                "The argument 'max_samples' must be a strictly positive "
+                f"integer. {max_samples} is invalid."
+            )
+        # look up a pre-allocated buffer of appropriate length
+        max_values = max_samples * self._n_channels
+
+        # create buffer
         if max_samples not in self._buffers:
             self._buffers[max_samples] = (
-                (self._value_type * max_values)(),
-                (c_double * max_samples)(),
+                (self._value_type * max_values)(),  # data
+                (c_double * max_samples)(),  # timestamps
             )
         if dest_obj is not None:
             data_buff = (self._value_type * max_values).from_buffer(dest_obj)
@@ -187,18 +249,33 @@ class StreamInlet:
         handle_error(errcode)
         # return results (note: could offer a more efficient format in the
         # future, e.g., a numpy array)
-        num_samples = num_elements / num_channels
+        num_samples = num_elements / self._n_channels
         if dest_obj is None:
-            samples = [
-                [data_buff[s * num_channels + c] for c in range(num_channels)]
-                for s in range(int(num_samples))
-            ]
             if self._channel_format == cf_string:
+                samples = [
+                    [
+                        data_buff[s * self._n_channels + c]
+                        for c in range(self._n_channels)
+                    ]
+                    for s in range(int(num_samples))
+                ]
                 samples = [[v.decode("utf-8") for v in s] for s in samples]
                 free_char_p_array_memory(data_buff, max_values)
+            else:
+                # this is 500x faster than the list
+                # 529 µs ± 5.31 µs against 1.11 µs ± 9.13 ns per loop
+                samples = np.array(data_buff).reshape(-1, self._n_channels).T
+
         else:
             samples = None
-        timestamps = [ts_buff[s] for s in range(int(num_samples))]
+
+        # %timeit [ts_buff[s] for s in range(int(num_samples))]
+        # 68.8 µs ± 635 ns per loop
+        # %timeit np.array(ts_buff)
+        # 854 ns ± 2.99 ns per loop
+        # %timeit np.frombuffer(ts_buff)
+        # 192 ns ± 1.11 ns per loop
+        timestamps = np.frombuffer(ts_buff)  # requires numpy ≥ 1.20
         return samples, timestamps
 
     def samples_available(self) -> int:
