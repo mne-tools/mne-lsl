@@ -229,10 +229,10 @@ class StreamInlet:
                 (self._value_type * max_values)(),  # data
                 (c_double * max_samples)(),  # timestamps
             )
-        if dest_obj is not None:
-            data_buff = (self._value_type * max_values).from_buffer(dest_obj)
-        else:
+        if dest_obj is None:
             data_buff = self._buffers[max_samples][0]
+        else:
+            data_buff = (self._value_type * max_values).from_buffer(dest_obj)
         ts_buff = self._buffers[max_samples][1]
 
         # read data into the buffer
