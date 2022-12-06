@@ -16,6 +16,15 @@ from .utils import free_char_p_array_memory, handle_error
 
 
 class StreamInlet:
+    """An inlet to retrieve data and metadata on the network.
+
+    Parameters
+    ----------
+    sinfo : StreamInfo
+        The `~bsl.lsl.StreamInfo` object describing the stream. Stays constant
+        over the lifetime of the inlet.
+    """
+
     def __init__(
         self,
         sinfo: _BaseStreamInfo,
@@ -64,15 +73,58 @@ class StreamInlet:
             pass
 
     def open_stream(self, timeout: Optional[float] = None) -> None:
+        """Subscribe to a data stream.
+
+        All samples pushed in at the other end from this moment onwards will be
+        queued and eventually be delivered in response to
+        `~bsl.lsl.StreamInlet.pull_sample` or `~bsl.lsl.StreamInlet.pull_chunk`
+        calls. Pulling a sample without subscribing to the stream with this
+        method is permitted (the stream will be opened implicitly).
+
+        Parameters
+        ----------
+        timeout : float | None
+            Optional timeout (in seconds) of the operation. By default, timeout
+            is disabled.
+        """
         timeout = StreamInlet._check_timeout(timeout)
         errcode = c_int()
         lib.lsl_open_stream(self.obj, c_double(timeout), byref(errcode))
         handle_error(errcode)
 
     def close_stream(self) -> None:
+        """Drop the current data stream.
+
+        All samples that are still buffered or in flight will be dropped and
+        transmission and buffering of data for this inlet will be stopped.
+        This method is used if an application stops being interested in data
+        from a source (temporarily or not) but keeps the outlet alive, to not
+        waste unnecessary system and network resources.
+        """
         lib.lsl_close_stream(self.obj)
 
     def time_correction(self, timeout: Optional[float] = None) -> float:
+        """Retrieve an estimated time correction offset for the given stream.
+
+        The first call to this function takes several milliseconds until a
+        reliable first estimate is obtained. Subsequent calls are instantaneous
+        (and rely on periodic background updates). The precision of these
+        estimates should be below 1 ms (empirically within +/-0.2 ms).
+
+        Parameters
+        ----------
+        timeout : float | None
+            Optional timeout (in seconds) of the operation. By default, timeout
+            is disabled.
+
+        Returns
+        -------
+        time_correction : float
+            Current estimate of the time correction. This number needs to be
+            added to a timestamp that was remotely generated via
+            ``local_clock()`` to map it into the local clock domain of the
+            client machine.
+        """
         timeout = StreamInlet._check_timeout(timeout)
         errcode = c_int()
         result = lib.lsl_time_correction(
