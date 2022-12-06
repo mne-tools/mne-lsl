@@ -19,10 +19,26 @@ from .utils import handle_error
 
 
 class StreamOutlet:
-    def __init__(self, sinfo, chunk_size=0, max_buffered=360):
+    """An outlet to share data and metadata on the network.
+
+    Parameters
+    ----------
+    sinfo : StreamInfo
+        The `~bsl.lsl.StreamInfo` object describing the stream. Stays constant
+        over the lifetime of the outlet.
+    chunk_size : int ``≥ 1``
+        The desired chunk granularity in samples. By default, each push
+        operation yields one chunk. An Inlet can override this setting.
+    max_buffered : float ``≥ 0``
+        The maximum amount of data to buffer in the Outlet.
+        The number of samples buffered is ``max_buffered * 100`` if the
+        sampling rate is irregular, else it's ``max_buffered`` seconds.
+    """
+
+    def __init__(self, sinfo, chunk_size=1, max_buffered=360):
         _check_type(sinfo, (_BaseStreamInfo,), "sinfo")
         _check_type(chunk_size, ("numeric",), "chunk_size")
-        if chunk_size < 0:
+        if chunk_size < 1:
             raise ValueError(
                 "The argument 'chunk_size' must contain a positive number. "
                 f"{chunk_size} is invalid."
@@ -109,7 +125,7 @@ class StreamOutlet:
             )
         )
 
-    def push_chunk(self, x, timestamp=0.0, pushthrough=True):
+    def push_chunk(self, x, timestamp=0.0, pushthrough=True) -> None:
         """Push a chunk of samples into the `~bsl.lsl.StreamOutlet`.
 
         Parameters
@@ -142,7 +158,7 @@ class StreamOutlet:
             # element to avoid slowing down the execution.
             x = [v for sample in x for v in sample]  # flatten
             n_values = len(x)
-            if n_values % self._n_channels != 0:
+            if n_values % self._n_channels != 0:  # quick incomplete test
                 raise ValueError(
                     "The samples to push 'x' must contain one element per "
                     "channel at each time-point. Thus, the shape should be "
@@ -224,4 +240,5 @@ class StreamOutlet:
 
     @property
     def sinfo(self) -> _BaseStreamInfo:
+        """`~bsl.lsl.StreamInfo` corresponding to this Outlet."""
         return _BaseStreamInfo(lib.lsl_get_info(self.obj))

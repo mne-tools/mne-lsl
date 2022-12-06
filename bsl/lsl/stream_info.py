@@ -8,6 +8,16 @@ from .utils import XMLElement
 
 
 class _BaseStreamInfo:
+    """Base Stream information object, storing the declaration of a stream.
+
+    A StreamInfo contains the following information:
+    - Core information (name, number of channels, sampling frequency, channel
+      format, ...)
+    - Optional metadata about the stream content (channel labels, measurement
+      units, ...)
+    - Hosting information (uID, hostname, ...) if bound to an inlet or outlet
+    """
+
     def __init__(self, obj):
         self.obj = c_void_p(obj)
         if not self.obj:
@@ -148,7 +158,7 @@ class _BaseStreamInfo:
 
     @property
     def desc(self) -> XMLElement:
-        """"Extended description of the stream.
+        """ "Extended description of the stream.
 
         It is highly recommended that at least the channel labels are described
         here. See code examples on the LSL wiki. Other information, such
@@ -166,6 +176,44 @@ class _BaseStreamInfo:
 
 
 class StreamInfo(_BaseStreamInfo):
+    """Base Stream information object, storing the declaration of a stream.
+
+    A StreamInfo contains the following information:
+    - Core information (name, number of channels, sampling frequency, channel
+      format, ...)
+    - Optional metadata about the stream content (channel labels, measurement
+      units, ...)
+    - Hosting information (uID, hostname, ...) if bound to an
+      `~bsl.lsl.StreamInlet` or `~bsl.lsl.StreamOutlet`
+
+    Parameters
+    ----------
+    name : str
+        Name of the stream. This field can not be empty.
+    stype : str
+        Content type of the stream, e.g. ``"EEG"`` or ``"Gaze"``. If a stream
+        contains mixed content, this value should be empty and the description
+        of each channel should include its type.
+    n_channels : int ``≥ 1``
+        Also alled ``channel_count``, represents the number of channels per
+        sample. This number stays constant for the lifetime of the stream.
+    sfreq : float ``≥ 0``
+        Also called ``nominal_srate``, represents the sampling rate (in Hz) as
+        advertised by the data source. If the sampling rate is irregular (e.g.
+        for a trigger stream), the sampling rate is set to ``0``.
+    channel_format : str
+        Format of each channel. If your channels have different formats,
+        consider supplying multiple streams or use the largest type that can
+        hold them all.
+        One of ``('string', 'float32', 'float64', 'int8', 'int16', 'int32')``.
+        ``'int64'`` is partially supported.
+    source_id : str
+        A unique identifier of the device or source of the data. If not empty,
+        this information improves the system robustness since it alllows
+        recipients to recover from failure by finding a stream with the same
+        ``source_id`` on the network.
+    """
+
     def __init__(
         self,
         name: str,
