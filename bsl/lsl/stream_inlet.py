@@ -206,7 +206,7 @@ class StreamInlet:
 
         Returns
         -------
-        samples : list of list | array of shape (n_channels, n_samples) |
+        samples : list of list | array of shape (n_channels, n_samples) | None
             If the channel format is ``'string^``, returns a list of list of
             values for each channel and sample. Else, returns a numpy array of
             shape ``(n_channels, n_samples)``.
