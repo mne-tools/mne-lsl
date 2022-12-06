@@ -255,12 +255,11 @@ class StreamInlet:
             if self._channel_format == cf_string:
                 samples = [
                     [
-                        data_buffer[s * self._n_channels + c]
+                        data_buffer[s * self._n_channels + c].decode("utf-8")
                         for c in range(self._n_channels)
                     ]
                     for s in range(int(num_samples))
                 ]
-                samples = [[v.decode("utf-8") for v in s] for s in samples]
                 _free_char_p_array_memory(data_buffer, max_values)
             else:
                 # this is 400-500x faster than the list approach
