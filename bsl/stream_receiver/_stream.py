@@ -103,9 +103,9 @@ class _Stream(ABC):
         """Display the stream's info."""
         logger.info(
             f"Server: {self._name}({self._serial}) "
-            f"/ type:{self._streamInfo.type()} "
-            f"@ {self._streamInfo.hostname()} "
-            f"(v{self._streamInfo.version()})."
+            f"/ type:{self._streamInfo.stype} "
+            f"@ {self._streamInfo.hostname} "
+            f"(v{self._streamInfo.version})."
         )
         logger.info("Source sampling rate: %s", self._sample_rate)
         logger.info("Channels: %s", self._streamInfo.n_channels)
