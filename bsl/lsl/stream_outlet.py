@@ -166,7 +166,7 @@ class StreamOutlet:
                 )
             if self._channel_format == cf_string:
                 x = [v.encode("utf-8") for v in x]
-            constructor = self._value_type * n_values
+            constructor = (self._value_type * n_values)()
             data_buffer = constructor(*x)
 
         handle_error(

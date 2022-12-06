@@ -79,9 +79,9 @@ class _Stream(ABC):
 
     def _extract_stream_info(self):
         """Extract the name, serial number and if it's a slave."""
-        self._name = self._streamInfo.name()
+        self._name = self._streamInfo.name
         self._serial = (
-            self._inlet.info()
+            self._inlet.get_sinfo()
             .desc.child("acquisition")
             .child_value("serial_number")
         )
@@ -90,7 +90,7 @@ class _Stream(ABC):
             self._serial = "N/A"
 
         self._is_slave = (
-            self._inlet.info()
+            self._inlet.get_sinfo()
             .desc.child("amplifier")
             .child("settings")
             .child("is_slave")
@@ -147,7 +147,7 @@ class _Stream(ABC):
             while self._watchdog.sec() < self._blocking_time:
                 if len(tslist) == 0:
                     chunk, tslist = self._inlet.pull_chunk(
-                        timeout=0.0, max_samples=self._lsl_bufsize
+                        timeout=0.0, n_samples=self._lsl_bufsize
                     )
                     if not self._blocking and len(tslist) == 0:
                         received = True
@@ -170,7 +170,7 @@ class _Stream(ABC):
                 )
                 received = True
 
-        return chunk, tslist
+        return np.array(chunk).T, tslist
 
     @fill_doc
     def _compute_offset(self, tslist):

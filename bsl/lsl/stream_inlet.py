@@ -193,7 +193,7 @@ class StreamInlet:
         timeout : float | None
             Optional timeout (in seconds) of the operation. By default, timeout
             is disabled.
-        max_samples : int
+        n_samples : int
             Number of samples to return. The function is blocking until this
             number of samples is available.
 
