@@ -185,7 +185,6 @@ class StreamInlet:
         self,
         timeout: Optional[float] = None,
         n_samples: int = 1024,
-        dest_obj=None,
     ):
         """Pull a chunk of samples from the inlet.
 
@@ -197,12 +196,6 @@ class StreamInlet:
         max_samples : int
             Number of samples to return. The function is blocking until this
             number of samples is available.
-        dest_obj : Buffer
-            A python object that supports the buffer interface. If this
-            argument is provided, the the destination object will be updated
-            in place and the samples returned by this method will be None.
-            The timestamps are returned regardless of this argument.
-            A numpy buffer must use ``order='C'``.
 
         Returns
         -------
@@ -230,10 +223,7 @@ class StreamInlet:
                 (self._value_type * max_values)(),  # data
                 (c_double * n_samples)(),  # timestamps
             )
-        if dest_obj is None:
-            data_buffer = self._buffers[n_samples][0]
-        else:
-            data_buffer = (self._value_type * max_values).from_buffer(dest_obj)
+        data_buffer = self._buffers[n_samples][0]
         ts_buffer = self._buffers[n_samples][1]
 
         # read data into the buffer
@@ -251,26 +241,22 @@ class StreamInlet:
         # return results (note: could offer a more efficient format in the
         # future, e.g., a numpy array)
         num_samples = num_elements / self._n_channels
-        if dest_obj is None:
-            if self._channel_format == cf_string:
-                samples = [
-                    [
-                        data_buffer[s * self._n_channels + c].decode("utf-8")
-                        for c in range(self._n_channels)
-                    ]
-                    for s in range(int(num_samples))
+        if self._channel_format == cf_string:
+            samples = [
+                [
+                    data_buffer[s * self._n_channels + c].decode("utf-8")
+                    for c in range(self._n_channels)
                 ]
-                _free_char_p_array_memory(data_buffer, max_values)
-            else:
-                # this is 400-500x faster than the list approach
-                samples = (
-                    np.frombuffer(data_buffer, dtype=self._value_type)
-                    .reshape(-1, self._n_channels)
-                    .T
-                )
-
+                for s in range(int(num_samples))
+            ]
+            _free_char_p_array_memory(data_buffer, max_values)
         else:
-            samples = None
+            # this is 400-500x faster than the list approach
+            samples = (
+                np.frombuffer(data_buffer, dtype=self._value_type)
+                .reshape(-1, self._n_channels)
+                .T
+            )
 
         # %timeit [ts_buff[s] for s in range(int(num_samples))]
         # 68.8 µs ± 635 ns per loop
