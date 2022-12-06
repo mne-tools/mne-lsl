@@ -349,8 +349,8 @@ class _Streamer:
 
             idx_current = idx_chunk * self._chunk_size
             idx_next = idx_current + self._chunk_size
-            chunk = self._raw._data[:, idx_current:idx_next]
-            data = chunk.transpose().tolist()
+            # create a C_CONTIGUOUS data array
+            chunk = self._raw.get_data(start=idx_current, stop=idx_next)
 
             if idx_current >= self._raw._data.shape[1] - self._chunk_size:
                 finished = True
@@ -359,11 +359,11 @@ class _Streamer:
                 self._high_resolution, idx_chunk, t_start, t_chunk
             )
 
-            self._outlet.push_chunk(data)
+            self._outlet.push_chunk(chunk)
             logger.debug(
                 "[%8.3fs] sent %d samples (LSL %8.3f)",
                 time.perf_counter(),
-                len(data),
+                len(chunk),
                 local_clock(),
             )
 

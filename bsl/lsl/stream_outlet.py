@@ -151,7 +151,7 @@ class StreamOutlet:
                     f"(n_channels, n_samples), {x.shape} is invalid."
                 )
             n_values = x.size
-            data_buff = (self._value_type * n_values).from_buffer(x)
+            data_buffer = (self._value_type * n_values).from_buffer(x)
         else:
             # we do not check the input, specifically, that all elements in the
             # list are list and that all list have the correct number of
@@ -166,13 +166,13 @@ class StreamOutlet:
                 )
             if self._channel_format == cf_string:
                 x = [v.encode("utf-8") for v in x]
-            constructor = self._n_channels * n_values
-            data_buff = constructor(*x)
+            constructor = self._value_type * n_values
+            data_buffer = constructor(*x)
 
         handle_error(
             self._do_push_chunk(
                 self.obj,
-                data_buff,
+                data_buffer,
                 c_long(n_values),
                 c_double(timestamp),
                 c_int(pushthrough),
