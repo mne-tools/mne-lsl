@@ -238,7 +238,7 @@ class StreamOutlet:
     def sfreq(self) -> float:
         return self._sfreq
 
-    @property
-    def sinfo(self) -> _BaseStreamInfo:
+    # -------------------------------------------------------------------------
+    def get_sinfo(self) -> _BaseStreamInfo:
         """`~bsl.lsl.StreamInfo` corresponding to this Outlet."""
         return _BaseStreamInfo(lib.lsl_get_info(self.obj))

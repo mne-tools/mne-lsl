@@ -97,6 +97,16 @@ fmt2push_sample = [
     lib.lsl_push_sample_ctp,
     push_sample_int64,
 ]
+fmt2pull_sample = [
+    [],
+    lib.lsl_pull_sample_f,
+    lib.lsl_pull_sample_d,
+    lib.lsl_pull_sample_str,
+    lib.lsl_pull_sample_i,
+    lib.lsl_pull_sample_s,
+    lib.lsl_pull_sample_c,
+    pull_sample_int64,
+]
 try:
     fmt2push_chunk = [
         [],
