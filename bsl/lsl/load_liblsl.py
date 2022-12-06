@@ -1,4 +1,5 @@
 import os
+import platform
 from ctypes import CDLL, c_char_p, c_double, c_long, c_void_p
 from pathlib import Path
 from typing import Optional, Tuple, Union
@@ -9,6 +10,12 @@ from ..utils._logs import logger
 # and the minor version is given by version % 100.
 VERSION_MIN = 115
 VERSION_MAX = 116
+
+PLATFORM_SUFFIXES = {
+    "Windows": ".dll",
+    "Darwin": ".dylib",
+    "Linux": ".so",
+}
 
 
 def load_liblsl():
@@ -40,6 +47,15 @@ def _find_liblsl_env() -> Optional[CDLL]:
         return None
 
     libpath = Path(os.environ["LSL_LIB"])
+    if libpath.suffix != PLATFORM_SUFFIXES[platform.system()]:
+        logger.error(
+            "The LIBLSL '%s' provided in the environment variable "
+            "'LSL_LIB' ends with '%s' which is different from the expected "
+            "extension for this OS.",
+            libpath,
+            libpath.suffix,
+        )
+        return None
     if libpath.exists():
         libpath, version = _attempt_load_liblsl(libpath)
         if version is None:
@@ -88,21 +104,6 @@ def _find_liblsl_env() -> Optional[CDLL]:
     return lib
 
 
-def _find_liblsl_bsl() -> Optional[CDLL]:
-    """Search for the LSL library packaged with BSL."""
-    directory = Path(__file__).parent / "lib"
-    lib = None
-    for libpath in directory.iterdir():
-        if libpath.suffix not in (".so", ".dylib", ".dll"):
-            continue
-        try:
-            lib = CDLL(str(libpath))
-            assert VERSION_MIN <= lib.lsl_library_version()
-        except Exception:
-            continue
-    return lib
-
-
 def _attempt_load_liblsl(
     libpath: Union[str, Path]
 ) -> Tuple[str, Optional[int]]:
@@ -130,6 +131,21 @@ def _attempt_load_liblsl(
     except OSError:
         version = None
     return libpath, version
+
+
+def _find_liblsl_bsl() -> Optional[CDLL]:
+    """Search for the LSL library packaged with BSL."""
+    directory = Path(__file__).parent / "lib"
+    lib = None
+    for libpath in directory.iterdir():
+        if libpath.suffix != PLATFORM_SUFFIXES[platform.system()]:
+            continue
+        try:
+            lib = CDLL(str(libpath))
+            assert VERSION_MIN <= lib.lsl_library_version()
+        except Exception:
+            continue
+    return lib
 
 
 def _set_return_types(lib: CDLL) -> CDLL:

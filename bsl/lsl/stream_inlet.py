@@ -184,7 +184,7 @@ class StreamInlet:
     def pull_chunk(
         self,
         timeout: Optional[float] = None,
-        max_samples: int = 1024,
+        n_samples: int = 1024,
         dest_obj=None,
     ):
         """Pull a chunk of samples from the inlet.
@@ -195,7 +195,8 @@ class StreamInlet:
             Optional timeout (in seconds) of the operation. By default, timeout
             is disabled.
         max_samples : int
-            Maximum number of samples to return.
+            Number of samples to return. The function is blocking until this
+            number of samples is available.
         dest_obj : Buffer
             A python object that supports the buffer interface. If this
             argument is provided, the the destination object will be updated
@@ -213,36 +214,36 @@ class StreamInlet:
             Acquisition timestamps on the remote machine.
         """
         timeout = StreamInlet._check_timeout(timeout)
-        if not isinstance(max_samples, int):
-            max_samples = int(max_samples)
-        if max_samples <= 0:
+        if not isinstance(n_samples, int):
+            n_samples = int(n_samples)
+        if n_samples <= 0:
             raise ValueError(
-                "The argument 'max_samples' must be a strictly positive "
-                f"integer. {max_samples} is invalid."
+                "The argument 'n_samples' must be a strictly positive "
+                f"integer. {n_samples} is invalid."
             )
         # look up a pre-allocated buffer of appropriate length
-        max_values = max_samples * self._n_channels
+        max_values = n_samples * self._n_channels
 
         # create buffer
-        if max_samples not in self._buffers:
-            self._buffers[max_samples] = (
+        if n_samples not in self._buffers:
+            self._buffers[n_samples] = (
                 (self._value_type * max_values)(),  # data
-                (c_double * max_samples)(),  # timestamps
+                (c_double * n_samples)(),  # timestamps
             )
         if dest_obj is None:
-            data_buff = self._buffers[max_samples][0]
+            data_buffer = self._buffers[n_samples][0]
         else:
-            data_buff = (self._value_type * max_values).from_buffer(dest_obj)
-        ts_buff = self._buffers[max_samples][1]
+            data_buffer = (self._value_type * max_values).from_buffer(dest_obj)
+        ts_buffer = self._buffers[n_samples][1]
 
         # read data into the buffer
         errcode = c_int()
         num_elements = self._do_pull_chunk(
             self.obj,
-            byref(data_buff),
-            byref(ts_buff),
+            byref(data_buffer),
+            byref(ts_buffer),
             max_values,
-            max_samples,
+            n_samples,
             c_double(timeout),
             byref(errcode),
         )
@@ -254,17 +255,17 @@ class StreamInlet:
             if self._channel_format == cf_string:
                 samples = [
                     [
-                        data_buff[s * self._n_channels + c]
+                        data_buffer[s * self._n_channels + c]
                         for c in range(self._n_channels)
                     ]
                     for s in range(int(num_samples))
                 ]
                 samples = [[v.decode("utf-8") for v in s] for s in samples]
-                _free_char_p_array_memory(data_buff, max_values)
+                _free_char_p_array_memory(data_buffer, max_values)
             else:
                 # this is 500x faster than the list
                 # 529 µs ± 5.31 µs against 1.11 µs ± 9.13 ns per loop
-                samples = np.array(data_buff).reshape(-1, self._n_channels).T
+                samples = np.array(data_buffer).reshape(-1, self._n_channels).T
 
         else:
             samples = None
@@ -275,7 +276,7 @@ class StreamInlet:
         # 854 ns ± 2.99 ns per loop
         # %timeit np.frombuffer(ts_buff)
         # 192 ns ± 1.11 ns per loop
-        timestamps = np.frombuffer(ts_buff)  # requires numpy ≥ 1.20
+        timestamps = np.frombuffer(ts_buffer)  # requires numpy ≥ 1.20
         return samples, timestamps
 
     def samples_available(self) -> int:

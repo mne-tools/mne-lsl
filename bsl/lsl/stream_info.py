@@ -220,7 +220,7 @@ class StreamInfo(_BaseStreamInfo):
         stype: str,
         n_channels: int,
         sfreq: float,
-        channel_format: int,
+        channel_format: str,
         source_id: str,
     ):
         _check_type(name, (str,), "name")
