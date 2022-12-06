@@ -96,7 +96,7 @@ def _find_liblsl_bsl() -> Optional[CDLL]:
         if libpath.suffix not in (".so", ".dylib", ".dll"):
             continue
         try:
-            lib = CDLL(libpath)
+            lib = CDLL(str(libpath))
             assert VERSION_MIN <= lib.lsl_library_version()
         except Exception:
             continue
