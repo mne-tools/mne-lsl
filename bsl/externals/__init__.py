@@ -5,7 +5,6 @@ import importlib
 
 from ..utils._logs import logger
 
-
 try:
     psychopy = importlib.import_module(name="psychopy")
     logger.debug("Installed 'psychopy' is functional.")

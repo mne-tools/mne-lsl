@@ -210,10 +210,10 @@ class StreamOutlet:
         success : bool
             True if the wait was successful, False if the ``timeout`` expired.
 
-         Notes
-         -----
-         This function does not filter the search for `bsl.lsl.StreamInlet`. Any
-         application inlet will be recognized.
+        Notes
+        -----
+        This function does not filter the search for `bsl.lsl.StreamInlet`.
+        Any application inlet will be recognized.
         """
         return bool(lib.lsl_wait_for_consumers(self.obj, c_double(timeout)))
 

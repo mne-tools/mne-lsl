@@ -76,7 +76,7 @@ if struct.calcsize("P") != 4 and platform.system() != "Windows":
     pull_chunk_int64 = lib.lsl_pull_chunk_l
 else:
 
-    def push_sample_int64(*_):
+    def push_sample_int64(*_):  # noqa: D103
         raise NotImplementedError(
             "int64 is not yet supported on your platform."
         )

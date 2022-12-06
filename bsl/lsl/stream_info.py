@@ -112,7 +112,7 @@ class _BaseStreamInfo:
 
         The session ID is an optional human-assigned identifier of the
         recording session. While it is rarely used, it can be used to prevent
-        concurrent recording activitites on the same sub-network (e.g., in
+        concurrent recording activities on the same sub-network (e.g., in
         multiple experiment areas) from seeing each other's streams
         (can be assigned in a configuration file read by liblsl, see also
         Network Connectivity in the LSL wiki).
@@ -195,7 +195,7 @@ class StreamInfo(_BaseStreamInfo):
         contains mixed content, this value should be empty and the description
         of each channel should include its type.
     n_channels : int ``≥ 1``
-        Also alled ``channel_count``, represents the number of channels per
+        Also called ``channel_count``, represents the number of channels per
         sample. This number stays constant for the lifetime of the stream.
     sfreq : float ``≥ 0``
         Also called ``nominal_srate``, represents the sampling rate (in Hz) as
@@ -209,7 +209,7 @@ class StreamInfo(_BaseStreamInfo):
         ``'int64'`` is partially supported.
     source_id : str
         A unique identifier of the device or source of the data. If not empty,
-        this information improves the system robustness since it alllows
+        this information improves the system robustness since it allows
         recipients to recover from failure by finding a stream with the same
         ``source_id`` on the network.
     """

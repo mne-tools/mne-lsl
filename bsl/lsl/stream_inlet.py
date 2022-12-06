@@ -14,7 +14,7 @@ from .constants import (
 )
 from .load_liblsl import lib
 from .stream_info import _BaseStreamInfo
-from .utils import free_char_p_array_memory, handle_error
+from .utils import _free_char_p_array_memory, handle_error
 
 
 class StreamInlet:
@@ -260,7 +260,7 @@ class StreamInlet:
                     for s in range(int(num_samples))
                 ]
                 samples = [[v.decode("utf-8") for v in s] for s in samples]
-                free_char_p_array_memory(data_buff, max_values)
+                _free_char_p_array_memory(data_buff, max_values)
             else:
                 # this is 500x faster than the list
                 # 529 µs ± 5.31 µs against 1.11 µs ± 9.13 ns per loop

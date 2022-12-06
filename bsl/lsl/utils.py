@@ -60,11 +60,11 @@ class XMLElement:
         return XMLElement(lib.lsl_parent(self.e))
 
     # -- Content Queries ------------------------------------------------------
-    def empty(self):
+    def empty(self):  # noqa: D401
         """True if this node is empty."""
         return bool(lib.lsl_empty(self.e))
 
-    def is_text(self):
+    def is_text(self):  # noqa: D401
         """True if this node is a text body (instead of an XML element).
 
         True both for plain char data and CData.
@@ -92,27 +92,30 @@ class XMLElement:
         return res.decode("utf-8")
 
     # -- Modification ---------------------------------------------------------
-    def append_child_value(self, name, value):
+    def append_child_value(self, name, value):  # noqa: D205, D400
         """Append a child node with a given name, which has a (nameless)
-        plain-text child with the given text value."""
+        plain-text child with the given text value.
+        """
         return XMLElement(
             lib.lsl_append_child_value(
                 self.e, str.encode(name), str.encode(value)
             )
         )
 
-    def prepend_child_value(self, name, value):
+    def prepend_child_value(self, name, value):  # noqa: D205, D400
         """Prepend a child node with a given name, which has a (nameless)
-        plain-text child with the given text value."""
+        plain-text child with the given text value.
+        """
         return XMLElement(
             lib.lsl_prepend_child_value(
                 self.e, str.encode(name), str.encode(value)
             )
         )
 
-    def set_child_value(self, name, value):
+    def set_child_value(self, name, value):  # noqa: D205, D400
         """Set the text value of the (nameless) plain-text child of a named
-        child node."""
+        child node.
+        """
         return XMLElement(
             lib.lsl_set_child_value(
                 self.e, str.encode(name), str.encode(value)
@@ -158,15 +161,15 @@ class XMLElement:
 
 
 # -- Exception handling -------------------------------------------------------
-class LostError(RuntimeError):
+class LostError(RuntimeError):  # noqa: D101
     pass
 
 
-class InvalidArgumentError(RuntimeError):
+class InvalidArgumentError(RuntimeError):  # noqa: D101
     pass
 
 
-class InternalError(RuntimeError):
+class InternalError(RuntimeError):  # noqa: D101
     pass
 
 
@@ -192,7 +195,7 @@ def handle_error(errcode):
 
 
 # -- Memory function ----------------------------------------------------------
-def free_char_p_array_memory(char_p_array, num_elements):
+def _free_char_p_array_memory(char_p_array, num_elements):
     pointers = cast(char_p_array, POINTER(c_void_p))
     for p in range(num_elements):
         if pointers[p] is not None:  # only free initialized pointers

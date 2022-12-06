@@ -1,8 +1,8 @@
-from ctypes import c_void_p, byref, c_double
+from ctypes import byref, c_double, c_void_p
 
+from ..utils._checks import _check_type
 from .load_liblsl import lib
 from .stream_info import _BaseStreamInfo
-from ..utils._checks import _check_type
 
 
 def library_version() -> int:

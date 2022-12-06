@@ -5,7 +5,7 @@ import pytest
 
 from bsl import StreamPlayer, logger, set_log_level
 from bsl.datasets import eeg_resting_state
-from bsl.externals import pylsl
+from bsl.lsl import resolve_streams
 from bsl.stream_receiver._buffer import Buffer
 from bsl.stream_receiver._stream import StreamEEG, StreamMarker  # noqa: F401
 from bsl.utils._tests import requires_eeg_resting_state_dataset
@@ -94,7 +94,7 @@ def test_stream_eeg(caplog):
     """Test StreamEEG class used by the StreamReceiver."""
     # Default
     with StreamPlayer("StreamPlayer", eeg_resting_state.data_path()):
-        streamInfos = pylsl.resolve_streams()
+        streamInfos = resolve_streams()
         for streamInfo in streamInfos:
             if streamInfo.name() == "StreamPlayer":
                 break
@@ -144,7 +144,7 @@ def test_stream_eeg(caplog):
     sp = StreamPlayer("StreamPlayer", eeg_resting_state.data_path())
     sp.start()
 
-    streamInfos = pylsl.resolve_streams()
+    streamInfos = resolve_streams()
     for streamInfo in streamInfos:
         if streamInfo.name() == "StreamPlayer":
             break

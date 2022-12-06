@@ -1,6 +1,6 @@
 """Trigger using an LSL outlet."""
 
-from ..externals import pylsl
+from ..lsl import StreamInfo, StreamOutlet
 from ..utils._checks import _check_type
 from ..utils._docs import copy_doc, fill_doc
 from ._base import BaseTrigger
@@ -31,15 +31,15 @@ class LSLTrigger(BaseTrigger):
         _check_type(name, (str,), "name")
         self._name = name
         # create outlet
-        self._sinfo = pylsl.StreamInfo(
+        self._sinfo = StreamInfo(
             name=name,
             type="Markers",
             channel_count=1,
-            nominal_srate=pylsl.IRREGULAR_RATE,
-            channel_format=pylsl.cf_int16,
+            nominal_srate=0.0,
+            channel_format="int16",
             source_id=name,
         )
-        self._outlet = pylsl.StreamOutlet(self._sinfo)
+        self._outlet = StreamOutlet(self._sinfo)
 
     @copy_doc(BaseTrigger.signal)
     def signal(self, value: int) -> None:
@@ -72,17 +72,17 @@ class LSLTrigger(BaseTrigger):
         return self._name
 
     @property
-    def sinfo(self) -> pylsl.StreamInfo:
+    def sinfo(self) -> StreamInfo:
         """LSL stream info.
 
-        :type: ``pylsl.StreamInfo``
+        :type: `~bsl.lsl.StreamInfo`
         """
         return self._sinfo
 
     @property
-    def outlet(self) -> pylsl.StreamOutlet:
+    def outlet(self) -> StreamOutlet:
         """LSL stream outlet.
 
-        :type: ``pylsl.StreamOutlet``
+        :type: `~bsl.lsl.StreamOutlet`
         """
         return self._outlet

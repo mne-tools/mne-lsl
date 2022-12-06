@@ -11,7 +11,7 @@ from bsl.datasets import (
     eeg_resting_state_short,
     trigger_def,
 )
-from bsl.externals import pylsl
+from bsl.lsl import StreamInlet, resolve_streams
 from bsl.triggers import TriggerDef
 from bsl.utils._tests import (
     requires_eeg_auditory_stimuli_dataset,
@@ -38,12 +38,12 @@ def test_stream_player(caplog):
     assert "Streaming started." in caplog.text
 
     # Test stream is in resolved streams
-    streams = pylsl.resolve_streams()
+    streams = resolve_streams()
     assert stream_name in [stream.name() for stream in streams]
 
     # Test that data is being streamed
     idx = [stream.name() for stream in streams].index(stream_name)
-    inlet = pylsl.StreamInlet(streams[idx], max_buflen=int(raw.info["sfreq"]))
+    inlet = StreamInlet(streams[idx], max_buflen=int(raw.info["sfreq"]))
     inlet.open_stream()
     time.sleep(0.1)
     chunk, tslist = inlet.pull_chunk(
@@ -70,7 +70,7 @@ def test_stream_player(caplog):
     caplog.clear()
     sp.start()
     assert "Streaming started." in caplog.text
-    streams = pylsl.resolve_streams()
+    streams = resolve_streams()
     assert sp.stream_name in [stream.name() for stream in streams]
     sp.stop()
     assert (
@@ -87,7 +87,7 @@ def test_stream_player(caplog):
     caplog.clear()
     with StreamPlayer(stream_name=stream_name, fif_file=fif_file):
         assert "Streaming started." in caplog.text
-        streams = pylsl.resolve_streams()
+        streams = resolve_streams()
         assert stream_name in [stream.name() for stream in streams]
         time.sleep(0.5)
     assert (

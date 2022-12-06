@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 
-from ..externals import pylsl
+from ..lsl import StreamInlet, local_clock
 from ..utils import Timer, find_event_channel
 from ..utils._checks import _check_type
 from ..utils._docs import copy_doc, fill_doc
@@ -34,19 +34,19 @@ class _Stream(ABC):
         bufsize = _Stream._check_bufsize(bufsize, winsize)
 
         self._streamInfo = streamInfo
-        self._sample_rate = self._streamInfo.nominal_srate()
+        self._sample_rate = self._streamInfo.sfreq
         self._lsl_bufsize = min(_MAX_PYLSL_STREAM_BUFSIZE, bufsize)
 
         if self._sample_rate is not None:
             samples_per_sec = self._sample_rate
             # max_buflen: seconds
-            self._inlet = pylsl.StreamInlet(
+            self._inlet = StreamInlet(
                 streamInfo, max_buflen=math.ceil(self._lsl_bufsize)
             )
         else:
             samples_per_sec = 100
             # max_buflen: samples x100
-            self._inlet = pylsl.StreamInlet(
+            self._inlet = StreamInlet(
                 streamInfo,
                 max_buflen=math.ceil(self._lsl_bufsize * samples_per_sec),
             )
@@ -185,7 +185,7 @@ class _Stream(ABC):
         ----------
         %(receiver_tslist)s
         """
-        self._lsl_time_offset = tslist[-1] - pylsl.local_clock()
+        self._lsl_time_offset = tslist[-1] - local_clock()
         return self._lsl_time_offset
 
     @fill_doc

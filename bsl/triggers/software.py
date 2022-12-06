@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from ..externals import pylsl
+from ..lsl import local_clock
 from ..stream_recorder import StreamRecorder
 from ..utils._checks import _check_type
 from ..utils._docs import copy_doc, fill_doc
@@ -50,7 +50,7 @@ class SoftwareTrigger(BaseTrigger):
     @copy_doc(BaseTrigger._set_data)
     def _set_data(self, value: int) -> None:
         super()._set_data(value)
-        self._eve_file.write("%.6f\t0\t%d\n" % (pylsl.local_clock(), value))
+        self._eve_file.write("%.6f\t0\t%d\n" % (local_clock(), value))
 
     def close(self) -> None:
         """Close the event file."""
