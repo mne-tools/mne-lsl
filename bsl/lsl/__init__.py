@@ -9,4 +9,5 @@ and tested on the OS and version of Python supported by ``BSL``.
 
 from .functions import library_version, local_clock  # noqa: F401
 from .stream_info import StreamInfo  # noqa: F401
+from .stream_inlet import StreamInlet  # noqa: F401
 from .stream_oulet import StreamOutlet  # noqa: F401

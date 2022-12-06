@@ -238,6 +238,11 @@ class StreamOutlet:
     def sfreq(self) -> float:
         return self._sfreq
 
+    @copy_doc(_BaseStreamInfo.stype)
+    @property
+    def stype(self) -> str:
+        return self._stype
+
     # -------------------------------------------------------------------------
     def get_sinfo(self) -> _BaseStreamInfo:
         """`~bsl.lsl.StreamInfo` corresponding to this Outlet."""
