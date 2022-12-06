@@ -425,7 +425,7 @@ class _Streamer:
             source_id=stream_name,
         )
 
-        desc = sinfo.desc()
+        desc = sinfo.desc
         channel_desc = desc.append_child("channels")
         for channel in ch_names:
             channel_desc.append_child("channel").append_child_value(

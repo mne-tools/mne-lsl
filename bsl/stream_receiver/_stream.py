@@ -74,7 +74,7 @@ class _Stream(ABC):
 
         if not self._ch_list:
             self._ch_list = [
-                f"ch_{i+1}" for i in range(self._streamInfo.channel_count())
+                f"ch_{i+1}" for i in range(self._streamInfo.n_channels)
             ]
 
     def _extract_stream_info(self):
@@ -82,7 +82,7 @@ class _Stream(ABC):
         self._name = self._streamInfo.name()
         self._serial = (
             self._inlet.info()
-            .desc()
+            .desc
             .child("acquisition")
             .child_value("serial_number")
         )
@@ -92,7 +92,7 @@ class _Stream(ABC):
 
         self._is_slave = (
             self._inlet.info()
-            .desc()
+            .desc
             .child("amplifier")
             .child("settings")
             .child("is_slave")
@@ -110,7 +110,7 @@ class _Stream(ABC):
             f"(v{self._streamInfo.version()})."
         )
         logger.info("Source sampling rate: %s", self._sample_rate)
-        logger.info("Channels: %s", self._streamInfo.channel_count())
+        logger.info("Channels: %s", self._streamInfo.n_channels)
 
         # Check for high LSL offset
         if self._lsl_time_offset is None:
