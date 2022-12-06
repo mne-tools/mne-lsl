@@ -82,8 +82,7 @@ class _Stream(ABC):
         self._name = self._streamInfo.name()
         self._serial = (
             self._inlet.info()
-            .desc
-            .child("acquisition")
+            .desc.child("acquisition")
             .child_value("serial_number")
         )
 
@@ -92,8 +91,7 @@ class _Stream(ABC):
 
         self._is_slave = (
             self._inlet.info()
-            .desc
-            .child("amplifier")
+            .desc.child("amplifier")
             .child("settings")
             .child("is_slave")
             .first_child()

@@ -263,9 +263,12 @@ class StreamInlet:
                 samples = [[v.decode("utf-8") for v in s] for s in samples]
                 _free_char_p_array_memory(data_buffer, max_values)
             else:
-                # this is 500x faster than the list
-                # 529 µs ± 5.31 µs against 1.11 µs ± 9.13 ns per loop
-                samples = np.array(data_buffer).reshape(-1, self._n_channels).T
+                # this is 400-500x faster than the list approach
+                samples = (
+                    np.frombuffer(data_buffer, dtype=self._value_type)
+                    .reshape(-1, self._n_channels)
+                    .T
+                )
 
         else:
             samples = None
