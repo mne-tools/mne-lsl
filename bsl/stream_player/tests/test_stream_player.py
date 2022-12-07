@@ -49,13 +49,13 @@ def test_stream_player(caplog):
     chunk, tslist = inlet.pull_chunk(
         timeout=0.0, n_samples=int(raw.info["sfreq"])
     )
-    assert chunk.shape[1] == tslist.shape[0]
+    assert len(chunk) == len(tslist)
     assert 0 < len(chunk) < int(raw.info["sfreq"])
     time.sleep(1)
     chunk, tslist = inlet.pull_chunk(
         timeout=0.0, n_samples=int(raw.info["sfreq"])
     )
-    assert chunk.shape[1] == tslist.shape[0] == int(raw.info["sfreq"])
+    assert len(chunk) == len(tslist) == int(raw.info["sfreq"])
 
     # Test stop
     caplog.clear()

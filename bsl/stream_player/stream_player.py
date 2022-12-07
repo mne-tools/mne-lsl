@@ -349,8 +349,10 @@ class _Streamer:
 
             idx_current = idx_chunk * self._chunk_size
             idx_next = idx_current + self._chunk_size
+            chunk = self._raw._data[:, idx_current:idx_next]
+            chunk = chunk.transpose().tolist()
             # create a C_CONTIGUOUS data array
-            chunk = self._raw.get_data(start=idx_current, stop=idx_next)
+            # chunk = self._raw.get_data(start=idx_current, stop=idx_next)
 
             if idx_current >= self._raw._data.shape[1] - self._chunk_size:
                 finished = True

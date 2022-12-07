@@ -170,7 +170,7 @@ class _Stream(ABC):
                 )
                 received = True
 
-        return np.array(chunk).T, tslist
+        return chunk, tslist
 
     @fill_doc
     def _compute_offset(self, tslist):
