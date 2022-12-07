@@ -1,4 +1,5 @@
 from ctypes import POINTER, c_int, c_void_p, cast
+from typing import Optional
 
 from .load_liblsl import lib
 
@@ -200,3 +201,36 @@ def _free_char_p_array_memory(char_p_array, num_elements):
     for p in range(num_elements):
         if pointers[p] is not None:  # only free initialized pointers
             lib.lsl_destroy_string(pointers[p])
+
+
+# -- Static checker -----------------------------------------------------------
+def _check_timeout(timeout: Optional[float]) -> float:
+    """Check that the provided timeout is valid.
+
+    Parameters
+    ----------
+    timeout : float | None
+        Timeout (in seconds) or None to disable timeout.
+
+    Returns
+    -------
+    timeout : float
+        Timeout (in seconds). If None was provided, a very large float is
+        provided.
+    """
+    # with _check_type, the execution takes 800-900 ns.
+    # with the try/except below, the execution takes 110 ns.
+    if timeout is None:
+        return 32000000.0  # about 1 year
+    try:
+        raise_ = timeout < 0
+    except Exception:
+        raise TypeError(
+            "The argument 'timeout' must be a strictly positive number."
+        )
+    if raise_:
+        raise ValueError(
+            "The argument 'timeout' must be a strictly positive number. "
+            f"{timeout} is invalid."
+        )
+    return timeout

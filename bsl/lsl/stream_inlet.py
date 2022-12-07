@@ -14,7 +14,7 @@ from .constants import (
 )
 from .load_liblsl import lib
 from .stream_info import _BaseStreamInfo
-from .utils import _free_char_p_array_memory, handle_error
+from .utils import _check_timeout, _free_char_p_array_memory, handle_error
 
 
 class StreamInlet:
@@ -39,12 +39,12 @@ class StreamInlet:
         self._stype = sinfo.stype
 
         # inlet properties
-        self.do_pull_sample = fmt2pull_sample[self._channel_format]
-        self.do_pull_chunk = fmt2pull_chunk[self._channel_format]
-        self.value_type = fmt2type[self._channel_format]
-        self.sample_type = self.value_type * self._n_channels
-        self.sample = self.sample_type()
-        self.buffers = {}
+        self._do_pull_sample = fmt2pull_sample[self._channel_format]
+        self._do_pull_chunk = fmt2pull_chunk[self._channel_format]
+        self._value_type = fmt2type[self._channel_format]
+        self._sample_type = self._value_type * self._n_channels
+        self._sample = self._sample_type()
+        self._buffers = {}
 
     def __del__(self):
         # noinspection PyBroadException
@@ -84,12 +84,12 @@ class StreamInlet:
             assign_to = None
 
         errcode = c_int()
-        timestamp = self.do_pull_sample(self.obj, byref(self.sample),
+        timestamp = self._do_pull_sample(self.obj, byref(self._sample),
                                         self._n_channels, c_double(timeout),
                                         byref(errcode))
         handle_error(errcode)
         if timestamp:
-            sample = [v for v in self.sample]
+            sample = [v for v in self._sample]
             if self._channel_format == cf_string:
                 sample = [v.decode('utf-8') for v in sample]
             if assign_to is not None:
@@ -103,20 +103,20 @@ class StreamInlet:
         num_channels = self._n_channels
         max_values = n_samples * num_channels
 
-        if n_samples not in self.buffers:
+        if n_samples not in self._buffers:
             # noinspection PyCallingNonCallable
-            self.buffers[n_samples] = ((self.value_type * max_values)(),
+            self._buffers[n_samples] = ((self._value_type * max_values)(),
                                          (c_double * n_samples)())
         if dest_obj is not None:
-            data_buff = (self.value_type * max_values).from_buffer(dest_obj)
+            data_buff = (self._value_type * max_values).from_buffer(dest_obj)
         else:
-            data_buff = self.buffers[n_samples][0]
-        ts_buff = self.buffers[n_samples][1]
+            data_buff = self._buffers[n_samples][0]
+        ts_buff = self._buffers[n_samples][1]
 
         # read data into it
         errcode = c_int()
         # noinspection PyCallingNonCallable
-        num_elements = self.do_pull_chunk(self.obj, byref(data_buff),
+        num_elements = self._do_pull_chunk(self.obj, byref(data_buff),
                                           byref(ts_buff), max_values,
                                           n_samples, c_double(timeout),
                                           byref(errcode))
@@ -180,7 +180,7 @@ class StreamInlet:
             Optional timeout (in seconds) of the operation. By default, timeout
             is disabled.
         """
-        timeout = StreamInlet._check_timeout(timeout)
+        timeout = _check_timeout(timeout)
         errcode = c_int()
         result = lib.lsl_get_fullinfo(
             self.obj, c_double(timeout), byref(errcode)
@@ -295,7 +295,7 @@ class NewStreamInlet:
             Optional timeout (in seconds) of the operation. By default, timeout
             is disabled.
         """
-        timeout = StreamInlet._check_timeout(timeout)
+        timeout = _check_timeout(timeout)
         errcode = c_int()
         lib.lsl_open_stream(self.obj, c_double(timeout), byref(errcode))
         handle_error(errcode)
@@ -333,7 +333,7 @@ class NewStreamInlet:
             ``local_clock()`` to map it into the local clock domain of the
             client machine.
         """
-        timeout = StreamInlet._check_timeout(timeout)
+        timeout = _check_timeout(timeout)
         errcode = c_int()
         result = lib.lsl_time_correction(
             self.obj, c_double(timeout), byref(errcode)
@@ -365,7 +365,7 @@ class NewStreamInlet:
         estimated time correction returned by
         `~bsl.lsl.StreamInlet.time_correction`.
         """
-        timeout = StreamInlet._check_timeout(timeout)
+        timeout = _check_timeout(timeout)
 
         errcode = c_int()
         timestamp = self._do_pull_sample(
@@ -412,7 +412,7 @@ class NewStreamInlet:
         timestamps : array of shape (n_samples,) | None
             Acquisition timestamps on the remote machine.
         """
-        timeout = StreamInlet._check_timeout(timeout)
+        timeout = _check_timeout(timeout)
         if not isinstance(n_samples, int):
             n_samples = int(n_samples)
         if n_samples <= 0:
@@ -536,43 +536,10 @@ class NewStreamInlet:
             Optional timeout (in seconds) of the operation. By default, timeout
             is disabled.
         """
-        timeout = StreamInlet._check_timeout(timeout)
+        timeout = _check_timeout(timeout)
         errcode = c_int()
         result = lib.lsl_get_fullinfo(
             self.obj, c_double(timeout), byref(errcode)
         )
         handle_error(errcode)
         return _BaseStreamInfo(result)
-
-    # -------------------------------------------------------------------------
-    @staticmethod
-    def _check_timeout(timeout: Optional[float]) -> float:
-        """Check that the provided timeout is valid.
-
-        Parameters
-        ----------
-        timeout : float | None
-            Timeout (in seconds) or None to disable timeout.
-
-        Returns
-        -------
-        timeout : float
-            Timeout (in seconds). If None was provided, a very large float is
-            provided.
-        """
-        # with _check_type, the execution takes 800-900 ns.
-        # with the try/except below, the execution takes 110 ns.
-        if timeout is None:
-            return 32000000.0  # about 1 year
-        try:
-            raise_ = timeout < 0
-        except Exception:
-            raise TypeError(
-                "The argument 'timeout' must be a strictly positive number."
-            )
-        if raise_:
-            raise ValueError(
-                "The argument 'timeout' must be a strictly positive number. "
-                f"{timeout} is invalid."
-            )
-        return timeout

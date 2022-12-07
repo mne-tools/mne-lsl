@@ -1,5 +1,5 @@
 from ctypes import c_double, c_int, c_long, c_void_p
-from typing import List, Union
+from typing import List, Optional, Union
 
 import numpy as np
 from numpy.typing import NDArray
@@ -15,7 +15,7 @@ from .constants import (
 )
 from .load_liblsl import lib
 from .stream_info import _BaseStreamInfo
-from .utils import handle_error
+from .utils import _check_timeout, handle_error
 
 
 class StreamOutlet:
@@ -47,23 +47,22 @@ class StreamOutlet:
         self._stype = sinfo.stype
 
         # outlet properties
-        self.do_push_sample = fmt2push_sample[self._channel_format]
-        self.do_push_chunk = fmt2push_chunk[self._channel_format]
-        self.value_type = fmt2type[self._channel_format]
-        self.sample_type = self.value_type * self._n_channels
+        self._do_push_sample = fmt2push_sample[self._channel_format]
+        self._do_push_chunk = fmt2push_chunk[self._channel_format]
+        self._value_type = fmt2type[self._channel_format]
+        self._sample_type = self._value_type * self._n_channels
 
     def __del__(self):
-        # noinspection PyBroadException
         try:
             lib.lsl_destroy_outlet(self.obj)
-        except:
+        except Exception:
             pass
 
     def push_sample(self, x, timestamp=0.0, pushthrough=True):
         if len(x) == self._n_channels:
             if self._channel_format == cf_string:
                 x = [v.encode('utf-8') for v in x]
-            handle_error(self.do_push_sample(self.obj, self.sample_type(*x),
+            handle_error(self._do_push_sample(self.obj, self._sample_type(*x),
                                              c_double(timestamp),
                                              c_int(pushthrough)))
         else:
@@ -74,8 +73,8 @@ class StreamOutlet:
     def push_chunk(self, x, timestamp=0.0, pushthrough=True):
         try:
             n_values = self._n_channels * len(x)
-            data_buff = (self.value_type * n_values).from_buffer(x)
-            handle_error(self.do_push_chunk(self.obj, data_buff,
+            data_buff = (self._value_type * n_values).from_buffer(x)
+            handle_error(self._do_push_chunk(self.obj, data_buff,
                                             c_long(n_values),
                                             c_double(timestamp),
                                             c_int(pushthrough)))
@@ -86,9 +85,9 @@ class StreamOutlet:
                 if self._channel_format == cf_string:
                     x = [v.encode('utf-8') for v in x]
                 if len(x) % self._n_channels == 0:
-                    constructor = self.value_type * len(x)
+                    constructor = self._value_type * len(x)
                     # noinspection PyCallingNonCallable
-                    handle_error(self.do_push_chunk(self.obj, constructor(*x),
+                    handle_error(self._do_push_chunk(self.obj, constructor(*x),
                                                     c_long(len(x)),
                                                     c_double(timestamp),
                                                     c_int(pushthrough)))
@@ -96,10 +95,11 @@ class StreamOutlet:
                     raise ValueError("Each sample must have the same number of channels ("
                                      + str(self._n_channels) + ").")
 
-    def have_consumers(self):
+    def have_consumers(self) -> bool:
         return bool(lib.lsl_have_consumers(self.obj))
 
-    def wait_for_consumers(self, timeout):
+    def wait_for_consumers(self, timeout: Optional[float] = None) -> bool:
+        timeout = _check_timeout(timeout)
         return bool(lib.lsl_wait_for_consumers(self.obj, c_double(timeout)))
 
     def get_info(self):
