@@ -143,7 +143,7 @@ class StreamOutlet:
             Samples to push, with one element for each channel at every time
             point. If a list of list, each sublist has ``(n_samples,)``
             elements and contain an entire channel. Numpy arrays are
-            recommanded for numerical formats.
+            recommended for numerical formats.
         timestamp : float
             The acquisition timestamp of the sample, in agreement with
             `~bsl.lsl.local_clock`. The default, ``0``, uses the current time.
