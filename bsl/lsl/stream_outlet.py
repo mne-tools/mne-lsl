@@ -143,10 +143,10 @@ class StreamOutlet:
             Samples to push, with one element for each channel at every time
             point. If a list of list, each sublist has ``(n_samples,)``
             elements and contain an entire channel.
-        timestamp : float optional
+        timestamp : float
             The acquisition timestamp of the sample, in agreement with
-            `~bsl.lsl.local_clock`. The default, `0`, uses the current time.
-        pushThrough : bool, optional
+            `~bsl.lsl.local_clock`. The default, ``0``, uses the current time.
+        pushThrough : bool
             If True, push the sample through to the receivers instead of
             buffering it with subsequent samples. Note that the ``chunk_size``
             defined when creating a `~bsl.lsl.StreamOutlet` takes precedence
@@ -191,24 +191,6 @@ class StreamOutlet:
                 c_int(pushthrough),
             )
         )
-
-    def have_consumers(self) -> bool:
-        """Check whether `~bsl.lsl.StreamInlet` are currently connected.
-
-        While it does not hurt, there is technically no reason to push samples
-        if there is no one connected.
-
-        Returns
-        -------
-        consumers : bool
-            True if at least one consumer is connected.
-
-        Notes
-        -----
-        This function does not filter the search for `bsl.lsl.StreamInlet`. Any
-        application inlet will be recognized.
-        """
-        return bool(lib.lsl_have_consumers(self.obj))
 
     def wait_for_consumers(self, timeout: Optional[float]) -> bool:
         """Wait (block) until at least one `~bsl.lsl.StreamInlet` connects.
@@ -256,6 +238,25 @@ class StreamOutlet:
     @property
     def stype(self) -> str:
         return self._stype
+
+    @property
+    def has_consumers(self) -> bool:
+        """Check whether `~bsl.lsl.StreamInlet` are currently connected.
+
+        While it does not hurt, there is technically no reason to push samples
+        if there is no one connected.
+
+        Returns
+        -------
+        consumers : bool
+            True if at least one consumer is connected.
+
+        Notes
+        -----
+        This function does not filter the search for `bsl.lsl.StreamInlet`. Any
+        application inlet will be recognized.
+        """
+        return bool(lib.lsl_have_consumers(self.obj))
 
     # -------------------------------------------------------------------------
     def get_sinfo(self) -> _BaseStreamInfo:
