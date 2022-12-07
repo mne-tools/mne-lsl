@@ -169,9 +169,6 @@ class StreamOutlet:
             # we do not check the input, specifically, that all elements in the
             # list are list and that all list have the correct number of
             # element to avoid slowing down the execution.
-            assert isinstance(
-                x[0], list
-            ), "'x' must be a list of list or an array"
             x = [v for sample in x for v in sample]  # flatten
             n_samples = len(x)
             if n_samples % self._n_channels != 0:  # quick incomplete test

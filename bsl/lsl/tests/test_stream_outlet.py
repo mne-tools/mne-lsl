@@ -1,3 +1,4 @@
+import re
 import time
 
 import numpy as np
@@ -104,4 +105,85 @@ def test_push_str_sample():
         raise error
     finally:
         del inlet
+        del outlet
+
+
+@pytest.mark.parametrize(
+    "dtype_str, dtype",
+    [
+        ("float32", np.float32),
+        ("float64", np.float64),
+        ("int8", np.int8),
+        ("int16", np.int16),
+        ("int32", np.int32),
+    ],
+)
+def test_push_numerical_chunk(dtype_str, dtype):
+    """Test the error checking when pushing a numerical chunk."""
+    x = (
+        [[1, 2, 3], [4, 5, 6]]
+        if "int" in dtype_str
+        else [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]]
+    )
+
+    sinfo = StreamInfo("test", "", 2, 0.0, dtype_str, "")
+    try:
+        outlet = StreamOutlet(sinfo, chunk_size=3)
+        # valid
+        outlet.push_chunk(x)
+
+        # invalid
+        with pytest.raises(
+            AssertionError,
+            match="must be a list of list or an array",
+        ):
+            outlet.push_chunk(tuple(x))
+        with pytest.raises(
+            ValueError,
+            match="must contain one element per channel at each time-point",
+        ):
+            outlet.push_chunk(x + [[7]])
+
+        # numpy valid
+        outlet.push_chunk(np.array(x, dtype=dtype))
+
+        # numpy invalid
+        with pytest.raises(
+            ValueError,
+            match=re.escape("the shape should be (n_channels, n_samples)"),
+        ):
+            outlet.push_chunk(np.array(x, dtype=dtype).T)
+        with pytest.raises(
+            ValueError,
+            match=re.escape("the shape should be (n_channels, n_samples)"),
+        ):
+            outlet.push_chunk(np.array(x, dtype=dtype).flatten())
+    except Exception as error:
+        raise error
+    finally:
+        del outlet
+
+
+def test_push_str_chunk():
+    """Test the error checking when pushing a string chunk."""
+    sinfo = StreamInfo("test", "", 2, 0.0, "string", "")
+    try:
+        outlet = StreamOutlet(sinfo, chunk_size=3)
+        # valid
+        outlet.push_chunk([["1", "2", "3"], ["4", "5", "6"]])
+
+        # invalid
+        with pytest.raises(
+            AssertionError,
+            match="must be a list of list or an array",
+        ):
+            outlet.push_chunk((["1", "2", "3"], ["4", "5", "6"]))
+        with pytest.raises(
+            ValueError,
+            match="must contain one element per channel at each time-point",
+        ):
+            outlet.push_chunk([["1", "2", "3"], ["4", "5", "6", "7"]])
+    except Exception as error:
+        raise error
+    finally:
         del outlet
