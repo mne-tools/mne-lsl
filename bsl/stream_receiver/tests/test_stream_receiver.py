@@ -36,17 +36,17 @@ def test_stream_receiver():
         window, timestamps_window = sr.get_window()
         buffer, timestamps_buffer = sr.get_buffer()
         assert (
-            window.shape[1]
-            == buffer.shape[1]
+            window.shape[0]
+            == buffer.shape[0]
             == len(sr.streams[stream].ch_list)
         )
         assert (
-            window.shape[0]
+            window.shape[1]
             == len(timestamps_window)
             == round(sr.streams[stream].sample_rate * 0.2)
         )
         assert (
-            buffer.shape[0]
+            buffer.shape[1]
             == len(timestamps_buffer)
             == round(sr.streams[stream].sample_rate * 1)
         )
@@ -60,7 +60,7 @@ def test_stream_receiver():
         sr.acquire()
         window3, _ = sr.get_window()
         buffer3, _ = sr.get_buffer()
-        assert window3[0, :] in previous_buffer
+        assert window3[:, 0] in previous_buffer
 
         # test get_window MNE raw
         raw, _ = sr.get_window(return_raw=True)

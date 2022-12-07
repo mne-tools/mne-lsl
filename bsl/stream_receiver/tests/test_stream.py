@@ -98,6 +98,8 @@ def test_stream_eeg(caplog):
         for streamInfo in streamInfos:
             if streamInfo.name == "StreamPlayer":
                 break
+        else:
+            raise RuntimeError("Stream not found.")
 
         stream = StreamEEG(streamInfo, bufsize=1, winsize=0.5)
         _check_stream_properties(
@@ -148,6 +150,8 @@ def test_stream_eeg(caplog):
     for streamInfo in streamInfos:
         if streamInfo.name == "StreamPlayer":
             break
+    else:
+        raise RuntimeError("Stream not found.")
 
     caplog.clear()
     stream = StreamEEG(streamInfo, bufsize=1, winsize=0.5)

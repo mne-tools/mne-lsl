@@ -359,7 +359,9 @@ class StreamMarker(_Stream):
     def acquire(self):
         """Pull data from the stream's inlet and fill the buffer."""
         chunk, tslist = super().acquire()
-        self._buffer.fill(chunk, tslist)  # Fill its buffer
+        if isinstance(chunk, list):
+            chunk = np.array(chunk)
+        self._buffer.fill(chunk.T.tolist(), tslist)  # Fill its buffer
 
 
 @fill_doc
@@ -433,49 +435,42 @@ class StreamEEG(_Stream):
         """Pull data from the stream's inlet and fill the buffer."""
         chunk, tslist = super().acquire()
 
-        if len(chunk) == 0:
+        if chunk.size == 0:
             return
-
-        # TODO: Is it not more efficient to keep working on lists?
-        data = np.array(chunk)
 
         # BioSemi has pull-up resistor instead of pull-down
         if "BioSemi" in self._name and self._lsl_tr_channel is not None:
-            datatype = data.dtype
-            data[:, self._lsl_tr_channel] = (
+            datatype = chunk.dtype
+            chunk[self._lsl_tr_channel, :] = (
                 np.bitwise_and(
-                    255, data[:, self._lsl_tr_channel].astype(int, copy=False)
+                    255, chunk[self._lsl_tr_channel, :].astype(int, copy=False)
                 )
                 - 1
             ).astype(datatype, copy=False)
 
         # multiply values (to change unit)
         if self._scaling_factor != 1:
-            data[:, self._lsl_eeg_channels] *= self._scaling_factor
+            chunk[self._lsl_eeg_channels, :] *= self._scaling_factor
 
         if self._lsl_tr_channel is not None:
             # move trigger channel to 0 and add back to the buffer
-            data = np.concatenate(
+            chunk = np.concatenate(
                 (
-                    data[:, self._lsl_tr_channel].reshape(-1, 1),
-                    data[:, self._lsl_eeg_channels],
+                    chunk[self._lsl_tr_channel, :].reshape(1, -1),
+                    chunk[self._lsl_eeg_channels, :],
                 ),
-                axis=1,
             )
         else:
             # add an empty channel with zeros to channel 0
-            data = np.concatenate(
+            chunk = np.concatenate(
                 (
-                    np.zeros((data.shape[0], 1)),
-                    data[:, self._lsl_eeg_channels],
+                    np.zeros((1, chunk.shape[1])),
+                    chunk[self._lsl_eeg_channels, :],
                 ),
-                axis=1,
             )
 
-        data = data.tolist()
-
         # Fill its buffer
-        self._buffer.fill(data, tslist)
+        self._buffer.fill(chunk.T.tolist(), tslist)
 
     # --------------------------------------------------------------------
     @property

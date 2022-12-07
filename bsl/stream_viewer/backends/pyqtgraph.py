@@ -41,10 +41,12 @@ class _BackendPyQtGraph(_Backend):
         )
         self._win.show()
         self._plot_handler = self._win.addPlot()  # pyqtgraph.PlotItem
-        subsampling_ratio = self._scope.sample_rate / 64
-        self._plot_handler.setDownsampling(
-            ds=subsampling_ratio, auto=None, mode="mean"
-        )
+
+        subsampling_ratio = int(self._scope.sample_rate / 64)
+        if subsampling_ratio != 0:
+            self._plot_handler.setDownsampling(
+                ds=subsampling_ratio, auto=None, mode="mean"
+            )
         self._plot_handler.setMouseEnabled(x=False, y=False)
         self._plot_handler.setMenuEnabled(False)
         self._init_canvas()
