@@ -19,13 +19,33 @@ from .utils import _check_timeout, handle_error
 
 
 class StreamOutlet:
+    """An outlet to share data and metadata on the network.
 
-    def __init__(self, sinfo, chunk_size=0, max_buffered=360):
+    Parameters
+    ----------
+    sinfo : StreamInfo
+        The `~bsl.lsl.StreamInfo` object describing the stream. Stays constant
+        over the lifetime of the outlet.
+    chunk_size : int ``≥ 1``
+        The desired chunk granularity in samples. By default, each push
+        operation yields one chunk. An Inlet can override this setting.
+    max_buffered : float ``≥ 0``
+        The maximum amount of data to buffer in the Outlet.
+        The number of samples buffered is ``max_buffered * 100`` if the
+        sampling rate is irregular, else it's ``max_buffered`` seconds.
+    """
+
+    def __init__(
+        self,
+        sinfo: _BaseStreamInfo,
+        chunk_size: int = 0,
+        max_buffered: float = 360,
+    ):
         _check_type(sinfo, (_BaseStreamInfo,), "sinfo")
-        _check_type(chunk_size, ("numeric",), "chunk_size")
+        _check_type(chunk_size, ("int",), "chunk_size")
         if chunk_size < 1:
             raise ValueError(
-                "The argument 'chunk_size' must contain a positive number. "
+                "The argument 'chunk_size' must contain a positive integer. "
                 f"{chunk_size} is invalid."
             )
         _check_type(max_buffered, ("numeric",), "max_buffered")
@@ -53,6 +73,11 @@ class StreamOutlet:
         self._sample_type = self._value_type * self._n_channels
 
     def __del__(self):
+        """Destroy a `~bsl.lsl.StreamOutlet`.
+
+        The outlet will no longer be discoverable after destruction and all
+        connected inlets will stop delivering data.
+        """
         try:
             lib.lsl_destroy_outlet(self.obj)
         except Exception:
@@ -96,15 +121,43 @@ class StreamOutlet:
                                      + str(self._n_channels) + ").")
 
     def have_consumers(self) -> bool:
+        """Check whether `~bsl.lsl.StreamInlet` are currently connected.
+
+        While it does not hurt, there is technically no reason to push samples
+        if there is no one connected.
+
+        Returns
+        -------
+        consumers : bool
+            True if at least one consumer is connected.
+
+        Notes
+        -----
+        This function does not filter the search for `bsl.lsl.StreamInlet`. Any
+        application inlet will be recognized.
+        """
         return bool(lib.lsl_have_consumers(self.obj))
 
-    def wait_for_consumers(self, timeout: Optional[float] = None) -> bool:
+    def wait_for_consumers(self, timeout: Optional[float]) -> bool:
+        """Wait (block) until at least one `~bsl.lsl.StreamInlet` connects.
+
+        Parameters
+        ----------
+        timeout : float
+            Timeout duration in seconds.
+
+        Returns
+        -------
+        success : bool
+            True if the wait was successful, False if the ``timeout`` expired.
+
+        Notes
+        -----
+        This function does not filter the search for `bsl.lsl.StreamInlet`.
+        Any application inlet will be recognized.
+        """
         timeout = _check_timeout(timeout)
         return bool(lib.lsl_wait_for_consumers(self.obj, c_double(timeout)))
-
-    def get_info(self):
-        outlet_info = lib.lsl_get_info(self.obj)
-        return _BaseStreamInfo(outlet_info)
 
     # -------------------------------------------------------------------------
     @copy_doc(_BaseStreamInfo.channel_format)
@@ -134,70 +187,17 @@ class StreamOutlet:
 
     # -------------------------------------------------------------------------
     def get_sinfo(self) -> _BaseStreamInfo:
-        """`~bsl.lsl.StreamInfo` corresponding to this Outlet."""
+        """`~bsl.lsl.StreamInfo` corresponding to this Outlet.
+
+        Returns
+        -------
+        sinfo : StreamInfo
+            Description of the stream connected to the outlet.
+        """
         return _BaseStreamInfo(lib.lsl_get_info(self.obj))
 
 
 class NewStreamOutlet:
-    """An outlet to share data and metadata on the network.
-
-    Parameters
-    ----------
-    sinfo : StreamInfo
-        The `~bsl.lsl.StreamInfo` object describing the stream. Stays constant
-        over the lifetime of the outlet.
-    chunk_size : int ``≥ 1``
-        The desired chunk granularity in samples. By default, each push
-        operation yields one chunk. An Inlet can override this setting.
-    max_buffered : float ``≥ 0``
-        The maximum amount of data to buffer in the Outlet.
-        The number of samples buffered is ``max_buffered * 100`` if the
-        sampling rate is irregular, else it's ``max_buffered`` seconds.
-    """
-
-    def __init__(self, sinfo, chunk_size=1, max_buffered=360):
-        _check_type(sinfo, (_BaseStreamInfo,), "sinfo")
-        _check_type(chunk_size, ("numeric",), "chunk_size")
-        if chunk_size < 1:
-            raise ValueError(
-                "The argument 'chunk_size' must contain a positive number. "
-                f"{chunk_size} is invalid."
-            )
-        _check_type(max_buffered, ("numeric",), "max_buffered")
-        if max_buffered < 0:
-            raise ValueError(
-                "The argument 'max_buffered' must contain a positive number. "
-                f"{max_buffered} is invalid."
-            )
-
-        self.obj = lib.lsl_create_outlet(sinfo.obj, chunk_size, max_buffered)
-        self.obj = c_void_p(self.obj)
-        if not self.obj:
-            raise RuntimeError("The StreamOutlet could not be created.")
-
-        # properties from the StreamInfo
-        self._channel_format = sinfo._channel_format
-        self._name = sinfo.name
-        self._n_channels = sinfo.n_channels
-        self._sfreq = sinfo.sfreq
-        self._stype = sinfo.stype
-
-        # outlet properties
-        self._do_push_sample = fmt2push_sample[self._channel_format]
-        self._do_push_chunk = fmt2push_chunk[self._channel_format]
-        self._value_type = fmt2type[self._channel_format]
-        self._sample_type = self._value_type * self._n_channels
-
-    def __del__(self):
-        """Destroy a `~bsl.lsl.StreamOutlet`.
-
-        The outlet will no longer be discoverable after destruction and all
-        connected inlets will stop delivering data.
-        """
-        try:
-            lib.lsl_destroy_outlet(self.obj)
-        except Exception:
-            pass
 
     def push_sample(
         self,
@@ -298,72 +298,3 @@ class NewStreamOutlet:
                 c_int(pushthrough),
             )
         )
-
-    def have_consumers(self) -> bool:
-        """Check whether `~bsl.lsl.StreamInlet` are currently connected.
-
-        While it does not hurt, there is technically no reason to push samples
-        if there is no one connected.
-
-        Returns
-        -------
-        consumers : bool
-            True if at least one consumer is connected.
-
-        Notes
-        -----
-        This function does not filter the search for `bsl.lsl.StreamInlet`. Any
-        application inlet will be recognized.
-        """
-        return bool(lib.lsl_have_consumers(self.obj))
-
-    def wait_for_consumers(self, timeout: float) -> bool:
-        """Wait (block) until at least one `~bsl.lsl.StreamInlet` connects.
-
-        Parameters
-        ----------
-        timeout : float
-            Timeout duration in seconds.
-
-        Returns
-        -------
-        success : bool
-            True if the wait was successful, False if the ``timeout`` expired.
-
-        Notes
-        -----
-        This function does not filter the search for `bsl.lsl.StreamInlet`.
-        Any application inlet will be recognized.
-        """
-        return bool(lib.lsl_wait_for_consumers(self.obj, c_double(timeout)))
-
-    # -------------------------------------------------------------------------
-    @copy_doc(_BaseStreamInfo.channel_format)
-    @property
-    def channel_format(self) -> str:
-        return fmt2string[self._channel_format]
-
-    @copy_doc(_BaseStreamInfo.n_channels)
-    @property
-    def n_channels(self) -> int:
-        return self._n_channels
-
-    @copy_doc(_BaseStreamInfo.name)
-    @property
-    def name(self) -> str:
-        return self._name
-
-    @copy_doc(_BaseStreamInfo.sfreq)
-    @property
-    def sfreq(self) -> float:
-        return self._sfreq
-
-    @copy_doc(_BaseStreamInfo.stype)
-    @property
-    def stype(self) -> str:
-        return self._stype
-
-    # -------------------------------------------------------------------------
-    def get_sinfo(self) -> _BaseStreamInfo:
-        """`~bsl.lsl.StreamInfo` corresponding to this Outlet."""
-        return _BaseStreamInfo(lib.lsl_get_info(self.obj))

@@ -23,9 +23,9 @@ class StreamInlet:
     def __init__(
         self,
         sinfo: _BaseStreamInfo,
-        max_buflen=360,
-        max_chunklen=0,
-        recover=True,
+        max_buflen: int = 360,
+        max_chunklen: int = 0,
+        recover: bool = True,
         processing_flags=0,
     ):
         _check_type(sinfo, (_BaseStreamInfo,), "sinfo")
@@ -245,6 +245,11 @@ class StreamInlet:
         timeout : float | None
             Optional timeout (in seconds) of the operation. By default, timeout
             is disabled.
+
+        Returns
+        -------
+        sinfo : StreamInfo
+            Description of the stream connected to the inlet.
         """
         timeout = _check_timeout(timeout)
         errcode = c_int()
@@ -256,51 +261,6 @@ class StreamInlet:
 
 
 class NewStreamInlet:
-    """An inlet to retrieve data and metadata on the network.
-
-    Parameters
-    ----------
-    sinfo : StreamInfo
-        The `~bsl.lsl.StreamInfo` object describing the stream. Stays constant
-        over the lifetime of the inlet.
-    """
-
-    def __init__(
-        self,
-        sinfo: _BaseStreamInfo,
-        max_buflen=360,
-        max_chunklen=0,
-        recover=True,
-        processing_flags=0,
-    ):
-        _check_type(sinfo, (_BaseStreamInfo,), "sinfo")
-        self.obj = lib.lsl_create_inlet(
-            sinfo.obj, max_buflen, max_chunklen, recover
-        )
-        self.obj = c_void_p(self.obj)
-        if not self.obj:
-            raise RuntimeError("The StreamInlet could not be created.")
-
-        # set preprocessing of the inlet
-        if processing_flags > 0:
-            handle_error(
-                lib.lsl_set_postprocessing(self.obj, processing_flags)
-            )
-
-        # properties from the StreamInfo
-        self._channel_format = sinfo._channel_format
-        self._name = sinfo.name
-        self._n_channels = sinfo.n_channels
-        self._sfreq = sinfo.sfreq
-        self._stype = sinfo.stype
-
-        # properties from the inlet
-        self._do_pull_sample = fmt2pull_sample[self._channel_format]
-        self._do_pull_chunk = fmt2pull_chunk[self._channel_format]
-        self._value_type = fmt2type[self._channel_format]
-        self._sample_type = self._value_type * self._n_channels
-        self._sample = self._sample_type()  # required
-        self._buffers = {}
 
     def pull_sample(self, timeout: Optional[float] = None):
         """Pull a single sample from the inlet.
