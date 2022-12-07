@@ -1,4 +1,5 @@
 from ctypes import byref, c_double, c_void_p
+from typing import List
 
 from ..utils._checks import _check_type
 from .load_liblsl import lib
@@ -18,7 +19,7 @@ def library_version() -> int:
     return lib.lsl_library_version()
 
 
-def local_clock() -> int:
+def local_clock() -> float:
     """Obtain a local system timestamp in seconds.
 
     Returns
@@ -29,7 +30,7 @@ def local_clock() -> int:
     return lib.lsl_local_clock()
 
 
-def resolve_streams(timeout: float = 1.0):
+def resolve_streams(timeout: float = 1.0) -> List[_BaseStreamInfo]:
     """Resolve all streams on the network.
 
     This function returns all currently available streams from any outlet on

@@ -38,7 +38,7 @@ class StreamOutlet:
     def __init__(
         self,
         sinfo: _BaseStreamInfo,
-        chunk_size: int = 0,
+        chunk_size: int = 1,
         max_buffered: float = 360,
     ):
         _check_type(sinfo, (_BaseStreamInfo,), "sinfo")
