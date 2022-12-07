@@ -199,9 +199,10 @@ class StreamInlet:
         Returns
         -------
         samples : list of list | array of shape (n_channels, n_samples) | None
-            If the channel format is ``'string^``, returns a list of list of
-            values for each channel and sample. Else, returns a numpy array of
-            shape ``(n_channels, n_samples)``.
+            If the channel format is ``'string'``, returns a list of list of
+            values for each channel and sample. Each sublist represents an
+            entire channel. Else, returns a numpy array of shape
+            ``(n_channels, n_samples)``.
         timestamps : array of shape (n_samples,) | None
             Acquisition timestamps on the remote machine.
         """
@@ -237,14 +238,14 @@ class StreamInlet:
         )
         handle_error(errcode)
 
-        num_samples = num_elements / self._n_channels
+        num_samples = int(num_elements / self._n_channels)
         if self._channel_format == cf_string:
             samples = [
                 [
-                    data_buffer[s * self._n_channels + c].decode("utf-8")
-                    for c in range(self._n_channels)
+                    data_buffer[s + c * num_samples].decode("utf-8")
+                    for s in range(num_samples)
                 ]
-                for s in range(int(num_samples))
+                for c in range(self._n_channels)
             ]
             _free_char_p_array_memory(data_buffer, max_values)
         else:
