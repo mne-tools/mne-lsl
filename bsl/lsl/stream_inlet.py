@@ -128,25 +128,23 @@ class StreamInlet:
         handle_error(errcode)
         return result
 
-    def pull_sample(self, timeout=320000, sample=None):
-        # support for the legacy API
-        if type(timeout) is list:
-            assign_to = timeout
-            timeout = sample if type(sample) is float else 0.0
-        else:
-            assign_to = None
+    def pull_sample(self, timeout: Optional[float] = None):
+        timeout = _check_timeout(timeout)
 
         errcode = c_int()
-        timestamp = self._do_pull_sample(self.obj, byref(self._sample),
-                                        self._n_channels, c_double(timeout),
-                                        byref(errcode))
+        timestamp = self._do_pull_sample(
+            self.obj,
+            byref(self._sample),
+            self._n_channels,
+            c_double(timeout),
+            byref(errcode),
+        )
         handle_error(errcode)
+
         if timestamp:
             sample = [v for v in self._sample]
             if self._channel_format == cf_string:
-                sample = [v.decode('utf-8') for v in sample]
-            if assign_to is not None:
-                assign_to[:] = sample
+                sample = [v.decode("utf-8") for v in sample]
             return sample, timestamp
         else:
             return None, None
@@ -158,26 +156,35 @@ class StreamInlet:
 
         if n_samples not in self._buffers:
             # noinspection PyCallingNonCallable
-            self._buffers[n_samples] = ((self._value_type * max_values)(),
-                                         (c_double * n_samples)())
+            self._buffers[n_samples] = (
+                (self._value_type * max_values)(),
+                (c_double * n_samples)(),
+            )
         data_buff = self._buffers[n_samples][0]
         ts_buff = self._buffers[n_samples][1]
 
         # read data into it
         errcode = c_int()
         # noinspection PyCallingNonCallable
-        num_elements = self._do_pull_chunk(self.obj, byref(data_buff),
-                                          byref(ts_buff), max_values,
-                                          n_samples, c_double(timeout),
-                                          byref(errcode))
+        num_elements = self._do_pull_chunk(
+            self.obj,
+            byref(data_buff),
+            byref(ts_buff),
+            max_values,
+            n_samples,
+            c_double(timeout),
+            byref(errcode),
+        )
         handle_error(errcode)
         # return results (note: could offer a more efficient format in the
         # future, e.g., a numpy array)
         num_samples = num_elements / num_channels
-        samples = [[data_buff[s * num_channels + c] for c in range(num_channels)]
-                   for s in range(int(num_samples))]
+        samples = [
+            [data_buff[s * num_channels + c] for c in range(num_channels)]
+            for s in range(int(num_samples))
+        ]
         if self._channel_format == cf_string:
-            samples = [[v.decode('utf-8') for v in s] for s in samples]
+            samples = [[v.decode("utf-8") for v in s] for s in samples]
             _free_char_p_array_memory(data_buff, max_values)
         timestamps = [ts_buff[s] for s in range(int(num_samples))]
         return samples, timestamps
@@ -261,7 +268,6 @@ class StreamInlet:
 
 
 class NewStreamInlet:
-
     def pull_sample(self, timeout: Optional[float] = None):
         """Pull a single sample from the inlet.
 

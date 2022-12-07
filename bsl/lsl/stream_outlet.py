@@ -142,7 +142,8 @@ class StreamOutlet:
         ----------
         x : list of list | array of shape (n_channels, n_samples)
             Samples to push, with one element for each channel at every time
-            point.
+            point. If a list of list, each sublist has ``(n_samples,)``
+            elements and contain an entire channel.
         timestamp : float optional
             The acquisition timestamp of the sample, in agreement with
             `~bsl.lsl.local_clock`. The default, `0`, uses the current time.
@@ -152,7 +153,9 @@ class StreamOutlet:
             defined when creating a `~bsl.lsl.StreamOutlet` takes precedence
             over the ``pushThrough`` flag.
         """
-        assert isinstance(x, (list, np.ndarray)), "'x' must be a list of list or an array"
+        assert isinstance(
+            x, (list, np.ndarray)
+        ), "'x' must be a list of list or an array"
         if isinstance(x, np.ndarray):
             if x.ndim != 2 or x.shape[0] != self._n_channels:
                 raise ValueError(
@@ -165,7 +168,9 @@ class StreamOutlet:
             # we do not check the input, specifically, that all elements in the
             # list are list and that all list have the correct number of
             # element to avoid slowing down the execution.
-            assert isinstance(x[0], list), "'x' must be a list of list or an array"
+            assert isinstance(
+                x[0], list
+            ), "'x' must be a list of list or an array"
             x = [v for sample in x for v in sample]  # flatten
             if len(x) % self._n_channels != 0:  # quick incomplete test
                 raise ValueError(
