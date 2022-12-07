@@ -83,42 +83,110 @@ class StreamOutlet:
         except Exception:
             pass
 
-    def push_sample(self, x, timestamp=0.0, pushthrough=True):
-        if len(x) == self._n_channels:
-            if self._channel_format == cf_string:
-                x = [v.encode('utf-8') for v in x]
-            handle_error(self._do_push_sample(self.obj, self._sample_type(*x),
-                                             c_double(timestamp),
-                                             c_int(pushthrough)))
-        else:
-            raise ValueError("length of the sample (" + str(len(x)) + ") must "
-                             "correspond to the stream's channel count ("
-                             + str(self._n_channels) + ").")
+    def push_sample(
+        self,
+        x: Union[List[Union[float, str]], NDArray[float]],
+        timestamp: float = 0.0,
+        pushThrough: bool = True,
+    ) -> None:
+        """Push a sample into the `~bsl.lsl.StreamOutlet`.
 
-    def push_chunk(self, x, timestamp=0.0, pushthrough=True):
-        try:
-            n_values = self._n_channels * len(x)
-            data_buff = (self._value_type * n_values).from_buffer(x)
-            handle_error(self._do_push_chunk(self.obj, data_buff,
-                                            c_long(n_values),
-                                            c_double(timestamp),
-                                            c_int(pushthrough)))
-        except TypeError:
-            if len(x):
-                if type(x[0]) is list:
-                    x = [v for sample in x for v in sample]
-                if self._channel_format == cf_string:
-                    x = [v.encode('utf-8') for v in x]
-                if len(x) % self._n_channels == 0:
-                    constructor = self._value_type * len(x)
-                    # noinspection PyCallingNonCallable
-                    handle_error(self._do_push_chunk(self.obj, constructor(*x),
-                                                    c_long(len(x)),
-                                                    c_double(timestamp),
-                                                    c_int(pushthrough)))
-                else:
-                    raise ValueError("Each sample must have the same number of channels ("
-                                     + str(self._n_channels) + ").")
+        Parameters
+        ----------
+        x : list | array of shape (n_channels,)
+            Sample to push, with one element for each channel.
+        timestamp : float optional
+            The acquisition timestamp of the sample, in agreement with
+            `~bsl.lsl.local_clock`. The default, `0`, uses the current time.
+        pushThrough : bool, optional
+            If True, push the sample through to the receivers instead of
+            buffering it with subsequent samples. Note that the ``chunk_size``
+            defined when creating a `~bsl.lsl.StreamOutlet` takes precedence
+            over the ``pushThrough`` flag.
+        """
+
+        assert isinstance(x, (list, np.ndarray)), "'x' must be a list or array"
+        if isinstance(x, np.ndarray) and x.ndim != 1:
+            raise ValueError(
+                "The sample to push 'x' must contain one element per channel. "
+                f"Thus, the shape should be (n_channels,), {x.shape} is "
+                "invalid."
+            )
+        elif len(x) != self._n_channels:
+            raise ValueError(
+                "The sample to push 'x' must contain one element per channel. "
+                f"Thus, {self._n_channels} elements are expected. {len(x)} "
+                "is invalid."
+            )
+
+        if self._channel_format == cf_string:
+            x = [v.encode("utf-8") for v in x]
+        handle_error(
+            self._do_push_sample(
+                self.obj,
+                self._sample_type(*x),
+                c_double(timestamp),
+                c_int(pushThrough),
+            )
+        )
+
+    def push_chunk(
+        self,
+        x: Union[List[List[Union[float, str]]], NDArray[float]],
+        timestamp: float = 0.0,
+        pushthrough: bool = True,
+    ) -> None:
+        """Push a chunk of samples into the `~bsl.lsl.StreamOutlet`.
+
+        Parameters
+        ----------
+        x : list of list | array of shape (n_channels, n_samples)
+            Samples to push, with one element for each channel at every time
+            point.
+        timestamp : float optional
+            The acquisition timestamp of the sample, in agreement with
+            `~bsl.lsl.local_clock`. The default, `0`, uses the current time.
+        pushThrough : bool, optional
+            If True, push the sample through to the receivers instead of
+            buffering it with subsequent samples. Note that the ``chunk_size``
+            defined when creating a `~bsl.lsl.StreamOutlet` takes precedence
+            over the ``pushThrough`` flag.
+        """
+        assert isinstance(x, (list, np.ndarray)), "'x' must be a list of list or an array"
+        if isinstance(x, np.ndarray):
+            if x.ndim != 2 or x.shape[0] != self._n_channels:
+                raise ValueError(
+                    "The samples to push 'x' must contain one element per "
+                    "channel at each time-point. Thus, the shape should be "
+                    f"(n_channels, n_samples), {x.shape} is invalid."
+                )
+            data_buffer = (self._value_type * x.size).from_buffer(x)
+        else:
+            # we do not check the input, specifically, that all elements in the
+            # list are list and that all list have the correct number of
+            # element to avoid slowing down the execution.
+            assert isinstance(x[0], list), "'x' must be a list of list or an array"
+            x = [v for sample in x for v in sample]  # flatten
+            if len(x) % self._n_channels != 0:  # quick incomplete test
+                raise ValueError(
+                    "The samples to push 'x' must contain one element per "
+                    "channel at each time-point. Thus, the shape should be "
+                    "(n_channels, n_samples)."
+                )
+            if self._channel_format == cf_string:
+                x = [v.encode("utf-8") for v in x]
+            constructor = self._value_type * len(x)
+            data_buffer = constructor(*x)
+
+        handle_error(
+            self._do_push_chunk(
+                self.obj,
+                data_buffer,
+                c_long(len(x)),
+                c_double(timestamp),
+                c_int(pushthrough),
+            )
+        )
 
     def have_consumers(self) -> bool:
         """Check whether `~bsl.lsl.StreamInlet` are currently connected.
@@ -195,106 +263,3 @@ class StreamOutlet:
             Description of the stream connected to the outlet.
         """
         return _BaseStreamInfo(lib.lsl_get_info(self.obj))
-
-
-class NewStreamOutlet:
-
-    def push_sample(
-        self,
-        x: Union[List, NDArray],
-        timestamp: float = 0.0,
-        pushThrough: bool = True,
-    ) -> None:
-        """Push a sample into the `~bsl.lsl.StreamOutlet`.
-
-        Parameters
-        ----------
-        x : list | array of shape (n_channels,)
-            Sample to push, with one element for each channel.
-        timestamp : float optional
-            The acquisition timestamp of the sample, in agreement with
-            `~bsl.lsl.local_clock`. The default, `0`, uses the current time.
-        pushThrough : bool, optional
-            If True, push the sample through to the receivers instead of
-            buffering it with subsequent samples. Note that the ``chunk_size``
-            defined when creating a `~bsl.lsl.StreamOutlet` takes precedence
-            over the ``pushThrough`` flag.
-        """
-        assert isinstance(x, (list, np.ndarray)), "'x' must be a list or array"
-        if isinstance(x, np.ndarray) and x.ndim != 1:
-            raise ValueError(
-                "The sample to push 'x' must contain one element per channel. "
-                f"Thus, the shape should be (n_channels,), {x.shape} is "
-                "invalid."
-            )
-        elif len(x) != self._n_channels:
-            raise ValueError(
-                "The sample to push 'x' must contain one element per channel. "
-                f"Thus, {self._n_channels} elements are expected. {len(x)} "
-                "is invalid."
-            )
-
-        if self._channel_format == cf_string:
-            x = [v.encode("utf-8") for v in x]
-        handle_error(
-            self._do_push_sample(
-                self.obj,
-                self._sample_type(*x),
-                c_double(timestamp),
-                c_int(pushThrough),
-            )
-        )
-
-    def push_chunk(self, x, timestamp=0.0, pushthrough=True) -> None:
-        """Push a chunk of samples into the `~bsl.lsl.StreamOutlet`.
-
-        Parameters
-        ----------
-        x : list of list | array of shape (n_channels, n_samples)
-            Samples to push, with one element for each channel at every time
-            point.
-        timestamp : float optional
-            The acquisition timestamp of the sample, in agreement with
-            `~bsl.lsl.local_clock`. The default, `0`, uses the current time.
-        pushThrough : bool, optional
-            If True, push the sample through to the receivers instead of
-            buffering it with subsequent samples. Note that the ``chunk_size``
-            defined when creating a `~bsl.lsl.StreamOutlet` takes precedence
-            over the ``pushThrough`` flag.
-        """
-        assert isinstance(x, (list, np.ndarray)), "'x' must be a list or array"
-        if isinstance(x, np.ndarray):
-            if x.ndim != 2 or x.shape[0] != self._n_channels:
-                raise ValueError(
-                    "The samples to push 'x' must contain one element per "
-                    "channel at each time-point. Thus, the shape should be "
-                    f"(n_channels, n_samples), {x.shape} is invalid."
-                )
-            n_values = x.size
-            data_buffer = (self._value_type * n_values).from_buffer(x)
-        else:
-            # we do not check the input, specifically, that all elements in the
-            # list are list and that all list have the correct number of
-            # element to avoid slowing down the execution.
-            x = [v for sample in x for v in sample]  # flatten
-            n_values = len(x)
-            if n_values % self._n_channels != 0:  # quick incomplete test
-                raise ValueError(
-                    "The samples to push 'x' must contain one element per "
-                    "channel at each time-point. Thus, the shape should be "
-                    "(n_channels, n_samples)."
-                )
-            if self._channel_format == cf_string:
-                x = [v.encode("utf-8") for v in x]
-            constructor = self._value_type * n_values
-            data_buffer = constructor(*x)
-
-        handle_error(
-            self._do_push_chunk(
-                self.obj,
-                data_buffer,
-                c_long(n_values),
-                c_double(timestamp),
-                c_int(pushthrough),
-            )
-        )
