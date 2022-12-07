@@ -81,6 +81,11 @@ class StreamInlet:
         timeout : float | None
             Optional timeout (in seconds) of the operation. By default, timeout
             is disabled.
+
+        Notes
+        -----
+        Opening a stream is a non-blocking operation. Thus, samples pushed on
+        an outlet while the stream is not yet open will be missed.
         """
         timeout = _check_timeout(timeout)
         errcode = c_int()
@@ -129,6 +134,30 @@ class StreamInlet:
         return result
 
     def pull_sample(self, timeout: Optional[float] = None):
+        """Pull a single sample from the inlet.
+
+        Parameters
+        ----------
+        timeout : float | None
+            Optional timeout (in seconds) of the operation. By default, timeout
+            is disabled.
+
+        Returns
+        -------
+        sample : list | array of shape (n_channels,) | None
+            If the channel format is ``'string^``, returns a list of values for
+            each channel. Else, returns a numpy array of shape
+            ``(n_channels,)``.
+        timestamp : float | None
+            Acquisition timestamp on the remote machine. To map the timestamp
+            to the local clock of the client machine, add the estimated time
+            correction return by `~bsl.lsl.StreamInlet.time_correction`.
+
+        Notes
+        -----
+        If the outlet did not push any new sample (i.e. if the number of
+        available samples is 0), this function is blocking.
+        """
         timeout = _check_timeout(timeout)
 
         errcode = c_int()
@@ -142,12 +171,14 @@ class StreamInlet:
         handle_error(errcode)
 
         if timestamp:
-            sample = [v for v in self._sample]
             if self._channel_format == cf_string:
-                sample = [v.decode("utf-8") for v in sample]
-            return sample, timestamp
+                sample = [v.decode("utf-8") for v in self._sample]
+            else:
+                sample = np.frombuffer(self._sample, dtype=self._value_type)
         else:
-            return None, None
+            sample = None
+            timestamp = None
+        return sample, timestamp
 
     def pull_chunk(self, timeout=0.0, n_samples=1024):
         # look up a pre-allocated buffer of appropriate length
@@ -189,20 +220,6 @@ class StreamInlet:
         timestamps = [ts_buff[s] for s in range(int(num_samples))]
         return samples, timestamps
 
-    def samples_available(self) -> int:
-        """Query whether samples are currently available on the Outlet.
-
-        Note that it is not a good idea to use this method to determine if a
-        pull call would block. Instead, set the pull timeout to 0.0 or an
-        acceptably low value.
-
-        Returns
-        -------
-        n_samples : int
-            Number of available samples.
-        """
-        return lib.lsl_samples_available(self.obj)
-
     def flush(self) -> int:
         """Drop all queued and not-yet pulled samples.
 
@@ -212,10 +229,6 @@ class StreamInlet:
             Number of dropped samples.
         """
         return lib.lsl_inlet_flush(self.obj)
-
-    def was_clock_reset(self) -> bool:
-        """Query if the clock was potentially reset since the last call."""
-        return bool(lib.lsl_was_clock_reset(self.obj))
 
     # -------------------------------------------------------------------------
     @copy_doc(_BaseStreamInfo.channel_format)
@@ -243,6 +256,22 @@ class StreamInlet:
     def stype(self) -> str:
         return self._stype
 
+    @property
+    def samples_available(self) -> int:
+        """Number of currently available samples on the Outlet.
+
+        Returns
+        -------
+        n_samples : int
+            Number of available samples.
+        """
+        return lib.lsl_samples_available(self.obj)
+
+    @property
+    def was_clock_reset(self) -> bool:
+        """True if the clock was potentially reset since the last call."""
+        return bool(lib.lsl_was_clock_reset(self.obj))
+
     # -------------------------------------------------------------------------
     def get_sinfo(self, timeout: Optional[float] = None) -> _BaseStreamInfo:
         """`~bsl.lsl.StreamInfo` corresponding to this Inlet.
@@ -268,52 +297,6 @@ class StreamInlet:
 
 
 class NewStreamInlet:
-    def pull_sample(self, timeout: Optional[float] = None):
-        """Pull a single sample from the inlet.
-
-        Parameters
-        ----------
-        timeout : float | None
-            Optional timeout (in seconds) of the operation. By default, timeout
-            is disabled.
-
-        Returns
-        -------
-        sample : list | array of shape (n_channels,) | None
-            If the channel format is ``'string^``, returns a list of values for
-            each channel. Else, returns a numpy array of shape
-            ``(n_channels,)``.
-        timestamp : float | None
-            Acquisition timestamp on the remote machine.
-
-        Notes
-        -----
-        To map the timestamp to the local clock of the client machine, add the
-        estimated time correction returned by
-        `~bsl.lsl.StreamInlet.time_correction`.
-        """
-        timeout = _check_timeout(timeout)
-
-        errcode = c_int()
-        timestamp = self._do_pull_sample(
-            self.obj,
-            byref(self._sample),
-            self._n_channels,
-            c_double(timeout),
-            byref(errcode),
-        )
-        handle_error(errcode)
-
-        if timestamp:
-            if self._channel_format == cf_string:
-                sample = [v.decode("utf-8") for v in self._sample]
-            else:
-                sample = np.array(self._sample)
-        else:
-            sample = None
-            timestamp = None
-        return sample, timestamp
-
     def pull_chunk(
         self,
         timeout: Optional[float] = None,

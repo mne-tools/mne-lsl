@@ -70,7 +70,7 @@ class StreamOutlet:
         self._do_push_sample = fmt2push_sample[self._channel_format]
         self._do_push_chunk = fmt2push_chunk[self._channel_format]
         self._value_type = fmt2type[self._channel_format]
-        self._sample_type = self._value_type * self._n_channels
+        self._sample_buffer = self._value_type * self._n_channels
 
     def __del__(self):
         """Destroy a `~bsl.lsl.StreamOutlet`.
@@ -104,7 +104,6 @@ class StreamOutlet:
             defined when creating a `~bsl.lsl.StreamOutlet` takes precedence
             over the ``pushThrough`` flag.
         """
-
         assert isinstance(x, (list, np.ndarray)), "'x' must be a list or array"
         if isinstance(x, np.ndarray) and x.ndim != 1:
             raise ValueError(
@@ -124,7 +123,7 @@ class StreamOutlet:
         handle_error(
             self._do_push_sample(
                 self.obj,
-                self._sample_type(*x),
+                self._sample_buffer(*x),
                 c_double(timestamp),
                 c_int(pushThrough),
             )
