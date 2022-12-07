@@ -37,7 +37,7 @@ class LSLTrigger(BaseTrigger):
             n_channels=1,
             sfreq=0.0,
             channel_format="int8",
-            source_id=name,
+            source_id=f"BSL-{name}",
         )
         self._outlet = StreamOutlet(self._sinfo)
 
