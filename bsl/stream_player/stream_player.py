@@ -419,7 +419,7 @@ class _Streamer:
         sinfo = StreamInfo(
             stream_name,
             n_channels=channel_count,
-            channel_format="float64",
+            dtype="float64",
             sfreq=nominal_srate,
             stype="EEG",
             source_id=stream_name,
