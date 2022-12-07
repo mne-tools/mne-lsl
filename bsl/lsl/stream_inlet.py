@@ -180,44 +180,86 @@ class StreamInlet:
             timestamp = None
         return sample, timestamp
 
-    def pull_chunk(self, timeout=0.0, n_samples=1024):
-        # look up a pre-allocated buffer of appropriate length
-        num_channels = self._n_channels
-        max_values = n_samples * num_channels
+    def pull_chunk(
+        self,
+        timeout: Optional[float] = None,
+        n_samples: int = 1024,
+    ):
+        """Pull a chunk of samples from the inlet.
 
-        if n_samples not in self._buffers:
-            # noinspection PyCallingNonCallable
-            self._buffers[n_samples] = (
-                (self._value_type * max_values)(),
-                (c_double * n_samples)(),
+        Parameters
+        ----------
+        timeout : float | None
+            Optional timeout (in seconds) of the operation. By default, timeout
+            is disabled.
+        n_samples : int
+            Number of samples to return. The function is blocking until this
+            number of samples is available.
+
+        Returns
+        -------
+        samples : list of list | array of shape (n_channels, n_samples) | None
+            If the channel format is ``'string^``, returns a list of list of
+            values for each channel and sample. Else, returns a numpy array of
+            shape ``(n_channels, n_samples)``.
+        timestamps : array of shape (n_samples,) | None
+            Acquisition timestamps on the remote machine.
+        """
+        timeout = _check_timeout(timeout)
+        if not isinstance(n_samples, int):
+            n_samples = int(n_samples)
+        if n_samples <= 0:
+            raise ValueError(
+                "The argument 'n_samples' must be a strictly positive "
+                f"integer. {n_samples} is invalid."
             )
-        data_buff = self._buffers[n_samples][0]
-        ts_buff = self._buffers[n_samples][1]
+
+        # look up or create a pre-allocated buffer of appropriate length
+        max_values = n_samples * self._n_channels
+        if n_samples not in self._buffers:
+            self._buffers[n_samples] = (
+                (self._value_type * max_values)(),  # data
+                (c_double * n_samples)(),  # timestamps
+            )
+        data_buffer = self._buffers[n_samples][0]
+        ts_buffer = self._buffers[n_samples][1]
 
         # read data into it
         errcode = c_int()
-        # noinspection PyCallingNonCallable
         num_elements = self._do_pull_chunk(
             self.obj,
-            byref(data_buff),
-            byref(ts_buff),
+            byref(data_buffer),
+            byref(ts_buffer),
             max_values,
             n_samples,
             c_double(timeout),
             byref(errcode),
         )
         handle_error(errcode)
-        # return results (note: could offer a more efficient format in the
-        # future, e.g., a numpy array)
-        num_samples = num_elements / num_channels
-        samples = [
-            [data_buff[s * num_channels + c] for c in range(num_channels)]
-            for s in range(int(num_samples))
-        ]
+
+        num_samples = num_elements / self._n_channels
         if self._channel_format == cf_string:
-            samples = [[v.decode("utf-8") for v in s] for s in samples]
-            _free_char_p_array_memory(data_buff, max_values)
-        timestamps = [ts_buff[s] for s in range(int(num_samples))]
+            samples = [
+                [
+                    data_buffer[s * self._n_channels + c].decode("utf-8")
+                    for c in range(self._n_channels)
+                ]
+                for s in range(int(num_samples))
+            ]
+            _free_char_p_array_memory(data_buffer, max_values)
+        else:
+            # this is 400-500x faster than the list approach
+            samples = np.frombuffer(
+                data_buffer, dtype=self._value_type
+            ).reshape(self._n_channels, -1)
+
+        # %timeit [ts_buff[s] for s in range(int(num_samples))]
+        # 68.8 µs ± 635 ns per loop
+        # %timeit np.array(ts_buff)
+        # 854 ns ± 2.99 ns per loop
+        # %timeit np.frombuffer(ts_buff)
+        # 192 ns ± 1.11 ns per loop
+        timestamps = np.frombuffer(ts_buffer)  # requires numpy ≥ 1.20
         return samples, timestamps
 
     def flush(self) -> int:
@@ -294,90 +336,3 @@ class StreamInlet:
         )
         handle_error(errcode)
         return _BaseStreamInfo(result)
-
-
-class NewStreamInlet:
-    def pull_chunk(
-        self,
-        timeout: Optional[float] = None,
-        n_samples: int = 1024,
-    ):
-        """Pull a chunk of samples from the inlet.
-
-        Parameters
-        ----------
-        timeout : float | None
-            Optional timeout (in seconds) of the operation. By default, timeout
-            is disabled.
-        n_samples : int
-            Number of samples to return. The function is blocking until this
-            number of samples is available.
-
-        Returns
-        -------
-        samples : list of list | array of shape (n_channels, n_samples) | None
-            If the channel format is ``'string^``, returns a list of list of
-            values for each channel and sample. Else, returns a numpy array of
-            shape ``(n_channels, n_samples)``.
-        timestamps : array of shape (n_samples,) | None
-            Acquisition timestamps on the remote machine.
-        """
-        timeout = _check_timeout(timeout)
-        if not isinstance(n_samples, int):
-            n_samples = int(n_samples)
-        if n_samples <= 0:
-            raise ValueError(
-                "The argument 'n_samples' must be a strictly positive "
-                f"integer. {n_samples} is invalid."
-            )
-        # look up a pre-allocated buffer of appropriate length
-        max_values = n_samples * self._n_channels
-
-        # create buffer
-        if n_samples not in self._buffers:
-            self._buffers[n_samples] = (
-                (self._value_type * max_values)(),  # data
-                (c_double * n_samples)(),  # timestamps
-            )
-        data_buffer = self._buffers[n_samples][0]
-        ts_buffer = self._buffers[n_samples][1]
-
-        # read data into the buffer
-        errcode = c_int()
-        num_elements = self._do_pull_chunk(
-            self.obj,
-            byref(data_buffer),
-            byref(ts_buffer),
-            max_values,
-            n_samples,
-            c_double(timeout),
-            byref(errcode),
-        )
-        handle_error(errcode)
-
-        num_samples = num_elements / self._n_channels
-        if self._channel_format == cf_string:
-            samples = [
-                [
-                    data_buffer[s * self._n_channels + c].decode("utf-8")
-                    for c in range(self._n_channels)
-                ]
-                for s in range(int(num_samples))
-            ]
-            _free_char_p_array_memory(data_buffer, max_values)
-        else:
-            # this is 400-500x faster than the list approach
-            samples = (
-                np.frombuffer(data_buffer, dtype=self._value_type)
-                .reshape(-1, self._n_channels)
-                .T
-            )
-
-        # %timeit [ts_buff[s] for s in range(int(num_samples))]
-        # 68.8 µs ± 635 ns per loop
-        # %timeit np.array(ts_buff)
-        # 854 ns ± 2.99 ns per loop
-        # %timeit np.frombuffer(ts_buff)
-        # 192 ns ± 1.11 ns per loop
-        timestamps = np.frombuffer(ts_buffer)  # requires numpy ≥ 1.20
-        return samples, timestamps

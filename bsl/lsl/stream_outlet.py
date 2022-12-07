@@ -163,7 +163,8 @@ class StreamOutlet:
                     "channel at each time-point. Thus, the shape should be "
                     f"(n_channels, n_samples), {x.shape} is invalid."
                 )
-            data_buffer = (self._value_type * x.size).from_buffer(x)
+            n_samples = x.size
+            data_buffer = (self._value_type * n_samples).from_buffer(x)
         else:
             # we do not check the input, specifically, that all elements in the
             # list are list and that all list have the correct number of
@@ -172,7 +173,8 @@ class StreamOutlet:
                 x[0], list
             ), "'x' must be a list of list or an array"
             x = [v for sample in x for v in sample]  # flatten
-            if len(x) % self._n_channels != 0:  # quick incomplete test
+            n_samples = len(x)
+            if n_samples % self._n_channels != 0:  # quick incomplete test
                 raise ValueError(
                     "The samples to push 'x' must contain one element per "
                     "channel at each time-point. Thus, the shape should be "
@@ -180,14 +182,14 @@ class StreamOutlet:
                 )
             if self._channel_format == cf_string:
                 x = [v.encode("utf-8") for v in x]
-            constructor = self._value_type * len(x)
+            constructor = self._value_type * n_samples
             data_buffer = constructor(*x)
 
         handle_error(
             self._do_push_chunk(
                 self.obj,
                 data_buffer,
-                c_long(len(x)),
+                c_long(n_samples),
                 c_double(timestamp),
                 c_int(pushthrough),
             )
