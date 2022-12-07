@@ -60,16 +60,16 @@ class StreamOutlet:
             raise RuntimeError("The StreamOutlet could not be created.")
 
         # properties from the StreamInfo
-        self._channel_format = sinfo._channel_format
+        self._dtype = sinfo._dtype
         self._name = sinfo.name
         self._n_channels = sinfo.n_channels
         self._sfreq = sinfo.sfreq
         self._stype = sinfo.stype
 
         # outlet properties
-        self._do_push_sample = fmt2push_sample[self._channel_format]
-        self._do_push_chunk = fmt2push_chunk[self._channel_format]
-        self._value_type = fmt2type[self._channel_format]
+        self._do_push_sample = fmt2push_sample[self._dtype]
+        self._do_push_chunk = fmt2push_chunk[self._dtype]
+        self._value_type = fmt2type[self._dtype]
         self._sample_buffer = self._value_type * self._n_channels
 
     def __del__(self):
@@ -118,7 +118,7 @@ class StreamOutlet:
                 "is invalid."
             )
 
-        if self._channel_format == cf_string:
+        if self._dtype == cf_string:
             x = [v.encode("utf-8") for v in x]
         handle_error(
             self._do_push_sample(
@@ -177,7 +177,7 @@ class StreamOutlet:
                     "channel at each time-point. Thus, the shape should be "
                     "(n_channels, n_samples)."
                 )
-            if self._channel_format == cf_string:
+            if self._dtype == cf_string:
                 x = [v.encode("utf-8") for v in x]
             constructor = self._value_type * n_samples
             data_buffer = constructor(*x)
@@ -214,10 +214,10 @@ class StreamOutlet:
         return bool(lib.lsl_wait_for_consumers(self.obj, c_double(timeout)))
 
     # -------------------------------------------------------------------------
-    @copy_doc(_BaseStreamInfo.channel_format)
+    @copy_doc(_BaseStreamInfo.dtype)
     @property
-    def channel_format(self) -> str:
-        return fmt2string[self._channel_format]
+    def dtype(self) -> str:
+        return fmt2string[self._dtype]
 
     @copy_doc(_BaseStreamInfo.n_channels)
     @property

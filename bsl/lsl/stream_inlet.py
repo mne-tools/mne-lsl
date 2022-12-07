@@ -100,16 +100,16 @@ class StreamInlet:
             )
 
         # properties from the StreamInfo
-        self._channel_format = sinfo._channel_format
+        self._dtype = sinfo._dtype
         self._name = sinfo.name
         self._n_channels = sinfo.n_channels
         self._sfreq = sinfo.sfreq
         self._stype = sinfo.stype
 
         # inlet properties
-        self._do_pull_sample = fmt2pull_sample[self._channel_format]
-        self._do_pull_chunk = fmt2pull_chunk[self._channel_format]
-        self._value_type = fmt2type[self._channel_format]
+        self._do_pull_sample = fmt2pull_sample[self._dtype]
+        self._do_pull_chunk = fmt2pull_chunk[self._dtype]
+        self._value_type = fmt2type[self._dtype]
         self._sample_type = self._value_type * self._n_channels
         self._sample = self._sample_type()
         self._buffers = {}
@@ -228,7 +228,7 @@ class StreamInlet:
         handle_error(errcode)
 
         if timestamp:
-            if self._channel_format == cf_string:
+            if self._dtype == cf_string:
                 sample = [v.decode("utf-8") for v in self._sample]
             else:
                 sample = np.frombuffer(self._sample, dtype=self._value_type)
@@ -296,7 +296,7 @@ class StreamInlet:
         handle_error(errcode)
 
         num_samples = int(num_elements / self._n_channels)
-        if self._channel_format == cf_string:
+        if self._dtype == cf_string:
             samples = [
                 [
                     data_buffer[s + c * num_samples].decode("utf-8")
@@ -331,10 +331,10 @@ class StreamInlet:
         return lib.lsl_inlet_flush(self.obj)
 
     # -------------------------------------------------------------------------
-    @copy_doc(_BaseStreamInfo.channel_format)
+    @copy_doc(_BaseStreamInfo.dtype)
     @property
-    def channel_format(self) -> str:
-        return fmt2string[self._channel_format]
+    def dtype(self) -> str:
+        return fmt2string[self._dtype]
 
     @copy_doc(_BaseStreamInfo.n_channels)
     @property

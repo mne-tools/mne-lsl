@@ -24,7 +24,7 @@ class _BaseStreamInfo:
             raise RuntimeError(
                 "The StreamInfo could not be created from the description."
             )
-        self._channel_format = lib.lsl_get_channel_format(self.obj)
+        self._dtype = lib.lsl_get_channel_format(self.obj)
 
     def __del__(self):
         """Destroy a `~bsl.lsl.StreamInfo`."""
@@ -35,12 +35,12 @@ class _BaseStreamInfo:
 
     # -- Core information, assigned at construction ---------------------------
     @property
-    def channel_format(self) -> str:
+    def dtype(self) -> str:
         """Channel format of a stream.
 
         All channels in a stream have the same format.
         """
-        return fmt2string[self._channel_format]
+        return fmt2string[self._dtype]
 
     @property
     def name(self) -> str:
@@ -201,7 +201,7 @@ class StreamInfo(_BaseStreamInfo):
         Also called ``nominal_srate``, represents the sampling rate (in Hz) as
         advertised by the data source. If the sampling rate is irregular (e.g.
         for a trigger stream), the sampling rate is set to ``0``.
-    channel_format : str
+    dtype : str
         Format of each channel. If your channels have different formats,
         consider supplying multiple streams or use the largest type that can
         hold them all.
@@ -220,7 +220,7 @@ class StreamInfo(_BaseStreamInfo):
         stype: str,
         n_channels: int,
         sfreq: float,
-        channel_format: str,
+        dtype: str,
         source_id: str,
     ):
         _check_type(name, (str,), "name")
@@ -239,20 +239,20 @@ class StreamInfo(_BaseStreamInfo):
             c_char_p(str.encode(stype)),
             n_channels,
             c_double(sfreq),
-            StreamInfo._string2fmt(channel_format),
+            StreamInfo._string2fmt(dtype),
             c_char_p(str.encode(source_id)),
         )
         super().__init__(obj)
 
     # -------------------------------------------------------------------------
     @staticmethod
-    def _string2fmt(channel_format: Union[int, str]) -> int:
+    def _string2fmt(dtype: Union[int, str]) -> int:
         """Convert a string format to its integer value."""
-        _check_type(channel_format, (str, "int"), "channel_format")
-        if isinstance(channel_format, str):
-            channel_format = channel_format.lower()
-            _check_value(channel_format, string2fmt, "channel_format")
-            channel_format = string2fmt[channel_format]
+        _check_type(dtype, (str, "int"), "dtype")
+        if isinstance(dtype, str):
+            dtype = dtype.lower()
+            _check_value(dtype, string2fmt, "dtype")
+            dtype = string2fmt[dtype]
         else:
-            _check_value(channel_format, string2fmt.values(), "channel_format")
-        return channel_format
+            _check_value(dtype, string2fmt.values(), "dtype")
+        return dtype
