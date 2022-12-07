@@ -39,16 +39,14 @@ class _Stream(ABC):
 
         if self._sample_rate is not None:
             samples_per_sec = self._sample_rate
-            # max_buflen: seconds
             self._inlet = StreamInlet(
-                streamInfo, max_buflen=math.ceil(self._lsl_bufsize)
+                streamInfo, max_buffered=math.ceil(self._lsl_bufsize)
             )
         else:
             samples_per_sec = 100
-            # max_buflen: samples x100
             self._inlet = StreamInlet(
                 streamInfo,
-                max_buflen=math.ceil(self._lsl_bufsize * samples_per_sec),
+                max_buffered=math.ceil(self._lsl_bufsize * samples_per_sec),
             )
         self._inlet.open_stream()
 

@@ -43,19 +43,13 @@ def test_stream_player(caplog):
 
     # Test that data is being streamed
     idx = [stream.name for stream in streams].index(stream_name)
-    inlet = StreamInlet(streams[idx], max_buflen=int(raw.info["sfreq"]))
+    inlet = StreamInlet(streams[idx], max_buffered=int(raw.info["sfreq"]))
     inlet.open_stream()
     time.sleep(0.1)
     chunk, tslist = inlet.pull_chunk(
         timeout=0.0, n_samples=int(raw.info["sfreq"])
     )
-    assert len(chunk) == len(tslist)
-    assert 0 < len(chunk) < int(raw.info["sfreq"])
-    time.sleep(1)
-    chunk, tslist = inlet.pull_chunk(
-        timeout=0.0, n_samples=int(raw.info["sfreq"])
-    )
-    assert len(chunk) == len(tslist) == int(raw.info["sfreq"])
+    assert chunk.shape[1] == tslist.size == int(raw.info["sfreq"])
 
     # Test stop
     caplog.clear()
