@@ -135,26 +135,9 @@ except Exception:  # if not available
 # ---------------------
 # Post processing flags
 # ---------------------
-# No automatic post-processing; return the ground-truth time stamps for manual
-# post-processing.
-proc_none = 0
-# Perform automatic clock synchronization; equivalent to manually adding the
-# time_correction().
-proc_clocksync = 1
-# Remove jitter from time stamps using a smoothing algorithm to the received
-# time stamps.
-proc_dejitter = 2
-# Force the time-stamps to be monotonically ascending. Only makes sense if
-# timestamps are dejittered.
-proc_monotonize = 4
-# Post-processing is thread-safe (same inlet can be read from by multiple
-# threads).
-proc_threadsafe = 8
-# Bitwise OR operations
-proc_ALL = (
-    proc_none
-    | proc_clocksync
-    | proc_dejitter
-    | proc_monotonize
-    | proc_threadsafe
-)
+post_processing_flags = {
+    "clocksync": 1,
+    "dejitter": 2,
+    "monotize": 4,
+    "threadsafe": 8,
+}

@@ -1,9 +1,10 @@
 from ctypes import byref, c_double, c_int, c_void_p
-from typing import Optional
+from functools import reduce
+from typing import List, Optional, Union
 
 import numpy as np
 
-from ..utils._checks import _check_type
+from ..utils._checks import _check_type, _check_value
 from ..utils._docs import copy_doc
 from .constants import (
     cf_string,
@@ -11,6 +12,7 @@ from .constants import (
     fmt2pull_sample,
     fmt2string,
     fmt2type,
+    post_processing_flags,
 )
 from .load_liblsl import lib
 from .stream_info import _BaseStreamInfo
@@ -18,26 +20,81 @@ from .utils import _check_timeout, _free_char_p_array_memory, handle_error
 
 
 class StreamInlet:
-    """An inlet to retrieve data and metadata on the network."""
+    """An inlet to retrieve data and metadata on the network.
+
+    Parameters
+    ----------
+    sinfo : StreamInfo
+        Description of the stream to connect to.
+    chunk_size : int ``≥ 1`` | ``0``
+        The desired chunk granularity in samples. By default, the
+        ``chunk_size`` defined by the sender (outlet) is used.
+    max_buffered : float ``≥ 0``
+        The maximum amount of data to buffer in the Outlet.
+        The number of samples buffered is ``max_buffered * 100`` if the
+        sampling rate is irregular, else it's ``max_buffered`` seconds.
+    recover : bool
+        Attempt to silently recover lost streams that are recoverable (requires
+        a ``source_id`` to be specified in the `~bsl.lsl.StreamInfo`).
+    processing_flags : list of str | ``'all'`` | None
+        Set the post-processing options. By default, post-processing is
+        disabled. Any combination of the processing flags is valid. The
+        available flags are:
+        - ``'clocksync'``: Automatic clock synchronization, equivalent to
+          manually adding the estimated `~bsl.lsl.StreamInlet.time_correction`.
+        - ``'dejitter'``: Remove jitter on the received timestamps with a
+          smoothing algorithm.
+        - ``'monotize'``: Force the timestamps to be monotically ascending.
+          This option should not be enable if ``'dejitter'`` is not enabled.
+        - ``'threadsafe'``: Post-processing is thread-safe, thus the same
+          inlet can be read from multiple threads.
+    """
 
     def __init__(
         self,
         sinfo: _BaseStreamInfo,
-        max_buflen: int = 360,
-        max_chunklen: int = 0,
+        chunk_size: int = 0,
+        max_buffered: float = 360,
         recover: bool = True,
-        processing_flags=0,
+        processing_flags: Optional[Union[str, List[str]]] = None,
     ):
         _check_type(sinfo, (_BaseStreamInfo,), "sinfo")
+        _check_type(chunk_size, ("int",), "chunk_size")
+        if chunk_size < 0:
+            raise ValueError(
+                "The argument 'chunk_size' must contain a positive integer. "
+                f"{chunk_size} is invalid."
+            )
+        _check_type(max_buffered, ("numeric",), "max_buffered")
+        if max_buffered < 0:
+            raise ValueError(
+                "The argument 'max_buffered' must contain a positive number. "
+                f"{max_buffered} is invalid."
+            )
+        _check_type(recover, (bool,), "recover")
+
         self.obj = lib.lsl_create_inlet(
-            sinfo.obj, max_buflen, max_chunklen, recover
+            sinfo.obj, max_buffered, chunk_size, recover
         )
         self.obj = c_void_p(self.obj)
         if not self.obj:
             raise RuntimeError("The StreamInlet could not be created.")
 
         # set preprocessing of the inlet
-        if processing_flags > 0:
+        if processing_flags is not None:
+            _check_type(processing_flags, (list, str), "processing_flags")
+            if isinstance(processing_flags, str):
+                _check_value(processing_flags, ("all",), "processing_flags")
+                processing_flags = reduce(
+                    lambda x, y: x | y, post_processing_flags.values()
+                )
+            else:
+                for flag in processing_flags:
+                    _check_type(flag, (str,), "processing_flag")
+                    _check_value(flag, post_processing_flags, flag)
+                # bitwise OR between the flags
+                processing_flags = reduce(lambda x, y: x | y, processing_flags)
+            assert processing_flags > 0  # sanity-check
             handle_error(
                 lib.lsl_set_postprocessing(self.obj, processing_flags)
             )
