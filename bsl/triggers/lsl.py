@@ -43,7 +43,13 @@ class LSLTrigger(BaseTrigger):
 
     @copy_doc(BaseTrigger.signal)
     def signal(self, value: int) -> None:
-        _check_type(value, ("int",), item_name="value")
+        try:
+            value = int(value)
+        except TypeError:
+            raise TypeError(
+                "The argument 'value' of an LSL Trigger must be an integer "
+                "between 1 and 127 included."
+            )
         if not (0 < value < 128):
             raise ValueError(
                 "The argument 'value' of an LSL Trigger must be an integer "
@@ -54,8 +60,8 @@ class LSLTrigger(BaseTrigger):
 
     @copy_doc(BaseTrigger._set_data)
     def _set_data(self, value: int) -> None:
-        super()._set_data(value)
         self._outlet.push_sample([value])
+        super()._set_data(value)
 
     def close(self) -> None:
         """Close the LSL outlet."""
