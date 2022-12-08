@@ -145,6 +145,9 @@ def test_pull_numerical_chunk(dtype_str, dtype):
         data, ts = inlet.pull_chunk(n_samples=3)
         assert isinstance(data, np.ndarray)
         assert np.allclose(x_arr, data)
+        assert inlet.samples_available == 0
+        data, ts = inlet.pull_chunk(n_samples=1)
+        assert data.size == ts.size == 0
         inlet.close_stream()
     except Exception as error:
         raise error

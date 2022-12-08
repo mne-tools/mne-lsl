@@ -239,7 +239,7 @@ class StreamInlet:
 
     def pull_chunk(
         self,
-        timeout: Optional[float] = None,
+        timeout: Optional[float] = 0.,
         n_samples: int = 1024,
     ):
         """Pull a chunk of samples from the inlet.
@@ -247,11 +247,12 @@ class StreamInlet:
         Parameters
         ----------
         timeout : float | None
-            Optional timeout (in seconds) of the operation. By default, timeout
-            is disabled.
+            Optional timeout (in seconds) of the operation. None correspond to
+            a very large value, effectively disabling the timeout. See notes
+            for additional details.
         n_samples : int
             Number of samples to return. The function is blocking until this
-            number of samples is available.
+            number of samples is available. See notes for additional details.
 
         Returns
         -------
@@ -262,6 +263,15 @@ class StreamInlet:
             ``(n_channels, n_samples)``.
         timestamps : array of shape (n_samples,) | None
             Acquisition timestamps on the remote machine.
+
+        Notes
+        -----
+        The argument ``timeout`` and ``n_samples`` control the blockin behavior
+        of the pull operation. If the number of available sample is inferior to
+        ``n_samples``, the pull operation is blocking until ``timeout`` is
+        reached. Thus, to return all the available samples at a given time,
+        regardless of the number of samples requested, ``timeout`` must be set
+        to ``0``.
         """
         timeout = _check_timeout(timeout)
         if not isinstance(n_samples, int):
@@ -271,6 +281,11 @@ class StreamInlet:
                 "The argument 'n_samples' must be a strictly positive "
                 f"integer. {n_samples} is invalid."
             )
+        available_samples = self.samples_available
+        if available_samples == 0:
+            return np.empty((5, 0), dtype=self._value_type), np.empty((0,))
+        elif available_samples < n_samples:
+            n_samples = available_samples
 
         # look up or create a pre-allocated buffer of appropriate length
         max_values = n_samples * self._n_channels
@@ -365,6 +380,7 @@ class StreamInlet:
         n_samples : int
             Number of available samples.
         """
+        # 354 ns ± 6.04 ns per loop
         return lib.lsl_samples_available(self.obj)
 
     @property
