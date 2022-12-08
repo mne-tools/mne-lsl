@@ -110,8 +110,7 @@ class StreamInlet:
         self._do_pull_sample = fmt2pull_sample[self._dtype]
         self._do_pull_chunk = fmt2pull_chunk[self._dtype]
         self._value_type = fmt2type[self._dtype]
-        self._sample_type = self._value_type * self._n_channels
-        self._sample = self._sample_type()
+        self._buffer_sample = (self._value_type * self._n_channels)()
         self._buffers = {}
 
     def __del__(self):
@@ -190,12 +189,16 @@ class StreamInlet:
         handle_error(errcode)
         return result
 
-    def pull_sample(self, timeout: Optional[float] = None):
+    def pull_sample(self, timeout: Optional[float] = 0.0):
         """Pull a single sample from the inlet.
 
         Parameters
         ----------
         timeout : float | None
+            Optional timeout (in seconds) of the operation. None correspond to
+            a very large value, effectively disabling the timeout. ``0.`` makes
+            this function non-blocking even if no sample is available. See
+            notes for additional details.
             Optional timeout (in seconds) of the operation. By default, timeout
             is disabled.
 
@@ -209,18 +212,19 @@ class StreamInlet:
             Acquisition timestamp on the remote machine. To map the timestamp
             to the local clock of the client machine, add the estimated time
             correction return by `~bsl.lsl.StreamInlet.time_correction`.
+            None if no sample was retrieved.
 
         Notes
         -----
-        If the outlet did not push any new sample (i.e. if the number of
-        available samples is 0), this function is blocking.
+        Note that if ``timeout`` is reached and no sample is available, empty
+        ``sample`` arrays is returned.
         """
         timeout = _check_timeout(timeout)
 
         errcode = c_int()
         timestamp = self._do_pull_sample(
             self.obj,
-            byref(self._sample),
+            byref(self._buffer_sample),
             self._n_channels,
             c_double(timeout),
             byref(errcode),
@@ -229,9 +233,11 @@ class StreamInlet:
 
         if timestamp:
             if self._dtype == cf_string:
-                sample = [v.decode("utf-8") for v in self._sample]
+                sample = [v.decode("utf-8") for v in self._buffer_sample]
             else:
-                sample = np.frombuffer(self._sample, dtype=self._value_type)
+                sample = np.frombuffer(
+                    self._buffer_sample, dtype=self._value_type
+                )
         else:
             sample = None
             timestamp = None
@@ -239,7 +245,7 @@ class StreamInlet:
 
     def pull_chunk(
         self,
-        timeout: Optional[float] = 0.,
+        timeout: Optional[float] = 0.0,
         n_samples: int = 1024,
     ):
         """Pull a chunk of samples from the inlet.
@@ -248,8 +254,9 @@ class StreamInlet:
         ----------
         timeout : float | None
             Optional timeout (in seconds) of the operation. None correspond to
-            a very large value, effectively disabling the timeout. See notes
-            for additional details.
+            a very large value, effectively disabling the timeout. ``0.`` makes
+            this function non-blocking even if no sample is available. See
+            notes for additional details.
         n_samples : int
             Number of samples to return. The function is blocking until this
             number of samples is available. See notes for additional details.
@@ -272,6 +279,9 @@ class StreamInlet:
         reached. Thus, to return all the available samples at a given time,
         regardless of the number of samples requested, ``timeout`` must be set
         to ``0``.
+
+        Note that if ``timeout`` is reached and no sample is available, empty
+        ``samples`` and ``timestamps`` arrays are returned.
         """
         timeout = _check_timeout(timeout)
         if not isinstance(n_samples, int):
@@ -281,9 +291,13 @@ class StreamInlet:
                 "The argument 'n_samples' must be a strictly positive "
                 f"integer. {n_samples} is invalid."
             )
+        # TODO: That's not good because we can not assume the number of final
+        # samples BEFORE the timeout.
         available_samples = self.samples_available
         if available_samples == 0:
-            return np.empty((5, 0), dtype=self._value_type), np.empty((0,))
+            samples = np.empty((self._n_channels, 0), dtype=self._value_type)
+            timestamps = np.empty((0,))
+            return samples, timestamps
         elif available_samples < n_samples:
             n_samples = available_samples
 

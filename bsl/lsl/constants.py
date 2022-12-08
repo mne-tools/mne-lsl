@@ -65,6 +65,17 @@ fmt2type = [
     c_longlong,
 ]
 
+_string2fmt = {
+    "float32": c_float,
+    "float64": c_double,
+    "string": c_char_p,
+    "int8": c_byte,
+    "int16": c_short,
+    "int32": c_int,
+    "int64": c_longlong,
+}
+_fmt2string = {value: key for key, value in _string2fmt.items()}
+
 # ------------------------------
 # Handle int64 incompatibilities
 # ------------------------------
