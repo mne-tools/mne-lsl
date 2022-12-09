@@ -58,9 +58,9 @@ else:
 
     pull_sample_int64 = push_chunk_int64 = pull_chunk_int64 = push_sample_int64
 
-# --------------------
-# Push/Pull properties
-# --------------------
+# -------------------
+# Push/Pull functions
+# -------------------
 
 fmt2push_sample = {
     c_float: lib.lsl_push_sample_ftp,
