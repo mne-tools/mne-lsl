@@ -145,7 +145,7 @@ class _Stream(ABC):
             while self._watchdog.sec() < self._blocking_time:
                 if len(tslist) == 0:
                     chunk, tslist = self._inlet.pull_chunk(
-                        timeout=0.0, n_samples=self._lsl_bufsize
+                        timeout=0.0, max_samples=self._lsl_bufsize
                     )
                     if not self._blocking and len(tslist) == 0:
                         received = True

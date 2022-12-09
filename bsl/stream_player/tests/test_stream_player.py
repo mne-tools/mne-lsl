@@ -47,7 +47,7 @@ def test_stream_player(caplog):
     inlet.open_stream()
     time.sleep(0.1)
     chunk, tslist = inlet.pull_chunk(
-        timeout=0.0, n_samples=int(raw.info["sfreq"])
+        timeout=0.0, max_samples=int(raw.info["sfreq"])
     )
     assert chunk.shape[1] == tslist.size == int(raw.info["sfreq"])
 

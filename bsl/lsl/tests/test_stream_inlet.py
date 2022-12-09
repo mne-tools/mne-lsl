@@ -144,15 +144,15 @@ def test_pull_numerical_chunk(dtype_str, dtype):
         inlet.open_stream()
         time.sleep(0.1)
         outlet.push_chunk(x_arr)
-        data, ts = inlet.pull_chunk(n_samples=3, timeout=1)
+        data, ts = inlet.pull_chunk(max_samples=3, timeout=1)
         assert isinstance(data, np.ndarray)
         assert np.allclose(x_arr, data)
         outlet.push_chunk(x)
-        data, ts = inlet.pull_chunk(n_samples=3, timeout=1)
+        data, ts = inlet.pull_chunk(max_samples=3, timeout=1)
         assert isinstance(data, np.ndarray)
         assert np.allclose(x_arr, data)
         assert inlet.samples_available == 0
-        data, ts = inlet.pull_chunk(n_samples=1, timeout=0)
+        data, ts = inlet.pull_chunk(max_samples=1, timeout=0)
         assert data.size == ts.size == 0
         inlet.close_stream()
     except Exception as error:
@@ -173,11 +173,11 @@ def test_pull_str_chunk():
         inlet.open_stream()
         time.sleep(0.1)
         outlet.push_chunk(x)
-        data, ts = inlet.pull_chunk(n_samples=3, timeout=1)
+        data, ts = inlet.pull_chunk(max_samples=3, timeout=1)
         assert isinstance(data, list)
         assert all(isinstance(elt, list) for elt in data)
         assert x == data
-        data, ts = inlet.pull_chunk(n_samples=1, timeout=0)
+        data, ts = inlet.pull_chunk(max_samples=1, timeout=0)
         assert data.size == ts.size == 0
         inlet.close_stream()
     except Exception as error:

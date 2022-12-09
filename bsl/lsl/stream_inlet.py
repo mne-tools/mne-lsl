@@ -110,8 +110,8 @@ class StreamInlet:
         self._do_pull_sample = fmt2pull_sample[self._dtype]
         self._do_pull_chunk = fmt2pull_chunk[self._dtype]
         self._value_type = fmt2type[self._dtype]
-        self._buffer_sample = (self._value_type * self._n_channels)()
-        self._buffers = {}
+        self._buffer_data = {1: (self._value_type * self._n_channels)()}
+        self._buffer_ts = {}
 
     def __del__(self):
         """Destroy a `~bsl.lsl.StreamInlet`.
@@ -224,7 +224,7 @@ class StreamInlet:
         errcode = c_int()
         timestamp = self._do_pull_sample(
             self.obj,
-            byref(self._buffer_sample),
+            byref(self._buffer_data[1]),
             self._n_channels,
             c_double(timeout),
             byref(errcode),
@@ -233,11 +233,12 @@ class StreamInlet:
 
         if timestamp:
             if self._dtype == cf_string:
-                sample = [v.decode("utf-8") for v in self._buffer_sample]
+                sample = [v.decode("utf-8") for v in self._buffer_data[1]]
             else:
                 sample = np.frombuffer(
-                    self._buffer_sample, dtype=self._value_type
+                    self._buffer_data[1], dtype=self._value_type
                 )
+            _free_char_p_array_memory(self._buffer_data[1])
         else:
             sample = None
             timestamp = None
@@ -246,7 +247,7 @@ class StreamInlet:
     def pull_chunk(
         self,
         timeout: Optional[float] = 0.0,
-        n_samples: int = 1024,
+        max_samples: int = 1024,
     ):
         """Pull a chunk of samples from the inlet.
 
@@ -257,8 +258,8 @@ class StreamInlet:
             a very large value, effectively disabling the timeout. ``0.`` makes
             this function non-blocking even if no sample is available. See
             notes for additional details.
-        n_samples : int
-            Number of samples to return. The function is blocking until this
+        max_samples : int
+            Maximum umber of samples to return. The function is blocking until this
             number of samples is available. See notes for additional details.
 
         Returns
@@ -273,72 +274,63 @@ class StreamInlet:
 
         Notes
         -----
-        The argument ``timeout`` and ``n_samples`` control the blockin behavior
-        of the pull operation. If the number of available sample is inferior to
-        ``n_samples``, the pull operation is blocking until ``timeout`` is
-        reached. Thus, to return all the available samples at a given time,
-        regardless of the number of samples requested, ``timeout`` must be set
-        to ``0``.
+        The argument ``timeout`` and ``max_samples`` control the blockin
+        behavior of the pull operation. If the number of available sample is
+        inferior to ``n_samples``, the pull operation is blocking until
+        ``timeout`` is reached. Thus, to return all the available samples at a
+        given time, regardless of the number of samples requested, ``timeout``
+        must be set to ``0``.
 
         Note that if ``timeout`` is reached and no sample is available, empty
         ``samples`` and ``timestamps`` arrays are returned.
         """
         timeout = _check_timeout(timeout)
-        if not isinstance(n_samples, int):
-            n_samples = int(n_samples)
-        if n_samples <= 0:
+        if not isinstance(max_samples, int):
+            max_samples = int(max_samples)
+        if max_samples <= 0:
             raise ValueError(
-                "The argument 'n_samples' must be a strictly positive "
-                f"integer. {n_samples} is invalid."
+                "The argument 'max_samples' must be a strictly positive "
+                f"integer. {max_samples} is invalid."
             )
-        # TODO: That's not good because we can not assume the number of final
-        # samples BEFORE the timeout.
-        available_samples = self.samples_available
-        if available_samples == 0:
-            samples = np.empty((self._n_channels, 0), dtype=self._value_type)
-            timestamps = np.empty((0,))
-            return samples, timestamps
-        elif available_samples < n_samples:
-            n_samples = available_samples
 
-        # look up or create a pre-allocated buffer of appropriate length
-        max_values = n_samples * self._n_channels
-        if n_samples not in self._buffers:
-            self._buffers[n_samples] = (
-                (self._value_type * max_values)(),  # data
-                (c_double * n_samples)(),  # timestamps
-            )
-        data_buffer = self._buffers[n_samples][0]
-        ts_buffer = self._buffers[n_samples][1]
+        # look up or create a pre-allocated buffers of appropriate length
+        max_samples_data = max_samples * self._n_channels
+        if max_samples_data not in self._buffer_data:
+            self._buffer_data[max_samples_data] = (self._value_type * max_samples_data)()
+        if max_samples not in self._buffer_ts:
+            self._buffer_ts[max_samples] = (c_double * max_samples)()
+
+        data_buffer = self._buffer_data[max_samples_data]
+        ts_buffer = self._buffer_ts[max_samples]
 
         # read data into it
         errcode = c_int()
-        num_elements = self._do_pull_chunk(
+        n_samples_data = self._do_pull_chunk(
             self.obj,
             byref(data_buffer),
             byref(ts_buffer),
-            max_values,
-            n_samples,
+            max_samples_data,
+            max_samples,
             c_double(timeout),
             byref(errcode),
         )
         handle_error(errcode)
 
-        num_samples = int(num_elements / self._n_channels)
+        n_samples = int(n_samples_data / self._n_channels)
         if self._dtype == cf_string:
             samples = [
                 [
-                    data_buffer[s + c * num_samples].decode("utf-8")
-                    for s in range(num_samples)
+                    data_buffer[s + c * n_samples].decode("utf-8")
+                    for s in range(n_samples)
                 ]
                 for c in range(self._n_channels)
             ]
-            _free_char_p_array_memory(data_buffer, max_values)
+            _free_char_p_array_memory(data_buffer)
         else:
             # this is 400-500x faster than the list approach
             samples = np.frombuffer(
                 data_buffer, dtype=self._value_type
-            ).reshape(self._n_channels, -1)
+            )[:n_samples_data].reshape(self._n_channels, -1)
 
         # %timeit [ts_buff[s] for s in range(int(num_samples))]
         # 68.8 µs ± 635 ns per loop
@@ -346,7 +338,8 @@ class StreamInlet:
         # 854 ns ± 2.99 ns per loop
         # %timeit np.frombuffer(ts_buff)
         # 192 ns ± 1.11 ns per loop
-        timestamps = np.frombuffer(ts_buffer)  # requires numpy ≥ 1.20
+        # requires numpy ≥ 1.20
+        timestamps = np.frombuffer(ts_buffer)[:n_samples]
         return samples, timestamps
 
     def flush(self) -> int:
