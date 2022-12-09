@@ -1,4 +1,4 @@
-from ctypes import c_double, c_int, c_long, c_void_p
+from ctypes import c_char_p, c_double, c_int, c_long, c_void_p
 from typing import List, Optional, Union
 
 import numpy as np
@@ -6,13 +6,7 @@ from numpy.typing import NDArray
 
 from ..utils._checks import _check_type
 from ..utils._docs import copy_doc
-from .constants import (
-    cf_string,
-    fmt2push_chunk,
-    fmt2push_sample,
-    fmt2string,
-    fmt2type,
-)
+from .constants import fmt2idx, fmt2push_chunk, fmt2push_sample, fmt2string
 from .load_liblsl import lib
 from .stream_info import _BaseStreamInfo
 from .utils import _check_timeout, handle_error
@@ -67,10 +61,9 @@ class StreamOutlet:
         self._stype = sinfo.stype
 
         # outlet properties
-        self._do_push_sample = fmt2push_sample[self._dtype]
-        self._do_push_chunk = fmt2push_chunk[self._dtype]
-        self._value_type = fmt2type[self._dtype]
-        self._buffer_sample = self._value_type * self._n_channels
+        self._do_push_sample = fmt2push_sample[fmt2idx[self._dtype]]
+        self._do_push_chunk = fmt2push_chunk[fmt2idx[self._dtype]]
+        self._buffer_sample = self._dtype * self._n_channels
 
     def __del__(self):
         """Destroy a `~bsl.lsl.StreamOutlet`.
@@ -118,7 +111,7 @@ class StreamOutlet:
                 "is invalid."
             )
 
-        if self._dtype == cf_string:
+        if self._dtype == c_char_p:
             x = [v.encode("utf-8") for v in x]
         handle_error(
             self._do_push_sample(
@@ -165,7 +158,7 @@ class StreamOutlet:
                 )
             x = x if x.flags["C_CONTIGUOUS"] else np.ascontiguousarray(x)
             n_samples = x.size
-            data_buffer = (self._value_type * n_samples).from_buffer(x)
+            data_buffer = (self._dtype * n_samples).from_buffer(x)
         else:
             # we do not check the input, specifically, that all elements in the
             # list are list and that all list have the correct number of
@@ -178,10 +171,9 @@ class StreamOutlet:
                     "channel at each time-point. Thus, the shape should be "
                     "(n_samples, n_channels)."
                 )
-            if self._dtype == cf_string:
+            if self._dtype == c_char_p:
                 x = [v.encode("utf-8") for v in x]
-            constructor = self._value_type * n_samples
-            data_buffer = constructor(*x)
+            data_buffer = (self._dtype * n_samples)(*x)
 
         handle_error(
             self._do_push_chunk(

@@ -1,8 +1,7 @@
 from ctypes import c_char_p, c_double, c_void_p
-from typing import Union
 
 from ..utils._checks import _check_type, _check_value
-from .constants import fmt2string, string2fmt
+from .constants import fmt2idx, fmt2string, idx2fmt, string2fmt
 from .load_liblsl import lib
 from .utils import XMLElement
 
@@ -24,7 +23,7 @@ class _BaseStreamInfo:
             raise RuntimeError(
                 "The StreamInfo could not be created from the description."
             )
-        self._dtype = lib.lsl_get_channel_format(self._obj)
+        self._dtype = idx2fmt[lib.lsl_get_channel_format(self._obj)]
 
     def __del__(self):
         """Destroy a `~bsl.lsl.StreamInfo`."""
@@ -239,20 +238,22 @@ class StreamInfo(_BaseStreamInfo):
             c_char_p(str.encode(stype)),
             n_channels,
             c_double(sfreq),
-            StreamInfo._string2fmt(dtype),
+            StreamInfo._string2idxfmt(dtype),
             c_char_p(str.encode(source_id)),
         )
         super().__init__(obj)
 
     # -------------------------------------------------------------------------
     @staticmethod
-    def _string2fmt(dtype: Union[int, str]) -> int:
-        """Convert a string format to its integer value."""
+    def _string2idxfmt(dtype) -> int:
+        """Convert a string format to its LSL integer value."""
+        if dtype in fmt2idx:
+            return fmt2idx[dtype]
         _check_type(dtype, (str, "int"), "dtype")
         if isinstance(dtype, str):
             dtype = dtype.lower()
             _check_value(dtype, string2fmt, "dtype")
-            dtype = string2fmt[dtype]
+            dtype = fmt2idx[string2fmt[dtype]]
         else:
-            _check_value(dtype, string2fmt.values(), "dtype")
+            _check_value(dtype, idx2fmt, "dtype")
         return dtype

@@ -1,4 +1,4 @@
-from ctypes import byref, c_double, c_int, c_void_p
+from ctypes import byref, c_char_p, c_double, c_int, c_void_p
 from functools import reduce
 from typing import List, Optional, Union
 
@@ -7,11 +7,10 @@ import numpy as np
 from ..utils._checks import _check_type, _check_value
 from ..utils._docs import copy_doc
 from .constants import (
-    cf_string,
+    fmt2idx,
     fmt2pull_chunk,
     fmt2pull_sample,
     fmt2string,
-    fmt2type,
     post_processing_flags,
 )
 from .load_liblsl import lib
@@ -107,10 +106,9 @@ class StreamInlet:
         self._stype = sinfo.stype
 
         # inlet properties
-        self._do_pull_sample = fmt2pull_sample[self._dtype]
-        self._do_pull_chunk = fmt2pull_chunk[self._dtype]
-        self._value_type = fmt2type[self._dtype]
-        self._buffer_data = {1: (self._value_type * self._n_channels)()}
+        self._do_pull_sample = fmt2pull_sample[fmt2idx[self._dtype]]
+        self._do_pull_chunk = fmt2pull_chunk[fmt2idx[self._dtype]]
+        self._buffer_data = {1: (self._dtype * self._n_channels)()}
         self._buffer_ts = {}
 
     def __del__(self):
@@ -232,13 +230,11 @@ class StreamInlet:
         handle_error(errcode)
 
         if timestamp:
-            if self._dtype == cf_string:
+            if self._dtype == c_char_p:
                 sample = [v.decode("utf-8") for v in self._buffer_data[1]]
                 _free_char_p_array_memory(self._buffer_data[1])
             else:
-                sample = np.frombuffer(
-                    self._buffer_data[1], dtype=self._value_type
-                )
+                sample = np.frombuffer(self._buffer_data[1], dtype=self._dtype)
         else:
             sample = None
             timestamp = None
@@ -298,7 +294,7 @@ class StreamInlet:
         max_samples_data = max_samples * self._n_channels
         if max_samples_data not in self._buffer_data:
             self._buffer_data[max_samples_data] = (
-                self._value_type * max_samples_data
+                self._dtype * max_samples_data
             )()
         if max_samples not in self._buffer_ts:
             self._buffer_ts[max_samples] = (c_double * max_samples)()
@@ -319,7 +315,7 @@ class StreamInlet:
         handle_error(errcode)
 
         n_samples = int(n_samples_data / self._n_channels)
-        if self._dtype == cf_string:
+        if self._dtype == c_char_p:
             samples = [
                 [
                     data_buffer[s * self._n_channels + c].decode("utf-8")
@@ -330,7 +326,7 @@ class StreamInlet:
             _free_char_p_array_memory(data_buffer)
         else:
             # this is 400-500x faster than the list approach
-            samples = np.frombuffer(data_buffer, dtype=self._value_type)[
+            samples = np.frombuffer(data_buffer, dtype=self._dtype)[
                 :n_samples_data
             ].reshape(-1, self._n_channels)
 
@@ -341,7 +337,7 @@ class StreamInlet:
         # %timeit np.frombuffer(ts_buff)
         # 192 ns ± 1.11 ns per loop
         # requires numpy ≥ 1.20
-        timestamps = np.frombuffer(ts_buffer)[:n_samples]
+        timestamps = np.frombuffer(ts_buffer, dtype=np.float64)[:n_samples]
         return samples, timestamps
 
     def flush(self) -> int:

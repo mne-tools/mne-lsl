@@ -18,54 +18,7 @@ from .load_liblsl import lib
 # Value formats supported by LSL. LSL data streams are sequences of samples,
 # each of which is a same-size vector of values with one of the below types.
 
-# For up to 24-bit precision measurements in the appropriate physical unit (
-# e.g., microvolts). Integers from -16777216 to 16777216 are represented
-# accurately.
-cf_float32 = 1
-# For universal numeric data as long as permitted by network and disk budget.
-# The largest representable integer is 53-bit.
-cf_float64 = 2
-# For variable-length ASCII strings or data blobs, such as video frames,
-# complex event descriptions, etc.
-cf_string = 3
-# For high-rate digitized formats that require 32-bit precision. Depends
-# critically on meta-data to represent meaningful units. Useful for
-# application event codes or other coded data.
-cf_int32 = 4
-# For very high bandwidth signals or CD quality audio (for professional audio
-# float is recommended).
-cf_int16 = 5
-# For binary signals or other coded data.
-cf_int8 = 6
-# For now only for future compatibility. Support for this type is not
-# available on all languages and platforms.
-cf_int64 = 7
-# Can not be transmitted.
-cf_undefined = 0
-
 string2fmt = {
-    "float32": cf_float32,
-    "float64": cf_float64,
-    "string": cf_string,
-    "int8": cf_int8,
-    "int16": cf_int16,
-    "int32": cf_int32,
-    "int64": cf_int64,
-}
-
-fmt2string = {value: key for key, value in string2fmt.items()}
-fmt2type = [
-    [],
-    c_float,
-    c_double,
-    c_char_p,
-    c_int,
-    c_short,
-    c_byte,
-    c_longlong,
-]
-
-_string2fmt = {
     "float32": c_float,
     "float64": c_double,
     "string": c_char_p,
@@ -74,7 +27,18 @@ _string2fmt = {
     "int32": c_int,
     "int64": c_longlong,
 }
-_fmt2string = {value: key for key, value in _string2fmt.items()}
+fmt2string = {value: key for key, value in string2fmt.items()}
+
+idx2fmt = {
+    1: c_float,
+    2: c_double,
+    3: c_char_p,
+    4: c_int,
+    5: c_short,
+    6: c_byte,
+    7: c_longlong,
+}
+fmt2idx = {value: key for key, value in idx2fmt.items()}
 
 # ------------------------------
 # Handle int64 incompatibilities
@@ -118,30 +82,26 @@ fmt2pull_sample = [
     lib.lsl_pull_sample_c,
     pull_sample_int64,
 ]
-try:
-    fmt2push_chunk = [
-        [],
-        lib.lsl_push_chunk_ftp,
-        lib.lsl_push_chunk_dtp,
-        lib.lsl_push_chunk_strtp,
-        lib.lsl_push_chunk_itp,
-        lib.lsl_push_chunk_stp,
-        lib.lsl_push_chunk_ctp,
-        push_chunk_int64,
-    ]
-    fmt2pull_chunk = [
-        [],
-        lib.lsl_pull_chunk_f,
-        lib.lsl_pull_chunk_d,
-        lib.lsl_pull_chunk_str,
-        lib.lsl_pull_chunk_i,
-        lib.lsl_pull_chunk_s,
-        lib.lsl_pull_chunk_c,
-        pull_chunk_int64,
-    ]
-except Exception:  # if not available
-    fmt2push_chunk = [None, None, None, None, None, None, None, None]
-    fmt2pull_chunk = [None, None, None, None, None, None, None, None]
+fmt2push_chunk = [
+    [],
+    lib.lsl_push_chunk_ftp,
+    lib.lsl_push_chunk_dtp,
+    lib.lsl_push_chunk_strtp,
+    lib.lsl_push_chunk_itp,
+    lib.lsl_push_chunk_stp,
+    lib.lsl_push_chunk_ctp,
+    push_chunk_int64,
+]
+fmt2pull_chunk = [
+    [],
+    lib.lsl_pull_chunk_f,
+    lib.lsl_pull_chunk_d,
+    lib.lsl_pull_chunk_str,
+    lib.lsl_pull_chunk_i,
+    lib.lsl_pull_chunk_s,
+    lib.lsl_pull_chunk_c,
+    pull_chunk_int64,
+]
 
 # ---------------------
 # Post processing flags
