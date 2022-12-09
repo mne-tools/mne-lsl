@@ -70,7 +70,7 @@ class StreamOutlet:
         self._do_push_sample = fmt2push_sample[self._dtype]
         self._do_push_chunk = fmt2push_chunk[self._dtype]
         self._value_type = fmt2type[self._dtype]
-        self._sample_buffer = self._value_type * self._n_channels
+        self._buffer_sample = self._value_type * self._n_channels
 
     def __del__(self):
         """Destroy a `~bsl.lsl.StreamOutlet`.
@@ -123,7 +123,7 @@ class StreamOutlet:
         handle_error(
             self._do_push_sample(
                 self._obj,
-                self._sample_buffer(*x),
+                self._buffer_sample(*x),
                 c_double(timestamp),
                 c_int(pushThrough),
             )
@@ -139,10 +139,10 @@ class StreamOutlet:
 
         Parameters
         ----------
-        x : list of list | array of shape (n_channels, n_samples)
+        x : list of list | array of shape (n_samples, n_channels)
             Samples to push, with one element for each channel at every time
-            point. If a list of list, each sublist has ``(n_samples,)``
-            elements and contain an entire channel. Numpy arrays are
+            point. If a list of list, each sublist has ``(n_channels,)``
+            elements and contain an entire sample. Numpy arrays are
             recommended for numerical formats.
         timestamp : float
             The acquisition timestamp of the sample, in agreement with
@@ -157,12 +157,13 @@ class StreamOutlet:
             x, (list, np.ndarray)
         ), "'x' must be a list of list or an array"
         if isinstance(x, np.ndarray):
-            if x.ndim != 2 or x.shape[0] != self._n_channels:
+            if x.ndim != 2 or x.shape[1] != self._n_channels:
                 raise ValueError(
                     "The samples to push 'x' must contain one element per "
                     "channel at each time-point. Thus, the shape should be "
-                    f"(n_channels, n_samples), {x.shape} is invalid."
+                    f"(n_samples, n_channels), {x.shape} is invalid."
                 )
+            x = x if x.flags["C_CONTIGUOUS"] else np.ascontiguousarray(x)
             n_samples = x.size
             data_buffer = (self._value_type * n_samples).from_buffer(x)
         else:
@@ -175,7 +176,7 @@ class StreamOutlet:
                 raise ValueError(
                     "The samples to push 'x' must contain one element per "
                     "channel at each time-point. Thus, the shape should be "
-                    "(n_channels, n_samples)."
+                    "(n_samples, n_channels)."
                 )
             if self._dtype == cf_string:
                 x = [v.encode("utf-8") for v in x]

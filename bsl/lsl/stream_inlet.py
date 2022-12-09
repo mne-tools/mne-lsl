@@ -264,17 +264,17 @@ class StreamInlet:
 
         Returns
         -------
-        samples : list of list | array of shape (n_channels, n_samples) | None
+        samples : list of list | array of shape (n_samples, n_channels) | None
             If the channel format is ``'string'``, returns a list of list of
             values for each channel and sample. Each sublist represents an
             entire channel. Else, returns a numpy array of shape
-            ``(n_channels, n_samples)``.
+            ``(n_samples, n_channels)``.
         timestamps : array of shape (n_samples,) | None
             Acquisition timestamps on the remote machine.
 
         Notes
         -----
-        The argument ``timeout`` and ``max_samples`` control the blockin
+        The argument ``timeout`` and ``max_samples`` control the blocking
         behavior of the pull operation. If the number of available sample is
         inferior to ``n_samples``, the pull operation is blocking until
         ``timeout`` is reached. Thus, to return all the available samples at a
@@ -296,10 +296,11 @@ class StreamInlet:
         # look up or create a pre-allocated buffers of appropriate length
         max_samples_data = max_samples * self._n_channels
         if max_samples_data not in self._buffer_data:
-            self._buffer_data[max_samples_data] = (self._value_type * max_samples_data)()
+            self._buffer_data[max_samples_data] = (
+                self._value_type * max_samples_data
+            )()
         if max_samples not in self._buffer_ts:
             self._buffer_ts[max_samples] = (c_double * max_samples)()
-
         data_buffer = self._buffer_data[max_samples_data]
         ts_buffer = self._buffer_ts[max_samples]
 
@@ -320,17 +321,17 @@ class StreamInlet:
         if self._dtype == cf_string:
             samples = [
                 [
-                    data_buffer[s + c * n_samples].decode("utf-8")
-                    for s in range(n_samples)
+                    data_buffer[s * self._n_channels + c].decode("utf-8")
+                    for c in range(self._n_channels)
                 ]
-                for c in range(self._n_channels)
+                for s in range(int(n_samples))
             ]
             _free_char_p_array_memory(data_buffer)
         else:
             # this is 400-500x faster than the list approach
-            samples = np.frombuffer(
-                data_buffer, dtype=self._value_type
-            )[:n_samples_data].reshape(self._n_channels, -1)
+            samples = np.frombuffer(data_buffer, dtype=self._value_type)[
+                :n_samples_data
+            ].reshape(-1, self._n_channels)
 
         # %timeit [ts_buff[s] for s in range(int(num_samples))]
         # 68.8 µs ± 635 ns per loop
