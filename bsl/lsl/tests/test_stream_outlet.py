@@ -5,7 +5,6 @@ import numpy as np
 import pytest
 from pylsl import StreamInfo as pylslStreamInfo
 from pylsl import StreamInlet as pylslStreamInlet
-from pylsl import StreamOutlet as pylslStreamOutlet
 
 from bsl.lsl import StreamInfo, StreamOutlet
 
@@ -21,36 +20,15 @@ from bsl.lsl import StreamInfo, StreamOutlet
     ],
 )
 def test_push_numerical_sample(dtype_str_bsl, dtype_str_pylsl, dtype):
-    """Test push_sample against the pylsl version with numerical values."""
+    """Test push_sample with numerical values."""
     x = [1, 2] if "int" in dtype_str_bsl else [1.0, 2.0]
     x_arr = np.array(x).astype(dtype)
     assert x_arr.shape == (2,) and x_arr.dtype == dtype
-
     # create stream descriptions
     sinfo_bsl = StreamInfo("test", "", 2, 0.0, dtype_str_bsl, "")
     sinfo_pylsl = pylslStreamInfo("test", "", 2, 0.0, dtype_str_pylsl, "")
     try:
-        # test push/pull of single sample with bsl.lsl
         outlet = StreamOutlet(sinfo_bsl, chunk_size=1)
-        inlet = pylslStreamInlet(sinfo_pylsl)
-        inlet.open_stream()
-        time.sleep(0.1)
-        outlet.push_sample(x)
-        data, ts = inlet.pull_sample()
-        assert data == x
-        outlet.push_sample(x_arr)
-        data, ts = inlet.pull_sample()
-        assert data == x
-        inlet.close_stream()
-    except Exception as error:
-        raise error
-    finally:
-        del inlet
-        del outlet
-
-    try:
-        # test push/pull of single sample with pylsl
-        outlet = pylslStreamOutlet(sinfo_pylsl, chunk_size=1)
         inlet = pylslStreamInlet(sinfo_pylsl)
         inlet.open_stream()
         time.sleep(0.1)
@@ -69,31 +47,13 @@ def test_push_numerical_sample(dtype_str_bsl, dtype_str_pylsl, dtype):
 
 
 def test_push_str_sample():
-    """Test push_sample against the pylsl version with strings."""
+    """Test push_sample with strings."""
     x = ["1", "2"]
-
+    # create stream descriptions
     sinfo_pylsl = pylslStreamInfo("test", "", 2, 0.0, "string", "")
     sinfo_bsl = StreamInfo("test", "", 2, 0.0, "string", "")
-
     try:
-        # test push/pull of single sample with bsl.lsl
         outlet = StreamOutlet(sinfo_bsl, chunk_size=1)
-        inlet = pylslStreamInlet(sinfo_pylsl)
-        inlet.open_stream()
-        time.sleep(0.1)
-        outlet.push_sample(x)
-        data, ts = inlet.pull_sample()
-        assert data == x
-        inlet.close_stream()
-    except Exception as error:
-        raise error
-    finally:
-        del inlet
-        del outlet
-
-    try:
-        # test push/pull of single sample with pylsl
-        outlet = pylslStreamOutlet(sinfo_pylsl, chunk_size=1)
         inlet = pylslStreamInlet(sinfo_pylsl)
         inlet.open_stream()
         time.sleep(0.1)
@@ -120,12 +80,8 @@ def test_push_str_sample():
 )
 def test_push_numerical_chunk(dtype_str, dtype):
     """Test the error checking when pushing a numerical chunk."""
-    x = (
-        [[1, 2, 3], [4, 5, 6]]
-        if "int" in dtype_str
-        else [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]]
-    )
-
+    x = ([[1, 4], [2, 5], [3, 6]] if "int" in dtype_str else [[1., 4.], [2., 5.], [3., 6.]])
+    # create stream description
     sinfo = StreamInfo("test", "", 2, 0.0, dtype_str, "")
     try:
         outlet = StreamOutlet(sinfo, chunk_size=3)
@@ -150,12 +106,12 @@ def test_push_numerical_chunk(dtype_str, dtype):
         # numpy invalid
         with pytest.raises(
             ValueError,
-            match=re.escape("the shape should be (n_channels, n_samples)"),
+            match=re.escape("the shape should be (n_samples, n_channels)"),
         ):
             outlet.push_chunk(np.array(x, dtype=dtype).T)
         with pytest.raises(
             ValueError,
-            match=re.escape("the shape should be (n_channels, n_samples)"),
+            match=re.escape("the shape should be (n_samples, n_channels)"),
         ):
             outlet.push_chunk(np.array(x, dtype=dtype).flatten())
     except Exception as error:
@@ -170,19 +126,19 @@ def test_push_str_chunk():
     try:
         outlet = StreamOutlet(sinfo, chunk_size=3)
         # valid
-        outlet.push_chunk([["1", "2", "3"], ["4", "5", "6"]])
+        outlet.push_chunk([["1", "4"], ["2", "5"], ["3", "6"]])
 
         # invalid
         with pytest.raises(
             AssertionError,
             match="must be a list of list or an array",
         ):
-            outlet.push_chunk((["1", "2", "3"], ["4", "5", "6"]))
+            outlet.push_chunk((["1", "4"], ["2", "5"], ["3", "6"]))
         with pytest.raises(
             ValueError,
             match="must contain one element per channel at each time-point",
         ):
-            outlet.push_chunk([["1", "2", "3"], ["4", "5", "6", "7"]])
+            outlet.push_chunk([["1", "4"], ["2", "5"], ["3", "6"], ["7"]])
     except Exception as error:
         raise error
     finally:
