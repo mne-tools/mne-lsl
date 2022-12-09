@@ -234,11 +234,11 @@ class StreamInlet:
         if timestamp:
             if self._dtype == cf_string:
                 sample = [v.decode("utf-8") for v in self._buffer_data[1]]
+                _free_char_p_array_memory(self._buffer_data[1])
             else:
                 sample = np.frombuffer(
                     self._buffer_data[1], dtype=self._value_type
                 )
-            _free_char_p_array_memory(self._buffer_data[1])
         else:
             sample = None
             timestamp = None
