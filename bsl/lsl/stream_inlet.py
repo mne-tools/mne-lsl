@@ -259,8 +259,9 @@ class StreamInlet:
             this function non-blocking even if no sample is available. See
             notes for additional details.
         max_samples : int
-            Maximum umber of samples to return. The function is blocking until this
-            number of samples is available. See notes for additional details.
+            Maximum number of samples to return. The function is blocking until
+            this number of samples is available or until ``timeout`` is
+            reached. See notes for additional details.
 
         Returns
         -------

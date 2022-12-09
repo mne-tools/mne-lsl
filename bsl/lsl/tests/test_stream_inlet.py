@@ -84,7 +84,11 @@ def test_pull_str_sample():
 )
 def test_pull_numerical_chunk(dtype_str, dtype):
     """Test pull_chunk on a numerical chunk."""
-    x = ([[1, 4], [2, 5], [3, 6]] if "int" in dtype_str else [[1., 4.], [2., 5.], [3., 6.]])
+    x = (
+        [[1, 4], [2, 5], [3, 6]]
+        if "int" in dtype_str
+        else [[1.0, 4.0], [2.0, 5.0], [3.0, 6.0]]
+    )
     x_arr = np.array(x).astype(dtype)
     assert x_arr.shape == (3, 2) and x_arr.dtype == dtype
     # create stream description

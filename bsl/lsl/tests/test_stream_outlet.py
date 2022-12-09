@@ -80,7 +80,11 @@ def test_push_str_sample():
 )
 def test_push_numerical_chunk(dtype_str, dtype):
     """Test the error checking when pushing a numerical chunk."""
-    x = ([[1, 4], [2, 5], [3, 6]] if "int" in dtype_str else [[1., 4.], [2., 5.], [3., 6.]])
+    x = (
+        [[1, 4], [2, 5], [3, 6]]
+        if "int" in dtype_str
+        else [[1.0, 4.0], [2.0, 5.0], [3.0, 6.0]]
+    )
     # create stream description
     sinfo = StreamInfo("test", "", 2, 0.0, dtype_str, "")
     try:
