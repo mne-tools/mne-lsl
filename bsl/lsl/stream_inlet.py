@@ -73,11 +73,11 @@ class StreamInlet:
             )
         _check_type(recover, (bool,), "recover")
 
-        self.obj = lib.lsl_create_inlet(
-            sinfo.obj, max_buffered, chunk_size, recover
+        self._obj = lib.lsl_create_inlet(
+            sinfo._obj, max_buffered, chunk_size, recover
         )
-        self.obj = c_void_p(self.obj)
-        if not self.obj:
+        self._obj = c_void_p(self._obj)
+        if not self._obj:
             raise RuntimeError("The StreamInlet could not be created.")
 
         # set preprocessing of the inlet
@@ -96,7 +96,7 @@ class StreamInlet:
                 processing_flags = reduce(lambda x, y: x | y, processing_flags)
             assert processing_flags > 0  # sanity-check
             handle_error(
-                lib.lsl_set_postprocessing(self.obj, processing_flags)
+                lib.lsl_set_postprocessing(self._obj, processing_flags)
             )
 
         # properties from the StreamInfo
@@ -119,7 +119,7 @@ class StreamInlet:
         The inlet will automatically disconnect.
         """
         try:
-            lib.lsl_destroy_inlet(self.obj)
+            lib.lsl_destroy_inlet(self._obj)
         except Exception:
             pass
 
@@ -145,7 +145,7 @@ class StreamInlet:
         """
         timeout = _check_timeout(timeout)
         errcode = c_int()
-        lib.lsl_open_stream(self.obj, c_double(timeout), byref(errcode))
+        lib.lsl_open_stream(self._obj, c_double(timeout), byref(errcode))
         handle_error(errcode)
 
     def close_stream(self) -> None:
@@ -157,7 +157,7 @@ class StreamInlet:
         from a source (temporarily or not) but keeps the outlet alive, to not
         waste unnecessary system and network resources.
         """
-        lib.lsl_close_stream(self.obj)
+        lib.lsl_close_stream(self._obj)
 
     def time_correction(self, timeout: Optional[float] = None) -> float:
         """Retrieve an estimated time correction offset for the given stream.
@@ -184,7 +184,7 @@ class StreamInlet:
         timeout = _check_timeout(timeout)
         errcode = c_int()
         result = lib.lsl_time_correction(
-            self.obj, c_double(timeout), byref(errcode)
+            self._obj, c_double(timeout), byref(errcode)
         )
         handle_error(errcode)
         return result
@@ -223,7 +223,7 @@ class StreamInlet:
 
         errcode = c_int()
         timestamp = self._do_pull_sample(
-            self.obj,
+            self._obj,
             byref(self._buffer_data[1]),
             self._n_channels,
             c_double(timeout),
@@ -306,7 +306,7 @@ class StreamInlet:
         # read data into it
         errcode = c_int()
         n_samples_data = self._do_pull_chunk(
-            self.obj,
+            self._obj,
             byref(data_buffer),
             byref(ts_buffer),
             max_samples_data,
@@ -350,7 +350,7 @@ class StreamInlet:
         n_dropped : int
             Number of dropped samples.
         """
-        return lib.lsl_inlet_flush(self.obj)
+        return lib.lsl_inlet_flush(self._obj)
 
     # -------------------------------------------------------------------------
     @copy_doc(_BaseStreamInfo.dtype)
@@ -388,12 +388,12 @@ class StreamInlet:
             Number of available samples.
         """
         # 354 ns ± 6.04 ns per loop
-        return lib.lsl_samples_available(self.obj)
+        return lib.lsl_samples_available(self._obj)
 
     @property
     def was_clock_reset(self) -> bool:
         """True if the clock was potentially reset since the last call."""
-        return bool(lib.lsl_was_clock_reset(self.obj))
+        return bool(lib.lsl_was_clock_reset(self._obj))
 
     # -------------------------------------------------------------------------
     def get_sinfo(self, timeout: Optional[float] = None) -> _BaseStreamInfo:
@@ -413,7 +413,7 @@ class StreamInlet:
         timeout = _check_timeout(timeout)
         errcode = c_int()
         result = lib.lsl_get_fullinfo(
-            self.obj, c_double(timeout), byref(errcode)
+            self._obj, c_double(timeout), byref(errcode)
         )
         handle_error(errcode)
         return _BaseStreamInfo(result)

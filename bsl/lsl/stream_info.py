@@ -19,17 +19,17 @@ class _BaseStreamInfo:
     """
 
     def __init__(self, obj):
-        self.obj = c_void_p(obj)
-        if not self.obj:
+        self._obj = c_void_p(obj)
+        if not self._obj:
             raise RuntimeError(
                 "The StreamInfo could not be created from the description."
             )
-        self._dtype = lib.lsl_get_channel_format(self.obj)
+        self._dtype = lib.lsl_get_channel_format(self._obj)
 
     def __del__(self):
         """Destroy a `~bsl.lsl.StreamInfo`."""
         try:
-            lib.lsl_destroy_streaminfo(self.obj)
+            lib.lsl_destroy_streaminfo(self._obj)
         except Exception:
             pass
 
@@ -50,7 +50,7 @@ class _BaseStreamInfo:
         outlet. Streams with identical names can coexist, at the cost of
         ambiguity for the recording application and/or the experimenter.
         """
-        return lib.lsl_get_name(self.obj).decode("utf-8")
+        return lib.lsl_get_name(self._obj).decode("utf-8")
 
     @property
     def n_channels(self) -> int:
@@ -59,7 +59,7 @@ class _BaseStreamInfo:
         A stream must have at least one channel. The number of channels remains
         constant for all samples.
         """
-        return lib.lsl_get_channel_count(self.obj)
+        return lib.lsl_get_channel_count(self._obj)
 
     @property
     def sfreq(self) -> float:
@@ -67,7 +67,7 @@ class _BaseStreamInfo:
 
         If a stream is irregularly sampled, the sampling rate is set to ``0``.
         """
-        return lib.lsl_get_nominal_srate(self.obj)
+        return lib.lsl_get_nominal_srate(self._obj)
 
     @property
     def source_id(self) -> str:
@@ -78,7 +78,7 @@ class _BaseStreamInfo:
         program) to re-acquire a stream automatically once if it came back
         online.
         """
-        return lib.lsl_get_source_id(self.obj).decode("utf-8")
+        return lib.lsl_get_source_id(self._obj).decode("utf-8")
 
     @property
     def stype(self) -> str:
@@ -89,7 +89,7 @@ class _BaseStreamInfo:
         contains mixed content, this value should be an empty string and the
         type should be stored in the description of individual channels.
         """
-        return lib.lsl_get_type(self.obj).decode("utf-8")
+        return lib.lsl_get_type(self._obj).decode("utf-8")
 
     # -- Hosting information, assigned when bound to an outlet/inlet ----------
     @property
@@ -99,12 +99,12 @@ class _BaseStreamInfo:
         This is the time stamps at which the stream was first created, as
         determined by `~bsl.lsl.local_clock` on the providing machine.
         """
-        return lib.lsl_get_created_at(self.obj)
+        return lib.lsl_get_created_at(self._obj)
 
     @property
     def hostname(self) -> str:
         """Hostname of the providing machine."""
-        return lib.lsl_get_hostname(self.obj).decode("utf-8")
+        return lib.lsl_get_hostname(self._obj).decode("utf-8")
 
     @property
     def session_id(self) -> str:
@@ -117,7 +117,7 @@ class _BaseStreamInfo:
         (can be assigned in a configuration file read by liblsl, see also
         Network Connectivity in the LSL wiki).
         """
-        return lib.lsl_get_session_id(self.obj).decode("utf-8")
+        return lib.lsl_get_session_id(self._obj).decode("utf-8")
 
     @property
     def uid(self) -> str:
@@ -126,7 +126,7 @@ class _BaseStreamInfo:
         This ID is guaranteed to be different across multiple instantiations of
         the same ~bsl.lsl.StreamOutlet`, e.g. after a re-start.
         """
-        return lib.lsl_get_uid(self.obj).decode("utf-8")
+        return lib.lsl_get_uid(self._obj).decode("utf-8")
 
     @property
     def version(self) -> int:
@@ -136,7 +136,7 @@ class _BaseStreamInfo:
         The minor version is version % 100.
         """
         # TODO: Check why this is not returning the same version as the lib..
-        return lib.lsl_get_version(self.obj)
+        return lib.lsl_get_version(self._obj)
 
     # -- Data description -----------------------------------------------------
     @property
@@ -154,7 +154,7 @@ class _BaseStreamInfo:
         - the extended description element <desc> with user-defined
           sub-elements.
         """
-        return lib.lsl_get_xml(self.obj).decode("utf-8")
+        return lib.lsl_get_xml(self._obj).decode("utf-8")
 
     @property
     def desc(self) -> XMLElement:
@@ -172,7 +172,7 @@ class _BaseStreamInfo:
         agreement with these recommendations for compatibility with other
         applications.
         """
-        return XMLElement(lib.lsl_get_desc(self.obj))
+        return XMLElement(lib.lsl_get_desc(self._obj))
 
 
 class StreamInfo(_BaseStreamInfo):

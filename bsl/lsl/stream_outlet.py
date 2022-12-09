@@ -54,9 +54,9 @@ class StreamOutlet:
                 "The argument 'max_buffered' must contain a positive number. "
                 f"{max_buffered} is invalid."
             )
-        self.obj = lib.lsl_create_outlet(sinfo.obj, chunk_size, max_buffered)
-        self.obj = c_void_p(self.obj)
-        if not self.obj:
+        self._obj = lib.lsl_create_outlet(sinfo._obj, chunk_size, max_buffered)
+        self._obj = c_void_p(self._obj)
+        if not self._obj:
             raise RuntimeError("The StreamOutlet could not be created.")
 
         # properties from the StreamInfo
@@ -79,7 +79,7 @@ class StreamOutlet:
         connected inlets will stop delivering data.
         """
         try:
-            lib.lsl_destroy_outlet(self.obj)
+            lib.lsl_destroy_outlet(self._obj)
         except Exception:
             pass
 
@@ -122,7 +122,7 @@ class StreamOutlet:
             x = [v.encode("utf-8") for v in x]
         handle_error(
             self._do_push_sample(
-                self.obj,
+                self._obj,
                 self._sample_buffer(*x),
                 c_double(timestamp),
                 c_int(pushThrough),
@@ -184,7 +184,7 @@ class StreamOutlet:
 
         handle_error(
             self._do_push_chunk(
-                self.obj,
+                self._obj,
                 data_buffer,
                 c_long(n_samples),
                 c_double(timestamp),
@@ -211,7 +211,7 @@ class StreamOutlet:
         Any application inlet will be recognized.
         """
         timeout = _check_timeout(timeout)
-        return bool(lib.lsl_wait_for_consumers(self.obj, c_double(timeout)))
+        return bool(lib.lsl_wait_for_consumers(self._obj, c_double(timeout)))
 
     # -------------------------------------------------------------------------
     @copy_doc(_BaseStreamInfo.dtype)
@@ -256,7 +256,7 @@ class StreamOutlet:
         This function does not filter the search for `bsl.lsl.StreamInlet`. Any
         application inlet will be recognized.
         """
-        return bool(lib.lsl_have_consumers(self.obj))
+        return bool(lib.lsl_have_consumers(self._obj))
 
     # -------------------------------------------------------------------------
     def get_sinfo(self) -> _BaseStreamInfo:
@@ -267,4 +267,4 @@ class StreamOutlet:
         sinfo : StreamInfo
             Description of the stream connected to the outlet.
         """
-        return _BaseStreamInfo(lib.lsl_get_info(self.obj))
+        return _BaseStreamInfo(lib.lsl_get_info(self._obj))
