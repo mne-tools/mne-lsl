@@ -62,46 +62,42 @@ else:
 # Push/Pull properties
 # --------------------
 
-fmt2push_sample = [
-    [],
-    lib.lsl_push_sample_ftp,
-    lib.lsl_push_sample_dtp,
-    lib.lsl_push_sample_strtp,
-    lib.lsl_push_sample_itp,
-    lib.lsl_push_sample_stp,
-    lib.lsl_push_sample_ctp,
-    push_sample_int64,
-]
-fmt2pull_sample = [
-    [],
-    lib.lsl_pull_sample_f,
-    lib.lsl_pull_sample_d,
-    lib.lsl_pull_sample_str,
-    lib.lsl_pull_sample_i,
-    lib.lsl_pull_sample_s,
-    lib.lsl_pull_sample_c,
-    pull_sample_int64,
-]
-fmt2push_chunk = [
-    [],
-    lib.lsl_push_chunk_ftp,
-    lib.lsl_push_chunk_dtp,
-    lib.lsl_push_chunk_strtp,
-    lib.lsl_push_chunk_itp,
-    lib.lsl_push_chunk_stp,
-    lib.lsl_push_chunk_ctp,
-    push_chunk_int64,
-]
-fmt2pull_chunk = [
-    [],
-    lib.lsl_pull_chunk_f,
-    lib.lsl_pull_chunk_d,
-    lib.lsl_pull_chunk_str,
-    lib.lsl_pull_chunk_i,
-    lib.lsl_pull_chunk_s,
-    lib.lsl_pull_chunk_c,
-    pull_chunk_int64,
-]
+fmt2push_sample = {
+    c_float: lib.lsl_push_sample_ftp,
+    c_double: lib.lsl_push_sample_dtp,
+    c_char_p: lib.lsl_push_sample_strtp,
+    c_int: lib.lsl_push_sample_itp,
+    c_short: lib.lsl_push_sample_stp,
+    c_byte: lib.lsl_push_sample_ctp,
+    c_longlong: push_sample_int64,
+}
+fmt2pull_sample = {
+    c_float: lib.lsl_pull_sample_f,
+    c_double: lib.lsl_pull_sample_d,
+    c_char_p: lib.lsl_pull_sample_str,
+    c_int: lib.lsl_pull_sample_i,
+    c_short: lib.lsl_pull_sample_s,
+    c_byte: lib.lsl_pull_sample_c,
+    c_longlong: pull_sample_int64,
+}
+fmt2push_chunk = {
+    c_float: lib.lsl_push_chunk_ftp,
+    c_double: lib.lsl_push_chunk_dtp,
+    c_char_p: lib.lsl_push_chunk_strtp,
+    c_int: lib.lsl_push_chunk_itp,
+    c_short: lib.lsl_push_chunk_stp,
+    c_byte: lib.lsl_push_chunk_ctp,
+    c_longlong: push_chunk_int64,
+}
+fmt2pull_chunk = {
+    c_float: lib.lsl_pull_chunk_f,
+    c_double: lib.lsl_pull_chunk_d,
+    c_char_p: lib.lsl_pull_chunk_str,
+    c_int: lib.lsl_pull_chunk_i,
+    c_short: lib.lsl_pull_chunk_s,
+    c_byte: lib.lsl_pull_chunk_c,
+    c_longlong: pull_chunk_int64,
+}
 
 # ---------------------
 # Post processing flags

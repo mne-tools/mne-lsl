@@ -6,7 +6,7 @@ from numpy.typing import NDArray
 
 from ..utils._checks import _check_type
 from ..utils._docs import copy_doc
-from .constants import fmt2idx, fmt2push_chunk, fmt2push_sample, fmt2string
+from .constants import fmt2push_chunk, fmt2push_sample, fmt2string
 from .load_liblsl import lib
 from .stream_info import _BaseStreamInfo
 from .utils import _check_timeout, handle_error
@@ -61,8 +61,8 @@ class StreamOutlet:
         self._stype = sinfo.stype
 
         # outlet properties
-        self._do_push_sample = fmt2push_sample[fmt2idx[self._dtype]]
-        self._do_push_chunk = fmt2push_chunk[fmt2idx[self._dtype]]
+        self._do_push_sample = fmt2push_sample[self._dtype]
+        self._do_push_chunk = fmt2push_chunk[self._dtype]
         self._buffer_sample = self._dtype * self._n_channels
 
     def __del__(self):

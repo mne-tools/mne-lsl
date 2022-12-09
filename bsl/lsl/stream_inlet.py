@@ -7,7 +7,6 @@ import numpy as np
 from ..utils._checks import _check_type, _check_value
 from ..utils._docs import copy_doc
 from .constants import (
-    fmt2idx,
     fmt2pull_chunk,
     fmt2pull_sample,
     fmt2string,
@@ -106,8 +105,8 @@ class StreamInlet:
         self._stype = sinfo.stype
 
         # inlet properties
-        self._do_pull_sample = fmt2pull_sample[fmt2idx[self._dtype]]
-        self._do_pull_chunk = fmt2pull_chunk[fmt2idx[self._dtype]]
+        self._do_pull_sample = fmt2pull_sample[self._dtype]
+        self._do_pull_chunk = fmt2pull_chunk[self._dtype]
         self._buffer_data = {1: (self._dtype * self._n_channels)()}
         self._buffer_ts = {}
 
