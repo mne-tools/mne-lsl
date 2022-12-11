@@ -1,5 +1,3 @@
-import time
-
 import numpy as np
 import pytest
 
@@ -27,7 +25,6 @@ def test_pull_numerical_sample(dtype_str, dtype):
         outlet = StreamOutlet(sinfo_bsl, chunk_size=1)
         inlet = StreamInlet(sinfo_bsl)
         inlet.open_stream()
-        time.sleep(0.1)
         outlet.push_sample(x)
         data, ts = inlet.pull_sample(timeout=1)
         assert isinstance(data, np.ndarray)
@@ -56,7 +53,6 @@ def test_pull_str_sample():
         outlet = StreamOutlet(sinfo_bsl, chunk_size=1)
         inlet = StreamInlet(sinfo_bsl)
         inlet.open_stream()
-        time.sleep(0.1)
         outlet.push_sample(x)
         data, ts = inlet.pull_sample(timeout=1)
         assert isinstance(data, list)
@@ -97,7 +93,6 @@ def test_pull_numerical_chunk(dtype_str, dtype):
         outlet = StreamOutlet(sinfo, chunk_size=3)
         inlet = StreamInlet(sinfo)
         inlet.open_stream()
-        time.sleep(0.1)
         outlet.push_chunk(x_arr)
         data, ts = inlet.pull_chunk(max_samples=3, timeout=1)
         assert isinstance(data, np.ndarray)
@@ -147,7 +142,6 @@ def test_pull_str_chunk():
         outlet = StreamOutlet(sinfo, chunk_size=3)
         inlet = StreamInlet(sinfo)
         inlet.open_stream()
-        time.sleep(0.1)
         outlet.push_chunk(x)
         data, ts = inlet.pull_chunk(max_samples=3, timeout=1)
         assert isinstance(data, list)

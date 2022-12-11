@@ -1,3 +1,4 @@
+import time
 from ctypes import byref, c_char_p, c_double, c_int, c_void_p
 from functools import reduce
 from typing import List, Optional, Union
@@ -144,6 +145,10 @@ class StreamInlet:
         errcode = c_int()
         lib.lsl_open_stream(self._obj, c_double(timeout), byref(errcode))
         handle_error(errcode)
+        # block a bit longer because of a bug in liblsl
+        # this sleep can be removed once the minimum version supported includes
+        # a fix for https://github.com/sccn/liblsl/issues/176
+        time.sleep(0.1)
 
     def close_stream(self) -> None:
         """Drop the current data stream.
