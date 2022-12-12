@@ -1,4 +1,5 @@
 import re
+import time
 
 import numpy as np
 import pytest
@@ -30,11 +31,12 @@ def test_push_numerical_sample(dtype_str_bsl, dtype_str_pylsl, dtype):
         outlet = StreamOutlet(sinfo_bsl, chunk_size=1)
         inlet = pylslStreamInlet(sinfo_pylsl)
         inlet.open_stream()
+        time.sleep(0.1)
         outlet.push_sample(x)
-        data, ts = inlet.pull_sample()
+        data, ts = inlet.pull_sample(timeout=2)
         assert data == x
         outlet.push_sample(x_arr)
-        data, ts = inlet.pull_sample()
+        data, ts = inlet.pull_sample(timeout=2)
         assert data == x
         inlet.close_stream()
     except Exception as error:
@@ -54,8 +56,9 @@ def test_push_str_sample():
         outlet = StreamOutlet(sinfo_bsl, chunk_size=1)
         inlet = pylslStreamInlet(sinfo_pylsl)
         inlet.open_stream()
+        time.sleep(0.1)
         outlet.push_sample(x)
-        data, ts = inlet.pull_sample()
+        data, ts = inlet.pull_sample(timeout=2)
         assert data == x
         inlet.close_stream()
     except Exception as error:
