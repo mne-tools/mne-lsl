@@ -359,9 +359,8 @@ class StreamMarker(_Stream):
     def acquire(self):
         """Pull data from the stream's inlet and fill the buffer."""
         chunk, tslist = super().acquire()
-        if isinstance(chunk, list):
-            chunk = np.array(chunk)
-        self._buffer.fill(chunk.T.tolist(), tslist)  # Fill its buffer
+        chunk = chunk if isinstance(chunk, list) else chunk.tolist()
+        self._buffer.fill(chunk, tslist)  # Fill its buffer
 
 
 @fill_doc
