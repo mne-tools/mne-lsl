@@ -6,7 +6,7 @@ from numpy.typing import NDArray
 
 from ..utils._checks import _check_type
 from ..utils._docs import copy_doc
-from .constants import fmt2push_chunk, fmt2push_sample, fmt2string
+from .constants import fmt2numpy, fmt2push_chunk, fmt2push_sample, fmt2string
 from .load_liblsl import lib
 from .stream_info import _BaseStreamInfo
 from .utils import _check_timeout, handle_error
@@ -78,7 +78,7 @@ class StreamOutlet:
 
     def push_sample(
         self,
-        x: Union[List[Union[float, str]], NDArray[float]],
+        x: Union[List[str], NDArray[float]],
         timestamp: float = 0.0,
         pushThrough: bool = True,
     ) -> None:
@@ -88,31 +88,41 @@ class StreamOutlet:
         ----------
         x : list | array of shape (n_channels,)
             Sample to push, with one element for each channel.
-        timestamp : float optional
+            If strings are transmitted, a list is required. If numericals are
+            transmitted, a numpy array is required.
+        timestamp : float
             The acquisition timestamp of the sample, in agreement with
             `~bsl.lsl.local_clock`. The default, `0`, uses the current time.
-        pushThrough : bool, optional
+        pushThrough : bool
             If True, push the sample through to the receivers instead of
             buffering it with subsequent samples. Note that the ``chunk_size``
             defined when creating a `~bsl.lsl.StreamOutlet` takes precedence
             over the ``pushThrough`` flag.
         """
-        assert isinstance(x, (list, np.ndarray)), "'x' must be a list or array"
-        if isinstance(x, np.ndarray) and x.ndim != 1:
-            raise ValueError(
-                "The sample to push 'x' must contain one element per channel. "
-                f"Thus, the shape should be (n_channels,), {x.shape} is "
-                "invalid."
-            )
-        elif len(x) != self._n_channels:
+        if self._dtype == c_char_p:
+            assert isinstance(
+                x, list
+            ), "'x' must be a list if strings are pushed."
+            x = [v.encode("utf-8") for v in x]
+        else:
+            assert isinstance(
+                x, np.ndarray
+            ), "'x' must be an array if numericals are pushed."
+            if x.ndim != 1:
+                raise ValueError(
+                    "The sample to push 'x' must contain one element per "
+                    "channel. Thus, the shape should be (n_channels,), "
+                    f"{x.shape} is invalid."
+                )
+            npdtype = fmt2numpy[self._dtype]
+            x = x if x.dtype == npdtype else x.astype(npdtype)
+        if len(x) != self._n_channels:
             raise ValueError(
                 "The sample to push 'x' must contain one element per channel. "
                 f"Thus, {self._n_channels} elements are expected. {len(x)} "
                 "is invalid."
             )
 
-        if self._dtype == c_char_p:
-            x = [v.encode("utf-8") for v in x]
         handle_error(
             self._do_push_sample(
                 self._obj,
@@ -124,7 +134,7 @@ class StreamOutlet:
 
     def push_chunk(
         self,
-        x: Union[List[List[Union[float, str]]], NDArray[float]],
+        x: Union[List[List[str]], NDArray[float]],
         timestamp: float = 0.0,
         pushthrough: bool = True,
     ) -> None:
@@ -134,9 +144,9 @@ class StreamOutlet:
         ----------
         x : list of list | array of shape (n_samples, n_channels)
             Samples to push, with one element for each channel at every time
-            point. If a list of list, each sublist has ``(n_channels,)``
-            elements and contain an entire sample. Numpy arrays are
-            recommended for numerical formats.
+            point. If strings are transmitted, a list of sublist containing
+            ``(n_channels,)`` is required. If numericals are transmitted, a
+            numpy array of shape ``(n_samples, n_channels)`` is required.
         timestamp : float
             The acquisition timestamp of the sample, in agreement with
             `~bsl.lsl.local_clock`. The default, ``0``, uses the current time.
@@ -146,23 +156,10 @@ class StreamOutlet:
             defined when creating a `~bsl.lsl.StreamOutlet` takes precedence
             over the ``pushThrough`` flag.
         """
-        assert isinstance(
-            x, (list, np.ndarray)
-        ), "'x' must be a list of list or an array"
-        if isinstance(x, np.ndarray):
-            if x.ndim != 2 or x.shape[1] != self._n_channels:
-                raise ValueError(
-                    "The samples to push 'x' must contain one element per "
-                    "channel at each time-point. Thus, the shape should be "
-                    f"(n_samples, n_channels), {x.shape} is invalid."
-                )
-            x = x if x.flags["C_CONTIGUOUS"] else np.ascontiguousarray(x)
-            n_samples = x.size
-            data_buffer = (self._dtype * n_samples).from_buffer(x)
-        else:
-            # we do not check the input, specifically, that all elements in the
-            # list are list and that all list have the correct number of
-            # element to avoid slowing down the execution.
+        if self._dtype == c_char_p:
+            assert isinstance(
+                x, list
+            ), "'x' must be a list if strings are pushed."
             x = [v for sample in x for v in sample]  # flatten
             n_samples = len(x)
             if n_samples % self._n_channels != 0:  # quick incomplete test
@@ -171,9 +168,24 @@ class StreamOutlet:
                     "channel at each time-point. Thus, the shape should be "
                     "(n_samples, n_channels)."
                 )
-            if self._dtype == c_char_p:
-                x = [v.encode("utf-8") for v in x]
+            x = [v.encode("utf-8") for v in x]
+            n_samples = len(x)
             data_buffer = (self._dtype * n_samples)(*x)
+        else:
+            assert isinstance(
+                x, np.ndarray
+            ), "'x' must be an array if numericals are pushed."
+            if x.ndim != 2 or x.shape[1] != self._n_channels:
+                raise ValueError(
+                    "The samples to push 'x' must contain one element per "
+                    "channel at each time-point. Thus, the shape should be "
+                    f"(n_samples, n_channels), {x.shape} is invalid."
+                )
+            npdtype = fmt2numpy[self._dtype]
+            x = x if x.dtype == npdtype else x.astype(npdtype)
+            x = x if x.flags["C_CONTIGUOUS"] else np.ascontiguousarray(x)
+            n_samples = x.size
+            data_buffer = (self._dtype * n_samples).from_buffer(x)
 
         handle_error(
             self._do_push_chunk(

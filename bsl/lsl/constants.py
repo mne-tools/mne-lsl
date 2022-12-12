@@ -10,6 +10,8 @@ from ctypes import (
     c_short,
 )
 
+import numpy as np
+
 from .load_liblsl import lib
 
 # -----------------
@@ -39,6 +41,16 @@ idx2fmt = {
     7: c_longlong,
 }
 fmt2idx = {value: key for key, value in idx2fmt.items()}
+
+numpy2fmt = {
+    "float32": np.float32,
+    "float64": np.float64,
+    "int8": np.int8,
+    "int16": np.int16,
+    "int32": np.int32,
+    "int64": np.int64,
+}
+fmt2numpy = {value: key for key, value in numpy2fmt.items()}
 
 # ------------------------------
 # Handle int64 incompatibilities
