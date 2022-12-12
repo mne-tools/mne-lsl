@@ -148,7 +148,7 @@ class StreamInlet:
         # block a bit longer because of a bug in liblsl
         # this sleep can be removed once the minimum version supported includes
         # a fix for https://github.com/sccn/liblsl/issues/176
-        time.sleep(0.1)
+        time.sleep(0.5)
 
     def close_stream(self) -> None:
         """Drop the current data stream.

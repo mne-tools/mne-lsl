@@ -1,12 +1,14 @@
 import re
 import time
+import uuid
 
 import numpy as np
 import pytest
 from pylsl import StreamInfo as pylslStreamInfo
 from pylsl import StreamInlet as pylslStreamInlet
 
-from bsl.lsl import StreamInfo, StreamOutlet
+from bsl.lsl import StreamInfo, StreamInlet, StreamOutlet
+from bsl.lsl.stream_info import _BaseStreamInfo
 
 
 @pytest.mark.parametrize(
@@ -24,12 +26,16 @@ def test_push_numerical_sample(dtype_str_bsl, dtype_str_pylsl, dtype):
     x = np.array([1, 2], dtype=dtype)
     assert x.shape == (2,) and x.dtype == dtype
     # create stream descriptions
-    sinfo_bsl = StreamInfo("test", "", 2, 0.0, dtype_str_bsl, "")
-    sinfo_pylsl = pylslStreamInfo("test", "", 2, 0.0, dtype_str_pylsl, "")
+    source_id = uuid.uuid4().hex[:6]
+    sinfo_bsl = StreamInfo("test", "", 2, 0.0, dtype_str_bsl, source_id)
+    sinfo_pylsl = pylslStreamInfo(
+        "test", "", 2, 0.0, dtype_str_pylsl, source_id
+    )
     try:
         outlet = StreamOutlet(sinfo_bsl, chunk_size=1)
+        _test_properties(outlet, dtype_str_bsl, 2, "test", 0.0, "")
         inlet = pylslStreamInlet(sinfo_pylsl)
-        inlet.open_stream()
+        inlet.open_stream(timeout=10)
         time.sleep(0.1)  # sleep required because of pylsl inlet
         outlet.push_sample(x)
         data, ts = inlet.pull_sample(timeout=2)
@@ -38,20 +44,28 @@ def test_push_numerical_sample(dtype_str_bsl, dtype_str_pylsl, dtype):
     except Exception as error:
         raise error
     finally:
-        del inlet
-        del outlet
+        try:
+            del outlet
+        except Exception:
+            pass
+        try:
+            del inlet
+        except Exception:
+            pass
 
 
 def test_push_str_sample():
     """Test push_sample with strings."""
     x = ["1", "2"]
     # create stream descriptions
-    sinfo_pylsl = pylslStreamInfo("test", "", 2, 0.0, "string", "")
-    sinfo_bsl = StreamInfo("test", "", 2, 0.0, "string", "")
+    source_id = uuid.uuid4().hex[:6]
+    sinfo_pylsl = pylslStreamInfo("test", "", 2, 0.0, "string", source_id)
+    sinfo_bsl = StreamInfo("test", "", 2, 0.0, "string", source_id)
     try:
         outlet = StreamOutlet(sinfo_bsl, chunk_size=1)
+        _test_properties(outlet, "string", 2, "test", 0.0, "")
         inlet = pylslStreamInlet(sinfo_pylsl)
-        inlet.open_stream()
+        inlet.open_stream(timeout=10)
         time.sleep(0.1)  # sleep required because of pylsl inlet
         outlet.push_sample(x)
         data, ts = inlet.pull_sample(timeout=2)
@@ -60,8 +74,14 @@ def test_push_str_sample():
     except Exception as error:
         raise error
     finally:
-        del inlet
-        del outlet
+        try:
+            del outlet
+        except Exception:
+            pass
+        try:
+            del inlet
+        except Exception:
+            pass
 
 
 @pytest.mark.parametrize(
@@ -78,9 +98,10 @@ def test_push_numerical_chunk(dtype_str, dtype):
     """Test the error checking when pushing a numerical chunk."""
     x = np.array([[1, 4], [2, 5], [3, 6]], dtype=dtype)
     # create stream description
-    sinfo = StreamInfo("test", "", 2, 0.0, dtype_str, "")
+    sinfo = StreamInfo("test", "", 2, 0.0, dtype_str, uuid.uuid4().hex[:6])
     try:
         outlet = StreamOutlet(sinfo, chunk_size=3)
+        _test_properties(outlet, dtype_str, 2, "test", 0.0, "")
         # valid
         outlet.push_chunk(x)
 
@@ -103,14 +124,18 @@ def test_push_numerical_chunk(dtype_str, dtype):
     except Exception as error:
         raise error
     finally:
-        del outlet
+        try:
+            del outlet
+        except Exception:
+            pass
 
 
 def test_push_str_chunk():
     """Test the error checking when pushing a string chunk."""
-    sinfo = StreamInfo("test", "", 2, 0.0, "string", "")
+    sinfo = StreamInfo("test", "", 2, 0.0, "string", uuid.uuid4().hex[:6])
     try:
         outlet = StreamOutlet(sinfo, chunk_size=3)
+        _test_properties(outlet, "string", 2, "test", 0.0, "")
         # valid
         outlet.push_chunk([["1", "4"], ["2", "5"], ["3", "6"]])
 
@@ -128,4 +153,47 @@ def test_push_str_chunk():
     except Exception as error:
         raise error
     finally:
-        del outlet
+        try:
+            del outlet
+        except Exception:
+            pass
+
+
+def test_wait_for_consumers():
+    """Test wait for client."""
+    sinfo = StreamInfo(
+        "test", "EEG", 2, 100.0, "float32", uuid.uuid4().hex[:6]
+    )
+    try:
+        outlet = StreamOutlet(sinfo, chunk_size=3)
+        _test_properties(outlet, "float32", 2, "test", 100.0, "EEG")
+        assert not outlet.wait_for_consumers(timeout=0.2)
+        assert not outlet.has_consumers
+        inlet = StreamInlet(sinfo)
+        assert not outlet.wait_for_consumers(timeout=0.2)
+        assert not outlet.has_consumers
+        inlet.open_stream(timeout=10)
+        assert outlet.wait_for_consumers(timeout=0.2)
+        assert outlet.has_consumers
+    except Exception as error:
+        raise error
+    finally:
+        try:
+            del outlet
+        except Exception:
+            pass
+        try:
+            del inlet
+        except Exception:
+            pass
+
+
+def _test_properties(outlet, dtype_str, n_channels, name, sfreq, stype):
+    """Test the properties of an outlet against expected values."""
+    assert outlet.dtype == dtype_str
+    assert outlet.n_channels == n_channels
+    assert outlet.name == name
+    assert outlet.sfreq == sfreq
+    assert outlet.stype == stype
+    sinfo = outlet.get_sinfo()
+    assert isinstance(sinfo, _BaseStreamInfo)

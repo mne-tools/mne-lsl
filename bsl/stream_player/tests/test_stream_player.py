@@ -44,7 +44,7 @@ def test_stream_player(caplog):
     # Test that data is being streamed
     idx = [stream.name for stream in streams].index(stream_name)
     inlet = StreamInlet(streams[idx], max_buffered=int(raw.info["sfreq"]))
-    inlet.open_stream()
+    inlet.open_stream(timeout=10)
     chunk, tslist = inlet.pull_chunk(
         timeout=1.0, max_samples=int(raw.info["sfreq"])
     )
