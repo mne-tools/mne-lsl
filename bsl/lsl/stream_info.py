@@ -10,11 +10,12 @@ class _BaseStreamInfo:
     """Base Stream information object, storing the declaration of a stream.
 
     A StreamInfo contains the following information:
-    - Core information (name, number of channels, sampling frequency, channel
+
+    * Core information (name, number of channels, sampling frequency, channel
       format, ...)
-    - Optional metadata about the stream content (channel labels, measurement
+    * Optional metadata about the stream content (channel labels, measurement
       units, ...)
-    - Hosting information (uID, hostname, ...) if bound to an inlet or outlet
+    * Hosting information (uID, hostname, ...) if bound to an inlet or outlet
     """
 
     def __init__(self, obj):
@@ -145,19 +146,20 @@ class _BaseStreamInfo:
         This yields an XML document (in string form) whose top-level element is
         <info>. The info element contains one element for each field of the
         `~bsl.lsl.StreamInfo` class, including:
-        - the core elements <name>, <type>, <channel_count>, <nominal_srate>,
+
+        * the core elements <name>, <type>, <channel_count>, <nominal_srate>,
           <channel_format>, <source_id>
-        - the misc elements <version>, <created_at>, <uid>, <session_id>,
+        * the misc elements <version>, <created_at>, <uid>, <session_id>,
           <v4address>, <v4data_port>, <v4service_port>, <v6address>,
           <v6data_port>, <v6service_port>
-        - the extended description element <desc> with user-defined
+        * the extended description element <desc> with user-defined
           sub-elements.
         """
         return lib.lsl_get_xml(self._obj).decode("utf-8")
 
     @property
     def desc(self) -> XMLElement:
-        """ "Extended description of the stream.
+        """Extended description of the stream.
 
         It is highly recommended that at least the channel labels are described
         here. See code examples on the LSL wiki. Other information, such
@@ -178,11 +180,12 @@ class StreamInfo(_BaseStreamInfo):
     """Base Stream information object, storing the declaration of a stream.
 
     A StreamInfo contains the following information:
-    - Core information (name, number of channels, sampling frequency, channel
+
+    * Core information (name, number of channels, sampling frequency, channel
       format, ...)
-    - Optional metadata about the stream content (channel labels, measurement
+    * Optional metadata about the stream content (channel labels, measurement
       units, ...)
-    - Hosting information (uID, hostname, ...) if bound to an
+    * Hosting information (uID, hostname, ...) if bound to an
       `~bsl.lsl.StreamInlet` or `~bsl.lsl.StreamOutlet`
 
     Parameters
