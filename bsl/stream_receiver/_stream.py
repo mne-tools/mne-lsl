@@ -441,36 +441,38 @@ class StreamEEG(_Stream):
         # BioSemi has pull-up resistor instead of pull-down
         if "BioSemi" in self._name and self._lsl_tr_channel is not None:
             datatype = chunk.dtype
-            chunk[self._lsl_tr_channel, :] = (
+            chunk[:, self._lsl_tr_channel] = (
                 np.bitwise_and(
-                    255, chunk[self._lsl_tr_channel, :].astype(int, copy=False)
+                    255, chunk[:, self._lsl_tr_channel].astype(int, copy=False)
                 )
                 - 1
             ).astype(datatype, copy=False)
 
         # multiply values (to change unit)
         if self._scaling_factor != 1:
-            chunk[self._lsl_eeg_channels, :] *= self._scaling_factor
+            chunk[:, self._lsl_eeg_channels] *= self._scaling_factor
 
         if self._lsl_tr_channel is not None:
             # move trigger channel to 0 and add back to the buffer
             chunk = np.concatenate(
                 (
-                    chunk[self._lsl_tr_channel, :].reshape(1, -1),
-                    chunk[self._lsl_eeg_channels, :],
+                    chunk[:, self._lsl_tr_channel].reshape(-1, 1),
+                    chunk[:, self._lsl_eeg_channels],
                 ),
+                axis=1,
             )
         else:
             # add an empty channel with zeros to channel 0
             chunk = np.concatenate(
                 (
-                    np.zeros((1, chunk.shape[1])),
-                    chunk[self._lsl_eeg_channels, :],
+                    np.zeros((chunk.shape[0], 1)),
+                    chunk[:, self._lsl_eeg_channels],
                 ),
+                axis=1,
             )
 
         # Fill its buffer
-        self._buffer.fill(chunk.T.tolist(), tslist)
+        self._buffer.fill(chunk.tolist(), tslist)
 
     # --------------------------------------------------------------------
     @property
