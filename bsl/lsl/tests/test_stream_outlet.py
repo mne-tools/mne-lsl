@@ -21,9 +21,8 @@ from bsl.lsl import StreamInfo, StreamOutlet
 )
 def test_push_numerical_sample(dtype_str_bsl, dtype_str_pylsl, dtype):
     """Test push_sample with numerical values."""
-    x = [1, 2] if "int" in dtype_str_bsl else [1.0, 2.0]
-    x_arr = np.array(x).astype(dtype)
-    assert x_arr.shape == (2,) and x_arr.dtype == dtype
+    x = np.array([1, 2], dtype=dtype)
+    assert x.shape == (2,) and x.dtype == dtype
     # create stream descriptions
     sinfo_bsl = StreamInfo("test", "", 2, 0.0, dtype_str_bsl, "")
     sinfo_pylsl = pylslStreamInfo("test", "", 2, 0.0, dtype_str_pylsl, "")
@@ -31,13 +30,10 @@ def test_push_numerical_sample(dtype_str_bsl, dtype_str_pylsl, dtype):
         outlet = StreamOutlet(sinfo_bsl, chunk_size=1)
         inlet = pylslStreamInlet(sinfo_pylsl)
         inlet.open_stream()
-        time.sleep(0.1)
+        time.sleep(0.1)  # sleep required because of pylsl inlet
         outlet.push_sample(x)
         data, ts = inlet.pull_sample(timeout=2)
-        assert data == x
-        outlet.push_sample(x_arr)
-        data, ts = inlet.pull_sample(timeout=2)
-        assert data == x
+        assert np.allclose(data, x)
         inlet.close_stream()
     except Exception as error:
         raise error
@@ -56,7 +52,7 @@ def test_push_str_sample():
         outlet = StreamOutlet(sinfo_bsl, chunk_size=1)
         inlet = pylslStreamInlet(sinfo_pylsl)
         inlet.open_stream()
-        time.sleep(0.1)
+        time.sleep(0.1)  # sleep required because of pylsl inlet
         outlet.push_sample(x)
         data, ts = inlet.pull_sample(timeout=2)
         assert data == x
@@ -80,11 +76,7 @@ def test_push_str_sample():
 )
 def test_push_numerical_chunk(dtype_str, dtype):
     """Test the error checking when pushing a numerical chunk."""
-    x = (
-        [[1, 4], [2, 5], [3, 6]]
-        if "int" in dtype_str
-        else [[1.0, 4.0], [2.0, 5.0], [3.0, 6.0]]
-    )
+    x = np.array([[1, 4], [2, 5], [3, 6]], dtype=dtype)
     # create stream description
     sinfo = StreamInfo("test", "", 2, 0.0, dtype_str, "")
     try:
@@ -95,19 +87,9 @@ def test_push_numerical_chunk(dtype_str, dtype):
         # invalid
         with pytest.raises(
             AssertionError,
-            match="must be a list of list or an array",
+            match="must be an array if numericals are pushed.",
         ):
             outlet.push_chunk(tuple(x))
-        with pytest.raises(
-            ValueError,
-            match="must contain one element per channel at each time-point",
-        ):
-            outlet.push_chunk(x + [[7]])
-
-        # numpy valid
-        outlet.push_chunk(np.array(x, dtype=dtype))
-
-        # numpy invalid
         with pytest.raises(
             ValueError,
             match=re.escape("the shape should be (n_samples, n_channels)"),
@@ -135,7 +117,7 @@ def test_push_str_chunk():
         # invalid
         with pytest.raises(
             AssertionError,
-            match="must be a list of list or an array",
+            match="must be a list if strings are pushed.",
         ):
             outlet.push_chunk((["1", "4"], ["2", "5"], ["3", "6"]))
         with pytest.raises(

@@ -43,12 +43,12 @@ idx2fmt = {
 fmt2idx = {value: key for key, value in idx2fmt.items()}
 
 numpy2fmt = {
-    "float32": np.float32,
-    "float64": np.float64,
-    "int8": np.int8,
-    "int16": np.int16,
-    "int32": np.int32,
-    "int64": np.int64,
+    np.float32: c_float,
+    np.float64: c_double,
+    np.int8: c_byte,
+    np.int16: c_short,
+    np.int32: c_int,
+    np.int64: c_longlong,
 }
 fmt2numpy = {value: key for key, value in numpy2fmt.items()}
 
