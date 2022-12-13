@@ -44,14 +44,14 @@ def _check_recorded_files_content(
     assert raw.info["sfreq"] == raw_pcl["sample_rate"] == raw_fif.info["sfreq"]
     assert raw_pcl["signals"].shape[::-1] == raw_fif.get_data().shape
     # some delay is introduce by the process operations
-    assert 0 <= raw_fif.n_times / raw_fif.info["sfreq"] - record_duration < 0.3
+    assert record_duration <= raw_fif.n_times / raw_fif.info["sfreq"]
 
 
 @requires_eeg_resting_state_dataset
 def test_stream_recorder(tmp_path, caplog):
     """Test recording capability of the stream recorder."""
     stream = "StreamPlayer"
-    record_duration = 0.5  # seconds
+    record_duration = 1  # seconds
     dataset = eeg_resting_state
     fif_subdir = False
 
@@ -105,7 +105,7 @@ def test_stream_recorder(tmp_path, caplog):
 @requires_eeg_resting_state_dataset
 def test_recording_multiple_streams(tmp_path):
     """Test multi-stream recording capabilities of the stream recorder."""
-    record_duration = 0.5  # seconds
+    record_duration = 1  # seconds
     dataset = eeg_resting_state
     fif_subdir = False
 
@@ -223,7 +223,7 @@ def test_recording_multiple_streams(tmp_path):
 @requires_eeg_resting_state_dataset
 def test_arg_fif_subdir(tmp_path):
     """Test argument fif_subdir."""
-    record_duration = 0.5  # seconds
+    record_duration = 1  # seconds
     dataset = eeg_resting_state
 
     with StreamPlayer("StreamPlayer", dataset.data_path()):
@@ -274,7 +274,7 @@ def test_arg_fif_subdir(tmp_path):
 @requires_eeg_resting_state_dataset
 def test_arg_verbose(tmp_path):
     """Test argument verbose."""
-    record_duration = 0.5  # seconds
+    record_duration = 1  # seconds
     dataset = eeg_resting_state
     fif_subdir = False
 
@@ -326,7 +326,7 @@ def test_arg_verbose(tmp_path):
 @requires_eeg_resting_state_dataset
 def test_properties(tmp_path):
     """Test the StreamRecorder properties."""
-    record_duration = 0.5  # seconds
+    record_duration = 1  # seconds
     dataset = eeg_resting_state
 
     with StreamPlayer("StreamPlayer", dataset.data_path()):
