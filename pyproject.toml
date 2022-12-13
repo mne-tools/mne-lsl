@@ -51,6 +51,7 @@ dependencies = [
 
 [project.scripts]
 bsl = 'bsl.commands.main:run'
+bsl-sys_info = 'bsl.commands.sys_info:run'
 bsl_stream_player = 'bsl.commands.bsl_stream_player:run'
 bsl_stream_recorder = 'bsl.commands.bsl_stream_recorder:run'
 bsl_stream_viewer = 'bsl.commands.bsl_stream_viewer:run'
@@ -75,6 +76,7 @@ parallel = [
     'pyparallel; platform_system == "linux"',
 ]
 style = [
+    'bibclean',
     'black',
     'codespell',
     'isort',
