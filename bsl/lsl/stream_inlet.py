@@ -39,13 +39,14 @@ class StreamInlet:
         Set the post-processing options. By default, post-processing is
         disabled. Any combination of the processing flags is valid. The
         available flags are:
-        - ``'clocksync'``: Automatic clock synchronization, equivalent to
+
+        * ``'clocksync'``: Automatic clock synchronization, equivalent to
           manually adding the estimated `~bsl.lsl.StreamInlet.time_correction`.
-        - ``'dejitter'``: Remove jitter on the received timestamps with a
+        * ``'dejitter'``: Remove jitter on the received timestamps with a
           smoothing algorithm.
-        - ``'monotize'``: Force the timestamps to be monotically ascending.
+        * ``'monotize'``: Force the timestamps to be monotically ascending.
           This option should not be enable if ``'dejitter'`` is not enabled.
-        - ``'threadsafe'``: Post-processing is thread-safe, thus the same
+        * ``'threadsafe'``: Post-processing is thread-safe, thus the same
           inlet can be read from multiple threads.
     """
 
@@ -161,7 +162,7 @@ class StreamInlet:
         """
         raise NotImplementedError(
             "At the moment, closing a Stream is not properly supported. "
-            "Please delete the StreamInlet when you need to free ressources. "
+            "Please delete the StreamInlet when you need to free resources. "
         )
         lib.lsl_close_stream(self._obj)
 

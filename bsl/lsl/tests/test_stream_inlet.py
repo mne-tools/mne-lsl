@@ -257,7 +257,9 @@ def test_inlet_methods(dtype_str, dtype):
         data, ts = inlet.pull_chunk(max_samples=1, timeout=0)
         assert data.size == ts.size == 0
         # close and re-open -- At the moment this is not well supported
-        with pytest.raises(NotImplementedError, match="Please delete the StreamInlet"):
+        with pytest.raises(
+            NotImplementedError, match="Please delete the StreamInlet"
+        ):
             inlet._close_stream()
         # inlet.close_stream()
         # inlet.open_stream(timeout=10)
