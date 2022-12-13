@@ -1,3 +1,4 @@
+import time
 import uuid
 
 import numpy as np
@@ -250,6 +251,7 @@ def test_inlet_methods(dtype_str, dtype):
         inlet = StreamInlet(sinfo)
         inlet.open_stream(timeout=10)
         outlet.push_chunk(x)
+        time.sleep(0.1)  # sleep somce samples_available does not have timeout
         assert inlet.samples_available == 3
         n_flush = inlet.flush()
         assert n_flush == 3

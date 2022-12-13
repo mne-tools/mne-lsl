@@ -1,4 +1,5 @@
 import time
+import uuid
 
 from bsl.lsl import (
     StreamInfo,
@@ -31,7 +32,7 @@ def test_resolve_streams():
     assert isinstance(streams, list)
     assert len(streams) == 0
 
-    sinfo = StreamInfo("test", "", 1, 0.0, "int8", "")
+    sinfo = StreamInfo("test", "", 1, 0.0, "int8", uuid.uuid4().hex[:6])
     try:
         outlet = StreamOutlet(
             sinfo,
