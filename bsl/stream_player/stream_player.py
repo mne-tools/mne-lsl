@@ -389,8 +389,7 @@ class _Streamer:
     def _log_event(self, chunk):
         """Look for an event on the data chunk and log it."""
         if self._tch is not None:
-            event_values = set(chunk[self._tch]) - set([0])
-
+            event_values = set(chunk[:, self._tch]) - set([0])
             if len(event_values) > 0:
                 if self._trigger_def is None:
                     logger.info("Events: %s", event_values)
