@@ -44,7 +44,6 @@ def test_pull_numerical_sample(dtype_str, dtype):
         assert isinstance(data, np.ndarray)
         assert isinstance(ts, float)
         assert np.allclose(data, x)
-        inlet.close_stream()
     except Exception as error:
         raise error
     finally:
@@ -78,7 +77,6 @@ def test_pull_str_sample():
         data, ts = inlet.pull_sample(timeout=0)
         assert ts is None
         assert data is None
-        inlet.close_stream()
     except Exception as error:
         raise error
     finally:
@@ -148,7 +146,6 @@ def test_pull_numerical_chunk(dtype_str, dtype):
         assert isinstance(data, np.ndarray)
         assert np.allclose(x, data)
         assert ts.size == 3
-        inlet.close_stream()
     except Exception as error:
         raise error
     finally:
@@ -195,7 +192,6 @@ def test_pull_str_chunk():
         assert data == x[1]
         data, ts = inlet.pull_chunk(max_samples=5, timeout=1)
         assert data == [x[2]]  # chunk is nested
-        inlet.close_stream()
     except Exception as error:
         raise error
     finally:
@@ -260,13 +256,15 @@ def test_inlet_methods(dtype_str, dtype):
         assert inlet.samples_available == 0
         data, ts = inlet.pull_chunk(max_samples=1, timeout=0)
         assert data.size == ts.size == 0
-        # close and re-open
-        inlet.close_stream()
-        inlet.open_stream(timeout=10)
-        assert inlet.samples_available == 0
-        outlet.push_chunk(x)
-        assert inlet.samples_available == 3
-        inlet.close_stream()
+        # close and re-open -- At the moment this is not well supported
+        with pytest.raises(NotImplementedError, match="Please delete the StreamInlet"):
+            inlet._close_stream()
+        # inlet.close_stream()
+        # inlet.open_stream(timeout=10)
+        # assert inlet.samples_available == 0
+        # outlet.push_chunk(x)
+        # assert inlet.samples_available == 3
+        # inlet.close_stream()
     except Exception as error:
         raise error
     finally:

@@ -40,7 +40,6 @@ def test_push_numerical_sample(dtype_str_bsl, dtype_str_pylsl, dtype):
         outlet.push_sample(x)
         data, ts = inlet.pull_sample(timeout=2)
         assert np.allclose(data, x)
-        inlet.close_stream()
     except Exception as error:
         raise error
     finally:
@@ -70,7 +69,6 @@ def test_push_str_sample():
         outlet.push_sample(x)
         data, ts = inlet.pull_sample(timeout=2)
         assert data == x
-        inlet.close_stream()
     except Exception as error:
         raise error
     finally:
