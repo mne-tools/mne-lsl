@@ -166,7 +166,6 @@ class StreamReceiver:
             if stream not in stream_name:
                 continue
 
-            self._streams[stream]._inlet.close_stream()
             del self._streams[stream]
             del self._acquisition_threads[stream]
             if self._stream_name is not None:
