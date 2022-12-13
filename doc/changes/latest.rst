@@ -21,7 +21,7 @@ Enhancements
 ------------
 
 - Improve GitHub workflows and add CodeCov (:pr:`70`)
-- Add `bsl.sys_info` to display system informations and dependency version  (:pr:`70`)
+- Add `bsl.sys_info` to display system information and dependency version  (:pr:`70`)
 
 Bugs
 ----
