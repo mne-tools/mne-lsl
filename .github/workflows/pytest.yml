@@ -50,6 +50,8 @@ jobs:
           path: ~/bsl_data
       - name: Download BSL testing dataset
         run: python -c 'import bsl; bsl.datasets._download_all_datasets()'
+      - name: DEBUG
+        run: pytest bsl/lsl/tests
       - name: Run pytest
         run: pytest bsl --cov=bsl --cov-report=xml --cov-config=pyproject.toml
       - name: Upload to codecov
