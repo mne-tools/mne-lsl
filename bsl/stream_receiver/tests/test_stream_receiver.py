@@ -314,6 +314,7 @@ def test_get_method_warning_and_errors(caplog):
         del sr
         sr = StreamReceiver(bufsize=1, winsize=1, stream_name=None)
         # caplog.clear()
+        sr.streams["StreamPlayer1"]._inlet.flush()
         sr.acquire()
         sr.get_window(stream_name="StreamPlayer1")
         assert (
