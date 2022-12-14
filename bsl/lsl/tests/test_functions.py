@@ -38,7 +38,7 @@ def test_resolve_streams():
             sinfo,
         )
         time.sleep(0.1)
-        streams = resolve_streams()
+        streams = resolve_streams(timeout=5)
         assert isinstance(streams, list)
         assert len(streams) == 1
     except Exception as error:

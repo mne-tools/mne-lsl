@@ -37,10 +37,10 @@ def test_push_numerical_sample(dtype_str_bsl, dtype_str_pylsl, dtype):
         outlet = StreamOutlet(sinfo_bsl, chunk_size=1)
         _test_properties(outlet, dtype_str_bsl, 2, "test", 0.0, "")
         inlet = pylslStreamInlet(sinfo_pylsl)
-        inlet.open_stream(timeout=10)
+        inlet.open_stream(timeout=5)
         time.sleep(0.1)  # sleep required because of pylsl inlet
         outlet.push_sample(x)
-        data, ts = inlet.pull_sample(timeout=2)
+        data, ts = inlet.pull_sample(timeout=5)
         assert np.allclose(data, x)
     except Exception as error:
         raise error
@@ -67,10 +67,10 @@ def test_push_str_sample():
         outlet = StreamOutlet(sinfo_bsl, chunk_size=1)
         _test_properties(outlet, "string", 2, "test", 0.0, "")
         inlet = pylslStreamInlet(sinfo_pylsl)
-        inlet.open_stream(timeout=10)
+        inlet.open_stream(timeout=5)
         time.sleep(0.1)  # sleep required because of pylsl inlet
         outlet.push_sample(x)
-        data, ts = inlet.pull_sample(timeout=2)
+        data, ts = inlet.pull_sample(timeout=5)
         assert data == x
     except Exception as error:
         raise error
@@ -173,7 +173,7 @@ def test_wait_for_consumers():
         inlet = StreamInlet(sinfo)
         assert not outlet.wait_for_consumers(timeout=0.2)
         assert not outlet.has_consumers
-        inlet.open_stream(timeout=10)
+        inlet.open_stream(timeout=5)
         assert outlet.wait_for_consumers(timeout=0.2)
         assert outlet.has_consumers
     except Exception as error:

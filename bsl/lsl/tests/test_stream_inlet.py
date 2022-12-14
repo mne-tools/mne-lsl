@@ -27,10 +27,10 @@ def test_pull_numerical_sample(dtype_str, dtype):
     try:
         outlet = StreamOutlet(sinfo, chunk_size=1)
         inlet = StreamInlet(sinfo)
-        inlet.open_stream(timeout=10)
+        inlet.open_stream(timeout=5)
         _test_properties(inlet, dtype_str, 2, "test", 0.0, "")
         outlet.push_sample(x)
-        data, ts = inlet.pull_sample(timeout=1)
+        data, ts = inlet.pull_sample(timeout=5)
         assert isinstance(data, np.ndarray)
         assert isinstance(ts, float)
         assert np.allclose(data, x)
@@ -41,7 +41,7 @@ def test_pull_numerical_sample(dtype_str, dtype):
         outlet.push_sample(
             x.astype(np.float64 if dtype != np.float64 else np.float32)
         )
-        data, ts = inlet.pull_sample(timeout=1)
+        data, ts = inlet.pull_sample(timeout=5)
         assert isinstance(data, np.ndarray)
         assert isinstance(ts, float)
         assert np.allclose(data, x)
@@ -66,10 +66,10 @@ def test_pull_str_sample():
     try:
         outlet = StreamOutlet(sinfo, chunk_size=1)
         inlet = StreamInlet(sinfo)
-        inlet.open_stream(timeout=10)
+        inlet.open_stream(timeout=5)
         _test_properties(inlet, "string", 2, "test", 10.0, "Gaze")
         outlet.push_sample(x)
-        data, ts = inlet.pull_sample(timeout=1)
+        data, ts = inlet.pull_sample(timeout=5)
         assert isinstance(data, list)
         assert isinstance(ts, float)
         assert data == x
@@ -111,7 +111,7 @@ def test_pull_numerical_chunk(dtype_str, dtype):
         inlet.open_stream(timeout=10)
         _test_properties(inlet, dtype_str, 2, "test", 0.0, "")
         outlet.push_chunk(x)
-        data, ts = inlet.pull_chunk(max_samples=3, timeout=1)
+        data, ts = inlet.pull_chunk(max_samples=3, timeout=5)
         assert isinstance(data, np.ndarray)
         assert np.allclose(x, data)
         assert ts.size == 3
@@ -120,28 +120,28 @@ def test_pull_numerical_chunk(dtype_str, dtype):
         assert data.size == ts.size == 0
         # request more samples than available
         outlet.push_chunk(x)
-        data, ts = inlet.pull_chunk(max_samples=5, timeout=1)
+        data, ts = inlet.pull_chunk(max_samples=5, timeout=5)
         assert isinstance(data, np.ndarray)
         assert np.allclose(x, data)
         assert ts.size == 3
         # pull sample by sample
         outlet.push_chunk(x)
-        data, ts = inlet.pull_sample(timeout=1)
+        data, ts = inlet.pull_sample(timeout=5)
         assert isinstance(data, np.ndarray)
         assert isinstance(ts, float)
         assert np.allclose(x[0, :], data)
-        data, ts = inlet.pull_sample(timeout=1)
+        data, ts = inlet.pull_sample(timeout=5)
         assert isinstance(data, np.ndarray)
         assert isinstance(ts, float)
         assert np.allclose(x[1, :], data)
-        data, ts = inlet.pull_chunk(max_samples=5, timeout=1)
+        data, ts = inlet.pull_chunk(max_samples=5, timeout=5)
         assert isinstance(data, np.ndarray)
         assert np.allclose(x[2, :], data)
         # test push/pull with wrong dtype
         outlet.push_chunk(
             x.astype(np.float64 if dtype != np.float64 else np.float32)
         )
-        data, ts = inlet.pull_chunk(max_samples=3, timeout=1)
+        data, ts = inlet.pull_chunk(max_samples=3, timeout=5)
         assert isinstance(data, np.ndarray)
         assert np.allclose(x, data)
         assert ts.size == 3
@@ -166,10 +166,10 @@ def test_pull_str_chunk():
     try:
         outlet = StreamOutlet(sinfo, chunk_size=3)
         inlet = StreamInlet(sinfo)
-        inlet.open_stream(timeout=10)
+        inlet.open_stream(timeout=5)
         _test_properties(inlet, "string", 2, "test", 0.0, "")
         outlet.push_chunk(x)
-        data, ts = inlet.pull_chunk(max_samples=3, timeout=1)
+        data, ts = inlet.pull_chunk(max_samples=3, timeout=5)
         assert isinstance(data, list)
         assert all(isinstance(elt, list) for elt in data)
         assert x == data
@@ -177,19 +177,19 @@ def test_pull_str_chunk():
         assert len(data) == len(ts) == 0
         # request more samples than available
         outlet.push_chunk(x)
-        data, ts = inlet.pull_chunk(max_samples=5, timeout=1)
+        data, ts = inlet.pull_chunk(max_samples=5, timeout=5)
         assert isinstance(data, list)
         assert all(isinstance(elt, list) for elt in data)
         assert x == data
         # pull sample by sample
         outlet.push_chunk(x)
-        data, ts = inlet.pull_sample(timeout=1)
+        data, ts = inlet.pull_sample(timeout=5)
         assert isinstance(ts, float)
         assert data == x[0]
-        data, ts = inlet.pull_sample(timeout=1)
+        data, ts = inlet.pull_sample(timeout=5)
         assert isinstance(ts, float)
         assert data == x[1]
-        data, ts = inlet.pull_chunk(max_samples=5, timeout=1)
+        data, ts = inlet.pull_chunk(max_samples=5, timeout=5)
         assert data == [x[2]]  # chunk is nested
     except Exception as error:
         raise error
@@ -208,12 +208,12 @@ def test_get_sinfo():
     """Test getting a StreamInfo from an Inlet."""
     sinfo = StreamInfo("test", "", 2, 0.0, "string", uuid.uuid4().hex[:6])
     try:
+        outlet = StreamOutlet(sinfo)
         inlet = StreamInlet(sinfo)
         with pytest.raises(TimeoutError):
-            inlet.get_sinfo(timeout=0.1)
-        outlet = StreamOutlet(sinfo)
-        inlet.open_stream(timeout=10)
-        sinfo = inlet.get_sinfo(timeout=1)
+            inlet.get_sinfo(timeout=0.5)
+        inlet.open_stream(timeout=5)
+        sinfo = inlet.get_sinfo(timeout=5)
         assert isinstance(sinfo, _BaseStreamInfo)
     except Exception as error:
         raise error
@@ -247,7 +247,7 @@ def test_inlet_methods(dtype_str, dtype):
     try:
         outlet = StreamOutlet(sinfo, chunk_size=3)
         inlet = StreamInlet(sinfo)
-        inlet.open_stream(timeout=10)
+        inlet.open_stream(timeout=5)
         outlet.push_chunk(x)
         time.sleep(0.1)  # sleep somce samples_available does not have timeout
         assert inlet.samples_available == 3
@@ -287,5 +287,5 @@ def _test_properties(inlet, dtype_str, n_channels, name, sfreq, stype):
     assert inlet.name == name
     assert inlet.sfreq == sfreq
     assert inlet.stype == stype
-    sinfo = inlet.get_sinfo(timeout=1)
+    sinfo = inlet.get_sinfo(timeout=5)
     assert isinstance(sinfo, _BaseStreamInfo)
