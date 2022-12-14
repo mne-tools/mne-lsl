@@ -180,7 +180,7 @@ def _check_value(
 
 
 @fill_doc
-def _check_verbose(verbose: Union[bool, str, int, None]) -> int:
+def _check_verbose(verbose: Any) -> int:
     """Check that the value of verbose is valid.
 
     Parameters
