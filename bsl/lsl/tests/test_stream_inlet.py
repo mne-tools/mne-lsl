@@ -62,9 +62,7 @@ def test_pull_str_sample():
     """Test pull_sample with strings."""
     x = ["1", "2"]
     # create stream description
-    sinfo = StreamInfo(
-        "test", "Gaze", 2, 10.0, "string", uuid.uuid4().hex[:6]
-    )
+    sinfo = StreamInfo("test", "Gaze", 2, 10.0, "string", uuid.uuid4().hex[:6])
     try:
         outlet = StreamOutlet(sinfo, chunk_size=1)
         inlet = StreamInlet(sinfo)
