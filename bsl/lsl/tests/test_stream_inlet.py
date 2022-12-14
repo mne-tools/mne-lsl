@@ -23,10 +23,10 @@ def test_pull_numerical_sample(dtype_str, dtype):
     x = np.array([1, 2], dtype=dtype)
     assert x.shape == (2,) and x.dtype == dtype
     # create stream description
-    sinfo_bsl = StreamInfo("test", "", 2, 0.0, dtype_str, uuid.uuid4().hex[:6])
+    sinfo = StreamInfo("test", "", 2, 0.0, dtype_str, uuid.uuid4().hex[:6])
     try:
-        outlet = StreamOutlet(sinfo_bsl, chunk_size=1)
-        inlet = StreamInlet(sinfo_bsl)
+        outlet = StreamOutlet(sinfo, chunk_size=1)
+        inlet = StreamInlet(sinfo)
         inlet.open_stream(timeout=10)
         _test_properties(inlet, dtype_str, 2, "test", 0.0, "")
         outlet.push_sample(x)
@@ -62,12 +62,12 @@ def test_pull_str_sample():
     """Test pull_sample with strings."""
     x = ["1", "2"]
     # create stream description
-    sinfo_bsl = StreamInfo(
+    sinfo = StreamInfo(
         "test", "Gaze", 2, 10.0, "string", uuid.uuid4().hex[:6]
     )
     try:
-        outlet = StreamOutlet(sinfo_bsl, chunk_size=1)
-        inlet = StreamInlet(sinfo_bsl)
+        outlet = StreamOutlet(sinfo, chunk_size=1)
+        inlet = StreamInlet(sinfo)
         inlet.open_stream(timeout=10)
         _test_properties(inlet, "string", 2, "test", 10.0, "Gaze")
         outlet.push_sample(x)

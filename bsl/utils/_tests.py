@@ -1,7 +1,9 @@
 """Utility functions for testing. Inspired from MNE."""
 
 from functools import partial
+from importlib import import_module
 from pathlib import Path
+from typing import Callable
 
 import pytest
 import requests
@@ -15,7 +17,7 @@ from ..datasets import (
 from ..datasets._fetching import _hashfunc
 
 
-def requires_good_network(function):  # noqa: D401
+def requires_good_network(function: Callable):  # noqa: D401
     """Decorator to skip a test if a network connection is not available."""
     try:
         requests.get("https://github.com/", timeout=1)
@@ -27,7 +29,7 @@ def requires_good_network(function):  # noqa: D401
     return pytest.mark.skipif(skip, reason=reason)(function)
 
 
-def _requires_dataset_or_good_network(function, dataset):  # noqa
+def _requires_dataset_or_good_network(function: Callable, dataset):  # noqa
     """Decorator to skip a test if a required dataset is absent and it can not
     be downloaded.
     """
@@ -66,3 +68,17 @@ requires_eeg_resting_state_short_dataset = partial(
 requires_trigger_def_dataset = partial(
     _requires_dataset_or_good_network, dataset=trigger_def
 )
+
+
+def _requires_module(function: Callable, name: str):
+    """Skip a test if package is not available (decorator)."""
+    try:
+        import_module(name)
+        skip = False
+    except ImportError:
+        skip = True
+    reason = f"Test {function.__name__} skipped, requires {name}."
+    return pytest.mark.skipif(skip, reason=reason)(function)
+
+
+requires_pylsl = partial(_requires_module, name="pylsl")

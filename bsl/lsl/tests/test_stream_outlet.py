@@ -9,8 +9,10 @@ from pylsl import StreamInlet as pylslStreamInlet
 
 from bsl.lsl import StreamInfo, StreamInlet, StreamOutlet
 from bsl.lsl.stream_info import _BaseStreamInfo
+from bsl.utils._tests import requires_pylsl
 
 
+@requires_pylsl
 @pytest.mark.parametrize(
     "dtype_str_bsl, dtype_str_pylsl, dtype",
     [
@@ -53,6 +55,7 @@ def test_push_numerical_sample(dtype_str_bsl, dtype_str_pylsl, dtype):
             pass
 
 
+@requires_pylsl
 def test_push_str_sample():
     """Test push_sample with strings."""
     x = ["1", "2"]
