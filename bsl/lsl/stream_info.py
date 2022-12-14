@@ -129,7 +129,7 @@ class _BaseStreamInfo:
         return lib.lsl_get_uid(self._obj).decode("utf-8")
 
     @property
-    def version(self) -> int:
+    def protocol_version(self) -> int:
         """Version of the LSL protocol.
 
         The major version is version // 100.
