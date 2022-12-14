@@ -130,12 +130,11 @@ class _BaseStreamInfo:
 
     @property
     def version(self) -> int:
-        """Version of the binary LSL library.
+        """Version of the LSL protocol.
 
         The major version is version // 100.
         The minor version is version % 100.
         """
-        # TODO: Check why this is not returning the same version as the lib..
         return lib.lsl_get_version(self._obj)
 
     # -- Data description -----------------------------------------------------

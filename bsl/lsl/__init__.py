@@ -10,6 +10,7 @@ and tested on the OS and version of Python supported by ``BSL``.
 from .functions import (  # noqa: F401
     library_version,
     local_clock,
+    protocol_version,
     resolve_streams,
 )
 from .stream_info import StreamInfo  # noqa: F401
