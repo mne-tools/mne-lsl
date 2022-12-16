@@ -4,39 +4,32 @@ import uuid
 
 import numpy as np
 import pytest
-from pylsl import StreamInfo as pylslStreamInfo
-from pylsl import StreamInlet as pylslStreamInlet
 
 from bsl.lsl import StreamInfo, StreamInlet, StreamOutlet
 from bsl.lsl.stream_info import _BaseStreamInfo
-from bsl.utils._tests import requires_pylsl
 
 
-@requires_pylsl
 @pytest.mark.parametrize(
-    "dtype_str_bsl, dtype_str_pylsl, dtype",
+    "dtype_str, dtype",
     [
-        ("float32", "float32", np.float32),
-        ("float64", "double64", np.float64),
-        ("int8", "int8", np.int8),
-        ("int16", "int16", np.int16),
-        ("int32", "int32", np.int32),
+        ("float32", np.float32),
+        ("float64", np.float64),
+        ("int8", np.int8),
+        ("int16", np.int16),
+        ("int32", np.int32),
     ],
 )
-def test_push_numerical_sample(dtype_str_bsl, dtype_str_pylsl, dtype):
+def test_push_numerical_sample(dtype_str, dtype):
     """Test push_sample with numerical values."""
     x = np.array([1, 2], dtype=dtype)
     assert x.shape == (2,) and x.dtype == dtype
     # create stream descriptions
     source_id = uuid.uuid4().hex[:6]
-    sinfo_bsl = StreamInfo("test", "", 2, 0.0, dtype_str_bsl, source_id)
-    sinfo_pylsl = pylslStreamInfo(
-        "test", "", 2, 0.0, dtype_str_pylsl, source_id
-    )
+    sinfo = StreamInfo("test", "", 2, 0.0, dtype_str, source_id)
     try:
-        outlet = StreamOutlet(sinfo_bsl, chunk_size=1)
-        _test_properties(outlet, dtype_str_bsl, 2, "test", 0.0, "")
-        inlet = pylslStreamInlet(sinfo_pylsl)
+        outlet = StreamOutlet(sinfo, chunk_size=1)
+        _test_properties(outlet, dtype_str, 2, "test", 0.0, "")
+        inlet = StreamInlet(sinfo)
         inlet.open_stream(timeout=5)
         time.sleep(0.1)  # sleep required because of pylsl inlet
         outlet.push_sample(x)
@@ -55,18 +48,16 @@ def test_push_numerical_sample(dtype_str_bsl, dtype_str_pylsl, dtype):
             pass
 
 
-@requires_pylsl
 def test_push_str_sample():
     """Test push_sample with strings."""
     x = ["1", "2"]
     # create stream descriptions
     source_id = uuid.uuid4().hex[:6]
-    sinfo_pylsl = pylslStreamInfo("test", "", 2, 0.0, "string", source_id)
-    sinfo_bsl = StreamInfo("test", "", 2, 0.0, "string", source_id)
+    sinfo = StreamInfo("test", "", 2, 0.0, "string", source_id)
     try:
-        outlet = StreamOutlet(sinfo_bsl, chunk_size=1)
+        outlet = StreamOutlet(sinfo, chunk_size=1)
         _test_properties(outlet, "string", 2, "test", 0.0, "")
-        inlet = pylslStreamInlet(sinfo_pylsl)
+        inlet = StreamInlet(sinfo)
         inlet.open_stream(timeout=5)
         time.sleep(0.1)  # sleep required because of pylsl inlet
         outlet.push_sample(x)

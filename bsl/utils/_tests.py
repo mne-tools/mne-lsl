@@ -79,6 +79,3 @@ def _requires_module(function: Callable, name: str):
         skip = True
     reason = f"Test {function.__name__} skipped, requires {name}."
     return pytest.mark.skipif(skip, reason=reason)(function)
-
-
-requires_pylsl = partial(_requires_module, name="pylsl")

@@ -1,3 +1,4 @@
+import sys
 import time
 import uuid
 
@@ -204,6 +205,10 @@ def test_pull_str_chunk():
             pass
 
 
+@pytest.mark.xfail(
+    sys.platform == "linux",
+    reason="incompatibility with 22.04 LTS, sccn/liblsl/issues/179",
+)
 def test_get_sinfo():
     """Test getting a StreamInfo from an Inlet."""
     sinfo = StreamInfo("test", "", 2, 0.0, "string", uuid.uuid4().hex[:6])
