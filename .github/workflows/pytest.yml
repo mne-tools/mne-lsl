@@ -37,12 +37,6 @@ jobs:
           python -m pip install --progress-bar off .[test]
       - name: Display system information
         run: bsl-sys_info --developer
-      - name: Install liblsl (Ubuntu)
-        if: ${{ matrix.os == 'ubuntu'}}
-        run: |
-          sudo apt install -y libpugixml-dev
-          curl -L ${LSL_RELEASE_URL} -o liblsl.deb
-          sudo apt install ./liblsl.deb
       - name: 'Cache BSL testing dataset'
         uses: actions/cache@v3
         with:
