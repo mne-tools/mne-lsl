@@ -88,6 +88,7 @@ test = [
     'pylsl',
     'pytest',
     'pytest-cov',
+    'pytest-timeout',
     'requests',
 ]
 all = [
@@ -129,7 +130,6 @@ extend-exclude = '''
     | doc/
     | examples/
     | bsl/externals/psychopy/
-    | bsl/externals/pylsl/
 )
 '''
 
@@ -143,7 +143,6 @@ extend_skip_glob = [
     'doc/*',
     'examples/*',
     'bsl/externals/psychopy/*',
-    'bsl/externals/pylsl/*'
 ]
 
 [tool.pydocstyle]
@@ -152,3 +151,26 @@ ignore-decorators = '(copy_doc|property|.*setter|.*getter|pyqtSlot)'
 match = '^(?!setup|__init__|test_).*\.py'
 match-dir = '^(?!build|dist|\.|externals|examples).*'
 add_ignore = 'D100,D104,D107'
+
+[tool.pytest.ini_options]
+minversion = '6.0'
+addopts = '--durations 20 --junit-xml=junit-results.xml --verbose'
+filterwarnings = []
+timeout = 20
+
+[tool.coverage.run]
+branch = true
+cover_pylib = false
+omit = [
+    '**/__init__.py',
+    '**/bsl/_version.py',
+    '**/bsl/commands/*',
+    '**/tests/**',
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    'pragma: no cover',
+    'if __name__ == .__main__.:',
+]
+precision = 2

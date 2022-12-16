@@ -108,7 +108,7 @@ def test_pull_numerical_chunk(dtype_str, dtype):
     try:
         outlet = StreamOutlet(sinfo, chunk_size=3)
         inlet = StreamInlet(sinfo)
-        inlet.open_stream(timeout=10)
+        inlet.open_stream(timeout=5)
         _test_properties(inlet, dtype_str, 2, "test", 0.0, "")
         outlet.push_chunk(x)
         data, ts = inlet.pull_chunk(max_samples=3, timeout=5)
