@@ -87,7 +87,6 @@ style = [
 test = [
     'pytest',
     'pytest-cov',
-    'pytest-timeout',
     'requests',
 ]
 all = [
@@ -155,7 +154,6 @@ add_ignore = 'D100,D104,D107'
 minversion = '6.0'
 addopts = '--durations 20 --junit-xml=junit-results.xml --verbose'
 filterwarnings = []
-timeout = 20
 
 [tool.coverage.run]
 branch = true

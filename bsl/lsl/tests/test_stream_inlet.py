@@ -207,7 +207,7 @@ def test_pull_str_chunk():
 
 @pytest.mark.xfail(
     sys.platform == "linux",
-    reason="incompatibility with 22.04 LTS, sccn/liblsl/issues/179",
+    reason="incompatibility with 22.04 LTS, https://github.com/sccn/liblsl/issues/179",
 )
 def test_get_sinfo():
     """Test getting a StreamInfo from an Inlet."""
@@ -233,7 +233,9 @@ def test_get_sinfo():
             pass
 
 
-@pytest.mark.xfail(reason="liblsl bug, sccn/liblsl/issues/180")
+@pytest.mark.xfail(
+    reason="liblsl bug, https://github.com/sccn/liblsl/issues/180"
+)
 @pytest.mark.parametrize(
     "dtype_str, dtype",
     [

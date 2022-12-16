@@ -1,4 +1,3 @@
-import time
 import uuid
 
 from bsl.lsl import (
@@ -37,7 +36,6 @@ def test_resolve_streams():
         outlet = StreamOutlet(
             sinfo,
         )
-        time.sleep(0.1)
         streams = resolve_streams(timeout=5)
         assert isinstance(streams, list)
         assert len(streams) == 1
