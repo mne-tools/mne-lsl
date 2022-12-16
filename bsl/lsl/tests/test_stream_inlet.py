@@ -235,7 +235,9 @@ def test_get_sinfo():
 
 
 @pytest.mark.xfail(
-    reason="liblsl bug, https://github.com/sccn/liblsl/issues/180"
+    reason="liblsl bug, https://github.com/sccn/liblsl/issues/180",
+    raises=TimeoutError,
+    run=True,
 )
 @pytest.mark.parametrize(
     "dtype_str, dtype",
