@@ -18,8 +18,6 @@ jobs:
         python-version: [3.8, 3.9, "3.10"]
     name: ${{ matrix.os }} - ${{ matrix.python-version }}
     runs-on: ${{ matrix.os }}
-    env:
-      LSL_RELEASE_URL: 'https://github.com/sccn/liblsl/releases/download/v1.16.0/liblsl-1.16.0-focal_amd64.deb'
     defaults:
       run:
         shell: bash
@@ -31,6 +29,9 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           architecture: 'x64'
+      - name: Install linux dependencies
+        if: ${{ matrix.os == 'ubuntu-20.04'}}
+        run: sudo apt install -y libpugixml-dev
       - name: Install dependencies
         run: |
           python -m pip install --progress-bar off --upgrade pip setuptools wheel
