@@ -151,7 +151,7 @@ class StreamInlet:
         # a fix for https://github.com/sccn/liblsl/issues/176
         time.sleep(0.5)
 
-    def _close_stream(self) -> None:
+    def close_stream(self) -> None:
         """Drop the current data stream.
 
         All samples that are still buffered or in flight will be dropped and
@@ -160,10 +160,6 @@ class StreamInlet:
         from a source (temporarily or not) but keeps the outlet alive, to not
         waste unnecessary system and network resources.
         """
-        raise NotImplementedError(
-            "At the moment, closing a Stream is not properly supported. "
-            "Please delete the StreamInlet when you need to free resources. "
-        )
         lib.lsl_close_stream(self._obj)
 
     def time_correction(self, timeout: Optional[float] = None) -> float:

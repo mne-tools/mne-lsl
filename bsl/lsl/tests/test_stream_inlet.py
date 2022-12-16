@@ -233,6 +233,7 @@ def test_get_sinfo():
             pass
 
 
+@pytest.mark.xfail(reason="liblsl bug, sccn/liblsl/issues/180")
 @pytest.mark.parametrize(
     "dtype_str, dtype",
     [
@@ -254,7 +255,7 @@ def test_inlet_methods(dtype_str, dtype):
         inlet = StreamInlet(sinfo)
         inlet.open_stream(timeout=5)
         outlet.push_chunk(x)
-        time.sleep(0.1)  # sleep somce samples_available does not have timeout
+        time.sleep(0.1)  # sleep since samples_available does not have timeout
         assert inlet.samples_available == 3
         n_flush = inlet.flush()
         assert n_flush == 3
@@ -262,16 +263,11 @@ def test_inlet_methods(dtype_str, dtype):
         data, ts = inlet.pull_chunk(max_samples=1, timeout=0)
         assert data.size == ts.size == 0
         # close and re-open -- At the moment this is not well supported
-        with pytest.raises(
-            NotImplementedError, match="Please delete the StreamInlet"
-        ):
-            inlet._close_stream()
-        # inlet.close_stream()
-        # inlet.open_stream(timeout=10)
-        # assert inlet.samples_available == 0
-        # outlet.push_chunk(x)
-        # assert inlet.samples_available == 3
-        # inlet.close_stream()
+        inlet.close_stream()
+        inlet.open_stream(timeout=10)
+        assert inlet.samples_available == 0
+        outlet.push_chunk(x)
+        assert inlet.samples_available == 3
     except Exception as error:
         raise error
     finally:
