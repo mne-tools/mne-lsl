@@ -238,7 +238,7 @@ def test_get_sinfo():
 @pytest.mark.xfail(
     reason="liblsl bug, https://github.com/sccn/liblsl/issues/180",
     raises=AssertionError,
-    run=True,
+    run=False,
 )
 @pytest.mark.parametrize(
     "dtype_str, dtype",
@@ -268,7 +268,7 @@ def test_inlet_methods(dtype_str, dtype):
         assert inlet.samples_available == 0
         data, ts = inlet.pull_chunk(max_samples=1, timeout=0)
         assert data.size == ts.size == 0
-        # close and re-open -- At the moment this is not well supported
+        # close and re-open -- at the moment this is not well supported
         inlet.close_stream()
         inlet.open_stream(timeout=10)
         assert inlet.samples_available == 0

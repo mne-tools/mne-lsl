@@ -159,6 +159,13 @@ class StreamInlet:
         This method is used if an application stops being interested in data
         from a source (temporarily or not) but keeps the outlet alive, to not
         waste unnecessary system and network resources.
+
+        .. warning::
+
+            At the moment, ``liblsl`` is released in version 1.16. Closing and
+            re-opening a stream does not work and new samples pushed to the
+            outlet do not arrive at the inlet. c.f. this
+            `github issue <https://github.com/sccn/liblsl/issues/180>`_.
         """
         lib.lsl_close_stream(self._obj)
 
