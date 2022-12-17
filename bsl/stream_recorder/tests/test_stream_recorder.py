@@ -56,32 +56,22 @@ def test_stream_recorder(tmp_path, caplog):
     fif_subdir = False
 
     # Test default call
-    try:
-        with StreamPlayer(stream, dataset.data_path()):
-            recorder = StreamRecorder(
-                record_dir=tmp_path, fif_subdir=fif_subdir, verbose=False
-            )
-            assert recorder._state.value == 0
-            recorder.start(blocking=True)
-            eve_file = recorder.eve_file
-            assert eve_file is not None
-            assert recorder._state.value == 1
-            time.sleep(record_duration)
-            recorder.stop()
-            assert (
-                "Waiting for StreamRecorder process to finish." in caplog.text
-            )
-            assert "Recording finished." in caplog.text
-            assert recorder._eve_file is None
-            assert recorder._process is None
-            assert recorder._state.value == 0
-    except Exception as error:
-        raise error
-    finally:
-        try:
-            del recorder
-        except Exception:
-            pass
+    with StreamPlayer(stream, dataset.data_path()):
+        recorder = StreamRecorder(
+            record_dir=tmp_path, fif_subdir=fif_subdir, verbose=False
+        )
+        assert recorder._state.value == 0
+        recorder.start(blocking=True)
+        eve_file = recorder.eve_file
+        assert eve_file is not None
+        assert recorder._state.value == 1
+        time.sleep(record_duration)
+        recorder.stop()
+        assert "Waiting for StreamRecorder process to finish." in caplog.text
+        assert "Recording finished." in caplog.text
+        assert recorder._eve_file is None
+        assert recorder._process is None
+        assert recorder._state.value == 0
 
     _check_recorded_files(tmp_path, eve_file, stream, fif_subdir)
     _check_recorded_files_content(
@@ -90,19 +80,11 @@ def test_stream_recorder(tmp_path, caplog):
 
     # Test stop when not started
     caplog.clear()
-    try:
-        recorder = StreamRecorder(record_dir=tmp_path)
-        assert recorder._state.value == 0
-        recorder.stop()
-        assert recorder._state.value == 0
-        assert "StreamRecorder was not started. Skipping." in caplog.text
-    except Exception as error:
-        raise error
-    finally:
-        try:
-            del recorder
-        except Exception:
-            pass
+    recorder = StreamRecorder(record_dir=tmp_path)
+    assert recorder._state.value == 0
+    recorder.stop()
+    assert recorder._state.value == 0
+    assert "StreamRecorder was not started. Skipping." in caplog.text
 
     # Test context manager
     with StreamPlayer(stream, dataset.data_path()):
@@ -127,135 +109,115 @@ def test_recording_multiple_streams(tmp_path):
     dataset = eeg_resting_state
     fif_subdir = False
 
-    try:
-        with StreamPlayer("StreamPlayer1", dataset.data_path()), StreamPlayer(
-            "StreamPlayer2", dataset.data_path()
-        ):
+    with StreamPlayer("StreamPlayer1", dataset.data_path()), StreamPlayer(
+        "StreamPlayer2", dataset.data_path()
+    ):
 
-            # Record only StreamPlayer1
-            recorder = StreamRecorder(
-                record_dir=tmp_path,
-                stream_name="StreamPlayer1",
-                fif_subdir=fif_subdir,
-                verbose=False,
-            )
-            recorder.start(blocking=True)
-            eve_file = recorder.eve_file
-            time.sleep(record_duration)
-            recorder.stop()
+        # Record only StreamPlayer1
+        recorder = StreamRecorder(
+            record_dir=tmp_path,
+            stream_name="StreamPlayer1",
+            fif_subdir=fif_subdir,
+            verbose=False,
+        )
+        recorder.start(blocking=True)
+        eve_file = recorder.eve_file
+        time.sleep(record_duration)
+        recorder.stop()
 
-            _check_recorded_files(
-                tmp_path, eve_file, "StreamPlayer1", fif_subdir
-            )
-            _check_recorded_files_content(
-                tmp_path,
-                eve_file,
-                "StreamPlayer1",
-                fif_subdir,
-                dataset,
-                record_duration,
-            )
+        _check_recorded_files(tmp_path, eve_file, "StreamPlayer1", fif_subdir)
+        _check_recorded_files_content(
+            tmp_path,
+            eve_file,
+            "StreamPlayer1",
+            fif_subdir,
+            dataset,
+            record_duration,
+        )
 
-            # Record only StreamPlayer2
-            recorder = StreamRecorder(
-                record_dir=tmp_path,
-                stream_name="StreamPlayer2",
-                fif_subdir=fif_subdir,
-                verbose=False,
-            )
-            recorder.start(blocking=True)
-            eve_file = recorder.eve_file
-            time.sleep(record_duration)
-            recorder.stop()
+        # Record only StreamPlayer2
+        recorder = StreamRecorder(
+            record_dir=tmp_path,
+            stream_name="StreamPlayer2",
+            fif_subdir=fif_subdir,
+            verbose=False,
+        )
+        recorder.start(blocking=True)
+        eve_file = recorder.eve_file
+        time.sleep(record_duration)
+        recorder.stop()
 
-            _check_recorded_files(
-                tmp_path, eve_file, "StreamPlayer2", fif_subdir
-            )
-            _check_recorded_files_content(
-                tmp_path,
-                eve_file,
-                "StreamPlayer2",
-                fif_subdir,
-                dataset,
-                record_duration,
-            )
+        _check_recorded_files(tmp_path, eve_file, "StreamPlayer2", fif_subdir)
+        _check_recorded_files_content(
+            tmp_path,
+            eve_file,
+            "StreamPlayer2",
+            fif_subdir,
+            dataset,
+            record_duration,
+        )
 
-            # Record both - stream_name = None
-            recorder = StreamRecorder(
-                record_dir=tmp_path,
-                stream_name=None,
-                fif_subdir=fif_subdir,
-                verbose=False,
-            )
-            recorder.start(blocking=True)
-            eve_file = recorder.eve_file
-            time.sleep(record_duration)
-            recorder.stop()
+        # Record both - stream_name = None
+        recorder = StreamRecorder(
+            record_dir=tmp_path,
+            stream_name=None,
+            fif_subdir=fif_subdir,
+            verbose=False,
+        )
+        recorder.start(blocking=True)
+        eve_file = recorder.eve_file
+        time.sleep(record_duration)
+        recorder.stop()
 
-            _check_recorded_files(
-                tmp_path, eve_file, "StreamPlayer1", fif_subdir
-            )
-            _check_recorded_files_content(
-                tmp_path,
-                eve_file,
-                "StreamPlayer1",
-                fif_subdir,
-                dataset,
-                record_duration,
-            )
-            _check_recorded_files(
-                tmp_path, eve_file, "StreamPlayer2", fif_subdir
-            )
-            _check_recorded_files_content(
-                tmp_path,
-                eve_file,
-                "StreamPlayer2",
-                fif_subdir,
-                dataset,
-                record_duration,
-            )
+        _check_recorded_files(tmp_path, eve_file, "StreamPlayer1", fif_subdir)
+        _check_recorded_files_content(
+            tmp_path,
+            eve_file,
+            "StreamPlayer1",
+            fif_subdir,
+            dataset,
+            record_duration,
+        )
+        _check_recorded_files(tmp_path, eve_file, "StreamPlayer2", fif_subdir)
+        _check_recorded_files_content(
+            tmp_path,
+            eve_file,
+            "StreamPlayer2",
+            fif_subdir,
+            dataset,
+            record_duration,
+        )
 
-            # Record both - stream_name = ['StreamPlayer1', 'StreamPlayer2']
-            recorder = StreamRecorder(
-                record_dir=tmp_path,
-                stream_name=["StreamPlayer1", "StreamPlayer2"],
-                fif_subdir=fif_subdir,
-                verbose=False,
-            )
-            recorder.start(blocking=True)
-            eve_file = recorder.eve_file
-            time.sleep(record_duration)
-            recorder.stop()
+        # Record both - stream_name = ['StreamPlayer1', 'StreamPlayer2']
+        recorder = StreamRecorder(
+            record_dir=tmp_path,
+            stream_name=["StreamPlayer1", "StreamPlayer2"],
+            fif_subdir=fif_subdir,
+            verbose=False,
+        )
+        recorder.start(blocking=True)
+        eve_file = recorder.eve_file
+        time.sleep(record_duration)
+        recorder.stop()
 
-            _check_recorded_files(
-                tmp_path, eve_file, "StreamPlayer1", fif_subdir
-            )
-            _check_recorded_files_content(
-                tmp_path,
-                eve_file,
-                "StreamPlayer1",
-                fif_subdir,
-                dataset,
-                record_duration,
-            )
-            _check_recorded_files(
-                tmp_path, eve_file, "StreamPlayer2", fif_subdir
-            )
-            _check_recorded_files_content(
-                tmp_path,
-                eve_file,
-                "StreamPlayer2",
-                fif_subdir,
-                dataset,
-                record_duration,
-            )
-    except Exception as error:
-        raise error
-    finally:
-        try:
-            del recorder
-        except Exception:
-            pass
+        _check_recorded_files(tmp_path, eve_file, "StreamPlayer1", fif_subdir)
+        _check_recorded_files_content(
+            tmp_path,
+            eve_file,
+            "StreamPlayer1",
+            fif_subdir,
+            dataset,
+            record_duration,
+        )
+        _check_recorded_files(tmp_path, eve_file, "StreamPlayer2", fif_subdir)
+        _check_recorded_files_content(
+            tmp_path,
+            eve_file,
+            "StreamPlayer2",
+            fif_subdir,
+            dataset,
+            record_duration,
+        )
 
 
 @requires_eeg_resting_state_dataset
@@ -264,61 +226,49 @@ def test_arg_fif_subdir(tmp_path):
     record_duration = 1  # seconds
     dataset = eeg_resting_state
 
-    try:
-        with StreamPlayer("StreamPlayer", dataset.data_path()):
+    with StreamPlayer("StreamPlayer", dataset.data_path()):
 
-            # False
-            fif_subdir = False
+        # False
+        fif_subdir = False
 
-            recorder = StreamRecorder(
-                record_dir=tmp_path, fif_subdir=fif_subdir, verbose=False
-            )
-            assert recorder._fif_subdir is False
-            recorder.start(blocking=True)
-            eve_file = recorder.eve_file
-            time.sleep(record_duration)
-            recorder.stop()
-            _check_recorded_files(
-                tmp_path, eve_file, "StreamPlayer", fif_subdir
-            )
-            _check_recorded_files_content(
-                tmp_path,
-                eve_file,
-                "StreamPlayer",
-                fif_subdir,
-                dataset,
-                record_duration,
-            )
+        recorder = StreamRecorder(
+            record_dir=tmp_path, fif_subdir=fif_subdir, verbose=False
+        )
+        assert recorder._fif_subdir is False
+        recorder.start(blocking=True)
+        eve_file = recorder.eve_file
+        time.sleep(record_duration)
+        recorder.stop()
+        _check_recorded_files(tmp_path, eve_file, "StreamPlayer", fif_subdir)
+        _check_recorded_files_content(
+            tmp_path,
+            eve_file,
+            "StreamPlayer",
+            fif_subdir,
+            dataset,
+            record_duration,
+        )
 
-            # True
-            fif_subdir = True
+        # True
+        fif_subdir = True
 
-            recorder = StreamRecorder(
-                record_dir=tmp_path, fif_subdir=fif_subdir, verbose=False
-            )
-            assert recorder._fif_subdir is True
-            recorder.start(blocking=True)
-            eve_file = recorder.eve_file
-            time.sleep(record_duration)
-            recorder.stop()
-            _check_recorded_files(
-                tmp_path, eve_file, "StreamPlayer", fif_subdir
-            )
-            _check_recorded_files_content(
-                tmp_path,
-                eve_file,
-                "StreamPlayer",
-                fif_subdir,
-                dataset,
-                record_duration,
-            )
-    except Exception as error:
-        raise error
-    finally:
-        try:
-            del recorder
-        except Exception:
-            pass
+        recorder = StreamRecorder(
+            record_dir=tmp_path, fif_subdir=fif_subdir, verbose=False
+        )
+        assert recorder._fif_subdir is True
+        recorder.start(blocking=True)
+        eve_file = recorder.eve_file
+        time.sleep(record_duration)
+        recorder.stop()
+        _check_recorded_files(tmp_path, eve_file, "StreamPlayer", fif_subdir)
+        _check_recorded_files_content(
+            tmp_path,
+            eve_file,
+            "StreamPlayer",
+            fif_subdir,
+            dataset,
+            record_duration,
+        )
 
 
 @requires_eeg_resting_state_dataset
@@ -328,61 +278,49 @@ def test_arg_verbose(tmp_path):
     dataset = eeg_resting_state
     fif_subdir = False
 
-    try:
-        with StreamPlayer("StreamPlayer", dataset.data_path()):
+    with StreamPlayer("StreamPlayer", dataset.data_path()):
 
-            # False
-            verbose = False
+        # False
+        verbose = False
 
-            recorder = StreamRecorder(
-                record_dir=tmp_path, fif_subdir=False, verbose=verbose
-            )
-            assert recorder._verbose is False
-            recorder.start(blocking=True)
-            eve_file = recorder.eve_file
-            time.sleep(record_duration)
-            recorder.stop()
-            _check_recorded_files(
-                tmp_path, eve_file, "StreamPlayer", fif_subdir
-            )
-            _check_recorded_files_content(
-                tmp_path,
-                eve_file,
-                "StreamPlayer",
-                fif_subdir,
-                dataset,
-                record_duration,
-            )
+        recorder = StreamRecorder(
+            record_dir=tmp_path, fif_subdir=False, verbose=verbose
+        )
+        assert recorder._verbose is False
+        recorder.start(blocking=True)
+        eve_file = recorder.eve_file
+        time.sleep(record_duration)
+        recorder.stop()
+        _check_recorded_files(tmp_path, eve_file, "StreamPlayer", fif_subdir)
+        _check_recorded_files_content(
+            tmp_path,
+            eve_file,
+            "StreamPlayer",
+            fif_subdir,
+            dataset,
+            record_duration,
+        )
 
-            # True
-            verbose = True
+        # True
+        verbose = True
 
-            recorder = StreamRecorder(
-                record_dir=tmp_path, fif_subdir=False, verbose=verbose
-            )
-            assert recorder._verbose is True
-            recorder.start(blocking=True)
-            eve_file = recorder.eve_file
-            time.sleep(record_duration)
-            recorder.stop()
-            _check_recorded_files(
-                tmp_path, eve_file, "StreamPlayer", fif_subdir
-            )
-            _check_recorded_files_content(
-                tmp_path,
-                eve_file,
-                "StreamPlayer",
-                fif_subdir,
-                dataset,
-                record_duration,
-            )
-    except Exception as error:
-        raise error
-    finally:
-        try:
-            del recorder
-        except Exception:
-            pass
+        recorder = StreamRecorder(
+            record_dir=tmp_path, fif_subdir=False, verbose=verbose
+        )
+        assert recorder._verbose is True
+        recorder.start(blocking=True)
+        eve_file = recorder.eve_file
+        time.sleep(record_duration)
+        recorder.stop()
+        _check_recorded_files(tmp_path, eve_file, "StreamPlayer", fif_subdir)
+        _check_recorded_files_content(
+            tmp_path,
+            eve_file,
+            "StreamPlayer",
+            fif_subdir,
+            dataset,
+            record_duration,
+        )
 
 
 @requires_eeg_resting_state_dataset
@@ -391,78 +329,70 @@ def test_properties(tmp_path):
     record_duration = 1  # seconds
     dataset = eeg_resting_state
 
-    try:
-        with StreamPlayer("StreamPlayer", dataset.data_path()):
-            recorder = StreamRecorder(
-                record_dir=tmp_path,
-                fname="test",
-                stream_name="StreamPlayer",
-                fif_subdir=False,
-                verbose=False,
-            )
+    with StreamPlayer("StreamPlayer", dataset.data_path()):
+        recorder = StreamRecorder(
+            record_dir=tmp_path,
+            fname="test",
+            stream_name="StreamPlayer",
+            fif_subdir=False,
+            verbose=False,
+        )
 
-            assert recorder.record_dir == tmp_path
-            assert recorder.fname == "test"
-            assert recorder.stream_name == "StreamPlayer"
-            assert recorder.fif_subdir is False
-            assert recorder.verbose is False
+        assert recorder.record_dir == tmp_path
+        assert recorder.fname == "test"
+        assert recorder.stream_name == "StreamPlayer"
+        assert recorder.fif_subdir is False
+        assert recorder.verbose is False
 
-            with pytest.raises(AttributeError, match="can't set attribute"):
-                recorder.record_dir = "new path"
-            with pytest.raises(AttributeError, match="can't set attribute"):
-                recorder.fname = "new fname"
-            with pytest.raises(AttributeError, match="can't set attribute"):
-                recorder.stream_name = "new stream name"
-            with pytest.raises(AttributeError, match="can't set attribute"):
-                recorder.fif_subdir = True
-            with pytest.raises(AttributeError, match="can't set attribute"):
-                recorder.verbose = True
+        with pytest.raises(AttributeError, match="can't set attribute"):
+            recorder.record_dir = "new path"
+        with pytest.raises(AttributeError, match="can't set attribute"):
+            recorder.fname = "new fname"
+        with pytest.raises(AttributeError, match="can't set attribute"):
+            recorder.stream_name = "new stream name"
+        with pytest.raises(AttributeError, match="can't set attribute"):
+            recorder.fif_subdir = True
+        with pytest.raises(AttributeError, match="can't set attribute"):
+            recorder.verbose = True
 
-            recorder.start(blocking=True)
+        recorder.start(blocking=True)
 
-            assert recorder.record_dir == tmp_path
-            assert recorder.fname == "test"
-            assert recorder.stream_name == "StreamPlayer"
-            assert recorder.fif_subdir is False
-            assert recorder.verbose is False
+        assert recorder.record_dir == tmp_path
+        assert recorder.fname == "test"
+        assert recorder.stream_name == "StreamPlayer"
+        assert recorder.fif_subdir is False
+        assert recorder.verbose is False
 
-            with pytest.raises(AttributeError, match="can't set attribute"):
-                recorder.record_dir = "new path"
-            with pytest.raises(AttributeError, match="can't set attribute"):
-                recorder.fname = "new fname"
-            with pytest.raises(AttributeError, match="can't set attribute"):
-                recorder.stream_name = "new stream name"
-            with pytest.raises(AttributeError, match="can't set attribute"):
-                recorder.fif_subdir = True
-            with pytest.raises(AttributeError, match="can't set attribute"):
-                recorder.verbose = True
+        with pytest.raises(AttributeError, match="can't set attribute"):
+            recorder.record_dir = "new path"
+        with pytest.raises(AttributeError, match="can't set attribute"):
+            recorder.fname = "new fname"
+        with pytest.raises(AttributeError, match="can't set attribute"):
+            recorder.stream_name = "new stream name"
+        with pytest.raises(AttributeError, match="can't set attribute"):
+            recorder.fif_subdir = True
+        with pytest.raises(AttributeError, match="can't set attribute"):
+            recorder.verbose = True
 
-            time.sleep(record_duration)
-            recorder.stop()
+        time.sleep(record_duration)
+        recorder.stop()
 
-            assert recorder.record_dir == tmp_path
-            assert recorder.fname == "test"
-            assert recorder.stream_name == "StreamPlayer"
-            assert recorder.fif_subdir is False
-            assert recorder.verbose is False
+        assert recorder.record_dir == tmp_path
+        assert recorder.fname == "test"
+        assert recorder.stream_name == "StreamPlayer"
+        assert recorder.fif_subdir is False
+        assert recorder.verbose is False
 
-            with pytest.raises(AttributeError, match="can't set attribute"):
-                recorder.record_dir = "new path"
-            with pytest.raises(AttributeError, match="can't set attribute"):
-                recorder.fname = "new fname"
-            with pytest.raises(AttributeError, match="can't set attribute"):
-                recorder.stream_name = "new stream name"
-            with pytest.raises(AttributeError, match="can't set attribute"):
-                recorder.fif_subdir = True
-            with pytest.raises(AttributeError, match="can't set attribute"):
-                recorder.verbose = True
-    except Exception as error:
-        raise error
-    finally:
-        try:
-            del recorder
-        except Exception:
-            pass
+        with pytest.raises(AttributeError, match="can't set attribute"):
+            recorder.record_dir = "new path"
+        with pytest.raises(AttributeError, match="can't set attribute"):
+            recorder.fname = "new fname"
+        with pytest.raises(AttributeError, match="can't set attribute"):
+            recorder.stream_name = "new stream name"
+        with pytest.raises(AttributeError, match="can't set attribute"):
+            recorder.fif_subdir = True
+        with pytest.raises(AttributeError, match="can't set attribute"):
+            recorder.verbose = True
 
 
 def test_checker_arguments(tmp_path):
@@ -504,33 +434,25 @@ def test_checker_fname(tmp_path):
 @requires_eeg_resting_state_dataset
 def test_representation(tmp_path):
     """Test the representation method."""
-    try:
-        with StreamPlayer("StreamPlayer", eeg_resting_state.data_path()):
-            recorder = StreamRecorder(record_dir=tmp_path, fname=None)
-            expected = f"<Recorder: All streams | OFF | {tmp_path}>"
-            assert recorder.__repr__() == expected
-            recorder.start()
-            expected = f"<Recorder: All streams | ON | {tmp_path}>"
-            assert recorder.__repr__() == expected
-            recorder.stop()
-            expected = f"<Recorder: All streams | OFF | {tmp_path}>"
-            assert recorder.__repr__() == expected
+    with StreamPlayer("StreamPlayer", eeg_resting_state.data_path()):
+        recorder = StreamRecorder(record_dir=tmp_path, fname=None)
+        expected = f"<Recorder: All streams | OFF | {tmp_path}>"
+        assert recorder.__repr__() == expected
+        recorder.start()
+        expected = f"<Recorder: All streams | ON | {tmp_path}>"
+        assert recorder.__repr__() == expected
+        recorder.stop()
+        expected = f"<Recorder: All streams | OFF | {tmp_path}>"
+        assert recorder.__repr__() == expected
 
-            recorder = StreamRecorder(
-                record_dir=tmp_path, fname=None, stream_name="StreamPlayer"
-            )
-            expected = f"<Recorder: StreamPlayer | OFF | {tmp_path}>"
-            assert recorder.__repr__() == expected
-            recorder.start()
-            expected = f"<Recorder: StreamPlayer | ON | {tmp_path}>"
-            assert recorder.__repr__() == expected
-            recorder.stop()
-            expected = f"<Recorder: StreamPlayer | OFF | {tmp_path}>"
-            assert recorder.__repr__() == expected
-    except Exception as error:
-        raise error
-    finally:
-        try:
-            del recorder
-        except Exception:
-            pass
+        recorder = StreamRecorder(
+            record_dir=tmp_path, fname=None, stream_name="StreamPlayer"
+        )
+        expected = f"<Recorder: StreamPlayer | OFF | {tmp_path}>"
+        assert recorder.__repr__() == expected
+        recorder.start()
+        expected = f"<Recorder: StreamPlayer | ON | {tmp_path}>"
+        assert recorder.__repr__() == expected
+        recorder.stop()
+        expected = f"<Recorder: StreamPlayer | OFF | {tmp_path}>"
+        assert recorder.__repr__() == expected
