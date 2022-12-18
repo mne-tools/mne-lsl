@@ -207,7 +207,7 @@ def test_pull_str_chunk():
 
 @pytest.mark.xfail(
     sys.platform == "linux",
-    reason="incompatibility with 22.04 LTS, "
+    reason="incompatibility with 20.04 and 22.04 LTS, "
     + "https://github.com/sccn/liblsl/issues/179",
     raises=TimeoutError,
 )
