@@ -2,7 +2,7 @@
 
 import pytest
 
-from bsl.utils._docs import copy_doc, fill_doc
+from .._docs import copy_doc, fill_doc
 
 
 def test_fill_doc():
