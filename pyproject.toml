@@ -87,6 +87,7 @@ style = [
 test = [
     'pytest',
     'pytest-cov',
+    'pytest-timeout',
     'requests',
 ]
 all = [
