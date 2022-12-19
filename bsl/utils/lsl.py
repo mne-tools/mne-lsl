@@ -118,12 +118,8 @@ def lsl_channel_list(inlet):
         List of channels name ``[name1, name2, ... ]``.
     """
     _check_type(inlet, (StreamInlet,), item_name="inlet")
-
-    xml_str = inlet.get_sinfo().as_xml
-    root = ET.fromstring(xml_str)
-
+    root = ET.fromstring(inlet.get_sinfo().as_xml)
     ch_list = []
     for elt in root.iter("channel"):
         ch_list.append(elt.find("label").text)
-
     return ch_list

@@ -36,14 +36,25 @@ class LSLTrigger(BaseTrigger):
             stype="Markers",
             n_channels=1,
             sfreq=0.0,
-            dtype="int16",
-            source_id=name,
+            dtype="int8",
+            source_id=f"BSL-{name}",
         )
         self._outlet = StreamOutlet(self._sinfo)
 
     @copy_doc(BaseTrigger.signal)
     def signal(self, value: int) -> None:
-        _check_type(value, ("int",), item_name="value")
+        try:
+            value = int(value)
+        except TypeError:
+            raise TypeError(
+                "The argument 'value' of an LSL Trigger must be an integer "
+                "between 1 and 127 included."
+            )
+        if not (0 < value < 128):
+            raise ValueError(
+                "The argument 'value' of an LSL Trigger must be an integer "
+                "between 1 and 127 included."
+            )
         self._set_data(value)
         super().signal(value)
 
