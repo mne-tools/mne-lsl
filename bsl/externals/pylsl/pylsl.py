@@ -22,16 +22,10 @@ from ctypes import (
 # === Constants ===
 # =================
 
-# Constant to indicate that a stream has variable sampling rate.
-IRREGULAR_RATE = 0.0
-
 # Constant to indicate that a sample has the next successive time stamp
 # according to the stream's defined sampling rate. Optional optimization to
 # transmit less data per sample.
 DEDUCED_TIMESTAMP = -1.0
-
-# A very large time value (ca. 1 year); can be used in timeouts.
-FOREVER = 32000000.0
 
 # Value formats supported by LSL. LSL data streams are sequences of samples,
 # each of which is a same-size vector of values with one of the below types.
@@ -58,8 +52,6 @@ cf_int8 = 6
 # For now only for future compatibility. Support for this type is not
 # available on all languages and platforms.
 cf_int64 = 7
-# Can not be transmitted.
-cf_undefined = 0
 
 # Post processing flags
 proc_none = 0  # No automatic post-processing; return the ground-truth time stamps for manual post-processing.
@@ -135,7 +127,7 @@ class StreamInfo:
         name="untitled",
         type="",
         channel_count=1,
-        nominal_srate=IRREGULAR_RATE,
+        nominal_srate=0.0,
         channel_format=cf_float32,
         source_id="",
         handle=None,
@@ -365,7 +357,7 @@ class StreamInlet:
         except:
             pass
 
-    def info(self, timeout=FOREVER):
+    def info(self, timeout=32000000.0):
         errcode = c_int()
         result = lib.lsl_get_fullinfo(
             self.obj, c_double(timeout), byref(errcode)
@@ -373,7 +365,7 @@ class StreamInlet:
         handle_error(errcode)
         return StreamInfo(handle=result)
 
-    def open_stream(self, timeout=FOREVER):
+    def open_stream(self, timeout=32000000.0):
         errcode = c_int()
         lib.lsl_open_stream(self.obj, c_double(timeout), byref(errcode))
         handle_error(errcode)
@@ -381,7 +373,7 @@ class StreamInlet:
     def close_stream(self):
         lib.lsl_close_stream(self.obj)
 
-    def time_correction(self, timeout=FOREVER):
+    def time_correction(self, timeout=32000000.0):
         errcode = c_int()
         result = lib.lsl_time_correction(
             self.obj, c_double(timeout), byref(errcode)
@@ -389,7 +381,7 @@ class StreamInlet:
         handle_error(errcode)
         return result
 
-    def pull_sample(self, timeout=FOREVER, sample=None):
+    def pull_sample(self, timeout=32000000.0, sample=None):
         # support for the legacy API
         if type(timeout) is list:
             assign_to = timeout
