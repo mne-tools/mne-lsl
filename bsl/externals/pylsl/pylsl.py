@@ -22,14 +22,8 @@ from ctypes import (
 # === Constants ===
 # =================
 
-# Constant to indicate that a sample has the next successive time stamp
-# according to the stream's defined sampling rate. Optional optimization to
-# transmit less data per sample.
-DEDUCED_TIMESTAMP = -1.0
-
 # Value formats supported by LSL. LSL data streams are sequences of samples,
 # each of which is a same-size vector of values with one of the below types.
-
 # For up to 24-bit precision measurements in the appropriate physical unit (
 # e.g., microvolts). Integers from -16777216 to 16777216 are represented
 # accurately.
@@ -71,8 +65,6 @@ proc_ALL = (
 # ==========================================================
 # === Free Functions provided by the lab streaming layer ===
 # ==========================================================
-
-
 def library_version() -> int:
     """Version of the binary LSL library.
 
@@ -115,11 +107,9 @@ def local_clock() -> float:
     """
     return lib.lsl_local_clock()
 
-
 # ==========================
 # === Stream Declaration ===
 # ==========================
-
 
 class StreamInfo:
     def __init__(
@@ -784,32 +774,19 @@ lib.lsl_prepend_copy.argtypes = [c_void_p, c_void_p]
 lib.lsl_remove_child_n.argtypes = [c_void_p, c_char_p]
 lib.lsl_remove_child.argtypes = [c_void_p, c_void_p]
 lib.lsl_destroy_string.argtypes = [c_void_p]
-# noinspection PyBroadException
-try:
-    lib.lsl_pull_chunk_f.restype = c_long
-    lib.lsl_pull_chunk_d.restype = c_long
-    lib.lsl_pull_chunk_l.restype = c_long
-    lib.lsl_pull_chunk_i.restype = c_long
-    lib.lsl_pull_chunk_s.restype = c_long
-    lib.lsl_pull_chunk_c.restype = c_long
-    lib.lsl_pull_chunk_str.restype = c_long
-    lib.lsl_pull_chunk_buf.restype = c_long
-except:
-    print(
-        "pylsl: chunk transfer functions not available in your liblsl "
-        "version."
-    )
-# noinspection PyBroadException
-try:
-    lib.lsl_create_continuous_resolver.restype = c_void_p
-    lib.lsl_create_continuous_resolver_bypred.restype = c_void_p
-    lib.lsl_create_continuous_resolver_byprop.restype = c_void_p
-except:
-    print(
-        "pylsl: ContinuousResolver not (fully) available in your liblsl "
-        "version."
-    )
 
+lib.lsl_pull_chunk_f.restype = c_long
+lib.lsl_pull_chunk_d.restype = c_long
+lib.lsl_pull_chunk_l.restype = c_long
+lib.lsl_pull_chunk_i.restype = c_long
+lib.lsl_pull_chunk_s.restype = c_long
+lib.lsl_pull_chunk_c.restype = c_long
+lib.lsl_pull_chunk_str.restype = c_long
+lib.lsl_pull_chunk_buf.restype = c_long
+
+lib.lsl_create_continuous_resolver.restype = c_void_p
+lib.lsl_create_continuous_resolver_bypred.restype = c_void_p
+lib.lsl_create_continuous_resolver_byprop.restype = c_void_p
 
 # int64 support on windows and 32bit OSes isn't there yet
 if struct.calcsize("P") != 4 and platform.system() != "Windows":
@@ -876,29 +853,23 @@ fmt2pull_sample = [
     lib.lsl_pull_sample_c,
     pull_sample_int64,
 ]
-# noinspection PyBroadException
-try:
-    fmt2push_chunk = [
-        [],
-        lib.lsl_push_chunk_ftp,
-        lib.lsl_push_chunk_dtp,
-        lib.lsl_push_chunk_strtp,
-        lib.lsl_push_chunk_itp,
-        lib.lsl_push_chunk_stp,
-        lib.lsl_push_chunk_ctp,
-        push_chunk_int64,
-    ]
-    fmt2pull_chunk = [
-        [],
-        lib.lsl_pull_chunk_f,
-        lib.lsl_pull_chunk_d,
-        lib.lsl_pull_chunk_str,
-        lib.lsl_pull_chunk_i,
-        lib.lsl_pull_chunk_s,
-        lib.lsl_pull_chunk_c,
-        pull_chunk_int64,
-    ]
-except:
-    # if not available
-    fmt2push_chunk = [None, None, None, None, None, None, None, None]
-    fmt2pull_chunk = [None, None, None, None, None, None, None, None]
+fmt2push_chunk = [
+    [],
+    lib.lsl_push_chunk_ftp,
+    lib.lsl_push_chunk_dtp,
+    lib.lsl_push_chunk_strtp,
+    lib.lsl_push_chunk_itp,
+    lib.lsl_push_chunk_stp,
+    lib.lsl_push_chunk_ctp,
+    push_chunk_int64,
+]
+fmt2pull_chunk = [
+    [],
+    lib.lsl_pull_chunk_f,
+    lib.lsl_pull_chunk_d,
+    lib.lsl_pull_chunk_str,
+    lib.lsl_pull_chunk_i,
+    lib.lsl_pull_chunk_s,
+    lib.lsl_pull_chunk_c,
+    pull_chunk_int64,
+]
