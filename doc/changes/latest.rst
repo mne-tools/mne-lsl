@@ -20,18 +20,18 @@ Version 0.6
 Enhancements
 ------------
 
-- Improve GitHub workflows and add CodeCov (:pr:`70`)
-- Add `bsl.sys_info` to display system information and dependency version  (:pr:`70`)
+- Improve GitHub workflows and add CodeCov (:pr:`71`)
+- Add `bsl.sys_info` to display system information and dependency version  (:pr:`71`)
 
 Bugs
 ----
 
-- Change type of the data stream from a `bsl.StreamPlayer` to ``np.float64`` (:pr:`70`)
+- Change type of the data stream from a `bsl.StreamPlayer` to ``np.float64`` (:pr:`71`)
 
 API and behavior changes
 ------------------------
 
-- Add the low-level `bsl.lsl` module re-implementing ``pylsl`` main objects `~bsl.lsl.StreamInfo`, `~bsl.lsl.StreamInlet`, `~bsl.lsl.StreamOutlet` (:pr:`70`)
+- Add the low-level `bsl.lsl` module re-implementing ``pylsl`` main objects `~bsl.lsl.StreamInfo`, `~bsl.lsl.StreamInlet`, `~bsl.lsl.StreamOutlet` (:pr:`71`)
 
 Authors
 -------
