@@ -3,109 +3,13 @@ from ctypes import (
     c_char_p,
     c_double,
     c_int,
-    c_long,
     c_void_p,
 )
 
 from .load_liblsl import lib
 from .utils import handle_error, _free_char_p_array_memory
-from .constants import fmt2pull_sample, fmt2pull_chunk, string2fmt, fmt2push_sample, fmt2push_chunk
+from .constants import fmt2pull_sample, fmt2pull_chunk, string2fmt
 from .stream_info import _BaseStreamInfo
-
-# =====================
-# === Stream Outlet ===
-# =====================
-class StreamOutlet:
-    def __init__(self, info, chunk_size=0, max_buffered=360):
-        self.obj = lib.lsl_create_outlet(info._obj, chunk_size, max_buffered)
-        self.obj = c_void_p(self.obj)
-        if not self.obj:
-            raise RuntimeError("could not create stream outlet.")
-        self.channel_format = string2fmt[info.dtype]
-        self.channel_count = info.n_channels
-        self.do_push_sample = fmt2push_sample[self.channel_format]
-        self.do_push_chunk = fmt2push_chunk[self.channel_format]
-        self.value_type = self.channel_format
-        self.sample_type = self.value_type * self.channel_count
-
-    def __del__(self):
-        try:
-            lib.lsl_destroy_outlet(self.obj)
-        except:
-            pass
-
-    def push_sample(self, x, timestamp=0.0, pushthrough=True):
-        if len(x) == self.channel_count:
-            if self.channel_format == c_char_p:
-                x = [v.encode("utf-8") for v in x]
-            handle_error(
-                self.do_push_sample(
-                    self.obj,
-                    self.sample_type(*x),
-                    c_double(timestamp),
-                    c_int(pushthrough),
-                )
-            )
-        else:
-            raise ValueError(
-                "length of the sample (" + str(len(x)) + ") must "
-                "correspond to the stream's channel count ("
-                + str(self.channel_count)
-                + ")."
-            )
-
-    def push_chunk(self, x, timestamp=0.0, pushthrough=True):
-        try:
-            n_values = self.channel_count * len(x)
-            data_buff = (self.value_type * n_values).from_buffer(x)
-            handle_error(
-                self.do_push_chunk(
-                    self.obj,
-                    data_buff,
-                    c_long(n_values),
-                    c_double(timestamp),
-                    c_int(pushthrough),
-                )
-            )
-        except TypeError:
-            if len(x):
-                if type(x[0]) is list:
-                    x = [v for sample in x for v in sample]
-                if self.channel_format == c_char_p:
-                    x = [v.encode("utf-8") for v in x]
-                if len(x) % self.channel_count == 0:
-                    constructor = self.value_type * len(x)
-                    # noinspection PyCallingNonCallable
-                    handle_error(
-                        self.do_push_chunk(
-                            self.obj,
-                            constructor(*x),
-                            c_long(len(x)),
-                            c_double(timestamp),
-                            c_int(pushthrough),
-                        )
-                    )
-                else:
-                    raise ValueError(
-                        "Each sample must have the same number of channels ("
-                        + str(self.channel_count)
-                        + ")."
-                    )
-
-    def have_consumers(self):
-        return bool(lib.lsl_have_consumers(self.obj))
-
-    def wait_for_consumers(self, timeout):
-        return bool(lib.lsl_wait_for_consumers(self.obj, c_double(timeout)))
-
-    def get_info(self):
-        outlet_info = lib.lsl_get_info(self.obj)
-        return _BaseStreamInfo(outlet_info)
-
-
-# ====================
-# === Stream Inlet ===
-# ====================
 
 
 class StreamInlet:

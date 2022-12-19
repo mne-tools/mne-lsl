@@ -352,7 +352,7 @@ class _Streamer:
             idx_current = idx_chunk * self._chunk_size
             idx_next = idx_current + self._chunk_size
             chunk = self._raw._data[:, idx_current:idx_next]
-            data = chunk.transpose().tolist()
+            data = chunk.transpose()
 
             if idx_current >= self._raw._data.shape[1] - self._chunk_size:
                 finished = True
