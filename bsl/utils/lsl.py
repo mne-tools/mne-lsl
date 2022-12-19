@@ -119,7 +119,7 @@ def lsl_channel_list(inlet):
     """
     _check_type(inlet, (pylsl.StreamInlet,), item_name="inlet")
 
-    xml_str = inlet.info().as_xml
+    xml_str = inlet.get_sinfo().as_xml
     root = ET.fromstring(xml_str)
 
     ch_list = []

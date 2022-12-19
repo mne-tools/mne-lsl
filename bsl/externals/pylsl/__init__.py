@@ -1,6 +1,4 @@
-from .pylsl import (
-    StreamInlet,
-)
+from .pylsl import StreamInlet
 from .stream_info import StreamInfo
 from .stream_outlet import StreamOutlet
 from .functions import (

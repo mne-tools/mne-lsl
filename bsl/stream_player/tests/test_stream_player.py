@@ -43,7 +43,7 @@ def test_stream_player(caplog):
 
     # Test that data is being streamed
     idx = [stream.name for stream in streams].index(stream_name)
-    inlet = pylsl.StreamInlet(streams[idx], max_buflen=int(raw.info["sfreq"]))
+    inlet = pylsl.StreamInlet(streams[idx], max_buffered=int(raw.info["sfreq"]))
     inlet.open_stream()
     time.sleep(0.1)
     chunk, tslist = inlet.pull_chunk(

@@ -39,16 +39,16 @@ class _Stream(ABC):
 
         if self._sample_rate is not None:
             samples_per_sec = self._sample_rate
-            # max_buflen: seconds
+            # max_buffered: seconds
             self._inlet = pylsl.StreamInlet(
-                streamInfo, max_buflen=math.ceil(self._lsl_bufsize)
+                streamInfo, max_buffered=math.ceil(self._lsl_bufsize)
             )
         else:
             samples_per_sec = 100
-            # max_buflen: samples x100
+            # max_buffered: samples x100
             self._inlet = pylsl.StreamInlet(
                 streamInfo,
-                max_buflen=math.ceil(self._lsl_bufsize * samples_per_sec),
+                max_buffered=math.ceil(self._lsl_bufsize * samples_per_sec),
             )
         self._inlet.open_stream()
 
@@ -81,7 +81,7 @@ class _Stream(ABC):
         """Extract the name, serial number and if it's a slave."""
         self._name = self._streamInfo.name
         self._serial = (
-            self._inlet.info()
+            self._inlet.get_sinfo()
             .desc
             .child("acquisition")
             .child_value("serial_number")
@@ -91,7 +91,7 @@ class _Stream(ABC):
             self._serial = "N/A"
 
         self._is_slave = (
-            self._inlet.info()
+            self._inlet.get_sinfo()
             .desc
             .child("amplifier")
             .child("settings")

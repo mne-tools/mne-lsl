@@ -16,7 +16,7 @@ class StreamInlet:
     def __init__(
         self,
         info,
-        max_buflen=360,
+        max_buffered=360,
         max_chunklen=0,
         recover=True,
         processing_flags=0,
@@ -26,7 +26,7 @@ class StreamInlet:
                 "description needs to be of type StreamInfo, " "got a list."
             )
         self.obj = lib.lsl_create_inlet(
-            info._obj, max_buflen, max_chunklen, recover
+            info._obj, max_buffered, max_chunklen, recover
         )
         self.obj = c_void_p(self.obj)
         if not self.obj:
@@ -50,7 +50,7 @@ class StreamInlet:
         except:
             pass
 
-    def info(self, timeout=32000000.0):
+    def get_sinfo(self, timeout=32000000.0):
         errcode = c_int()
         result = lib.lsl_get_fullinfo(
             self.obj, c_double(timeout), byref(errcode)
