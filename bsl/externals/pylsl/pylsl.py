@@ -1,63 +1,17 @@
-import platform
-import struct
 from ctypes import (
     byref,
-    c_byte,
     c_char_p,
     c_double,
-    c_float,
     c_int,
     c_long,
-    c_longlong,
-    c_short,
     c_void_p,
 )
 
+from ...utils._checks import _check_value, _check_type
 from .load_liblsl import lib
 from .utils import handle_error, _free_char_p_array_memory, XMLElement
+from .constants import fmt2pull_sample, fmt2pull_chunk, fmt2idx, idx2fmt, string2fmt, fmt2push_sample, fmt2push_chunk
 
-# =================
-# === Constants ===
-# =================
-
-# Value formats supported by LSL. LSL data streams are sequences of samples,
-# each of which is a same-size vector of values with one of the below types.
-# For up to 24-bit precision measurements in the appropriate physical unit (
-# e.g., microvolts). Integers from -16777216 to 16777216 are represented
-# accurately.
-cf_float32 = 1
-# For universal numeric data as long as permitted by network and disk budget.
-#  The largest representable integer is 53-bit.
-cf_double64 = 2
-# For variable-length ASCII strings or data blobs, such as video frames,
-# complex event descriptions, etc.
-cf_string = 3
-# For high-rate digitized formats that require 32-bit precision. Depends
-# critically on meta-data to represent meaningful units. Useful for
-# application event codes or other coded data.
-cf_int32 = 4
-# For very high bandwidth signals or CD quality audio (for professional audio
-#  float is recommended).
-cf_int16 = 5
-# For binary signals or other coded data.
-cf_int8 = 6
-# For now only for future compatibility. Support for this type is not
-# available on all languages and platforms.
-cf_int64 = 7
-
-# Post processing flags
-proc_none = 0  # No automatic post-processing; return the ground-truth time stamps for manual post-processing.
-proc_clocksync = 1  # Perform automatic clock synchronization; equivalent to manually adding the time_correction().
-proc_dejitter = 2  # Remove jitter from time stamps using a smoothing algorithm to the received time stamps.
-proc_monotonize = 4  # Force the time-stamps to be monotonically ascending. Only makes sense if timestamps are dejittered.
-proc_threadsafe = 8  # Post-processing is thread-safe (same inlet can be read from by multiple threads).
-proc_ALL = (
-    proc_none
-    | proc_clocksync
-    | proc_dejitter
-    | proc_monotonize
-    | proc_threadsafe
-)
 
 # ==========================
 # === Stream Declaration ===
@@ -69,7 +23,7 @@ class StreamInfo:
         type="",
         channel_count=1,
         nominal_srate=0.0,
-        channel_format=cf_float32,
+        channel_format="float32",
         source_id="",
         handle=None,
     ):
@@ -77,7 +31,7 @@ class StreamInfo:
             self.obj = c_void_p(handle)
         else:
             if isinstance(channel_format, str):
-                channel_format = string2fmt[channel_format]
+                channel_format = StreamInfo._string2idxfmt(channel_format)
             self.obj = lib.lsl_create_streaminfo(
                 c_char_p(str.encode(name)),
                 c_char_p(str.encode(type)),
@@ -91,6 +45,20 @@ class StreamInfo:
                 raise RuntimeError(
                     "could not create stream description " "object."
                 )
+
+    # -------------------------------------------------------------------------
+    @staticmethod
+    def _string2idxfmt(dtype) -> int:
+        """Convert a string format to its LSL integer value."""
+        if dtype in fmt2idx:
+            return fmt2idx[dtype]
+        _check_type(dtype, (str, "int"), "dtype")
+        if isinstance(dtype, str):
+            _check_value(dtype, string2fmt, "dtype")
+            dtype = fmt2idx[string2fmt[dtype]]
+        else:
+            _check_value(dtype, idx2fmt, "dtype")
+        return dtype
 
     def __del__(self):
         try:
@@ -112,7 +80,7 @@ class StreamInfo:
         return lib.lsl_get_nominal_srate(self.obj)
 
     def channel_format(self):
-        return lib.lsl_get_channel_format(self.obj)
+        return idx2fmt[lib.lsl_get_channel_format(self.obj)]
 
     def source_id(self):
         return lib.lsl_get_source_id(self.obj).decode("utf-8")
@@ -156,7 +124,7 @@ class StreamOutlet:
         self.channel_count = info.channel_count()
         self.do_push_sample = fmt2push_sample[self.channel_format]
         self.do_push_chunk = fmt2push_chunk[self.channel_format]
-        self.value_type = fmt2type[self.channel_format]
+        self.value_type = self.channel_format
         self.sample_type = self.value_type * self.channel_count
 
     def __del__(self):
@@ -167,7 +135,7 @@ class StreamOutlet:
 
     def push_sample(self, x, timestamp=0.0, pushthrough=True):
         if len(x) == self.channel_count:
-            if self.channel_format == cf_string:
+            if self.channel_format == c_char_p:
                 x = [v.encode("utf-8") for v in x]
             handle_error(
                 self.do_push_sample(
@@ -202,7 +170,7 @@ class StreamOutlet:
             if len(x):
                 if type(x[0]) is list:
                     x = [v for sample in x for v in sample]
-                if self.channel_format == cf_string:
+                if self.channel_format == c_char_p:
                     x = [v.encode("utf-8") for v in x]
                 if len(x) % self.channel_count == 0:
                     constructor = self.value_type * len(x)
@@ -277,7 +245,7 @@ class StreamInlet:
         self.channel_count = info.channel_count()
         self.do_pull_sample = fmt2pull_sample[self.channel_format]
         self.do_pull_chunk = fmt2pull_chunk[self.channel_format]
-        self.value_type = fmt2type[self.channel_format]
+        self.value_type = self.channel_format
         self.sample_type = self.value_type * self.channel_count
         self.sample = self.sample_type()
         self.buffers = {}
@@ -331,7 +299,7 @@ class StreamInlet:
         handle_error(errcode)
         if timestamp:
             sample = [v for v in self.sample]
-            if self.channel_format == cf_string:
+            if self.channel_format == c_char_p:
                 sample = [v.decode("utf-8") for v in sample]
             if assign_to is not None:
                 assign_to[:] = sample
@@ -375,7 +343,7 @@ class StreamInlet:
                 [data_buff[s * num_channels + c] for c in range(num_channels)]
                 for s in range(int(num_samples))
             ]
-            if self.channel_format == cf_string:
+            if self.channel_format == c_char_p:
                 samples = [[v.decode("utf-8") for v in s] for s in samples]
                 _free_char_p_array_memory(data_buff, max_values)
         else:
@@ -391,93 +359,3 @@ class StreamInlet:
 
     def was_clock_reset(self):
         return bool(lib.lsl_was_clock_reset(self.obj))
-
-
-# ==================================
-# === Module Initialization Code ===
-# ==================================
-# int64 support on windows and 32bit OSes isn't there yet
-if struct.calcsize("P") != 4 and platform.system() != "Windows":
-    push_sample_int64 = lib.lsl_push_sample_ltp
-    pull_sample_int64 = lib.lsl_pull_sample_l
-    push_chunk_int64 = lib.lsl_push_chunk_ltp
-    pull_chunk_int64 = lib.lsl_pull_chunk_l
-else:
-
-    def push_sample_int64(*_):
-        raise NotImplementedError(
-            "int64 support isn't enabled on your platform"
-        )
-
-    pull_sample_int64 = push_chunk_int64 = pull_chunk_int64 = push_sample_int64
-
-# set up some type maps
-string2fmt = {
-    "float32": cf_float32,
-    "double64": cf_double64,
-    "string": cf_string,
-    "int32": cf_int32,
-    "int16": cf_int16,
-    "int8": cf_int8,
-    "int64": cf_int64,
-}
-fmt2string = [
-    "undefined",
-    "float32",
-    "double64",
-    "string",
-    "int32",
-    "int16",
-    "int8",
-    "int64",
-]
-fmt2type = [
-    [],
-    c_float,
-    c_double,
-    c_char_p,
-    c_int,
-    c_short,
-    c_byte,
-    c_longlong,
-]
-fmt2push_sample = [
-    [],
-    lib.lsl_push_sample_ftp,
-    lib.lsl_push_sample_dtp,
-    lib.lsl_push_sample_strtp,
-    lib.lsl_push_sample_itp,
-    lib.lsl_push_sample_stp,
-    lib.lsl_push_sample_ctp,
-    push_sample_int64,
-]
-fmt2pull_sample = [
-    [],
-    lib.lsl_pull_sample_f,
-    lib.lsl_pull_sample_d,
-    lib.lsl_pull_sample_str,
-    lib.lsl_pull_sample_i,
-    lib.lsl_pull_sample_s,
-    lib.lsl_pull_sample_c,
-    pull_sample_int64,
-]
-fmt2push_chunk = [
-    [],
-    lib.lsl_push_chunk_ftp,
-    lib.lsl_push_chunk_dtp,
-    lib.lsl_push_chunk_strtp,
-    lib.lsl_push_chunk_itp,
-    lib.lsl_push_chunk_stp,
-    lib.lsl_push_chunk_ctp,
-    push_chunk_int64,
-]
-fmt2pull_chunk = [
-    [],
-    lib.lsl_pull_chunk_f,
-    lib.lsl_pull_chunk_d,
-    lib.lsl_pull_chunk_str,
-    lib.lsl_pull_chunk_i,
-    lib.lsl_pull_chunk_s,
-    lib.lsl_pull_chunk_c,
-    pull_chunk_int64,
-]
