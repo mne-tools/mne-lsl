@@ -5,14 +5,20 @@ from typing import Optional, Union
 
 import pytest
 
-from bsl.utils._logs import init_logger, logger, set_log_level, verbose
+from .._logs import (
+    _init_logger,
+    add_file_handler,
+    logger,
+    set_log_level,
+    verbose,
+)
 
 logger.propagate = True
 
 
 def test_default_log_level(caplog):
     """Test the default log level."""
-    init_logger()
+    _init_logger()
 
     caplog.clear()
     logger.debug("101")
@@ -85,3 +91,26 @@ def test_verbose(caplog):
     caplog.clear()
     foo(verbose="DEBUG")
     assert "101" in caplog.text
+
+
+def test_file_handler(tmp_path):
+    """Test adding a file handler."""
+    fname = tmp_path / "logs.txt"
+    add_file_handler(fname)
+
+    set_log_level("WARNING")
+    logger.warning("test1")
+    logger.info("test2")
+    set_log_level("INFO")
+    logger.info("test3")
+
+    logger.handlers[-1].close()
+
+    with open(fname, mode="r") as file:
+        lines = file.readlines()
+
+    assert len(lines) == 2
+    assert "test1" in lines[0]
+    assert "test2" not in lines[0]
+    assert "test2" not in lines[1]
+    assert "test3" in lines[1]
