@@ -3,7 +3,7 @@ from threading import Thread
 import mne
 import numpy as np
 
-from ..externals import pylsl
+from ..lsl import resolve_streams
 from ..utils import Timer
 from ..utils._checks import _check_type
 from ..utils._docs import fill_doc
@@ -79,7 +79,7 @@ class StreamReceiver:
 
         watchdog = Timer()
         while watchdog.sec() <= timeout:
-            streamInfos = pylsl.resolve_streams()
+            streamInfos = resolve_streams()
             for streamInfo in streamInfos:
 
                 # connect to a specific amp only?

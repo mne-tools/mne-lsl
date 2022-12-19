@@ -2,7 +2,7 @@
 
 import xml.etree.ElementTree as ET
 
-from ..externals import pylsl
+from ..lsl import resolve_streams, StreamInlet
 from . import Timer
 from ._checks import _check_type
 from ._logs import logger
@@ -21,12 +21,12 @@ def list_lsl_streams(ignore_markers=False):
     stream_list : list
         List of the found stream name.
     streamInfos : list
-        List of the corresponding ``pylsl.StreamInfo``.
+        List of the corresponding `~bsl.lsl.StreamInfo`.
     """
     _check_type(ignore_markers, (bool,), item_name="ignore_markers")
 
     stream_list = []
-    streamInfos = pylsl.resolve_streams()
+    streamInfos = resolve_streams()
 
     if len(streamInfos) == 0:
         return stream_list, []
@@ -109,7 +109,7 @@ def lsl_channel_list(inlet):
 
     Parameters
     ----------
-    inlet : pylsl.StreamInlet
+    inlet : StreamInlet
         Inlet to extract the channels list from.
 
     Returns
@@ -117,7 +117,7 @@ def lsl_channel_list(inlet):
     ch_list : list
         List of channels name ``[name1, name2, ... ]``.
     """
-    _check_type(inlet, (pylsl.StreamInlet,), item_name="inlet")
+    _check_type(inlet, (StreamInlet,), item_name="inlet")
 
     xml_str = inlet.get_sinfo().as_xml
     root = ET.fromstring(xml_str)

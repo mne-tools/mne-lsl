@@ -4,8 +4,8 @@ from typing import List, Optional, Union
 import numpy as np
 from numpy.typing import NDArray
 
-from ...utils._checks import _check_type
-from ...utils._docs import copy_doc
+from ..utils._checks import _check_type
+from ..utils._docs import copy_doc
 from .constants import fmt2numpy, fmt2push_chunk, fmt2push_sample, fmt2string
 from .load_liblsl import lib
 from .stream_info import _BaseStreamInfo

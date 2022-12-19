@@ -1,7 +1,7 @@
 from ctypes import byref, c_double, c_void_p
 from typing import List
 
-from ...utils._checks import _check_type
+from ..utils._checks import _check_type
 from .load_liblsl import lib
 from .stream_info import _BaseStreamInfo
 

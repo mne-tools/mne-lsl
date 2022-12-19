@@ -5,7 +5,7 @@ from pathlib import Path
 import mne
 import numpy as np
 
-from ..externals import pylsl
+from ..lsl import StreamOutlet, StreamInfo, local_clock
 from ..triggers import TriggerDef
 from ..utils import find_event_channel
 from ..utils._checks import _check_type
@@ -318,7 +318,7 @@ class _Streamer:
         if isinstance(self._tch, list):
             self._tch = self._tch[0]
         self._scale_raw_data()
-        self._outlet = pylsl.StreamOutlet(
+        self._outlet = StreamOutlet(
             self._sinfo, chunk_size=self._chunk_size
         )
 
@@ -366,7 +366,7 @@ class _Streamer:
                 "[%8.3fs] sent %d samples (LSL %8.3f)",
                 time.perf_counter(),
                 len(data),
-                pylsl.local_clock(),
+                local_clock(),
             )
 
             self._log_event(chunk)
@@ -418,7 +418,7 @@ class _Streamer:
         Extract information from raw and set the LSL server's information
         needed to create the LSL stream.
         """
-        sinfo = pylsl.StreamInfo(
+        sinfo = StreamInfo(
             stream_name,
             n_channels=channel_count,
             dtype="float32",

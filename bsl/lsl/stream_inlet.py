@@ -5,8 +5,8 @@ from typing import List, Optional, Union
 
 import numpy as np
 
-from ...utils._checks import _check_type, _check_value
-from ...utils._docs import copy_doc
+from ..utils._checks import _check_type, _check_value
+from ..utils._docs import copy_doc
 from .constants import (
     fmt2pull_chunk,
     fmt2pull_sample,

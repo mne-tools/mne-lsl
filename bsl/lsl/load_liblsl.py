@@ -4,7 +4,7 @@ from ctypes import CDLL, c_char_p, c_double, c_long, c_void_p
 from pathlib import Path
 from typing import Optional, Tuple, Union
 
-from ...utils._logs import logger
+from ..utils._logs import logger
 
 # Minimum/Maximum liblsl version. The major version is given by version // 100
 # and the minor version is given by version % 100.

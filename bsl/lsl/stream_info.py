@@ -1,6 +1,6 @@
 from ctypes import c_char_p, c_double, c_void_p
 
-from ...utils._checks import _check_type, _check_value
+from ..utils._checks import _check_type, _check_value
 from .constants import fmt2idx, fmt2string, idx2fmt, string2fmt
 from .load_liblsl import lib
 from .utils import XMLElement
