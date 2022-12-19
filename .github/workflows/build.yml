@@ -1,7 +1,4 @@
 name: build
-# https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#concurrency
-# https://docs.github.com/en/developers/webhooks-and-events/events/github-event-types#pullrequestevent
-# workflow name, PR number (empty on push), push ref (empty on PR)
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.number }}-${{ github.event.ref }}
   cancel-in-progress: true
@@ -13,13 +10,13 @@ on:
 
 jobs:
   build:
-    timeout-minutes: 30
+    timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu, macos, windows]
         python-version: [3.8, 3.9, "3.10"]
-    name: ${{ matrix.os }} - ${{ matrix.python-version }}
+    name: ${{ matrix.os }} - py${{ matrix.python-version }}
     runs-on: ${{ matrix.os }}-latest
     defaults:
       run:
@@ -32,25 +29,30 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           architecture: 'x64'
+      - name: Install linux dependencies
+        if: ${{ matrix.os == 'ubuntu'}}
+        run: |
+          sudo apt update
+          sudo apt install -y libpugixml-dev
       - name: Install dependencies
         run: |
           python -m pip install --progress-bar off --upgrade pip setuptools wheel
           python -m pip install --progress-bar off .[build]
       - name: Test package install
-        run: python -c "import bsl; print(bsl.__version__)"
+        run: bsl-sys_info
       - name: Remove package install
-        run: python -m pip uninstall -y bsl
+        run: python -m pip uninstall -yq bsl
       - name: Build package
         run: python -m build
       - name: Install sdist
         run: pip install ./dist/*.tar.gz
       - name: Test sdist install
-        run: python -c "import bsl; print(bsl.__version__)"
+        run: bsl-sys_info
       - name: Remove sdist install
-        run: python -m pip uninstall -y bsl
+        run: python -m pip uninstall -yq bsl
       - name: Install wheel
         run: pip install ./dist/*.whl
       - name: Test wheel install
-        run: python -c "import bsl; print(bsl.__version__)"
+        run: bsl-sys_info
       - name: Remove wheel install
-        run: python -m pip uninstall -y bsl
+        run: python -m pip uninstall -yq bsl
