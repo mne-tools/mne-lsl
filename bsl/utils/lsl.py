@@ -2,7 +2,7 @@
 
 import xml.etree.ElementTree as ET
 
-from ..lsl import resolve_streams, StreamInlet
+from ..lsl import StreamInlet, resolve_streams
 from . import Timer
 from ._checks import _check_type
 from ._logs import logger

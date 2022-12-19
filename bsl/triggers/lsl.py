@@ -35,7 +35,7 @@ class LSLTrigger(BaseTrigger):
             name=name,
             stype="Markers",
             n_channels=1,
-            sfreq=0.,
+            sfreq=0.0,
             dtype="int16",
             source_id=name,
         )

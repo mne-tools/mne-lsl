@@ -11,7 +11,7 @@ from bsl.datasets import (
     eeg_resting_state_short,
     trigger_def,
 )
-from bsl.lsl import resolve_streams, StreamInlet
+from bsl.lsl import StreamInlet, resolve_streams
 from bsl.triggers import TriggerDef
 from bsl.utils._tests import (
     requires_eeg_auditory_stimuli_dataset,
@@ -43,9 +43,7 @@ def test_stream_player(caplog):
 
     # Test that data is being streamed
     idx = [stream.name for stream in streams].index(stream_name)
-    inlet = StreamInlet(
-        streams[idx], max_buffered=int(raw.info["sfreq"])
-    )
+    inlet = StreamInlet(streams[idx], max_buffered=int(raw.info["sfreq"]))
     inlet.open_stream()
     time.sleep(0.1)
     chunk, tslist = inlet.pull_chunk(

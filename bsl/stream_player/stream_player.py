@@ -5,7 +5,7 @@ from pathlib import Path
 import mne
 import numpy as np
 
-from ..lsl import StreamOutlet, StreamInfo, local_clock
+from ..lsl import StreamInfo, StreamOutlet, local_clock
 from ..triggers import TriggerDef
 from ..utils import find_event_channel
 from ..utils._checks import _check_type
@@ -318,9 +318,7 @@ class _Streamer:
         if isinstance(self._tch, list):
             self._tch = self._tch[0]
         self._scale_raw_data()
-        self._outlet = StreamOutlet(
-            self._sinfo, chunk_size=self._chunk_size
-        )
+        self._outlet = StreamOutlet(self._sinfo, chunk_size=self._chunk_size)
 
     def _scale_raw_data(self):
         """Assumes raw data is in Volt and convert to microvolts.
