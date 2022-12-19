@@ -1,8 +1,6 @@
-import os
 import platform
 import struct
 from ctypes import (
-    CDLL,
     POINTER,
     byref,
     c_byte,
@@ -15,8 +13,9 @@ from ctypes import (
     c_short,
     c_void_p,
     cast,
-    util,
 )
+
+from .load_liblsl import lib
 
 # =================
 # === Constants ===
@@ -635,159 +634,6 @@ def handle_error(errcode):
 # ==================================
 # === Module Initialization Code ===
 # ==================================
-
-
-def find_liblsl_libraries():
-    if "PYLSL_LIB" in os.environ:
-        path = os.environ["PYLSL_LIB"]
-        if os.path.isfile(path):
-            yield path
-
-    os_name = platform.system()
-    if os_name in ["Windows", "Microsoft"]:
-        libsuffix = ".dll"
-    elif os_name == "Darwin":
-        libsuffix = ".dylib"
-    elif os_name == "Linux":
-        libsuffix = ".so"
-    else:
-        raise RuntimeError("unrecognized operating system:", os_name)
-
-    # Package-wide search
-    libbasepath = os.path.join(os.path.dirname(__file__), "lib")
-    for file in os.listdir(libbasepath):
-        path = os.path.join(libbasepath, file)
-        if os.path.isfile(path) and file.split(".")[-1] == libsuffix[1:]:
-            yield path
-
-    if os_name not in ["Windows", "Microsoft"]:
-        for libprefix in ["", "lib"]:
-            for debugsuffix in ["", "-debug"]:
-                for bitness in ["", str(8 * struct.calcsize("P"))]:
-                    path = util.find_library(
-                        libprefix + "lsl" + bitness + debugsuffix
-                    )
-                    if path is not None:
-                        yield path
-
-
-libpaths = find_liblsl_libraries()
-while True:
-    try:
-        libpath = next(libpaths)
-        lib = CDLL(libpath)
-        break
-    except StopIteration:
-        raise RuntimeError(
-            "Your system configuration is not supported by default by BSL. "
-            "Please install 'pylsl' first and make sure it can be imported "
-            "on your system."
-        )
-    except Exception:
-        continue
-
-
-# set function return types where necessary
-lib.lsl_local_clock.restype = c_double
-lib.lsl_create_streaminfo.restype = c_void_p
-lib.lsl_library_info.restype = c_char_p
-lib.lsl_get_name.restype = c_char_p
-lib.lsl_get_type.restype = c_char_p
-lib.lsl_get_nominal_srate.restype = c_double
-lib.lsl_get_source_id.restype = c_char_p
-lib.lsl_get_created_at.restype = c_double
-lib.lsl_get_uid.restype = c_char_p
-lib.lsl_get_session_id.restype = c_char_p
-lib.lsl_get_hostname.restype = c_char_p
-lib.lsl_get_desc.restype = c_void_p
-lib.lsl_get_xml.restype = c_char_p
-lib.lsl_create_outlet.restype = c_void_p
-lib.lsl_create_inlet.restype = c_void_p
-lib.lsl_get_fullinfo.restype = c_void_p
-lib.lsl_get_info.restype = c_void_p
-lib.lsl_open_stream.restype = c_void_p
-lib.lsl_time_correction.restype = c_double
-lib.lsl_pull_sample_f.restype = c_double
-lib.lsl_pull_sample_d.restype = c_double
-lib.lsl_pull_sample_l.restype = c_double
-lib.lsl_pull_sample_i.restype = c_double
-lib.lsl_pull_sample_s.restype = c_double
-lib.lsl_pull_sample_c.restype = c_double
-lib.lsl_pull_sample_str.restype = c_double
-lib.lsl_pull_sample_buf.restype = c_double
-lib.lsl_first_child.restype = c_void_p
-lib.lsl_first_child.argtypes = [
-    c_void_p,
-]
-lib.lsl_last_child.restype = c_void_p
-lib.lsl_last_child.argtypes = [
-    c_void_p,
-]
-lib.lsl_next_sibling.restype = c_void_p
-lib.lsl_next_sibling.argtypes = [
-    c_void_p,
-]
-lib.lsl_previous_sibling.restype = c_void_p
-lib.lsl_previous_sibling.argtypes = [
-    c_void_p,
-]
-lib.lsl_parent.restype = c_void_p
-lib.lsl_parent.argtypes = [
-    c_void_p,
-]
-lib.lsl_child.restype = c_void_p
-lib.lsl_child.argtypes = [c_void_p, c_char_p]
-lib.lsl_next_sibling_n.restype = c_void_p
-lib.lsl_next_sibling_n.argtypes = [c_void_p, c_char_p]
-lib.lsl_previous_sibling_n.restype = c_void_p
-lib.lsl_previous_sibling_n.argtypes = [c_void_p, c_char_p]
-lib.lsl_name.restype = c_char_p
-lib.lsl_name.argtypes = [
-    c_void_p,
-]
-lib.lsl_value.restype = c_char_p
-lib.lsl_value.argtypes = [
-    c_void_p,
-]
-lib.lsl_child_value.restype = c_char_p
-lib.lsl_child_value.argtypes = [
-    c_void_p,
-]
-lib.lsl_child_value_n.restype = c_char_p
-lib.lsl_child_value_n.argtypes = [c_void_p, c_char_p]
-lib.lsl_append_child_value.restype = c_void_p
-lib.lsl_append_child_value.argtypes = [c_void_p, c_char_p, c_char_p]
-lib.lsl_prepend_child_value.restype = c_void_p
-lib.lsl_prepend_child_value.argtypes = [c_void_p, c_char_p, c_char_p]
-# Return type for lsl_set_child_value, lsl_set_name, lsl_set_value is int
-lib.lsl_set_child_value.argtypes = [c_void_p, c_char_p, c_char_p]
-lib.lsl_set_name.argtypes = [c_void_p, c_char_p]
-lib.lsl_set_value.argtypes = [c_void_p, c_char_p]
-lib.lsl_append_child.restype = c_void_p
-lib.lsl_append_child.argtypes = [c_void_p, c_char_p]
-lib.lsl_prepend_child.restype = c_void_p
-lib.lsl_prepend_child.argtypes = [c_void_p, c_char_p]
-lib.lsl_append_copy.restype = c_void_p
-lib.lsl_append_copy.argtypes = [c_void_p, c_void_p]
-lib.lsl_prepend_copy.restype = c_void_p
-lib.lsl_prepend_copy.argtypes = [c_void_p, c_void_p]
-lib.lsl_remove_child_n.argtypes = [c_void_p, c_char_p]
-lib.lsl_remove_child.argtypes = [c_void_p, c_void_p]
-lib.lsl_destroy_string.argtypes = [c_void_p]
-
-lib.lsl_pull_chunk_f.restype = c_long
-lib.lsl_pull_chunk_d.restype = c_long
-lib.lsl_pull_chunk_l.restype = c_long
-lib.lsl_pull_chunk_i.restype = c_long
-lib.lsl_pull_chunk_s.restype = c_long
-lib.lsl_pull_chunk_c.restype = c_long
-lib.lsl_pull_chunk_str.restype = c_long
-lib.lsl_pull_chunk_buf.restype = c_long
-
-lib.lsl_create_continuous_resolver.restype = c_void_p
-lib.lsl_create_continuous_resolver_bypred.restype = c_void_p
-lib.lsl_create_continuous_resolver_byprop.restype = c_void_p
-
 # int64 support on windows and 32bit OSes isn't there yet
 if struct.calcsize("P") != 4 and platform.system() != "Windows":
     push_sample_int64 = lib.lsl_push_sample_ltp
