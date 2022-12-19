@@ -85,22 +85,22 @@ class StreamReceiver:
                 # connect to a specific amp only?
                 if (
                     self._stream_name is not None
-                    and streamInfo.name() not in self._stream_name
+                    and streamInfo.name not in self._stream_name
                 ):
-                    logger.info("Stream %s skipped.", streamInfo.name())
+                    logger.info("Stream %s skipped.", streamInfo.name)
                     continue
 
                 # EEG stream
                 if (
-                    streamInfo.type().lower() == "eeg"
-                    or streamInfo.type().lower() == "signal"
+                    streamInfo.stype.lower() == "eeg"
+                    or streamInfo.stype.lower() == "signal"
                 ):
-                    self._streams[streamInfo.name()] = StreamEEG(
+                    self._streams[streamInfo.name] = StreamEEG(
                         streamInfo, self._bufsize, self._winsize
                     )
                 # Marker stream
-                elif streamInfo.nominal_srate() == 0:
-                    self._streams[streamInfo.name()] = StreamMarker(
+                elif streamInfo.sfreq == 0:
+                    self._streams[streamInfo.name] = StreamMarker(
                         streamInfo, self._bufsize, self._winsize
                     )
 

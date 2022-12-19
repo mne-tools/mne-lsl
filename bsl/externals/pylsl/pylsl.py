@@ -20,24 +20,24 @@ class StreamInfo:
     def __init__(
         self,
         name="untitled",
-        type="",
-        channel_count=1,
-        nominal_srate=0.0,
-        channel_format="float32",
+        stype="",
+        n_channels=1,
+        sfreq=0.0,
+        dtype="float32",
         source_id="",
         handle=None,
     ):
         if handle is not None:
             self.obj = c_void_p(handle)
         else:
-            if isinstance(channel_format, str):
-                channel_format = StreamInfo._string2idxfmt(channel_format)
+            if isinstance(dtype, str):
+                dtype = StreamInfo._string2idxfmt(dtype)
             self.obj = lib.lsl_create_streaminfo(
                 c_char_p(str.encode(name)),
-                c_char_p(str.encode(type)),
-                channel_count,
-                c_double(nominal_srate),
-                channel_format,
+                c_char_p(str.encode(stype)),
+                n_channels,
+                c_double(sfreq),
+                dtype,
                 c_char_p(str.encode(source_id)),
             )
             self.obj = c_void_p(self.obj)
@@ -67,44 +67,57 @@ class StreamInfo:
             pass
 
     # === Core Information (assigned at construction) ===
+    @property
     def name(self):
         return lib.lsl_get_name(self.obj).decode("utf-8")
 
-    def type(self):
+    @property
+    def stype(self):
         return lib.lsl_get_type(self.obj).decode("utf-8")
 
-    def channel_count(self):
+    @property
+    def n_channels(self):
         return lib.lsl_get_channel_count(self.obj)
 
-    def nominal_srate(self):
+    @property
+    def sfreq(self):
         return lib.lsl_get_nominal_srate(self.obj)
 
-    def channel_format(self):
+    @property
+    def dtype(self):
         return idx2fmt[lib.lsl_get_channel_format(self.obj)]
 
+    @property
     def source_id(self):
         return lib.lsl_get_source_id(self.obj).decode("utf-8")
 
     # === Hosting Information (assigned when bound to an outlet/inlet) ===
-    def version(self):
+    @property
+    def protocol_version(self):
         return lib.lsl_get_version(self.obj)
 
+    @property
     def created_at(self):
         return lib.lsl_get_created_at(self.obj)
 
+    @property
     def uid(self):
         return lib.lsl_get_uid(self.obj).decode("utf-8")
 
+    @property
     def session_id(self):
         return lib.lsl_get_session_id(self.obj).decode("utf-8")
 
+    @property
     def hostname(self):
         return lib.lsl_get_hostname(self.obj).decode("utf-8")
 
     # === Data Description (can be modified) ===
+    @property
     def desc(self):
         return XMLElement(lib.lsl_get_desc(self.obj))
 
+    @property
     def as_xml(self):
         return lib.lsl_get_xml(self.obj).decode("utf-8")
 
@@ -120,8 +133,8 @@ class StreamOutlet:
         self.obj = c_void_p(self.obj)
         if not self.obj:
             raise RuntimeError("could not create stream outlet.")
-        self.channel_format = info.channel_format()
-        self.channel_count = info.channel_count()
+        self.channel_format = info.dtype
+        self.channel_count = info.n_channels
         self.do_push_sample = fmt2push_sample[self.channel_format]
         self.do_push_chunk = fmt2push_chunk[self.channel_format]
         self.value_type = self.channel_format
@@ -241,8 +254,8 @@ class StreamInlet:
             handle_error(
                 lib.lsl_set_postprocessing(self.obj, processing_flags)
             )
-        self.channel_format = info.channel_format()
-        self.channel_count = info.channel_count()
+        self.channel_format = info.dtype
+        self.channel_count = info.n_channels
         self.do_pull_sample = fmt2pull_sample[self.channel_format]
         self.do_pull_chunk = fmt2pull_chunk[self.channel_format]
         self.value_type = self.channel_format

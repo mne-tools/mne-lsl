@@ -33,10 +33,10 @@ class LSLTrigger(BaseTrigger):
         # create outlet
         self._sinfo = pylsl.StreamInfo(
             name=name,
-            type="Markers",
-            channel_count=1,
-            nominal_srate=pylsl.IRREGULAR_RATE,
-            channel_format=pylsl.cf_int16,
+            stype="Markers",
+            n_channels=1,
+            sfreq=pylsl.IRREGULAR_RATE,
+            dtype="int16",
             source_id=name,
         )
         self._outlet = pylsl.StreamOutlet(self._sinfo)

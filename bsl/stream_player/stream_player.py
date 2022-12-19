@@ -420,14 +420,14 @@ class _Streamer:
         """
         sinfo = pylsl.StreamInfo(
             stream_name,
-            channel_count=channel_count,
-            channel_format="float32",
-            nominal_srate=nominal_srate,
-            type="EEG",
+            n_channels=channel_count,
+            dtype="float32",
+            sfreq=nominal_srate,
+            stype="EEG",
             source_id=stream_name,
         )
 
-        desc = sinfo.desc()
+        desc = sinfo.desc
         channel_desc = desc.append_child("channels")
         for channel in ch_names:
             channel_desc.append_child("channel").append_child_value(

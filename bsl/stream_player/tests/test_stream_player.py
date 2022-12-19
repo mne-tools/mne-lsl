@@ -39,10 +39,10 @@ def test_stream_player(caplog):
 
     # Test stream is in resolved streams
     streams = pylsl.resolve_streams()
-    assert stream_name in [stream.name() for stream in streams]
+    assert stream_name in [stream.name for stream in streams]
 
     # Test that data is being streamed
-    idx = [stream.name() for stream in streams].index(stream_name)
+    idx = [stream.name for stream in streams].index(stream_name)
     inlet = pylsl.StreamInlet(streams[idx], max_buflen=int(raw.info["sfreq"]))
     inlet.open_stream()
     time.sleep(0.1)
@@ -71,7 +71,7 @@ def test_stream_player(caplog):
     sp.start()
     assert "Streaming started." in caplog.text
     streams = pylsl.resolve_streams()
-    assert sp.stream_name in [stream.name() for stream in streams]
+    assert sp.stream_name in [stream.name for stream in streams]
     sp.stop()
     assert (
         "Waiting for StreamPlayer %s process to finish." % "StreamPlayer"
@@ -88,7 +88,7 @@ def test_stream_player(caplog):
     with StreamPlayer(stream_name=stream_name, fif_file=fif_file):
         assert "Streaming started." in caplog.text
         streams = pylsl.resolve_streams()
-        assert stream_name in [stream.name() for stream in streams]
+        assert stream_name in [stream.name for stream in streams]
         time.sleep(0.5)
     assert (
         "Waiting for StreamPlayer %s process to finish." % "StreamPlayer"

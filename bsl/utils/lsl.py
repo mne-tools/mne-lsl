@@ -32,15 +32,15 @@ def list_lsl_streams(ignore_markers=False):
         return stream_list, []
 
     for index, streamInfo in enumerate(streamInfos):
-        if ignore_markers and "Markers" in streamInfo.type():
+        if ignore_markers and "Markers" in streamInfo.stype:
             continue
-        stream_list.append(streamInfo.name())
+        stream_list.append(streamInfo.name)
 
     if ignore_markers:
         streamInfos = [
             streamInfo
             for streamInfo in streamInfos
-            if "Markers" not in streamInfo.type()
+            if "Markers" not in streamInfo.stype
         ]
 
     return stream_list, streamInfos
@@ -97,7 +97,7 @@ def search_lsl(ignore_markers=False, timeout=10):
 
     stream_name = stream_list[index]
     streamInfo = streamInfos[index]
-    assert stream_name == streamInfo.name()
+    assert stream_name == streamInfo.name
 
     logger.info("Selected: %s", stream_name)
 
@@ -119,7 +119,7 @@ def lsl_channel_list(inlet):
     """
     _check_type(inlet, (pylsl.StreamInlet,), item_name="inlet")
 
-    xml_str = inlet.info().as_xml()
+    xml_str = inlet.info().as_xml
     root = ET.fromstring(xml_str)
 
     ch_list = []

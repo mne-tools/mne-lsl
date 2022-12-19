@@ -96,7 +96,7 @@ def test_stream_eeg(caplog):
     with StreamPlayer("StreamPlayer", eeg_resting_state.data_path()):
         streamInfos = pylsl.resolve_streams()
         for streamInfo in streamInfos:
-            if streamInfo.name() == "StreamPlayer":
+            if streamInfo.name == "StreamPlayer":
                 break
 
         stream = StreamEEG(streamInfo, bufsize=1, winsize=0.5)
@@ -146,7 +146,7 @@ def test_stream_eeg(caplog):
 
     streamInfos = pylsl.resolve_streams()
     for streamInfo in streamInfos:
-        if streamInfo.name() == "StreamPlayer":
+        if streamInfo.name == "StreamPlayer":
             break
 
     caplog.clear()
