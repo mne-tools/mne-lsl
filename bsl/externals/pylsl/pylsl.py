@@ -7,133 +7,21 @@ from ctypes import (
     c_void_p,
 )
 
-from ...utils._checks import _check_value, _check_type
 from .load_liblsl import lib
-from .utils import handle_error, _free_char_p_array_memory, XMLElement
-from .constants import fmt2pull_sample, fmt2pull_chunk, fmt2idx, idx2fmt, string2fmt, fmt2push_sample, fmt2push_chunk
-
-
-# ==========================
-# === Stream Declaration ===
-# ==========================
-class StreamInfo:
-    def __init__(
-        self,
-        name="untitled",
-        stype="",
-        n_channels=1,
-        sfreq=0.0,
-        dtype="float32",
-        source_id="",
-        handle=None,
-    ):
-        if handle is not None:
-            self.obj = c_void_p(handle)
-        else:
-            if isinstance(dtype, str):
-                dtype = StreamInfo._string2idxfmt(dtype)
-            self.obj = lib.lsl_create_streaminfo(
-                c_char_p(str.encode(name)),
-                c_char_p(str.encode(stype)),
-                n_channels,
-                c_double(sfreq),
-                dtype,
-                c_char_p(str.encode(source_id)),
-            )
-            self.obj = c_void_p(self.obj)
-            if not self.obj:
-                raise RuntimeError(
-                    "could not create stream description " "object."
-                )
-
-    # -------------------------------------------------------------------------
-    @staticmethod
-    def _string2idxfmt(dtype) -> int:
-        """Convert a string format to its LSL integer value."""
-        if dtype in fmt2idx:
-            return fmt2idx[dtype]
-        _check_type(dtype, (str, "int"), "dtype")
-        if isinstance(dtype, str):
-            _check_value(dtype, string2fmt, "dtype")
-            dtype = fmt2idx[string2fmt[dtype]]
-        else:
-            _check_value(dtype, idx2fmt, "dtype")
-        return dtype
-
-    def __del__(self):
-        try:
-            lib.lsl_destroy_streaminfo(self.obj)
-        except:
-            pass
-
-    # === Core Information (assigned at construction) ===
-    @property
-    def name(self):
-        return lib.lsl_get_name(self.obj).decode("utf-8")
-
-    @property
-    def stype(self):
-        return lib.lsl_get_type(self.obj).decode("utf-8")
-
-    @property
-    def n_channels(self):
-        return lib.lsl_get_channel_count(self.obj)
-
-    @property
-    def sfreq(self):
-        return lib.lsl_get_nominal_srate(self.obj)
-
-    @property
-    def dtype(self):
-        return idx2fmt[lib.lsl_get_channel_format(self.obj)]
-
-    @property
-    def source_id(self):
-        return lib.lsl_get_source_id(self.obj).decode("utf-8")
-
-    # === Hosting Information (assigned when bound to an outlet/inlet) ===
-    @property
-    def protocol_version(self):
-        return lib.lsl_get_version(self.obj)
-
-    @property
-    def created_at(self):
-        return lib.lsl_get_created_at(self.obj)
-
-    @property
-    def uid(self):
-        return lib.lsl_get_uid(self.obj).decode("utf-8")
-
-    @property
-    def session_id(self):
-        return lib.lsl_get_session_id(self.obj).decode("utf-8")
-
-    @property
-    def hostname(self):
-        return lib.lsl_get_hostname(self.obj).decode("utf-8")
-
-    # === Data Description (can be modified) ===
-    @property
-    def desc(self):
-        return XMLElement(lib.lsl_get_desc(self.obj))
-
-    @property
-    def as_xml(self):
-        return lib.lsl_get_xml(self.obj).decode("utf-8")
-
+from .utils import handle_error, _free_char_p_array_memory
+from .constants import fmt2pull_sample, fmt2pull_chunk, string2fmt, fmt2push_sample, fmt2push_chunk
+from .stream_info import _BaseStreamInfo
 
 # =====================
 # === Stream Outlet ===
 # =====================
-
-
 class StreamOutlet:
     def __init__(self, info, chunk_size=0, max_buffered=360):
-        self.obj = lib.lsl_create_outlet(info.obj, chunk_size, max_buffered)
+        self.obj = lib.lsl_create_outlet(info._obj, chunk_size, max_buffered)
         self.obj = c_void_p(self.obj)
         if not self.obj:
             raise RuntimeError("could not create stream outlet.")
-        self.channel_format = info.dtype
+        self.channel_format = string2fmt[info.dtype]
         self.channel_count = info.n_channels
         self.do_push_sample = fmt2push_sample[self.channel_format]
         self.do_push_chunk = fmt2push_chunk[self.channel_format]
@@ -212,18 +100,7 @@ class StreamOutlet:
 
     def get_info(self):
         outlet_info = lib.lsl_get_info(self.obj)
-        return StreamInfo(handle=outlet_info)
-
-
-# =========================
-# === Resolve Functions ===
-# =========================
-
-
-def resolve_streams(wait_time=1.0):
-    buffer = (c_void_p * 1024)()
-    num_found = lib.lsl_resolve_all(byref(buffer), 1024, c_double(wait_time))
-    return [StreamInfo(handle=buffer[k]) for k in range(num_found)]
+        return _BaseStreamInfo(outlet_info)
 
 
 # ====================
@@ -245,7 +122,7 @@ class StreamInlet:
                 "description needs to be of type StreamInfo, " "got a list."
             )
         self.obj = lib.lsl_create_inlet(
-            info.obj, max_buflen, max_chunklen, recover
+            info._obj, max_buflen, max_chunklen, recover
         )
         self.obj = c_void_p(self.obj)
         if not self.obj:
@@ -254,7 +131,7 @@ class StreamInlet:
             handle_error(
                 lib.lsl_set_postprocessing(self.obj, processing_flags)
             )
-        self.channel_format = info.dtype
+        self.channel_format = string2fmt[info.dtype]
         self.channel_count = info.n_channels
         self.do_pull_sample = fmt2pull_sample[self.channel_format]
         self.do_pull_chunk = fmt2pull_chunk[self.channel_format]
@@ -275,7 +152,7 @@ class StreamInlet:
             self.obj, c_double(timeout), byref(errcode)
         )
         handle_error(errcode)
-        return StreamInfo(handle=result)
+        return _BaseStreamInfo(result)
 
     def open_stream(self, timeout=32000000.0):
         errcode = c_int()

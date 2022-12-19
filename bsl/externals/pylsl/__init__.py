@@ -1,8 +1,8 @@
-# (not using import * for Python 2.5 support)
 from .pylsl import (
-    StreamInfo,
     StreamInlet,
     StreamOutlet,
-    resolve_streams,
 )
-from .functions import library_version, protocol_version, local_clock
+from .stream_info import StreamInfo
+from .functions import (
+    library_version, protocol_version, local_clock, resolve_streams
+)
