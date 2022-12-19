@@ -8,6 +8,7 @@ from .stream_player import StreamPlayer  # noqa: F401
 from .stream_receiver import StreamReceiver  # noqa: F401
 from .stream_recorder import StreamRecorder  # noqa: F401
 from .stream_viewer import StreamViewer  # noqa: F401
+from .utils._config import sys_info  # noqa: F401
 from .utils._logs import (  # noqa: F401
     add_file_handler,
     add_stream_handler,
