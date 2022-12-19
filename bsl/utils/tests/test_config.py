@@ -28,5 +28,7 @@ def test_sys_info():
     value = out.getvalue()
     out.close()
 
+    assert "build" in value
+    assert "doc" in value
     assert "style" in value
     assert "test" in value
