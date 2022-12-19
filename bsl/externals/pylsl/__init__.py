@@ -3,9 +3,6 @@ from .pylsl import (
     StreamInfo,
     StreamInlet,
     StreamOutlet,
-    library_version,
-    local_clock,
-    protocol_version,
     resolve_streams,
 )
-from .version import __version__
+from .functions import library_version, protocol_version, local_clock
