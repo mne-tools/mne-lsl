@@ -42,15 +42,17 @@ classifiers = [
     'Topic :: Scientific/Engineering',
 ]
 dependencies = [
-    'numpy',
+    'numpy>=1.20',
     'scipy',
     'mne>=1.0.0',
+    'psutil',
     'PyQt5',
     'pyqtgraph',
 ]
 
 [project.scripts]
 bsl = 'bsl.commands.main:run'
+bsl-sys_info = 'bsl.commands.sys_info:run'
 bsl_stream_player = 'bsl.commands.bsl_stream_player:run'
 bsl_stream_recorder = 'bsl.commands.bsl_stream_recorder:run'
 bsl_stream_viewer = 'bsl.commands.bsl_stream_viewer:run'
@@ -68,7 +70,6 @@ doc = [
     'sphinx-gallery',
 ]
 externals = [
-    'pylsl',
     'psychopy',
 ]
 parallel = [
@@ -76,6 +77,7 @@ parallel = [
     'pyparallel; platform_system == "linux"',
 ]
 style = [
+    'bibclean',
     'black',
     'codespell',
     'isort',
@@ -85,6 +87,7 @@ style = [
 test = [
     'pytest',
     'pytest-cov',
+    'pytest-timeout',
     'requests',
 ]
 all = [
@@ -111,7 +114,7 @@ exclude = ['bsl*tests']
 
 [tool.setuptools.package-data]
 "bsl.stream_viewer.control_gui.settings" = ["*.ini"]
-"bsl.externals.pylsl.lib" = ["*"]
+"bsl.lsl.lib" = ["*"]
 
 [tool.black]
 line-length = 79
@@ -126,7 +129,6 @@ extend-exclude = '''
     | doc/
     | examples/
     | bsl/externals/psychopy/
-    | bsl/externals/pylsl/
 )
 '''
 
@@ -140,7 +142,6 @@ extend_skip_glob = [
     'doc/*',
     'examples/*',
     'bsl/externals/psychopy/*',
-    'bsl/externals/pylsl/*'
 ]
 
 [tool.pydocstyle]
@@ -149,3 +150,25 @@ ignore-decorators = '(copy_doc|property|.*setter|.*getter|pyqtSlot)'
 match = '^(?!setup|__init__|test_).*\.py'
 match-dir = '^(?!build|dist|\.|externals|examples).*'
 add_ignore = 'D100,D104,D107'
+
+[tool.pytest.ini_options]
+minversion = '6.0'
+addopts = '--durations 20 --junit-xml=junit-results.xml --verbose'
+filterwarnings = []
+
+[tool.coverage.run]
+branch = true
+cover_pylib = false
+omit = [
+    '**/__init__.py',
+    '**/bsl/_version.py',
+    '**/bsl/commands/*',
+    '**/tests/**',
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    'pragma: no cover',
+    'if __name__ == .__main__.:',
+]
+precision = 2
