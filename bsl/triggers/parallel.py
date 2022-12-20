@@ -161,8 +161,8 @@ class ParallelPortTrigger(BaseTrigger):
         self._set_data(0)
         self._offtimer = threading.Timer(self._delay, self._signal_off)
 
-    @copy_doc(BaseTrigger._set_data)
     def _set_data(self, value: int) -> None:
+        """Set data on the pin."""
         if self._address.startswith("COM"):
             self._port.write(bytes([value]))
         else:
