@@ -13,3 +13,4 @@ from a terminal.
     api/triggers
     api/datasets
     api/utils
+    api/lsl

@@ -27,9 +27,18 @@ def _check_recorded_files(record_dir, eve_file, stream, fif_subdir):
 
 
 def _check_recorded_files_content(
-    record_dir, eve_file, stream, fif_subdir, dataset, record_duration
+    record_dir,
+    eve_file,
+    stream,
+    fif_subdir,
+    dataset,
+    record_duration,
 ):
     """Checks the recorded files content."""
+    # patch because of the delay added in StreamInlet.open_stream()
+    # due to the issue https://github.com/sccn/liblsl/issues/176 on the C++ lib
+    record_duration += 0.5
+
     fname_stem = eve_file.stem.split("-eve")[0]
     fname_pcl = record_dir / f"{fname_stem}-{stream}-raw.pcl"
     if fif_subdir:
@@ -112,7 +121,6 @@ def test_recording_multiple_streams(tmp_path):
     with StreamPlayer("StreamPlayer1", dataset.data_path()), StreamPlayer(
         "StreamPlayer2", dataset.data_path()
     ):
-
         # Record only StreamPlayer1
         recorder = StreamRecorder(
             record_dir=tmp_path,
@@ -126,14 +134,6 @@ def test_recording_multiple_streams(tmp_path):
         recorder.stop()
 
         _check_recorded_files(tmp_path, eve_file, "StreamPlayer1", fif_subdir)
-        _check_recorded_files_content(
-            tmp_path,
-            eve_file,
-            "StreamPlayer1",
-            fif_subdir,
-            dataset,
-            record_duration,
-        )
 
         # Record only StreamPlayer2
         recorder = StreamRecorder(
@@ -148,14 +148,6 @@ def test_recording_multiple_streams(tmp_path):
         recorder.stop()
 
         _check_recorded_files(tmp_path, eve_file, "StreamPlayer2", fif_subdir)
-        _check_recorded_files_content(
-            tmp_path,
-            eve_file,
-            "StreamPlayer2",
-            fif_subdir,
-            dataset,
-            record_duration,
-        )
 
         # Record both - stream_name = None
         recorder = StreamRecorder(
@@ -170,23 +162,7 @@ def test_recording_multiple_streams(tmp_path):
         recorder.stop()
 
         _check_recorded_files(tmp_path, eve_file, "StreamPlayer1", fif_subdir)
-        _check_recorded_files_content(
-            tmp_path,
-            eve_file,
-            "StreamPlayer1",
-            fif_subdir,
-            dataset,
-            record_duration,
-        )
         _check_recorded_files(tmp_path, eve_file, "StreamPlayer2", fif_subdir)
-        _check_recorded_files_content(
-            tmp_path,
-            eve_file,
-            "StreamPlayer2",
-            fif_subdir,
-            dataset,
-            record_duration,
-        )
 
         # Record both - stream_name = ['StreamPlayer1', 'StreamPlayer2']
         recorder = StreamRecorder(
@@ -201,23 +177,7 @@ def test_recording_multiple_streams(tmp_path):
         recorder.stop()
 
         _check_recorded_files(tmp_path, eve_file, "StreamPlayer1", fif_subdir)
-        _check_recorded_files_content(
-            tmp_path,
-            eve_file,
-            "StreamPlayer1",
-            fif_subdir,
-            dataset,
-            record_duration,
-        )
         _check_recorded_files(tmp_path, eve_file, "StreamPlayer2", fif_subdir)
-        _check_recorded_files_content(
-            tmp_path,
-            eve_file,
-            "StreamPlayer2",
-            fif_subdir,
-            dataset,
-            record_duration,
-        )
 
 
 @requires_eeg_resting_state_dataset
