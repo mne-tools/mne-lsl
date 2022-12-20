@@ -2,7 +2,7 @@
 
 import xml.etree.ElementTree as ET
 
-from ..externals import pylsl
+from ..lsl import StreamInlet, resolve_streams
 from . import Timer
 from ._checks import _check_type
 from ._logs import logger
@@ -21,26 +21,26 @@ def list_lsl_streams(ignore_markers=False):
     stream_list : list
         List of the found stream name.
     streamInfos : list
-        List of the corresponding ``pylsl.StreamInfo``.
+        List of the corresponding `~bsl.lsl.StreamInfo`.
     """
     _check_type(ignore_markers, (bool,), item_name="ignore_markers")
 
     stream_list = []
-    streamInfos = pylsl.resolve_streams()
+    streamInfos = resolve_streams()
 
     if len(streamInfos) == 0:
         return stream_list, []
 
     for index, streamInfo in enumerate(streamInfos):
-        if ignore_markers and "Markers" in streamInfo.type():
+        if ignore_markers and "Markers" in streamInfo.stype:
             continue
-        stream_list.append(streamInfo.name())
+        stream_list.append(streamInfo.name)
 
     if ignore_markers:
         streamInfos = [
             streamInfo
             for streamInfo in streamInfos
-            if "Markers" not in streamInfo.type()
+            if "Markers" not in streamInfo.stype
         ]
 
     return stream_list, streamInfos
@@ -97,7 +97,7 @@ def search_lsl(ignore_markers=False, timeout=10):
 
     stream_name = stream_list[index]
     streamInfo = streamInfos[index]
-    assert stream_name == streamInfo.name()
+    assert stream_name == streamInfo.name
 
     logger.info("Selected: %s", stream_name)
 
@@ -109,7 +109,7 @@ def lsl_channel_list(inlet):
 
     Parameters
     ----------
-    inlet : pylsl.StreamInlet
+    inlet : StreamInlet
         Inlet to extract the channels list from.
 
     Returns
@@ -117,13 +117,9 @@ def lsl_channel_list(inlet):
     ch_list : list
         List of channels name ``[name1, name2, ... ]``.
     """
-    _check_type(inlet, (pylsl.StreamInlet,), item_name="inlet")
-
-    xml_str = inlet.info().as_xml()
-    root = ET.fromstring(xml_str)
-
+    _check_type(inlet, (StreamInlet,), item_name="inlet")
+    root = ET.fromstring(inlet.get_sinfo().as_xml)
     ch_list = []
     for elt in root.iter("channel"):
         ch_list.append(elt.find("label").text)
-
     return ch_list

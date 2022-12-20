@@ -1,18 +1,11 @@
 name: code-style
-# https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#concurrency
-# https://docs.github.com/en/developers/webhooks-and-events/events/github-event-types#pullrequestevent
-# workflow name, PR number (empty on push), push ref (empty on PR)
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.number }}-${{ github.event.ref }}
   cancel-in-progress: true
 on:
   pull_request:
-    paths:
-      - '**.py'
   push:
     branches: [main]
-    paths:
-      - '**.py'
   workflow_dispatch:
 
 jobs:
@@ -27,18 +20,21 @@ jobs:
         with:
           python-version: '3.9'
           architecture: 'x64'
+      - name: Install linux dependencies
+        if: ${{ matrix.os == 'ubuntu-20.04'}}
+        run: |
+          sudo apt update
+          sudo apt install -y libpugixml-dev
       - name: Install dependencies
         run: |
           python -m pip install --progress-bar off --upgrade pip setuptools wheel
           python -m pip install --progress-bar off .[style]
-      - name: Setup flake8 annotations
-        uses: rbialon/flake8-annotations@v1
       - name: Run flake8
         uses: py-actions/flake8@v2
         with:
           path: "bsl"
       - name: Run isort
-        uses: jamescurtin/isort-action@master
+        uses: isort/isort-action@master
       - name: Run black
         uses: psf/black@stable
         with:
@@ -48,7 +44,9 @@ jobs:
         with:
           check_filenames: true
           check_hidden: true
-          skip: './.git,./build,./bsl/externals'
-          ignore_words_list: ser
+          skip: './.git,./build,./.mypy_cache,./.pytest_cache,./bsl/externals,./doc/_static/icon*'
+          ignore_words_file: ./.codespellignore
       - name: Run pydocstyle
         run: pydocstyle .
+      - name: Run bibclean
+        run: bibclean-check doc/references.bib

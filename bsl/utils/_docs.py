@@ -5,10 +5,10 @@ Inspired from mne.utils.docs.py by Eric Larson <larson.eric.d@gmail.com>
 """
 
 import sys
-from typing import Callable, List
+from typing import Callable, Dict, List
 
 # ------------------------- Documentation dictionary -------------------------
-docdict = dict()
+docdict: Dict[str, str] = dict()
 
 # -----------------------------------------------
 docdict[
@@ -193,12 +193,11 @@ verbose : bool
     If ``True``, display a ``logger.info`` message when a trigger is sent."""
 
 # ------------------------- Documentation functions --------------------------
-docdict_indented = dict()
+docdict_indented: Dict[int, Dict[str, str]] = dict()
 
 
 def fill_doc(f: Callable) -> Callable:
-    """
-    Fill a docstring with docdict entries.
+    """Fill a docstring with docdict entries.
 
     Parameters
     ----------
@@ -262,14 +261,11 @@ def _indentcount_lines(lines: List[str]) -> int:
         line_stripped = line.lstrip()
         if line_stripped:
             indent = min(indent, len(line) - len(line_stripped))
-    if indent == sys.maxsize:
-        return 0
     return indent
 
 
 def copy_doc(source: Callable) -> Callable:
-    """
-    Copy the docstring from another function (decorator).
+    """Copy the docstring from another function (decorator).
 
     The docstring of the source function is prepepended to the docstring of the
     function wrapped by this decorator.
