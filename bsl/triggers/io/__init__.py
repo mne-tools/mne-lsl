@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 """
 This module provides read / write access to the parallel port for
 Linux or Windows.
@@ -18,6 +15,8 @@ forcing the use of a specific driver:
 
 Either way, each instance of the class can provide access to a different
 parallel port.
+
+This code snippet is inspired from the parallel module of PsychoPy.
 """
 
 import sys

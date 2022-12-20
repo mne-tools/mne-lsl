@@ -1,5 +1,7 @@
 """Trigger using an LSL outlet."""
 
+import numpy as np
+
 from ..lsl import StreamInfo, StreamOutlet
 from ..utils._checks import _check_type
 from ..utils._docs import copy_doc, fill_doc
@@ -15,19 +17,31 @@ class LSLTrigger(BaseTrigger):
     LabRecorder, update the stream list after creating the
     `~bsl.triggers.LSLTrigger`.
 
-    Make sure to close the LSL outlet by calling the
-    `~bsl.triggers.LSLTrigger.close` method or by deleting the trigger after
-    use.
+    .. warning::
+
+        Make sure to close the `~bsl.lsl.StreamOutlet` by calling the
+        `~bsl.triggers.LSLTrigger.close` method or by deleting the trigger
+        after use.
 
     Parameters
     ----------
     name : str
-        Name of the LSL outlet.
-    %(trigger_verbose)s
+        Name of the trigger displayed on the LSL network.
+
+    Notes
+    -----
+    The `~bsl.lsl.StreamOutlet` created has the following properties:
+    * Type: ``"Markers"``
+    * Number of channels: 1
+    * Sampling rate: Irregular
+    * Data type: ``np.int8``
+    * Source ID: ``"BSL-name"``
+
+    The values sent must be in the range of strictly positive integers defined
+    by ``np.int8``, 1 to 127 included.
     """
 
-    def __init__(self, name: str, *, verbose: bool = True):
-        super().__init__(verbose)
+    def __init__(self, name: str):
         _check_type(name, (str,), "name")
         self._name = name
         # create outlet
@@ -39,29 +53,12 @@ class LSLTrigger(BaseTrigger):
             dtype="int8",
             source_id=f"BSL-{name}",
         )
-        self._outlet = StreamOutlet(self._sinfo)
+        self._outlet = StreamOutlet(self._sinfo, max_buffered=1)
 
     @copy_doc(BaseTrigger.signal)
     def signal(self, value: int) -> None:
-        try:
-            value = int(value)
-        except TypeError:
-            raise TypeError(
-                "The argument 'value' of an LSL Trigger must be an integer "
-                "between 1 and 127 included."
-            )
-        if not (0 < value < 128):
-            raise ValueError(
-                "The argument 'value' of an LSL Trigger must be an integer "
-                "between 1 and 127 included."
-            )
-        self._set_data(value)
         super().signal(value)
-
-    @copy_doc(BaseTrigger._set_data)
-    def _set_data(self, value: int) -> None:
-        super()._set_data(value)
-        self._outlet.push_sample([value])
+        self._outlet.push_sample(np.int8(value))
 
     def close(self) -> None:
         """Close the LSL outlet."""
@@ -76,7 +73,7 @@ class LSLTrigger(BaseTrigger):
     # --------------------------------------------------------------------
     @property
     def name(self) -> str:
-        """LSL outlet name.
+        """Name of the trigger displayed on the LSL network.
 
         :type: str
         """
@@ -84,7 +81,7 @@ class LSLTrigger(BaseTrigger):
 
     @property
     def sinfo(self) -> StreamInfo:
-        """LSL stream info.
+        """Description of the trigger outlet.
 
         :type: `~bsl.lsl.StreamInfo`
         """
@@ -92,7 +89,7 @@ class LSLTrigger(BaseTrigger):
 
     @property
     def outlet(self) -> StreamOutlet:
-        """LSL stream outlet.
+        """Trigger outlet.
 
         :type: `~bsl.lsl.StreamOutlet`
         """
