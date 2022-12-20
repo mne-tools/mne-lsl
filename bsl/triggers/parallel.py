@@ -22,14 +22,14 @@ class ParallelPortTrigger(BaseTrigger):
         If an :ref:`arduino2lpt` is used, the address must be the COM port
         (e.g. ``"COM5"``) or ``"arduino"`` for automatic detection.
     port_type : str
-        Either "arduino" or "pport" depending on the connection.
+        Either ``'arduino'`` or ``'pport'`` depending on the connection.
     delay : int
         Delay in milliseconds until which a new trigger cannot be sent. During
         this time, the pins of the LPT port remain in the same state.
 
     Notes
     -----
-    The address is specific to the system. Typical addresses are:
+    The address is specific to the system. Typical parallel port addresses are:
 
     - On Linux::
 
@@ -108,7 +108,7 @@ class ParallelPortTrigger(BaseTrigger):
                 "[Trigger] Could not connect to arduino to LPT on '%s'.",
                 self._address,
             )
-            raise Exception from error
+            raise error
 
         time.sleep(1)
         logger.info(
@@ -149,8 +149,8 @@ class ParallelPortTrigger(BaseTrigger):
         super().signal(value)
         if self._offtimer.is_alive():
             logger.warning(
-                "You are sending a new signal before the end of the last "
-                "signal. Signal ignored. Delay required = %.1f ms.",
+                "[Trigger] You are sending a new signal before the end of the "
+                "last signal. Signal ignored. Delay required = %.1f ms.",
                 self.delay,
             )
         else:
