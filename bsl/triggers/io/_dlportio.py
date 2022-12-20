@@ -37,7 +37,7 @@
 
 
 class PParallelDLPortIO:
-    """This class provides read/write access to the parallel port on a PC.
+    """Class for read/write access to the parallel port on a PC.
 
     This is a wrapper around Dincer Aydin's `winioport`_ for reading and
     writing to the parallel port, but adds the following additional
@@ -53,8 +53,7 @@ class PParallelDLPortIO:
     """
 
     def __init__(self, address=0x0378):
-        """Set the memory address of your parallel port, to be used in
-        subsequent method calls on this class.
+        """Set the memory address of your parallel port.
 
         Common port addresses::
 
@@ -62,7 +61,6 @@ class PParallelDLPortIO:
             LPT2 = 0x0278 or 0x0378
             LPT3 = 0x0278
         """
-
         from ctypes import windll
 
         try:
@@ -84,6 +82,7 @@ class PParallelDLPortIO:
 
     def setData(self, data):
         """Set the data to be presented on the parallel port (one ubyte).
+
         Alternatively you can set the value of each pin (data pins are pins
         2-9 inclusive) using :func:`setPin`
 
@@ -120,7 +119,7 @@ class PParallelDLPortIO:
         self.port.DlPortWritePortUchar(self.base, val)
 
     def readData(self):
-        """Return the value currently set on the data pins (2-9)"""
+        """Return the value currently set on the data pins (2-9)."""
         return self.port.DlPortReadPortUchar(self.base)
 
     def readPin(self, pinNumber):

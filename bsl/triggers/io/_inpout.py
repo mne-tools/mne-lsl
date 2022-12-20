@@ -8,13 +8,13 @@
 
 
 class PParallelInpOut:
-    """This class provides read/write access to the parallel port on a PC
-    using inpout32 or inpoutx64 (for instance for Windows 7 64-bit)
+    """Class for read/write access to the parallel port on a PC.
+
+    Uses inpout32 or inpoutx64 (for instance for Windows 7 64-bit).
     """
 
     def __init__(self, address=0x0378):
-        """Set the memory address of your parallel port,
-        to be used in subsequent calls to this object
+        """Set the memory address of your parallel port.
 
         Common port addresses::
 
@@ -22,7 +22,6 @@ class PParallelInpOut:
             LPT2 = 0x0278 or 0x0378
             LPT3 = 0x0278
         """
-
         import platform
         from ctypes import windll
 
@@ -55,6 +54,7 @@ class PParallelInpOut:
 
     def setData(self, data):
         """Set the data to be presented on the parallel port (one ubyte).
+
         Alternatively you can set the value of each pin (data pins are pins
         2-9 inclusive) using :func:`setPin`
 
@@ -89,7 +89,7 @@ class PParallelInpOut:
         self.port.Out32(self.base, val)
 
     def readData(self):
-        """Return the value currently set on the data pins (2-9)"""
+        """Return the value currently set on the data pins (2-9)."""
         return self.port.Inp32(self.base)
 
     def readPin(self, pinNumber):
