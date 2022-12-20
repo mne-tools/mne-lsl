@@ -8,10 +8,12 @@ from ..utils._logs import logger
 
 # Minimum/Maximum liblsl version. The major version is given by version // 100
 # and the minor version is given by version % 100.
-VERSION_MIN = 115
-VERSION_MAX = 116
+_VERSION_MIN = 115
+_VERSION_MAX = 116
+# liblsl objects created with the same protocol version are inter-compatible.
+_VERSION_PROTOCOL = 110
 
-PLATFORM_SUFFIXES = {
+_PLATFORM_SUFFIXES = {
     "Windows": ".dll",
     "Darwin": ".dylib",
     "Linux": ".so",
@@ -46,7 +48,7 @@ def _find_liblsl_env() -> Optional[CDLL]:
         return None
 
     libpath = Path(os.environ["LSL_LIB"])
-    if libpath.suffix != PLATFORM_SUFFIXES[platform.system()]:
+    if libpath.suffix != _PLATFORM_SUFFIXES[platform.system()]:
         logger.error(
             "The LIBLSL '%s' provided in the environment variable "
             "'LSL_LIB' ends with '%s' which is different from the expected "
@@ -63,7 +65,7 @@ def _find_liblsl_env() -> Optional[CDLL]:
                 "'LSL_LIB' can not be loaded.",
                 libpath,
             )
-        elif version < VERSION_MIN:
+        elif version < _VERSION_MIN:
             logger.error(
                 "The LIBLSL '%s' provided in the environment variable "
                 "'LSL_LIB' is outdated. The version is %i.%i while the "
@@ -71,11 +73,11 @@ def _find_liblsl_env() -> Optional[CDLL]:
                 libpath,
                 version // 100,
                 version % 100,
-                VERSION_MIN // 100,
-                VERSION_MIN % 100,
+                _VERSION_MIN // 100,
+                _VERSION_MIN % 100,
             )
             version = None
-        elif VERSION_MAX < version:
+        elif _VERSION_MAX < version:
             logger.warning(
                 "The LIBLSL '%s' provided in the environment variable "
                 "'LSL_LIB' is not officially supported. The version is %i.%i "
@@ -84,8 +86,8 @@ def _find_liblsl_env() -> Optional[CDLL]:
                 libpath,
                 version // 100,
                 version % 100,
-                VERSION_MIN // 100,
-                VERSION_MIN % 100,
+                _VERSION_MIN // 100,
+                _VERSION_MIN % 100,
             )
     else:
         logger.error(
@@ -137,11 +139,11 @@ def _find_liblsl_bsl() -> Optional[CDLL]:
     directory = Path(__file__).parent / "lib"
     lib = None
     for libpath in directory.iterdir():
-        if libpath.suffix != PLATFORM_SUFFIXES[platform.system()]:
+        if libpath.suffix != _PLATFORM_SUFFIXES[platform.system()]:
             continue
         try:
             lib = CDLL(str(libpath))
-            assert VERSION_MIN <= lib.lsl_library_version()
+            assert _VERSION_MIN <= lib.lsl_library_version() <= _VERSION_MAX
         except Exception:
             continue
     return lib
