@@ -2,7 +2,7 @@
 
 import pytest
 
-from bsl.utils._imports import import_optional_dependency
+from .._imports import import_optional_dependency
 
 
 def test_import_optional_dependency():

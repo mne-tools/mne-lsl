@@ -312,7 +312,7 @@ def test_get_method_warning_and_errors(caplog):
 
         # not enough samples
         del sr
-        sr = StreamReceiver(bufsize=1, winsize=1, stream_name=None)
+        sr = StreamReceiver(bufsize=2, winsize=2, stream_name=None)
         # caplog.clear()
         sr.acquire()
         sr.get_window(stream_name="StreamPlayer1")
