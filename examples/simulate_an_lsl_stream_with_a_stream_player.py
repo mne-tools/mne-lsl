@@ -37,7 +37,7 @@ and experiment designs.
 import time
 
 from bsl import StreamPlayer, datasets
-from bsl.externals import pylsl  # distributed version of pylsl
+from bsl.lsl import resolve_streams
 from bsl.triggers import TriggerDef
 
 #%%
@@ -74,7 +74,7 @@ print (player)
 #
 # To verify if the stream is accessible on the network, use directly ``pylsl``:
 
-streams = [stream.name() for stream in pylsl.resolve_streams()]
+streams = [stream.name for stream in resolve_streams()]
 print (streams)
 
 #%%
@@ -93,7 +93,7 @@ print (player)
 # stream.
 
 with StreamPlayer(stream_name, fif_file):
-    streams = [stream.name() for stream in pylsl.resolve_streams()]
+    streams = [stream.name for stream in resolve_streams()]
 print (streams)
 
 #%%

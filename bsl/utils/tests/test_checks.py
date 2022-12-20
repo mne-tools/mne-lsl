@@ -4,12 +4,7 @@ import logging
 
 import pytest
 
-from bsl.utils._checks import (
-    _check_type,
-    _check_value,
-    _check_verbose,
-    _ensure_int,
-)
+from .._checks import _check_type, _check_value, _check_verbose, _ensure_int
 
 
 def test_ensure_int():
@@ -30,6 +25,7 @@ def test_check_type():
     """Test _check_type checker."""
     # valids
     assert _check_type(101, ("int",)) == 101
+    assert _check_type(101, ("int", str)) == 101
     assert _check_type("101.fif", ("path-like",)) == "101.fif"
 
     def foo():
@@ -50,6 +46,8 @@ def test_check_type():
 def test_check_value():
     """Test _check_value checker."""
     # valids
+    assert _check_value(5, (5,)) == 5
+    assert _check_value(5, (5, 101)) == 5
     assert _check_value(5, [1, 2, 3, 4, 5]) == 5
     assert _check_value((1, 2), [(1, 2), (2, 3, 4, 5)]) == (1, 2)
 

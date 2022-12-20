@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 
-from ..externals import pylsl
+from ..lsl import StreamInlet, local_clock
 from ..utils import Timer, find_event_channel
 from ..utils._checks import _check_type
 from ..utils._docs import copy_doc, fill_doc
@@ -34,21 +34,21 @@ class _Stream(ABC):
         bufsize = _Stream._check_bufsize(bufsize, winsize)
 
         self._streamInfo = streamInfo
-        self._sample_rate = self._streamInfo.nominal_srate()
+        self._sample_rate = self._streamInfo.sfreq
         self._lsl_bufsize = min(_MAX_PYLSL_STREAM_BUFSIZE, bufsize)
 
         if self._sample_rate is not None:
             samples_per_sec = self._sample_rate
-            # max_buflen: seconds
-            self._inlet = pylsl.StreamInlet(
-                streamInfo, max_buflen=math.ceil(self._lsl_bufsize)
+            # max_buffered: seconds
+            self._inlet = StreamInlet(
+                streamInfo, max_buffered=math.ceil(self._lsl_bufsize)
             )
         else:
             samples_per_sec = 100
-            # max_buflen: samples x100
-            self._inlet = pylsl.StreamInlet(
+            # max_buffered: samples x100
+            self._inlet = StreamInlet(
                 streamInfo,
-                max_buflen=math.ceil(self._lsl_bufsize * samples_per_sec),
+                max_buffered=math.ceil(self._lsl_bufsize * samples_per_sec),
             )
         self._inlet.open_stream()
 
@@ -74,16 +74,15 @@ class _Stream(ABC):
 
         if not self._ch_list:
             self._ch_list = [
-                f"ch_{i+1}" for i in range(self._streamInfo.channel_count())
+                f"ch_{i+1}" for i in range(self._streamInfo.n_channels)
             ]
 
     def _extract_stream_info(self):
         """Extract the name, serial number and if it's a slave."""
-        self._name = self._streamInfo.name()
+        self._name = self._streamInfo.name
         self._serial = (
-            self._inlet.info()
-            .desc()
-            .child("acquisition")
+            self._inlet.get_sinfo()
+            .desc.child("acquisition")
             .child_value("serial_number")
         )
 
@@ -91,9 +90,8 @@ class _Stream(ABC):
             self._serial = "N/A"
 
         self._is_slave = (
-            self._inlet.info()
-            .desc()
-            .child("amplifier")
+            self._inlet.get_sinfo()
+            .desc.child("amplifier")
             .child("settings")
             .child("is_slave")
             .first_child()
@@ -105,12 +103,12 @@ class _Stream(ABC):
         """Display the stream's info."""
         logger.info(
             f"Server: {self._name}({self._serial}) "
-            f"/ type:{self._streamInfo.type()} "
-            f"@ {self._streamInfo.hostname()} "
-            f"(v{self._streamInfo.version()})."
+            f"/ type:{self._streamInfo.stype} "
+            f"@ {self._streamInfo.hostname} "
+            f"(v{self._streamInfo.protocol_version})."
         )
         logger.info("Source sampling rate: %s", self._sample_rate)
-        logger.info("Channels: %s", self._streamInfo.channel_count())
+        logger.info("Channels: %s", self._streamInfo.n_channels)
 
         # Check for high LSL offset
         if self._lsl_time_offset is None:
@@ -185,7 +183,7 @@ class _Stream(ABC):
         ----------
         %(receiver_tslist)s
         """
-        self._lsl_time_offset = tslist[-1] - pylsl.local_clock()
+        self._lsl_time_offset = tslist[-1] - local_clock()
         return self._lsl_time_offset
 
     @fill_doc
