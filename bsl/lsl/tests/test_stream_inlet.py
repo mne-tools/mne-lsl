@@ -1,4 +1,3 @@
-import sys
 import time
 import uuid
 
@@ -190,86 +189,86 @@ def test_pull_str_chunk():
             pass
 
 
-# @pytest.mark.xfail(
-#     sys.platform == "linux",
-#     reason="incompatibility with 20.04 and 22.04 LTS, "
-#     + "https://github.com/sccn/liblsl/issues/179",
-#     raises=TimeoutError,
-# )
-# def test_get_sinfo():
-#     """Test getting a StreamInfo from an Inlet."""
-#     sinfo = StreamInfo("test", "", 2, 0.0, "string", uuid.uuid4().hex[:6])
-#     try:
-#         outlet = StreamOutlet(sinfo)
-#         inlet = StreamInlet(sinfo)
-#         with pytest.raises(TimeoutError):
-#             inlet.get_sinfo(timeout=0.5)
-#         inlet.open_stream(timeout=5)
-#         sinfo = inlet.get_sinfo(timeout=5)
-#         assert isinstance(sinfo, _BaseStreamInfo)
-#     except Exception as error:
-#         raise error
-#     finally:
-#         try:
-#             del outlet
-#         except Exception:
-#             pass
-#         try:
-#             del inlet
-#         except Exception:
-#             pass
+@pytest.mark.xfail(
+    reason="liblsl bug with 20.04 and 22.04 LTS, "
+    + "https://github.com/sccn/liblsl/issues/179",
+    raises=TimeoutError,
+    run=False,
+)
+def test_get_sinfo():
+    """Test getting a StreamInfo from an Inlet."""
+    sinfo = StreamInfo("test", "", 2, 0.0, "string", uuid.uuid4().hex[:6])
+    try:
+        outlet = StreamOutlet(sinfo)
+        inlet = StreamInlet(sinfo)
+        with pytest.raises(TimeoutError):
+            inlet.get_sinfo(timeout=0.5)
+        inlet.open_stream(timeout=5)
+        sinfo = inlet.get_sinfo(timeout=5)
+        assert isinstance(sinfo, _BaseStreamInfo)
+    except Exception as error:
+        raise error
+    finally:
+        try:
+            del outlet
+        except Exception:
+            pass
+        try:
+            del inlet
+        except Exception:
+            pass
 
 
-# @pytest.mark.xfail(
-#     reason="liblsl bug, https://github.com/sccn/liblsl/issues/180",
-#     raises=AssertionError,
-#     run=False,
-# )
-# @pytest.mark.parametrize(
-#     "dtype_str, dtype",
-#     [
-#         ("float32", np.float32),
-#         ("float64", np.float64),
-#         ("int8", np.int8),
-#         ("int16", np.int16),
-#         ("int32", np.int32),
-#     ],
-# )
-# def test_inlet_methods(dtype_str, dtype):
-#     """Test the methods from an Inlet."""
-#     x = np.array([[1, 4], [2, 5], [3, 6]], dtype=dtype)
-#     assert x.shape == (3, 2) and x.dtype == dtype
-#     # create stream description
-#     sinfo = StreamInfo("test", "", 2, 0.0, dtype_str, uuid.uuid4().hex[:6])
-#     try:
-#         outlet = StreamOutlet(sinfo, chunk_size=3)
-#         inlet = StreamInlet(sinfo)
-#         inlet.open_stream(timeout=5)
-#         outlet.push_chunk(x)
-#         time.sleep(0.1)  # sleep since samples_available does not have timeout
-#         assert inlet.samples_available == 3
-#         n_flush = inlet.flush()
-#         assert n_flush == 3
-#         assert inlet.samples_available == 0
-#         data, ts = inlet.pull_chunk(max_samples=1, timeout=0)
-#         assert data.size == ts.size == 0
-#         # close and re-open -- at the moment this is not well supported
-#         inlet.close_stream()
-#         inlet.open_stream(timeout=10)
-#         assert inlet.samples_available == 0
-#         outlet.push_chunk(x)
-#         assert inlet.samples_available == 3
-#     except Exception as error:
-#         raise error
-#     finally:
-#         try:
-#             del outlet
-#         except Exception:
-#             pass
-#         try:
-#             del inlet
-#         except Exception:
-#             pass
+@pytest.mark.xfail(
+    reason="liblsl bug, https://github.com/sccn/liblsl/issues/180",
+    raises=AssertionError,
+    run=False,
+)
+@pytest.mark.parametrize(
+    "dtype_str, dtype",
+    [
+        ("float32", np.float32),
+        ("float64", np.float64),
+        ("int8", np.int8),
+        ("int16", np.int16),
+        ("int32", np.int32),
+    ],
+)
+def test_inlet_methods(dtype_str, dtype):
+    """Test the methods from an Inlet."""
+    x = np.array([[1, 4], [2, 5], [3, 6]], dtype=dtype)
+    assert x.shape == (3, 2) and x.dtype == dtype
+    # create stream description
+    sinfo = StreamInfo("test", "", 2, 0.0, dtype_str, uuid.uuid4().hex[:6])
+    try:
+        outlet = StreamOutlet(sinfo, chunk_size=3)
+        inlet = StreamInlet(sinfo)
+        inlet.open_stream(timeout=5)
+        outlet.push_chunk(x)
+        time.sleep(0.1)  # sleep since samples_available does not have timeout
+        assert inlet.samples_available == 3
+        n_flush = inlet.flush()
+        assert n_flush == 3
+        assert inlet.samples_available == 0
+        data, ts = inlet.pull_chunk(max_samples=1, timeout=0)
+        assert data.size == ts.size == 0
+        # close and re-open -- at the moment this is not well supported
+        inlet.close_stream()
+        inlet.open_stream(timeout=10)
+        assert inlet.samples_available == 0
+        outlet.push_chunk(x)
+        assert inlet.samples_available == 3
+    except Exception as error:
+        raise error
+    finally:
+        try:
+            del outlet
+        except Exception:
+            pass
+        try:
+            del inlet
+        except Exception:
+            pass
 
 
 def _test_properties(inlet, dtype_str, n_channels, name, sfreq, stype):
