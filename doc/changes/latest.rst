@@ -22,6 +22,8 @@ Enhancements
 
 - Improve GitHub workflows and add CodeCov (:pr:`71`)
 - Add `bsl.sys_info` to display system information and dependency version  (:pr:`71`)
+- Improve LSL trigger by reducing the buffer, optimizing the execution, and limiting the data type to ``np.int8`` (:pr:`72`)
+- Improve detection of Arduino to LPT converter and of parrallel port (:pr:`72`)
 
 Bugs
 ----
@@ -32,6 +34,8 @@ API and behavior changes
 ------------------------
 
 - Add the low-level `bsl.lsl` module re-implementing ``pylsl`` main objects `~bsl.lsl.StreamInfo`, `~bsl.lsl.StreamInlet`, `~bsl.lsl.StreamOutlet` (:pr:`71`)
+- Remove ``bsl.triggers.SoftwareTrigger`` that are both imprecise and not needed with the future recorder (:pr:`72`)
+- Remove the ``externals`` module and move the parallel port I/O code in the ``triggers`` module (:pr:`72`)
 
 Authors
 -------
