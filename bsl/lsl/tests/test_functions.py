@@ -39,15 +39,70 @@ def test_resolve_streams():
     assert isinstance(streams, list)
     assert len(streams) == 0
 
+    # detect all streams
     sinfo = StreamInfo("test", "", 1, 0.0, "int8", uuid.uuid4().hex[:6])
     try:
-        outlet = StreamOutlet(
-            sinfo,
-        )
-        streams = resolve_streams(timeout=5)
+        outlet = StreamOutlet(sinfo)
+        streams = resolve_streams(timeout=2)
         assert isinstance(streams, list)
         assert len(streams) == 1
+        assert streams[0] == sinfo
     except Exception as error:
         raise error
     finally:
-        del outlet
+        try:
+            del outlet
+        except Exception:
+            pass
+
+    # detect streams by properties
+    sinfo1 = StreamInfo("test1", "", 1, 0.0, "int8", "")
+    sinfo2 = StreamInfo("test1", "Markers", 1, 0, "int8", "")
+    sinfo3 = StreamInfo("test2", "", 1, 0.0, "int8", "")
+
+    try:
+        outlet1 = StreamOutlet(sinfo1)
+        outlet2 = StreamOutlet(sinfo2)
+        outlet3 = StreamOutlet(sinfo3)
+
+        streams = resolve_streams(timeout=2)
+        assert len(streams) == 3
+        assert sinfo1 in streams
+        assert sinfo2 in streams
+        assert sinfo3 in streams
+
+        streams = resolve_streams(name="test1", minimum=2)
+        assert len(streams) == 2
+        assert sinfo1 in streams
+        assert sinfo2 in streams
+
+        streams = resolve_streams(name="test1", minimum=1)
+        assert len(streams) == 1
+        assert sinfo1 in streams or sinfo2 in streams
+
+        streams = resolve_streams(stype="Markers")
+        assert len(streams) == 1
+        assert sinfo2 in streams
+
+        streams = resolve_streams(name="test2", minimum=2, timeout=1)
+        assert len(streams) == 1
+        assert sinfo3 in streams
+
+        streams = resolve_streams(name="test1", stype="Markers")
+        assert len(streams) == 1
+        assert sinfo2 in streams
+    except Exception as error:
+        raise error
+    finally:
+        try:
+            del outlet1
+        except Exception:
+            pass
+        try:
+            del outlet2
+        except Exception:
+            pass
+        try:
+            del outlet3
+        except Exception:
+            pass
