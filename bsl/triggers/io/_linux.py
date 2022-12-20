@@ -22,7 +22,7 @@ class PParallelLinux:
         sudo modprobe ppdev
     """
 
-    def __init__(self, address='/dev/parport0'):
+    def __init__(self, address="/dev/parport0"):
         """Set the device node of your parallel port
 
         Common port addresses::
@@ -33,16 +33,16 @@ class PParallelLinux:
         """
         import parallel as pyp
 
-        if not hasattr(pyp, 'Parallel'):
+        if not hasattr(pyp, "Parallel"):
             # We failed to import pyparallel properly
             # We probably ended up with psychopy.parallel instead...
-            raise Exception('Failed to import pyparallel - is it installed?')
+            raise Exception("Failed to import pyparallel - is it installed?")
 
         self.port = pyp.Parallel(address)
         self.status = None
 
     def __del__(self):
-        if hasattr(self, 'port'):
+        if hasattr(self, "port"):
             del self.port
 
     def setData(self, data):
@@ -74,13 +74,14 @@ class PParallelLinux:
         """
         # I can't see how to do this without reading and writing the data
         if state:
-            self.port.setData(self.port.PPRDATA() | (2**(pinNumber - 2)))
+            self.port.setData(self.port.PPRDATA() | (2 ** (pinNumber - 2)))
         else:
-            self.port.setData(self.port.PPRDATA() & (255 ^ 2**(pinNumber - 2)))
+            self.port.setData(
+                self.port.PPRDATA() & (255 ^ 2 ** (pinNumber - 2))
+            )
 
     def readData(self):
-        """Return the value currently set on the data pins (2-9)
-        """
+        """Return the value currently set on the data pins (2-9)"""
         return self.port.PPRDATA()
 
     def readPin(self, pinNumber):
@@ -101,5 +102,5 @@ class PParallelLinux:
         elif 2 <= pinNumber <= 9:
             return (self.port.PPRDATA() >> (pinNumber - 2)) & 1
         else:
-            msg = 'Pin %i cannot be read (by PParallelLinux.readPin())'
+            msg = "Pin %i cannot be read (by PParallelLinux.readPin())"
             print(msg % pinNumber)
