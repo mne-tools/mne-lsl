@@ -1,4 +1,5 @@
 from ctypes import c_char_p, c_double, c_void_p
+from typing import Any
 
 from ..utils._checks import _check_type, _check_value
 from .constants import fmt2idx, fmt2string, idx2fmt, string2fmt
@@ -32,6 +33,72 @@ class _BaseStreamInfo:
             lib.lsl_destroy_streaminfo(self._obj)
         except Exception:
             pass
+
+    def __eq__(self, other: Any) -> bool:
+        """Equality == method.
+
+        Test one by one to stop ASAP.
+        """
+        if self.name != other.name:
+            return False
+        if self.source_id != other.source_id:
+            return False
+        if self.stype != other.stype:
+            return False
+        if self.sfreq != other.sfreq:
+            return False
+        if self.n_channels != other.n_channels:
+            return False
+        if self.dtype != other.dtype:
+            return False
+        return True
+
+    def __ne__(self, other: Any) -> bool:
+        """Inequality != method."""
+        return not self.__eq__(other)
+
+    def __hash__(self) -> int:
+        """Determine a hash from the properties."""
+        return hash(
+            (
+                self.dtype,
+                self.name,
+                self.n_channels,
+                self.sfreq,
+                self.source_id,
+                self.stype,
+            )
+        )
+
+    def __repr__(self) -> str:
+        """Representation of the Info."""
+        str_ = f"< sInfo '{self.name}' >\n"
+        stype = self.stype
+
+        if len(stype) != 0:
+            add = f"| Type: {stype}\n"
+            str_ += add.rjust(2 + len(add))
+
+        sfreq = self.sfreq
+        if sfreq == 0:
+            add = "| Sampling: Irregular\n"
+            str_ += add.rjust(2 + len(add))
+        else:
+            add = f"| Sampling: {sfreq} Hz\n"
+            str_ += add.rjust(2 + len(add))
+
+        add = f"| Number of channels: {self.n_channels}\n"
+        str_ += add.rjust(2 + len(add))
+
+        add = f"| Data type: {self.dtype}\n"
+        str_ += add.rjust(2 + len(add))
+
+        source_id = self.source_id
+        if len(source_id) != 0:
+            add = f"| Source: {source_id}\n"
+            str_ += add.rjust(2 + len(add))
+
+        return str_
 
     # -- Core information, assigned at construction ---------------------------
     @property
