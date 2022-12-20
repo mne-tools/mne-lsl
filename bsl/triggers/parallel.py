@@ -203,8 +203,7 @@ class ParallelPortTrigger(BaseTrigger):
 
     @property
     def delay(self) -> float:
-        """Delay to wait between two :meth:`~ParallelPortTrigger.signal` call
-        in milliseconds.
+        """Delay (ms) to wait between two :meth:`~ParallelPortTrigger.signal`.
 
         :type: float
         """
