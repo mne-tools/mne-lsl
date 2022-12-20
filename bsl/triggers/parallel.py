@@ -1,11 +1,11 @@
 """Trigger using an parallel port."""
 
-import re
 import threading
 import time
+from platform import system
 from typing import Union
 
-from ..utils._checks import _check_type
+from ..utils._checks import _check_type, _check_value
 from ..utils._docs import copy_doc
 from ..utils._imports import import_optional_dependency
 from ..utils._logs import logger
@@ -21,6 +21,8 @@ class ParallelPortTrigger(BaseTrigger):
         The address of the parallel port on the system.
         If an :ref:`arduino2lpt` is used, the address must be the COM port
         (e.g. ``"COM5"``) or ``"arduino"`` for automatic detection.
+    port_type : str
+        Either "arduino" or "pport" depending on the connection.
     delay : int
         Delay in milliseconds until which a new trigger cannot be sent. During
         this time, the pins of the LPT port remain in the same state.
@@ -47,34 +49,44 @@ class ParallelPortTrigger(BaseTrigger):
     def __init__(
         self,
         address: Union[int, str],
+        port_type: str,
         delay: int = 50,
     ):
-        _check_type(address, ("int", str), item_name="address")
-        _check_type(delay, ("int",), item_name="delay")
+        _check_type(address, ("int", str), "address")
+        _check_type(port_type, (str,), "port_type")
+        _check_value(port_type, ("arduino", "pport"), "port_type")
+        _check_type(delay, ("int",), "delay")
 
-        self._address = address
+        self._port_type = port_type
         self._delay = delay / 1000.0
 
         # initialize port
-        if isinstance(self._address, str):
-            pattern = re.compile(r"^COM\d{1}$")
-            if pattern.match(self._address) or self._address == "arduino":
-                import_optional_dependency(
-                    "serial", extra="Install 'pyserial' for ARDUINO support."
-                )
-                self._address = (
-                    self._address
-                    if pattern.match(self._address)
-                    else self._search_arduino()
-                )
-                self._connect_arduino()
+        if self._port_type == "pport" and system() == "Darwin":
+            raise IOError("macOS does not support built-in parallel ports.")
+
+        if self._port_type == "arduino":
+            import_optional_dependency(
+                "serial", extra="Install 'pyserial' for ARDUINO support."
+            )
+            if address == "arduino":
+                self._address = ParallelPortTrigger._search_arduino()
             else:
-                self._connect_pport()
-        else:
+                self._address = address
+            self._connect_arduino()
+
+        elif self._port_type == "pport":
+            if system() == "Linux":
+                import_optional_dependency(
+                    "parallel",
+                    extra="Install 'pyparallel' for LPT support on Linux.",
+                )
+
+            self._address = address
             self._connect_pport()
 
         self._offtimer = threading.Timer(self._delay, self._signal_off)
 
+    @staticmethod
     def _search_arduino() -> str:
         """Look for a connected Arduino to LPT converter."""
         from serial.tools import list_ports
@@ -105,14 +117,6 @@ class ParallelPortTrigger(BaseTrigger):
 
     def _connect_pport(self) -> None:
         """Connect to the ParallelPort."""
-        import platform
-
-        if platform.system() == "Linux":
-            import_optional_dependency(
-                "parallel",
-                extra="Install 'pyparallel' for LPT support on Linux.",
-            )
-
         from .io import ParallelPort
 
         if ParallelPort is None:
@@ -163,7 +167,7 @@ class ParallelPortTrigger(BaseTrigger):
 
     def _set_data(self, value: int) -> None:
         """Set data on the pin."""
-        if self._address.startswith("COM"):
+        if self._port_type == "arduino":
             self._port.write(bytes([value]))
         else:
             self._port.setData(value)
@@ -174,7 +178,7 @@ class ParallelPortTrigger(BaseTrigger):
         This method should free the parallel or serial port and let other
         application or python process use it.
         """
-        if self._address.startswith("COM"):
+        if self._port_type == "arduino":
             try:
                 self._port.close()
             except Exception:
@@ -205,3 +209,11 @@ class ParallelPortTrigger(BaseTrigger):
         :type: float
         """
         return self._delay * 1000.0
+
+    @property
+    def port_type(self) -> str:
+        """Type of connection port.
+
+        :type: str
+        """
+        return self._port_type
