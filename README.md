@@ -165,18 +165,7 @@ Currently, the supported hardware triggers use an LPT port.
 ```
 import time
 from bsl import StreamRecorder
-from bsl.triggers import SoftwareTrigger
 from bsl.triggers import ParallelPortTrigger
-
-# Software trigger
-recorder = StreamRecorder()
-recorder.start()
-trigger = Softwaretrigger(recorder)
-for k in range(1, 5):
-    trigger.signal(k)
-    time.sleep(1)
-trigger.close()
-recorder.stop()
 
 # Hardware trigger through Arduino LPT converter
 recorder = StreamRecorder()

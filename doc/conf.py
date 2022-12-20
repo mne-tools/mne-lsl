@@ -174,7 +174,6 @@ numpydoc_xref_aliases = {
     # BSL
     "StreamReceiver": "bsl.StreamReceiver",
     "StreamRecorder": "bsl.StreamRecorder",
-    "SoftwareTrigger": "bsl.triggers.SoftwareTrigger",
 }
 
 numpydoc_xref_ignore = {
