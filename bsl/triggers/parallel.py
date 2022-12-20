@@ -41,7 +41,7 @@ class ParallelPortTrigger(BaseTrigger):
           LPT2 = 0x0278 or 0x0378
           LPT3 = 0x0278
 
-    - macOS does not have support for build-in parallel ports.
+    - macOS does not have support for built-in parallel ports.
     """
 
     def __init__(
