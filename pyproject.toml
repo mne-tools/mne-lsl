@@ -70,7 +70,7 @@ doc = [
     'sphinx-gallery',
 ]
 triggers = [
-    'pyparallel; platform_system == "linux"',
+    'pyparallel; sys_platform == "linux"',
     'pyserial',
 ]
 style = [
@@ -82,7 +82,7 @@ style = [
     'pydocstyle[toml]',
 ]
 test = [
-    'pyparallel; platform_system == "linux"',
+    'pyparallel; sys_platform == "linux"',
     'pyserial',
     'pytest',
     'pytest-cov',
