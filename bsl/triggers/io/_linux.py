@@ -35,12 +35,13 @@ class PParallelLinux:
         """
         import parallel as pyp
 
-        if not hasattr(pyp, "Parallel"):
-            # We failed to import pyparallel properly
-            # We probably ended up with psychopy.parallel instead...
-            raise Exception("Failed to import pyparallel - is it installed?")
-
-        self.port = pyp.Parallel(address)
+        try:
+            self.port = pyp.Parallel(address)
+        except FileNotFoundError:
+            raise RuntimeError(
+                "[Trigger] Could not access parallel port on '{address}'. "
+                "No such file or directory."
+            )
         self.status = None
 
     def __del__(self):

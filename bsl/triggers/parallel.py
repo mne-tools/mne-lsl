@@ -103,12 +103,11 @@ class ParallelPortTrigger(BaseTrigger):
 
         try:
             self._port = Serial(self._address, baud_rate)
-        except SerialException as error:
-            logger.error(
-                "[Trigger] Could not connect to arduino to LPT on '%s'.",
-                self._address,
+        except SerialException:
+            raise SerialException(
+                "[Trigger] Could not access arduino to LPT on "
+                f"'{self._address}'."
             )
-            raise error
 
         time.sleep(1)
         logger.info(
@@ -121,23 +120,21 @@ class ParallelPortTrigger(BaseTrigger):
 
         if ParallelPort is None:
             raise RuntimeError(
-                "PsychoPy parallel module has been imported but no parallel "
-                "port driver was found. psychopy.parallel supports Linux with "
-                "pyparallel and Windows with either inpout32, inpout64 or "
-                "dlportio. macOS is not supported."
+                "[Trigger] PsychoPy parallel module has been imported but no "
+                "parallel port driver was found. psychopy.parallel supports "
+                "Linux with pyparallel and Windows with either inpout32, "
+                "inpout64 or dlportio. macOS is not supported."
             )
 
         try:
             self._port = ParallelPort(self._address)
-        except PermissionError as error:
-            logger.error(
-                "[Trigger] Could not connect to parallel port on '%s'. "
-                "To fix a PermissionError, try adding your user into the "
-                "group with access to the port or try changing the chmod on "
-                "the port.",
-                self._address,
+        except PermissionError:
+            raise PermissionError(
+                "[Trigger] Could not connect to parallel port on "
+                f"'{self._address}'. To fix a PermissionError, try adding "
+                "your user into the group with access to the port or try "
+                "changing the chmod on the port.",
             )
-            raise Exception from error
 
         time.sleep(1)
         logger.info(
