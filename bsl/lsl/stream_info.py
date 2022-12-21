@@ -1,7 +1,7 @@
 from ctypes import c_char_p, c_double, c_void_p
 from typing import Any
 
-from ..utils._checks import _check_type, _check_value
+from ..utils._checks import _check_type, _check_value, _ensure_int
 from .constants import fmt2idx, fmt2string, idx2fmt, string2fmt
 from .load_liblsl import lib
 from .utils import XMLElement
@@ -293,7 +293,7 @@ class StreamInfo(_BaseStreamInfo):
     ):
         _check_type(name, (str,), "name")
         _check_type(stype, (str,), "stype")
-        _check_type(n_channels, ("int",), "n_channels")
+        n_channels = _ensure_int(n_channels, "n_channels")
         if n_channels <= 0:
             raise ValueError(
                 "The number of channels 'n_channels' must be a strictly "
@@ -324,5 +324,6 @@ class StreamInfo(_BaseStreamInfo):
             _check_value(dtype, string2fmt, "dtype")
             dtype = fmt2idx[string2fmt[dtype]]
         else:
+            dtype = _ensure_int(dtype)
             _check_value(dtype, idx2fmt, "dtype")
         return dtype
