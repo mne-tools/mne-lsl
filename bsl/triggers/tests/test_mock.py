@@ -9,14 +9,12 @@ logger.propagate = True
 
 def test_trigger_mock(caplog):
     """Testing for Mock triggers."""
-    trigger = MockTrigger(verbose=True)
-    assert trigger.verbose
-    trigger.verbose = False
+    trigger = MockTrigger()
     trigger.signal(1)
-    assert "MOCK trigger set to 1" in caplog.text
+    assert "Mock set to 1" in caplog.text
     trigger.signal(2)
-    assert "MOCK trigger set to 2" in caplog.text
+    assert "Mock set to 2" in caplog.text
 
-    with pytest.raises(TypeError, match="'value' must be an instance"):
-        trigger.signal(3.0)
-    assert "MOCK trigger set to 3.0" not in caplog.text
+    with pytest.raises(ValueError, match="between 1 and 127"):
+        trigger.signal(128)
+    assert "Mock set to 3" not in caplog.text
