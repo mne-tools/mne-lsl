@@ -104,10 +104,17 @@ class ParallelPortTrigger(BaseTrigger):
         try:
             self._port = Serial(self._address, baud_rate)
         except SerialException:
-            raise SerialException(
+            msg = (
                 "[Trigger] Could not access arduino to LPT on "
-                f"'{self._address}'."
+                "'{self._address}'."
             )
+            if system() == "Linux":
+                msg += (
+                    "Make sure you have the permission to access this "
+                    "address, e.g. by adding your user account to the "
+                    "'dialout' group: 'sudo usermod -a -G dialout <username>'."
+                )
+            raise SerialException(msg)
 
         time.sleep(1)
         logger.info(
