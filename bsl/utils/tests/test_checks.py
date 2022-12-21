@@ -31,17 +31,17 @@ def test_ensure_int():
 def test_check_type():
     """Test _check_type checker."""
     # valids
-    assert _check_type(101, ("int",)) == 101
-    assert _check_type(101, ("int", str)) == 101
-    assert _check_type("101.fif", ("path-like",)) == "101.fif"
+    _check_type(101, ("int",))
+    _check_type(101, ("int", str))
+    _check_type("101.fif", ("path-like",))
 
     def foo():
         pass
 
     _check_type(foo, ("callable",))
 
-    assert _check_type(101, ("numeric",)) == 101
-    assert _check_type(101.0, ("numeric",)) == 101.0
+    _check_type(101, ("numeric",))
+    _check_type(101.0, ("numeric",))
 
     # invalids
     with pytest.raises(TypeError, match="Item must be an instance of"):
@@ -53,10 +53,10 @@ def test_check_type():
 def test_check_value():
     """Test _check_value checker."""
     # valids
-    assert _check_value(5, (5,)) == 5
-    assert _check_value(5, (5, 101)) == 5
-    assert _check_value(5, [1, 2, 3, 4, 5]) == 5
-    assert _check_value((1, 2), [(1, 2), (2, 3, 4, 5)]) == (1, 2)
+    _check_value(5, (5,))
+    _check_value(5, (5, 101))
+    _check_value(5, [1, 2, 3, 4, 5])
+    _check_value((1, 2), [(1, 2), (2, 3, 4, 5)])
 
     # invalids
     with pytest.raises(ValueError, match="Invalid value for the parameter."):
