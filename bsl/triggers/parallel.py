@@ -111,7 +111,9 @@ class ParallelPortTrigger(BaseTrigger):
                 return "arduino"
             else:
                 # TODO: Check in detail what the address should look like for
-                # the windows drivers.
+                # the windows drivers, and raise a RuntimeError as for Linux
+                # when the address does not comply.
+                # Maybe address.startswith("LPT") ?
                 return "pport"
 
     @staticmethod
