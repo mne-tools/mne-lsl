@@ -23,7 +23,7 @@ Enhancements
 - Improve GitHub workflows and add CodeCov (:pr:`71`)
 - Add `bsl.sys_info` to display system information and dependency version  (:pr:`71`)
 - Improve LSL trigger by reducing the buffer, optimizing the execution, and limiting the data type to ``np.int8`` (:pr:`72`)
-- Improve detection of Arduino to LPT converter and of parrallel port (:pr:`72`)
+- Improve detection of Arduino to LPT converter and of parallel port (:pr:`72`)
 
 Bugs
 ----
