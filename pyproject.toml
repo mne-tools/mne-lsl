@@ -82,6 +82,7 @@ style = [
     'pydocstyle[toml]',
 ]
 test = [
+    'bsl[triggers]',
     'pytest',
     'pytest-cov',
     'pytest-timeout',
