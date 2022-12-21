@@ -38,7 +38,7 @@ class ParallelPortTrigger(BaseTrigger):
           LPT2 = /dev/parport1
           LPT3 = /dev/parport2
 
-    - On Windows, common port addresses::
+    - On Windows::
 
           LPT1 = 0x0378 or 0x03BC
           LPT2 = 0x0278 or 0x0378
