@@ -69,12 +69,9 @@ doc = [
     'sphinx',
     'sphinx-gallery',
 ]
-externals = [
-    'psychopy',
-]
-parallel = [
+triggers = [
+    'pyparallel; sys_platform == "linux"',
     'pyserial',
-    'pyparallel; platform_system == "linux"',
 ]
 style = [
     'bibclean',
@@ -85,6 +82,8 @@ style = [
     'pydocstyle[toml]',
 ]
 test = [
+    'pyparallel; sys_platform == "linux"',
+    'pyserial',
     'pytest',
     'pytest-cov',
     'pytest-timeout',
@@ -93,8 +92,7 @@ test = [
 all = [
     'bsl[build]',
     'bsl[doc]',
-    'bsl[externals]',
-    'bsl[parallel]',
+    'bsl[triggers]',
     'bsl[style]',
     'bsl[test]',
 ]
@@ -128,7 +126,6 @@ extend-exclude = '''
     | pyproject.toml
     | doc/
     | examples/
-    | bsl/externals/psychopy/
 )
 '''
 
@@ -141,14 +138,13 @@ extend_skip_glob = [
     'setup.py',
     'doc/*',
     'examples/*',
-    'bsl/externals/psychopy/*',
 ]
 
 [tool.pydocstyle]
 convention = 'numpy'
 ignore-decorators = '(copy_doc|property|.*setter|.*getter|pyqtSlot)'
 match = '^(?!setup|__init__|test_).*\.py'
-match-dir = '^(?!build|dist|\.|externals|examples).*'
+match-dir = '^(?!build|dist|\.|examples).*'
 add_ignore = 'D100,D104,D107'
 
 [tool.pytest.ini_options]

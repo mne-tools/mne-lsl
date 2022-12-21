@@ -15,8 +15,6 @@ exclude =
     bsl.egg-info
     setup.py
     doc
-    bsl/externals/psychopy
-    bsl/externals/pylsl
     bsl/stream_viewer/control_gui
 
 per-file-ignores =
