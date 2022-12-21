@@ -31,11 +31,12 @@ class LSLTrigger(BaseTrigger):
     Notes
     -----
     The `~bsl.lsl.StreamOutlet` created has the following properties:
+    * Name: ``f"{name}"``
     * Type: ``"Markers"``
     * Number of channels: 1
     * Sampling rate: Irregular
     * Data type: ``np.int8``
-    * Source ID: ``"BSL-name"``
+    * Source ID: ``f"BSL-{name}"``
 
     The values sent must be in the range of strictly positive integers defined
     by ``np.int8``, 1 to 127 included.
