@@ -37,7 +37,7 @@ def _ensure_int(item: Any, item_name: Optional[str] = None) -> int:
     except TypeError:
         item_name = "Item" if item_name is None else "'%s'" % item_name
         raise TypeError(
-            "%s must be an int, got %s instead." % (item_name, type(item))
+            f"{item_name} must be an integer, got {type(item)} instead."
         )
 
     return item
@@ -70,7 +70,7 @@ _types = {
 
 def _check_type(
     item: Any, types: tuple, item_name: Optional[str] = None
-) -> Any:
+) -> None:
     """Check that item is an instance of types.
 
     Parameters
@@ -123,15 +123,13 @@ def _check_type(
             f"got {type(item)} instead."
         )
 
-    return item
-
 
 def _check_value(
     item: Any,
     allowed_values: tuple,
     item_name: Optional[str] = None,
     extra: Optional[str] = None,
-) -> Any:
+) -> None:
     """Check the value of a parameter against a list of valid options.
 
     Parameters
@@ -176,8 +174,6 @@ def _check_value(
             )
         )
 
-    return item
-
 
 @fill_doc
 def _check_verbose(verbose: Any) -> int:
@@ -214,6 +210,7 @@ def _check_verbose(verbose: Any) -> int:
         else:
             verbose = logging.WARNING
     elif isinstance(verbose, int):
+        verbose = _ensure_int(verbose)
         if verbose <= 0:
             raise ValueError(
                 "Argument 'verbose' can not be a negative integer, "
@@ -221,3 +218,37 @@ def _check_verbose(verbose: Any) -> int:
             )
 
     return verbose
+
+
+def _ensure_path(item: Any, must_exist: bool) -> Path:
+    """Ensure a variable is a Path.
+
+    Parameters
+    ----------
+    item : Any
+        Item to check.
+    must_exist : bool
+        If True, the path must resolve to an existing file or directory.
+
+    Returns
+    -------
+    path : Path
+        Path validated and converted to a pathlib.Path object.
+    """
+    try:
+        item = Path(item)
+    except TypeError:
+        try:
+            str_ = f"'{str(item)}' "
+        except Exception:
+            str_ = ""
+        raise TypeError(
+            f"The provided path {str_}is invalid and can not be converted. "
+            "Please provide a str, an os.PathLike or a pathlib.Path object, "
+            f"not {type(item)}."
+        )
+    if must_exist and not item.exists():
+        raise FileNotFoundError(
+            f"The provided path '{str(item)}' does not exist."
+        )
+    return item

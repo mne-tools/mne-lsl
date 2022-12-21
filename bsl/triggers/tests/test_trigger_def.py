@@ -118,7 +118,7 @@ def test_read_ini(caplog, tmp_path):
     assert tdef._by_value == {1: "stim"}
 
     # Invalid file
-    with pytest.raises(TypeError, match="'trigger_file' must be an instance"):
+    with pytest.raises(TypeError, match="'101' is invalid"):
         tdef = TriggerDef(101)
 
     caplog.clear()
@@ -126,7 +126,7 @@ def test_read_ini(caplog, tmp_path):
     assert tdef._trigger_file is None
     assert (
         "Argument trigger_file must be a valid Path to a .ini file. "
-        "Provided: %s" % ".fif"
+        "Provided: .fif"
     ) in caplog.text
 
     caplog.clear()
@@ -147,7 +147,7 @@ def test_write_ini(tmp_path):
 
     # Invalid file
     trigger_file = 101
-    with pytest.raises(TypeError, match="'trigger_file' must be an instance"):
+    with pytest.raises(TypeError, match="'101' is invalid"):
         tdef.write(trigger_file)
 
     trigger_file = tmp_path / "test_write.txt"
