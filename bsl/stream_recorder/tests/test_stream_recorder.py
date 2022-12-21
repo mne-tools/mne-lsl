@@ -374,7 +374,7 @@ def test_checker_record_dir(tmp_path):
     assert recorder.record_dir == tmp_path
 
     # Invalid
-    with pytest.raises(TypeError, match="'record_dir' must be an instance"):
+    with pytest.raises(TypeError, match="'101' is invalid"):
         StreamRecorder(record_dir=101)
 
 
