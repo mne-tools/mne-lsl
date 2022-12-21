@@ -101,7 +101,7 @@ def test_ensure_path():
     path = _ensure_path("101", must_exist=False)
     assert isinstance(path, Path)
 
-    with pytest.raises(ValueError, match="does not exist."):
+    with pytest.raises(FileNotFoundError, match="does not exist."):
         _ensure_path("101", must_exist=True)
 
     # invalids
