@@ -8,13 +8,13 @@
 
 
 class PParallelInpOut:
-    """This class provides read/write access to the parallel port on a PC
-    using inpout32 or inpoutx64 (for instance for Windows 7 64-bit)
+    """Class for read/write access to the parallel port on a PC.
+
+    Uses inpout32 or inpoutx64 (for instance for Windows 7 64-bit).
     """
 
     def __init__(self, address=0x0378):
-        """Set the memory address of your parallel port,
-        to be used in subsequent calls to this object
+        """Set the memory address of your parallel port.
 
         Common port addresses::
 
@@ -22,38 +22,39 @@ class PParallelInpOut:
             LPT2 = 0x0278 or 0x0378
             LPT3 = 0x0278
         """
+        import platform
+        from ctypes import windll
 
         from numpy import uint8
-        from ctypes import windll
-        import platform
 
-        if isinstance(address, str) and address.startswith('0x'):
+        if isinstance(address, str) and address.startswith("0x"):
             # convert u"0x0378" into 0x0378
             self.base = int(address, 16)
         else:
             self.base = address
 
-        if platform.architecture()[0] == '32bit':
-            self.port = getattr(windll, 'inpout32')
-        elif platform.architecture()[0] == '64bit':
-            self.port = getattr(windll, 'inpoutx64')
+        if platform.architecture()[0] == "32bit":
+            self.port = getattr(windll, "inpout32")
+        elif platform.architecture()[0] == "64bit":
+            self.port = getattr(windll, "inpoutx64")
 
         BYTEMODEMASK = uint8(1 << 5 | 1 << 6 | 1 << 7)
 
         # Put the port into Byte Mode (ECP register)
         _inp = self.port.Inp32(self.base + 0x402)
-        self.port.Out32(self.base + 0x402,
-                        int((_inp & ~BYTEMODEMASK) | (1 << 5)))
+        self.port.Out32(
+            self.base + 0x402, int((_inp & ~BYTEMODEMASK) | (1 << 5))
+        )
 
         # Now to make sure the port is in output mode we need to make
         # sure that bit 5 of the control register is not set
         _inp = self.port.Inp32(self.base + 2)
-        self.port.Out32(self.base + 2,
-                        int(_inp & ~uint8(1 << 5)))
+        self.port.Out32(self.base + 2, int(_inp & ~uint8(1 << 5)))
         self.status = None
 
     def setData(self, data):
         """Set the data to be presented on the parallel port (one ubyte).
+
         Alternatively you can set the value of each pin (data pins are pins
         2-9 inclusive) using :func:`setPin`
 
@@ -82,14 +83,13 @@ class PParallelInpOut:
         # I can't see how to do this without reading and writing the data
         _inp = self.port.Inp32(self.base)
         if state:
-            val = _inp | 2**(pinNumber - 2)
+            val = _inp | 2 ** (pinNumber - 2)
         else:
-            val = _inp & (255 ^ 2**(pinNumber - 2))
+            val = _inp & (255 ^ 2 ** (pinNumber - 2))
         self.port.Out32(self.base, val)
 
     def readData(self):
-        """Return the value currently set on the data pins (2-9)
-        """
+        """Return the value currently set on the data pins (2-9)."""
         return self.port.Inp32(self.base)
 
     def readPin(self, pinNumber):
@@ -116,5 +116,5 @@ class PParallelInpOut:
         elif 2 <= pinNumber <= 9:
             return (self.port.Inp32(self.base) >> (pinNumber - 2)) & 1
         else:
-            msg = 'Pin %i cannot be read (by PParallelInpOut32.readPin())'
+            msg = "Pin %i cannot be read (by PParallelInpOut32.readPin())"
             print(msg % pinNumber)

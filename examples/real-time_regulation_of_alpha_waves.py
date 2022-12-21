@@ -39,7 +39,7 @@ import numpy as np
 
 from bsl import StreamRecorder, StreamReceiver, StreamPlayer, datasets
 from bsl.utils import Timer
-from bsl.triggers.software import SoftwareTrigger
+from bsl.triggers import MockTrigger
 
 #%%
 #
@@ -155,32 +155,15 @@ phase_duration = 3  # in seconds
 #
 # Acquired data is saved to disk with a `~bsl.StreamRecorder` and the beginning
 # of each phase is marked with a trigger event. For this example, a
-# `~bsl.triggers.software.SoftwareTrigger` is used, but this example would be
+# `~bsl.triggers.MockTrigger` is used, but this example would be
 # equally valid with a different type of trigger.
-#
-# .. note::
-#
-#     `~bsl.triggers.software.SoftwareTrigger` must be created after a
-#     `~bsl.StreamRecorder` is started and closed/deleted before a
-#     `~bsl.StreamRecorder` is stopped.
-#
-#     .. code-block:: python
-#
-#         recorder = StreamRecorder()
-#         recorder.start()
-#         trigger = SoftwareTrigger(recorder)
-#         # do stuff
-#         trigger.close() # OR >>> del trigger
-#         recorder.stop()
-#
-#     All triggers do not need an active `~bsl.StreamRecorder` to be created.
 
 record_dir = Path('~/bsl_data/examples').expanduser()
 os.makedirs(record_dir, exist_ok=True)
 recorder = StreamRecorder(record_dir, fname='example_real_time')
 recorder.start()
 print (recorder)
-trigger = SoftwareTrigger(recorder, verbose=True)
+trigger = MockTrigger()
 
 #%%
 #
@@ -251,7 +234,7 @@ while n <= n_cycles:
         next_event_timing, event = events.pop(0)
 
 # close the trigger and stop the recorder
-trigger.close()
+del trigger
 recorder.stop()
 
 #%%
@@ -280,8 +263,6 @@ for k in range(len(alphas)):
 fname = record_dir / 'fif' / 'example_real_time-StreamPlayer-raw.fif'
 raw = mne.io.read_raw_fif(fname, preload=True)
 print (raw)
-events = mne.find_events(raw, stim_channel='TRIGGER')
-print (events)
 
 #%%
 #

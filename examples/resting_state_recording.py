@@ -40,7 +40,7 @@ import time
 import mne
 
 from bsl import StreamPlayer, StreamRecorder, datasets
-from bsl.triggers.software import SoftwareTrigger
+from bsl.triggers import MockTrigger
 
 #%%
 #
@@ -97,27 +97,10 @@ print (recorder)
 #
 # Now that a `~bsl.StreamRecorder` is started and is acquiring data, a trigger
 # to mark the beginning of the segment of interest is created. For this
-# example, a `~bsl.triggers.software.SoftwareTrigger` is used, but this example
+# example, a `~bsl.triggers.MockTrigger` is used, but this example
 # would be equally valid with a different type of trigger.
-#
-# .. note::
-#
-#     `~bsl.triggers.software.SoftwareTrigger` must be created after a
-#     `~bsl.StreamRecorder` is started and closed/deleted before a
-#     `~bsl.StreamRecorder` is stopped.
-#
-#     .. code-block:: python
-#
-#         recorder = StreamRecorder()
-#         recorder.start()
-#         trigger = SoftwareTrigger(recorder)
-#         # do stuff
-#         trigger.close() # OR >>> del trigger
-#         recorder.stop()
-#
-#     All triggers do not need an active `~bsl.StreamRecorder` to be created.
 
-trigger = SoftwareTrigger(recorder, verbose=True)
+trigger = MockTrigger()
 
 #%%
 #
@@ -129,15 +112,9 @@ trigger.signal(1)
 #%%
 #
 # Finally, after the appropriate duration, the recording is interrupted.
-#
-# .. note::
-#
-#     `~bsl.triggers.software.SoftwareTrigger` must be closed or deleted before
-#     the recorder is stopped. All triggers do not need to be closed or deleted
-#     before the recorder is stopped.
 
 time.sleep(2)  # 2 seconds duration
-trigger.close()
+del trigger
 recorder.stop()
 print (recorder)
 
