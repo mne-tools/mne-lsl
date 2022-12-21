@@ -56,12 +56,12 @@ class ParallelPortTrigger(BaseTrigger):
         _check_type(address, ("int", str), "address")
         _check_type(delay, ("int",), "delay")
         self._delay = delay / 1000.0
-        if port_type is not None:
+        if port_type is None:
+            self._port_type = ParallelPortTrigger._infer_port_type(address)
+        else:
             _check_type(port_type, (str,), "port_type")
             _check_value(port_type, ("arduino", "pport"), "port_type")
             self._port_type = port_type
-        else:
-            self._port_type = ParallelPortTrigger._infer_port_type(address)
 
         # initialize port
         if self._port_type == "arduino":
