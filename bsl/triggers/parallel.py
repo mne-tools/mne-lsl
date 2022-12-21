@@ -3,7 +3,7 @@
 import threading
 import time
 from platform import system
-from typing import Union
+from typing import Optional, Union
 
 from ..utils._checks import _check_type, _check_value
 from ..utils._docs import copy_doc
@@ -19,10 +19,11 @@ class ParallelPortTrigger(BaseTrigger):
     ----------
     address : int (hex) | str
         The address of the parallel port on the system.
-        If an :ref:`arduino2lpt` is used, the address must be the COM port
-        (e.g. ``"COM5"``) or ``"arduino"`` for automatic detection.
-    port_type : str
+        If an :ref:`arduino2lpt` is used, the address must be the serial port
+        address or ``"arduino"`` for automatic detection.
+    port_type : str | None
         Either ``'arduino'`` or ``'pport'`` depending on the connection.
+        If None, BSL attempts to infers the type of port from the address.
     delay : int
         Delay in milliseconds until which a new trigger cannot be sent. During
         this time, the pins of the LPT port remain in the same state.
@@ -49,21 +50,21 @@ class ParallelPortTrigger(BaseTrigger):
     def __init__(
         self,
         address: Union[int, str],
-        port_type: str,
+        port_type: Optional[str] = None,
         delay: int = 50,
     ):
         _check_type(address, ("int", str), "address")
-        _check_type(port_type, (str,), "port_type")
-        _check_value(port_type, ("arduino", "pport"), "port_type")
+        if port_type is not None:
+            _check_type(port_type, (str,), "port_type")
+            _check_value(port_type, ("arduino", "pport"), "port_type")
+            self._port_type = port_type
+        else:
+            self._port_type = ParallelPortTrigger._infer_port_type(address)
         _check_type(delay, ("int",), "delay")
 
-        self._port_type = port_type
         self._delay = delay / 1000.0
 
         # initialize port
-        if self._port_type == "pport" and system() == "Darwin":
-            raise IOError("macOS does not support built-in parallel ports.")
-
         if self._port_type == "arduino":
             import_optional_dependency(
                 "serial", extra="Install 'pyserial' for ARDUINO support."
@@ -87,6 +88,33 @@ class ParallelPortTrigger(BaseTrigger):
         self._offtimer = threading.Timer(self._delay, self._signal_off)
 
     @staticmethod
+    def _infer_port_type(address: Union[int, str]) -> str:
+        """Infer the type of port from the address."""
+        if address == "arduino":
+            return "arduino"
+
+        if system() == "Linux":
+            if address.startswith("/dev/parport"):
+                return "pport"
+            if address.startswith("/dev/ttyACM"):
+                return "arduino"
+            else:
+                raise RuntimeError(
+                    "[Trigger] Could not infer the port type from the address "
+                    f"'{address}'. Please provide the 'port_type' argument "
+                    "when creating the ParallelPortTrigger object. "
+                )
+        elif system() == "Darwin":
+            return "arduino"
+        elif system() == "Windows":
+            if address.startswith("COM"):
+                return "arduino"
+            else:
+                # TODO: Check in detail what the address should look like for
+                # the windows drivers.
+                return "pport"
+
+    @staticmethod
     def _search_arduino() -> str:
         """Look for a connected Arduino to LPT converter."""
         from serial.tools import list_ports
@@ -106,11 +134,11 @@ class ParallelPortTrigger(BaseTrigger):
         except SerialException:
             msg = (
                 "[Trigger] Could not access arduino to LPT on "
-                "'{self._address}'."
+                f"'{self._address}'."
             )
             if system() == "Linux":
                 msg += (
-                    "Make sure you have the permission to access this "
+                    " Make sure you have the permission to access this "
                     "address, e.g. by adding your user account to the "
                     "'dialout' group: 'sudo usermod -a -G dialout <username>'."
                 )
@@ -125,23 +153,37 @@ class ParallelPortTrigger(BaseTrigger):
         """Connect to the ParallelPort."""
         from .io import ParallelPort
 
-        if ParallelPort is None:
+        if ParallelPort is None and system() == "Darwin":
             raise RuntimeError(
-                "[Trigger] PsychoPy parallel module has been imported but no "
-                "parallel port driver was found. psychopy.parallel supports "
-                "Linux with pyparallel and Windows with either inpout32, "
-                "inpout64 or dlportio. macOS is not supported."
+                "[Trigger] macOS does not support built-in parallel port. "
+                "Please use an arduino to LPT converter for hardware triggers "
+                "or bsl.triggers.LSLTrigger for software triggers."
+            )
+        elif ParallelPort is None and system() != "Linux":
+            raise RuntimeError(
+                "[Trigger] Windows supports built-in parallel port via "
+                "inpout32, inpout64 or dlportio. Neither of this driver was "
+                "found."
             )
 
         try:
             self._port = ParallelPort(self._address)
-        except PermissionError:
-            raise PermissionError(
-                "[Trigger] Could not connect to parallel port on "
-                f"'{self._address}'. To fix a PermissionError, try adding "
-                "your user into the group with access to the port or try "
-                "changing the chmod on the port.",
+        except Exception:
+            msg = (
+                "[Trigger] Could not access the parallel port on "
+                f"'{self._address}'."
             )
+            if system() == "Linux":
+                msg += (
+                    " Make sure you have the permission to access this "
+                    "address, e.g. by adding your user account to the 'lp' "
+                    "group: 'sudo usermod -a -G lp <username>'. Make sure the "
+                    "'lp' module is removed and the 'ppdev' module is loaded: "
+                    "'sudo rmmod lp' & 'sudo modprobe ppdev'. You can "
+                    "configure the module loaded by default in "
+                    "'/etc/modprobe.d/'."
+                )
+            raise RuntimeError(msg)
 
         time.sleep(1)
         logger.info(

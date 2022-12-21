@@ -70,8 +70,8 @@ doc = [
     'sphinx-gallery',
 ]
 triggers = [
-    'pyserial',
     'pyparallel; platform_system == "linux"',
+    'pyserial',
 ]
 style = [
     'bibclean',
@@ -82,7 +82,8 @@ style = [
     'pydocstyle[toml]',
 ]
 test = [
-    'bsl[triggers]',
+    'pyparallel; platform_system == "linux"',
+    'pyserial',
     'pytest',
     'pytest-cov',
     'pytest-timeout',
