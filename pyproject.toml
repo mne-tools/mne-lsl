@@ -4,7 +4,7 @@ build-backend = 'setuptools.build_meta'
 
 [project]
 name = 'bsl'
-version = '0.6.0.dev'
+version = '0.5.1'
 description = 'Real-time framework for online neuroscience research through LSL-compatible devices.'
 readme = 'README.md'
 license = {file = 'LICENSE'}
