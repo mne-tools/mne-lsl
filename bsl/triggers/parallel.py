@@ -5,7 +5,7 @@ import time
 from platform import system
 from typing import Optional, Union
 
-from ..utils._checks import _check_type, _check_value
+from ..utils._checks import _check_type, _check_value, _ensure_int
 from ..utils._docs import copy_doc
 from ..utils._imports import import_optional_dependency
 from ..utils._logs import logger
@@ -54,7 +54,9 @@ class ParallelPortTrigger(BaseTrigger):
         delay: int = 50,
     ):
         _check_type(address, ("int", str), "address")
-        _check_type(delay, ("int",), "delay")
+        if not isinstance(address, str):
+            address = _ensure_int(address)
+        delay = _ensure_int(delay, "delay")
         self._delay = delay / 1000.0
         if port_type is None:
             self._port_type = ParallelPortTrigger._infer_port_type(address)

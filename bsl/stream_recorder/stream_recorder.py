@@ -8,7 +8,7 @@ from pathlib import Path
 from ..stream_receiver import StreamEEG, StreamReceiver
 from ..stream_receiver._stream import MAX_BUF_SIZE
 from ..utils import Timer
-from ..utils._checks import _check_type
+from ..utils._checks import _check_type, _ensure_path
 from ..utils._docs import fill_doc
 from ..utils._logs import logger
 from ..utils.io import pcl2fif
@@ -157,10 +157,10 @@ class StreamRecorder:
         Convert record_dir to a Path, or select the current working directory
         if record_dir is None.
         """
-        _check_type(record_dir, (None, "path-like"), item_name="record_dir")
         if record_dir is None:
             record_dir = Path.cwd()
         else:
+            record_dir = _ensure_path(record_dir, must_exist=False)
             record_dir = Path(record_dir)
         return record_dir
 

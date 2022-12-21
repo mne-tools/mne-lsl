@@ -2,7 +2,7 @@ import os
 from configparser import ConfigParser
 from pathlib import Path
 
-from ..utils._checks import _check_type
+from ..utils._checks import _check_type, _ensure_int, _ensure_path
 from ..utils._logs import logger
 
 
@@ -120,7 +120,7 @@ class TriggerDef:
             If ``True``, overwrite previous event with the same name or value.
         """
         _check_type(name, (str,), item_name="name")
-        _check_type(value, ("int",), item_name="value")
+        value = _ensure_int(value, "value")
         _check_type(overwrite, (bool,), item_name="overwrite")
         if name in self._by_name and not overwrite:
             logger.info("Event name %s already exists. Skipping.", name)
@@ -181,13 +181,10 @@ class TriggerDef:
     @staticmethod
     def _check_trigger_file(trigger_file):
         """Check that the provided file exists and ends with .ini."""
-        _check_type(
-            trigger_file, (None, "path-like"), item_name="trigger_file"
-        )
-
         if trigger_file is None:
             return None
         else:
+            _ensure_path(trigger_file, must_exist=False)
             trigger_file = Path(trigger_file)
 
         if trigger_file.exists() and trigger_file.suffix == ".ini":
@@ -212,9 +209,7 @@ class TriggerDef:
     def _check_write_to_trigger_file(trigger_file):  # noqa
         """Check that the directory exists and that the file name ends with
         .ini."""
-        _check_type(trigger_file, ("path-like",), item_name="trigger_file")
-
-        trigger_file = Path(trigger_file)
+        trigger_file = _ensure_path(trigger_file, must_exist=False)
         if trigger_file.suffix != ".ini":
             raise ValueError(
                 "Argument trigger_file must end with .ini. "

@@ -8,7 +8,7 @@ import numpy as np
 from ..lsl import StreamInfo, StreamOutlet, local_clock
 from ..triggers import TriggerDef
 from ..utils import find_event_channel
-from ..utils._checks import _check_type
+from ..utils._checks import _check_type, _ensure_int, _ensure_path
 from ..utils._logs import logger
 
 
@@ -154,7 +154,7 @@ class StreamPlayer:
     @staticmethod
     def _check_fif_file(fif_file):
         """Check if the provided fif_file is valid."""
-        _check_type(fif_file, ("path-like",), item_name="fif_file")
+        fif_file = _ensure_path(fif_file, must_exist=True)
         mne.io.read_raw_fif(fif_file, preload=False, verbose=None)
         return Path(fif_file)
 
@@ -163,7 +163,7 @@ class StreamPlayer:
         """Check that repeat is valid."""
         if repeat == float("inf"):
             return repeat
-        _check_type(repeat, ("int",), item_name="repeat")
+        repeat = _ensure_int(repeat, "repeat")
         if repeat <= 0:
             raise ValueError(
                 "Argument repeat must be a strictly positive "
@@ -174,27 +174,17 @@ class StreamPlayer:
     @staticmethod
     def _check_trigger_def(trigger_def):
         """Check that trigger_def is valid."""
-        _check_type(
-            trigger_def,
-            (None, TriggerDef, "path-like"),
-            item_name="trigger_def",
-        )
         if isinstance(trigger_def, (type(None), TriggerDef)):
             return trigger_def
         else:
-            trigger_def = Path(trigger_def)
-            if not trigger_def.exists():
-                raise ValueError(
-                    "Argument trigger_def is a path that does "
-                    "not exist. Provided: %s" % trigger_def
-                )
+            trigger_def = _ensure_path(trigger_def, must_exist=True)
             trigger_def = TriggerDef(trigger_def)
             return trigger_def
 
     @staticmethod
     def _check_chunk_size(chunk_size):
         """Check that chunk_size is a strictly positive integer."""
-        _check_type(chunk_size, ("int",), item_name="chunk_size")
+        chunk_size = _ensure_int(chunk_size, "chunk_size")
         if chunk_size <= 0:
             raise ValueError(
                 "Argument chunk_size must be a strictly positive "
