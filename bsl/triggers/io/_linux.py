@@ -13,17 +13,19 @@
 
 
 class PParallelLinux:
-    """This class provides read/write access to the parallel port for linux
-    using pyparallel.
+    """Clsas for read/write access to the parallel port on a Linux.
+
+    Uses pyparallel.
 
     Note that you must have the lp module removed and the ppdev module loaded
     to use this code::
+
         sudo rmmod lp
         sudo modprobe ppdev
     """
 
-    def __init__(self, address='/dev/parport0'):
-        """Set the device node of your parallel port
+    def __init__(self, address="/dev/parport0"):
+        """Set the device node of your parallel port.
 
         Common port addresses::
 
@@ -33,20 +35,23 @@ class PParallelLinux:
         """
         import parallel as pyp
 
-        if not hasattr(pyp, 'Parallel'):
-            # We failed to import pyparallel properly
-            # We probably ended up with psychopy.parallel instead...
-            raise Exception('Failed to import pyparallel - is it installed?')
-
-        self.port = pyp.Parallel(address)
+        try:
+            self.port = pyp.Parallel(address)
+        except FileNotFoundError:
+            raise RuntimeError(
+                "[Trigger] Could not access parallel port on '{address}'. "
+                "No such file or directory."
+            )
         self.status = None
 
     def __del__(self):
-        if hasattr(self, 'port'):
+        """Delete and free the port."""
+        if hasattr(self, "port"):
             del self.port
 
     def setData(self, data):
         """Set the data to be presented on the parallel port (one ubyte).
+
         Alternatively you can set the value of each pin (data pins are pins
         2-9 inclusive) using :func:`~psychopy.parallel.setPin`
 
@@ -74,13 +79,14 @@ class PParallelLinux:
         """
         # I can't see how to do this without reading and writing the data
         if state:
-            self.port.setData(self.port.PPRDATA() | (2**(pinNumber - 2)))
+            self.port.setData(self.port.PPRDATA() | (2 ** (pinNumber - 2)))
         else:
-            self.port.setData(self.port.PPRDATA() & (255 ^ 2**(pinNumber - 2)))
+            self.port.setData(
+                self.port.PPRDATA() & (255 ^ 2 ** (pinNumber - 2))
+            )
 
     def readData(self):
-        """Return the value currently set on the data pins (2-9)
-        """
+        """Return the value currently set on the data pins (2-9)."""
         return self.port.PPRDATA()
 
     def readPin(self, pinNumber):
@@ -101,5 +107,5 @@ class PParallelLinux:
         elif 2 <= pinNumber <= 9:
             return (self.port.PPRDATA() >> (pinNumber - 2)) & 1
         else:
-            msg = 'Pin %i cannot be read (by PParallelLinux.readPin())'
+            msg = "Pin %i cannot be read (by PParallelLinux.readPin())"
             print(msg % pinNumber)

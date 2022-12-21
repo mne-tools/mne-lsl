@@ -37,7 +37,7 @@
 
 
 class PParallelDLPortIO:
-    """This class provides read/write access to the parallel port on a PC.
+    """Class for read/write access to the parallel port on a PC.
 
     This is a wrapper around Dincer Aydin's `winioport`_ for reading and
     writing to the parallel port, but adds the following additional
@@ -53,8 +53,7 @@ class PParallelDLPortIO:
     """
 
     def __init__(self, address=0x0378):
-        """Set the memory address of your parallel port, to be used in
-        subsequent method calls on this class.
+        """Set the memory address of your parallel port.
 
         Common port addresses::
 
@@ -62,17 +61,19 @@ class PParallelDLPortIO:
             LPT2 = 0x0278 or 0x0378
             LPT3 = 0x0278
         """
-
         from ctypes import windll
+
         try:
             # Load dlportio.dll functions
             self.port = windll.dlportio
         except Exception as e:
-            print("Could not import DLportIO driver, "
-                  "parallel Ports not available")
+            print(
+                "Could not import DLportIO driver, "
+                "parallel Ports not available"
+            )
             raise e
 
-        if isinstance(address, str) and address.startswith('0x'):
+        if isinstance(address, str) and address.startswith("0x"):
             # convert u"0x0378" into 0x0378
             self.base = int(address, 16)
         else:
@@ -81,6 +82,7 @@ class PParallelDLPortIO:
 
     def setData(self, data):
         """Set the data to be presented on the parallel port (one ubyte).
+
         Alternatively you can set the value of each pin (data pins are pins
         2-9 inclusive) using :func:`setPin`
 
@@ -111,14 +113,13 @@ class PParallelDLPortIO:
         # or caching the registers which seems like a very bad idea...
         _uchar = self.port.DlPortReadPortUchar(self.base)
         if state:
-            val = _uchar | 2**(pinNumber - 2)
+            val = _uchar | 2 ** (pinNumber - 2)
         else:
-            val = _uchar & (255 ^ 2**(pinNumber - 2))
+            val = _uchar & (255 ^ 2 ** (pinNumber - 2))
         self.port.DlPortWritePortUchar(self.base, val)
 
     def readData(self):
-        """Return the value currently set on the data pins (2-9)
-        """
+        """Return the value currently set on the data pins (2-9)."""
         return self.port.DlPortReadPortUchar(self.base)
 
     def readPin(self, pinNumber):
@@ -146,5 +147,5 @@ class PParallelDLPortIO:
             val = self.port.DlPortReadPortUchar(self.base)
             return (val >> (pinNumber - 2)) & 1
         else:
-            msg = 'Pin %i cannot be read (by PParallelDLPortIO.readPin())'
+            msg = "Pin %i cannot be read (by PParallelDLPortIO.readPin())"
             print(msg % pinNumber)
