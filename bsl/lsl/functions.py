@@ -1,7 +1,7 @@
 from ctypes import byref, c_char_p, c_double, c_void_p
 from typing import List, Optional
 
-from ..utils._checks import _check_type
+from ..utils._checks import _check_type, _ensure_int
 from .load_liblsl import lib
 from .stream_info import _BaseStreamInfo
 
@@ -108,7 +108,7 @@ def resolve_streams(
         streams = list(set(streams))  # remove duplicates
         return streams
 
-    _check_type(minimum, ("int",), "minimum")
+    minimum = _ensure_int(minimum, "minimum")
     if minimum <= 0:
         raise ValueError(
             "The argument 'minimum' must be a strictly positive integer. "

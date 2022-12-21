@@ -5,7 +5,7 @@ from typing import List, Optional, Union
 
 import numpy as np
 
-from ..utils._checks import _check_type, _check_value
+from ..utils._checks import _check_type, _check_value, _ensure_int
 from ..utils._docs import copy_doc
 from .constants import (
     fmt2pull_chunk,
@@ -59,7 +59,7 @@ class StreamInlet:
         processing_flags: Optional[Union[str, List[str]]] = None,
     ):
         _check_type(sinfo, (_BaseStreamInfo,), "sinfo")
-        _check_type(chunk_size, ("int",), "chunk_size")
+        chunk_size = _ensure_int(chunk_size, "chunk_size")
         if chunk_size < 0:
             raise ValueError(
                 "The argument 'chunk_size' must contain a positive integer. "

@@ -4,7 +4,7 @@ from typing import List, Optional, Union
 import numpy as np
 from numpy.typing import NDArray
 
-from ..utils._checks import _check_type
+from ..utils._checks import _check_type, _ensure_int
 from ..utils._docs import copy_doc
 from .constants import fmt2numpy, fmt2push_chunk, fmt2push_sample, fmt2string
 from .load_liblsl import lib
@@ -36,7 +36,7 @@ class StreamOutlet:
         max_buffered: float = 360,
     ):
         _check_type(sinfo, (_BaseStreamInfo,), "sinfo")
-        _check_type(chunk_size, ("int",), "chunk_size")
+        chunk_size = _ensure_int(chunk_size, "chunk_size")
         if chunk_size < 1:
             raise ValueError(
                 "The argument 'chunk_size' must contain a positive integer. "
