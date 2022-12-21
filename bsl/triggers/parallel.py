@@ -80,7 +80,6 @@ class ParallelPortTrigger(BaseTrigger):
                     "parallel",
                     extra="Install 'pyparallel' for LPT support on Linux.",
                 )
-
             self._address = address
             self._connect_pport()
 
