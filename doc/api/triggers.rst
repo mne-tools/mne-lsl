@@ -10,5 +10,4 @@ Triggers
    TriggerDef
    MockTrigger
    LSLTrigger
-   SoftwareTrigger
    ParallelPortTrigger
