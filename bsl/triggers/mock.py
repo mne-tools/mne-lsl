@@ -6,7 +6,10 @@ from ._base import BaseTrigger
 
 
 class MockTrigger(BaseTrigger):
-    """Mock trigger class."""
+    """Mock trigger class.
+
+    Delivered triggers are logged at the 'INFO' level.
+    """
 
     def __init__(self):
         pass
