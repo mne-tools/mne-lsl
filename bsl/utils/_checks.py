@@ -248,10 +248,5 @@ def _ensure_path(item: Any, must_exist: bool) -> Path:
             f"not {type(item)}."
         )
     if must_exist and not item.exists():
-        try:
-            str_ = f"'{str(item)}' "
-        except Exception:
-            str_ = ""
-        raise ValueError(
-            f"The provided path {str_}does not exist.")
+        raise ValueError(f"The provided path {str(item)} does not exist.")
     return item

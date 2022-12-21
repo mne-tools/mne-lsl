@@ -1,10 +1,17 @@
 """Test _checks.py"""
 
 import logging
+from pathlib import Path
 
 import pytest
 
-from .._checks import _check_type, _check_value, _check_verbose, _ensure_int
+from .._checks import (
+    _check_type,
+    _check_value,
+    _check_verbose,
+    _ensure_int,
+    _ensure_path,
+)
 
 
 def test_ensure_int():
@@ -77,3 +84,33 @@ def test_check_verbose():
         _check_verbose("101")
     with pytest.raises(ValueError, match="negative integer, -101 is invalid."):
         _check_verbose(-101)
+
+
+def test_ensure_path():
+    """Test _ensure_path checker."""
+    # valids
+    cwd = Path.cwd()
+    path = _ensure_path(cwd, must_exist=False)
+    assert isinstance(path, Path)
+    path = _ensure_path(cwd, must_exist=True)
+    assert isinstance(path, Path)
+    path = _ensure_path(str(cwd), must_exist=False)
+    assert isinstance(path, Path)
+    path = _ensure_path(str(cwd), must_exist=True)
+    assert isinstance(path, Path)
+    path = _ensure_path("101", must_exist=False)
+    assert isinstance(path, Path)
+
+    with pytest.raises(ValueError, match="does not exist."):
+        _ensure_path("101", must_exist=True)
+
+    # invalids
+    with pytest.raises(TypeError, match="'101' is invalid"):
+        _ensure_path(101, must_exist=False)
+
+    class Foo:
+        def __str__(self):
+            pass
+
+    with pytest.raises(TypeError, match="path is invalid"):
+        _ensure_path(Foo(), must_exist=False)
