@@ -27,7 +27,7 @@ class MarkersPlayer:
         if self._stream_info["desc"][0] == None:
             self._info = create_info(self.n_channels, 1, "stim")
             with self._info.unlock():
-                self._info["sfreq"] = 0.
+                self._info["sfreq"] = 0.0
         else:
             desc = self._stream_info["desc"][0]
 
@@ -39,17 +39,11 @@ class MarkersPlayer:
         if desc is None:
             info = create_info(n_channels, 1, "stim")
             with info.unlock():
-                info["sfreq"] = 0.
+                info["sfreq"] = 0.0
             return info
 
         channels = desc["channels"][0]["channel"]
         assert len(channels) == n_channels
-
-
-
-
-
-
 
     def _create_sinfo(self):
         self._sinfo = StreamInfo(
