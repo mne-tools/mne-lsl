@@ -4,6 +4,7 @@ from ctypes import CDLL, c_char_p, c_double, c_long, c_void_p, sizeof
 from pathlib import Path
 from typing import Optional, Tuple, Union
 
+from ..utils._exceptions import _GH_ISSUES
 from ..utils._logs import logger
 
 # Minimum/Maximum liblsl version. The major version is given by version // 100
@@ -28,6 +29,9 @@ _SUPPORTED_DISTRO = {
 
 def load_liblsl():
     """Load the binary LSL library on the system."""
+    if platform.system() not in _PLATFORM_SUFFIXES:
+        raise RuntimeError("The OS could not be determined. " + _GH_ISSUES)
+
     lib = _find_liblsl_env()
     if lib is not None:
         return _set_return_types(lib)
@@ -37,7 +41,7 @@ def load_liblsl():
     else:
         raise RuntimeError(
             "The liblsl library packaged with BSL could not be loaded. "
-            "Please contact the developers on GitHub."
+            + _GH_ISSUES
         )
 
 
@@ -179,29 +183,27 @@ def _find_liblsl_bsl() -> Optional[CDLL]:
         libname += f"{distro.version()}_amd64.so"
 
     # check macOS intel vs arm
-    if platform.system() == "Darwin":
+    elif platform.system() == "Darwin":
         if platform.processor() == "arm":
             libname += "OSX_arm64.dylib"
         elif platform.processor() == "i386":
             libname += "OSX_amd64.dylib"
         else:
             raise RuntimeError(
-                "The processor architecture could not be determined. Please "
-                "contact the developers on GitHub "
-                "(https://github.com/bsl-tools/bsl/issues)."
+                "The processor architecture could not be determined. "
+                + _GH_ISSUES
             )
 
     # check windows 32 vs 64 bits
-    if platform.system() == "Windows":
+    elif platform.system() == "Windows":
         if sizeof(c_void_p) == 4:  # 32 bits
             libname += "Win_i386.dll"
         elif sizeof(c_void_p) == 8:  # 64 bits
             libname += "Win_amd64.dll"
         else:
             raise RuntimeError(
-                "The processor architecture could not be determined. Please "
-                "contact the developers on GitHub "
-                "(https://github.com/bsl-tools/bsl/issues)."
+                "The processor architecture could not be determined. "
+                + _GH_ISSUES
             )
 
     # attempt to load the corresponding liblsl
@@ -210,7 +212,8 @@ def _find_liblsl_bsl() -> Optional[CDLL]:
         lib = CDLL(str(libpath))
         assert _VERSION_MIN <= lib.lsl_library_version() <= _VERSION_MAX
     except Exception:
-        return None
+        lib = None
+    return lib
 
 
 def _set_return_types(lib: CDLL) -> CDLL:
