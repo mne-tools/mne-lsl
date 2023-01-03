@@ -45,7 +45,11 @@ def sys_info(fid: Optional[IO] = None, developer: bool = False):
     # dependencies
     out("\nDependencies info\n")
     out(f"{package}:".ljust(ljust) + version(package) + "\n")
-    dependencies = [elt for elt in requires(package) if "extra" not in elt]
+    dependencies = [
+        elt.split(";")[0].rstrip()
+        for elt in requires(package)
+        if "extra" not in elt
+    ]
     _list_dependencies_info(out, ljust, dependencies)
 
     # extras
@@ -56,7 +60,6 @@ def sys_info(fid: Optional[IO] = None, developer: bool = False):
             "test",
             "style",
         )
-        print(requires(package))
         for key in keys:
             dependencies = [
                 elt.split(";")[0].rstrip()
