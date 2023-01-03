@@ -142,7 +142,11 @@ def _attempt_load_liblsl(
 
 def _find_liblsl_bsl() -> Optional[CDLL]:
     """Search for the LSL library packaged with BSL."""
-    libname = f"liblsl-{_VERSION_BSL // 100}" + f".{_VERSION_BSL % 100}" + f".{_VERSION_BSL_PATCH}-"
+    libname = (
+        f"liblsl-{_VERSION_BSL // 100}"
+        + f".{_VERSION_BSL % 100}"
+        + f".{_VERSION_BSL_PATCH}-"
+    )
 
     # check linux distribution
     if platform.system() == "Linux":
@@ -165,8 +169,8 @@ def _find_liblsl_bsl() -> Optional[CDLL]:
                 "The liblsl library packaged with BSL supports distro_like "
                 "based distributions on versions "
                 f"{', '.join(_SUPPORTED_DISTRO[distro_like])}. Version "
-                f"{distro.version()} is not supported. Please build the liblsl "
-                "library from source and provide it in the environment "
+                f"{distro.version()} is not supported. Please build the "
+                "liblsl library from source and provide it in the environment "
                 "variable LSL_LIB."
             )
         libname += f"{distro.version()}_amd64.so"
