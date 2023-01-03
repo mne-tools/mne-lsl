@@ -1,15 +1,19 @@
 import os
 import platform
-from ctypes import CDLL, c_char_p, c_double, c_long, c_void_p
+from ctypes import CDLL, c_char_p, c_double, c_long, c_void_p, sizeof
 from pathlib import Path
 from typing import Optional, Tuple, Union
 
+from ..utils._exceptions import _GH_ISSUES
 from ..utils._logs import logger
 
 # Minimum/Maximum liblsl version. The major version is given by version // 100
 # and the minor version is given by version % 100.
 _VERSION_MIN = 115
 _VERSION_MAX = 116
+# Description of the current version packaged with BSL: 1.16.0
+_VERSION_BSL = 116
+_VERSION_BSL_PATCH = 0
 # liblsl objects created with the same protocol version are inter-compatible.
 _VERSION_PROTOCOL = 110
 
@@ -18,10 +22,16 @@ _PLATFORM_SUFFIXES = {
     "Darwin": ".dylib",
     "Linux": ".so",
 }
+_SUPPORTED_DISTRO = {
+    "ubuntu": ("20.04", "22.04"),
+}
 
 
 def load_liblsl():
     """Load the binary LSL library on the system."""
+    if platform.system() not in _PLATFORM_SUFFIXES:
+        raise RuntimeError("The OS could not be determined. " + _GH_ISSUES)
+
     lib = _find_liblsl_env()
     if lib is not None:
         return _set_return_types(lib)
@@ -31,7 +41,7 @@ def load_liblsl():
     else:
         raise RuntimeError(
             "The liblsl library packaged with BSL could not be loaded. "
-            "Please contact the developers on GitHub."
+            + _GH_ISSUES
         )
 
 
@@ -136,16 +146,73 @@ def _attempt_load_liblsl(
 
 def _find_liblsl_bsl() -> Optional[CDLL]:
     """Search for the LSL library packaged with BSL."""
-    directory = Path(__file__).parent / "lib"
-    lib = None
-    for libpath in directory.iterdir():
-        if libpath.suffix != _PLATFORM_SUFFIXES[platform.system()]:
-            continue
-        try:
-            lib = CDLL(str(libpath))
-            assert _VERSION_MIN <= lib.lsl_library_version() <= _VERSION_MAX
-        except Exception:
-            continue
+    libname = (
+        f"liblsl-{_VERSION_BSL // 100}"
+        + f".{_VERSION_BSL % 100}"
+        + f".{_VERSION_BSL_PATCH}-"
+    )
+
+    # check linux distribution
+    if platform.system() == "Linux":
+        import distro
+
+        if distro.name().lower() in _SUPPORTED_DISTRO:
+            distro_like = distro.name().lower()
+        else:
+            for elt in distro.like().split(" "):
+                if elt in _SUPPORTED_DISTRO:
+                    distro_like = elt
+                    break
+            else:
+                raise RuntimeError(
+                    "The liblsl library packaged with BSL supports "
+                    f"{', '.join(_SUPPORTED_DISTRO)} based distributions. "
+                    f"{distro.name()} is not supported. Please build the "
+                    "liblsl library from source and provide it in the "
+                    "environment variable LSL_LIB."
+                )
+        if distro.version() not in _SUPPORTED_DISTRO[distro_like]:
+            raise RuntimeError(
+                "The liblsl library packaged with BSL supports distro_like "
+                "based distributions on versions "
+                f"{', '.join(_SUPPORTED_DISTRO[distro_like])}. Version "
+                f"{distro.version()} is not supported. Please build the "
+                "liblsl library from source and provide it in the environment "
+                "variable LSL_LIB."
+            )
+        libname += f"{distro.version()}_amd64.so"
+
+    # check macOS intel vs arm
+    elif platform.system() == "Darwin":
+        if platform.processor() == "arm":
+            libname += "OSX_arm64.dylib"
+        elif platform.processor() == "i386":
+            libname += "OSX_amd64.dylib"
+        else:
+            raise RuntimeError(
+                "The processor architecture could not be determined. "
+                + _GH_ISSUES
+            )
+
+    # check windows 32 vs 64 bits
+    elif platform.system() == "Windows":
+        if sizeof(c_void_p) == 4:  # 32 bits
+            libname += "Win_i386.dll"
+        elif sizeof(c_void_p) == 8:  # 64 bits
+            libname += "Win_amd64.dll"
+        else:
+            raise RuntimeError(
+                "The processor architecture could not be determined. "
+                + _GH_ISSUES
+            )
+
+    # attempt to load the corresponding liblsl
+    libpath = Path(__file__).parent / "lib" / libname
+    try:
+        lib = CDLL(str(libpath))
+        assert _VERSION_MIN <= lib.lsl_library_version() <= _VERSION_MAX
+    except Exception:
+        lib = None
     return lib
 
 
