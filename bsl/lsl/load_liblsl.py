@@ -152,18 +152,21 @@ def _find_liblsl_bsl() -> Optional[CDLL]:
     if platform.system() == "Linux":
         import distro
 
-        for elt in distro.like().split(" "):
-            if elt in _SUPPORTED_DISTRO:
-                distro_like = elt
-                break
+        if distro.name().lower() in _SUPPORTED_DISTRO:
+            distro_like = distro.name().lower()
         else:
-            raise RuntimeError(
-                "The liblsl library packaged with BSL supports "
-                f"{', '.join(_SUPPORTED_DISTRO)} based distributions. "
-                f"{distro.name()} is not supported. Please build the liblsl "
-                "library from source and provide it in the environment "
-                "variable LSL_LIB."
-            )
+            for elt in distro.like().split(" "):
+                if elt in _SUPPORTED_DISTRO:
+                    distro_like = elt
+                    break
+            else:
+                raise RuntimeError(
+                    "The liblsl library packaged with BSL supports "
+                    f"{', '.join(_SUPPORTED_DISTRO)} based distributions. "
+                    f"{distro.name()} is not supported. Please build the "
+                    "liblsl library from source and provide it in the "
+                    "environment variable LSL_LIB."
+                )
         if distro.version() not in _SUPPORTED_DISTRO[distro_like]:
             raise RuntimeError(
                 "The liblsl library packaged with BSL supports distro_like "
@@ -175,7 +178,7 @@ def _find_liblsl_bsl() -> Optional[CDLL]:
             )
         libname += f"{distro.version()}_amd64.so"
 
-    # check macOS amd vs arm
+    # check macOS intel vs arm
     if platform.system() == "Darwin":
         if platform.processor() == "arm":
             libname += "OSX_arm64.dylib"
@@ -202,9 +205,9 @@ def _find_liblsl_bsl() -> Optional[CDLL]:
             )
 
     # attempt to load the corresponding liblsl
-    directory = Path(__file__).parent / "lib"
+    libpath = Path(__file__).parent / "lib" / libname
     try:
-        lib = CDLL(str(directory / libname))
+        lib = CDLL(str(libpath))
         assert _VERSION_MIN <= lib.lsl_library_version() <= _VERSION_MAX
     except Exception:
         return None
