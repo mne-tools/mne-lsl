@@ -7,6 +7,11 @@ from mne.io.pick import get_channel_type_constants
 from ._checks import _check_type, _ensure_int
 
 _CH_TYPES_DICT = get_channel_type_constants(include_defaults=True)
+_STIM_TYPES = (
+    "marker",
+    "markers",
+    "stim",
+)
 _EEG_UNITS = {
     "v": _ch_unit_mul_named[0],
     "volt": _ch_unit_mul_named[0],
@@ -26,7 +31,7 @@ def _create_info(
     stype: str,
     desc: Optional[Dict[str, Any]],
 ) -> Info:
-    """Create an `~mne.Info` object from a stream attributes."""
+    """Create an mne.Info object from a stream attributes."""
     n_channels = _ensure_int(n_channels, "n_channels")
     _check_type(sfreq, ("numeric",), "sfreq")
     _check_type(stype, (str,), "stype")
@@ -40,7 +45,7 @@ def _create_info(
 
     # try to identify the main channel type
     stype = stype.lower().strip()
-    stype = "stim" if stype in ("marker", "markers") else stype
+    stype = "stim" if stype in _STIM_TYPES else stype
     stype = stype if stype in _CH_TYPES_DICT else "misc"
 
     # attempt to create the info depending on the provided description
@@ -91,7 +96,7 @@ def _get_ch_types_and_units(
     units = list()
     for ch in channels:
         ch_type = _safe_get(ch, "type", stype)
-        ch_type = "stim" if ch_type in ("marker", "markers") else ch_type
+        ch_type = "stim" if ch_type in _STIM_TYPES else ch_type
         ch_type = ch_type if ch_type in _CH_TYPES_DICT else stype
 
         unit = _safe_get(ch, "unit", _ch_unit_mul_named[0])
