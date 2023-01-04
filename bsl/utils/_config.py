@@ -96,6 +96,7 @@ def _list_dependencies_info(
         if dep in ("matplotlib", "seaborn") and version_ != "Not found.":
             try:
                 from matplotlib import pyplot as plt
+
                 backend = plt.get_backend()
             except Exception:
                 backend = "Not found"
