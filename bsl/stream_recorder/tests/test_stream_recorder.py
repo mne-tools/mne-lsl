@@ -187,7 +187,6 @@ def test_arg_fif_subdir(tmp_path):
     dataset = eeg_resting_state
 
     with StreamPlayer("StreamPlayer", dataset.data_path()):
-
         # False
         fif_subdir = False
 
@@ -239,7 +238,6 @@ def test_arg_verbose(tmp_path):
     fif_subdir = False
 
     with StreamPlayer("StreamPlayer", dataset.data_path()):
-
         # False
         verbose = False
 

@@ -1,5 +1,5 @@
 import time
-from ctypes import byref, c_char_p, c_double, c_int, c_void_p
+from ctypes import byref, c_char_p, c_double, c_int, c_size_t, c_void_p
 from functools import reduce
 from typing import List, Optional, Union
 
@@ -319,8 +319,8 @@ class StreamInlet:
             self._obj,
             byref(data_buffer),
             byref(ts_buffer),
-            max_samples_data,
-            max_samples,
+            c_size_t(max_samples_data),
+            c_size_t(max_samples),
             c_double(timeout),
             byref(errcode),
         )

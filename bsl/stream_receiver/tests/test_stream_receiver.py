@@ -89,7 +89,6 @@ def test_receiving_multi_streams():
     with StreamPlayer(
         "StreamPlayer1", eeg_resting_state.data_path()
     ), StreamPlayer("StreamPlayer2", eeg_resting_state.data_path()):
-
         # test connect to only one
         sr = StreamReceiver(
             bufsize=1, winsize=0.2, stream_name="StreamPlayer1"
