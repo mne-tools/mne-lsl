@@ -336,7 +336,6 @@ class _Streamer:
 
         # Streaming loop
         while self._state.value == 1:
-
             idx_current = idx_chunk * self._chunk_size
             idx_next = idx_current + self._chunk_size
             chunk = self._raw._data[:, idx_current:idx_next]

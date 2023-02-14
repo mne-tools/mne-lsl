@@ -81,7 +81,6 @@ class StreamReceiver:
         while watchdog.sec() <= timeout:
             streamInfos = resolve_streams()
             for streamInfo in streamInfos:
-
                 # connect to a specific amp only?
                 if (
                     self._stream_name is not None
