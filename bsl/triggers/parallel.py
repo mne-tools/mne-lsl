@@ -85,7 +85,7 @@ class ParallelPortTrigger(BaseTrigger):
             self._address = address
             self._connect_pport()
 
-        self._offtimer = threading.Timer(self._delay, self._signal_off)
+        self._signal_off()  # set pins to 0 and define self._offtimer
 
     @staticmethod
     def _infer_port_type(address: Union[int, str]) -> str:
