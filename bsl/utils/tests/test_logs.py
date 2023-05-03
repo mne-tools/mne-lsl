@@ -1,4 +1,4 @@
-"""Test _logs.py"""
+"""Test logs.py"""
 
 import logging
 from typing import Optional, Union

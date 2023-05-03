@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-from ..utils._logs import logger
+from ..utils.logs import logger
 from ._fetching import _hashfunc, fetch_file
 
 MD5 = "ea0d40643bdc1c88e2b808c7128a0eba"

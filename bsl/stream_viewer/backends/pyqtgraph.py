@@ -5,7 +5,7 @@ import pyqtgraph as pg
 from PyQt5 import QtCore
 
 from ...utils._docs import copy_doc, fill_doc
-from ...utils._logs import logger
+from ...utils.logs import logger
 from ._backend import _Backend, _Event
 
 # pg.setConfigOptions(antialias=True)

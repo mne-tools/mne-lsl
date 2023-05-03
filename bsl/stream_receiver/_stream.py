@@ -6,9 +6,9 @@ import numpy as np
 
 from ..lsl import StreamInlet, local_clock
 from ..utils import Timer, find_event_channel
-from ..utils._checks import _check_type
+from ..utils._checks import check_type
 from ..utils._docs import copy_doc, fill_doc
-from ..utils._logs import logger
+from ..utils.logs import logger
 from ..utils.lsl import lsl_channel_list
 from ._buffer import Buffer
 
@@ -204,7 +204,7 @@ class _Stream(ABC):
         ----------
         %(receiver_winsize)s
         """
-        _check_type(winsize, ("numeric",), item_name="winsize")
+        check_type(winsize, ("numeric",), item_name="winsize")
         if winsize <= 0:
             raise ValueError("Invalid window size %s." % winsize)
 
@@ -220,7 +220,7 @@ class _Stream(ABC):
         %(receiver_bufsize)s
         %(receiver_winsize)s
         """
-        _check_type(bufsize, ("numeric",), item_name="bufsize")
+        check_type(bufsize, ("numeric",), item_name="bufsize")
 
         if bufsize <= 0 or bufsize > MAX_BUF_SIZE:
             logger.error(
@@ -485,7 +485,7 @@ class StreamEEG(_Stream):
 
     @scaling_factor.setter
     def scaling_factor(self, scaling_factor):
-        _check_type(scaling_factor, ("numeric",), item_name="scaling_factor")
+        check_type(scaling_factor, ("numeric",), item_name="scaling_factor")
         if scaling_factor <= 0:
             raise ValueError(
                 "Property scaling_factor must be a strictly "

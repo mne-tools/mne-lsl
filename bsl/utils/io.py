@@ -8,7 +8,7 @@ import mne
 import numpy as np
 
 from . import find_event_channel
-from ._logs import logger
+from .logs import logger
 
 mne.set_log_level("ERROR")
 

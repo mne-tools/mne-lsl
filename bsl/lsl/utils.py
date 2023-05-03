@@ -211,7 +211,7 @@ def _check_timeout(timeout: Optional[float]) -> float:
         Timeout (in seconds). If None was provided, a very large float is
         provided.
     """
-    # with _check_type, the execution takes 800-900 ns.
+    # with check_type, the execution takes 800-900 ns.
     # with the try/except below, the execution takes 110 ns.
     if timeout is None:
         return 32000000.0  # about 1 year

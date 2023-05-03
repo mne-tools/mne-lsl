@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Optional, Tuple, Union
 
 from ..utils._exceptions import _GH_ISSUES
-from ..utils._logs import logger
+from ..utils.logs import logger
 
 # Minimum/Maximum liblsl version. The major version is given by version // 100
 # and the minor version is given by version % 100.

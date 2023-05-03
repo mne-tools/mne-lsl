@@ -1,6 +1,6 @@
 import time
 
-from ._checks import _check_type
+from ._checks import check_type
 
 
 class Timer:
@@ -56,5 +56,5 @@ class Timer:
 
     @autoreset.setter
     def autoreset(self, autoreset):
-        _check_type(autoreset, (bool,), item_name="autoreset")
+        check_type(autoreset, (bool,), item_name="autoreset")
         self._autoreset = autoreset

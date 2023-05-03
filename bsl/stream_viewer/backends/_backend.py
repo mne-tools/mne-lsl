@@ -3,7 +3,7 @@ import math
 from abc import ABC, abstractmethod
 
 from ...utils._docs import fill_doc
-from ...utils._logs import logger
+from ...utils.logs import logger
 
 
 @fill_doc

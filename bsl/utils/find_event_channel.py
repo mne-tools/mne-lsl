@@ -2,7 +2,7 @@ import numpy as np
 from mne.epochs import BaseEpochs
 from mne.io import BaseRaw
 
-from ._checks import _check_type
+from ._checks import check_type
 
 
 def find_event_channel(inst=None, ch_names=None):
@@ -29,8 +29,8 @@ def find_event_channel(inst=None, ch_names=None):
         Event channel index, list of event channel indexes or ``None`` if not
         found.
     """
-    _check_type(inst, (None, np.ndarray, BaseRaw, BaseEpochs), item_name="inst")
-    _check_type(ch_names, (None, list, tuple), item_name="ch_names")
+    check_type(inst, (None, np.ndarray, BaseRaw, BaseEpochs), item_name="inst")
+    check_type(ch_names, (None, list, tuple), item_name="ch_names")
 
     # numpy array + ch_names
     if isinstance(inst, np.ndarray) and ch_names is not None:

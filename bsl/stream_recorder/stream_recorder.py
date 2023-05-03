@@ -8,10 +8,10 @@ from pathlib import Path
 from ..stream_receiver import StreamEEG, StreamReceiver
 from ..stream_receiver._stream import MAX_BUF_SIZE
 from ..utils import Timer
-from ..utils._checks import _check_type, _ensure_path
+from ..utils._checks import check_type, ensure_path
 from ..utils._docs import fill_doc
-from ..utils._logs import logger
 from ..utils.io import pcl2fif
+from ..utils.logs import logger
 
 
 @fill_doc
@@ -38,11 +38,11 @@ class StreamRecorder:
     ):
         self._record_dir = StreamRecorder._check_record_dir(record_dir)
         self._fname = StreamRecorder._check_fname(fname)
-        _check_type(stream_name, (None, str, list, tuple), item_name="stream_name")
+        check_type(stream_name, (None, str, list, tuple), item_name="stream_name")
         self._stream_name = stream_name
-        _check_type(fif_subdir, (bool,), item_name="fif_subdir")
+        check_type(fif_subdir, (bool,), item_name="fif_subdir")
         self._fif_subdir = fif_subdir
-        _check_type(verbose, (bool,), item_name="verbose")
+        check_type(verbose, (bool,), item_name="verbose")
         self._verbose = verbose
 
         self._eve_file = None  # for SOFTWARE triggers
@@ -57,7 +57,7 @@ class StreamRecorder:
         blocking : bool
             If ``True``, waits for the child process to start recording data.
         """
-        _check_type(blocking, (bool,), item_name="blocking")
+        check_type(blocking, (bool,), item_name="blocking")
         fname, self._eve_file = StreamRecorder._create_fname(
             self._record_dir, self._fname
         )
@@ -154,14 +154,14 @@ class StreamRecorder:
         if record_dir is None:
             record_dir = Path.cwd()
         else:
-            record_dir = _ensure_path(record_dir, must_exist=False)
+            record_dir = ensure_path(record_dir, must_exist=False)
             record_dir = Path(record_dir)
         return record_dir
 
     @staticmethod
     def _check_fname(fname):
         """Check that the file name stem is a string or None."""
-        _check_type(fname, (None, str), item_name="fname")
+        check_type(fname, (None, str), item_name="fname")
         return fname
 
     @staticmethod

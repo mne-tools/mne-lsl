@@ -6,7 +6,7 @@ from PyQt5 import QtCore
 from PyQt5.QtWidgets import QHeaderView, QTableWidgetItem
 
 from ...utils._docs import copy_doc, fill_doc
-from ...utils._logs import logger
+from ...utils.logs import logger
 from ..backends.pyqtgraph import _BackendPyQtGraph
 from ._control import _ControlGUI
 from ._ui_control import UI_MainWindow

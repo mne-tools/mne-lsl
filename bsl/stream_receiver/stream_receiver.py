@@ -5,9 +5,9 @@ import numpy as np
 
 from ..lsl import resolve_streams
 from ..utils import Timer
-from ..utils._checks import _check_type
+from ..utils._checks import check_type
 from ..utils._docs import fill_doc
-from ..utils._logs import logger
+from ..utils.logs import logger
 from ._stream import StreamEEG, StreamMarker
 
 
@@ -55,8 +55,8 @@ class StreamReceiver:
             If ``True``, force reconnect if the StreamReceiver was already
             connected.
         """
-        _check_type(timeout, ("numeric",), item_name="timeout")
-        _check_type(force, (bool,), item_name="force")
+        check_type(timeout, ("numeric",), item_name="timeout")
+        check_type(force, (bool,), item_name="force")
 
         if not force and self._connected:
             return True
@@ -372,7 +372,7 @@ class StreamReceiver:
     @staticmethod
     def _check_bufsize(bufsize, winsize):
         """Check that bufsize is positive and bigger than the winsize."""
-        _check_type(bufsize, ("numeric",), item_name="bufsize")
+        check_type(bufsize, ("numeric",), item_name="bufsize")
         bufsize = float(bufsize)
         if bufsize <= 0:
             raise ValueError(
@@ -392,7 +392,7 @@ class StreamReceiver:
     @staticmethod
     def _check_winsize(winsize):
         """Check that winsize is positive."""
-        _check_type(winsize, ("numeric",), item_name="winsize")
+        check_type(winsize, ("numeric",), item_name="winsize")
         winsize = float(winsize)
         if winsize <= 0:
             raise ValueError(
@@ -405,7 +405,7 @@ class StreamReceiver:
     @staticmethod
     def _check_format_stream_name(stream_name):
         """Check the format of stream_name."""
-        _check_type(stream_name, (None, str, list, tuple), item_name="stream_name")
+        check_type(stream_name, (None, str, list, tuple), item_name="stream_name")
         if isinstance(stream_name, (list, tuple)):
             stream_name = list(stream_name)
             if not all(isinstance(name, str) for name in stream_name):
