@@ -145,16 +145,10 @@ class ControlGUI_EEG(_ControlGUI):
         except Exception:  # 10s by default
             self._ui.spinBox_signal_xRange.setValue(10)
 
-        # CAR
-        try:
-            self._ui.checkBox_car.setChecked(
-                bool(scope_settings.get("filtering", "apply_car_filter"))
-            )
-        except Exception:
-            self._ui.checkBox_car.setChecked(False)
-
         # BP Filters
-        self._ui.checkBox_bandpass.setChecked(True)
+        self._ui.checkBox_bandpass.setChecked(
+            bool(int(scope_settings.get("filtering", "apply_bandpass")))
+        )
         try:
             self._ui.doubleSpinBox_bandpass_low.setValue(
                 float(
@@ -174,6 +168,22 @@ class ControlGUI_EEG(_ControlGUI):
             # Default to [1, 40] Hz.
             self._ui.doubleSpinBox_bandpass_low.setValue(1.0)
             self._ui.doubleSpinBox_bandpass_high.setValue(40.0)
+
+        # CAR
+        try:
+            self._ui.checkBox_car.setChecked(
+                bool(int(scope_settings.get("filtering", "apply_car")))
+            )
+        except Exception:
+            self._ui.checkBox_car.setChecked(False)
+
+        # Detrend
+        try:
+            self._ui.checkBox_detrend.setChecked(
+                bool(int(scope_settings.get("filtering", "apply_detrend")))
+            )
+        except Exception:
+            self._ui.checkBox_detrend.setChecked(False)
 
         self._ui.doubleSpinBox_bandpass_high.setMinimum(
             self._ui.doubleSpinBox_bandpass_low.value() + 1
@@ -228,7 +238,6 @@ class ControlGUI_EEG(_ControlGUI):
         )
 
         # CAR / Filters
-        self._ui.checkBox_car.stateChanged.connect(self.onClicked_checkBox_car)
         self._ui.checkBox_bandpass.stateChanged.connect(
             self.onClicked_checkBox_bandpass
         )
@@ -238,6 +247,8 @@ class ControlGUI_EEG(_ControlGUI):
         self._ui.doubleSpinBox_bandpass_high.valueChanged.connect(
             self.onValueChanged_doubleSpinBox_bandpass_high
         )
+        self._ui.checkBox_car.stateChanged.connect(self.onClicked_checkBox_car)
+        self._ui.checkBox_detrend.stateChanged.connect(self.onClicked_checkBox_detrend)
 
         # Trigger events
         self._ui.checkBox_show_LPT_trigger_events.stateChanged.connect(
@@ -266,16 +277,22 @@ class ControlGUI_EEG(_ControlGUI):
         logger.debug("x-range set to %d", self._xRange)
 
     @QtCore.pyqtSlot()
+    def onClicked_checkBox_bandpass(self):
+        logger.debug("Checkbox for BP event received.")
+        self._scope.apply_bandpass = self._ui.checkBox_bandpass.isChecked()
+        logger.debug("BP checkbox: %s", self._ui.checkBox_bandpass.isChecked())
+
+    @QtCore.pyqtSlot()
     def onClicked_checkBox_car(self):
         logger.debug("Checkbox for CAR event received.")
         self._scope.apply_car = self._ui.checkBox_car.isChecked()
         logger.debug("CAR checkbox: %s", self._ui.checkBox_car.isChecked())
 
     @QtCore.pyqtSlot()
-    def onClicked_checkBox_bandpass(self):
-        logger.debug("Checkbox for BP event received.")
-        self._scope.apply_bandpass = self._ui.checkBox_bandpass.isChecked()
-        logger.debug("BP checkbox: %s", self._ui.checkBox_bandpass.isChecked())
+    def onClicked_checkBox_detrend(self):
+        logger.debug("Checkbox for detrend event received.")
+        self._scope.apply_detrend = self._ui.checkBox_detrend.isChecked()
+        logger.debug("Detrend checkbox: %s", self._ui.checkBox_bandpass.isChecked())
 
     @QtCore.pyqtSlot()
     def onValueChanged_doubleSpinBox_bandpass_low(self):

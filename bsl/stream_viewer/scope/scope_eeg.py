@@ -38,8 +38,9 @@ class ScopeEEG(_Scope):
         self._nb_channels = len(self._channels_labels)
 
         # Variables
-        self._apply_car = False
         self._apply_bandpass = False
+        self._apply_car = False
+        self._apply_detrend = False
         self._selected_channels = list(range(self._nb_channels))
 
         # Buffers
@@ -113,6 +114,9 @@ class ScopeEEG(_Scope):
             car_ch = np.mean(self._data_acquired[:, self._selected_channels], axis=1)
             self._data_acquired -= car_ch.reshape((-1, 1))
 
+        if self._apply_detrend:
+            self._data_acquired -= np.mean(self._data_acquired, axis=0)
+
     def _filter_trigger(self, tol=0.05):  # noqa
         """
         Cleans up the trigger signal by removing successive duplicates of a
@@ -140,6 +144,15 @@ class ScopeEEG(_Scope):
         return self._nb_channels
 
     @property
+    def apply_bandpass(self):
+        """Boolean. Applies bandpass filter if True."""
+        return self._apply_bandpass
+
+    @apply_bandpass.setter
+    def apply_bandpass(self, apply_bandpass):
+        self._apply_bandpass = bool(apply_bandpass)
+
+    @property
     def apply_car(self):
         """Boolean. Applies CAR if True."""
         return self._apply_car
@@ -149,13 +162,13 @@ class ScopeEEG(_Scope):
         self._apply_car = bool(apply_car)
 
     @property
-    def apply_bandpass(self):
-        """Boolean. Applies bandpass filter if True."""
-        return self._apply_bandpass
+    def apply_detrend(self):
+        """Boolean. Applies detrending if True."""
+        return self._apply_detrend
 
-    @apply_bandpass.setter
-    def apply_bandpass(self, apply_bandpass):
-        self._apply_bandpass = bool(apply_bandpass)
+    @apply_detrend.setter
+    def apply_detrend(self, apply_detrend):
+        self._apply_detrend = bool(apply_detrend)
 
     @property
     def selected_channels(self):
