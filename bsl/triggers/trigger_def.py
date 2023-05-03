@@ -2,8 +2,8 @@ import os
 from configparser import ConfigParser
 from pathlib import Path
 
-from ..utils._checks import _check_type, _ensure_int, _ensure_path
-from ..utils._logs import logger
+from ..utils._checks import check_type, ensure_int, ensure_path
+from ..utils.logs import logger
 
 
 class TriggerDef:
@@ -119,9 +119,9 @@ class TriggerDef:
         overwrite : bool
             If ``True``, overwrite previous event with the same name or value.
         """
-        _check_type(name, (str,), item_name="name")
-        value = _ensure_int(value, "value")
-        _check_type(overwrite, (bool,), item_name="overwrite")
+        check_type(name, (str,), item_name="name")
+        value = ensure_int(value, "value")
+        check_type(overwrite, (bool,), item_name="overwrite")
         if name in self._by_name and not overwrite:
             logger.info("Event name %s already exists. Skipping.", name)
             return
@@ -149,7 +149,7 @@ class TriggerDef:
             If a str is provided, assumes event is the name.
             If a int is provided, assumes event is the value.
         """
-        _check_type(event, (str, "numeric"), item_name="event")
+        check_type(event, (str, "numeric"), item_name="event")
         if isinstance(event, str):
             if event not in self._by_name:
                 logger.info("Event name %s not found.", event)
@@ -184,13 +184,11 @@ class TriggerDef:
         if trigger_file is None:
             return None
         else:
-            _ensure_path(trigger_file, must_exist=False)
+            ensure_path(trigger_file, must_exist=False)
             trigger_file = Path(trigger_file)
 
         if trigger_file.exists() and trigger_file.suffix == ".ini":
-            logger.info(
-                "Found trigger definition file '%s'", trigger_file.name
-            )
+            logger.info("Found trigger definition file '%s'", trigger_file.name)
             return trigger_file
         elif trigger_file.exists() and trigger_file.suffix != ".ini":
             logger.error(
@@ -200,16 +198,14 @@ class TriggerDef:
             )
             return None
         else:
-            logger.error(
-                "Trigger event definition file '%s' not found.", trigger_file
-            )
+            logger.error("Trigger event definition file '%s' not found.", trigger_file)
             return None
 
     @staticmethod
     def _check_write_to_trigger_file(trigger_file):  # noqa
         """Check that the directory exists and that the file name ends with
         .ini."""
-        trigger_file = _ensure_path(trigger_file, must_exist=False)
+        trigger_file = ensure_path(trigger_file, must_exist=False)
         if trigger_file.suffix != ".ini":
             raise ValueError(
                 "Argument trigger_file must end with .ini. "

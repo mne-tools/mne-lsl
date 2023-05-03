@@ -2,7 +2,7 @@ import math
 from abc import ABC, abstractmethod
 
 from ...utils._docs import fill_doc
-from ...utils._logs import logger
+from ...utils.logs import logger
 
 _BUFFER_DURATION = 30  # seconds
 
@@ -25,24 +25,18 @@ class _Scope(ABC):
         self._stream_name = stream_name
 
         # Infos from stream
-        self._sample_rate = int(
-            self._sr.streams[self._stream_name].sample_rate
-        )
+        self._sample_rate = int(self._sr.streams[self._stream_name].sample_rate)
 
         # Variables
         self._duration_buffer = _BUFFER_DURATION
-        self._duration_buffer_samples = math.ceil(
-            _BUFFER_DURATION * self._sample_rate
-        )
+        self._duration_buffer_samples = math.ceil(_BUFFER_DURATION * self._sample_rate)
 
         # Buffers
         self._ts_list = list()
 
         logger.debug("Scope connected to %s", self._stream_name)
         logger.debug("Data sample rate is %f", self._sample_rate)
-        logger.debug(
-            "Scope buffer duration is %d seconds", self._duration_buffer
-        )
+        logger.debug("Scope buffer duration is %d seconds", self._duration_buffer)
 
     # -------------------------- Main Loop -------------------------
     @abstractmethod

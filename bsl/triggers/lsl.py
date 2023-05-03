@@ -3,7 +3,7 @@
 import numpy as np
 
 from ..lsl import StreamInfo, StreamOutlet
-from ..utils._checks import _check_type
+from ..utils._checks import check_type
 from ..utils._docs import copy_doc, fill_doc
 from ._base import BaseTrigger
 
@@ -43,7 +43,7 @@ class LSLTrigger(BaseTrigger):
     """
 
     def __init__(self, name: str):
-        _check_type(name, (str,), "name")
+        check_type(name, (str,), "name")
         self._name = name
         # create outlet
         self._sinfo = StreamInfo(
