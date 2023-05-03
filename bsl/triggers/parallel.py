@@ -134,10 +134,7 @@ class ParallelPortTrigger(BaseTrigger):
         try:
             self._port = Serial(self._address, baud_rate)
         except SerialException:
-            msg = (
-                "[Trigger] Could not access arduino to LPT on "
-                f"'{self._address}'."
-            )
+            msg = "[Trigger] Could not access arduino to LPT on " f"'{self._address}'."
             if system() == "Linux":
                 msg += (
                     " Make sure you have the permission to access this "
@@ -147,9 +144,7 @@ class ParallelPortTrigger(BaseTrigger):
             raise SerialException(msg)
 
         time.sleep(1)
-        logger.info(
-            "[Trigger] Connected to arduino to LPT on '%s'.", self._address
-        )
+        logger.info("[Trigger] Connected to arduino to LPT on '%s'.", self._address)
 
     def _connect_pport(self) -> None:
         """Connect to the ParallelPort."""
@@ -172,8 +167,7 @@ class ParallelPortTrigger(BaseTrigger):
             self._port = ParallelPort(self._address)
         except Exception:
             msg = (
-                "[Trigger] Could not access the parallel port on "
-                f"'{self._address}'."
+                "[Trigger] Could not access the parallel port on " f"'{self._address}'."
             )
             if system() == "Linux":
                 msg += (
@@ -188,9 +182,7 @@ class ParallelPortTrigger(BaseTrigger):
             raise RuntimeError(msg)
 
         time.sleep(1)
-        logger.info(
-            "[Trigger] Connected to parallel port on '%s'.", self._address
-        )
+        logger.info("[Trigger] Connected to parallel port on '%s'.", self._address)
 
     @copy_doc(BaseTrigger.signal)
     def signal(self, value: int) -> None:

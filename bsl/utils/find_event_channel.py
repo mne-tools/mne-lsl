@@ -29,9 +29,7 @@ def find_event_channel(inst=None, ch_names=None):
         Event channel index, list of event channel indexes or ``None`` if not
         found.
     """
-    _check_type(
-        inst, (None, np.ndarray, BaseRaw, BaseEpochs), item_name="inst"
-    )
+    _check_type(inst, (None, np.ndarray, BaseRaw, BaseEpochs), item_name="inst")
     _check_type(ch_names, (None, list, tuple), item_name="ch_names")
 
     # numpy array + ch_names
@@ -52,9 +50,7 @@ def find_event_channel(inst=None, ch_names=None):
     # For MNE raw/epochs + ch_names
     elif isinstance(inst, (BaseRaw, BaseEpochs)) and ch_names is not None:
         tchs = [
-            idx
-            for idx, type_ in enumerate(inst.get_channel_types())
-            if type_ == "stim"
+            idx for idx, type_ in enumerate(inst.get_channel_types()) if type_ == "stim"
         ]
         if len(tchs) == 0:
             tchs = _search_in_ch_names(ch_names)
@@ -62,9 +58,7 @@ def find_event_channel(inst=None, ch_names=None):
     # For MNE raw/epochs without ch_names
     elif isinstance(inst, (BaseRaw, BaseEpochs)) and ch_names is None:
         tchs = [
-            idx
-            for idx, type_ in enumerate(inst.get_channel_types())
-            if type_ == "stim"
+            idx for idx, type_ in enumerate(inst.get_channel_types()) if type_ == "stim"
         ]
         if len(tchs) == 0:
             tchs = _search_in_ch_names(inst.ch_names)
@@ -97,8 +91,7 @@ def _search_in_ch_names(ch_names):
     tchs = list()
     for idx, ch_name in enumerate(ch_names):
         if any(
-            trigger_ch_name in ch_name
-            for trigger_ch_name in valid_trigger_ch_names
+            trigger_ch_name in ch_name for trigger_ch_name in valid_trigger_ch_names
         ):
             tchs.append(idx)
 

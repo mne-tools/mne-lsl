@@ -36,9 +36,7 @@ def _ensure_int(item: Any, item_name: Optional[str] = None) -> int:
         item = int(operator.index(item))
     except TypeError:
         item_name = "Item" if item_name is None else "'%s'" % item_name
-        raise TypeError(
-            f"{item_name} must be an integer, got {type(item)} instead."
-        )
+        raise TypeError(f"{item_name} must be an integer, got {type(item)} instead.")
 
     return item
 
@@ -68,9 +66,7 @@ _types = {
 }
 
 
-def _check_type(
-    item: Any, types: tuple, item_name: Optional[str] = None
-) -> None:
+def _check_type(item: Any, types: tuple, item_name: Optional[str] = None) -> None:
     """Check that item is an instance of types.
 
     Parameters
@@ -169,9 +165,7 @@ def _check_value(
             options += ", ".join([f"{repr(v)}" for v in allowed_values[:-1]])
             options += f", and {repr(allowed_values[-1])}"
         raise ValueError(
-            msg.format(
-                item_name=item_name, extra=extra, options=options, item=item
-            )
+            msg.format(item_name=item_name, extra=extra, options=options, item=item)
         )
 
 
@@ -248,7 +242,5 @@ def _ensure_path(item: Any, must_exist: bool) -> Path:
             f"not {type(item)}."
         )
     if must_exist and not item.exists():
-        raise FileNotFoundError(
-            f"The provided path '{str(item)}' does not exist."
-        )
+        raise FileNotFoundError(f"The provided path '{str(item)}' does not exist.")
     return item

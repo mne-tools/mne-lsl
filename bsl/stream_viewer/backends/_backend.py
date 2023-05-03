@@ -37,9 +37,7 @@ class _Backend(ABC):
 
         # xRange
         self._delta_with_buffer = self._scope.duration_buffer - self._xRange
-        self._duration_plot_samples = math.ceil(
-            self._xRange * self._scope.sample_rate
-        )
+        self._duration_plot_samples = math.ceil(self._xRange * self._scope.sample_rate)
 
         logger.debug("Initialization of variables from _Backend complete.")
 
@@ -155,9 +153,7 @@ class _Event(ABC):
     _supported = ["LPT"]
 
     @abstractmethod
-    def __init__(
-        self, event_type, event_value, position_buffer, position_plot
-    ):
+    def __init__(self, event_type, event_value, position_buffer, position_plot):
         assert event_type in self._supported
         self._event_type = event_type
         self._event_value = event_value

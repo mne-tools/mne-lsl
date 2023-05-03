@@ -79,9 +79,7 @@ class ControlGUI_EEG(_ControlGUI):
         )
 
         # Set position on the screen
-        self.setGeometry(
-            100, 100, self.geometry().width(), self.geometry().height()
-        )
+        self.setGeometry(100, 100, self.geometry().width(), self.geometry().height())
         self.setFixedSize(self.geometry().width(), self.geometry().height())
         self.show()  # Display
 
@@ -161,16 +159,16 @@ class ControlGUI_EEG(_ControlGUI):
         try:
             self._ui.doubleSpinBox_bandpass_low.setValue(
                 float(
-                    scope_settings.get(
-                        "filtering", "bandpass_cutoff_frequency"
-                    ).split(" ")[0]
+                    scope_settings.get("filtering", "bandpass_cutoff_frequency").split(
+                        " "
+                    )[0]
                 )
             )
             self._ui.doubleSpinBox_bandpass_high.setValue(
                 float(
-                    scope_settings.get(
-                        "filtering", "bandpass_cutoff_frequency"
-                    ).split(" ")[1]
+                    scope_settings.get("filtering", "bandpass_cutoff_frequency").split(
+                        " "
+                    )[1]
                 )
             )
         except Exception:
@@ -256,9 +254,7 @@ class ControlGUI_EEG(_ControlGUI):
     def onActivated_comboBox_signal_yRange(self):
         logger.debug("yRange event received.")
         self._yRange = float(
-            list(self._yRanges.values())[
-                self._ui.comboBox_signal_yRange.currentIndex()
-            ]
+            list(self._yRanges.values())[self._ui.comboBox_signal_yRange.currentIndex()]
         )
         self._backend.yRange = self._yRange
         logger.debug("y-range set to %d", self._yRange)
@@ -330,10 +326,7 @@ class ControlGUI_EEG(_ControlGUI):
         logger.debug("Channel selection event received.")
         selected = self._ui.table_channels.selectedItems()
         self._scope.selected_channels = sorted(
-            [
-                item.row() * self._nb_table_columns + item.column()
-                for item in selected
-            ]
+            [item.row() * self._nb_table_columns + item.column() for item in selected]
         )
         self._backend.selected_channels = self._scope.selected_channels
 

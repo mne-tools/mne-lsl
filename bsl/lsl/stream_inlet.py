@@ -73,9 +73,7 @@ class StreamInlet:
             )
         _check_type(recover, (bool,), "recover")
 
-        self._obj = lib.lsl_create_inlet(
-            sinfo._obj, max_buffered, chunk_size, recover
-        )
+        self._obj = lib.lsl_create_inlet(sinfo._obj, max_buffered, chunk_size, recover)
         self._obj = c_void_p(self._obj)
         if not self._obj:
             raise RuntimeError("The StreamInlet could not be created.")
@@ -95,9 +93,7 @@ class StreamInlet:
                 # bitwise OR between the flags
                 processing_flags = reduce(lambda x, y: x | y, processing_flags)
             assert processing_flags > 0  # sanity-check
-            handle_error(
-                lib.lsl_set_postprocessing(self._obj, processing_flags)
-            )
+            handle_error(lib.lsl_set_postprocessing(self._obj, processing_flags))
 
         # properties from the StreamInfo
         self._dtype = sinfo._dtype
@@ -193,9 +189,7 @@ class StreamInlet:
         """
         timeout = _check_timeout(timeout)
         errcode = c_int()
-        result = lib.lsl_time_correction(
-            self._obj, c_double(timeout), byref(errcode)
-        )
+        result = lib.lsl_time_correction(self._obj, c_double(timeout), byref(errcode))
         handle_error(errcode)
         return result
 
@@ -305,9 +299,7 @@ class StreamInlet:
         # look up or create a pre-allocated buffers of appropriate length
         max_samples_data = max_samples * self._n_channels
         if max_samples_data not in self._buffer_data:
-            self._buffer_data[max_samples_data] = (
-                self._dtype * max_samples_data
-            )()
+            self._buffer_data[max_samples_data] = (self._dtype * max_samples_data)()
         if max_samples not in self._buffer_ts:
             self._buffer_ts[max_samples] = (c_double * max_samples)()
         data_buffer = self._buffer_data[max_samples_data]
@@ -422,8 +414,6 @@ class StreamInlet:
         """
         timeout = _check_timeout(timeout)
         errcode = c_int()
-        result = lib.lsl_get_fullinfo(
-            self._obj, c_double(timeout), byref(errcode)
-        )
+        result = lib.lsl_get_fullinfo(self._obj, c_double(timeout), byref(errcode))
         handle_error(errcode)
         return _BaseStreamInfo(result)

@@ -46,9 +46,7 @@ def sys_info(fid: Optional[IO] = None, developer: bool = False):
     out("\nDependencies info\n")
     out(f"{package}:".ljust(ljust) + version(package) + "\n")
     dependencies = [
-        elt.split(";")[0].rstrip()
-        for elt in requires(package)
-        if "extra" not in elt
+        elt.split(";")[0].rstrip() for elt in requires(package) if "extra" not in elt
     ]
     _list_dependencies_info(out, ljust, dependencies)
 
@@ -72,9 +70,7 @@ def sys_info(fid: Optional[IO] = None, developer: bool = False):
             _list_dependencies_info(out, ljust, dependencies)
 
 
-def _list_dependencies_info(
-    out: Callable, ljust: int, dependencies: List[str]
-):
+def _list_dependencies_info(out: Callable, ljust: int, dependencies: List[str]):
     """List dependencies names and versions."""
     for dep in dependencies:
         # handle dependencies with version specifiers

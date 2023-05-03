@@ -99,9 +99,7 @@ class StreamPlayer:
         with self._state.get_lock():
             self._state.value = 0
 
-        logger.info(
-            "Waiting for StreamPlayer %s process to finish.", self._stream_name
-        )
+        logger.info("Waiting for StreamPlayer %s process to finish.", self._stream_name)
         self._process.join(10)
         if self._process.is_alive():
             logger.error("StreamPlayer process not finishing..")
@@ -192,8 +190,7 @@ class StreamPlayer:
             )
         if chunk_size not in (16, 32):
             logger.warning(
-                "The chunk size %i is different from the usual "
-                "values 16 or 32.",
+                "The chunk size %i is different from the usual " "values 16 or 32.",
                 chunk_size,
             )
         return chunk_size
@@ -344,9 +341,7 @@ class _Streamer:
             if idx_current >= self._raw._data.shape[1] - self._chunk_size:
                 finished = True
 
-            _Streamer._sleep(
-                self._high_resolution, idx_chunk, t_start, t_chunk
-            )
+            _Streamer._sleep(self._high_resolution, idx_chunk, t_start, t_chunk)
 
             self._outlet.push_chunk(data)
             logger.debug(
@@ -392,15 +387,11 @@ class _Streamer:
                                 self._trigger_def.by_value[event_value],
                             )
                         else:
-                            logger.info(
-                                "Events: %s (Undefined event)", event_value
-                            )
+                            logger.info("Events: %s (Undefined event)", event_value)
 
     # --------------------------------------------------------------------
     @staticmethod
-    def _create_lsl_info(
-        stream_name, channel_count, nominal_srate, ch_names
-    ):  # noqa
+    def _create_lsl_info(stream_name, channel_count, nominal_srate, ch_names):  # noqa
         """
         Extract information from raw and set the LSL server's information
         needed to create the LSL stream.
@@ -419,13 +410,11 @@ class _Streamer:
         for channel in ch_names:
             channel_desc.append_child("channel").append_child_value(
                 "label", str(channel)
-            ).append_child_value("type", "EEG").append_child_value(
-                "unit", "microvolts"
-            )
+            ).append_child_value("type", "EEG").append_child_value("unit", "microvolts")
 
-        desc.append_child("amplifier").append_child(
-            "settings"
-        ).append_child_value("is_slave", "false")
+        desc.append_child("amplifier").append_child("settings").append_child_value(
+            "is_slave", "false"
+        )
 
         desc.append_child("acquisition").append_child_value(
             "manufacturer", "BSL"

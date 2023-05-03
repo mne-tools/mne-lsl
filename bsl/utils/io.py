@@ -66,9 +66,7 @@ def pcl2fif(
 
     # Add events from txt file
     if external_event is not None:
-        events = _load_events_from_txt(
-            raw.times, external_event, data["timestamps"][0]
-        )
+        events = _load_events_from_txt(raw.times, external_event, data["timestamps"][0])
         if 0 < len(events):
             raw.add_events(events, stim_channel="TRIGGER", replace=replace)
 
@@ -115,8 +113,7 @@ def _format_pcl_to_mne_RawArray(data):
     if trig_ch is None:
         # Add a event channel to index 0 for consistency.
         logger.warning(
-            "Event channel was not found. "
-            "Adding a blank event channel to index 0."
+            "Event channel was not found. " "Adding a blank event channel to index 0."
         )
         eventch = np.zeros([1, signals_raw.shape[1]])
         signals = np.concatenate((eventch, signals_raw), axis=0)
@@ -174,8 +171,7 @@ def _load_events_from_txt(raw_times, eve_file, offset):  # noqa
             next_index = np.searchsorted(raw_times, event_ts)
             if next_index >= len(raw_times):
                 logger.warning(
-                    "Event %d at time %.3f is out of time range"
-                    " (%.3f - %.3f).",
+                    "Event %d at time %.3f is out of time range" " (%.3f - %.3f).",
                     event_value,
                     event_ts,
                     ts_min,
@@ -187,9 +183,7 @@ def _load_events_from_txt(raw_times, eve_file, offset):  # noqa
     return np.array(events)
 
 
-def _add_events_from_txt(
-    raw, events_index, stim_channel="TRIGGER", replace=False
-):
+def _add_events_from_txt(raw, events_index, stim_channel="TRIGGER", replace=False):
     """Merge the events extracted from a .txt file to the trigger channel.
 
     Parameters
@@ -209,6 +203,4 @@ def _add_events_from_txt(
         logger.warning("No events were found in the event file.")
     else:
         logger.info("Found %i events", len(events_index))
-        raw.add_events(
-            events_index, stim_channel=stim_channel, replace=replace
-        )
+        raw.add_events(events_index, stim_channel=stim_channel, replace=replace)

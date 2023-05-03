@@ -52,9 +52,7 @@ class XMLElement:
         if name is None:
             return XMLElement(lib.lsl_previous_sibling(self.e))
         else:
-            return XMLElement(
-                lib.lsl_previous_sibling_n(self.e, str.encode(name))
-            )
+            return XMLElement(lib.lsl_previous_sibling_n(self.e, str.encode(name)))
 
     def parent(self):
         """Get the parent node."""
@@ -98,9 +96,7 @@ class XMLElement:
         plain-text child with the given text value.
         """
         return XMLElement(
-            lib.lsl_append_child_value(
-                self.e, str.encode(name), str.encode(value)
-            )
+            lib.lsl_append_child_value(self.e, str.encode(name), str.encode(value))
         )
 
     def prepend_child_value(self, name, value):  # noqa: D205, D400
@@ -108,9 +104,7 @@ class XMLElement:
         plain-text child with the given text value.
         """
         return XMLElement(
-            lib.lsl_prepend_child_value(
-                self.e, str.encode(name), str.encode(value)
-            )
+            lib.lsl_prepend_child_value(self.e, str.encode(name), str.encode(value))
         )
 
     def set_child_value(self, name, value):  # noqa: D205, D400
@@ -118,9 +112,7 @@ class XMLElement:
         child node.
         """
         return XMLElement(
-            lib.lsl_set_child_value(
-                self.e, str.encode(name), str.encode(value)
-            )
+            lib.lsl_set_child_value(self.e, str.encode(name), str.encode(value))
         )
 
     def set_name(self, name):
@@ -226,9 +218,7 @@ def _check_timeout(timeout: Optional[float]) -> float:
     try:
         raise_ = timeout < 0
     except Exception:
-        raise TypeError(
-            "The argument 'timeout' must be a strictly positive number."
-        )
+        raise TypeError("The argument 'timeout' must be a strictly positive number.")
     if raise_:
         raise ValueError(
             "The argument 'timeout' must be a strictly positive number. "

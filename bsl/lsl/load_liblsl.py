@@ -40,8 +40,7 @@ def load_liblsl():
         return _set_return_types(lib)
     else:
         raise RuntimeError(
-            "The liblsl library packaged with BSL could not be loaded. "
-            + _GH_ISSUES
+            "The liblsl library packaged with BSL could not be loaded. " + _GH_ISSUES
         )
 
 
@@ -115,9 +114,7 @@ def _find_liblsl_env() -> Optional[CDLL]:
     return lib
 
 
-def _attempt_load_liblsl(
-    libpath: Union[str, Path]
-) -> Tuple[str, Optional[int]]:
+def _attempt_load_liblsl(libpath: Union[str, Path]) -> Tuple[str, Optional[int]]:
     """Try loading a binary LSL library.
 
     Parameters
@@ -190,8 +187,7 @@ def _find_liblsl_bsl() -> Optional[CDLL]:
             libname += "OSX_amd64.dylib"
         else:
             raise RuntimeError(
-                "The processor architecture could not be determined. "
-                + _GH_ISSUES
+                "The processor architecture could not be determined. " + _GH_ISSUES
             )
 
     # check windows 32 vs 64 bits
@@ -202,8 +198,7 @@ def _find_liblsl_bsl() -> Optional[CDLL]:
             libname += "Win_amd64.dll"
         else:
             raise RuntimeError(
-                "The processor architecture could not be determined. "
-                + _GH_ISSUES
+                "The processor architecture could not be determined. " + _GH_ISSUES
             )
 
     # attempt to load the corresponding liblsl
@@ -329,8 +324,7 @@ def _set_return_types(lib: CDLL) -> CDLL:
         lib.lsl_pull_chunk_buf.restype = c_long
     except Exception:
         logger.info(
-            "[LIBLSL] Chunk transfer functions not available in your liblsl "
-            "version."
+            "[LIBLSL] Chunk transfer functions not available in your liblsl " "version."
         )
     try:
         lib.lsl_create_continuous_resolver.restype = c_void_p

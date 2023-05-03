@@ -188,9 +188,7 @@ class TriggerDef:
             trigger_file = Path(trigger_file)
 
         if trigger_file.exists() and trigger_file.suffix == ".ini":
-            logger.info(
-                "Found trigger definition file '%s'", trigger_file.name
-            )
+            logger.info("Found trigger definition file '%s'", trigger_file.name)
             return trigger_file
         elif trigger_file.exists() and trigger_file.suffix != ".ini":
             logger.error(
@@ -200,9 +198,7 @@ class TriggerDef:
             )
             return None
         else:
-            logger.error(
-                "Trigger event definition file '%s' not found.", trigger_file
-            )
+            logger.error("Trigger event definition file '%s' not found.", trigger_file)
             return None
 
     @staticmethod

@@ -100,9 +100,7 @@ class StreamOutlet:
             over the ``pushThrough`` flag.
         """
         if self._dtype == c_char_p:
-            assert isinstance(
-                x, list
-            ), "'x' must be a list if strings are pushed."
+            assert isinstance(x, list), "'x' must be a list if strings are pushed."
             x = [v.encode("utf-8") for v in x]
         else:
             assert isinstance(
@@ -157,9 +155,7 @@ class StreamOutlet:
             over the ``pushThrough`` flag.
         """
         if self._dtype == c_char_p:
-            assert isinstance(
-                x, list
-            ), "'x' must be a list if strings are pushed."
+            assert isinstance(x, list), "'x' must be a list if strings are pushed."
             x = [v for sample in x for v in sample]  # flatten
             n_samples = len(x)
             if n_samples % self._n_channels != 0:  # quick incomplete test

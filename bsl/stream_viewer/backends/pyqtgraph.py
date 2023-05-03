@@ -78,9 +78,7 @@ class _BackendPyQtGraph(_Backend):
             -self._yRange,
         )
 
-        logger.debug(
-            "Initialization of variables from _BackendPyQtGraph complete."
-        )
+        logger.debug("Initialization of variables from _BackendPyQtGraph complete.")
 
     def _init_canvas(self):
         """Initialize the drawing canvas."""
@@ -102,14 +100,10 @@ class _BackendPyQtGraph(_Backend):
         ]
         ticks = [yticks, []]  # [major, minor]
         self._plot_handler.getAxis("left").setTicks(ticks)
-        self._plot_handler.setLabel(
-            axis="left", text=f"Scale (uV): {self._yRange}"
-        )
+        self._plot_handler.setLabel(axis="left", text=f"Scale (uV): {self._yRange}")
 
         # X-axis
-        self._x_arr = (
-            np.arange(self._duration_plot_samples) / self._scope.sample_rate
-        )
+        self._x_arr = np.arange(self._duration_plot_samples) / self._scope.sample_rate
         self._plot_handler.setLabel(axis="bottom", text="Time (s)")
 
         logger.debug("Initialization of canvas complete.")
@@ -166,9 +160,7 @@ class _BackendPyQtGraph(_Backend):
             for k, idx in enumerate(self._scope.selected_channels):
                 self._plots[idx].setData(
                     x=self._x_arr,
-                    y=self._scope.data_buffer[
-                        idx, -self._duration_plot_samples :
-                    ]
+                    y=self._scope.data_buffer[idx, -self._duration_plot_samples :]
                     + self._offset[k],
                 )
 
@@ -200,9 +192,7 @@ class _BackendPyQtGraph(_Backend):
         self._init_canvas()
 
         for event in self._trigger_events:
-            event.position_plot = (
-                event.position_buffer - self._delta_with_buffer
-            )
+            event.position_plot = event.position_buffer - self._delta_with_buffer
             if event.position_plot >= 0:
                 if event.event_type == "LPT" and self._show_LPT_trigger_events:
                     event.addEventPlot()
@@ -223,14 +213,10 @@ class _BackendPyQtGraph(_Backend):
     @copy_doc(_Backend.selected_channels.setter)
     def selected_channels(self, selected_channels):
         plots2remove = [
-            idx
-            for idx in self._selected_channels
-            if idx not in selected_channels
+            idx for idx in self._selected_channels if idx not in selected_channels
         ]
         plots2add = [
-            idx
-            for idx in selected_channels
-            if idx not in self._selected_channels
+            idx for idx in selected_channels if idx not in self._selected_channels
         ]
         self._selected_channels = selected_channels
         self._init_variables()
@@ -286,9 +272,7 @@ class _TriggerEvent(_Event):
         plot_handler,
         yRange,
     ):
-        super().__init__(
-            event_type, event_value, position_buffer, position_plot
-        )
+        super().__init__(event_type, event_value, position_buffer, position_plot)
         self._plot_handler = plot_handler
         self._yRange = yRange
 

@@ -87,8 +87,7 @@ def search_lsl(ignore_markers=False, timeout=10):
         index = 0
     else:
         index = input(
-            "Stream index? "
-            "Hit enter without index to select the first server.\n>> "
+            "Stream index? " "Hit enter without index to select the first server.\n>> "
         )
         if index.strip() == "":
             index = 0
