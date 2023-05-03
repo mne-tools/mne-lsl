@@ -1,3 +1,5 @@
+import math
+
 import numpy as np
 from scipy.signal import butter, sosfilt, sosfilt_zi
 
@@ -38,8 +40,10 @@ class ScopeEEG(_Scope):
         self._nb_channels = len(self._channels_labels)
 
         # Variables
-        self._apply_car = False
         self._apply_bandpass = False
+        self._apply_car = False
+        self._apply_detrend = False
+        self._detrend_mean = None
         self._selected_channels = list(range(self._nb_channels))
 
         # Buffers
@@ -100,6 +104,20 @@ class ScopeEEG(_Scope):
 
     def _filter_signal(self):
         """Apply bandpass and CAR filter to the signal acquired if needed."""
+        if self._apply_detrend:
+            if self._detrend_mean is None:
+                raise RuntimeError(
+                    "The variable _detrend_mean should not be None if "
+                    "the detrending checkbox is ticked. Please contact a developer. "
+                )
+            # shape (channels, samples)
+            self._detrend_mean = np.roll(
+                self._detrend_mean, -len(self._ts_list), axis=1
+            )
+            self._detrend_mean[:, -len(self._ts_list) :] = self._data_acquired.T
+            if not np.all(self._detrend_mean[:, 0] == 0):
+                self._data_acquired -= np.mean(self._detrend_mean, axis=1)
+
         if self._apply_bandpass:
             if self._zi is None:
                 logger.debug("Initialize ZI coefficient for BP.")
@@ -140,6 +158,15 @@ class ScopeEEG(_Scope):
         return self._nb_channels
 
     @property
+    def apply_bandpass(self):
+        """Boolean. Applies bandpass filter if True."""
+        return self._apply_bandpass
+
+    @apply_bandpass.setter
+    def apply_bandpass(self, apply_bandpass):
+        self._apply_bandpass = bool(apply_bandpass)
+
+    @property
     def apply_car(self):
         """Boolean. Applies CAR if True."""
         return self._apply_car
@@ -149,13 +176,20 @@ class ScopeEEG(_Scope):
         self._apply_car = bool(apply_car)
 
     @property
-    def apply_bandpass(self):
-        """Boolean. Applies bandpass filter if True."""
-        return self._apply_bandpass
+    def apply_detrend(self):
+        """Boolean. Applies detrending if True."""
+        return self._apply_detrend
 
-    @apply_bandpass.setter
-    def apply_bandpass(self, apply_bandpass):
-        self._apply_bandpass = bool(apply_bandpass)
+    @apply_detrend.setter
+    def apply_detrend(self, apply_detrend):
+        self._apply_detrend = bool(apply_detrend)
+        if self._apply_detrend is True:
+            self._detrend_mean = np.zeros(
+                (self._nb_channels, math.ceil(2 * self._sample_rate)),
+                dtype=np.float32,
+            )
+        else:
+            self._detrend_mean = None
 
     @property
     def selected_channels(self):

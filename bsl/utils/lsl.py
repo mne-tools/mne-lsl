@@ -5,7 +5,7 @@ import xml.etree.ElementTree as ET
 from ..lsl import StreamInlet, resolve_streams
 from . import Timer
 from ._checks import check_type
-from .logs import logger
+from .logs import _use_log_level, logger
 
 
 def list_lsl_streams(ignore_markers=False):
@@ -77,9 +77,10 @@ def search_lsl(ignore_markers=False, timeout=10):
         logger.error("Timeout. No LSL stream found.")
         return None
 
-    logger.info("-- List of servers --")
-    for i, stream_name in enumerate(stream_list):
-        logger.info("%i: %s", i, stream_name)
+    with _use_log_level("INFO"):
+        logger.info("-- List of servers --")
+        for i, stream_name in enumerate(stream_list):
+            logger.info("%i: %s", i, stream_name)
 
     if len(stream_list) == 0:
         logger.error("No LSL stream found on the network.")
@@ -97,8 +98,6 @@ def search_lsl(ignore_markers=False, timeout=10):
     stream_name = stream_list[index]
     streamInfo = streamInfos[index]
     assert stream_name == streamInfo.name
-
-    logger.info("Selected: %s", stream_name)
 
     return stream_name
 
