@@ -45,9 +45,5 @@ def test_fetch_file_invalid_arg(tmp_path):
         fetch_file(URL, tmp_path / "test.md", hash_=123456789)
     # Test invalid hash type
     with pytest.raises(ValueError, match="Unsupported hash type"):
-        fetch_file(
-            URL, tmp_path / "README3.md", hash_=HASH["md5"], hash_type="..."
-        )
-        fetch_file(
-            URL, tmp_path / "README3.md", hash_=HASH["md5"], hash_type=123
-        )
+        fetch_file(URL, tmp_path / "README3.md", hash_=HASH["md5"], hash_type="...")
+        fetch_file(URL, tmp_path / "README3.md", hash_=HASH["md5"], hash_type=123)

@@ -1,7 +1,7 @@
 from ctypes import c_char_p, c_double, c_void_p
 from typing import Any
 
-from ..utils._checks import _check_type, _check_value, _ensure_int
+from ..utils._checks import check_type, check_value, ensure_int
 from .constants import fmt2idx, fmt2string, idx2fmt, string2fmt
 from .load_liblsl import lib
 from .utils import XMLElement
@@ -291,16 +291,16 @@ class StreamInfo(_BaseStreamInfo):
         dtype: str,
         source_id: str,
     ):
-        _check_type(name, (str,), "name")
-        _check_type(stype, (str,), "stype")
-        n_channels = _ensure_int(n_channels, "n_channels")
+        check_type(name, (str,), "name")
+        check_type(stype, (str,), "stype")
+        n_channels = ensure_int(n_channels, "n_channels")
         if n_channels <= 0:
             raise ValueError(
                 "The number of channels 'n_channels' must be a strictly "
                 f"positive integer. {n_channels} is invalid."
             )
-        _check_type(sfreq, ("numeric",), "sfreq")
-        _check_type(source_id, (str,), "source_id")
+        check_type(sfreq, ("numeric",), "sfreq")
+        check_type(source_id, (str,), "source_id")
 
         obj = lib.lsl_create_streaminfo(
             c_char_p(str.encode(name)),
@@ -318,12 +318,12 @@ class StreamInfo(_BaseStreamInfo):
         """Convert a string format to its LSL integer value."""
         if dtype in fmt2idx:
             return fmt2idx[dtype]
-        _check_type(dtype, (str, "int"), "dtype")
+        check_type(dtype, (str, "int"), "dtype")
         if isinstance(dtype, str):
             dtype = dtype.lower()
-            _check_value(dtype, string2fmt, "dtype")
+            check_value(dtype, string2fmt, "dtype")
             dtype = fmt2idx[string2fmt[dtype]]
         else:
-            dtype = _ensure_int(dtype)
-            _check_value(dtype, idx2fmt, "dtype")
+            dtype = ensure_int(dtype)
+            check_value(dtype, idx2fmt, "dtype")
         return dtype

@@ -84,16 +84,10 @@ def test_buffer_duration():
             bufsize=bufsize, winsize=bufsize, stream_name=stream_name
         )
         scope = ScopeEEG(receiver, stream_name)
-        assert (
-            scope.sample_rate
-            == receiver.streams[stream_name].sample_rate
-            == sfreq
-        )
+        assert scope.sample_rate == receiver.streams[stream_name].sample_rate == sfreq
 
         assert scope.duration_buffer == _BUFFER_DURATION
-        assert scope.duration_buffer_samples == math.ceil(
-            _BUFFER_DURATION * sfreq
-        )
+        assert scope.duration_buffer_samples == math.ceil(_BUFFER_DURATION * sfreq)
 
 
 @requires_eeg_resting_state_dataset
@@ -114,9 +108,7 @@ def test_properties():
         assert scope.duration_buffer == scope._duration_buffer
         assert scope.duration_buffer_samples == scope._duration_buffer_samples
         assert scope.ts_list == scope._ts_list == list()
-        assert (
-            scope.channels_labels == scope._channels_labels == raw.ch_names[1:]
-        )
+        assert scope.channels_labels == scope._channels_labels == raw.ch_names[1:]
         assert scope.nb_channels == scope._nb_channels == len(raw.ch_names[1:])
         assert scope.apply_car == scope._apply_car
         assert not scope.apply_car

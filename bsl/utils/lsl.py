@@ -4,8 +4,8 @@ import xml.etree.ElementTree as ET
 
 from ..lsl import StreamInlet, resolve_streams
 from . import Timer
-from ._checks import _check_type
-from ._logs import logger
+from ._checks import check_type
+from .logs import logger
 
 
 def list_lsl_streams(ignore_markers=False):
@@ -23,7 +23,7 @@ def list_lsl_streams(ignore_markers=False):
     streamInfos : list
         List of the corresponding `~bsl.lsl.StreamInfo`.
     """
-    _check_type(ignore_markers, (bool,), item_name="ignore_markers")
+    check_type(ignore_markers, (bool,), item_name="ignore_markers")
 
     stream_list = []
     streamInfos = resolve_streams()
@@ -64,8 +64,8 @@ def search_lsl(ignore_markers=False, timeout=10):
     stream_name : str
         Selected stream name.
     """
-    _check_type(ignore_markers, (bool,), item_name="ignore_markers")
-    _check_type(timeout, ("numeric",), item_name="timeout")
+    check_type(ignore_markers, (bool,), item_name="ignore_markers")
+    check_type(timeout, ("numeric",), item_name="timeout")
     assert 0 < timeout
 
     watchdog = Timer()
@@ -87,8 +87,7 @@ def search_lsl(ignore_markers=False, timeout=10):
         index = 0
     else:
         index = input(
-            "Stream index? "
-            "Hit enter without index to select the first server.\n>> "
+            "Stream index? " "Hit enter without index to select the first server.\n>> "
         )
         if index.strip() == "":
             index = 0
@@ -117,7 +116,7 @@ def lsl_channel_list(inlet):
     ch_list : list
         List of channels name ``[name1, name2, ... ]``.
     """
-    _check_type(inlet, (StreamInlet,), item_name="inlet")
+    check_type(inlet, (StreamInlet,), item_name="inlet")
     root = ET.fromstring(inlet.get_sinfo().as_xml)
     ch_list = []
     for elt in root.iter("channel"):

@@ -16,7 +16,7 @@ from urllib.error import HTTPError, URLError
 
 from mne.utils.progressbar import ProgressBar
 
-from ..utils._logs import logger
+from ..utils.logs import logger
 
 
 def fetch_file(
@@ -51,23 +51,19 @@ def fetch_file(
     if hash_ is not None:
         if not isinstance(hash_, str):
             raise ValueError(
-                "Bad hash value given, should be a string. Given: %s."
-                % type(hash_)
+                "Bad hash value given, should be a string. Given: %s." % type(hash_)
             )
         if hash_type == "md5" and len(hash_) != 32:
             raise ValueError(
-                "Bad hash value given, should be a 32-character string:\n%s"
-                % hash_
+                "Bad hash value given, should be a 32-character string:\n%s" % hash_
             )
         if hash_type == "sha1" and len(hash_) != 40:
             raise ValueError(
-                "Bad hash value given, should be a 40-character string:\n%s"
-                % hash_
+                "Bad hash value given, should be a 40-character string:\n%s" % hash_
             )
         if hash_type not in ["md5", "sha1"]:
             raise ValueError(
-                "Unsupported hash type %s.\nSupported: 'md5', 'sha1'."
-                % hash_type
+                "Unsupported hash type %s.\nSupported: 'md5', 'sha1'." % hash_type
             )
     file_name = Path(file_name)
     temp_file_name = file_name.with_suffix(file_name.suffix + ".part")
@@ -100,9 +96,7 @@ def fetch_file(
         if print_destination is True:
             logger.info("File saved as %s.\n", file_name)
     except Exception:
-        logger.error(
-            "Error while fetching file %s. Dataset fetching aborted.", url
-        )
+        logger.error("Error while fetching file %s. Dataset fetching aborted.", url)
         raise
 
 
@@ -142,9 +136,7 @@ def _get_http(url, temp_file_name, initial_size, timeout):
     extra = ""
     if initial_size > 0:
         logger.debug("  Resuming at %s", initial_size)
-        req = request.Request(
-            url, headers={"Range": "bytes=%s-" % (initial_size,)}
-        )
+        req = request.Request(url, headers={"Range": "bytes=%s-" % (initial_size,)})
         try:
             response = request.urlopen(req, timeout=timeout)
             content_range = response.info().get("Content-Range", None)

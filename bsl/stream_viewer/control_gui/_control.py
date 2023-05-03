@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import QFileDialog, QMainWindow
 
 from ...stream_recorder import StreamRecorder
 from ...utils._docs import fill_doc
-from ...utils._logs import logger
+from ...utils.logs import logger
 
 
 class _metaclass_ControlGUI(type(QMainWindow), type(ABC)):
