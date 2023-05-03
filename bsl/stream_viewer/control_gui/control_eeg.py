@@ -109,6 +109,10 @@ class ControlGUI_EEG(_ControlGUI):
             "1mV": 1000,
             "2.5mV": 2500,
             "10mV": 10000,
+            "100mV": 100000,
+            "1V": 1000000,
+            "2V": 2000000,
+            "5V": 5000000,
         }
         try:
             self._yRange = float(scope_settings.get("plot", "yRange"))
