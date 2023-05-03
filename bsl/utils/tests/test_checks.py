@@ -8,7 +8,7 @@ import pytest
 from .._checks import (
     _check_type,
     _check_value,
-    _check_verbose,
+    check_verbose,
     _ensure_int,
     _ensure_path,
 )
@@ -68,20 +68,20 @@ def test_check_value():
 def test_check_verbose():
     """Test _check_verbose checker."""
     # valids
-    assert _check_verbose(12) == 12
-    assert _check_verbose("INFO") == logging.INFO
-    assert _check_verbose("DEBUG") == logging.DEBUG
-    assert _check_verbose(True) == logging.INFO
-    assert _check_verbose(False) == logging.WARNING
-    assert _check_verbose(None) == logging.WARNING
+    assert check_verbose(12) == 12
+    assert check_verbose("INFO") == logging.INFO
+    assert check_verbose("DEBUG") == logging.DEBUG
+    assert check_verbose(True) == logging.INFO
+    assert check_verbose(False) == logging.WARNING
+    assert check_verbose(None) == logging.WARNING
 
     # invalids
     with pytest.raises(TypeError, match="must be an instance of"):
-        _check_verbose(("INFO",))
+        check_verbose(("INFO",))
     with pytest.raises(ValueError, match="Invalid value"):
-        _check_verbose("101")
+        check_verbose("101")
     with pytest.raises(ValueError, match="negative integer, -101 is invalid."):
-        _check_verbose(-101)
+        check_verbose(-101)
 
 
 def test_ensure_path():

@@ -3,7 +3,7 @@ from functools import wraps
 from pathlib import Path
 from typing import Callable, Optional, Union
 
-from ._checks import _check_verbose
+from ._checks import check_verbose
 from ._docs import fill_doc
 from ._fixes import _WrapStdOut
 
@@ -24,7 +24,7 @@ def _init_logger(*, verbose: Optional[Union[bool, str, int]] = None) -> logging.
         The initialized logger.
     """
     # create logger
-    verbose = _check_verbose(verbose)
+    verbose = check_verbose(verbose)
     logger = logging.getLogger(__package__.split(".utils", maxsplit=1)[0])
     logger.propagate = False
     logger.setLevel(verbose)
@@ -57,7 +57,7 @@ def add_file_handler(
         If not None, encoding used to open the file.
     %(verbose)s
     """
-    verbose = _check_verbose(verbose)
+    verbose = check_verbose(verbose)
     handler = logging.FileHandler(fname, mode, encoding)
     handler.setFormatter(_LoggerFormatter())
     handler.setLevel(verbose)
@@ -72,7 +72,7 @@ def set_log_level(verbose: Optional[Union[bool, str, int]]) -> None:
     ----------
     %(verbose)s
     """
-    verbose = _check_verbose(verbose)
+    verbose = check_verbose(verbose)
     logger.setLevel(verbose)
 
 

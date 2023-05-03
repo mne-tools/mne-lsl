@@ -5,14 +5,14 @@ from typing import Optional, Union
 
 import pytest
 
-from .._logs import _init_logger, add_file_handler, logger, set_log_level, verbose
+from ..logs import add_file_handler, logger, set_log_level, verbose
 
 logger.propagate = True
 
 
 def test_default_log_level(caplog):
     """Test the default log level."""
-    _init_logger()
+    set_log_level("WARNING")  # set to default
 
     caplog.clear()
     logger.debug("101")
@@ -66,14 +66,18 @@ def test_logger(level, caplog):
 def test_verbose(caplog):
     """Test verbose decorator."""
 
+    # function
     @verbose
     def foo(verbose: Optional[Union[bool, str, int]] = None):
+        """Foo function."""
         logger.debug("101")
 
-    set_log_level("DEBUG")
+    assert foo.__doc__ == "Foo function."
+    assert foo.__name__ == "foo"
+    set_log_level("INFO")
     caplog.clear()
     foo()
-    assert "101" in caplog.text
+    assert "101" not in caplog.text
 
     for level in (20, 25, 30, True, False, "WARNING", "ERROR"):
         caplog.clear()
@@ -83,17 +87,48 @@ def test_verbose(caplog):
     caplog.clear()
     foo(verbose="DEBUG")
     assert "101" in caplog.text
+    assert logger.level == logging.INFO
+
+    # method
+    class Foo:
+        def __init__(self):
+            pass
+
+        @verbose
+        def foo(self, verbose: Optional[Union[bool, str, int]] = None):
+            logger.debug("101")
+
+        @staticmethod
+        @verbose
+        def foo2(verbose: Optional[Union[bool, str, int]] = None):
+            logger.debug("101")
+
+    foo = Foo()
+    set_log_level("INFO")
+    caplog.clear()
+    foo.foo()
+    assert "101" not in caplog.text
+    caplog.clear()
+    foo.foo(verbose="DEBUG")
+    assert "101" in caplog.text
+
+    # static method
+    caplog.clear()
+    Foo.foo2()
+    assert "101" not in caplog.text
+    caplog.clear()
+    Foo.foo2(verbose="DEBUG")
+    assert "101" in caplog.text
 
 
 def test_file_handler(tmp_path):
     """Test adding a file handler."""
     fname = tmp_path / "logs.txt"
-    add_file_handler(fname)
+    add_file_handler(fname)  # default level: WARNING.
 
-    set_log_level("WARNING")
     logger.warning("test1")
     logger.info("test2")
-    set_log_level("INFO")
+    logger.handlers[-1].setLevel(logging.INFO)
     logger.info("test3")
 
     logger.handlers[-1].close()
