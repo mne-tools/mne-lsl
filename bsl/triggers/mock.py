@@ -1,7 +1,7 @@
 """Mock trigger."""
 
 from ..utils._docs import copy_doc
-from ..utils._logs import logger
+from ..utils.logs import logger
 from ._base import BaseTrigger
 
 

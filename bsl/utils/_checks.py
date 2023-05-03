@@ -11,7 +11,7 @@ import numpy as np
 from ._docs import fill_doc
 
 
-def _ensure_int(item: Any, item_name: Optional[str] = None) -> int:
+def ensure_int(item: Any, item_name: Optional[str] = None) -> int:
     """Ensure a variable is an integer.
 
     Parameters
@@ -36,9 +36,7 @@ def _ensure_int(item: Any, item_name: Optional[str] = None) -> int:
         item = int(operator.index(item))
     except TypeError:
         item_name = "Item" if item_name is None else "'%s'" % item_name
-        raise TypeError(
-            f"{item_name} must be an integer, got {type(item)} instead."
-        )
+        raise TypeError(f"{item_name} must be an integer, got {type(item)} instead.")
 
     return item
 
@@ -47,7 +45,7 @@ class _IntLike:
     @classmethod
     def __instancecheck__(cls, other: Any) -> bool:
         try:
-            _ensure_int(other)
+            ensure_int(other)
         except TypeError:
             return False
         else:
@@ -68,9 +66,7 @@ _types = {
 }
 
 
-def _check_type(
-    item: Any, types: tuple, item_name: Optional[str] = None
-) -> None:
+def check_type(item: Any, types: tuple, item_name: Optional[str] = None) -> None:
     """Check that item is an instance of types.
 
     Parameters
@@ -124,7 +120,7 @@ def _check_type(
         )
 
 
-def _check_value(
+def check_value(
     item: Any,
     allowed_values: tuple,
     item_name: Optional[str] = None,
@@ -169,14 +165,12 @@ def _check_value(
             options += ", ".join([f"{repr(v)}" for v in allowed_values[:-1]])
             options += f", and {repr(allowed_values[-1])}"
         raise ValueError(
-            msg.format(
-                item_name=item_name, extra=extra, options=options, item=item
-            )
+            msg.format(item_name=item_name, extra=extra, options=options, item=item)
         )
 
 
 @fill_doc
-def _check_verbose(verbose: Any) -> int:
+def check_verbose(verbose: Any) -> int:
     """Check that the value of verbose is valid.
 
     Parameters
@@ -196,13 +190,13 @@ def _check_verbose(verbose: Any) -> int:
         CRITICAL=logging.CRITICAL,
     )
 
-    _check_type(verbose, (bool, str, "int", None), item_name="verbose")
+    check_type(verbose, (bool, str, "int", None), item_name="verbose")
 
     if verbose is None:
         verbose = logging.WARNING
     elif isinstance(verbose, str):
         verbose = verbose.upper()
-        _check_value(verbose, logging_types, item_name="verbose")
+        check_value(verbose, logging_types, item_name="verbose")
         verbose = logging_types[verbose]
     elif isinstance(verbose, bool):
         if verbose:
@@ -210,7 +204,7 @@ def _check_verbose(verbose: Any) -> int:
         else:
             verbose = logging.WARNING
     elif isinstance(verbose, int):
-        verbose = _ensure_int(verbose)
+        verbose = ensure_int(verbose)
         if verbose <= 0:
             raise ValueError(
                 "Argument 'verbose' can not be a negative integer, "
@@ -220,7 +214,7 @@ def _check_verbose(verbose: Any) -> int:
     return verbose
 
 
-def _ensure_path(item: Any, must_exist: bool) -> Path:
+def ensure_path(item: Any, must_exist: bool) -> Path:
     """Ensure a variable is a Path.
 
     Parameters
@@ -248,7 +242,5 @@ def _ensure_path(item: Any, must_exist: bool) -> Path:
             f"not {type(item)}."
         )
     if must_exist and not item.exists():
-        raise FileNotFoundError(
-            f"The provided path '{str(item)}' does not exist."
-        )
+        raise FileNotFoundError(f"The provided path '{str(item)}' does not exist.")
     return item

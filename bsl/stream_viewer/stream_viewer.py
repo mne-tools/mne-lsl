@@ -4,8 +4,8 @@ import time
 from PyQt5.QtWidgets import QApplication
 
 from ..stream_receiver import StreamEEG, StreamReceiver
-from ..utils._checks import _check_type
-from ..utils._logs import logger
+from ..utils._checks import check_type
+from ..utils.logs import logger
 from ..utils.lsl import search_lsl
 from .control_gui.control_eeg import ControlGUI_EEG
 from .scope.scope_eeg import ScopeEEG
@@ -65,7 +65,7 @@ class StreamViewer:
         Check that the stream_name is valid or search for a valid stream on
         the network.
         """
-        _check_type(stream_name, (None, str), item_name="stream_name")
+        check_type(stream_name, (None, str), item_name="stream_name")
         if stream_name is None:
             stream_name = search_lsl(ignore_markers=True)
             if stream_name is None:
