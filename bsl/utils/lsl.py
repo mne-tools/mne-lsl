@@ -5,7 +5,7 @@ import xml.etree.ElementTree as ET
 from ..lsl import StreamInlet, resolve_streams
 from . import Timer
 from ._checks import check_type
-from .logs import logger, _use_log_level
+from .logs import _use_log_level, logger
 
 
 def list_lsl_streams(ignore_markers=False):

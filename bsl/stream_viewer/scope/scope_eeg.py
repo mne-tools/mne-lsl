@@ -111,7 +111,9 @@ class ScopeEEG(_Scope):
                     "the detrending checkbox is ticked. Please contact a developer. "
                 )
             # shape (channels, samples)
-            self._detrend_mean = np.roll(self._detrend_mean, -len(self._ts_list), axis=1)
+            self._detrend_mean = np.roll(
+                self._detrend_mean, -len(self._ts_list), axis=1
+            )
             self._detrend_mean[:, -len(self._ts_list) :] = self._data_acquired.T
             if not np.all(self._detrend_mean[:, 0] == 0):
                 self._data_acquired -= np.mean(self._detrend_mean, axis=1)
