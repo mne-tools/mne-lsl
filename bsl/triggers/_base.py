@@ -26,8 +26,8 @@ class BaseTrigger(ABC):
                 "The argument 'value' of a BSL trigger must be an integer "
                 "between 1 and 127 included."
             )
-        if not (0 < value < 128):
+        if not (1 <= value <= 255):
             raise ValueError(
                 "The argument 'value' of a BSL trigger must be an integer "
-                "between 1 and 127 included."
+                "between 1 and 255 included."
             )
