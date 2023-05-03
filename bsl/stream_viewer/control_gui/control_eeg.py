@@ -155,7 +155,6 @@ class ControlGUI_EEG(_ControlGUI):
 
         # BP Filters
         self._ui.checkBox_bandpass.setChecked(True)
-        self._ui.checkBox_bandpass.setEnabled(False)
         try:
             self._ui.doubleSpinBox_bandpass_low.setValue(
                 float(
