@@ -36,9 +36,7 @@ def test_pull_numerical_sample(dtype_str, dtype):
         assert ts is None
         assert data is None
         # test push/pull with wrong dtype
-        outlet.push_sample(
-            x.astype(np.float64 if dtype != np.float64 else np.float32)
-        )
+        outlet.push_sample(x.astype(np.float64 if dtype != np.float64 else np.float32))
         data, ts = inlet.pull_sample(timeout=5)
         _test_numerical_data(data, x, dtype, ts)
     except Exception as error:
@@ -125,9 +123,7 @@ def test_pull_numerical_chunk(dtype_str, dtype):
         data, ts = inlet.pull_chunk(max_samples=5, timeout=1)
         _test_numerical_data(data, x[2, :], dtype, ts, 1)
         # test push/pull with wrong dtype
-        outlet.push_chunk(
-            x.astype(np.float64 if dtype != np.float64 else np.float32)
-        )
+        outlet.push_chunk(x.astype(np.float64 if dtype != np.float64 else np.float32))
         data, ts = inlet.pull_chunk(max_samples=3, timeout=5)
         _test_numerical_data(data, x, dtype, ts, 3)
     except Exception as error:
