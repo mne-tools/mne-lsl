@@ -153,9 +153,7 @@ def test_push_str_chunk():
 
 def test_wait_for_consumers():
     """Test wait for client."""
-    sinfo = StreamInfo(
-        "test", "EEG", 2, 100.0, "float32", uuid.uuid4().hex[:6]
-    )
+    sinfo = StreamInfo("test", "EEG", 2, 100.0, "float32", uuid.uuid4().hex[:6])
     try:
         outlet = StreamOutlet(sinfo, chunk_size=3)
         _test_properties(outlet, "float32", 2, "test", 100.0, "EEG")

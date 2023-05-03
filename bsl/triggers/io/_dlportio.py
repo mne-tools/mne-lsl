@@ -67,10 +67,7 @@ class PParallelDLPortIO:
             # Load dlportio.dll functions
             self.port = windll.dlportio
         except Exception as e:
-            print(
-                "Could not import DLportIO driver, "
-                "parallel Ports not available"
-            )
+            print("Could not import DLportIO driver, " "parallel Ports not available")
             raise e
 
         if isinstance(address, str) and address.startswith("0x"):

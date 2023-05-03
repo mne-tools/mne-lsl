@@ -1,7 +1,7 @@
 from ctypes import byref, c_char_p, c_double, c_void_p
 from typing import List, Optional
 
-from ..utils._checks import _check_type, _ensure_int
+from ..utils._checks import check_type, ensure_int
 from .load_liblsl import lib
 from .stream_info import _BaseStreamInfo
 
@@ -94,7 +94,7 @@ def resolve_streams(
     each restriction. Thus, the true timeout is multiplied by the non ``None``
     restrictions.
     """
-    _check_type(timeout, ("numeric",), "timeout")
+    check_type(timeout, ("numeric",), "timeout")
     if timeout <= 0:
         raise ValueError(
             "The argument 'timeout' must be a strictly positive integer. "
@@ -108,7 +108,7 @@ def resolve_streams(
         streams = list(set(streams))  # remove duplicates
         return streams
 
-    minimum = _ensure_int(minimum, "minimum")
+    minimum = ensure_int(minimum, "minimum")
     if minimum <= 0:
         raise ValueError(
             "The argument 'minimum' must be a strictly positive integer. "
@@ -124,7 +124,7 @@ def resolve_streams(
 
     streams = []
     for prop, name in properties:
-        _check_type(prop, (str,), name)
+        check_type(prop, (str,), name)
         # rename properties for lsl compatibility
         name = "type" if name == "stype" else name
 

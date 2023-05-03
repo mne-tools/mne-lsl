@@ -38,8 +38,7 @@ def _requires_dataset_or_good_network(function: Callable, dataset):  # noqa
         fname = dataset.PATH
         download = (
             False
-            if fname.exists()
-            and _hashfunc(fname, hash_type="md5") == dataset.MD5
+            if fname.exists() and _hashfunc(fname, hash_type="md5") == dataset.MD5
             else True
         )
     except AttributeError:

@@ -42,9 +42,7 @@ class PParallelInpOut:
 
         # Put the port into Byte Mode (ECP register)
         _inp = self.port.Inp32(self.base + 0x402)
-        self.port.Out32(
-            self.base + 0x402, int((_inp & ~BYTEMODEMASK) | (1 << 5))
-        )
+        self.port.Out32(self.base + 0x402, int((_inp & ~BYTEMODEMASK) | (1 << 5)))
 
         # Now to make sure the port is in output mode we need to make
         # sure that bit 5 of the control register is not set
