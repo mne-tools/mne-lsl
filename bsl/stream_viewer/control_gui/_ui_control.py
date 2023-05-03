@@ -53,12 +53,6 @@ class UI_MainWindow(object):  # noqa
         self.label_signal_xRange.setObjectName("label_signal_xRange")
         self.label_signal_xRange.setText("Scale")
 
-        # CAR
-        self.checkBox_car = QCheckBox(self.MainWidget)
-        self.checkBox_car.setGeometry(QRect(120, 0, 97, 22))
-        self.checkBox_car.setObjectName("checkBox_car")
-        self.checkBox_car.setText("CAR Filter")
-
         # BP Filter
         self.checkBox_bandpass = QCheckBox(self.MainWidget)
         self.checkBox_bandpass.setGeometry(QRect(120, 20, 141, 22))
@@ -67,7 +61,7 @@ class UI_MainWindow(object):  # noqa
 
         # Set bandpass 'LOW'
         self.doubleSpinBox_bandpass_low = QDoubleSpinBox(self.MainWidget)  # Floats
-        self.doubleSpinBox_bandpass_low.setGeometry(QRect(250, 17, 69, 27))
+        self.doubleSpinBox_bandpass_low.setGeometry(QRect(253, 17, 69, 27))
         self.doubleSpinBox_bandpass_low.setMinimum(0.1)
         self.doubleSpinBox_bandpass_low.setMaximum(1000.0)
         self.doubleSpinBox_bandpass_low.setSingleStep(1.0)
@@ -76,12 +70,24 @@ class UI_MainWindow(object):  # noqa
 
         # Set bandpass 'HIGH'
         self.doubleSpinBox_bandpass_high = QDoubleSpinBox(self.MainWidget)
-        self.doubleSpinBox_bandpass_high.setGeometry(QRect(330, 17, 69, 27))
+        self.doubleSpinBox_bandpass_high.setGeometry(QRect(333, 17, 69, 27))
         self.doubleSpinBox_bandpass_high.setMinimum(1.0)
         self.doubleSpinBox_bandpass_high.setMaximum(1000.0)
         self.doubleSpinBox_bandpass_high.setSingleStep(1.0)
         self.doubleSpinBox_bandpass_high.setProperty("value", 40.0)  # Default 40Hz
         self.doubleSpinBox_bandpass_high.setObjectName("doubleSpinBox_bandpass_high")
+
+        # CAR
+        self.checkBox_car = QCheckBox(self.MainWidget)
+        self.checkBox_car.setGeometry(QRect(120, 0, 60, 22))
+        self.checkBox_car.setObjectName("checkBox_car")
+        self.checkBox_car.setText("CAR")
+
+        # Detrend
+        self.checkBox_detrend = QCheckBox(self.MainWidget)
+        self.checkBox_detrend.setGeometry(QRect(175, 0, 80, 22))
+        self.checkBox_detrend.setObjectName("checkBox_detrend")
+        self.checkBox_detrend.setText("Detrend")
 
         # Show LPT events
         self.checkBox_show_LPT_trigger_events = QCheckBox(self.MainWidget)
