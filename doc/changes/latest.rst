@@ -25,11 +25,14 @@ Enhancements
 - Improve LSL trigger by reducing the buffer, optimizing the execution, and limiting the data type to ``np.int8`` (:pr:`72`)
 - Improve detection of Arduino to LPT converter and of parallel port (:pr:`72`)
 - Improve error checking for integers and paths (:pr:`73`)
+- Add a detrending option and additional y-ranges to the `~bsl.StreamViewer` (:pr:`88`)
 
 Bugs
 ----
 
-- Change type of the data stream from a `bsl.StreamPlayer` to ``np.float64`` (:pr:`71`)
+- Change type of the data stream from a `~bsl.StreamPlayer` to ``np.float64`` (:pr:`71`)
+- Improve logger integration with sphinx-gallery (:pr:`87`)
+- Set pins to 0 during the initialization of a parallel port (:pr:`86`)
 
 API and behavior changes
 ------------------------
