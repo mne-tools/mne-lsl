@@ -1,5 +1,4 @@
 """
-==============================================================
 StreamReceiver: real-time buffer filtered with a causal filter
 ==============================================================
 
@@ -26,7 +25,7 @@ filtered with a bandpass filter.
 #     <https://docs.python.org/2/library/multiprocessing.html#windows>`_.
 #
 # This example will use a sample EEG resting-state dataset that can be retrieve
-# with :ref:`bsl.datasets<datasets>`. The dataset is stored in the user home
+# with :ref:`bsl.datasets <api/utils:Datasets>`. The dataset is stored in the user home
 # directory in the folder ``bsl_data`` (e.g. ``C:\Users\User\bsl_data``).
 
 #%%
@@ -60,7 +59,7 @@ print (f"BP filter between: {raw.info['highpass']}, {raw.info['lowpass']} Hz")
 
 #%%
 # Filter
-# ^^^^^^
+# ------
 #
 # Data should be filtered along one dimension. For this example, a butter IIR
 # filter is used. More information on filtering is available on the MNE
@@ -110,7 +109,7 @@ def create_bandpass_filter(low, high, fs, n):
 
 #%%
 # Buffer
-# ^^^^^^
+# ------
 #
 # When creating the filtered buffer, the duration has to be define to create a
 # numpy array of the correct shape and pre-allocate the required space.
@@ -219,7 +218,7 @@ class Buffer:
 
 #%%
 # Testing the filtered buffer
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# ---------------------------
 #
 # The filtered buffer must be updated regularly. In this example, the
 # `~bsl.StreamReceiver` buffer has been initialized at 200 ms. Thus, the

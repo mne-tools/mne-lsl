@@ -181,7 +181,7 @@ class StreamRecorder:
     def record_dir(self):
         """Path to the directory where data will be saved.
 
-        :type: Path
+        :type: `~pathlib.Path`
         """
         return self._record_dir
 
@@ -204,8 +204,7 @@ class StreamRecorder:
 
     @property
     def stream_name(self):
-        """
-        Servers' name or list of servers' name to connect to.
+        """Servers' name or list of servers' name to connect to.
 
         :type: str | list
         """
@@ -213,9 +212,7 @@ class StreamRecorder:
 
     @property
     def fif_subdir(self):
-        """
-        If ``True``, the ``.pcl`` files are converted to ``.fif`` in a
-        subdirectory ``'fif': record_dir/fif/...`` instead of ``record_dir``.
+        """If ``True``, the ``.pcl`` files are converted to ``.fif`` in a subdirectory.
 
         :type: bool
         """
@@ -223,9 +220,7 @@ class StreamRecorder:
 
     @property
     def verbose(self):
-        """
-        If ``True``, a timer showing since when the recorder started is
-        displayed every seconds.
+        """If ``True``, a timer showing since when the recorder started is displayed.
 
         :type: bool
         """
@@ -233,31 +228,28 @@ class StreamRecorder:
 
     @property
     def eve_file(self):
-        """
-        Path to the event file for SoftwareTrigger.
+        """Path to the event file for SoftwareTrigger.
 
-        :type: Path
+        :type: `~pathlib.Path`
         """
         return self._eve_file
 
     @property
     def process(self):
-        """
-        Launched process.
+        """Launched process.
 
-        :type: Process
+        :type: `~multiprocessing.Process`
         """
         return self._process
 
     @property
     def state(self):
-        """
-        Recording state of the recorder
+        """Recording state of the recorder.
 
-        - ``0``: Not recording.
-        - ``1``: Recording.
+        * ``0``: Not recording.
+        * ``1``: Recording.
 
-        :type: `multiprocessing.Value`
+        :type: `~multiprocessing.Value`
         """
         return self._state
 

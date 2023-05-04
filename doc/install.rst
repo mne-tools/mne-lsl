@@ -2,152 +2,111 @@
 
 .. _install:
 
-====================
-Install instructions
-====================
+Install
+=======
 
-BSL requires Python version ``3.8`` or higher. BSL is available on `GitHub`_
-and on `Pypi <https://pypi.org/project/bsl/>`_.
+Default install
+---------------
 
-- **Pypi**: Install BSL using ``pip``
+``BSL`` requires Python version ``3.8`` or higher and is available on
+`PyPI <project pypi_>`_ and is distributed with a compatible version of
+`liblsl <lsl lib c++_>`_.
 
-  .. code-block:: console
+.. tab-set::
 
-      $ pip install bsl
+    .. tab-item:: PyPI
 
-- **Conda**: A conda-forge distribution is not yet available.
+        .. code-block:: bash
 
-- **GitHub**: Clone the `main repository <https://github.com/bsl-tools/bsl>`_
-  and install with ``pip install .``
+            pip install bsl
 
-  .. code-block:: console
+    .. tab-item:: conda-forge
 
-      $ git clone https://github.com/bsl-tools/bsl
-      $ pip install .
+        Not yet available.
 
-  For the developer mode, use ``-e`` flag: ``pip install -e .``.
+    .. tab-item:: Source
 
-=====================
+        .. code-block:: bash
+
+            pip install git+https://github.com/fcbg-hnp-meeg/bsl
+
 Optional dependencies
-=====================
+---------------------
 
-BSL installs the following dependencies:
+Parallel port
+^^^^^^^^^^^^^
 
-- `numpy`_
-- `scipy`_
-- `mne`_
-- `pyqt5`_
-- `pyqtgraph`_
+`~bsl.triggers.ParallelPortTrigger` sends trigger (8 bits values) to a parallel port.
+On Linux, the ``pyparallel`` library is required. If an
+:ref:`arduino_lpt:Arduino to parallel port (LPT) converter` is used, the ``pyserial``
+library is required. Both can be installed using the extra-key ``triggers``:
 
-Additional functionalities requires:
+.. code-block:: bash
 
-- `pyserial`_: for the parallel port trigger using an :ref:`arduino2lpt`.
-- `pyparallel`_: for the parallel port trigger using an on-board port on Linux.
+    pip install bsl[triggers]
 
-The additional functionalities can be installed with the keywords:
-
-- ``build`` for build dependencies
-- ``doc`` for doc rendering dependencies
-- ``externals`` for ``pylsl`` and ``psychopy``
-- ``parallel`` for parallel port trigger dependencies
-- ``style`` for code-style dependencies
-- ``test`` for development test dependencies
-- ``all`` for all of th above.
-
-e.g. ``pip install bsl[parallel]`` will install ``BSL`` with the dependencies
-for parallel port triggers.
-
-===========================
-Installing pylsl and liblsl
-===========================
-
-By default, ``BSL`` is distributed with a recent version of ``pylsl`` and
-``liblsl`` that should work on Ubuntu 18.04, Ubuntu 20.04, macOS and
-Windows. You can test if your system supports the distributed version by
-running the following command in a terminal:
+On Linux, you user must have access to the parallel port. For instance, if an onboard
+parallel port at the address ``/dev/parport0`` is used, you can check the group owning
+the device with:
 
 .. code-block:: console
 
-    $ python -c 'from bsl.externals import pylsl'
+    $ ls -l /dev/parport0
 
-If you prefer to use a different version, or if the command above raises an
-error, `pylsl`_ can be installed in the same environment as ``BSL``. ``BSL``
-will automatically select `pylsl`_ and will prefer the version installed in the
-same environment above the version distributed in ``bsl.externals``.
-
-`pylsl`_ requires a binary library called ``liblsl`` to operate. The binary
-library may or may not have been downloaded alongside `pylsl`_. To test if
-an install of `pylsl`_ is working, use the following command in a terminal:
+Usually, the group is ``lp``. Your user should then be added to this group:
 
 .. code-block:: console
 
-    $ python -c 'import pylsl'
+    $ sudo usermod -aG lp $USER
 
-If this command did not raise an error, congratulation, you have a working
-install of `pylsl`_! However, if an error is raised, please refer to the
-instructions below or to the
-`LabStreamingLayer Slack <https://labstreaminglayer.slack.com>`_.
+Moreover, ``pyparallel`` requires the ``lp`` kernel module to be unloaded. This can be
+done at boot with a ``blacklist-parallelport.conf`` file containing ``blacklist lp`` in
+``/etc/modprobe.d/``.
 
-Linux
------
-
-Start by installing ``libpugixml-dev``, a light-weight C++ XML processing
-library.
+If an :ref:`arduino_lpt:Arduino to parallel port (LPT) converter` is used, your user
+should be added to the ``dialout`` group which owns the serial port used:
 
 .. code-block:: console
 
-    $ sudo apt install -y libpugixml-dev
+    $ sudo usermod -aG dialout $USER
 
-Fetch the correct binary from the `liblsl release page`_. If your
-distribution is not available, the binary library must be build.
-At the time of writing, the binaries for Ubuntu 18.04 (bionic) and for Ubuntu
-20.04 (focal) are available. Install the downloaded ``.deb`` library with:
+Qt
+^^
+
+At the moment, ``BSL`` requires ``PyQt5``. Future versions will support other Qt
+bindings via ``qtpy``. On Linux based distribution, ``PyQt5`` requires system libraries:
 
 .. code-block:: console
 
-    $ sudo apt install ./liblsl.deb
+    $ sudo apt install -y qt5-default  # Ubuntu 20.04 LTS
+    $ sudo apt install -y qtbase5-dev qt5-qmake  # Ubuntu 22.04 LTS
 
-macOS
------
+Advance install
+---------------
 
-Fetch the correct binary from the `liblsl release page`_ and retrieve the
-``.dylib`` binary library. Create an environment variable named ``PYLSL_LIB``
-that contains the path to the downloaded binary library.
+By default, ``BSL`` is distributed with a recent version of ``liblsl`` that should work
+on Ubuntu-based distribution, macOS and Windows. If your OS is not compatible with the
+distributed version or if you want to use a specific ``liblsl``, provide the path to the
+library in an environment variable ``LSL_LIB``.
 
-Alternatively, ``homebrew`` can be used to download and install the binary
-library with the command:
+Troubleshooting
+---------------
+
+On Linux, ``liblsl`` requires ``libpugixml-dev`` and ``LabRecorder`` requires
+``qt6-base-dev`` and ``freeglut3-dev``.
+
+.. code-block:: console
+
+    $ sudo apt install -y libpugixml-dev qt6-base-dev freeglut3-dev
+
+On macOS, ``homebrew`` can be used to download and install ``liblsl``:
 
 .. code-block:: console
 
     $ brew install labstreaminglayer/tap/lsl
 
-Windows
--------
-
-Fetch the correct binary from the `liblsl release page`_ and retrieve the
-``.dll`` binary library. Create an environment variable named ``PYLSL_LIB``
-that contains the path to the downloaded binary library.
-
-===================
-Installing PsychoPy
-===================
-
-The parallel port trigger can either use an on-board parallel port, or an
-:ref:`arduino2lpt` connected via USB. The on-board parallel port requires
-the ``psychopy.parallel`` module. By default, ``BSL`` is distributed with a
-recent version of ``psychopy.parallel`` that should work on most systems.
-
-If you prefer to use a different version, `psychopy`_ can be installed in the
-same environment as ``BSL``. ``BSL`` will automatically select `psychopy`_ and
-will prefer the version installed in the same environment above the version
-distributed in ``bsl.externals``.
-
-=====================
-Test the installation
-=====================
-
-To test the installation, you can run a fake stream with a `~bsl.StreamPlayer`
-and display it with a `~bsl.StreamViewer`.
+To test the installation, you can run a fake stream with a `~bsl.StreamPlayer` and
+display it with a `~bsl.StreamViewer`.
 
 - Download a sample :ref:`bsl.datasets<datasets>`:
 
@@ -157,10 +116,7 @@ and display it with a `~bsl.StreamViewer`.
       dataset = bsl.datasets.eeg_resting_state.data_path()
       print (dataset)  # displays the path to the -raw.fif dataset
 
-- Run a `~bsl.StreamPlayer` either from a python console or from terminal using
-  the downloaded sample dataset ``resting_state-raw.fif``.
-
-  In a python console:
+- Run a `~bsl.StreamPlayer` either from a python console:
 
   .. code-block:: python
 
@@ -169,8 +125,7 @@ and display it with a `~bsl.StreamViewer`.
       player = StreamPlayer('TestStream', dataset)
       player.start()
 
-  In a terminal, navigate to the folder containing the dataset
-  (``~/bsl_data/eeg_sample``):
+  Or from a terminal in the folder containing the dataset (``~/bsl_data/eeg_sample``):
 
   .. code-block:: console
 
@@ -182,8 +137,8 @@ and display it with a `~bsl.StreamViewer`.
 
       $ bsl_stream_viewer
 
-The `~bsl.StreamViewer` should load and display:
+  The `~bsl.StreamViewer` should load and display:
 
-.. image:: _static/stream_viewer/stream_viewer.gif
-   :alt: StreamViewer
-   :align: center
+  .. image:: _static/stream_viewer/stream_viewer.gif
+      :alt: StreamViewer
+      :align: center

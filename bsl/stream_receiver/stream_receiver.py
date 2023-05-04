@@ -38,7 +38,8 @@ class StreamReceiver:
 
     @fill_doc
     def connect(self, stream_name=None, timeout=5, force=False):  # noqa
-        """
+        """Connect to the LSL streams.
+
         Search for the available streams on the LSL network and connect to the
         appropriate ones. If a LSL stream fulfills the requirements (name...),
         a connection is established.
@@ -54,6 +55,11 @@ class StreamReceiver:
         force : bool
             If ``True``, force reconnect if the StreamReceiver was already
             connected.
+
+        Returns
+        -------
+        success : bool
+            True if the connection was successful.
         """
         check_type(timeout, ("numeric",), item_name="timeout")
         check_type(force, (bool,), item_name="force")
@@ -136,7 +142,7 @@ class StreamReceiver:
             self._streams[stream].show_info()
 
     def disconnect(self, stream_name=None):
-        """Disconnects the stream ``stream_name`` from the StreamReceiver.
+        """Disconnect the stream ``stream_name`` from the StreamReceiver.
 
         If ``stream_name`` is a `list`, disconnects all streams in the list.
         If ``stream_name`` is ``None``, disconnects all streams.

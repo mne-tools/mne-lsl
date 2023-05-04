@@ -1,5 +1,4 @@
 """
-=======================================
 StreamRecorder: resting-state recording
 =======================================
 
@@ -28,7 +27,7 @@ resting-state recording can be designed with a `~bsl.StreamRecorder`.
 #     <https://docs.python.org/2/library/multiprocessing.html#windows>`_.
 #
 # This example will use a sample EEG resting-state dataset that can be retrieve
-# with :ref:`bsl.datasets<datasets>`. The dataset is stored in the user home
+# with :ref:`bsl.datasets <api/utils:Datasets>`. The dataset is stored in the user home
 # directory in the folder ``bsl_data`` (e.g. ``C:\Users\User\bsl_data``).
 
 #%%
@@ -161,7 +160,7 @@ with StreamRecorder(record_dir):
 #
 #     $ bsl_stream_recorder -d examples -f test -s MyStream
 #
-# .. image:: ../_static/stream_recorder/stream_recorder_cli.gif
+# .. image:: ../../_static/stream_recorder/stream_recorder_cli.gif
 #    :alt: StreamRecorder
 #    :align: center
 

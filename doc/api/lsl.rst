@@ -1,7 +1,11 @@
-Low-level LSL
-=============
+LSL (low-level)
+===============
 
 .. currentmodule:: bsl.lsl
+
+.. automodule:: bsl.lsl
+   :no-members:
+   :no-inherited-members:
 
 .. autosummary::
    :toctree: generated/
