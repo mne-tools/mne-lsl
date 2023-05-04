@@ -1,10 +1,10 @@
 """
-Low-level API for the Lab Streaming Layer (LSL).
+.. include:: ../links.inc
 
-The API is similar to `pylsl`_, but the code-base is restructured, improved,
-and tested on the OS and version of Python supported by ``BSL``.
+Low-level python API for the Lab Streaming Layer (LSL).
 
-.. _pylsl: https://github.com/labstreaminglayer/liblsl-Python
+The API is similar to `pylsl <lsl python_>`_, but the code-base is restructured,
+improved, and tested on the OS and version of Python supported by ``BSL``.
 """
 
 from .functions import (  # noqa: F401

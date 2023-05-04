@@ -1,6 +1,5 @@
 .. _cli:
 
-============
 Command-Line
 ============
 
@@ -10,13 +9,12 @@ BSL propose to use 3 of its main classes from the command line:
 - :ref:`stream_recorder`
 - :ref:`stream_viewer`
 
-For each command, the flag `-h` can be used to obtain additional information.
+For each command, the flag ``-h`` can be used to obtain additional information.
 
 .. _stream_player:
 
-============
 StreamPlayer
-============
+------------
 
 The :class:`~bsl.StreamPlayer` can be called from the command-line with:
 
@@ -27,14 +25,15 @@ The :class:`~bsl.StreamPlayer` can be called from the command-line with:
 With the positional arguments:
 
 - ``stream_name``: `str`, name of the LSL stream displayed on the network.
-- ``fif_file``: `file-like`, recorded fif file by the StreamRecorder.
+- ``fif_file``: :term:`file-like <python:file object>`, recorded fif file by the
+  StreamRecorder.
 
 With the optional arguments:
 
 - ``r``, ``--repeat``: `int`, number of time the file is repeated.
   Default ``+inf``.
-- ``-t``, ``--trigger_def``: `file-like`, trigger file mapping events id to
-  strings, loaded by :class:`~bsl.triggers.trigger_def.TriggerDef`.
+- ``-t``, ``--trigger_def``: :term:`file-like <python:file object>`, trigger file
+  mapping events id to strings, loaded by :class:`~bsl.triggers.trigger_def.TriggerDef`.
 - ``-c``, ``--chunk_size``: `int`, chunk size pushed on the outlet. Default
   ``16``.
 - ``--high_resolution``: boolean flag, uses `time.perf_counter` instead of
@@ -46,9 +45,8 @@ With the optional arguments:
 
 .. _stream_recorder:
 
-==============
 StreamRecorder
-==============
+--------------
 
 The :class:`~bsl.StreamRecorder` can be called from the command-line with:
 
@@ -58,7 +56,7 @@ The :class:`~bsl.StreamRecorder` can be called from the command-line with:
 
 With the optional arguments:
 
-- ``-d``, ``--directory``: `path-like`, path to the record directory.
+- ``-d``, ``--directory``: :term:`path-like`, path to the record directory.
 - ``-f``, ``--fname``: `str`, file name stem.
 - ``-s``, ``--stream_name``: `str`, stream to record.
 - ``--fif_subdir``: boolean flag, saves in a ``fif`` subdirectory.
@@ -77,9 +75,8 @@ With the optional arguments:
 
 .. _stream_viewer:
 
-============
 StreamViewer
-============
+------------
 
 The :class:`~bsl.StreamViewer` can be called from the command-line with:
 
