@@ -5,7 +5,6 @@ Triggers
 
 .. autosummary::
    :toctree: generated/
-   :template: class.rst
 
    TriggerDef
    MockTrigger

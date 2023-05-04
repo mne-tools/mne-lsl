@@ -18,15 +18,15 @@ class StreamOutlet:
     Parameters
     ----------
     sinfo : StreamInfo
-        The `~bsl.lsl.StreamInfo` object describing the stream. Stays constant
-        over the lifetime of the outlet.
+        The `~bsl.lsl.StreamInfo` object describing the stream. Stays constant over the
+        lifetime of the outlet.
     chunk_size : int ``≥ 1``
-        The desired chunk granularity in samples. By default, each push
-        operation yields one chunk. An Inlet can override this setting.
+        The desired chunk granularity in samples. By default, each push operation yields
+        one chunk. An Inlet can override this setting.
     max_buffered : float ``≥ 0``
-        The maximum amount of data to buffer in the Outlet.
-        The number of samples buffered is ``max_buffered * 100`` if the
-        sampling rate is irregular, else it's ``max_buffered`` seconds.
+        The maximum amount of data to buffer in the Outlet. The number of samples
+        buffered is ``max_buffered * 100`` if the sampling rate is irregular, else it's
+        ``max_buffered`` seconds.
     """
 
     def __init__(
@@ -68,8 +68,8 @@ class StreamOutlet:
     def __del__(self):
         """Destroy a `~bsl.lsl.StreamOutlet`.
 
-        The outlet will no longer be discoverable after destruction and all
-        connected inlets will stop delivering data.
+        The outlet will no longer be discoverable after destruction and all connected
+        inlets will stop delivering data.
         """
         try:
             lib.lsl_destroy_outlet(self._obj)
@@ -87,17 +87,16 @@ class StreamOutlet:
         Parameters
         ----------
         x : list | array of shape (n_channels,)
-            Sample to push, with one element for each channel.
-            If strings are transmitted, a list is required. If numericals are
-            transmitted, a numpy array is required.
+            Sample to push, with one element for each channel. If strings are
+            transmitted, a list is required. If numericals are transmitted, a numpy
+            array is required.
         timestamp : float
             The acquisition timestamp of the sample, in agreement with
-            `~bsl.lsl.local_clock`. The default, `0`, uses the current time.
+            `~bsl.lsl.local_clock`. The default, ``0``, uses the current time.
         pushThrough : bool
-            If True, push the sample through to the receivers instead of
-            buffering it with subsequent samples. Note that the ``chunk_size``
-            defined when creating a `~bsl.lsl.StreamOutlet` takes precedence
-            over the ``pushThrough`` flag.
+            If True, push the sample through to the receivers instead of buffering it
+            with subsequent samples. Note that the ``chunk_size`` defined when creating
+            a `~bsl.lsl.StreamOutlet` takes precedence over the ``pushThrough`` flag.
         """
         if self._dtype == c_char_p:
             assert isinstance(x, list), "'x' must be a list if strings are pushed."
@@ -134,25 +133,24 @@ class StreamOutlet:
         self,
         x: Union[List[List[str]], NDArray[float]],
         timestamp: float = 0.0,
-        pushthrough: bool = True,
+        pushThrough: bool = True,
     ) -> None:
         """Push a chunk of samples into the `~bsl.lsl.StreamOutlet`.
 
         Parameters
         ----------
         x : list of list | array of shape (n_samples, n_channels)
-            Samples to push, with one element for each channel at every time
-            point. If strings are transmitted, a list of sublist containing
-            ``(n_channels,)`` is required. If numericals are transmitted, a
-            numpy array of shape ``(n_samples, n_channels)`` is required.
+            Samples to push, with one element for each channel at every time point. If
+            strings are transmitted, a list of sublist containing ``(n_channels,)`` is
+            required. If numericals are transmitted, a numpy array of shape
+            ``(n_samples, n_channels)`` is required.
         timestamp : float
             The acquisition timestamp of the sample, in agreement with
             `~bsl.lsl.local_clock`. The default, ``0``, uses the current time.
         pushThrough : bool
-            If True, push the sample through to the receivers instead of
-            buffering it with subsequent samples. Note that the ``chunk_size``
-            defined when creating a `~bsl.lsl.StreamOutlet` takes precedence
-            over the ``pushThrough`` flag.
+            If True, push the sample through to the receivers instead of buffering it
+            with subsequent samples. Note that the ``chunk_size`` defined when creating
+            a `~bsl.lsl.StreamOutlet` takes precedence over the ``pushThrough`` flag.
         """
         if self._dtype == c_char_p:
             assert isinstance(x, list), "'x' must be a list if strings are pushed."
@@ -173,8 +171,8 @@ class StreamOutlet:
             ), "'x' must be an array if numericals are pushed."
             if x.ndim != 2 or x.shape[1] != self._n_channels:
                 raise ValueError(
-                    "The samples to push 'x' must contain one element per "
-                    "channel at each time-point. Thus, the shape should be "
+                    "The samples to push 'x' must contain one element per channel at "
+                    "each time-point. Thus, the shape should be "
                     f"(n_samples, n_channels), {x.shape} is invalid."
                 )
             npdtype = fmt2numpy[self._dtype]
@@ -189,7 +187,7 @@ class StreamOutlet:
                 data_buffer,
                 c_long(n_samples),
                 c_double(timestamp),
-                c_int(pushthrough),
+                c_int(pushThrough),
             )
         )
 
@@ -244,8 +242,8 @@ class StreamOutlet:
     def has_consumers(self) -> bool:
         """Check whether `~bsl.lsl.StreamInlet` are currently connected.
 
-        While it does not hurt, there is technically no reason to push samples
-        if there is no one connected.
+        While it does not hurt, there is technically no reason to push samples if there
+        is no one connected.
 
         Returns
         -------

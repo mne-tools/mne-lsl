@@ -208,16 +208,15 @@ class StreamPlayer:
     def fif_file(self):
         """Path to the compatible raw ``.fif`` file to play.
 
-        :type: str | Path
+        :type: str | `~pathlib.Path`
         """
         return self._fif_file
 
     @property
     def repeat(self):
-        """
-        Number of times the stream player will loop on the FIF file before
-        interrupting. Default ``float('inf')`` can be passed to never interrupt
-        streaming.
+        """Number of times the stream player will loop.
+
+        Default ``float('inf')`` can be passed to never interrupt streaming.
 
         :type: int | ``float('ìnf')``
         """
@@ -225,9 +224,9 @@ class StreamPlayer:
 
     @property
     def trigger_def(self):
-        """
-        Either ``None`` or TriggerDef instance converting event numbers into
-        event strings.
+        """Either ``None`` or TriggerDef instance.
+
+        Used to convert event numbers into event strings.
 
         :type: TriggerDef
         """
@@ -235,9 +234,7 @@ class StreamPlayer:
 
     @property
     def chunk_size(self):
-        """
-        Number of samples to send at once (usually ``16-32`` is good enough)
-        ``[samples]``.
+        """Number of samples to send at once (usually ``16-32`` is good enough).
 
         :type: int
         """
@@ -245,9 +242,7 @@ class StreamPlayer:
 
     @property
     def high_resolution(self):
-        """
-        If ``True``, it uses `~time.perf_counter` instead of `~time.sleep`
-        for higher time resolution. However, it uses more CPU.
+        """If ``True``, it uses `~time.perf_counter` instead of `~time.sleep`.
 
         :type: bool
         """
@@ -257,18 +252,18 @@ class StreamPlayer:
     def process(self):
         """Launched streaming process.
 
-        :type: Process
+        :type: `~multiprocessing.Process`
         """
         return self._process
 
     @property
     def state(self):
-        """
-        Streaming state of the player:
-            - ``0``: Not streaming.
-            - ``1``: Streaming.
+        """Streaming state of the player.
 
-        :type: `multiprocessing.Value`
+        * ``0``: Not streaming.
+        * ``1``: Streaming.
+
+        :type: `~multiprocessing.Value`
         """
         return self._state
 

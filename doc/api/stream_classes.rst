@@ -5,7 +5,6 @@ Stream classes
 
 .. autosummary::
    :toctree: generated/
-   :template: class.rst
 
    StreamReceiver
    StreamRecorder

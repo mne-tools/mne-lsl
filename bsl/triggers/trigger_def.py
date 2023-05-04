@@ -91,14 +91,28 @@ class TriggerDef:
     def write(self, trigger_file):
         """Write events to a ``.ini`` trigger definition file.
 
-        .. note:: The ``.ini`` file is written with `configparser` and is
-                  structured as follows:
+        Parameters
+        ----------
+        trigger_file : None | path-like
+            Path to the ``.ini`` file containing the table converting event numbers
+            into event strings.
 
-                  .. code-block:: python
+            .. note:: The ``.ini`` file is read with `configparser` and has to be
+                      structured as follows:
 
-                      [events]
-                      event_str_1 = event_id_1
-                      event_str_2 = event_id_2
+                      .. code-block:: python
+
+                          [events]
+                          event_str_1 = event_id_1   # comment
+                          event_str_2 = event_id_2   # comment
+
+                      Example:
+
+                      .. code-block:: python
+
+                          [events]
+                          rest = 1
+                          stim = 2
         """
         trigger_file = TriggerDef._check_write_to_trigger_file(trigger_file)
 
@@ -113,9 +127,9 @@ class TriggerDef:
         Parameters
         ----------
         name : str
-            Name of the event
+            Name of the event.
         value : int
-            Value of the event
+            Value of the event.
         overwrite : bool
             If ``True``, overwrite previous event with the same name or value.
         """

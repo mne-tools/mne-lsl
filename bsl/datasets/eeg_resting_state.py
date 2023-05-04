@@ -1,3 +1,5 @@
+"""Sample 40-seconds EEG recording with 64 channels."""
+
 import os
 from pathlib import Path
 
@@ -11,9 +13,9 @@ PATH = Path("~/bsl_data/eeg_sample/resting_state-raw.fif").expanduser()
 
 
 def data_path():  # noqa
-    """
-    Path to a sample EEG dataset recorded on ANT Neuro Amplifier with 64
-    electrodes. This is a resting-state recording lasting 40 seconds.
+    """Path to a sample EEG dataset recorded on ANT Neuro Amplifier.
+
+    Recording with 64 electrodes. This is a resting-state recording lasting 40 seconds.
     If the dataset is not locally present, it is downloaded in the user home
     directory in the folder ``bsl_data/eeg_sample``.
 

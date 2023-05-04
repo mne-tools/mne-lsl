@@ -59,11 +59,16 @@ build = [
     'twine',
 ]
 doc = [
+    'furo',
     'matplotlib',
+    'memory-profiler',
     'numpydoc',
-    'pydata-sphinx-theme',
     'sphinx',
+    'sphinxcontrib-bibtex',
+    'sphinx-copybutton',
+    'sphinx-design',
     'sphinx-gallery',
+    'sphinx-issues',
 ]
 triggers = [
     'pyparallel; sys_platform == "linux"',

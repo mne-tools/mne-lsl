@@ -19,8 +19,9 @@ class ParallelPortTrigger(BaseTrigger):
     ----------
     address : int (hex) | str
         The address of the parallel port on the system.
-        If an :ref:`arduino2lpt` is used, the address must be the serial port
-        address or ``"arduino"`` for automatic detection.
+        If an :ref:`arduino_lpt:Arduino to parallel port (LPT) converter` is used, the
+        address must be the serial port address or ``"arduino"`` for automatic
+        detection.
     port_type : str | None
         Either ``'arduino'`` or ``'pport'`` depending on the connection.
         If None, BSL attempts to infers the type of port from the address.
@@ -213,7 +214,7 @@ class ParallelPortTrigger(BaseTrigger):
             self._port.setData(value)
 
     def close(self) -> None:
-        """Disconnects the parallel port.
+        """Disconnect the parallel port.
 
         This method should free the parallel or serial port and let other
         application or python process use it.
