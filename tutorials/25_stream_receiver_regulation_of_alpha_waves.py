@@ -1,5 +1,4 @@
 """
-==========================================
 StreamReceiver: real-time alpha band power
 ==========================================
 
@@ -25,7 +24,7 @@ signals to compute a given metric can be designed with a `~bsl.StreamReceiver`.
 #     <https://docs.python.org/2/library/multiprocessing.html#windows>`_.
 #
 # This example will use a sample EEG resting-state dataset that can be retrieve
-# with :ref:`bsl.datasets<datasets>`. The dataset is stored in the user home
+# with :ref:`bsl.datasets <api/utils:Datasets>`. The dataset is stored in the user home
 # directory in the folder ``bsl_data`` (e.g. ``C:\Users\User\bsl_data``).
 
 #%%
@@ -54,7 +53,7 @@ print (player)
 
 #%%
 # Basics of StreamReceiver
-# ^^^^^^^^^^^^^^^^^^^^^^^^
+# ------------------------
 #
 # Now that a `~bsl.StreamPlayer` is streaming data, a `~bsl.StreamReceiver` is
 # defined to access it in real-time.
@@ -129,7 +128,7 @@ print ((data4 == data3).all(), (timestamps4 == timestamps3).all())
 
 #%%
 # Online loop with a StreamReceiver
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# ---------------------------------
 #
 # The example below is a simple online loop shifting between 2 phases lasting
 # each 3 seconds. The loop will stop once each phase has been experienced
@@ -168,7 +167,7 @@ trigger = MockTrigger()
 #%%
 #
 # The 2 first events, ``phase1`` and ``phase2`` are defined with their
-# respective timings as tuples `(timing, event)`. The timing are offset by 0.2
+# respective timings as tuples ``(timing, event)``. The timing are offset by 0.2
 # to give a little headroom to the script and to avoid clipping the first
 # phase.
 #

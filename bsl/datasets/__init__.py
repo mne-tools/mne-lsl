@@ -16,9 +16,7 @@ __all__ = [
 
 
 def _download_all_datasets():
-    """
-    Download all the datasets.
-    """
+    """Download all the datasets."""
     eeg_auditory_stimuli.data_path()
     eeg_resting_state.data_path()
     eeg_resting_state_short.data_path()
