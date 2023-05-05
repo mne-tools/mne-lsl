@@ -8,7 +8,7 @@ measuring real-time brain signals can be limited and time-consuming. With a
 and experiment designs.
 """
 
-#%%
+# %%
 
 # Authors: Mathieu Scheltienne <mathieu.scheltienne@fcbg.ch>
 #
@@ -16,7 +16,7 @@ and experiment designs.
 
 # sphinx_gallery_thumbnail_path = '_static/stream_player/stream_player_cli.gif'
 
-#%%
+# %%
 # .. warning::
 #
 #     Both `~bsl.StreamPlayer` and `~bsl.StreamRecorder` create a new process
@@ -31,7 +31,7 @@ and experiment designs.
 # with :ref:`bsl.datasets <api/utils:Datasets>`. The dataset is stored in the user
 # home directory, in the folder ``bsl_data``.
 
-#%%
+# %%
 
 import time
 
@@ -39,7 +39,7 @@ from bsl import StreamPlayer, datasets
 from bsl.lsl import resolve_streams
 from bsl.triggers import TriggerDef
 
-#%%
+# %%
 # Starting a StreamPlayer
 # -----------------------
 #
@@ -48,11 +48,11 @@ from bsl.triggers import TriggerDef
 # - ``stream_name``, indicating a the name of the stream on the LSL network.
 # - ``fif_file``, path to a valid `~mne.io.Raw` fif file.
 
-stream_name = 'StreamPlayer'
+stream_name = "StreamPlayer"
 fif_file = datasets.eeg_resting_state.data_path()
-print (fif_file)
+print(fif_file)
 
-#%%
+# %%
 # Instance
 # ^^^^^^^^
 #
@@ -67,23 +67,23 @@ print (fif_file)
 
 player = StreamPlayer(stream_name, fif_file)
 player.start()
-print (player)
+print(player)
 
-#%%
+# %%
 #
 # To verify if the stream is accessible on the network, use directly ``pylsl``:
 
 streams = [stream.name for stream in resolve_streams()]
-print (streams)
+print(streams)
 
-#%%
+# %%
 #
 # To stop the streaming, use the `~bsl.StreamPlayer.stop` method.
 
 player.stop()
-print (player)
+print(player)
 
-#%%
+# %%
 # Context manager
 # ^^^^^^^^^^^^^^^
 #
@@ -93,9 +93,9 @@ print (player)
 
 with StreamPlayer(stream_name, fif_file):
     streams = [stream.name for stream in resolve_streams()]
-print (streams)
+print(streams)
 
-#%%
+# %%
 # CLI
 # ^^^
 #
@@ -113,7 +113,7 @@ print (streams)
 #    :alt: StreamPlayer
 #    :align: center
 
-#%%
+# %%
 # Additional arguments
 # --------------------
 #
@@ -128,7 +128,7 @@ print (streams)
 # - ``high_resolution``, indicating if `~time.sleep` or `~time.perf_counter` is
 #   used to wait between 2 push on the LSL outlet.
 
-#%%
+# %%
 # repeat
 # ^^^^^^
 #
@@ -144,17 +144,17 @@ print (streams)
 fif_file = datasets.eeg_resting_state_short.data_path()
 player = StreamPlayer(stream_name, fif_file, repeat=1)
 player.start()
-print (player)
+print(player)
 
-#%%
+# %%
 #
 # The dataset is streamed only once. A call to the `~bsl.StreamPlayer.stop`
 # method is not necessary.
 
 time.sleep(2)  # duration of this dataset.
-print (player)
+print(player)
 
-#%%
+# %%
 # trigger_def
 # ^^^^^^^^^^^
 #
@@ -170,36 +170,36 @@ print (player)
 fif_file = datasets.eeg_auditory_stimuli.data_path()
 player = StreamPlayer(stream_name, fif_file)
 player.start()
-print (player)
+print(player)
 
 # wait a bit to get some events logged
 time.sleep(4)
 
 # stop
 player.stop()
-print (player)
+print(player)
 
-#%%
+# %%
 #
 # By default, the logging of events uses the ID with ``Events: ID``. If a
 # :class:`bsl.triggers.TriggerDef` is provided, the logging message will include the
 # corresponding event name if it exists with ``Events: ID (NAME)``.
 
 tdef = TriggerDef()
-tdef.add('rest', 1)
+tdef.add("rest", 1)
 
 player = StreamPlayer(stream_name, fif_file, trigger_def=tdef)
 player.start()
-print (player)
+print(player)
 
 # wait a bit to get some events logged
 time.sleep(4)
 
 # stop
 player.stop()
-print (player)
+print(player)
 
-#%%
+# %%
 #
 # .. note::
 #
@@ -221,7 +221,7 @@ print (player)
 #         rest = 1
 #         stim = 2
 
-#%%
+# %%
 # chunk_size
 # ^^^^^^^^^^
 #
@@ -230,7 +230,7 @@ print (player)
 # most of the time. A warning is emitted if the value is different from the
 # usual ``16`` or ``32``.
 
-#%%
+# %%
 # high_resolution
 # ^^^^^^^^^^^^^^^
 #

@@ -7,13 +7,13 @@ operations have already been applied. For instance, a buffer where data is
 filtered with a bandpass filter.
 """
 
-#%%
+# %%
 
 # Authors: Mathieu Scheltienne <mathieu.scheltienne@fcbg.ch>
 #
 # License: LGPL-2.1
 
-#%%
+# %%
 # .. warning::
 #
 #     Both `~bsl.StreamPlayer` and `~bsl.StreamRecorder` create a new process
@@ -28,36 +28,37 @@ filtered with a bandpass filter.
 # with :ref:`bsl.datasets <api/utils:Datasets>`. The dataset is stored in the user home
 # directory in the folder ``bsl_data`` (e.g. ``C:\Users\User\bsl_data``).
 
-#%%
-from math import ceil
 import time
 
-from matplotlib import pyplot as plt
+# %%
+from math import ceil
+
 import mne
 import numpy as np
+from matplotlib import pyplot as plt
 from scipy.signal import butter, sosfilt, sosfilt_zi
 
-from bsl import StreamReceiver, StreamPlayer, datasets
+from bsl import StreamPlayer, StreamReceiver, datasets
 from bsl.utils import Timer
 
-#%%
+# %%
 #
 # To simulate an actual signal coming from an LSL stream, a `~bsl.StreamPlayer`
 # is used with a 40 seconds resting-state recording. This dataset is already
 # filtered between (1, 40) Hz.
 
-stream_name = 'StreamPlayer'
+stream_name = "StreamPlayer"
 fif_file = datasets.eeg_resting_state.data_path()
 player = StreamPlayer(stream_name, fif_file)
 player.start()
-print (player)
+print(player)
 
-#%%
+# %%
 
 raw = mne.io.read_raw_fif(fif_file, preload=False, verbose=False)
-print (f"BP filter between: {raw.info['highpass']}, {raw.info['lowpass']} Hz")
+print(f"BP filter between: {raw.info['highpass']}, {raw.info['lowpass']} Hz")
 
-#%%
+# %%
 # Filter
 # ------
 #
@@ -67,6 +68,7 @@ print (f"BP filter between: {raw.info['highpass']}, {raw.info['lowpass']} Hz")
 #
 # - `Background information on filtering <https://mne.tools/stable/auto_tutorials/preprocessing/25_background_filtering.html#disc-filtering>`_
 # - `Filtering and resampling data <https://mne.tools/stable/auto_tutorials/preprocessing/30_filtering_resampling.html#tut-filter-resample>`_
+
 
 def create_bandpass_filter(low, high, fs, n):
     """
@@ -94,20 +96,21 @@ def create_bandpass_filter(low, high, fs, n):
     bp_low = low / (0.5 * fs)
     bp_high = high / (0.5 * fs)
     # Compute SOS output (second order sections)
-    sos = butter(n, [bp_low, bp_high], btype='band', output='sos')
+    sos = butter(n, [bp_low, bp_high], btype="band", output="sos")
     # Construct initial conditions for sosfilt for step response steady-state.
     zi_coeff = sosfilt_zi(sos).reshape((sos.shape[0], 2, 1))
 
     return sos, zi_coeff
 
-#%%
+
+# %%
 #
 # EEG data is usually subject to a lage DC offset, which corresponds to a step
 # response steady-state. The initial conditions are determined by multiplying
 # the ``zi_coeff`` with the DC offset. The DC offset value can be approximated
 # by taking the mean of a small window.
 
-#%%
+# %%
 # Buffer
 # ------
 #
@@ -116,7 +119,7 @@ def create_bandpass_filter(low, high, fs, n):
 
 buffer_duration = 5  # in seconds
 
-#%%
+# %%
 #
 # Then, a `~bsl.StreamReceiver` is created. But the actual buffer and window
 # size of the `~bsl.StreamReceiver` are set as small as possible. The buffer
@@ -127,7 +130,7 @@ buffer_duration = 5  # in seconds
 sr = StreamReceiver(bufsize=0.2, winsize=0.2, stream_name=stream_name)
 time.sleep(0.2)  # wait to fill LSL inlet.
 
-#%%%
+# %%%
 #
 # .. note::
 #
@@ -148,6 +151,7 @@ time.sleep(0.2)  # wait to fill LSL inlet.
 #
 # For this example, the filter is defined between 5 and 10 Hz to emphasize its
 # effect as the dataset streamed is already filtered between (1, 40) Hz.
+
 
 class Buffer:
     """
@@ -177,11 +181,10 @@ class Buffer:
         self.timestamps = np.zeros(self.buffer_duration_samples)
         self.data = np.zeros((self.buffer_duration_samples, self.nb_channels))
         # For demo purposes, let's store also the raw data
-        self.raw_data = np.zeros((self.buffer_duration_samples,
-                                  self.nb_channels))
+        self.raw_data = np.zeros((self.buffer_duration_samples, self.nb_channels))
 
         # Create filter BP (1, 15) Hz and filter variables
-        self.sos, self.zi_coeff = create_bandpass_filter(5., 10., self.fs, n=2)
+        self.sos, self.zi_coeff = create_bandpass_filter(5.0, 10.0, self.fs, n=2)
         self.zi = None
 
     def update(self):
@@ -205,18 +208,18 @@ class Buffer:
         if self.zi is None:
             # Initialize the initial conditions for the cascaded filter delays.
             self.zi = self.zi_coeff * np.mean(data_acquired, axis=0)
-        data_filtered, self.zi = sosfilt(self.sos, data_acquired, axis=0,
-                                         zi=self.zi)
+        data_filtered, self.zi = sosfilt(self.sos, data_acquired, axis=0, zi=self.zi)
 
         # Roll buffer, remove samples exiting and add new samples
         self.timestamps = np.roll(self.timestamps, -len(ts_list))
-        self.timestamps[-len(ts_list):] = ts_list
+        self.timestamps[-len(ts_list) :] = ts_list
         self.data = np.roll(self.data, -len(ts_list), axis=0)
-        self.data[-len(ts_list):, :] = data_filtered
+        self.data[-len(ts_list) :, :] = data_filtered
         self.raw_data = np.roll(self.raw_data, -len(ts_list), axis=0)
-        self.raw_data[-len(ts_list):, :] = data_acquired
+        self.raw_data[-len(ts_list) :, :] = data_acquired
 
-#%%
+
+# %%
 # Testing the filtered buffer
 # ---------------------------
 #
@@ -230,8 +233,8 @@ class Buffer:
 
 # Create plot
 f, ax = plt.subplots(2, 1, sharex=True)
-ax[0].set_title('Raw data')
-ax[1].set_title('Filtered data between (5, 10) Hz')
+ax[0].set_title("Raw data")
+ax[1].set_title("Filtered data between (5, 10) Hz")
 # Create buffer
 buffer = Buffer(buffer_duration, sr)
 
@@ -252,7 +255,7 @@ while timer.sec() <= 15:
         ax[1].plot(buffer.timestamps, np.mean(buffer.data[:, 1:], axis=1))
         idx_last_plot += 1
 
-#%%
+# %%
 #
 # Stop the mock LSL stream.
 
