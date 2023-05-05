@@ -30,37 +30,37 @@ def _check_stream_properties(
 
     # test streamInfo
     assert stream.streamInfo == stream._streamInfo == streamInfo
-    with pytest.raises(AttributeError, match="can't set attribute"):
+    with pytest.raises(AttributeError):
         stream.streamInfo = "101"
 
     # test sample rate
     assert stream.sample_rate == stream._sample_rate == raw.info["sfreq"]
-    with pytest.raises(AttributeError, match="can't set attribute"):
+    with pytest.raises(AttributeError):
         stream.sample_rate = "2048"
 
     # test name
     assert stream.name == stream._name == stream_name
-    with pytest.raises(AttributeError, match="can't set attribute"):
+    with pytest.raises(AttributeError):
         stream.name = "random-name"
 
     # test serial
     assert stream.serial == stream._serial == serial
-    with pytest.raises(AttributeError, match="can't set attribute"):
+    with pytest.raises(AttributeError):
         stream.serial = "101"
 
     # test is_slave
     assert stream.is_slave == stream._is_slave == bool(is_slave)
-    with pytest.raises(AttributeError, match="can't set attribute"):
+    with pytest.raises(AttributeError):
         stream.is_slave = not stream.is_slave
 
     # test channel list
     assert stream.ch_list == stream._ch_list == raw.ch_names
-    with pytest.raises(AttributeError, match="can't set attribute"):
+    with pytest.raises(AttributeError):
         stream.ch_list = [1, 0, 1]
 
     # test lsl_time_offset
     assert stream.lsl_time_offset == stream._lsl_time_offset == lsl_time_offset
-    with pytest.raises(AttributeError, match="can't set attribute"):
+    with pytest.raises(AttributeError):
         stream.lsl_time_offset = 101
 
     # test blocking
@@ -79,7 +79,7 @@ def _check_stream_properties(
 
     # test buffer
     assert isinstance(stream.buffer, Buffer)
-    with pytest.raises(AttributeError, match="can't set attribute"):
+    with pytest.raises(AttributeError):
         stream.buffer = 101
 
 

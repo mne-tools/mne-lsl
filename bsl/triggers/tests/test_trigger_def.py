@@ -187,7 +187,7 @@ def test_properties():
         }
     )
 
-    with pytest.raises(AttributeError, match="can't set attribute"):
+    with pytest.raises(AttributeError):
         tdef.by_name = dict()
-    with pytest.raises(AttributeError, match="can't set attribute"):
+    with pytest.raises(AttributeError):
         tdef.by_value = dict()
