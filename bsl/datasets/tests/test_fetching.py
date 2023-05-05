@@ -3,10 +3,10 @@ import pytest
 from bsl.datasets._fetching import fetch_file
 from bsl.utils._tests import requires_good_network
 
-URL = "https://raw.githubusercontent.com/bsl-tools/bsl/master/LICENSE"
+URL = "https://raw.githubusercontent.com/fcbg-hnp-meeg/bsl/main/LICENSE"
 HASH = {
-    "md5": "1803fa9c2c3ce8cb06b4861d75310742",
-    "sha1": "b386b371ce94933e63ced1052aa72a60da5485ff",
+    "md5": "de531c30ba2efbd003d5a4075ef76e57",
+    "sha1": "26180c061b7e2edb432719aba0d672bd518b6bd3",
 }
 WRONG_HASH = {
     "md5": "12345678912345678912345678912345",
