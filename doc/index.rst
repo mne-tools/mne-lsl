@@ -42,7 +42,7 @@ Supporting institutions
 -----------------------
 
 The development of ``BSL`` is supported by the
-`Human Neuroscience Platform, Fondation Campus Biotech Geneva, Geneva <fcbg hnp_>`_.
+`Human Neuroscience Platform, Fondation Campus Biotech Geneva <fcbg hnp_>`_.
 
 .. image:: _static/partners/fcbg-hnp-meeg.png
     :alt: FCBG - HNP - MEEG/BCI Platform
