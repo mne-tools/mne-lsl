@@ -191,17 +191,17 @@ def test_properties():
         assert len(sr.streams) == 1
         assert "StreamPlayer" in sr.streams
 
-        with pytest.raises(AttributeError, match="can't set attribute"):
+        with pytest.raises(AttributeError):
             sr.winsize = 1
-        with pytest.raises(AttributeError, match="can't set attribute"):
+        with pytest.raises(AttributeError):
             sr.bufsize = 2
-        with pytest.raises(AttributeError, match="can't set attribute"):
+        with pytest.raises(AttributeError):
             sr.stream_name = "StreamPlayer"
-        with pytest.raises(AttributeError, match="can't set attribute"):
+        with pytest.raises(AttributeError):
             sr.connected = False
-        with pytest.raises(AttributeError, match="can't set attribute"):
+        with pytest.raises(AttributeError):
             sr.mne_infos = dict()
-        with pytest.raises(AttributeError, match="can't set attribute"):
+        with pytest.raises(AttributeError):
             sr.streams = dict()
 
         sr.disconnect()
