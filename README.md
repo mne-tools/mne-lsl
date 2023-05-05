@@ -39,7 +39,7 @@ with the First Prize Award (2016) after achieving high decoding accuracy.
 development is still supported by the
 [Human Neuroscience Platform (FCBG)](https://hnp.fcbg.ch/).
 
-[![HNP](https://raw.githubusercontent.com/fcbg-hnp-meeg/bsl/main/doc/_static/partners/fcbg-hnp-meeg.png)](https://hnp.fcbg.ch/)
+<img src="https://raw.githubusercontent.com/fcbg-hnp-meeg/bsl/main/doc/_static/partners/fcbg-hnp-meeg.png" width=150>
 
 # Copyright and license
 
