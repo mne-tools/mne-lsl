@@ -28,15 +28,15 @@ version of `liblsl <lsl lib c++_>`_. If you want to use a different version of
 
     .. tab-item:: PyPI
 
-        .. code-block:: bash
+        .. code-block:: console
 
-            pip install bsl
+            $ pip install bsl
 
     .. tab-item:: Source
 
-        .. code-block:: bash
+        .. code-block:: console
 
-            pip install git+https://github.com/fcbg-hnp-meeg/bsl
+            $ pip install git+https://github.com/fcbg-hnp-meeg/bsl
 
 Supporting institutions
 -----------------------
