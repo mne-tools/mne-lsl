@@ -40,11 +40,6 @@ jobs:
           python -m pip install --progress-bar off .[test]
       - name: Display system information
         run: bsl-sys_info --developer
-      - name: 'Cache BSL testing dataset'
-        uses: actions/cache@v3
-        with:
-          key: ${{ matrix.os }}-bsl_data
-          path: ~/bsl_data
       - name: Download BSL testing dataset
         run: python -c 'import bsl; bsl.datasets._download_all_datasets()'
       - name: Run pytest
