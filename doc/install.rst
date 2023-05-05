@@ -9,16 +9,16 @@ Default install
 ---------------
 
 ``BSL`` requires Python version ``3.8`` or higher and is available on
-`PyPI <project pypi_>`_ and is distributed with a compatible version of
+`PyPI <project pypi_>`_. It is distributed with a compatible version of
 `liblsl <lsl lib c++_>`_.
 
 .. tab-set::
 
     .. tab-item:: PyPI
 
-        .. code-block:: bash
+        .. code-block:: console
 
-            pip install bsl
+            $ pip install bsl
 
     .. tab-item:: conda-forge
 
@@ -26,9 +26,9 @@ Default install
 
     .. tab-item:: Source
 
-        .. code-block:: bash
+        .. code-block:: console
 
-            pip install git+https://github.com/fcbg-hnp-meeg/bsl
+            $ pip install git+https://github.com/fcbg-hnp-meeg/bsl
 
 Optional dependencies
 ---------------------
@@ -36,16 +36,18 @@ Optional dependencies
 Parallel port
 ^^^^^^^^^^^^^
 
-`~bsl.triggers.ParallelPortTrigger` sends trigger (8 bits values) to a parallel port.
+.. _parallel port: https://en.wikipedia.org/wiki/Parallel_port
+
+`~bsl.triggers.ParallelPortTrigger` sends trigger (8 bits values) to a `parallel port`_.
 On Linux, the ``pyparallel`` library is required. If an
 :ref:`arduino_lpt:Arduino to parallel port (LPT) converter` is used, the ``pyserial``
 library is required. Both can be installed using the extra-key ``triggers``:
 
-.. code-block:: bash
+.. code-block:: console
 
-    pip install bsl[triggers]
+    $ pip install bsl[triggers]
 
-On Linux, you user must have access to the parallel port. For instance, if an onboard
+On Linux, the user must have access to the parallel port. For instance, if an onboard
 parallel port at the address ``/dev/parport0`` is used, you can check the group owning
 the device with:
 
@@ -53,17 +55,17 @@ the device with:
 
     $ ls -l /dev/parport0
 
-Usually, the group is ``lp``. Your user should then be added to this group:
+Usually, the group is ``lp``. The user should be added to this group:
 
 .. code-block:: console
 
     $ sudo usermod -aG lp $USER
 
 Moreover, ``pyparallel`` requires the ``lp`` kernel module to be unloaded. This can be
-done at boot with a ``blacklist-parallelport.conf`` file containing ``blacklist lp`` in
-``/etc/modprobe.d/``.
+done at boot with a ``blacklist-parallelport.conf`` file containing the line
+``blacklist lp`` in ``/etc/modprobe.d/``.
 
-If an :ref:`arduino_lpt:Arduino to parallel port (LPT) converter` is used, your user
+If an :ref:`arduino_lpt:Arduino to parallel port (LPT) converter` is used, the user
 should be added to the ``dialout`` group which owns the serial port used:
 
 .. code-block:: console
