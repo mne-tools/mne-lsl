@@ -179,17 +179,17 @@ def test_properties():
     assert sp.high_resolution is False
 
     # Check setters
-    with pytest.raises(AttributeError, match="can't set attribute"):
+    with pytest.raises(AttributeError):
         sp.stream_name = "new name"
-    with pytest.raises(AttributeError, match="can't set attribute"):
+    with pytest.raises(AttributeError):
         sp.fif_file = "new fif file"
-    with pytest.raises(AttributeError, match="can't set attribute"):
+    with pytest.raises(AttributeError):
         sp.repeat = 10
-    with pytest.raises(AttributeError, match="can't set attribute"):
+    with pytest.raises(AttributeError):
         sp.trigger_def = TriggerDef()
-    with pytest.raises(AttributeError, match="can't set attribute"):
+    with pytest.raises(AttributeError):
         sp.chunk_size = 8
-    with pytest.raises(AttributeError, match="can't set attribute"):
+    with pytest.raises(AttributeError):
         sp.high_resolution = True
 
     # Process and state
@@ -197,9 +197,9 @@ def test_properties():
     assert isinstance(sp.state, mp.sharedctypes.Synchronized)
     assert sp.state.value == 0
 
-    with pytest.raises(AttributeError, match="can't set attribute"):
+    with pytest.raises(AttributeError):
         sp.process = 5
-    with pytest.raises(AttributeError, match="can't set attribute"):
+    with pytest.raises(AttributeError):
         sp.state = 5
 
     sp.start()

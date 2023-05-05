@@ -122,19 +122,19 @@ def test_properties():
         assert (scope.data_buffer == scope._data_buffer).all()
         assert (scope.trigger_buffer == scope._trigger_buffer).all()
 
-        with pytest.raises(AttributeError, match="can't set attribute"):
+        with pytest.raises(AttributeError):
             scope.stream_name = "new name"
-        with pytest.raises(AttributeError, match="can't set attribute"):
+        with pytest.raises(AttributeError):
             scope.sample_rate = 101
-        with pytest.raises(AttributeError, match="can't set attribute"):
+        with pytest.raises(AttributeError):
             scope.duration_buffer = 101
-        with pytest.raises(AttributeError, match="can't set attribute"):
+        with pytest.raises(AttributeError):
             scope.duration_buffer_samples = 101
-        with pytest.raises(AttributeError, match="can't set attribute"):
+        with pytest.raises(AttributeError):
             scope.ts_list = [101]
-        with pytest.raises(AttributeError, match="can't set attribute"):
+        with pytest.raises(AttributeError):
             scope.channels_labels = ["101"]
-        with pytest.raises(AttributeError, match="can't set attribute"):
+        with pytest.raises(AttributeError):
             scope.nb_channels = 101
         scope.apply_car = True
         assert scope.apply_car
@@ -142,10 +142,10 @@ def test_properties():
         assert scope.apply_bandpass
         scope.selected_channels = list(range(scope.nb_channels // 2))
         assert scope.selected_channels == list(range(scope.nb_channels // 2))
-        with pytest.raises(AttributeError, match="can't set attribute"):
+        with pytest.raises(AttributeError):
             scope.data_buffer = np.ones(
                 (scope._nb_channels, scope._duration_buffer_samples),
                 dtype=np.float32,
             )
-        with pytest.raises(AttributeError, match="can't set attribute"):
+        with pytest.raises(AttributeError):
             scope.trigger_buffer = np.ones(scope._duration_buffer_samples)
