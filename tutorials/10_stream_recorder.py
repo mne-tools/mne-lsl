@@ -7,7 +7,7 @@ activity of a subject is measured in the absence of any stimulus or task. A
 resting-state recording can be designed with a `~bsl.StreamRecorder`.
 """
 
-#%%
+# %%
 
 # Authors: Mathieu Scheltienne <mathieu.scheltienne@fcbg.ch>
 #
@@ -15,7 +15,7 @@ resting-state recording can be designed with a `~bsl.StreamRecorder`.
 
 # sphinx_gallery_thumbnail_path = '_static/stream_recorder/stream_recorder_cli.gif'
 
-#%%
+# %%
 # .. warning::
 #
 #     Both `~bsl.StreamPlayer` and `~bsl.StreamRecorder` create a new process
@@ -30,39 +30,39 @@ resting-state recording can be designed with a `~bsl.StreamRecorder`.
 # with :ref:`bsl.datasets <api/utils:Datasets>`. The dataset is stored in the user home
 # directory in the folder ``bsl_data`` (e.g. ``C:\Users\User\bsl_data``).
 
-#%%
+# %%
 
 import os
-from pathlib import Path
 import time
+from pathlib import Path
 
 import mne
 
 from bsl import StreamPlayer, StreamRecorder, datasets
 from bsl.triggers import MockTrigger
 
-#%%
+# %%
 #
 # To simulate an actual signal coming from an LSL stream, a `~bsl.StreamPlayer`
 # is used with a 40 seconds resting-state recording.
 
-stream_name = 'StreamPlayer'
+stream_name = "StreamPlayer"
 fif_file = datasets.eeg_resting_state.data_path()
 player = StreamPlayer(stream_name, fif_file)
 player.start()
-print (player)
+print(player)
 
-#%%
+# %%
 #
 # For this example, the folder ``bsl_data/examples`` located in the user home
 # directory will be used to stored recorded files. To ensure its existence,
 # `os.makedirs` is used.
 
-record_dir = Path('~/bsl_data/examples').expanduser()
+record_dir = Path("~/bsl_data/examples").expanduser()
 os.makedirs(record_dir, exist_ok=True)
-print (record_dir)
+print(record_dir)
 
-#%%
+# %%
 #
 # For this simple offline recording, the goal is to start a
 # `~bsl.StreamRecorder`, send an event on a trigger to mark the beginning of
@@ -88,11 +88,11 @@ print (record_dir)
 #     wait for the recording to start. This behavior can be changed with the
 #     ``blocking`` argument.
 
-recorder = StreamRecorder(record_dir, fname='example-resting-state')
+recorder = StreamRecorder(record_dir, fname="example-resting-state")
 recorder.start()
-print (recorder)
+print(recorder)
 
-#%%
+# %%
 #
 # Now that a `~bsl.StreamRecorder` is started and is acquiring data, a trigger
 # to mark the beginning of the segment of interest is created. For this
@@ -101,23 +101,23 @@ print (recorder)
 
 trigger = MockTrigger()
 
-#%%
+# %%
 #
 # To mark the beginning of the segment of interest in the recording, a signal
 # is sent on the trigger. For this example, the event value (1) is used.
 
 trigger.signal(1)
 
-#%%
+# %%
 #
 # Finally, after the appropriate duration, the recording is interrupted.
 
 time.sleep(2)  # 2 seconds duration
 del trigger
 recorder.stop()
-print (recorder)
+print(recorder)
 
-#%%
+# %%
 #
 # A `~bsl.StreamRecorder` records data in ``.pcl`` format. This file can be
 # open with `pickle.load`, and is automatically converted to a `~mne.io.Raw`
@@ -129,13 +129,13 @@ print (recorder)
 # Where ``stream`` is the name of the recorded LSL stream. Thus, one file is
 # created for each stream being recorded.
 
-fname = record_dir / 'fif' / 'example-resting-state-StreamPlayer-raw.fif'
+fname = record_dir / "fif" / "example-resting-state-StreamPlayer-raw.fif"
 raw = mne.io.read_raw_fif(fname, preload=True)
-print (raw)
-events = mne.find_events(raw, stim_channel='TRIGGER')
-print (events)
+print(raw)
+events = mne.find_events(raw, stim_channel="TRIGGER")
+print(events)
 
-#%%
+# %%
 #
 # As for the `~bsl.StreamPlayer`, the `~bsl.StreamRecorder` can be used as a
 # context manager. The context manager takes care of starting and stopping the
@@ -144,7 +144,7 @@ print (events)
 with StreamRecorder(record_dir):
     time.sleep(1)
 
-#%%
+# %%
 #
 # As for the `~bsl.StreamPlayer`, the `~bsl.StreamRecorder` can be started via
 # command-line when a LSL stream is accessible on the network.
@@ -164,7 +164,7 @@ with StreamRecorder(record_dir):
 #    :alt: StreamRecorder
 #    :align: center
 
-#%%
+# %%
 # | Stop the mock LSL stream used in this example.
 
 player.stop()
