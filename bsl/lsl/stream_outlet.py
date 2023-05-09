@@ -107,17 +107,15 @@ class StreamOutlet:
             ), "'x' must be an array if numericals are pushed."
             if x.ndim != 1:
                 raise ValueError(
-                    "The sample to push 'x' must contain one element per "
-                    "channel. Thus, the shape should be (n_channels,), "
-                    f"{x.shape} is invalid."
+                    "The sample to push 'x' must contain one element per channel. "
+                    f"Thus, the shape should be (n_channels,), {x.shape} is invalid."
                 )
             npdtype = fmt2numpy[self._dtype]
             x = x if x.dtype == npdtype else x.astype(npdtype)
         if len(x) != self._n_channels:
             raise ValueError(
-                "The sample to push 'x' must contain one element per channel. "
-                f"Thus, {self._n_channels} elements are expected. {len(x)} "
-                "is invalid."
+                "The sample to push 'x' must contain one element per channel. Thus, "
+                f"{self._n_channels} elements are expected. {len(x)} is invalid."
             )
 
         handle_error(
@@ -158,9 +156,9 @@ class StreamOutlet:
             n_samples = len(x)
             if n_samples % self._n_channels != 0:  # quick incomplete test
                 raise ValueError(
-                    "The samples to push 'x' must contain one element per "
-                    "channel at each time-point. Thus, the shape should be "
-                    "(n_samples, n_channels)."
+                    "The samples to push 'x' must contain one element per channel at "
+                    "each time-point. Thus, the shape should be (n_samples, "
+                    "n_channels)."
                 )
             x = [v.encode("utf-8") for v in x]
             n_samples = len(x)
@@ -172,8 +170,8 @@ class StreamOutlet:
             if x.ndim != 2 or x.shape[1] != self._n_channels:
                 raise ValueError(
                     "The samples to push 'x' must contain one element per channel at "
-                    "each time-point. Thus, the shape should be "
-                    f"(n_samples, n_channels), {x.shape} is invalid."
+                    "each time-point. Thus, the shape should be (n_samples, "
+                    f"n_channels), {x.shape} is invalid."
                 )
             npdtype = fmt2numpy[self._dtype]
             x = x if x.dtype == npdtype else x.astype(npdtype)
