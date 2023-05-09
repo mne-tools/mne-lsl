@@ -9,8 +9,8 @@ from .load_liblsl import lib
 # -----------------
 # Supported formats
 # -----------------
-# Value formats supported by LSL. LSL data streams are sequences of samples,
-# each of which is a same-size vector of values with one of the below types.
+# Value formats supported by LSL. LSL data streams are sequences of samples, each of
+# which is a same-size vector of values with one of the below types.
 
 string2fmt = {
     "float32": c_float,

@@ -31,9 +31,8 @@ def protocol_version() -> int:
 
     Notes
     -----
-    Clients with different minor versions are protocol-compatible with each
-    other, while clients with different major versions will refuse to work
-    together.
+    Clients with different minor versions are protocol-compatible with each other, while
+    clients with different major versions will refuse to work together.
     """
     return lib.lsl_protocol_version()
 
@@ -58,19 +57,19 @@ def resolve_streams(
 ) -> List[_BaseStreamInfo]:
     """Resolve streams on the network.
 
-    This function returns all currently available streams from any outlet on
-    the network. The network is usually the subnet specified at the local
-    router, but may also include a group of machines visible to each other via
-    multicast packets (given that the network supports it), or list of
-    hostnames. These details may optionally be customized by the experimenter
-    in a configuration file (see Network Connectivity in the LSL wiki).
+    This function returns all currently available streams from any outlet on the
+    network. The network is usually the subnet specified at the local router, but may
+    also include a group of machines visible to each other via multicast packets (given
+    that the network supports it), or list of hostnames. These details may optionally be
+    customized by the experimenter in a configuration file (see Network Connectivity in
+    the LSL wiki).
 
     Parameters
     ----------
     timeout : float
         Timeout (in seconds) of the operation. If this is too short (e.g.
-        ``< 0.5 seconds``) only a subset (or none) of the outlets that are
-        present on the network may be returned.
+        ``< 0.5 seconds``) only a subset (or none) of the outlets that are present on
+        the network may be returned.
     name : str | None
         Restrict the selected streams to this name.
     stype : str | None
@@ -78,21 +77,20 @@ def resolve_streams(
     source_id : str | None
         Restrict the selected stream to this source ID.
     minimum : int
-        Minimum number of stream to return where restricting the selection. As
-        soon as this minimum is hit, the search will end.
+        Minimum number of stream to return where restricting the selection. As soon as
+        this minimum is hit, the search will end.
 
     Returns
     -------
     sinfos : list
-        List of `~bsl.lsl.StreamInfo` objects found on the network.
-        While a `~bsl.lsl.StreamInfo` is not bound to an Inlet, the description
-        field remains empty.
+        List of `~bsl.lsl.StreamInfo` objects found on the network. While a
+        `~bsl.lsl.StreamInfo` is not bound to an Inlet, the description field remains
+        empty.
 
     Notes
     -----
-    If multiple restrinction are provided, the network must be queried once for
-    each restriction. Thus, the true timeout is multiplied by the non ``None``
-    restrictions.
+    If multiple restrinction are provided, the network must be queried once for each
+    restriction. Thus, the true timeout is multiplied by the non ``None`` restrictions.
     """
     check_type(timeout, ("numeric",), "timeout")
     if timeout <= 0:
