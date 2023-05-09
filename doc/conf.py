@@ -153,6 +153,7 @@ numpydoc_xref_aliases = {
 }
 numpydoc_xref_ignore = {
     "hex",
+    "n_channels",
     "n_samples",
     "of",
     "shape",
