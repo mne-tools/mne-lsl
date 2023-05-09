@@ -90,6 +90,9 @@ class StreamInlet:
                     check_type(flag, (str,), "processing_flag")
                     check_value(flag, post_processing_flags, flag)
                 # bitwise OR between the flags
+                processing_flags = [
+                    post_processing_flags[key] for key in processing_flags
+                ]
                 processing_flags = reduce(lambda x, y: x | y, processing_flags)
             assert processing_flags > 0  # sanity-check
             handle_error(lib.lsl_set_postprocessing(self._obj, processing_flags))
