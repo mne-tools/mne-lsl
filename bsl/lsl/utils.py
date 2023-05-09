@@ -218,7 +218,7 @@ def _check_timeout(timeout: Optional[float]) -> float:
         raise TypeError("The argument 'timeout' must be a strictly positive number.")
     if raise_:
         raise ValueError(
-            "The argument 'timeout' must be a strictly positive number. "
-            f"{timeout} is invalid."
+            f"The argument 'timeout' must be a strictly positive number. {timeout} is "
+            "invalid."
         )
     return timeout
