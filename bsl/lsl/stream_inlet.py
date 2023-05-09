@@ -26,19 +26,18 @@ class StreamInlet:
     sinfo : StreamInfo
         Description of the stream to connect to.
     chunk_size : int ``≥ 1`` | ``0``
-        The desired chunk granularity in samples. By default, the
-        ``chunk_size`` defined by the sender (outlet) is used.
+        The desired chunk granularity in samples. By default, the ``chunk_size`` defined
+        by the sender (outlet) is used.
     max_buffered : float ``≥ 0``
-        The maximum amount of data to buffer in the Outlet.
-        The number of samples buffered is ``max_buffered * 100`` if the
-        sampling rate is irregular, else it's ``max_buffered`` seconds.
+        The maximum amount of data to buffer in the Outlet. The number of samples
+        buffered is ``max_buffered * 100`` if the sampling rate is irregular, else it's
+        ``max_buffered`` seconds.
     recover : bool
-        Attempt to silently recover lost streams that are recoverable (requires
-        a ``source_id`` to be specified in the `~bsl.lsl.StreamInfo`).
+        Attempt to silently recover lost streams that are recoverable (requires a
+        ``source_id`` to be specified in the `~bsl.lsl.StreamInfo`).
     processing_flags : list of str | ``'all'`` | None
-        Set the post-processing options. By default, post-processing is
-        disabled. Any combination of the processing flags is valid. The
-        available flags are:
+        Set the post-processing options. By default, post-processing is disabled. Any
+        combination of the processing flags is valid. The available flags are:
 
         * ``'clocksync'``: Automatic clock synchronization, equivalent to
           manually adding the estimated `~bsl.lsl.StreamInlet.time_correction`.
@@ -121,22 +120,21 @@ class StreamInlet:
     def open_stream(self, timeout: Optional[float] = None) -> None:
         """Subscribe to a data stream.
 
-        All samples pushed in at the other end from this moment onwards will be
-        queued and eventually be delivered in response to
-        `~bsl.lsl.StreamInlet.pull_sample` or `~bsl.lsl.StreamInlet.pull_chunk`
-        calls. Pulling a sample without subscribing to the stream with this
-        method is permitted (the stream will be opened implicitly).
+        All samples pushed in at the other end from this moment onwards will be queued
+        and eventually be delivered in response to `~bsl.lsl.StreamInlet.pull_sample` or
+        `~bsl.lsl.StreamInlet.pull_chunk` calls. Pulling a sample without subscribing to
+        the stream with this method is permitted (the stream will be opened implicitly).
 
         Parameters
         ----------
         timeout : float | None
-            Optional timeout (in seconds) of the operation. By default, timeout
-            is disabled.
+            Optional timeout (in seconds) of the operation. By default, timeout is
+            disabled.
 
         Notes
         -----
-        Opening a stream is a non-blocking operation. Thus, samples pushed on
-        an outlet while the stream is not yet open will be missed.
+        Opening a stream is a non-blocking operation. Thus, samples pushed on an outlet
+        while the stream is not yet open will be missed.
         """
         timeout = _check_timeout(timeout)
         errcode = c_int()
@@ -151,16 +149,16 @@ class StreamInlet:
         """Drop the current data stream.
 
         All samples that are still buffered or in flight will be dropped and
-        transmission and buffering of data for this inlet will be stopped.
-        This method is used if an application stops being interested in data
-        from a source (temporarily or not) but keeps the outlet alive, to not
-        waste unnecessary system and network resources.
+        transmission and buffering of data for this inlet will be stopped. This method
+        is used if an application stops being interested in data from a source
+        (temporarily or not) but keeps the outlet alive, to not waste unnecessary system
+        and network resources.
 
         .. warning::
 
             At the moment, ``liblsl`` is released in version 1.16. Closing and
-            re-opening a stream does not work and new samples pushed to the
-            outlet do not arrive at the inlet. c.f. this
+            re-opening a stream does not work and new samples pushed to the outlet do
+            not arrive at the inlet. c.f. this
             `github issue <https://github.com/sccn/liblsl/issues/180>`_.
         """
         lib.lsl_close_stream(self._obj)
@@ -168,24 +166,23 @@ class StreamInlet:
     def time_correction(self, timeout: Optional[float] = None) -> float:
         """Retrieve an estimated time correction offset for the given stream.
 
-        The first call to this function takes several milliseconds until a
-        reliable first estimate is obtained. Subsequent calls are instantaneous
-        (and rely on periodic background updates). The precision of these
-        estimates should be below 1 ms (empirically within +/-0.2 ms).
+        The first call to this function takes several milliseconds until a reliable
+        first estimate is obtained. Subsequent calls are instantaneous (and rely on
+        periodic background updates). The precision of these estimates should be below
+        1 ms (empirically within +/-0.2 ms).
 
         Parameters
         ----------
         timeout : float | None
-            Optional timeout (in seconds) of the operation. By default, timeout
-            is disabled.
+            Optional timeout (in seconds) of the operation. By default, timeout is
+            disabled.
 
         Returns
         -------
         time_correction : float
-            Current estimate of the time correction. This number needs to be
-            added to a timestamp that was remotely generated via
-            ``local_clock()`` to map it into the local clock domain of the
-            client machine.
+            Current estimate of the time correction. This number needs to be added to a
+            timestamp that was remotely generated via ``local_clock()`` to map it into
+            the local clock domain of the client machine.
         """
         timeout = _check_timeout(timeout)
         errcode = c_int()
@@ -199,29 +196,28 @@ class StreamInlet:
         Parameters
         ----------
         timeout : float | None
-            Optional timeout (in seconds) of the operation. None correspond to
-            a very large value, effectively disabling the timeout. ``0.`` makes
-            this function non-blocking even if no sample is available. See
-            notes for additional details.
-            Optional timeout (in seconds) of the operation. By default, timeout
-            is disabled.
+            Optional timeout (in seconds) of the operation. None correspond to a very
+            large value, effectively disabling the timeout. ``0.`` makes this function
+            non-blocking even if no sample is available. See notes for additional
+            details.
 
         Returns
         -------
         sample : list | array of shape (n_channels,) | None
-            If the channel format is ``'string^``, returns a list of values for
-            each channel. Else, returns a numpy array of shape
-            ``(n_channels,)``.
+            If the channel format is ``'string^``, returns a list of values for each
+            channel. Else, returns a numpy array of shape ``(n_channels,)``.
         timestamp : float | None
-            Acquisition timestamp on the remote machine. To map the timestamp
-            to the local clock of the client machine, add the estimated time
-            correction return by `~bsl.lsl.StreamInlet.time_correction`.
-            None if no sample was retrieved.
+            Acquisition timestamp on the remote machine. To maOptional timeout (in seconds) of the operation. None correspond to a very
+            large value, effectively disabling the timeout. ``0.`` makes this function
+            non-blocking even if no sample is available. See notes for additional
+            details.p the timestamp to the
+            local clock of the client machine, add the estimated time correction return
+            by `~bsl.lsl.StreamInlet.time_correction`. None if no sample was retrieved.
 
         Notes
         -----
-        Note that if ``timeout`` is reached and no sample is available, empty
-        ``sample`` arrays is returned.
+        Note that if ``timeout`` is reached and no sample is available, None is returned
+        in ``sample`` and ``timestamp``.
         """
         timeout = _check_timeout(timeout)
 
@@ -256,36 +252,34 @@ class StreamInlet:
         Parameters
         ----------
         timeout : float | None
-            Optional timeout (in seconds) of the operation. None correspond to
-            a very large value, effectively disabling the timeout. ``0.`` makes
-            this function non-blocking even if no sample is available. See
-            notes for additional details.
+            Optional timeout (in seconds) of the operation. None correspond to a very
+            large value, effectively disabling the timeout. ``0.`` makes this function
+            non-blocking even if no sample is available. See notes for additional
+            details.
         max_samples : int
-            Maximum number of samples to return. The function is blocking until
-            this number of samples is available or until ``timeout`` is
-            reached. See notes for additional details.
+            Maximum number of samples to return. The function is blocking until this
+            number of samples is available or until ``timeout`` is reached. See notes
+            for additional details.
 
         Returns
         -------
         samples : list of list | array of shape (n_samples, n_channels) | None
-            If the channel format is ``'string'``, returns a list of list of
-            values for each channel and sample. Each sublist represents an
-            entire channel. Else, returns a numpy array of shape
-            ``(n_samples, n_channels)``.
+            If the channel format is ``'string'``, returns a list of list of values for
+            each channel and sample. Each sublist represents an entire channel. Else,
+            returns a numpy array of shape ``(n_samples, n_channels)``.
         timestamps : array of shape (n_samples,) | None
             Acquisition timestamps on the remote machine.
 
         Notes
         -----
-        The argument ``timeout`` and ``max_samples`` control the blocking
-        behavior of the pull operation. If the number of available sample is
-        inferior to ``n_samples``, the pull operation is blocking until
-        ``timeout`` is reached. Thus, to return all the available samples at a
-        given time, regardless of the number of samples requested, ``timeout``
-        must be set to ``0``.
+        The argument ``timeout`` and ``max_samples`` control the blocking behavior of
+        the pull operation. If the number of available sample is inferior to
+        ``n_samples``, the pull operation is blocking until ``timeout`` is reached.
+        Thus, to return all the available samples at a given time, regardless of the
+        number of samples requested, ``timeout`` must be set to ``0``.
 
-        Note that if ``timeout`` is reached and no sample is available, empty
-        ``samples`` and ``timestamps`` arrays are returned.
+        Note that if ``timeout`` is reached and no sample is available, None is returned
+        in ``samples`` and ``timestamps``.
         """
         timeout = _check_timeout(timeout)
         if not isinstance(max_samples, int):
@@ -342,7 +336,10 @@ class StreamInlet:
         # 192 ns ± 1.11 ns per loop
         # requires numpy ≥ 1.20
         timestamps = np.frombuffer(ts_buffer, dtype=np.float64)[:n_samples]
-        return samples, timestamps
+        if timestamps.size == 0:
+            return None, None
+        else:
+            return samples, timestamps
 
     def flush(self) -> int:
         """Drop all queued and not-yet pulled samples.
@@ -404,8 +401,8 @@ class StreamInlet:
         Parameters
         ----------
         timeout : float | None
-            Optional timeout (in seconds) of the operation. By default, timeout
-            is disabled.
+            Optional timeout (in seconds) of the operation. By default, timeout is
+            disabled.
 
         Returns
         -------
