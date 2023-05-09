@@ -25,12 +25,13 @@ Enhancements
 Bugs
 ----
 
-- Correctly install linux dependencies during publication workflow
+- Install linux dependencies during publication workflow
+- Fix handling of processing flags in `~bsl.lsl.StreamInlet`
 
 API and behavior changes
 ------------------------
 
-- xxx
+- `bsl.lsl.StreamInlet.pull_sample` now returns an empty list or array if no sample is available instead of ``None``
 
 Authors
 -------
