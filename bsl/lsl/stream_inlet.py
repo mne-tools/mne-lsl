@@ -210,10 +210,7 @@ class StreamInlet:
             If the channel format is ``'string^``, returns a list of values for each
             channel. Else, returns a numpy array of shape ``(n_channels,)``.
         timestamp : float | None
-            Acquisition timestamp on the remote machine. To maOptional timeout (in seconds) of the operation. None correspond to a very
-            large value, effectively disabling the timeout. ``0.`` makes this function
-            non-blocking even if no sample is available. See notes for additional
-            details.p the timestamp to the
+            Acquisition timestamp on the remote machine. To map the timestamp to the
             local clock of the client machine, add the estimated time correction return
             by `~bsl.lsl.StreamInlet.time_correction`. None if no sample was retrieved.
 
