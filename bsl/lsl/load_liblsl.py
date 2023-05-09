@@ -50,8 +50,8 @@ def _find_liblsl_env() -> Optional[CDLL]:
     Returns
     -------
     lib : CDLL | None
-        Loaded binary LSL library. None if the value retrieved in the
-        environment variable was not valid or yielded an invalid library.
+        Loaded binary LSL library. None if the value retrieved in the environment
+        variable was not valid or yielded an invalid library.
     """
     if "LSL_LIB" not in os.environ:
         return None
@@ -59,9 +59,8 @@ def _find_liblsl_env() -> Optional[CDLL]:
     libpath = Path(os.environ["LSL_LIB"])
     if libpath.suffix != _PLATFORM_SUFFIXES[platform.system()]:
         logger.error(
-            "The LIBLSL '%s' provided in the environment variable "
-            "'LSL_LIB' ends with '%s' which is different from the expected "
-            "extension for this OS.",
+            "The LIBLSL '%s' provided in the environment variable 'LSL_LIB' ends with "
+            "'%s' which is different from the expected extension for this OS.",
             libpath,
             libpath.suffix,
         )
@@ -70,15 +69,15 @@ def _find_liblsl_env() -> Optional[CDLL]:
         libpath, version = _attempt_load_liblsl(libpath)
         if version is None:
             logger.error(
-                "The LIBLSL '%s' provided in the environment variable "
-                "'LSL_LIB' can not be loaded.",
+                "The LIBLSL '%s' provided in the environment variable 'LSL_LIB' can "
+                "not be loaded.",
                 libpath,
             )
         elif version < _VERSION_MIN:
             logger.error(
-                "The LIBLSL '%s' provided in the environment variable "
-                "'LSL_LIB' is outdated. The version is %i.%i while the "
-                "minimum version required by BSL is %i.%i.",
+                "The LIBLSL '%s' provided in the environment variable 'LSL_LIB' is "
+                "outdated. The version is %i.%i while the minimum version required by "
+                "BSL is %i.%i.",
                 libpath,
                 version // 100,
                 version % 100,
@@ -88,10 +87,10 @@ def _find_liblsl_env() -> Optional[CDLL]:
             version = None
         elif _VERSION_MAX < version:
             logger.warning(
-                "The LIBLSL '%s' provided in the environment variable "
-                "'LSL_LIB' is not officially supported. The version is %i.%i "
-                "while the maximum supported version required by BSL is "
-                "%i.%i. Use this version at your own risk.",
+                "The LIBLSL '%s' provided in the environment variable 'LSL_LIB' is not "
+                "officially supported. The version is %i.%i while the maximum "
+                "supported version required by BSL is %i.%i. Use this version at your "
+                "own risk.",
                 libpath,
                 version // 100,
                 version % 100,
@@ -100,8 +99,8 @@ def _find_liblsl_env() -> Optional[CDLL]:
             )
     else:
         logger.error(
-            "The LIBLSL path '%s' provided in the environment variable "
-            "'LSL_LIB' does not exists.",
+            "The LIBLSL path '%s' provided in the environment variable 'LSL_LIB' does "
+            "not exists.",
             libpath,
         )
         libpath = None
@@ -164,18 +163,17 @@ def _find_liblsl_bsl() -> Optional[CDLL]:
                 raise RuntimeError(
                     "The liblsl library packaged with BSL supports "
                     f"{', '.join(_SUPPORTED_DISTRO)} based distributions. "
-                    f"{distro.name()} is not supported. Please build the "
-                    "liblsl library from source and provide it in the "
-                    "environment variable LSL_LIB."
+                    f"{distro.name()} is not supported. Please build the liblsl "
+                    "library from source and provide it in the environment variable "
+                    "LSL_LIB."
                 )
         if distro.version() not in _SUPPORTED_DISTRO[distro_like]:
             raise RuntimeError(
                 "The liblsl library packaged with BSL supports distro_like "
                 "based distributions on versions "
                 f"{', '.join(_SUPPORTED_DISTRO[distro_like])}. Version "
-                f"{distro.version()} is not supported. Please build the "
-                "liblsl library from source and provide it in the environment "
-                "variable LSL_LIB."
+                f"{distro.version()} is not supported. Please build the liblsl library "
+                "from source and provide it in the environment variable LSL_LIB."
             )
         libname += f"{distro.version()}_amd64.so"
 
@@ -332,8 +330,8 @@ def _set_return_types(lib: CDLL) -> CDLL:
         lib.lsl_create_continuous_resolver_byprop.restype = c_void_p
     except Exception:
         logger.info(
-            "[LIBLSL] Continuous resolver functions not available in your "
-            "liblsl version."
+            "[LIBLSL] Continuous resolver functions not available in your liblsl "
+            "version."
         )
 
     return lib
