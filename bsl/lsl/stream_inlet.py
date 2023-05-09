@@ -203,7 +203,7 @@ class StreamInlet:
 
         Returns
         -------
-        sample : list | array of shape (n_channels,) | None
+        sample : list | array of shape (n_channels,)
             If the channel format is ``'string^``, returns a list of values for each
             channel. Else, returns a numpy array of shape ``(n_channels,)``.
         timestamp : float | None
@@ -238,7 +238,7 @@ class StreamInlet:
             else:
                 sample = np.frombuffer(self._buffer_data[1], dtype=self._dtype)
         else:
-            sample = None
+            sample = [] if self._dtype == c_char_p else np.empty(0, dtype=self._dtype)
             timestamp = None
         return sample, timestamp
 
@@ -263,11 +263,11 @@ class StreamInlet:
 
         Returns
         -------
-        samples : list of list | array of shape (n_samples, n_channels) | None
+        samples : list of list | array of shape (n_samples, n_channels)
             If the channel format is ``'string'``, returns a list of list of values for
             each channel and sample. Each sublist represents an entire channel. Else,
             returns a numpy array of shape ``(n_samples, n_channels)``.
-        timestamps : array of shape (n_samples,) | None
+        timestamps : array of shape (n_samples,)
             Acquisition timestamps on the remote machine.
 
         Notes
@@ -278,8 +278,8 @@ class StreamInlet:
         Thus, to return all the available samples at a given time, regardless of the
         number of samples requested, ``timeout`` must be set to ``0``.
 
-        Note that if ``timeout`` is reached and no sample is available, None is returned
-        in ``samples`` and ``timestamps``.
+        Note that if ``timeout`` is reached and no sample is available, empty
+        ``samples`` and ``timestamps`` arrays are returned.
         """
         timeout = _check_timeout(timeout)
         if not isinstance(max_samples, int):
@@ -336,10 +336,7 @@ class StreamInlet:
         # 192 ns ± 1.11 ns per loop
         # requires numpy ≥ 1.20
         timestamps = np.frombuffer(ts_buffer, dtype=np.float64)[:n_samples]
-        if timestamps.size == 0:
-            return None, None
-        else:
-            return samples, timestamps
+        return samples, timestamps
 
     def flush(self) -> int:
         """Drop all queued and not-yet pulled samples.
