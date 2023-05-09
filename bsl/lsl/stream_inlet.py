@@ -216,8 +216,8 @@ class StreamInlet:
 
         Notes
         -----
-        Note that if ``timeout`` is reached and no sample is available, None is returned
-        in ``sample`` and ``timestamp``.
+        Note that if ``timeout`` is reached and no sample is available, an empty
+        ``sample`` is returned and ``timestamp`` is set to None.
         """
         timeout = _check_timeout(timeout)
 
