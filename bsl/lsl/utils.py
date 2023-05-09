@@ -8,11 +8,11 @@ from .load_liblsl import lib
 class XMLElement:
     """A lightweight XML element tree modeling the .desc() field of StreamInfo.
 
-    Has a name and can have multiple named children or have text content as
-    value; attributes are omitted. Insider note: The interface is modeled after
-    a subset of pugixml's node type and is compatible with it. See also
-    http://pugixml.googlecode.com/svn/tags/latest/docs/manual/access.html for
-    additional documentation.
+    Has a name and can have multiple named children or have text content as value;
+    attributes are omitted. Insider note: The interface is modeled after a subset of
+    pugixml's node type and is compatible with it. See also
+    http://pugixml.googlecode.com/svn/tags/latest/docs/manual/access.html for additional
+    documentation.
     """
 
     def __init__(self, handle):
@@ -35,8 +35,7 @@ class XMLElement:
     def next_sibling(self, name=None):
         """Get the next sibling in the children list of the parent node.
 
-        If a name is provided, the next sibling with the given name is
-        returned.
+        If a name is provided, the next sibling with the given name is returned.
         """
         if name is None:
             return XMLElement(lib.lsl_next_sibling(self.e))
@@ -46,8 +45,7 @@ class XMLElement:
     def previous_sibling(self, name=None):
         """Get the previous sibling in the children list of the parent node.
 
-        If a name is provided, the previous sibling with the given name is
-        returned.
+        If a name is provided, the previous sibling with the given name is returned.
         """
         if name is None:
             return XMLElement(lib.lsl_previous_sibling(self.e))
@@ -81,8 +79,8 @@ class XMLElement:
     def child_value(self, name=None):
         """Get child value (value of the first child that is text).
 
-        If a name is provided, then the value of the first child with the
-        given name is returned.
+        If a name is provided, then the value of the first child with the given name is
+        returned.
         """
         if name is None:
             res = lib.lsl_child_value(self.e)
@@ -92,16 +90,16 @@ class XMLElement:
 
     # -- Modification ---------------------------------------------------------
     def append_child_value(self, name, value):  # noqa: D205, D400
-        """Append a child node with a given name, which has a (nameless)
-        plain-text child with the given text value.
+        """Append a child node with a given name, which has a (nameless) plain-text
+        child with the given text value.
         """
         return XMLElement(
             lib.lsl_append_child_value(self.e, str.encode(name), str.encode(value))
         )
 
     def prepend_child_value(self, name, value):  # noqa: D205, D400
-        """Prepend a child node with a given name, which has a (nameless)
-        plain-text child with the given text value.
+        """Prepend a child node with a given name, which has a (nameless) plain-text
+        child with the given text value.
         """
         return XMLElement(
             lib.lsl_prepend_child_value(self.e, str.encode(name), str.encode(value))
@@ -208,8 +206,7 @@ def _check_timeout(timeout: Optional[float]) -> float:
     Returns
     -------
     timeout : float
-        Timeout (in seconds). If None was provided, a very large float is
-        provided.
+        Timeout (in seconds). If None was provided, a very large float is returned.
     """
     # with check_type, the execution takes 800-900 ns.
     # with the try/except below, the execution takes 110 ns.
