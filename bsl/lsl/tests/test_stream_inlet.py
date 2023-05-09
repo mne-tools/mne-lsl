@@ -1,5 +1,6 @@
 import time
 import uuid
+from itertools import product
 
 import numpy as np
 import pytest
@@ -34,7 +35,7 @@ def test_pull_numerical_sample(dtype_str, dtype):
         _test_numerical_data(data, x, dtype, ts)
         data, ts = inlet.pull_sample(timeout=0)
         assert ts is None
-        assert data is None
+        assert data.size == 0
         # test push/pull with wrong dtype
         outlet.push_sample(x.astype(np.float64 if dtype != np.float64 else np.float32))
         data, ts = inlet.pull_sample(timeout=5)
@@ -43,11 +44,11 @@ def test_pull_numerical_sample(dtype_str, dtype):
         raise error
     finally:
         try:
-            del outlet
+            del inlet
         except Exception:
             pass
         try:
-            del inlet
+            del outlet
         except Exception:
             pass
 
@@ -69,16 +70,16 @@ def test_pull_str_sample():
         assert data == x
         data, ts = inlet.pull_sample(timeout=0)
         assert ts is None
-        assert data is None
+        assert isinstance(data, list) and len(data) == 0
     except Exception as error:
         raise error
     finally:
         try:
-            del outlet
+            del inlet
         except Exception:
             pass
         try:
-            del inlet
+            del outlet
         except Exception:
             pass
 
@@ -130,11 +131,11 @@ def test_pull_numerical_chunk(dtype_str, dtype):
         raise error
     finally:
         try:
-            del outlet
+            del inlet
         except Exception:
             pass
         try:
-            del inlet
+            del outlet
         except Exception:
             pass
 
