@@ -207,7 +207,7 @@ class StreamInlet:
         Returns
         -------
         sample : list | array of shape (n_channels,)
-            If the channel format is ``'string^``, returns a list of values for each
+            If the channel format is ``'string``, returns a list of values for each
             channel. Else, returns a numpy array of shape ``(n_channels,)``.
         timestamp : float | None
             Acquisition timestamp on the remote machine. To map the timestamp to the
