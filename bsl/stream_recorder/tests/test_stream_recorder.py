@@ -187,7 +187,6 @@ def test_arg_fif_subdir(tmp_path):
     dataset = eeg_resting_state
 
     with StreamPlayer("StreamPlayer", dataset.data_path()):
-
         # False
         fif_subdir = False
 
@@ -239,7 +238,6 @@ def test_arg_verbose(tmp_path):
     fif_subdir = False
 
     with StreamPlayer("StreamPlayer", dataset.data_path()):
-
         # False
         verbose = False
 
@@ -304,15 +302,15 @@ def test_properties(tmp_path):
         assert recorder.fif_subdir is False
         assert recorder.verbose is False
 
-        with pytest.raises(AttributeError, match="can't set attribute"):
+        with pytest.raises(AttributeError):
             recorder.record_dir = "new path"
-        with pytest.raises(AttributeError, match="can't set attribute"):
+        with pytest.raises(AttributeError):
             recorder.fname = "new fname"
-        with pytest.raises(AttributeError, match="can't set attribute"):
+        with pytest.raises(AttributeError):
             recorder.stream_name = "new stream name"
-        with pytest.raises(AttributeError, match="can't set attribute"):
+        with pytest.raises(AttributeError):
             recorder.fif_subdir = True
-        with pytest.raises(AttributeError, match="can't set attribute"):
+        with pytest.raises(AttributeError):
             recorder.verbose = True
 
         recorder.start(blocking=True)
@@ -323,15 +321,15 @@ def test_properties(tmp_path):
         assert recorder.fif_subdir is False
         assert recorder.verbose is False
 
-        with pytest.raises(AttributeError, match="can't set attribute"):
+        with pytest.raises(AttributeError):
             recorder.record_dir = "new path"
-        with pytest.raises(AttributeError, match="can't set attribute"):
+        with pytest.raises(AttributeError):
             recorder.fname = "new fname"
-        with pytest.raises(AttributeError, match="can't set attribute"):
+        with pytest.raises(AttributeError):
             recorder.stream_name = "new stream name"
-        with pytest.raises(AttributeError, match="can't set attribute"):
+        with pytest.raises(AttributeError):
             recorder.fif_subdir = True
-        with pytest.raises(AttributeError, match="can't set attribute"):
+        with pytest.raises(AttributeError):
             recorder.verbose = True
 
         time.sleep(record_duration)
@@ -343,15 +341,15 @@ def test_properties(tmp_path):
         assert recorder.fif_subdir is False
         assert recorder.verbose is False
 
-        with pytest.raises(AttributeError, match="can't set attribute"):
+        with pytest.raises(AttributeError):
             recorder.record_dir = "new path"
-        with pytest.raises(AttributeError, match="can't set attribute"):
+        with pytest.raises(AttributeError):
             recorder.fname = "new fname"
-        with pytest.raises(AttributeError, match="can't set attribute"):
+        with pytest.raises(AttributeError):
             recorder.stream_name = "new stream name"
-        with pytest.raises(AttributeError, match="can't set attribute"):
+        with pytest.raises(AttributeError):
             recorder.fif_subdir = True
-        with pytest.raises(AttributeError, match="can't set attribute"):
+        with pytest.raises(AttributeError):
             recorder.verbose = True
 
 

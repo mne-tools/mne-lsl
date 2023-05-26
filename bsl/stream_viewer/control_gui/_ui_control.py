@@ -53,12 +53,6 @@ class UI_MainWindow(object):  # noqa
         self.label_signal_xRange.setObjectName("label_signal_xRange")
         self.label_signal_xRange.setText("Scale")
 
-        # CAR
-        self.checkBox_car = QCheckBox(self.MainWidget)
-        self.checkBox_car.setGeometry(QRect(120, 0, 97, 22))
-        self.checkBox_car.setObjectName("checkBox_car")
-        self.checkBox_car.setText("CAR Filter")
-
         # BP Filter
         self.checkBox_bandpass = QCheckBox(self.MainWidget)
         self.checkBox_bandpass.setGeometry(QRect(120, 20, 141, 22))
@@ -66,38 +60,38 @@ class UI_MainWindow(object):  # noqa
         self.checkBox_bandpass.setText("Bandpass Filter")
 
         # Set bandpass 'LOW'
-        self.doubleSpinBox_bandpass_low = QDoubleSpinBox(
-            self.MainWidget
-        )  # Floats
-        self.doubleSpinBox_bandpass_low.setGeometry(QRect(250, 17, 69, 27))
+        self.doubleSpinBox_bandpass_low = QDoubleSpinBox(self.MainWidget)  # Floats
+        self.doubleSpinBox_bandpass_low.setGeometry(QRect(253, 17, 69, 27))
         self.doubleSpinBox_bandpass_low.setMinimum(0.1)
         self.doubleSpinBox_bandpass_low.setMaximum(1000.0)
         self.doubleSpinBox_bandpass_low.setSingleStep(1.0)
-        self.doubleSpinBox_bandpass_low.setProperty(
-            "value", 1.0
-        )  # Default 1Hz
-        self.doubleSpinBox_bandpass_low.setObjectName(
-            "doubleSpinBox_bandpass_low"
-        )
+        self.doubleSpinBox_bandpass_low.setProperty("value", 1.0)  # Default 1Hz
+        self.doubleSpinBox_bandpass_low.setObjectName("doubleSpinBox_bandpass_low")
 
         # Set bandpass 'HIGH'
         self.doubleSpinBox_bandpass_high = QDoubleSpinBox(self.MainWidget)
-        self.doubleSpinBox_bandpass_high.setGeometry(QRect(330, 17, 69, 27))
+        self.doubleSpinBox_bandpass_high.setGeometry(QRect(333, 17, 69, 27))
         self.doubleSpinBox_bandpass_high.setMinimum(1.0)
         self.doubleSpinBox_bandpass_high.setMaximum(1000.0)
         self.doubleSpinBox_bandpass_high.setSingleStep(1.0)
-        self.doubleSpinBox_bandpass_high.setProperty(
-            "value", 40.0
-        )  # Default 40Hz
-        self.doubleSpinBox_bandpass_high.setObjectName(
-            "doubleSpinBox_bandpass_high"
-        )
+        self.doubleSpinBox_bandpass_high.setProperty("value", 40.0)  # Default 40Hz
+        self.doubleSpinBox_bandpass_high.setObjectName("doubleSpinBox_bandpass_high")
+
+        # CAR
+        self.checkBox_car = QCheckBox(self.MainWidget)
+        self.checkBox_car.setGeometry(QRect(120, 0, 60, 22))
+        self.checkBox_car.setObjectName("checkBox_car")
+        self.checkBox_car.setText("CAR")
+
+        # Detrend
+        self.checkBox_detrend = QCheckBox(self.MainWidget)
+        self.checkBox_detrend.setGeometry(QRect(175, 0, 80, 22))
+        self.checkBox_detrend.setObjectName("checkBox_detrend")
+        self.checkBox_detrend.setText("Detrend")
 
         # Show LPT events
         self.checkBox_show_LPT_trigger_events = QCheckBox(self.MainWidget)
-        self.checkBox_show_LPT_trigger_events.setGeometry(
-            QRect(120, 80, 151, 22)
-        )
+        self.checkBox_show_LPT_trigger_events.setGeometry(QRect(120, 80, 151, 22))
         self.checkBox_show_LPT_trigger_events.setObjectName(
             "checkBox_show_LPT_trigger_events"
         )
@@ -125,27 +119,21 @@ class UI_MainWindow(object):  # noqa
         # Start recording
         self.pushButton_start_recording = QPushButton(self.MainWidget)
         self.pushButton_start_recording.setGeometry(QRect(390, 60, 61, 31))
-        self.pushButton_start_recording.setObjectName(
-            "pushButton_start_recording"
-        )
+        self.pushButton_start_recording.setObjectName("pushButton_start_recording")
         self.pushButton_start_recording.setText("REC")
         self.pushButton_start_recording.setEnabled(False)
 
         # Stop recording
         self.pushButton_stop_recording = QPushButton(self.MainWidget)
         self.pushButton_stop_recording.setGeometry(QRect(460, 60, 61, 31))
-        self.pushButton_stop_recording.setObjectName(
-            "pushButton_stop_recording"
-        )
+        self.pushButton_stop_recording.setObjectName("pushButton_stop_recording")
         self.pushButton_stop_recording.setText("Stop REC")
         self.pushButton_stop_recording.setEnabled(False)
 
         # Set recording directory
         self.pushButton_set_recording_dir = QPushButton(self.MainWidget)
         self.pushButton_set_recording_dir.setGeometry(QRect(310, 60, 71, 31))
-        self.pushButton_set_recording_dir.setObjectName(
-            "pushButton_set_recording_dir"
-        )
+        self.pushButton_set_recording_dir.setObjectName("pushButton_set_recording_dir")
         self.pushButton_set_recording_dir.setText("REC Dir")
 
         # Edit Line for the recording directory
@@ -157,9 +145,7 @@ class UI_MainWindow(object):  # noqa
         self.table_channels = QTableWidget(self.MainWidget)
         self.table_channels.setGeometry(QRect(4, 131, 525, 503))
         self.table_channels.setMaximumSize(QSize(529, 16777215))
-        self.table_channels.setEditTriggers(
-            QtWidgets.QAbstractItemView.NoEditTriggers
-        )
+        self.table_channels.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
         self.table_channels.setTextElideMode(QtCore.Qt.ElideMiddle)
         self.table_channels.setShowGrid(False)
         self.table_channels.setObjectName("table_channels")

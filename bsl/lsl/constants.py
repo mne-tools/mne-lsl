@@ -1,14 +1,6 @@
 import platform
 import struct
-from ctypes import (
-    c_byte,
-    c_char_p,
-    c_double,
-    c_float,
-    c_int,
-    c_longlong,
-    c_short,
-)
+from ctypes import c_byte, c_char_p, c_double, c_float, c_int, c_longlong, c_short
 
 import numpy as np
 
@@ -17,8 +9,8 @@ from .load_liblsl import lib
 # -----------------
 # Supported formats
 # -----------------
-# Value formats supported by LSL. LSL data streams are sequences of samples,
-# each of which is a same-size vector of values with one of the below types.
+# Value formats supported by LSL. LSL data streams are sequences of samples, each of
+# which is a same-size vector of values with one of the below types.
 
 string2fmt = {
     "float32": c_float,
@@ -64,9 +56,7 @@ if struct.calcsize("P") != 4 and platform.system() != "Windows":
 else:
 
     def push_sample_int64(*_):  # noqa: D103
-        raise NotImplementedError(
-            "int64 is not yet supported on your platform."
-        )
+        raise NotImplementedError("int64 is not yet supported on your platform.")
 
     pull_sample_int64 = push_chunk_int64 = pull_chunk_int64 = push_sample_int64
 

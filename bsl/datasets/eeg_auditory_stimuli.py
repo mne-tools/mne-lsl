@@ -1,7 +1,9 @@
+"""Sample EEG recording with 64 channels and 75 auditory stimuli."""
+
 import os
 from pathlib import Path
 
-from ..utils._logs import logger
+from ..utils.logs import logger
 from ._fetching import _hashfunc, fetch_file
 
 MD5 = "ea0d40643bdc1c88e2b808c7128a0eba"
@@ -11,10 +13,10 @@ PATH = Path("~/bsl_data/eeg_sample/auditory_stimuli-raw.fif").expanduser()
 
 
 def data_path():  # noqa
-    """
-    Path to a sample EEG dataset recorded on ANT Neuro Amplifier with 64
-    electrodes. The recording last 184 seconds and include 75 rest events (1)
-    lasting 1 second and 75 auditory stimuli events (4) lasting 0.8 second.
+    """Path to a sample EEG dataset recorded on ANT Neuro Amplifier.
+
+    Recording with 64 electrodes. The recording last 184 seconds and include 75 rest
+    events (1) lasting 1 second and 75 auditory stimuli events (4) lasting 0.8 second.
     If the dataset is not locally present, it is downloaded in the user home
     directory in the folder ``bsl_data/eeg_sample``.
 
@@ -32,9 +34,7 @@ def data_path():  # noqa
     if PATH.exists() and _hashfunc(PATH, hash_type="md5") == MD5:
         download = False
     elif PATH.exists() and not _hashfunc(PATH, hash_type="md5") == MD5:
-        logger.warning(
-            "Dataset existing but with different hash. Re-downloading."
-        )
+        logger.warning("Dataset existing but with different hash. Re-downloading.")
         download = True
     else:
         logger.info("Fetching dataset..")

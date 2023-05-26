@@ -5,9 +5,9 @@ import numpy as np
 
 from ..lsl import resolve_streams
 from ..utils import Timer
-from ..utils._checks import _check_type
+from ..utils._checks import check_type
 from ..utils._docs import fill_doc
-from ..utils._logs import logger
+from ..utils.logs import logger
 from ._stream import StreamEEG, StreamMarker
 
 
@@ -38,7 +38,8 @@ class StreamReceiver:
 
     @fill_doc
     def connect(self, stream_name=None, timeout=5, force=False):  # noqa
-        """
+        """Connect to the LSL streams.
+
         Search for the available streams on the LSL network and connect to the
         appropriate ones. If a LSL stream fulfills the requirements (name...),
         a connection is established.
@@ -54,9 +55,14 @@ class StreamReceiver:
         force : bool
             If ``True``, force reconnect if the StreamReceiver was already
             connected.
+
+        Returns
+        -------
+        success : bool
+            True if the connection was successful.
         """
-        _check_type(timeout, ("numeric",), item_name="timeout")
-        _check_type(force, (bool,), item_name="force")
+        check_type(timeout, ("numeric",), item_name="timeout")
+        check_type(force, (bool,), item_name="force")
 
         if not force and self._connected:
             return True
@@ -73,15 +79,12 @@ class StreamReceiver:
         if self._stream_name is None:
             logger.info("Looking for available LSL streaming servers...")
         else:
-            logger.info(
-                "Looking for server(s): '%s'...", ", ".join(self._stream_name)
-            )
+            logger.info("Looking for server(s): '%s'...", ", ".join(self._stream_name))
 
         watchdog = Timer()
         while watchdog.sec() <= timeout:
             streamInfos = resolve_streams()
             for streamInfo in streamInfos:
-
                 # connect to a specific amp only?
                 if (
                     self._stream_name is not None
@@ -109,9 +112,7 @@ class StreamReceiver:
             if self._connected:
                 break
         else:
-            logger.error(
-                "Connection timeout. Could not connect to an LSL stream."
-            )
+            logger.error("Connection timeout. Could not connect to an LSL stream.")
             return False
 
         for stream in self._streams:
@@ -123,9 +124,7 @@ class StreamReceiver:
                     ch_names = self._streams[stream].ch_list
                     sfreq = self._streams[stream].sample_rate
                     ch_types = ["eeg"] * len(ch_names)
-                    self._mne_infos[stream] = mne.create_info(
-                        ch_names, sfreq, ch_types
-                    )
+                    self._mne_infos[stream] = mne.create_info(ch_names, sfreq, ch_types)
                 else:
                     self._mne_infos[stream] = None
 
@@ -137,14 +136,13 @@ class StreamReceiver:
         """Display the information about the connected streams."""
         for stream in self._streams:
             logger.info(
-                "--------------------------------"
-                "--------------------------------"
+                "--------------------------------" "--------------------------------"
             )
             logger.info("The stream %s is connected to:", stream)
             self._streams[stream].show_info()
 
     def disconnect(self, stream_name=None):
-        """Disconnects the stream ``stream_name`` from the StreamReceiver.
+        """Disconnect the stream ``stream_name`` from the StreamReceiver.
 
         If ``stream_name`` is a `list`, disconnects all streams in the list.
         If ``stream_name`` is ``None``, disconnects all streams.
@@ -179,9 +177,7 @@ class StreamReceiver:
     def acquire(self):
         """Read data from the streams and fill their buffer using threading."""
         if not self._connected:
-            raise RuntimeError(
-                "StreamReceiver is not connected to any " "streams."
-            )
+            raise RuntimeError("StreamReceiver is not connected to any " "streams.")
 
         for stream in self._streams:
             if (
@@ -216,9 +212,7 @@ class StreamReceiver:
         %(receiver_get_unit)s
         """
         if not self._connected:
-            raise RuntimeError(
-                "StreamReceiver is not connected to any " "streams."
-            )
+            raise RuntimeError("StreamReceiver is not connected to any " "streams.")
 
         if stream_name is None and len(self._streams) == 1:
             stream_name = list(self._streams)[0]
@@ -231,19 +225,13 @@ class StreamReceiver:
         try:
             self._acquisition_threads[stream_name].join()
         except KeyError:
-            raise KeyError(
-                "StreamReceiver is not connected to '%s'." % stream_name
-            )
+            raise KeyError("StreamReceiver is not connected to '%s'." % stream_name)
         except AttributeError:
-            raise AttributeError(
-                ".acquire() must be called before .get_window()."
-            )
+            raise AttributeError(".acquire() must be called before .get_window().")
 
         winsize = self._streams[stream_name].buffer.winsize
         window = np.array(self._streams[stream_name].buffer.data[-winsize:])
-        timestamps = np.array(
-            self._streams[stream_name].buffer.timestamps[-winsize:]
-        )
+        timestamps = np.array(self._streams[stream_name].buffer.timestamps[-winsize:])
         if len(timestamps) != winsize:
             logger.warning(
                 "The buffer of %s does not contain enough samples. Returning "
@@ -253,9 +241,7 @@ class StreamReceiver:
 
         if len(timestamps) > 0:
             if bool(return_raw) and self._mne_infos[stream_name] is not None:
-                window = mne.io.RawArray(
-                    window.T, self._mne_infos[stream_name]
-                )
+                window = mne.io.RawArray(window.T, self._mne_infos[stream_name])
                 window._filenames = [f"BSL {stream_name}"]
             elif bool(return_raw) and self._mne_infos[stream_name] is None:
                 logger.warning(
@@ -295,9 +281,7 @@ class StreamReceiver:
         %(receiver_get_unit)s
         """
         if not self._connected:
-            raise RuntimeError(
-                "StreamReceiver is not connected to any " "streams."
-            )
+            raise RuntimeError("StreamReceiver is not connected to any " "streams.")
 
         if stream_name is None and len(self._streams) == 1:
             stream_name = list(self._streams)[0]
@@ -310,21 +294,15 @@ class StreamReceiver:
         try:
             self._acquisition_threads[stream_name].join()
         except KeyError:
-            raise KeyError(
-                "StreamReceiver is not connected to '%s'." % stream_name
-            )
+            raise KeyError("StreamReceiver is not connected to '%s'." % stream_name)
         except AttributeError:
-            raise AttributeError(
-                ".acquire() must be called before .get_buffer()."
-            )
+            raise AttributeError(".acquire() must be called before .get_buffer().")
 
         window = np.array(self._streams[stream_name].buffer.data)
         timestamps = np.array(self._streams[stream_name].buffer.timestamps)
         if len(self._streams[stream_name].buffer.timestamps) > 0:
             if bool(return_raw) and self._mne_infos[stream_name] is not None:
-                window = mne.io.RawArray(
-                    window.T, self._mne_infos[stream_name]
-                )
+                window = mne.io.RawArray(window.T, self._mne_infos[stream_name])
                 window._filenames = [f"BSL {stream_name}"]
             elif bool(return_raw) and self._mne_infos[stream_name] is None:
                 logger.warning(
@@ -388,9 +366,7 @@ class StreamReceiver:
             streams = str(tuple(self._streams))
         else:
             streams = (
-                "()"
-                if self._stream_name is None
-                else str(tuple(self._stream_name))
+                "()" if self._stream_name is None else str(tuple(self._stream_name))
             )
         repr_str = (
             f"<Receiver: {streams} | {status} | "
@@ -402,7 +378,7 @@ class StreamReceiver:
     @staticmethod
     def _check_bufsize(bufsize, winsize):
         """Check that bufsize is positive and bigger than the winsize."""
-        _check_type(bufsize, ("numeric",), item_name="bufsize")
+        check_type(bufsize, ("numeric",), item_name="bufsize")
         bufsize = float(bufsize)
         if bufsize <= 0:
             raise ValueError(
@@ -411,8 +387,7 @@ class StreamReceiver:
             )
         if bufsize < winsize:
             logger.error(
-                "Buffer size %.2f is smaller than window size. "
-                "Setting to %.2f.",
+                "Buffer size %.2f is smaller than window size. " "Setting to %.2f.",
                 bufsize,
                 winsize,
             )
@@ -423,7 +398,7 @@ class StreamReceiver:
     @staticmethod
     def _check_winsize(winsize):
         """Check that winsize is positive."""
-        _check_type(winsize, ("numeric",), item_name="winsize")
+        check_type(winsize, ("numeric",), item_name="winsize")
         winsize = float(winsize)
         if winsize <= 0:
             raise ValueError(
@@ -436,9 +411,7 @@ class StreamReceiver:
     @staticmethod
     def _check_format_stream_name(stream_name):
         """Check the format of stream_name."""
-        _check_type(
-            stream_name, (None, str, list, tuple), item_name="stream_name"
-        )
+        check_type(stream_name, (None, str, list, tuple), item_name="stream_name")
         if isinstance(stream_name, (list, tuple)):
             stream_name = list(stream_name)
             if not all(isinstance(name, str) for name in stream_name):

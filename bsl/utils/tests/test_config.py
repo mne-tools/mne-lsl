@@ -1,6 +1,6 @@
 from io import StringIO
 
-from .._config import sys_info
+from ..config import sys_info
 
 
 def test_sys_info():
@@ -29,6 +29,5 @@ def test_sys_info():
     out.close()
 
     assert "build" in value
-    assert "doc" in value
     assert "style" in value
     assert "test" in value

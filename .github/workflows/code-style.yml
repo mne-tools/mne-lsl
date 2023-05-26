@@ -20,19 +20,12 @@ jobs:
         with:
           python-version: '3.9'
           architecture: 'x64'
-      - name: Install linux dependencies
-        if: ${{ matrix.os == 'ubuntu-20.04'}}
-        run: |
-          sudo apt update
-          sudo apt install -y libpugixml-dev
       - name: Install dependencies
         run: |
           python -m pip install --progress-bar off --upgrade pip setuptools wheel
           python -m pip install --progress-bar off .[style]
-      - name: Run flake8
-        uses: py-actions/flake8@v2
-        with:
-          path: "bsl"
+      - name: Run Ruff
+        run: ruff check .
       - name: Run isort
         uses: isort/isort-action@master
       - name: Run black
@@ -44,7 +37,7 @@ jobs:
         with:
           check_filenames: true
           check_hidden: true
-          skip: './.git,./build,./.mypy_cache,./.pytest_cache,./bsl/externals,./doc/_static/icon*'
+          skip: './.git,./build,./.pytest_cache,./doc/_static/icon*'
           ignore_words_file: ./.codespellignore
       - name: Run pydocstyle
         run: pydocstyle .

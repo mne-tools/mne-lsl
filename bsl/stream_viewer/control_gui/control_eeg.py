@@ -6,7 +6,7 @@ from PyQt5 import QtCore
 from PyQt5.QtWidgets import QHeaderView, QTableWidgetItem
 
 from ...utils._docs import copy_doc, fill_doc
-from ...utils._logs import logger
+from ...utils.logs import logger
 from ..backends.pyqtgraph import _BackendPyQtGraph
 from ._control import _ControlGUI
 from ._ui_control import UI_MainWindow
@@ -79,9 +79,7 @@ class ControlGUI_EEG(_ControlGUI):
         )
 
         # Set position on the screen
-        self.setGeometry(
-            100, 100, self.geometry().width(), self.geometry().height()
-        )
+        self.setGeometry(100, 100, self.geometry().width(), self.geometry().height())
         self.setFixedSize(self.geometry().width(), self.geometry().height())
         self.show()  # Display
 
@@ -111,6 +109,10 @@ class ControlGUI_EEG(_ControlGUI):
             "1mV": 1000,
             "2.5mV": 2500,
             "10mV": 10000,
+            "100mV": 100000,
+            "1V": 1000000,
+            "2V": 2000000,
+            "5V": 5000000,
         }
         try:
             self._yRange = float(scope_settings.get("plot", "yRange"))
@@ -147,30 +149,23 @@ class ControlGUI_EEG(_ControlGUI):
         except Exception:  # 10s by default
             self._ui.spinBox_signal_xRange.setValue(10)
 
-        # CAR
-        try:
-            self._ui.checkBox_car.setChecked(
-                bool(scope_settings.get("filtering", "apply_car_filter"))
-            )
-        except Exception:
-            self._ui.checkBox_car.setChecked(False)
-
         # BP Filters
-        self._ui.checkBox_bandpass.setChecked(True)
-        self._ui.checkBox_bandpass.setEnabled(False)
+        self._ui.checkBox_bandpass.setChecked(
+            bool(int(scope_settings.get("filtering", "apply_bandpass")))
+        )
         try:
             self._ui.doubleSpinBox_bandpass_low.setValue(
                 float(
-                    scope_settings.get(
-                        "filtering", "bandpass_cutoff_frequency"
-                    ).split(" ")[0]
+                    scope_settings.get("filtering", "bandpass_cutoff_frequency").split(
+                        " "
+                    )[0]
                 )
             )
             self._ui.doubleSpinBox_bandpass_high.setValue(
                 float(
-                    scope_settings.get(
-                        "filtering", "bandpass_cutoff_frequency"
-                    ).split(" ")[1]
+                    scope_settings.get("filtering", "bandpass_cutoff_frequency").split(
+                        " "
+                    )[1]
                 )
             )
         except Exception:
@@ -188,6 +183,22 @@ class ControlGUI_EEG(_ControlGUI):
             low=self._ui.doubleSpinBox_bandpass_low.value(),
             high=self._ui.doubleSpinBox_bandpass_high.value(),
         )
+
+        # CAR
+        try:
+            self._ui.checkBox_car.setChecked(
+                bool(int(scope_settings.get("filtering", "apply_car")))
+            )
+        except Exception:
+            self._ui.checkBox_car.setChecked(False)
+
+        # Detrend
+        try:
+            self._ui.checkBox_detrend.setChecked(
+                bool(int(scope_settings.get("filtering", "apply_detrend")))
+            )
+        except Exception:
+            self._ui.checkBox_detrend.setChecked(False)
 
         # Trigger events
         try:
@@ -231,7 +242,6 @@ class ControlGUI_EEG(_ControlGUI):
         )
 
         # CAR / Filters
-        self._ui.checkBox_car.stateChanged.connect(self.onClicked_checkBox_car)
         self._ui.checkBox_bandpass.stateChanged.connect(
             self.onClicked_checkBox_bandpass
         )
@@ -241,6 +251,8 @@ class ControlGUI_EEG(_ControlGUI):
         self._ui.doubleSpinBox_bandpass_high.valueChanged.connect(
             self.onValueChanged_doubleSpinBox_bandpass_high
         )
+        self._ui.checkBox_car.stateChanged.connect(self.onClicked_checkBox_car)
+        self._ui.checkBox_detrend.stateChanged.connect(self.onClicked_checkBox_detrend)
 
         # Trigger events
         self._ui.checkBox_show_LPT_trigger_events.stateChanged.connect(
@@ -256,9 +268,7 @@ class ControlGUI_EEG(_ControlGUI):
     def onActivated_comboBox_signal_yRange(self):
         logger.debug("yRange event received.")
         self._yRange = float(
-            list(self._yRanges.values())[
-                self._ui.comboBox_signal_yRange.currentIndex()
-            ]
+            list(self._yRanges.values())[self._ui.comboBox_signal_yRange.currentIndex()]
         )
         self._backend.yRange = self._yRange
         logger.debug("y-range set to %d", self._yRange)
@@ -269,12 +279,6 @@ class ControlGUI_EEG(_ControlGUI):
         self._xRange = int(self._ui.spinBox_signal_xRange.value())
         self._backend.xRange = self._xRange
         logger.debug("x-range set to %d", self._xRange)
-
-    @QtCore.pyqtSlot()
-    def onClicked_checkBox_car(self):
-        logger.debug("Checkbox for CAR event received.")
-        self._scope.apply_car = self._ui.checkBox_car.isChecked()
-        logger.debug("CAR checkbox: %s", self._ui.checkBox_car.isChecked())
 
     @QtCore.pyqtSlot()
     def onClicked_checkBox_bandpass(self):
@@ -315,6 +319,18 @@ class ControlGUI_EEG(_ControlGUI):
         )
 
     @QtCore.pyqtSlot()
+    def onClicked_checkBox_car(self):
+        logger.debug("Checkbox for CAR event received.")
+        self._scope.apply_car = self._ui.checkBox_car.isChecked()
+        logger.debug("CAR checkbox: %s", self._ui.checkBox_car.isChecked())
+
+    @QtCore.pyqtSlot()
+    def onClicked_checkBox_detrend(self):
+        logger.debug("Checkbox for detrend event received.")
+        self._scope.apply_detrend = self._ui.checkBox_detrend.isChecked()
+        logger.debug("Detrend checkbox: %s", self._ui.checkBox_bandpass.isChecked())
+
+    @QtCore.pyqtSlot()
     def onClicked_checkBox_show_LPT_trigger_events(self):
         logger.debug("Checkbox for LPT event received.")
         self._backend.show_LPT_trigger_events = bool(
@@ -330,10 +346,7 @@ class ControlGUI_EEG(_ControlGUI):
         logger.debug("Channel selection event received.")
         selected = self._ui.table_channels.selectedItems()
         self._scope.selected_channels = sorted(
-            [
-                item.row() * self._nb_table_columns + item.column()
-                for item in selected
-            ]
+            [item.row() * self._nb_table_columns + item.column() for item in selected]
         )
         self._backend.selected_channels = self._scope.selected_channels
 

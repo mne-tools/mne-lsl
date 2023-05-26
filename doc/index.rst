@@ -1,33 +1,58 @@
-.. title:: BSL
+:hide-toc:
 
-.. The page title must be in rST for it to show in next/prev page buttons.
-   Therefore we add a special style rule to only this page that hides h1 tags
+.. include:: ./links.inc
 
 .. raw:: html
 
     <style type="text/css">h1 {display:none;}</style>
 
-Brain Streaming Layer Homepage
-==============================
-
-.. LOGO
+Brain Streaming Layer
+=====================
 
 .. image:: _static/icon-with-name/icon-with-name.svg
-   :alt: BSL
-   :class: logo
-   :align: center
+    :alt: BSL
+    :class: logo
+    :align: center
 
-.. rst-class:: h4 text-center font-weight-light my-4
+Open-source Python package for real-time brain signal streaming framework
+based on the `Lab Streaming Layer (LSL) <lsl intro_>`_.
 
-   Open-source Python package for a real-time brain signal streaming framework
-   based around the `Lab Streaming Layer (LSL)
-   <https://labstreaminglayer.readthedocs.io/info/intro.html>`_.
+Install
+-------
+
+``BSL`` is available on `PyPI <project pypi_>`_ and is distributed with a compatible
+version of `liblsl <lsl lib c++_>`_. If you want to use a different version of
+``liblsl``, please refer to the :ref:`install:Advance install`.
+
+.. tab-set::
+
+    .. tab-item:: PyPI
+
+        .. code-block:: console
+
+            $ pip install bsl
+
+    .. tab-item:: Source
+
+        .. code-block:: console
+
+            $ pip install git+https://github.com/fcbg-hnp-meeg/bsl
+
+Supporting institutions
+-----------------------
+
+The development of ``BSL`` is supported by the
+`Human Neuroscience Platform, Fondation Campus Biotech Geneva <fcbg hnp_>`_.
+
+.. image:: _static/partners/fcbg-hnp-meeg.png
+    :alt: FCBG - HNP - MEEG/BCI Platform
+    :width: 150
 
 .. toctree::
-   :hidden:
+    :hidden:
 
-   Install<install>
-   Examples<generated_examples/index>
-   API Reference<api_reference>
-   Command Line<command_line>
-   Changelog<changes/index>
+    install.rst
+    api/index.rst
+    command_line.rst
+    generated/tutorials/index.rst
+    changes/index.rst

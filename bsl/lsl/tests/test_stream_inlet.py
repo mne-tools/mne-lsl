@@ -1,5 +1,6 @@
 import time
 import uuid
+from itertools import product
 
 import numpy as np
 import pytest
@@ -34,22 +35,20 @@ def test_pull_numerical_sample(dtype_str, dtype):
         _test_numerical_data(data, x, dtype, ts)
         data, ts = inlet.pull_sample(timeout=0)
         assert ts is None
-        assert data is None
+        assert data.size == 0
         # test push/pull with wrong dtype
-        outlet.push_sample(
-            x.astype(np.float64 if dtype != np.float64 else np.float32)
-        )
+        outlet.push_sample(x.astype(np.float64 if dtype != np.float64 else np.float32))
         data, ts = inlet.pull_sample(timeout=5)
         _test_numerical_data(data, x, dtype, ts)
     except Exception as error:
         raise error
     finally:
         try:
-            del outlet
+            del inlet
         except Exception:
             pass
         try:
-            del inlet
+            del outlet
         except Exception:
             pass
 
@@ -71,16 +70,16 @@ def test_pull_str_sample():
         assert data == x
         data, ts = inlet.pull_sample(timeout=0)
         assert ts is None
-        assert data is None
+        assert isinstance(data, list) and len(data) == 0
     except Exception as error:
         raise error
     finally:
         try:
-            del outlet
+            del inlet
         except Exception:
             pass
         try:
-            del inlet
+            del outlet
         except Exception:
             pass
 
@@ -125,20 +124,18 @@ def test_pull_numerical_chunk(dtype_str, dtype):
         data, ts = inlet.pull_chunk(max_samples=5, timeout=1)
         _test_numerical_data(data, x[2, :], dtype, ts, 1)
         # test push/pull with wrong dtype
-        outlet.push_chunk(
-            x.astype(np.float64 if dtype != np.float64 else np.float32)
-        )
+        outlet.push_chunk(x.astype(np.float64 if dtype != np.float64 else np.float32))
         data, ts = inlet.pull_chunk(max_samples=3, timeout=5)
         _test_numerical_data(data, x, dtype, ts, 3)
     except Exception as error:
         raise error
     finally:
         try:
-            del outlet
+            del inlet
         except Exception:
             pass
         try:
-            del inlet
+            del outlet
         except Exception:
             pass
 
@@ -267,6 +264,47 @@ def test_inlet_methods(dtype_str, dtype):
             pass
         try:
             del inlet
+        except Exception:
+            pass
+
+
+@pytest.mark.parametrize(
+    "dtype_str, flags",
+    product(
+        ("float32", "int16"),
+        (
+            ["clocksync"],
+            ["clocksync", "dejitter"],
+            ["clocksync", "dejitter", "monotize"],
+            ["clocksync", "dejitter", "monotize", "threadsafe"],
+            "all",
+        ),
+    ),
+)
+def test_processing_flags(dtype_str, flags):
+    """Test that the processing flags are working."""
+    x = np.array([[1, 4], [2, 5], [3, 6]])
+    # create stream description
+    sinfo = StreamInfo("test", "", 2, 0.0, dtype_str, uuid.uuid4().hex[:6])
+    try:
+        outlet = StreamOutlet(sinfo, chunk_size=3)
+        inlet = StreamInlet(sinfo, processing_flags=flags)
+        inlet.open_stream(timeout=5)
+        _test_properties(inlet, dtype_str, 2, "test", 0.0, "")
+        outlet.push_chunk(x)
+        data, ts = inlet.pull_chunk(max_samples=3, timeout=5)
+        assert inlet.samples_available == 0
+        data, ts = inlet.pull_chunk(max_samples=1, timeout=0)
+        assert data.size == ts.size == 0
+    except Exception as error:
+        raise error
+    finally:
+        try:
+            del inlet
+        except Exception:
+            pass
+        try:
+            del outlet
         except Exception:
             pass
 

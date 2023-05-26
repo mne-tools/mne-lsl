@@ -2,8 +2,8 @@ import os
 from configparser import ConfigParser
 from pathlib import Path
 
-from ..utils._checks import _check_type, _ensure_int, _ensure_path
-from ..utils._logs import logger
+from ..utils._checks import check_type, ensure_int, ensure_path
+from ..utils.logs import logger
 
 
 class TriggerDef:
@@ -91,14 +91,28 @@ class TriggerDef:
     def write(self, trigger_file):
         """Write events to a ``.ini`` trigger definition file.
 
-        .. note:: The ``.ini`` file is written with `configparser` and is
-                  structured as follows:
+        Parameters
+        ----------
+        trigger_file : None | path-like
+            Path to the ``.ini`` file containing the table converting event numbers
+            into event strings.
 
-                  .. code-block:: python
+            .. note:: The ``.ini`` file is read with `configparser` and has to be
+                      structured as follows:
 
-                      [events]
-                      event_str_1 = event_id_1
-                      event_str_2 = event_id_2
+                      .. code-block:: python
+
+                          [events]
+                          event_str_1 = event_id_1   # comment
+                          event_str_2 = event_id_2   # comment
+
+                      Example:
+
+                      .. code-block:: python
+
+                          [events]
+                          rest = 1
+                          stim = 2
         """
         trigger_file = TriggerDef._check_write_to_trigger_file(trigger_file)
 
@@ -113,15 +127,15 @@ class TriggerDef:
         Parameters
         ----------
         name : str
-            Name of the event
+            Name of the event.
         value : int
-            Value of the event
+            Value of the event.
         overwrite : bool
             If ``True``, overwrite previous event with the same name or value.
         """
-        _check_type(name, (str,), item_name="name")
-        value = _ensure_int(value, "value")
-        _check_type(overwrite, (bool,), item_name="overwrite")
+        check_type(name, (str,), item_name="name")
+        value = ensure_int(value, "value")
+        check_type(overwrite, (bool,), item_name="overwrite")
         if name in self._by_name and not overwrite:
             logger.info("Event name %s already exists. Skipping.", name)
             return
@@ -149,7 +163,7 @@ class TriggerDef:
             If a str is provided, assumes event is the name.
             If a int is provided, assumes event is the value.
         """
-        _check_type(event, (str, "numeric"), item_name="event")
+        check_type(event, (str, "numeric"), item_name="event")
         if isinstance(event, str):
             if event not in self._by_name:
                 logger.info("Event name %s not found.", event)
@@ -184,13 +198,11 @@ class TriggerDef:
         if trigger_file is None:
             return None
         else:
-            _ensure_path(trigger_file, must_exist=False)
+            ensure_path(trigger_file, must_exist=False)
             trigger_file = Path(trigger_file)
 
         if trigger_file.exists() and trigger_file.suffix == ".ini":
-            logger.info(
-                "Found trigger definition file '%s'", trigger_file.name
-            )
+            logger.info("Found trigger definition file '%s'", trigger_file.name)
             return trigger_file
         elif trigger_file.exists() and trigger_file.suffix != ".ini":
             logger.error(
@@ -200,16 +212,14 @@ class TriggerDef:
             )
             return None
         else:
-            logger.error(
-                "Trigger event definition file '%s' not found.", trigger_file
-            )
+            logger.error("Trigger event definition file '%s' not found.", trigger_file)
             return None
 
     @staticmethod
     def _check_write_to_trigger_file(trigger_file):  # noqa
         """Check that the directory exists and that the file name ends with
         .ini."""
-        trigger_file = _ensure_path(trigger_file, must_exist=False)
+        trigger_file = ensure_path(trigger_file, must_exist=False)
         if trigger_file.suffix != ".ini":
             raise ValueError(
                 "Argument trigger_file must end with .ini. "

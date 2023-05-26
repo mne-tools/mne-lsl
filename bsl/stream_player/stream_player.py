@@ -8,8 +8,8 @@ import numpy as np
 from ..lsl import StreamInfo, StreamOutlet, local_clock
 from ..triggers import TriggerDef
 from ..utils import find_event_channel
-from ..utils._checks import _check_type, _ensure_int, _ensure_path
-from ..utils._logs import logger
+from ..utils._checks import check_type, ensure_int, ensure_path
+from ..utils.logs import logger
 
 
 class StreamPlayer:
@@ -46,13 +46,13 @@ class StreamPlayer:
         chunk_size=16,
         high_resolution=False,
     ):
-        _check_type(stream_name, (str,), item_name="stream_name")
+        check_type(stream_name, (str,), item_name="stream_name")
         self._stream_name = stream_name
         self._fif_file = StreamPlayer._check_fif_file(fif_file)
         self._repeat = StreamPlayer._check_repeat(repeat)
         self._trigger_def = StreamPlayer._check_trigger_def(trigger_def)
         self._chunk_size = StreamPlayer._check_chunk_size(chunk_size)
-        _check_type(high_resolution, (bool,), item_name="high_resolution")
+        check_type(high_resolution, (bool,), item_name="high_resolution")
         self._high_resolution = high_resolution
 
         self._process = None
@@ -66,7 +66,7 @@ class StreamPlayer:
         blocking : bool
             If ``True``, waits for the child process to start streaming data.
         """
-        _check_type(blocking, (bool,), item_name="blocking")
+        check_type(blocking, (bool,), item_name="blocking")
         raw = mne.io.read_raw_fif(self._fif_file, preload=True, verbose=False)
 
         logger.info("Streaming started.")
@@ -99,9 +99,7 @@ class StreamPlayer:
         with self._state.get_lock():
             self._state.value = 0
 
-        logger.info(
-            "Waiting for StreamPlayer %s process to finish.", self._stream_name
-        )
+        logger.info("Waiting for StreamPlayer %s process to finish.", self._stream_name)
         self._process.join(10)
         if self._process.is_alive():
             logger.error("StreamPlayer process not finishing..")
@@ -154,7 +152,7 @@ class StreamPlayer:
     @staticmethod
     def _check_fif_file(fif_file):
         """Check if the provided fif_file is valid."""
-        fif_file = _ensure_path(fif_file, must_exist=True)
+        fif_file = ensure_path(fif_file, must_exist=True)
         mne.io.read_raw_fif(fif_file, preload=False, verbose=None)
         return Path(fif_file)
 
@@ -163,7 +161,7 @@ class StreamPlayer:
         """Check that repeat is valid."""
         if repeat == float("inf"):
             return repeat
-        repeat = _ensure_int(repeat, "repeat")
+        repeat = ensure_int(repeat, "repeat")
         if repeat <= 0:
             raise ValueError(
                 "Argument repeat must be a strictly positive "
@@ -177,14 +175,14 @@ class StreamPlayer:
         if isinstance(trigger_def, (type(None), TriggerDef)):
             return trigger_def
         else:
-            trigger_def = _ensure_path(trigger_def, must_exist=True)
+            trigger_def = ensure_path(trigger_def, must_exist=True)
             trigger_def = TriggerDef(trigger_def)
             return trigger_def
 
     @staticmethod
     def _check_chunk_size(chunk_size):
         """Check that chunk_size is a strictly positive integer."""
-        chunk_size = _ensure_int(chunk_size, "chunk_size")
+        chunk_size = ensure_int(chunk_size, "chunk_size")
         if chunk_size <= 0:
             raise ValueError(
                 "Argument chunk_size must be a strictly positive "
@@ -192,8 +190,7 @@ class StreamPlayer:
             )
         if chunk_size not in (16, 32):
             logger.warning(
-                "The chunk size %i is different from the usual "
-                "values 16 or 32.",
+                "The chunk size %i is different from the usual " "values 16 or 32.",
                 chunk_size,
             )
         return chunk_size
@@ -211,16 +208,15 @@ class StreamPlayer:
     def fif_file(self):
         """Path to the compatible raw ``.fif`` file to play.
 
-        :type: str | Path
+        :type: str | `~pathlib.Path`
         """
         return self._fif_file
 
     @property
     def repeat(self):
-        """
-        Number of times the stream player will loop on the FIF file before
-        interrupting. Default ``float('inf')`` can be passed to never interrupt
-        streaming.
+        """Number of times the stream player will loop.
+
+        Default ``float('inf')`` can be passed to never interrupt streaming.
 
         :type: int | ``float('ìnf')``
         """
@@ -228,9 +224,9 @@ class StreamPlayer:
 
     @property
     def trigger_def(self):
-        """
-        Either ``None`` or TriggerDef instance converting event numbers into
-        event strings.
+        """Either ``None`` or TriggerDef instance.
+
+        Used to convert event numbers into event strings.
 
         :type: TriggerDef
         """
@@ -238,9 +234,7 @@ class StreamPlayer:
 
     @property
     def chunk_size(self):
-        """
-        Number of samples to send at once (usually ``16-32`` is good enough)
-        ``[samples]``.
+        """Number of samples to send at once (usually ``16-32`` is good enough).
 
         :type: int
         """
@@ -248,9 +242,7 @@ class StreamPlayer:
 
     @property
     def high_resolution(self):
-        """
-        If ``True``, it uses `~time.perf_counter` instead of `~time.sleep`
-        for higher time resolution. However, it uses more CPU.
+        """If ``True``, it uses `~time.perf_counter` instead of `~time.sleep`.
 
         :type: bool
         """
@@ -260,18 +252,18 @@ class StreamPlayer:
     def process(self):
         """Launched streaming process.
 
-        :type: Process
+        :type: `~multiprocessing.Process`
         """
         return self._process
 
     @property
     def state(self):
-        """
-        Streaming state of the player:
-            - ``0``: Not streaming.
-            - ``1``: Streaming.
+        """Streaming state of the player.
 
-        :type: `multiprocessing.Value`
+        * ``0``: Not streaming.
+        * ``1``: Streaming.
+
+        :type: `~multiprocessing.Value`
         """
         return self._state
 
@@ -336,7 +328,6 @@ class _Streamer:
 
         # Streaming loop
         while self._state.value == 1:
-
             idx_current = idx_chunk * self._chunk_size
             idx_next = idx_current + self._chunk_size
             chunk = self._raw._data[:, idx_current:idx_next]
@@ -345,9 +336,7 @@ class _Streamer:
             if idx_current >= self._raw._data.shape[1] - self._chunk_size:
                 finished = True
 
-            _Streamer._sleep(
-                self._high_resolution, idx_chunk, t_start, t_chunk
-            )
+            _Streamer._sleep(self._high_resolution, idx_chunk, t_start, t_chunk)
 
             self._outlet.push_chunk(data)
             logger.debug(
@@ -393,15 +382,11 @@ class _Streamer:
                                 self._trigger_def.by_value[event_value],
                             )
                         else:
-                            logger.info(
-                                "Events: %s (Undefined event)", event_value
-                            )
+                            logger.info("Events: %s (Undefined event)", event_value)
 
     # --------------------------------------------------------------------
     @staticmethod
-    def _create_lsl_info(
-        stream_name, channel_count, nominal_srate, ch_names
-    ):  # noqa
+    def _create_lsl_info(stream_name, channel_count, nominal_srate, ch_names):  # noqa
         """
         Extract information from raw and set the LSL server's information
         needed to create the LSL stream.
@@ -420,13 +405,11 @@ class _Streamer:
         for channel in ch_names:
             channel_desc.append_child("channel").append_child_value(
                 "label", str(channel)
-            ).append_child_value("type", "EEG").append_child_value(
-                "unit", "microvolts"
-            )
+            ).append_child_value("type", "EEG").append_child_value("unit", "microvolts")
 
-        desc.append_child("amplifier").append_child(
-            "settings"
-        ).append_child_value("is_slave", "false")
+        desc.append_child("amplifier").append_child("settings").append_child_value(
+            "is_slave", "false"
+        )
 
         desc.append_child("acquisition").append_child_value(
             "manufacturer", "BSL"

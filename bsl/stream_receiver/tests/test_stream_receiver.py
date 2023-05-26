@@ -35,11 +35,7 @@ def test_stream_receiver():
         sr.acquire()
         window, timestamps_window = sr.get_window()
         buffer, timestamps_buffer = sr.get_buffer()
-        assert (
-            window.shape[1]
-            == buffer.shape[1]
-            == len(sr.streams[stream].ch_list)
-        )
+        assert window.shape[1] == buffer.shape[1] == len(sr.streams[stream].ch_list)
         assert (
             window.shape[0]
             == len(timestamps_window)
@@ -86,14 +82,11 @@ def test_stream_receiver():
 @requires_eeg_resting_state_dataset
 def test_receiving_multi_streams():
     """Test StreamReceiver multi-streams functionalities."""
-    with StreamPlayer(
-        "StreamPlayer1", eeg_resting_state.data_path()
-    ), StreamPlayer("StreamPlayer2", eeg_resting_state.data_path()):
-
+    with StreamPlayer("StreamPlayer1", eeg_resting_state.data_path()), StreamPlayer(
+        "StreamPlayer2", eeg_resting_state.data_path()
+    ):
         # test connect to only one
-        sr = StreamReceiver(
-            bufsize=1, winsize=0.2, stream_name="StreamPlayer1"
-        )
+        sr = StreamReceiver(bufsize=1, winsize=0.2, stream_name="StreamPlayer1")
         assert "StreamPlayer1" in sr.streams
         assert sr.stream_name == ["StreamPlayer1"]
         del sr
@@ -144,16 +137,10 @@ def test_receiving_multi_streams():
         info1 = sr.mne_infos["StreamPlayer1"]
         info2 = sr.mne_infos["StreamPlayer2"]
         assert (
-            raw1.info.ch_names
-            == raw2.info.ch_names
-            == info1.ch_names
-            == info2.ch_names
+            raw1.info.ch_names == raw2.info.ch_names == info1.ch_names == info2.ch_names
         )
         assert (
-            raw1.info["sfreq"]
-            == raw2.info["sfreq"]
-            == info1["sfreq"]
-            == info2["sfreq"]
+            raw1.info["sfreq"] == raw2.info["sfreq"] == info1["sfreq"] == info2["sfreq"]
         )
         raw1.info._check_consistency()
         raw2.info._check_consistency()
@@ -170,16 +157,10 @@ def test_receiving_multi_streams():
         info1 = sr.mne_infos["StreamPlayer1"]
         info2 = sr.mne_infos["StreamPlayer2"]
         assert (
-            raw1.info.ch_names
-            == raw2.info.ch_names
-            == info1.ch_names
-            == info2.ch_names
+            raw1.info.ch_names == raw2.info.ch_names == info1.ch_names == info2.ch_names
         )
         assert (
-            raw1.info["sfreq"]
-            == raw2.info["sfreq"]
-            == info1["sfreq"]
-            == info2["sfreq"]
+            raw1.info["sfreq"] == raw2.info["sfreq"] == info1["sfreq"] == info2["sfreq"]
         )
         raw1.info._check_consistency()
         raw2.info._check_consistency()
@@ -210,17 +191,17 @@ def test_properties():
         assert len(sr.streams) == 1
         assert "StreamPlayer" in sr.streams
 
-        with pytest.raises(AttributeError, match="can't set attribute"):
+        with pytest.raises(AttributeError):
             sr.winsize = 1
-        with pytest.raises(AttributeError, match="can't set attribute"):
+        with pytest.raises(AttributeError):
             sr.bufsize = 2
-        with pytest.raises(AttributeError, match="can't set attribute"):
+        with pytest.raises(AttributeError):
             sr.stream_name = "StreamPlayer"
-        with pytest.raises(AttributeError, match="can't set attribute"):
+        with pytest.raises(AttributeError):
             sr.connected = False
-        with pytest.raises(AttributeError, match="can't set attribute"):
+        with pytest.raises(AttributeError):
             sr.mne_infos = dict()
-        with pytest.raises(AttributeError, match="can't set attribute"):
+        with pytest.raises(AttributeError):
             sr.streams = dict()
 
         sr.disconnect()
@@ -233,9 +214,9 @@ def test_properties():
 @requires_eeg_resting_state_dataset
 def test_get_method_warning_and_errors(caplog):
     """Test the checking done in get_xxx methods."""
-    with StreamPlayer(
-        "StreamPlayer1", eeg_resting_state.data_path()
-    ), StreamPlayer("StreamPlayer2", eeg_resting_state.data_path()):
+    with StreamPlayer("StreamPlayer1", eeg_resting_state.data_path()), StreamPlayer(
+        "StreamPlayer2", eeg_resting_state.data_path()
+    ):
         sr = StreamReceiver(bufsize=1, winsize=1, stream_name=None)
 
         # Disconnect and acquire
@@ -283,13 +264,9 @@ def test_get_method_warning_and_errors(caplog):
             sr.get_buffer()
 
         # stream_name not in streams
-        with pytest.raises(
-            KeyError, match="StreamReceiver is not connected to '101'."
-        ):
+        with pytest.raises(KeyError, match="StreamReceiver is not connected to '101'."):
             sr.get_window(stream_name="101")
-        with pytest.raises(
-            KeyError, match="StreamReceiver is not connected to '101'."
-        ):
+        with pytest.raises(KeyError, match="StreamReceiver is not connected to '101'."):
             sr.get_buffer(stream_name="101")
 
         # forgot to call .acquire()
@@ -297,16 +274,12 @@ def test_get_method_warning_and_errors(caplog):
         sr.connect()
         with pytest.raises(
             AttributeError,
-            match=re.escape(
-                ".acquire() must be called before " ".get_window()."
-            ),
+            match=re.escape(".acquire() must be called before " ".get_window()."),
         ):
             sr.get_window(stream_name="StreamPlayer1")
         with pytest.raises(
             AttributeError,
-            match=re.escape(
-                ".acquire() must be called before " ".get_buffer()."
-            ),
+            match=re.escape(".acquire() must be called before " ".get_buffer()."),
         ):
             sr.get_buffer(stream_name="StreamPlayer1")
 
@@ -346,9 +319,9 @@ def test_get_method_warning_and_errors(caplog):
 @requires_eeg_resting_state_dataset
 def test_connect_disconnect():
     """Test connect and disconnect methods."""
-    with StreamPlayer(
-        "StreamPlayer1", eeg_resting_state.data_path()
-    ), StreamPlayer("StreamPlayer2", eeg_resting_state.data_path()):
+    with StreamPlayer("StreamPlayer1", eeg_resting_state.data_path()), StreamPlayer(
+        "StreamPlayer2", eeg_resting_state.data_path()
+    ):
         sr = StreamReceiver(bufsize=1, winsize=1, stream_name="StreamPlayer1")
         assert sr.connected
         assert sr.stream_name == ["StreamPlayer1"]
@@ -470,16 +443,12 @@ def test_checker_stream_name(caplog):
         del sr
 
         # Valid - list of str
-        sr = StreamReceiver(
-            bufsize=1, winsize=0.2, stream_name=["StreamPlayer"]
-        )
+        sr = StreamReceiver(bufsize=1, winsize=0.2, stream_name=["StreamPlayer"])
         assert sr.stream_name == ["StreamPlayer"]
         del sr
 
         # Valid - tuple of str
-        sr = StreamReceiver(
-            bufsize=1, winsize=0.2, stream_name=("StreamPlayer",)
-        )
+        sr = StreamReceiver(bufsize=1, winsize=0.2, stream_name=("StreamPlayer",))
         assert sr.stream_name == ["StreamPlayer"]
         del sr
 
@@ -494,9 +463,7 @@ def test_checker_stream_name(caplog):
             StreamReceiver(bufsize=1, winsize=0.2, stream_name=[1, 0, 1])
 
         # Invalid type
-        with pytest.raises(
-            TypeError, match="'stream_name' must be an instance"
-        ):
+        with pytest.raises(TypeError, match="'stream_name' must be an instance"):
             StreamReceiver(bufsize=1, winsize=0.2, stream_name=101)
 
 

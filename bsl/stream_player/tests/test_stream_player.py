@@ -46,15 +46,11 @@ def test_stream_player(caplog):
     inlet = StreamInlet(streams[idx], max_buffered=int(raw.info["sfreq"]))
     inlet.open_stream()
     time.sleep(0.1)
-    chunk, tslist = inlet.pull_chunk(
-        timeout=0.0, max_samples=int(raw.info["sfreq"])
-    )
+    chunk, tslist = inlet.pull_chunk(timeout=0.0, max_samples=int(raw.info["sfreq"]))
     assert len(chunk) == len(tslist)
     assert 0 < len(chunk) < int(raw.info["sfreq"])
     time.sleep(1)
-    chunk, tslist = inlet.pull_chunk(
-        timeout=0.0, max_samples=int(raw.info["sfreq"])
-    )
+    chunk, tslist = inlet.pull_chunk(timeout=0.0, max_samples=int(raw.info["sfreq"]))
     assert len(chunk) == len(tslist) == int(raw.info["sfreq"])
 
     # Test stop
@@ -119,9 +115,7 @@ def test_arg_trigger_def():
     fif_file = eeg_auditory_stimuli.data_path()
 
     # Without TriggerDef
-    sp = StreamPlayer(
-        stream_name=stream_name, fif_file=fif_file, trigger_def=None
-    )
+    sp = StreamPlayer(stream_name=stream_name, fif_file=fif_file, trigger_def=None)
     sp.start()
     time.sleep(2)
     sp.stop()
@@ -185,17 +179,17 @@ def test_properties():
     assert sp.high_resolution is False
 
     # Check setters
-    with pytest.raises(AttributeError, match="can't set attribute"):
+    with pytest.raises(AttributeError):
         sp.stream_name = "new name"
-    with pytest.raises(AttributeError, match="can't set attribute"):
+    with pytest.raises(AttributeError):
         sp.fif_file = "new fif file"
-    with pytest.raises(AttributeError, match="can't set attribute"):
+    with pytest.raises(AttributeError):
         sp.repeat = 10
-    with pytest.raises(AttributeError, match="can't set attribute"):
+    with pytest.raises(AttributeError):
         sp.trigger_def = TriggerDef()
-    with pytest.raises(AttributeError, match="can't set attribute"):
+    with pytest.raises(AttributeError):
         sp.chunk_size = 8
-    with pytest.raises(AttributeError, match="can't set attribute"):
+    with pytest.raises(AttributeError):
         sp.high_resolution = True
 
     # Process and state
@@ -203,9 +197,9 @@ def test_properties():
     assert isinstance(sp.state, mp.sharedctypes.Synchronized)
     assert sp.state.value == 0
 
-    with pytest.raises(AttributeError, match="can't set attribute"):
+    with pytest.raises(AttributeError):
         sp.process = 5
-    with pytest.raises(AttributeError, match="can't set attribute"):
+    with pytest.raises(AttributeError):
         sp.state = 5
 
     sp.start()
@@ -223,12 +217,8 @@ def test_checker_arguments():
     stream_name = "StreamPlayer"
     fif_file = eeg_resting_state.data_path()
 
-    with pytest.raises(
-        TypeError, match="'high_resolution' must be an instance"
-    ):
-        StreamPlayer(
-            stream_name=stream_name, fif_file=fif_file, high_resolution=1
-        )
+    with pytest.raises(TypeError, match="'high_resolution' must be an instance"):
+        StreamPlayer(stream_name=stream_name, fif_file=fif_file, high_resolution=1)
 
 
 def test_checker_fif_file():
@@ -248,9 +238,7 @@ def test_checker_repeat():
     fif_file = eeg_resting_state.data_path()
 
     # Default
-    sp = StreamPlayer(
-        stream_name=stream_name, fif_file=fif_file, repeat=float("inf")
-    )
+    sp = StreamPlayer(stream_name=stream_name, fif_file=fif_file, repeat=float("inf"))
     assert sp.repeat == float("inf")
 
     # Positive integer
@@ -264,18 +252,13 @@ def test_checker_repeat():
     # Negative integer
     with pytest.raises(
         ValueError,
-        match="Argument repeat must be a strictly "
-        "positive integer. Provided: -101",
+        match="Argument repeat must be a strictly " "positive integer. Provided: -101",
     ):
-        sp = StreamPlayer(
-            stream_name=stream_name, fif_file=fif_file, repeat=-101
-        )
+        sp = StreamPlayer(stream_name=stream_name, fif_file=fif_file, repeat=-101)
 
     # Not integer
     with pytest.raises(TypeError, match="'repeat' must be an integer"):
-        StreamPlayer(
-            stream_name=stream_name, fif_file=fif_file, repeat=[1, 0, 1]
-        )
+        StreamPlayer(stream_name=stream_name, fif_file=fif_file, repeat=[1, 0, 1])
 
 
 @requires_trigger_def_dataset
@@ -287,9 +270,7 @@ def test_checker_trigger_def():
     trigger_file = trigger_def.data_path()
 
     # Default
-    sp = StreamPlayer(
-        stream_name=stream_name, fif_file=fif_file, trigger_def=None
-    )
+    sp = StreamPlayer(stream_name=stream_name, fif_file=fif_file, trigger_def=None)
     assert sp.trigger_def is None
 
     # TriggerDef instance
@@ -311,15 +292,11 @@ def test_checker_trigger_def():
         FileNotFoundError,
         match="'101-path' does not exist.",
     ):
-        StreamPlayer(
-            stream_name=stream_name, fif_file=fif_file, trigger_def="101-path"
-        )
+        StreamPlayer(stream_name=stream_name, fif_file=fif_file, trigger_def="101-path")
 
     # Invalid type
     with pytest.raises(TypeError, match="'101' is invalid"):
-        StreamPlayer(
-            stream_name=stream_name, fif_file=fif_file, trigger_def=101
-        )
+        StreamPlayer(stream_name=stream_name, fif_file=fif_file, trigger_def=101)
 
 
 @requires_eeg_resting_state_dataset
@@ -329,22 +306,16 @@ def test_checker_chunk_size(caplog):
     fif_file = eeg_resting_state.data_path()
 
     # Default
-    sp = StreamPlayer(
-        stream_name=stream_name, fif_file=fif_file, chunk_size=16
-    )
+    sp = StreamPlayer(stream_name=stream_name, fif_file=fif_file, chunk_size=16)
     assert sp.chunk_size == 16
 
     # Positive integer
-    sp = StreamPlayer(
-        stream_name=stream_name, fif_file=fif_file, chunk_size=32
-    )
+    sp = StreamPlayer(stream_name=stream_name, fif_file=fif_file, chunk_size=32)
     assert sp.chunk_size == 32
 
     # Positive float
     with pytest.raises(TypeError, match="'chunk_size' must be an integer"):
-        StreamPlayer(
-            stream_name=stream_name, fif_file=fif_file, chunk_size=32.0
-        )
+        StreamPlayer(stream_name=stream_name, fif_file=fif_file, chunk_size=32.0)
 
     # Positive non-usual integer
     caplog.clear()
@@ -360,15 +331,11 @@ def test_checker_chunk_size(caplog):
         match="Argument chunk_size must be a strictly positive "
         "integer. Provided: -101",
     ):
-        StreamPlayer(
-            stream_name=stream_name, fif_file=fif_file, chunk_size=-101
-        )
+        StreamPlayer(stream_name=stream_name, fif_file=fif_file, chunk_size=-101)
 
     # Invalid type
     with pytest.raises(TypeError, match="'chunk_size' must be an integer"):
-        StreamPlayer(
-            stream_name=stream_name, fif_file=fif_file, chunk_size=[1, 0, 1]
-        )
+        StreamPlayer(stream_name=stream_name, fif_file=fif_file, chunk_size=[1, 0, 1])
 
     # Infinite
     with pytest.raises(TypeError, match="'chunk_size' must be an integer"):

@@ -84,16 +84,10 @@ def test_buffer_duration():
             bufsize=bufsize, winsize=bufsize, stream_name=stream_name
         )
         scope = ScopeEEG(receiver, stream_name)
-        assert (
-            scope.sample_rate
-            == receiver.streams[stream_name].sample_rate
-            == sfreq
-        )
+        assert scope.sample_rate == receiver.streams[stream_name].sample_rate == sfreq
 
         assert scope.duration_buffer == _BUFFER_DURATION
-        assert scope.duration_buffer_samples == math.ceil(
-            _BUFFER_DURATION * sfreq
-        )
+        assert scope.duration_buffer_samples == math.ceil(_BUFFER_DURATION * sfreq)
 
 
 @requires_eeg_resting_state_dataset
@@ -114,9 +108,7 @@ def test_properties():
         assert scope.duration_buffer == scope._duration_buffer
         assert scope.duration_buffer_samples == scope._duration_buffer_samples
         assert scope.ts_list == scope._ts_list == list()
-        assert (
-            scope.channels_labels == scope._channels_labels == raw.ch_names[1:]
-        )
+        assert scope.channels_labels == scope._channels_labels == raw.ch_names[1:]
         assert scope.nb_channels == scope._nb_channels == len(raw.ch_names[1:])
         assert scope.apply_car == scope._apply_car
         assert not scope.apply_car
@@ -130,19 +122,19 @@ def test_properties():
         assert (scope.data_buffer == scope._data_buffer).all()
         assert (scope.trigger_buffer == scope._trigger_buffer).all()
 
-        with pytest.raises(AttributeError, match="can't set attribute"):
+        with pytest.raises(AttributeError):
             scope.stream_name = "new name"
-        with pytest.raises(AttributeError, match="can't set attribute"):
+        with pytest.raises(AttributeError):
             scope.sample_rate = 101
-        with pytest.raises(AttributeError, match="can't set attribute"):
+        with pytest.raises(AttributeError):
             scope.duration_buffer = 101
-        with pytest.raises(AttributeError, match="can't set attribute"):
+        with pytest.raises(AttributeError):
             scope.duration_buffer_samples = 101
-        with pytest.raises(AttributeError, match="can't set attribute"):
+        with pytest.raises(AttributeError):
             scope.ts_list = [101]
-        with pytest.raises(AttributeError, match="can't set attribute"):
+        with pytest.raises(AttributeError):
             scope.channels_labels = ["101"]
-        with pytest.raises(AttributeError, match="can't set attribute"):
+        with pytest.raises(AttributeError):
             scope.nb_channels = 101
         scope.apply_car = True
         assert scope.apply_car
@@ -150,10 +142,10 @@ def test_properties():
         assert scope.apply_bandpass
         scope.selected_channels = list(range(scope.nb_channels // 2))
         assert scope.selected_channels == list(range(scope.nb_channels // 2))
-        with pytest.raises(AttributeError, match="can't set attribute"):
+        with pytest.raises(AttributeError):
             scope.data_buffer = np.ones(
                 (scope._nb_channels, scope._duration_buffer_samples),
                 dtype=np.float32,
             )
-        with pytest.raises(AttributeError, match="can't set attribute"):
+        with pytest.raises(AttributeError):
             scope.trigger_buffer = np.ones(scope._duration_buffer_samples)

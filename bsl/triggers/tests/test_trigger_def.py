@@ -125,8 +125,7 @@ def test_read_ini(caplog, tmp_path):
     tdef = TriggerDef(eeg_resting_state.data_path())
     assert tdef._trigger_file is None
     assert (
-        "Argument trigger_file must be a valid Path to a .ini file. "
-        "Provided: .fif"
+        "Argument trigger_file must be a valid Path to a .ini file. " "Provided: .fif"
     ) in caplog.text
 
     caplog.clear()
@@ -188,7 +187,7 @@ def test_properties():
         }
     )
 
-    with pytest.raises(AttributeError, match="can't set attribute"):
+    with pytest.raises(AttributeError):
         tdef.by_name = dict()
-    with pytest.raises(AttributeError, match="can't set attribute"):
+    with pytest.raises(AttributeError):
         tdef.by_value = dict()

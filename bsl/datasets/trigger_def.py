@@ -3,7 +3,7 @@
 import os
 from pathlib import Path
 
-from ..utils._logs import logger
+from ..utils.logs import logger
 from ._fetching import _hashfunc, fetch_file
 
 MD5 = "553f24ecb5c8e67ebe597e6e71d7fcdc"
@@ -32,9 +32,7 @@ def data_path():
     if PATH.exists() and _hashfunc(PATH, hash_type="md5") == MD5:
         download = False
     elif PATH.exists() and not _hashfunc(PATH, hash_type="md5") == MD5:
-        logger.warning(
-            "Dataset existing but with different hash. Re-downloading."
-        )
+        logger.warning("Dataset existing but with different hash. Re-downloading.")
         download = True
     else:
         logger.info("Fetching dataset..")
