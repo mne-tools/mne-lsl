@@ -20,4 +20,4 @@ jobs:
         with:
           repository: labstreaminglayer/pylsl
       - name: Compare checksum
-        run: echo "$SHA256_PYLSL setup.py" | sha256sum -c
+        run: echo "$SHA256_PYLSL pylsl/pylsl.py" | sha256sum -c
