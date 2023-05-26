@@ -9,7 +9,7 @@ on:
   - cron: '0 8 * * 1'
 
 jobs:
-  style:
+  pylsl:
     timeout-minutes: 10
     runs-on: ubuntu-latest
     env:
