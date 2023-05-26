@@ -27,8 +27,7 @@ def test_valid_info():
     assert sorted(info.ch_names) == sorted(channels)
     assert info.get_channel_types() == [channels[ch] for ch in info.ch_names]
     assert all(
-        ch["unit_mul"] == (-6 if k in (0, 1) else 0)
-        for k, ch in enumerate(info["chs"])
+        ch["unit_mul"] == (-6 if k in (0, 1) else 0) for k, ch in enumerate(info["chs"])
     )
 
     # non-nested
@@ -45,8 +44,7 @@ def test_valid_info():
     assert sorted(info.ch_names) == sorted(channels)
     assert info.get_channel_types() == [channels[ch] for ch in info.ch_names]
     assert all(
-        ch["unit_mul"] == (-6 if k in (0, 1) else 0)
-        for k, ch in enumerate(info["chs"])
+        ch["unit_mul"] == (-6 if k in (0, 1) else 0) for k, ch in enumerate(info["chs"])
     )
 
     # marker stream
@@ -56,8 +54,7 @@ def test_valid_info():
     assert sorted(info.ch_names) == sorted(channels)
     assert info.get_channel_types() == [channels[ch] for ch in info.ch_names]
     assert all(
-        ch["unit_mul"] == (-6 if k in (0, 1) else 0)
-        for k, ch in enumerate(info["chs"])
+        ch["unit_mul"] == (-6 if k in (0, 1) else 0) for k, ch in enumerate(info["chs"])
     )
 
     info = create_info(2, 1024, "eeg", desc)
@@ -93,8 +90,7 @@ def test_invalid_info():
         channels[ch] if k != 0 else "eeg" for k, ch in enumerate(info.ch_names)
     ]
     assert all(
-        ch["unit_mul"] == (-6 if k in (0, 1) else 0)
-        for k, ch in enumerate(info["chs"])
+        ch["unit_mul"] == (-6 if k in (0, 1) else 0) for k, ch in enumerate(info["chs"])
     )
 
     # wrong name

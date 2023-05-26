@@ -9,8 +9,8 @@ from mne import create_info as mne_create_info
 from mne.io.constants import _ch_unit_mul_named
 from mne.io.pick import get_channel_type_constants
 
-from .logs import logger
 from ._checks import check_type, ensure_int
+from .logs import logger
 
 if TYPE_CHECKING:
     from typing import Any, Dict, List, Optional, Tuple
@@ -81,8 +81,7 @@ def create_info(
         assert len(channels) == n_channels
         ch_names = [ch["label"] for ch in channels]
         ch_names = [
-            ch[0] if (isinstance(ch, list) and len(ch) == 1) else ch
-            for ch in ch_names
+            ch[0] if (isinstance(ch, list) and len(ch) == 1) else ch for ch in ch_names
         ]
         assert all(isinstance(elt, str) and len(elt) != 0 for elt in ch_names)
         ch_types, units = _get_ch_types_and_units(channels, stype)
