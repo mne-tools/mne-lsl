@@ -1,0 +1,23 @@
+name: pylsl
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.number }}-${{ github.event.ref }}
+  cancel-in-progress: true
+on:
+  workflow_dispatch:
+  pull_request:
+  schedule:
+  - cron: '0 8 * * 1'
+
+jobs:
+  style:
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    env:
+      SHA256_PYLSL: dd9222ee3894c43535b40aee542a2c8cb6062a467d4b103bd3c3a713d7c7690c
+    steps:
+      - name: Checkout pylsl repository
+        uses: actions/checkout@v3
+        with:
+          repository: labstreaminglayer/pylsl
+      - name: Compare checksum
+        run: echo "$(SHA256_PYLSL) setup.py" | sha256sum -c
