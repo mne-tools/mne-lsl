@@ -1,10 +1,22 @@
-from typing import Any, Dict, List, Optional, Tuple
+# postponed evaluation of annotations, c.f. PEP 563 and PEP 649 alternatively, the type
+# hints can be defined as strings which will be evaluated with eval() prior to type
+# checking.
+from __future__ import annotations
 
-from mne import Info, create_info
+from typing import TYPE_CHECKING
+
+from mne import create_info as mne_create_info
 from mne.io.constants import _ch_unit_mul_named
 from mne.io.pick import get_channel_type_constants
 
+from .logs import logger
 from ._checks import _check_type, _ensure_int
+
+if TYPE_CHECKING:
+    from typing import Any, Dict, List, Optional, Tuple
+
+    from mne import Info
+
 
 _CH_TYPES_DICT = get_channel_type_constants(include_defaults=True)
 _STIM_TYPES = (
@@ -25,13 +37,28 @@ _EEG_UNITS = {
 }
 
 
-def _create_info(
+def create_info(
     n_channels: int,
     sfreq: float,
     stype: str,
     desc: Optional[Dict[str, Any]],
 ) -> Info:
-    """Create an mne.Info object from a stream attributes."""
+    """Create an `mne.Info` object from a stream attributes.
+
+    Parameters
+    ----------
+    n_channels : int
+        Number of channels.
+    sfreq : float
+        Sampling frequency in Hz. ``0`` corresponds to an irregular sampling rate.
+    desc : dict | None
+        If provided, dictionary containing channel information.
+
+    Returns
+    -------
+    info : Info
+        MNE info object corresponding.
+    """
     n_channels = _ensure_int(n_channels, "n_channels")
     _check_type(sfreq, ("numeric",), "sfreq")
     _check_type(stype, (str,), "stype")
@@ -60,7 +87,7 @@ def _create_info(
         assert all(isinstance(elt, str) and len(elt) != 0 for elt in ch_names)
         ch_types, units = _get_ch_types_and_units(channels, stype)
 
-        info = create_info(ch_names, 1, ch_types)
+        info = mne_create_info(ch_names, 1, ch_types)
         with info._unlock():
             info["sfreq"] = sfreq
             for ch, unit in zip(info["chs"], units):
@@ -78,7 +105,11 @@ def _create_info(
         ):
             info["device_info"]["model"] = manufacturer[0]
     except Exception:
-        info = create_info(n_channels, 1.0, stype)
+        logger.warning(
+            "Something went wrong while reading the channel description. Defaulting to "
+            "channel IDs and MNE-compatible stream type."
+        )
+        info = mne_create_info(n_channels, 1.0, stype)
         info["device_info"] = dict()
         with info._unlock():
             info["sfreq"] = sfreq
