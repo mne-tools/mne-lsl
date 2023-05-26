@@ -10,7 +10,7 @@ from mne.io.constants import _ch_unit_mul_named
 from mne.io.pick import get_channel_type_constants
 
 from .logs import logger
-from ._checks import _check_type, _ensure_int
+from ._checks import check_type, ensure_int
 
 if TYPE_CHECKING:
     from typing import Any, Dict, List, Optional, Tuple
@@ -59,16 +59,16 @@ def create_info(
     info : Info
         MNE info object corresponding.
     """
-    n_channels = _ensure_int(n_channels, "n_channels")
-    _check_type(sfreq, ("numeric",), "sfreq")
-    _check_type(stype, (str,), "stype")
+    n_channels = ensure_int(n_channels, "n_channels")
+    check_type(sfreq, ("numeric",), "sfreq")
+    check_type(stype, (str,), "stype")
     if sfreq < 0:
         raise ValueError(
             "The sampling frequency provided must be a positive number. "
             f"Provided '{sfreq}' can not be interpreted as a sampling "
             "frequency in Hz."
         )
-    _check_type(desc, (dict, None), "desc")
+    check_type(desc, (dict, None), "desc")
 
     # try to identify the main channel type
     stype = stype.lower().strip()

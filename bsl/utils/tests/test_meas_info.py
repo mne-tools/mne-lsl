@@ -2,7 +2,7 @@
 
 import pytest
 
-from bsl.utils.meas_info import _create_info
+from bsl.utils.meas_info import create_info
 
 
 def test_valid_info():
@@ -21,7 +21,7 @@ def test_valid_info():
             dict(label=[ch_name], unit=["uv"], type=[ch_type])
         )
 
-    info = _create_info(4, 1024, "eeg", desc)
+    info = create_info(4, 1024, "eeg", desc)
     assert info["sfreq"] == 1024.0
     assert len(info.ch_names) == 4
     assert sorted(info.ch_names) == sorted(channels)
@@ -39,7 +39,7 @@ def test_valid_info():
             dict(label=ch_name, unit="uv", type=ch_type)
         )
 
-    info = _create_info(4, 1024, "eeg", desc)
+    info = create_info(4, 1024, "eeg", desc)
     assert info["sfreq"] == 1024.0
     assert len(info.ch_names) == 4
     assert sorted(info.ch_names) == sorted(channels)
@@ -50,7 +50,7 @@ def test_valid_info():
     )
 
     # marker stream
-    info = _create_info(4, 0, "eeg", desc)
+    info = create_info(4, 0, "eeg", desc)
     assert info["sfreq"] == 0.0
     assert len(info.ch_names) == 4
     assert sorted(info.ch_names) == sorted(channels)
@@ -60,7 +60,7 @@ def test_valid_info():
         for k, ch in enumerate(info["chs"])
     )
 
-    info = _create_info(2, 1024, "eeg", desc)
+    info = create_info(2, 1024, "eeg", desc)
     assert info["sfreq"] == 1024
     assert len(info.ch_names) == 2
     assert info.ch_names == ["0", "1"]
@@ -85,7 +85,7 @@ def test_invalid_info():
             dict(label=[ch_name], unit=["uv"], type=[ch_type])
         )
 
-    info = _create_info(4, 1024, "eeg", desc)
+    info = create_info(4, 1024, "eeg", desc)
     assert info["sfreq"] == 1024.0
     assert len(info.ch_names) == 4
     assert sorted(info.ch_names) == sorted(channels)
@@ -112,7 +112,7 @@ def test_invalid_info():
             dict(label=[ch_name], unit=["uv"], type=[ch_type])
         )
 
-    info = _create_info(4, 1024, "eeg", desc)
+    info = create_info(4, 1024, "eeg", desc)
     assert info["sfreq"] == 1024
     assert len(info.ch_names) == 4
     assert info.ch_names == ["0", "1", "2", "3"]
@@ -121,15 +121,15 @@ def test_invalid_info():
 
     # invalid that should raise
     with pytest.raises(TypeError, match="'n_channels' must be an integer"):
-        _create_info(5.0, 1024, "eeg", desc)
+        create_info(5.0, 1024, "eeg", desc)
     with pytest.raises(TypeError, match="'sfreq' must be an instance of"):
-        _create_info(5, [101], "eeg", desc)
+        create_info(5, [101], "eeg", desc)
     with pytest.raises(ValueError, match="The sampling frequency"):
-        _create_info(5, -101, "eeg", desc)
+        create_info(5, -101, "eeg", desc)
     with pytest.raises(TypeError, match="'stype' must be an instance of str"):
-        _create_info(5, 101, 101, desc)
+        create_info(5, 101, 101, desc)
     with pytest.raises(TypeError, match="'desc' must be an instance of"):
-        _create_info(5, 101, "eeg", [101])
+        create_info(5, 101, "eeg", [101])
 
 
 def test_manufacturer():
@@ -149,7 +149,7 @@ def test_manufacturer():
         )
     desc["manufacturer"].append("101")
 
-    info = _create_info(4, 1024, "eeg", desc)
+    info = create_info(4, 1024, "eeg", desc)
     assert info["device_info"]["model"] == "101"
 
     # not nested
@@ -160,13 +160,13 @@ def test_manufacturer():
             dict(label=[ch_name], unit=["uv"], type=[ch_type])
         )
 
-    info = _create_info(4, 1024, "eeg", desc)
+    info = create_info(4, 1024, "eeg", desc)
     assert info["device_info"]["model"] == "101"
 
 
 def test_without_description():
     """Test creation of a valid info without description."""
-    info = _create_info(2, 1024, "eeg", None)
+    info = create_info(2, 1024, "eeg", None)
     assert info["sfreq"] == 1024
     assert len(info.ch_names) == 2
     assert info.ch_names == ["0", "1"]
