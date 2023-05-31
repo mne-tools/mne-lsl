@@ -47,6 +47,8 @@ class _BaseStreamInfo:
 
         Test one by one to stop ASAP.
         """
+        # TODO: check if this is not better
+        # return isinstance(other, _BaseStreamInfo) and self.__dict__ == other.__dict__
         if self.name != other.name:
             return False
         if self.source_id != other.source_id:
