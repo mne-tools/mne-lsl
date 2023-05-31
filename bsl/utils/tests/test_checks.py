@@ -3,6 +3,7 @@
 import logging
 from pathlib import Path
 
+import numpy as np
 import pytest
 
 from .._checks import check_type, check_value, check_verbose, ensure_int, ensure_path
@@ -25,8 +26,8 @@ def test_ensure_int():
 def test_check_type():
     """Test check_type checker."""
     # valids
-    check_type(101, ("int",))
-    check_type(101, ("int", str))
+    check_type(101, ("int-like",))
+    check_type(101, ("int-like", str))
     check_type("101.fif", ("path-like",))
 
     def foo():
@@ -36,10 +37,15 @@ def test_check_type():
 
     check_type(101, ("numeric",))
     check_type(101.0, ("numeric",))
+    check_type((1, 0, 1), ("array-like",))
+    check_type([1, 0, 1], ("array-like",))
+    check_type(np.array([1, 0, 1]), ("array-like",))
 
     # invalids
     with pytest.raises(TypeError, match="Item must be an instance of"):
         check_type(101, (float,))
+    with pytest.raises(TypeError, match="Item must be an instance of"):
+        check_type(101, ("array-like",))
     with pytest.raises(TypeError, match="'number' must be an instance of"):
         check_type(101, (float,), "number")
 
