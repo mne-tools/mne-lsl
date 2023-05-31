@@ -3,6 +3,7 @@
 import logging
 import operator
 import os
+from collections.abc import Sequence
 from pathlib import Path
 from typing import Any, Optional
 
@@ -61,8 +62,9 @@ class _Callable:
 _types = {
     "numeric": (np.floating, float, _IntLike()),
     "path-like": (str, Path, os.PathLike),
-    "int": (_IntLike(),),
+    "int-like": (_IntLike(),),
     "callable": (_Callable(),),
+    "array-like": (Sequence, np.ndarray),
 }
 
 
@@ -75,8 +77,8 @@ def check_type(item: Any, types: tuple, item_name: Optional[str] = None) -> None
         Item to check.
     types : tuple of types | tuple of str
         Types to be checked against.
-        If str, must be one of:
-            ('int', 'str', 'numeric', 'path-like', 'callable')
+        If str, must be one of ('int-like', 'numeric', 'path-like', 'callable',
+        'array-like').
     item_name : str | None
         Name of the item to show inside the error message.
 
@@ -115,8 +117,7 @@ def check_type(item: Any, types: tuple, item_name: Optional[str] = None) -> None
             type_name = ", ".join(type_name)
         item_name = "Item" if item_name is None else "'%s'" % item_name
         raise TypeError(
-            f"{item_name} must be an instance of {type_name}, "
-            f"got {type(item)} instead."
+            f"{item_name} must be an instance of {type_name}, got {type(item)} instead."
         )
 
 
@@ -137,8 +138,7 @@ def check_value(
     item_name : str | None
         Name of the item to show inside the error message.
     extra : str | None
-        Extra string to append to the invalid value sentence, e.g.
-        "when using ico mode".
+        Extra string to append to the invalid value sentence, e.g. "when using DC mode".
 
     Raises
     ------
@@ -190,7 +190,7 @@ def check_verbose(verbose: Any) -> int:
         CRITICAL=logging.CRITICAL,
     )
 
-    check_type(verbose, (bool, str, "int", None), item_name="verbose")
+    check_type(verbose, (bool, str, "int-like", None), item_name="verbose")
 
     if verbose is None:
         verbose = logging.WARNING
@@ -207,8 +207,8 @@ def check_verbose(verbose: Any) -> int:
         verbose = ensure_int(verbose)
         if verbose <= 0:
             raise ValueError(
-                "Argument 'verbose' can not be a negative integer, "
-                f"{verbose} is invalid."
+                f"Argument 'verbose' can not be a negative integer, {verbose} is "
+                "invalid."
             )
 
     return verbose
@@ -237,9 +237,8 @@ def ensure_path(item: Any, must_exist: bool) -> Path:
         except Exception:
             str_ = ""
         raise TypeError(
-            f"The provided path {str_}is invalid and can not be converted. "
-            "Please provide a str, an os.PathLike or a pathlib.Path object, "
-            f"not {type(item)}."
+            f"The provided path {str_}is invalid and can not be converted. Please "
+            f"provide a str, an os.PathLike or a pathlib.Path object, not {type(item)}."
         )
     if must_exist and not item.exists():
         raise FileNotFoundError(f"The provided path '{str(item)}' does not exist.")

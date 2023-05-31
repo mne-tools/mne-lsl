@@ -54,7 +54,7 @@ class ParallelPortTrigger(BaseTrigger):
         port_type: Optional[str] = None,
         delay: int = 50,
     ):
-        check_type(address, ("int", str), "address")
+        check_type(address, ("int-like", str), "address")
         if not isinstance(address, str):
             address = ensure_int(address)
         delay = ensure_int(delay, "delay")
