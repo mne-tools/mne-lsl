@@ -1,9 +1,17 @@
+# postponed evaluation of annotations, c.f. PEP 563 and PEP 649 alternatively, the type
+# hints can be defined as strings which will be evaluated with eval() prior to type
+# checking.
+from __future__ import annotations
+
 from ctypes import byref, c_char_p, c_double, c_void_p
-from typing import List, Optional
+from typing import TYPE_CHECKING
 
 from ..utils._checks import check_type, ensure_int
 from .load_liblsl import lib
 from .stream_info import _BaseStreamInfo
+
+if TYPE_CHECKING:
+    from typing import List, Optional
 
 
 def library_version() -> int:

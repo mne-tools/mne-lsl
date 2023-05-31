@@ -1,8 +1,12 @@
+# postponed evaluation of annotations, c.f. PEP 563 and PEP 649 alternatively, the type
+# hints can be defined as strings which will be evaluated with eval() prior to type
+# checking.
+from __future__ import annotations
+
 from ctypes import c_char_p, c_double, c_int, c_long, c_void_p
-from typing import List, Optional, Union
+from typing import TYPE_CHECKING
 
 import numpy as np
-from numpy.typing import NDArray
 
 from ..utils._checks import check_type, ensure_int
 from ..utils._docs import copy_doc
@@ -10,6 +14,11 @@ from .constants import fmt2numpy, fmt2push_chunk, fmt2push_sample, fmt2string
 from .load_liblsl import lib
 from .stream_info import _BaseStreamInfo
 from .utils import _check_timeout, handle_error
+
+if TYPE_CHECKING:
+    from typing import List, Optional, Union
+
+    from numpy.typing import NDArray
 
 
 class StreamOutlet:

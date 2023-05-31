@@ -1,10 +1,18 @@
+# postponed evaluation of annotations, c.f. PEP 563 and PEP 649 alternatively, the type
+# hints can be defined as strings which will be evaluated with eval() prior to type
+# checking.
+from __future__ import annotations
+
 from ctypes import c_char_p, c_double, c_void_p
-from typing import Any
+from typing import TYPE_CHECKING
 
 from ..utils._checks import check_type, check_value, ensure_int
 from .constants import fmt2idx, fmt2string, idx2fmt, string2fmt
 from .load_liblsl import lib
 from .utils import XMLElement
+
+if TYPE_CHECKING:
+    from typing import Any
 
 
 class _BaseStreamInfo:

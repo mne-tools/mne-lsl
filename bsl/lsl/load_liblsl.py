@@ -1,11 +1,19 @@
+# postponed evaluation of annotations, c.f. PEP 563 and PEP 649 alternatively, the type
+# hints can be defined as strings which will be evaluated with eval() prior to type
+# checking.
+from __future__ import annotations
+
 import os
 import platform
 from ctypes import CDLL, c_char_p, c_double, c_long, c_void_p, sizeof
 from pathlib import Path
-from typing import Optional, Tuple, Union
+from typing import TYPE_CHECKING
 
 from ..utils._exceptions import _GH_ISSUES
 from ..utils.logs import logger
+
+if TYPE_CHECKING:
+    from typing import Optional, Tuple, Union
 
 # Minimum/Maximum liblsl version. The major version is given by version // 100
 # and the minor version is given by version % 100.
@@ -27,7 +35,7 @@ _SUPPORTED_DISTRO = {
 }
 
 
-def load_liblsl():
+def load_liblsl() -> CDLL:
     """Load the binary LSL library on the system."""
     if platform.system() not in _PLATFORM_SUFFIXES:
         raise RuntimeError("The OS could not be determined. " + _GH_ISSUES)

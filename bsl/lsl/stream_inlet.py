@@ -1,7 +1,12 @@
+# postponed evaluation of annotations, c.f. PEP 563 and PEP 649 alternatively, the type
+# hints can be defined as strings which will be evaluated with eval() prior to type
+# checking.
+from __future__ import annotations
+
 import time
 from ctypes import byref, c_char_p, c_double, c_int, c_size_t, c_void_p
 from functools import reduce
-from typing import List, Optional, Union
+from typing import TYPE_CHECKING
 
 import numpy as np
 
@@ -16,6 +21,11 @@ from .constants import (
 from .load_liblsl import lib
 from .stream_info import _BaseStreamInfo
 from .utils import _check_timeout, _free_char_p_array_memory, handle_error
+
+if TYPE_CHECKING:
+    from typing import List, Optional, Tuple, Union
+
+    from numpy.typing import NDArray
 
 
 class StreamInlet:
@@ -193,7 +203,9 @@ class StreamInlet:
         handle_error(errcode)
         return result
 
-    def pull_sample(self, timeout: Optional[float] = 0.0):
+    def pull_sample(
+        self, timeout: Optional[float] = 0.0
+    ) -> Tuple[Union[List, NDArray[float]], Optional[float]]:
         """Pull a single sample from the inlet.
 
         Parameters
@@ -246,7 +258,7 @@ class StreamInlet:
         self,
         timeout: Optional[float] = 0.0,
         max_samples: int = 1024,
-    ):
+    ) -> Tuple[Union[List, NDArray[float]], NDArray[float]]:
         """Pull a chunk of samples from the inlet.
 
         Parameters
