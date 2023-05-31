@@ -9,6 +9,7 @@ from mne import create_info as mne_create_info
 from mne.io.constants import _ch_unit_mul_named
 from mne.io.pick import get_channel_type_constants
 
+from ..lsl.utils import XMLElement
 from ._checks import check_type, ensure_int
 from .logs import logger
 
@@ -41,7 +42,7 @@ def create_info(
     n_channels: int,
     sfreq: float,
     stype: str,
-    desc: Optional[Dict[str, Any]],
+    desc: Optional[Dict[str, Any], XMLElement],
 ) -> Info:
     """Create an `mne.Info` object from a stream attributes.
 
@@ -51,8 +52,8 @@ def create_info(
         Number of channels.
     sfreq : float
         Sampling frequency in Hz. ``0`` corresponds to an irregular sampling rate.
-    desc : dict | None
-        If provided, dictionary containing channel information.
+    desc : dict | XMLElement | None
+        If provided, dictionary or XML tree containing the channel information.
 
     Returns
     -------
@@ -68,7 +69,7 @@ def create_info(
             f"Provided '{sfreq}' can not be interpreted as a sampling "
             "frequency in Hz."
         )
-    check_type(desc, (dict, None), "desc")
+    check_type(desc, (dict, XMLElement, None), "desc")
 
     # try to identify the main channel type
     stype = stype.lower().strip()
