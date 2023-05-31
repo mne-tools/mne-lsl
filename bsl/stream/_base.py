@@ -1,8 +1,8 @@
-from typing import Optional
+from typing import Optional, Union, List
 
 from mne import Info
 
-from ..lsl import resolve_streams
+from ..lsl import resolve_streams, StreamInlet
 from .. import logger
 from ..utils._checks import check_type
 from ..utils.meas_info import create_info
@@ -49,8 +49,34 @@ class BaseStream:
             self._sinfo.desc,  # TODO: create_info likely not compatible with XMLElement
         )
 
-    def connect(self):
-        pass
+    def connect(self, processing_flags: Optional[Union[str, List[str]]] = None):
+        """Connect to the LSL stream.
+
+        Parameters
+        ----------
+        processing_flags : list of str | ``'all'`` | None
+            Set the post-processing options. By default, post-processing is disabled. Any
+            combination of the processing flags is valid. The available flags are:
+
+            * ``'clocksync'``: Automatic clock synchronization, equivalent to
+              manually adding the estimated `~bsl.lsl.StreamInlet.time_correction`.
+            * ``'dejitter'``: Remove jitter on the received timestamps with a
+              smoothing algorithm.
+            * ``'monotize'``: Force the timestamps to be monotically ascending.
+              This option should not be enable if ``'dejitter'`` is not enabled.
+        """
+        # The threadsafe processing flag should not be needed for this class. If it is
+        # provided, then it means the user is retrieving and doing something with the
+        # inlet in a different thread. This use-case is not supported, and users which
+        # needs this level of control should create the inlet themselves.
+        if processing_flags == "threadsafe" or "threadsafe" in processing_flags:
+            raise ValueError(
+                "The 'threadsafe' processing flag should not be provided for a BSL "
+                "Stream. If you require access to the underlying StreamInlet in a "
+                "separate thread, please instantiate the StreamInlet directly from "
+                "bsl.lsl.StreamInlet."
+            )
+        self._inlet = StreamInlet(self._sinfo, processing_flags=processing_flags)
 
     def disconnect(self):
         pass
@@ -97,7 +123,7 @@ class BaseStream:
         return self._stype
 
     @property
-    def name(self) -> Optional[str]:
+    def source_id(self) -> Optional[str]:
         """ID of the source of the LSL stream.
 
         :type: `str` | None
