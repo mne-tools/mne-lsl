@@ -49,14 +49,14 @@ class BaseStream:
             self._sinfo.desc,  # TODO: create_info likely not compatible with XMLElement
         )
 
-    def connect(self, processing_flags: Optional[Union[str, List[str]]] = None):
-        """Connect to the LSL stream.
+    def connect(self, processing_flags: Optional[Union[str, List[str]]] = None, timeout: Optional[float] = 10):
+        """Connect to the LSL stream and initiate data collection in the buffer.
 
         Parameters
         ----------
         processing_flags : list of str | ``'all'`` | None
-            Set the post-processing options. By default, post-processing is disabled. Any
-            combination of the processing flags is valid. The available flags are:
+            Set the post-processing options. By default, post-processing is disabled.
+            Any combination of the processing flags is valid. The available flags are:
 
             * ``'clocksync'``: Automatic clock synchronization, equivalent to
               manually adding the estimated `~bsl.lsl.StreamInlet.time_correction`.
@@ -64,6 +64,9 @@ class BaseStream:
               smoothing algorithm.
             * ``'monotize'``: Force the timestamps to be monotically ascending.
               This option should not be enable if ``'dejitter'`` is not enabled.
+        timeout : float | None
+            Optional timeout (in seconds) of the operation. ``None`` disables the
+            timeout.
         """
         # The threadsafe processing flag should not be needed for this class. If it is
         # provided, then it means the user is retrieving and doing something with the
@@ -77,6 +80,10 @@ class BaseStream:
                 "bsl.lsl.StreamInlet."
             )
         self._inlet = StreamInlet(self._sinfo, processing_flags=processing_flags)
+        self._inlet.open_stream(timeout=timeout)
+        # initiate time-correction
+        tc = self._inlet.time_correction(timeout=timeout)
+        logger.info("The estimated timestamp offset is %.2f seconds.", tc)
 
     def disconnect(self):
         pass
