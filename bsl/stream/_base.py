@@ -5,6 +5,7 @@ from mne import Info
 from ..lsl import resolve_streams
 from .. import logger
 from ..utils._checks import check_type
+from ..utils.meas_info import create_info
 
 
 class BaseStream:
@@ -41,7 +42,12 @@ class BaseStream:
         self._sinfo = sinfos[0]
 
         # create MNE info from the LSL stream info
-        # TODO
+        self._info = create_info(
+            self._sinfo.n_channels,
+            self._sinfo.sfreq,
+            self._sinfo.stype,
+            self._sinfo.desc,  # TODO: create_info likely not compatible with XMLElement
+        )
 
     def connect(self):
         pass
@@ -53,6 +59,9 @@ class BaseStream:
         pass
 
     def set_channel_types(self):
+        pass
+
+    def set_channel_units(self):
         pass
 
     def rename_channels(self):
