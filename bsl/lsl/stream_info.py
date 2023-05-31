@@ -314,7 +314,7 @@ class StreamInfo(_BaseStreamInfo):
         """Convert a string format to its LSL integer value."""
         if dtype in fmt2idx:
             return fmt2idx[dtype]
-        check_type(dtype, (str, "int"), "dtype")
+        check_type(dtype, (str, "int-like"), "dtype")
         if isinstance(dtype, str):
             dtype = dtype.lower()
             check_value(dtype, string2fmt, "dtype")
