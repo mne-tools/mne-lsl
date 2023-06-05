@@ -2,12 +2,15 @@ from time import strftime
 
 import pytest
 
+from bsl import logger
 from bsl.lsl import StreamInfo
+
+logger.propagate = True
 
 
 def test_stream_info_desc(caplog):
     """Test setters and getters for StreamInfo."""
-    sinfo = StreamInfo("pytest", "eeg", 3, 101, "float32", strftime("%H%m%s"))
+    sinfo = StreamInfo("pytest", "eeg", 3, 101, "float32", strftime("%H%M%S"))
     assert sinfo.get_channel_names() is None
     assert sinfo.get_channel_types() is None
     assert sinfo.get_channel_units() is None
@@ -47,15 +50,17 @@ def test_stream_info_desc(caplog):
     caplog.clear()
     assert sinfo.get_channel_names() == ch_names + ["tempered-label"]
     assert "description contains 4 elements for 3 channels" in caplog.text
-    assert sinfo.get_channel_types() == ch_types
-    assert sinfo.get_channel_units() == ["101"] * 3
+    assert sinfo.get_channel_types() == ch_types + [None]
+    assert sinfo.get_channel_units() == ["101"] * 3 + [None]
     ch_names = ["101", "201", "301"]
     sinfo.set_channel_names(ch_names)
     caplog.clear()
     assert sinfo.get_channel_names() == ch_names
+    assert sinfo.get_channel_types() == ch_types
+    assert sinfo.get_channel_units() == ["101"] * 3
     assert "elements for 3 channels" not in caplog.text
 
-    sinfo = StreamInfo("pytest", "eeg", 3, 101, "float32", strftime("%H%m%s"))
+    sinfo = StreamInfo("pytest", "eeg", 3, 101, "float32", strftime("%H%M%S"))
     channels = sinfo.desc.append_child("channels")
     ch = channels.append_child("channel")
     ch.append_child_value("label", "tempered-label")
@@ -66,12 +71,14 @@ def test_stream_info_desc(caplog):
     sinfo.set_channel_names(ch_names)
     caplog.clear()
     assert sinfo.get_channel_names() == ch_names
+    assert sinfo.get_channel_types() is None
+    assert sinfo.get_channel_units() is None
     assert "elements for 3 channels" not in caplog.text
 
 
 def test_stream_info_invalid_desc():
     """Test invalid arguments for the channel description setters."""
-    sinfo = StreamInfo("pytest", "eeg", 3, 101, "float32", strftime("%H%m%s"))
+    sinfo = StreamInfo("pytest", "eeg", 3, 101, "float32", strftime("%H%M%S"))
     assert sinfo.get_channel_names() is None
     assert sinfo.get_channel_types() is None
     assert sinfo.get_channel_units() is None
