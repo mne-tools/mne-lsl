@@ -332,8 +332,14 @@ class _BaseStreamInfo:
             return None
         if any(ch_info is None for ch_info in ch_infos):
             logger.warning(
-                "The stream description is missing some of the channel %s",
+                "The stream description is missing some of the channel %s.",
                 name.lstrip("ch_"),
+            )
+        if len(ch_infos) != self.n_channels:
+            logger.warning(
+                "The stream description contains %i elements for %i channels.",
+                len(ch_infos),
+                self.n_channels,
             )
         return ch_infos
 
@@ -386,8 +392,8 @@ class _BaseStreamInfo:
             check_type(ch_info, (str,), name.rstrip("s"))
         if len(ch_infos) != self.n_channels:
             raise ValueError(
-                f"The number of provided channel {name} {len(ch_infos)} must match the "
-                f"number of channels {self.n_channels}."
+                f"The number of provided channel {name.lstrip('ch_')} {len(ch_infos)} "
+                f"must match the number of channels {self.n_channels}."
             )
 
         if self.desc.child("channels").empty():
