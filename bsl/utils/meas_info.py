@@ -3,7 +3,6 @@
 # checking.
 from __future__ import annotations
 
-import xml.etree.ElementTree as ET
 from typing import TYPE_CHECKING
 
 from mne import create_info as mne_create_info
@@ -12,6 +11,7 @@ from mne.io.pick import get_channel_type_constants
 
 from ._checks import check_type, ensure_int
 from .logs import logger
+from ..lsl.stream_info import _BaseStreamInfo
 
 if TYPE_CHECKING:
     from typing import Any, Dict, List, Optional, Tuple
@@ -42,7 +42,7 @@ def create_info(
     n_channels: int,
     sfreq: float,
     stype: str,
-    desc: Optional[str, Dict[str, Any]],
+    desc: Optional[_BaseStreamInfo, Dict[str, Any]],
 ) -> Info:
     """Create an `mne.Info` object from a stream attributes.
 
@@ -52,8 +52,8 @@ def create_info(
         Number of channels.
     sfreq : float
         Sampling frequency in Hz. ``0`` corresponds to an irregular sampling rate.
-    desc : str | dict | None
-        If provided, dictionary or XML tree (as `str`) containing the channel
+    desc : StreamInfo | dict | None
+        If provided, dictionary or `~bsl.lsl.StreamInfo` containing the channel
         information.
 
     Returns
@@ -70,7 +70,7 @@ def create_info(
             f"Provided '{sfreq}' can not be interpreted as a sampling "
             "frequency in Hz."
         )
-    check_type(desc, (dict, str, None), "desc")
+    check_type(desc, (_BaseStreamInfo, dict, None), "desc")
 
     # try to identify the main channel type
     stype = stype.lower().strip()
@@ -80,19 +80,19 @@ def create_info(
     # attempt to create the info depending on the provided description
     try:
         if isinstance(desc, dict):
-            ch_names, ch_types, units, manufacturer = _read_ch_dict(
+            ch_names, ch_types, ch_units, manufacturer = _read_ch_dict(
                 n_channels, stype, desc
             )
-        elif isinstance(desc, str):
-            ch_names, ch_types, units, manufacturer = _read_ch_xml(
+        elif isinstance(desc, _BaseStreamInfo):
+            ch_names, ch_types, ch_units, manufacturer = _read_ch_sinfo(
                 n_channels, stype, desc
             )
 
         info = mne_create_info(ch_names, 1, ch_types)
         with info._unlock():
             info["sfreq"] = sfreq
-            for ch, unit in zip(info["chs"], units):
-                ch["unit_mul"] = unit
+            for ch, ch_unit in zip(info["chs"], ch_units):
+                ch["unit_mul"] = ch_unit
         # add manufacturer information if available
         info["device_info"] = dict()
         if isinstance(manufacturer, str):
@@ -119,42 +119,59 @@ def create_info(
 
 
 # --------------------- Functions to read from a description sinfo ---------------------
-def _read_ch_xml(
+def _read_ch_sinfo(
     n_channels: int, stype: str, desc: str
 ) -> Tuple[List[str], List[str], List[int], Optional[str]]:
-    """Read channel information from a description XML string.
+    """Read channel information from a StreamInfo.
 
-    An XML string is returned from a StreamInlet. A StreamInfo returned by
-    resolve_streams will contain an empty description.
+    If the StreamInfo is retrieved by resolve_streams, the description will be empty.
+    An inlet should be created and the inlet StreamInfo should be used to retrive the
+    channel description.
     """
-    root = ET.fromstring(desc)
-    ch_names, ch_types, units = [], [], []
-    for elt in root.iter("channel"):
-        ch_names.append(elt.find("label").text)
+    if n_channels != desc.n_channels:
+        raise RuntimeError(
+            "The number of channels expected and the number of channels in the "
+            "StreamInfo differ."
+        )
+    if stype != desc.stype:
+        raise RuntimeError(
+            "The stream type expected and the stream type in the StreamInfo differ."
+        )
 
-        ch_type = elt.find("type").text.lower().strip()
-        ch_type = stype if ch_type is None else ch_type
-        ch_type = "stim" if ch_type in _STIM_TYPES else ch_type
-        ch_type = ch_type if ch_type in _CH_TYPES_DICT else stype
-
-        unit = elt.find("unit").text.lower().strip()
-        unit = _ch_unit_mul_named[0] if unit is None else unit
-        if ch_type == "eeg" and unit in _EEG_UNITS:
-            unit = _EEG_UNITS[unit]
-        if isinstance(unit, (str, int)):  # we failed to identify the unit
-            unit = _ch_unit_mul_named[0]
-
-        ch_types.append(ch_type)
-        units.append(unit)
-
-    # sanity-checks
+    ch_names = [ch_name for ch_name in desc.get_channel_names() if ch_name is not None]
     assert len(ch_names) == n_channels
-    assert len(ch_types) == n_channels
-    assert len(ch_types) == n_channels
     assert all(isinstance(elt, str) and len(elt) != 0 for elt in ch_names)
 
-    manufacturer = root.find("desc").find("acquisition").find("manufacturer").text
-    return ch_names, ch_types, units, manufacturer
+    try:
+        ch_types = list()
+        for ch_type in desc.get_channel_types():
+            ch_type = ch_type.lower().strip()
+            ch_type = stype if ch_type is None else ch_type
+            ch_type = "stim" if ch_type in _STIM_TYPES else ch_type
+            ch_type = ch_type if ch_type in _CH_TYPES_DICT else stype
+            ch_types.append(ch_type)
+    except Exception:
+        ch_types = [stype] * n_channels
+    assert len(ch_types) == n_channels
+    assert all(isinstance(elt, str) and len(elt) != 0 for elt in ch_types)
+
+    try:
+        ch_units = list()
+        for ch_type, ch_unit in zip(ch_types, desc.get_channel_units()):
+            ch_unit = ch_unit.lower().strip()
+            ch_unit = _ch_unit_mul_named[0] if ch_unit is None else ch_unit
+            if ch_type == "eeg" and ch_unit in _EEG_UNITS:
+                ch_unit = _EEG_UNITS[ch_unit]
+            if isinstance(ch_unit, (str, int)):  # we failed to identify the unit
+                ch_unit = _ch_unit_mul_named[0]
+            ch_units.append(ch_unit)
+    except Exception:
+        ch_units = [_ch_unit_mul_named[0]] * n_channels
+    assert len(ch_units) == n_channels
+
+    # TODO: retrieve manufacturer from StreamInfo.desc
+    manufacturer = None
+    return ch_names, ch_types, ch_units, manufacturer
 
 
 # --------------------- Functions to read from a description dict ----------------------
@@ -172,9 +189,9 @@ def _read_ch_dict(
         ch[0] if (isinstance(ch, list) and len(ch) == 1) else ch for ch in ch_names
     ]
     assert all(isinstance(elt, str) and len(elt) != 0 for elt in ch_names)
-    ch_types, units = _get_ch_types_and_units(channels, stype)
+    ch_types, ch_units = _get_ch_types_and_units(channels, stype)
     manufacturer = desc.get("manufacturer", None)
-    return ch_names, ch_types, units, manufacturer
+    return ch_names, ch_types, ch_units, manufacturer
 
 
 def _get_ch_types_and_units(
@@ -183,21 +200,21 @@ def _get_ch_types_and_units(
 ) -> Tuple[List[str], List[int]]:
     """Get the channel types and units from a stream description."""
     ch_types = list()
-    units = list()
+    ch_units = list()
     for ch in channels:
         ch_type = _safe_get(ch, "type", stype)
         ch_type = "stim" if ch_type in _STIM_TYPES else ch_type
         ch_type = ch_type if ch_type in _CH_TYPES_DICT else stype
 
-        unit = _safe_get(ch, "unit", _ch_unit_mul_named[0])
-        if ch_type == "eeg" and unit in _EEG_UNITS:
-            unit = _EEG_UNITS[unit]
-        if isinstance(unit, (str, int)):  # we failed to identify the unit
-            unit = _ch_unit_mul_named[0]
+        ch_unit = _safe_get(ch, "unit", _ch_unit_mul_named[0])
+        if ch_type == "eeg" and ch_unit in _EEG_UNITS:
+            ch_unit = _EEG_UNITS[ch_unit]
+        if isinstance(ch_unit, (str, int)):  # we failed to identify the unit
+            ch_unit = _ch_unit_mul_named[0]
 
         ch_types.append(ch_type)
-        units.append(unit)
-    return ch_types, units
+        ch_units.append(ch_unit)
+    return ch_types, ch_units
 
 
 def _safe_get(channel, item, default) -> str:
