@@ -6,6 +6,7 @@ from __future__ import annotations
 from ctypes import c_char_p, c_double, c_void_p
 from typing import TYPE_CHECKING
 
+from ..utils.logs import logger
 from ..utils._checks import check_type, check_value, ensure_int
 from .constants import fmt2idx, fmt2string, idx2fmt, string2fmt
 from .load_liblsl import lib
@@ -13,6 +14,13 @@ from .utils import XMLElement
 
 if TYPE_CHECKING:
     from typing import Any, List, Optional, Tuple, Union
+
+
+_MAPPING_LSL = {
+    "ch_names": "label",
+    "ch_types": "type",
+    "ch_units": "unit",
+}
 
 
 class _BaseStreamInfo:
@@ -249,15 +257,85 @@ class _BaseStreamInfo:
         """
         return XMLElement(lib.lsl_get_desc(self._obj))
 
-    # -- Getter and setters for data description ---------------------------------------
+    # -- Getters and setters for data description --------------------------------------
     def get_channel_names(self) -> Optional[List[str]]:
-        pass
+        """Get the channel names in the description.
+
+        Returns
+        -------
+        ch_names : sequence of str or ``None`` | None
+            List of channel names, matching the number of total channels.
+            If ``None``, the channel names are not set.
+
+            .. warning::
+
+                If a list of str and ``None`` are returned, some of the channel names
+                are missing. This is not expected and could occur if the XML tree in
+                the ``desc`` property is tempered with outside of the defined getter and
+                setter.
+        """
+        return self._get_channel_info("ch_names")
 
     def get_channel_types(self) -> Optional[List[str]]:
-        pass
+        """Get the channel types in the description.
+
+        Returns
+        -------
+        ch_types : sequence of str or ``None`` | None
+            List of channel names, matching the number of total channels.
+            If ``None``, the channel types are not set.
+
+            .. warning::
+
+                If a list of str and ``None`` are returned, some of the channel types
+                are missing. This is not expected and could occur if the XML tree in
+                the ``desc`` property is tempered with outside of the defined getter and
+                setter.
+        """
+        return self._get_channel_info("ch_types")
 
     def get_channel_units(self) -> Optional[List[str]]:
-        pass
+        """Get the channel units in the description.
+
+        Returns
+        -------
+        ch_units : sequence of str or ``None`` | None
+            List of channel units, matching the number of total channels.
+            If ``None``, the channel units are not set.
+
+            .. warning::
+
+                If a list of str and ``None`` are returned, some of the channel units
+                are missing. This is not expected and could occur if the XML tree in
+                the ``desc`` property is tempered with outside of the defined getter and
+                setter.
+        """
+        return self._get_channel_info("ch_units")
+
+    def _get_channel_info(self, name: str) -> Optional[List[str]]:
+        """Get the 'channel/name' element in the XML tree."""
+        if self.desc.child("channels").empty():
+            return None
+
+        channels = self.desc.child("channels")
+        ch_infos = list()
+        ch = channels.child("channel")
+        while not ch.empty():
+            ch_info = ch.child(_MAPPING_LSL[name]).first_child().value()
+            if len(ch_info) != 0:
+                ch_infos.append(ch_info)
+            else:
+                ch_infos.append(None)
+            ch = ch.next_sibling()
+
+        if all(ch_info is None for ch_info in ch_infos):
+            return None
+        if any(ch_info is None for ch_info in ch_infos):
+            logger.warning(
+                "The stream description is missing some of the channel %s",
+                name.lstrip("ch_"),
+            )
+        return ch_infos
 
     def set_channel_names(self, ch_names: Union[List[str], Tuple[str]]) -> None:
         """Set the channel names in the description. Existing labels are overwritten.
@@ -318,23 +396,19 @@ class _BaseStreamInfo:
             channels = self.desc.child("channels")
 
         # fill the 'channel/name' element of the tree and overwrite existing values
-        mapping_lsl = {
-            "ch_names": "label",
-            "ch_types": "type",
-            "ch_units": "unit",
-        }
         ch = channels.child("channel")
         for ch_info in ch_infos:
             if ch.empty():
                 ch = channels.append_child("channel")
 
-            if ch.child(mapping_lsl[name]).empty():
-                ch.append_child_value(mapping_lsl[name], ch_info)
+            if ch.child(_MAPPING_LSL[name]).empty():
+                ch.append_child_value(_MAPPING_LSL[name], ch_info)
             else:
-                ch.child(mapping_lsl[name]).first_child().set_value(ch_info)
+                ch.child(_MAPPING_LSL[name]).first_child().set_value(ch_info)
             ch = ch.next_sibling()
 
-        # in case the original sinfo had more 'channel' than the correct number
+        # in case the original sinfo was tempered with and had more 'channel' than the
+        # correct number of channels
         while not ch.empty():
             ch_next = ch.next_sibling()
             channels.remove_child(ch)
