@@ -12,7 +12,7 @@ from .load_liblsl import lib
 from .utils import XMLElement
 
 if TYPE_CHECKING:
-    from typing import Any
+    from typing import Any, List, Optional, Tuple, Union
 
 
 class _BaseStreamInfo:
@@ -110,7 +110,7 @@ class _BaseStreamInfo:
 
         return str_
 
-    # -- Core information, assigned at construction ---------------------------
+    # -- Core information, assigned at construction ------------------------------------
     @property
     def dtype(self) -> str:
         """Channel format of a stream.
@@ -167,7 +167,7 @@ class _BaseStreamInfo:
         """
         return lib.lsl_get_type(self._obj).decode("utf-8")
 
-    # -- Hosting information, assigned when bound to an outlet/inlet ----------
+    # -- Hosting information, assigned when bound to an outlet/inlet -------------------
     @property
     def created_at(self) -> float:
         """Timestamp at which the stream was created.
@@ -212,7 +212,7 @@ class _BaseStreamInfo:
         """
         return lib.lsl_get_version(self._obj)
 
-    # -- Data description -----------------------------------------------------
+    # -- Data description --------------------------------------------------------------
     @property
     def as_xml(self) -> str:
         """Retrieve the entire stream_info in XML format.
@@ -248,6 +248,58 @@ class _BaseStreamInfo:
         .. _XDF file format project: https://github.com/sccn/xdf/wiki/Meta-Data
         """
         return XMLElement(lib.lsl_get_desc(self._obj))
+
+    # -- Getter and setters for data description ---------------------------------------
+    def get_channel_names(self) -> Optional[List[str]]:
+        pass
+
+    def get_channel_types(self) -> Optional[List[str]]:
+        pass
+
+    def get_channel_units(self) -> Optional[List[str]]:
+        pass
+
+    def set_channel_names(self, ch_names: Union[List[str], Tuple[str]]):
+        """Set the channel names in the description. Existing labels are overwritten.
+
+        Parameters
+        ----------
+        ch_names : sequence of str
+            List of channel names, matching the number of total channels.
+        """
+        check_type(ch_names, (list, tuple), "ch_names")
+        for ch_name in ch_names:
+            check_type(ch_name, (str,), "ch_name")
+        if len(ch_names) != self.n_channels:
+            raise ValueError(
+                f"The number of provided channel names {len(ch_names)} must match the "
+                f"number of channels {self.n_channels}."
+            )
+
+        channels = self.desc.append_child("channels")
+        for ch_name in ch_names:
+            ch = channels.append_child("channel")
+            ch.append_child_value("label", ch_name)
+
+    def set_channel_types(self, ch_types: List[str]):
+        """Set the channel types in the description. Existing types are overwritten.
+
+        Parameters
+        ----------
+        ch_types : sequence of str
+            List of channel types, matching the number of total channels.
+        """
+        pass
+
+    def set_channel_units(self, ch_units: List[str]):
+        """Set the channel units in the description. Existing units are overwritten.
+
+        Parameters
+        ----------
+        ch_units : sequence of str
+            List of channel units, matching the number of total channels.
+        """
+        pass
 
 
 class StreamInfo(_BaseStreamInfo):
@@ -318,7 +370,7 @@ class StreamInfo(_BaseStreamInfo):
         )
         super().__init__(obj)
 
-    # -------------------------------------------------------------------------
+    # ----------------------------------------------------------------------------------
     @staticmethod
     def _string2idxfmt(dtype) -> int:
         """Convert a string format to its LSL integer value."""
