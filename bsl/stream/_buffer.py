@@ -29,7 +29,7 @@ class Buffer:
     def update(self, data: NDArray[float]):
         # data is a pull from an inlet, thus the shape is (n_samples, n_channels)
         self._buffer = np.roll(self._buffer, -data.shape[0], axis=0)
-        self._buffer[-data.shape[0]:, :] = data
+        self._buffer[-data.shape[0] :, :] = data
         self._samples_retrieved += data.shape[0]
 
     @property

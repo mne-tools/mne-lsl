@@ -9,9 +9,9 @@ from mne import create_info as mne_create_info
 from mne.io.constants import _ch_unit_mul_named
 from mne.io.pick import get_channel_type_constants
 
+from ..lsl.stream_info import _BaseStreamInfo
 from ._checks import check_type, ensure_int
 from .logs import logger
-from ..lsl.stream_info import _BaseStreamInfo
 
 if TYPE_CHECKING:
     from typing import Any, Dict, List, Optional, Tuple

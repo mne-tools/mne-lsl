@@ -1,9 +1,9 @@
-from typing import Optional, Union, List
+from typing import List, Optional, Union
 
 from mne import Info
 
-from ..lsl import resolve_streams, StreamInlet
 from .. import logger
+from ..lsl import StreamInlet, resolve_streams
 from ..utils._checks import check_type
 from ..utils.meas_info import create_info
 
@@ -49,7 +49,11 @@ class BaseStream:
             self._sinfo.as_xml,
         )
 
-    def connect(self, processing_flags: Optional[Union[str, List[str]]] = None, timeout: Optional[float] = 10):
+    def connect(
+        self,
+        processing_flags: Optional[Union[str, List[str]]] = None,
+        timeout: Optional[float] = 10,
+    ):
         """Connect to the LSL stream and initiate data collection in the buffer.
 
         Parameters
