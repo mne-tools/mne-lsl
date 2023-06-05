@@ -1,7 +1,10 @@
 """Test meas_info.py"""
 
+from time import strftime
+
 import pytest
 
+from bsl.lsl import StreamInfo, StreamOutlet
 from bsl.utils.meas_info import create_info
 
 
@@ -62,7 +65,7 @@ def test_valid_info():
     assert len(info.ch_names) == 2
     assert info.ch_names == ["0", "1"]
     assert info.get_channel_types() == ["eeg", "eeg"]
-    assert all(ch["unit_mul"] == -0 for ch in info["chs"])
+    assert all(ch["unit_mul"] == 0 for ch in info["chs"])
 
 
 def test_invalid_info():
@@ -113,7 +116,7 @@ def test_invalid_info():
     assert len(info.ch_names) == 4
     assert info.ch_names == ["0", "1", "2", "3"]
     assert info.get_channel_types() == ["eeg", "eeg", "eeg", "eeg"]
-    assert all(ch["unit_mul"] == -0 for ch in info["chs"])
+    assert all(ch["unit_mul"] == 0 for ch in info["chs"])
 
     # invalid that should raise
     with pytest.raises(TypeError, match="'n_channels' must be an integer"):
@@ -160,6 +163,11 @@ def test_manufacturer():
     assert info["device_info"]["model"] == "101"
 
 
+def test_valid_info_from_sinfo():
+    """Test creation of a valid info from a SreamInlet."""
+    pass
+
+
 def test_without_description():
     """Test creation of a valid info without description."""
     info = create_info(2, 1024, "eeg", None)
@@ -167,4 +175,7 @@ def test_without_description():
     assert len(info.ch_names) == 2
     assert info.ch_names == ["0", "1"]
     assert info.get_channel_types() == ["eeg", "eeg"]
-    assert all(ch["unit_mul"] == -0 for ch in info["chs"])
+    assert all(ch["unit_mul"] == 0 for ch in info["chs"])
+
+    # TODO
+    sinfo = StreamInfo("pytest", "eeg", 2, 101, strftime("%H%m%s"))

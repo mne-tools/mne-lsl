@@ -46,7 +46,7 @@ class BaseStream:
             self._sinfo.n_channels,
             self._sinfo.sfreq,
             self._sinfo.stype,
-            self._sinfo.desc,  # TODO: create_info likely not compatible with XMLElement
+            self._sinfo.as_xml,
         )
 
     def connect(self, processing_flags: Optional[Union[str, List[str]]] = None, timeout: Optional[float] = 10):
