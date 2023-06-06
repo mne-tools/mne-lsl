@@ -25,7 +25,7 @@ _STIM_TYPES = (
     "markers",
     "stim",
 )
-_EEG_UNITS = {
+_VOLTAGE_UNITS = {
     "v": _ch_unit_mul_named[0],
     "volt": _ch_unit_mul_named[0],
     "volts": _ch_unit_mul_named[0],
@@ -44,7 +44,7 @@ def create_info(
     stype: str,
     desc: Optional[_BaseStreamInfo, Dict[str, Any]],
 ) -> Info:
-    """Create an `mne.Info` object from a stream attributes.
+    """Create an `mne.Info` object from an LSL stream attributes.
 
     Parameters
     ----------
@@ -52,14 +52,25 @@ def create_info(
         Number of channels.
     sfreq : float
         Sampling frequency in Hz. ``0`` corresponds to an irregular sampling rate.
+    stype : str
+        Type of the stream. This type will be used as a default for all channels with
+        an unknown type. If the ``stype`` provided is not among the MNE-known channel
+        types, defaults to ``'misc'``.
     desc : StreamInfo | dict | None
         If provided, dictionary or `~bsl.lsl.StreamInfo` containing the channel
-        information.
+        information. A `~bsl.lsl.StreamInfo` contains the number of channels, sampling
+        frequency and stream type, which will be checked against the provided arguments
+        ``n_channels``, ``sfreq`` and ``stype``.
 
     Returns
     -------
     info : Info
-        MNE info object corresponding.
+        MNE `~mne.Info` object corresponding.
+
+    Notes
+    -----
+    If the argument ``desc`` is not aligned with ``n_channels``, it is ignored and an
+    `mne.Info` with the number of channels definbed in ``n_channels`` is created.
     """
     n_channels = ensure_int(n_channels, "n_channels")
     check_type(sfreq, ("numeric",), "sfreq")
@@ -80,11 +91,11 @@ def create_info(
     # attempt to create the info depending on the provided description
     try:
         if isinstance(desc, dict):
-            ch_names, ch_types, ch_units, manufacturer = _read_ch_dict(
+            ch_names, ch_types, ch_units, manufacturer = _read_desc_dict(
                 n_channels, stype, desc
             )
         elif isinstance(desc, _BaseStreamInfo):
-            ch_names, ch_types, ch_units, manufacturer = _read_ch_sinfo(
+            ch_names, ch_types, ch_units, manufacturer = _read_desc_sinfo(
                 n_channels, stype, desc
             )
 
@@ -119,7 +130,7 @@ def create_info(
 
 
 # --------------------- Functions to read from a description sinfo ---------------------
-def _read_ch_sinfo(
+def _read_desc_sinfo(
     n_channels: int, stype: str, desc: str
 ) -> Tuple[List[str], List[str], List[int], Optional[str]]:
     """Read channel information from a StreamInfo.
@@ -160,9 +171,9 @@ def _read_ch_sinfo(
         for ch_type, ch_unit in zip(ch_types, desc.get_channel_units()):
             ch_unit = ch_unit.lower().strip()
             ch_unit = _ch_unit_mul_named[0] if ch_unit is None else ch_unit
-            if ch_type == "eeg" and ch_unit in _EEG_UNITS:
-                ch_unit = _EEG_UNITS[ch_unit]
-            if isinstance(ch_unit, (str, int)):  # we failed to identify the unit
+            if ch_type in ("eeg", "eog", "ecg") and ch_unit in _VOLTAGE_UNITS:
+                ch_unit = _VOLTAGE_UNITS[ch_unit]
+            if isinstance(ch_unit, str):  # we failed to identify the unit
                 ch_unit = _ch_unit_mul_named[0]
             ch_units.append(ch_unit)
     except Exception:
@@ -175,7 +186,7 @@ def _read_ch_sinfo(
 
 
 # --------------------- Functions to read from a description dict ----------------------
-def _read_ch_dict(
+def _read_desc_dict(
     n_channels: int, stype: str, desc: Dict[str, Any]
 ) -> Tuple[List[str], List[str], List[int], Optional[str]]:
     """Read channel information from a description dictionary.
@@ -207,9 +218,9 @@ def _get_ch_types_and_units(
         ch_type = ch_type if ch_type in _CH_TYPES_DICT else stype
 
         ch_unit = _safe_get(ch, "unit", _ch_unit_mul_named[0])
-        if ch_type == "eeg" and ch_unit in _EEG_UNITS:
-            ch_unit = _EEG_UNITS[ch_unit]
-        if isinstance(ch_unit, (str, int)):  # we failed to identify the unit
+        if ch_type in ("eeg", "eog", "ecg") and ch_unit in _VOLTAGE_UNITS:
+            ch_unit = _VOLTAGE_UNITS[ch_unit]
+        if isinstance(ch_unit, str):  # we failed to identify the unit
             ch_unit = _ch_unit_mul_named[0]
 
         ch_types.append(ch_type)

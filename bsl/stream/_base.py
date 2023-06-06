@@ -46,7 +46,7 @@ class BaseStream:
             self._sinfo.n_channels,
             self._sinfo.sfreq,
             self._sinfo.stype,
-            self._sinfo.as_xml,
+            self._sinfo,
         )
 
     def connect(

@@ -4,11 +4,14 @@ from time import strftime
 
 import pytest
 
-from bsl.lsl import StreamInfo, StreamOutlet
+from bsl import logger
+from bsl.lsl import StreamInfo
 from bsl.utils.meas_info import create_info
 
+logger.propagate = True
 
-def test_valid_info():
+
+def test_valid_info(caplog):
     """Test creation of valid info."""
     channels = {
         "Fp1": "eeg",
@@ -30,7 +33,7 @@ def test_valid_info():
     assert sorted(info.ch_names) == sorted(channels)
     assert info.get_channel_types() == [channels[ch] for ch in info.ch_names]
     assert all(
-        ch["unit_mul"] == (-6 if k in (0, 1) else 0) for k, ch in enumerate(info["chs"])
+        ch["unit_mul"] == (0 if k == 2 else -6) for k, ch in enumerate(info["chs"])
     )
 
     # non-nested
@@ -47,7 +50,7 @@ def test_valid_info():
     assert sorted(info.ch_names) == sorted(channels)
     assert info.get_channel_types() == [channels[ch] for ch in info.ch_names]
     assert all(
-        ch["unit_mul"] == (-6 if k in (0, 1) else 0) for k, ch in enumerate(info["chs"])
+        ch["unit_mul"] == (0 if k == 2 else -6) for k, ch in enumerate(info["chs"])
     )
 
     # marker stream
@@ -57,10 +60,13 @@ def test_valid_info():
     assert sorted(info.ch_names) == sorted(channels)
     assert info.get_channel_types() == [channels[ch] for ch in info.ch_names]
     assert all(
-        ch["unit_mul"] == (-6 if k in (0, 1) else 0) for k, ch in enumerate(info["chs"])
+        ch["unit_mul"] == (0 if k == 2 else -6) for k, ch in enumerate(info["chs"])
     )
 
+    caplog.set_level(30)  # WARNING level
+    caplog.clear()
     info = create_info(2, 1024, "eeg", desc)
+    assert "Something went wrong while reading the channel description." in caplog.text
     assert info["sfreq"] == 1024
     assert len(info.ch_names) == 2
     assert info.ch_names == ["0", "1"]
@@ -93,7 +99,7 @@ def test_invalid_info():
         channels[ch] if k != 0 else "eeg" for k, ch in enumerate(info.ch_names)
     ]
     assert all(
-        ch["unit_mul"] == (-6 if k in (0, 1) else 0) for k, ch in enumerate(info["chs"])
+        ch["unit_mul"] == (0 if k == 2 else -6) for k, ch in enumerate(info["chs"])
     )
 
     # wrong name
@@ -178,4 +184,4 @@ def test_without_description():
     assert all(ch["unit_mul"] == 0 for ch in info["chs"])
 
     # TODO
-    sinfo = StreamInfo("pytest", "eeg", 2, 101, strftime("%H%m%s"))
+    sinfo = StreamInfo("pytest", "eeg", 2, 101, "float32", strftime("%H%M%S"))
