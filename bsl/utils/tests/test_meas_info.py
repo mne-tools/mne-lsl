@@ -170,8 +170,29 @@ def test_manufacturer():
 
 
 def test_valid_info_from_sinfo():
-    """Test creation of a valid info from a SreamInlet."""
-    pass
+    """Test creation of a valid info from a SreamInfo."""
+    sinfo = StreamInfo("pytest", "eeg", 4, 101, "float32", strftime("%H%M%S"))
+    ch_names = ["Fp1", "Fp2", "STI101", "EOG"]
+    ch_types = ["eeg", "eeg", "stim", "eog"]
+    sinfo.set_channel_names(ch_names)
+    sinfo.set_channel_types(ch_types)
+    info = create_info(4, 101, "eeg", sinfo)
+    assert info["sfreq"] == 101
+    assert len(info.ch_names) == 4
+    assert info.ch_names == ch_names
+    assert info.get_channel_types() == ch_types
+    assert all(ch["unit_mul"] == 0 for ch in info["chs"])
+
+    # set channel units
+    sinfo.set_channel_units(["uv", "uv", "none", "uv"])
+    info = create_info(4, 101, "eeg", sinfo)
+    assert info["sfreq"] == 101
+    assert len(info.ch_names) == 4
+    assert info.ch_names == ch_names
+    assert info.get_channel_types() == ch_types
+    assert all(
+        ch["unit_mul"] == (0 if k == 2 else -6) for k, ch in enumerate(info["chs"])
+    )
 
 
 def test_without_description():
@@ -183,5 +204,10 @@ def test_without_description():
     assert info.get_channel_types() == ["eeg", "eeg"]
     assert all(ch["unit_mul"] == 0 for ch in info["chs"])
 
-    # TODO
     sinfo = StreamInfo("pytest", "eeg", 2, 101, "float32", strftime("%H%M%S"))
+    info = create_info(2, 101, "eeg", sinfo)
+    assert info["sfreq"] == 101
+    assert len(info.ch_names) == 2
+    assert info.ch_names == ["0", "1"]
+    assert info.get_channel_types() == ["eeg", "eeg"]
+    assert all(ch["unit_mul"] == 0 for ch in info["chs"])

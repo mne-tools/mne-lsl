@@ -374,6 +374,11 @@ class _BaseStreamInfo:
         ch_units : sequence of str | str
             List of channel units, matching the number of total channels.
             If a single `str` is provided, the unit is applied to all channels.
+
+        Notes
+        -----
+        A ``'stim'`` channel does not have a unit. The `str` ``none`` should be used to
+        denote a ``'stim'`` channel unit, corresponding to ``FIFF_UNITM_NONE`` in MNE.
         """
         ch_units = (
             [ch_units] * self.n_channels if isinstance(ch_units, str) else ch_units
