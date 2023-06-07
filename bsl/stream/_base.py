@@ -53,8 +53,10 @@ class BaseStream:
         # (n_samples, n_channels). New samples are added to the right of the buffer
         # while old samples are removed from the left of the buffer.
         self._buffer = None
-        # picks defines the selected channels and their order
-        self._picks = None
+        self._timestamps = None
+        self._picks = None  # picks defines the selected channels and their order
+        self._update_delay = None
+        self._update_thread = None
 
     def resolve(self, timeout: float = 10) -> None:
         sinfos = resolve_streams(timeout, self._name, self._stype, self._source_id)
@@ -142,8 +144,25 @@ class BaseStream:
         self._update_thread = Timer(1 / self._update_delay, self._update)
         self._update_thread.start()
 
-    def disconnect(self):
-        pass
+    def disconnect(self) -> None:
+        while self._update_thread.is_alive():
+            self._update_thread.cancel()
+        self._inlet.close_stream()
+        del self._inlet
+
+        # reset variables defined after connection
+        self._inlet = None
+        self._buffer = None
+        self._timestamps = None
+        self._picks = None
+        self._update_delay = None
+        self._update_thread = None
+
+    def __del__(self):
+        try:
+            self.disconnect()
+        except Exception:
+            pass
 
     def _update(self) -> None:
         """Update function pulling new samples in the buffer at a regular interval."""
