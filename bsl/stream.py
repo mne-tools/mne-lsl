@@ -9,16 +9,17 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 
-from .. import logger
-from ..lsl import StreamInlet, resolve_streams
-from ..lsl.constants import fmt2numpy
-from ..utils._checks import check_type
-from ..utils.meas_info import create_info
+from .lsl import StreamInlet, resolve_streams
+from .lsl.constants import fmt2numpy
+from .utils._checks import check_type
+from .utils.logs import logger
+from .utils.meas_info import create_info
 
 if TYPE_CHECKING:
-    from typing import List, Optional, Tuple, Union
+    from typing import List, Optional, Sequence, Tuple, Union
 
-    from numpy.typing import NDarray
+    from mne import Info
+    from numpy.typing import NDArray
 
 
 class Stream:
@@ -54,7 +55,7 @@ class Stream:
         source_id: Optional[str] = None,
     ):
         check_type(bufsize, ("numeric",), "bufsize")
-        if 0 <= bufsize:
+        if bufsize <= 0:
             raise ValueError(
                 "The buffer size 'bufsize' must be a strictly positive number. "
                 f"{bufsize} is invalid."
@@ -120,7 +121,7 @@ class Stream:
 
     def connect(
         self,
-        processing_flags: Optional[Union[str, List[str]]] = None,
+        processing_flags: Optional[Union[str, Sequence[str]]] = None,
         timeout: Optional[float] = 10,
         ufreq: float = 5,
     ) -> None:
@@ -151,7 +152,9 @@ class Stream:
         # provided, then it means the user is retrieving and doing something with the
         # inlet in a different thread. This use-case is not supported, and users which
         # needs this level of control should create the inlet themselves.
-        if processing_flags == "threadsafe" or "threadsafe" in processing_flags:
+        if processing_flags is not None and (
+            processing_flags == "threadsafe" or "threadsafe" in processing_flags
+        ):
             raise ValueError(
                 "The 'threadsafe' processing flag should not be provided for a BSL "
                 "Stream. If you require access to the underlying StreamInlet in a "
@@ -177,15 +180,13 @@ class Stream:
         # create buffer of shape (n_samples, n_channels) and (n_samples,)
         if self._inlet.sfreq == 0:
             self._buffer = np.zeros(
-                self._bufsize,
-                self._inlet.n_channels,
+                (self._bufsize, self._inlet.n_channels),
                 dtype=fmt2numpy[self._inlet._dtype],
             )
             self._timestamps = np.zeros(self._bufsize, dtype=np.float64)
         else:
             self._buffer = np.zeros(
-                ceil(self._bufsize * self._inlet.sfreq),
-                self._inlet.n_channels,
+                (ceil(self._bufsize * self._inlet.sfreq), self._inlet.n_channels),
                 dtype=fmt2numpy[self._inlet._dtype],
             )
             self._timestamps = np.zeros(
@@ -231,10 +232,49 @@ class Stream:
         self._update_thread = Timer(self._update_delay, self._update)
         self._update_thread.start()
 
-    def get_data(self, winsize: float) -> Tuple[NDarray[float], NDarray[float]]:
-        assert 0 <= winsize, "The window size must be a strictly positive number."
-        n_samples = ceil(winsize * self._inlet.sfreq)
-        return self._buffer[-n_samples:, self._picks], self._timestamps[-n_samples:]
+    def get_data(
+        self,
+        winsize: Optional[float],
+        picks: Optional[
+            Union[Sequence[str], Sequence[int], str, int, NDArray[int]]
+        ] = None,
+    ) -> Tuple[NDArray[float], NDArray[float]]:
+        """
+        Parameters
+        ----------
+        winsize : float | int | None
+            Size of the window of data to view. If the stream sampling rate ``sfreq`` is
+            regular, ``winsize`` is expressed in seconds. The window will view the last
+            ``winsize * sfreq`` samples (ceiled) from the buffer. If the strean sampling
+            sampling rate ``sfreq`` is irregular, ``winsize`` is expressed in samples.
+            The window will view the last ``winsize`` samples. If ``None``, the entire
+            buffer is returned.
+        picks : sequence of str | sequence of int | str | int
+
+
+        Returns
+        -------
+        data : array of shape (n_samples, n_channels)
+            Data in the given window.
+        timestamps : array of shape (n_samples,)
+            Timestamps in the given window.
+
+        Notes
+        -----
+        To select specific channels
+        """
+        if winsize is None:
+            n_samples = self._buffer.shape[0]
+        else:
+            assert 0 <= winsize, "The window size must be a strictly positive number."
+            n_samples = (
+                winsize if self._inlet.sfreq == 0 else ceil(winsize * self._inlet.sfreq)
+            )
+        if picks is None:
+            picks = self._picks
+        else:
+            raise NotImplementedError
+        return self._buffer[-n_samples:, picks], self._timestamps[-n_samples:]
 
     def set_channel_types(self):
         pass
@@ -264,6 +304,14 @@ class Stream:
         pass
 
     # ----------------------------------------------------------------------------------
+    @property
+    def info(self) -> Optional[Info]:
+        """Info of the LSL stream.
+
+        :type: `~mne.Info` | None
+        """
+        return self._info
+
     @property
     def name(self) -> Optional[str]:
         """Name of the LSL stream.

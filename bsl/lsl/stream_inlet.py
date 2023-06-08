@@ -23,7 +23,7 @@ from .stream_info import _BaseStreamInfo
 from .utils import _check_timeout, _free_char_p_array_memory, handle_error
 
 if TYPE_CHECKING:
-    from typing import List, Optional, Tuple, Union
+    from typing import List, Optional, Sequence, Tuple, Union
 
     from numpy.typing import NDArray
 
@@ -45,7 +45,7 @@ class StreamInlet:
     recover : bool
         Attempt to silently recover lost streams that are recoverable (requires a
         ``source_id`` to be specified in the `~bsl.lsl.StreamInfo`).
-    processing_flags : list of str | ``'all'`` | None
+    processing_flags : sequence of str | ``'all'`` | None
         Set the post-processing options. By default, post-processing is disabled. Any
         combination of the processing flags is valid. The available flags are:
 
@@ -65,7 +65,7 @@ class StreamInlet:
         chunk_size: int = 0,
         max_buffered: float = 360,
         recover: bool = True,
-        processing_flags: Optional[Union[str, List[str]]] = None,
+        processing_flags: Optional[Union[str, Sequence[str]]] = None,
     ):
         check_type(sinfo, (_BaseStreamInfo,), "sinfo")
         chunk_size = ensure_int(chunk_size, "chunk_size")
@@ -89,7 +89,7 @@ class StreamInlet:
 
         # set preprocessing of the inlet
         if processing_flags is not None:
-            check_type(processing_flags, (list, str), "processing_flags")
+            check_type(processing_flags, (list, tuple, str), "processing_flags")
             if isinstance(processing_flags, str):
                 check_value(processing_flags, ("all",), "processing_flags")
                 processing_flags = reduce(
@@ -205,7 +205,7 @@ class StreamInlet:
 
     def pull_sample(
         self, timeout: Optional[float] = 0.0
-    ) -> Tuple[Union[List, NDArray[float]], Optional[float]]:
+    ) -> Tuple[Union[List[str], NDArray[float]], Optional[float]]:
         """Pull a single sample from the inlet.
 
         Parameters
@@ -218,7 +218,7 @@ class StreamInlet:
 
         Returns
         -------
-        sample : list | array of shape (n_channels,)
+        sample : list of str | array of shape (n_channels,)
             If the channel format is ``'string``, returns a list of values for each
             channel. Else, returns a numpy array of shape ``(n_channels,)``.
         timestamp : float | None
@@ -258,7 +258,7 @@ class StreamInlet:
         self,
         timeout: Optional[float] = 0.0,
         max_samples: int = 1024,
-    ) -> Tuple[Union[List, NDArray[float]], NDArray[float]]:
+    ) -> Tuple[Union[List[List[str]], NDArray[float]], NDArray[float]]:
         """Pull a chunk of samples from the inlet.
 
         Parameters
@@ -275,7 +275,7 @@ class StreamInlet:
 
         Returns
         -------
-        samples : list of list | array of shape (n_samples, n_channels)
+        samples : list of list of str | array of shape (n_samples, n_channels)
             If the channel format is ``'string'``, returns a list of list of values for
             each channel and sample. Each sublist represents an entire channel. Else,
             returns a numpy array of shape ``(n_samples, n_channels)``.
