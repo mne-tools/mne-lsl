@@ -16,7 +16,7 @@ from .utils.logs import logger
 from .utils.meas_info import create_info
 
 if TYPE_CHECKING:
-    from typing import List, Optional, Sequence, Tuple, Union
+    from typing import Optional, Sequence, Tuple, Union
 
     from mne import Info
     from numpy.typing import NDArray
@@ -200,6 +200,7 @@ class Stream:
         self._update_thread.start()
 
     def disconnect(self) -> None:
+        """Disconnect from the LSL stream and interrupt data collection."""
         while self._update_thread.is_alive():
             self._update_thread.cancel()
         self._inlet.close_stream()
@@ -214,6 +215,7 @@ class Stream:
         self._update_thread = None
 
     def __del__(self):
+        """Try to disconnect the stream when deleting the object."""
         try:
             self.disconnect()
         except Exception:
@@ -239,7 +241,8 @@ class Stream:
             Union[Sequence[str], Sequence[int], str, int, NDArray[int]]
         ] = None,
     ) -> Tuple[NDArray[float], NDArray[float]]:
-        """
+        """Retrieve the latest data from the buffer.
+
         Parameters
         ----------
         winsize : float | int | None
@@ -249,8 +252,8 @@ class Stream:
             sampling rate ``sfreq`` is irregular, ``winsize`` is expressed in samples.
             The window will view the last ``winsize`` samples. If ``None``, the entire
             buffer is returned.
-        picks : sequence of str | sequence of int | str | int
-
+        picks : sequence of str | sequence of int | array of int | str | int
+            Selection of channels by name, by indices, or by channel types.
 
         Returns
         -------
@@ -258,10 +261,6 @@ class Stream:
             Data in the given window.
         timestamps : array of shape (n_samples,)
             Timestamps in the given window.
-
-        Notes
-        -----
-        To select specific channels
         """
         if winsize is None:
             n_samples = self._buffer.shape[0]
