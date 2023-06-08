@@ -21,7 +21,7 @@ if TYPE_CHECKING:
     from numpy.typing import NDarray
 
 
-class BaseStream:
+class Stream:
     def __init__(
         self,
         bufsize: float,
@@ -29,6 +29,29 @@ class BaseStream:
         stype: Optional[str] = None,
         source_id: Optional[str] = None,
     ):
+        """Stream object representing a single LSL stream.
+
+        Parameters
+        ----------
+        bufsize : float | int
+            Size of the buffer keeping track of the data received from the stream. If
+            the stream sampling rate ``sfreq`` is regular, ``bufsize`` is expressed in
+            seconds. The buffer will hold the last ``bufsize * sfreq`` samples (ceiled).
+            If the strean sampling sampling rate ``sfreq`` is irregular, ``bufsize`` is
+            expressed in samples. The buffer will hold the last ``bufsize`` samples.
+        name : str
+            Name of the LSL stream.
+        stype : str
+            Type of the LSL stream.
+        source_id : str
+            ID of the source of the LSL stream.
+
+        Notes
+        -----
+        The 3 arguments ``name``, ``stype``, and ``source_id`` must uniquely identify an
+        LSL stream. If this is not possible, please resolve the available LSL streams
+        with `~bsl.lsl.resolve_streams` and create an inlet with `~bsl.lsl.StreamInlet`.
+        """
         check_type(bufsize, ("numeric",), "bufsize")
         if 0 <= bufsize:
             raise ValueError(
@@ -65,6 +88,12 @@ class BaseStream:
                 "The provided arguments 'name', 'stype', and 'source_id' do not "
                 f"uniquely identify an LSL stream. {len(sinfos)} were found: "
                 f"{[(sinfo.name, sinfo.stype, sinfo.source_id) for sinfo in sinfos]}."
+            )
+        if sinfos[0].dtype == "string":
+            raise RuntimeError(
+                "The Stream class is designed for numerical types. It does not support "
+                "string LSL streams. Please use a bsl.lsl.StreamInlet directly to "
+                "interact with this stream."
             )
         self._sinfo = sinfos[0]
 
@@ -122,6 +151,8 @@ class BaseStream:
                 "instance, 5 Hz corresponds to a pull every 200 ms. The provided "
                 f"{ufreq} is invalid."
             )
+        if self._sinfo is None:
+            self.resolve()
         self._inlet = StreamInlet(self._sinfo, processing_flags=processing_flags)
         self._inlet.open_stream(timeout=timeout)
         # initiate time-correction
@@ -129,18 +160,26 @@ class BaseStream:
         logger.info("The estimated timestamp offset is %.2f seconds.", tc)
 
         # create buffer of shape (n_samples, n_channels) and (n_samples,)
-        self._buffer = np.zeros(
-            ceil(self._bufsize * self._inlet.sfreq),
-            self._inlet.n_channels,
-            dtype=fmt2numpy[self._inlet._dtype],
-        )
-        self._timestamps = np.zeros(
-            ceil(self._bufsize * self._inlet.sfreq), dtype=np.float64
-        )
+        if self._inlet.sfreq == 0:
+            self._buffer = np.zeros(
+                self._bufsize,
+                self._inlet.n_channels,
+                dtype=fmt2numpy[self._inlet._dtype],
+            )
+            self._timestamps = np.zeros(self._bufsize, dtype=np.float64)
+        else:
+            self._buffer = np.zeros(
+                ceil(self._bufsize * self._inlet.sfreq),
+                self._inlet.n_channels,
+                dtype=fmt2numpy[self._inlet._dtype],
+            )
+            self._timestamps = np.zeros(
+                ceil(self._bufsize * self._inlet.sfreq), dtype=np.float64
+            )
         self._picks = np.arange(0, self._inlet.n_channels)
 
         # define the acquisition thread
-        self._update_delay = 1. / ufreq
+        self._update_delay = 1.0 / ufreq
         self._update_thread = Timer(1 / self._update_delay, self._update)
         self._update_thread.start()
 
@@ -171,7 +210,7 @@ class BaseStream:
             self._buffer = np.roll(self._buffer, -data.shape[0], axis=0)
             self._timestamps = np.roll(self._timestamps, -timestamps.size, axis=0)
             self._buffer[-data.shape[0] :, :] = data
-            self._timestamps[-timestamps.size:] = timestamps
+            self._timestamps[-timestamps.size :] = timestamps
 
         # recreate the timer thread as it is one-call only
         self._update_thread = Timer(self._update_delay, self._update)
@@ -201,6 +240,12 @@ class BaseStream:
         pass
 
     def drop_channels(self):
+        pass
+
+    def save_stream_config(self):
+        pass
+
+    def load_stream_config(self):
         pass
 
     # ----------------------------------------------------------------------------------
