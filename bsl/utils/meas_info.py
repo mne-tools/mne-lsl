@@ -136,7 +136,7 @@ def _read_desc_sinfo(
     """Read channel information from a StreamInfo.
 
     If the StreamInfo is retrieved by resolve_streams, the description will be empty.
-    An inlet should be created and the inlet StreamInfo should be used to retrive the
+    An inlet should be created and the inlet StreamInfo should be used to retrieve the
     channel description.
     """
     if n_channels != desc.n_channels:

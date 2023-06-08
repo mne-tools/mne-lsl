@@ -22,6 +22,30 @@ if TYPE_CHECKING:
 
 
 class Stream:
+    """Stream object representing a single LSL stream.
+
+    Parameters
+    ----------
+    bufsize : float | int
+        Size of the buffer keeping track of the data received from the stream. If
+        the stream sampling rate ``sfreq`` is regular, ``bufsize`` is expressed in
+        seconds. The buffer will hold the last ``bufsize * sfreq`` samples (ceiled).
+        If the strean sampling sampling rate ``sfreq`` is irregular, ``bufsize`` is
+        expressed in samples. The buffer will hold the last ``bufsize`` samples.
+    name : str
+        Name of the LSL stream.
+    stype : str
+        Type of the LSL stream.
+    source_id : str
+        ID of the source of the LSL stream.
+
+    Notes
+    -----
+    The 3 arguments ``name``, ``stype``, and ``source_id`` must uniquely identify an
+    LSL stream. If this is not possible, please resolve the available LSL streams
+    with `~bsl.lsl.resolve_streams` and create an inlet with `~bsl.lsl.StreamInlet`.
+    """
+
     def __init__(
         self,
         bufsize: float,
@@ -29,29 +53,6 @@ class Stream:
         stype: Optional[str] = None,
         source_id: Optional[str] = None,
     ):
-        """Stream object representing a single LSL stream.
-
-        Parameters
-        ----------
-        bufsize : float | int
-            Size of the buffer keeping track of the data received from the stream. If
-            the stream sampling rate ``sfreq`` is regular, ``bufsize`` is expressed in
-            seconds. The buffer will hold the last ``bufsize * sfreq`` samples (ceiled).
-            If the strean sampling sampling rate ``sfreq`` is irregular, ``bufsize`` is
-            expressed in samples. The buffer will hold the last ``bufsize`` samples.
-        name : str
-            Name of the LSL stream.
-        stype : str
-            Type of the LSL stream.
-        source_id : str
-            ID of the source of the LSL stream.
-
-        Notes
-        -----
-        The 3 arguments ``name``, ``stype``, and ``source_id`` must uniquely identify an
-        LSL stream. If this is not possible, please resolve the available LSL streams
-        with `~bsl.lsl.resolve_streams` and create an inlet with `~bsl.lsl.StreamInlet`.
-        """
         check_type(bufsize, ("numeric",), "bufsize")
         if 0 <= bufsize:
             raise ValueError(
@@ -82,6 +83,18 @@ class Stream:
         self._update_thread = None
 
     def resolve(self, timeout: float = 10) -> None:
+        """Resolve the streams available on the network.
+
+        The properties ``name``, ``stype`` and ``source_id`` must uniquely identify an
+        LSL stream on the network.
+
+        Parameters
+        ----------
+        timeout : float
+            Timeout (in seconds) of the operation. If this is too short (e.g.
+            ``< 0.5 seconds``) only a subset (or none) of the outlets that are present
+            on the network may be returned.
+        """
         sinfos = resolve_streams(timeout, self._name, self._stype, self._source_id)
         if len(sinfos) != 1:
             raise RuntimeError(
@@ -112,6 +125,8 @@ class Stream:
         ufreq: float = 5,
     ) -> None:
         """Connect to the LSL stream and initiate data collection in the buffer.
+
+        If the streams were not resolve with the method `~bsl.Stream.resolve`,
 
         Parameters
         ----------
