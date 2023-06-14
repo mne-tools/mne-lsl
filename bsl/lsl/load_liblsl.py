@@ -204,7 +204,8 @@ def _find_liblsl_bsl() -> Optional[CDLL]:
     try:
         lib = CDLL(str(libpath))
         assert _VERSION_MIN <= lib.lsl_library_version() <= _VERSION_MAX
-    except Exception:
+    except Exception as error:
+        logger.exception(error)
         lib = None
     return lib
 
