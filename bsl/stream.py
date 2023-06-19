@@ -8,6 +8,7 @@ from threading import Timer
 from typing import TYPE_CHECKING
 
 import numpy as np
+from mne.channels.channels import SetChannelsMixin
 from mne.io.meas_info import ContainsMixin
 
 from .lsl import StreamInlet, resolve_streams
@@ -25,7 +26,7 @@ if TYPE_CHECKING:
     from numpy.typing import NDArray
 
 
-class Stream(ContainsMixin):
+class Stream(ContainsMixin, SetChannelsMixin):
     """Stream object representing a single LSL stream.
 
     Parameters
@@ -91,9 +92,9 @@ class Stream(ContainsMixin):
         if not self.connected:
             raise ValueError(
                 "The Stream attribute 'info' is None. An Info instance is required by "
-                "'in' operator. Please connect to the stream to create the Info."
+                "the 'in' operator. Please connect to the stream to create the Info."
             )
-        super().__contains__(ch_type)
+        return super().__contains__(ch_type)
 
     def __del__(self):
         """Try to disconnect the stream when deleting the object."""
@@ -110,7 +111,7 @@ class Stream(ContainsMixin):
                 "retrieve the current gradient compensation grade. Please connect to "
                 "the stream to create the Info."
             )
-        super().compensation_grade()
+        return super().compensation_grade()
 
     def connect(
         self,
@@ -221,7 +222,9 @@ class Stream(ContainsMixin):
                 "retrieve the channel types. Please connect to the stream to create "
                 "the Info."
             )
-        super().get_channel_types(picks=None, unique=False, only_data_chs=False)
+        return super().get_channel_types(
+            picks=picks, unique=unique, only_data_chs=only_data_chs
+        )
 
     def get_data(
         self,
@@ -281,6 +284,16 @@ class Stream(ContainsMixin):
                 )
             raise
 
+    @copy_doc(SetChannelsMixin.get_montage)
+    def get_montage(self):
+        if not self.connected:
+            raise ValueError(
+                "The Stream attribute 'info' is None. An Info instance is required to "
+                "retrieve the channel montage. Please connect to the stream to create "
+                "the Info."
+            )
+        return super().get_montage()
+
     def load_stream_config(self):
         pass
 
@@ -302,8 +315,32 @@ class Stream(ContainsMixin):
     def set_channel_units(self):
         pass
 
-    def set_montage(self):
+    def set_eeg_reference(self):
         pass
+
+    @copy_doc(SetChannelsMixin.set_montage)
+    def set_montage(
+        self,
+        montage,
+        match_case=True,
+        match_alias=False,
+        on_missing="raise",
+        *,
+        verbose=None,
+    ):
+        if not self.connected:
+            raise ValueError(
+                "The Stream attribute 'info' is None. An Info instance is required to "
+                "set the channel montage. Please connect to the stream to create "
+                "the Info."
+            )
+        super().set_montage(
+            montage=montage,
+            match_case=match_case,
+            match_alias=match_alias,
+            on_missing=on_missing,
+            verbose=verbose,
+        )
 
     def _resolve(self, timeout: float = 10) -> None:
         """Resolve the streams available on the network.
