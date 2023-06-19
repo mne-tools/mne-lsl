@@ -5,10 +5,31 @@ Inspired from mne.utils.docs.py by Eric Larson <larson.eric.d@gmail.com>
 """
 
 import sys
-from typing import Callable, Dict, List
+from typing import Callable, Dict, List, Tuple
+
+from mne.utils.docs import docdict as docdict_mne
 
 # ------------------------- Documentation dictionary -------------------------
 docdict: Dict[str, str] = dict()
+
+# -------- Documentation to inc. from MNE -------
+keys: Tuple[str, ...] = (
+    "match_alias",
+    "match_case",
+    "montage",
+    "montage_types",
+    "on_missing_montage",
+)
+
+for key in keys:
+    entry = docdict_mne[key]
+    if ".. versionchanged::" in entry:
+        entry = entry.replace(
+            ".. versionchanged::", ".. versionchanged:: MNE "
+        )
+    if ".. versionadded::" in entry:
+        entry = entry.replace(".. versionadded::", ".. versionadded:: MNE ")
+    docdict[key] = entry
 
 # -----------------------------------------------
 docdict[

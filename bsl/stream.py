@@ -14,7 +14,7 @@ from mne.io.meas_info import ContainsMixin
 from .lsl import StreamInlet, resolve_streams
 from .lsl.constants import fmt2numpy
 from .utils._checks import check_type
-from .utils._docs import copy_doc
+from .utils._docs import copy_doc, fill_doc
 from .utils._exceptions import _GH_ISSUES
 from .utils.logs import logger
 from .utils.meas_info import create_info
@@ -318,7 +318,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
     def set_eeg_reference(self):
         pass
 
-    @copy_doc(SetChannelsMixin.set_montage)
+    @fill_doc
     def set_montage(
         self,
         montage,
@@ -328,6 +328,30 @@ class Stream(ContainsMixin, SetChannelsMixin):
         *,
         verbose=None,
     ):
+        """Set %(montage_types)s channel positions and digitization points.
+
+        Parameters
+        ----------
+        %(montage)s
+        %(match_case)s
+        %(match_alias)s
+        %(on_missing_montage)s
+        %(verbose)s
+
+        See Also
+        --------
+        mne.channels.make_standard_montage
+        mne.channels.make_dig_montage
+        mne.channels.read_custom_montage
+
+        Notes
+        -----
+        .. warning::
+            Only %(montage_types)s channels can have their positions set using
+            a montage. Other channel types (e.g., MEG channels) should have
+            their positions defined properly using their data reading
+            functions.
+        """
         if not self.connected:
             raise ValueError(
                 "The Stream attribute 'info' is None. An Info instance is required to "
