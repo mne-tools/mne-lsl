@@ -23,6 +23,7 @@ if TYPE_CHECKING:
     from typing import List, Optional, Sequence, Tuple, Union
 
     from mne import Info
+    from mne.channels import DigMontage
     from numpy.typing import NDArray
 
 
@@ -104,7 +105,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
             pass
 
     @copy_doc(ContainsMixin.__contains__)
-    def compensation_grade(self):
+    def compensation_grade(self) -> Optional[int]:
         if not self.connected:
             raise ValueError(
                 "The Stream attribute 'info' is None. An Info instance is required to "
@@ -209,7 +210,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
         self._update_delay = None
         self._update_thread = None
 
-    def drop_channels(self):
+    def drop_channels(self) -> None:
         pass
 
     @copy_doc(ContainsMixin.__contains__)
@@ -285,7 +286,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
             raise
 
     @copy_doc(SetChannelsMixin.get_montage)
-    def get_montage(self):
+    def get_montage(self) -> Optional[DigMontage]:
         if not self.connected:
             raise ValueError(
                 "The Stream attribute 'info' is None. An Info instance is required to "
@@ -294,28 +295,28 @@ class Stream(ContainsMixin, SetChannelsMixin):
             )
         return super().get_montage()
 
-    def load_stream_config(self):
+    def load_stream_config(self) -> None:
         pass
 
-    def pick(self):
+    def pick(self) -> None:
         pass
 
-    def rename_channels(self):
+    def rename_channels(self) -> None:
         pass
 
-    def reorder_channels(self):
+    def reorder_channels(self) -> None:
         pass
 
-    def save_stream_config(self):
+    def save_stream_config(self) -> None:
         pass
 
-    def set_channel_types(self):
+    def set_channel_types(self) -> None:
         pass
 
-    def set_channel_units(self):
+    def set_channel_units(self) -> None:
         pass
 
-    def set_eeg_reference(self):
+    def set_eeg_reference(self) -> None:
         pass
 
     @fill_doc
@@ -327,7 +328,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
         on_missing="raise",
         *,
         verbose=None,
-    ):
+    ) -> None:
         """Set %(montage_types)s channel positions and digitization points.
 
         Parameters
@@ -417,7 +418,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
 
     # ----------------------------------------------------------------------------------
     @property
-    def connected(self):
+    def connected(self) -> bool:
         """Connection status of the stream.
 
         :type: `bool`
