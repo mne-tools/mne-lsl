@@ -8,21 +8,24 @@ from threading import Timer
 from typing import TYPE_CHECKING
 
 import numpy as np
+from mne.io.meas_info import ContainsMixin
 
 from .lsl import StreamInlet, resolve_streams
 from .lsl.constants import fmt2numpy
 from .utils._checks import check_type
+from .utils._docs import copy_doc
+from .utils._exceptions import _GH_ISSUES
 from .utils.logs import logger
 from .utils.meas_info import create_info
 
 if TYPE_CHECKING:
-    from typing import Optional, Sequence, Tuple, Union
+    from typing import List, Optional, Sequence, Tuple, Union
 
     from mne import Info
     from numpy.typing import NDArray
 
 
-class Stream:
+class Stream(ContainsMixin):
     """Stream object representing a single LSL stream.
 
     Parameters
@@ -83,41 +86,31 @@ class Stream:
         self._update_delay = None
         self._update_thread = None
 
-    def resolve(self, timeout: float = 10) -> None:
-        """Resolve the streams available on the network.
-
-        The properties ``name``, ``stype`` and ``source_id`` must uniquely identify an
-        LSL stream on the network.
-
-        Parameters
-        ----------
-        timeout : float
-            Timeout (in seconds) of the operation. If this is too short (e.g.
-            ``< 0.5 seconds``) only a subset (or none) of the outlets that are present
-            on the network may be returned.
-        """
-        sinfos = resolve_streams(timeout, self._name, self._stype, self._source_id)
-        if len(sinfos) != 1:
-            raise RuntimeError(
-                "The provided arguments 'name', 'stype', and 'source_id' do not "
-                f"uniquely identify an LSL stream. {len(sinfos)} were found: "
-                f"{[(sinfo.name, sinfo.stype, sinfo.source_id) for sinfo in sinfos]}."
+    @copy_doc(ContainsMixin.__contains__)
+    def __contains__(self, ch_type) -> bool:
+        if not self.connected:
+            raise ValueError(
+                "The Stream attribute 'info' is None. An Info instance is required by "
+                "'in' operator. Please connect to the stream to create the Info."
             )
-        if sinfos[0].dtype == "string":
-            raise RuntimeError(
-                "The Stream class is designed for numerical types. It does not support "
-                "string LSL streams. Please use a bsl.lsl.StreamInlet directly to "
-                "interact with this stream."
-            )
-        self._sinfo = sinfos[0]
+        super().__contains__(ch_type)
 
-        # create MNE info from the LSL stream info
-        self._info = create_info(
-            self._sinfo.n_channels,
-            self._sinfo.sfreq,
-            self._sinfo.stype,
-            self._sinfo,
-        )
+    def __del__(self):
+        """Try to disconnect the stream when deleting the object."""
+        try:
+            self.disconnect()
+        except Exception:
+            pass
+
+    @copy_doc(ContainsMixin.__contains__)
+    def compensation_grade(self):
+        if not self.connected:
+            raise ValueError(
+                "The Stream attribute 'info' is None. An Info instance is required to "
+                "retrieve the current gradient compensation grade. Please connect to "
+                "the stream to create the Info."
+            )
+        super().compensation_grade()
 
     def connect(
         self,
@@ -143,7 +136,7 @@ class Stream:
               This option should not be enable if ``'dejitter'`` is not enabled.
         timeout : float | None
             Optional timeout (in seconds) of the operation. ``None`` disables the
-            timeout.
+            timeout. The timeout value is applied once to every operation supporting it.
         ufreq : float
             Update frequency (Hz) at which chunks of data are pulled from the
             `~bsl.lsl.StreamInlet`.
@@ -169,8 +162,7 @@ class Stream:
                 "instance, 5 Hz corresponds to a pull every 200 ms. The provided "
                 f"{ufreq} is invalid."
             )
-        if self._sinfo is None:
-            self.resolve()
+        self._resolve(timeout=timeout)
         self._inlet = StreamInlet(self._sinfo, processing_flags=processing_flags)
         self._inlet.open_stream(timeout=timeout)
         # initiate time-correction
@@ -206,7 +198,9 @@ class Stream:
         self._inlet.close_stream()
         del self._inlet
 
-        # reset variables defined after connection
+        # reset variables defined after resolution and connection
+        self._sinfo = None
+        self._info = None
         self._inlet = None
         self._buffer = None
         self._timestamps = None
@@ -214,25 +208,20 @@ class Stream:
         self._update_delay = None
         self._update_thread = None
 
-    def __del__(self):
-        """Try to disconnect the stream when deleting the object."""
-        try:
-            self.disconnect()
-        except Exception:
-            pass
+    def drop_channels(self):
+        pass
 
-    def _update(self) -> None:
-        """Update function pulling new samples in the buffer at a regular interval."""
-        data, timestamps = self._inlet.pull_chunk(timeout=0.0)
-        if timestamps.size != 0:
-            self._buffer = np.roll(self._buffer, -data.shape[0], axis=0)
-            self._timestamps = np.roll(self._timestamps, -timestamps.size, axis=0)
-            self._buffer[-data.shape[0] :, :] = data
-            self._timestamps[-timestamps.size :] = timestamps
-
-        # recreate the timer thread as it is one-call only
-        self._update_thread = Timer(self._update_delay, self._update)
-        self._update_thread.start()
+    @copy_doc(ContainsMixin.__contains__)
+    def get_channel_types(
+        self, picks=None, unique=False, only_data_chs=False
+    ) -> List[str]:
+        if not self.connected:
+            raise ValueError(
+                "The Stream attribute 'info' is None. An Info instance is required to "
+                "retrieve the channel types. Please connect to the stream to create "
+                "the Info."
+            )
+        super().get_channel_types(picks=None, unique=False, only_data_chs=False)
 
     def get_data(
         self,
@@ -262,23 +251,40 @@ class Stream:
         timestamps : array of shape (n_samples,)
             Timestamps in the given window.
         """
-        if winsize is None:
-            n_samples = self._buffer.shape[0]
-        else:
-            assert 0 <= winsize, "The window size must be a strictly positive number."
-            n_samples = (
-                winsize if self._inlet.sfreq == 0 else ceil(winsize * self._inlet.sfreq)
-            )
-        if picks is None:
-            picks = self._picks
-        else:
-            raise NotImplementedError
-        return self._buffer[-n_samples:, picks], self._timestamps[-n_samples:]
+        try:
+            if winsize is None:
+                n_samples = self._buffer.shape[0]
+            else:
+                assert (
+                    0 <= winsize
+                ), "The window size must be a strictly positive number."
+                n_samples = (
+                    winsize
+                    if self._inlet.sfreq == 0
+                    else ceil(winsize * self._inlet.sfreq)
+                )
+            if picks is None:
+                picks = self._picks
+            else:
+                raise NotImplementedError
+            return self._buffer[-n_samples:, picks], self._timestamps[-n_samples:]
+        except Exception:
+            if not self.connected:
+                logger.error(
+                    "The stream is not connected. Please connect to the stream before "
+                    "retrieve data from the buffer."
+                )
+            else:
+                logger.error(
+                    "Something went wrong while retrieving data from a connected "
+                    "stream. " + _GH_ISSUES
+                )
+            raise
 
-    def set_channel_types(self):
+    def load_stream_config(self):
         pass
 
-    def set_channel_units(self):
+    def pick(self):
         pass
 
     def rename_channels(self):
@@ -287,22 +293,90 @@ class Stream:
     def reorder_channels(self):
         pass
 
-    def set_montage(self):
-        pass
-
-    def pick(self):
-        pass
-
-    def drop_channels(self):
-        pass
-
     def save_stream_config(self):
         pass
 
-    def load_stream_config(self):
+    def set_channel_types(self):
         pass
 
+    def set_channel_units(self):
+        pass
+
+    def set_montage(self):
+        pass
+
+    def _resolve(self, timeout: float = 10) -> None:
+        """Resolve the streams available on the network.
+
+        The properties ``name``, ``stype`` and ``source_id`` must uniquely identify an
+        LSL stream on the network.
+
+        Parameters
+        ----------
+        timeout : float
+            Timeout (in seconds) of the operation. If this is too short (e.g.
+            ``< 0.5 seconds``) only a subset (or none) of the outlets that are present
+            on the network may be returned.
+        """
+        sinfos = resolve_streams(timeout, self._name, self._stype, self._source_id)
+        if len(sinfos) != 1:
+            raise RuntimeError(
+                "The provided arguments 'name', 'stype', and 'source_id' do not "
+                f"uniquely identify an LSL stream. {len(sinfos)} were found: "
+                f"{[(sinfo.name, sinfo.stype, sinfo.source_id) for sinfo in sinfos]}."
+            )
+        if sinfos[0].dtype == "string":
+            raise RuntimeError(
+                "The Stream class is designed for numerical types. It does not support "
+                "string LSL streams. Please use a bsl.lsl.StreamInlet directly to "
+                "interact with this stream."
+            )
+        self._sinfo = sinfos[0]
+
+        # create MNE info from the LSL stream info
+        self._info = create_info(
+            self._sinfo.n_channels,
+            self._sinfo.sfreq,
+            self._sinfo.stype,
+            self._sinfo,
+        )
+
+    def _update(self) -> None:
+        """Update function pulling new samples in the buffer at a regular interval."""
+        data, timestamps = self._inlet.pull_chunk(timeout=0.0)
+        if timestamps.size != 0:
+            self._buffer = np.roll(self._buffer, -data.shape[0], axis=0)
+            self._timestamps = np.roll(self._timestamps, -timestamps.size, axis=0)
+            self._buffer[-data.shape[0] :, :] = data
+            self._timestamps[-timestamps.size :] = timestamps
+
+        # recreate the timer thread as it is one-call only
+        self._update_thread = Timer(self._update_delay, self._update)
+        self._update_thread.start()
+
     # ----------------------------------------------------------------------------------
+    @property
+    def connected(self):
+        """Connection status of the stream.
+
+        :type: `bool`
+        """
+        attributes = (
+            "_sinfo",
+            "_info",
+            "_inlet",
+            "_buffer",
+            "_timestamps",
+            "_picks",
+            "_update_delay",
+            "_update_thread",
+        )
+        if all(getattr(self, attr) is None for attr in attributes):
+            return False
+        else:
+            assert not any(getattr(self, attr) is None for attr in attributes)
+            return True
+
     @property
     def info(self) -> Optional[Info]:
         """Info of the LSL stream.
