@@ -385,7 +385,9 @@ class Stream(ContainsMixin, SetChannelsMixin):
                 "set the channel types. Please connect to the stream to create the "
                 "Info."
             )
-        super().set_channel_types(mapping=mapping, verbose=verbose)
+        super().set_channel_types(
+            mapping=mapping, on_unit_change=on_unit_change, verbose=verbose
+        )
 
     def set_channel_units(self) -> None:
         pass

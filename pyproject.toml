@@ -44,7 +44,7 @@ classifiers = [
 ]
 dependencies = [
     'distro; sys_platform == "linux"',
-    'mne>=1.1.1',
+    'mne>=1.4.2',
     'numpy>=1.21',
     'packaging',
     'psutil',
