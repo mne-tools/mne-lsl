@@ -102,16 +102,6 @@ class Stream(ContainsMixin, SetChannelsMixin):
         except Exception:
             pass
 
-    @copy_doc(ContainsMixin.__contains__)
-    def compensation_grade(self) -> Optional[int]:
-        if not self.connected:
-            raise ValueError(
-                "The Stream attribute 'info' is None. An Info instance is required to "
-                "retrieve the current gradient compensation grade. Please connect to "
-                "the stream to create the Info."
-            )
-        return super().compensation_grade()
-
     def connect(
         self,
         processing_flags: Optional[Union[str, Sequence[str]]] = None,
@@ -234,7 +224,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
     def drop_channels(self) -> None:
         pass
 
-    @copy_doc(ContainsMixin.__contains__)
+    @copy_doc(ContainsMixin.get_channel_types)
     def get_channel_types(
         self, picks=None, unique=False, only_data_chs=False
     ) -> List[str]:
@@ -292,7 +282,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
                 picks = self._picks
             else:
                 raise NotImplementedError
-            return self._buffer[-n_samples:, picks], self._timestamps[-n_samples:]
+            return self._buffer[-n_samples:, picks].T, self._timestamps[-n_samples:]
         except Exception:
             if not self.connected:
                 logger.error(
@@ -369,10 +359,10 @@ class Stream(ContainsMixin, SetChannelsMixin):
         Notes
         -----
         .. warning::
-            Only %(montage_types)s channels can have their positions set using
-            a montage. Other channel types (e.g., MEG channels) should have
-            their positions defined properly using their data reading
-            functions.
+
+            Only %(montage_types)s channels can have their positions set using a
+            montage. Other channel types (e.g., MEG channels) should have their
+            positions defined properly using their data reading functions.
         """
         if not self.connected:
             raise ValueError(
@@ -400,6 +390,21 @@ class Stream(ContainsMixin, SetChannelsMixin):
         # recreate the timer thread as it is one-call only
         self._update_thread = Timer(self._update_delay, self._update)
         self._update_thread.start()
+
+    # ----------------------------------------------------------------------------------
+    @property
+    def compensation_grade(self) -> Optional[int]:
+        """The current gradient compensation grade.
+
+        :type: `int` | None
+        """
+        if not self.connected:
+            raise ValueError(
+                "The Stream attribute 'info' is None. An Info instance is required to "
+                "retrieve the current gradient compensation grade. Please connect to "
+                "the stream to create the Info."
+            )
+        return super().compensation_grade
 
     # ----------------------------------------------------------------------------------
     @property
