@@ -263,7 +263,7 @@ class _BaseStreamInfo:
 
         Returns
         -------
-        ch_names : sequence of str or ``None`` | None
+        ch_names : list of str or ``None`` | None
             List of channel names, matching the number of total channels.
             If ``None``, the channel names are not set.
 
@@ -281,7 +281,7 @@ class _BaseStreamInfo:
 
         Returns
         -------
-        ch_types : sequence of str or ``None`` | None
+        ch_types : list of str or ``None`` | None
             List of channel names, matching the number of total channels.
             If ``None``, the channel types are not set.
 
@@ -299,7 +299,7 @@ class _BaseStreamInfo:
 
         Returns
         -------
-        ch_units : sequence of str or ``None`` | None
+        ch_units : list of str or ``None`` | None
             List of channel units, matching the number of total channels.
             If ``None``, the channel units are not set.
 
