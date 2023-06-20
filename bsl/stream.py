@@ -20,7 +20,7 @@ from .utils.logs import logger
 from .utils.meas_info import create_info
 
 if TYPE_CHECKING:
-    from typing import List, Optional, Sequence, Tuple, Union
+    from typing import Dict, List, Optional, Sequence, Tuple, Union
 
     from mne import Info
     from mne.channels import DigMontage
@@ -321,8 +321,39 @@ class Stream(ContainsMixin, SetChannelsMixin):
     def save_stream_config(self) -> None:
         pass
 
-    def set_channel_types(self) -> None:
-        pass
+    def set_channel_types(
+        self, mapping: Dict[str, str], *, on_unit_change: str = "warn", verbose=None
+    ) -> None:
+        """Define the sensor type of channels.
+
+        Parameters
+        ----------
+        mapping : dict
+            A dictionary mapping a channel to a sensor type (str), e.g.,
+            ``{'EEG061': 'eog'}`` or ``{'EEG061': 'eog', 'TRIGGER': 'stim'}``.
+        on_unit_change : ``'raise'`` | ``'warn'`` | ``'ignore'``
+            What to do if the measurement unit of a channel is changed automatically to
+            match the new sensor type.
+
+            .. versionadded:: MNE 1.4
+        %(verbose)s
+
+        Notes
+        -----
+        The following sensor types are accepted:
+
+            ecg, eeg, emg, eog, exci, ias, misc, resp, seeg, dbs, stim, syst,
+            ecog, hbo, hbr, fnirs_cw_amplitude, fnirs_fd_ac_amplitude,
+            fnirs_fd_phase, fnirs_od, eyetrack_pos, eyetrack_pupil,
+            temperature, gsr
+        """
+        if not self.connected:
+            raise ValueError(
+                "The Stream attribute 'info' is None. An Info instance is required to "
+                "set the channel types. Please connect to the stream to create the "
+                "Info."
+            )
+        super().set_channel_types(mapping=mapping, verbose=verbose)
 
     def set_channel_units(self) -> None:
         pass
