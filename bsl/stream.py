@@ -369,15 +369,6 @@ class Stream(ContainsMixin, SetChannelsMixin):
 
             .. versionadded:: MNE 1.4
         %(verbose)s
-
-        Notes
-        -----
-        The following sensor types are accepted:
-
-            ecg, eeg, emg, eog, exci, ias, misc, resp, seeg, dbs, stim, syst,
-            ecog, hbo, hbr, fnirs_cw_amplitude, fnirs_fd_ac_amplitude,
-            fnirs_fd_phase, fnirs_od, eyetrack_pos, eyetrack_pupil,
-            temperature, gsr
         """
         if not self.connected:
             raise RuntimeError(
