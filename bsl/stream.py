@@ -8,6 +8,7 @@ from threading import Timer
 from typing import TYPE_CHECKING
 
 import numpy as np
+from mne.channels import rename_channels
 from mne.channels.channels import SetChannelsMixin
 from mne.io.meas_info import ContainsMixin
 
@@ -20,7 +21,7 @@ from .utils.logs import logger
 from .utils.meas_info import create_info
 
 if TYPE_CHECKING:
-    from typing import Dict, List, Optional, Sequence, Tuple, Union
+    from typing import Callable, Dict, List, Optional, Sequence, Tuple, Union
 
     from mne import Info
     from mne.channels import DigMontage
@@ -89,7 +90,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
     @copy_doc(ContainsMixin.__contains__)
     def __contains__(self, ch_type) -> bool:
         if not self.connected:
-            raise ValueError(
+            raise RuntimeError(
                 "The Stream attribute 'info' is None. An Info instance is required by "
                 "the 'in' operator. Please connect to the stream to create the Info."
             )
@@ -229,7 +230,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
         self, picks=None, unique=False, only_data_chs=False
     ) -> List[str]:
         if not self.connected:
-            raise ValueError(
+            raise RuntimeError(
                 "The Stream attribute 'info' is None. An Info instance is required to "
                 "retrieve the channel types. Please connect to the stream to create "
                 "the Info."
@@ -299,7 +300,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
     @copy_doc(SetChannelsMixin.get_montage)
     def get_montage(self) -> Optional[DigMontage]:
         if not self.connected:
-            raise ValueError(
+            raise RuntimeError(
                 "The Stream attribute 'info' is None. An Info instance is required to "
                 "retrieve the channel montage. Please connect to the stream to create "
                 "the Info."
@@ -312,8 +313,39 @@ class Stream(ContainsMixin, SetChannelsMixin):
     def pick(self) -> None:
         pass
 
-    def rename_channels(self) -> None:
-        pass
+    def rename_channels(
+        self,
+        mapping: Union[Dict[str, str], Callable],
+        allow_duplicates: bool = False,
+        *,
+        verbose=None,
+    ) -> None:
+        """Rename channels.
+
+        Parameters
+        ----------
+        mapping : dict | callable
+            A dictionary mapping the old channel to a new channel name e.g.
+            ``{'EEG061' : 'EEG161'}``. Can also be a callable function that takes and
+            returns a string.
+        allow_duplicates : bool
+            If True (default False), allow duplicates, which will automatically be
+            renamed with ``-N`` at the end.
+
+            .. versionadded:: MNE 0.22.0
+        %(verbose)s
+        """
+        if not self.connected:
+            raise RuntimeError(
+                "The Stream attribute 'info' is None. An Info instance is required to "
+                "rename channels. Please connect to the stream to create the Info."
+            )
+        rename_channels(
+            self.info,
+            mapping=mapping,
+            allow_duplicates=allow_duplicates,
+            verbose=verbose,
+        )
 
     def reorder_channels(self) -> None:
         pass
@@ -348,7 +380,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
             temperature, gsr
         """
         if not self.connected:
-            raise ValueError(
+            raise RuntimeError(
                 "The Stream attribute 'info' is None. An Info instance is required to "
                 "set the channel types. Please connect to the stream to create the "
                 "Info."
@@ -396,7 +428,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
             positions defined properly using their data reading functions.
         """
         if not self.connected:
-            raise ValueError(
+            raise RuntimeError(
                 "The Stream attribute 'info' is None. An Info instance is required to "
                 "set the channel montage. Please connect to the stream to create "
                 "the Info."
@@ -430,7 +462,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
         :type: `int` | None
         """
         if not self.connected:
-            raise ValueError(
+            raise RuntimeError(
                 "The Stream attribute 'info' is None. An Info instance is required to "
                 "retrieve the current gradient compensation grade. Please connect to "
                 "the stream to create the Info."
