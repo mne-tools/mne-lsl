@@ -144,7 +144,7 @@ def _read_desc_sinfo(
             "The number of channels expected and the number of channels in the "
             "StreamInfo differ."
         )
-    if stype != desc.stype:
+    if stype != desc.stype.lower().strip():
         raise RuntimeError(
             "The stream type expected and the stream type in the StreamInfo differ."
         )

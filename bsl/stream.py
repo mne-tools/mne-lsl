@@ -73,12 +73,10 @@ class Stream(ContainsMixin, SetChannelsMixin):
         self._source_id = source_id
         self._bufsize = bufsize
 
-        # -- variables defined after resolution ----------------------------------------
-        self._sinfo = None
-        self._info = None
-
         # -- variables defined after connection ----------------------------------------
+        self._sinfo = None
         self._inlet = None
+        self._info = None
         # The buffer shape is similar to a pull_sample/pull_chunk from an inlet:
         # (n_samples, n_channels). New samples are added to the right of the buffer
         # while old samples are removed from the left of the buffer.
@@ -164,9 +162,32 @@ class Stream(ContainsMixin, SetChannelsMixin):
                 "instance, 5 Hz corresponds to a pull every 200 ms. The provided "
                 f"{ufreq} is invalid."
             )
-        self._resolve(timeout=timeout)
+
+        # resolve and connect to available streams
+        sinfos = resolve_streams(timeout, self._name, self._stype, self._source_id)
+        if len(sinfos) != 1:
+            raise RuntimeError(
+                "The provided arguments 'name', 'stype', and 'source_id' do not "
+                f"uniquely identify an LSL stream. {len(sinfos)} were found: "
+                f"{[(sinfo.name, sinfo.stype, sinfo.source_id) for sinfo in sinfos]}."
+            )
+        if sinfos[0].dtype == "string":
+            raise RuntimeError(
+                "The Stream class is designed for numerical types. It does not support "
+                "string LSL streams. Please use a bsl.lsl.StreamInlet directly to "
+                "interact with this stream."
+            )
+        self._sinfo = sinfos[0]
+        # create inlet
         self._inlet = StreamInlet(self._sinfo, processing_flags=processing_flags)
         self._inlet.open_stream(timeout=timeout)
+        # create MNE info from the LSL stream info returned by an open stream inlet
+        self._info = create_info(
+            self._sinfo.n_channels,
+            self._sinfo.sfreq,
+            self._sinfo.stype,
+            self._inlet.get_sinfo(),
+        )
         # initiate time-correction
         tc = self._inlet.time_correction(timeout=timeout)
         logger.info("The estimated timestamp offset is %.2f seconds.", tc)
@@ -202,8 +223,8 @@ class Stream(ContainsMixin, SetChannelsMixin):
 
         # reset variables defined after resolution and connection
         self._sinfo = None
-        self._info = None
         self._inlet = None
+        self._info = None
         self._buffer = None
         self._timestamps = None
         self._picks = None
@@ -365,42 +386,6 @@ class Stream(ContainsMixin, SetChannelsMixin):
             match_alias=match_alias,
             on_missing=on_missing,
             verbose=verbose,
-        )
-
-    def _resolve(self, timeout: float = 10) -> None:
-        """Resolve the streams available on the network.
-
-        The properties ``name``, ``stype`` and ``source_id`` must uniquely identify an
-        LSL stream on the network.
-
-        Parameters
-        ----------
-        timeout : float
-            Timeout (in seconds) of the operation. If this is too short (e.g.
-            ``< 0.5 seconds``) only a subset (or none) of the outlets that are present
-            on the network may be returned.
-        """
-        sinfos = resolve_streams(timeout, self._name, self._stype, self._source_id)
-        if len(sinfos) != 1:
-            raise RuntimeError(
-                "The provided arguments 'name', 'stype', and 'source_id' do not "
-                f"uniquely identify an LSL stream. {len(sinfos)} were found: "
-                f"{[(sinfo.name, sinfo.stype, sinfo.source_id) for sinfo in sinfos]}."
-            )
-        if sinfos[0].dtype == "string":
-            raise RuntimeError(
-                "The Stream class is designed for numerical types. It does not support "
-                "string LSL streams. Please use a bsl.lsl.StreamInlet directly to "
-                "interact with this stream."
-            )
-        self._sinfo = sinfos[0]
-
-        # create MNE info from the LSL stream info
-        self._info = create_info(
-            self._sinfo.n_channels,
-            self._sinfo.sfreq,
-            self._sinfo.stype,
-            self._sinfo,
         )
 
     def _update(self) -> None:
