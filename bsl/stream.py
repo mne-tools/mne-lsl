@@ -3,6 +3,7 @@
 # checking.
 from __future__ import annotations
 
+from contextlib import contextmanager
 from math import ceil
 from threading import Timer
 from typing import TYPE_CHECKING
@@ -14,7 +15,7 @@ from mne.io.meas_info import ContainsMixin
 
 from .lsl import StreamInlet, resolve_streams
 from .lsl.constants import fmt2numpy
-from .utils._checks import check_type
+from .utils._checks import check_type, check_value
 from .utils._docs import copy_doc, fill_doc
 from .utils._exceptions import _GH_ISSUES
 from .utils.logs import logger
@@ -84,8 +85,8 @@ class Stream(ContainsMixin, SetChannelsMixin):
         self._buffer = None
         self._timestamps = None
         self._picks = None  # picks defines the selected channels and their order
-        self._update_delay = None
-        self._update_thread = None
+        self._acquisition_delay = None
+        self._acquisition_thread = None
 
     @copy_doc(ContainsMixin.__contains__)
     def __contains__(self, ch_type) -> bool:
@@ -201,14 +202,14 @@ class Stream(ContainsMixin, SetChannelsMixin):
         self._picks = np.arange(0, self._inlet.n_channels)
 
         # define the acquisition thread
-        self._update_delay = 1.0 / ufreq
-        self._update_thread = Timer(1 / self._update_delay, self._update)
-        self._update_thread.start()
+        self._acquisition_delay = 1.0 / ufreq
+        self._acquisition_thread = Timer(1 / self._acquisition_delay, self._acquire)
+        self._acquisition_thread.start()
 
     def disconnect(self) -> None:
         """Disconnect from the LSL stream and interrupt data collection."""
-        while self._update_thread.is_alive():
-            self._update_thread.cancel()
+        while self._acquisition_thread.is_alive():
+            self._acquisition_thread.cancel()
         self._inlet.close_stream()
         del self._inlet
 
@@ -219,8 +220,8 @@ class Stream(ContainsMixin, SetChannelsMixin):
         self._buffer = None
         self._timestamps = None
         self._picks = None
-        self._update_delay = None
-        self._update_thread = None
+        self._acquisition_delay = None
+        self._acquisition_thread = None
 
     def drop_channels(self) -> None:
         pass
@@ -347,8 +348,41 @@ class Stream(ContainsMixin, SetChannelsMixin):
             verbose=verbose,
         )
 
-    def reorder_channels(self) -> None:
-        pass
+    def reorder_channels(self, ch_names) -> None:
+        """Reorder channels.
+
+        Parameters
+        ----------
+        ch_names : list of str
+            The desired channel order.
+        """
+        if not self.connected:
+            raise RuntimeError(
+                "The Stream attribute 'info' is None. An Info instance is required to "
+                "reorder the channels. Please connect to the stream to create the Info."
+            )
+
+        check_type(ch_names, (list, tuple), "ch_names")
+        try:
+            idx = [self.info.ch_names.index(ch_name) for ch_name in ch_names]
+        except ValueError:
+            raise ValueError(
+                "The argument 'ch_names' must contain existing channel names."
+            )
+        if len(set(ch_names)) != len(ch_names):
+            raise ValueError(
+                "The argument 'ch_names' must contain the desired channel order "
+                "without duplicated channel name."
+            )
+        if len(ch_names) != len(self.info.ch_names):
+            raise ValueError(
+                "The argument 'ch_names' must contain all the existing channels in the "
+                "desired order."
+            )
+
+        with self._interrupt_acquisition():
+            self._picks = np.array(idx)
+            self._buffer = self._buffer[:, self._picks]
 
     def save_stream_config(self) -> None:
         pass
@@ -434,7 +468,22 @@ class Stream(ContainsMixin, SetChannelsMixin):
             verbose=verbose,
         )
 
-    def _update(self) -> None:
+    @contextmanager
+    def _interrupt_acquisition(self):
+        """Context manager interrupting the acquisition thread."""
+        if not self.connected:
+            raise RuntimeError(
+                "Interruption of the acquisition thread was requested but the stream "
+                "is not connected. " + _GH_ISSUES
+            )
+
+        while self._acquisition_thread.is_alive():
+            self._acquisition_thread.cancel()
+        yield
+        self._acquisition_thread = Timer(self._acquisition_delay, self._acquire)
+        self._acquisition_thread.start()
+
+    def _acquire(self) -> None:
         """Update function pulling new samples in the buffer at a regular interval."""
         data, timestamps = self._inlet.pull_chunk(timeout=0.0)
         if timestamps.size != 0:
@@ -444,8 +493,8 @@ class Stream(ContainsMixin, SetChannelsMixin):
             self._timestamps[-timestamps.size :] = timestamps
 
         # recreate the timer thread as it is one-call only
-        self._update_thread = Timer(self._update_delay, self._update)
-        self._update_thread.start()
+        self._acquisition_thread = Timer(self._acquisition_delay, self._acquire)
+        self._acquisition_thread.start()
 
     # ----------------------------------------------------------------------------------
     @property
@@ -476,8 +525,8 @@ class Stream(ContainsMixin, SetChannelsMixin):
             "_buffer",
             "_timestamps",
             "_picks",
-            "_update_delay",
-            "_update_thread",
+            "_acquisition_delay",
+            "_acquisition_thread",
         )
         if all(getattr(self, attr) is None for attr in attributes):
             return False
