@@ -364,12 +364,12 @@ class Stream(ContainsMixin, SetChannelsMixin):
 
         check_type(ch_names, (list, tuple), "ch_names")
         try:
-            idx = [self.info.ch_names.index(ch_name) for ch_name in ch_names]
+            idx = np.array([self.info.ch_names.index(ch_name) for ch_name in ch_names])
         except ValueError:
             raise ValueError(
                 "The argument 'ch_names' must contain existing channel names."
             )
-        if len(set(ch_names)) != len(ch_names):
+        if np.unique(idx).size != len(ch_names):
             raise ValueError(
                 "The argument 'ch_names' must contain the desired channel order "
                 "without duplicated channel name."
@@ -381,7 +381,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
             )
 
         with self._interrupt_acquisition():
-            self._picks = np.array(idx)
+            self._picks = idx
             self._buffer = self._buffer[:, self._picks]
 
     def save_stream_config(self) -> None:
