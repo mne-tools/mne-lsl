@@ -468,6 +468,19 @@ class Stream(ContainsMixin, SetChannelsMixin):
             verbose=verbose,
         )
 
+    def _acquire(self) -> None:
+        """Update function pulling new samples in the buffer at a regular interval."""
+        data, timestamps = self._inlet.pull_chunk(timeout=0.0)
+        if timestamps.size != 0:
+            self._buffer = np.roll(self._buffer, -data.shape[0], axis=0)
+            self._timestamps = np.roll(self._timestamps, -timestamps.size, axis=0)
+            self._buffer[-data.shape[0] :, :] = data
+            self._timestamps[-timestamps.size :] = timestamps
+
+        # recreate the timer thread as it is one-call only
+        self._acquisition_thread = Timer(self._acquisition_delay, self._acquire)
+        self._acquisition_thread.start()
+
     @contextmanager
     def _interrupt_acquisition(self):
         """Context manager interrupting the acquisition thread."""
@@ -480,19 +493,6 @@ class Stream(ContainsMixin, SetChannelsMixin):
         while self._acquisition_thread.is_alive():
             self._acquisition_thread.cancel()
         yield
-        self._acquisition_thread = Timer(self._acquisition_delay, self._acquire)
-        self._acquisition_thread.start()
-
-    def _acquire(self) -> None:
-        """Update function pulling new samples in the buffer at a regular interval."""
-        data, timestamps = self._inlet.pull_chunk(timeout=0.0)
-        if timestamps.size != 0:
-            self._buffer = np.roll(self._buffer, -data.shape[0], axis=0)
-            self._timestamps = np.roll(self._timestamps, -timestamps.size, axis=0)
-            self._buffer[-data.shape[0] :, :] = data
-            self._timestamps[-timestamps.size :] = timestamps
-
-        # recreate the timer thread as it is one-call only
         self._acquisition_thread = Timer(self._acquisition_delay, self._acquire)
         self._acquisition_thread.start()
 
