@@ -15,7 +15,7 @@ from mne.io.meas_info import ContainsMixin
 
 from .lsl import StreamInlet, resolve_streams
 from .lsl.constants import fmt2numpy
-from .utils._checks import check_type, check_value
+from .utils._checks import check_type
 from .utils._docs import copy_doc, fill_doc
 from .utils._exceptions import _GH_ISSUES
 from .utils.logs import logger
