@@ -21,7 +21,7 @@ from .utils._checks import check_type
 from .utils._docs import copy_doc, fill_doc
 from .utils._exceptions import _GH_ISSUES
 from .utils.logs import logger
-from .utils.meas_info import create_info
+from .utils.meas_info import create_info, _set_channel_units
 
 if TYPE_CHECKING:
     from typing import Callable, Dict, List, Optional, Sequence, Tuple, Union
@@ -440,6 +440,11 @@ class Stream(ContainsMixin, SetChannelsMixin):
     ) -> None:
         """Define the sensor type of channels.
 
+        If the new channel type changes the unit type, e.g. from ``T/m`` to ``V``, the
+        unit multiplication factor is reset to ``0``. Use `~Stream.set_channel_units` to
+        change the multiplication factor, e.g. from ``0`` to ``-6`` to change from Volts
+        to microvolts.
+
         Parameters
         ----------
         mapping : dict
@@ -462,8 +467,8 @@ class Stream(ContainsMixin, SetChannelsMixin):
             mapping=mapping, on_unit_change=on_unit_change, verbose=verbose
         )
 
-    def set_channel_units(self) -> None:
-        pass
+    def set_channel_units(self, mapping: Dict[str, Union[str, int]]) -> None:
+        _set_channel_units(self._info, mapping)
 
     def set_eeg_reference(self) -> None:
         pass

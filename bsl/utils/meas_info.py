@@ -6,15 +6,15 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from mne import create_info as mne_create_info
-from mne.io.constants import _ch_unit_mul_named
+from mne.io.constants import FIFF, _ch_unit_mul_named
 from mne.io.pick import get_channel_type_constants
 
 from ..lsl.stream_info import _BaseStreamInfo
-from ._checks import check_type, ensure_int
+from ._checks import check_type, check_value, ensure_int
 from .logs import logger
 
 if TYPE_CHECKING:
-    from typing import Any, Dict, List, Optional, Tuple
+    from typing import Any, Dict, List, Optional, Tuple, Union
 
     from mne import Info
 
@@ -25,16 +25,18 @@ _STIM_TYPES = (
     "markers",
     "stim",
 )
-_VOLTAGE_UNITS = {
-    "v": _ch_unit_mul_named[0],
-    "volt": _ch_unit_mul_named[0],
-    "volts": _ch_unit_mul_named[0],
-    "mv": _ch_unit_mul_named[-3],
-    "millivolt": _ch_unit_mul_named[-3],
-    "millivolts": _ch_unit_mul_named[-3],
-    "uv": _ch_unit_mul_named[-6],
-    "microvolt": _ch_unit_mul_named[-6],
-    "microvolts": _ch_unit_mul_named[-6],
+_HUMAN_UNITS = {
+    FIFF.FIFF_UNIT_V: {
+        "v": _ch_unit_mul_named[0],
+        "volt": _ch_unit_mul_named[0],
+        "volts": _ch_unit_mul_named[0],
+        "mv": _ch_unit_mul_named[-3],
+        "millivolt": _ch_unit_mul_named[-3],
+        "millivolts": _ch_unit_mul_named[-3],
+        "uv": _ch_unit_mul_named[-6],
+        "microvolt": _ch_unit_mul_named[-6],
+        "microvolts": _ch_unit_mul_named[-6],
+    },
 }
 
 
@@ -171,8 +173,10 @@ def _read_desc_sinfo(
         for ch_type, ch_unit in zip(ch_types, desc.get_channel_units()):
             ch_unit = ch_unit.lower().strip()
             ch_unit = _ch_unit_mul_named[0] if ch_unit is None else ch_unit
-            if ch_type in ("eeg", "eog", "ecg") and ch_unit in _VOLTAGE_UNITS:
-                ch_unit = _VOLTAGE_UNITS[ch_unit]
+            if _CH_TYPES_DICT[ch_type]["unit"] in _HUMAN_UNITS:
+                ch_unit = _HUMAN_UNITS[_CH_TYPES_DICT[ch_type]["unit"]].get(
+                    ch_unit, _ch_unit_mul_named[0]
+                )
             if isinstance(ch_unit, str):  # we failed to identify the unit
                 ch_unit = _ch_unit_mul_named[0]
             ch_units.append(ch_unit)
@@ -218,8 +222,10 @@ def _get_ch_types_and_units(
         ch_type = ch_type if ch_type in _CH_TYPES_DICT else stype
 
         ch_unit = _safe_get(ch, "unit", _ch_unit_mul_named[0])
-        if ch_type in ("eeg", "eog", "ecg") and ch_unit in _VOLTAGE_UNITS:
-            ch_unit = _VOLTAGE_UNITS[ch_unit]
+        if _CH_TYPES_DICT[ch_type]["unit"] in _HUMAN_UNITS:
+            ch_unit = _HUMAN_UNITS[_CH_TYPES_DICT[ch_type]["unit"]].get(
+                ch_unit, _ch_unit_mul_named[0]
+            )
         if isinstance(ch_unit, str):  # we failed to identify the unit
             ch_unit = _ch_unit_mul_named[0]
 
@@ -247,3 +253,17 @@ def _safe_get(channel, item, default) -> str:
         return default
     elt = elt.lower().strip()  # ensure format
     return elt
+
+
+# ----------------------------- Functions to edit an Info ------------------------------
+def _set_channel_units(info: Info, mapping: Dict[str, Union[str, int]]) -> None:
+    check_type(mapping, (dict,), "mapping")
+    ch_types = info.get_channel_types()
+    for key, value in mapping.items():
+        check_type(key, (str,), "mapping_key")
+        check_value(key, info.ch_names, "mapping_key")
+        check_type(value, (str, "int"), "mapping_value")
+
+        # let's check the unit against the channel type
+        idx = info.ch_names.index(key)
+        ch_type = ch_types[idx]
