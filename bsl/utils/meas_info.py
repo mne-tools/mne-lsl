@@ -11,6 +11,7 @@ from mne.io.pick import get_channel_type_constants
 
 from ..lsl.stream_info import _BaseStreamInfo
 from ._checks import check_type, check_value, ensure_int
+from ._exceptions import _GH_ISSUES
 from .logs import logger
 
 if TYPE_CHECKING:
@@ -257,13 +258,37 @@ def _safe_get(channel, item, default) -> str:
 
 # ----------------------------- Functions to edit an Info ------------------------------
 def _set_channel_units(info: Info, mapping: Dict[str, Union[str, int]]) -> None:
+    """Set the channel unit multiplication factor."""
     check_type(mapping, (dict,), "mapping")
-    ch_types = info.get_channel_types()
-    for key, value in mapping.items():
-        check_type(key, (str,), "mapping_key")
-        check_value(key, info.ch_names, "mapping_key")
-        check_type(value, (str, "int"), "mapping_value")
+    mapping_idx = dict()  # to avoid overwriting the input dictionary
+    for ch, unit in mapping.items():
+        check_type(ch, (str,), "ch")
+        check_value(ch, info.ch_names, "ch")
 
-        # let's check the unit against the channel type
-        idx = info.ch_names.index(key)
-        ch_type = ch_types[idx]
+        # handle channels which are not suppose to have a unit
+        idx = info.ch_names.index(ch)
+        fiff_unit = info["chs"][idx]["unit"]
+        if fiff_unit == FIFF.FIFF_UNIT_NONE:
+            raise ValueError(
+                f"The channel {ch} type unit is N/A. If you want to set the unit of "
+                "this channel, first change its type to one which supports a unit."
+            )
+
+        check_type(unit, (str, "int-like"), "unit")
+        # convert the unit to a known value
+        if isinstance(unit, str):
+            if fiff_unit in _HUMAN_UNITS and unit in _HUMAN_UNITS[fiff_unit]:
+                mapping_idx[idx] = _HUMAN_UNITS[fiff_unit][unit]
+                continue
+            else:
+                raise ValueError(
+                    f"The human-readable unit {unit} for the channel {ch} "
+                    f"({info['chs'][idx]['unit']} is unknown to BSL. " + _GH_ISSUES
+                )
+        elif isinstance(unit, int):
+            check_value(unit, _ch_unit_mul_named, "unit")
+            mapping_idx[idx] = _ch_unit_mul_named[unit]
+
+    # now that the unit looks safe, set them in Info
+    for ch_idx, unit in mapping_idx.items():
+        info["chs"][ch_idx]["unit_mul"] = unit

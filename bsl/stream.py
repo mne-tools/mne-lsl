@@ -468,6 +468,20 @@ class Stream(ContainsMixin, SetChannelsMixin):
         )
 
     def set_channel_units(self, mapping: Dict[str, Union[str, int]]) -> None:
+        """Define the channel unit.
+
+        Parameters
+        ----------
+        mapping : dict
+            A dictionary mapping a channel to a unit, e.g. ``{'EEG061': 'microvolts'}``.
+            The unit can be given as a human-readable string or as unit multiplication
+            factor, e.g. ``-6`` for microvolts.
+
+        Notes
+        -----
+        If the human-readable unit of your channel is not yet supported by BSL, please
+        contact the developers on GitHub to add your units to the known set.
+        """
         _set_channel_units(self._info, mapping)
 
     def set_eeg_reference(self) -> None:
