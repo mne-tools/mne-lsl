@@ -311,8 +311,8 @@ class Stream(ContainsMixin, SetChannelsMixin):
             return self._buffer[-n_samples:, :].T, self._timestamps[-n_samples:]
         except Exception:
             if not self.connected:
-                logger.error(
-                    "The stream is not connected. Please connect to the stream before "
+                raise RuntimeError(
+                    "The Stream is not connected. Please connect to the stream before "
                     "retrieving data from the buffer."
                 )
             else:
