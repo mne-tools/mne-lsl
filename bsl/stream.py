@@ -86,7 +86,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
         # while old samples are removed from the left of the buffer.
         self._buffer = None
         self._timestamps = None
-        self._picks = None  # picks defines the selected channels and their order
+        self._picks = None  # picks defines the channel selected from the StreamInlet
         self._acquisition_delay = None
         self._acquisition_thread = None
 
