@@ -474,8 +474,8 @@ class Stream(ContainsMixin, SetChannelsMixin):
         ----------
         mapping : dict
             A dictionary mapping a channel to a unit, e.g. ``{'EEG061': 'microvolts'}``.
-            The unit can be given as a human-readable string or as unit multiplication
-            factor, e.g. ``-6`` for microvolts.
+            The unit can be given as a human-readable string or as a unit multiplication
+            factor, e.g. ``-6`` for microvolts corresponding to ``1e-6``.
 
         Notes
         -----
