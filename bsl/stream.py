@@ -9,6 +9,7 @@ from threading import Timer
 from typing import TYPE_CHECKING
 
 import numpy as np
+from mne import pick_info
 from mne.channels import rename_channels
 from mne.channels.channels import SetChannelsMixin
 from mne.io.meas_info import ContainsMixin
@@ -304,7 +305,17 @@ class Stream(ContainsMixin, SetChannelsMixin):
         pass
 
     def pick(self, picks, exclude=()) -> None:
-        picks = _picks_to_idx(self.info, picks, "all", exclude, allow_empty=False)
+        if not self.connected:
+            raise RuntimeError(
+                "The Stream attribute 'info' is None. An Info instance is required to "
+                "pick channels. Please connect to the stream to create the Info."
+            )
+
+        picks = _picks_to_idx(self._info, picks, "all", exclude, allow_empty=False)
+        self._info = pick_info(self._info, picks)
+        with self._interrupt_acquisition():
+            self._picks = picks
+            self._buffer = self._buffer[:, self._picks]
 
     def rename_channels(
         self,
@@ -334,7 +345,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
                 "rename channels. Please connect to the stream to create the Info."
             )
         rename_channels(
-            self.info,
+            self._info,
             mapping=mapping,
             allow_duplicates=allow_duplicates,
             verbose=verbose,
@@ -356,7 +367,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
 
         check_type(ch_names, (list, tuple), "ch_names")
         try:
-            idx = np.array([self.info.ch_names.index(ch_name) for ch_name in ch_names])
+            idx = np.array([self._info.ch_names.index(ch_name) for ch_name in ch_names])
         except ValueError:
             raise ValueError(
                 "The argument 'ch_names' must contain existing channel names."
@@ -366,7 +377,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
                 "The argument 'ch_names' must contain the desired channel order "
                 "without duplicated channel name."
             )
-        if len(ch_names) != len(self.info.ch_names):
+        if len(ch_names) != len(self._info.ch_names):
             raise ValueError(
                 "The argument 'ch_names' must contain all the existing channels in the "
                 "desired order."
