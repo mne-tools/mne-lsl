@@ -110,7 +110,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
         self,
         processing_flags: Optional[Union[str, Sequence[str]]] = None,
         timeout: Optional[float] = 10,
-        ufreq: float = 5,
+        acquisition_delay: float = 0.2,
     ) -> None:
         """Connect to the LSL stream and initiate data collection in the buffer.
 
@@ -131,9 +131,9 @@ class Stream(ContainsMixin, SetChannelsMixin):
         timeout : float | None
             Optional timeout (in seconds) of the operation. ``None`` disables the
             timeout. The timeout value is applied once to every operation supporting it.
-        ufreq : float
-            Update frequency (Hz) at which chunks of data are pulled from the
-            `~bsl.lsl.StreamInlet`.
+        acquisition_delay : float
+            Delay in seconds between 2 acquisition during which chunks of data are
+            pulled from the `~bsl.lsl.StreamInlet`.
         """
         # The threadsafe processing flag should not be needed for this class. If it is
         # provided, then it means the user is retrieving and doing something with the
@@ -148,13 +148,13 @@ class Stream(ContainsMixin, SetChannelsMixin):
                 "separate thread, please instantiate the StreamInlet directly from "
                 "bsl.lsl.StreamInlet."
             )
-        check_type(ufreq, ("numeric",), "ufreq")
-        if ufreq <= 0:
+        check_type(acquisition_delay, ("numeric",), "acquisition_delay")
+        if acquisition_delay <= 0:
             raise ValueError(
-                "The update frequency 'ufreq' must be a strictly positive number "
-                "defining the frequency at which new samples are acquired in Hz. For "
-                "instance, 5 Hz corresponds to a pull every 200 ms. The provided "
-                f"{ufreq} is invalid."
+                "The acquisition delay must be a strictly positive number "
+                "defining the delay at which new samples are acquired in seconds. For "
+                "instance, 0.2 corresponds to a pull every 200 ms. The provided "
+                f"{acquisition_delay} is invalid."
             )
 
         # resolve and connect to available streams
@@ -204,7 +204,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
         self._picks = np.arange(0, self._inlet.n_channels)
 
         # define the acquisition thread
-        self._acquisition_delay = 1.0 / ufreq
+        self._acquisition_delay = acquisition_delay
         self._acquisition_thread = Timer(1 / self._acquisition_delay, self._acquire)
         self._acquisition_thread.start()
 
