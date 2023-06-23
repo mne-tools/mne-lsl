@@ -19,6 +19,7 @@ keys: Tuple[str, ...] = (
     "montage",
     "montage_types",
     "on_missing_montage",
+    "picks_all",
 )
 
 for key in keys:

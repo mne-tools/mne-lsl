@@ -225,8 +225,39 @@ class Stream(ContainsMixin, SetChannelsMixin):
         self._acquisition_delay = None
         self._acquisition_thread = None
 
-    def drop_channels(self) -> None:
-        pass
+    def drop_channels(self, ch_names: Union[str, List[str], Tuple[str]]) -> None:
+        """Drop channel(s).
+
+        Parameters
+        ----------
+        ch_names : str | list of str
+            Name or list of names of channels to remove.
+
+        See Also
+        --------
+        pick
+        """
+        if not self.connected:
+            raise RuntimeError(
+                "The Stream attribute 'info' is None. An Info instance is required to "
+                "drop channels. Please connect to the stream to create the Info."
+            )
+
+        if isinstance(ch_names, str):
+            ch_names = [ch_names]
+        check_type(ch_names, (list, tuple), "ch_names")
+        try:
+            idx = np.array([self._info.ch_names.index(ch_name) for ch_name in ch_names])
+        except ValueError:
+            raise ValueError(
+                "The argument 'ch_names' must contain existing channel names."
+            )
+
+        picks = np.setdiff1d(np.arange(len(self._info.ch_names)), idx)
+        self._info = pick_info(self._info, picks)
+        with self._interrupt_acquisition():
+            self._picks = self._picks[picks]
+            self._buffer = self._buffer[:, picks]
 
     @copy_doc(ContainsMixin.get_channel_types)
     def get_channel_types(
@@ -304,7 +335,21 @@ class Stream(ContainsMixin, SetChannelsMixin):
     def load_stream_config(self) -> None:
         pass
 
+    @fill_doc
     def pick(self, picks, exclude=()) -> None:
+        """Pick a subset of channels.
+
+        Parameters
+        ----------
+        %(picks_all)s
+        exclude : str | list of str
+            Set of channels to exclude, only used when picking is based on types, e.g.
+            ``exclude='bads'`` when ``picks="meg"``.
+
+        See Also
+        --------
+        drop_channels
+        """
         if not self.connected:
             raise RuntimeError(
                 "The Stream attribute 'info' is None. An Info instance is required to "
@@ -314,8 +359,8 @@ class Stream(ContainsMixin, SetChannelsMixin):
         picks = _picks_to_idx(self._info, picks, "all", exclude, allow_empty=False)
         self._info = pick_info(self._info, picks)
         with self._interrupt_acquisition():
-            self._picks = picks
-            self._buffer = self._buffer[:, self._picks]
+            self._picks = self._picks[picks]
+            self._buffer = self._buffer[:, picks]
 
     def rename_channels(
         self,
