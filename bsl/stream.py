@@ -12,6 +12,7 @@ import numpy as np
 from mne.channels import rename_channels
 from mne.channels.channels import SetChannelsMixin
 from mne.io.meas_info import ContainsMixin
+from mne.io.pick import _picks_to_idx
 
 from .lsl import StreamInlet, resolve_streams
 from .lsl.constants import fmt2numpy
@@ -243,9 +244,6 @@ class Stream(ContainsMixin, SetChannelsMixin):
     def get_data(
         self,
         winsize: Optional[float],
-        picks: Optional[
-            Union[Sequence[str], Sequence[int], str, int, NDArray[int]]
-        ] = None,
     ) -> Tuple[NDArray[float], NDArray[float]]:
         """Retrieve the latest data from the buffer.
 
@@ -254,12 +252,10 @@ class Stream(ContainsMixin, SetChannelsMixin):
         winsize : float | int | None
             Size of the window of data to view. If the stream sampling rate ``sfreq`` is
             regular, ``winsize`` is expressed in seconds. The window will view the last
-            ``winsize * sfreq`` samples (ceiled) from the buffer. If the strean sampling
+            ``winsize * sfreq`` samples (ceiled) from the buffer. If the stream sampling
             sampling rate ``sfreq`` is irregular, ``winsize`` is expressed in samples.
             The window will view the last ``winsize`` samples. If ``None``, the entire
             buffer is returned.
-        picks : sequence of str | sequence of int | array of int | str | int
-            Selection of channels by name, by indices, or by channel types.
 
         Returns
         -------
@@ -280,16 +276,12 @@ class Stream(ContainsMixin, SetChannelsMixin):
                     if self._inlet.sfreq == 0
                     else ceil(winsize * self._inlet.sfreq)
                 )
-            if picks is None:
-                picks = self._picks
-            else:
-                raise NotImplementedError
-            return self._buffer[-n_samples:, picks].T, self._timestamps[-n_samples:]
+            return self._buffer[-n_samples:, :].T, self._timestamps[-n_samples:]
         except Exception:
             if not self.connected:
                 logger.error(
                     "The stream is not connected. Please connect to the stream before "
-                    "retrieve data from the buffer."
+                    "retrieving data from the buffer."
                 )
             else:
                 logger.error(
@@ -311,8 +303,8 @@ class Stream(ContainsMixin, SetChannelsMixin):
     def load_stream_config(self) -> None:
         pass
 
-    def pick(self) -> None:
-        pass
+    def pick(self, picks, exclude=()) -> None:
+        picks = _picks_to_idx(self.info, picks, "all", exclude, allow_empty=False)
 
     def rename_channels(
         self,
@@ -474,7 +466,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
         if timestamps.size != 0:
             self._buffer = np.roll(self._buffer, -data.shape[0], axis=0)
             self._timestamps = np.roll(self._timestamps, -timestamps.size, axis=0)
-            self._buffer[-data.shape[0] :, :] = data
+            self._buffer[-data.shape[0] :, :] = data[:, self._picks]
             self._timestamps[-timestamps.size :] = timestamps
 
         # recreate the timer thread as it is one-call only
