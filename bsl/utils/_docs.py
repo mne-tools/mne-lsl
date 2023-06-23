@@ -14,6 +14,9 @@ docdict: Dict[str, str] = dict()
 
 # -------- Documentation to inc. from MNE -------
 keys: Tuple[str, ...] = (
+    "anonymize_info_notes",
+    "daysback_anonymize_info",
+    "keep_his_anonymize_info",
     "match_alias",
     "match_case",
     "montage",

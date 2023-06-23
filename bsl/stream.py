@@ -106,6 +106,26 @@ class Stream(ContainsMixin, SetChannelsMixin):
         except Exception:
             pass
 
+    @fill_doc
+    def anonymize(self, daysback=None, keep_his=False, *, verbose=None):
+        """Anonymize the measurement information in-place.
+
+        Parameters
+        ----------
+        %(daysback_anonymize_info)s
+        %(keep_his_anonymize_info)s
+        %(verbose)s
+
+        Notes
+        -----
+        %(anonymize_info_notes)s
+        """
+        if not self.connected:
+            raise RuntimeError(
+                "The Stream attribute 'info' is None. An Info instance is required to "
+                "anonymize the stream. Please connect to the stream to create the Info."
+            )
+
     def connect(
         self,
         processing_flags: Optional[Union[str, Sequence[str]]] = None,
@@ -486,6 +506,30 @@ class Stream(ContainsMixin, SetChannelsMixin):
 
     def set_eeg_reference(self) -> None:
         pass
+
+    def set_meas_date(self, meas_date):
+        """Set the measurement start date.
+
+        Parameters
+        ----------
+        meas_date : datetime | float | tuple | None
+            The new measurement date.
+            If datetime object, it must be timezone-aware and in UTC.
+            A tuple of (seconds, microseconds) or float (alias for
+            ``(meas_date, 0)``) can also be passed and a datetime
+            object will be automatically created. If None, will remove
+            the time reference.
+
+        See Also
+        --------
+        anonymize
+        """
+        if not self.connected:
+            raise RuntimeError(
+                "The Stream attribute 'info' is None. An Info instance is required to "
+                "set the measurement date. Please connect to the stream to create the "
+                "Info."
+            )
 
     @fill_doc
     def set_montage(
