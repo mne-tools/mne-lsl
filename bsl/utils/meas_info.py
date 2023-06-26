@@ -289,6 +289,6 @@ def _set_channel_units(info: Info, mapping: Dict[str, Union[str, int]]) -> None:
             check_value(unit, _ch_unit_mul_named, "unit")
             mapping_idx[idx] = _ch_unit_mul_named[unit]
 
-    # now that the unit looks safe, set them in Info
+    # now that the units look safe, set them in Info
     for ch_idx, unit in mapping_idx.items():
         info["chs"][ch_idx]["unit_mul"] = unit
