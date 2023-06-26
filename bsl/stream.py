@@ -319,7 +319,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
         channel_units = list()
         for idx in picks:
             channel_units.append(
-                self._info["chs"][idx]["unit"], self._info["chs"][idx]["unit_mul"]
+                (self._info["chs"][idx]["unit"], self._info["chs"][idx]["unit_mul"])
             )
         return channel_units
 
