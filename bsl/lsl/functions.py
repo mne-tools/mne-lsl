@@ -86,7 +86,8 @@ def resolve_streams(
         Restrict the selected stream to this source ID.
     minimum : int
         Minimum number of stream to return where restricting the selection. As soon as
-        this minimum is hit, the search will end.
+        this minimum is hit, the search will end. Only works if at least one of the 3
+        identifiers ``name``, ``stype`` or ``source_id`` is not ``None``.
 
     Returns
     -------

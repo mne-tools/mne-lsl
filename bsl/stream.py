@@ -130,7 +130,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
     def connect(
         self,
         processing_flags: Optional[Union[str, Sequence[str]]] = None,
-        timeout: Optional[float] = 10,
+        timeout: Optional[float] = 2,
         acquisition_delay: float = 0.2,
     ) -> None:
         """Connect to the LSL stream and initiate data collection in the buffer.
@@ -155,6 +155,14 @@ class Stream(ContainsMixin, SetChannelsMixin):
         acquisition_delay : float
             Delay in seconds between 2 acquisition during which chunks of data are
             pulled from the `~bsl.lsl.StreamInlet`.
+
+        Notes
+        -----
+        If all 3 stream identifiers ``name``, ``stype`` and ``source_id`` are left to
+        ``None``, resolution of the available streams will require a full ``timeout``,
+        blocking the execution until this function returns. If at least one of the 3
+        stream identifiers is specified, resolution will stop as soon as one stream
+        matching the identifier is found.
         """
         # The threadsafe processing flag should not be needed for this class. If it is
         # provided, then it means the user is retrieving and doing something with the
