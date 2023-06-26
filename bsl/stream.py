@@ -316,6 +316,12 @@ class Stream(ContainsMixin, SetChannelsMixin):
         check_type(only_data_chs, (bool,), "only_data_chs")
         none = "data" if only_data_chs else "all"
         picks = _picks_to_idx(self._info, picks, none, (), allow_empty=False)
+        channel_units = list()
+        for idx in picks:
+            channel_units.append(
+                self._info["chs"][idx]["unit"], self._info["chs"][idx]["unit_mul"]
+            )
+        return channel_units
 
     def get_data(
         self,
