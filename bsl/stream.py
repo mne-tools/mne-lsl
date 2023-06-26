@@ -293,6 +293,30 @@ class Stream(ContainsMixin, SetChannelsMixin):
             picks=picks, unique=unique, only_data_chs=only_data_chs
         )
 
+    @fill_doc
+    def get_channel_units(
+        self, picks=None, only_data_chs: bool = False
+    ) -> List[Tuple[int, int]]:
+        """Get a list of channel type for each channel.
+
+        Parameters
+        ----------
+        %(picks_all)s
+        only_data_chs : bool
+            Whether to ignore non-data channels. Default is ``False``.
+
+        Returns
+        -------
+        channel_units : list of tuple of shape (2,)
+            A list of 2-element tuples. The first element contains the unit FIFF code
+            and its associated name, e.g. ``107 (FIFF_UNIT_V)`` for Volts. The second
+            element contains the unit multiplication factor, e.g. ``-6 (FIFF_UNITM_MU)``
+            for micro (corresponds to ``1e-6``).
+        """
+        check_type(only_data_chs, (bool,), "only_data_chs")
+        none = "data" if only_data_chs else "all"
+        picks = _picks_to_idx(self._info, picks, none, (), allow_empty=False)
+
     def get_data(
         self,
         winsize: Optional[float],
@@ -623,6 +647,20 @@ class Stream(ContainsMixin, SetChannelsMixin):
         return super().compensation_grade
 
     # ----------------------------------------------------------------------------------
+    @property
+    def ch_names(self) -> List[str]:
+        """Name of the channels.
+
+        :type: `list` of `str`
+        """
+        if not self.connected:
+            raise RuntimeError(
+                "The Stream attribute 'info' is None. An Info instance is required to "
+                "retrieve the channel names. Please connect to the stream to create "
+                "the Info."
+            )
+        return self._info.ch_names
+
     @property
     def connected(self) -> bool:
         """Connection status of the stream.
