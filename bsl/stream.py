@@ -125,6 +125,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
                 "The Stream attribute 'info' is None. An Info instance is required to "
                 "anonymize the stream. Please connect to the stream to create the Info."
             )
+        super().anonymize(daysback=daysback, keep_his=keep_his, verbose=verbose)
 
     def connect(
         self,
@@ -560,6 +561,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
                 "set the measurement date. Please connect to the stream to create the "
                 "Info."
             )
+        super().set_meas_date(meas_date)
 
     @fill_doc
     def set_montage(
