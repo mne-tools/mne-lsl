@@ -106,6 +106,9 @@ class Stream(ContainsMixin, SetChannelsMixin):
         except Exception:
             pass
 
+    def add_reference_channels():
+        raise NotImplementedError
+
     @fill_doc
     def anonymize(self, daysback=None, keep_his=False, *, verbose=None):
         """Anonymize the measurement information in-place.
@@ -177,6 +180,8 @@ class Stream(ContainsMixin, SetChannelsMixin):
                 "separate thread, please instantiate the StreamInlet directly from "
                 "bsl.lsl.StreamInlet."
             )
+        if processing_flags == "all":
+            processing_flags = ("clocksync", "dejitter", "monotize")
         check_type(acquisition_delay, ("numeric",), "acquisition_delay")
         if acquisition_delay <= 0:
             raise ValueError(
