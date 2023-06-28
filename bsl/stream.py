@@ -288,6 +288,9 @@ class Stream(ContainsMixin, SetChannelsMixin):
             self._picks = self._picks[picks]
             self._buffer = self._buffer[:, picks]
 
+    def filter(self) -> None:
+        raise NotImplementedError
+
     @copy_doc(ContainsMixin.get_channel_types)
     def get_channel_types(
         self, picks=None, unique=False, only_data_chs=False
@@ -527,7 +530,11 @@ class Stream(ContainsMixin, SetChannelsMixin):
         )
 
     def set_channel_units(self, mapping: Dict[str, Union[str, int]]) -> None:
-        """Define the channel unit.
+        """Define the channel unit multiplication factor.
+
+        The unit itself is defined by the sensor type. Use `~Stream.set_channel_types`
+        to change the channel type, e.g. from planar gradiometers in ``T/m`` to EEG in
+        ``V``.
 
         Parameters
         ----------
@@ -544,7 +551,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
         _set_channel_units(self._info, mapping)
 
     def set_eeg_reference(self) -> None:
-        pass
+        raise NotImplementedError
 
     def set_meas_date(self, meas_date):
         """Set the measurement start date.
