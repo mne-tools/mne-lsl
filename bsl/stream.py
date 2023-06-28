@@ -402,6 +402,9 @@ class Stream(ContainsMixin, SetChannelsMixin):
     def load_stream_config(self) -> None:
         pass
 
+    def plot(self):
+        raise NotImplementedError
+
     @fill_doc
     def pick(self, picks, exclude=()) -> None:
         """Pick a subset of channels.
@@ -428,6 +431,9 @@ class Stream(ContainsMixin, SetChannelsMixin):
         with self._interrupt_acquisition():
             self._picks = self._picks[picks]
             self._buffer = self._buffer[:, picks]
+
+    def record(self):
+        raise NotImplementedError
 
     @fill_doc
     def rename_channels(
