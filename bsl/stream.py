@@ -424,6 +424,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
             self._picks = self._picks[picks]
             self._buffer = self._buffer[:, picks]
 
+    @fill_doc
     def rename_channels(
         self,
         mapping: Union[Dict[str, str], Callable],
@@ -497,6 +498,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
     def save_stream_config(self) -> None:
         pass
 
+    @fill_doc
     def set_channel_types(
         self, mapping: Dict[str, str], *, on_unit_change: str = "warn", verbose=None
     ) -> None:
