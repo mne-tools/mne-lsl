@@ -45,14 +45,8 @@ def test_push_numerical_sample(dtype_str, dtype):
     except Exception as error:
         raise error
     finally:
-        try:
-            del outlet
-        except Exception:
-            pass
-        try:
-            del inlet
-        except Exception:
-            pass
+        del outlet
+        del inlet
 
 
 def test_push_str_sample():
@@ -73,14 +67,8 @@ def test_push_str_sample():
     except Exception as error:
         raise error
     finally:
-        try:
-            del outlet
-        except Exception:
-            pass
-        try:
-            del inlet
-        except Exception:
-            pass
+        del outlet
+        del inlet
 
 
 @pytest.mark.parametrize(
@@ -123,10 +111,7 @@ def test_push_numerical_chunk(dtype_str, dtype):
     except Exception as error:
         raise error
     finally:
-        try:
-            del outlet
-        except Exception:
-            pass
+        del outlet
 
 
 def test_push_str_chunk():
@@ -152,10 +137,7 @@ def test_push_str_chunk():
     except Exception as error:
         raise error
     finally:
-        try:
-            del outlet
-        except Exception:
-            pass
+        del outlet
 
 
 def test_wait_for_consumers():
@@ -175,14 +157,8 @@ def test_wait_for_consumers():
     except Exception as error:
         raise error
     finally:
-        try:
-            del outlet
-        except Exception:
-            pass
-        try:
-            del inlet
-        except Exception:
-            pass
+        del outlet
+        del inlet
 
 
 def test_invalid_outlet():

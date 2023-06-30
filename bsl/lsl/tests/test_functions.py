@@ -96,18 +96,9 @@ def test_resolve_streams():
     except Exception as error:
         raise error
     finally:
-        try:
-            del outlet1
-        except Exception:
-            pass
-        try:
-            del outlet2
-        except Exception:
-            pass
-        try:
-            del outlet3
-        except Exception:
-            pass
+        del outlet1
+        del outlet2
+        del outlet3
 
     with pytest.raises(
         ValueError, match="'timeout' must be a strictly positive integer"

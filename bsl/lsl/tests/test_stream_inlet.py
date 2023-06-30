@@ -43,14 +43,8 @@ def test_pull_numerical_sample(dtype_str, dtype):
     except Exception as error:
         raise error
     finally:
-        try:
-            del inlet
-        except Exception:
-            pass
-        try:
-            del outlet
-        except Exception:
-            pass
+        del inlet
+        del outlet
 
 
 def test_pull_str_sample():
@@ -74,14 +68,8 @@ def test_pull_str_sample():
     except Exception as error:
         raise error
     finally:
-        try:
-            del inlet
-        except Exception:
-            pass
-        try:
-            del outlet
-        except Exception:
-            pass
+        del inlet
+        del outlet
 
 
 @pytest.mark.parametrize(
@@ -138,14 +126,8 @@ def test_pull_numerical_chunk(dtype_str, dtype):
     except Exception as error:
         raise error
     finally:
-        try:
-            del inlet
-        except Exception:
-            pass
-        try:
-            del outlet
-        except Exception:
-            pass
+        del inlet
+        del outlet
 
 
 def test_pull_str_chunk():
@@ -184,14 +166,8 @@ def test_pull_str_chunk():
     except Exception as error:
         raise error
     finally:
-        try:
-            del outlet
-        except Exception:
-            pass
-        try:
-            del inlet
-        except Exception:
-            pass
+        del outlet
+        del inlet
 
 
 @pytest.mark.xfail(
@@ -214,14 +190,8 @@ def test_get_sinfo():
     except Exception as error:
         raise error
     finally:
-        try:
-            del outlet
-        except Exception:
-            pass
-        try:
-            del inlet
-        except Exception:
-            pass
+        del outlet
+        del inlet
 
 
 @pytest.mark.xfail(
@@ -266,14 +236,8 @@ def test_inlet_methods(dtype_str, dtype):
     except Exception as error:
         raise error
     finally:
-        try:
-            del outlet
-        except Exception:
-            pass
-        try:
-            del inlet
-        except Exception:
-            pass
+        del outlet
+        del inlet
 
 
 @pytest.mark.parametrize(
@@ -307,14 +271,8 @@ def test_processing_flags(dtype_str, flags):
     except Exception as error:
         raise error
     finally:
-        try:
-            del inlet
-        except Exception:
-            pass
-        try:
-            del outlet
-        except Exception:
-            pass
+        del inlet
+        del outlet
 
 
 def test_time_correction():
@@ -329,14 +287,8 @@ def test_time_correction():
     except Exception as error:
         raise error
     finally:
-        try:
-            del inlet
-        except Exception:
-            pass
-        try:
-            del outlet
-        except Exception:
-            pass
+        del inlet
+        del outlet
 
 
 def _test_properties(inlet, dtype_str, n_channels, name, sfreq, stype):
