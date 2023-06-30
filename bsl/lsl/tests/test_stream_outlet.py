@@ -4,7 +4,7 @@ import uuid
 
 import numpy as np
 import pytest
-from numpy.testing import array_allclose
+from numpy.testing import assert_allclose
 
 from bsl.lsl import StreamInfo, StreamInlet, StreamOutlet
 from bsl.lsl.stream_info import _BaseStreamInfo
@@ -35,7 +35,7 @@ def test_push_numerical_sample(dtype_str, dtype):
         time.sleep(0.1)  # sleep required because of pylsl inlet
         outlet.push_sample(x)
         data, ts = inlet.pull_sample(timeout=5)
-        assert array_allclose(data, x)
+        assert_allclose(data, x)
 
         with pytest.raises(ValueError, match="shape should be (n_channels,)"):
             outlet.push_sample(

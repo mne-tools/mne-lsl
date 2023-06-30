@@ -4,7 +4,7 @@ from itertools import product
 
 import numpy as np
 import pytest
-from numpy.testing import array_allclose
+from numpy.testing import assert_allclose
 
 from bsl.lsl import StreamInfo, StreamInlet, StreamOutlet
 from bsl.lsl.stream_info import _BaseStreamInfo
@@ -307,7 +307,7 @@ def _test_numerical_data(data, expected, dtype, ts, n_samples_expected=None):
     """Check that the pull data match the expected data."""
     assert isinstance(data, np.ndarray)
     assert data.dtype == dtype
-    assert array_allclose(data, expected)
+    assert_allclose(data, expected)
     assert data.ndim in (1, 2)
     if data.ndim == 1:  # pull_sample
         assert isinstance(ts, float)
