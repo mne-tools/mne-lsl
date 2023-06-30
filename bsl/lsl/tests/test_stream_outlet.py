@@ -35,6 +35,13 @@ def test_push_numerical_sample(dtype_str, dtype):
         outlet.push_sample(x)
         data, ts = inlet.pull_sample(timeout=5)
         assert np.allclose(data, x)
+
+        with pytest.raises(ValueError, match="shape should be (n_channels,)"):
+            outlet.push_sample(
+                np.array([1, 2, 3, 4, 5, 6], dtype=dtype).reshape((2, 3))
+            )
+        with pytest.raises(ValueError, match="2 elements are expected"):
+            outlet.push_sample(np.array([1, 2, 3, 4, 5], dtype=dtype))
     except Exception as error:
         raise error
     finally:
@@ -176,6 +183,19 @@ def test_wait_for_consumers():
             del inlet
         except Exception:
             pass
+
+
+def test_invalid_outlet():
+    """Test creation of an invalid outlet."""
+    sinfo = StreamInfo("test", "EEG", 2, 100.0, "float32", uuid.uuid4().hex[:6])
+    with pytest.raises(
+        ValueError, match="'chunk_size' must contain a positive integer"
+    ):
+        StreamOutlet(sinfo, chunk_size=-101)
+    with pytest.raises(
+        ValueError, match="'max_buffered' must contain a positive number"
+    ):
+        StreamOutlet(sinfo, max_buffered=-101)
 
 
 def _test_properties(outlet, dtype_str, n_channels, name, sfreq, stype):

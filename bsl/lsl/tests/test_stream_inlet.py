@@ -127,6 +127,14 @@ def test_pull_numerical_chunk(dtype_str, dtype):
         outlet.push_chunk(x.astype(np.float64 if dtype != np.float64 else np.float32))
         data, ts = inlet.pull_chunk(max_samples=3, timeout=5)
         _test_numerical_data(data, x, dtype, ts, 3)
+        # test push/pull with an unusual max_samples type
+        outlet.push_chunk(x.astype(np.float64 if dtype != np.float64 else np.float32))
+        data, ts = inlet.pull_chunk(max_samples=np.int64(3), timeout=5)
+        _test_numerical_data(data, x, dtype, ts, 3)
+        with pytest.raises(
+            ValueError, match="'max_samples' must be a strictly positive integer"
+        ):
+            data, ts = inlet.pull_chunk(max_samples=-101)
     except Exception as error:
         raise error
     finally:
@@ -296,6 +304,28 @@ def test_processing_flags(dtype_str, flags):
         assert inlet.samples_available == 0
         data, ts = inlet.pull_chunk(max_samples=1, timeout=0)
         assert data.size == ts.size == 0
+    except Exception as error:
+        raise error
+    finally:
+        try:
+            del inlet
+        except Exception:
+            pass
+        try:
+            del outlet
+        except Exception:
+            pass
+
+
+def test_time_correction():
+    """Test time_correction method."""
+    sinfo = StreamInfo("test", "", 2, 0.0, "int8", uuid.uuid4().hex[:6])
+    try:
+        outlet = StreamOutlet(sinfo, chunk_size=3)
+        inlet = StreamInlet(sinfo)
+        inlet.open_stream(timeout=5)
+        tc = inlet.time_correction(timeout=3)
+        assert isinstance(tc, float)
     except Exception as error:
         raise error
     finally:
