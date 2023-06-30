@@ -1,5 +1,7 @@
 import uuid
 
+import pytest
+
 from bsl.lsl import (
     StreamInfo,
     StreamOutlet,
@@ -106,3 +108,12 @@ def test_resolve_streams():
             del outlet3
         except Exception:
             pass
+
+    with pytest.raises(
+        ValueError, match="'timeout' must be a strictly positive integer"
+    ):
+        resolve_streams(timeout=-1)
+    with pytest.raises(
+        ValueError, match="'minimum' must be a strictly positive integer"
+    ):
+        resolve_streams(name="test", minimum=-1)
