@@ -51,12 +51,9 @@ class _BaseStreamInfo:
             pass
 
     def __eq__(self, other: Any) -> bool:
-        """Equality == method.
-
-        Test one by one to stop ASAP.
-        """
-        # TODO: check if this is not better
-        # return isinstance(other, _BaseStreamInfo) and self.__dict__ == other.__dict__
+        """Equality == method."""
+        if not isinstance(other, _BaseStreamInfo):
+            return False
         if self.name != other.name:
             return False
         if self.source_id != other.source_id:
