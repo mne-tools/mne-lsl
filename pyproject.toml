@@ -184,5 +184,6 @@ omit = [
 exclude_lines = [
     'pragma: no cover',
     'if __name__ == .__main__.:',
+    'if TYPE_CHECKING:',
 ]
 precision = 2
