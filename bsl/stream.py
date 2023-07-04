@@ -223,6 +223,12 @@ class Stream(ContainsMixin, SetChannelsMixin):
         # create the associated numpy array and edit buffer
         refs = np.zeros((self._timestamps.size, len(ref_channels)))
         with self._interrupt_acquisition():
+            self._picks = np.hstack(
+                (
+                    self._picks,
+                    np.arange(self._picks.size, self._picks.size + len(ref_channels)),
+                )
+            )
             self._buffer = np.hstack((self._buffer, refs))
 
     @fill_doc
@@ -624,7 +630,6 @@ class Stream(ContainsMixin, SetChannelsMixin):
             )
 
         with self._interrupt_acquisition():
-            self._picks_inlet = np.intersect1d(self._picks_inlet, idx)
             self._picks = idx
             self._buffer = self._buffer[:, self._picks]
 
