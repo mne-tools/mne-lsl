@@ -83,13 +83,13 @@ class Stream(ContainsMixin, SetChannelsMixin):
         # The buffer shape is similar to a pull_sample/pull_chunk from an inlet:
         # (n_samples, n_channels). New samples are added to the right of the buffer
         # while old samples are removed from the left of the buffer.
-        self._buffer = None
-        self._timestamps = None
-        self._picks_inlet = None  # selection of channels from the inlet
-        self._picks = None  # selection of channels from the inlet + additional channels
-        self._ref_channels = []
         self._acquisition_delay = None
         self._acquisition_thread = None
+        self._buffer = None
+        self._picks = None  # selection of channels from the inlet + additional channels
+        self._picks_inlet = None  # selection of channels from the inlet
+        self._ref_channels = []
+        self._timestamps = None
 
     @copy_doc(ContainsMixin.__contains__)
     def __contains__(self, ch_type) -> bool:
@@ -370,13 +370,13 @@ class Stream(ContainsMixin, SetChannelsMixin):
         self._sinfo = None
         self._inlet = None
         self._info = None
-        self._buffer = None
-        self._timestamps = None
-        self._picks_inlet = None
-        self._picks = None
-        self._ref_channels = []
         self._acquisition_delay = None
         self._acquisition_thread = None
+        self._buffer = None
+        self._picks = None
+        self._picks_inlet = None
+        self._ref_channels = []
+        self._timestamps = None
 
     def drop_channels(self, ch_names: Union[str, List[str], Tuple[str]]) -> None:
         """Drop channel(s).
