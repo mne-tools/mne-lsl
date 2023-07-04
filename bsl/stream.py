@@ -22,6 +22,7 @@ from .utils.logs import logger
 from .utils.meas_info import create_info, _set_channel_units, _HUMAN_UNITS
 
 if TYPE_CHECKING:
+    from datetime import datetime
     from typing import Callable, Dict, List, Optional, Sequence, Tuple, Union
 
     from mne import Info
@@ -216,6 +217,8 @@ class Stream(ContainsMixin, SetChannelsMixin):
 
         # create the associated numpy array and edit buffer
         refs = np.zeros((self._timestamps.size, len(ref_channels)))
+        with self._interrupt_acquisition():
+            self._buffer = np.hstack((self._buffer, refs))
 
     @fill_doc
     def anonymize(self, daysback=None, keep_his=False, *, verbose=None):
@@ -674,7 +677,9 @@ class Stream(ContainsMixin, SetChannelsMixin):
     def set_eeg_reference(self) -> None:
         raise NotImplementedError
 
-    def set_meas_date(self, meas_date):
+    def set_meas_date(
+        self, meas_date: Optional[Union[datetime, float, Tuple[float]]]
+    ) -> None:
         """Set the measurement start date.
 
         Parameters
