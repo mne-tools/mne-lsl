@@ -779,7 +779,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
         # roll and update buffers
         self._buffer = np.roll(self._buffer, -data.shape[0], axis=0)
         self._timestamps = np.roll(self._timestamps, -timestamps.size, axis=0)
-        self._buffer[-timestamps.size :, :] = data[self._picks]
+        self._buffer[-timestamps.size :, :] = data[:, self._picks]
         self._timestamps[-timestamps.size :] = timestamps
 
         # recreate the timer thread as it is one-call only
