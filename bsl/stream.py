@@ -85,7 +85,9 @@ class Stream(ContainsMixin, SetChannelsMixin):
         # while old samples are removed from the left of the buffer.
         self._buffer = None
         self._timestamps = None
-        self._picks = None  # picks defines the channel selected from the StreamInlet
+        self._picks_inlet = None  # selection of channels from the inlet
+        self._picks = None  # selection of channels from the inlet + additional channels
+        self._ref_channels = []
         self._acquisition_delay = None
         self._acquisition_thread = None
 
@@ -214,6 +216,9 @@ class Stream(ContainsMixin, SetChannelsMixin):
                     "loc": ref_dig_array,
                 }
                 self._info["chs"].append(chan_info)
+
+        # save reference channels
+        self._ref_channels = ref_channels
 
         # create the associated numpy array and edit buffer
         refs = np.zeros((self._timestamps.size, len(ref_channels)))
@@ -346,7 +351,8 @@ class Stream(ContainsMixin, SetChannelsMixin):
             self._timestamps = np.zeros(
                 ceil(self._bufsize * self._inlet.sfreq), dtype=np.float64
             )
-        self._picks = np.arange(0, self._inlet.n_channels)
+        self._picks_inlet = np.arange(0, self._inlet.n_channels)
+        self._pcks = self._picks_inlet
 
         # define the acquisition thread
         self._acquisition_delay = acquisition_delay
@@ -366,7 +372,9 @@ class Stream(ContainsMixin, SetChannelsMixin):
         self._info = None
         self._buffer = None
         self._timestamps = None
+        self._picks_inlet = None
         self._picks = None
+        self._ref_channels = []
         self._acquisition_delay = None
         self._acquisition_thread = None
 
@@ -401,6 +409,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
         picks = np.setdiff1d(np.arange(len(self._info.ch_names)), idx)
         self._info = pick_info(self._info, picks)
         with self._interrupt_acquisition():
+            self._picks_inlet = np.intersect1d(self._picks_inlet, picks)
             self._picks = self._picks[picks]
             self._buffer = self._buffer[:, picks]
 
@@ -540,6 +549,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
         picks = _picks_to_idx(self._info, picks, "all", exclude, allow_empty=False)
         self._info = pick_info(self._info, picks)
         with self._interrupt_acquisition():
+            self._picks_inlet = np.intersect1d(self._picks_inlet, picks)
             self._picks = self._picks[picks]
             self._buffer = self._buffer[:, picks]
 
@@ -614,6 +624,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
             )
 
         with self._interrupt_acquisition():
+            self._picks_inlet = np.intersect1d(self._picks_inlet, idx)
             self._picks = idx
             self._buffer = self._buffer[:, self._picks]
 
@@ -741,8 +752,8 @@ class Stream(ContainsMixin, SetChannelsMixin):
         if not self.connected:
             raise RuntimeError(
                 "The Stream attribute 'info' is None. An Info instance is required to "
-                "set the channel montage. Please connect to the stream to create "
-                "the Info."
+                "set the channel montage. Please connect to the stream to create the "
+                "Info."
             )
         super().set_montage(
             montage=montage,
@@ -755,11 +766,21 @@ class Stream(ContainsMixin, SetChannelsMixin):
     def _acquire(self) -> None:
         """Update function pulling new samples in the buffer at a regular interval."""
         data, timestamps = self._inlet.pull_chunk(timeout=0.0)
-        if timestamps.size != 0:
-            self._buffer = np.roll(self._buffer, -data.shape[0], axis=0)
-            self._timestamps = np.roll(self._timestamps, -timestamps.size, axis=0)
-            self._buffer[-data.shape[0] :, :] = data[:, self._picks]
-            self._timestamps[-timestamps.size :] = timestamps
+        if timestamps.size == 0:
+            return None  # interrupt early
+
+        # process acquisition window
+        data = data[:, self._picks_inlet]
+        if len(self._ref_channels) != 0:
+            data = np.hstack(
+                (data, np.zeros((self._timestamps.size, len(self._ref_channels))))
+            )
+
+        # roll and update buffers
+        self._buffer = np.roll(self._buffer, -data.shape[0], axis=0)
+        self._timestamps = np.roll(self._timestamps, -timestamps.size, axis=0)
+        self._buffer[-timestamps.size :, :] = data
+        self._timestamps[-timestamps.size :] = timestamps
 
         # recreate the timer thread as it is one-call only
         self._acquisition_thread = Timer(self._acquisition_delay, self._acquire)
