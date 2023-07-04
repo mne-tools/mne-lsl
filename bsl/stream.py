@@ -171,7 +171,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
                 check_value(unit, _ch_unit_mul_named, "unit")
                 ref_units[k] = _ch_unit_mul_named[unit]
 
-        # try to figure out the reference channel location
+        # try to figure out the reference channels location
         if self.get_montage() is None:
             ref_dig_array = np.full(12, np.nan)
             logger.info(
@@ -198,7 +198,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
                     for idx in pick_types(self._info, meg=False, eeg=True, exclude=[]):
                         self._info["chs"][idx]["loc"][3:6] = ref_dig_loc[0]["r"]
 
-        # add the reference channel to the info
+        # add the reference channels to the info
         nchan = len(self.ch_names)
         with self._info.unlock(update_redundant=True):
             for ch in ref_channels:
