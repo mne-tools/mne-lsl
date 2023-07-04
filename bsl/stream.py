@@ -6,19 +6,20 @@ from threading import Timer
 from typing import TYPE_CHECKING
 
 import numpy as np
-from mne import pick_info
+from mne import pick_info, pick_types
 from mne.channels import rename_channels
 from mne.channels.channels import SetChannelsMixin
+from mne.io.constants import FIFF, _ch_unit_mul_named
 from mne.io.meas_info import ContainsMixin
 from mne.io.pick import _picks_to_idx
 
 from .lsl import StreamInlet, resolve_streams
 from .lsl.constants import fmt2numpy
-from .utils._checks import check_type
+from .utils._checks import check_type, check_value
 from .utils._docs import copy_doc, fill_doc
 from .utils._exceptions import _GH_ISSUES
 from .utils.logs import logger
-from .utils.meas_info import create_info, _set_channel_units
+from .utils.meas_info import create_info, _set_channel_units, _HUMAN_UNITS
 
 if TYPE_CHECKING:
     from typing import Callable, Dict, List, Optional, Sequence, Tuple, Union
@@ -104,16 +105,29 @@ class Stream(ContainsMixin, SetChannelsMixin):
             pass
 
     @fill_doc
-    def add_reference_channels(self, ref_channels):
-        """Add reference channels to data that consists of all zeros.
+    def add_reference_channels(
+        self,
+        ref_channels: Union[str, List[str], Tuple[str]],
+        ref_units: Optional[
+            Union[str, int, List[Union[str, int]], Tuple[Union[str, int]]]
+        ] = None,
+    ) -> None:
+        """Add EEG reference channels to data that consists of all zeros.
 
-        Adds reference channels that are not part of the streamed data. This is useful
-        when you need to re-reference your data to different channels. These added
-        channels will consist of all zeros.
+        Adds EEG reference channels that are not part of the streamed data. This is
+        useful when you need to re-reference your data to different channels. These
+        added channels will consist of all zeros.
 
         Parameters
         ----------
         %(ref_channels)s
+        ref_units : str | int | list of str | list of int
+            The unit or unit multiplication factor of the reference channels. The unit
+            can be given as a human-readable string or as a unit multiplication factor,
+            e.g. ``-6`` for microvolts corresponding to ``1e-6``.
+            If not provided, the added EEG reference channel has a unit multiplication
+            factor set to ``0`` which corresponds to Volts. Use
+            `~Stream.set_channel_units` to change the unit multiplication factor.
         """
         if not self.connected:
             raise RuntimeError(
@@ -122,13 +136,86 @@ class Stream(ContainsMixin, SetChannelsMixin):
                 "Info."
             )
 
+        # error checking and conversion of the arguments to valid values
         if isinstance(ref_channels, str):
-            ref_channels = [str]
+            ref_channels = [ref_channels]
+        if isinstance(ref_units, (str, int)):
+            ref_units = [ref_units]
+        elif ref_units is None:
+            ref_units = [0] * len(ref_channels)
         check_type(ref_channels, (list, tuple), "ref_channels")
+        check_type(ref_units, (list, tuple), "ref_units")
+        if len(ref_channels) != len(ref_units):
+            raise ValueError(
+                "The number of reference channels and of reference units provided must "
+                f"match. {len(ref_channels)} channels and {len(ref_units)} units were "
+                "provided."
+            )
         for ch in ref_channels:
             check_type(ch, (str,), "ref_channel")
             if ch in self.ch_names:
                 raise ValueError(f"The channel {ch} is already part of the stream.")
+        for k, unit in enumerate(ref_units):
+            check_type(unit, (str, "int-like"), unit)
+            if isinstance(unit, str):
+                if unit not in _HUMAN_UNITS[FIFF.FIFF_UNIT_V]:
+                    raise ValueError(
+                        f"The human-readable unit {unit} for the channel "
+                        f"{ref_channels[k]} is unknown to BSL. " + _GH_ISSUES
+                    )
+                ref_units[k] = _HUMAN_UNITS[FIFF.FIFF_UNIT_V][unit]
+            elif isinstance(unit, int):
+                check_value(unit, _ch_unit_mul_named, "unit")
+                ref_units[k] = _ch_unit_mul_named[unit]
+
+        # try to figure out the reference channel location
+        if self.get_montage() is None:
+            ref_dig_array = np.full(12, np.nan)
+            logger.info(
+                "Location for this channel is unknown, consider calling set_montage() "
+                "again if needed."
+            )
+        else:
+            ref_dig_loc = [
+                dl
+                for dl in self._info["dig"]
+                if (dl["kind"] == FIFF.FIFFV_POINT_EEG and dl["ident"] == 0)
+            ]
+            if len(ref_channels) > 1 or len(ref_dig_loc) != len(ref_channels):
+                ref_dig_array = np.full(12, np.nan)
+                logger.warning(
+                    "The locations of multiple reference channels are ignored."
+                )
+            else:  # n_ref_channels == 1 and a single ref digitization exists
+                ref_dig_array = np.concatenate(
+                    (ref_dig_loc[0]["r"], ref_dig_loc[0]["r"], np.zeros(6))
+                )
+                # replace the (possibly new) ref location for each channel
+                with self._info.unlock():
+                    for idx in pick_types(self._info, meg=False, eeg=True, exclude=[]):
+                        self._info["chs"][idx]["loc"][3:6] = ref_dig_loc[0]["r"]
+
+        # add the reference channel to the info
+        nchan = len(self.ch_names)
+        with self._info.unlock(update_redundant=True):
+            for ch in ref_channels:
+                chan_info = {
+                    "ch_name": ch,
+                    "coil_type": FIFF.FIFFV_COIL_EEG,
+                    "kind": FIFF.FIFFV_EEG_CH,
+                    "logno": nchan + 1,
+                    "scanno": nchan + 1,
+                    "cal": 1,
+                    "range": 1.0,
+                    "unit_mul": FIFF.FIFF_UNITM_NONE,
+                    "unit": FIFF.FIFF_UNIT_V,
+                    "coord_frame": FIFF.FIFFV_COORD_HEAD,
+                    "loc": ref_dig_array,
+                }
+                self._info["chs"].append(chan_info)
+
+        # create the associated numpy array and edit buffer
+        refs = np.zeros((self._timestamps.size, len(ref_channels)))
 
     @fill_doc
     def anonymize(self, daysback=None, keep_his=False, *, verbose=None):
@@ -491,7 +578,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
             verbose=verbose,
         )
 
-    def reorder_channels(self, ch_names) -> None:
+    def reorder_channels(self, ch_names: Union[List[str], Tuple[str]]) -> None:
         """Reorder channels.
 
         Parameters
