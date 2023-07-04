@@ -1,7 +1,4 @@
-# postponed evaluation of annotations, c.f. PEP 563 and PEP 649 alternatively, the type
-# hints can be defined as strings which will be evaluated with eval() prior to type
-# checking.
-from __future__ import annotations
+from __future__ import annotations  # c.f. PEP 563, PEP 649
 
 from contextlib import contextmanager
 from math import ceil
@@ -106,8 +103,32 @@ class Stream(ContainsMixin, SetChannelsMixin):
         except Exception:
             pass
 
-    def add_reference_channels():
-        raise NotImplementedError
+    @fill_doc
+    def add_reference_channels(self, ref_channels):
+        """Add reference channels to data that consists of all zeros.
+
+        Adds reference channels that are not part of the streamed data. This is useful
+        when you need to re-reference your data to different channels. These added
+        channels will consist of all zeros.
+
+        Parameters
+        ----------
+        %(ref_channels)s
+        """
+        if not self.connected:
+            raise RuntimeError(
+                "The Stream attribute 'info' is None. An Info instance is required to "
+                "add reference channels. Please connect to the stream to create the "
+                "Info."
+            )
+
+        if isinstance(ref_channels, str):
+            ref_channels = [str]
+        check_type(ref_channels, (list, tuple), "ref_channels")
+        for ch in ref_channels:
+            check_type(ch, (str,), "ref_channel")
+            if ch in self.ch_names:
+                raise ValueError(f"The channel {ch} is already part of the stream.")
 
     @fill_doc
     def anonymize(self, daysback=None, keep_his=False, *, verbose=None):

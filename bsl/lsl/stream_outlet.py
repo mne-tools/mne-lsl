@@ -1,7 +1,4 @@
-# postponed evaluation of annotations, c.f. PEP 563 and PEP 649 alternatively, the type
-# hints can be defined as strings which will be evaluated with eval() prior to type
-# checking.
-from __future__ import annotations
+from __future__ import annotations  # c.f. PEP 563, PEP 649
 
 from ctypes import c_char_p, c_double, c_int, c_long, c_void_p
 from typing import TYPE_CHECKING

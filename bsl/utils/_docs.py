@@ -23,6 +23,7 @@ keys: Tuple[str, ...] = (
     "montage_types",
     "on_missing_montage",
     "picks_all",
+    "ref_channels",
 )
 
 for key in keys:
@@ -166,7 +167,7 @@ docdict[
     "viewer_backend_xRange"
 ] = """
 xRange : int
-    Range of the x-axis (plotting time duration) in seconds."""
+    Range of the x-axref_channelsis (plotting time duration) in seconds."""
 docdict[
     "viewer_backend_yRange"
 ] = """
