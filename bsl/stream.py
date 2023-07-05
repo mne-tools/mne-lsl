@@ -12,6 +12,7 @@ from mne.channels.channels import SetChannelsMixin
 from mne.io.constants import FIFF, _ch_unit_mul_named
 from mne.io.meas_info import ContainsMixin
 from mne.io.pick import _picks_to_idx
+from mne.io.reference import _ELECTRODE_CH_TYPES
 
 from .lsl import StreamInlet, resolve_streams
 from .lsl.constants import fmt2numpy
@@ -638,8 +639,37 @@ class Stream(ContainsMixin, SetChannelsMixin):
         """
         _set_channel_units(self._info, mapping)
 
-    def set_eeg_reference(self) -> None:
-        raise NotImplementedError
+    def set_eeg_reference(
+        self,
+        ref_channels: Union[str, List[str], Tuple[str]],
+        ch_type: Union[str, List[str], Tuple[str]] = "eeg",
+    ) -> None:
+        """Specify which reference to use for EEG data.
+
+        Use this function to explicitly specify the desired reference for EEG. This can
+        be either an existing electrode or a new virtual channel. This function will
+        re-reference the data according to the desired reference.
+
+        Parameters
+        ----------
+        ref_channels : str | list of str
+            Name(s) of the channel(s) used to construct the reference. Can also be set
+            to ``'average'`` to apply a common average reference.
+        ch_type : str | list of str
+            The name of the channel type to apply the reference to. Valid channel types
+            are ``'eeg'``, ``'ecog'``, ``'seeg'``, ``'dbs'``.
+        """
+        if isinstance(ch_type, str):
+            ch_type = [ch_type]
+        check_type(ch_type, (tuple, list), "ch_type")
+        for type_ in ch_type:
+            check_value(type_, _ELECTRODE_CH_TYPES, "ch_type")
+            if type_ not in self:
+                raise ValueError(
+                    f"There are no channels of type {type_} in this stream."
+                )
+
+        ch_dict = {**{type_: True for type_ in ch_type}, "meg": False, "ref_meg": False}
 
     def set_meas_date(
         self, meas_date: Optional[Union[datetime, float, Tuple[float]]]
