@@ -86,8 +86,8 @@ class Stream(ContainsMixin, SetChannelsMixin):
         self._acquisition_delay = None
         self._acquisition_thread = None
         self._buffer = None
-        self._picks = None  # selection of channels from the inlet + additional channels
-        self._picks_inlet = None  # selection of channels from the inlet
+        # picks_inlet represent the selection of channels from the inlet.
+        self._picks_inlet = None
         self._ref_channels = []
         self._timestamps = None
 
@@ -194,13 +194,13 @@ class Stream(ContainsMixin, SetChannelsMixin):
                     (ref_dig_loc[0]["r"], ref_dig_loc[0]["r"], np.zeros(6))
                 )
                 # replace the (possibly new) ref location for each channel
-                with self._info.unlock():
+                with self._info._unlock():
                     for idx in pick_types(self._info, meg=False, eeg=True, exclude=[]):
                         self._info["chs"][idx]["loc"][3:6] = ref_dig_loc[0]["r"]
 
         # add the reference channels to the info
         nchan = len(self.ch_names)
-        with self._info.unlock(update_redundant=True):
+        with self._info._unlock(update_redundant=True):
             for ch in ref_channels:
                 chan_info = {
                     "ch_name": ch,
@@ -223,12 +223,6 @@ class Stream(ContainsMixin, SetChannelsMixin):
         # create the associated numpy array and edit buffer
         refs = np.zeros((self._timestamps.size, len(ref_channels)))
         with self._interrupt_acquisition():
-            self._picks = np.hstack(
-                (
-                    self._picks,
-                    np.arange(self._picks.size, self._picks.size + len(ref_channels)),
-                )
-            )
             self._buffer = np.hstack((self._buffer, refs))
 
     @fill_doc
@@ -358,7 +352,6 @@ class Stream(ContainsMixin, SetChannelsMixin):
                 ceil(self._bufsize * self._inlet.sfreq), dtype=np.float64
             )
         self._picks_inlet = np.arange(0, self._inlet.n_channels)
-        self._pcks = self._picks_inlet
 
         # define the acquisition thread
         self._acquisition_delay = acquisition_delay
@@ -379,7 +372,6 @@ class Stream(ContainsMixin, SetChannelsMixin):
         self._acquisition_delay = None
         self._acquisition_thread = None
         self._buffer = None
-        self._picks = None
         self._picks_inlet = None
         self._ref_channels = []
         self._timestamps = None
@@ -415,9 +407,9 @@ class Stream(ContainsMixin, SetChannelsMixin):
         picks = np.setdiff1d(np.arange(len(self._info.ch_names)), idx)
         self._info = pick_info(self._info, picks)
         with self._interrupt_acquisition():
-            self._picks_inlet = np.intersect1d(self._picks_inlet, picks)
-            self._picks = self._picks[picks]
             self._buffer = self._buffer[:, picks]
+            picks = picks[np.where(picks < self._picks_inlet.size)[0]]
+            self._picks_inlet = self._picks_inlet[picks]
 
     def filter(self) -> None:
         raise NotImplementedError
@@ -555,9 +547,9 @@ class Stream(ContainsMixin, SetChannelsMixin):
         picks = _picks_to_idx(self._info, picks, "all", exclude, allow_empty=False)
         self._info = pick_info(self._info, picks)
         with self._interrupt_acquisition():
-            self._picks_inlet = np.intersect1d(self._picks_inlet, picks)
-            self._picks = self._picks[picks]
             self._buffer = self._buffer[:, picks]
+            picks = picks[np.where(picks < self._picks_inlet.size)[0]]
+            self._picks_inlet = self._picks_inlet[picks]
 
     def record(self):
         raise NotImplementedError
@@ -596,42 +588,6 @@ class Stream(ContainsMixin, SetChannelsMixin):
             allow_duplicates=allow_duplicates,
             verbose=verbose,
         )
-
-    def reorder_channels(self, ch_names: Union[List[str], Tuple[str]]) -> None:
-        """Reorder channels.
-
-        Parameters
-        ----------
-        ch_names : list of str
-            The desired channel order.
-        """
-        if not self.connected:
-            raise RuntimeError(
-                "The Stream attribute 'info' is None. An Info instance is required to "
-                "reorder the channels. Please connect to the stream to create the Info."
-            )
-
-        check_type(ch_names, (list, tuple), "ch_names")
-        try:
-            idx = np.array([self._info.ch_names.index(ch_name) for ch_name in ch_names])
-        except ValueError:
-            raise ValueError(
-                "The argument 'ch_names' must contain existing channel names."
-            )
-        if np.unique(idx).size != len(ch_names):
-            raise ValueError(
-                "The argument 'ch_names' must contain the desired channel order "
-                "without duplicated channel name."
-            )
-        if len(ch_names) != len(self._info.ch_names):
-            raise ValueError(
-                "The argument 'ch_names' must contain all the existing channels in the "
-                "desired order."
-            )
-
-        with self._interrupt_acquisition():
-            self._picks = idx
-            self._buffer = self._buffer[:, self._picks]
 
     def save_stream_config(self) -> None:
         pass
@@ -778,13 +734,13 @@ class Stream(ContainsMixin, SetChannelsMixin):
         data = data[:, self._picks_inlet]
         if len(self._ref_channels) != 0:
             data = np.hstack(
-                (data, np.zeros((self._timestamps.size, len(self._ref_channels))))
+                (data, np.zeros((timestamps.size, len(self._ref_channels))))
             )
 
         # roll and update buffers
         self._buffer = np.roll(self._buffer, -data.shape[0], axis=0)
         self._timestamps = np.roll(self._timestamps, -timestamps.size, axis=0)
-        self._buffer[-timestamps.size :, :] = data[:, self._picks]
+        self._buffer[-timestamps.size :, :] = data
         self._timestamps[-timestamps.size :] = timestamps
 
         # recreate the timer thread as it is one-call only
@@ -844,13 +800,13 @@ class Stream(ContainsMixin, SetChannelsMixin):
         """
         attributes = (
             "_sinfo",
-            "_info",
             "_inlet",
-            "_buffer",
-            "_timestamps",
-            "_picks",
+            "_info",
             "_acquisition_delay",
             "_acquisition_thread",
+            "_buffer",
+            "_picks_inlet",
+            "_timestamps",
         )
         if all(getattr(self, attr) is None for attr in attributes):
             return False
