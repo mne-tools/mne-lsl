@@ -218,7 +218,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
                 self._info["chs"].append(chan_info)
 
         # save reference channels
-        self._ref_channels = ref_channels
+        self._ref_channels.extend(ref_channels)
 
         # create the associated numpy array and edit buffer
         refs = np.zeros((self._timestamps.size, len(ref_channels)))
@@ -405,11 +405,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
             )
 
         picks = np.setdiff1d(np.arange(len(self._info.ch_names)), idx)
-        self._info = pick_info(self._info, picks)
-        with self._interrupt_acquisition():
-            self._buffer = self._buffer[:, picks]
-            picks = picks[np.where(picks < self._picks_inlet.size)[0]]
-            self._picks_inlet = self._picks_inlet[picks]
+        self._pick(picks)
 
     def filter(self) -> None:
         raise NotImplementedError
@@ -545,11 +541,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
             )
 
         picks = _picks_to_idx(self._info, picks, "all", exclude, allow_empty=False)
-        self._info = pick_info(self._info, picks)
-        with self._interrupt_acquisition():
-            self._buffer = self._buffer[:, picks]
-            picks = picks[np.where(picks < self._picks_inlet.size)[0]]
-            self._picks_inlet = self._picks_inlet[picks]
+        self._pick(picks)
 
     def record(self):
         raise NotImplementedError
@@ -761,6 +753,25 @@ class Stream(ContainsMixin, SetChannelsMixin):
         yield
         self._acquisition_thread = Timer(self._acquisition_delay, self._acquire)
         self._acquisition_thread.start()
+
+    def _pick(self, picks: NDArray[int]) -> None:
+        """Interrupt acquisition and apply the channel selection."""
+        picks_inlet = picks[np.where(picks < self._picks_inlet.size)[0]]
+        if picks_inlet.size == 0:
+            raise RuntimeError(
+                "The requested channel selection would not leave any channel from the "
+                "LSL Stream."
+            )
+
+        with self._interrupt_acquisition():
+            self._info = pick_info(self._info, picks)
+            self._picks_inlet = self._picks_inlet[picks_inlet]
+            self._buffer = self._buffer[:, picks]
+
+            # prune added channels which are not part of the inlet
+            for ch in self._ref_channels[::-1]:
+                if ch not in self.ch_names:
+                    self._ref_channels.remove(ch)
 
     # ----------------------------------------------------------------------------------
     @property
