@@ -89,8 +89,10 @@ class Stream(ContainsMixin, SetChannelsMixin):
         self._buffer = None
         # picks_inlet represent the selection of channels from the inlet.
         self._picks_inlet = None
-        self._ref_channels = []
         self._timestamps = None
+
+        # -- variables defined for processing ------------------------------------------
+        self._ref_channels = []
 
     @copy_doc(ContainsMixin.__contains__)
     def __contains__(self, ch_type) -> bool:
@@ -659,6 +661,13 @@ class Stream(ContainsMixin, SetChannelsMixin):
             The name of the channel type to apply the reference to. Valid channel types
             are ``'eeg'``, ``'ecog'``, ``'seeg'``, ``'dbs'``.
         """
+        if not self.connected:
+            raise RuntimeError(
+                "The Stream attribute 'info' is None. An Info instance is required to "
+                "set the electrode reference. Please connect to the stream to create "
+                "the Info."
+            )
+
         if isinstance(ch_type, str):
             ch_type = [ch_type]
         check_type(ch_type, (tuple, list), "ch_type")
@@ -669,7 +678,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
                     f"There are no channels of type {type_} in this stream."
                 )
 
-        ch_dict = {**{type_: True for type_ in ch_type}, "meg": False, "ref_meg": False}
+        picks = _picks_to_idx(self._info, ch_type, "all", (), allow_empty=False)
 
     def set_meas_date(
         self, meas_date: Optional[Union[datetime, float, Tuple[float]]]
