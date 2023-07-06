@@ -224,9 +224,9 @@ class Stream(ContainsMixin, SetChannelsMixin):
         self._ref_channels.extend(ref_channels)
 
         # create the associated numpy array and edit buffer
-        refs = np.zeros((self._timestamps.size, len(ref_channels)))
+        refs = np.zeros((self._timestamps.size, len(ref_channels)), dtype=self.dtype)
         with self._interrupt_acquisition():
-            self._buffer = np.hstack((self._buffer, refs))
+            self._buffer = np.hstack((self._buffer, refs), dtype=self.dtype)
 
     @fill_doc
     def anonymize(self, daysback=None, keep_his=False, *, verbose=None):
@@ -764,9 +764,10 @@ class Stream(ContainsMixin, SetChannelsMixin):
         # process acquisition window
         data = data[:, self._picks_inlet]
         if len(self._ref_channels) != 0:
-            data = np.hstack(
-                (data, np.zeros((timestamps.size, len(self._ref_channels))))
+            refs = np.zeros(
+                (timestamps.size, len(self._ref_channels)), dtype=self.dtype
             )
+            data = np.hstack((data, refs), dtype=self.dtype)
 
         # roll and update buffers
         self._buffer = np.roll(self._buffer, -data.shape[0], axis=0)
@@ -861,8 +862,14 @@ class Stream(ContainsMixin, SetChannelsMixin):
         if all(getattr(self, attr) is None for attr in attributes):
             return False
         else:
+            # sanity-check
             assert not any(getattr(self, attr) is None for attr in attributes)
             return True
+
+    @property
+    def dtype(self):
+        """Channel format of the stream."""
+        return getattr(self._buffer, "dtype", None)
 
     @property
     def info(self) -> Optional[Info]:
