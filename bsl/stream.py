@@ -587,6 +587,9 @@ class Stream(ContainsMixin, SetChannelsMixin):
     def save_stream_config(self) -> None:
         pass
 
+    def set_bipolar_reference():
+        pass
+
     @fill_doc
     def set_channel_types(
         self, mapping: Dict[str, str], *, on_unit_change: str = "warn", verbose=None
