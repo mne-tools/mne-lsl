@@ -517,7 +517,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
         return super().get_montage()
 
     def load_stream_config(self) -> None:
-        pass
+        raise NotImplementedError
 
     def plot(self):
         raise NotImplementedError
@@ -585,10 +585,10 @@ class Stream(ContainsMixin, SetChannelsMixin):
         )
 
     def save_stream_config(self) -> None:
-        pass
+        raise NotImplementedError
 
     def set_bipolar_reference():
-        pass
+        raise NotImplementedError
 
     @fill_doc
     def set_channel_types(
@@ -682,6 +682,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
                 )
 
         picks = _picks_to_idx(self._info, ch_type, "all", (), allow_empty=False)
+        raise NotImplementedError
 
     def set_meas_date(
         self, meas_date: Optional[Union[datetime, float, Tuple[float]]]
