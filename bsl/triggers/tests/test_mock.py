@@ -15,6 +15,6 @@ def test_trigger_mock(caplog):
     trigger.signal(2)
     assert "Mock set to 2" in caplog.text
 
-    with pytest.raises(ValueError, match="between 1 and 255"):
+    with pytest.raises(ValueError, match="between 1 and 127"):
         trigger.signal(256)
     assert "Mock set to 3" not in caplog.text
