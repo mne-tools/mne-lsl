@@ -729,6 +729,11 @@ class Stream(ContainsMixin, SetChannelsMixin):
 
     def _acquire(self) -> None:
         """Update function pulling new samples in the buffer at a regular interval."""
+        # recreate the timer thread as it is one-call only
+        self._acquisition_thread = Timer(self._acquisition_delay, self._acquire)
+        self._acquisition_thread.start()
+
+        # pull data
         data, timestamps = self._inlet.pull_chunk(timeout=0.0)
         if timestamps.size == 0:
             return None  # interrupt early
@@ -746,10 +751,6 @@ class Stream(ContainsMixin, SetChannelsMixin):
         self._timestamps = np.roll(self._timestamps, -timestamps.size, axis=0)
         self._buffer[-timestamps.size :, :] = data  # noqa: E203
         self._timestamps[-timestamps.size :] = timestamps  # noqa: E203
-
-        # recreate the timer thread as it is one-call only
-        self._acquisition_thread = Timer(self._acquisition_delay, self._acquire)
-        self._acquisition_thread.start()
 
     def _check_connected(self, name: str):
         """Check that the stream is connected before calling the function 'name'."""

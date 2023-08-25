@@ -13,7 +13,7 @@ elif check_version("mne", "1.6"):
 else:
     from mne.io.meas_info import ContainsMixin
 
-from .lsl import StreamInfo
+from .lsl import StreamInfo, StreamOutlet
 from .utils._checks import check_type, ensure_int, ensure_path
 
 if TYPE_CHECKING:
@@ -63,21 +63,50 @@ class Player(ContainsMixin):
         self._sinfo.set_channel_names(self._raw.info["ch_names"])
         self._sinfo.set_channel_types(self._raw.get_channel_types(unique=False))
         # TODO: set the channel units
+        self._outlet = None
+        self._chunk_idx = 0
         self._streaming_thread = None
 
     def start(self):
+        """Start streaming data on the LSL `~bsl.lsl.StreamOutlet`."""
+        self._outlet = StreamOutlet(self._sinfo, self._chunk_size)
         self._streaming_delay = self.chunk_size / self.info["sfreq"]
         self._streaming_thread = Timer(self._streaming_delay, self._stream)
         self.start()
 
     def stop(self):
-        pass
+        """Stop streaming data on the LSL `~bsl.lsl.StreamOutlet`."""
+        while self._streaming_thread.is_alive():
+            self._streaming_thread.cancel()
+        del self._outlet
+        # reset variables
+        self._outlet = None
 
     def _stream(self):
+        """Push a chunk of data from the raw object to the StreamOutlet.
+
+        Don't use raw.get_data but indexing which is faster.
+
+        >>> [In] %timeit raw[:, 0:16][0]
+        >>> 19 µs ± 50.3 ns per loo
+        >>> [In] %timeit raw.get_data(start=0, stop=16)
+        >>> 1.3 ms ± 1.01 µs per loop
+
+        There is no need to compensate the delay or the LSL timestamp since the total
+        step is short, for reasonnable chunk sizes.
+
+        >>> [In] %timeit np.ascontiguousarray(raw[:, 0:16][0].T)
+        >>> 23.7 µs ± 183 ns per loop
+        """
         # recreate the timer thread as it is one-call only
         self._streaming_thread = Timer(self._streaming_delay, self._stream)
         self._streaming_thread.start()
-        # TODO: compensate self._streaming_delay for _stream execution time
+
+        start = self._chunk_idx * self._chunk_size
+        stop = start + self._chunk_size
+        data = self._raw[:, start:stop].T
+        self._outlet.push_chunk(data)
+        self._chunk_idx += 1
 
     # ----------------------------------------------------------------------------------
     def __enter__(self):
@@ -90,7 +119,12 @@ class Player(ContainsMixin):
 
     def __repr__(self):
         """Representation of the instance."""
-        status = "ON" if self._state.value == 1 else "OFF"
+        if self._streaming_thread is None:
+            status = "OFF"
+        elif self._streaming_thread.is_alive():
+            status = "ON"
+        else:
+            status = "OFF"
         return f"<Player: {self.name} | {status} | {self._fname}>"
 
     # ----------------------------------------------------------------------------------
