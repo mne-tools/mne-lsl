@@ -3,8 +3,14 @@ from __future__ import annotations  # c.f. PEP 563, PEP 649
 from typing import TYPE_CHECKING
 
 from mne import create_info as mne_create_info
-from mne.io.constants import FIFF, _ch_unit_mul_named
-from mne.io.pick import get_channel_type_constants
+from mne.utils import check_version
+
+if check_version("mne", "1.6"):
+    from mne._fiff.constants import FIFF, _ch_unit_mul_named
+    from mne._fiff.pick import get_channel_type_constants
+else:
+    from mne.io.constants import FIFF, _ch_unit_mul_named
+    from mne.io.pick import get_channel_type_constants
 
 from ..lsl.stream_info import _BaseStreamInfo
 from ._checks import check_type, check_value, ensure_int
