@@ -59,7 +59,7 @@ class LSLTrigger(BaseTrigger):
     @copy_doc(BaseTrigger.signal)
     def signal(self, value: int) -> None:
         super().signal(value)
-        self._outlet.push_sample(np.int8(value))
+        self._outlet.push_sample(np.array([value], dtype=np.int8))
 
     def close(self) -> None:
         """Close the LSL outlet."""
