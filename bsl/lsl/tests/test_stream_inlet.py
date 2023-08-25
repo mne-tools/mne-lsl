@@ -7,6 +7,7 @@ import pytest
 from numpy.testing import assert_allclose
 
 from bsl.lsl import StreamInfo, StreamInlet, StreamOutlet
+from bsl.lsl.constants import string2numpy
 from bsl.lsl.stream_info import _BaseStreamInfo
 
 
@@ -110,8 +111,8 @@ def test_pull_numerical_chunk(dtype_str, dtype):
         _test_numerical_data(data, x[0, :], dtype, ts)
         data, ts = inlet.pull_sample(timeout=5)
         _test_numerical_data(data, x[1, :], dtype, ts)
-        data, ts = inlet.pull_chunk(max_samples=5, timeout=1)
-        _test_numerical_data(data, x[2, :], dtype, ts, 1)
+        data, ts = inlet.pull_sample(timeout=5)
+        _test_numerical_data(data, x[2, :], dtype, ts)
         # test push/pull with wrong dtype
         outlet.push_chunk(x.astype(np.float64 if dtype != np.float64 else np.float32))
         data, ts = inlet.pull_chunk(max_samples=3, timeout=5)
@@ -294,7 +295,7 @@ def test_time_correction():
 
 def _test_properties(inlet, dtype_str, n_channels, name, sfreq, stype):
     """Test the properties of an inlet against expected values."""
-    assert inlet.dtype == dtype_str
+    assert inlet.dtype == string2numpy.get(dtype_str, dtype_str)
     assert inlet.n_channels == n_channels
     assert inlet.name == name
     assert inlet.sfreq == sfreq

@@ -39,10 +39,10 @@ def load_liblsl() -> CDLL:
 
     lib = _find_liblsl_env()
     if lib is not None:
-        return _set_return_types(lib)
+        return _set_types(lib)
     lib = _find_liblsl_bsl()
     if lib is not None:
-        return _set_return_types(lib)
+        return _set_types(lib)
     else:
         raise RuntimeError(
             "The liblsl library packaged with BSL could not be loaded. " + _GH_ISSUES
@@ -215,8 +215,8 @@ def _find_liblsl_bsl() -> Optional[CDLL]:
     return lib
 
 
-def _set_return_types(lib: CDLL) -> CDLL:
-    """Set the return types for the different liblsl functions.
+def _set_types(lib: CDLL) -> CDLL:
+    """Set the argument and return types for the different liblsl functions.
 
     Parameters
     ----------
@@ -328,7 +328,7 @@ def _set_return_types(lib: CDLL) -> CDLL:
         lib.lsl_pull_chunk_buf.restype = c_long
     except Exception:
         logger.info(
-            "[LIBLSL] Chunk transfer functions not available in your liblsl " "version."
+            "[LIBLSL] Chunk transfer functions not available in your liblsl version."
         )
     try:
         lib.lsl_create_continuous_resolver.restype = c_void_p

@@ -1,5 +1,6 @@
 from time import strftime
 
+import numpy as np
 import pytest
 
 from bsl import logger
@@ -103,3 +104,29 @@ def test_stream_info_invalid_desc():
         sinfo.set_channel_units([101, 101, 101])
     with pytest.raises(ValueError, match="number of provided channel"):
         sinfo.set_channel_units(["101"])
+
+
+@pytest.mark.parametrize(
+    "dtype_str, dtype",
+    [
+        ("float32", np.float32),
+        ("float64", np.float64),
+        ("int8", np.int8),
+        ("int16", np.int16),
+        ("int32", np.int32),
+    ],
+)
+def test_create_stream_info_with_numpy_dtype(dtype, dtype_str):
+    """Test creation of a StreamInfo with a numpy dtype instead of a string."""
+    sinfo = StreamInfo("pytest", "eeg", 3, 101, dtype_str, strftime("%H%M%S"))
+    assert sinfo.dtype == dtype
+    del sinfo
+    sinfo = StreamInfo("pytest", "eeg", 3, 101, dtype, strftime("%H%M%S"))
+    assert sinfo.dtype == dtype
+    del sinfo
+
+
+def test_create_stream_info_with_invalid_numpy_dtype():
+    """Test creation of a StreamInfo with an invalid numpy dtype."""
+    with pytest.raises(ValueError, match="provided dtype could not be interpreted as"):
+        StreamInfo("pytest", "eeg", 3, 101, np.uint8, strftime("%H%M%S"))

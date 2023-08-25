@@ -9,12 +9,7 @@ import numpy as np
 
 from ..utils._checks import check_type, check_value, ensure_int
 from ..utils._docs import copy_doc
-from .constants import (
-    fmt2pull_chunk,
-    fmt2pull_sample,
-    fmt2string,
-    post_processing_flags,
-)
+from .constants import fmt2numpy, fmt2pull_chunk, fmt2pull_sample, post_processing_flags
 from .load_liblsl import lib
 from .stream_info import _BaseStreamInfo
 from .utils import _check_timeout, _free_char_p_array_memory, handle_error
@@ -22,7 +17,7 @@ from .utils import _check_timeout, _free_char_p_array_memory, handle_error
 if TYPE_CHECKING:
     from typing import List, Optional, Sequence, Tuple, Union
 
-    from numpy.typing import NDArray
+    from numpy.typing import DTypeLike, NDArray
 
 
 class StreamInlet:
@@ -360,8 +355,8 @@ class StreamInlet:
     # -------------------------------------------------------------------------
     @copy_doc(_BaseStreamInfo.dtype)
     @property
-    def dtype(self) -> str:
-        return fmt2string[self._dtype]
+    def dtype(self) -> Union[str, DTypeLike]:
+        return fmt2numpy.get(self._dtype, "string")
 
     @copy_doc(_BaseStreamInfo.n_channels)
     @property

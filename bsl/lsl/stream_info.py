@@ -3,14 +3,18 @@ from __future__ import annotations  # c.f. PEP 563, PEP 649
 from ctypes import c_char_p, c_double, c_void_p
 from typing import TYPE_CHECKING
 
+import numpy as np
+
 from ..utils._checks import check_type, check_value, ensure_int
 from ..utils.logs import logger
-from .constants import fmt2idx, fmt2string, idx2fmt, string2fmt
+from .constants import fmt2idx, fmt2numpy, idx2fmt, numpy2fmt, string2fmt
 from .load_liblsl import lib
 from .utils import XMLElement
 
 if TYPE_CHECKING:
     from typing import Any, List, Optional, Tuple, Union
+
+    from numpy.typing import DTypeLike
 
 
 _MAPPING_LSL = {
@@ -114,12 +118,12 @@ class _BaseStreamInfo:
 
     # -- Core information, assigned at construction ------------------------------------
     @property
-    def dtype(self) -> str:
+    def dtype(self) -> Union[str, DTypeLike]:
         """Channel format of a stream.
 
         All channels in a stream have the same format.
         """
-        return fmt2string[self._dtype]
+        return fmt2numpy.get(self._dtype, "string")
 
     @property
     def name(self) -> str:
@@ -442,11 +446,12 @@ class StreamInfo(_BaseStreamInfo):
         Also called ``nominal_srate``, represents the sampling rate (in Hz) as
         advertised by the data source. If the sampling rate is irregular (e.g. for a
         trigger stream), the sampling rate is set to ``0``.
-    dtype : str
+    dtype : str | dtype
         Format of each channel. If your channels have different formats, consider
         supplying multiple streams or use the largest type that can hold them all.
         One of ``('string', 'float32', 'float64', 'int8', 'int16', 'int32')``.
-        ``'int64'`` is partially supported.
+        ``'int64'`` is partially supported. Can also be the equivalent numpy type, e.g.
+        ``np.int8``.
     source_id : str
         A unique identifier of the device or source of the data. If not empty, this
         information improves the system robustness since it allows recipients to recover
@@ -478,23 +483,29 @@ class StreamInfo(_BaseStreamInfo):
             c_char_p(str.encode(stype)),
             n_channels,
             c_double(sfreq),
-            StreamInfo._string2idxfmt(dtype),
+            StreamInfo._dtype2idxfmt(dtype),
             c_char_p(str.encode(source_id)),
         )
         super().__init__(obj)
 
     # ----------------------------------------------------------------------------------
     @staticmethod
-    def _string2idxfmt(dtype) -> int:
+    def _dtype2idxfmt(dtype: Union[str, int, DTypeLike]) -> int:
         """Convert a string format to its LSL integer value."""
         if dtype in fmt2idx:
             return fmt2idx[dtype]
-        check_type(dtype, (str, "int-like"), "dtype")
-        if isinstance(dtype, str):
+        elif dtype in numpy2fmt:
+            return fmt2idx[numpy2fmt[dtype]]
+        elif isinstance(dtype, str):
             dtype = dtype.lower()
             check_value(dtype, string2fmt, "dtype")
             dtype = fmt2idx[string2fmt[dtype]]
-        else:
+        elif isinstance(dtype, int):
             dtype = ensure_int(dtype)
             check_value(dtype, idx2fmt, "dtype")
+        else:
+            raise ValueError(
+                "The provided dtype could not be interpreted as a supported type. "
+                f"{dtype} is invalid."
+            )
         return dtype

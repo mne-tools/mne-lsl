@@ -29,9 +29,7 @@ keys: Tuple[str, ...] = (
 for key in keys:
     entry = docdict_mne[key]
     if ".. versionchanged::" in entry:
-        entry = entry.replace(
-            ".. versionchanged::", ".. versionchanged:: MNE "
-        )
+        entry = entry.replace(".. versionchanged::", ".. versionchanged:: MNE ")
     if ".. versionadded::" in entry:
         entry = entry.replace(".. versionadded::", ".. versionadded:: MNE ")
     docdict[key] = entry

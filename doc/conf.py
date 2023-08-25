@@ -141,6 +141,8 @@ numpydoc_xref_aliases = {
     "Info": "mne.Info",
     "Projection": "mne.Projection",
     "Raw": "mne.io.Raw",
+    # Numpy
+    "dtype": "numpy.dtype",
     # Python
     "bool": ":class:`python:bool`",
     "file-like": ":term:`file-like <python:file object>`",

@@ -92,11 +92,6 @@ def resolve_streams(
         List of `~bsl.lsl.StreamInfo` objects found on the network. While a
         `~bsl.lsl.StreamInfo` is not bound to an Inlet, the description field remains
         empty.
-
-    Notes
-    -----
-    If multiple restrinction are provided, the network must be queried once for each
-    restriction. Thus, the true timeout is multiplied by the non ``None`` restrictions.
     """
     check_type(timeout, ("numeric",), "timeout")
     if timeout <= 0:
@@ -125,6 +120,7 @@ def resolve_streams(
         for prop, name in zip(properties, ("name", "stype", "source_id"))
         if prop is not None
     ]
+    timeout /= len(properties)
 
     streams = []
     for prop, name in properties:

@@ -7,6 +7,7 @@ import pytest
 from numpy.testing import assert_allclose
 
 from bsl.lsl import StreamInfo, StreamInlet, StreamOutlet
+from bsl.lsl.constants import string2numpy
 from bsl.lsl.stream_info import _BaseStreamInfo
 
 
@@ -37,7 +38,9 @@ def test_push_numerical_sample(dtype_str, dtype):
         data, ts = inlet.pull_sample(timeout=5)
         assert_allclose(data, x)
 
-        with pytest.raises(ValueError, match="shape should be (n_channels,)"):
+        with pytest.raises(
+            ValueError, match=re.escape("shape should be (n_channels,)")
+        ):
             outlet.push_sample(
                 np.array([1, 2, 3, 4, 5, 6], dtype=dtype).reshape((2, 3))
             )
@@ -177,7 +180,7 @@ def test_invalid_outlet():
 
 def _test_properties(outlet, dtype_str, n_channels, name, sfreq, stype):
     """Test the properties of an outlet against expected values."""
-    assert outlet.dtype == dtype_str
+    assert outlet.dtype == string2numpy.get(dtype_str, dtype_str)
     assert outlet.n_channels == n_channels
     assert outlet.name == name
     assert outlet.sfreq == sfreq
