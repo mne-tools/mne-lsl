@@ -511,6 +511,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
         raise NotImplementedError
 
     def plot(self):
+        self._check_connected(name="Stream.plot()")
         raise NotImplementedError
 
     @fill_doc
@@ -533,6 +534,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
         self._pick(picks)
 
     def record(self):
+        self._check_connected(name="Stream.record()")
         raise NotImplementedError
 
     @fill_doc
