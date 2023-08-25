@@ -103,6 +103,7 @@ class Player(ContainsMixin):
         self._streaming_thread = Timer(self._streaming_delay, self._stream)
         self._streaming_thread.start()
 
+        # retrieve data and push to the stream outlet
         start = self._start_idx
         stop = start + self._chunk_size
         if stop <= self._raw.times.size:
