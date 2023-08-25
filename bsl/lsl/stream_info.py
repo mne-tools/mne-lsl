@@ -3,8 +3,6 @@ from __future__ import annotations  # c.f. PEP 563, PEP 649
 from ctypes import c_char_p, c_double, c_void_p
 from typing import TYPE_CHECKING
 
-import numpy as np
-
 from ..utils._checks import check_type, check_value, ensure_int
 from ..utils.logs import logger
 from .constants import fmt2idx, fmt2numpy, idx2fmt, numpy2fmt, string2fmt
