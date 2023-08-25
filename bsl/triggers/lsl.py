@@ -54,12 +54,15 @@ class LSLTrigger(BaseTrigger):
             dtype="int8",
             source_id=f"BSL-{name}",
         )
+        self._sinfo.set_channel_names(["STI"])
+        self._sinfo.set_channel_types(["stim"])
+        self._sinfo.set_channel_units(["none"])
         self._outlet = StreamOutlet(self._sinfo, max_buffered=1)
 
     @copy_doc(BaseTrigger.signal)
     def signal(self, value: int) -> None:
         super().signal(value)
-        self._outlet.push_sample(np.int8(value))
+        self._outlet.push_sample(np.array([value], dtype=np.int8))
 
     def close(self) -> None:
         """Close the LSL outlet."""
