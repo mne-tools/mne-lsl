@@ -8,11 +8,21 @@ from typing import TYPE_CHECKING
 import numpy as np
 from mne import pick_info, pick_types
 from mne.channels import rename_channels
-from mne.channels.channels import SetChannelsMixin
-from mne.io.constants import FIFF, _ch_unit_mul_named
-from mne.io.meas_info import ContainsMixin
-from mne.io.pick import _picks_to_idx
-from mne.io.reference import _ELECTRODE_CH_TYPES
+from mne.utils import check_version
+
+if check_version("mne", "1.5"):
+    from mne.io.constants import FIFF, _ch_unit_mul_named
+    from mne.io.meas_info import ContainsMixin, SetChannelsMixin
+    from mne.io.pick import _ELECTRODE_CH_TYPES, _picks_to_idx
+elif check_version("mne", "1.6"):
+    from mne._fiff.constants import FIFF, _ch_unit_mul_named
+    from mne._fiff.meas_info import ContainsMixin, SetChannelsMixin
+    from mne._fiff.pick import _ELECTRODE_CH_TYPES, _picks_to_idx
+else:
+    from mne.io.constants import FIFF, _ch_unit_mul_named
+    from mne.io.meas_info import ContainsMixin
+    from mne.io.pick import _picks_to_idx, _ELECTRODE_CH_TYPES
+    from mne.channels.channels import SetChannelsMixin
 
 from .lsl import StreamInlet, resolve_streams
 from .lsl.constants import fmt2numpy
