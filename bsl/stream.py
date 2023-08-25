@@ -145,13 +145,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
             factor set to ``0`` which corresponds to Volts. Use
             `~Stream.set_channel_units` to change the unit multiplication factor.
         """
-        if not self.connected:
-            raise RuntimeError(
-                "The Stream attribute 'info' is None. An Info instance is required to "
-                "add reference channels. Please connect to the stream to create the "
-                "Info."
-            )
-
+        self._check_connected(name="Stream.add_reference_channels()")
         # error checking and conversion of the arguments to valid values
         if isinstance(ref_channels, str):
             ref_channels = [ref_channels]
@@ -252,11 +246,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
         -----
         %(anonymize_info_notes)s
         """
-        if not self.connected:
-            raise RuntimeError(
-                "The Stream attribute 'info' is None. An Info instance is required to "
-                "anonymize the stream. Please connect to the stream to create the Info."
-            )
+        self._check_connected(name="Stream.anonymize()")
         super().anonymize(daysback=daysback, keep_his=keep_his, verbose=verbose)
 
     def connect(
@@ -336,7 +326,9 @@ class Stream(ContainsMixin, SetChannelsMixin):
             )
         self._sinfo = sinfos[0]
         # create inlet
-        self._inlet = StreamInlet(self._sinfo, processing_flags=processing_flags)
+        self._inlet = StreamInlet(
+            self._sinfo, max_buffered=self._bufsize, processing_flags=processing_flags
+        )
         self._inlet.open_stream(timeout=timeout)
         # create MNE info from the LSL stream info returned by an open stream inlet
         self._info = create_info(
@@ -373,6 +365,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
 
     def disconnect(self) -> None:
         """Disconnect from the LSL stream and interrupt data collection."""
+        self._check_connected(name="Stream.disconnect()")
         while self._acquisition_thread.is_alive():
             self._acquisition_thread.cancel()
         self._inlet.close_stream()
@@ -401,12 +394,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
         --------
         pick
         """
-        if not self.connected:
-            raise RuntimeError(
-                "The Stream attribute 'info' is None. An Info instance is required to "
-                "drop channels. Please connect to the stream to create the Info."
-            )
-
+        self._check_connected(name="Stream.drop_channels()")
         if isinstance(ch_names, str):
             ch_names = [ch_names]
         check_type(ch_names, (list, tuple), "ch_names")
@@ -421,18 +409,15 @@ class Stream(ContainsMixin, SetChannelsMixin):
         self._pick(picks)
 
     def filter(self) -> None:
+        self._check_connected(name="Stream.filter()")
+        self._check_regular_sampling()
         raise NotImplementedError
 
     @copy_doc(ContainsMixin.get_channel_types)
     def get_channel_types(
         self, picks=None, unique=False, only_data_chs=False
     ) -> List[str]:
-        if not self.connected:
-            raise RuntimeError(
-                "The Stream attribute 'info' is None. An Info instance is required to "
-                "retrieve the channel types. Please connect to the stream to create "
-                "the Info."
-            )
+        self._check_connected(name="Stream.get_channel_types()")
         return super().get_channel_types(
             picks=picks, unique=unique, only_data_chs=only_data_chs
         )
@@ -457,6 +442,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
             element contains the unit multiplication factor, e.g. ``-6 (FIFF_UNITM_MU)``
             for micro (corresponds to ``1e-6``).
         """
+        self._check_connected(name="Stream.get_channel_units()")
         check_type(only_data_chs, (bool,), "only_data_chs")
         none = "data" if only_data_chs else "all"
         picks = _picks_to_idx(self._info, picks, none, (), allow_empty=False)
@@ -518,12 +504,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
 
     @copy_doc(SetChannelsMixin.get_montage)
     def get_montage(self) -> Optional[DigMontage]:
-        if not self.connected:
-            raise RuntimeError(
-                "The Stream attribute 'info' is None. An Info instance is required to "
-                "retrieve the channel montage. Please connect to the stream to create "
-                "the Info."
-            )
+        self._check_connected(name="Stream.get_montage()")
         return super().get_montage()
 
     def load_stream_config(self) -> None:
@@ -547,12 +528,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
         --------
         drop_channels
         """
-        if not self.connected:
-            raise RuntimeError(
-                "The Stream attribute 'info' is None. An Info instance is required to "
-                "pick channels. Please connect to the stream to create the Info."
-            )
-
+        self._check_connected(name="Stream.pick()")
         picks = _picks_to_idx(self._info, picks, "all", exclude, allow_empty=False)
         self._pick(picks)
 
@@ -582,11 +558,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
             .. versionadded:: MNE 0.22.0
         %(verbose)s
         """
-        if not self.connected:
-            raise RuntimeError(
-                "The Stream attribute 'info' is None. An Info instance is required to "
-                "rename channels. Please connect to the stream to create the Info."
-            )
+        self._check_connected(name="Stream.rename_channels()")
         rename_channels(
             self._info,
             mapping=mapping,
@@ -597,7 +569,9 @@ class Stream(ContainsMixin, SetChannelsMixin):
     def save_stream_config(self) -> None:
         raise NotImplementedError
 
-    def set_bipolar_reference():
+    def set_bipolar_reference(self):
+        self._check_connected(name="Stream.set_bipolar_reference()")
+        self._check_regular_sampling()
         raise NotImplementedError
 
     @fill_doc
@@ -623,12 +597,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
             .. versionadded:: MNE 1.4
         %(verbose)s
         """
-        if not self.connected:
-            raise RuntimeError(
-                "The Stream attribute 'info' is None. An Info instance is required to "
-                "set the channel types. Please connect to the stream to create the "
-                "Info."
-            )
+        self._check_connected(name="Stream.set_channel_types()")
         super().set_channel_types(
             mapping=mapping, on_unit_change=on_unit_change, verbose=verbose
         )
@@ -652,6 +621,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
         If the human-readable unit of your channel is not yet supported by BSL, please
         contact the developers on GitHub to add your units to the known set.
         """
+        self._check_connected(name="Stream.set_channel_units()")
         _set_channel_units(self._info, mapping)
 
     def set_eeg_reference(
@@ -674,12 +644,8 @@ class Stream(ContainsMixin, SetChannelsMixin):
             The name of the channel type to apply the reference to. Valid channel types
             are ``'eeg'``, ``'ecog'``, ``'seeg'``, ``'dbs'``.
         """
-        if not self.connected:
-            raise RuntimeError(
-                "The Stream attribute 'info' is None. An Info instance is required to "
-                "set the electrode reference. Please connect to the stream to create "
-                "the Info."
-            )
+        self._check_connected(name="Stream.set_eeg_reference()")
+        self._check_regular_sampling()
 
         if isinstance(ch_type, str):
             ch_type = [ch_type]
@@ -713,12 +679,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
         --------
         anonymize
         """
-        if not self.connected:
-            raise RuntimeError(
-                "The Stream attribute 'info' is None. An Info instance is required to "
-                "set the measurement date. Please connect to the stream to create the "
-                "Info."
-            )
+        self._check_connected(name="Stream.set_meas_date()")
         super().set_meas_date(meas_date)
 
     @fill_doc
@@ -755,12 +716,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
             montage. Other channel types (e.g., MEG channels) should have their
             positions defined properly using their data reading functions.
         """
-        if not self.connected:
-            raise RuntimeError(
-                "The Stream attribute 'info' is None. An Info instance is required to "
-                "set the channel montage. Please connect to the stream to create the "
-                "Info."
-            )
+        self._check_connected(name="Stream.set_montage()")
         super().set_montage(
             montage=montage,
             match_case=match_case,
@@ -792,6 +748,21 @@ class Stream(ContainsMixin, SetChannelsMixin):
         # recreate the timer thread as it is one-call only
         self._acquisition_thread = Timer(self._acquisition_delay, self._acquire)
         self._acquisition_thread.start()
+
+    def _check_connected(self, name: str):
+        """Check that the stream is connected before calling the function 'name'."""
+        if not self.connected:
+            raise RuntimeError(
+                "The Stream attribute 'info' is None. An Info instance is required to "
+                f"use {name}. Please connect to the stream to create the Info."
+            )
+
+    def _check_regular_sampling(self):
+        """Check that the stream has a regular sampling rate."""
+        if self.info["sfreq"] == 0:
+            raise RuntimeError(
+                "A stream with an irregular sampling rate can not be filtered."
+            )
 
     @contextmanager
     def _interrupt_acquisition(self):
@@ -834,12 +805,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
 
         :type: `int` | None
         """
-        if not self.connected:
-            raise RuntimeError(
-                "The Stream attribute 'info' is None. An Info instance is required to "
-                "retrieve the current gradient compensation grade. Please connect to "
-                "the stream to create the Info."
-            )
+        self._check_connected(name="Stream.compensation_grade")
         return super().compensation_grade
 
     # ----------------------------------------------------------------------------------
@@ -849,12 +815,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
 
         :type: `list` of `str`
         """
-        if not self.connected:
-            raise RuntimeError(
-                "The Stream attribute 'info' is None. An Info instance is required to "
-                "retrieve the channel names. Please connect to the stream to create "
-                "the Info."
-            )
+        self._check_connected(name="Stream.ch_names")
         return self._info.ch_names
 
     @property

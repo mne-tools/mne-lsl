@@ -374,7 +374,7 @@ class _BaseStreamInfo:
         Notes
         -----
         Some channel types do not have a unit. The `str` ``none`` should be used to
-        denote a this channel unit, corresponding to ``FIFF_UNITM_NONE`` in MNE.
+        denote this channel unit, corresponding to ``FIFF_UNITM_NONE`` in MNE.
         """
         ch_units = (
             [ch_units] * self.n_channels if isinstance(ch_units, str) else ch_units
