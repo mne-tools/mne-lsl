@@ -7,9 +7,7 @@ import numpy as np
 from mne.io import read_raw
 from mne.utils import check_version
 
-if check_version("mne", "1.5"):
-    from mne.io.meas_info import ContainsMixin
-elif check_version("mne", "1.6"):
+if check_version("mne", "1.6"):
     from mne._fiff.meas_info import ContainsMixin
 else:
     from mne.io.meas_info import ContainsMixin
