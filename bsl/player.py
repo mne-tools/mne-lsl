@@ -3,6 +3,7 @@ from __future__ import annotations  # c.f. PEP 563, PEP 649
 from threading import Timer
 from typing import TYPE_CHECKING
 
+import numpy as np
 from mne.io import read_raw
 from mne.utils import check_version
 
@@ -57,14 +58,14 @@ class Player(ContainsMixin):
             stype=ch_types[0] if len(ch_types) == 1 else "",
             n_channels=len(self._raw.info["ch_names"]),
             sfreq=self._raw.info["sfreq"],
-            dtype="float64",
+            dtype=np.float64,
             source_id="BSL",
         )
         self._sinfo.set_channel_names(self._raw.info["ch_names"])
         self._sinfo.set_channel_types(self._raw.get_channel_types(unique=False))
         # TODO: set the channel units
         self._outlet = None
-        self._chunk_idx = 0
+        self._start_idx = 0
         self._streaming_thread = None
 
     def start(self):
@@ -102,11 +103,16 @@ class Player(ContainsMixin):
         self._streaming_thread = Timer(self._streaming_delay, self._stream)
         self._streaming_thread.start()
 
-        start = self._chunk_idx * self._chunk_size
+        start = self._start_idx
         stop = start + self._chunk_size
-        data = self._raw[:, start:stop].T
+        if stop <= self._raw.times.size:
+            data = self._raw[:, start:stop][0].T
+            self._start_idx += self._chunk_size
+        else:
+            stop = self._chunk_size - (self._raw.times.size - start)
+            data = np.vstack([self._raw[:, start:][0].T, self._raw[:, :stop][0].T])
+            self._start_idx = stop
         self._outlet.push_chunk(data)
-        self._chunk_idx += 1
 
     # ----------------------------------------------------------------------------------
     def __enter__(self):
