@@ -786,8 +786,8 @@ class Stream(ContainsMixin, SetChannelsMixin):
         # roll and update buffers
         self._buffer = np.roll(self._buffer, -data.shape[0], axis=0)
         self._timestamps = np.roll(self._timestamps, -timestamps.size, axis=0)
-        self._buffer[-timestamps.size :, :] = data
-        self._timestamps[-timestamps.size :] = timestamps
+        self._buffer[-timestamps.size :, :] = data  # noqa: E203
+        self._timestamps[-timestamps.size :] = timestamps  # noqa: E203
 
         # recreate the timer thread as it is one-call only
         self._acquisition_thread = Timer(self._acquisition_delay, self._acquire)
