@@ -41,7 +41,7 @@ class Player(ContainsMixin):
     """
 
     def __init__(
-        self, fname: Union[str, Path], name: Optional[str] = None, chunk_size: int = 1
+        self, fname: Union[str, Path], name: Optional[str] = None, chunk_size: int = 16
     ) -> None:
         self._fname = ensure_path(fname, "fname")
         check_type(name, (str, None), "name")
@@ -71,7 +71,7 @@ class Player(ContainsMixin):
         self._outlet = StreamOutlet(self._sinfo, self._chunk_size)
         self._streaming_delay = self.chunk_size / self.info["sfreq"]
         self._streaming_thread = Timer(self._streaming_delay, self._stream)
-        self.start()
+        self._streaming_thread.start()
 
     def stop(self):
         """Stop streaming data on the LSL `~bsl.lsl.StreamOutlet`."""
@@ -90,10 +90,6 @@ class Player(ContainsMixin):
         >>> 19 µs ± 50.3 ns per loo
         >>> [In] %timeit raw.get_data(start=0, stop=16)
         >>> 1.3 ms ± 1.01 µs per loop
-
-        There is no need to compensate the delay or the LSL timestamp since the total
-        step is short, for reasonnable chunk sizes.
-
         >>> [In] %timeit np.ascontiguousarray(raw[:, 0:16][0].T)
         >>> 23.7 µs ± 183 ns per loop
         """
