@@ -37,12 +37,8 @@ def test_push_numerical_sample(dtype_str, dtype):
     data, ts = inlet.pull_sample(timeout=5)
     assert_allclose(data, x)
 
-    with pytest.raises(
-        ValueError, match=re.escape("shape should be (n_channels,)")
-    ):
-        outlet.push_sample(
-            np.array([1, 2, 3, 4, 5, 6], dtype=dtype).reshape((2, 3))
-        )
+    with pytest.raises(ValueError, match=re.escape("shape should be (n_channels,)")):
+        outlet.push_sample(np.array([1, 2, 3, 4, 5, 6], dtype=dtype).reshape((2, 3)))
     with pytest.raises(ValueError, match="2 elements are expected"):
         outlet.push_sample(np.array([1, 2, 3, 4, 5], dtype=dtype))
 
