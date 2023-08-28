@@ -64,6 +64,7 @@ class Player(ContainsMixin):
         self._sinfo.set_channel_units([ch["unit_mul"] for ch in self._raw.info["chs"]])
         self._outlet = None
         self._start_idx = 0
+        self._streaming_delay = None
         self._streaming_thread = None
 
     def start(self):
@@ -80,6 +81,9 @@ class Player(ContainsMixin):
         del self._outlet
         # reset variables
         self._outlet = None
+        self._start_idx = 0
+        self._streaming_delay = None
+        self._streaming_thread = None
 
     def _stream(self):
         """Push a chunk of data from the raw object to the StreamOutlet.
