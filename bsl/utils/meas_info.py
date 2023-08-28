@@ -13,8 +13,8 @@ else:
     from mne.io.pick import get_channel_type_constants
 
 from ..lsl.stream_info import _BaseStreamInfo
+from . import _GH_ISSUES
 from ._checks import check_type, check_value, ensure_int
-from ._exceptions import _GH_ISSUES
 from .logs import logger
 
 if TYPE_CHECKING:

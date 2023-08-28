@@ -6,7 +6,7 @@ from ctypes import CDLL, c_char_p, c_double, c_long, c_void_p, sizeof
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from ..utils._exceptions import _GH_ISSUES
+from ..utils import _GH_ISSUES
 from ..utils.logs import logger
 
 if TYPE_CHECKING:

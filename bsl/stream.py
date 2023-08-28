@@ -26,9 +26,9 @@ else:
 
 from .lsl import StreamInlet, resolve_streams
 from .lsl.constants import fmt2numpy
+from .utils import _GH_ISSUES
 from .utils._checks import check_type, check_value
 from .utils._docs import copy_doc, fill_doc
-from .utils._exceptions import _GH_ISSUES
 from .utils.logs import logger
 from .utils.meas_info import _HUMAN_UNITS, _set_channel_units, create_info
 
