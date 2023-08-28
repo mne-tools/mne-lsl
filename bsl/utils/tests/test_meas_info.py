@@ -29,9 +29,7 @@ def test_valid_info(caplog):
     assert len(info.ch_names) == 4
     assert info.ch_names == ch_names
     assert info.get_channel_types() == ch_types
-    assert all(
-        ch["unit_mul"] == (0 if k == 2 else -6) for k, ch in enumerate(info["chs"])
-    )
+    assert [ch["unit_mul"] for ch in info["chs"]] == [-6, -6, 0, -6]
 
     # non-nested
     desc = dict(channels=list())
@@ -46,9 +44,7 @@ def test_valid_info(caplog):
     assert len(info.ch_names) == 4
     assert info.ch_names == ch_names
     assert info.get_channel_types() == ch_types
-    assert all(
-        ch["unit_mul"] == (0 if k == 2 else -6) for k, ch in enumerate(info["chs"])
-    )
+    assert [ch["unit_mul"] for ch in info["chs"]] == [-6, -6, 0, -6]
 
     # marker stream
     info = create_info(4, 0, "eeg", desc)
@@ -56,9 +52,7 @@ def test_valid_info(caplog):
     assert len(info.ch_names) == 4
     assert info.ch_names == ch_names
     assert info.get_channel_types() == ch_types
-    assert all(
-        ch["unit_mul"] == (0 if k == 2 else -6) for k, ch in enumerate(info["chs"])
-    )
+    assert [ch["unit_mul"] for ch in info["chs"]] == [-6, -6, 0, -6]
 
     caplog.set_level(30)  # WARNING level
     caplog.clear()
@@ -68,7 +62,7 @@ def test_valid_info(caplog):
     assert len(info.ch_names) == 2
     assert info.ch_names == ["0", "1"]
     assert info.get_channel_types() == ["eeg", "eeg"]
-    assert all(ch["unit_mul"] == 0 for ch in info["chs"])
+    assert [ch["unit_mul"] for ch in info["chs"]] == [0, 0]
 
 
 def test_invalid_info():
@@ -89,9 +83,7 @@ def test_invalid_info():
     assert len(info.ch_names) == 4
     assert info.ch_names == ch_names
     assert info.get_channel_types() == ["eeg"] + ch_types[1:]
-    assert all(
-        ch["unit_mul"] == (0 if k == 2 else -6) for k, ch in enumerate(info["chs"])
-    )
+    assert [ch["unit_mul"] for ch in info["chs"]] == [-6, -6, 0, -6]
 
     # wrong name
     ch_names = [101, "Fp2", "Trigger", "EOG"]
@@ -111,7 +103,7 @@ def test_invalid_info():
     assert len(info.ch_names) == 4
     assert info.ch_names == ["0", "1", "2", "3"]
     assert info.get_channel_types() == ["eeg", "eeg", "eeg", "eeg"]
-    assert all(ch["unit_mul"] == 0 for ch in info["chs"])
+    assert [ch["unit_mul"] for ch in info["chs"]] == [0, 0, 0, 0]
 
     # invalid that should raise
     with pytest.raises(TypeError, match="'n_channels' must be an integer"):
@@ -128,16 +120,12 @@ def test_invalid_info():
 
 def test_manufacturer():
     """Test creation of a valid info with a manufacturer entry."""
-    channels = {
-        "Fp1": "eeg",
-        "Fp2": "eeg",
-        "Trigger": "stim",
-        "EOG": "eog",
-    }
+    ch_names = ["Fp1", "Fp2", "STI101", "EOG"]
+    ch_types = ["eeg", "eeg", "stim", "eog"]
     # nested
     desc = dict(channels=list(), manufacturer=list())
     desc["channels"].append(dict(channel=list()))
-    for ch_name, ch_type in channels.items():
+    for ch_name, ch_type in zip(ch_names, ch_types):
         desc["channels"][0]["channel"].append(
             dict(label=[ch_name], unit=["uv"], type=[ch_type])
         )
@@ -149,7 +137,7 @@ def test_manufacturer():
     # not nested
     desc = dict(channels=list(), manufacturer="101")
     desc["channels"].append(dict(channel=list()))
-    for ch_name, ch_type in channels.items():
+    for ch_name, ch_type in zip(ch_names, ch_types):
         desc["channels"][0]["channel"].append(
             dict(label=[ch_name], unit=["uv"], type=[ch_type])
         )
@@ -170,7 +158,7 @@ def test_valid_info_from_sinfo():
     assert len(info.ch_names) == 4
     assert info.ch_names == ch_names
     assert info.get_channel_types() == ch_types
-    assert all(ch["unit_mul"] == 0 for ch in info["chs"])
+    assert [ch["unit_mul"] for ch in info["chs"]] == [0, 0, 0, 0]
 
     # set channel units
     sinfo.set_channel_units(["uv", "uv", "none", "uv"])
@@ -179,9 +167,29 @@ def test_valid_info_from_sinfo():
     assert len(info.ch_names) == 4
     assert info.ch_names == ch_names
     assert info.get_channel_types() == ch_types
-    assert all(
-        ch["unit_mul"] == (0 if k == 2 else -6) for k, ch in enumerate(info["chs"])
-    )
+    assert [ch["unit_mul"] for ch in info["chs"]] == [-6, -6, 0, -6]
+
+    # stream info without a main channel type
+    sinfo = StreamInfo("pytest", "", 4, 101, "float32", strftime("%H%M%S"))
+    ch_names = ["Fp1", "Fp2", "STI101", "EOG"]
+    ch_types = ["eeg", "eeg", "stim", "eog"]
+    sinfo.set_channel_names(ch_names)
+    sinfo.set_channel_types(ch_types)
+    info = create_info(4, 101, "eeg", sinfo)
+    assert info["sfreq"] == 101
+    assert len(info.ch_names) == 4
+    assert info.ch_names == ch_names
+    assert info.get_channel_types() == ch_types
+    assert [ch["unit_mul"] for ch in info["chs"]] == [0, 0, 0, 0]
+
+    # set channel units
+    sinfo.set_channel_units([-6, "-6", "none", "0"])
+    info = create_info(4, 101, "eeg", sinfo)
+    assert info["sfreq"] == 101
+    assert len(info.ch_names) == 4
+    assert info.ch_names == ch_names
+    assert info.get_channel_types() == ch_types
+    assert [ch["unit_mul"] for ch in info["chs"]] == [-6, -6, 0, 0]
 
 
 def test_without_description():
@@ -191,7 +199,7 @@ def test_without_description():
     assert len(info.ch_names) == 2
     assert info.ch_names == ["0", "1"]
     assert info.get_channel_types() == ["eeg", "eeg"]
-    assert all(ch["unit_mul"] == 0 for ch in info["chs"])
+    assert [ch["unit_mul"] for ch in info["chs"]] == [0, 0]
 
     sinfo = StreamInfo("pytest", "eeg", 2, 101, "float32", strftime("%H%M%S"))
     info = create_info(2, 101, "eeg", sinfo)
@@ -199,4 +207,4 @@ def test_without_description():
     assert len(info.ch_names) == 2
     assert info.ch_names == ["0", "1"]
     assert info.get_channel_types() == ["eeg", "eeg"]
-    assert all(ch["unit_mul"] == 0 for ch in info["chs"])
+    assert [ch["unit_mul"] for ch in info["chs"]] == [0, 0]

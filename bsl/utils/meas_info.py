@@ -1,5 +1,6 @@
 from __future__ import annotations  # c.f. PEP 563, PEP 649
 
+from decimal import Decimal, InvalidOperation
 from typing import TYPE_CHECKING
 
 from mne import create_info as mne_create_info
@@ -149,10 +150,6 @@ def _read_desc_sinfo(
             "The number of channels expected and the number of channels in the "
             "StreamInfo differ."
         )
-    if stype != desc.stype.lower().strip():
-        raise RuntimeError(
-            "The stream type expected and the stream type in the StreamInfo differ."
-        )
 
     ch_names = [ch_name for ch_name in desc.get_channel_names() if ch_name is not None]
     assert len(ch_names) == n_channels
@@ -162,7 +159,6 @@ def _read_desc_sinfo(
         ch_types = list()
         for ch_type in desc.get_channel_types():
             ch_type = ch_type.lower().strip()
-            ch_type = stype if ch_type is None else ch_type
             ch_type = "stim" if ch_type in _STIM_TYPES else ch_type
             ch_type = ch_type if ch_type in _CH_TYPES_DICT else stype
             ch_types.append(ch_type)
@@ -175,13 +171,19 @@ def _read_desc_sinfo(
         ch_units = list()
         for ch_type, ch_unit in zip(ch_types, desc.get_channel_units()):
             ch_unit = ch_unit.lower().strip()
-            ch_unit = _ch_unit_mul_named[0] if ch_unit is None else ch_unit
-            if _CH_TYPES_DICT[ch_type]["unit"] in _HUMAN_UNITS:
-                ch_unit = _HUMAN_UNITS[_CH_TYPES_DICT[ch_type]["unit"]].get(
-                    ch_unit, _ch_unit_mul_named[0]
-                )
-            if isinstance(ch_unit, str):  # we failed to identify the unit
-                ch_unit = _ch_unit_mul_named[0]
+            fiff_unit = _CH_TYPES_DICT[ch_type]["unit"]
+            if fiff_unit in _HUMAN_UNITS:
+                ch_unit = _HUMAN_UNITS[fiff_unit].get(ch_unit, ch_unit)
+            if isinstance(ch_unit, str):
+                # try to convert the str to an integer to get the multiplication factor
+                try:
+                    decimal = Decimal(ch_unit)
+                    if int(decimal) == decimal and int(decimal) in _ch_unit_mul_named:
+                        ch_unit = int(decimal)
+                    else:
+                        ch_unit = _ch_unit_mul_named[0]
+                except InvalidOperation:
+                    ch_unit = _ch_unit_mul_named[0]
             ch_units.append(ch_unit)
     except Exception:
         ch_units = [_ch_unit_mul_named[0]] * n_channels
@@ -225,12 +227,19 @@ def _get_ch_types_and_units(
         ch_type = ch_type if ch_type in _CH_TYPES_DICT else stype
 
         ch_unit = _safe_get(ch, "unit", _ch_unit_mul_named[0])
-        if _CH_TYPES_DICT[ch_type]["unit"] in _HUMAN_UNITS:
-            ch_unit = _HUMAN_UNITS[_CH_TYPES_DICT[ch_type]["unit"]].get(
-                ch_unit, _ch_unit_mul_named[0]
-            )
-        if isinstance(ch_unit, str):  # we failed to identify the unit
-            ch_unit = _ch_unit_mul_named[0]
+        fiff_unit = _CH_TYPES_DICT[ch_type]["unit"]
+        if fiff_unit in _HUMAN_UNITS:
+            ch_unit = _HUMAN_UNITS[fiff_unit].get(ch_unit, ch_unit)
+        if isinstance(ch_unit, str):
+            # try to convert the str to an integer to get the multiplication factor
+            try:
+                decimal = Decimal(ch_unit)
+                if int(decimal) == decimal and int(decimal) in _ch_unit_mul_named:
+                    ch_unit = int(decimal)
+                else:
+                    ch_unit = _ch_unit_mul_named[0]
+            except InvalidOperation:
+                ch_unit = _ch_unit_mul_named[0]
 
         ch_types.append(ch_type)
         ch_units.append(ch_unit)

@@ -61,7 +61,7 @@ class Player(ContainsMixin):
         )
         self._sinfo.set_channel_names(self._raw.info["ch_names"])
         self._sinfo.set_channel_types(self._raw.get_channel_types(unique=False))
-        # TODO: set the channel units
+        self._sinfo.set_channel_units([ch["unit_mul"] for ch in self._raw.info["chs"]])
         self._outlet = None
         self._start_idx = 0
         self._streaming_thread = None

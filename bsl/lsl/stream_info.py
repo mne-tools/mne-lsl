@@ -339,7 +339,7 @@ class _BaseStreamInfo:
 
         Parameters
         ----------
-        ch_names : sequence of str
+        ch_names : list of str
             List of channel names, matching the number of total channels.
         """
         self._set_channel_info(ch_names, "ch_names")
@@ -351,7 +351,7 @@ class _BaseStreamInfo:
 
         Parameters
         ----------
-        ch_types : sequence of str | str
+        ch_types : list of str | str
             List of channel types, matching the number of total channels.
             If a single `str` is provided, the type is applied to all channels.
         """
@@ -360,25 +360,32 @@ class _BaseStreamInfo:
         )
         self._set_channel_info(ch_types, "ch_types")
 
-    def set_channel_units(self, ch_units: Union[str, List[str]]) -> None:
+    def set_channel_units(
+        self, ch_units: Union[str, List[str], int, List[int]]
+    ) -> None:
         """Set the channel units in the description. Existing units are overwritten.
 
-        The units are given as human readable strings, e.g. ``'microvolts'``.
+        The units are given as human readable strings, e.g. ``'microvolts'``, or as
+        multiplication factor, e.g. ``-6`` for ``1e-6`` thus converting e.g. Volts to
+        microvolts.
 
         Parameters
         ----------
-        ch_units : sequence of str | str
+        ch_units : list of str | list of int | str | int
             List of channel units, matching the number of total channels.
-            If a single `str` is provided, the unit is applied to all channels.
+            If a single `str` or `int` is provided, the unit is applied to all channels.
 
         Notes
         -----
-        Some channel types do not have a unit. The `str` ``none`` should be used to
-        denote this channel unit, corresponding to ``FIFF_UNITM_NONE`` in MNE.
+        Some channel types do not have a unit. The `str` ``none`` or the `int` 0 should
+        be used to denote this channel unit, corresponding to ``FIFF_UNITM_NONE`` in
+        MNE.
         """
-        ch_units = (
-            [ch_units] * self.n_channels if isinstance(ch_units, str) else ch_units
-        )
+        check_type(ch_units, (list, tuple, str, "int-like"), "ch_units")
+        if isinstance(ch_units, (str, int)):
+            ch_units = [str(ch_units)] * self.n_channels
+        else:
+            ch_units = [str(ch_unit) for ch_unit in ch_units]
         self._set_channel_info(ch_units, "ch_units")
 
     def _set_channel_info(self, ch_infos: List[str], name: str) -> None:
