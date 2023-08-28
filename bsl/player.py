@@ -74,7 +74,8 @@ class Player(ContainsMixin):
         """Start streaming data on the LSL `~bsl.lsl.StreamOutlet`."""
         self._outlet = StreamOutlet(self._sinfo, self._chunk_size)
         self._streaming_delay = self.chunk_size / self.info["sfreq"]
-        self._streaming_thread = Timer(self._streaming_delay, self._stream, daemon=True)
+        self._streaming_thread = Timer(self._streaming_delay, self._stream)
+        self._streaming_thread.daemon = True
         self._target_timestamp = local_clock() + self._streaming_delay
         self._streaming_thread.start()
 
@@ -113,7 +114,8 @@ class Player(ContainsMixin):
         delay = self._streaming_delay + delta
 
         # recreate the timer thread as it is one-call only
-        self._streaming_thread = Timer(delay, self._stream, daemon=True)
+        self._streaming_thread = Timer(delay, self._stream)
+        self._streaming_thread.daemon = True
         self._streaming_thread.start()
 
         # retrieve data and push to the stream outlet

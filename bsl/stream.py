@@ -360,7 +360,8 @@ class Stream(ContainsMixin, SetChannelsMixin):
 
         # define the acquisition thread
         self._acquisition_delay = acquisition_delay
-        self._acquisition_thread = Timer(1 / self._acquisition_delay, self._acquire, daemon=True)
+        self._acquisition_thread = Timer(1 / self._acquisition_delay, self._acquire)
+        self._acquisition_thread.daemon = True
         self._acquisition_thread.start()
 
     def disconnect(self) -> None:
@@ -731,7 +732,8 @@ class Stream(ContainsMixin, SetChannelsMixin):
     def _acquire(self) -> None:
         """Update function pulling new samples in the buffer at a regular interval."""
         # recreate the timer thread as it is one-call only
-        self._acquisition_thread = Timer(self._acquisition_delay, self._acquire, daemon=True)
+        self._acquisition_thread = Timer(self._acquisition_delay, self._acquire)
+        self._acquisition_thread.daemon = True
         self._acquisition_thread.start()
 
         # pull data

@@ -45,7 +45,7 @@ def test_player():
         assert sinfo.get_channel_names() == player.info["ch_names"]
         assert sinfo.get_channel_types() == player.get_channel_types()
         assert sinfo.get_channel_units() == [
-            ch["unit_mul"] for ch in player.info["chs"]
+            str(ch["unit_mul"]) for ch in player.info["chs"]
         ]
 
         # check player vs raw
@@ -73,5 +73,11 @@ def test_player():
     except Exception as error:
         raise error
     finally:
-        del player
-        del inlet
+        try:
+            del player
+        except Exception:
+            pass
+        try:
+            del inlet
+        except Exception:
+            pass
