@@ -130,6 +130,13 @@ class Player(ContainsMixin):
         self._outlet.push_chunk(data, timestamp=self._target_timestamp)
 
     # ----------------------------------------------------------------------------------
+    def __del__(self):
+        """Delete the player and destroy the `~bsl.lsl.StreamOutlet`."""
+        try:
+            del self._outlet
+        except Exception:
+            pass
+
     def __enter__(self):
         """Context manager entry point."""
         self.start()
