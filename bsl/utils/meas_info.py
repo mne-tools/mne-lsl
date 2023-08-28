@@ -13,7 +13,6 @@ else:
     from mne.io.pick import get_channel_type_constants
 
 from ..lsl.stream_info import _BaseStreamInfo
-from . import _GH_ISSUES
 from ._checks import check_type, check_value, ensure_int
 from .logs import logger
 
@@ -286,7 +285,8 @@ def _set_channel_units(info: Info, mapping: Dict[str, Union[str, int]]) -> None:
             else:
                 raise ValueError(
                     f"The human-readable unit {unit} for the channel {ch} "
-                    f"({info['chs'][idx]['unit']} is unknown to BSL. " + _GH_ISSUES
+                    f"({info['chs'][idx]['unit']} is unknown to BSL. Please contact "
+                    "the developers on GitHub if you want to add support for this unit."
                 )
         elif isinstance(unit, int):
             check_value(unit, _ch_unit_mul_named, "unit")

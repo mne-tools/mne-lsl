@@ -26,7 +26,6 @@ else:
 
 from .lsl import StreamInlet, resolve_streams
 from .lsl.constants import fmt2numpy
-from .utils import _GH_ISSUES
 from .utils._checks import check_type, check_value
 from .utils._docs import copy_doc, fill_doc
 from .utils.logs import logger
@@ -137,7 +136,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
         Parameters
         ----------
         %(ref_channels)s
-        ref_units : str | int | list of str | list of int
+        ref_units : str | int | list of str | list of int | None
             The unit or unit multiplication factor of the reference channels. The unit
             can be given as a human-readable string or as a unit multiplication factor,
             e.g. ``-6`` for microvolts corresponding to ``1e-6``.
@@ -171,7 +170,8 @@ class Stream(ContainsMixin, SetChannelsMixin):
                 if unit not in _HUMAN_UNITS[FIFF.FIFF_UNIT_V]:
                     raise ValueError(
                         f"The human-readable unit {unit} for the channel "
-                        f"{ref_channels[k]} is unknown to BSL. " + _GH_ISSUES
+                        f"{ref_channels[k]} is unknown to BSL. Please contact the "
+                        "developers on GitHub if you want to add support for that unit."
                     )
                 ref_units[k] = _HUMAN_UNITS[FIFF.FIFF_UNIT_V][unit]
             elif isinstance(unit, int):
@@ -498,7 +498,8 @@ class Stream(ContainsMixin, SetChannelsMixin):
             else:
                 logger.error(
                     "Something went wrong while retrieving data from a connected "
-                    "stream. " + _GH_ISSUES
+                    "stream. Please open an issue on GitHub and provide the error "
+                    "traceback to the developers."
                 )
             raise
 
@@ -773,7 +774,8 @@ class Stream(ContainsMixin, SetChannelsMixin):
         if not self.connected:
             raise RuntimeError(
                 "Interruption of the acquisition thread was requested but the stream "
-                "is not connected. " + _GH_ISSUES
+                "is not connected. Please open an issue on GitHub and provide the "
+                "error traceback to the developers."
             )
 
         while self._acquisition_thread.is_alive():

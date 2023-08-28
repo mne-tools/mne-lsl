@@ -6,7 +6,6 @@ from ctypes import CDLL, c_char_p, c_double, c_long, c_void_p, sizeof
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from ..utils import _GH_ISSUES
 from ..utils.logs import logger
 
 if TYPE_CHECKING:
@@ -35,7 +34,10 @@ _SUPPORTED_DISTRO = {
 def load_liblsl() -> CDLL:
     """Load the binary LSL library on the system."""
     if platform.system() not in _PLATFORM_SUFFIXES:
-        raise RuntimeError("The OS could not be determined. " + _GH_ISSUES)
+        raise RuntimeError(
+            "The OS could not be determined. Please open an issue on GitHub and "
+            "provide the error traceback to the developers."
+        )
 
     lib = _find_liblsl_env()
     if lib is not None:
@@ -45,7 +47,8 @@ def load_liblsl() -> CDLL:
         return _set_types(lib)
     else:
         raise RuntimeError(
-            "The liblsl library packaged with BSL could not be loaded. " + _GH_ISSUES
+            "The liblsl library packaged with BSL could not be loaded. Please open an "
+            "issue on GitHub and provide the error traceback to the developers."
         )
 
 
@@ -190,7 +193,8 @@ def _find_liblsl_bsl() -> Optional[CDLL]:
             libname += "OSX_amd64.dylib"
         else:
             raise RuntimeError(
-                "The processor architecture could not be determined. " + _GH_ISSUES
+                "The processor architecture could not be determined. Please open an "
+                "issue on GitHub and provide the error traceback to the developers."
             )
 
     # check windows 32 vs 64 bits
@@ -201,7 +205,8 @@ def _find_liblsl_bsl() -> Optional[CDLL]:
             libname += "Win_amd64.dll"
         else:
             raise RuntimeError(
-                "The processor architecture could not be determined. " + _GH_ISSUES
+                "The processor architecture could not be determined. Please open an "
+                "issue on GitHub and provide the error traceback to the developers."
             )
 
     # attempt to load the corresponding liblsl
