@@ -385,7 +385,10 @@ class _BaseStreamInfo:
         if isinstance(ch_units, (str, int)):
             ch_units = [str(ch_units)] * self.n_channels
         else:
-            ch_units = [str(ch_unit) for ch_unit in ch_units]
+            ch_units = [
+                str(ch_unit) if isinstance(ch_unit, int) else ch_unit
+                for ch_unit in ch_units
+            ]
         self._set_channel_info(ch_units, "ch_units")
 
     def _set_channel_info(self, ch_infos: List[str], name: str) -> None:

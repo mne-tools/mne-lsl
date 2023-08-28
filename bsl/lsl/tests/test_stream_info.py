@@ -98,10 +98,10 @@ def test_stream_info_invalid_desc():
     with pytest.raises(ValueError, match="number of provided channel"):
         sinfo.set_channel_types(["101"])
 
-    with pytest.raises(TypeError, match="instance of list or tuple"):
-        sinfo.set_channel_units(101)
+    with pytest.raises(TypeError, match="instance of list, tuple, str, or int"):
+        sinfo.set_channel_units(101.2)
     with pytest.raises(TypeError, match="an instance of str"):
-        sinfo.set_channel_units([101, 101, 101])
+        sinfo.set_channel_units([5.2, 5.2, 5.2])
     with pytest.raises(ValueError, match="number of provided channel"):
         sinfo.set_channel_units(["101"])
 
