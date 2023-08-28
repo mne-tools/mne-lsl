@@ -34,6 +34,7 @@ def test_push_numerical_sample(dtype_str, dtype):
     inlet.open_stream(timeout=5)
     time.sleep(0.1)  # sleep required because of pylsl inlet
     outlet.push_sample(x)
+    assert False
     data, ts = inlet.pull_sample(timeout=5)
     assert_allclose(data, x)
 
