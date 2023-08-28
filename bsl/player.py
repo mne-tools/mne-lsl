@@ -80,6 +80,10 @@ class Player(ContainsMixin):
 
     def stop(self):
         """Stop streaming data on the LSL `~bsl.lsl.StreamOutlet`."""
+        if self._streaming_thread is None:
+            raise RuntimeError(
+                "The player is not started. Use Player.start() to begin streaming."
+            )
         while self._streaming_thread.is_alive():
             self._streaming_thread.cancel()
         del self._outlet
