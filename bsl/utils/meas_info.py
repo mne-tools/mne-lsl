@@ -240,7 +240,6 @@ def _get_ch_types_and_units(
                     ch_unit = _ch_unit_mul_named[0]
             except InvalidOperation:
                 ch_unit = _ch_unit_mul_named[0]
-
         ch_types.append(ch_type)
         ch_units.append(ch_unit)
     return ch_types, ch_units
