@@ -28,20 +28,29 @@ def test_push_numerical_sample(dtype_str, dtype):
     # create stream descriptions
     source_id = uuid.uuid4().hex[:6]
     sinfo = StreamInfo("test", "", 2, 0.0, dtype_str, source_id)
-    outlet = StreamOutlet(sinfo, chunk_size=1)
-    _test_properties(outlet, dtype_str, 2, "test", 0.0, "")
-    inlet = StreamInlet(sinfo)
-    inlet.open_stream(timeout=5)
-    time.sleep(0.1)  # sleep required because of pylsl inlet
-    outlet.push_sample(x)
-    assert False
-    data, ts = inlet.pull_sample(timeout=5)
-    assert_allclose(data, x)
+    try:
+        outlet = StreamOutlet(sinfo, chunk_size=1)
+        _test_properties(outlet, dtype_str, 2, "test", 0.0, "")
+        inlet = StreamInlet(sinfo)
+        inlet.open_stream(timeout=5)
+        time.sleep(0.1)  # sleep required because of pylsl inlet
+        outlet.push_sample(x)
+        data, ts = inlet.pull_sample(timeout=5)
+        assert_allclose(data, x)
 
-    with pytest.raises(ValueError, match=re.escape("shape should be (n_channels,)")):
-        outlet.push_sample(np.array([1, 2, 3, 4, 5, 6], dtype=dtype).reshape((2, 3)))
-    with pytest.raises(ValueError, match="2 elements are expected"):
-        outlet.push_sample(np.array([1, 2, 3, 4, 5], dtype=dtype))
+        with pytest.raises(
+            ValueError, match=re.escape("shape should be (n_channels,)")
+        ):
+            outlet.push_sample(
+                np.array([1, 2, 3, 4, 5, 6], dtype=dtype).reshape((2, 3))
+            )
+        with pytest.raises(ValueError, match="2 elements are expected"):
+            outlet.push_sample(np.array([1, 2, 3, 4, 5], dtype=dtype))
+    except Exception as error:
+        raise error
+    finally:
+        del outlet
+        del inlet
 
 
 def test_push_str_sample():
@@ -50,14 +59,20 @@ def test_push_str_sample():
     # create stream descriptions
     source_id = uuid.uuid4().hex[:6]
     sinfo = StreamInfo("test", "", 2, 0.0, "string", source_id)
-    outlet = StreamOutlet(sinfo, chunk_size=1)
-    _test_properties(outlet, "string", 2, "test", 0.0, "")
-    inlet = StreamInlet(sinfo)
-    inlet.open_stream(timeout=5)
-    time.sleep(0.1)  # sleep required because of pylsl inlet
-    outlet.push_sample(x)
-    data, ts = inlet.pull_sample(timeout=5)
-    assert data == x
+    try:
+        outlet = StreamOutlet(sinfo, chunk_size=1)
+        _test_properties(outlet, "string", 2, "test", 0.0, "")
+        inlet = StreamInlet(sinfo)
+        inlet.open_stream(timeout=5)
+        time.sleep(0.1)  # sleep required because of pylsl inlet
+        outlet.push_sample(x)
+        data, ts = inlet.pull_sample(timeout=5)
+        assert data == x
+    except Exception as error:
+        raise error
+    finally:
+        del outlet
+        del inlet
 
 
 @pytest.mark.parametrize(
@@ -75,63 +90,79 @@ def test_push_numerical_chunk(dtype_str, dtype):
     x = np.array([[1, 4], [2, 5], [3, 6]], dtype=dtype)
     # create stream description
     sinfo = StreamInfo("test", "", 2, 0.0, dtype_str, uuid.uuid4().hex[:6])
-    outlet = StreamOutlet(sinfo, chunk_size=3)
-    _test_properties(outlet, dtype_str, 2, "test", 0.0, "")
-    # valid
-    outlet.push_chunk(x)
+    try:
+        outlet = StreamOutlet(sinfo, chunk_size=3)
+        _test_properties(outlet, dtype_str, 2, "test", 0.0, "")
+        # valid
+        outlet.push_chunk(x)
 
-    # invalid
-    with pytest.raises(
-        AssertionError,
-        match="must be an array if numericals are pushed.",
-    ):
-        outlet.push_chunk(tuple(x))
-    with pytest.raises(
-        ValueError,
-        match=re.escape("the shape should be (n_samples, n_channels)"),
-    ):
-        outlet.push_chunk(np.array(x, dtype=dtype).T)
-    with pytest.raises(
-        ValueError,
-        match=re.escape("the shape should be (n_samples, n_channels)"),
-    ):
-        outlet.push_chunk(np.array(x, dtype=dtype).flatten())
+        # invalid
+        with pytest.raises(
+            AssertionError,
+            match="must be an array if numericals are pushed.",
+        ):
+            outlet.push_chunk(tuple(x))
+        with pytest.raises(
+            ValueError,
+            match=re.escape("the shape should be (n_samples, n_channels)"),
+        ):
+            outlet.push_chunk(np.array(x, dtype=dtype).T)
+        with pytest.raises(
+            ValueError,
+            match=re.escape("the shape should be (n_samples, n_channels)"),
+        ):
+            outlet.push_chunk(np.array(x, dtype=dtype).flatten())
+    except Exception as error:
+        raise error
+    finally:
+        del outlet
 
 
 def test_push_str_chunk():
     """Test the error checking when pushing a string chunk."""
     sinfo = StreamInfo("test", "", 2, 0.0, "string", uuid.uuid4().hex[:6])
-    outlet = StreamOutlet(sinfo, chunk_size=3)
-    _test_properties(outlet, "string", 2, "test", 0.0, "")
-    # valid
-    outlet.push_chunk([["1", "4"], ["2", "5"], ["3", "6"]])
+    try:
+        outlet = StreamOutlet(sinfo, chunk_size=3)
+        _test_properties(outlet, "string", 2, "test", 0.0, "")
+        # valid
+        outlet.push_chunk([["1", "4"], ["2", "5"], ["3", "6"]])
 
-    # invalid
-    with pytest.raises(
-        AssertionError,
-        match="must be a list if strings are pushed.",
-    ):
-        outlet.push_chunk((["1", "4"], ["2", "5"], ["3", "6"]))
-    with pytest.raises(
-        ValueError,
-        match="must contain one element per channel at each time-point",
-    ):
-        outlet.push_chunk([["1", "4"], ["2", "5"], ["3", "6"], ["7"]])
+        # invalid
+        with pytest.raises(
+            AssertionError,
+            match="must be a list if strings are pushed.",
+        ):
+            outlet.push_chunk((["1", "4"], ["2", "5"], ["3", "6"]))
+        with pytest.raises(
+            ValueError,
+            match="must contain one element per channel at each time-point",
+        ):
+            outlet.push_chunk([["1", "4"], ["2", "5"], ["3", "6"], ["7"]])
+    except Exception as error:
+        raise error
+    finally:
+        del outlet
 
 
 def test_wait_for_consumers():
     """Test wait for client."""
     sinfo = StreamInfo("test", "EEG", 2, 100.0, "float32", uuid.uuid4().hex[:6])
-    outlet = StreamOutlet(sinfo, chunk_size=3)
-    _test_properties(outlet, "float32", 2, "test", 100.0, "EEG")
-    assert not outlet.wait_for_consumers(timeout=0.2)
-    assert not outlet.has_consumers
-    inlet = StreamInlet(sinfo)
-    assert not outlet.wait_for_consumers(timeout=0.2)
-    assert not outlet.has_consumers
-    inlet.open_stream(timeout=5)
-    assert outlet.wait_for_consumers(timeout=0.2)
-    assert outlet.has_consumers
+    try:
+        outlet = StreamOutlet(sinfo, chunk_size=3)
+        _test_properties(outlet, "float32", 2, "test", 100.0, "EEG")
+        assert not outlet.wait_for_consumers(timeout=0.2)
+        assert not outlet.has_consumers
+        inlet = StreamInlet(sinfo)
+        assert not outlet.wait_for_consumers(timeout=0.2)
+        assert not outlet.has_consumers
+        inlet.open_stream(timeout=5)
+        assert outlet.wait_for_consumers(timeout=0.2)
+        assert outlet.has_consumers
+    except Exception as error:
+        raise error
+    finally:
+        del outlet
+        del inlet
 
 
 def test_invalid_outlet():
