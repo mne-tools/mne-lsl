@@ -64,6 +64,25 @@ def test_valid_info(caplog):
     assert info.get_channel_types() == ["eeg", "eeg"]
     assert [ch["unit_mul"] for ch in info["chs"]] == [0, 0]
 
+    # units as integers
+    ch_names = ["Fp1", "Fp2", "Trigger", "EOG"]
+    ch_types = ["eeg", "eeg", "stim", "eog"]
+    ch_units = ["-6", "-6", "0", "uV"]
+    # nested
+    desc = dict(channels=list())
+    desc["channels"].append(dict(channel=list()))
+    for ch_name, ch_type, ch_unit in zip(ch_names, ch_types, ch_units):
+        desc["channels"][0]["channel"].append(
+            dict(label=[ch_name], unit=[ch_unit], type=[ch_type])
+        )
+
+    info = create_info(4, 1024, "eeg", desc)
+    assert info["sfreq"] == 1024.0
+    assert len(info.ch_names) == 4
+    assert info.ch_names == ch_names
+    assert info.get_channel_types() == ch_types
+    assert [ch["unit_mul"] for ch in info["chs"]] == [-6, -6, 0, -6]
+
 
 def test_invalid_info():
     """Test creation of invalid info."""
