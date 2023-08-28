@@ -13,25 +13,22 @@ logger.propagate = True
 
 def test_valid_info(caplog):
     """Test creation of valid info."""
-    channels = {
-        "Fp1": "eeg",
-        "Fp2": "eeg",
-        "Trigger": "stim",
-        "EOG": "eog",
-    }
+    ch_names = ["Fp1", "Fp2", "Trigger", "EOG"]
+    ch_types = ["eeg", "eeg", "stim", "eog"]
+    ch_units = ["uv", "uv", "V", "uV"]
     # nested
     desc = dict(channels=list())
     desc["channels"].append(dict(channel=list()))
-    for ch_name, ch_type in channels.items():
+    for ch_name, ch_type, ch_unit in zip(ch_names, ch_types, ch_units):
         desc["channels"][0]["channel"].append(
-            dict(label=[ch_name], unit=["uv"], type=[ch_type])
+            dict(label=[ch_name], unit=[ch_unit], type=[ch_type])
         )
 
     info = create_info(4, 1024, "eeg", desc)
     assert info["sfreq"] == 1024.0
     assert len(info.ch_names) == 4
-    assert sorted(info.ch_names) == sorted(channels)
-    assert info.get_channel_types() == [channels[ch] for ch in info.ch_names]
+    assert info.ch_names == ch_names
+    assert info.get_channel_types() == ch_types
     assert all(
         ch["unit_mul"] == (0 if k == 2 else -6) for k, ch in enumerate(info["chs"])
     )
@@ -39,16 +36,16 @@ def test_valid_info(caplog):
     # non-nested
     desc = dict(channels=list())
     desc["channels"].append(dict(channel=list()))
-    for ch_name, ch_type in channels.items():
+    for ch_name, ch_type, ch_unit in zip(ch_names, ch_types, ch_units):
         desc["channels"][0]["channel"].append(
-            dict(label=ch_name, unit="uv", type=ch_type)
+            dict(label=ch_name, unit=ch_unit, type=ch_type)
         )
 
     info = create_info(4, 1024, "eeg", desc)
     assert info["sfreq"] == 1024.0
     assert len(info.ch_names) == 4
-    assert sorted(info.ch_names) == sorted(channels)
-    assert info.get_channel_types() == [channels[ch] for ch in info.ch_names]
+    assert info.ch_names == ch_names
+    assert info.get_channel_types() == ch_types
     assert all(
         ch["unit_mul"] == (0 if k == 2 else -6) for k, ch in enumerate(info["chs"])
     )
@@ -57,8 +54,8 @@ def test_valid_info(caplog):
     info = create_info(4, 0, "eeg", desc)
     assert info["sfreq"] == 0.0
     assert len(info.ch_names) == 4
-    assert sorted(info.ch_names) == sorted(channels)
-    assert info.get_channel_types() == [channels[ch] for ch in info.ch_names]
+    assert info.ch_names == ch_names
+    assert info.get_channel_types() == ch_types
     assert all(
         ch["unit_mul"] == (0 if k == 2 else -6) for k, ch in enumerate(info["chs"])
     )
@@ -76,45 +73,37 @@ def test_valid_info(caplog):
 
 def test_invalid_info():
     """Test creation of invalid info."""
-    # wrong type
-    channels = {
-        "Fp1": "wrong_type",
-        "Fp2": "eeg",
-        "Trigger": "stim",
-        "EOG": "eog",
-    }
+    ch_names = ["Fp1", "Fp2", "Trigger", "EOG"]
+    ch_types = ["wrong_type", "eeg", "stim", "eog"]
+    ch_units = ["uv", "uv", "V", "uV"]
 
     desc = dict(channels=list())
     desc["channels"].append(dict(channel=list()))
-    for ch_name, ch_type in channels.items():
+    for ch_name, ch_type, ch_unit in zip(ch_names, ch_types, ch_units):
         desc["channels"][0]["channel"].append(
-            dict(label=[ch_name], unit=["uv"], type=[ch_type])
+            dict(label=[ch_name], unit=[ch_unit], type=[ch_type])
         )
 
     info = create_info(4, 1024, "eeg", desc)
     assert info["sfreq"] == 1024.0
     assert len(info.ch_names) == 4
-    assert sorted(info.ch_names) == sorted(channels)
-    assert info.get_channel_types() == [
-        channels[ch] if k != 0 else "eeg" for k, ch in enumerate(info.ch_names)
-    ]
+    assert info.ch_names == ch_names
+    assert info.get_channel_types() == ["eeg"] + ch_types[1:]
     assert all(
         ch["unit_mul"] == (0 if k == 2 else -6) for k, ch in enumerate(info["chs"])
     )
 
     # wrong name
-    channels = {
-        101: "eeg",
-        "Fp2": "eeg",
-        "Trigger": "stim",
-        "EOG": "eog",
-    }
+    ch_names = [101, "Fp2", "Trigger", "EOG"]
+    ch_types = ["eeg", "eeg", "stim", "eog"]
+    ch_units = ["uv", "uv", "V", "uV"]
+
     # nested
     desc = dict(channels=list())
     desc["channels"].append(dict(channel=list()))
-    for ch_name, ch_type in channels.items():
+    for ch_name, ch_type, ch_unit in zip(ch_names, ch_types, ch_units):
         desc["channels"][0]["channel"].append(
-            dict(label=[ch_name], unit=["uv"], type=[ch_type])
+            dict(label=[ch_name], unit=[ch_unit], type=[ch_type])
         )
 
     info = create_info(4, 1024, "eeg", desc)
