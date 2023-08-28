@@ -27,26 +27,20 @@ def test_pull_numerical_sample(dtype_str, dtype):
     assert x.shape == (2,) and x.dtype == dtype
     # create stream description
     sinfo = StreamInfo("test", "", 2, 0.0, dtype_str, uuid.uuid4().hex[:6])
-    try:
-        outlet = StreamOutlet(sinfo, chunk_size=1)
-        inlet = StreamInlet(sinfo)
-        inlet.open_stream(timeout=5)
-        _test_properties(inlet, dtype_str, 2, "test", 0.0, "")
-        outlet.push_sample(x)
-        data, ts = inlet.pull_sample(timeout=5)
-        _test_numerical_data(data, x, dtype, ts)
-        data, ts = inlet.pull_sample(timeout=0)
-        assert ts is None
-        assert data.size == 0
-        # test push/pull with wrong dtype
-        outlet.push_sample(x.astype(np.float64 if dtype != np.float64 else np.float32))
-        data, ts = inlet.pull_sample(timeout=5)
-        _test_numerical_data(data, x, dtype, ts)
-    except Exception as error:
-        raise error
-    finally:
-        del inlet
-        del outlet
+    outlet = StreamOutlet(sinfo, chunk_size=1)
+    inlet = StreamInlet(sinfo)
+    inlet.open_stream(timeout=5)
+    _test_properties(inlet, dtype_str, 2, "test", 0.0, "")
+    outlet.push_sample(x)
+    data, ts = inlet.pull_sample(timeout=5)
+    _test_numerical_data(data, x, dtype, ts)
+    data, ts = inlet.pull_sample(timeout=0)
+    assert ts is None
+    assert data.size == 0
+    # test push/pull with wrong dtype
+    outlet.push_sample(x.astype(np.float64 if dtype != np.float64 else np.float32))
+    data, ts = inlet.pull_sample(timeout=5)
+    _test_numerical_data(data, x, dtype, ts)
 
 
 def test_pull_str_sample():
@@ -54,24 +48,18 @@ def test_pull_str_sample():
     x = ["1", "2"]
     # create stream description
     sinfo = StreamInfo("test", "Gaze", 2, 10.0, "string", uuid.uuid4().hex[:6])
-    try:
-        outlet = StreamOutlet(sinfo, chunk_size=1)
-        inlet = StreamInlet(sinfo)
-        inlet.open_stream(timeout=5)
-        _test_properties(inlet, "string", 2, "test", 10.0, "Gaze")
-        outlet.push_sample(x)
-        data, ts = inlet.pull_sample(timeout=5)
-        assert isinstance(data, list)
-        assert isinstance(ts, float)
-        assert data == x
-        data, ts = inlet.pull_sample(timeout=0)
-        assert ts is None
-        assert isinstance(data, list) and len(data) == 0
-    except Exception as error:
-        raise error
-    finally:
-        del inlet
-        del outlet
+    outlet = StreamOutlet(sinfo, chunk_size=1)
+    inlet = StreamInlet(sinfo)
+    inlet.open_stream(timeout=5)
+    _test_properties(inlet, "string", 2, "test", 10.0, "Gaze")
+    outlet.push_sample(x)
+    data, ts = inlet.pull_sample(timeout=5)
+    assert isinstance(data, list)
+    assert isinstance(ts, float)
+    assert data == x
+    data, ts = inlet.pull_sample(timeout=0)
+    assert ts is None
+    assert isinstance(data, list) and len(data) == 0
 
 
 @pytest.mark.parametrize(
@@ -90,46 +78,40 @@ def test_pull_numerical_chunk(dtype_str, dtype):
     assert x.shape == (3, 2) and x.dtype == dtype
     # create stream description
     sinfo = StreamInfo("test", "", 2, 0.0, dtype_str, uuid.uuid4().hex[:6])
-    try:
-        outlet = StreamOutlet(sinfo, chunk_size=3)
-        inlet = StreamInlet(sinfo)
-        inlet.open_stream(timeout=5)
-        _test_properties(inlet, dtype_str, 2, "test", 0.0, "")
-        outlet.push_chunk(x)
-        data, ts = inlet.pull_chunk(max_samples=3, timeout=5)
-        _test_numerical_data(data, x, dtype, ts, 3)
-        assert inlet.samples_available == 0
-        data, ts = inlet.pull_chunk(max_samples=1, timeout=0)
-        assert data.size == ts.size == 0
-        # request more samples than available
-        outlet.push_chunk(x)
-        data, ts = inlet.pull_chunk(max_samples=5, timeout=1)
-        _test_numerical_data(data, x, dtype, ts, 3)
-        # pull sample by sample
-        outlet.push_chunk(x)
-        data, ts = inlet.pull_sample(timeout=5)
-        _test_numerical_data(data, x[0, :], dtype, ts)
-        data, ts = inlet.pull_sample(timeout=5)
-        _test_numerical_data(data, x[1, :], dtype, ts)
-        data, ts = inlet.pull_sample(timeout=5)
-        _test_numerical_data(data, x[2, :], dtype, ts)
-        # test push/pull with wrong dtype
-        outlet.push_chunk(x.astype(np.float64 if dtype != np.float64 else np.float32))
-        data, ts = inlet.pull_chunk(max_samples=3, timeout=5)
-        _test_numerical_data(data, x, dtype, ts, 3)
-        # test push/pull with an unusual max_samples type
-        outlet.push_chunk(x.astype(np.float64 if dtype != np.float64 else np.float32))
-        data, ts = inlet.pull_chunk(max_samples=np.int64(3), timeout=5)
-        _test_numerical_data(data, x, dtype, ts, 3)
-        with pytest.raises(
-            ValueError, match="'max_samples' must be a strictly positive integer"
-        ):
-            data, ts = inlet.pull_chunk(max_samples=-101)
-    except Exception as error:
-        raise error
-    finally:
-        del inlet
-        del outlet
+    outlet = StreamOutlet(sinfo, chunk_size=3)
+    inlet = StreamInlet(sinfo)
+    inlet.open_stream(timeout=5)
+    _test_properties(inlet, dtype_str, 2, "test", 0.0, "")
+    outlet.push_chunk(x)
+    data, ts = inlet.pull_chunk(max_samples=3, timeout=5)
+    _test_numerical_data(data, x, dtype, ts, 3)
+    assert inlet.samples_available == 0
+    data, ts = inlet.pull_chunk(max_samples=1, timeout=0)
+    assert data.size == ts.size == 0
+    # request more samples than available
+    outlet.push_chunk(x)
+    data, ts = inlet.pull_chunk(max_samples=5, timeout=1)
+    _test_numerical_data(data, x, dtype, ts, 3)
+    # pull sample by sample
+    outlet.push_chunk(x)
+    data, ts = inlet.pull_sample(timeout=5)
+    _test_numerical_data(data, x[0, :], dtype, ts)
+    data, ts = inlet.pull_sample(timeout=5)
+    _test_numerical_data(data, x[1, :], dtype, ts)
+    data, ts = inlet.pull_sample(timeout=5)
+    _test_numerical_data(data, x[2, :], dtype, ts)
+    # test push/pull with wrong dtype
+    outlet.push_chunk(x.astype(np.float64 if dtype != np.float64 else np.float32))
+    data, ts = inlet.pull_chunk(max_samples=3, timeout=5)
+    _test_numerical_data(data, x, dtype, ts, 3)
+    # test push/pull with an unusual max_samples type
+    outlet.push_chunk(x.astype(np.float64 if dtype != np.float64 else np.float32))
+    data, ts = inlet.pull_chunk(max_samples=np.int64(3), timeout=5)
+    _test_numerical_data(data, x, dtype, ts, 3)
+    with pytest.raises(
+        ValueError, match="'max_samples' must be a strictly positive integer"
+    ):
+        data, ts = inlet.pull_chunk(max_samples=-101)
 
 
 def test_pull_str_chunk():
@@ -137,39 +119,33 @@ def test_pull_str_chunk():
     x = [["1", "4"], ["2", "5"], ["3", "6"]]
     # create stream description
     sinfo = StreamInfo("test", "", 2, 0.0, "string", uuid.uuid4().hex[:6])
-    try:
-        outlet = StreamOutlet(sinfo, chunk_size=3)
-        inlet = StreamInlet(sinfo)
-        inlet.open_stream(timeout=5)
-        _test_properties(inlet, "string", 2, "test", 0.0, "")
-        outlet.push_chunk(x)
-        data, ts = inlet.pull_chunk(max_samples=3, timeout=5)
-        assert isinstance(data, list)
-        assert all(isinstance(elt, list) for elt in data)
-        assert x == data
-        data, ts = inlet.pull_chunk(max_samples=1, timeout=0)
-        assert len(data) == len(ts) == 0
-        # request more samples than available
-        outlet.push_chunk(x)
-        data, ts = inlet.pull_chunk(max_samples=5, timeout=1)
-        assert isinstance(data, list)
-        assert all(isinstance(elt, list) for elt in data)
-        assert x == data
-        # pull sample by sample
-        outlet.push_chunk(x)
-        data, ts = inlet.pull_sample(timeout=5)
-        assert isinstance(ts, float)
-        assert data == x[0]
-        data, ts = inlet.pull_sample(timeout=5)
-        assert isinstance(ts, float)
-        assert data == x[1]
-        data, ts = inlet.pull_chunk(max_samples=5, timeout=1)
-        assert data == [x[2]]  # chunk is nested
-    except Exception as error:
-        raise error
-    finally:
-        del outlet
-        del inlet
+    outlet = StreamOutlet(sinfo, chunk_size=3)
+    inlet = StreamInlet(sinfo)
+    inlet.open_stream(timeout=5)
+    _test_properties(inlet, "string", 2, "test", 0.0, "")
+    outlet.push_chunk(x)
+    data, ts = inlet.pull_chunk(max_samples=3, timeout=5)
+    assert isinstance(data, list)
+    assert all(isinstance(elt, list) for elt in data)
+    assert x == data
+    data, ts = inlet.pull_chunk(max_samples=1, timeout=0)
+    assert len(data) == len(ts) == 0
+    # request more samples than available
+    outlet.push_chunk(x)
+    data, ts = inlet.pull_chunk(max_samples=5, timeout=1)
+    assert isinstance(data, list)
+    assert all(isinstance(elt, list) for elt in data)
+    assert x == data
+    # pull sample by sample
+    outlet.push_chunk(x)
+    data, ts = inlet.pull_sample(timeout=5)
+    assert isinstance(ts, float)
+    assert data == x[0]
+    data, ts = inlet.pull_sample(timeout=5)
+    assert isinstance(ts, float)
+    assert data == x[1]
+    data, ts = inlet.pull_chunk(max_samples=5, timeout=1)
+    assert data == [x[2]]  # chunk is nested
 
 
 @pytest.mark.xfail(
@@ -181,19 +157,13 @@ def test_pull_str_chunk():
 def test_get_sinfo():
     """Test getting a StreamInfo from an Inlet."""
     sinfo = StreamInfo("test", "", 2, 0.0, "string", uuid.uuid4().hex[:6])
-    try:
-        outlet = StreamOutlet(sinfo)
-        inlet = StreamInlet(sinfo)
-        with pytest.raises(TimeoutError):
-            inlet.get_sinfo(timeout=0.5)
-        inlet.open_stream(timeout=5)
-        sinfo = inlet.get_sinfo(timeout=5)
-        assert isinstance(sinfo, _BaseStreamInfo)
-    except Exception as error:
-        raise error
-    finally:
-        del outlet
-        del inlet
+    outlet = StreamOutlet(sinfo)  # noqa: F841
+    inlet = StreamInlet(sinfo)
+    with pytest.raises(TimeoutError):
+        inlet.get_sinfo(timeout=0.5)
+    inlet.open_stream(timeout=5)
+    sinfo = inlet.get_sinfo(timeout=5)
+    assert isinstance(sinfo, _BaseStreamInfo)
 
 
 @pytest.mark.xfail(
@@ -217,29 +187,23 @@ def test_inlet_methods(dtype_str, dtype):
     assert x.shape == (3, 2) and x.dtype == dtype
     # create stream description
     sinfo = StreamInfo("test", "", 2, 0.0, dtype_str, uuid.uuid4().hex[:6])
-    try:
-        outlet = StreamOutlet(sinfo, chunk_size=3)
-        inlet = StreamInlet(sinfo)
-        inlet.open_stream(timeout=5)
-        outlet.push_chunk(x)
-        time.sleep(0.1)  # sleep since samples_available does not have timeout
-        assert inlet.samples_available == 3
-        n_flush = inlet.flush()
-        assert n_flush == 3
-        assert inlet.samples_available == 0
-        data, ts = inlet.pull_chunk(max_samples=1, timeout=0)
-        assert data.size == ts.size == 0
-        # close and re-open -- at the moment this is not well supported
-        inlet.close_stream()
-        inlet.open_stream(timeout=10)
-        assert inlet.samples_available == 0
-        outlet.push_chunk(x)
-        assert inlet.samples_available == 3
-    except Exception as error:
-        raise error
-    finally:
-        del outlet
-        del inlet
+    outlet = StreamOutlet(sinfo, chunk_size=3)
+    inlet = StreamInlet(sinfo)
+    inlet.open_stream(timeout=5)
+    outlet.push_chunk(x)
+    time.sleep(0.1)  # sleep since samples_available does not have timeout
+    assert inlet.samples_available == 3
+    n_flush = inlet.flush()
+    assert n_flush == 3
+    assert inlet.samples_available == 0
+    data, ts = inlet.pull_chunk(max_samples=1, timeout=0)
+    assert data.size == ts.size == 0
+    # close and re-open -- at the moment this is not well supported
+    inlet.close_stream()
+    inlet.open_stream(timeout=10)
+    assert inlet.samples_available == 0
+    outlet.push_chunk(x)
+    assert inlet.samples_available == 3
 
 
 @pytest.mark.parametrize(
@@ -260,37 +224,25 @@ def test_processing_flags(dtype_str, flags):
     x = np.array([[1, 4], [2, 5], [3, 6]])
     # create stream description
     sinfo = StreamInfo("test", "", 2, 0.0, dtype_str, uuid.uuid4().hex[:6])
-    try:
-        outlet = StreamOutlet(sinfo, chunk_size=3)
-        inlet = StreamInlet(sinfo, processing_flags=flags)
-        inlet.open_stream(timeout=5)
-        _test_properties(inlet, dtype_str, 2, "test", 0.0, "")
-        outlet.push_chunk(x)
-        data, ts = inlet.pull_chunk(max_samples=3, timeout=5)
-        assert inlet.samples_available == 0
-        data, ts = inlet.pull_chunk(max_samples=1, timeout=0)
-        assert data.size == ts.size == 0
-    except Exception as error:
-        raise error
-    finally:
-        del inlet
-        del outlet
+    outlet = StreamOutlet(sinfo, chunk_size=3)
+    inlet = StreamInlet(sinfo, processing_flags=flags)
+    inlet.open_stream(timeout=5)
+    _test_properties(inlet, dtype_str, 2, "test", 0.0, "")
+    outlet.push_chunk(x)
+    data, ts = inlet.pull_chunk(max_samples=3, timeout=5)
+    assert inlet.samples_available == 0
+    data, ts = inlet.pull_chunk(max_samples=1, timeout=0)
+    assert data.size == ts.size == 0
 
 
 def test_time_correction():
     """Test time_correction method."""
     sinfo = StreamInfo("test", "", 2, 0.0, "int8", uuid.uuid4().hex[:6])
-    try:
-        outlet = StreamOutlet(sinfo, chunk_size=3)
-        inlet = StreamInlet(sinfo)
-        inlet.open_stream(timeout=5)
-        tc = inlet.time_correction(timeout=3)
-        assert isinstance(tc, float)
-    except Exception as error:
-        raise error
-    finally:
-        del inlet
-        del outlet
+    outlet = StreamOutlet(sinfo, chunk_size=3)  # noqa: F841
+    inlet = StreamInlet(sinfo)
+    inlet.open_stream(timeout=5)
+    tc = inlet.time_correction(timeout=3)
+    assert isinstance(tc, float)
 
 
 def _test_properties(inlet, dtype_str, n_channels, name, sfreq, stype):
