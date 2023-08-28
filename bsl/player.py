@@ -12,7 +12,7 @@ if check_version("mne", "1.6"):
 else:
     from mne.io.meas_info import ContainsMixin
 
-from .lsl import StreamInfo, StreamOutlet
+from .lsl import StreamInfo, StreamOutlet, local_clock
 from .utils._checks import check_type, ensure_int, ensure_path
 
 if TYPE_CHECKING:
@@ -66,12 +66,14 @@ class Player(ContainsMixin):
         self._start_idx = 0
         self._streaming_delay = None
         self._streaming_thread = None
+        self._target_timestamp = None
 
     def start(self):
         """Start streaming data on the LSL `~bsl.lsl.StreamOutlet`."""
         self._outlet = StreamOutlet(self._sinfo, self._chunk_size)
         self._streaming_delay = self.chunk_size / self.info["sfreq"]
         self._streaming_thread = Timer(self._streaming_delay, self._stream)
+        self._target_timestamp = local_clock() + self._streaming_delay
         self._streaming_thread.start()
 
     def stop(self):
@@ -84,6 +86,7 @@ class Player(ContainsMixin):
         self._start_idx = 0
         self._streaming_delay = None
         self._streaming_thread = None
+        self._target_timestamp = None
 
     def _stream(self):
         """Push a chunk of data from the raw object to the StreamOutlet.
@@ -97,8 +100,14 @@ class Player(ContainsMixin):
         >>> [In] %timeit np.ascontiguousarray(raw[:, 0:16][0].T)
         >>> 23.7 µs ± 183 ns per loop
         """
+        # figure out how early or late the thread woke up and compensate the delay for
+        # the next thread to remain in the neighbourhood of _target_timestamp for the
+        # following wake .
+        delta = self._target_timestamp - local_clock()
+        delay = self._streaming_delay + delta
+
         # recreate the timer thread as it is one-call only
-        self._streaming_thread = Timer(self._streaming_delay, self._stream)
+        self._streaming_thread = Timer(delay, self._stream)
         self._streaming_thread.start()
 
         # retrieve data and push to the stream outlet
@@ -111,7 +120,12 @@ class Player(ContainsMixin):
             stop = self._chunk_size - (self._raw.times.size - start)
             data = np.vstack([self._raw[:, start:][0].T, self._raw[:, :stop][0].T])
             self._start_idx = stop
-        self._outlet.push_chunk(data)
+
+        # bump the target LSL timestamp before pushing because the argument 'timestamp'
+        # expects the timestamp of the most 'recent' sample, which in this non-real time
+        # replay scenario is the timestamp of the last sample in the chunk.
+        self._target_timestamp += self._streaming_delay
+        self._outlet.push_chunk(data, timestamp=self._target_timestamp)
 
     # ----------------------------------------------------------------------------------
     def __enter__(self):

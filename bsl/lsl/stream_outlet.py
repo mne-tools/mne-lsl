@@ -149,7 +149,7 @@ class StreamOutlet:
             required. If numericals are transmitted, a numpy array of shape
             ``(n_samples, n_channels)`` is required.
         timestamp : float
-            The acquisition timestamp of the sample, in agreement with
+            The acquisition timestamp of the last sample, in agreement with
             `~bsl.lsl.local_clock`. The default, ``0``, uses the current time.
         pushThrough : bool
             If True, push the sample through to the receivers instead of buffering it
