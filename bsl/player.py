@@ -37,7 +37,9 @@ class Player(ContainsMixin):
 
     Notes
     -----
-    The file re-played is loaded in memory. Thus, large files are not recommended.
+    The file re-played is loaded in memory. Thus, large files are not recommended. Once
+    the end-of-file is reached, the player loops back to the beginning which can lead to
+    a small discontinuity in the data stream.
     """
 
     def __init__(
