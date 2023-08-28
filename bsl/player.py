@@ -104,7 +104,7 @@ class Player(ContainsMixin):
         """
         # figure out how early or late the thread woke up and compensate the delay for
         # the next thread to remain in the neighbourhood of _target_timestamp for the
-        # following wake .
+        # following wake.
         delta = self._target_timestamp - local_clock()
         delay = self._streaming_delay + delta
 
