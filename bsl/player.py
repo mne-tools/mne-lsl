@@ -45,10 +45,15 @@ class Player(ContainsMixin):
     def __init__(
         self, fname: Union[str, Path], name: Optional[str] = None, chunk_size: int = 16
     ) -> None:
-        self._fname = ensure_path(fname, "fname")
+        self._fname = ensure_path(fname, must_exist=True)
         check_type(name, (str, None), "name")
         self._name = "BSL-Player" if name is None else name
         self._chunk_size = ensure_int(chunk_size, "chunk_size")
+        if self._chunk_size <= 0:
+            raise ValueError(
+                "The argument 'chunk_size' must be a strictly positive integer. "
+                f"{chunk_size} is invalid."
+            )
 
         # load header from the file and create StreamInfo
         self._raw = read_raw(self._fname, preload=True)
