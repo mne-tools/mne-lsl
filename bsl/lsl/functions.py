@@ -136,16 +136,17 @@ def resolve_streams(
             minimum,
             c_double(timeout),
         )
-        streams.extend([_BaseStreamInfo(buffer[k]) for k in range(num_found)])
-    streams = list(set(streams))  # remove duplicates
-    # now select the set of StreamInfo that match all the properties
-    stream2delete = list()
-    for k, stream in enumerate(streams):
-        for prop, name in properties:
-            if getattr(stream, name) != prop:
-                stream2delete.append(k)
-                break
-    for idx in stream2delete[::-1]:
-        del streams[idx]
-
-    return streams
+        new_streams = [_BaseStreamInfo(buffer[k]) for k in range(num_found)]
+        # now delete the ones that dn't have all the correct properties
+        stream2delete = list()
+        for k, stream in enumerate(new_streams):
+            for prop, name in properties:
+                if getattr(stream, name) != prop:
+                    stream2delete.append(k)
+                    break
+        for idx in stream2delete[::-1]:
+            del new_streams[idx]
+        streams.extend(new_streams)
+        if minimum <= len(streams):
+            break
+    return list(set(streams))  # remove duplicates
