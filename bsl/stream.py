@@ -368,7 +368,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
 
         # define the acquisition thread
         self._acquisition_delay = acquisition_delay
-        self._acquisition_thread = Timer(1 / self._acquisition_delay, self._acquire)
+        self._acquisition_thread = Timer(0, self._acquire)
         self._acquisition_thread.daemon = True
         self._acquisition_thread.start()
 

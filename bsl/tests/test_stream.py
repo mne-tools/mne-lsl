@@ -40,8 +40,9 @@ def test_stream(mock_lsl_stream):
     assert stream.info["sfreq"] == raw.info["sfreq"]
 
     # check fs and that the returned data array is in raw a couple of times
+    time.sleep(0.1)  # give a bit of time to the stream to acquire the first chunks
     for _ in range(3):
-        data, ts = stream.get_data(winsize=1)
+        data, ts = stream.get_data(winsize=0.1)
         assert ts.size == data.shape[1]
         fs = 1 / np.diff(ts)
         assert_allclose(fs, stream.info["sfreq"])
@@ -58,7 +59,7 @@ def test_stream(mock_lsl_stream):
         else:
             raw_data = np.hstack((raw[:, start:][0], raw[:, :][0]))[:, : stop - start]
             assert_allclose(data, raw_data)
-        time.sleep(0.1)
+        time.sleep(0.3)
 
     # montage
     stream.set_montage("standard_1020")
