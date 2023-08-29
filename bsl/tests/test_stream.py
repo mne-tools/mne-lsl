@@ -1,3 +1,4 @@
+import time
 from collections import Counter
 
 import numpy as np
@@ -37,25 +38,27 @@ def test_stream(mock_lsl_stream):
     assert stream.info["ch_names"] == raw.info["ch_names"]
     assert stream.get_channel_types() == raw.get_channel_types()
     assert stream.info["sfreq"] == raw.info["sfreq"]
-    data, ts = stream.get_data(winsize=1)
-    assert ts.size == data.shape[1]
-    fs = 1 / np.diff(ts)
-    assert_allclose(fs, stream.info["sfreq"])
 
-    # check that the returned data array is in raw
-    idx = [np.where(raw[:, :][0] == data[k, 0])[1] for k in range(data.shape[0])]
-    idx = np.concatenate(idx)
-    counter = Counter(idx)
-    idx, n_channels = counter.most_common()[0]
-    assert n_channels == data.shape[0]
-    assert n_channels == stream.sinfo.n_channels
-    start = idx
-    stop = start + data.shape[1]
-    if stop <= raw.times.size:
-        assert_allclose(data, raw[:, start:stop][0])
-    else:
-        raw_data = np.hstack((raw[:, start:][0], raw[:, :][0]))[:, : stop - start]
-        assert_allclose(data, raw_data)
+    # check fs and that the returned data array is in raw a couple of times
+    for _ in range(3):
+        data, ts = stream.get_data(winsize=1)
+        assert ts.size == data.shape[1]
+        fs = 1 / np.diff(ts)
+        assert_allclose(fs, stream.info["sfreq"])
+        idx = [np.where(raw[:, :][0] == data[k, 0])[1] for k in range(data.shape[0])]
+        idx = np.concatenate(idx)
+        counter = Counter(idx)
+        idx, n_channels = counter.most_common()[0]
+        assert n_channels == data.shape[0]
+        assert n_channels == stream.sinfo.n_channels
+        start = idx
+        stop = start + data.shape[1]
+        if stop <= raw.times.size:
+            assert_allclose(data, raw[:, start:stop][0])
+        else:
+            raw_data = np.hstack((raw[:, start:][0], raw[:, :][0]))[:, : stop - start]
+            assert_allclose(data, raw_data)
+        time.sleep(0.1)
 
     # montage
     stream.set_montage("standard_1020")
