@@ -177,6 +177,7 @@ omit = [
     '**/__init__.py',
     '**/bsl/_version.py',
     '**/bsl/commands/*',
+    '**/bsl/conftest.py',
     '**/tests/**',
 ]
 
