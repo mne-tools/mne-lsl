@@ -7,10 +7,10 @@ from mne.io import read_raw
 from numpy.testing import assert_allclose
 
 from bsl import Player
-from bsl.datasets import eeg_resting_state_short
+from bsl.datasets import testing
 from bsl.lsl import StreamInlet, local_clock, resolve_streams
 
-fname = eeg_resting_state_short.data_path()
+fname = testing.data_path() / "sample-eeg-ant-raw.fif"
 raw = read_raw(fname, preload=True)
 
 
