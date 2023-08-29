@@ -47,6 +47,7 @@ dependencies = [
     'mne>=1.4.2',
     'numpy>=1.21',
     'packaging',
+    'pooch',
     'psutil',
     'pyqtgraph',
     'PyQt5',
