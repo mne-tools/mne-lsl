@@ -91,6 +91,11 @@ class StreamInlet:
                 for flag in processing_flags:
                     check_type(flag, (str,), "processing_flag")
                     check_value(flag, post_processing_flags, flag)
+                if "monotize" in processing_flags and "dejitter" not in processing_flags:
+                    raise ValueError(
+                        "The processing flag 'monotize' should not be used without the "
+                        "processing flag 'dejitter'."
+                    )
                 # bitwise OR between the flags
                 processing_flags = [
                     post_processing_flags[key] for key in processing_flags

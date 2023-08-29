@@ -235,6 +235,16 @@ def test_processing_flags(dtype_str, flags):
     assert data.size == ts.size == 0
 
 
+def test_processing_flags_invalid():
+    """Test the use of invalid processing flags combination."""
+    sinfo = StreamInfo("test", "", 2, 0.0, "float32", uuid.uuid4().hex[:6])
+    outlet = StreamOutlet(sinfo, chunk_size=3)  # noqa: F841
+    with pytest.raises(ValueError, match="should not be used without"):
+        StreamInlet(sinfo, processing_flags=("monotize",))
+    with pytest.raises(ValueError, match="should not be used without"):
+        StreamInlet(sinfo, processing_flags=("monotize", "clocksync"))
+
+
 def test_time_correction():
     """Test time_correction method."""
     sinfo = StreamInfo("test", "", 2, 0.0, "int8", uuid.uuid4().hex[:6])
