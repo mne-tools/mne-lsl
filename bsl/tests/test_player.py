@@ -1,6 +1,8 @@
 from collections import Counter
+from pathlib import Path
 
 import numpy as np
+import pytest
 from mne.io import read_raw
 from numpy.testing import assert_allclose
 
@@ -82,3 +84,17 @@ def test_player_context_manager():
         assert streams[0].name == name
     streams = resolve_streams(timeout=0.1)
     assert len(streams) == 0
+
+
+def test_player_invalid_arguments():
+    """Test creation of a player with invalid arguments."""
+    with pytest.raises(FileNotFoundError, match="does not exist"):
+        Player("invalid-fname.something")
+    with pytest.raises(ValueError, match="Unsupported file type"):
+        Player(Path(__file__))
+    with pytest.raises(TypeError, match="'name' must be an instance of str or None"):
+        Player(fname, name=101)
+    with pytest.raises(TypeError, match="'chunk_size' must be an integer"):
+        Player(fname, name="101", chunk_size=101.0)
+    with pytest.raises(ValueError, match="strictly positive integer"):
+        Player(fname, name="101", chunk_size=-101)
