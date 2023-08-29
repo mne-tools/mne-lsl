@@ -42,5 +42,5 @@ def data_path() -> Path:
     """
     path = Path.home() / "bsl_data" / "testing"
     base_url = "https://github.com/fcbg-hnp-meeg/bsl/raw/main/datasets/testing/"
-    registry = files("meg_wiki.datasets") / "sample-registry.txt"
+    registry = files("bsl.datasets") / "testing-registry.txt"
     return fetch_dataset(path, base_url, registry)
