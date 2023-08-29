@@ -75,7 +75,7 @@ class Player(ContainsMixin):
         self._streaming_thread = None
         self._target_timestamp = None
 
-    def start(self):
+    def start(self) -> None:
         """Start streaming data on the LSL `~bsl.lsl.StreamOutlet`."""
         self._outlet = StreamOutlet(self._sinfo, self._chunk_size)
         self._streaming_delay = self.chunk_size / self.info["sfreq"]
@@ -84,7 +84,7 @@ class Player(ContainsMixin):
         self._target_timestamp = local_clock()
         self._streaming_thread.start()
 
-    def stop(self):
+    def stop(self) -> None:
         """Stop streaming data on the LSL `~bsl.lsl.StreamOutlet`."""
         if self._streaming_thread is None:
             raise RuntimeError(
@@ -93,14 +93,9 @@ class Player(ContainsMixin):
         while self._streaming_thread.is_alive():
             self._streaming_thread.cancel()
         del self._outlet
-        # reset variables
-        self._outlet = None
-        self._start_idx = 0
-        self._streaming_delay = None
-        self._streaming_thread = None
-        self._target_timestamp = None
+        self._reset_variables()
 
-    def _stream(self):
+    def _stream(self) -> None:
         """Push a chunk of data from the raw object to the StreamOutlet.
 
         Don't use raw.get_data but indexing which is faster.
@@ -130,13 +125,8 @@ class Player(ContainsMixin):
             self._target_timestamp += self._streaming_delay
             self._outlet.push_chunk(data, timestamp=self._target_timestamp)
         except Exception:
-            # reset variables
-            self._outlet = None
-            self._start_idx = 0
-            self._streaming_delay = None
-            self._streaming_thread = None
-            self._target_timestamp = None
-            return  # equivalent to an interrupt
+            self._reset_variables()
+            return None  # equivalent to an interrupt
         else:
             # figure out how early or late the thread woke up and compensate the delay
             # for the next thread to remain in the neighbourhood of _target_timestamp
@@ -148,6 +138,14 @@ class Player(ContainsMixin):
             self._streaming_thread = Timer(delay, self._stream)
             self._streaming_thread.daemon = True
             self._streaming_thread.start()
+
+    def _reset_variables(self) -> None:
+        """Reset variables for streaming."""
+        self._outlet = None
+        self._start_idx = 0
+        self._streaming_delay = None
+        self._streaming_thread = None
+        self._target_timestamp = None
 
     # ----------------------------------------------------------------------------------
     def __del__(self):

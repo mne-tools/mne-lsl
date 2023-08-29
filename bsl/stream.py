@@ -39,6 +39,8 @@ if TYPE_CHECKING:
     from mne.channels import DigMontage
     from numpy.typing import NDArray
 
+    from bsl.lsl.stream_info import _BaseStreamInfo
+
 
 class Stream(ContainsMixin, SetChannelsMixin):
     """Stream object representing a single LSL stream.
@@ -286,6 +288,9 @@ class Stream(ContainsMixin, SetChannelsMixin):
         stream identifiers is specified, resolution will stop as soon as one stream
         matching the identifier is found.
         """
+        if self.connected:
+            logger.warning("The stream is already connected. Skipping.")
+            return
         # The threadsafe processing flag should not be needed for this class. If it is
         # provided, then it means the user is retrieving and doing something with the
         # inlet in a different thread. This use-case is not supported, and users which
@@ -324,18 +329,21 @@ class Stream(ContainsMixin, SetChannelsMixin):
                 "string LSL streams. Please use a bsl.lsl.StreamInlet directly to "
                 "interact with this stream."
             )
-        self._sinfo = sinfos[0]
-        # create inlet
+        # create inlet and retrieve stream info
         self._inlet = StreamInlet(
-            self._sinfo, max_buffered=self._bufsize, processing_flags=processing_flags
+            sinfos[0], max_buffered=self._bufsize, processing_flags=processing_flags
         )
         self._inlet.open_stream(timeout=timeout)
+        self._sinfo = self._inlet.get_sinfo()
+        self._name = self._sinfo.name
+        self._stype = self._sinfo.stype
+        self._source_id = self._sinfo.source_id
         # create MNE info from the LSL stream info returned by an open stream inlet
         self._info = create_info(
             self._sinfo.n_channels,
             self._sinfo.sfreq,
             self._sinfo.stype,
-            self._inlet.get_sinfo(),
+            self._sinfo,
         )
         # initiate time-correction
         tc = self._inlet.time_correction(timeout=timeout)
@@ -371,17 +379,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
             self._acquisition_thread.cancel()
         self._inlet.close_stream()
         del self._inlet
-
-        # reset variables defined after resolution and connection
-        self._sinfo = None
-        self._inlet = None
-        self._info = None
-        self._acquisition_delay = None
-        self._acquisition_thread = None
-        self._buffer = None
-        self._picks_inlet = None
-        self._ref_channels = []
-        self._timestamps = None
+        self._reset_variables()
 
     def drop_channels(self, ch_names: Union[str, List[str], Tuple[str]]) -> None:
         """Drop channel(s).
@@ -731,29 +729,33 @@ class Stream(ContainsMixin, SetChannelsMixin):
 
     def _acquire(self) -> None:
         """Update function pulling new samples in the buffer at a regular interval."""
-        # recreate the timer thread as it is one-call only
-        self._acquisition_thread = Timer(self._acquisition_delay, self._acquire)
-        self._acquisition_thread.daemon = True
-        self._acquisition_thread.start()
+        try:
+            # pull data
+            data, timestamps = self._inlet.pull_chunk(timeout=0.0)
+            if timestamps.size == 0:
+                return None  # interrupt early
 
-        # pull data
-        data, timestamps = self._inlet.pull_chunk(timeout=0.0)
-        if timestamps.size == 0:
-            return None  # interrupt early
+            # process acquisition window
+            data = data[:, self._picks_inlet]
+            if len(self._ref_channels) != 0:
+                refs = np.zeros(
+                    (timestamps.size, len(self._ref_channels)), dtype=self.dtype
+                )
+                data = np.hstack((data, refs), dtype=self.dtype)
 
-        # process acquisition window
-        data = data[:, self._picks_inlet]
-        if len(self._ref_channels) != 0:
-            refs = np.zeros(
-                (timestamps.size, len(self._ref_channels)), dtype=self.dtype
-            )
-            data = np.hstack((data, refs), dtype=self.dtype)
-
-        # roll and update buffers
-        self._buffer = np.roll(self._buffer, -data.shape[0], axis=0)
-        self._timestamps = np.roll(self._timestamps, -timestamps.size, axis=0)
-        self._buffer[-timestamps.size :, :] = data  # noqa: E203
-        self._timestamps[-timestamps.size :] = timestamps  # noqa: E203
+            # roll and update buffers
+            self._buffer = np.roll(self._buffer, -data.shape[0], axis=0)
+            self._timestamps = np.roll(self._timestamps, -timestamps.size, axis=0)
+            self._buffer[-timestamps.size :, :] = data  # noqa: E203
+            self._timestamps[-timestamps.size :] = timestamps  # noqa: E203
+        except Exception:
+            self._reset_variables()
+            return None  # equivalent to an interrupt
+        else:
+            # recreate the timer thread as it is one-call only
+            self._acquisition_thread = Timer(self._acquisition_delay, self._acquire)
+            self._acquisition_thread.daemon = True
+            self._acquisition_thread.start()
 
     def _check_connected(self, name: str):
         """Check that the stream is connected before calling the function 'name'."""
@@ -805,6 +807,18 @@ class Stream(ContainsMixin, SetChannelsMixin):
             for ch in self._ref_channels[::-1]:
                 if ch not in self.ch_names:
                     self._ref_channels.remove(ch)
+
+    def _reset_variables(self) -> None:
+        """Reset variables define after connection."""
+        self._sinfo = None
+        self._inlet = None
+        self._info = None
+        self._acquisition_delay = None
+        self._acquisition_thread = None
+        self._buffer = None
+        self._picks_inlet = None
+        self._ref_channels = []
+        self._timestamps = None
 
     # ----------------------------------------------------------------------------------
     @property
@@ -869,6 +883,14 @@ class Stream(ContainsMixin, SetChannelsMixin):
         :type: `str` | None
         """
         return self._name
+
+    @property
+    def sinfo(self) -> Optional[_BaseStreamInfo]:
+        """StreamInfo of the connected stream.
+
+        :type: `~bsl.lsl.StreamInfo` | None
+        """
+        return self._sinfo
 
     @property
     def stype(self) -> Optional[str]:
