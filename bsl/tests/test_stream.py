@@ -1,4 +1,6 @@
+from matplotlib import pyplot as plt
 from mne import Info
+from mne.channels import DigMontage
 from mne.io import read_raw
 
 from bsl import Stream
@@ -26,3 +28,12 @@ def test_stream(mock_lsl_stream):
 
     # test content
     assert stream.info["ch_names"] == raw.info["ch_names"]
+    assert stream.get_channel_types() == raw.get_channel_types()
+
+    # montage
+    stream.set_montage("standard_1020")
+    stream.plot_sensors()
+    plt.close("all")
+    montage = stream.get_montage()
+    assert isinstance(montage, DigMontage)
+    assert montage.ch_names == stream.ch_names[1:]  # first channel is TRIGGER

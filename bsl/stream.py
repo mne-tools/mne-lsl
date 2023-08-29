@@ -411,7 +411,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
 
     def filter(self) -> None:
         self._check_connected(name="Stream.filter()")
-        self._check_regular_sampling()
+        self._check_regular_sampling(name="Stream.filter()")
         raise NotImplementedError
 
     @copy_doc(ContainsMixin.get_channel_types)
@@ -575,7 +575,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
 
     def set_bipolar_reference(self):
         self._check_connected(name="Stream.set_bipolar_reference()")
-        self._check_regular_sampling()
+        self._check_regular_sampling(name="Stream.set_bipolar_reference()")
         raise NotImplementedError
 
     @fill_doc
@@ -649,7 +649,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
             are ``'eeg'``, ``'ecog'``, ``'seeg'``, ``'dbs'``.
         """
         self._check_connected(name="Stream.set_eeg_reference()")
-        self._check_regular_sampling()
+        self._check_regular_sampling(name="Stream.set_eeg_reference()")
 
         if isinstance(ch_type, str):
             ch_type = [ch_type]
@@ -763,11 +763,12 @@ class Stream(ContainsMixin, SetChannelsMixin):
                 f"use {name}. Please connect to the stream to create the Info."
             )
 
-    def _check_regular_sampling(self):
+    def _check_regular_sampling(self, name: str):
         """Check that the stream has a regular sampling rate."""
         if self.info["sfreq"] == 0:
             raise RuntimeError(
-                "A stream with an irregular sampling rate can not be filtered."
+                f"The method {name} can not be used on a stream with an irregular "
+                "sampling rate."
             )
 
     @contextmanager
