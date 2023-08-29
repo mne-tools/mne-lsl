@@ -470,7 +470,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
 
         Returns
         -------
-        data : array of shape (n_samples, n_channels)
+        data : array of shape (n_channels, n_samples)
             Data in the given window.
         timestamps : array of shape (n_samples,)
             Timestamps in the given window.
