@@ -123,7 +123,6 @@ class Player(ContainsMixin):
                 stop = self._chunk_size - (self._raw.times.size - start)
                 data = np.vstack([self._raw[:, start:][0].T, self._raw[:, :stop][0].T])
                 self._start_idx = stop
-
             # bump the target LSL timestamp before pushing because the argument
             # 'timestamp' expects the timestamp of the most 'recent' sample, which in
             # this non-real time replay scenario is the timestamp of the last sample in
