@@ -1,4 +1,3 @@
-import uuid
 from collections import Counter
 
 import numpy as np
@@ -15,7 +14,7 @@ raw = read_raw(fname, preload=True)
 
 def test_player():
     """Test a working and valid player."""
-    name = f"BSL-Player-{uuid.uuid4().hex[:6]}"
+    name = "BSL-Player-test_player"
     player = Player(fname, name, 16)
     assert "OFF" in player.__repr__()
     streams = resolve_streams(timeout=0.1)
@@ -31,7 +30,7 @@ def test_player():
     inlet.open_stream()
     data, ts = inlet.pull_chunk()
     now = local_clock()
-    assert_allclose(now, ts[-1], rtol=0, atol=0.1)  # give 100 ms to the slower CIs
+    assert_allclose(now, ts[-1], rtol=0, atol=0.1)  # 100 ms of freedom for slower CIs
     assert data.shape[1] == len(player.info["ch_names"])
 
     # check sampling rate
@@ -69,3 +68,17 @@ def test_player():
     else:
         raw_data = np.hstack((raw[:, start:][0], raw[:, :][0]))[:, : stop - start]
         assert_allclose(data.T, raw_data)
+    player.stop()
+
+
+def test_player_context_manager():
+    """Test a working and valid player as context manager."""
+    name = "BSL-Player-test_player_context_manager"
+    streams = resolve_streams(timeout=0.1)
+    assert len(streams) == 0
+    with Player(fname, name, 16):
+        streams = resolve_streams(timeout=0.1)
+        assert len(streams) == 1
+        assert streams[0].name == name
+    streams = resolve_streams(timeout=0.1)
+    assert len(streams) == 0
