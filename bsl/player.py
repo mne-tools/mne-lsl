@@ -153,7 +153,7 @@ class Player(ContainsMixin):
     # ----------------------------------------------------------------------------------
     def __del__(self):
         """Delete the player and destroy the `~bsl.lsl.StreamOutlet`."""
-        if self._streaming_thread is not None:
+        if hasattr(self, "_streaming_thread") and self._streaming_thread is not None:
             while self._streaming_thread.is_alive():
                 self._streaming_thread.cancel()
         try:
