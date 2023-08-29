@@ -37,7 +37,7 @@ if TYPE_CHECKING:
 
     from mne import Info
     from mne.channels import DigMontage
-    from numpy.typing import NDArray
+    from numpy.typing import NDArray, DTypeLike
 
     from bsl.lsl.stream_info import _BaseStreamInfo
 
@@ -864,7 +864,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
             return True
 
     @property
-    def dtype(self):
+    def dtype(self) -> Optional[DTypeLike]:
         """Channel format of the stream."""
         return getattr(self._buffer, "dtype", None)
 
