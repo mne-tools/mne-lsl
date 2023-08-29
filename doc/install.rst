@@ -8,7 +8,7 @@ Install
 Default install
 ---------------
 
-``BSL`` requires Python version ``3.8`` or higher and is available on
+``BSL`` requires Python version ``3.9`` or higher and is available on
 `PyPI <project pypi_>`_. It is distributed with a compatible version of
 `liblsl <lsl lib c++_>`_.
 
