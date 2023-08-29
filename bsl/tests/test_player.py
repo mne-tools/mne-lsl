@@ -98,3 +98,12 @@ def test_player_invalid_arguments():
         Player(fname, name="101", chunk_size=101.0)
     with pytest.raises(ValueError, match="strictly positive integer"):
         Player(fname, name="101", chunk_size=-101)
+
+
+def test_stop_player_invalid():
+    """Test stopping a player that is not started."""
+    player = player = Player(fname, "BSL-Player-test_stop_player_invalid", 16)
+    with pytest.raises(RuntimeError, match="The player is not started"):
+        player.stop()
+    player.start()
+    player.stop()
