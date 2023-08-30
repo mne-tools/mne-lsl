@@ -231,6 +231,7 @@ def linkcode_resolve(domain: str, info: Dict[str, str]) -> Optional[str]:
         return None
 
     # retrieve start/stop lines
+    print (fname)
     source, start_line = inspect.getsourcelines(pyobject)
     lines = "L%d-L%d" % (start_line, start_line + len(source) - 1)
 
