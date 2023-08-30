@@ -6,8 +6,6 @@ from PyQt5.QtWidgets import (
     QDoubleSpinBox,
     QFrame,
     QLabel,
-    QLineEdit,
-    QPushButton,
     QSpinBox,
     QStatusBar,
     QTableWidget,
@@ -115,31 +113,6 @@ class UI_MainWindow(object):  # noqa
         self.line3.setFrameShape(QFrame.VLine)
         self.line3.setFrameShadow(QFrame.Sunken)
         self.line3.setObjectName("line3")
-
-        # Start recording
-        self.pushButton_start_recording = QPushButton(self.MainWidget)
-        self.pushButton_start_recording.setGeometry(QRect(390, 60, 61, 31))
-        self.pushButton_start_recording.setObjectName("pushButton_start_recording")
-        self.pushButton_start_recording.setText("REC")
-        self.pushButton_start_recording.setEnabled(False)
-
-        # Stop recording
-        self.pushButton_stop_recording = QPushButton(self.MainWidget)
-        self.pushButton_stop_recording.setGeometry(QRect(460, 60, 61, 31))
-        self.pushButton_stop_recording.setObjectName("pushButton_stop_recording")
-        self.pushButton_stop_recording.setText("Stop REC")
-        self.pushButton_stop_recording.setEnabled(False)
-
-        # Set recording directory
-        self.pushButton_set_recording_dir = QPushButton(self.MainWidget)
-        self.pushButton_set_recording_dir.setGeometry(QRect(310, 60, 71, 31))
-        self.pushButton_set_recording_dir.setObjectName("pushButton_set_recording_dir")
-        self.pushButton_set_recording_dir.setText("REC Dir")
-
-        # Edit Line for the recording directory
-        self.lineEdit_recording_dir = QLineEdit(self.MainWidget)
-        self.lineEdit_recording_dir.setGeometry(QRect(310, 100, 211, 27))
-        self.lineEdit_recording_dir.setObjectName("lineEdit_recording_dir")
 
         # Table of channels
         self.table_channels = QTableWidget(self.MainWidget)
