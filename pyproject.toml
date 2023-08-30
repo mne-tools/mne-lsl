@@ -63,7 +63,7 @@ doc = [
     'matplotlib',
     'memory-profiler',
     'numpydoc',
-    'sphinx',
+    'sphinx!=7.2.*',
     'sphinxcontrib-bibtex',
     'sphinx-copybutton',
     'sphinx-design',
