@@ -331,3 +331,14 @@ def test_stream_add_reference_channels(mock_lsl_stream):
         match_stream_and_raw_data(data, raw_, len(stream.ch_names))
         time.sleep(0.3)
     stream.disconnect()
+
+
+def test_stream_repr(mock_lsl_stream):
+    """Test the stream representation."""
+    stream = Stream(bufsize=2)
+    assert stream.__repr__() == "<Stream: OFF>"
+    stream = Stream(bufsize=2, name="BSL-Player-pytest")
+    assert stream.__repr__() == "<Stream: OFF | BSL-Player-pytest (source: unknown)>"
+    stream.connect()
+    assert stream.__repr__() == "<Stream: ON | BSL-Player-pytest (source: BSL)>"
+    stream.disconnect()

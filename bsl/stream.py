@@ -121,6 +121,35 @@ class Stream(ContainsMixin, SetChannelsMixin):
         except Exception:
             pass
 
+    def __repr__(self):
+        """Representation of the instance."""
+        if self._inlet is None:
+            status = "OFF"
+            if self._name is not None and self._source_id is not None:
+                if len(self._source_id) != 0:
+                    desc = f"{self._name} (source: {self._source_id})"
+                else:
+                    desc = f"{self._name} (source: unknown)"
+            elif self._name is not None and self._source_id is None:
+                desc = f"{self._name} (source: unknown)"
+            elif self._name is None and self._source_id is not None:
+                if len(self._source_id) != 0:
+                    desc = f"(source: {self._source_id}"
+                else:
+                    desc = None
+            else:
+                desc = None
+        else:
+            status = "ON"
+            if len(self._source_id) != 0:
+                desc = f"{self._name} (source: {self._source_id})"
+            else:
+                desc = f"{self._name} (source: unknown)"
+        if desc is None:
+            return f"<Stream: {status}>"
+        else:
+            return f"<Stream: {status} | {desc}>"
+
     @fill_doc
     def add_reference_channels(
         self,

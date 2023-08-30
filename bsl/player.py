@@ -193,7 +193,7 @@ class Player(ContainsMixin):
     def chunk_size(self) -> int:
         """Number of samples in a chunk.
 
-        :type: `ìnt`
+        :type: `int`
         """
         return self._chunk_size
 
