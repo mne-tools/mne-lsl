@@ -7,6 +7,7 @@
 import inspect
 from datetime import date
 from importlib import import_module
+from pathlib import Path
 from typing import Dict, Optional
 
 from sphinx_gallery.sorting import FileNameSortKey
@@ -217,6 +218,8 @@ def linkcode_resolve(domain: str, info: Dict[str, str]) -> Optional[str]:
         for elt in info["fullname"].split("."):
             pyobject = getattr(pyobject, elt)
         fname = inspect.getsourcefile(pyobject).replace("\\", "/")
+        if not Path(fname).exists():
+            return None
     except Exception:
         # Either the object could not be loaded or the file was not found.
         # For instance, properties will raise.
