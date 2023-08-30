@@ -82,8 +82,11 @@ class ScopeEEG(_Scope):
             self._data_buffer = np.roll(self._data_buffer, -len(self._ts_list), axis=1)
             self._data_buffer[:, -len(self._ts_list) :] = self._data_acquired.T
             # shape (samples, )
-            self._trigger_buffer = np.roll(self._trigger_buffer, -len(self._ts_list))
-            self._trigger_buffer[-len(self._ts_list) :] = self._trigger_acquired
+            if self._tch is not None:
+                self._trigger_buffer = np.roll(
+                    self._trigger_buffer, -len(self._ts_list)
+                )
+                self._trigger_buffer[-len(self._ts_list) :] = self._trigger_acquired
 
     @copy_doc(_Scope._read_lsl_stream)
     def _read_lsl_stream(self):
