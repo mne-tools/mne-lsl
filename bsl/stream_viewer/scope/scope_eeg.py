@@ -3,40 +3,35 @@ import math
 import numpy as np
 from scipy.signal import butter, sosfilt, sosfilt_zi
 
-from ...utils import find_event_channel
-from ...utils._docs import copy_doc, fill_doc
+from ...utils._docs import copy_doc
 from ...utils.logs import logger
 from ._scope import _Scope
 
 BP_ORDER = 2
 
 
-@fill_doc
 class ScopeEEG(_Scope):
     """Class representing an EEG scope.
 
     Parameters
     ----------
-    %(viewer_scope_stream_receiver)s
-    %(viewer_scope_stream_name)s
+    inlet : StreamInlet
     """
 
     # ---------------------------- INIT ----------------------------
-    def __init__(self, stream_receiver, stream_name):
-        super().__init__(stream_receiver, stream_name)
+    def __init__(self, inlet):
+        super().__init__(inlet)
 
-        # Infos from stream
-        tch = find_event_channel(ch_names=self._sr.streams[self._stream_name].ch_list)
-        # TODO: patch to be improved for multi-trig channel recording
-        if isinstance(tch, list):
-            tch = tch[0]
-        assert tch is not None  # sanity-check
-
-        self._channels_labels = [
-            channel
-            for k, channel in enumerate(self._sr.streams[self._stream_name].ch_list)
-            if k != tch
-        ]
+        self._channels_labels = self._inlet.get_sinfo().get_channel_names()
+        self._picks = list(range(len(self._channels_labels)))
+        # patch for CB classic trigger channel on ANT devices:
+        if "TRIGGER" in self._channels_labels:
+            self._tch = self._channels_labels.index("TRIGGER")
+            self._channels_labels.pop(self._tch)
+            self._picks.pop(self._tch)
+        else:
+            self._tch = None
+        self._picks = np.array(self._picks)
         self._nb_channels = len(self._channels_labels)
 
         # Variables
@@ -81,7 +76,8 @@ class ScopeEEG(_Scope):
         self._read_lsl_stream()
         if len(self._ts_list) > 0:
             self._filter_signal()
-            self._filter_trigger()
+            if self._tch is not None:
+                self._filter_trigger()
             # shape (channels, samples)
             self._data_buffer = np.roll(self._data_buffer, -len(self._ts_list), axis=1)
             self._data_buffer[:, -len(self._ts_list) :] = self._data_acquired.T
@@ -97,8 +93,9 @@ class ScopeEEG(_Scope):
         """
         super()._read_lsl_stream()
         # Remove trigger ch - shapes (samples, ) and (samples, channels)
-        self._trigger_acquired = self._data_acquired[:, 0]
-        self._data_acquired = self._data_acquired[:, 1:].reshape(
+        if self._tch is not None:
+            self._trigger_acquired = self._data_acquired[:, self._tch]
+        self._data_acquired = self._data_acquired[:, self._picks].reshape(
             (-1, self._nb_channels)
         )
 
