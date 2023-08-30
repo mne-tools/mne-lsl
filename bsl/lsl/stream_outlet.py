@@ -24,11 +24,11 @@ class StreamOutlet:
     Parameters
     ----------
     sinfo : StreamInfo
-        The `~bsl.lsl.StreamInfo` object describing the stream. Stays constant over the
-        lifetime of the outlet.
+        The :class:`~bsl.lsl.StreamInfo` object describing the stream. Stays constant
+        over the lifetime of the outlet.
     chunk_size : int ``≥ 1``
         The desired chunk granularity in samples. By default, each push operation yields
-        one chunk. An Inlet can override this setting.
+        one chunk. A :class:`~bsl.lsl.StreamInlet` can override this setting.
     max_buffered : float ``≥ 0``
         The maximum amount of data to buffer in the Outlet. The number of samples
         buffered is ``max_buffered * 100`` if the sampling rate is irregular, else it's
@@ -72,7 +72,7 @@ class StreamOutlet:
         self._buffer_sample = self._dtype * self._n_channels
 
     def __del__(self):
-        """Destroy a `~bsl.lsl.StreamOutlet`.
+        """Destroy a :class:`~bsl.lsl.StreamOutlet`.
 
         The outlet will no longer be discoverable after destruction and all connected
         inlets will stop delivering data.
@@ -88,7 +88,7 @@ class StreamOutlet:
         timestamp: float = 0.0,
         pushThrough: bool = True,
     ) -> None:
-        """Push a sample into the `~bsl.lsl.StreamOutlet`.
+        """Push a sample into the :class:`~bsl.lsl.StreamOutlet`.
 
         Parameters
         ----------
@@ -98,11 +98,12 @@ class StreamOutlet:
             array is required.
         timestamp : float
             The acquisition timestamp of the sample, in agreement with
-            `~bsl.lsl.local_clock`. The default, ``0``, uses the current time.
+            :func:`bsl.lsl.local_clock`. The default, ``0``, uses the current time.
         pushThrough : bool
             If True, push the sample through to the receivers instead of buffering it
             with subsequent samples. Note that the ``chunk_size`` defined when creating
-            a `~bsl.lsl.StreamOutlet` takes precedence over the ``pushThrough`` flag.
+            a :class:`~bsl.lsl.StreamOutlet` takes precedence over the ``pushThrough``
+            flag.
         """
         if self._dtype == c_char_p:
             assert isinstance(x, list), "'x' must be a list if strings are pushed."
@@ -139,7 +140,7 @@ class StreamOutlet:
         timestamp: float = 0.0,
         pushThrough: bool = True,
     ) -> None:
-        """Push a chunk of samples into the `~bsl.lsl.StreamOutlet`.
+        """Push a chunk of samples into the :class:`~bsl.lsl.StreamOutlet`.
 
         Parameters
         ----------
@@ -150,11 +151,12 @@ class StreamOutlet:
             ``(n_samples, n_channels)`` is required.
         timestamp : float
             The acquisition timestamp of the last sample, in agreement with
-            `~bsl.lsl.local_clock`. The default, ``0``, uses the current time.
+            :func:`bsl.lsl.local_clock`. The default, ``0``, uses the current time.
         pushThrough : bool
             If True, push the sample through to the receivers instead of buffering it
             with subsequent samples. Note that the ``chunk_size`` defined when creating
-            a `~bsl.lsl.StreamOutlet` takes precedence over the ``pushThrough`` flag.
+            a :class:`~bsl.lsl.StreamOutlet` takes precedence over the ``pushThrough``
+            flag.
         """
         if self._dtype == c_char_p:
             assert isinstance(x, list), "'x' must be a list if strings are pushed."
@@ -196,7 +198,7 @@ class StreamOutlet:
         )
 
     def wait_for_consumers(self, timeout: Optional[float]) -> bool:
-        """Wait (block) until at least one `~bsl.lsl.StreamInlet` connects.
+        """Wait (block) until at least one :class:`~bsl.lsl.StreamInlet` connects.
 
         Parameters
         ----------
@@ -210,7 +212,7 @@ class StreamOutlet:
 
         Notes
         -----
-        This function does not filter the search for `bsl.lsl.StreamInlet`.
+        This function does not filter the search for :class:`bsl.lsl.StreamInlet`.
         Any application inlet will be recognized.
         """
         timeout = _check_timeout(timeout)
@@ -244,26 +246,23 @@ class StreamOutlet:
 
     @property
     def has_consumers(self) -> bool:
-        """Check whether `~bsl.lsl.StreamInlet` are currently connected.
+        """True if at least one :class:`~bsl.lsl.StreamInlet` is currently connected.
 
         While it does not hurt, there is technically no reason to push samples if there
         is no one connected.
 
-        Returns
-        -------
-        consumers : bool
-            True if at least one consumer is connected.
+        :type: :class:`bool`
 
         Notes
         -----
-        This function does not filter the search for `bsl.lsl.StreamInlet`. Any
+        This function does not filter the search for :class:`bsl.lsl.StreamInlet`. Any
         application inlet will be recognized.
         """
         return bool(lib.lsl_have_consumers(self._obj))
 
     # -------------------------------------------------------------------------
     def get_sinfo(self) -> _BaseStreamInfo:
-        """`~bsl.lsl.StreamInfo` corresponding to this Outlet.
+        """:class:`~bsl.lsl.StreamInfo` corresponding to this Outlet.
 
         Returns
         -------

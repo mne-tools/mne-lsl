@@ -64,7 +64,8 @@ class Stream(ContainsMixin, SetChannelsMixin):
     -----
     The 3 arguments ``name``, ``stype``, and ``source_id`` must uniquely identify an
     LSL stream. If this is not possible, please resolve the available LSL streams
-    with `~bsl.lsl.resolve_streams` and create an inlet with `~bsl.lsl.StreamInlet`.
+    with :func:`bsl.lsl.resolve_streams` and create an inlet with
+    :class:`~bsl.lsl.StreamInlet`.
     """
 
     def __init__(
@@ -173,7 +174,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
             e.g. ``-6`` for microvolts corresponding to ``1e-6``.
             If not provided, the added EEG reference channel has a unit multiplication
             factor set to ``0`` which corresponds to Volts. Use
-            `~Stream.set_channel_units` to change the unit multiplication factor.
+            :meth:`~Stream.set_channel_units` to change the unit multiplication factor.
         """
         self._check_connected(name="Stream.add_reference_channels()")
         # error checking and conversion of the arguments to valid values
@@ -295,7 +296,8 @@ class Stream(ContainsMixin, SetChannelsMixin):
             Any combination of the processing flags is valid. The available flags are:
 
             * ``'clocksync'``: Automatic clock synchronization, equivalent to
-              manually adding the estimated `~bsl.lsl.StreamInlet.time_correction`.
+              manually adding the estimated
+              :meth:`~bsl.lsl.StreamInlet.time_correction`.
             * ``'dejitter'``: Remove jitter on the received timestamps with a
               smoothing algorithm.
             * ``'monotize'``: Force the timestamps to be monotically ascending.
@@ -305,7 +307,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
             timeout. The timeout value is applied once to every operation supporting it.
         acquisition_delay : float
             Delay in seconds between 2 acquisition during which chunks of data are
-            pulled from the `~bsl.lsl.StreamInlet`.
+            pulled from the :class:`~bsl.lsl.StreamInlet`.
 
         Notes
         -----
@@ -647,9 +649,9 @@ class Stream(ContainsMixin, SetChannelsMixin):
     def set_channel_units(self, mapping: Dict[str, Union[str, int]]) -> None:
         """Define the channel unit multiplication factor.
 
-        The unit itself is defined by the sensor type. Use `~Stream.set_channel_types`
-        to change the channel type, e.g. from planar gradiometers in ``T/m`` to EEG in
-        ``V``.
+        The unit itself is defined by the sensor type. Use
+        :meth:`~Stream.set_channel_types` to change the channel type, e.g. from planar
+        gradiometers in ``T/m`` to EEG in ``V``.
 
         Parameters
         ----------
@@ -865,7 +867,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
     def compensation_grade(self) -> Optional[int]:
         """The current gradient compensation grade.
 
-        :type: `int` | None
+        :type: :class:`int` | None
         """
         self._check_connected(name="Stream.compensation_grade")
         return super().compensation_grade
@@ -875,7 +877,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
     def ch_names(self) -> List[str]:
         """Name of the channels.
 
-        :type: `list` of `str`
+        :type: :class:`list` of :class:`str`
         """
         self._check_connected(name="Stream.ch_names")
         return self._info.ch_names
@@ -884,7 +886,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
     def connected(self) -> bool:
         """Connection status of the stream.
 
-        :type: `bool`
+        :type: :class:`bool`
         """
         attributes = (
             "_sinfo",
@@ -912,7 +914,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
     def info(self) -> Optional[Info]:
         """Info of the LSL stream.
 
-        :type: `~mne.Info` | None
+        :type: :class:`~mne.Info` | None
         """
         return self._info
 
@@ -920,7 +922,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
     def name(self) -> Optional[str]:
         """Name of the LSL stream.
 
-        :type: `str` | None
+        :type: :class:`str` | None
         """
         return self._name
 
@@ -928,7 +930,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
     def sinfo(self) -> Optional[_BaseStreamInfo]:
         """StreamInfo of the connected stream.
 
-        :type: `~bsl.lsl.StreamInfo` | None
+        :type: :class:`~bsl.lsl.StreamInfo` | None
         """
         return self._sinfo
 
@@ -936,7 +938,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
     def stype(self) -> Optional[str]:
         """Type of the LSL stream.
 
-        :type: `str` | None
+        :type: :class:`str` | None
         """
         return self._stype
 
@@ -944,6 +946,6 @@ class Stream(ContainsMixin, SetChannelsMixin):
     def source_id(self) -> Optional[str]:
         """ID of the source of the LSL stream.
 
-        :type: `str` | None
+        :type: :class:`str` | None
         """
         return self._source_id

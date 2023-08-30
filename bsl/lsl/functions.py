@@ -18,8 +18,8 @@ def library_version() -> int:
     -------
     version : int
         Version of the binary LSL library.
-        The major version is version // 100.
-        The minor version is version % 100.
+        The major version is ``version // 100``.
+        The minor version is ``version % 100``.
     """
     return lib.lsl_library_version()
 
@@ -31,8 +31,8 @@ def protocol_version() -> int:
     -------
     version : int
         Version of the binary LSL library.
-        The major version is version // 100.
-        The minor version is version % 100.
+        The major version is ``version // 100``.
+        The minor version is ``version % 100``.
 
     Notes
     -----
@@ -89,9 +89,9 @@ def resolve_streams(
     Returns
     -------
     sinfos : list
-        List of `~bsl.lsl.StreamInfo` objects found on the network. While a
-        `~bsl.lsl.StreamInfo` is not bound to an Inlet, the description field remains
-        empty.
+        List of :class:`~bsl.lsl.StreamInfo` objects found on the network. While a
+        :class:`~bsl.lsl.StreamInfo` is not bound to an Inlet, the description field
+        remains empty.
     """
     check_type(timeout, ("numeric",), "timeout")
     if timeout <= 0:

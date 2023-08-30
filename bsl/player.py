@@ -30,11 +30,11 @@ class Player(ContainsMixin):
     ----------
     fname : path-like
         Path to the file to re-play as a mock LSL stream. MNE-Python must be able to
-        load the file with `mne.io.read_raw`.
+        load the file with :func:`mne.io.read_raw`.
     name : str | None
-        Name of the mock LSL stream. If None, the name ``BSL-Player`` is used.
+        Name of the mock LSL stream. If ``None``, the name ``BSL-Player`` is used.
     chunk_size : int ``≥ 1``
-        Number of samples pushed at once on the `~bsl.lsl.StreamOutlet`.
+        Number of samples pushed at once on the :class:`~bsl.lsl.StreamOutlet`.
 
     Notes
     -----
@@ -91,7 +91,7 @@ class Player(ContainsMixin):
         self._streaming_thread.start()
 
     def stop(self) -> None:
-        """Stop streaming data on the LSL `~bsl.lsl.StreamOutlet`."""
+        """Stop streaming data on the LSL :class:`~bsl.lsl.StreamOutlet`."""
         if self._streaming_thread is None:
             raise RuntimeError(
                 "The player is not started. Use Player.start() to begin streaming."
@@ -155,7 +155,7 @@ class Player(ContainsMixin):
 
     # ----------------------------------------------------------------------------------
     def __del__(self):
-        """Delete the player and destroy the `~bsl.lsl.StreamOutlet`."""
+        """Delete the player and destroy the :class:`~bsl.lsl.StreamOutlet`."""
         if hasattr(self, "_streaming_thread") and self._streaming_thread is not None:
             while self._streaming_thread.is_alive():
                 self._streaming_thread.cancel()
@@ -185,7 +185,7 @@ class Player(ContainsMixin):
     def ch_names(self) -> List[str]:
         """Name of the channels.
 
-        :type: `list` of `str`
+        :type: :class:`list` of :class:`str`
         """
         return self.info.ch_names
 
@@ -193,7 +193,7 @@ class Player(ContainsMixin):
     def chunk_size(self) -> int:
         """Number of samples in a chunk.
 
-        :type: `int`
+        :type: :class:`int`
         """
         return self._chunk_size
 
@@ -201,7 +201,7 @@ class Player(ContainsMixin):
     def fname(self) -> Path:
         """Path to file played.
 
-        :type: `~pathlib.Path`
+        :type: :class:`~pathlib.Path`
         """
         return self._fname
 
@@ -209,7 +209,7 @@ class Player(ContainsMixin):
     def info(self) -> Info:
         """Info of the LSL stream.
 
-        :type: `~mne.Info`
+        :type: :class:`~mne.Info`
         """
         return self._raw.info
 
@@ -217,6 +217,6 @@ class Player(ContainsMixin):
     def name(self) -> str:
         """Name of the LSL stream.
 
-        :type: `str`
+        :type: :class:`str`
         """
         return self._name

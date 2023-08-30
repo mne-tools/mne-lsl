@@ -120,6 +120,8 @@ class _BaseStreamInfo:
         """Channel format of a stream.
 
         All channels in a stream have the same format.
+
+        :type: :class:`~numpy.dtype` | ``"string"``
         """
         return fmt2numpy.get(self._dtype, "string")
 
@@ -130,6 +132,8 @@ class _BaseStreamInfo:
         The name of the stream is defined by the application creating the LSL outlet.
         Streams with identical names can coexist, at the cost of ambiguity for the
         recording application and/or the experimenter.
+
+        :type: :class:`str`
         """
         return lib.lsl_get_name(self._obj).decode("utf-8")
 
@@ -139,6 +143,8 @@ class _BaseStreamInfo:
 
         A stream must have at least one channel. The number of channels remains constant
         for all samples.
+
+        :type: :class:`int`
         """
         return lib.lsl_get_channel_count(self._obj)
 
@@ -147,6 +153,8 @@ class _BaseStreamInfo:
         """Sampling rate of the stream, according to the source (in Hz).
 
         If a stream is irregularly sampled, the sampling rate is set to ``0``.
+
+        :type: :class:`float`
         """
         return lib.lsl_get_nominal_srate(self._obj)
 
@@ -157,6 +165,8 @@ class _BaseStreamInfo:
         The unique source (or device) identifier is an optional piece of information
         that, if available, allows endpoints (such as the recording program) to
         re-acquire a stream automatically once if it came back online.
+
+        :type: :class:`str`
         """
         return lib.lsl_get_source_id(self._obj).decode("utf-8")
 
@@ -168,6 +178,8 @@ class _BaseStreamInfo:
         describes the content carried by the channel. If a stream contains mixed
         content, this value should be an empty string and the type should be stored in
         the description of individual channels.
+
+        :type: :class:`str`
         """
         return lib.lsl_get_type(self._obj).decode("utf-8")
 
@@ -177,13 +189,18 @@ class _BaseStreamInfo:
         """Timestamp at which the stream was created.
 
         This is the time stamps at which the stream was first created, as determined by
-        `~bsl.lsl.local_clock` on the providing machine.
+        :func:`bsl.lsl.local_clock` on the providing machine.
+
+        :type: :class:`float`
         """
         return lib.lsl_get_created_at(self._obj)
 
     @property
     def hostname(self) -> str:
-        """Hostname of the providing machine."""
+        """Hostname of the providing machine.
+
+        :type: :class:`str`
+        """
         return lib.lsl_get_hostname(self._obj).decode("utf-8")
 
     @property
@@ -195,6 +212,8 @@ class _BaseStreamInfo:
         activities on the same sub-network (e.g., in multiple experiment areas) from
         seeing each other's streams (can be assigned in a configuration file read by
         liblsl, see also Network Connectivity in the LSL wiki).
+
+    :type: :class:`str`
         """
         return lib.lsl_get_session_id(self._obj).decode("utf-8")
 
@@ -203,7 +222,9 @@ class _BaseStreamInfo:
         """Unique ID of the `~bsl.lsl.StreamOutlet` instance.
 
         This ID is guaranteed to be different across multiple instantiations of the same
-        `~bsl.lsl.StreamOutlet`, e.g. after a re-start.
+        :class:`~bsl.lsl.StreamOutlet`, e.g. after a re-start.
+
+        :type: :class:`str`
         """
         return lib.lsl_get_uid(self._obj).decode("utf-8")
 
@@ -213,6 +234,8 @@ class _BaseStreamInfo:
 
         The major version is ``version // 100``.
         The minor version is ``version % 100``.
+
+        :type: :class:`int`
         """
         return lib.lsl_get_version(self._obj)
 
@@ -221,8 +244,8 @@ class _BaseStreamInfo:
     def as_xml(self) -> str:
         """Retrieve the entire stream_info in XML format.
 
-        This yields an XML document (in string form) whose top-level element is <info>.
-        The info element contains one element for each field of the
+        This yields an XML document (in string form) whose top-level element is
+        ``<info>``. The info element contains one element for each field of the
         `~bsl.lsl.StreamInfo` class, including:
 
         * the core elements ``name``, ``type`` (eq. ``stype``), ``channel_count``
@@ -232,6 +255,8 @@ class _BaseStreamInfo:
           ``v4address``, ``v4data_port``, ``v4service_port``, ``v6address``,
           ``v6data_port``, ``v6service_port``
         * the extended description element ``desc`` with user-defined sub-elements.
+
+        :type: :class:`str`
         """
         return lib.lsl_get_xml(self._obj).decode("utf-8")
 
@@ -433,11 +458,11 @@ class StreamInfo(_BaseStreamInfo):
     A StreamInfo contains the following information:
 
     * Core information (name, number of channels, sampling frequency, channel format,
-      ...)
+      ...).
     * Optional metadata about the stream content (channel labels, measurement units,
-      ...)
-    * Hosting information (uID, hostname, ...) if bound to an `~bsl.lsl.StreamInlet` or
-      `~bsl.lsl.StreamOutlet`
+      ...).
+    * Hosting information (uID, hostname, ...) if bound to a
+      :class:`~bsl.lsl.StreamInlet` or :class:`~bsl.lsl.StreamOutlet`.
 
     Parameters
     ----------
