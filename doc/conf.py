@@ -10,11 +10,12 @@ from importlib import import_module
 from pathlib import Path
 from typing import Dict, Optional
 
+import mne
 from sphinx_gallery.sorting import FileNameSortKey
 
 import bsl
 
-# -- project information -----------------------------------------------------
+# -- project information ---------------------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = "BSL"
@@ -24,7 +25,12 @@ release = bsl.__version__
 package = bsl.__name__
 gh_url = "https://github.com/fcbg-hnp-meeg/bsl"
 
-# -- general configuration ---------------------------------------------------
+# -- mne information -------------------------------------------------------------------
+
+gh_url_mne = "https://github.com/mne-tools/mne-python"
+release_mne = mne.__version__
+
+# -- general configuration -------------------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -66,7 +72,7 @@ modindex_common_prefix = [f"{package}."]
 # make `filter` a cross-reference to the Python function “filter”.
 default_role = "py:obj"
 
-# -- options for HTML output -------------------------------------------------
+# -- options for HTML output -----------------------------------------------------------
 html_theme = "furo"
 html_static_path = ["_static"]
 html_css_files = [
@@ -95,16 +101,16 @@ html_theme_options = {
     "sidebar_hide_name": True,
 }
 
-# -- autosummary -------------------------------------------------------------
+# -- autosummary -----------------------------------------------------------------------
 autosummary_generate = True
 
-# -- autodoc -----------------------------------------------------------------
+# -- autodoc ---------------------------------------------------------------------------
 autodoc_typehints = "none"
 autodoc_member_order = "groupwise"
 autodoc_warningiserror = True
 autoclass_content = "class"
 
-# -- intersphinx -------------------------------------------------------------
+# -- intersphinx -----------------------------------------------------------------------
 intersphinx_mapping = {
     "matplotlib": ("https://matplotlib.org/stable", None),
     "mne": ("https://mne.tools/stable/", None),
@@ -115,13 +121,13 @@ intersphinx_mapping = {
 }
 intersphinx_timeout = 5
 
-# -- sphinx-issues -----------------------------------------------------------
+# -- sphinx-issues ---------------------------------------------------------------------
 issues_github_path = gh_url.split("https://github.com/")[-1]
 
-# -- autosectionlabels -------------------------------------------------------
+# -- autosectionlabels -----------------------------------------------------------------
 autosectionlabel_prefix_document = True
 
-# -- numpydoc ----------------------------------------------------------------
+# -- numpydoc --------------------------------------------------------------------------
 numpydoc_class_members_toctree = False
 numpydoc_attributes_as_param_list = False
 
@@ -175,7 +181,7 @@ error_ignores = {
     "ES01",  # no extended summary found
     "SA01",  # section 'See Also' not found
     "SA04",  # no description in See Also
-    "RT02",  # The first line of the Returns section should contain only the type, unless multiple values are being returned  # noqa
+    "RT02",  # the first line of the Returns section should contain only the type, unless multiple values are being returned  # noqa
 }
 numpydoc_validate = True
 numpydoc_validation_checks = {"all"} | set(error_ignores)
@@ -191,10 +197,10 @@ numpydoc_validation_exclude = {  # regex to ignore during docstring check
     r"\.__neg__",
 }
 
-# -- sphinxcontrib-bibtex ----------------------------------------------------
+# -- sphinxcontrib-bibtex --------------------------------------------------------------
 bibtex_bibfiles = ["./references.bib"]
 
-# -- sphinx.ext.linkcode -----------------------------------------------------
+# -- sphinx.ext.linkcode ---------------------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/extensions/linkcode.html
 
 
@@ -213,42 +219,43 @@ def linkcode_resolve(domain: str, info: Dict[str, str]) -> Optional[str]:
     url : str | None
         The code URL. If None, no link is added.
     """
+    if domain != "py":
+        return None  # only document python objects
+
+    # retrieve pyobject and file
     try:
-        if domain != "py":
-            return None  # only document python objects
-
-        # retrieve pyobject and file
-        try:
-            module = import_module(info["module"])
-            pyobject = module
-            for elt in info["fullname"].split("."):
-                pyobject = getattr(pyobject, elt)
-            fname = inspect.getsourcefile(pyobject).replace("\\", "/")
-            if not Path(fname).exists():
-                return None
-        except Exception:
-            # Either the object could not be loaded or the file was not found.
-            # For instance, properties will raise.
+        module = import_module(info["module"])
+        pyobject = module
+        for elt in info["fullname"].split("."):
+            pyobject = getattr(pyobject, elt)
+        fname = inspect.getsourcefile(pyobject).replace("\\", "/")
+        if not Path(fname).exists():
             return None
-
-        # retrieve start/stop lines
-        source, start_line = inspect.getsourcelines(pyobject)
-        lines = "L%d-L%d" % (start_line, start_line + len(source) - 1)
-
-        # create URL
-        if "dev" in release:
-            branch = "main"
-        else:
-            return None  # alternatively, link to a maint/version branch
-        fname = fname.rsplit(f"/{package}/")[1]
-        url = f"{gh_url}/blob/{branch}/{package}/{fname}#{lines}"
     except Exception:
-        print(domain, info)
-        raise
+        # Either the object could not be loaded or the file was not found.
+        # For instance, properties will raise.
+        return None
+
+    # retrieve start/stop lines
+    source, start_line = inspect.getsourcelines(pyobject)
+    lines = "L%d-L%d" % (start_line, start_line + len(source) - 1)
+
+    # create URL
+    if "/mne/" in fname:
+        # that's an MNE-Python inherited method/function/class
+        fname = fname.rsplit("/mne/")[1]
+        mne_version = ".".join(mne.__version__.rsplit(".")[:2])
+        url = f"{gh_url_mne}/blob/maint/{mne_version}/mne/{fname}#{lines}"
+    elif "dev" in release:
+        branch = "main"
+    else:
+        return None  # alternatively, link to a maint/version branch
+    fname = fname.rsplit(f"/{package}/")[1]
+    url = f"{gh_url}/blob/{branch}/{package}/{fname}#{lines}"
     return url
 
 
-# -- sphinx-gallery ----------------------------------------------------------
+# -- sphinx-gallery --------------------------------------------------------------------
 sphinx_gallery_conf = {
     "backreferences_dir": "generated/backreferences",
     "doc_module": (f"{package}",),
