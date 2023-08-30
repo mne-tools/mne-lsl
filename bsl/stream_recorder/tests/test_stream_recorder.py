@@ -7,7 +7,6 @@ import pytest
 
 from bsl import StreamPlayer, StreamRecorder, logger, set_log_level
 from bsl.datasets import eeg_resting_state
-from bsl.utils._tests import requires_eeg_resting_state_dataset
 
 set_log_level("INFO")
 logger.propagate = True
@@ -56,7 +55,6 @@ def _check_recorded_files_content(
     assert 0 <= raw_fif.n_times / raw_fif.info["sfreq"] - record_duration < 0.2
 
 
-@requires_eeg_resting_state_dataset
 def test_stream_recorder(tmp_path, caplog):
     """Test recording capability of the stream recorder."""
     stream = "StreamPlayer"
@@ -111,7 +109,6 @@ def test_stream_recorder(tmp_path, caplog):
     )
 
 
-@requires_eeg_resting_state_dataset
 def test_recording_multiple_streams(tmp_path):
     """Test multi-stream recording capabilities of the stream recorder."""
     record_duration = 0.5  # seconds
@@ -180,7 +177,6 @@ def test_recording_multiple_streams(tmp_path):
         _check_recorded_files(tmp_path, eve_file, "StreamPlayer2", fif_subdir)
 
 
-@requires_eeg_resting_state_dataset
 def test_arg_fif_subdir(tmp_path):
     """Test argument fif_subdir."""
     record_duration = 0.5  # seconds
@@ -230,7 +226,6 @@ def test_arg_fif_subdir(tmp_path):
         )
 
 
-@requires_eeg_resting_state_dataset
 def test_arg_verbose(tmp_path):
     """Test argument verbose."""
     record_duration = 0.5  # seconds
@@ -281,7 +276,6 @@ def test_arg_verbose(tmp_path):
         )
 
 
-@requires_eeg_resting_state_dataset
 def test_properties(tmp_path):
     """Test the StreamRecorder properties."""
     record_duration = 0.5  # seconds
@@ -389,7 +383,6 @@ def test_checker_fname(tmp_path):
         StreamRecorder(record_dir=tmp_path, fname=101)
 
 
-@requires_eeg_resting_state_dataset
 def test_representation(tmp_path):
     """Test the representation method."""
     with StreamPlayer("StreamPlayer", eeg_resting_state.data_path()):

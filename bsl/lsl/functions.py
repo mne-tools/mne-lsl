@@ -1,9 +1,14 @@
+from __future__ import annotations  # c.f. PEP 563, PEP 649
+
 from ctypes import byref, c_char_p, c_double, c_void_p
-from typing import List, Optional
+from typing import TYPE_CHECKING
 
 from ..utils._checks import check_type, ensure_int
 from .load_liblsl import lib
 from .stream_info import _BaseStreamInfo
+
+if TYPE_CHECKING:
+    from typing import List, Optional
 
 
 def library_version() -> int:
@@ -13,8 +18,8 @@ def library_version() -> int:
     -------
     version : int
         Version of the binary LSL library.
-        The major version is version // 100.
-        The minor version is version % 100.
+        The major version is ``version // 100``.
+        The minor version is ``version % 100``.
     """
     return lib.lsl_library_version()
 
@@ -26,8 +31,8 @@ def protocol_version() -> int:
     -------
     version : int
         Version of the binary LSL library.
-        The major version is version // 100.
-        The minor version is version % 100.
+        The major version is ``version // 100``.
+        The minor version is ``version % 100``.
 
     Notes
     -----
@@ -78,19 +83,15 @@ def resolve_streams(
         Restrict the selected stream to this source ID.
     minimum : int
         Minimum number of stream to return where restricting the selection. As soon as
-        this minimum is hit, the search will end.
+        this minimum is hit, the search will end. Only works if at least one of the 3
+        identifiers ``name``, ``stype`` or ``source_id`` is not ``None``.
 
     Returns
     -------
     sinfos : list
-        List of `~bsl.lsl.StreamInfo` objects found on the network. While a
-        `~bsl.lsl.StreamInfo` is not bound to an Inlet, the description field remains
-        empty.
-
-    Notes
-    -----
-    If multiple restrinction are provided, the network must be queried once for each
-    restriction. Thus, the true timeout is multiplied by the non ``None`` restrictions.
+        List of :class:`~bsl.lsl.StreamInfo` objects found on the network. While a
+        :class:`~bsl.lsl.StreamInfo` is not bound to an Inlet, the description field
+        remains empty.
     """
     check_type(timeout, ("numeric",), "timeout")
     if timeout <= 0:
@@ -119,6 +120,7 @@ def resolve_streams(
         for prop, name in zip(properties, ("name", "stype", "source_id"))
         if prop is not None
     ]
+    timeout /= len(properties)
 
     streams = []
     for prop, name in properties:
@@ -134,16 +136,17 @@ def resolve_streams(
             minimum,
             c_double(timeout),
         )
-        streams.extend([_BaseStreamInfo(buffer[k]) for k in range(num_found)])
-    streams = list(set(streams))  # remove duplicates
-    # now select the set of StreamInfo that match all the properties
-    stream2delete = list()
-    for k, stream in enumerate(streams):
-        for prop, name in properties:
-            if getattr(stream, name) != prop:
-                stream2delete.append(k)
-                break
-    for idx in stream2delete[::-1]:
-        del streams[idx]
-
-    return streams
+        new_streams = [_BaseStreamInfo(buffer[k]) for k in range(num_found)]
+        # now delete the ones that dn't have all the correct properties
+        stream2delete = list()
+        for k, stream in enumerate(new_streams):
+            for prop, name in properties:
+                if getattr(stream, name) != prop:
+                    stream2delete.append(k)
+                    break
+        for idx in stream2delete[::-1]:
+            del new_streams[idx]
+        streams.extend(new_streams)
+        if minimum <= len(streams):
+            break
+    return list(set(streams))  # remove duplicates

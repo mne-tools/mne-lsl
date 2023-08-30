@@ -23,7 +23,7 @@ transmitted wirelessly. For more information about LSL, please visit the
 
 # Install
 
-BSL supports `python ≥ 3.8` and is available on [PyPI](https://pypi.org/project/bsl/).
+BSL supports `python ≥ 3.9` and is available on [PyPI](https://pypi.org/project/bsl/).
 Install instruction can be found on the
 [documentation website](https://fcbg-hnp-meeg.github.io/bsl/dev/install.html).
 

@@ -7,8 +7,7 @@ from bsl import StreamPlayer, logger, set_log_level
 from bsl.datasets import eeg_resting_state
 from bsl.lsl import resolve_streams
 from bsl.stream_receiver._buffer import Buffer
-from bsl.stream_receiver._stream import StreamEEG, StreamMarker  # noqa: F401
-from bsl.utils._tests import requires_eeg_resting_state_dataset
+from bsl.stream_receiver._stream import StreamEEG
 
 set_log_level("INFO")
 logger.propagate = True
@@ -89,7 +88,6 @@ def test_stream_marker():
     pass
 
 
-@requires_eeg_resting_state_dataset
 def test_stream_eeg(caplog):
     """Test StreamEEG class used by the StreamReceiver."""
     # Default

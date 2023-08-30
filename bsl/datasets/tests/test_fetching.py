@@ -1,7 +1,6 @@
 import pytest
 
 from bsl.datasets._fetching import fetch_file
-from bsl.utils._tests import requires_good_network
 
 URL = "https://raw.githubusercontent.com/fcbg-hnp-meeg/bsl/main/LICENSE"
 HASH = {
@@ -14,7 +13,6 @@ WRONG_HASH = {
 }
 
 
-@requires_good_network
 @pytest.mark.parametrize("hash_type", ("md5", "sha1"))
 def test_fetch_file(tmp_path, hash_type):
     """Test file download."""
