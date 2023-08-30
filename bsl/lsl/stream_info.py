@@ -1,10 +1,25 @@
+from __future__ import annotations  # c.f. PEP 563, PEP 649
+
 from ctypes import c_char_p, c_double, c_void_p
-from typing import Any
+from typing import TYPE_CHECKING
 
 from ..utils._checks import check_type, check_value, ensure_int
-from .constants import fmt2idx, fmt2string, idx2fmt, string2fmt
+from ..utils.logs import logger
+from .constants import fmt2idx, fmt2numpy, idx2fmt, numpy2fmt, string2fmt
 from .load_liblsl import lib
 from .utils import XMLElement
+
+if TYPE_CHECKING:
+    from typing import Any, List, Optional, Tuple, Union
+
+    from numpy.typing import DTypeLike
+
+
+_MAPPING_LSL = {
+    "ch_names": "label",
+    "ch_types": "type",
+    "ch_units": "unit",
+}
 
 
 class _BaseStreamInfo:
@@ -35,10 +50,9 @@ class _BaseStreamInfo:
             pass
 
     def __eq__(self, other: Any) -> bool:
-        """Equality == method.
-
-        Test one by one to stop ASAP.
-        """
+        """Equality == method."""
+        if not isinstance(other, _BaseStreamInfo):
+            return False
         if self.name != other.name:
             return False
         if self.source_id != other.source_id:
@@ -100,14 +114,16 @@ class _BaseStreamInfo:
 
         return str_
 
-    # -- Core information, assigned at construction ---------------------------
+    # -- Core information, assigned at construction ------------------------------------
     @property
-    def dtype(self) -> str:
+    def dtype(self) -> Union[str, DTypeLike]:
         """Channel format of a stream.
 
         All channels in a stream have the same format.
+
+        :type: :class:`~numpy.dtype` | ``"string"``
         """
-        return fmt2string[self._dtype]
+        return fmt2numpy.get(self._dtype, "string")
 
     @property
     def name(self) -> str:
@@ -116,6 +132,8 @@ class _BaseStreamInfo:
         The name of the stream is defined by the application creating the LSL outlet.
         Streams with identical names can coexist, at the cost of ambiguity for the
         recording application and/or the experimenter.
+
+        :type: :class:`str`
         """
         return lib.lsl_get_name(self._obj).decode("utf-8")
 
@@ -125,6 +143,8 @@ class _BaseStreamInfo:
 
         A stream must have at least one channel. The number of channels remains constant
         for all samples.
+
+        :type: :class:`int`
         """
         return lib.lsl_get_channel_count(self._obj)
 
@@ -133,6 +153,8 @@ class _BaseStreamInfo:
         """Sampling rate of the stream, according to the source (in Hz).
 
         If a stream is irregularly sampled, the sampling rate is set to ``0``.
+
+        :type: :class:`float`
         """
         return lib.lsl_get_nominal_srate(self._obj)
 
@@ -143,6 +165,8 @@ class _BaseStreamInfo:
         The unique source (or device) identifier is an optional piece of information
         that, if available, allows endpoints (such as the recording program) to
         re-acquire a stream automatically once if it came back online.
+
+        :type: :class:`str`
         """
         return lib.lsl_get_source_id(self._obj).decode("utf-8")
 
@@ -154,22 +178,29 @@ class _BaseStreamInfo:
         describes the content carried by the channel. If a stream contains mixed
         content, this value should be an empty string and the type should be stored in
         the description of individual channels.
+
+        :type: :class:`str`
         """
         return lib.lsl_get_type(self._obj).decode("utf-8")
 
-    # -- Hosting information, assigned when bound to an outlet/inlet ----------
+    # -- Hosting information, assigned when bound to an outlet/inlet -------------------
     @property
     def created_at(self) -> float:
         """Timestamp at which the stream was created.
 
         This is the time stamps at which the stream was first created, as determined by
-        `~bsl.lsl.local_clock` on the providing machine.
+        :func:`bsl.lsl.local_clock` on the providing machine.
+
+        :type: :class:`float`
         """
         return lib.lsl_get_created_at(self._obj)
 
     @property
     def hostname(self) -> str:
-        """Hostname of the providing machine."""
+        """Hostname of the providing machine.
+
+        :type: :class:`str`
+        """
         return lib.lsl_get_hostname(self._obj).decode("utf-8")
 
     @property
@@ -181,6 +212,8 @@ class _BaseStreamInfo:
         activities on the same sub-network (e.g., in multiple experiment areas) from
         seeing each other's streams (can be assigned in a configuration file read by
         liblsl, see also Network Connectivity in the LSL wiki).
+
+        :type: :class:`str`
         """
         return lib.lsl_get_session_id(self._obj).decode("utf-8")
 
@@ -189,7 +222,9 @@ class _BaseStreamInfo:
         """Unique ID of the `~bsl.lsl.StreamOutlet` instance.
 
         This ID is guaranteed to be different across multiple instantiations of the same
-        `~bsl.lsl.StreamOutlet`, e.g. after a re-start.
+        :class:`~bsl.lsl.StreamOutlet`, e.g. after a re-start.
+
+        :type: :class:`str`
         """
         return lib.lsl_get_uid(self._obj).decode("utf-8")
 
@@ -199,16 +234,18 @@ class _BaseStreamInfo:
 
         The major version is ``version // 100``.
         The minor version is ``version % 100``.
+
+        :type: :class:`int`
         """
         return lib.lsl_get_version(self._obj)
 
-    # -- Data description -----------------------------------------------------
+    # -- Data description --------------------------------------------------------------
     @property
     def as_xml(self) -> str:
         """Retrieve the entire stream_info in XML format.
 
-        This yields an XML document (in string form) whose top-level element is <info>.
-        The info element contains one element for each field of the
+        This yields an XML document (in string form) whose top-level element is
+        ``<info>``. The info element contains one element for each field of the
         `~bsl.lsl.StreamInfo` class, including:
 
         * the core elements ``name``, ``type`` (eq. ``stype``), ``channel_count``
@@ -218,6 +255,8 @@ class _BaseStreamInfo:
           ``v4address``, ``v4data_port``, ``v4service_port``, ``v6address``,
           ``v6data_port``, ``v6service_port``
         * the extended description element ``desc`` with user-defined sub-elements.
+
+        :type: :class:`str`
         """
         return lib.lsl_get_xml(self._obj).decode("utf-8")
 
@@ -239,6 +278,179 @@ class _BaseStreamInfo:
         """
         return XMLElement(lib.lsl_get_desc(self._obj))
 
+    # -- Getters and setters for data description --------------------------------------
+    def get_channel_names(self) -> Optional[List[str]]:
+        """Get the channel names in the description.
+
+        Returns
+        -------
+        ch_names : list of str or ``None`` | None
+            List of channel names, matching the number of total channels.
+            If ``None``, the channel names are not set.
+
+            .. warning::
+
+                If a list of str and ``None`` are returned, some of the channel names
+                are missing. This is not expected and could occur if the XML tree in
+                the ``desc`` property is tempered with outside of the defined getter and
+                setter.
+        """
+        return self._get_channel_info("ch_names")
+
+    def get_channel_types(self) -> Optional[List[str]]:
+        """Get the channel types in the description.
+
+        Returns
+        -------
+        ch_types : list of str or ``None`` | None
+            List of channel names, matching the number of total channels.
+            If ``None``, the channel types are not set.
+
+            .. warning::
+
+                If a list of str and ``None`` are returned, some of the channel types
+                are missing. This is not expected and could occur if the XML tree in
+                the ``desc`` property is tempered with outside of the defined getter and
+                setter.
+        """
+        return self._get_channel_info("ch_types")
+
+    def get_channel_units(self) -> Optional[List[str]]:
+        """Get the channel units in the description.
+
+        Returns
+        -------
+        ch_units : list of str or ``None`` | None
+            List of channel units, matching the number of total channels.
+            If ``None``, the channel units are not set.
+
+            .. warning::
+
+                If a list of str and ``None`` are returned, some of the channel units
+                are missing. This is not expected and could occur if the XML tree in
+                the ``desc`` property is tempered with outside of the defined getter and
+                setter.
+        """
+        return self._get_channel_info("ch_units")
+
+    def _get_channel_info(self, name: str) -> Optional[List[str]]:
+        """Get the 'channel/name' element in the XML tree."""
+        if self.desc.child("channels").empty():
+            return None
+
+        channels = self.desc.child("channels")
+        ch_infos = list()
+        ch = channels.child("channel")
+        while not ch.empty():
+            ch_info = ch.child(_MAPPING_LSL[name]).first_child().value()
+            if len(ch_info) != 0:
+                ch_infos.append(ch_info)
+            else:
+                ch_infos.append(None)
+            ch = ch.next_sibling()
+
+        if all(ch_info is None for ch_info in ch_infos):
+            return None
+        if len(ch_infos) != self.n_channels:
+            logger.warning(
+                "The stream description contains %i elements for %i channels.",
+                len(ch_infos),
+                self.n_channels,
+            )
+        return ch_infos
+
+    def set_channel_names(self, ch_names: Union[List[str], Tuple[str]]) -> None:
+        """Set the channel names in the description. Existing labels are overwritten.
+
+        Parameters
+        ----------
+        ch_names : list of str
+            List of channel names, matching the number of total channels.
+        """
+        self._set_channel_info(ch_names, "ch_names")
+
+    def set_channel_types(self, ch_types: Union[str, List[str]]) -> None:
+        """Set the channel types in the description. Existing types are overwritten.
+
+        The types are given as human readable strings, e.g. ``'eeg'``.
+
+        Parameters
+        ----------
+        ch_types : list of str | str
+            List of channel types, matching the number of total channels.
+            If a single `str` is provided, the type is applied to all channels.
+        """
+        ch_types = (
+            [ch_types] * self.n_channels if isinstance(ch_types, str) else ch_types
+        )
+        self._set_channel_info(ch_types, "ch_types")
+
+    def set_channel_units(
+        self, ch_units: Union[str, List[str], int, List[int]]
+    ) -> None:
+        """Set the channel units in the description. Existing units are overwritten.
+
+        The units are given as human readable strings, e.g. ``'microvolts'``, or as
+        multiplication factor, e.g. ``-6`` for ``1e-6`` thus converting e.g. Volts to
+        microvolts.
+
+        Parameters
+        ----------
+        ch_units : list of str | list of int | str | int
+            List of channel units, matching the number of total channels.
+            If a single `str` or `int` is provided, the unit is applied to all channels.
+
+        Notes
+        -----
+        Some channel types do not have a unit. The `str` ``none`` or the `int` 0 should
+        be used to denote this channel unit, corresponding to ``FIFF_UNITM_NONE`` in
+        MNE.
+        """
+        check_type(ch_units, (list, tuple, str, "int-like"), "ch_units")
+        if isinstance(ch_units, (str, int)):
+            ch_units = [str(ch_units)] * self.n_channels
+        else:
+            ch_units = [
+                str(ch_unit) if isinstance(ch_unit, int) else ch_unit
+                for ch_unit in ch_units
+            ]
+        self._set_channel_info(ch_units, "ch_units")
+
+    def _set_channel_info(self, ch_infos: List[str], name: str) -> None:
+        """Set the 'channel/name' element in the XML tree."""
+        check_type(ch_infos, (list, tuple), name)
+        for ch_info in ch_infos:
+            check_type(ch_info, (str,), name.rstrip("s"))
+        if len(ch_infos) != self.n_channels:
+            raise ValueError(
+                f"The number of provided channel {name.lstrip('ch_')} {len(ch_infos)} "
+                f"must match the number of channels {self.n_channels}."
+            )
+
+        if self.desc.child("channels").empty():
+            channels = self.desc.append_child("channels")
+        else:
+            channels = self.desc.child("channels")
+
+        # fill the 'channel/name' element of the tree and overwrite existing values
+        ch = channels.child("channel")
+        for ch_info in ch_infos:
+            if ch.empty():
+                ch = channels.append_child("channel")
+
+            if ch.child(_MAPPING_LSL[name]).empty():
+                ch.append_child_value(_MAPPING_LSL[name], ch_info)
+            else:
+                ch.child(_MAPPING_LSL[name]).first_child().set_value(ch_info)
+            ch = ch.next_sibling()
+
+        # in case the original sinfo was tempered with and had more 'channel' than the
+        # correct number of channels
+        while not ch.empty():
+            ch_next = ch.next_sibling()
+            channels.remove_child(ch)
+            ch = ch_next
+
 
 class StreamInfo(_BaseStreamInfo):
     """Base Stream information object, storing the declaration of a stream.
@@ -246,11 +458,11 @@ class StreamInfo(_BaseStreamInfo):
     A StreamInfo contains the following information:
 
     * Core information (name, number of channels, sampling frequency, channel format,
-      ...)
+      ...).
     * Optional metadata about the stream content (channel labels, measurement units,
-      ...)
-    * Hosting information (uID, hostname, ...) if bound to an `~bsl.lsl.StreamInlet` or
-      `~bsl.lsl.StreamOutlet`
+      ...).
+    * Hosting information (uID, hostname, ...) if bound to a
+      :class:`~bsl.lsl.StreamInlet` or :class:`~bsl.lsl.StreamOutlet`.
 
     Parameters
     ----------
@@ -267,11 +479,12 @@ class StreamInfo(_BaseStreamInfo):
         Also called ``nominal_srate``, represents the sampling rate (in Hz) as
         advertised by the data source. If the sampling rate is irregular (e.g. for a
         trigger stream), the sampling rate is set to ``0``.
-    dtype : str
+    dtype : str | dtype
         Format of each channel. If your channels have different formats, consider
         supplying multiple streams or use the largest type that can hold them all.
         One of ``('string', 'float32', 'float64', 'int8', 'int16', 'int32')``.
-        ``'int64'`` is partially supported.
+        ``'int64'`` is partially supported. Can also be the equivalent numpy type, e.g.
+        ``np.int8``.
     source_id : str
         A unique identifier of the device or source of the data. If not empty, this
         information improves the system robustness since it allows recipients to recover
@@ -303,23 +516,29 @@ class StreamInfo(_BaseStreamInfo):
             c_char_p(str.encode(stype)),
             n_channels,
             c_double(sfreq),
-            StreamInfo._string2idxfmt(dtype),
+            StreamInfo._dtype2idxfmt(dtype),
             c_char_p(str.encode(source_id)),
         )
         super().__init__(obj)
 
-    # -------------------------------------------------------------------------
+    # ----------------------------------------------------------------------------------
     @staticmethod
-    def _string2idxfmt(dtype) -> int:
+    def _dtype2idxfmt(dtype: Union[str, int, DTypeLike]) -> int:
         """Convert a string format to its LSL integer value."""
         if dtype in fmt2idx:
             return fmt2idx[dtype]
-        check_type(dtype, (str, "int-like"), "dtype")
-        if isinstance(dtype, str):
+        elif dtype in numpy2fmt:
+            return fmt2idx[numpy2fmt[dtype]]
+        elif isinstance(dtype, str):
             dtype = dtype.lower()
             check_value(dtype, string2fmt, "dtype")
             dtype = fmt2idx[string2fmt[dtype]]
-        else:
+        elif isinstance(dtype, int):
             dtype = ensure_int(dtype)
             check_value(dtype, idx2fmt, "dtype")
+        else:
+            raise ValueError(
+                "The provided dtype could not be interpreted as a supported type. "
+                f"{dtype} is invalid."
+            )
         return dtype

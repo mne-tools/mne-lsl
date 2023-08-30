@@ -7,13 +7,11 @@ import pytest
 
 from bsl import StreamPlayer, StreamReceiver, logger, set_log_level
 from bsl.datasets import eeg_resting_state
-from bsl.utils._tests import requires_eeg_resting_state_dataset
 
 set_log_level("INFO")
 logger.propagate = True
 
 
-@requires_eeg_resting_state_dataset
 def test_stream_receiver():
     """Test stream receiver default functionalities."""
     stream = "StreamPlayer"
@@ -79,7 +77,6 @@ def test_stream_receiver():
         del sr
 
 
-@requires_eeg_resting_state_dataset
 def test_receiving_multi_streams():
     """Test StreamReceiver multi-streams functionalities."""
     with StreamPlayer("StreamPlayer1", eeg_resting_state.data_path()), StreamPlayer(
@@ -172,7 +169,6 @@ def test_receiving_multi_streams():
         del sr
 
 
-@requires_eeg_resting_state_dataset
 def test_properties():
     """Test the StreamReceiver properties."""
     with StreamPlayer("StreamPlayer", eeg_resting_state.data_path()):
@@ -211,7 +207,6 @@ def test_properties():
         del sr
 
 
-@requires_eeg_resting_state_dataset
 def test_get_method_warning_and_errors(caplog):
     """Test the checking done in get_xxx methods."""
     with StreamPlayer("StreamPlayer1", eeg_resting_state.data_path()), StreamPlayer(
@@ -316,7 +311,6 @@ def test_get_method_warning_and_errors(caplog):
         del sr
 
 
-@requires_eeg_resting_state_dataset
 def test_connect_disconnect():
     """Test connect and disconnect methods."""
     with StreamPlayer("StreamPlayer1", eeg_resting_state.data_path()), StreamPlayer(
@@ -367,7 +361,6 @@ def test_connect_disconnect():
         del sr
 
 
-@requires_eeg_resting_state_dataset
 def test_checker_bufsize(caplog):
     """Test the checker for argument bufsize."""
     with StreamPlayer("StreamPlayer", eeg_resting_state.data_path()):
@@ -405,7 +398,6 @@ def test_checker_bufsize(caplog):
         del sr
 
 
-@requires_eeg_resting_state_dataset
 def test_checker_winsize():
     """Test the checker for argument winsize."""
     with StreamPlayer("StreamPlayer", eeg_resting_state.data_path()):
@@ -428,7 +420,6 @@ def test_checker_winsize():
             StreamReceiver(bufsize=1, winsize=[101])
 
 
-@requires_eeg_resting_state_dataset
 def test_checker_stream_name(caplog):
     """Test the checker for argument stream_name."""
     with StreamPlayer("StreamPlayer", eeg_resting_state.data_path()):
@@ -467,7 +458,6 @@ def test_checker_stream_name(caplog):
             StreamReceiver(bufsize=1, winsize=0.2, stream_name=101)
 
 
-@requires_eeg_resting_state_dataset
 def test_representation():
     """Test the representation method."""
     with StreamPlayer("StreamPlayer", eeg_resting_state.data_path()):

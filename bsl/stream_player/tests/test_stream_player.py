@@ -13,18 +13,11 @@ from bsl.datasets import (
 )
 from bsl.lsl import StreamInlet, resolve_streams
 from bsl.triggers import TriggerDef
-from bsl.utils._tests import (
-    requires_eeg_auditory_stimuli_dataset,
-    requires_eeg_resting_state_dataset,
-    requires_eeg_resting_state_short_dataset,
-    requires_trigger_def_dataset,
-)
 
 set_log_level("INFO")
 logger.propagate = True
 
 
-@requires_eeg_resting_state_dataset
 def test_stream_player(caplog):
     """Test stream player default capabilities."""
     stream_name = "StreamPlayer"
@@ -92,7 +85,6 @@ def test_stream_player(caplog):
     assert "Streaming finished." in caplog.text
 
 
-@requires_eeg_resting_state_short_dataset
 def test_arg_repeat():
     """Test stream player replay capabilities."""
     sp = StreamPlayer(
@@ -108,7 +100,6 @@ def test_arg_repeat():
     assert sp.state.value == 0
 
 
-@requires_eeg_auditory_stimuli_dataset
 def test_arg_trigger_def():
     """Test stream player trigger display capabilities."""
     stream_name = "StreamPlayer"
@@ -142,7 +133,6 @@ def test_arg_trigger_def():
     sp.stop()
 
 
-@requires_eeg_resting_state_dataset
 def test_arg_high_resolution():
     """Test stream player high-resolution capabilities."""
     sp = StreamPlayer(
@@ -158,7 +148,6 @@ def test_arg_high_resolution():
     assert sp.high_resolution is True
 
 
-@requires_eeg_resting_state_dataset
 def test_properties():
     """Test the StreamPlayer properties."""
     sp = StreamPlayer(
@@ -211,7 +200,6 @@ def test_properties():
     assert sp.state.value == 0
 
 
-@requires_eeg_resting_state_dataset
 def test_checker_arguments():
     """Test the argument error checking."""
     stream_name = "StreamPlayer"
@@ -231,7 +219,6 @@ def test_checker_fif_file():
         StreamPlayer(stream_name=stream_name, fif_file="101-file")
 
 
-@requires_eeg_resting_state_dataset
 def test_checker_repeat():
     """Test the checker for argument repeat."""
     stream_name = "StreamPlayer"
@@ -261,8 +248,6 @@ def test_checker_repeat():
         StreamPlayer(stream_name=stream_name, fif_file=fif_file, repeat=[1, 0, 1])
 
 
-@requires_trigger_def_dataset
-@requires_eeg_resting_state_dataset
 def test_checker_trigger_def():
     """Test the checker for argument trigger_def."""
     stream_name = "StreamPlayer"
@@ -299,7 +284,6 @@ def test_checker_trigger_def():
         StreamPlayer(stream_name=stream_name, fif_file=fif_file, trigger_def=101)
 
 
-@requires_eeg_resting_state_dataset
 def test_checker_chunk_size(caplog):
     """Test the checker for argument chunk_size."""
     stream_name = "StreamPlayer"
@@ -344,7 +328,6 @@ def test_checker_chunk_size(caplog):
         )
 
 
-@requires_eeg_resting_state_dataset
 def test_representation():
     """Test the representation method."""
     fif_file = eeg_resting_state.data_path()

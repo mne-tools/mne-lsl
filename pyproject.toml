@@ -8,7 +8,7 @@ version = '0.7.0.dev'
 description = 'Real-time framework for online neuroscience research through LSL-compatible devices.'
 readme = 'README.md'
 license = {file = 'LICENSE'}
-requires-python = '>=3.8'
+requires-python = '>=3.9'
 authors = [
     {name = 'Mathieu Scheltienne', email = 'mathieu.scheltienne@fcbg.ch'},
     {name = 'Arnaud Desvachez', email = 'arnaud.desvachez@gmail.com'},
@@ -31,7 +31,6 @@ classifiers = [
     'Operating System :: Unix',
     'Operating System :: MacOS',
     'Programming Language :: Python :: 3 :: Only',
-    'Programming Language :: Python :: 3.8',
     'Programming Language :: Python :: 3.9',
     'Programming Language :: Python :: 3.10',
     'Programming Language :: Python :: 3.11',
@@ -44,7 +43,7 @@ classifiers = [
 ]
 dependencies = [
     'distro; sys_platform == "linux"',
-    'mne>=1.1.1',
+    'mne>=1.4.2',
     'numpy>=1.21',
     'packaging',
     'pooch',
@@ -64,7 +63,7 @@ doc = [
     'matplotlib',
     'memory-profiler',
     'numpydoc',
-    'sphinx',
+    'sphinx!=7.2.*',
     'sphinxcontrib-bibtex',
     'sphinx-copybutton',
     'sphinx-design',
@@ -178,6 +177,7 @@ omit = [
     '**/__init__.py',
     '**/bsl/_version.py',
     '**/bsl/commands/*',
+    '**/bsl/conftest.py',
     '**/tests/**',
 ]
 
@@ -185,5 +185,6 @@ omit = [
 exclude_lines = [
     'pragma: no cover',
     'if __name__ == .__main__.:',
+    'if TYPE_CHECKING:',
 ]
 precision = 2

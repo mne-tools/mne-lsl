@@ -5,10 +5,6 @@ import pytest
 from bsl import logger, set_log_level
 from bsl.datasets import eeg_resting_state, trigger_def
 from bsl.triggers import TriggerDef
-from bsl.utils._tests import (
-    requires_eeg_resting_state_dataset,
-    requires_trigger_def_dataset,
-)
 
 set_log_level("INFO")
 logger.propagate = True
@@ -83,8 +79,6 @@ def test_trigger_def(caplog):
     assert not hasattr(tdef, "rest")
 
 
-@requires_trigger_def_dataset
-@requires_eeg_resting_state_dataset
 def test_read_ini(caplog, tmp_path):
     """Test reading from a .ini file."""
     # Valid file
@@ -158,7 +152,6 @@ def test_write_ini(tmp_path):
         tdef.write(trigger_file)
 
 
-@requires_trigger_def_dataset
 def test_properties():
     """Test the properties."""
     tdef = TriggerDef(trigger_def.data_path())

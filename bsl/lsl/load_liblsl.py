@@ -1,11 +1,15 @@
+from __future__ import annotations  # c.f. PEP 563, PEP 649
+
 import os
 import platform
 from ctypes import CDLL, c_char_p, c_double, c_long, c_void_p, sizeof
 from pathlib import Path
-from typing import Optional, Tuple, Union
+from typing import TYPE_CHECKING
 
-from ..utils._exceptions import _GH_ISSUES
 from ..utils.logs import logger
+
+if TYPE_CHECKING:
+    from typing import Optional, Tuple, Union
 
 # Minimum/Maximum liblsl version. The major version is given by version // 100
 # and the minor version is given by version % 100.
@@ -27,20 +31,24 @@ _SUPPORTED_DISTRO = {
 }
 
 
-def load_liblsl():
+def load_liblsl() -> CDLL:
     """Load the binary LSL library on the system."""
     if platform.system() not in _PLATFORM_SUFFIXES:
-        raise RuntimeError("The OS could not be determined. " + _GH_ISSUES)
+        raise RuntimeError(
+            "The OS could not be determined. Please open an issue on GitHub and "
+            "provide the error traceback to the developers."
+        )
 
     lib = _find_liblsl_env()
     if lib is not None:
-        return _set_return_types(lib)
+        return _set_types(lib)
     lib = _find_liblsl_bsl()
     if lib is not None:
-        return _set_return_types(lib)
+        return _set_types(lib)
     else:
         raise RuntimeError(
-            "The liblsl library packaged with BSL could not be loaded. " + _GH_ISSUES
+            "The liblsl library packaged with BSL could not be loaded. Please open an "
+            "issue on GitHub and provide the error traceback to the developers."
         )
 
 
@@ -185,7 +193,8 @@ def _find_liblsl_bsl() -> Optional[CDLL]:
             libname += "OSX_amd64.dylib"
         else:
             raise RuntimeError(
-                "The processor architecture could not be determined. " + _GH_ISSUES
+                "The processor architecture could not be determined. Please open an "
+                "issue on GitHub and provide the error traceback to the developers."
             )
 
     # check windows 32 vs 64 bits
@@ -196,7 +205,8 @@ def _find_liblsl_bsl() -> Optional[CDLL]:
             libname += "Win_amd64.dll"
         else:
             raise RuntimeError(
-                "The processor architecture could not be determined. " + _GH_ISSUES
+                "The processor architecture could not be determined. Please open an "
+                "issue on GitHub and provide the error traceback to the developers."
             )
 
     # attempt to load the corresponding liblsl
@@ -210,8 +220,8 @@ def _find_liblsl_bsl() -> Optional[CDLL]:
     return lib
 
 
-def _set_return_types(lib: CDLL) -> CDLL:
-    """Set the return types for the different liblsl functions.
+def _set_types(lib: CDLL) -> CDLL:
+    """Set the argument and return types for the different liblsl functions.
 
     Parameters
     ----------
@@ -323,7 +333,7 @@ def _set_return_types(lib: CDLL) -> CDLL:
         lib.lsl_pull_chunk_buf.restype = c_long
     except Exception:
         logger.info(
-            "[LIBLSL] Chunk transfer functions not available in your liblsl " "version."
+            "[LIBLSL] Chunk transfer functions not available in your liblsl version."
         )
     try:
         lib.lsl_create_continuous_resolver.restype = c_void_p
