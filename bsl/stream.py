@@ -408,6 +408,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
         self._pick(picks)
 
     def filter(self) -> None:
+        """Filter the stream. Not implemented."""
         self._check_connected(name="Stream.filter()")
         self._check_regular_sampling(name="Stream.filter()")
         raise NotImplementedError
@@ -508,9 +509,11 @@ class Stream(ContainsMixin, SetChannelsMixin):
         return super().get_montage()
 
     def load_stream_config(self) -> None:
+        """Load a stream configuration. Not implemented."""
         raise NotImplementedError
 
     def plot(self):
+        """Open a real-time stream viewer. Not implemented."""
         self._check_connected(name="Stream.plot()")
         raise NotImplementedError
 
@@ -541,6 +544,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
         self._pick(picks)
 
     def record(self):
+        """Record the stream data to disk. Not implemented."""
         self._check_connected(name="Stream.record()")
         raise NotImplementedError
 
@@ -576,9 +580,11 @@ class Stream(ContainsMixin, SetChannelsMixin):
         )
 
     def save_stream_config(self) -> None:
+        """Save a stream configuration. Not implemented."""
         raise NotImplementedError
 
     def set_bipolar_reference(self):
+        """Set a bipolar reference. Not implemented."""
         self._check_connected(name="Stream.set_bipolar_reference()")
         self._check_regular_sampling(name="Stream.set_bipolar_reference()")
         raise NotImplementedError
@@ -666,7 +672,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
                     f"There are no channels of type {type_} in this stream."
                 )
 
-        picks = _picks_to_idx(self._info, ch_type, "all", (), allow_empty=False)
+        picks = _picks_to_idx(self._info, ch_type, "all", (), allow_empty=False)  # noqa
         raise NotImplementedError
 
     def set_meas_date(
