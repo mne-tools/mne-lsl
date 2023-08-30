@@ -7,6 +7,5 @@ Stream classes
    :toctree: generated/
 
    StreamReceiver
-   StreamRecorder
    StreamPlayer
    StreamViewer
