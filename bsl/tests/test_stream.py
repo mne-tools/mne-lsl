@@ -1,4 +1,5 @@
 import time
+from datetime import datetime, timezone
 
 import numpy as np
 import pytest
@@ -157,6 +158,7 @@ def test_stream_drop_channels(mock_lsl_stream):
         data, _ = stream.get_data(winsize=0.1)
         match_stream_and_raw_data(data, raw_, len(stream.ch_names))
         time.sleep(0.3)
+    stream.disconnect()
 
 
 def test_stream_pick(mock_lsl_stream):
@@ -194,3 +196,15 @@ def test_stream_pick(mock_lsl_stream):
         data, _ = stream.get_data(winsize=0.1)
         match_stream_and_raw_data(data, raw_, len(stream.ch_names))
         time.sleep(0.3)
+    stream.disconnect()
+
+
+def test_stream_meas_data(mock_lsl_stream):
+    """Test stream measurement date."""
+    stream = Stream(bufsize=2, name="BSL-Player-pytest")
+    stream.connect()
+    assert stream.info["meas_date"] is None
+    meas_date = datetime(2023, 1, 1, tzinfo=timezone.utc)
+    stream.set_meas_date(meas_date)
+    assert stream.info["meas_date"] == meas_date
+    stream.disconnect()
