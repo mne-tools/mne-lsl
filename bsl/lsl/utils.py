@@ -10,9 +10,7 @@ class XMLElement:
 
     Has a name and can have multiple named children or have text content as value;
     attributes are omitted. Insider note: The interface is modeled after a subset of
-    pugixml's node type and is compatible with it. See also
-    http://pugixml.googlecode.com/svn/tags/latest/docs/manual/access.html for additional
-    documentation.
+    pugixml's node type and is compatible with it.
     """
 
     def __init__(self, handle):

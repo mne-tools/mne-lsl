@@ -9,10 +9,8 @@ from bsl import StreamPlayer, StreamReceiver
 from bsl.datasets import eeg_resting_state
 from bsl.stream_viewer.scope import ScopeEEG
 from bsl.stream_viewer.scope._scope import _BUFFER_DURATION
-from bsl.utils._tests import requires_eeg_resting_state_dataset
 
 
-@requires_eeg_resting_state_dataset
 def test_scope_eeg():
     """Test EEG scope default capabilities."""
     bufsize = 0.2
@@ -70,7 +68,6 @@ def test_scope_eeg():
         scope._selected_channels = scope._selected_channels[: n // 2]
 
 
-@requires_eeg_resting_state_dataset
 def test_buffer_duration():
     """Test the buffer size."""
     bufsize = 0.2
@@ -90,7 +87,6 @@ def test_buffer_duration():
         assert scope.duration_buffer_samples == math.ceil(_BUFFER_DURATION * sfreq)
 
 
-@requires_eeg_resting_state_dataset
 def test_properties():
     """Test EEG scope properties."""
     bufsize = 0.2

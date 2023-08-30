@@ -2,6 +2,8 @@
 
 from . import datasets  # noqa: F401
 from ._version import __version__  # noqa: F401
+from .player import Player  # noqa: F401
+from .stream import Stream  # noqa: F401
 from .stream_player import StreamPlayer  # noqa: F401
 from .stream_receiver import StreamReceiver  # noqa: F401
 from .stream_recorder import StreamRecorder  # noqa: F401
