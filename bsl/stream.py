@@ -288,8 +288,6 @@ class Stream(ContainsMixin, SetChannelsMixin):
     ) -> None:
         """Connect to the LSL stream and initiate data collection in the buffer.
 
-        If the streams were not resolve with the method `~bsl.Stream.resolve`,
-
         Parameters
         ----------
         processing_flags : list of str | ``'all'`` | None
