@@ -62,6 +62,11 @@ class LSLTrigger(BaseTrigger):
     @copy_doc(BaseTrigger.signal)
     def signal(self, value: int) -> None:
         super().signal(value)
+        if not (1 <= value <= 127):
+            raise ValueError(
+                "The argument 'value' of an LSL trigger must be an integer "
+                "between 1 and 127 included."
+            )
         self._outlet.push_sample(np.array([value], dtype=np.int8))
 
     def close(self) -> None:

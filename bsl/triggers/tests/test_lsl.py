@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 
 from bsl import logger, set_log_level
 from bsl.lsl import StreamInlet, resolve_streams
@@ -35,3 +36,5 @@ def test_trigger_lsl():
     assert data.size == 1
     assert data[0] == 127
     assert ts is not None
+    with pytest.raises(ValueError, match="between 1 and 127 included"):
+        trigger.signal(255)
