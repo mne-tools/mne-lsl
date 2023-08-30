@@ -107,9 +107,8 @@ source = 'https://github.com/fcbg-hnp-meeg/bsl'
 tracker = 'https://github.com/fcbg-hnp-meeg/bsl/issues'
 
 [project.scripts]
-bsl = 'bsl.commands.main:run'
 bsl-sys_info = 'bsl.commands.sys_info:run'
-bsl_stream_player = 'bsl.commands.bsl_stream_player:run'
+bsl_player = 'bsl.commands.bsl_player:run'
 bsl_stream_viewer = 'bsl.commands.bsl_stream_viewer:run'
 
 [tool.setuptools]
