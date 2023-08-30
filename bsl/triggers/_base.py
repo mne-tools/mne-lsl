@@ -17,17 +17,17 @@ class BaseTrigger(ABC):
         Parameters
         ----------
         value : int
-            Value of the trigger, between 1 and 127.
+            Value of the trigger, between 1 and 255.
         """
         try:
             value = int(value)
         except TypeError:
             raise TypeError(
                 "The argument 'value' of a BSL trigger must be an integer "
-                "between 1 and 127 included."
+                "between 1 and 255 included."
             )
-        if not (1 <= value <= 127):
+        if not (1 <= value <= 255):
             raise ValueError(
                 "The argument 'value' of a BSL trigger must be an integer "
-                "between 1 and 127 included."
+                "between 1 and 255 included."
             )
