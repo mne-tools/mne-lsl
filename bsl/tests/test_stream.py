@@ -138,7 +138,50 @@ def test_stream_drop_channels(mock_lsl_stream):
         match_stream_and_raw_data(data, raw_, len(stream.ch_names))
         time.sleep(0.3)
 
+    # test pick after drop
+    stream.set_channel_types({"M1": "emg", "M2": "emg"})
+    stream.pick("emg")
+    raw_.set_channel_types({"M1": "emg", "M2": "emg"})
+    raw_.pick("emg")
+    assert stream.ch_names == raw_.ch_names
+    for _ in range(3):
+        data, _ = stream.get_data(winsize=0.1)
+        match_stream_and_raw_data(data, raw_, len(stream.ch_names))
+        time.sleep(0.3)
+
 
 def test_stream_pick(mock_lsl_stream):
     """Test channel selection."""
-    pass
+    stream = Stream(bufsize=2, name="BSL-Player-pytest")
+    stream.connect()
+    stream.info["bads"] = ["Fp2"]
+    stream.pick("eeg", exclude="bads")
+    raw_ = raw.copy()
+    raw_.info["bads"] = ["Fp2"]
+    raw_.pick("eeg", exclude="bads")
+    assert stream.ch_names == raw_.ch_names
+    time.sleep(0.1)  # give a bit of time to the stream to acquire the first chunks
+    for _ in range(3):
+        data, _ = stream.get_data(winsize=0.1)
+        match_stream_and_raw_data(data, raw_, len(stream.ch_names))
+        time.sleep(0.3)
+
+    # change channel types for testing and pick again
+    stream.set_channel_types({"M1": "emg", "M2": "emg"})
+    stream.pick("eeg")
+    raw_.set_channel_types({"M1": "emg", "M2": "emg"})
+    raw_.pick("eeg")
+    assert stream.ch_names == raw_.ch_names
+    for _ in range(3):
+        data, _ = stream.get_data(winsize=0.1)
+        match_stream_and_raw_data(data, raw_, len(stream.ch_names))
+        time.sleep(0.3)
+
+    # test dropping channels after pick
+    stream.drop_channels(["F1", "F2"])
+    raw_.drop_channels(["F1", "F2"])
+    assert stream.ch_names == raw_.ch_names
+    for _ in range(3):
+        data, _ = stream.get_data(winsize=0.1)
+        match_stream_and_raw_data(data, raw_, len(stream.ch_names))
+        time.sleep(0.3)
