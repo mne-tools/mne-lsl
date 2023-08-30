@@ -40,12 +40,10 @@ def test_stream(mock_lsl_stream):
     stream.connect()
     assert isinstance(stream.info, Info)
     assert stream.connected
-
     # test content
     assert stream.info["ch_names"] == raw.info["ch_names"]
     assert stream.get_channel_types() == raw.get_channel_types()
     assert stream.info["sfreq"] == raw.info["sfreq"]
-
     # check fs and that the returned data array is in raw a couple of times
     time.sleep(0.1)  # give a bit of time to the stream to acquire the first chunks
     for _ in range(3):
@@ -54,7 +52,6 @@ def test_stream(mock_lsl_stream):
         assert_allclose(1 / np.diff(ts), stream.info["sfreq"])
         match_stream_and_raw_data(data, raw, stream.sinfo.n_channels)
         time.sleep(0.3)
-
     # montage
     stream.set_montage("standard_1020")
     stream.plot_sensors()
@@ -65,10 +62,8 @@ def test_stream(mock_lsl_stream):
         montage.ch_names
         == pick_info(stream.info, _picks_to_idx(stream.info, "eeg")).ch_names
     )
-
     # dtype
     assert stream.dtype == stream.sinfo.dtype
-
     # disconnect
     stream.disconnect()
 
@@ -199,12 +194,16 @@ def test_stream_pick(mock_lsl_stream):
     stream.disconnect()
 
 
-def test_stream_meas_data(mock_lsl_stream):
+def test_stream_meas_date_and_anonymize(mock_lsl_stream):
     """Test stream measurement date."""
     stream = Stream(bufsize=2, name="BSL-Player-pytest")
     stream.connect()
     assert stream.info["meas_date"] is None
-    meas_date = datetime(2023, 1, 1, tzinfo=timezone.utc)
+    meas_date = datetime(2023, 1, 25, tzinfo=timezone.utc)
     stream.set_meas_date(meas_date)
     assert stream.info["meas_date"] == meas_date
+    stream.info["experimenter"] = "Mathieu Scheltienne"
+    stream.anonymize(daysback=10)
+    assert stream.info["meas_date"] == datetime(2023, 1, 15, tzinfo=timezone.utc)
+    assert stream.info["experimenter"] != "Mathieu Scheltienne"
     stream.disconnect()
