@@ -43,36 +43,6 @@ With the optional arguments:
    :alt: StreamPlayer
    :align: center
 
-.. _stream_recorder:
-
-StreamRecorder
---------------
-
-The :class:`~bsl.StreamRecorder` can be called from the command-line with:
-
-.. code-block:: console
-
-    $ bsl_stream_recorder
-
-With the optional arguments:
-
-- ``-d``, ``--directory``: :term:`path-like`, path to the record directory.
-- ``-f``, ``--fname``: `str`, file name stem.
-- ``-s``, ``--stream_name``: `str`, stream to record.
-- ``--fif_subdir``: boolean flag, saves in a ``fif`` subdirectory.
-- ``--verbose``: boolean flag, displays a timer every recorded second.
-
-.. note::
-
-    If ``directory`` is not provided, the current working directory is used.
-    If ``fname`` is not provided, a stem is generated based on the current
-    datetime. If ``stream_name`` is not provided, all available streams are
-    recorded.
-
-.. image:: _static/stream_recorder/stream_recorder_cli.gif
-   :alt: StreamRecorder
-   :align: center
-
 .. _stream_viewer:
 
 StreamViewer
