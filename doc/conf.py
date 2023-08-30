@@ -239,7 +239,7 @@ def linkcode_resolve(domain: str, info: Dict[str, str]) -> Optional[str]:
 
         # retrieve start/stop lines
         source, start_line = inspect.getsourcelines(pyobject)
-        lines = "L%d-L%d" % (start_line, start_line + len(source) - 1)
+        lines = f"L{start_line}-L{start_line + len(source) - 1}"
 
         # create URL
         if "/mne/" in fname:
@@ -255,6 +255,21 @@ def linkcode_resolve(domain: str, info: Dict[str, str]) -> Optional[str]:
         url = f"{gh_url}/blob/{branch}/{package}/{fname}#{lines}"
     except:
         print (info)
+        module = import_module(info["module"])
+        pyobject = module
+        for elt in info["fullname"].split("."):
+            pyobject = getattr(pyobject, elt)
+        fname = inspect.getsourcefile(pyobject).replace("\\", "/")
+        print (fname)
+        source, start_line = inspect.getsourcelines(pyobject)
+        lines = f"L{start_line}-L{start_line + len(source) - 1}"
+        print (lines)
+        fname = fname.rsplit("/mne/")[1]
+        print (fname)
+        mne_version = ".".join(mne.__version__.rsplit(".")[:2])
+        print(mne_version)
+        url = f"{gh_url_mne}/blob/maint/{mne_version}/mne/{fname}#{lines}"
+        print (url)
         raise
     return url
 
