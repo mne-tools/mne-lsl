@@ -44,6 +44,16 @@ numpy2fmt = {
 }
 fmt2numpy = {value: key for key, value in numpy2fmt.items()}
 
+string2numpy = {
+    "float32": np.float32,
+    "float64": np.float64,
+    "int8": np.int8,
+    "int16": np.int16,
+    "int32": np.int32,
+    "int64": np.int64,
+}
+numpy2string = {value: key for key, value in string2numpy.items()}
+
 # ------------------------------
 # Handle int64 incompatibilities
 # ------------------------------

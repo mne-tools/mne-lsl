@@ -31,6 +31,7 @@ class LSLTrigger(BaseTrigger):
     Notes
     -----
     The `~bsl.lsl.StreamOutlet` created has the following properties:
+
     * Name: ``f"{name}"``
     * Type: ``"Markers"``
     * Number of channels: 1
@@ -54,12 +55,20 @@ class LSLTrigger(BaseTrigger):
             dtype="int8",
             source_id=f"BSL-{name}",
         )
+        self._sinfo.set_channel_names(["STI"])
+        self._sinfo.set_channel_types(["stim"])
+        self._sinfo.set_channel_units(["none"])
         self._outlet = StreamOutlet(self._sinfo, max_buffered=1)
 
     @copy_doc(BaseTrigger.signal)
     def signal(self, value: int) -> None:
         super().signal(value)
-        self._outlet.push_sample(np.int8(value))
+        if not (1 <= value <= 127):
+            raise ValueError(
+                "The argument 'value' of an LSL trigger must be an integer "
+                "between 1 and 127 included."
+            )
+        self._outlet.push_sample(np.array([value], dtype=np.int8))
 
     def close(self) -> None:
         """Close the LSL outlet."""

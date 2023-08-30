@@ -7,13 +7,15 @@
 import inspect
 from datetime import date
 from importlib import import_module
+from pathlib import Path
 from typing import Dict, Optional
 
+import mne
 from sphinx_gallery.sorting import FileNameSortKey
 
 import bsl
 
-# -- project information -----------------------------------------------------
+# -- project information ---------------------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = "BSL"
@@ -23,7 +25,12 @@ release = bsl.__version__
 package = bsl.__name__
 gh_url = "https://github.com/fcbg-hnp-meeg/bsl"
 
-# -- general configuration ---------------------------------------------------
+# -- mne information -------------------------------------------------------------------
+
+gh_url_mne = "https://github.com/mne-tools/mne-python"
+release_mne = mne.__version__
+
+# -- general configuration -------------------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -65,9 +72,12 @@ modindex_common_prefix = [f"{package}."]
 # make `filter` a cross-reference to the Python function “filter”.
 default_role = "py:obj"
 
-# -- options for HTML output -------------------------------------------------
+# -- options for HTML output -----------------------------------------------------------
 html_theme = "furo"
 html_static_path = ["_static"]
+html_css_files = [
+    "css/style.css",
+]
 html_title = project
 html_show_sphinx = False
 html_logo = "_static/icon-with-acronym/icon-with-acronym.svg"
@@ -84,43 +94,40 @@ html_theme_options = {
                 <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 16 16">
                     <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"></path>
                 </svg>
-            """,
+            """,  # noqa: E501
             "class": "",
         },
     ],
     "sidebar_hide_name": True,
 }
 
-# -- autosummary -------------------------------------------------------------
+# -- autosummary -----------------------------------------------------------------------
 autosummary_generate = True
 
-# -- autodoc -----------------------------------------------------------------
+# -- autodoc ---------------------------------------------------------------------------
 autodoc_typehints = "none"
 autodoc_member_order = "groupwise"
 autodoc_warningiserror = True
 autoclass_content = "class"
 
-# -- intersphinx -------------------------------------------------------------
+# -- intersphinx -----------------------------------------------------------------------
 intersphinx_mapping = {
     "matplotlib": ("https://matplotlib.org/stable", None),
     "mne": ("https://mne.tools/stable/", None),
     "numpy": ("https://numpy.org/doc/stable", None),
-    "pandas": ("https://pandas.pydata.org/pandas-docs/stable/", None),
-    "psychoy": ("https://psychopy.org", None),
     "python": ("https://docs.python.org/3", None),
     "scipy": ("https://docs.scipy.org/doc/scipy", None),
     "sklearn": ("https://scikit-learn.org/stable/", None),
-    "vispy": ("https://vispy.org/", None),
 }
 intersphinx_timeout = 5
 
-# -- sphinx-issues -----------------------------------------------------------
+# -- sphinx-issues ---------------------------------------------------------------------
 issues_github_path = gh_url.split("https://github.com/")[-1]
 
-# -- autosectionlabels -------------------------------------------------------
+# -- autosectionlabels -----------------------------------------------------------------
 autosectionlabel_prefix_document = True
 
-# -- numpydoc ----------------------------------------------------------------
+# -- numpydoc --------------------------------------------------------------------------
 numpydoc_class_members_toctree = False
 numpydoc_attributes_as_param_list = False
 
@@ -136,14 +143,18 @@ numpydoc_xref_aliases = {
     "TriggerDef": "bsl.triggers.TriggerDef",
     # Matplotlib
     "Axes": "matplotlib.axes.Axes",
+    "Axes3D": "mpl_toolkits.mplot3d.axes3d.Axes3D",
     "Figure": "matplotlib.figure.Figure",
     # MNE
+    "ConductorModel": "mne.bem.ConductorModel",
     "DigMontage": "mne.channels.DigMontage",
     "Epochs": "mne.Epochs",
     "Evoked": "mne.Evoked",
     "Info": "mne.Info",
     "Projection": "mne.Projection",
     "Raw": "mne.io.Raw",
+    # Numpy
+    "dtype": "numpy.dtype",
     # Python
     "bool": ":class:`python:bool`",
     "file-like": ":term:`file-like <python:file object>`",
@@ -153,7 +164,10 @@ numpydoc_xref_aliases = {
 }
 numpydoc_xref_ignore = {
     "hex",
+    "instance",
+    "n_ch_groups",
     "n_channels",
+    "n_picks",
     "n_samples",
     "of",
     "shape",
@@ -166,7 +180,8 @@ error_ignores = {
     "EX01",  # section 'Examples' not found
     "ES01",  # no extended summary found
     "SA01",  # section 'See Also' not found
-    "RT02",  # The first line of the Returns section should contain only the type, unless multiple values are being returned  # noqa
+    "SA04",  # no description in See Also
+    "RT02",  # the first line of the Returns section should contain only the type, unless multiple values are being returned  # noqa
 }
 numpydoc_validate = True
 numpydoc_validation_checks = {"all"} | set(error_ignores)
@@ -182,10 +197,10 @@ numpydoc_validation_exclude = {  # regex to ignore during docstring check
     r"\.__neg__",
 }
 
-# -- sphinxcontrib-bibtex ----------------------------------------------------
+# -- sphinxcontrib-bibtex --------------------------------------------------------------
 bibtex_bibfiles = ["./references.bib"]
 
-# -- sphinx.ext.linkcode -----------------------------------------------------
+# -- sphinx.ext.linkcode ---------------------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/extensions/linkcode.html
 
 
@@ -214,6 +229,8 @@ def linkcode_resolve(domain: str, info: Dict[str, str]) -> Optional[str]:
         for elt in info["fullname"].split("."):
             pyobject = getattr(pyobject, elt)
         fname = inspect.getsourcefile(pyobject).replace("\\", "/")
+        if not Path(fname).exists():
+            return None
     except Exception:
         # Either the object could not be loaded or the file was not found.
         # For instance, properties will raise.
@@ -221,19 +238,25 @@ def linkcode_resolve(domain: str, info: Dict[str, str]) -> Optional[str]:
 
     # retrieve start/stop lines
     source, start_line = inspect.getsourcelines(pyobject)
-    lines = "L%d-L%d" % (start_line, start_line + len(source) - 1)
+    lines = f"L{start_line}-L{start_line + len(source) - 1}"
 
     # create URL
+    if "/mne/" in fname:
+        # that's an MNE-Python inherited method/function/class
+        fname = fname.rsplit("/mne/")[1]
+        mne_version = ".".join(mne.__version__.rsplit(".")[:2])
+        return f"{gh_url_mne}/blob/maint/{mne_version}/mne/{fname}#{lines}"
+
+    fname = fname.rsplit(f"/{package}/")[1]
     if "dev" in release:
         branch = "main"
     else:
-        return None  # alternatively, link to a maint/version branch
-    fname = fname.rsplit(f"/{package}/")[1]
-    url = f"{gh_url}/blob/{branch}/{package}/{fname}#{lines}"
-    return url
+        maint_version = ".".join(release.rsplit(".")[:2])
+        branch = f"maint/{maint_version}"
+    return f"{gh_url}/blob/{branch}/{package}/{fname}#{lines}"
 
 
-# -- sphinx-gallery ----------------------------------------------------------
+# -- sphinx-gallery --------------------------------------------------------------------
 sphinx_gallery_conf = {
     "backreferences_dir": "generated/backreferences",
     "doc_module": (f"{package}",),

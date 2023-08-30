@@ -27,7 +27,7 @@ def sys_info(fid: Optional[IO] = None, developer: bool = False):
     out = partial(print, end="", file=fid)
     package = __package__.split(".")[0]
 
-    # OS information - requires python 3.8 or above
+    # OS information
     out("Platform:".ljust(ljust) + platform.platform() + "\n")
     # python information
     out("Python:".ljust(ljust) + sys.version.replace("\n", " ") + "\n")

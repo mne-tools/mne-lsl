@@ -1,21 +1,23 @@
+from __future__ import annotations  # c.f. PEP 563, PEP 649
+
 import time
 from ctypes import byref, c_char_p, c_double, c_int, c_size_t, c_void_p
 from functools import reduce
-from typing import List, Optional, Union
+from typing import TYPE_CHECKING
 
 import numpy as np
 
 from ..utils._checks import check_type, check_value, ensure_int
 from ..utils._docs import copy_doc
-from .constants import (
-    fmt2pull_chunk,
-    fmt2pull_sample,
-    fmt2string,
-    post_processing_flags,
-)
+from .constants import fmt2numpy, fmt2pull_chunk, fmt2pull_sample, post_processing_flags
 from .load_liblsl import lib
 from .stream_info import _BaseStreamInfo
 from .utils import _check_timeout, _free_char_p_array_memory, handle_error
+
+if TYPE_CHECKING:
+    from typing import List, Optional, Sequence, Tuple, Union
+
+    from numpy.typing import DTypeLike, NDArray
 
 
 class StreamInlet:
@@ -34,13 +36,13 @@ class StreamInlet:
         ``max_buffered`` seconds.
     recover : bool
         Attempt to silently recover lost streams that are recoverable (requires a
-        ``source_id`` to be specified in the `~bsl.lsl.StreamInfo`).
-    processing_flags : list of str | ``'all'`` | None
+        ``source_id`` to be specified in the :class:`~bsl.lsl.StreamInfo`).
+    processing_flags : sequence of str | ``'all'`` | None
         Set the post-processing options. By default, post-processing is disabled. Any
         combination of the processing flags is valid. The available flags are:
 
         * ``'clocksync'``: Automatic clock synchronization, equivalent to
-          manually adding the estimated `~bsl.lsl.StreamInlet.time_correction`.
+          manually adding the estimated :meth:`~bsl.lsl.StreamInlet.time_correction`.
         * ``'dejitter'``: Remove jitter on the received timestamps with a
           smoothing algorithm.
         * ``'monotize'``: Force the timestamps to be monotically ascending.
@@ -55,7 +57,7 @@ class StreamInlet:
         chunk_size: int = 0,
         max_buffered: float = 360,
         recover: bool = True,
-        processing_flags: Optional[Union[str, List[str]]] = None,
+        processing_flags: Optional[Union[str, Sequence[str]]] = None,
     ):
         check_type(sinfo, (_BaseStreamInfo,), "sinfo")
         chunk_size = ensure_int(chunk_size, "chunk_size")
@@ -79,7 +81,7 @@ class StreamInlet:
 
         # set preprocessing of the inlet
         if processing_flags is not None:
-            check_type(processing_flags, (list, str), "processing_flags")
+            check_type(processing_flags, (list, tuple, str), "processing_flags")
             if isinstance(processing_flags, str):
                 check_value(processing_flags, ("all",), "processing_flags")
                 processing_flags = reduce(
@@ -89,6 +91,14 @@ class StreamInlet:
                 for flag in processing_flags:
                     check_type(flag, (str,), "processing_flag")
                     check_value(flag, post_processing_flags, flag)
+                if (
+                    "monotize" in processing_flags
+                    and "dejitter" not in processing_flags
+                ):
+                    raise ValueError(
+                        "The processing flag 'monotize' should not be used without the "
+                        "processing flag 'dejitter'."
+                    )
                 # bitwise OR between the flags
                 processing_flags = [
                     post_processing_flags[key] for key in processing_flags
@@ -111,7 +121,7 @@ class StreamInlet:
         self._buffer_ts = {}
 
     def __del__(self):
-        """Destroy a `~bsl.lsl.StreamInlet`.
+        """Destroy a :class:`~bsl.lsl.StreamInlet`.
 
         The inlet will automatically disconnect.
         """
@@ -124,9 +134,11 @@ class StreamInlet:
         """Subscribe to a data stream.
 
         All samples pushed in at the other end from this moment onwards will be queued
-        and eventually be delivered in response to `~bsl.lsl.StreamInlet.pull_sample` or
-        `~bsl.lsl.StreamInlet.pull_chunk` calls. Pulling a sample without subscribing to
-        the stream with this method is permitted (the stream will be opened implicitly).
+        and eventually be delivered in response to
+        :meth:`~bsl.lsl.StreamInlet.pull_sample` or
+        :meth:`~bsl.lsl.StreamInlet.pull_chunk` calls. Pulling a sample without
+        subscribing to the stream with this method is permitted (the stream will be
+        opened implicitly).
 
         Parameters
         ----------
@@ -193,7 +205,9 @@ class StreamInlet:
         handle_error(errcode)
         return result
 
-    def pull_sample(self, timeout: Optional[float] = 0.0):
+    def pull_sample(
+        self, timeout: Optional[float] = 0.0
+    ) -> Tuple[Union[List[str], NDArray[float]], Optional[float]]:
         """Pull a single sample from the inlet.
 
         Parameters
@@ -206,13 +220,14 @@ class StreamInlet:
 
         Returns
         -------
-        sample : list | array of shape (n_channels,)
+        sample : list of str | array of shape (n_channels,)
             If the channel format is ``'string``, returns a list of values for each
             channel. Else, returns a numpy array of shape ``(n_channels,)``.
         timestamp : float | None
             Acquisition timestamp on the remote machine. To map the timestamp to the
             local clock of the client machine, add the estimated time correction return
-            by `~bsl.lsl.StreamInlet.time_correction`. None if no sample was retrieved.
+            by :meth:`~bsl.lsl.StreamInlet.time_correction`. None if no sample was
+            retrieved.
 
         Notes
         -----
@@ -246,7 +261,7 @@ class StreamInlet:
         self,
         timeout: Optional[float] = 0.0,
         max_samples: int = 1024,
-    ):
+    ) -> Tuple[Union[List[List[str]], NDArray[float]], NDArray[float]]:
         """Pull a chunk of samples from the inlet.
 
         Parameters
@@ -263,12 +278,14 @@ class StreamInlet:
 
         Returns
         -------
-        samples : list of list | array of shape (n_samples, n_channels)
+        samples : list of list of str | array of shape (n_samples, n_channels)
             If the channel format is ``'string'``, returns a list of list of values for
             each channel and sample. Each sublist represents an entire channel. Else,
             returns a numpy array of shape ``(n_samples, n_channels)``.
         timestamps : array of shape (n_samples,)
-            Acquisition timestamps on the remote machine.
+            Acquisition timestamp on the remote machine. To map the timestamp to the
+            local clock of the client machine, add the estimated time correction return
+            by :meth:`~bsl.lsl.StreamInlet.time_correction`.
 
         Notes
         -----
@@ -351,8 +368,8 @@ class StreamInlet:
     # -------------------------------------------------------------------------
     @copy_doc(_BaseStreamInfo.dtype)
     @property
-    def dtype(self) -> str:
-        return fmt2string[self._dtype]
+    def dtype(self) -> Union[str, DTypeLike]:
+        return fmt2numpy.get(self._dtype, "string")
 
     @copy_doc(_BaseStreamInfo.n_channels)
     @property
@@ -376,24 +393,23 @@ class StreamInlet:
 
     @property
     def samples_available(self) -> int:
-        """Number of currently available samples on the Outlet.
+        """Number of currently available samples on the :class:`~bsl.lsl.StreamOutlet`.
 
-        Returns
-        -------
-        n_samples : int
-            Number of available samples.
+        :type: :class:`int`
         """
-        # 354 ns ± 6.04 ns per loop
-        return lib.lsl_samples_available(self._obj)
+        return lib.lsl_samples_available(self._obj)  # 354 ns ± 6.04 ns per loop
 
     @property
     def was_clock_reset(self) -> bool:
-        """True if the clock was potentially reset since the last call."""
+        """True if the clock was potentially reset since the last call.
+
+        :type: :class:`bool`
+        """
         return bool(lib.lsl_was_clock_reset(self._obj))
 
     # -------------------------------------------------------------------------
     def get_sinfo(self, timeout: Optional[float] = None) -> _BaseStreamInfo:
-        """`~bsl.lsl.StreamInfo` corresponding to this Inlet.
+        """:class:`~bsl.lsl.StreamInfo` corresponding to this Inlet.
 
         Parameters
         ----------
