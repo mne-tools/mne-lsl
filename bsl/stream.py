@@ -290,7 +290,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
         """
         if self.connected:
             logger.warning("The stream is already connected. Skipping.")
-            return
+            return None
         # The threadsafe processing flag should not be needed for this class. If it is
         # provided, then it means the user is retrieving and doing something with the
         # inlet in a different thread. This use-case is not supported, and users which

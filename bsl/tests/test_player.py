@@ -5,16 +5,18 @@ import pytest
 from mne.io import read_raw
 from numpy.testing import assert_allclose
 
-from bsl import Player
+from bsl import Player, logger
 from bsl.datasets import testing
 from bsl.lsl import StreamInlet, local_clock, resolve_streams
 from bsl.utils._tests import match_stream_and_raw_data
+
+logger.propagate = True
 
 fname = testing.data_path() / "sample-eeg-ant-raw.fif"
 raw = read_raw(fname, preload=True)
 
 
-def test_player():
+def test_player(caplog):
     """Test a working and valid player."""
     name = "BSL-Player-test_player"
     player = Player(fname, name, 16)
@@ -26,6 +28,12 @@ def test_player():
     streams = resolve_streams()
     assert len(streams) == 1
     assert streams[0].name == name
+
+    # try double start
+    caplog.set_level(30)  # WARNING
+    caplog.clear()
+    player.start()
+    assert "player is already started" in caplog.text
 
     # connect an inlet to the player
     inlet = StreamInlet(streams[0])

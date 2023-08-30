@@ -3,10 +3,16 @@ import time
 import numpy as np
 import pytest
 from matplotlib import pyplot as plt
-from mne import Info
+from mne import Info, pick_info
 from mne.channels import DigMontage
 from mne.io import read_raw
+from mne.utils import check_version
 from numpy.testing import assert_allclose
+
+if check_version("mne", "1.6"):
+    from mne._fiff.pick import _picks_to_idx
+else:
+    from mne.io.pick import _picks_to_idx
 
 from bsl import Stream, logger
 from bsl.datasets import testing
@@ -54,7 +60,10 @@ def test_stream(mock_lsl_stream):
     plt.close("all")
     montage = stream.get_montage()
     assert isinstance(montage, DigMontage)
-    assert montage.ch_names == stream.ch_names[1:]  # first channel is TRIGGER
+    assert (
+        montage.ch_names
+        == pick_info(stream.info, _picks_to_idx(stream.info, "eeg")).ch_names
+    )
 
     # dtype
     assert stream.dtype == stream.sinfo.dtype
