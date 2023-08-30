@@ -6,7 +6,6 @@ from .player import Player  # noqa: F401
 from .stream import Stream  # noqa: F401
 from .stream_player import StreamPlayer  # noqa: F401
 from .stream_receiver import StreamReceiver  # noqa: F401
-from .stream_recorder import StreamRecorder  # noqa: F401
 from .stream_viewer import StreamViewer  # noqa: F401
 from .utils.config import sys_info  # noqa: F401
 from .utils.logs import add_file_handler, logger, set_log_level  # noqa: F401

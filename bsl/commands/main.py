@@ -19,7 +19,6 @@ def run():
         for command in valid_commands:
             print("\t- %s" % command)
         print('\nExample: bsl stream_player StreamPlayer "path to .fif file"')
-        print("\nGetting help example: bsl stream_recorder -h")
 
     if len(sys.argv) == 1 or "help" in sys.argv[1] or "-h" in sys.argv[1]:
         print_help()

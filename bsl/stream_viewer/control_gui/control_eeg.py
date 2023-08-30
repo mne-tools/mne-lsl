@@ -214,9 +214,6 @@ class ControlGUI_EEG(_ControlGUI):
             col = idx % self._nb_table_columns
             self._ui.table_channels.item(row, col).setSelected(True)
 
-        # Status bar
-        self._ui.statusBar.showMessage("[Not recording]")
-
     @copy_doc(_ControlGUI._init_backend)
     def _init_backend(self):
         geometry = (
@@ -353,8 +350,6 @@ class ControlGUI_EEG(_ControlGUI):
     def closeEvent(self, event):
         """Event called when closing the _ScopeControllerUI window."""
         logger.debug("Closing event received.")
-        if self._ui.pushButton_stop_recording.isEnabled():
-            self.onClicked_pushButton_stop_recording()
         self._backend.close()
         super().closeEvent(event)
 

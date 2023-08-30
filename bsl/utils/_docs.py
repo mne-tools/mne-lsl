@@ -112,40 +112,6 @@ tslist : list
     Data's timestamps (samples, )."""
 
 # -----------------------------------------------
-# Stream Recorder
-docdict[
-    "recorder_record_dir"
-] = """
-record_dir : None | path-like
-    Path to the directory where data will be saved. If the directory does not
-    exist, it is created. If ``None``, the current working directory is used.
-"""
-docdict[
-    "recorder_fname"
-] = """
-fname : None | str
-    File name stem used to create the files. The StreamRecorder creates 2 files
-    plus an optional third if a software trigger was used, respecting the
-    following naming::
-
-      PCL: '{fname}-[stream_name]-raw.pcl'
-      FIF: '{fname}-[stream_name]-raw.fif'
-      (optional) SOFTWARE trigger events: '{fname}-eve.txt'
-"""
-docdict[
-    "recorder_fif_subdir"
-] = """
-fif_subdir : bool
-    If ``True``, the ``.pcl`` files are converted to ``.fif`` in a
-    subdirectory ``'fif': record_dir/fif/...`` instead of ``record_dir``."""
-docdict[
-    "recorder_verbose"
-] = """
-verbose : bool
-    If ``True``, a timer showing since when the recorder started is displayed
-    every seconds."""
-
-# -----------------------------------------------
 # Stream Viewer
 
 # Not read by sphinx autodoc
