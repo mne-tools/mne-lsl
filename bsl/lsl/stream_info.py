@@ -213,7 +213,7 @@ class _BaseStreamInfo:
         seeing each other's streams (can be assigned in a configuration file read by
         liblsl, see also Network Connectivity in the LSL wiki).
 
-    :type: :class:`str`
+        :type: :class:`str`
         """
         return lib.lsl_get_session_id(self._obj).decode("utf-8")
 
