@@ -31,6 +31,7 @@ class LSLTrigger(BaseTrigger):
     Notes
     -----
     The `~bsl.lsl.StreamOutlet` created has the following properties:
+
     * Name: ``f"{name}"``
     * Type: ``"Markers"``
     * Number of channels: 1
