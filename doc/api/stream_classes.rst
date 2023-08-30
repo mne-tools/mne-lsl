@@ -6,6 +6,5 @@ Stream classes
 .. autosummary::
    :toctree: generated/
 
-   StreamReceiver
    StreamPlayer
    StreamViewer
