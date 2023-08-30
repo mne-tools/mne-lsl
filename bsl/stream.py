@@ -37,7 +37,7 @@ if TYPE_CHECKING:
 
     from mne import Info
     from mne.channels import DigMontage
-    from numpy.typing import NDArray, DTypeLike
+    from numpy.typing import DTypeLike, NDArray
 
     from bsl.lsl.stream_info import _BaseStreamInfo
 

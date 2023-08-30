@@ -8,7 +8,6 @@ import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 
-
 if TYPE_CHECKING:
     from typing import Callable
 
