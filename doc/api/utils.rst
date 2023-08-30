@@ -42,7 +42,6 @@ Deprecated
    :toctree: generated/
 
    find_event_channel
-   io.pcl2fif
    lsl.list_lsl_streams
    lsl.lsl_channel_list
    lsl.search_lsl
