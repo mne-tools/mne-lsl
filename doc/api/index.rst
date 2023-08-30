@@ -12,6 +12,7 @@ The main `~bsl.Stream` object offers efficient communication with numerical LSL 
    :toctree: generated/
 
     Stream
+    Player
 
 .. toctree::
     :maxdepth: 2

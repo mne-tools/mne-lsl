@@ -68,6 +68,9 @@ default_role = "py:obj"
 # -- options for HTML output -------------------------------------------------
 html_theme = "furo"
 html_static_path = ["_static"]
+html_css_files = [
+    "css/style.css",
+]
 html_title = project
 html_show_sphinx = False
 html_logo = "_static/icon-with-acronym/icon-with-acronym.svg"
@@ -165,6 +168,7 @@ error_ignores = {
     "EX01",  # section 'Examples' not found
     "ES01",  # no extended summary found
     "SA01",  # section 'See Also' not found
+    "SA04",  # no description in See Also
     "RT02",  # The first line of the Returns section should contain only the type, unless multiple values are being returned  # noqa
 }
 numpydoc_validate = True
