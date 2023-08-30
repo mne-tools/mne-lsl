@@ -126,7 +126,7 @@ def test_stream_double_connection(mock_lsl_stream, caplog):
 
 
 def test_stream_drop_channels(mock_lsl_stream):
-    """Test dropping chanels."""
+    """Test dropping channels."""
     stream = Stream(bufsize=2, name="BSL-Player-pytest")
     stream.connect()
     stream.drop_channels("TRIGGER")
@@ -198,9 +198,7 @@ def test_stream_pick(mock_lsl_stream):
     stream.pick(
         [stream.ch_names[5], stream.ch_names[3], stream.ch_names[8], stream.ch_names[1]]
     )
-    raw_.pick(
-        [raw_.ch_names[1], raw_.ch_names[3], raw_.ch_names[5], raw_.ch_names[8]]
-    )
+    raw_.pick([raw_.ch_names[1], raw_.ch_names[3], raw_.ch_names[5], raw_.ch_names[8]])
     assert stream.ch_names == raw_.ch_names
     for _ in range(3):
         data, _ = stream.get_data(winsize=0.1)
