@@ -6,8 +6,6 @@ from PyQt5.QtWidgets import (
     QDoubleSpinBox,
     QFrame,
     QLabel,
-    QLineEdit,
-    QPushButton,
     QSpinBox,
     QStatusBar,
     QTableWidget,
