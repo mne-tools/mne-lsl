@@ -219,59 +219,41 @@ def linkcode_resolve(domain: str, info: Dict[str, str]) -> Optional[str]:
     url : str | None
         The code URL. If None, no link is added.
     """
+    if domain != "py":
+        return None  # only document python objects
+
+    # retrieve pyobject and file
     try:
-        if domain != "py":
-            return None  # only document python objects
-
-        # retrieve pyobject and file
-        try:
-            module = import_module(info["module"])
-            pyobject = module
-            for elt in info["fullname"].split("."):
-                pyobject = getattr(pyobject, elt)
-            fname = inspect.getsourcefile(pyobject).replace("\\", "/")
-            if not Path(fname).exists():
-                return None
-        except Exception:
-            # Either the object could not be loaded or the file was not found.
-            # For instance, properties will raise.
-            return None
-
-        # retrieve start/stop lines
-        source, start_line = inspect.getsourcelines(pyobject)
-        lines = f"L{start_line}-L{start_line + len(source) - 1}"
-
-        # create URL
-        if "/mne/" in fname:
-            # that's an MNE-Python inherited method/function/class
-            fname = fname.rsplit("/mne/")[1]
-            mne_version = ".".join(mne.__version__.rsplit(".")[:2])
-            url = f"{gh_url_mne}/blob/maint/{mne_version}/mne/{fname}#{lines}"
-        elif "dev" in release:
-            branch = "main"
-        else:
-            return None  # alternatively, link to a maint/version branch
-        fname = fname.rsplit(f"/{package}/")[1]
-        url = f"{gh_url}/blob/{branch}/{package}/{fname}#{lines}"
-    except:
-        print (info)
         module = import_module(info["module"])
         pyobject = module
         for elt in info["fullname"].split("."):
             pyobject = getattr(pyobject, elt)
         fname = inspect.getsourcefile(pyobject).replace("\\", "/")
-        print (fname)
-        source, start_line = inspect.getsourcelines(pyobject)
-        lines = f"L{start_line}-L{start_line + len(source) - 1}"
-        print (lines)
+        if not Path(fname).exists():
+            return None
+    except Exception:
+        # Either the object could not be loaded or the file was not found.
+        # For instance, properties will raise.
+        return None
+
+    # retrieve start/stop lines
+    source, start_line = inspect.getsourcelines(pyobject)
+    lines = f"L{start_line}-L{start_line + len(source) - 1}"
+
+    # create URL
+    if "/mne/" in fname:
+        # that's an MNE-Python inherited method/function/class
         fname = fname.rsplit("/mne/")[1]
-        print (fname)
         mne_version = ".".join(mne.__version__.rsplit(".")[:2])
-        print(mne_version)
-        url = f"{gh_url_mne}/blob/maint/{mne_version}/mne/{fname}#{lines}"
-        print (url)
-        raise
-    return url
+        return f"{gh_url_mne}/blob/maint/{mne_version}/mne/{fname}#{lines}"
+
+    fname = fname.rsplit(f"/{package}/")[1]
+    if "dev" in release:
+        branch = "main"
+    else:
+        maint_version = ".".join(release.rsplit(".")[:2])
+        branch = f"maint/{maint_version}"
+    return f"{gh_url}/blob/{branch}/{package}/{fname}#{lines}"
 
 
 # -- sphinx-gallery --------------------------------------------------------------------
