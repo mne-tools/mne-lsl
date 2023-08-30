@@ -207,3 +207,45 @@ def test_stream_meas_date_and_anonymize(mock_lsl_stream):
     assert stream.info["meas_date"] == datetime(2023, 1, 15, tzinfo=timezone.utc)
     assert stream.info["experimenter"] != "Mathieu Scheltienne"
     stream.disconnect()
+
+
+def test_stream_set_channel_types(mock_lsl_stream):
+    """Test channel type getters and setters."""
+    stream = Stream(bufsize=2, name="BSL-Player-pytest")
+    stream.connect()
+    assert stream.get_channel_types(unique=True) == raw.get_channel_types(unique=True)
+    assert stream.get_channel_types(unique=False) == raw.get_channel_types(unique=False)
+    assert "eeg" in stream
+    stream.set_channel_types({"M1": "emg", "M2": "emg"})
+    raw_ = raw.copy().set_channel_types({"M1": "emg", "M2": "emg"})
+    assert stream.get_channel_types(unique=True) == raw_.get_channel_types(unique=True)
+    assert stream.get_channel_types() == raw_.get_channel_types()
+    assert "emg" in stream
+    stream.disconnect()
+
+
+def test_rename_channels(mock_lsl_stream):
+    """Test channel renaming."""
+    stream = Stream(bufsize=2, name="BSL-Player-pytest")
+    stream.connect()
+    assert stream.ch_names == raw.ch_names
+    assert stream.info["ch_names"] == raw.ch_names
+    stream.rename_channels({"M1": "EMG1", "M2": "EMG2"})
+    raw_ = raw.copy().rename_channels({"M1": "EMG1", "M2": "EMG2"})
+    assert stream.ch_names == raw_.ch_names
+    assert stream.info["ch_names"] == raw_.ch_names
+
+    # rename after channel selection
+    stream.drop_channels("vEOG")
+    raw_.drop_channels("vEOG")
+    stream.rename_channels({"hEOG": "EOG"})
+    raw_.rename_channels({"hEOG": "EOG"})
+    assert stream.ch_names == raw_.ch_names
+    assert stream.info["ch_names"] == raw_.ch_names
+    # acquire a couple of chunks
+    time.sleep(0.1)
+    for _ in range(3):
+        data, _ = stream.get_data(winsize=0.1)
+        match_stream_and_raw_data(data, raw_, len(stream.ch_names))
+        time.sleep(0.3)
+    stream.disconnect()
