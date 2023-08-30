@@ -1,4 +1,3 @@
-from collections import Counter
 from pathlib import Path
 
 import numpy as np
@@ -9,6 +8,7 @@ from numpy.testing import assert_allclose
 from bsl import Player
 from bsl.datasets import testing
 from bsl.lsl import StreamInlet, local_clock, resolve_streams
+from bsl.utils._tests import match_stream_and_raw_data
 
 fname = testing.data_path() / "sample-eeg-ant-raw.fif"
 raw = read_raw(fname, preload=True)
@@ -57,19 +57,7 @@ def test_player():
     ]
 
     # check that the returned data array is in raw
-    idx = [np.where(raw[:, :][0] == data[0, k])[1] for k in range(data.shape[1])]
-    idx = np.concatenate(idx)
-    counter = Counter(idx)
-    idx, n_channels = counter.most_common()[0]
-    assert n_channels == data.shape[1]
-    assert n_channels == sinfo.n_channels
-    start = idx
-    stop = start + data.shape[0]
-    if stop <= raw.times.size:
-        assert_allclose(data.T, raw[:, start:stop][0])
-    else:
-        raw_data = np.hstack((raw[:, start:][0], raw[:, :][0]))[:, : stop - start]
-        assert_allclose(data.T, raw_data)
+    match_stream_and_raw_data(data.T, raw, sinfo.n_channels)
     player.stop()
 
 

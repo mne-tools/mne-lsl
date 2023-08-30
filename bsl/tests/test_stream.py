@@ -11,6 +11,7 @@ from numpy.testing import assert_allclose
 
 from bsl import Stream, logger
 from bsl.datasets import testing
+from bsl.utils._tests import match_stream_and_raw_data
 
 logger.propagate = True
 
@@ -44,21 +45,8 @@ def test_stream(mock_lsl_stream):
     for _ in range(3):
         data, ts = stream.get_data(winsize=0.1)
         assert ts.size == data.shape[1]
-        fs = 1 / np.diff(ts)
-        assert_allclose(fs, stream.info["sfreq"])
-        idx = [np.where(raw[:, :][0] == data[k, 0])[1] for k in range(data.shape[0])]
-        idx = np.concatenate(idx)
-        counter = Counter(idx)
-        idx, n_channels = counter.most_common()[0]
-        assert n_channels == data.shape[0]
-        assert n_channels == stream.sinfo.n_channels
-        start = idx
-        stop = start + data.shape[1]
-        if stop <= raw.times.size:
-            assert_allclose(data, raw[:, start:stop][0])
-        else:
-            raw_data = np.hstack((raw[:, start:][0], raw[:, :][0]))[:, : stop - start]
-            assert_allclose(data, raw_data)
+        assert_allclose(1 / np.diff(ts), stream.info["sfreq"])
+        match_stream_and_raw_data(data, raw, stream.sinfo.n_channels)
         time.sleep(0.3)
 
     # montage
@@ -67,7 +55,7 @@ def test_stream(mock_lsl_stream):
     plt.close("all")
     montage = stream.get_montage()
     assert isinstance(montage, DigMontage)
-    assert montage.ch_names == stream.ch_names[1:]  # first channel is
+    assert montage.ch_names == stream.ch_names[1:]  # first channel is TRIGGER
 
     # dtype
     assert stream.dtype == stream.sinfo.dtype
@@ -129,3 +117,22 @@ def test_stream_double_connection(mock_lsl_stream, caplog):
     stream.connect()
     assert "stream is already connected" in caplog.text
     stream.disconnect()
+
+
+def test_stream_drop_channels(mock_lsl_stream):
+    """Test dropping chanels."""
+    stream = Stream(bufsize=2, name="BSL-Player-pytest")
+    stream.connect()
+    stream.drop_channels("TRIGGER")
+    raw_ = raw.copy().drop_channels("TRIGGER")
+    assert stream.ch_names == raw_.ch_names
+    time.sleep(0.1)  # give a bit of time to the stream to acquire the first chunks
+    for _ in range(3):
+        data, _ = stream.get_data(winsize=0.1)
+        match_stream_and_raw_data(data, raw, len(stream.ch_names))
+        time.sleep(0.3)
+
+
+def test_stream_pick(mock_lsl_stream):
+    """Test channel selection."""
+    pass

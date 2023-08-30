@@ -1,9 +1,7 @@
 from bsl.datasets import eeg_resting_state
 from bsl.datasets._fetching import _hashfunc
-from bsl.utils._tests import requires_good_network
 
 
-@requires_good_network
 def test_data_path():
     """Test that the path exist and match the desired dataset."""
     path = eeg_resting_state.data_path()

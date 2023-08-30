@@ -1,75 +1,41 @@
-"""Utility functions for testing. Inspired from MNE."""
+from __future__ import annotations  # c.f. PEP 563, PEP 649
 
-from functools import partial
+from collections import Counter
 from importlib import import_module
-from pathlib import Path
-from typing import Callable
+from typing import TYPE_CHECKING
 
+import numpy as np
 import pytest
-import requests
-
-from ..datasets import (
-    eeg_auditory_stimuli,
-    eeg_resting_state,
-    eeg_resting_state_short,
-    trigger_def,
-)
-from ..datasets._fetching import _hashfunc
+from numpy.testing import assert_allclose
 
 
-def requires_good_network(function: Callable):  # noqa: D401
-    """Decorator to skip a test if a network connection is not available."""
-    try:
-        requests.get("https://github.com/", timeout=1)
-        skip = False
-    except ConnectionError:
-        skip = True
-    name = function.__name__
-    reason = f"Test {name} skipped, requires a good network connection."
-    return pytest.mark.skipif(skip, reason=reason)(function)
+if TYPE_CHECKING:
+    from typing import Callable
+
+    from mne.io import BaseRaw
+    from numpy.typing import NDArray
 
 
-def _requires_dataset_or_good_network(function: Callable, dataset):  # noqa
-    """Decorator to skip a test if a required dataset is absent and it can not
-    be downloaded.
-    """
-    # BSL datasets
-    try:
-        fname = dataset.PATH
-        download = (
-            False
-            if fname.exists() and _hashfunc(fname, hash_type="md5") == dataset.MD5
-            else True
-        )
-    except AttributeError:
-        # MNE datasets
-        try:
-            fname = dataset.data_path(download=False)
-            download = False if fname != "" and Path(fname).exists() else True
-        except AttributeError:
-            raise ValueError("Unsupported dataset.")
-
-    if download:
-        return requires_good_network(function)
+def match_stream_and_raw_data(
+    data: NDArray[float], raw: BaseRaw, n_channels: int
+) -> None:
+    """Check if the data array is part of the provided raw."""
+    idx = [np.where(raw[:, :][0] == data[k, 0])[1] for k in range(data.shape[0])]
+    idx = np.concatenate(idx)
+    counter = Counter(idx)
+    idx, n_channels_ = counter.most_common()[0]
+    assert n_channels_ == data.shape[0]
+    assert n_channels_ == n_channels
+    start = idx
+    stop = start + data.shape[1]
+    if stop <= raw.times.size:
+        assert_allclose(data, raw[:, start:stop][0])
     else:
-        return function
+        raw_data = np.hstack((raw[:, start:][0], raw[:, :][0]))[:, : stop - start]
+        assert_allclose(data, raw_data)
 
 
-requires_eeg_auditory_stimuli_dataset = partial(
-    _requires_dataset_or_good_network, dataset=eeg_auditory_stimuli
-)
-requires_eeg_resting_state_dataset = partial(
-    _requires_dataset_or_good_network, dataset=eeg_resting_state
-)
-requires_eeg_resting_state_short_dataset = partial(
-    _requires_dataset_or_good_network, dataset=eeg_resting_state_short
-)
-requires_trigger_def_dataset = partial(
-    _requires_dataset_or_good_network, dataset=trigger_def
-)
-
-
-def _requires_module(function: Callable, name: str):
+def requires_module(function: Callable, name: str):
     """Skip a test if package is not available (decorator)."""
     try:
         import_module(name)
