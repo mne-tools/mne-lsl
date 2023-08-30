@@ -77,6 +77,10 @@ class Player(ContainsMixin):
 
     def start(self) -> None:
         """Start streaming data on the LSL `~bsl.lsl.StreamOutlet`."""
+        if self._streaming_thread is not None:
+            raise RuntimeError(
+                "The player is already started. Use Player.stop() to stop streaming."
+            )
         self._outlet = StreamOutlet(self._sinfo, self._chunk_size)
         self._streaming_delay = self.chunk_size / self.info["sfreq"]
         self._streaming_thread = Timer(0, self._stream)

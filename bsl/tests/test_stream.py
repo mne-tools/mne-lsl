@@ -1,5 +1,4 @@
 import time
-from collections import Counter
 
 import numpy as np
 import pytest
@@ -129,7 +128,14 @@ def test_stream_drop_channels(mock_lsl_stream):
     time.sleep(0.1)  # give a bit of time to the stream to acquire the first chunks
     for _ in range(3):
         data, _ = stream.get_data(winsize=0.1)
-        match_stream_and_raw_data(data, raw, len(stream.ch_names))
+        match_stream_and_raw_data(data, raw_, len(stream.ch_names))
+        time.sleep(0.3)
+    stream.drop_channels(["Fp1", "Fp2"])
+    raw_ = raw_.drop_channels(["Fp1", "Fp2"])
+    assert stream.ch_names == raw_.ch_names
+    for _ in range(3):
+        data, _ = stream.get_data(winsize=0.1)
+        match_stream_and_raw_data(data, raw_, len(stream.ch_names))
         time.sleep(0.3)
 
 
