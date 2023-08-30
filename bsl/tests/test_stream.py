@@ -292,3 +292,44 @@ def test_stream_channel_units(mock_lsl_stream):
         match_stream_and_raw_data(data, raw_, len(stream.ch_names))
         time.sleep(0.3)
     stream.disconnect()
+
+
+def test_stream_add_reference_channels(mock_lsl_stream):
+    """Test add reference channels and channel selection."""
+    stream = Stream(bufsize=2, name="BSL-Player-pytest")
+    stream.connect()
+    time.sleep(0.1)  # give a bit of time to slower CIs
+    stream.add_reference_channels("CPz")
+    raw_ = raw.copy().add_reference_channels("CPz")
+    assert stream.ch_names == raw_.ch_names
+    # acquire a couple of chunks
+    time.sleep(0.1)
+    for _ in range(3):
+        data, _ = stream.get_data(winsize=0.1)
+        match_stream_and_raw_data(data, raw_, len(stream.ch_names))
+        time.sleep(0.3)
+    stream.add_reference_channels(["Ref1", "Ref2"])
+    raw_.add_reference_channels(["Ref1", "Ref2"])
+    assert stream.ch_names == raw_.ch_names
+    # acquire a couple of chunks
+    for _ in range(3):
+        data, _ = stream.get_data(winsize=0.1)
+        match_stream_and_raw_data(data, raw_, len(stream.ch_names))
+        time.sleep(0.3)
+    # pick channels
+    stream.pick("eeg")
+    raw_.pick("eeg")
+    for _ in range(3):
+        data, _ = stream.get_data(winsize=0.1)
+        match_stream_and_raw_data(data, raw_, len(stream.ch_names))
+        time.sleep(0.3)
+    with pytest.raises(RuntimeError, match="selection would not leave any channel"):
+        stream.pick("CPz")
+    # add reference channel again
+    stream.add_reference_channels("Ref3")
+    raw_.add_reference_channels("Ref3")
+    for _ in range(3):
+        data, _ = stream.get_data(winsize=0.1)
+        match_stream_and_raw_data(data, raw_, len(stream.ch_names))
+        time.sleep(0.3)
+    stream.disconnect()

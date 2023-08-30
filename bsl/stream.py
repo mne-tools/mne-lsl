@@ -789,11 +789,11 @@ class Stream(ContainsMixin, SetChannelsMixin):
                 "is not connected. Please open an issue on GitHub and provide the "
                 "error traceback to the developers."
             )
-
         while self._acquisition_thread.is_alive():
             self._acquisition_thread.cancel()
         yield
-        self._acquisition_thread = Timer(self._acquisition_delay, self._acquire)
+        self._acquisition_thread = Timer(0, self._acquire)
+        self._acquisition_thread.daemon = True
         self._acquisition_thread.start()
 
     def _pick(self, picks: NDArray[int]) -> None:

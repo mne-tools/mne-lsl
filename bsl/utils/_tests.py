@@ -1,6 +1,5 @@
 from __future__ import annotations  # c.f. PEP 563, PEP 649
 
-from collections import Counter
 from importlib import import_module
 from typing import TYPE_CHECKING
 
@@ -19,13 +18,11 @@ def match_stream_and_raw_data(
     data: NDArray[float], raw: BaseRaw, n_channels: int
 ) -> None:
     """Check if the data array is part of the provided raw."""
-    idx = [np.where(raw[:, :][0] == data[k, 0])[1] for k in range(data.shape[0])]
-    idx = np.concatenate(idx)
-    counter = Counter(idx)
-    idx, n_channels_ = counter.most_common()[0]
-    assert n_channels_ == data.shape[0]
-    assert n_channels_ == n_channels
-    start = idx
+    for start in range(raw.times.size):
+        if np.allclose(np.squeeze(raw[:, start][0]), data[:, 0], atol=0, rtol=1e-8):
+            break
+    else:
+        raise RuntimeError("Could not find match between data and raw.")
     stop = start + data.shape[1]
     if stop <= raw.times.size:
         assert_allclose(data, raw[:, start:stop][0])
