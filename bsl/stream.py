@@ -528,9 +528,16 @@ class Stream(ContainsMixin, SetChannelsMixin):
         See Also
         --------
         drop_channels
+
+        Notes
+        -----
+        Contrary to MNE-Python, re-ordering channels is not supported in ``BSL``. Thus,
+        if explicit channel names are provided in ``picks``, they are sorted to match
+        the order of existing channel names.
         """
         self._check_connected(name="Stream.pick()")
         picks = _picks_to_idx(self._info, picks, "all", exclude, allow_empty=False)
+        picks = np.sort(picks)
         self._pick(picks)
 
     def record(self):

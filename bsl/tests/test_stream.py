@@ -11,8 +11,10 @@ from mne.utils import check_version
 from numpy.testing import assert_allclose
 
 if check_version("mne", "1.6"):
+    from mne._fiff.constants import FIFF
     from mne._fiff.pick import _picks_to_idx
 else:
+    from mne.io.constants import FIFF
     from mne.io.pick import _picks_to_idx
 
 from bsl import Stream, logger
@@ -191,6 +193,19 @@ def test_stream_pick(mock_lsl_stream):
         data, _ = stream.get_data(winsize=0.1)
         match_stream_and_raw_data(data, raw_, len(stream.ch_names))
         time.sleep(0.3)
+
+    # test lack of re-order via pick
+    stream.pick(
+        [stream.ch_names[5], stream.ch_names[3], stream.ch_names[8], stream.ch_names[1]]
+    )
+    raw_.pick(
+        [raw_.ch_names[1], raw_.ch_names[3], raw_.ch_names[5], raw_.ch_names[8]]
+    )
+    assert stream.ch_names == raw_.ch_names
+    for _ in range(3):
+        data, _ = stream.get_data(winsize=0.1)
+        match_stream_and_raw_data(data, raw_, len(stream.ch_names))
+        time.sleep(0.3)
     stream.disconnect()
 
 
@@ -209,7 +224,7 @@ def test_stream_meas_date_and_anonymize(mock_lsl_stream):
     stream.disconnect()
 
 
-def test_stream_set_channel_types(mock_lsl_stream):
+def test_stream_channel_types(mock_lsl_stream):
     """Test channel type getters and setters."""
     stream = Stream(bufsize=2, name="BSL-Player-pytest")
     stream.connect()
@@ -224,7 +239,7 @@ def test_stream_set_channel_types(mock_lsl_stream):
     stream.disconnect()
 
 
-def test_rename_channels(mock_lsl_stream):
+def test_stream_channel_names(mock_lsl_stream):
     """Test channel renaming."""
     stream = Stream(bufsize=2, name="BSL-Player-pytest")
     stream.connect()
@@ -242,6 +257,34 @@ def test_rename_channels(mock_lsl_stream):
     raw_.rename_channels({"hEOG": "EOG"})
     assert stream.ch_names == raw_.ch_names
     assert stream.info["ch_names"] == raw_.ch_names
+    # acquire a couple of chunks
+    time.sleep(0.1)
+    for _ in range(3):
+        data, _ = stream.get_data(winsize=0.1)
+        match_stream_and_raw_data(data, raw_, len(stream.ch_names))
+        time.sleep(0.3)
+    stream.disconnect()
+
+
+def test_stream_channel_units(mock_lsl_stream):
+    """Test channel unit getters and setters."""
+    stream = Stream(bufsize=2, name="BSL-Player-pytest")
+    stream.connect()
+    ch_units = stream.get_channel_units()
+    assert ch_units == [(FIFF.FIFF_UNIT_V, FIFF.FIFF_UNITM_NONE)] * len(stream.ch_names)
+    stream.set_channel_units({"vEOG": "microvolts", "hEOG": "uv", "TRIGGER": 3})
+    ch_units = stream.get_channel_units()
+    assert ch_units[stream.ch_names.index("vEOG")][1] == -6
+    assert ch_units[stream.ch_names.index("hEOG")][1] == -6
+    assert ch_units[stream.ch_names.index("TRIGGER")][1] == 3
+
+    # set channel units after channel selection
+    stream.pick(["vEOG", "hEOG", "TRIGGER", "Fp1", "Fp2"])
+    raw_ = raw.copy().pick(["Fp1", "Fp2", "vEOG", "hEOG", "TRIGGER"])
+    stream.set_channel_units({"Fp1": -6, "vEOG": 6})
+    ch_units = stream.get_channel_units()
+    assert ch_units[stream.ch_names.index("Fp1")][1] == -6
+    assert ch_units[stream.ch_names.index("vEOG")][1] == 6
     # acquire a couple of chunks
     time.sleep(0.1)
     for _ in range(3):
