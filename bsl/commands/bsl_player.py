@@ -18,6 +18,7 @@ def run():
         "-n",
         "--name",
         type=str,
+        metavar="str",
         help="name of the stream displayed by LSL.",
         default="BSL-Player",
     )
