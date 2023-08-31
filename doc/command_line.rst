@@ -35,7 +35,7 @@ With the optional arguments:
 StreamViewer
 ------------
 
-The :class:`~bsl.StreamViewer` can be called from the command-line with:
+The :class:`~bsl.stream_viewer.StreamViewer` can be called from the command-line with:
 
 .. code-block:: console
 
@@ -50,7 +50,7 @@ With the optional arguments:
     If ``stream_name`` is not provided, a prompt is displayed to select a
     stream among the available ones.
 
-The :class:`~bsl.StreamViewer` opens 2 windows:
+The :class:`~bsl.stream_viewer.StreamViewer` opens 2 windows:
 
 - A controller to select the channels to plot and set different plotting
   parameters.
