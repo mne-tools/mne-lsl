@@ -35,7 +35,7 @@ class StreamViewer:
         Parameters
         ----------
         bufsize : int | float
-            Buffer/window size of the attached StreamReceiver.
+            Buffer/window size of the attached Viewer.
             The default ``0.2`` should work in most cases since data is fetched
             every 20 ms.
         """

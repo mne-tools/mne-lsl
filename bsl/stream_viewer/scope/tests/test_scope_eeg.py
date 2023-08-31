@@ -5,22 +5,22 @@ import mne
 import numpy as np
 import pytest
 
-from bsl import StreamPlayer, StreamReceiver
+from bsl import Player
 from bsl.datasets import eeg_resting_state
+from bsl.lsl import StreamInlet, resolve_streams
 from bsl.stream_viewer.scope import ScopeEEG
 from bsl.stream_viewer.scope._scope import _BUFFER_DURATION
 
 
 def test_scope_eeg():
     """Test EEG scope default capabilities."""
-    bufsize = 0.2
     stream_name = "StreamPlayer"
 
-    with StreamPlayer(stream_name, eeg_resting_state.data_path()):
-        receiver = StreamReceiver(
-            bufsize=bufsize, winsize=bufsize, stream_name=stream_name
-        )
-        scope = ScopeEEG(receiver, stream_name)
+    with Player(eeg_resting_state.data_path(), stream_name):
+        streams = resolve_streams()
+        inlet = StreamInlet(streams[0])
+        inlet.open_stream()
+        scope = ScopeEEG(inlet)
 
         # test init of BP filter
         assert not hasattr(scope, "_sos")
@@ -70,18 +70,16 @@ def test_scope_eeg():
 
 def test_buffer_duration():
     """Test the buffer size."""
-    bufsize = 0.2
     stream_name = "StreamPlayer"
-
     raw = mne.io.read_raw_fif(eeg_resting_state.data_path(), preload=False)
     sfreq = raw.info["sfreq"]
 
-    with StreamPlayer(stream_name, eeg_resting_state.data_path()):
-        receiver = StreamReceiver(
-            bufsize=bufsize, winsize=bufsize, stream_name=stream_name
-        )
-        scope = ScopeEEG(receiver, stream_name)
-        assert scope.sample_rate == receiver.streams[stream_name].sample_rate == sfreq
+    with Player(eeg_resting_state.data_path(), stream_name):
+        streams = resolve_streams()
+        inlet = StreamInlet(streams[0])
+        inlet.open_stream()
+        scope = ScopeEEG(inlet)
+        assert scope.sample_rate == inlet.get_sinfo().sfreq
 
         assert scope.duration_buffer == _BUFFER_DURATION
         assert scope.duration_buffer_samples == math.ceil(_BUFFER_DURATION * sfreq)
@@ -89,15 +87,14 @@ def test_buffer_duration():
 
 def test_properties():
     """Test EEG scope properties."""
-    bufsize = 0.2
     stream_name = "StreamPlayer"
     raw = mne.io.read_raw_fif(eeg_resting_state.data_path(), preload=False)
 
-    with StreamPlayer(stream_name, eeg_resting_state.data_path()):
-        receiver = StreamReceiver(
-            bufsize=bufsize, winsize=bufsize, stream_name=stream_name
-        )
-        scope = ScopeEEG(receiver, stream_name)
+    with Player(eeg_resting_state.data_path(), stream_name):
+        streams = resolve_streams()
+        inlet = StreamInlet(streams[0])
+        inlet.open_stream()
+        scope = ScopeEEG(inlet)
 
         assert scope.stream_name == scope._stream_name == stream_name
         assert scope.sample_rate == scope._sample_rate
