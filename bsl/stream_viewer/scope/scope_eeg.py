@@ -101,6 +101,8 @@ class ScopeEEG(_Scope):
         self._data_acquired = self._data_acquired[:, self._picks].reshape(
             (-1, self._nb_channels)
         )
+        # re-scale
+        self._data_acquired *= 1e6
 
     def _filter_signal(self):
         """Apply bandpass and CAR filter to the signal acquired if needed."""
