@@ -59,7 +59,7 @@ docdict[
     "viewer_scope"
 ] = """
 scope : Scope
-    Scope connected to a StreamReceiver acquiring the data and applying
+    Scope connected to a StreamInlet acquiring the data and applying
     filtering. The scope has a buffer of _BUFFER_DURATION seconds
     (default: 30s)."""
 docdict[
@@ -77,11 +77,6 @@ docdict[
 ] = """
 yRange : float
     Range of the y-axis (amplitude) in uV."""
-docdict[
-    "viewer_scope_stream_receiver"
-] = """
-stream_receiver : StreamReceiver
-    Connected StreamReceiver."""
 docdict[
     "viewer_scope_stream_name"
 ] = """
