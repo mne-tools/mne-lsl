@@ -1,7 +1,7 @@
 Stream classes
 ==============
 
-.. currentmodule:: bsl
+.. currentmodule:: bsl.stream_viewer
 
 .. autosummary::
    :toctree: generated/

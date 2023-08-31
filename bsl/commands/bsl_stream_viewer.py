@@ -1,6 +1,6 @@
 import argparse
 
-from bsl import StreamViewer
+from bsl.stream_viewer import StreamViewer
 
 
 def run():
