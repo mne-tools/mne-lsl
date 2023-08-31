@@ -71,7 +71,9 @@ def test_scope_eeg():
 def test_buffer_duration():
     """Test the buffer size."""
     stream_name = "StreamPlayer"
-    raw = mne.io.read_raw_fif(testing.data_path() / "sample-eeg-ant-raw.fif", preload=False)
+    raw = mne.io.read_raw_fif(
+        testing.data_path() / "sample-eeg-ant-raw.fif", preload=False
+    )
     sfreq = raw.info["sfreq"]
 
     with Player(testing.data_path() / "sample-eeg-ant-raw.fif", stream_name):
@@ -88,7 +90,9 @@ def test_buffer_duration():
 def test_properties():
     """Test EEG scope properties."""
     stream_name = "StreamPlayer"
-    raw = mne.io.read_raw_fif(testing.data_path() / "sample-eeg-ant-raw.fif", preload=False)
+    raw = mne.io.read_raw_fif(
+        testing.data_path() / "sample-eeg-ant-raw.fif", preload=False
+    )
 
     with Player(testing.data_path() / "sample-eeg-ant-raw.fif", stream_name):
         streams = resolve_streams()
