@@ -176,6 +176,8 @@ omit = [
     '**/bsl/_version.py',
     '**/bsl/commands/*',
     '**/bsl/conftest.py',
+    '**/bsl/utils/_tests.py',
+    '**/bsl/utils/_fixes.py',
     '**/tests/**',
 ]
 
