@@ -12,35 +12,23 @@ For each command, the flag ``-h`` can be used to obtain additional information.
 
 .. _stream_player:
 
-StreamPlayer
-------------
+Player
+------
 
-The :class:`~bsl.StreamPlayer` can be called from the command-line with:
+The :class:`~bsl.Player` can be called from the command-line with:
 
 .. code-block:: console
 
-    $ bsl_stream_player stream_name fif_file
+    $ bsl_stream_player file -n stream_name
 
 With the positional arguments:
 
-- ``stream_name``: `str`, name of the LSL stream displayed on the network.
-- ``fif_file``: :term:`file-like <python:file object>`, recorded fif file by the
-  StreamRecorder.
+- ``file``: :term:`file-like <python:file object>`
 
 With the optional arguments:
 
-- ``r``, ``--repeat``: `int`, number of time the file is repeated.
-  Default ``+inf``.
-- ``-t``, ``--trigger_def``: :term:`file-like <python:file object>`, trigger file
-  mapping events id to strings, loaded by :class:`~bsl.triggers.trigger_def.TriggerDef`.
-- ``-c``, ``--chunk_size``: `int`, chunk size pushed on the outlet. Default
-  ``16``.
-- ``--high_resolution``: boolean flag, uses `time.perf_counter` instead of
-  `time.sleep`.
-
-.. image:: _static/stream_player/stream_player_cli.gif
-   :alt: StreamPlayer
-   :align: center
+- ``-n``, ``--name``: `str`, name of the LSL stream.
+  Default ``BSL-Player``.
 
 .. _stream_viewer:
 
