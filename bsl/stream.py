@@ -513,7 +513,8 @@ class Stream(ContainsMixin, SetChannelsMixin):
         Notes
         -----
         The number of newly available samples stored in the property ``n_new_samples``
-        is reset at every function call.
+        is reset at every function call, even if all channels were not selected with
+        the argument ``picks``.
         """
         try:
             if winsize is None:
