@@ -138,7 +138,6 @@ numpydoc_xref_aliases = {
     "StreamInfo": "bsl.lsl.StreamInfo",
     "StreamInlet": "bsl.lsl.StreamInlet",
     "StreamOutlet": "bsl.lsl.StreamOutlet",
-    "TriggerDef": "bsl.triggers.TriggerDef",
     # Matplotlib
     "Axes": "matplotlib.axes.Axes",
     "Axes3D": "mpl_toolkits.mplot3d.axes3d.Axes3D",

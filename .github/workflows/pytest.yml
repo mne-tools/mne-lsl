@@ -40,8 +40,6 @@ jobs:
           python -m pip install --progress-bar off .[test]
       - name: Display system information
         run: bsl-sys_info --developer
-      - name: Download BSL testing dataset
-        run: python -c 'import bsl; bsl.datasets._download_all_datasets()'
       - name: Run pytest
         run: pytest bsl --cov=bsl --cov-report=xml --cov-config=pyproject.toml
       - name: Upload to codecov

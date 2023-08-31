@@ -1,19 +1,6 @@
 Utilities
 =========
 
-Datasets
---------
-
-.. currentmodule:: bsl.datasets
-
-.. autosummary::
-   :toctree: generated/
-
-   eeg_resting_state.data_path
-   eeg_resting_state_short.data_path
-   eeg_auditory_stimuli.data_path
-   trigger_def.data_path
-
 Logging
 -------
 
