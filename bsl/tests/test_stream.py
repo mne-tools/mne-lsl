@@ -20,6 +20,7 @@ else:
 from bsl import Stream, logger
 from bsl.datasets import testing
 from bsl.utils._tests import match_stream_and_raw_data
+from bsl.utils.logs import _use_log_level
 
 logger.propagate = True
 
@@ -358,9 +359,9 @@ def test_stream_get_data_picks(mock_lsl_stream):
         data, _ = stream.get_data(winsize=0.1, picks="eeg")
         match_stream_and_raw_data(data, raw_)
         time.sleep(0.3)
-    raw_.pick("Fp1")
+    raw_.pick(["Fp1", "F2", "F4"])
     for _ in range(3):
-        data, _ = stream.get_data(winsize=0.1, picks="Fp1")
+        data, _ = stream.get_data(winsize=0.1, picks=["Fp1", "F2", "F4"])
         match_stream_and_raw_data(data, raw_)
         time.sleep(0.3)
     stream.disconnect()
@@ -368,7 +369,6 @@ def test_stream_get_data_picks(mock_lsl_stream):
 
 def test_stream_n_new_samples(mock_lsl_stream, caplog):
     """Test the number of new samples available."""
-    caplog.set_level(30)  # WARNING
     stream = Stream(bufsize=0.4, name="BSL-Player-pytest")
     assert stream.n_new_samples is None
     stream.connect()
@@ -376,10 +376,11 @@ def test_stream_n_new_samples(mock_lsl_stream, caplog):
     assert 0 < stream.n_new_samples
     _, _ = stream.get_data()
     assert stream.n_new_samples == 0
-    caplog.clear()
-    time.sleep(0.8)
-    assert "new samples exceeds the buffer size" in caplog.text
+    with _use_log_level("INFO"):
+        caplog.set_level(20)  # INFO
+        caplog.clear()
+        time.sleep(0.8)
+        assert "new samples exceeds the buffer size" in caplog.text
     _, _ = stream.get_data(winsize=0.1)
-    assert "smaller than the number of new samples" in caplog.text
     assert stream.n_new_samples == 0
     stream.disconnect()

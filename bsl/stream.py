@@ -361,7 +361,9 @@ class Stream(ContainsMixin, SetChannelsMixin):
             )
         # create inlet and retrieve stream info
         self._inlet = StreamInlet(
-            sinfos[0], max_buffered=self._bufsize, processing_flags=processing_flags
+            sinfos[0],
+            max_buffered=ceil(self._bufsize),
+            processing_flags=processing_flags,
         )
         self._inlet.open_stream(timeout=timeout)
         self._sinfo = self._inlet.get_sinfo()
@@ -535,12 +537,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
             # 8.68 µs ± 113 ns per loop
             # >>> %timeit _picks_to_idx(raw.info, None)
             # 253 µs ± 1.22 µs per loop
-            picks = _picks_to_idx(self._info, picks)
-            if n_samples < self._n_new_samples:
-                logger.warning(
-                    "The number of samples requested with the argument 'winsize' is "
-                    "smaller than the number of new samples."
-                )
+            picks = _picks_to_idx(self._info, picks, none="all")
             self._n_new_samples = 0  # reset the number of new samples
             return self._buffer[-n_samples:, picks].T, self._timestamps[-n_samples:]
         except Exception:
@@ -813,18 +810,26 @@ class Stream(ContainsMixin, SetChannelsMixin):
             # roll and update buffers
             self._buffer = np.roll(self._buffer, -data.shape[0], axis=0)
             self._timestamps = np.roll(self._timestamps, -timestamps.size, axis=0)
-            self._buffer[-timestamps.size :, :] = data  # noqa: E203
-            self._timestamps[-timestamps.size :] = timestamps  # noqa: E203
+            self._buffer[-timestamps.size :, :] = data[
+                -self._timestamps.size :, :
+            ]  # noqa: E203
+            self._timestamps[-timestamps.size :] = timestamps[
+                -self._timestamps.size :
+            ]  # noqa: E203
             # update the number of new samples available
-            self._n_new_samples += timestamps.size
-            if self._timestamps.size < self._n_new_samples:
-                logger.warning(
+            self._n_new_samples += min(timestamps.size, self._timestamps.size)
+            if (
+                self._timestamps.size < self._n_new_samples
+                or self._timestamps.size < timestamps.size
+            ):
+                logger.info(
                     "The number of new samples exceeds the buffer size. Consider using "
                     "a larger buffer by creating a Stream with a larger 'bufsize' "
                     "argument or consider retrieving new samples more often with "
                     "Stream.get_data()."
                 )
-        except Exception:
+        except Exception as error:
+            logger.exception(error)
             self._reset_variables()
             return None  # equivalent to an interrupt
         else:
