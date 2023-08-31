@@ -109,11 +109,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
 
     @copy_doc(ContainsMixin.__contains__)
     def __contains__(self, ch_type) -> bool:
-        if not self.connected:
-            raise RuntimeError(
-                "The Stream attribute 'info' is None. An Info instance is required by "
-                "the 'in' operator. Please connect to the stream to create the Info."
-            )
+        self._check_connected("the 'in' operator")
         return super().__contains__(ch_type)
 
     def __del__(self):
@@ -810,12 +806,10 @@ class Stream(ContainsMixin, SetChannelsMixin):
             # roll and update buffers
             self._buffer = np.roll(self._buffer, -data.shape[0], axis=0)
             self._timestamps = np.roll(self._timestamps, -timestamps.size, axis=0)
-            self._buffer[-timestamps.size :, :] = data[
-                -self._timestamps.size :, :
-            ]  # noqa: E203
-            self._timestamps[-timestamps.size :] = timestamps[
-                -self._timestamps.size :
-            ]  # noqa: E203
+            # fmt: off
+            self._buffer[-timestamps.size :, :] = data[-self._timestamps.size :, :]  # noqa: E203, E501
+            self._timestamps[-timestamps.size :] = timestamps[-self._timestamps.size :]  # noqa: E203, E501
+            # fmt: on
             # update the number of new samples available
             self._n_new_samples += min(timestamps.size, self._timestamps.size)
             if (
