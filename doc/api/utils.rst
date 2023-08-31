@@ -19,13 +19,3 @@ Development
     :toctree: generated/
 
     sys_info
-
-Deprecated
-----------
-
-.. currentmodule:: bsl.utils
-
-.. autosummary::
-   :toctree: generated/
-
-   find_event_channel

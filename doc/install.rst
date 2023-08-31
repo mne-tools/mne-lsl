@@ -108,7 +108,7 @@ On macOS, ``homebrew`` can be used to download and install ``liblsl``:
     $ brew install labstreaminglayer/tap/lsl
 
 To test the installation, you can run a fake stream with a `~bsl.Player` and
-display it with a `~bsl.StreamViewer`.
+display it with a `~bsl.stream_viewer.StreamViewer`.
 
 - Download a sample :ref:`bsl.datasets<datasets>`:
 
@@ -133,13 +133,13 @@ display it with a `~bsl.StreamViewer`.
 
       $ bsl.player resting_state-raw.fif -n TestStream
 
-- Run a `~bsl.StreamViewer` from a different terminal:
+- Run a `~bsl.stream_viewer.StreamViewer` from a different terminal:
 
   .. code-block:: console
 
       $ bsl_stream_viewer
 
-  The `~bsl.StreamViewer` should load and display:
+  The `~bsl.stream_viewer.StreamViewer` should load and display:
 
   .. image:: _static/stream_viewer/stream_viewer.gif
       :alt: StreamViewer
