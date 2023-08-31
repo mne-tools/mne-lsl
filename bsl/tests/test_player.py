@@ -65,7 +65,7 @@ def test_player(caplog):
     ]
 
     # check that the returned data array is in raw
-    match_stream_and_raw_data(data.T, raw, sinfo.n_channels)
+    match_stream_and_raw_data(data.T, raw)
     player.stop()
 
 

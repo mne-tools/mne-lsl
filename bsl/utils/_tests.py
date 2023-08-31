@@ -14,9 +14,7 @@ if TYPE_CHECKING:
     from numpy.typing import NDArray
 
 
-def match_stream_and_raw_data(
-    data: NDArray[float], raw: BaseRaw, n_channels: int
-) -> None:
+def match_stream_and_raw_data(data: NDArray[float], raw: BaseRaw) -> None:
     """Check if the data array is part of the provided raw."""
     for start in range(raw.times.size):
         if np.allclose(np.squeeze(raw[:, start][0]), data[:, 0], atol=0, rtol=1e-8):
