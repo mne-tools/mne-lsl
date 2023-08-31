@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 
 from bsl import Player
-from bsl.datasets import eeg_resting_state
+from bsl.datasets import testing
 from bsl.lsl import StreamInlet, resolve_streams
 from bsl.stream_viewer.scope import ScopeEEG
 from bsl.stream_viewer.scope._scope import _BUFFER_DURATION
@@ -16,7 +16,7 @@ def test_scope_eeg():
     """Test EEG scope default capabilities."""
     stream_name = "StreamPlayer"
 
-    with Player(eeg_resting_state.data_path(), stream_name):
+    with Player(testing.data_path() / "sample-eeg-ant-raw.fif", stream_name):
         streams = resolve_streams()
         inlet = StreamInlet(streams[0])
         inlet.open_stream()
@@ -71,10 +71,12 @@ def test_scope_eeg():
 def test_buffer_duration():
     """Test the buffer size."""
     stream_name = "StreamPlayer"
-    raw = mne.io.read_raw_fif(eeg_resting_state.data_path(), preload=False)
+    raw = mne.io.read_raw_fif(
+        testing.data_path() / "sample-eeg-ant-raw.fif", preload=False
+    )
     sfreq = raw.info["sfreq"]
 
-    with Player(eeg_resting_state.data_path(), stream_name):
+    with Player(testing.data_path() / "sample-eeg-ant-raw.fif", stream_name):
         streams = resolve_streams()
         inlet = StreamInlet(streams[0])
         inlet.open_stream()
@@ -88,9 +90,11 @@ def test_buffer_duration():
 def test_properties():
     """Test EEG scope properties."""
     stream_name = "StreamPlayer"
-    raw = mne.io.read_raw_fif(eeg_resting_state.data_path(), preload=False)
+    raw = mne.io.read_raw_fif(
+        testing.data_path() / "sample-eeg-ant-raw.fif", preload=False
+    )
 
-    with Player(eeg_resting_state.data_path(), stream_name):
+    with Player(testing.data_path() / "sample-eeg-ant-raw.fif", stream_name):
         streams = resolve_streams()
         inlet = StreamInlet(streams[0])
         inlet.open_stream()
@@ -101,7 +105,7 @@ def test_properties():
         assert scope.duration_buffer == scope._duration_buffer
         assert scope.duration_buffer_samples == scope._duration_buffer_samples
         assert scope.ts_list == scope._ts_list == list()
-        assert scope.channels_labels == scope._channels_labels == raw.ch_names[1:]
+        assert scope.channels_labels == scope._channels_labels == raw.ch_names[:-1]
         assert scope.nb_channels == scope._nb_channels == len(raw.ch_names[1:])
         assert scope.apply_car == scope._apply_car
         assert not scope.apply_car
