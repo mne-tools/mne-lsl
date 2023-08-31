@@ -6,7 +6,6 @@ Triggers
 .. autosummary::
    :toctree: generated/
 
-   TriggerDef
    MockTrigger
    LSLTrigger
    ParallelPortTrigger
