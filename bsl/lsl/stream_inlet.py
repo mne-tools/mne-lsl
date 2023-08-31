@@ -30,7 +30,7 @@ class StreamInlet:
     chunk_size : int ``≥ 1`` | ``0``
         The desired chunk granularity in samples. By default, the ``chunk_size`` defined
         by the sender (outlet) is used.
-    max_buffered : float ``≥ 0``
+    max_buffered : int ``≥ 0``
         The maximum amount of data to buffer in the Outlet. The number of samples
         buffered is ``max_buffered * 100`` if the sampling rate is irregular, else it's
         ``max_buffered`` seconds.
@@ -66,10 +66,10 @@ class StreamInlet:
                 "The argument 'chunk_size' must contain a positive integer. "
                 f"{chunk_size} is invalid."
             )
-        check_type(max_buffered, ("numeric",), "max_buffered")
+        max_buffered = ensure_int(max_buffered, "max_buffered")
         if max_buffered < 0:
             raise ValueError(
-                "The argument 'max_buffered' must contain a positive number. "
+                "The argument 'max_buffered' must contain a positive integer. "
                 f"{max_buffered} is invalid."
             )
         check_type(recover, (bool,), "recover")

@@ -99,6 +99,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
         self._acquisition_delay = None
         self._acquisition_thread = None
         self._buffer = None
+        self._n_new_samples = None
         # picks_inlet represent the selection of channels from the inlet.
         self._picks_inlet = None
         self._timestamps = None
@@ -360,7 +361,9 @@ class Stream(ContainsMixin, SetChannelsMixin):
             )
         # create inlet and retrieve stream info
         self._inlet = StreamInlet(
-            sinfos[0], max_buffered=self._bufsize, processing_flags=processing_flags
+            sinfos[0],
+            max_buffered=ceil(self._bufsize),
+            processing_flags=processing_flags,
         )
         self._inlet.open_stream(timeout=timeout)
         self._sinfo = self._inlet.get_sinfo()
@@ -393,6 +396,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
             self._timestamps = np.zeros(
                 ceil(self._bufsize * self._inlet.sfreq), dtype=np.float64
             )
+        self._n_new_samples = 0
         self._picks_inlet = np.arange(0, self._inlet.n_channels)
 
         # define the acquisition thread
@@ -482,9 +486,11 @@ class Stream(ContainsMixin, SetChannelsMixin):
             )
         return channel_units
 
+    @fill_doc
     def get_data(
         self,
-        winsize: Optional[float],
+        winsize: Optional[float] = None,
+        picks: Optional[str, List[str], List[int], NDArray[int]] = None,
     ) -> Tuple[NDArray[float], NDArray[float]]:
         """Retrieve the latest data from the buffer.
 
@@ -497,6 +503,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
             sampling rate ``sfreq`` is irregular, ``winsize`` is expressed in samples.
             The window will view the last ``winsize`` samples. If ``None``, the entire
             buffer is returned.
+        %(picks_all)s
 
         Returns
         -------
@@ -504,6 +511,12 @@ class Stream(ContainsMixin, SetChannelsMixin):
             Data in the given window.
         timestamps : array of shape (n_samples,)
             Timestamps in the given window.
+
+        Notes
+        -----
+        The number of newly available samples stored in the property ``n_new_samples``
+        is reset at every function call, even if all channels were not selected with
+        the argument ``picks``.
         """
         try:
             if winsize is None:
@@ -517,7 +530,16 @@ class Stream(ContainsMixin, SetChannelsMixin):
                     if self._inlet.sfreq == 0
                     else ceil(winsize * self._inlet.sfreq)
                 )
-            return self._buffer[-n_samples:, :].T, self._timestamps[-n_samples:]
+            # Support channel selection since the performance impact is small.
+            # >>> %timeit _picks_to_idx(raw.info, "eeg")
+            # 256 µs ± 5.03 µs per loop
+            # >>> %timeit _picks_to_idx(raw.info, ["Fp1", "vEOG"])
+            # 8.68 µs ± 113 ns per loop
+            # >>> %timeit _picks_to_idx(raw.info, None)
+            # 253 µs ± 1.22 µs per loop
+            picks = _picks_to_idx(self._info, picks, none="all")
+            self._n_new_samples = 0  # reset the number of new samples
+            return self._buffer[-n_samples:, picks].T, self._timestamps[-n_samples:]
         except Exception:
             if not self.connected:
                 raise RuntimeError(
@@ -788,9 +810,26 @@ class Stream(ContainsMixin, SetChannelsMixin):
             # roll and update buffers
             self._buffer = np.roll(self._buffer, -data.shape[0], axis=0)
             self._timestamps = np.roll(self._timestamps, -timestamps.size, axis=0)
-            self._buffer[-timestamps.size :, :] = data  # noqa: E203
-            self._timestamps[-timestamps.size :] = timestamps  # noqa: E203
-        except Exception:
+            self._buffer[-timestamps.size :, :] = data[
+                -self._timestamps.size :, :
+            ]  # noqa: E203
+            self._timestamps[-timestamps.size :] = timestamps[
+                -self._timestamps.size :
+            ]  # noqa: E203
+            # update the number of new samples available
+            self._n_new_samples += min(timestamps.size, self._timestamps.size)
+            if (
+                self._timestamps.size < self._n_new_samples
+                or self._timestamps.size < timestamps.size
+            ):
+                logger.info(
+                    "The number of new samples exceeds the buffer size. Consider using "
+                    "a larger buffer by creating a Stream with a larger 'bufsize' "
+                    "argument or consider retrieving new samples more often with "
+                    "Stream.get_data()."
+                )
+        except Exception as error:
+            logger.exception(error)
             self._reset_variables()
             return None  # equivalent to an interrupt
         else:
@@ -858,6 +897,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
         self._acquisition_delay = None
         self._acquisition_thread = None
         self._buffer = None
+        self._n_new_samples = None
         self._picks_inlet = None
         self._ref_channels = []
         self._timestamps = None
@@ -925,6 +965,16 @@ class Stream(ContainsMixin, SetChannelsMixin):
         :type: :class:`str` | None
         """
         return self._name
+
+    @property
+    def n_new_samples(self) -> Optional[int]:
+        """Number of new samples available in the buffer.
+
+        The number of new samples is reset at every :meth:`Stream.get_data` call.
+
+        :type: :class:`int` | None
+        """
+        return self._n_new_samples
 
     @property
     def sinfo(self) -> Optional[_BaseStreamInfo]:
