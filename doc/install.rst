@@ -107,7 +107,7 @@ On macOS, ``homebrew`` can be used to download and install ``liblsl``:
 
     $ brew install labstreaminglayer/tap/lsl
 
-To test the installation, you can run a fake stream with a `~bsl.StreamPlayer` and
+To test the installation, you can run a fake stream with a `~bsl.Player` and
 display it with a `~bsl.StreamViewer`.
 
 - Download a sample :ref:`bsl.datasets<datasets>`:
@@ -118,20 +118,20 @@ display it with a `~bsl.StreamViewer`.
       dataset = bsl.datasets.eeg_resting_state.data_path()
       print (dataset)  # displays the path to the -raw.fif dataset
 
-- Run a `~bsl.StreamPlayer` either from a python console:
+- Run a `~bsl.Player` either from a python console:
 
   .. code-block:: python
 
       import bsl
       dataset = bsl.datasets.eeg_resting_state.data_path()
-      player = StreamPlayer('TestStream', dataset)
+      player = bsl.Player(dataset, 'TestStream')
       player.start()
 
   Or from a terminal in the folder containing the dataset (``~/bsl_data/eeg_sample``):
 
   .. code-block:: console
 
-      $ bsl_stream_player TestStream resting_state-raw.fif
+      $ bsl.player resting_state-raw.fif -n TestStream
 
 - Run a `~bsl.StreamViewer` from a different terminal:
 

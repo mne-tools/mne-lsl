@@ -28,7 +28,7 @@ Enhancements
 Bugs
 ----
 
-- Change type of the data stream from a `~bsl.StreamPlayer` to ``np.float64`` (:pr:`71`)
+- Change type of the data stream from a ``bsl.StreamPlayer`` to ``np.float64`` (:pr:`71`)
 - Improve logger integration with sphinx-gallery (:pr:`87`)
 - Set pins to 0 during the initialization of a parallel port (:pr:`86`)
 
