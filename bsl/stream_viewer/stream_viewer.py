@@ -3,10 +3,9 @@ import time
 
 from PyQt5.QtWidgets import QApplication
 
-from ..stream_receiver import StreamEEG, StreamReceiver
+from ..lsl import StreamInlet, resolve_streams
 from ..utils._checks import check_type
-from ..utils.logs import logger
-from ..utils.lsl import search_lsl
+from ..utils.logs import _use_log_level, logger
 from .control_gui.control_eeg import ControlGUI_EEG
 from .scope.scope_eeg import ScopeEEG
 
@@ -25,7 +24,7 @@ class StreamViewer:
     """
 
     def __init__(self, stream_name=None):
-        self._stream_name = StreamViewer._check_stream_name(stream_name)
+        self._sinfo = StreamViewer._check_stream_name(stream_name)
 
     def start(self, bufsize=0.2):
         """Connect to the selected amplifier and plot the streamed data.
@@ -36,27 +35,17 @@ class StreamViewer:
         Parameters
         ----------
         bufsize : int | float
-            Buffer/window size of the attached StreamReceiver.
+            Buffer/window size of the attached Viewer.
             The default ``0.2`` should work in most cases since data is fetched
             every 20 ms.
         """
-        logger.info("Connecting to the stream: %s", self.stream_name)
-        self._sr = StreamReceiver(
-            bufsize=bufsize, winsize=bufsize, stream_name=self._stream_name
-        )
-        self._sr.streams[self._stream_name].blocking = False
+        self._inlet = StreamInlet(self._sinfo)
+        self._inlet.open_stream()
         time.sleep(bufsize)  # Delay to fill the LSL buffer.
-
-        if isinstance(self._sr.streams[self._stream_name], StreamEEG):
-            self._scope = ScopeEEG(self._sr, self._stream_name)
-            app = QApplication(sys.argv)
-            self._ui = ControlGUI_EEG(self._scope)
-            sys.exit(app.exec_())
-        else:
-            logger.error(
-                "Unsupported stream type %s",
-                type(self._sr.streams[self._stream_name]),
-            )
+        self._scope = ScopeEEG(self._inlet)
+        app = QApplication(sys.argv)
+        self._ui = ControlGUI_EEG(self._scope)
+        sys.exit(app.exec_())
 
     # --------------------------------------------------------------------
     @staticmethod
@@ -66,25 +55,21 @@ class StreamViewer:
         the network.
         """
         check_type(stream_name, (None, str), item_name="stream_name")
-        if stream_name is None:
-            stream_name = search_lsl(ignore_markers=True)
-            if stream_name is None:
-                raise RuntimeError("No LSL stream found.")
-        return stream_name
-
-    # --------------------------------------------------------------------
-    @property
-    def stream_name(self):
-        """Connected stream's name.
-
-        :type: str
-        """
-        return self._stream_name
-
-    @property
-    def sr(self):
-        """Connected StreamReceiver.
-
-        :type: StreamReceiver
-        """
-        return self._sr
+        streams = resolve_streams(name=stream_name)
+        if len(streams) == 0:
+            raise RuntimeError("No LSL stream found.")
+        elif len(streams) == 1:
+            return streams[0]
+        else:
+            with _use_log_level("INFO"):
+                logger.info("-- List of servers --")
+                for k, stream in enumerate(streams):
+                    logger.info("%i: %i", k, stream.name)
+            index = input(
+                "Stream index? Hit enter without index to select the first server.\n>> "
+            )
+            if index.strip() == "":
+                index = 0
+            else:
+                index = int(index.strip())
+            return streams[index]

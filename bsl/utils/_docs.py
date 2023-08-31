@@ -52,66 +52,6 @@ verbose : int | str | bool | None
     to ``"INFO"`` for True."""
 
 # -----------------------------------------------
-# Stream Receiver
-docdict[
-    "receiver_get_stream_name"
-] = """
-stream_name : str | None
-    Name of the stream from which data is retrieved.
-    Can be set to ``None`` (default) if the StreamReceiver is connected to a
-    single stream."""
-docdict[
-    "receiver_get_return_raw"
-] = """
-return_raw : bool
-    By default (``False``), data is returned as a `~numpy.array` of shape
-    ``(samples, channels)``. If set to ``True``, the StreamReceiver will
-    attempt to return data as a MNE Raw instances."""
-docdict[
-    "receiver_data"
-] = """
-data : `~numpy.array`
-    Data ``(samples, channels)``."""
-docdict[
-    "receiver_timestamps"
-] = """
-timestamps : `~numpy.array`
-    Data's timestamps ``(samples, )``."""
-docdict[
-    "receiver_get_unit"
-] = """
-Returns a raw data array in the unit streamed by the LSL outlet. For conversion
-the corresponding scaling factor must be set for each stream, with e.g. for a
-stream in uV to convert to V:
-
-.. code-block:: python
-
-    sr.streams['stream_to_convert'].scaling_factor = 1e-6"""
-docdict[
-    "receiver_bufsize"
-] = """
-bufsize : int | float
-    Buffer's size ``[secs]``. ``MAX_BUF_SIZE`` (def: 1-day) is the maximum
-    size. Large buffer may lead to a delay if not pulled frequently."""
-docdict[
-    "receiver_winsize"
-] = """
-winsize : int | float
-    Window's size ``[secs]``. Must be smaller than the buffer's size."""
-
-# Not read by sphinx autodoc
-docdict[
-    "receiver_streamInfo"
-] = """
-streamInfo : LSL StreamInfo.
-    Contain all the info from the LSL stream to connect to."""
-docdict[
-    "receiver_tslist"
-] = """
-tslist : list
-    Data's timestamps (samples, )."""
-
-# -----------------------------------------------
 # Stream Viewer
 
 # Not read by sphinx autodoc
@@ -119,7 +59,7 @@ docdict[
     "viewer_scope"
 ] = """
 scope : Scope
-    Scope connected to a StreamReceiver acquiring the data and applying
+    Scope connected to a StreamInlet acquiring the data and applying
     filtering. The scope has a buffer of _BUFFER_DURATION seconds
     (default: 30s)."""
 docdict[
@@ -137,11 +77,6 @@ docdict[
 ] = """
 yRange : float
     Range of the y-axis (amplitude) in uV."""
-docdict[
-    "viewer_scope_stream_receiver"
-] = """
-stream_receiver : StreamReceiver
-    Connected StreamReceiver."""
 docdict[
     "viewer_scope_stream_name"
 ] = """
