@@ -615,8 +615,6 @@ class Stream(ContainsMixin, SetChannelsMixin):
         allow_duplicates : bool
             If True (default False), allow duplicates, which will automatically be
             renamed with ``-N`` at the end.
-
-            .. versionadded:: MNE 0.22.0
         %(verbose)s
         """
         self._check_connected(name="Stream.rename_channels()")

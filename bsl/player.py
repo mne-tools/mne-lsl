@@ -4,6 +4,7 @@ from threading import Timer
 from typing import TYPE_CHECKING
 
 import numpy as np
+from mne import rename_channels
 from mne.io import read_raw
 from mne.utils import check_version
 
@@ -22,7 +23,7 @@ from .utils.meas_info import _set_channel_units
 
 if TYPE_CHECKING:
     from pathlib import Path
-    from typing import Dict, List, Optional, Tuple, Union
+    from typing import Callable, Dict, List, Optional, Tuple, Union
 
     from mne import Info
 
@@ -110,6 +111,31 @@ class Player(ContainsMixin):
             )
         return channel_units
 
+    @fill_doc
+    def rename_channels(
+        self,
+        mapping: Union[Dict[str, str], Callable],
+        allow_duplicates: bool = False,
+        *,
+        verbose=None,
+    ) -> None:
+        """Rename channels.
+
+        Parameters
+        ----------
+        mapping : dict | callable
+            A dictionary mapping the old channel to a new channel name e.g.
+            ``{'EEG061' : 'EEG161'}``. Can also be a callable function that takes and
+            returns a string.
+        allow_duplicates : bool
+            If True (default False), allow duplicates, which will automatically be
+            renamed with ``-N`` at the end.
+        %(verbose)s
+        """
+        self._check_not_started("rename_channels")
+        rename_channels(self.info, mapping, allow_duplicates)
+        self._sinfo.set_channel_names(self.info["ch_names"])
+
     def start(self) -> None:
         """Start streaming data on the LSL `~bsl.lsl.StreamOutlet`."""
         if self._streaming_thread is not None:
@@ -149,12 +175,9 @@ class Player(ContainsMixin):
         If the human-readable unit of your channel is not yet supported by BSL, please
         contact the developers on GitHub to add your units to the known set.
         """
-        if self._streaming_thread is not None:
-            raise RuntimeError(
-                "The player is already started. The channel units can not be set on "
-                "a player currently streaming data."
-            )
+        self._check_not_started("set_channel_units")
         _set_channel_units(self.info, mapping)
+        self._sinfo.set_channel_units([ch["unit_mul"] for ch in self.info["chs"]])
 
     def stop(self) -> None:
         """Stop streaming data on the LSL :class:`~bsl.lsl.StreamOutlet`."""
@@ -166,6 +189,14 @@ class Player(ContainsMixin):
             self._streaming_thread.cancel()
         del self._outlet
         self._reset_variables()
+
+    def _check_not_started(self, name: str):
+        """Check that the player is not started before calling the function 'name'."""
+        if self._streaming_thread is not None:
+            raise RuntimeError(
+                "The player is already started. Please stop the streaming before using "
+                f"{name}."
+            )
 
     def _stream(self) -> None:
         """Push a chunk of data from the raw object to the StreamOutlet.
