@@ -171,7 +171,8 @@ class Stream(ContainsMixin, SetChannelsMixin):
             e.g. ``-6`` for microvolts corresponding to ``1e-6``.
             If not provided, the added EEG reference channel has a unit multiplication
             factor set to ``0`` which corresponds to Volts. Use
-            :meth:`~Stream.set_channel_units` to change the unit multiplication factor.
+            :meth:`~bsl.Stream.set_channel_units` to change the unit multiplication
+            factor.
         """
         self._check_connected(name="Stream.add_reference_channels()")
         # error checking and conversion of the arguments to valid values
@@ -455,7 +456,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
     def get_channel_units(
         self, picks=None, only_data_chs: bool = False
     ) -> List[Tuple[int, int]]:
-        """Get a list of channel type for each channel.
+        """Get a list of channel unit for each channel.
 
         Parameters
         ----------
@@ -614,8 +615,6 @@ class Stream(ContainsMixin, SetChannelsMixin):
         allow_duplicates : bool
             If True (default False), allow duplicates, which will automatically be
             renamed with ``-N`` at the end.
-
-            .. versionadded:: MNE 0.22.0
         %(verbose)s
         """
         self._check_connected(name="Stream.rename_channels()")
@@ -643,9 +642,9 @@ class Stream(ContainsMixin, SetChannelsMixin):
         """Define the sensor type of channels.
 
         If the new channel type changes the unit type, e.g. from ``T/m`` to ``V``, the
-        unit multiplication factor is reset to ``0``. Use `~Stream.set_channel_units` to
-        change the multiplication factor, e.g. from ``0`` to ``-6`` to change from Volts
-        to microvolts.
+        unit multiplication factor is reset to ``0``. Use
+        :meth:`~bsl.Stream.set_channel_units` to change the multiplication factor, e.g.
+        from ``0`` to ``-6`` to change from Volts to microvolts.
 
         Parameters
         ----------
