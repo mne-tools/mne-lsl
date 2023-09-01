@@ -33,6 +33,10 @@ def test_stream_info_desc(caplog):
     assert sinfo.get_channel_types() == ["eeg"] * 3
     assert sinfo.get_channel_units() == ch_units
 
+    ch_units = np.array([-6, -6, -6], dtype=np.int8)
+    sinfo.set_channel_units(ch_units)
+    assert sinfo.get_channel_units() == ['-6', '-6', '-6']
+
     ch_names = ["101", "201", "301"]
     sinfo.set_channel_names(ch_names)
     ch_types = ["eeg", "eog", "ecg"]
@@ -98,12 +102,14 @@ def test_stream_info_invalid_desc():
     with pytest.raises(ValueError, match="number of provided channel"):
         sinfo.set_channel_types(["101"])
 
-    with pytest.raises(TypeError, match="instance of list, tuple, str, or int"):
+    with pytest.raises(TypeError, match="list, tuple, ndarray, str, or int-like"):
         sinfo.set_channel_units(101.2)
     with pytest.raises(TypeError, match="an instance of str"):
         sinfo.set_channel_units([5.2, 5.2, 5.2])
     with pytest.raises(ValueError, match="number of provided channel"):
         sinfo.set_channel_units(["101"])
+    with pytest.raises(ValueError, match="as a 1D array of integers"):
+        sinfo.set_channel_units(np.array([-6, -6, -6, -6]).reshape(2, 2))
 
 
 @pytest.mark.parametrize(
