@@ -4,21 +4,26 @@ from threading import Timer
 from typing import TYPE_CHECKING
 
 import numpy as np
+from mne import rename_channels
 from mne.io import read_raw
 from mne.utils import check_version
 
 if check_version("mne", "1.6"):
     from mne._fiff.meas_info import ContainsMixin
+    from mne._fiff.pick import _picks_to_idx
 else:
     from mne.io.meas_info import ContainsMixin
+    from mne.io.pick import _picks_to_idx
 
 from .lsl import StreamInfo, StreamOutlet, local_clock
 from .utils._checks import check_type, ensure_int, ensure_path
+from .utils._docs import fill_doc
 from .utils.logs import logger
+from .utils.meas_info import _set_channel_units
 
 if TYPE_CHECKING:
     from pathlib import Path
-    from typing import List, Optional, Union
+    from typing import Callable, Dict, List, Optional, Tuple, Union
 
     from mne import Info
 
@@ -76,6 +81,61 @@ class Player(ContainsMixin):
         self._streaming_thread = None
         self._target_timestamp = None
 
+    @fill_doc
+    def get_channel_units(
+        self, picks=None, only_data_chs: bool = False
+    ) -> List[Tuple[int, int]]:
+        """Get a list of channel unit for each channel.
+
+        Parameters
+        ----------
+        %(picks_all)s
+        only_data_chs : bool
+            Whether to ignore non-data channels. Default is ``False``.
+
+        Returns
+        -------
+        channel_units : list of tuple of shape (2,)
+            A list of 2-element tuples. The first element contains the unit FIFF code
+            and its associated name, e.g. ``107 (FIFF_UNIT_V)`` for Volts. The second
+            element contains the unit multiplication factor, e.g. ``-6 (FIFF_UNITM_MU)``
+            for micro (corresponds to ``1e-6``).
+        """
+        check_type(only_data_chs, (bool,), "only_data_chs")
+        none = "data" if only_data_chs else "all"
+        picks = _picks_to_idx(self.info, picks, none, (), allow_empty=False)
+        channel_units = list()
+        for idx in picks:
+            channel_units.append(
+                (self.info["chs"][idx]["unit"], self.info["chs"][idx]["unit_mul"])
+            )
+        return channel_units
+
+    @fill_doc
+    def rename_channels(
+        self,
+        mapping: Union[Dict[str, str], Callable],
+        allow_duplicates: bool = False,
+        *,
+        verbose=None,
+    ) -> None:
+        """Rename channels.
+
+        Parameters
+        ----------
+        mapping : dict | callable
+            A dictionary mapping the old channel to a new channel name e.g.
+            ``{'EEG061' : 'EEG161'}``. Can also be a callable function that takes and
+            returns a string.
+        allow_duplicates : bool
+            If True (default False), allow duplicates, which will automatically be
+            renamed with ``-N`` at the end.
+        %(verbose)s
+        """
+        self._check_not_started("rename_channels")
+        rename_channels(self.info, mapping, allow_duplicates)
+        self._sinfo.set_channel_names(self.info["ch_names"])
+
     def start(self) -> None:
         """Start streaming data on the LSL `~bsl.lsl.StreamOutlet`."""
         if self._streaming_thread is not None:
@@ -90,6 +150,48 @@ class Player(ContainsMixin):
         self._target_timestamp = local_clock()
         self._streaming_thread.start()
 
+    def set_channel_units(self, mapping: Dict[str, Union[str, int]]) -> None:
+        """Define the channel unit multiplication factor.
+
+        By convention, MNE stores data in SI units. But systems often stream in non-SI
+        units. For instance, EEG amplifiers often stream in microvolts. Thus, to mock an
+        LSL stream from an MNE-compatible file, the data might need to be scale to match
+        the unit of the system to mock. This function will both change the unit
+        multiplication factor and rescale the associated data.
+
+        The unit itself is defined by the sensor type. Change the channel type in the
+        ``raw`` recording with :meth:`mne.io.Raw.set_channel_types` before providing the
+        recording to the :class:`~bsl.Player`.
+
+        Parameters
+        ----------
+        mapping : dict
+            A dictionary mapping a channel to a unit, e.g. ``{'EEG061': 'microvolts'}``.
+            The unit can be given as a human-readable string or as a unit multiplication
+            factor, e.g. ``-6`` for microvolts corresponding to ``1e-6``.
+
+        Notes
+        -----
+        If the human-readable unit of your channel is not yet supported by BSL, please
+        contact the developers on GitHub to add your units to the known set.
+        """
+        self._check_not_started("set_channel_units")
+        ch_units_before = np.array(
+            [ch["unit_mul"] for ch in self.info["chs"]], dtype=np.int8
+        )
+        _set_channel_units(self.info, mapping)
+        ch_units_after = np.array(
+            [ch["unit_mul"] for ch in self.info["chs"]], dtype=np.int8
+        )
+        self._sinfo.set_channel_units(ch_units_after)
+        # re-scale channels
+        factors = ch_units_before - ch_units_after
+        self._raw.apply_function(
+            lambda x: (x.T * np.power(np.ones(factors.shape) * 10, factors)).T,
+            channel_wise=False,
+            picks="all",
+        )
+
     def stop(self) -> None:
         """Stop streaming data on the LSL :class:`~bsl.lsl.StreamOutlet`."""
         if self._streaming_thread is None:
@@ -100,6 +202,14 @@ class Player(ContainsMixin):
             self._streaming_thread.cancel()
         del self._outlet
         self._reset_variables()
+
+    def _check_not_started(self, name: str):
+        """Check that the player is not started before calling the function 'name'."""
+        if self._streaming_thread is not None:
+            raise RuntimeError(
+                "The player is already started. Please stop the streaming before using "
+                f"{name}."
+            )
 
     def _stream(self) -> None:
         """Push a chunk of data from the raw object to the StreamOutlet.
