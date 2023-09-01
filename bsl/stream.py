@@ -455,7 +455,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
     def get_channel_units(
         self, picks=None, only_data_chs: bool = False
     ) -> List[Tuple[int, int]]:
-        """Get a list of channel type for each channel.
+        """Get a list of channel unit for each channel.
 
         Parameters
         ----------
