@@ -35,7 +35,7 @@ def test_stream_info_desc(caplog):
 
     ch_units = np.array([-6, -6, -6], dtype=np.int8)
     sinfo.set_channel_units(ch_units)
-    assert sinfo.get_channel_units() == ['-6', '-6', '-6']
+    assert sinfo.get_channel_units() == ["-6", "-6", "-6"]
 
     ch_names = ["101", "201", "301"]
     sinfo.set_channel_names(ch_names)
