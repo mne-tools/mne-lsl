@@ -1,6 +1,5 @@
 """BSL provides a real-time brain signal streaming framework."""
 
-from . import datasets  # noqa: F401
 from ._version import __version__  # noqa: F401
 from .player import Player  # noqa: F401
 from .stream import Stream  # noqa: F401
