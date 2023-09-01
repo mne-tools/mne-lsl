@@ -135,7 +135,7 @@ def test_player_unit():
     del inlet
     player.stop()
 
-    # try setting channel units after stoppping the player
+    # try setting channel units after stopping the player
     player.set_channel_units({"Fp1": -6, "Fpz": "uv", "Fp2": "microvolts"})
     player.start()
     streams = resolve_streams()
