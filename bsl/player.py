@@ -102,11 +102,11 @@ class Player(ContainsMixin):
         """
         check_type(only_data_chs, (bool,), "only_data_chs")
         none = "data" if only_data_chs else "all"
-        picks = _picks_to_idx(self._info, picks, none, (), allow_empty=False)
+        picks = _picks_to_idx(self.info, picks, none, (), allow_empty=False)
         channel_units = list()
         for idx in picks:
             channel_units.append(
-                (self._info["chs"][idx]["unit"], self._info["chs"][idx]["unit_mul"])
+                (self.info["chs"][idx]["unit"], self.info["chs"][idx]["unit_mul"])
             )
         return channel_units
 
@@ -143,6 +143,11 @@ class Player(ContainsMixin):
         If the human-readable unit of your channel is not yet supported by BSL, please
         contact the developers on GitHub to add your units to the known set.
         """
+        if self._streaming_thread is not None:
+            raise RuntimeError(
+                "The player is already started. The channel units can not be set on "
+                "a player currently streaming data."
+            )
         _set_channel_units(self.info, mapping)
 
     def stop(self) -> None:
