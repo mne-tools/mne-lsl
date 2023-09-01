@@ -144,7 +144,7 @@ def test_player_unit():
     inlet = StreamInlet(streams[0])
     inlet.open_stream()
     data, _ = inlet.pull_chunk()
-    raw_ = raw.copy().apply_function(lambda x: x*1e6, picks=["Fp1", "Fpz", "Fp2"])
+    raw_ = raw.copy().apply_function(lambda x: x * 1e6, picks=["Fp1", "Fpz", "Fp2"])
     match_stream_and_raw_data(data.T, raw_)
     del inlet
     player.stop()
@@ -159,8 +159,8 @@ def test_player_unit():
     inlet.open_stream()
     data, _ = inlet.pull_chunk()
     raw_ = raw.copy()
-    raw_.apply_function(lambda x: x*1e3, picks="Fp1")
-    raw_.apply_function(lambda x: x*1e6, picks=["Fpz", "Fp2"])
+    raw_.apply_function(lambda x: x * 1e3, picks="Fp1")
+    raw_.apply_function(lambda x: x * 1e6, picks=["Fpz", "Fp2"])
     match_stream_and_raw_data(data.T, raw_)
     del inlet
     player.stop()

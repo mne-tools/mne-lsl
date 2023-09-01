@@ -187,7 +187,9 @@ class Player(ContainsMixin):
         # re-scale channels
         factors = ch_units_before - ch_units_after
         self._raw.apply_function(
-            lambda x: (x.T * np.power(10, factors)).T, channel_wise=False, picks="all",
+            lambda x: (x.T * np.power(10, factors)).T,
+            channel_wise=False,
+            picks="all",
         )
 
     def stop(self) -> None:
