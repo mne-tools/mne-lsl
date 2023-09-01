@@ -127,9 +127,15 @@ class Player(ContainsMixin):
     def set_channel_units(self, mapping: Dict[str, Union[str, int]]) -> None:
         """Define the channel unit multiplication factor.
 
-        The unit itself is defined by the sensor type. Use
-        :meth:`~Player.set_channel_types` to change the channel type, e.g. from planar
-        gradiometers in ``T/m`` to EEG in ``V``.
+        By convention, MNE stores data in SI units. But systems often stream in non-SI
+        units. For instance, EEG amplifiers often stream in microvolts. Thus, to mock an
+        LSL stream from an MNE-compatible file, the data might need to be scale to match
+        the unit of the system to mock. This function will both change the unit
+        multiplication factor and rescale the associated data.
+
+        The unit itself is defined by the sensor type. Change the channel type in the
+        ``raw`` recording with :meth:`mne.io.Raw.set_channel_types` before providing the
+        recording to the :class:`~bsl.Player`.
 
         Parameters
         ----------
