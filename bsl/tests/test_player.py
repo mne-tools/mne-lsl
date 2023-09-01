@@ -164,3 +164,52 @@ def test_player_unit():
     match_stream_and_raw_data(data.T, raw_)
     del inlet
     player.stop()
+
+
+def test_player_rename_channels():
+    """Test channel renaming."""
+    name = "BSL-Player-test_player_unit"
+    player = Player(fname, name, 16)
+    assert player._sinfo.get_channel_names() == player.info["ch_names"]
+    player.start()
+    with pytest.raises(RuntimeError, match="player is already started"):
+        player.rename_channels(mapping={"Fp1": "EEG1"})
+    streams = resolve_streams()
+    assert len(streams) == 1
+    assert streams[0].name == name
+    inlet = StreamInlet(streams[0])
+    inlet.open_stream()
+    sinfo = inlet.get_sinfo()
+    assert sinfo.get_channel_names() == player.info["ch_names"]
+    del inlet
+    player.stop()
+
+    # test changing channel names
+    player.rename_channels({"Fp1": "EEG1", "Fp2": "EEG2"})
+    raw_ = raw.copy().rename_channels({"Fp1": "EEG1", "Fp2": "EEG2"})
+    player.start()
+    streams = resolve_streams()
+    assert len(streams) == 1
+    assert streams[0].name == name
+    inlet = StreamInlet(streams[0])
+    inlet.open_stream()
+    sinfo = inlet.get_sinfo()
+    assert sinfo.get_channel_names() == player.info["ch_names"]
+    assert sinfo.get_channel_names() == raw_.info["ch_names"]
+    del inlet
+    player.stop()
+
+    # test re-changing the channel names
+    player.rename_channels({"EEG1": "EEG101", "EEG2": "EEG202"})
+    raw_.rename_channels({"EEG1": "EEG101", "EEG2": "EEG202"})
+    player.start()
+    streams = resolve_streams()
+    assert len(streams) == 1
+    assert streams[0].name == name
+    inlet = StreamInlet(streams[0])
+    inlet.open_stream()
+    sinfo = inlet.get_sinfo()
+    assert sinfo.get_channel_names() == player.info["ch_names"]
+    assert sinfo.get_channel_names() == raw_.info["ch_names"]
+    del inlet
+    player.stop()
