@@ -176,8 +176,19 @@ class Player(ContainsMixin):
         contact the developers on GitHub to add your units to the known set.
         """
         self._check_not_started("set_channel_units")
+        ch_units_before = np.array(
+            [ch["unit_mul"] for ch in self.info["chs"]], dtype=np.int8
+        )
         _set_channel_units(self.info, mapping)
-        self._sinfo.set_channel_units([ch["unit_mul"] for ch in self.info["chs"]])
+        ch_units_after = np.array(
+            [ch["unit_mul"] for ch in self.info["chs"]], dtype=np.int8
+        )
+        self._sinfo.set_channel_units(ch_units_after)
+        # re-scale channels
+        factors = ch_units_before - ch_units_after
+        self._raw.apply_function(
+            lambda x: (x.T * np.power(10, factors)).T, channel_wise=False, picks="all",
+        )
 
     def stop(self) -> None:
         """Stop streaming data on the LSL :class:`~bsl.lsl.StreamOutlet`."""

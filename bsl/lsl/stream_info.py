@@ -3,6 +3,8 @@ from __future__ import annotations  # c.f. PEP 563, PEP 649
 from ctypes import c_char_p, c_double, c_void_p
 from typing import TYPE_CHECKING
 
+import numpy as np
+
 from ..utils._checks import check_type, check_value, ensure_int
 from ..utils.logs import logger
 from .constants import fmt2idx, fmt2numpy, idx2fmt, numpy2fmt, string2fmt
@@ -12,7 +14,7 @@ from .utils import XMLElement
 if TYPE_CHECKING:
     from typing import Any, List, Optional, Tuple, Union
 
-    from numpy.typing import DTypeLike
+    from numpy.typing import DTypeLike, NDArray
 
 
 _MAPPING_LSL = {
@@ -386,7 +388,7 @@ class _BaseStreamInfo:
         self._set_channel_info(ch_types, "ch_types")
 
     def set_channel_units(
-        self, ch_units: Union[str, List[str], int, List[int]]
+        self, ch_units: Union[str, List[str], int, List[int], NDArray[int]]
     ) -> None:
         """Set the channel units in the description. Existing units are overwritten.
 
@@ -396,7 +398,7 @@ class _BaseStreamInfo:
 
         Parameters
         ----------
-        ch_units : list of str | list of int | str | int
+        ch_units : list of str | list of int | array of int | str | int
             List of channel units, matching the number of total channels.
             If a single `str` or `int` is provided, the unit is applied to all channels.
 
@@ -406,10 +408,18 @@ class _BaseStreamInfo:
         be used to denote this channel unit, corresponding to ``FIFF_UNITM_NONE`` in
         MNE.
         """
-        check_type(ch_units, (list, tuple, str, "int-like"), "ch_units")
+        check_type(ch_units, (list, tuple, np.ndarray, str, "int-like"), "ch_units")
         if isinstance(ch_units, (str, int)):
             ch_units = [str(ch_units)] * self.n_channels
         else:
+            if isinstance(ch_units, np.ndarray):
+                if ch_units.ndim != 1:
+                    raise ValueError(
+                        "The channel units can be provided as a 1D array of integers. "
+                        f"The provided array has {ch_units.ndim} dimension and is "
+                        "invalid."
+                    )
+                ch_units = [ensure_int(ch_unit, "ch_unit") for ch_unit in ch_units]
             ch_units = [
                 str(ch_unit) if isinstance(ch_unit, int) else ch_unit
                 for ch_unit in ch_units
