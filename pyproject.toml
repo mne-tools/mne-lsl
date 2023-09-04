@@ -69,6 +69,7 @@ doc = [
     'sphinx-design',
     'sphinx-gallery',
     'sphinx-issues',
+    'sphinx-remove-toctrees',
 ]
 triggers = [
     'pyparallel; sys_platform == "linux"',
