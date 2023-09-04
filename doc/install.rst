@@ -40,8 +40,8 @@ Parallel port
 
 `~bsl.triggers.ParallelPortTrigger` sends trigger (8 bits values) to a `parallel port`_.
 On Linux, the ``pyparallel`` library is required. If an
-:ref:`arduino_lpt:Arduino to parallel port (LPT) converter` is used, the ``pyserial``
-library is required. Both can be installed using the extra-key ``triggers``:
+:ref:`resources/arduino2lpt:Arduino to parallel port (LPT) converter` is used, the
+``pyserial`` library is required. Both can be installed using the extra-key ``triggers``:
 
 .. code-block:: console
 
@@ -65,7 +65,7 @@ Moreover, ``pyparallel`` requires the ``lp`` kernel module to be unloaded. This 
 done at boot with a ``blacklist-parallelport.conf`` file containing the line
 ``blacklist lp`` in ``/etc/modprobe.d/``.
 
-If an :ref:`arduino_lpt:Arduino to parallel port (LPT) converter` is used, the user
+If an :ref:`resources/arduino2lpt:Arduino to parallel port (LPT) converter` is used, the user
 should be added to the ``dialout`` group which owns the serial port used:
 
 .. code-block:: console
