@@ -16,7 +16,7 @@ precision (``float64``) to python takes:
 * 4.35 µs ± 134 ns with ``bsl.lsl``
 
 More importantly, ``pylsl`` pulls a chunk in linear time ``O(n)``, scalings with the
-number of samples; while ``bsl.lsl`` pulls a chunk in constant time ``O(1)``. Additional
+number of values; while ``bsl.lsl`` pulls a chunk in constant time ``O(1)``. Additional
 details on the differences with ``pylsl`` and ``bsl`` can be found
 :ref:`here<resources/pylsl:Differences with pylsl>`.
 
