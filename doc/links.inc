@@ -30,7 +30,7 @@
 
 .. _lsl intro: https://labstreaminglayer.readthedocs.io/info/intro.html
 .. _lsl lib c++: https://github.com/sccn/liblsl
-.. _lsl python: https://github.com/labstreaminglayer/liblsl-Python
+.. _lsl python: https://github.com/labstreaminglayer/pylsl
 
 .. mne
 
