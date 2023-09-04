@@ -52,7 +52,7 @@ The development of ``BSL`` is supported by the
     :hidden:
 
     install.rst
-    api.rst
+    api/index.rst
     command_line.rst
     generated/tutorials/index.rst
     changes/index.rst
