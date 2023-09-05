@@ -254,12 +254,10 @@ class Stream(ContainsMixin, SetChannelsMixin):
                 }
                 self._info["chs"].append(chan_info)
 
-        # save reference channels
-        self._ref_channels.extend(ref_channels)
-
         # create the associated numpy array and edit buffer
         refs = np.zeros((self._timestamps.size, len(ref_channels)), dtype=self.dtype)
         with self._interrupt_acquisition():
+            self._ref_channels.extend(ref_channels)  # save reference channels
             self._buffer = np.hstack((self._buffer, refs), dtype=self.dtype)
 
     @fill_doc
@@ -803,7 +801,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
                 data = np.hstack((data, refs), dtype=self.dtype)
 
             # roll and update buffers
-            self._buffer = np.roll(self._buffer, -data.shape[0], axis=0)
+            self._buffer = np.roll(self._buffer, -timestamps.size, axis=0)
             self._timestamps = np.roll(self._timestamps, -timestamps.size, axis=0)
             # fmt: off
             self._buffer[-timestamps.size :, :] = data[-self._timestamps.size :, :]  # noqa: E203, E501
