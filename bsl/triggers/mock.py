@@ -16,5 +16,5 @@ class MockTrigger(BaseTrigger):
 
     @copy_doc(BaseTrigger.signal)
     def signal(self, value: int) -> None:
-        super().signal(value)
+        value = super().signal(value)
         logger.info("[Trigger] Mock set to %i.", value)
