@@ -130,6 +130,7 @@ class StreamInlet:
         """
         try:
             lib.lsl_destroy_inlet(self._obj)
+            self._stream_is_open = False
         except Exception:
             pass
 
