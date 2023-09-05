@@ -152,7 +152,7 @@ def test_stream_info_equality():
     assert sinfo1 != sinfo2
     sinfo2 = StreamInfo("pytest", "eeg", 3, 101, np.float64, strftime("%H%M%S"))
     assert sinfo1 != sinfo2
-    sinfo2 = StreamInfo("pytest", "eeg", 3, 101, np.float32, strftime("%H%M%S"))
+    sinfo2 = StreamInfo("pytest", "eeg", 3, 101, np.float32, "pytest")
     assert sinfo1 != sinfo2
     sinfo2 = StreamInfo("pytest", "eeg", 3, 101, np.float32, sinfo1.source_id)
     assert sinfo1 == sinfo2
