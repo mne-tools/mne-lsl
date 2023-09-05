@@ -4,20 +4,22 @@ API References
 This is the reference for classes (``CamelCase`` names) and functions
 (``underscore_case`` names) of ``bsl`` grouped thematically.
 
-The main `~bsl.Stream` object offers efficient communication with numerical LSL streams.
-
-.. currentmodule:: bsl
-
-.. autosummary::
-   :toctree: generated/
-
-    Stream
-    Player
-
 .. toctree::
     :maxdepth: 2
+    :hidden:
 
-    lsl.rst
-    stream_classes.rst
+    most-used classes.rst
+    lsl (low-level).rst
     triggers.rst
-    utils.rst
+    utilities.rst
+    legacy.rst
+
+.. include:: most-used classes.rst
+
+.. include:: lsl (low-level).rst
+
+.. include:: triggers.rst
+
+.. include:: utilities.rst
+
+.. include:: legacy.rst
