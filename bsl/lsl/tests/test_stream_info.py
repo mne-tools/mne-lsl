@@ -190,9 +190,9 @@ def test_stream_info_properties():
     assert isinstance(sinfo_.hostname, str)
     assert len(sinfo_.hostname) != 0
     assert isinstance(sinfo_.session_id, str)
-    assert len(sinfo_.session_id) !=  0
+    assert len(sinfo_.session_id) != 0
     assert isinstance(sinfo_.uid, str)
-    assert len(sinfo_.uid) !=  0
+    assert len(sinfo_.uid) != 0
 
     inlet = StreamInlet(sinfo)
     with pytest.raises(RuntimeError, match="StreamInlet is not open"):
@@ -204,9 +204,9 @@ def test_stream_info_properties():
     assert isinstance(sinfo_.hostname, str)
     assert len(sinfo_.hostname) != 0
     assert isinstance(sinfo_.session_id, str)
-    assert len(sinfo_.session_id) !=  0
+    assert len(sinfo_.session_id) != 0
     assert isinstance(sinfo_.uid, str)
-    assert len(sinfo_.uid) !=  0
+    assert len(sinfo_.uid) != 0
 
 
 def test_invalid_stream_info():
