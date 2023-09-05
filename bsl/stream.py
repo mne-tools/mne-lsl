@@ -254,12 +254,10 @@ class Stream(ContainsMixin, SetChannelsMixin):
                 }
                 self._info["chs"].append(chan_info)
 
-        # save reference channels
-        self._ref_channels.extend(ref_channels)
-
         # create the associated numpy array and edit buffer
         refs = np.zeros((self._timestamps.size, len(ref_channels)), dtype=self.dtype)
         with self._interrupt_acquisition():
+            self._ref_channels.extend(ref_channels)  # save reference channels
             self._buffer = np.hstack((self._buffer, refs), dtype=self.dtype)
 
     @fill_doc
@@ -821,17 +819,6 @@ class Stream(ContainsMixin, SetChannelsMixin):
                     "argument or consider retrieving new samples more often with "
                     "Stream.get_data()."
                 )
-        except ValueError as error:
-            logger.error("Data shape is %s", data.shape)
-            logger.error(
-                "Picks inlet has %s element (%s)",
-                self._picks_inlet.size,
-                self._picks_inlet,
-            )
-            logger.error("Ref channels are %s", self._ref_channels)
-            logger.exception(error)
-            self._reset_variables()
-            return None  # equivalent to an interrupt
         except Exception as error:
             logger.exception(error)
             self._reset_variables()
