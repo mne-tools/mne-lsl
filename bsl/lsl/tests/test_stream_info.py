@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 
 from bsl import logger
-from bsl.lsl import StreamInfo
+from bsl.lsl import StreamInfo, StreamInlet, StreamOutlet
 
 logger.propagate = True
 
@@ -136,3 +136,82 @@ def test_create_stream_info_with_invalid_numpy_dtype():
     """Test creation of a StreamInfo with an invalid numpy dtype."""
     with pytest.raises(ValueError, match="provided dtype could not be interpreted as"):
         StreamInfo("pytest", "eeg", 3, 101, np.uint8, strftime("%H%M%S"))
+
+
+def test_stream_info_equality():
+    """Test == method."""
+    sinfo1 = StreamInfo("pytest", "eeg", 3, 101, "float32", strftime("%H%M%S"))
+    assert sinfo1 != 101
+    sinfo2 = StreamInfo("pytest-2", "eeg", 3, 101, "float32", strftime("%H%M%S"))
+    assert sinfo1 != sinfo2
+    sinfo2 = StreamInfo("pytest", "gaze", 3, 101, "float32", strftime("%H%M%S"))
+    assert sinfo1 != sinfo2
+    sinfo2 = StreamInfo("pytest", "eeg", 3, 10101, "float32", strftime("%H%M%S"))
+    assert sinfo1 != sinfo2
+    sinfo2 = StreamInfo("pytest", "eeg", 101, 101, "float32", strftime("%H%M%S"))
+    assert sinfo1 != sinfo2
+    sinfo2 = StreamInfo("pytest", "eeg", 3, 101, np.float64, strftime("%H%M%S"))
+    assert sinfo1 != sinfo2
+    sinfo2 = StreamInfo("pytest", "eeg", 3, 101, np.float32, strftime("%H%M%S"))
+    assert sinfo1 != sinfo2
+    sinfo2 = StreamInfo("pytest", "eeg", 3, 101, np.float32, sinfo1.source_id)
+    assert sinfo1 == sinfo2
+
+
+def test_stream_info_representation():
+    """Test the str() representation of an Info."""
+    sinfo = StreamInfo("pytest", "eeg", 3, 101, "float32", strftime("%H%M%S"))
+    repr_ = str(sinfo)
+    assert "'pytest'" in repr_
+    assert "eeg" in repr_
+    assert "101" in repr_
+    assert "3" in repr_
+    assert "float32" in repr_
+
+
+def test_stream_info_properties():
+    """Test properties."""
+    sinfo = StreamInfo("pytest", "eeg", 3, 101, "float32", strftime("%H%M%S"))
+    assert isinstance(sinfo.created_at, float)
+    assert sinfo.created_at == 0.0
+    assert isinstance(sinfo.hostname, str)
+    assert len(sinfo.hostname) == 0
+    assert isinstance(sinfo.session_id, str)
+    assert len(sinfo.session_id) == 0
+    assert isinstance(sinfo.uid, str)
+    assert len(sinfo.uid) == 0
+    assert isinstance(sinfo.protocol_version, int)
+    assert isinstance(sinfo.as_xml, str)
+
+    outlet = StreamOutlet(sinfo)
+    sinfo_ = outlet.get_sinfo()
+    assert isinstance(sinfo_.created_at, float)
+    assert 0 < sinfo_.created_at
+    assert isinstance(sinfo_.hostname, str)
+    assert len(sinfo_.hostname) != 0
+    assert isinstance(sinfo_.session_id, str)
+    assert len(sinfo_.session_id) !=  0
+    assert isinstance(sinfo_.uid, str)
+    assert len(sinfo_.uid) !=  0
+
+    inlet = StreamInlet(sinfo)
+    with pytest.raises(RuntimeError, match="StreamInlet is not open"):
+        inlet.get_sinfo()
+    inlet.open_stream()
+    sinfo_ = inlet.get_sinfo()
+    assert isinstance(sinfo_.created_at, float)
+    assert 0 < sinfo_.created_at
+    assert isinstance(sinfo_.hostname, str)
+    assert len(sinfo_.hostname) != 0
+    assert isinstance(sinfo_.session_id, str)
+    assert len(sinfo_.session_id) !=  0
+    assert isinstance(sinfo_.uid, str)
+    assert len(sinfo_.uid) !=  0
+
+
+def test_invalid_stream_info():
+    """Test creation of an invalid StreamInfo."""
+    with pytest.raises(ValueError, match="'n_channels' must be a strictly positive"):
+        StreamInfo("pytest", "eeg", -101, 101, "float32", strftime("%H%M%S"))
+    with pytest.raises(ValueError, match="'sfreq' must be a positive"):
+        StreamInfo("pytest", "eeg", 101, -101, "float32", strftime("%H%M%S"))
