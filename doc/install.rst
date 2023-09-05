@@ -20,79 +20,21 @@ Default install
 
             $ pip install bsl
 
-    .. tab-item:: conda-forge
-
-        Not yet available.
-
     .. tab-item:: Source
 
         .. code-block:: console
 
             $ pip install git+https://github.com/fcbg-hnp-meeg/bsl
 
-Optional dependencies
----------------------
+Different liblsl version
+------------------------
 
-Parallel port
-^^^^^^^^^^^^^
+If you prefer to use a different version of `liblsl <lsl lib c++_>`_, or if your
+platform is not supported, you can provide the path to the library in an environment
+variable ``LSL_LIB``.
 
-.. _parallel port: https://en.wikipedia.org/wiki/Parallel_port
-
-`~bsl.triggers.ParallelPortTrigger` sends trigger (8 bits values) to a `parallel port`_.
-On Linux, the ``pyparallel`` library is required. If an
-:ref:`resources/arduino2lpt:Arduino to parallel port (LPT) converter` is used, the
-``pyserial`` library is required. Both can be installed using the extra-key ``triggers``:
-
-.. code-block:: console
-
-    $ pip install bsl[triggers]
-
-On Linux, the user must have access to the parallel port. For instance, if an onboard
-parallel port at the address ``/dev/parport0`` is used, you can check the group owning
-the device with:
-
-.. code-block:: console
-
-    $ ls -l /dev/parport0
-
-Usually, the group is ``lp``. The user should be added to this group:
-
-.. code-block:: console
-
-    $ sudo usermod -aG lp $USER
-
-Moreover, ``pyparallel`` requires the ``lp`` kernel module to be unloaded. This can be
-done at boot with a ``blacklist-parallelport.conf`` file containing the line
-``blacklist lp`` in ``/etc/modprobe.d/``.
-
-If an :ref:`resources/arduino2lpt:Arduino to parallel port (LPT) converter` is used, the user
-should be added to the ``dialout`` group which owns the serial port used:
-
-.. code-block:: console
-
-    $ sudo usermod -aG dialout $USER
-
-Qt
-^^
-
-At the moment, ``BSL`` requires ``PyQt5``. Future versions will support other Qt
-bindings via ``qtpy``. On Linux based distribution, ``PyQt5`` requires system libraries:
-
-.. code-block:: console
-
-    $ sudo apt install -y qt5-default  # Ubuntu 20.04 LTS
-    $ sudo apt install -y qtbase5-dev qt5-qmake  # Ubuntu 22.04 LTS
-
-Advance install
----------------
-
-By default, ``BSL`` is distributed with a recent version of ``liblsl`` that should work
-on Ubuntu-based distribution, macOS and Windows. If your OS is not compatible with the
-distributed version or if you want to use a specific ``liblsl``, provide the path to the
-library in an environment variable ``LSL_LIB``.
-
-Troubleshooting
----------------
+liblsl and LabRecorder dependencies
+-----------------------------------
 
 On Linux, ``liblsl`` requires ``libpugixml-dev`` and ``LabRecorder`` requires
 ``qt6-base-dev`` and ``freeglut3-dev``.
@@ -101,46 +43,80 @@ On Linux, ``liblsl`` requires ``libpugixml-dev`` and ``LabRecorder`` requires
 
     $ sudo apt install -y libpugixml-dev qt6-base-dev freeglut3-dev
 
-On macOS, ``homebrew`` can be used to download and install ``liblsl``:
+Optional trigger dependencies
+-----------------------------
+
+Parallel port
+~~~~~~~~~~~~~
+
+:class:`~bsl.triggers.ParallelPortTrigger` sends trigger (8 bits values) to an on-board
+`parallel port`_.
+
+.. tab-set::
+
+    .. tab-item:: Linux
+
+        On Linux systems, the ``pyparallel`` library is required. It can be installed
+        either directly or by using the keyword ``triggers`` when installing ``BSL``:
+
+        .. code-block:: console
+
+            $ pip install pyparallel
+            $ pip install bsl[triggers]
+
+        ``pyparallel`` requires the ``lp`` kernel module to be unloaded. The module can
+        be prevented from loading at boot with a file ``blacklist-parallelport.conf``
+        containing the single line ``blacklist lp`` in ``/etc/modprobe.d/``.
+        Finally, the user should be part of the group owning the parallel port device,
+        usually ``lp``.
+
+        .. code-block:: console
+
+            $ ls -l /dev/parport0  # confirm the group owning the parallel port
+            $ sudo usermod -aG lp $USER  # add the user to the lp group
+
+        Where ``/dev/parport0`` is the address of the on-board parallel port and
+        ``$USER`` is the user name.
+
+    .. tab-item:: Windows
+
+        .. code-block:: console
+
+            On Windows, ``DLPortIO``, ``inpout32`` or ``inpoutx64`` is used.
+
+macOS does not have support for on-board `parallel port`_.
+
+Arduino to parallel port converter
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The `Human Neuroscience Platform (FCBG) <fcbg hnp_>`_ has developed an
+:ref:`resources/arduino2lpt:Arduino to parallel port (LPT) converter` to replace
+on-board parallel ports and to offer hardware triggers to macOS devices. The
+``pyserial`` library is required to interface with serial ports (USB). It can be
+installed either directly or by using the keyword ``triggers`` when installing ``BSL``:
 
 .. code-block:: console
 
-    $ brew install labstreaminglayer/tap/lsl
+    $ pip install pyserial
+    $ pip install bsl[triggers]
 
-To test the installation, you can run a fake stream with a `~bsl.Player` and
-display it with a `~bsl.stream_viewer.StreamViewer`.
+On Linux, the user should be added to the ``dialout`` group which owns the serial port
+used:
 
-- Download a sample :ref:`bsl.datasets<datasets>`:
+.. code-block:: console
 
-  .. code-block:: python
+    $ sudo usermod -aG dialout $USER
 
-      import bsl
-      dataset = bsl.datasets.eeg_resting_state.data_path()
-      print (dataset)  # displays the path to the -raw.fif dataset
+Where ``$USER`` is the user name.
 
-- Run a `~bsl.Player` either from a python console:
+Qt
+--
 
-  .. code-block:: python
+``BSL`` requires a Qt binding for the legacy :class:`~bsl.stream_viewer.StreamViewer`
+and for the future ``bsl.Viewer``. All 4 Qt bindings, ``PyQt5``, ``PyQt6``, ``PySide2``
+and ``PySide6`` are supported thanks to ``qtpy``.
 
-      import bsl
-      dataset = bsl.datasets.eeg_resting_state.data_path()
-      player = bsl.Player(dataset, 'TestStream')
-      player.start()
+.. warning::
 
-  Or from a terminal in the folder containing the dataset (``~/bsl_data/eeg_sample``):
-
-  .. code-block:: console
-
-      $ bsl.player resting_state-raw.fif -n TestStream
-
-- Run a `~bsl.stream_viewer.StreamViewer` from a different terminal:
-
-  .. code-block:: console
-
-      $ bsl_stream_viewer
-
-  The `~bsl.stream_viewer.StreamViewer` should load and display:
-
-  .. image:: _static/stream_viewer/stream_viewer.gif
-      :alt: StreamViewer
-      :align: center
+    The legacy :class:`~bsl.stream_viewer.StreamViewer` was developed and tested with
+    ``PyQt5`` only.
