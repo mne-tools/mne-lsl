@@ -10,6 +10,8 @@
 .. NOTE: You can use the :pr:`xx` and :issue:`xx` role to x-ref to a GitHub PR
    or issue from this project.
 
+:hide-toc:
+
 .. include:: ./authors.inc
 
 .. _latest:

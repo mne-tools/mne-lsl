@@ -55,6 +55,7 @@ extensions = [
     "sphinx_design",
     "sphinx_gallery.gen_gallery",
     "sphinx_issues",
+    "sphinx_remove_toctrees",
 ]
 
 templates_path = ["_templates"]
@@ -268,3 +269,6 @@ sphinx_gallery_conf = {
     "show_memory": True,
     "within_subsection_order": FileNameSortKey,
 }
+
+# -- sphinx-remove-toctrees ------------------------------------------------------------
+remove_from_toctrees = ["generated/api/*"]
