@@ -16,7 +16,7 @@ def test_trigger_mock(caplog):
     trigger.signal(2)
     assert "Mock set to 2" in caplog.text
     caplog.clear()
-    trigger.signal(str(101))  # convertable to int
+    trigger.signal(str(101))  # convertible to int
     assert "Mock set to 101" in caplog.text
     caplog.clear()
     with pytest.raises(TypeError, match="between 1 and 255"):
