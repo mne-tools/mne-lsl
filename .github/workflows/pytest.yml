@@ -43,7 +43,6 @@ jobs:
       - name: Run pytest
         run: pytest bsl --cov=bsl --cov-report=xml --cov-config=pyproject.toml
       - name: Upload to codecov
-        if: ${{ matrix.os == 'ubuntu' && matrix.python-version == 3.9 }}
         uses: codecov/codecov-action@v3
         with:
           files: ./coverage.xml
