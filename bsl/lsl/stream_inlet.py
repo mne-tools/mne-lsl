@@ -120,6 +120,9 @@ class StreamInlet:
         self._buffer_data = {1: (self._dtype * self._n_channels)()}
         self._buffer_ts = {}
 
+        # variable to define if the stream is open or not  sinfo_ = inlet.get_sinfo()
+        self._stream_is_open = False
+
     def __del__(self):
         """Destroy a :class:`~bsl.lsl.StreamInlet`.
 
@@ -127,6 +130,7 @@ class StreamInlet:
         """
         try:
             lib.lsl_destroy_inlet(self._obj)
+            self._stream_is_open = False
         except Exception:
             pass
 
@@ -159,6 +163,7 @@ class StreamInlet:
         # this sleep can be removed once the minimum version supported includes
         # a fix for https://github.com/sccn/liblsl/issues/176
         time.sleep(0.5)
+        self._stream_is_open = True
 
     def close_stream(self) -> None:
         """Drop the current data stream.
@@ -177,6 +182,7 @@ class StreamInlet:
             `github issue <https://github.com/sccn/liblsl/issues/180>`_.
         """
         lib.lsl_close_stream(self._obj)
+        self._stream_is_open = False
 
     def time_correction(self, timeout: Optional[float] = None) -> float:
         """Retrieve an estimated time correction offset for the given stream.
@@ -245,6 +251,8 @@ class StreamInlet:
             byref(errcode),
         )
         handle_error(errcode)
+        if not self._stream_is_open:
+            self._stream_is_open = True
 
         if timestamp:
             if self._dtype == c_char_p:
@@ -328,6 +336,8 @@ class StreamInlet:
             byref(errcode),
         )
         handle_error(errcode)
+        if not self._stream_is_open:
+            self._stream_is_open = True
 
         n_samples = int(n_samples_data / self._n_channels)
         if self._dtype == c_char_p:
@@ -422,6 +432,11 @@ class StreamInlet:
         sinfo : StreamInfo
             Description of the stream connected to the inlet.
         """
+        if not self._stream_is_open:
+            raise RuntimeError(
+                "The StreamInlet is not open. Please use 'StreamInlet.open_stream() "
+                "before retrieving the attached StreamInfo."
+            )
         timeout = _check_timeout(timeout)
         errcode = c_int()
         result = lib.lsl_get_fullinfo(self._obj, c_double(timeout), byref(errcode))
