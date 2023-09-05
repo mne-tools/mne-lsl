@@ -519,6 +519,11 @@ class StreamInfo(_BaseStreamInfo):
                 f"integer. {n_channels} is invalid."
             )
         check_type(sfreq, ("numeric",), "sfreq")
+        if sfreq < 0:
+            raise ValueError(
+                "The sampling frequency 'sfreq' must be a positive number. "
+                f"{sfreq} is invalid."
+            )
         check_type(source_id, (str,), "source_id")
 
         obj = lib.lsl_create_streaminfo(

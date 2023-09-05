@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 from bsl import logger, set_log_level
-from bsl.lsl import StreamInlet, resolve_streams
+from bsl.lsl import StreamInfo, StreamInlet, StreamOutlet, resolve_streams
 from bsl.triggers import LSLTrigger
 
 set_log_level("INFO")
@@ -13,6 +13,7 @@ def test_trigger_lsl():
     """Testing for LSL triggers."""
     name = "test-trigger-lsl"
     trigger = LSLTrigger(name)
+    assert trigger.name == name
     streams = resolve_streams(name=name)
     assert len(streams) == 1
     sinfo = streams[0]
@@ -38,3 +39,5 @@ def test_trigger_lsl():
     assert ts is not None
     with pytest.raises(ValueError, match="between 1 and 127 included"):
         trigger.signal(255)
+    assert isinstance(trigger.outlet, StreamOutlet)
+    assert isinstance(trigger.sinfo, StreamInfo)
