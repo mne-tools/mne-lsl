@@ -19,8 +19,8 @@ class ParallelPortTrigger(BaseTrigger):
     ----------
     address : int (hex) | str
         The address of the parallel port on the system.
-        If an :ref:`arduino_lpt:Arduino to parallel port (LPT) converter` is used, the
-        address must be the serial port address or ``"arduino"`` for automatic
+        If an :ref:`resources/arduino2lpt:Arduino to parallel port (LPT) converter` is
+        used, the address must be the serial port address or ``"arduino"`` for automatic
         detection.
     port_type : str | None
         Either ``'arduino'`` or ``'pport'`` depending on the connection.

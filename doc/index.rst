@@ -21,8 +21,7 @@ Install
 -------
 
 ``BSL`` is available on `PyPI <project pypi_>`_ and is distributed with a compatible
-version of `liblsl <lsl lib c++_>`_. If you want to use a different version of
-``liblsl``, please refer to the :ref:`install:Advance install`.
+version of `liblsl <lsl lib c++_>`_.
 
 .. tab-set::
 

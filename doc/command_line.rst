@@ -1,61 +1,52 @@
-.. _cli:
+.. include:: ./links.inc
 
-Command-Line
+Command line
 ============
 
-BSL propose to use 3 of its main classes from the command line:
-
-- :ref:`stream_player`
-- :ref:`stream_viewer`
-
-For each command, the flag ``-h`` can be used to obtain additional information.
-
-.. _stream_player:
+A :class:`~bsl.Player`, or the legacy :class:`~bsl.stream_viewer.StreamViewer`, can be
+called from the command line. For each command, the flag ``-h`` or ``--help`` provides
+additional information.
 
 Player
 ------
 
-The :class:`~bsl.Player` can be called from the command-line with:
+An `MNE <mne stable_>`_ readable file can be streamed with a `~bsl.Player` with the
+command:
 
 .. code-block:: console
 
-    $ bsl_stream_player file -n stream_name
+    $ bsl_player file
 
-With the positional arguments:
+With the arguments:
 
-- ``file``: :term:`file-like <python:file object>`
-
-With the optional arguments:
-
-- ``-n``, ``--name``: `str`, name of the LSL stream.
-  Default ``BSL-Player``.
-
-.. _stream_viewer:
+* ``file`` (mandatory): :term:`file-like <python:file object>`, file to stream.
+* ``-n``, ``--name`` (optional, default ``BSL-Player``): :class:`str`, name of the LSL
+  stream.
+* ``-c``, ``--chunk_size`` (optional, default ``16``): :class:`int`, number of samples
+  pushed at once.
 
 StreamViewer
 ------------
 
-The :class:`~bsl.stream_viewer.StreamViewer` can be called from the command-line with:
+A legacy :class:`~bsl.stream_viewer.StreamViewer` can be opened with the command:
 
 .. code-block:: console
 
     $ bsl_stream_viewer
 
-With the optional arguments:
+With the arguments:
 
-- ``-s``, ``--stream_name``: `str`, stream to visualize.
+- ``-s``, ``--stream_name`` (optional): :class:`str`, name of the stream to connect to.
 
 .. note::
 
-    If ``stream_name`` is not provided, a prompt is displayed to select a
-    stream among the available ones.
+    If ``stream_name`` is not provided, a prompt is displayed to select a stream among
+    the available ones.
 
 The :class:`~bsl.stream_viewer.StreamViewer` opens 2 windows:
 
-- A controller to select the channels to plot and set different plotting
-  parameters.
-- A plotting window using the ``pyqtgraph`` backend displaying the signal in
-  real-time.
+- A controller to select the channels to plot and set different plotting parameters.
+- A plotting window using the ``pyqtgraph`` backend displaying the signal in real-time.
 
 .. image:: _static/stream_viewer/stream_viewer.gif
    :alt: StreamViewer
