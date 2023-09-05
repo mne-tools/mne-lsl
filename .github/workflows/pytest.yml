@@ -77,7 +77,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --progress-bar off --upgrade pip setuptools wheel
-          python -m pip install --progress-bar off --pre -i https://pypi.anaconda.org/scipy-wheels-nightly/simple numpy scipy
+          python -m pip install --progress-bar off --pre --only-binary :all: -i https://pypi.anaconda.org/scientific-python-nightly-wheels/simple numpy scipy
           python -m pip install --progress-bar off git+https://github.com/mne-tools/mne-python
           python -m pip install --progress-bar off .[test]
       - name: Display system information
