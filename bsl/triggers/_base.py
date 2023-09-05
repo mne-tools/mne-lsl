@@ -11,7 +11,7 @@ class BaseTrigger(ABC):
         pass
 
     @abstractmethod
-    def signal(self, value: int) -> None:
+    def signal(self, value: int) -> int:
         """Send a trigger value.
 
         Parameters
@@ -31,3 +31,4 @@ class BaseTrigger(ABC):
                 "The argument 'value' of a BSL trigger must be an integer "
                 "between 1 and 255 included."
             )
+        return value

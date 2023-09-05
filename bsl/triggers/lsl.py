@@ -62,7 +62,7 @@ class LSLTrigger(BaseTrigger):
 
     @copy_doc(BaseTrigger.signal)
     def signal(self, value: int) -> None:
-        super().signal(value)
+        value = super().signal(value)
         if not (1 <= value <= 127):
             raise ValueError(
                 "The argument 'value' of an LSL trigger must be an integer "

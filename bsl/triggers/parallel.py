@@ -187,7 +187,7 @@ class ParallelPortTrigger(BaseTrigger):
 
     @copy_doc(BaseTrigger.signal)
     def signal(self, value: int) -> None:
-        super().signal(value)
+        value = super().signal(value)
         if self._offtimer.is_alive():
             logger.warning(
                 "[Trigger] You are sending a new signal before the end of the "
