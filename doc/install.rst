@@ -1,7 +1,5 @@
 .. include:: ./links.inc
 
-.. _install:
-
 Install
 =======
 
