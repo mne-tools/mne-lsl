@@ -803,7 +803,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
                 data = np.hstack((data, refs), dtype=self.dtype)
 
             # roll and update buffers
-            self._buffer = np.roll(self._buffer, -data.shape[0], axis=0)
+            self._buffer = np.roll(self._buffer, -timestamps.size, axis=0)
             self._timestamps = np.roll(self._timestamps, -timestamps.size, axis=0)
             # fmt: off
             self._buffer[-timestamps.size :, :] = data[-self._timestamps.size :, :]  # noqa: E203, E501
@@ -821,6 +821,17 @@ class Stream(ContainsMixin, SetChannelsMixin):
                     "argument or consider retrieving new samples more often with "
                     "Stream.get_data()."
                 )
+        except ValueError as error:
+            logger.error("Data shape is %s", data.shape)
+            logger.error(
+                "Picks inlet has %s element (%s)",
+                self._picks_inlet.size,
+                self._picks_inlet,
+            )
+            logger.error("Ref channels are %s", self._ref_channels)
+            logger.exception(error)
+            self._reset_variables()
+            return None  # equivalent to an interrupt
         except Exception as error:
             logger.exception(error)
             self._reset_variables()
