@@ -48,7 +48,7 @@ jobs:
           files: ./coverage.xml
           flags: unittests # optional
           name: codecov-umbrella # optional
-          fail_ci_if_error: true # optional (default = false)
+          fail_ci_if_error: false # optional (default = false)
           verbose: true # optional (default = false)
 
   pytest-pip-pre:
@@ -90,5 +90,5 @@ jobs:
           files: ./coverage.xml
           flags: unittests # optional
           name: codecov-umbrella # optional
-          fail_ci_if_error: true # optional (default = false)
+          fail_ci_if_error: false # optional (default = false)
           verbose: true # optional (default = false)
