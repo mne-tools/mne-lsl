@@ -55,8 +55,8 @@ jobs:
     timeout-minutes: 30
     strategy:
       fail-fast: false
-    matrix:
-      python-version: [3.9, "3.10", "3.11"]
+      matrix:
+        python-version: [3.9, "3.10", "3.11"]
     name: ubuntu - ${{ matrix.python-version }}
     runs-on: ubuntu-latest
     defaults:
