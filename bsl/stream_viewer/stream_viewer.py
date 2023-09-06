@@ -1,7 +1,7 @@
 import sys
 import time
 
-from PyQt5.QtWidgets import QApplication
+from qtpy.QtWidgets import QApplication
 
 from ..lsl import StreamInlet, resolve_streams
 from ..utils._checks import check_type

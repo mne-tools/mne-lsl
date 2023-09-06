@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from PyQt5.QtWidgets import QMainWindow
+from qtpy.QtWidgets import QMainWindow
 
 from ...utils._docs import fill_doc
 
