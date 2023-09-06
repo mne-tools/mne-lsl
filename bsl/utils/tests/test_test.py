@@ -22,6 +22,9 @@ def test_match_stream_and_raw_data():
     match_stream_and_raw_data(np.hstack((data[:, 1700:], data[:, :200])), raw)
     match_stream_and_raw_data(np.hstack((data[:, 1800:], data[:, :10])), raw)
 
+    # test wrapping twice around the end
+    match_stream_and_raw_data(np.hstack((data[:, 1800:], data[:, :], data[:, :9])), raw)
+
     # test edge cases
     match_stream_and_raw_data(data[:, :101], raw)
     match_stream_and_raw_data(data[:, 101:], raw)
