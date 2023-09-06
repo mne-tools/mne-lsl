@@ -2,7 +2,7 @@
 
 import numpy as np
 import pyqtgraph as pg
-from PyQt5 import QtCore
+from qtpy import QtCore
 
 from ...utils._docs import copy_doc, fill_doc
 from ...utils.logs import logger

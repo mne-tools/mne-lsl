@@ -1,6 +1,6 @@
-from PyQt5 import QtCore, QtWidgets
-from PyQt5.QtCore import QRect, QSize
-from PyQt5.QtWidgets import (
+from qtpy import QtCore, QtWidgets
+from qtpy.QtCore import QRect, QSize
+from qtpy.QtWidgets import (
     QCheckBox,
     QComboBox,
     QDoubleSpinBox,
