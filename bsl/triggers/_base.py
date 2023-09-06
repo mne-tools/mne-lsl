@@ -7,7 +7,7 @@ class BaseTrigger(ABC):
     """Base trigger class."""
 
     @abstractmethod
-    def __init__(self):
+    def __init__(self):  # pragma: no cover
         pass
 
     @abstractmethod
