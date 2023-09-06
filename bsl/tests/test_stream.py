@@ -343,6 +343,10 @@ def test_stream_repr(mock_lsl_stream):
     stream.connect()
     assert stream.__repr__() == "<Stream: ON | BSL-Player-pytest (source: BSL)>"
     stream.disconnect()
+    stream = Stream(bufsize=2, name="BSL-Player-pytest", source_id="BSL")
+    assert stream.__repr__() == "<Stream: OFF | BSL-Player-pytest (source: BSL)>"
+    stream = Stream(bufsize=2, source_id="BSL")
+    assert stream.__repr__() == "<Stream: OFF | (source: BSL>"
 
 
 def test_stream_get_data_picks(mock_lsl_stream):
@@ -384,3 +388,12 @@ def test_stream_n_new_samples(mock_lsl_stream, caplog):
     _, _ = stream.get_data(winsize=0.1)
     assert stream.n_new_samples == 0
     stream.disconnect()
+
+
+def test_stream_invalid_interrupt():
+    """Test invalid acquisition interruption."""
+    stream = Stream(bufsize=0.4, name="BSL-Player-pytest")
+    assert not stream.connected
+    with pytest.raises(RuntimeError, match="requested but the stream is not connected"):
+        with stream._interrupt_acquisition():
+            pass
