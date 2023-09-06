@@ -5,7 +5,7 @@ from typing import Optional, Union
 
 import pytest
 
-from ..logs import add_file_handler, logger, set_log_level, verbose
+from bsl.utils.logs import add_file_handler, logger, set_log_level, verbose
 
 logger.propagate = True
 

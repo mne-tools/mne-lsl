@@ -6,7 +6,13 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from .._checks import check_type, check_value, check_verbose, ensure_int, ensure_path
+from bsl.utils._checks import (
+    check_type,
+    check_value,
+    check_verbose,
+    ensure_int,
+    ensure_path,
+)
 
 
 def test_ensure_int():
@@ -63,6 +69,10 @@ def test_check_value():
         check_value(5, [1, 2, 3, 4])
     with pytest.raises(ValueError, match="Invalid value for the 'number' parameter."):
         check_value(5, [1, 2, 3, 4], "number")
+    with pytest.raises(ValueError, match="only allowed value is"):
+        check_value(5, (1,))
+    with pytest.raises(ValueError, match="Allowed values are 3 and 4"):
+        check_value(5, (3, 4))
 
 
 def test_check_verbose():

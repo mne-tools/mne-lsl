@@ -1,5 +1,6 @@
 from __future__ import annotations  # c.f. PEP 563, PEP 649
 
+import hashlib
 from importlib import import_module
 from typing import TYPE_CHECKING
 
@@ -12,6 +13,17 @@ if TYPE_CHECKING:
 
     from mne.io import BaseRaw
     from numpy.typing import NDArray
+
+
+def sha256sum(fname):
+    """Efficiently hash a file."""
+    h = hashlib.sha256()
+    b = bytearray(128 * 1024)
+    mv = memoryview(b)
+    with open(fname, "rb", buffering=0) as file:
+        while n := file.readinto(mv):
+            h.update(mv[:n])
+    return h.hexdigest()
 
 
 def match_stream_and_raw_data(data: NDArray[float], raw: BaseRaw) -> None:
