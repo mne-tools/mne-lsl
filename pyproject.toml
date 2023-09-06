@@ -84,7 +84,7 @@ style = [
     'ruff',
 ]
 test = [
-    'bsl[triggers]',
+    'pyqt5',
     'pytest',
     'pytest-cov',
     'pytest-timeout',
