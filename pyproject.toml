@@ -63,6 +63,7 @@ doc = [
     'matplotlib',
     'memory-profiler',
     'numpydoc',
+    'pyqt5',
     'sphinx!=7.2.*',
     'sphinxcontrib-bibtex',
     'sphinx-copybutton',
@@ -84,7 +85,7 @@ style = [
     'ruff',
 ]
 test = [
-    'bsl[triggers]',
+    'pyqt5',
     'pytest',
     'pytest-cov',
     'pytest-timeout',
