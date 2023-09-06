@@ -64,7 +64,7 @@ class StreamViewer:
             with _use_log_level("INFO"):
                 logger.info("-- List of servers --")
                 for k, stream in enumerate(streams):
-                    logger.info("%i: %i", k, stream.name)
+                    logger.info("%i: %s", k, stream.name)
             index = input(
                 "Stream index? Hit enter without index to select the first server.\n>> "
             )
