@@ -25,7 +25,14 @@ def match_stream_and_raw_data(data: NDArray[float], raw: BaseRaw) -> None:
     if stop <= raw.times.size:
         assert_allclose(data, raw[:, start:stop][0])
     else:
-        raw_data = np.hstack((raw[:, start:][0], raw[:, :][0]))[:, : stop - start]
+        raw_data = raw[:, start:][0]
+        while raw_data.shape[1] != data.shape[1]:
+            if raw.times.size <= data.shape[1] - raw_data.shape[1]:
+                raw_data = np.hstack((raw_data, raw[:, :][0]))
+            else:
+                raw_data = np.hstack(
+                    (raw_data, raw[:, : data.shape[1] - raw_data.shape[1]][0])
+                )
         assert_allclose(data, raw_data)
 
 
