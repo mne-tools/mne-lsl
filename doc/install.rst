@@ -41,6 +41,19 @@ On Linux, ``liblsl`` requires ``libpugixml-dev`` and ``LabRecorder`` requires
 
     $ sudo apt install -y libpugixml-dev qt6-base-dev freeglut3-dev
 
+Qt
+--
+
+``BSL`` requires a Qt binding for the legacy :class:`~bsl.stream_viewer.StreamViewer`
+and for the future ``bsl.Viewer``. All 4 Qt bindings, ``PyQt5``, ``PyQt6``, ``PySide2``
+and ``PySide6`` are supported thanks to ``qtpy``. It is up to the user to make sure one
+of the binding is installed in the environment.
+
+.. warning::
+
+    The legacy :class:`~bsl.stream_viewer.StreamViewer` was developed and tested with
+    ``PyQt5`` only.
+
 Optional trigger dependencies
 -----------------------------
 
@@ -106,15 +119,3 @@ used:
     $ sudo usermod -aG dialout $USER
 
 Where ``$USER`` is the user name.
-
-Qt
---
-
-``BSL`` requires a Qt binding for the legacy :class:`~bsl.stream_viewer.StreamViewer`
-and for the future ``bsl.Viewer``. All 4 Qt bindings, ``PyQt5``, ``PyQt6``, ``PySide2``
-and ``PySide6`` are supported thanks to ``qtpy``.
-
-.. warning::
-
-    The legacy :class:`~bsl.stream_viewer.StreamViewer` was developed and tested with
-    ``PyQt5`` only.
