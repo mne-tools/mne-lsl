@@ -2,8 +2,8 @@ import math
 from configparser import RawConfigParser
 from pathlib import Path
 
-from PyQt5 import QtCore
-from PyQt5.QtWidgets import QHeaderView, QTableWidgetItem
+from qtpy import QtCore
+from qtpy.QtWidgets import QHeaderView, QTableWidgetItem
 
 from ...utils._docs import copy_doc, fill_doc
 from ...utils.logs import logger
@@ -261,7 +261,7 @@ class ControlGUI_EEG(_ControlGUI):
             self.onSelectionChanged_table_channels
         )
 
-    @QtCore.pyqtSlot()
+    @QtCore.Slot()
     def onActivated_comboBox_signal_yRange(self):
         logger.debug("yRange event received.")
         self._yRange = float(
@@ -270,20 +270,20 @@ class ControlGUI_EEG(_ControlGUI):
         self._backend.yRange = self._yRange
         logger.debug("y-range set to %d", self._yRange)
 
-    @QtCore.pyqtSlot()
+    @QtCore.Slot()
     def onValueChanged_spinBox_signal_xRange(self):
         logger.debug("xRange event received.")
         self._xRange = int(self._ui.spinBox_signal_xRange.value())
         self._backend.xRange = self._xRange
         logger.debug("x-range set to %d", self._xRange)
 
-    @QtCore.pyqtSlot()
+    @QtCore.Slot()
     def onClicked_checkBox_bandpass(self):
         logger.debug("Checkbox for BP event received.")
         self._scope.apply_bandpass = self._ui.checkBox_bandpass.isChecked()
         logger.debug("BP checkbox: %s", self._ui.checkBox_bandpass.isChecked())
 
-    @QtCore.pyqtSlot()
+    @QtCore.Slot()
     def onValueChanged_doubleSpinBox_bandpass_low(self):
         logger.debug("BP-low event received.")
         self._ui.doubleSpinBox_bandpass_high.setMinimum(
@@ -299,7 +299,7 @@ class ControlGUI_EEG(_ControlGUI):
             self._ui.doubleSpinBox_bandpass_high.value(),
         )
 
-    @QtCore.pyqtSlot()
+    @QtCore.Slot()
     def onValueChanged_doubleSpinBox_bandpass_high(self):
         logger.debug("BP-high event received.")
         self._ui.doubleSpinBox_bandpass_low.setMaximum(
@@ -315,19 +315,19 @@ class ControlGUI_EEG(_ControlGUI):
             self._ui.doubleSpinBox_bandpass_high.value(),
         )
 
-    @QtCore.pyqtSlot()
+    @QtCore.Slot()
     def onClicked_checkBox_car(self):
         logger.debug("Checkbox for CAR event received.")
         self._scope.apply_car = self._ui.checkBox_car.isChecked()
         logger.debug("CAR checkbox: %s", self._ui.checkBox_car.isChecked())
 
-    @QtCore.pyqtSlot()
+    @QtCore.Slot()
     def onClicked_checkBox_detrend(self):
         logger.debug("Checkbox for detrend event received.")
         self._scope.apply_detrend = self._ui.checkBox_detrend.isChecked()
         logger.debug("Detrend checkbox: %s", self._ui.checkBox_bandpass.isChecked())
 
-    @QtCore.pyqtSlot()
+    @QtCore.Slot()
     def onClicked_checkBox_show_LPT_trigger_events(self):
         logger.debug("Checkbox for LPT event received.")
         self._backend.show_LPT_trigger_events = bool(
@@ -338,7 +338,7 @@ class ControlGUI_EEG(_ControlGUI):
             self._ui.checkBox_show_LPT_trigger_events.isChecked(),
         )
 
-    @QtCore.pyqtSlot()
+    @QtCore.Slot()
     def onSelectionChanged_table_channels(self):
         logger.debug("Channel selection event received.")
         selected = self._ui.table_channels.selectedItems()

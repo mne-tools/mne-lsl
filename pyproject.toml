@@ -49,7 +49,7 @@ dependencies = [
     'pooch',
     'psutil',
     'pyqtgraph',
-    'PyQt5',
+    'qtpy',
     'scipy',
 ]
 
