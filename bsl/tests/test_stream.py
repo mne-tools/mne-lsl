@@ -390,7 +390,7 @@ def test_stream_n_new_samples(mock_lsl_stream, caplog):
     stream.disconnect()
 
 
-def test_stream_invalid_interrupt(self):
+def test_stream_invalid_interrupt():
     """Test invalid acquisition interruption."""
     stream = Stream(bufsize=0.4, name="BSL-Player-pytest")
     assert not stream.connected
