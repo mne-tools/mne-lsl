@@ -94,6 +94,12 @@ class ParallelPortTrigger(BaseTrigger):
         if address == "arduino":
             return "arduino"
         if isinstance(address, int):
+            if system() != "Windows":
+                raise RuntimeError(
+                    f"Could not infer the port type from the address '{hex(address)}'. "
+                    "An hexadecimal address should only be provided for parallel ports "
+                    "on windows."
+                )
             return "pport"
 
         if system() == "Linux":
@@ -103,9 +109,9 @@ class ParallelPortTrigger(BaseTrigger):
                 return "arduino"
             else:
                 raise RuntimeError(
-                    "[Trigger] Could not infer the port type from the address "
-                    f"'{address}'. Please provide the 'port_type' argument "
-                    "when creating the ParallelPortTrigger object. "
+                    f"Could not infer the port type from the address '{address}'. "
+                    "Please provide the 'port_type' argument when creating the "
+                    "ParallelPortTrigger object."
                 )
         elif system() == "Darwin":
             return "arduino"
@@ -121,10 +127,10 @@ class ParallelPortTrigger(BaseTrigger):
         from serial.tools import list_ports
 
         for arduino in list_ports.grep(regexp="Arduino"):
-            logger.info("[Trigger] Found arduino to LPT on '%s'.", arduino)
+            logger.info("Found arduino to LPT on '%s'.", arduino)
             return arduino.device
         else:
-            raise IOError("[Trigger] No arduino card was found.")
+            raise IOError("No arduino card was found.")
 
     def _connect_arduino(self, baud_rate: int = 115200) -> None:
         """Connect to an Arduino to LPT converter."""
@@ -133,7 +139,7 @@ class ParallelPortTrigger(BaseTrigger):
         try:
             self._port = Serial(self._address, baud_rate)
         except SerialException:
-            msg = "[Trigger] Could not access arduino to LPT on " f"'{self._address}'."
+            msg = f"Could not access arduino to LPT on '{self._address}'."
             if system() == "Linux":
                 msg += (
                     " Make sure you have the permission to access this "
@@ -143,7 +149,7 @@ class ParallelPortTrigger(BaseTrigger):
             raise SerialException(msg)
 
         time.sleep(1)
-        logger.info("[Trigger] Connected to arduino to LPT on '%s'.", self._address)
+        logger.info("Connected to arduino to LPT on '%s'.", self._address)
 
     def _connect_pport(self) -> None:
         """Connect to the ParallelPort."""
@@ -151,23 +157,20 @@ class ParallelPortTrigger(BaseTrigger):
 
         if ParallelPort is None and system() == "Darwin":
             raise RuntimeError(
-                "[Trigger] macOS does not support built-in parallel port. "
+                "macOS does not support built-in parallel port. "
                 "Please use an arduino to LPT converter for hardware triggers "
                 "or bsl.triggers.LSLTrigger for software triggers."
             )
         elif ParallelPort is None and system() != "Linux":
             raise RuntimeError(
-                "[Trigger] Windows supports built-in parallel port via "
-                "inpout32, inpout64 or dlportio. Neither of this driver was "
-                "found."
+                "Windows supports built-in parallel port via "
+                "inpout32, inpout64 or dlportio. Neither of this driver was found."
             )
 
         try:
             self._port = ParallelPort(self._address)
         except Exception:
-            msg = (
-                "[Trigger] Could not access the parallel port on " f"'{self._address}'."
-            )
+            msg = f"Could not access the parallel port on '{self._address}'."
             if system() == "Linux":
                 msg += (
                     " Make sure you have the permission to access this "
@@ -175,20 +178,19 @@ class ParallelPortTrigger(BaseTrigger):
                     "group: 'sudo usermod -a -G lp <username>'. Make sure the "
                     "'lp' module is removed and the 'ppdev' module is loaded: "
                     "'sudo rmmod lp' & 'sudo modprobe ppdev'. You can "
-                    "configure the module loaded by default in "
-                    "'/etc/modprobe.d/'."
+                    "configure the module loaded by default in '/etc/modprobe.d/'."
                 )
             raise RuntimeError(msg)
 
         time.sleep(1)
-        logger.info("[Trigger] Connected to parallel port on '%s'.", self._address)
+        logger.info("Connected to parallel port on '%s'.", self._address)
 
     @copy_doc(BaseTrigger.signal)
     def signal(self, value: int) -> None:
         value = super().signal(value)
         if self._offtimer.is_alive():
             logger.warning(
-                "[Trigger] You are sending a new signal before the end of the "
+                "You are sending a new signal before the end of the "
                 "last signal. Signal ignored. Delay required = %.1f ms.",
                 self.delay,
             )
