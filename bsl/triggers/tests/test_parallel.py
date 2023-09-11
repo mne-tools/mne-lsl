@@ -5,7 +5,7 @@ import pytest
 from bsl.triggers import ParallelPortTrigger
 
 
-@pytest.mark.skipif(system() != "Linux")
+@pytest.mark.skipif(system() != "Linux", reason="requires Linux")
 def test_infer_port_type_linux():
     """Test port type inference patterns on linux."""
     assert ParallelPortTrigger._infer_port_type("arduino") == "arduino"
@@ -19,7 +19,7 @@ def test_infer_port_type_linux():
         ParallelPortTrigger._infer_port_type(0x4FB8)
 
 
-@pytest.mark.skipif(system() != "Windows")
+@pytest.mark.skipif(system() != "Windows", reason="requires Windows")
 def test_infer_port_type_windows():
     """Test port type inference patterns on Windows."""
     assert ParallelPortTrigger._infer_port_type("arduino") == "arduino"
@@ -28,7 +28,7 @@ def test_infer_port_type_windows():
     assert ParallelPortTrigger._infer_port_type(0x4FB8) == "pport"
 
 
-@pytest.mark.skipif(system() != "Darwin")
+@pytest.mark.skipif(system() != "Darwin", reason="requires macOS")
 def test_infer_port_type_macos():
     """Test port type inference patterns on Windows."""
     assert ParallelPortTrigger._infer_port_type("arduino") == "arduino"
