@@ -93,6 +93,8 @@ class ParallelPortTrigger(BaseTrigger):
         """Infer the type of port from the address."""
         if address == "arduino":
             return "arduino"
+        if isinstance(address, int):
+            return "pport"
 
         if system() == "Linux":
             if address.startswith("/dev/parport"):
@@ -111,10 +113,6 @@ class ParallelPortTrigger(BaseTrigger):
             if address.startswith("COM"):
                 return "arduino"
             else:
-                # TODO: Check in detail what the address should look like for
-                # the windows drivers, and raise a RuntimeError as for Linux
-                # when the address does not comply.
-                # Maybe address.startswith("LPT") ?
                 return "pport"
 
     @staticmethod
