@@ -94,6 +94,12 @@ class ParallelPortTrigger(BaseTrigger):
         if address == "arduino":
             return "arduino"
         if isinstance(address, int):
+            if system() != "Windows":
+                raise RuntimeError(
+                    f"Could not infer the port type from the address '{hex(address)}'. "
+                    "An hexadecimal address should only be provided for parallel ports "
+                    "on windows."
+                )
             return "pport"
 
         if system() == "Linux":
