@@ -91,21 +91,14 @@ class ParallelPortTrigger(BaseTrigger):
     @staticmethod
     def _infer_port_type(address: Union[int, str]) -> str:
         """Infer the type of port from the address."""
-        if address == "arduino":
-            return "arduino"
-        if isinstance(address, int):
-            if system() != "Windows":
-                raise RuntimeError(
-                    f"Could not infer the port type from the address '{hex(address)}'. "
-                    "An hexadecimal address should only be provided for parallel ports "
-                    "on windows."
-                )
-            return "pport"
-
         if system() == "Linux":
+            if not isinstance(address, str):
+                raise TypeError(
+                    "On Linux, a parallel port address must be provided as a string."
+                )
             if address.startswith("/dev/parport"):
                 return "pport"
-            if address.startswith("/dev/ttyACM"):
+            elif address.startswith("/dev/ttyACM") or address == "arduino":
                 return "arduino"
             else:
                 raise RuntimeError(
@@ -114,12 +107,24 @@ class ParallelPortTrigger(BaseTrigger):
                     "ParallelPortTrigger object."
                 )
         elif system() == "Darwin":
-            return "arduino"
-        elif system() == "Windows":
-            if address.startswith("COM"):
+            if address == "arduino":
                 return "arduino"
             else:
+                raise RuntimeError(
+                    "macOS does not support on-board parallel ports. Only arduino "
+                    "converters are supported with address='arduino'."
+                )
+        elif system() == "Windows":
+            if isinstance(address, int):
                 return "pport"
+            elif address.startswith("COM") or address == "arduino":
+                return "arduino"
+            else:
+                raise RuntimeError(
+                    f"Could not infer the port type from the address '{address}'. "
+                    "Please provide the 'port_type' argument when creating the "
+                    "ParallelPortTrigger object."
+                )
 
     @staticmethod
     def _search_arduino() -> str:
