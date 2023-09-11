@@ -17,12 +17,12 @@ def test_infer_port_type():
         with pytest.raises(RuntimeError, match="provide the 'port_type' argument"):
             ParallelPortTrigger._infer_port_type("101")
         with pytest.raises(RuntimeError, match="for parallel ports on windows."):
-            ParallelPortTrigger._infer_port_type(0x4fb8)
+            ParallelPortTrigger._infer_port_type(0x4FB8)
 
     elif system() == "Windows":
         assert ParallelPortTrigger._infer_port_type("COM7") == "arduino"
         assert ParallelPortTrigger._infer_port_type("COM8") == "arduino"
-        assert ParallelPortTrigger._infer_port_type(0x4fb8) == "pport"
+        assert ParallelPortTrigger._infer_port_type(0x4FB8) == "pport"
 
 
 def test_search_arduino():
