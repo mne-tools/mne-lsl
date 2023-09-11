@@ -39,7 +39,7 @@ class PParallelLinux:
             self.port = pyp.Parallel(address)
         except FileNotFoundError:
             raise RuntimeError(
-                "[Trigger] Could not access parallel port on '{address}'. "
+                f"Could not access parallel port on '{address}'. "
                 "No such file or directory."
             )
         self.status = None
