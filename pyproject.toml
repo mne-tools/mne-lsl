@@ -85,6 +85,7 @@ style = [
     'ruff',
 ]
 test = [
+    'bsl[triggers]',
     'pyqt5',
     'pytest',
     'pytest-cov',
@@ -94,9 +95,9 @@ test = [
 all = [
     'bsl[build]',
     'bsl[doc]',
-    'bsl[triggers]',
     'bsl[style]',
     'bsl[test]',
+    'bsl[triggers]',
 ]
 full = [
     'bsl[all]',
