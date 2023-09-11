@@ -32,9 +32,9 @@ def test_infer_port_type_windows():
 def test_infer_port_type_macos():
     """Test port type inference patterns on Windows."""
     assert ParallelPortTrigger._infer_port_type("arduino") == "arduino"
-    with pytest.raises(RuntimeError, match="macOS does not spport"):
+    with pytest.raises(RuntimeError, match="macOS does not support"):
         ParallelPortTrigger._infer_port_type("/dev/parport0")
-    with pytest.raises(RuntimeError, match="macOS does not spport"):
+    with pytest.raises(RuntimeError, match="macOS does not support"):
         ParallelPortTrigger._infer_port_type(0x4FB8)
 
 
