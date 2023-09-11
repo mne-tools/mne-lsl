@@ -15,7 +15,7 @@ jobs:
       SHA256_PYLSL: dd9222ee3894c43535b40aee542a2c8cb6062a467d4b103bd3c3a713d7c7690c
     steps:
       - name: Checkout pylsl repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: labstreaminglayer/pylsl
       - name: Compare checksum
