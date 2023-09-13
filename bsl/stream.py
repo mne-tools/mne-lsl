@@ -175,6 +175,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
             factor.
         """
         self._check_connected(name="Stream.add_reference_channels()")
+        self._check_regular_sampling(name="Stream.add_reference_channels()")
         # error checking and conversion of the arguments to valid values
         if isinstance(ref_channels, str):
             ref_channels = [ref_channels]
