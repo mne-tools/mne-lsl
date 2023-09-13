@@ -105,9 +105,11 @@ def create_info(
                 n_channels, stype, desc
             )
 
-        info = mne_create_info(ch_names, 1, ch_types)
+        info = mne_create_info(ch_names, sfreq if sfreq != 0 else 1, ch_types)
         with info._unlock():
-            info["sfreq"] = sfreq
+            if sfreq == 0:
+                info["sfreq"] = sfreq
+                info["lowpass"] = 0.
             for ch, ch_unit in zip(info["chs"], ch_units):
                 ch["unit_mul"] = ch_unit
         # add manufacturer information if available
