@@ -122,8 +122,9 @@ include = ['bsl*']
 exclude = ['bsl*tests']
 
 [tool.setuptools.package-data]
-"bsl.stream_viewer.control_gui.settings" = ["*.ini"]
+"bsl.datasets" =["*registry.txt"]
 "bsl.lsl.lib" = ["*"]
+"bsl.stream_viewer.control_gui.settings" = ["*.ini"]
 
 [tool.black]
 line-length = 88
