@@ -15,7 +15,7 @@ command:
 
 .. code-block:: console
 
-    $ bsl_player file
+    $ bsl-player file
 
 With the arguments:
 
@@ -32,7 +32,7 @@ A legacy :class:`~bsl.stream_viewer.StreamViewer` can be opened with the command
 
 .. code-block:: console
 
-    $ bsl_stream_viewer
+    $ bsl-stream_viewer
 
 With the arguments:
 
