@@ -26,9 +26,7 @@ def _make_registry(output: Optional[Union[str, Path]] = None) -> None:
             "The sample dataset registry can only be created from a clone of the "
             "repository."
         )
-    output = (
-        files("bsl.datasets") / "sample-registry.txt" if output is None else output
-    )
+    output = files("bsl.datasets") / "sample-registry.txt" if output is None else output
     pooch.make_registry(folder, output=output, recursive=True)
 
 
