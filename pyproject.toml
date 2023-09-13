@@ -18,28 +18,31 @@ maintainers = [
     {name = 'Mathieu Scheltienne', email = 'mathieu.scheltienne@fcbg.ch'},
 ]
 keywords = [
-    'python',
-    'neuroscience',
-    'neuroimaging',
-    'EEG',
-    'LSL',
-    'real-time',
     'brain',
+    'EEG',
+    'eeg',
+    'electroencephalography',
+    'LSL',
+    'labstreaminglayer',
+    'neuroimaging',
+    'neuroscience',
+    'python',
+    'real-time',
 ]
 classifiers = [
+    'Intended Audience :: Developers',
+    'Intended Audience :: Science/Research',
+    'License :: OSI Approved :: MIT License',
+    'Natural Language :: English',
+    'Operating System :: MacOS',
     'Operating System :: Microsoft :: Windows',
     'Operating System :: Unix',
-    'Operating System :: MacOS',
     'Programming Language :: Python :: 3 :: Only',
     'Programming Language :: Python :: 3.9',
     'Programming Language :: Python :: 3.10',
     'Programming Language :: Python :: 3.11',
-    'Natural Language :: English',
-    'License :: OSI Approved :: BSD License',
-    'Intended Audience :: Science/Research',
-    'Intended Audience :: Developers',
-    'Topic :: Software Development',
     'Topic :: Scientific/Engineering',
+    'Topic :: Software Development',
 ]
 dependencies = [
     'distro; sys_platform == "linux"',
@@ -111,7 +114,10 @@ tracker = 'https://github.com/fcbg-hnp-meeg/bsl/issues'
 
 [project.scripts]
 bsl-sys_info = 'bsl.commands.sys_info:run'
+bsl_sys_info = 'bsl.commands.sys_info:run'
+bsl-player = 'bsl.commands.bsl_player:run'
 bsl_player = 'bsl.commands.bsl_player:run'
+bsl-stream_viewer = 'bsl.commands.bsl_stream_viewer:run'
 bsl_stream_viewer = 'bsl.commands.bsl_stream_viewer:run'
 
 [tool.setuptools]
