@@ -134,9 +134,11 @@ extend-exclude = '''
 (
       __pycache__
     | \.github
-    | setup.py
-    | pyproject.toml
+    | datasets/
     | doc/
+    | pyproject.toml
+    | setup.py
+    | tutorials/
 )
 '''
 
@@ -146,8 +148,12 @@ multi_line_output = 3
 line_length = 88
 py_version = 39
 extend_skip_glob = [
-    'setup.py',
+    '.github/*',
+    'datasets/*',
     'doc/*',
+    'pyproject.toml',
+    'setup.py',
+    'tutorials/*',
 ]
 
 [tool.pydocstyle]
@@ -160,8 +166,12 @@ add_ignore = 'D100,D104,D107'
 [tool.ruff]
 line-length = 88
 extend-exclude = [
-    "doc",
-    "setup.py",
+    '.github/*',
+    'datasets/*',
+    'doc/*',
+    'pyproject.toml',
+    'setup.py',
+    'tutorials/*',
 ]
 
 [tool.ruff.per-file-ignores]
