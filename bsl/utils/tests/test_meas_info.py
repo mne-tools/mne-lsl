@@ -26,6 +26,7 @@ def test_valid_info(caplog):
 
     info = create_info(4, 1024, "eeg", desc)
     assert info["sfreq"] == 1024.0
+    assert info["lowpass"] == 512.0
     assert len(info.ch_names) == 4
     assert info.ch_names == ch_names
     assert info.get_channel_types() == ch_types
@@ -49,6 +50,7 @@ def test_valid_info(caplog):
     # marker stream
     info = create_info(4, 0, "eeg", desc)
     assert info["sfreq"] == 0.0
+    assert info["lowpass"] == 0.0
     assert len(info.ch_names) == 4
     assert info.ch_names == ch_names
     assert info.get_channel_types() == ch_types
