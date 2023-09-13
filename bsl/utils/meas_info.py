@@ -109,7 +109,7 @@ def create_info(
         with info._unlock():
             if sfreq == 0:
                 info["sfreq"] = sfreq
-                info["lowpass"] = 0.
+                info["lowpass"] = 0.0
             for ch, ch_unit in zip(info["chs"], ch_units):
                 ch["unit_mul"] = ch_unit
         # add manufacturer information if available
