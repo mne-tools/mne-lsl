@@ -1,6 +1,6 @@
 """
-Player
-======
+Introduction to the Player API
+==============================
 
 .. include:: ./../../links.inc
 
