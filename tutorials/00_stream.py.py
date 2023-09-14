@@ -83,7 +83,7 @@ stream.connect()
 
 stream.info
 
-#%%
+# %%
 # Depending on the LSL Stream source, the `~bsl.Stream` may or may not be able to
 # correctly read the channel names, types and units.
 #
@@ -125,10 +125,10 @@ stream.info
 #     is overwritten with some samples "lost" or discarded without any prior notice or
 #     error raised.
 
-print (f"Number of new samples: {stream.n_new_samples}")
+print(f"Number of new samples: {stream.n_new_samples}")
 data, ts = stream.get_data()
 time.sleep(0.5)
-print (f"Number of new samples: {stream.n_new_samples}")
+print(f"Number of new samples: {stream.n_new_samples}")
 
 # %%
 # :meth:`bsl.Stream.get_data` returns 2 variables, ``data`` which contains the
