@@ -7,9 +7,19 @@ Stream information
 
 # %%
 # bla
-
 # For instance, let's have a closer look at the EEG channel units with
 # :meth:`bsl.Stream.get_channel_units`.
+
+from mne import pick_types
+
+from bsl import Player, Stream
+from bsl.datasets import sample
+
+fname = sample.data_path() / "sample-ant-raw.fif"
+player = Player(fname)
+player.start()
+stream = Stream(bufsize=5)  # 5 seconds of buffer
+stream.connect()
 
 units = stream.get_channel_units(picks="eeg")
 print (set(units))  # remove duplicates

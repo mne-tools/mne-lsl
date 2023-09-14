@@ -959,6 +959,15 @@ class Stream(ContainsMixin, SetChannelsMixin):
         return self._name
 
     @property
+    def n_buffer(self) -> Optional[int]:
+        """Number of samples that can be stored in the buffer.
+
+        :type: :class:`int` | None
+        """
+        self._check_connected(name="Stream.n_buffer")
+        return self._timestamps.size
+
+    @property
     def n_new_samples(self) -> Optional[int]:
         """Number of new samples available in the buffer.
 

@@ -60,6 +60,10 @@ size is specified at instantiation through the ``bufsize`` argument.
 #     :class:`~bsl.Player`. See :ref:`sphx_glr_generated_tutorials_10_player.py` for
 #     additional information on mock LSL streams.
 
+import time
+
+from matplotlib import pyplot as plt
+
 from bsl import Player, Stream
 from bsl.datasets import sample
 
@@ -69,7 +73,7 @@ player.start()
 stream = Stream(bufsize=5)  # 5 seconds of buffer
 stream.connect()
 
-#%%
+# %%
 # Stream information
 # ------------------
 #
@@ -92,6 +96,77 @@ stream.info
 # liking with :meth:`bsl.Stream.rename_channels`, :meth:`bsl.Stream.set_channel_types`
 # and :meth:`bsl.Stream.set_channel_units`. See
 # :ref:`sphx_glr_generated_tutorials_20_stream_meas_info.py` for additional information.
+
+# %%
+# Channel selection
+# -----------------
+#
+# Channels can be selected with :meth:`bsl.Stream.pick` or with
+# :meth:`bsl.Stream.drop_channels`. Selection is definitive, it is not possible to
+# restore channels removed until the :class:`~bsl.Stream` is disconnected and
+# reconnected to its source.
+
+stream.pick(["Fz", "Cz", "Oz"])
+stream.info
+
+# %%
+# Query the buffer
+# ----------------
+#
+# The ringbuffer can be queried for the last ``N`` samples with
+# :meth:`bsl.Stream.get_data`. The argument ``winsize`` controls the amount of samples
+# returned, and the property :py:attr:`bsl.Stream.n_new_samples` contains the amount
+# of new samples buffered betwen 2 queries.
+#
+# .. note::
+#
+#     If the number of new samples between 2 queries is superior to the number of
+#     samples that can be hold in the buffer :py:attr:`bsl.Stream.n_buffer`, the buffer
+#     is overwritten with some samples "lost" or discarded without any prior notice or
+#     error raised.
+
+print (f"Number of new samples: {stream.n_new_samples}")
+data, ts = stream.get_data()
+time.sleep(0.5)
+print (f"Number of new samples: {stream.n_new_samples}")
+
+# %%
+# :meth:`bsl.Stream.get_data` returns 2 variables, ``data`` which contains the
+# ``(n_channels, n_samples)`` data array and ``ts`` (or ``timestamps``) which contains
+# the ``(n_samples,) timestamp array, in LSL time.
+#
+# .. note::
+#
+#     LSL timetamps are not always regular. They can be jittered depending on the source
+#     and on the delay between the source and the client. Processing flags can be
+#     provided to improve the timestamp precision when connecting to a stream with
+#     :meth:`bsl.Stream.connect`. See
+#     :ref:`sphx_glr_generated_tutorials_30_timestamps.py` for additional information.
+
+f, ax = plt.subplots(3, 1, sharex=True, constrained_layout=True)
+for k, ch in enumerate(stream.ch_names):
+    ax[k].set_title(f"EEG {ch}")
+for _ in range(3):
+    # figure how many new samples are available, in seconds
+    winsize = stream.n_new_samples / stream.info["sfreq"]
+    # retrieve and plot data
+    data, ts = stream.get_data(winsize)
+    for k, data_channel in enumerate(data):
+        ax[k].plot(ts, data_channel)
+    time.sleep(0.5)
+plt.show()
+
+# %%
+# Apply processing to the buffer
+# ------------------------------
+#
+# TODO: add_reference_channels, set_eeg_reference, filter
+
+# %%
+# Record a stream
+# ---------------
+#
+# TODO
 
 # %%
 # Free resources
