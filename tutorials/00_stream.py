@@ -66,6 +66,7 @@ from matplotlib import pyplot as plt
 
 from bsl import Player, Stream
 from bsl.datasets import sample
+from bsl.lsl import local_clock
 
 fname = sample.data_path() / "sample-ant-raw.fif"
 player = Player(fname)
@@ -133,7 +134,7 @@ print(f"Number of new samples: {stream.n_new_samples}")
 # %%
 # :meth:`bsl.Stream.get_data` returns 2 variables, ``data`` which contains the
 # ``(n_channels, n_samples)`` data array and ``ts`` (or ``timestamps``) which contains
-# the ``(n_samples,) timestamp array, in LSL time.
+# the ``(n_samples,)`` timestamp array, in LSL time.
 #
 # .. note::
 #
@@ -143,18 +144,34 @@ print(f"Number of new samples: {stream.n_new_samples}")
 #     :meth:`bsl.Stream.connect`. See
 #     :ref:`sphx_glr_generated_tutorials_30_timestamps.py` for additional information.
 
+t0 = local_clock()
 f, ax = plt.subplots(3, 1, sharex=True, constrained_layout=True)
-for k, ch in enumerate(stream.ch_names):
-    ax[k].set_title(f"EEG {ch}")
 for _ in range(3):
     # figure how many new samples are available, in seconds
     winsize = stream.n_new_samples / stream.info["sfreq"]
     # retrieve and plot data
     data, ts = stream.get_data(winsize)
     for k, data_channel in enumerate(data):
-        ax[k].plot(ts, data_channel)
+        ax[k].plot(ts - t0, data_channel)
     time.sleep(0.5)
+for k, ch in enumerate(stream.ch_names):
+    ax[k].set_title(f"EEG {ch}")
+ax[-1].set_xlabel("Timestamp (LSL time)")
 plt.show()
+
+# %%
+# In the previous figure, the timestamps are corrected by ``t0``, which correspond to
+# the time at which the first loop was executed. Note that the samples in blue span
+# negative time values. Indeed, a 0.5 second sleep was added in the previous code cell
+# after the last :meth:`bsl.Stream.get_data` call. Thus, ``t0`` is created 0.5 seconds
+# after the last reset of :py:attr:`bsl.Stream.n_new_samples` and the samples
+# pulled with the first :meth:`bsl.Stream.get_data` correspond to past samples.
+#
+# Note also the varying number of samples in each of the 3 data query separated by
+# 0.5 seconds. When connecting to a Stream with :meth:`bsl.Stream.connect`, an
+# ``acquisition_delay`` is defined. It corresponds to the delay between 2 updates of the
+# ringbuffer, by default 200 ms. Thus, with a 500 ms sleep in this example, the number
+# of samples updated in the ringbuffer will vary every 2 iterations.
 
 # %%
 # Apply processing to the buffer

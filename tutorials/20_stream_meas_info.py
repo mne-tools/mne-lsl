@@ -32,7 +32,7 @@ The stream and channel type supported correspond to the MNE-supported channel ty
 # A :class:`~bsl.Stream` measurement information can be inspected with similar methods
 # to a :class:`~mne.io.Raw` object: :py:attr:`bsl.Stream.info`,
 # :py:attr:`bsl.Stream.ch_names`, :meth:`bsl.Stream.get_channel_types`,
-# :meth:`get_channel_units`.
+# :meth:`bsl.Stream.get_channel_units`.
 #
 # .. note::
 #
@@ -52,9 +52,10 @@ stream.info
 
 # %%
 # :py:attr:`bsl.Stream.ch_names` and :meth:`bsl.Stream.get_channel_types` behave like
-# their `MNE <mne stable_>`_ counterpart, but :meth:`get_channel_units` is unique to
-# ``BSL``. In `MNE <mne stable_>`_, recordings are expected to be provided in SI units,
-# and it is up to the end-user to ensure that the underlying data array is abiding.
+# their `MNE <mne stable_>`_ counterpart, but :meth:`bsl.Stream.get_channel_units` is
+# unique to ``BSL``. In `MNE <mne stable_>`_, recordings are expected to be provided in
+# SI units, and it is up to the end-user to ensure that the underlying data array is
+# abiding.
 #
 # However, many system do not stream data in SI units. For instance, most EEG amplifiers
 # stream data in microvolts. ``BSL`` implements a 'units' API to handle the difference
