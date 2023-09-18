@@ -90,7 +90,7 @@ style = [
 test = [
     'bsl[triggers]',
     'pyqt5',
-    'pytest',
+    'pytest>=6.0',
     'pytest-cov',
     'pytest-timeout',
     'requests',
