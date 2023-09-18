@@ -203,7 +203,7 @@ class Player(ContainsMixin, SetChannelsMixin):
         super().set_channel_types(
             mapping=mapping, on_unit_change=on_unit_change, verbose=verbose
         )
-        self._sinfo.set_channel_types(self._raw.get_channel_types(unique=False))
+        self._sinfo.set_channel_types(self.get_channel_types(unique=False))
 
     def set_channel_units(self, mapping: Dict[str, Union[str, int]]) -> None:
         """Define the channel unit multiplication factor.
