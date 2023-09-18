@@ -18,6 +18,12 @@ might be important.
 #
 # At a low-level, a :class:`~bsl.lsl.StreamInlet` has a
 # :meth:`~bsl.lsl.StreamInlet.time_correction` method to estimate the time offset.
+#
+# .. note::
+#
+#     For this tutorial purposes, a mock LSL stream is created using a
+#     :class:`~bsl.Player`. See :ref:`sphx_glr_generated_tutorials_10_player.py` for
+#     additional information on mock LSL streams.
 
 from matplotlib import pyplot as plt
 

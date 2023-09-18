@@ -6,7 +6,7 @@ Stream information
 
 A :class:`~bsl.Stream` will automatically attempt to interpret the channel names, types
 and units during the connection with :meth:`bsl.Stream.connect`. However, by definition,
-a lab streaming layer stream does not require any of those information to be present.
+an LSL stream does not require any of those information to be present.
 Moreover, the channel type and unit are not standardize, and may be define with
 different nomenclature depending on the system and the application emitting the LSL
 stream. For instance, an EEG channel might be denoted by the type ``'eeg'`` or
@@ -83,7 +83,6 @@ for ch_name, ch_type, ch_unit in zip(stream.ch_names, ch_types, ch_units):
 # Thus, the unit stored is ``Volts``, corresponding to the SI unit for
 # electrophysiological channels.
 #
-# %%
 # Correct a stream info
 # ---------------------
 #
