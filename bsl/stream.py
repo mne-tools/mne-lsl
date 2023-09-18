@@ -88,24 +88,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
         self._stype = stype
         self._source_id = source_id
         self._bufsize = bufsize
-
-        # -- variables defined after connection ----------------------------------------
-        self._sinfo = None
-        self._inlet = None
-        self._info = None
-        # The buffer shape is similar to a pull_sample/pull_chunk from an inlet:
-        # (n_samples, n_channels). New samples are added to the right of the buffer
-        # while old samples are removed from the left of the buffer.
-        self._acquisition_delay = None
-        self._acquisition_thread = None
-        self._buffer = None
-        self._n_new_samples = None
-        # picks_inlet represent the selection of channels from the inlet.
-        self._picks_inlet = None
-        self._timestamps = None
-
-        # -- variables defined for processing ------------------------------------------
-        self._ref_channels = []
+        self._reset_variables()
 
     @copy_doc(ContainsMixin.__contains__)
     def __contains__(self, ch_type) -> bool:
@@ -404,6 +387,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
     def disconnect(self) -> None:
         """Disconnect from the LSL stream and interrupt data collection."""
         self._check_connected(name="Stream.disconnect()")
+        self._interrupt = True
         while self._acquisition_thread.is_alive():
             self._acquisition_thread.cancel()
         self._inlet.close_stream()
@@ -809,7 +793,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
             self._timestamps[-timestamps.size :] = timestamps[-self._timestamps.size :]  # noqa: E203, E501
             # fmt: on
             # update the number of new samples available
-            self._n_new_samples += min(timestamps.size, self._timestamps.size)
+            self._n_new_samples += min(timestamps.size, self.n_buffer)
             if (
                 self._timestamps.size < self._n_new_samples
                 or self._timestamps.size < timestamps.size
@@ -825,10 +809,14 @@ class Stream(ContainsMixin, SetChannelsMixin):
             self._reset_variables()
             return None  # equivalent to an interrupt
         else:
-            # recreate the timer thread as it is one-call only
-            self._acquisition_thread = Timer(self._acquisition_delay, self._acquire)
-            self._acquisition_thread.daemon = True
-            self._acquisition_thread.start()
+            if self._interrupt:
+                # don't recreate the thread if we are trying to interrupt acquisition
+                return None
+            else:
+                # recreate the timer thread as it is one-call only
+                self._acquisition_thread = Timer(self._acquisition_delay, self._acquire)
+                self._acquisition_thread.daemon = True
+                self._acquisition_thread.start()
 
     def _check_connected(self, name: str):
         """Check that the stream is connected before calling the function 'name'."""
@@ -855,9 +843,11 @@ class Stream(ContainsMixin, SetChannelsMixin):
                 "is not connected. Please open an issue on GitHub and provide the "
                 "error traceback to the developers."
             )
+        self._interrupt = True
         while self._acquisition_thread.is_alive():
             self._acquisition_thread.cancel()
         yield
+        self._interrupt = False
         self._acquisition_thread = Timer(0, self._acquire)
         self._acquisition_thread.daemon = True
         self._acquisition_thread.start()
@@ -888,6 +878,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
         self._info = None
         self._acquisition_delay = None
         self._acquisition_thread = None
+        self._interrupt = False
         self._buffer = None
         self._n_new_samples = None
         self._picks_inlet = None
