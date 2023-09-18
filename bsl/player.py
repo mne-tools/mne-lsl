@@ -8,12 +8,16 @@ from mne import rename_channels
 from mne.io import read_raw
 from mne.utils import check_version
 
-if check_version("mne", "1.6"):
-    from mne._fiff.meas_info import ContainsMixin
+if check_version("mne", "1.5"):
+    from mne.io.meas_info import ContainsMixin, SetChannelsMixin
+    from mne.io.pick import _picks_to_idx
+elif check_version("mne", "1.6"):
+    from mne._fiff.meas_info import ContainsMixin, SetChannelsMixin
     from mne._fiff.pick import _picks_to_idx
 else:
     from mne.io.meas_info import ContainsMixin
     from mne.io.pick import _picks_to_idx
+    from mne.channels.channels import SetChannelsMixin
 
 from .lsl import StreamInfo, StreamOutlet, local_clock
 from .utils._checks import check_type, ensure_int, ensure_path
@@ -22,13 +26,14 @@ from .utils.logs import logger
 from .utils.meas_info import _set_channel_units
 
 if TYPE_CHECKING:
+    from datetime import datetime
     from pathlib import Path
     from typing import Callable, Dict, List, Optional, Tuple, Union
 
     from mne import Info
 
 
-class Player(ContainsMixin):
+class Player(ContainsMixin, SetChannelsMixin):
     """Class for creating a mock LSL stream.
 
     Parameters
@@ -82,6 +87,27 @@ class Player(ContainsMixin):
         self._target_timestamp = None
 
     @fill_doc
+    def anonymize(self, daysback=None, keep_his=False, *, verbose=None):
+        """Anonymize the measurement information in-place.
+
+        Parameters
+        ----------
+        %(daysback_anonymize_info)s
+        %(keep_his_anonymize_info)s
+        %(verbose)s
+
+        Notes
+        -----
+        %(anonymize_info_notes)s
+        """
+        self._check_not_started("Player.anonymize()")
+        logger.warning(
+            "Player.anonymize() is partially implemented and does impact the LSL "
+            "stream information yet."
+        )
+        super().anonymize(daysback=daysback, keep_his=keep_his, verbose=verbose)
+
+    @fill_doc
     def get_channel_units(
         self, picks=None, only_data_chs: bool = False
     ) -> List[Tuple[int, int]]:
@@ -132,7 +158,7 @@ class Player(ContainsMixin):
             renamed with ``-N`` at the end.
         %(verbose)s
         """
-        self._check_not_started("rename_channels")
+        self._check_not_started("Player.rename_channels()")
         rename_channels(self.info, mapping, allow_duplicates)
         self._sinfo.set_channel_names(self.info["ch_names"])
 
@@ -149,6 +175,35 @@ class Player(ContainsMixin):
         self._streaming_thread.daemon = True
         self._target_timestamp = local_clock()
         self._streaming_thread.start()
+
+    @fill_doc
+    def set_channel_types(
+        self, mapping: Dict[str, str], *, on_unit_change: str = "warn", verbose=None
+    ) -> None:
+        """Define the sensor type of channels.
+
+        If the new channel type changes the unit type, e.g. from ``T/m`` to ``V``, the
+        unit multiplication factor is reset to ``0``. Use
+        :meth:`~bsl.Player.set_channel_units` to change the multiplication factor, e.g.
+        from ``0`` to ``-6`` to change from Volts to microvolts.
+
+        Parameters
+        ----------
+        mapping : dict
+            A dictionary mapping a channel to a sensor type (str), e.g.,
+            ``{'EEG061': 'eog'}`` or ``{'EEG061': 'eog', 'TRIGGER': 'stim'}``.
+        on_unit_change : ``'raise'`` | ``'warn'`` | ``'ignore'``
+            What to do if the measurement unit of a channel is changed automatically to
+            match the new sensor type.
+
+            .. versionadded:: MNE 1.4
+        %(verbose)s
+        """
+        self._check_not_started("Player.set_channel_types()")
+        super().set_channel_types(
+            mapping=mapping, on_unit_change=on_unit_change, verbose=verbose
+        )
+        self._sinfo.set_channel_types(self._raw.get_channel_types(unique=False))
 
     def set_channel_units(self, mapping: Dict[str, Union[str, int]]) -> None:
         """Define the channel unit multiplication factor.
@@ -175,7 +230,7 @@ class Player(ContainsMixin):
         If the human-readable unit of your channel is not yet supported by BSL, please
         contact the developers on GitHub to add your units to the known set.
         """
-        self._check_not_started("set_channel_units")
+        self._check_not_started("Player.set_channel_units()")
         ch_units_before = np.array(
             [ch["unit_mul"] for ch in self.info["chs"]], dtype=np.int8
         )
@@ -191,6 +246,32 @@ class Player(ContainsMixin):
             channel_wise=False,
             picks="all",
         )
+
+    def set_meas_date(
+        self, meas_date: Optional[Union[datetime, float, Tuple[float]]]
+    ) -> None:
+        """Set the measurement start date.
+
+        Parameters
+        ----------
+        meas_date : datetime | float | tuple | None
+            The new measurement date.
+            If datetime object, it must be timezone-aware and in UTC.
+            A tuple of (seconds, microseconds) or float (alias for
+            ``(meas_date, 0)``) can also be passed and a datetime
+            object will be automatically created. If None, will remove
+            the time reference.
+
+        See Also
+        --------
+        anonymize
+        """
+        self._check_not_started(name="Player.set_meas_date()")
+        logger.warning(
+            "Player.set_meas_date() is partially implemented and does impact the LSL "
+            "stream information yet."
+        )
+        super().set_meas_date(meas_date)
 
     def stop(self) -> None:
         """Stop streaming data on the LSL :class:`~bsl.lsl.StreamOutlet`."""
