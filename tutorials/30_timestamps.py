@@ -17,7 +17,7 @@ might be important.
 # ------------------
 #
 # At a low-level, a :class:`~bsl.lsl.StreamInlet` has a
-# :meth:`~bsl.lsl.Stream.inlet.time_correction` method to estimate the time offset.
+# :meth:`~bsl.lsl.StreamInlet.time_correction` method to estimate the time offset.
 
 from matplotlib import pyplot as plt
 
