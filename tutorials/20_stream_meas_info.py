@@ -99,17 +99,6 @@ stream.info
 
 # %%
 # TODO: section about setting the channel units
-#
-# Note that the unit type did not change but the multiplication factor is now set to
-# ``-6 (FIFF_UNITM_MU)`` corresponding to ``μV``.
-#
-# .. note::
-#
-#     The unit can be provided as the power of 10 multiplication factor, e.g. ``-6`` for
-#     micro- or as readable string for known channel types and units. ``microvolts`` or
-#     ``uv`` is common enough to be correctly interpreted by ``BSL``. If you use a unit
-#     which is not understood by ``BSL`` and would like to add it to the known units,
-#     please open an issue on GitHub.
 
 # %%
 # Free resources
