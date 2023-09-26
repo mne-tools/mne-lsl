@@ -125,11 +125,7 @@ def test_player_unit():
     player.start()
     with pytest.raises(RuntimeError, match="player is already started"):
         player.set_channel_units({"Fp1": -6, "Fpz": "uv", "Fp2": "microvolts"})
-    streams = resolve_streams()
-    assert len(streams) == 1
-    assert streams[0].name == name
-    inlet = StreamInlet(streams[0])
-    inlet.open_stream()
+    inlet = _create_inlet(name)
     data, _ = inlet.pull_chunk()
     match_stream_and_raw_data(data.T, raw)
     del inlet
@@ -138,11 +134,7 @@ def test_player_unit():
     # try setting channel units after stopping the player
     player.set_channel_units({"Fp1": -6, "Fpz": "uv", "Fp2": "microvolts"})
     player.start()
-    streams = resolve_streams()
-    assert len(streams) == 1
-    assert streams[0].name == name
-    inlet = StreamInlet(streams[0])
-    inlet.open_stream()
+    inlet = _create_inlet(name)
     data, _ = inlet.pull_chunk()
     raw_ = raw.copy().apply_function(lambda x: x * 1e6, picks=["Fp1", "Fpz", "Fp2"])
     match_stream_and_raw_data(data.T, raw_)
@@ -152,11 +144,7 @@ def test_player_unit():
     # try re-setting the channel unit
     player.set_channel_units({"Fp1": -3})
     player.start()
-    streams = resolve_streams()
-    assert len(streams) == 1
-    assert streams[0].name == name
-    inlet = StreamInlet(streams[0])
-    inlet.open_stream()
+    inlet = _create_inlet(name)
     data, _ = inlet.pull_chunk()
     raw_ = raw.copy()
     raw_.apply_function(lambda x: x * 1e3, picks="Fp1")
@@ -174,11 +162,7 @@ def test_player_rename_channels():
     player.start()
     with pytest.raises(RuntimeError, match="player is already started"):
         player.rename_channels(mapping={"Fp1": "EEG1"})
-    streams = resolve_streams()
-    assert len(streams) == 1
-    assert streams[0].name == name
-    inlet = StreamInlet(streams[0])
-    inlet.open_stream()
+    inlet = _create_inlet(name)
     sinfo = inlet.get_sinfo()
     assert sinfo.get_channel_names() == player.info["ch_names"]
     del inlet
@@ -188,11 +172,7 @@ def test_player_rename_channels():
     player.rename_channels({"Fp1": "EEG1", "Fp2": "EEG2"})
     raw_ = raw.copy().rename_channels({"Fp1": "EEG1", "Fp2": "EEG2"})
     player.start()
-    streams = resolve_streams()
-    assert len(streams) == 1
-    assert streams[0].name == name
-    inlet = StreamInlet(streams[0])
-    inlet.open_stream()
+    inlet = _create_inlet(name)
     sinfo = inlet.get_sinfo()
     assert sinfo.get_channel_names() == player.info["ch_names"]
     assert sinfo.get_channel_names() == raw_.info["ch_names"]
@@ -203,13 +183,62 @@ def test_player_rename_channels():
     player.rename_channels({"EEG1": "EEG101", "EEG2": "EEG202"})
     raw_.rename_channels({"EEG1": "EEG101", "EEG2": "EEG202"})
     player.start()
-    streams = resolve_streams()
-    assert len(streams) == 1
-    assert streams[0].name == name
-    inlet = StreamInlet(streams[0])
-    inlet.open_stream()
+    inlet = _create_inlet(name)
     sinfo = inlet.get_sinfo()
     assert sinfo.get_channel_names() == player.info["ch_names"]
     assert sinfo.get_channel_names() == raw_.info["ch_names"]
     del inlet
     player.stop()
+
+
+def test_player_set_channel_types():
+    """Test channel type setting."""
+    name = "BSL-Player-test_player_types"
+    player = Player(fname, name, 16)
+    assert player._sinfo.get_channel_types() == player.get_channel_types(unique=False)
+    assert player.get_channel_types(unique=False) == raw.get_channel_types(unique=False)
+    player.start()
+    with pytest.raises(RuntimeError, match="player is already started"):
+        player.set_channel_types(mapping={"Fp1": "misc"})
+    inlet = _create_inlet(name)
+    sinfo = inlet.get_sinfo()
+    assert sinfo.get_channel_types() == player.get_channel_types(unique=False)
+    del inlet
+    player.stop()
+
+    # test changing types
+    player.set_channel_types(mapping={"Fp1": "eog", "Fp2": "eog"})
+    raw_ = raw.copy().set_channel_types(mapping={"Fp1": "eog", "Fp2": "eog"})
+    player.start()
+    inlet = _create_inlet(name)
+    sinfo = inlet.get_sinfo()
+    assert sinfo.get_channel_types() == player.get_channel_types(unique=False)
+    assert sinfo.get_channel_types() == raw_.get_channel_types(unique=False)
+    del inlet
+    player.stop()
+
+    # test rechanging types
+    player.set_channel_types(mapping={"Fp1": "eeg", "Fp2": "ecg"})
+    raw_ = raw.copy().set_channel_types(mapping={"Fp2": "ecg"})
+    player.start()
+    inlet = _create_inlet(name)
+    sinfo = inlet.get_sinfo()
+    assert sinfo.get_channel_types() == player.get_channel_types(unique=False)
+    assert sinfo.get_channel_types() == raw_.get_channel_types(unique=False)
+    del inlet
+    player.stop()
+
+    # test unique
+    assert sorted(player.get_channel_types(unique=True)) == sorted(
+        raw.get_channel_types(unique=True)
+    )
+
+
+def _create_inlet(name: str) -> StreamInlet:
+    """Create an inlet to the open-stream."""
+    streams = resolve_streams()
+    assert len(streams) == 1
+    assert streams[0].name == name
+    inlet = StreamInlet(streams[0])
+    inlet.open_stream()
+    return inlet
