@@ -25,6 +25,8 @@ might be important.
 #     :class:`~bsl.Player`. See :ref:`sphx_glr_generated_tutorials_10_player.py` for
 #     additional information on mock LSL streams.
 
+import time
+
 from matplotlib import pyplot as plt
 
 from bsl import Player, Stream
@@ -55,6 +57,7 @@ del inlet
 
 stream = Stream(2, name=player.name)
 stream.connect()
+time.sleep(2)
 data, ts = stream.get_data(picks="ECG")
 f, ax = plt.subplots(1, 1, figsize=(10, 5), constrained_layout=True)
 ax.plot(ts, data[0, :])

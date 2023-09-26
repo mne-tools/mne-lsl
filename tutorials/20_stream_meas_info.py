@@ -91,7 +91,7 @@ for ch_name, ch_type, ch_unit in zip(stream.ch_names, ch_types, ch_units):
 #
 # * the channel ``AUX1`` is a vertical EOG channel.
 # * the channel ``AUX2`` is an ECG channel.
-# * the channel ``AUX3`` is an horizontal EOG chanel.
+# * the channel ``AUX3`` is an horizontal EOG channel.
 
 stream.rename_channels({"AUX1": "vEOG", "AUX2": "ECG", "AUX3": "hEOG"})
 stream.set_channel_types({"vEOG": "eog", "hEOG": "eog", "ECG": "ecg"})

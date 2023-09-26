@@ -5,7 +5,7 @@ Introduction to the Player API
 .. include:: ./../../links.inc
 
 During the development of a project, it's very helpful to test on a mock LSL stream
-replicating an experimental condition. The :class`~bsl.Player` can create a mock LSL
+replicating an experimental condition. The :class:`~bsl.Player` can create a mock LSL
 stream from any `MNE <mne stable_>`_ readable file.
 
 .. note::
@@ -27,11 +27,13 @@ import time
 
 import numpy as np
 from matplotlib import pyplot as plt
-from mne import pick_types
+from mne import pick_types, set_log_level
 
 from bsl import Player, Stream
 from bsl.datasets import sample
 from bsl.lsl import StreamInlet, resolve_streams
+
+set_log_level("WARNING")
 
 fname = sample.data_path() / "sample-ant-raw.fif"
 player = Player(fname)
@@ -58,7 +60,7 @@ del inlet
 # %%
 # or with a :class:`bsl.Stream`:
 
-stream = Stream(bufsize=2)
+stream = Stream(bufsize=2, name=player.name)
 stream.connect()
 stream.info
 time.sleep(1)
@@ -113,18 +115,19 @@ player.start()
 
 # %%
 
-stream = Stream(bufsize=2)
+stream = Stream(bufsize=2, name=player.name)
 stream.connect()
 time.sleep(1)
 data_rescale, ts_rescale = stream.get_data(winsize=1, picks="Fz")
 f, ax = plt.subplots(2, 1, constrained_layout=True)
 ax[0].plot(ts, np.squeeze(data))
 ax[1].plot(ts_rescale, np.squeeze(data_rescale))
-for axis in ax:
-    axis.set_title("Fz channel (window 1)")
-    axis.set_title("Fz channel (window 2)")
+ax[0].set_title("Fz channel (window 1)")
+ax[1].set_title("Fz channel (window 2)")
 ax[0].set_ylabel("Voltage (V)")
 ax[1].set_ylabel("Voltage (µV)")
+ax[0].set_xlim(ts[0] - 1, ts_rescale[-1] + 1)
+ax[1].set_xlim(ts[0] - 1, ts_rescale[-1] + 1)
 plt.show()
 
 # %%
@@ -142,10 +145,26 @@ ecg_idx = pick_types(stream.info, ecg=True)[0]
 stim_idx = pick_types(stream.info, stim=True)[0]
 units = stream.get_channel_units()
 print (
-    f"ECG channel has the type {units[ecg_idx][0]} (Volts) with the multiplication "
-    f"factor {units[ecg_idx][1]} (1e-6, micro)."
+    f"ECG channel type: '{units[ecg_idx][0]}' (Volts)\n with the multiplication "
+    f"factor {units[ecg_idx][1]} (1e-6, micro).\n"
 )
 print (
-    f"Stim channel has the type {units[stim_idx][0]} (Volts) with the multiplication "
-    f"factor {units[stim_idx][1]} (1e0, none)."
+    f"Stim channel type: '{units[stim_idx][0]}' (Volts)\n with the multiplication "
+    f"factor {units[stim_idx][1]} (1e0, none).\n"
 )
+
+# %%
+# Context manager
+# ---------------
+#
+# A :class:`~bsl.Player` can also be used as a context manager, to handle the
+# :meth:`bsl.Player.start` and :meth:`bsl.Player.stop`.
+
+del stream
+player.stop()
+
+with player:
+    stream = Stream(bufsize=2)
+    stream.connect()
+    print (stream.info)
+    stream.disconnect()

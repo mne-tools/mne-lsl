@@ -117,7 +117,7 @@ stream.info
 # The ringbuffer can be queried for the last ``N`` samples with
 # :meth:`bsl.Stream.get_data`. The argument ``winsize`` controls the amount of samples
 # returned, and the property :py:attr:`bsl.Stream.n_new_samples` contains the amount
-# of new samples buffered betwen 2 queries.
+# of new samples buffered between 2 queries.
 #
 # .. note::
 #
@@ -138,7 +138,7 @@ print(f"Number of new samples: {stream.n_new_samples}")
 #
 # .. note::
 #
-#     LSL timetamps are not always regular. They can be jittered depending on the source
+#     LSL timestamps are not always regular. They can be jittered depending on the source
 #     and on the delay between the source and the client. Processing flags can be
 #     provided to improve the timestamp precision when connecting to a stream with
 #     :meth:`bsl.Stream.connect`. See
