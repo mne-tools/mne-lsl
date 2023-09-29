@@ -59,7 +59,7 @@ class StreamLSL(BaseStream):
 
     def __repr__(self):
         """Representation of the instance."""
-        if self.connected():
+        if self.connected:
             status = "ON"
             if len(self._source_id) != 0:
                 desc = f"{self._name} (source: {self._source_id})"
