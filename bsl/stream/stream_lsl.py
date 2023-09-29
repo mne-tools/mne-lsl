@@ -269,7 +269,7 @@ class StreamLSL(BaseStream):
 
         :type: :class:`bool`
         """
-        if super().connected():
+        if super().connected:
             attributes = (
                 "_sinfo",
                 "_inlet",
