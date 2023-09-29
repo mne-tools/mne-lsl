@@ -676,8 +676,9 @@ class Stream(ContainsMixin, SetChannelsMixin):
         """Specify which reference to use for EEG data.
 
         Use this function to explicitly specify the desired reference for EEG. This can
-        be either an existing electrode or a new virtual channel. This function will
-        re-reference the data according to the desired reference.
+        be either an existing electrode or a new virtual channel added with
+        :meth:`bsl.Stream.add_reference_channels`. This function will re-reference the
+        data in the ringbuffer according to the desired reference.
 
         Parameters
         ----------
