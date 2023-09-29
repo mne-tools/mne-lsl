@@ -98,14 +98,6 @@ class PlayerLSL(BasePlayer):
         del self._outlet
         self._reset_variables()
 
-    def _check_not_started(self, name: str):
-        """Check that the player is not started before calling the function 'name'."""
-        if self._streaming_thread is not None:
-            raise RuntimeError(
-                "The player is already started. Please stop the streaming before using "
-                f"{name}."
-            )
-
     @copy_doc(BasePlayer._stream)
     def _stream(self) -> None:
         try:

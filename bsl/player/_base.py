@@ -81,7 +81,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         -----
         %(anonymize_info_notes)s
         """
-        self._check_not_started("Player.anonymize()")
+        self._check_not_started("anonymize()")
         logger.warning(
             "Player.anonymize() is partially implemented and does not impact the "
             "stream information yet."
@@ -140,7 +140,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
             renamed with ``-N`` at the end.
         %(verbose)s
         """
-        self._check_not_started("Player.rename_channels()")
+        self._check_not_started("rename_channels()")
         rename_channels(self.info, mapping, allow_duplicates)
 
     @abstractmethod
@@ -181,7 +181,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
             .. versionadded:: MNE 1.4
         %(verbose)s
         """
-        self._check_not_started("Player.set_channel_types()")
+        self._check_not_started("set_channel_types()")
         super().set_channel_types(
             mapping=mapping, on_unit_change=on_unit_change, verbose=verbose
         )
@@ -213,7 +213,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         If the human-readable unit of your channel is not yet supported by BSL, please
         contact the developers on GitHub to add your units to the known set.
         """
-        self._check_not_started("Player.set_channel_units()")
+        self._check_not_started("set_channel_units()")
         ch_units_before = np.array(
             [ch["unit_mul"] for ch in self.info["chs"]], dtype=np.int8
         )
@@ -248,7 +248,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         --------
         anonymize
         """
-        self._check_not_started(name="Player.set_meas_date()")
+        self._check_not_started(name=f"{type(self).__name__}.set_meas_date()")
         logger.warning(
             "Player.set_meas_date() is partially implemented and does not impact the "
             "stream information yet."
@@ -272,7 +272,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         if self._streaming_thread is not None:
             raise RuntimeError(
                 "The player is already started. Please stop the streaming before using "
-                f"{name}."
+                f"{{type(self).__name__}}.{name}."
             )
 
     @abstractmethod

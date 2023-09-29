@@ -107,7 +107,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             :meth:`bsl.stream.%(object)s.set_channel_units` to change the unit
             multiplication factor.
         """
-        self._check_connected_and_regular_sampling("Stream.add_reference_channels()")
+        self._check_connected_and_regular_sampling("add_reference_channels()")
         # error checking and conversion of the arguments to valid values
         if isinstance(ref_channels, str):
             ref_channels = [ref_channels]
@@ -207,7 +207,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         -----
         %(anonymize_info_notes)s
         """
-        self._check_connected(name="Stream.anonymize()")
+        self._check_connected(name="anonymize()")
         super().anonymize(daysback=daysback, keep_his=keep_his, verbose=verbose)
 
     @abstractmethod
@@ -250,7 +250,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
     @abstractmethod
     def disconnect(self) -> None:
         """Disconnect from the LSL stream and interrupt data collection."""
-        self._check_connected(name="Stream.disconnect()")
+        self._check_connected(name="disconnect()")
         self._interrupt = True
         while self._acquisition_thread.is_alive():
             self._acquisition_thread.cancel()
@@ -269,7 +269,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         --------
         pick
         """
-        self._check_connected(name="Stream.drop_channels()")
+        self._check_connected(name="drop_channels()")
         if isinstance(ch_names, str):
             ch_names = [ch_names]
         check_type(ch_names, (list, tuple), "ch_names")
@@ -285,14 +285,14 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
     def filter(self) -> None:
         """Filter the stream. Not implemented."""
-        self._check_connected_and_regular_sampling("Stream.filter()")
+        self._check_connected_and_regular_sampling("filter()")
         raise NotImplementedError
 
     @copy_doc(ContainsMixin.get_channel_types)
     def get_channel_types(
         self, picks=None, unique=False, only_data_chs=False
     ) -> List[str]:
-        self._check_connected(name="Stream.get_channel_types()")
+        self._check_connected(name="get_channel_types()")
         return super().get_channel_types(
             picks=picks, unique=unique, only_data_chs=only_data_chs
         )
@@ -317,7 +317,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             element contains the unit multiplication factor, e.g. ``-6 (FIFF_UNITM_MU)``
             for micro (corresponds to ``1e-6``).
         """
-        self._check_connected(name="Stream.get_channel_units()")
+        self._check_connected(name="get_channel_units()")
         check_type(only_data_chs, (bool,), "only_data_chs")
         none = "data" if only_data_chs else "all"
         picks = _picks_to_idx(self._info, picks, none, (), allow_empty=False)
@@ -398,7 +398,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
     @copy_doc(SetChannelsMixin.get_montage)
     def get_montage(self) -> Optional[DigMontage]:
-        self._check_connected(name="Stream.get_montage()")
+        self._check_connected(name="get_montage()")
         return super().get_montage()
 
     def load_stream_config(self) -> None:
@@ -407,7 +407,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
     def plot(self):
         """Open a real-time stream viewer. Not implemented."""
-        self._check_connected(name="Stream.plot()")
+        self._check_connected(name="plot()")
         raise NotImplementedError
 
     @fill_doc
@@ -431,14 +431,14 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         if explicit channel names are provided in ``picks``, they are sorted to match
         the order of existing channel names.
         """
-        self._check_connected(name="Stream.pick()")
+        self._check_connected(name="pick()")
         picks = _picks_to_idx(self._info, picks, "all", exclude, allow_empty=False)
         picks = np.sort(picks)
         self._pick(picks)
 
     def record(self):
         """Record the stream data to disk. Not implemented."""
-        self._check_connected(name="Stream.record()")
+        self._check_connected(name="record()")
         raise NotImplementedError
 
     @fill_doc
@@ -462,7 +462,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             renamed with ``-N`` at the end.
         %(verbose)s
         """
-        self._check_connected(name="Stream.rename_channels()")
+        self._check_connected(name="rename_channels()")
         rename_channels(
             self._info,
             mapping=mapping,
@@ -476,7 +476,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
     def set_bipolar_reference(self):
         """Set a bipolar reference. Not implemented."""
-        self._check_connected_and_regular_sampling("Stream.set_bipolar_reference()")
+        self._check_connected_and_regular_sampling("set_bipolar_reference()")
         raise NotImplementedError
 
     @fill_doc
@@ -502,7 +502,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             .. versionadded:: MNE 1.4
         %(verbose)s
         """
-        self._check_connected(name="Stream.set_channel_types()")
+        self._check_connected(name="set_channel_types()")
         super().set_channel_types(
             mapping=mapping, on_unit_change=on_unit_change, verbose=verbose
         )
@@ -526,7 +526,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         If the human-readable unit of your channel is not yet supported by BSL, please
         contact the developers on GitHub to add your units to the known set.
         """
-        self._check_connected(name="Stream.set_channel_units()")
+        self._check_connected(name="set_channel_units()")
         _set_channel_units(self._info, mapping)
 
     def set_eeg_reference(
@@ -550,7 +550,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             The name of the channel type to apply the reference to. Valid channel types
             are ``'eeg'``, ``'ecog'``, ``'seeg'``, ``'dbs'``.
         """
-        self._check_connected_and_regular_sampling("Stream.set_eeg_reference()")
+        self._check_connected_and_regular_sampling("set_eeg_reference()")
 
         if isinstance(ch_type, str):
             ch_type = [ch_type]
@@ -584,7 +584,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         --------
         anonymize
         """
-        self._check_connected(name="Stream.set_meas_date()")
+        self._check_connected(name="set_meas_date()")
         super().set_meas_date(meas_date)
 
     @fill_doc
@@ -621,7 +621,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             montage. Other channel types (e.g., MEG channels) should have their
             positions defined properly using their data reading functions.
         """
-        self._check_connected(name="Stream.set_montage()")
+        self._check_connected(name="set_montage()")
         super().set_montage(
             montage=montage,
             match_case=match_case,
@@ -640,7 +640,8 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         if not self.connected:
             raise RuntimeError(
                 "The Stream attribute 'info' is None. An Info instance is required to "
-                f"use {name}. Please connect to the stream to create the Info."
+                f"use {type(self).__name__}.{name}. Please connect to the stream to "
+                "create the Info."
             )
 
     def _check_connected_and_regular_sampling(self, name: str):
@@ -648,8 +649,8 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         self._check_connected(name)
         if self.info["sfreq"] == 0:
             raise RuntimeError(
-                f"The method {name} can not be used on a stream with an irregular "
-                "sampling rate."
+                f"The method {type(self).__name__}.{name} can not be used on a stream "
+                "with an irregular sampling rate."
             )
 
     def _create_acquisition_thread(self, delay: float) -> None:
@@ -721,7 +722,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
         :type: :class:`int` | None
         """
-        self._check_connected(name="Stream.compensation_grade")
+        self._check_connected(name="compensation_grade")
         return super().compensation_grade
 
     # ----------------------------------------------------------------------------------
@@ -731,7 +732,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
         :type: :class:`list` of :class:`str`
         """
-        self._check_connected(name="Stream.ch_names")
+        self._check_connected(name="ch_names")
         return self._info.ch_names
 
     @property
@@ -774,7 +775,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
         :type: :class:`int` | None
         """
-        self._check_connected(name="Stream.n_buffer")
+        self._check_connected(name="n_buffer")
         return self._timestamps.size
 
     @property

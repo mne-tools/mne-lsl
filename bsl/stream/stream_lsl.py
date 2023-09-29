@@ -259,7 +259,7 @@ class StreamLSL(BaseStream):
 
         :type: :class:`int` | None
         """
-        self._check_connected(name="Stream.compensation_grade")
+        self._check_connected(name="compensation_grade")
         return super().compensation_grade
 
     # ----------------------------------------------------------------------------------
