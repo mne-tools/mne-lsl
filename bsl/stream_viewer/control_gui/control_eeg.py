@@ -5,20 +5,22 @@ from pathlib import Path
 from qtpy import QtCore
 from qtpy.QtWidgets import QHeaderView, QTableWidgetItem
 
-from ...utils._docs import copy_doc, fill_doc
+from ...utils._docs import copy_doc
 from ...utils.logs import logger
 from ..backends.pyqtgraph import _BackendPyQtGraph
 from ._control import _ControlGUI
 from ._ui_control import UI_MainWindow
 
 
-@fill_doc
 class ControlGUI_EEG(_ControlGUI):
     """Controller GUI for EEG LSL Stream.
 
     Parameters
     ----------
-    %(viewer_scope)s
+    scope : Scope
+        Scope connected to a StreamInlet acquiring the data and applying
+        filtering. The scope has a buffer of _BUFFER_DURATION seconds
+        (default: 30s).
     """
 
     def __init__(self, scope):
