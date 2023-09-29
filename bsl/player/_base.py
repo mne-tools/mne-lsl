@@ -1,7 +1,6 @@
 from __future__ import annotations  # c.f. PEP 563, PEP 649
 
 from abc import ABC, abstractmethod
-from threading import Timer
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -62,10 +61,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
             )
         # load raw recording
         self._raw = read_raw(self._fname, preload=True)
-        # create streaming variables
-        self._start_idx = 0
-        self._streaming_delay = None
-        self._streaming_thread = None
+        # This method should end on a self._reset_variables()
 
     @fill_doc
     def anonymize(self, daysback=None, keep_his=False, *, verbose=None):
@@ -146,16 +142,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
     @abstractmethod
     def start(self) -> None:
         """Start streaming data."""
-        if self._streaming_thread is not None:
-            logger.warning(
-                "The player is already started. Use Player.stop() to stop streaming."
-            )
-            return None
-        self._streaming_delay = self.chunk_size / self.info["sfreq"]
-        self._streaming_thread = Timer(0, self._stream)
-        self._streaming_thread.daemon = True
-        # This method must start the streaming thread with:
-        # self._streaming_thread.start()
+        pass
 
     @abstractmethod
     @fill_doc

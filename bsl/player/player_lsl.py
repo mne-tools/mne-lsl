@@ -8,6 +8,7 @@ import numpy as np
 from ..lsl import StreamInfo, StreamOutlet, local_clock
 from ..utils._checks import check_type
 from ..utils._docs import copy_doc
+from ..utils.logs import logger
 from ._base import BasePlayer
 
 if TYPE_CHECKING:
@@ -41,7 +42,7 @@ class PlayerLSL(BasePlayer):
         super().__init__(fname, chunk_size)
         check_type(name, (str, None), "name")
         self._name = "BSL-Player" if name is None else name
-        # create additional streaming variables
+        # create stream info based on raw
         ch_types = self._raw.get_channel_types(unique=True)
         self._sinfo = StreamInfo(
             name=self._name,
@@ -54,8 +55,8 @@ class PlayerLSL(BasePlayer):
         self._sinfo.set_channel_names(self._raw.info["ch_names"])
         self._sinfo.set_channel_types(self._raw.get_channel_types(unique=False))
         self._sinfo.set_channel_units([ch["unit_mul"] for ch in self._raw.info["chs"]])
-        self._outlet = None
-        self._target_timestamp = None
+        # create additional streaming variables
+        self._reset_variables()
 
     @copy_doc(BasePlayer.rename_channels)
     def rename_channels(
@@ -70,8 +71,15 @@ class PlayerLSL(BasePlayer):
 
     def start(self) -> None:
         """Start streaming data on the LSL `~bsl.lsl.StreamOutlet`."""
-        super().start()
+        if self._streaming_thread is not None:
+            logger.warning(
+                "The player is already started. Use Player.stop() to stop streaming."
+            )
+            return None
         self._outlet = StreamOutlet(self._sinfo, self._chunk_size)
+        self._streaming_delay = self.chunk_size / self.info["sfreq"]
+        self._streaming_thread = Timer(0, self._stream)
+        self._streaming_thread.daemon = True
         self._target_timestamp = local_clock()
         self._streaming_thread.start()
 
