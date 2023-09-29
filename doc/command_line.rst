@@ -3,19 +3,19 @@
 Command line
 ============
 
-A :class:`~bsl.Player`, or the legacy :class:`~bsl.stream_viewer.StreamViewer`, can be
+A ``Player``, or the legacy :class:`~bsl.stream_viewer.StreamViewer`, can be
 called from the command line. For each command, the flag ``-h`` or ``--help`` provides
 additional information.
 
 Player
 ------
 
-An `MNE <mne stable_>`_ readable file can be streamed with a `~bsl.Player` with the
-command:
+An `MNE <mne stable_>`_ readable file can be streamed with a `~bsl.player.PlayerLSL`
+with the command:
 
 .. code-block:: console
 
-    $ bsl_player file
+    $ bsl_player file lsl
 
 With the arguments:
 

@@ -3,16 +3,23 @@
 Most-used classes
 -----------------
 
-.. currentmodule:: bsl
-
-The main objects offer efficient communication with numerical LSL streams. A
-`~bsl.Stream` uses an `MNE <mne stable_>`_-like API to efficiently interacts with a
-numerical LSL stream. A `~bsl.Player` can mock an LSL stream from any
+The main objects offer efficient communication with numerical streams. A
+``Stream`` uses an `MNE <mne stable_>`_-like API to efficiently interacts with a
+numerical stream. A ``Player`` can mock a real-time stream from any
 `MNE <mne stable_>`_ readable file.
+
+.. currentmodule:: bsl.stream
 
 .. autosummary::
    :toctree: ../generated/api
    :nosignatures:
 
-    Stream
-    Player
+    StreamLSL
+
+.. currentmodule:: bsl.player
+
+.. autosummary::
+   :toctree: ../generated/api
+   :nosignatures:
+
+    PlayerLSL

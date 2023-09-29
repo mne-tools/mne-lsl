@@ -5,7 +5,7 @@ import mne
 import numpy as np
 import pytest
 
-from bsl import Player
+from bsl.player import PlayerLSL as Player
 from bsl.datasets import testing
 from bsl.lsl import StreamInlet, resolve_streams
 from bsl.stream_viewer.scope import ScopeEEG

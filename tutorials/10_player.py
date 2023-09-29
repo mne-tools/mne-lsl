@@ -5,8 +5,8 @@ Introduction to the Player API
 .. include:: ./../../links.inc
 
 During the development of a project, it's very helpful to test on a mock LSL stream
-replicating an experimental condition. The :class:`~bsl.Player` can create a mock LSL
-stream from any `MNE <mne stable_>`_ readable file.
+replicating an experimental condition. The :class:`~bsl.player.PlayerLSL` can create a
+mock LSL stream from any `MNE <mne stable_>`_ readable file.
 
 .. note::
 
@@ -19,9 +19,9 @@ stream from any `MNE <mne stable_>`_ readable file.
 # Create a mock LSL Stream
 # ------------------------
 #
-# A :class:`~bsl.Player` requires a valid path to an existing file which can be read by
-# `MNE <mne stable_>`_. In this case, the sample data ``sample-ant-raw.fif`` recorded on
-# an ANT Neuro 64 channel EEG amplifier.
+# A :class:`~bsl.player.PlayerLSL` requires a valid path to an existing file which can
+# be read by `MNE <mne stable_>`_. In this case, the sample data ``sample-ant-raw.fif``
+# recorded on an ANT Neuro 64 channel EEG amplifier.
 
 import time
 
@@ -29,9 +29,10 @@ import numpy as np
 from matplotlib import pyplot as plt
 from mne import pick_types, set_log_level
 
-from bsl import Player, Stream
 from bsl.datasets import sample
 from bsl.lsl import StreamInlet, resolve_streams
+from bsl.player import PlayerLSL as Player
+from bsl.stream import StreamLSL as Stream
 
 set_log_level("WARNING")
 
@@ -40,12 +41,12 @@ player = Player(fname)
 player.start()
 
 # %%
-# Once started, a :class:`~bsl.Player` will continuously stream data from the file until
-# stopped. If the end of file is reached, it will loop back to the beginning thus
-# inducing a discontinuity in the signal.
+# Once started, a :class:`~bsl.player.PlayerLSL` will continuously stream data from the
+# file until stopped. If the end of file is reached, it will loop back to the beginning
+# thus inducing a discontinuity in the signal.
 
 streams = resolve_streams()
-print (streams[0])
+print(streams[0])
 
 # %%
 # You can connect to the stream as you would with any other LSL stream, e.g. with a
@@ -54,7 +55,7 @@ print (streams[0])
 inlet = StreamInlet(streams[0])
 inlet.open_stream()
 data, ts = inlet.pull_chunk()
-print (data.shape)  # (n_samples, n_channels)
+print(data.shape)  # (n_samples, n_channels)
 del inlet
 
 # %%
@@ -65,7 +66,7 @@ stream.connect()
 stream.info
 time.sleep(1)
 data, ts = stream.get_data(winsize=1)
-print (data.shape)  # (n_channels, n_samples)
+print(data.shape)  # (n_channels, n_samples)
 
 # %%
 
@@ -97,7 +98,7 @@ plt.show()
 # But most systems do not stream in SI units as it can be inconvenient to work with very
 # small floats. For instance, an ANT amplifier stream in microvolts. Thus, to replicate
 # our experimental condition, the correct streaming unit must be set with
-# :meth:`bsl.Player.set_channel_units`.
+# :meth:`bsl.player.PlayerLSL.set_channel_units`.
 #
 # .. note::
 #
@@ -137,18 +138,18 @@ plt.show()
 #     The value range seems important for EEG channels, but the sample dataset is not
 #     filtered. Thus, a large DC offset is present.
 #
-# The :class:`~bsl.Stream` object will be able to interpret the channel unit and will
-# report that the EEG, EOG, ECG channels are streamed in microvolts while the trigger
-# channel is streamed in volts.
+# The :class:`~bsl.stream.StreamLSL` object will be able to interpret the channel unit
+# and will report that the EEG, EOG, ECG channels are streamed in microvolts while the
+# trigger channel is streamed in volts.
 
 ecg_idx = pick_types(stream.info, ecg=True)[0]
 stim_idx = pick_types(stream.info, stim=True)[0]
 units = stream.get_channel_units()
-print (
+print(
     f"ECG channel type: '{units[ecg_idx][0]}' (Volts)\n with the multiplication "
     f"factor {units[ecg_idx][1]} (1e-6, micro).\n"
 )
-print (
+print(
     f"Stim channel type: '{units[stim_idx][0]}' (Volts)\n with the multiplication "
     f"factor {units[stim_idx][1]} (1e0, none).\n"
 )
@@ -157,8 +158,8 @@ print (
 # Context manager
 # ---------------
 #
-# A :class:`~bsl.Player` can also be used as a context manager, to handle the
-# :meth:`bsl.Player.start` and :meth:`bsl.Player.stop`.
+# A :class:`~bsl.player.PlayerLSL` can also be used as a context manager, to handle the
+# :meth:`bsl.player.PlayerLSL.start` and :meth:`bsl.player.PlayerLSL.stop`.
 
 del stream
 player.stop()
@@ -166,5 +167,5 @@ player.stop()
 with player:
     stream = Stream(bufsize=2)
     stream.connect()
-    print (stream.info)
+    print(stream.info)
     stream.disconnect()

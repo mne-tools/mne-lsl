@@ -4,9 +4,9 @@ Stream information
 
 .. include:: ./../../links.inc
 
-A :class:`~bsl.Stream` will automatically attempt to interpret the channel names, types
-and units during the connection with :meth:`bsl.Stream.connect`. However, by definition,
-an LSL stream does not require any of those information to be present.
+A :class:`~bsl.stream.StreamLSL` will automatically attempt to interpret the channel
+names, types and units during the connection with :meth:`bsl.Stream.connect`. However,
+by definition, an LSL stream does not require any of those information to be present.
 Moreover, the channel type and unit are not standardize, and may be define with
 different nomenclature depending on the system and the application emitting the LSL
 stream. For instance, an EEG channel might be denoted by the type ``'eeg'`` or
@@ -29,19 +29,22 @@ The stream and channel type supported correspond to the MNE-supported channel ty
 # Inspecting a stream info
 # ------------------------
 #
-# A :class:`~bsl.Stream` measurement information can be inspected with similar methods
-# to a :class:`~mne.io.Raw` object: :py:attr:`bsl.Stream.info`,
-# :py:attr:`bsl.Stream.ch_names`, :meth:`bsl.Stream.get_channel_types`,
-# :meth:`bsl.Stream.get_channel_units`.
+# A :class:`~bsl.stream.StreamLSL` measurement information can be inspected with similar
+# methods to a :class:`~mne.io.Raw` object: :py:attr:`bsl.stream.StreamLSL.info`,
+# :py:attr:`bsl.stream.StreamLSL.ch_names`,
+# :meth:`bsl.stream.StreamLSL.get_channel_types`,
+# :meth:`bsl.stream.StreamLSL.get_channel_units`.
 #
 # .. note::
 #
 #     For this tutorial purposes, a mock LSL stream is created using a
-#     :class:`~bsl.Player`. See :ref:`sphx_glr_generated_tutorials_10_player.py` for
-#     additional information on mock LSL streams.
+#     :class:`~bsl.player.PlayerLSL`. See
+#     :ref:`sphx_glr_generated_tutorials_10_player.py` for additional information on
+#     mock LSL streams.
 
-from bsl import Player, Stream
 from bsl.datasets import sample
+from bsl.player import PlayerLSL as Player
+from bsl.stream import StreamLSL as Stream
 
 fname = sample.data_path() / "sample-ant-aux-raw.fif"
 player = Player(fname)
@@ -103,9 +106,9 @@ stream.info
 # %%
 # Free resources
 # --------------
-# When you are done with a :class:`~bsl.Player` or :class:`~bsl.Stream`, don't forget
-# to free the resources they both use to continuously mock an LSL stream or receive new
-# data from an LSL stream.
+# When you are done with a :class:`~bsl.player.PlayerLSL` or
+# :class:`~bsl.stream.StreamLSL`, don't forget to free the resources they both use to
+# continuously mock an LSL stream or receive new data from an LSL stream.
 
 stream.disconnect()
 player.stop()

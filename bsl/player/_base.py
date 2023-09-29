@@ -20,10 +20,10 @@ else:
     from mne.io.pick import _picks_to_idx
     from mne.channels.channels import SetChannelsMixin
 
-from .utils._checks import check_type, ensure_int, ensure_path
-from .utils._docs import fill_doc
-from .utils.logs import logger
-from .utils.meas_info import _set_channel_units
+from ..utils._checks import check_type, ensure_int, ensure_path
+from ..utils._docs import fill_doc
+from ..utils.logs import logger
+from ..utils.meas_info import _set_channel_units
 
 if TYPE_CHECKING:
     from datetime import datetime
@@ -166,7 +166,7 @@ class Player(ABC, ContainsMixin, SetChannelsMixin):
 
         If the new channel type changes the unit type, e.g. from ``T/m`` to ``V``, the
         unit multiplication factor is reset to ``0``. Use
-        :meth:`~bsl.Player.set_channel_units` to change the multiplication factor, e.g.
+        ``Player.set_channel_units`` to change the multiplication factor, e.g.
         from ``0`` to ``-6`` to change from Volts to microvolts.
 
         Parameters
@@ -199,7 +199,7 @@ class Player(ABC, ContainsMixin, SetChannelsMixin):
 
         The unit itself is defined by the sensor type. Change the channel type in the
         ``raw`` recording with :meth:`mne.io.Raw.set_channel_types` before providing the
-        recording to the :class:`~bsl.Player`.
+        recording to the player.
 
         Parameters
         ----------

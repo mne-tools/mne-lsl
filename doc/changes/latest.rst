@@ -19,8 +19,8 @@
 Version 1.0
 ===========
 
-- Add :class:`bsl.Stream` to connect to a numerical LSL Stream, automatically update an internal ringbuffer and provide an MNE-like Stream API (:pr:`93`)
-- Add :class:`bsl.Player` to create a mock LSL stream from an MNE-readable file (:pr:`93`)
+- Add :class:`bsl.stream.StreamLSL` to connect to a numerical LSL Stream, automatically update an internal ringbuffer and provide an MNE-like Stream API (:pr:`93`)
+- Add :class:`bsl.player.PlayerLSL` to create a mock LSL stream from an MNE-readable file (:pr:`93`)
 - Improve low-level LSL API :class:`bsl.lsl.StreamInfo`, :class:`bsl.lsl.StreamInlet`, :class:`bsl.lsl.StreamOutlet` (:pr:`93`) compared to ``BSL`` 0.6.3
 - Remove legacy and deprecated objects from ``BSL`` (:pr:`96`, :pr:`97`, :pr:`98`, :pr:`100`, :pr:`101`, :pr:`102`)
 

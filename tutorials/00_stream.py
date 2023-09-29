@@ -13,7 +13,7 @@ categories:
 * Streams with an **irregular** sampling rate, which can be considered as spontaneous
   events.
 
-Both types can be managed through a :class:`bsl.Stream` object, which represents a
+Both types can be managed through a ``Stream`` object, which represents a
 single LSL stream with its buffer containing the current and past samples. The buffer
 size is specified at instantiation through the ``bufsize`` argument.
 """
@@ -22,10 +22,10 @@ size is specified at instantiation through the ``bufsize`` argument.
 # Internal ringbuffer
 # -------------------
 #
-# Once the :class:`~bsl.Stream` object is connected to an LSL Stream, it automatically
-# updates an internal ringbuffer with newly available samples. A ringbuffer, also called
-# circular buffer, is a data structure that uses a single fixed-size buffer as if it
-# were connected and to end.
+# Once the :class:`~bsl.stream.StreamLSL` object is connected to an LSL Stream, it
+# automatically updates an internal ringbuffer with newly available samples. A
+# ringbuffer, also called circular buffer, is a data structure that uses a single
+# fixed-size buffer as if it were connected and to end.
 #
 # .. image:: ../../_static/tutorials/circular-buffer-light.png
 #     :align: center
@@ -42,31 +42,33 @@ size is specified at instantiation through the ``bufsize`` argument.
 # * The "tail" pointer, also called "end" or "write", which corresponds to the next
 #   data block that will be overwritten with new data.
 #
-# With a `~bsl.Stream`, the pointers are hidden and the head pointer is always updated
-# to the last received sample.
+# With a `~bsl.stream.StreamLSL`, the pointers are hidden and the head pointer is always
+# updated to the last received sample.
 
 # %%
 # Connect to a Stream
 # -------------------
 #
 # Connecting to an LSL Stream is a 2 step operation. First, create a
-# :class:`~bsl.Stream` with the desired buffer size and the desired stream attributes,
-# ``name``, ``stype``, ``source_id``. Second, connect to the stream which matches the
-# requested stream attributes with :meth:`bsl.Stream.connect`.
+# :class:`~bsl.stream.StreamLSL` with the desired buffer size and the desired stream
+# attributes, ``name``, ``stype``, ``source_id``. Second, connect to the stream which
+# matches the requested stream attributes with :meth:`bsl.Stream.connect`.
 #
 # .. note::
 #
 #     For this tutorial purposes, a mock LSL stream is created using a
-#     :class:`~bsl.Player`. See :ref:`sphx_glr_generated_tutorials_10_player.py` for
-#     additional information on mock LSL streams.
+#     :class:`~bsl.player.PlayerLSL`. See
+#     :ref:`sphx_glr_generated_tutorials_10_player.py` for additional information on
+#     mock LSL streams.
 
 import time
 
 from matplotlib import pyplot as plt
 
-from bsl import Player, Stream
 from bsl.datasets import sample
 from bsl.lsl import local_clock
+from bsl.player import PlayerLSL as Player
+from bsl.stream import StreamLSL as Stream
 
 fname = sample.data_path() / "sample-ant-raw.fif"
 player = Player(fname)
@@ -79,14 +81,14 @@ stream.connect()
 # ------------------
 #
 # Similar to a :class:`~mne.io.Raw` recording and to most `MNE <mne stable_>`_ objects,
-# a :class:`~bsl.Stream` has an ``.info`` attribute containing the channel names, types
-# and units.
+# a :class:`~bsl.stream.StreamLSL` has an ``.info`` attribute containing the channel
+# names, types and units.
 
 stream.info
 
 # %%
-# Depending on the LSL Stream source, the `~bsl.Stream` may or may not be able to
-# correctly read the channel names, types and units.
+# Depending on the LSL Stream source, the `~bsl.stream.StreamLSL` may or may not be able
+# to correctly read the channel names, types and units.
 #
 # * If the channel names are not readable or present, numbers will be used.
 # * If the channel types are not readable or present, the stream type or ``'misc'`` will
@@ -104,7 +106,7 @@ stream.info
 #
 # Channels can be selected with :meth:`bsl.Stream.pick` or with
 # :meth:`bsl.Stream.drop_channels`. Selection is definitive, it is not possible to
-# restore channels removed until the :class:`~bsl.Stream` is disconnected and
+# restore channels removed until the :class:`~bsl.stream.StreamLSL` is disconnected and
 # reconnected to its source.
 
 stream.pick(["Fz", "Cz", "Oz"])
@@ -188,9 +190,9 @@ plt.show()
 # %%
 # Free resources
 # --------------
-# When you are done with a :class:`~bsl.Player` or :class:`~bsl.Stream`, don't forget
-# to free the resources they both use to continuously mock an LSL stream or receive new
-# data from an LSL stream.
+# When you are done with a :class:`~bsl.player.PlayerLSL` or
+# :class:`~bsl.stream.StreamLSL`, don't forget to free the resources they both use to
+# continuously mock an LSL stream or receive new data from an LSL stream.
 
 stream.disconnect()
 player.stop()
