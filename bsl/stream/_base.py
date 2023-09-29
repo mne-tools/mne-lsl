@@ -510,7 +510,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         """Define the channel unit multiplication factor.
 
         The unit itself is defined by the sensor type. Use
-        :meth:`~Stream.set_channel_types` to change the channel type, e.g. from planar
+        ``Stream.set_channel_types`` to change the channel type, e.g. from planar
         gradiometers in ``T/m`` to EEG in ``V``.
 
         Parameters
@@ -782,7 +782,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
     def n_new_samples(self) -> Optional[int]:
         """Number of new samples available in the buffer.
 
-        The number of new samples is reset at every :meth:`Stream.get_data` call.
+        The number of new samples is reset at every ``Stream.get_data`` call.
 
         :type: :class:`int` | None
         """
