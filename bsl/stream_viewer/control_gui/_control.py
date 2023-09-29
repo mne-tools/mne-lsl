@@ -2,20 +2,20 @@ from abc import ABC, abstractmethod
 
 from qtpy.QtWidgets import QMainWindow
 
-from ...utils._docs import fill_doc
-
 
 class _metaclass_ControlGUI(type(QMainWindow), type(ABC)):
     pass
 
 
-@fill_doc
 class _ControlGUI(QMainWindow, ABC, metaclass=_metaclass_ControlGUI):
     """Class representing a base controller GUI.
 
     Parameters
     ----------
-    %(viewer_scope)s
+    scope : Scope
+        Scope connected to a StreamInlet acquiring the data and applying
+        filtering. The scope has a buffer of _BUFFER_DURATION seconds
+        (default: 30s).
     """
 
     @abstractmethod

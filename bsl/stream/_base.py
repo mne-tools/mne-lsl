@@ -1,5 +1,6 @@
 from __future__ import annotations  # c.f. PEP 563, PEP 649
 
+from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from math import ceil
 from threading import Timer
@@ -24,56 +25,32 @@ else:
     from mne.io.pick import _picks_to_idx, _ELECTRODE_CH_TYPES
     from mne.channels.channels import SetChannelsMixin
 
-from .lsl import StreamInlet, resolve_streams
-from .lsl.constants import fmt2numpy
-from .utils._checks import check_type, check_value
-from .utils._docs import copy_doc, fill_doc
-from .utils.logs import logger
-from .utils.meas_info import _HUMAN_UNITS, _set_channel_units, create_info
+from ..utils._checks import check_type, check_value
+from ..utils._docs import copy_doc, fill_doc
+from ..utils.logs import logger
+from ..utils.meas_info import _HUMAN_UNITS, _set_channel_units
 
 if TYPE_CHECKING:
     from datetime import datetime
-    from typing import Callable, Dict, List, Optional, Sequence, Tuple, Union
+    from typing import Callable, Dict, List, Optional, Tuple, Union
 
     from mne import Info
     from mne.channels import DigMontage
     from numpy.typing import DTypeLike, NDArray
 
-    from bsl.lsl.stream_info import _BaseStreamInfo
 
-
-class Stream(ContainsMixin, SetChannelsMixin):
-    """Stream object representing a single LSL stream.
+@fill_doc
+class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
+    """Stream object representing a single real-time stream.
 
     Parameters
     ----------
-    bufsize : float | int
-        Size of the buffer keeping track of the data received from the stream. If
-        the stream sampling rate ``sfreq`` is regular, ``bufsize`` is expressed in
-        seconds. The buffer will hold the last ``bufsize * sfreq`` samples (ceiled).
-        If the strean sampling sampling rate ``sfreq`` is irregular, ``bufsize`` is
-        expressed in samples. The buffer will hold the last ``bufsize`` samples.
-    name : str
-        Name of the LSL stream.
-    stype : str
-        Type of the LSL stream.
-    source_id : str
-        ID of the source of the LSL stream.
-
-    Notes
-    -----
-    The 3 arguments ``name``, ``stype``, and ``source_id`` must uniquely identify an
-    LSL stream. If this is not possible, please resolve the available LSL streams
-    with :func:`bsl.lsl.resolve_streams` and create an inlet with
-    :class:`~bsl.lsl.StreamInlet`.
+    %(stream_bufsize)s
     """
 
     def __init__(
         self,
         bufsize: float,
-        name: Optional[str] = None,
-        stype: Optional[str] = None,
-        source_id: Optional[str] = None,
     ):
         check_type(bufsize, ("numeric",), "bufsize")
         if bufsize <= 0:
@@ -81,14 +58,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
                 "The buffer size 'bufsize' must be a strictly positive number. "
                 f"{bufsize} is invalid."
             )
-        check_type(name, (str, None), "name")
-        check_type(stype, (str, None), "stype")
-        check_type(source_id, (str, None), "source_id")
-        self._name = name
-        self._stype = stype
-        self._source_id = source_id
         self._bufsize = bufsize
-        self._reset_variables()
 
     @copy_doc(ContainsMixin.__contains__)
     def __contains__(self, ch_type) -> bool:
@@ -102,34 +72,14 @@ class Stream(ContainsMixin, SetChannelsMixin):
         except Exception:
             pass
 
+    @abstractmethod
     def __repr__(self):
         """Representation of the instance."""
-        if self._inlet is None:
-            status = "OFF"
-            if self._name is not None and self._source_id is not None:
-                if len(self._source_id) != 0:
-                    desc = f"{self._name} (source: {self._source_id})"
-                else:
-                    desc = f"{self._name} (source: unknown)"
-            elif self._name is not None and self._source_id is None:
-                desc = f"{self._name} (source: unknown)"
-            elif self._name is None and self._source_id is not None:
-                if len(self._source_id) != 0:
-                    desc = f"(source: {self._source_id}"
-                else:
-                    desc = None
-            else:
-                desc = None
-        else:
-            status = "ON"
-            if len(self._source_id) != 0:
-                desc = f"{self._name} (source: {self._source_id})"
-            else:
-                desc = f"{self._name} (source: unknown)"
-        if desc is None:
-            return f"<Stream: {status}>"
-        else:
-            return f"<Stream: {status} | {desc}>"
+        # This method needs to define the str representation of the class based on the
+        # attributes of the Stream. For instance, an LSL stream is defined by 3
+        # attributes: name, stype, source_id. Thus a possible representation is:
+        # <Stream: ON | {name} - {stype} (source: {source_id})>
+        pass
 
     @fill_doc
     def add_reference_channels(
@@ -154,11 +104,9 @@ class Stream(ContainsMixin, SetChannelsMixin):
             e.g. ``-6`` for microvolts corresponding to ``1e-6``.
             If not provided, the added EEG reference channel has a unit multiplication
             factor set to ``0`` which corresponds to Volts. Use
-            :meth:`~bsl.Stream.set_channel_units` to change the unit multiplication
-            factor.
+            ``Stream.set_channel_units`` to change the unit multiplication factor.
         """
-        self._check_connected(name="Stream.add_reference_channels()")
-        self._check_regular_sampling(name="Stream.add_reference_channels()")
+        self._check_connected_and_regular_sampling("add_reference_channels()")
         # error checking and conversion of the arguments to valid values
         if isinstance(ref_channels, str):
             ref_channels = [ref_channels]
@@ -258,63 +206,25 @@ class Stream(ContainsMixin, SetChannelsMixin):
         -----
         %(anonymize_info_notes)s
         """
-        self._check_connected(name="Stream.anonymize()")
+        self._check_connected(name="anonymize()")
         super().anonymize(daysback=daysback, keep_his=keep_his, verbose=verbose)
 
+    @abstractmethod
     def connect(
         self,
-        processing_flags: Optional[Union[str, Sequence[str]]] = None,
-        timeout: Optional[float] = 2,
         acquisition_delay: float = 0.2,
     ) -> None:
-        """Connect to the LSL stream and initiate data collection in the buffer.
+        """Connect to the stream and initiate data collection in the buffer.
 
         Parameters
         ----------
-        processing_flags : list of str | ``'all'`` | None
-            Set the post-processing options. By default, post-processing is disabled.
-            Any combination of the processing flags is valid. The available flags are:
-
-            * ``'clocksync'``: Automatic clock synchronization, equivalent to
-              manually adding the estimated
-              :meth:`~bsl.lsl.StreamInlet.time_correction`.
-            * ``'dejitter'``: Remove jitter on the received timestamps with a
-              smoothing algorithm.
-            * ``'monotize'``: Force the timestamps to be monotically ascending.
-              This option should not be enable if ``'dejitter'`` is not enabled.
-        timeout : float | None
-            Optional timeout (in seconds) of the operation. ``None`` disables the
-            timeout. The timeout value is applied once to every operation supporting it.
         acquisition_delay : float
             Delay in seconds between 2 acquisition during which chunks of data are
             pulled from the :class:`~bsl.lsl.StreamInlet`.
-
-        Notes
-        -----
-        If all 3 stream identifiers ``name``, ``stype`` and ``source_id`` are left to
-        ``None``, resolution of the available streams will require a full ``timeout``,
-        blocking the execution until this function returns. If at least one of the 3
-        stream identifiers is specified, resolution will stop as soon as one stream
-        matching the identifier is found.
         """
         if self.connected:
             logger.warning("The stream is already connected. Skipping.")
             return None
-        # The threadsafe processing flag should not be needed for this class. If it is
-        # provided, then it means the user is retrieving and doing something with the
-        # inlet in a different thread. This use-case is not supported, and users which
-        # needs this level of control should create the inlet themselves.
-        if processing_flags is not None and (
-            processing_flags == "threadsafe" or "threadsafe" in processing_flags
-        ):
-            raise ValueError(
-                "The 'threadsafe' processing flag should not be provided for a BSL "
-                "Stream. If you require access to the underlying StreamInlet in a "
-                "separate thread, please instantiate the StreamInlet directly from "
-                "bsl.lsl.StreamInlet."
-            )
-        if processing_flags == "all":
-            processing_flags = ("clocksync", "dejitter", "monotize")
         check_type(acquisition_delay, ("numeric",), "acquisition_delay")
         if acquisition_delay <= 0:
             raise ValueError(
@@ -323,76 +233,28 @@ class Stream(ContainsMixin, SetChannelsMixin):
                 "instance, 0.2 corresponds to a pull every 200 ms. The provided "
                 f"{acquisition_delay} is invalid."
             )
-
-        # resolve and connect to available streams
-        sinfos = resolve_streams(timeout, self._name, self._stype, self._source_id)
-        if len(sinfos) != 1:
-            raise RuntimeError(
-                "The provided arguments 'name', 'stype', and 'source_id' do not "
-                f"uniquely identify an LSL stream. {len(sinfos)} were found: "
-                f"{[(sinfo.name, sinfo.stype, sinfo.source_id) for sinfo in sinfos]}."
-            )
-        if sinfos[0].dtype == "string":
-            raise RuntimeError(
-                "The Stream class is designed for numerical types. It does not support "
-                "string LSL streams. Please use a bsl.lsl.StreamInlet directly to "
-                "interact with this stream."
-            )
-        # create inlet and retrieve stream info
-        self._inlet = StreamInlet(
-            sinfos[0],
-            max_buffered=ceil(self._bufsize),
-            processing_flags=processing_flags,
-        )
-        self._inlet.open_stream(timeout=timeout)
-        self._sinfo = self._inlet.get_sinfo()
-        self._name = self._sinfo.name
-        self._stype = self._sinfo.stype
-        self._source_id = self._sinfo.source_id
-        # create MNE info from the LSL stream info returned by an open stream inlet
-        self._info = create_info(
-            self._sinfo.n_channels,
-            self._sinfo.sfreq,
-            self._sinfo.stype,
-            self._sinfo,
-        )
-        # initiate time-correction
-        tc = self._inlet.time_correction(timeout=timeout)
-        logger.info("The estimated timestamp offset is %.2f seconds.", tc)
-
-        # create buffer of shape (n_samples, n_channels) and (n_samples,)
-        if self._inlet.sfreq == 0:
-            self._buffer = np.zeros(
-                (self._bufsize, self._inlet.n_channels),
-                dtype=fmt2numpy[self._inlet._dtype],
-            )
-            self._timestamps = np.zeros(self._bufsize, dtype=np.float64)
-        else:
-            self._buffer = np.zeros(
-                (ceil(self._bufsize * self._inlet.sfreq), self._inlet.n_channels),
-                dtype=fmt2numpy[self._inlet._dtype],
-            )
-            self._timestamps = np.zeros(
-                ceil(self._bufsize * self._inlet.sfreq), dtype=np.float64
-            )
-        self._n_new_samples = 0
-        self._picks_inlet = np.arange(0, self._inlet.n_channels)
-
-        # define the acquisition thread
         self._acquisition_delay = acquisition_delay
-        self._acquisition_thread = Timer(0, self._acquire)
-        self._acquisition_thread.daemon = True
-        self._acquisition_thread.start()
+        self._n_new_samples = 0
+        # This method needs to connect to a stream, retrieve the stream information and
+        # create the ringbuffer. By the end of this method, the following variables
+        # must exist:
+        # - self._info: mne.Info
+        # - self._buffer: array of shape (n_samples, n_channels)
+        # - self._timestamps: array of shape (n_samples,) with n_samples which differs
+        #   between regularly and irregularly sampled streams.
+        # - self._picks_inlet: array of shape (n_channels,)
+        # plus any additional variables needed by the source and the stream-specific
+        # methods.
 
+    @abstractmethod
     def disconnect(self) -> None:
         """Disconnect from the LSL stream and interrupt data collection."""
-        self._check_connected(name="Stream.disconnect()")
+        self._check_connected(name="disconnect()")
         self._interrupt = True
         while self._acquisition_thread.is_alive():
             self._acquisition_thread.cancel()
-        self._inlet.close_stream()
-        del self._inlet
-        self._reset_variables()
+        # This method needs to close any inlet/network object and need to end with
+        # self._reset_variables().
 
     def drop_channels(self, ch_names: Union[str, List[str], Tuple[str]]) -> None:
         """Drop channel(s).
@@ -406,7 +268,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
         --------
         pick
         """
-        self._check_connected(name="Stream.drop_channels()")
+        self._check_connected(name="drop_channels()")
         if isinstance(ch_names, str):
             ch_names = [ch_names]
         check_type(ch_names, (list, tuple), "ch_names")
@@ -422,15 +284,14 @@ class Stream(ContainsMixin, SetChannelsMixin):
 
     def filter(self) -> None:
         """Filter the stream. Not implemented."""
-        self._check_connected(name="Stream.filter()")
-        self._check_regular_sampling(name="Stream.filter()")
+        self._check_connected_and_regular_sampling("filter()")
         raise NotImplementedError
 
     @copy_doc(ContainsMixin.get_channel_types)
     def get_channel_types(
         self, picks=None, unique=False, only_data_chs=False
     ) -> List[str]:
-        self._check_connected(name="Stream.get_channel_types()")
+        self._check_connected(name="get_channel_types()")
         return super().get_channel_types(
             picks=picks, unique=unique, only_data_chs=only_data_chs
         )
@@ -455,7 +316,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
             element contains the unit multiplication factor, e.g. ``-6 (FIFF_UNITM_MU)``
             for micro (corresponds to ``1e-6``).
         """
-        self._check_connected(name="Stream.get_channel_units()")
+        self._check_connected(name="get_channel_units()")
         check_type(only_data_chs, (bool,), "only_data_chs")
         none = "data" if only_data_chs else "all"
         picks = _picks_to_idx(self._info, picks, none, (), allow_empty=False)
@@ -536,7 +397,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
 
     @copy_doc(SetChannelsMixin.get_montage)
     def get_montage(self) -> Optional[DigMontage]:
-        self._check_connected(name="Stream.get_montage()")
+        self._check_connected(name="get_montage()")
         return super().get_montage()
 
     def load_stream_config(self) -> None:
@@ -545,7 +406,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
 
     def plot(self):
         """Open a real-time stream viewer. Not implemented."""
-        self._check_connected(name="Stream.plot()")
+        self._check_connected(name="plot()")
         raise NotImplementedError
 
     @fill_doc
@@ -569,14 +430,14 @@ class Stream(ContainsMixin, SetChannelsMixin):
         if explicit channel names are provided in ``picks``, they are sorted to match
         the order of existing channel names.
         """
-        self._check_connected(name="Stream.pick()")
+        self._check_connected(name="pick()")
         picks = _picks_to_idx(self._info, picks, "all", exclude, allow_empty=False)
         picks = np.sort(picks)
         self._pick(picks)
 
     def record(self):
         """Record the stream data to disk. Not implemented."""
-        self._check_connected(name="Stream.record()")
+        self._check_connected(name="record()")
         raise NotImplementedError
 
     @fill_doc
@@ -600,7 +461,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
             renamed with ``-N`` at the end.
         %(verbose)s
         """
-        self._check_connected(name="Stream.rename_channels()")
+        self._check_connected(name="rename_channels()")
         rename_channels(
             self._info,
             mapping=mapping,
@@ -614,8 +475,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
 
     def set_bipolar_reference(self):
         """Set a bipolar reference. Not implemented."""
-        self._check_connected(name="Stream.set_bipolar_reference()")
-        self._check_regular_sampling(name="Stream.set_bipolar_reference()")
+        self._check_connected_and_regular_sampling("set_bipolar_reference()")
         raise NotImplementedError
 
     @fill_doc
@@ -626,8 +486,8 @@ class Stream(ContainsMixin, SetChannelsMixin):
 
         If the new channel type changes the unit type, e.g. from ``T/m`` to ``V``, the
         unit multiplication factor is reset to ``0``. Use
-        :meth:`~bsl.Stream.set_channel_units` to change the multiplication factor, e.g.
-        from ``0`` to ``-6`` to change from Volts to microvolts.
+        ``Stream.set_channel_units`` to change the multiplication factor, e.g. from
+        ``0`` to ``-6`` to change from Volts to microvolts.
 
         Parameters
         ----------
@@ -641,7 +501,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
             .. versionadded:: MNE 1.4
         %(verbose)s
         """
-        self._check_connected(name="Stream.set_channel_types()")
+        self._check_connected(name="set_channel_types()")
         super().set_channel_types(
             mapping=mapping, on_unit_change=on_unit_change, verbose=verbose
         )
@@ -650,7 +510,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
         """Define the channel unit multiplication factor.
 
         The unit itself is defined by the sensor type. Use
-        :meth:`~Stream.set_channel_types` to change the channel type, e.g. from planar
+        ``Stream.set_channel_types`` to change the channel type, e.g. from planar
         gradiometers in ``T/m`` to EEG in ``V``.
 
         Parameters
@@ -665,9 +525,10 @@ class Stream(ContainsMixin, SetChannelsMixin):
         If the human-readable unit of your channel is not yet supported by BSL, please
         contact the developers on GitHub to add your units to the known set.
         """
-        self._check_connected(name="Stream.set_channel_units()")
+        self._check_connected(name="set_channel_units()")
         _set_channel_units(self._info, mapping)
 
+    @fill_doc
     def set_eeg_reference(
         self,
         ref_channels: Union[str, List[str], Tuple[str]],
@@ -676,8 +537,9 @@ class Stream(ContainsMixin, SetChannelsMixin):
         """Specify which reference to use for EEG data.
 
         Use this function to explicitly specify the desired reference for EEG. This can
-        be either an existing electrode or a new virtual channel. This function will
-        re-reference the data according to the desired reference.
+        be either an existing electrode or a new virtual channel added with
+        ``Stream.add_reference_channels``. This function will re-reference the data in
+        the ringbuffer according to the desired reference.
 
         Parameters
         ----------
@@ -688,8 +550,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
             The name of the channel type to apply the reference to. Valid channel types
             are ``'eeg'``, ``'ecog'``, ``'seeg'``, ``'dbs'``.
         """
-        self._check_connected(name="Stream.set_eeg_reference()")
-        self._check_regular_sampling(name="Stream.set_eeg_reference()")
+        self._check_connected_and_regular_sampling("set_eeg_reference()")
 
         if isinstance(ch_type, str):
             ch_type = [ch_type]
@@ -723,7 +584,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
         --------
         anonymize
         """
-        self._check_connected(name="Stream.set_meas_date()")
+        self._check_connected(name="set_meas_date()")
         super().set_meas_date(meas_date)
 
     @fill_doc
@@ -760,7 +621,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
             montage. Other channel types (e.g., MEG channels) should have their
             positions defined properly using their data reading functions.
         """
-        self._check_connected(name="Stream.set_montage()")
+        self._check_connected(name="set_montage()")
         super().set_montage(
             montage=montage,
             match_case=match_case,
@@ -769,70 +630,40 @@ class Stream(ContainsMixin, SetChannelsMixin):
             verbose=verbose,
         )
 
+    @staticmethod
     def _acquire(self) -> None:
         """Update function pulling new samples in the buffer at a regular interval."""
-        try:
-            # pull data
-            data, timestamps = self._inlet.pull_chunk(timeout=0.0)
-            if timestamps.size == 0:
-                return None  # interrupt early
-
-            # process acquisition window
-            data = data[:, self._picks_inlet]
-            if len(self._ref_channels) != 0:
-                refs = np.zeros(
-                    (timestamps.size, len(self._ref_channels)), dtype=self.dtype
-                )
-                data = np.hstack((data, refs), dtype=self.dtype)
-
-            # roll and update buffers
-            self._buffer = np.roll(self._buffer, -timestamps.size, axis=0)
-            self._timestamps = np.roll(self._timestamps, -timestamps.size, axis=0)
-            # fmt: off
-            self._buffer[-timestamps.size :, :] = data[-self._timestamps.size :, :]  # noqa: E203, E501
-            self._timestamps[-timestamps.size :] = timestamps[-self._timestamps.size :]  # noqa: E203, E501
-            # fmt: on
-            # update the number of new samples available
-            self._n_new_samples += min(timestamps.size, self.n_buffer)
-            if (
-                self._timestamps.size < self._n_new_samples
-                or self._timestamps.size < timestamps.size
-            ):
-                logger.info(
-                    "The number of new samples exceeds the buffer size. Consider using "
-                    "a larger buffer by creating a Stream with a larger 'bufsize' "
-                    "argument or consider retrieving new samples more often with "
-                    "Stream.get_data()."
-                )
-        except Exception as error:
-            logger.exception(error)
-            self._reset_variables()
-            return None  # equivalent to an interrupt
-        else:
-            if self._interrupt:
-                # don't recreate the thread if we are trying to interrupt acquisition
-                return None
-            else:
-                # recreate the timer thread as it is one-call only
-                self._acquisition_thread = Timer(self._acquisition_delay, self._acquire)
-                self._acquisition_thread.daemon = True
-                self._acquisition_thread.start()
+        pass
 
     def _check_connected(self, name: str):
         """Check that the stream is connected before calling the function 'name'."""
         if not self.connected:
             raise RuntimeError(
                 "The Stream attribute 'info' is None. An Info instance is required to "
-                f"use {name}. Please connect to the stream to create the Info."
+                f"use {type(self).__name__}.{name}. Please connect to the stream to "
+                "create the Info."
             )
 
-    def _check_regular_sampling(self, name: str):
+    def _check_connected_and_regular_sampling(self, name: str):
         """Check that the stream has a regular sampling rate."""
+        self._check_connected(name)
         if self.info["sfreq"] == 0:
             raise RuntimeError(
-                f"The method {name} can not be used on a stream with an irregular "
-                "sampling rate."
+                f"The method {type(self).__name__}.{name} can not be used on a stream "
+                "with an irregular sampling rate."
             )
+
+    def _create_acquisition_thread(self, delay: float) -> None:
+        """Create and start the daemonic acquisition thread.
+
+        Parameters
+        ----------
+        delay : float
+            Delay after which the thread will call the acquire function.
+        """
+        self._acquisition_thread = Timer(delay, self._acquire)
+        self._acquisition_thread.daemon = True
+        self._acquisition_thread.start()
 
     @contextmanager
     def _interrupt_acquisition(self):
@@ -848,9 +679,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
             self._acquisition_thread.cancel()
         yield
         self._interrupt = False
-        self._acquisition_thread = Timer(0, self._acquire)
-        self._acquisition_thread.daemon = True
-        self._acquisition_thread.start()
+        self._create_acquisition_thread(0)
 
     def _pick(self, picks: NDArray[int]) -> None:
         """Interrupt acquisition and apply the channel selection."""
@@ -871,10 +700,9 @@ class Stream(ContainsMixin, SetChannelsMixin):
                 if ch not in self.ch_names:
                     self._ref_channels.remove(ch)
 
+    @abstractmethod
     def _reset_variables(self) -> None:
         """Reset variables define after connection."""
-        self._sinfo = None
-        self._inlet = None
         self._info = None
         self._acquisition_delay = None
         self._acquisition_thread = None
@@ -884,6 +712,8 @@ class Stream(ContainsMixin, SetChannelsMixin):
         self._picks_inlet = None
         self._ref_channels = []
         self._timestamps = None
+        # This method needs to reset any stream-system-specific variables, e.g. an inlet
+        # or a StreamInfo for LSL streams.
 
     # ----------------------------------------------------------------------------------
     @property
@@ -892,7 +722,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
 
         :type: :class:`int` | None
         """
-        self._check_connected(name="Stream.compensation_grade")
+        self._check_connected(name="compensation_grade")
         return super().compensation_grade
 
     # ----------------------------------------------------------------------------------
@@ -902,7 +732,7 @@ class Stream(ContainsMixin, SetChannelsMixin):
 
         :type: :class:`list` of :class:`str`
         """
-        self._check_connected(name="Stream.ch_names")
+        self._check_connected(name="ch_names")
         return self._info.ch_names
 
     @property
@@ -912,8 +742,6 @@ class Stream(ContainsMixin, SetChannelsMixin):
         :type: :class:`bool`
         """
         attributes = (
-            "_sinfo",
-            "_inlet",
             "_info",
             "_acquisition_delay",
             "_acquisition_thread",
@@ -942,52 +770,20 @@ class Stream(ContainsMixin, SetChannelsMixin):
         return self._info
 
     @property
-    def name(self) -> Optional[str]:
-        """Name of the LSL stream.
-
-        :type: :class:`str` | None
-        """
-        return self._name
-
-    @property
     def n_buffer(self) -> Optional[int]:
         """Number of samples that can be stored in the buffer.
 
         :type: :class:`int` | None
         """
-        self._check_connected(name="Stream.n_buffer")
+        self._check_connected(name="n_buffer")
         return self._timestamps.size
 
     @property
     def n_new_samples(self) -> Optional[int]:
         """Number of new samples available in the buffer.
 
-        The number of new samples is reset at every :meth:`Stream.get_data` call.
+        The number of new samples is reset at every ``Stream.get_data`` call.
 
         :type: :class:`int` | None
         """
         return self._n_new_samples
-
-    @property
-    def sinfo(self) -> Optional[_BaseStreamInfo]:
-        """StreamInfo of the connected stream.
-
-        :type: :class:`~bsl.lsl.StreamInfo` | None
-        """
-        return self._sinfo
-
-    @property
-    def stype(self) -> Optional[str]:
-        """Type of the LSL stream.
-
-        :type: :class:`str` | None
-        """
-        return self._stype
-
-    @property
-    def source_id(self) -> Optional[str]:
-        """ID of the source of the LSL stream.
-
-        :type: :class:`str` | None
-        """
-        return self._source_id
