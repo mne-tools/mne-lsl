@@ -17,10 +17,16 @@ class _BackendPyQtGraph(_Backend):
 
     Parameters
     ----------
-    %(viewer_scope)s
-    %(viewer_backend_geometry)s
-    %(viewer_backend_xRange)s
-    %(viewer_backend_yRange)s
+    scope : Scope
+        Scope connected to a StreamInlet acquiring the data and applying
+        filtering. The scope has a buffer of _BUFFER_DURATION seconds
+        (default: 30s
+    geometry : tuple | list
+        Window geometry as (pos_x, pos_y, size_x, size_y).
+    xRange : int
+        Range of the x-axis (plotting time duration) in seconds.
+    yRange : float
+        Range of the y-axis (amplitude) in uV.
     """
 
     # ---------------------------- Init ---------------------------
@@ -251,10 +257,20 @@ class _TriggerEvent(_Event):
 
     Parameters
     ----------
-    %(viewer_event_type)s
-    %(viewer_event_value)s
-    %(viewer_position_buffer)s
-    %(viewer_position_plot)s
+    event_type : str
+        Type of event. Supported: 'LPT'.
+    event_value : int
+        Value of the event.
+    position_buffer : float
+        Time (seconds) at which the event is positioned in the buffer where:
+            0 represents the older events exiting the buffer.
+            _BUFFER_DURATION represents the newer events entering the
+            buffer.
+    position_plot : float
+        Time (seconds) at which the event is positioned in the plotting window
+        where:
+            0 represents the older events exiting the window.
+            xRange represents the newer events entering the window.
     plot_handler : pyqtgraph.PlotItem
         Plot handler.
     yRange : int | float
