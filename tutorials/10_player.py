@@ -59,7 +59,7 @@ print(data.shape)  # (n_samples, n_channels)
 del inlet
 
 # %%
-# or with a :class:`bsl.Stream`:
+# or with a :class:`bsl.stream.StreamLSL`:
 
 stream = Stream(bufsize=2, name=player.name)
 stream.connect()

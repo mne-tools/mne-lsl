@@ -52,7 +52,7 @@ size is specified at instantiation through the ``bufsize`` argument.
 # Connecting to an LSL Stream is a 2 step operation. First, create a
 # :class:`~bsl.stream.StreamLSL` with the desired buffer size and the desired stream
 # attributes, ``name``, ``stype``, ``source_id``. Second, connect to the stream which
-# matches the requested stream attributes with :meth:`bsl.Stream.connect`.
+# matches the requested stream attributes with :meth:`bsl.stream.StreamLSL.connect`.
 #
 # .. note::
 #
@@ -96,18 +96,19 @@ stream.info
 # * If the channel units are not readable or present, SI units will be used.
 #
 # Once connected to a Stream, you can change the channel names, types and units to your
-# liking with :meth:`bsl.Stream.rename_channels`, :meth:`bsl.Stream.set_channel_types`
-# and :meth:`bsl.Stream.set_channel_units`. See
+# liking with :meth:`bsl.stream.StreamLSL.rename_channels`,
+# :meth:`bsl.stream.StreamLSL.set_channel_types` and
+# :meth:`bsl.stream.StreamLSL.set_channel_units`. See
 # :ref:`sphx_glr_generated_tutorials_20_stream_meas_info.py` for additional information.
 
 # %%
 # Channel selection
 # -----------------
 #
-# Channels can be selected with :meth:`bsl.Stream.pick` or with
-# :meth:`bsl.Stream.drop_channels`. Selection is definitive, it is not possible to
-# restore channels removed until the :class:`~bsl.stream.StreamLSL` is disconnected and
-# reconnected to its source.
+# Channels can be selected with :meth:`bsl.stream.StreamLSL.pick` or with
+# :meth:`bsl.stream.StreamLSL.drop_channels`. Selection is definitive, it is not
+# possible to restore channels removed until the :class:`~bsl.stream.StreamLSL` is
+# disconnected and reconnected to its source.
 
 stream.pick(["Fz", "Cz", "Oz"])
 stream.info
@@ -117,16 +118,16 @@ stream.info
 # ----------------
 #
 # The ringbuffer can be queried for the last ``N`` samples with
-# :meth:`bsl.Stream.get_data`. The argument ``winsize`` controls the amount of samples
-# returned, and the property :py:attr:`bsl.Stream.n_new_samples` contains the amount
-# of new samples buffered between 2 queries.
+# :meth:`bsl.stream.StreamLSL.get_data`. The argument ``winsize`` controls the amount of
+# samples returned, and the property :py:attr:`bsl.stream.StreamLSL.n_new_samples`
+# contains the amount of new samples buffered between 2 queries.
 #
 # .. note::
 #
 #     If the number of new samples between 2 queries is superior to the number of
-#     samples that can be hold in the buffer :py:attr:`bsl.Stream.n_buffer`, the buffer
-#     is overwritten with some samples "lost" or discarded without any prior notice or
-#     error raised.
+#     samples that can be hold in the buffer :py:attr:`bsl.stream.StreamLSL.n_buffer`, the
+#     buffer is overwritten with some samples "lost" or discarded without any prior
+#     notice or error raised.
 
 print(f"Number of new samples: {stream.n_new_samples}")
 data, ts = stream.get_data()
@@ -134,7 +135,7 @@ time.sleep(0.5)
 print(f"Number of new samples: {stream.n_new_samples}")
 
 # %%
-# :meth:`bsl.Stream.get_data` returns 2 variables, ``data`` which contains the
+# :meth:`bsl.stream.StreamLSL.get_data` returns 2 variables, ``data`` which contains the
 # ``(n_channels, n_samples)`` data array and ``ts`` (or ``timestamps``) which contains
 # the ``(n_samples,)`` timestamp array, in LSL time.
 #
@@ -143,7 +144,7 @@ print(f"Number of new samples: {stream.n_new_samples}")
 #     LSL timestamps are not always regular. They can be jittered depending on the source
 #     and on the delay between the source and the client. Processing flags can be
 #     provided to improve the timestamp precision when connecting to a stream with
-#     :meth:`bsl.Stream.connect`. See
+#     :meth:`bsl.stream.StreamLSL.connect`. See
 #     :ref:`sphx_glr_generated_tutorials_30_timestamps.py` for additional information.
 
 t0 = local_clock()
@@ -165,12 +166,13 @@ plt.show()
 # In the previous figure, the timestamps are corrected by ``t0``, which correspond to
 # the time at which the first loop was executed. Note that the samples in blue span
 # negative time values. Indeed, a 0.5 second sleep was added in the previous code cell
-# after the last :meth:`bsl.Stream.get_data` call. Thus, ``t0`` is created 0.5 seconds
-# after the last reset of :py:attr:`bsl.Stream.n_new_samples` and the samples
-# pulled with the first :meth:`bsl.Stream.get_data` correspond to past samples.
+# after the last :meth:`bsl.stream.StreamLSL.get_data` call. Thus, ``t0`` is created 0.5
+# seconds after the last reset of :py:attr:`bsl.stream.StreamLSL.n_new_samples` and the
+# samples pulled with the first :meth:`bsl.stream.StreamLSL.get_data` correspond to past
+# samples.
 #
 # Note also the varying number of samples in each of the 3 data query separated by
-# 0.5 seconds. When connecting to a Stream with :meth:`bsl.Stream.connect`, an
+# 0.5 seconds. When connecting to a Stream with :meth:`bsl.stream.StreamLSL.connect`, an
 # ``acquisition_delay`` is defined. It corresponds to the delay between 2 updates of the
 # ringbuffer, by default 200 ms. Thus, with a 500 ms sleep in this example, the number
 # of samples updated in the ringbuffer will vary every 2 iterations.

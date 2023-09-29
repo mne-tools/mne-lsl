@@ -33,7 +33,7 @@ if TYPE_CHECKING:
     from mne import Info
 
 
-class Player(ABC, ContainsMixin, SetChannelsMixin):
+class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
     """Class for creating a mock real-time stream.
 
     Parameters
