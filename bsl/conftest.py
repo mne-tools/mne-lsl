@@ -1,7 +1,7 @@
 from pytest import fixture
 
-from bsl.player import PlayerLSL
 from bsl.datasets import testing
+from bsl.player import PlayerLSL
 
 
 @fixture(scope="module")

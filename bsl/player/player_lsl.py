@@ -5,10 +5,10 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 
-from ._base import BasePlayer
 from ..lsl import StreamInfo, StreamOutlet, local_clock
 from ..utils._checks import check_type
 from ..utils._docs import copy_doc
+from ._base import BasePlayer
 
 if TYPE_CHECKING:
     from pathlib import Path
