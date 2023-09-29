@@ -35,6 +35,15 @@ for key in keys:
     docdict[key] = entry
 
 # -----------------------------------------------
+docdict["stream_bufsize"] = """
+bufsize : float | int
+    Size of the buffer keeping track of the data received from the stream. If
+    the stream sampling rate ``sfreq`` is regular, ``bufsize`` is expressed in
+    seconds. The buffer will hold the last ``bufsize * sfreq`` samples (ceiled).
+    If the strean sampling sampling rate ``sfreq`` is irregular, ``bufsize`` is
+    expressed in samples. The buffer will hold the last ``bufsize`` samples."""
+
+# -----------------------------------------------
 docdict[
     "stream_name"
 ] = """

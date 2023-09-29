@@ -9,6 +9,7 @@ from ._base import BaseStream
 from ..lsl import StreamInlet, resolve_streams
 from ..lsl.constants import fmt2numpy
 from ..utils._checks import check_type
+from ..utils._docs import fill_doc
 from ..utils.logs import logger
 from ..utils.meas_info import create_info
 
@@ -18,17 +19,13 @@ if TYPE_CHECKING:
     from bsl.lsl.stream_info import _BaseStreamInfo
 
 
+@fill_doc
 class StreamLSL(BaseStream):
     """Stream object representing a single LSL stream.
 
     Parameters
     ----------
-    bufsize : float | int
-        Size of the buffer keeping track of the data received from the stream. If
-        the stream sampling rate ``sfreq`` is regular, ``bufsize`` is expressed in
-        seconds. The buffer will hold the last ``bufsize * sfreq`` samples (ceiled).
-        If the strean sampling sampling rate ``sfreq`` is irregular, ``bufsize`` is
-        expressed in samples. The buffer will hold the last ``bufsize`` samples.
+    %(stream_bufsize)s
     name : str
         Name of the LSL stream.
     stype : str

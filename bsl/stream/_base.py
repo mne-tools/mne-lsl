@@ -25,10 +25,10 @@ else:
     from mne.io.pick import _picks_to_idx, _ELECTRODE_CH_TYPES
     from mne.channels.channels import SetChannelsMixin
 
-from .utils._checks import check_type, check_value
-from .utils._docs import copy_doc, fill_doc
-from .utils.logs import logger
-from .utils.meas_info import _HUMAN_UNITS, _set_channel_units
+from ..utils._checks import check_type, check_value
+from ..utils._docs import copy_doc, fill_doc
+from ..utils.logs import logger
+from ..utils.meas_info import _HUMAN_UNITS, _set_channel_units
 
 if TYPE_CHECKING:
     from datetime import datetime
@@ -39,17 +39,13 @@ if TYPE_CHECKING:
     from numpy.typing import DTypeLike, NDArray
 
 
+@fill_doc
 class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
     """Stream object representing a single real-time stream.
 
     Parameters
     ----------
-    bufsize : float | int
-        Size of the buffer keeping track of the data received from the stream. If
-        the stream sampling rate ``sfreq`` is regular, ``bufsize`` is expressed in
-        seconds. The buffer will hold the last ``bufsize * sfreq`` samples (ceiled).
-        If the strean sampling sampling rate ``sfreq`` is irregular, ``bufsize`` is
-        expressed in samples. The buffer will hold the last ``bufsize`` samples.
+    %(stream_bufsize)s
     """
 
     def __init__(
