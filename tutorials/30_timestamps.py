@@ -22,16 +22,18 @@ might be important.
 # .. note::
 #
 #     For this tutorial purposes, a mock LSL stream is created using a
-#     :class:`~bsl.Player`. See :ref:`sphx_glr_generated_tutorials_10_player.py` for
-#     additional information on mock LSL streams.
+#     :class:`~bsl.player.PlayerLSL`. See
+#     :ref:`sphx_glr_generated_tutorials_10_player.py` for additional information on
+#     mock LSL streams.
 
 import time
 
 from matplotlib import pyplot as plt
 
-from bsl import Player, Stream
 from bsl.datasets import sample
 from bsl.lsl import StreamInlet, resolve_streams
+from bsl.player import PlayerLSL as Player
+from bsl.stream import StreamLSL as Stream
 
 fname = sample.data_path() / "sample-ant-raw.fif"
 player = Player(fname)
@@ -45,15 +47,15 @@ del inlet
 
 # %%
 # With the example above, the time offset is very small because the source
-# (:class:`~bsl.Player`) and the client (:class:`~bsl.lsl.StreamInlet`) are both local,
-# i.e. present on the same computer.
+# (:class:`~bsl.player.PlayerLSL`) and the client (:class:`~bsl.lsl.StreamInlet`) are
+# both local, i.e. present on the same computer.
 
 # %%
 # Timestamps in the Stream API
 # ----------------------------
 #
-# A :class:`~bsl.Stream` returns both the samples and the associated timestamps when
-# queried with :meth:`~bsl.Stream.get_data`.
+# A :class:`~bsl.stream.StreamLSL` returns both the samples and the associated
+# timestamps when queried with :meth:`~bsl.stream.StreamLSL.get_data`.
 
 stream = Stream(2, name=player.name)
 stream.connect()
@@ -70,9 +72,9 @@ ax.set_xlabel("Timestamps LSL")
 # %%
 # Free resources
 # --------------
-# When you are done with a :class:`~bsl.Player` or :class:`~bsl.Stream`, don't forget
-# to free the resources they both use to continuously mock an LSL stream or receive new
-# data from an LSL stream.
+# When you are done with a :class:`~bsl.player.PlayerLSL` or
+# :class:`~bsl.stream.StreamLSL`, don't forget to free the resources they both use to
+# continuously mock an LSL stream or receive new data from an LSL stream.
 
 stream.disconnect()
 player.stop()

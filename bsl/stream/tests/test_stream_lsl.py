@@ -17,8 +17,9 @@ else:
     from mne.io.constants import FIFF
     from mne.io.pick import _picks_to_idx
 
-from bsl import Stream, logger
+from bsl import logger
 from bsl.datasets import testing
+from bsl.stream import StreamLSL as Stream
 from bsl.utils._tests import match_stream_and_raw_data
 from bsl.utils.logs import _use_log_level
 

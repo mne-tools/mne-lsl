@@ -1,6 +1,6 @@
 from __future__ import annotations  # c.f. PEP 563, PEP 649
 
-from threading import Timer
+from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -19,11 +19,10 @@ else:
     from mne.io.pick import _picks_to_idx
     from mne.channels.channels import SetChannelsMixin
 
-from .lsl import StreamInfo, StreamOutlet, local_clock
-from .utils._checks import check_type, ensure_int, ensure_path
-from .utils._docs import fill_doc
-from .utils.logs import logger
-from .utils.meas_info import _set_channel_units
+from ..utils._checks import check_type, ensure_int, ensure_path
+from ..utils._docs import fill_doc
+from ..utils.logs import logger
+from ..utils.meas_info import _set_channel_units
 
 if TYPE_CHECKING:
     from datetime import datetime
@@ -33,18 +32,16 @@ if TYPE_CHECKING:
     from mne import Info
 
 
-class Player(ContainsMixin, SetChannelsMixin):
-    """Class for creating a mock LSL stream.
+class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
+    """Class for creating a mock real-time stream.
 
     Parameters
     ----------
     fname : path-like
-        Path to the file to re-play as a mock LSL stream. MNE-Python must be able to
-        load the file with :func:`mne.io.read_raw`.
-    name : str | None
-        Name of the mock LSL stream. If ``None``, the name ``BSL-Player`` is used.
+        Path to the file to re-play as a mock real-time stream. MNE-Python must be able
+        to load the file with :func:`mne.io.read_raw`.
     chunk_size : int ``≥ 1``
-        Number of samples pushed at once on the :class:`~bsl.lsl.StreamOutlet`.
+        Number of samples pushed at once on the mock real-time stream.
 
     Notes
     -----
@@ -53,38 +50,18 @@ class Player(ContainsMixin, SetChannelsMixin):
     a small discontinuity in the data stream.
     """
 
-    def __init__(
-        self, fname: Union[str, Path], name: Optional[str] = None, chunk_size: int = 16
-    ) -> None:
+    @abstractmethod
+    def __init__(self, fname: Union[str, Path], chunk_size: int = 16) -> None:
         self._fname = ensure_path(fname, must_exist=True)
-        check_type(name, (str, None), "name")
-        self._name = "BSL-Player" if name is None else name
         self._chunk_size = ensure_int(chunk_size, "chunk_size")
         if self._chunk_size <= 0:
             raise ValueError(
                 "The argument 'chunk_size' must be a strictly positive integer. "
                 f"{chunk_size} is invalid."
             )
-
-        # load header from the file and create StreamInfo
+        # load raw recording
         self._raw = read_raw(self._fname, preload=True)
-        ch_types = self._raw.get_channel_types(unique=True)
-        self._sinfo = StreamInfo(
-            name=self._name,
-            stype=ch_types[0] if len(ch_types) == 1 else "",
-            n_channels=len(self._raw.info["ch_names"]),
-            sfreq=self._raw.info["sfreq"],
-            dtype=np.float64,
-            source_id="BSL",
-        )
-        self._sinfo.set_channel_names(self._raw.info["ch_names"])
-        self._sinfo.set_channel_types(self._raw.get_channel_types(unique=False))
-        self._sinfo.set_channel_units([ch["unit_mul"] for ch in self._raw.info["chs"]])
-        self._outlet = None
-        self._start_idx = 0
-        self._streaming_delay = None
-        self._streaming_thread = None
-        self._target_timestamp = None
+        # This method should end on a self._reset_variables()
 
     @fill_doc
     def anonymize(self, daysback=None, keep_his=False, *, verbose=None):
@@ -100,9 +77,9 @@ class Player(ContainsMixin, SetChannelsMixin):
         -----
         %(anonymize_info_notes)s
         """
-        self._check_not_started("Player.anonymize()")
+        self._check_not_started("anonymize()")
         logger.warning(
-            "Player.anonymize() is partially implemented and does impact the LSL "
+            "Player.anonymize() is partially implemented and does not impact the "
             "stream information yet."
         )
         super().anonymize(daysback=daysback, keep_his=keep_his, verbose=verbose)
@@ -137,6 +114,7 @@ class Player(ContainsMixin, SetChannelsMixin):
             )
         return channel_units
 
+    @abstractmethod
     @fill_doc
     def rename_channels(
         self,
@@ -158,24 +136,15 @@ class Player(ContainsMixin, SetChannelsMixin):
             renamed with ``-N`` at the end.
         %(verbose)s
         """
-        self._check_not_started("Player.rename_channels()")
+        self._check_not_started("rename_channels()")
         rename_channels(self.info, mapping, allow_duplicates)
-        self._sinfo.set_channel_names(self.info["ch_names"])
 
+    @abstractmethod
     def start(self) -> None:
-        """Start streaming data on the LSL `~bsl.lsl.StreamOutlet`."""
-        if self._streaming_thread is not None:
-            logger.warning(
-                "The player is already started. Use Player.stop() to stop streaming."
-            )
-            return None
-        self._outlet = StreamOutlet(self._sinfo, self._chunk_size)
-        self._streaming_delay = self.chunk_size / self.info["sfreq"]
-        self._streaming_thread = Timer(0, self._stream)
-        self._streaming_thread.daemon = True
-        self._target_timestamp = local_clock()
-        self._streaming_thread.start()
+        """Start streaming data."""
+        pass
 
+    @abstractmethod
     @fill_doc
     def set_channel_types(
         self, mapping: Dict[str, str], *, on_unit_change: str = "warn", verbose=None
@@ -184,8 +153,8 @@ class Player(ContainsMixin, SetChannelsMixin):
 
         If the new channel type changes the unit type, e.g. from ``T/m`` to ``V``, the
         unit multiplication factor is reset to ``0``. Use
-        :meth:`~bsl.Player.set_channel_units` to change the multiplication factor, e.g.
-        from ``0`` to ``-6`` to change from Volts to microvolts.
+        ``Player.set_channel_units`` to change the multiplication factor, e.g. from
+        ``0`` to ``-6`` to change from Volts to microvolts.
 
         Parameters
         ----------
@@ -199,24 +168,25 @@ class Player(ContainsMixin, SetChannelsMixin):
             .. versionadded:: MNE 1.4
         %(verbose)s
         """
-        self._check_not_started("Player.set_channel_types()")
+        self._check_not_started("set_channel_types()")
         super().set_channel_types(
             mapping=mapping, on_unit_change=on_unit_change, verbose=verbose
         )
         self._sinfo.set_channel_types(self.get_channel_types(unique=False))
 
+    @abstractmethod
     def set_channel_units(self, mapping: Dict[str, Union[str, int]]) -> None:
         """Define the channel unit multiplication factor.
 
         By convention, MNE stores data in SI units. But systems often stream in non-SI
-        units. For instance, EEG amplifiers often stream in microvolts. Thus, to mock an
-        LSL stream from an MNE-compatible file, the data might need to be scale to match
+        units. For instance, EEG amplifiers often stream in microvolts. Thus, to mock a
+        stream from an MNE-compatible file, the data might need to be scale to match
         the unit of the system to mock. This function will both change the unit
         multiplication factor and rescale the associated data.
 
         The unit itself is defined by the sensor type. Change the channel type in the
         ``raw`` recording with :meth:`mne.io.Raw.set_channel_types` before providing the
-        recording to the :class:`~bsl.Player`.
+        recording to the player.
 
         Parameters
         ----------
@@ -230,7 +200,7 @@ class Player(ContainsMixin, SetChannelsMixin):
         If the human-readable unit of your channel is not yet supported by BSL, please
         contact the developers on GitHub to add your units to the known set.
         """
-        self._check_not_started("Player.set_channel_units()")
+        self._check_not_started("set_channel_units()")
         ch_units_before = np.array(
             [ch["unit_mul"] for ch in self.info["chs"]], dtype=np.int8
         )
@@ -238,7 +208,6 @@ class Player(ContainsMixin, SetChannelsMixin):
         ch_units_after = np.array(
             [ch["unit_mul"] for ch in self.info["chs"]], dtype=np.int8
         )
-        self._sinfo.set_channel_units(ch_units_after)
         # re-scale channels
         factors = ch_units_before - ch_units_after
         self._raw.apply_function(
@@ -266,34 +235,36 @@ class Player(ContainsMixin, SetChannelsMixin):
         --------
         anonymize
         """
-        self._check_not_started(name="Player.set_meas_date()")
+        self._check_not_started(name=f"{type(self).__name__}.set_meas_date()")
         logger.warning(
-            "Player.set_meas_date() is partially implemented and does impact the LSL "
+            "Player.set_meas_date() is partially implemented and does not impact the "
             "stream information yet."
         )
         super().set_meas_date(meas_date)
 
+    @abstractmethod
     def stop(self) -> None:
-        """Stop streaming data on the LSL :class:`~bsl.lsl.StreamOutlet`."""
+        """Stop streaming data on the mock real-time stream."""
         if self._streaming_thread is None:
             raise RuntimeError(
                 "The player is not started. Use Player.start() to begin streaming."
             )
+        self._interrupt = True
         while self._streaming_thread.is_alive():
             self._streaming_thread.cancel()
-        del self._outlet
-        self._reset_variables()
+        # This method must end with self._reset_variables()
 
     def _check_not_started(self, name: str):
         """Check that the player is not started before calling the function 'name'."""
         if self._streaming_thread is not None:
             raise RuntimeError(
                 "The player is already started. Please stop the streaming before using "
-                f"{name}."
+                f"{{type(self).__name__}}.{name}."
             )
 
+    @abstractmethod
     def _stream(self) -> None:
-        """Push a chunk of data from the raw object to the StreamOutlet.
+        """Push a chunk of data from the raw object to the real-time stream.
 
         Don't use raw.get_data but indexing which is faster.
 
@@ -304,56 +275,20 @@ class Player(ContainsMixin, SetChannelsMixin):
         >>> [In] %timeit np.ascontiguousarray(raw[:, 0:16][0].T)
         >>> 23.7 µs ± 183 ns per loop
         """
-        try:
-            # retrieve data and push to the stream outlet
-            start = self._start_idx
-            stop = start + self._chunk_size
-            if stop <= self._raw.times.size:
-                data = self._raw[:, start:stop][0].T
-                self._start_idx += self._chunk_size
-            else:
-                stop = self._chunk_size - (self._raw.times.size - start)
-                data = np.vstack([self._raw[:, start:][0].T, self._raw[:, :stop][0].T])
-                self._start_idx = stop
-            # bump the target LSL timestamp before pushing because the argument
-            # 'timestamp' expects the timestamp of the most 'recent' sample, which in
-            # this non-real time replay scenario is the timestamp of the last sample in
-            # the chunk.
-            self._target_timestamp += self._streaming_delay
-            self._outlet.push_chunk(data, timestamp=self._target_timestamp)
-        except Exception:
-            self._reset_variables()
-            return None  # equivalent to an interrupt
-        else:
-            # figure out how early or late the thread woke up and compensate the delay
-            # for the next thread to remain in the neighbourhood of _target_timestamp
-            # for the following wake.
-            delta = self._target_timestamp - self._streaming_delay - local_clock()
-            delay = self._streaming_delay + delta
-
-            # recreate the timer thread as it is one-call only
-            self._streaming_thread = Timer(delay, self._stream)
-            self._streaming_thread.daemon = True
-            self._streaming_thread.start()
+        pass
 
     def _reset_variables(self) -> None:
         """Reset variables for streaming."""
-        self._outlet = None
         self._start_idx = 0
         self._streaming_delay = None
         self._streaming_thread = None
-        self._target_timestamp = None
+        self._interrupt = False
 
     # ----------------------------------------------------------------------------------
     def __del__(self):
-        """Delete the player and destroy the :class:`~bsl.lsl.StreamOutlet`."""
+        """Delete the player."""
         if hasattr(self, "_streaming_thread") and self._streaming_thread is not None:
-            while self._streaming_thread.is_alive():
-                self._streaming_thread.cancel()
-        try:
-            del self._outlet
-        except Exception:
-            pass
+            self.stop()
 
     def __enter__(self):
         """Context manager entry point."""
@@ -363,13 +298,12 @@ class Player(ContainsMixin, SetChannelsMixin):
         """Context manager exit point."""
         self.stop()
 
+    @staticmethod
     def __repr__(self):
         """Representation of the instance."""
-        if self._outlet is None:
-            status = "OFF"
-        else:
-            status = "ON"
-        return f"<Player: {self.name} | {status} | {self._fname}>"
+        # This method must define the string representation of the player, e.g.
+        # <Player: {self._fname}>
+        pass
 
     # ----------------------------------------------------------------------------------
     @property
@@ -398,16 +332,8 @@ class Player(ContainsMixin, SetChannelsMixin):
 
     @property
     def info(self) -> Info:
-        """Info of the LSL stream.
+        """Info of the real-time stream.
 
         :type: :class:`~mne.Info`
         """
         return self._raw.info
-
-    @property
-    def name(self) -> str:
-        """Name of the LSL stream.
-
-        :type: :class:`str`
-        """
-        return self._name
