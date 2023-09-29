@@ -36,11 +36,16 @@ for key in keys:
 
 # -----------------------------------------------
 docdict[
-    "stream_name"
+    "stream_bufsize"
 ] = """
-stream_name : list | str | None
-    Servers' name or list of servers' name to connect to.
-    If ``None``, connects to all the available streams."""
+bufsize : float | int
+    Size of the buffer keeping track of the data received from the stream. If
+    the stream sampling rate ``sfreq`` is regular, ``bufsize`` is expressed in
+    seconds. The buffer will hold the last ``bufsize * sfreq`` samples (ceiled).
+    If the strean sampling sampling rate ``sfreq`` is irregular, ``bufsize`` is
+    expressed in samples. The buffer will hold the last ``bufsize`` samples."""
+
+# -----------------------------------------------
 docdict[
     "verbose"
 ] = """
@@ -50,72 +55,6 @@ verbose : int | str | bool | None
     If None is provided, the verbosity is set to ``"WARNING"``.
     If a bool is provided, the verbosity is set to ``"WARNING"`` for False and
     to ``"INFO"`` for True."""
-
-# -----------------------------------------------
-# Stream Viewer
-
-# Not read by sphinx autodoc
-docdict[
-    "viewer_scope"
-] = """
-scope : Scope
-    Scope connected to a StreamInlet acquiring the data and applying
-    filtering. The scope has a buffer of _BUFFER_DURATION seconds
-    (default: 30s)."""
-docdict[
-    "viewer_backend_geometry"
-] = """
-geometry : tuple | list
-    Window geometry as (pos_x, pos_y, size_x, size_y)."""
-docdict[
-    "viewer_backend_xRange"
-] = """
-xRange : int
-    Range of the x-axis (plotting time duration) in seconds."""
-docdict[
-    "viewer_backend_yRange"
-] = """
-yRange : float
-    Range of the y-axis (amplitude) in uV."""
-docdict[
-    "viewer_scope_stream_name"
-] = """
-stream_name : str
-    Stream to connect to."""
-docdict[
-    "viewer_event_type"
-] = """
-event_type : str
-    Type of event. Supported: 'LPT'."""
-docdict[
-    "viewer_event_value"
-] = """
-event_value : int
-    Value of the event."""
-docdict[
-    "viewer_position_buffer"
-] = """
-position_buffer : float
-    Time (seconds) at which the event is positioned in the buffer where:
-        0 represents the older events exiting the buffer.
-        _BUFFER_DURATION represents the newer events entering the
-        buffer."""
-docdict[
-    "viewer_position_plot"
-] = """
-position_plot : float
-    Time (seconds) at which the event is positioned in the plotting window
-    where:
-        0 represents the older events exiting the window.
-        xRange represents the newer events entering the window."""
-
-# -----------------------------------------------
-# Triggers
-docdict[
-    "trigger_verbose"
-] = """
-verbose : bool
-    If ``True``, display a ``logger.info`` message when a trigger is sent."""
 
 # ------------------------- Documentation functions --------------------------
 docdict_indented: Dict[int, Dict[str, str]] = dict()

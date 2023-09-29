@@ -11,9 +11,10 @@ if check_version("mne", "1.6"):
 else:
     from mne.io.constants import FIFF
 
-from bsl import Player, logger
+from bsl import logger
 from bsl.datasets import testing
 from bsl.lsl import StreamInlet, local_clock, resolve_streams
+from bsl.player import PlayerLSL as Player
 from bsl.utils._tests import match_stream_and_raw_data
 
 logger.propagate = True
