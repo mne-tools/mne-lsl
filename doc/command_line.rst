@@ -20,6 +20,7 @@ with the command:
 With the arguments:
 
 * ``file`` (mandatory): :term:`file-like <python:file object>`, file to stream.
+* ``type`` (mandatory): type of stream to mock, among (``lsl``,)
 * ``-n``, ``--name`` (optional, default ``BSL-Player``): :class:`str`, name of the LSL
   stream.
 * ``-c``, ``--chunk_size`` (optional, default ``16``): :class:`int`, number of samples
