@@ -14,11 +14,7 @@ def run():
         type=str,
         help="path to the File to stream via LSL.",
     )
-    parser.add_argument(
-        "type",
-        type=str,
-        help="type of mock stream (supported: lsl)."
-    )
+    parser.add_argument("type", type=str, help="type of mock stream (supported: lsl).")
     parser.add_argument(
         "-c",
         "--chunk_size",
