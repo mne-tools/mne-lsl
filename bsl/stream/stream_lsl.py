@@ -269,11 +269,11 @@ class StreamLSL(BaseStream):
 
         :type: :class:`bool`
         """
+        attributes = (
+            "_sinfo",
+            "_inlet",
+        )
         if super().connected:
-            attributes = (
-                "_sinfo",
-                "_inlet",
-            )
             # sanity-check
             assert not any(getattr(self, attr) is None for attr in attributes)
             return True

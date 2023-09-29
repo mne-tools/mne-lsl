@@ -243,6 +243,8 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         # - self._buffer: array of shape (n_samples, n_channels)
         # - self._timestamps: array of shape (n_samples,) with n_samples which differs
         #   between regularly and irregularly sampled streams.
+        # plus any additional variables needed by the source and the stream-specific
+        # methods.
 
     @abstractmethod
     def disconnect(self) -> None:
