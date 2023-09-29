@@ -5,13 +5,13 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 
-from ._base import BaseStream
 from ..lsl import StreamInlet, resolve_streams
 from ..lsl.constants import fmt2numpy
 from ..utils._checks import check_type
 from ..utils._docs import fill_doc
 from ..utils.logs import logger
 from ..utils.meas_info import create_info
+from ._base import BaseStream
 
 if TYPE_CHECKING:
     from typing import Optional, Sequence, Union
