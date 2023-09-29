@@ -104,8 +104,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             e.g. ``-6`` for microvolts corresponding to ``1e-6``.
             If not provided, the added EEG reference channel has a unit multiplication
             factor set to ``0`` which corresponds to Volts. Use
-            :meth:`bsl.stream.%(object)s.set_channel_units` to change the unit
-            multiplication factor.
+            ``Stream.set_channel_units`` to change the unit multiplication factor.
         """
         self._check_connected_and_regular_sampling("add_reference_channels()")
         # error checking and conversion of the arguments to valid values
@@ -487,8 +486,8 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
         If the new channel type changes the unit type, e.g. from ``T/m`` to ``V``, the
         unit multiplication factor is reset to ``0``. Use
-        :meth:`bsl.stream.%(object)s.set_channel_units` to change the multiplication
-        factor, e.g. from ``0`` to ``-6`` to change from Volts to microvolts.
+        ``Stream.set_channel_units`` to change the multiplication factor, e.g. from
+        ``0`` to ``-6`` to change from Volts to microvolts.
 
         Parameters
         ----------
@@ -529,6 +528,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         self._check_connected(name="set_channel_units()")
         _set_channel_units(self._info, mapping)
 
+    @fill_doc
     def set_eeg_reference(
         self,
         ref_channels: Union[str, List[str], Tuple[str]],
@@ -538,8 +538,8 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
         Use this function to explicitly specify the desired reference for EEG. This can
         be either an existing electrode or a new virtual channel added with
-        :meth:`bsl.stream.%(object)s.add_reference_channels`. This function will
-        re-reference the data in the ringbuffer according to the desired reference.
+        ``Stream.add_reference_channels``. This function will re-reference the data in
+        the ringbuffer according to the desired reference.
 
         Parameters
         ----------

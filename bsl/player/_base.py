@@ -166,8 +166,8 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
 
         If the new channel type changes the unit type, e.g. from ``T/m`` to ``V``, the
         unit multiplication factor is reset to ``0``. Use
-        ``Player.set_channel_units`` to change the multiplication factor, e.g.
-        from ``0`` to ``-6`` to change from Volts to microvolts.
+        ``Player.set_channel_units`` to change the multiplication factor, e.g. from
+        ``0`` to ``-6`` to change from Volts to microvolts.
 
         Parameters
         ----------
