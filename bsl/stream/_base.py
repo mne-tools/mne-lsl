@@ -737,6 +737,9 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
                 if ch not in self.ch_names:
                     self._added_channels.remove(ch)
 
+            # TODO: need to figure out what to do with the indices in self._ref_channels
+            # and in self._ref_to which are likely out of sync at this point.
+
     @abstractmethod
     def _reset_variables(self) -> None:
         """Reset variables define after connection."""
