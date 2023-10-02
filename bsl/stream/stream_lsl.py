@@ -209,9 +209,9 @@ class StreamLSL(BaseStream):
 
             # process acquisition window
             data = data[:, self._picks_inlet]
-            if len(self._ref_channels) != 0:
+            if len(self._added_channels) != 0:
                 refs = np.zeros(
-                    (timestamps.size, len(self._ref_channels)), dtype=self.dtype
+                    (timestamps.size, len(self._added_channels)), dtype=self.dtype
                 )
                 data = np.hstack((data, refs), dtype=self.dtype)
 

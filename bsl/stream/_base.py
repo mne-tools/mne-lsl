@@ -14,15 +14,15 @@ from mne.utils import check_version
 if check_version("mne", "1.5"):
     from mne.io.constants import FIFF, _ch_unit_mul_named
     from mne.io.meas_info import ContainsMixin, SetChannelsMixin
-    from mne.io.pick import _ELECTRODE_CH_TYPES, _picks_to_idx
+    from mne.io.pick import _picks_to_idx
 elif check_version("mne", "1.6"):
     from mne._fiff.constants import FIFF, _ch_unit_mul_named
     from mne._fiff.meas_info import ContainsMixin, SetChannelsMixin
-    from mne._fiff.pick import _ELECTRODE_CH_TYPES, _picks_to_idx
+    from mne._fiff.pick import _picks_to_idx
 else:
     from mne.io.constants import FIFF, _ch_unit_mul_named
     from mne.io.meas_info import ContainsMixin
-    from mne.io.pick import _picks_to_idx, _ELECTRODE_CH_TYPES
+    from mne.io.pick import _picks_to_idx
     from mne.channels.channels import SetChannelsMixin
 
 from ..utils._checks import check_type, check_value
@@ -108,6 +108,17 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             ``Stream.set_channel_units`` to change the unit multiplication factor.
         """
         self._check_connected_and_regular_sampling("add_reference_channels()")
+
+        # don't allow to add reference channels after a custom reference has been set
+        # with Stream.set_eeg_reference, for simplicity.
+        if self.info["custom_ref_applied"] == FIFF.FIFFV_MNE_CUSTOM_REF_ON:
+            raise RuntimeError(
+                "The method Stream.add_reference_channels() can only be called before "
+                "Stream.set_eeg_reference is called and the reference is changed. "
+                "If you want to add other reference to this Stream, please disconnect "
+                "and reconnect to reset the Stream."
+            )
+
         # error checking and conversion of the arguments to valid values
         if isinstance(ref_channels, str):
             ref_channels = [ref_channels]
@@ -190,7 +201,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         # create the associated numpy array and edit buffer
         refs = np.zeros((self._timestamps.size, len(ref_channels)), dtype=self.dtype)
         with self._interrupt_acquisition():
-            self._ref_channels.extend(ref_channels)  # save reference channels
+            self._added_channels.extend(ref_channels)  # save reference channels
             self._buffer = np.hstack((self._buffer, refs), dtype=self.dtype)
 
     @fill_doc
@@ -535,12 +546,12 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         ref_channels: Union[str, List[str], Tuple[str]],
         ch_type: Union[str, List[str], Tuple[str]] = "eeg",
     ) -> None:
-        """Specify which reference to use for EEG data.
+        """Specify which reference to use for EEG-like data.
 
-        Use this function to explicitly specify the desired reference for EEG. This can
-        be either an existing electrode or a new virtual channel added with
-        ``Stream.add_reference_channels``. This function will re-reference the data in
-        the ringbuffer according to the desired reference.
+        Use this function to explicitly specify the desired reference for EEG-like
+        channels. This can be either an existing electrode or a new virtual channel
+        added with ``Stream.add_reference_channels``. This function will re-reference
+        the data in the ringbuffer according to the desired reference.
 
         Parameters
         ----------
@@ -553,17 +564,36 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         """
         self._check_connected_and_regular_sampling("set_eeg_reference()")
 
+        # allow only one-call to this function for simplicity, and if one day someone
+        # want to apply 2 or more different reference to 2 or more types of channels,
+        # then we can remove this limitation.
+        if self.info["custom_ref_applied"] == FIFF.FIFFV_MNE_CUSTOM_REF_ON:
+            raise RuntimeError(
+                "The method Stream.set_eeg_reference() can only be called once. "
+                "If you want to change the reference of this Stream, please disconnect "
+                "and reconnect to reset the Stream."
+            )
+
+        if isinstance(ref_channels, str):
+            ref_channels = [ref_channels]
+        check_type(ref_channels, (tuple, list), "ref_channels")
+        picks_ref = _picks_to_idx(
+            self._info, ref_channels, "all", (), allow_empty=False
+        )
         if isinstance(ch_type, str):
             ch_type = [ch_type]
         check_type(ch_type, (tuple, list), "ch_type")
         for type_ in ch_type:
-            check_value(type_, _ELECTRODE_CH_TYPES, "ch_type")
             if type_ not in self:
                 raise ValueError(
                     f"There are no channels of type {type_} in this stream."
                 )
-
-        picks = _picks_to_idx(self._info, ch_type, "all", (), allow_empty=False)  # noqa
+        picks = _picks_to_idx(self._info, ch_type, "all", (), allow_empty=False)
+        if len(set(picks).intersection(set(picks_ref))) == 0:
+            raise ValueError(
+                f"The new reference channels must be of the type(s) {ch_type} provided "
+                "in the argument 'ch_type'."
+            )
         raise NotImplementedError
 
     def set_meas_date(
@@ -697,9 +727,9 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             self._buffer = self._buffer[:, picks]
 
             # prune added channels which are not part of the inlet
-            for ch in self._ref_channels[::-1]:
+            for ch in self._added_channels[::-1]:
                 if ch not in self.ch_names:
-                    self._ref_channels.remove(ch)
+                    self._added_channels.remove(ch)
 
     @abstractmethod
     def _reset_variables(self) -> None:
@@ -711,7 +741,9 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         self._buffer = None
         self._n_new_samples = None
         self._picks_inlet = None
-        self._ref_channels = []
+        self._added_channels = []
+        self._ref_channels = None
+        self._ref_to = None
         self._timestamps = None
         # This method needs to reset any stream-system-specific variables, e.g. an inlet
         # or a StreamInfo for LSL streams.
