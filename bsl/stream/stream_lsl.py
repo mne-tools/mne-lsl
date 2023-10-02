@@ -4,6 +4,14 @@ from math import ceil
 from typing import TYPE_CHECKING
 
 import numpy as np
+from mne.utils import check_version
+
+if check_version("mne", "1.5"):
+    from mne.io.constants import FIFF
+elif check_version("mne", "1.6"):
+    from mne._fiff.constants import FIFF
+else:
+    from mne.io.constants import FIFF
 
 from ..lsl import StreamInlet, resolve_streams
 from ..lsl.constants import fmt2numpy
@@ -214,6 +222,10 @@ class StreamLSL(BaseStream):
                     (timestamps.size, len(self._added_channels)), dtype=self.dtype
                 )
                 data = np.hstack((data, refs), dtype=self.dtype)
+
+            if self.info["custom_ref_applied"] == FIFF.FIFFV_MNE_CUSTOM_REF_ON:
+                data_ref = data[:, self._ref_channels].mean(axis=1, keepdims=True)
+                data[:, self._ref_to] -= data_ref
 
             # roll and update buffers
             self._buffer = np.roll(self._buffer, -timestamps.size, axis=0)
