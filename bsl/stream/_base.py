@@ -48,6 +48,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
     %(stream_bufsize)s
     """
 
+    @abstractmethod
     def __init__(
         self,
         bufsize: float,
