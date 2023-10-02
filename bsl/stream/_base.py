@@ -594,7 +594,13 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
                 f"The new reference channels must be of the type(s) {ch_type} provided "
                 "in the argument 'ch_type'."
             )
-        raise NotImplementedError
+
+        with self._interrupt_acquisition():
+            self._ref_channels = picks_ref
+            self._ref_to = picks
+            data_ref = self._buffer[:, self._ref_channels].mean(axis=1, keepdims=True)
+            self._buffer[:, self._ref_to] -= data_ref
+            self.info["custom_ref_applied"] == FIFF.FIFFV_MNE_CUSTOM_REF_ON
 
     def set_meas_date(
         self, meas_date: Optional[Union[datetime, float, Tuple[float]]]
