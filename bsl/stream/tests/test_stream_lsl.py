@@ -412,7 +412,7 @@ def test_stream_rereference(mock_lsl_stream_int):
 
     stream.set_eeg_reference("1")
     data, _ = stream.get_data()
-    data_ref = np.full(data.shape, np.arange(5).reshape(-1, 1))
+    data_ref = np.full(data.shape, np.arange(data.shape[0]).reshape(-1, 1))
     data_ref -= data_ref[1, :]
     assert_allclose(data, data_ref)
     time.sleep(0.3)
@@ -425,6 +425,8 @@ def test_stream_rereference(mock_lsl_stream_int):
         RuntimeError, match=re.escape("add_reference_channels() can only")
     ):
         stream.add_reference_channels("101")
+    with pytest.raises(RuntimeError, match="selection must be done before adding a"):
+        stream.drop_channels("4")
 
     stream.disconnect()
     assert stream._ref_channels is None
@@ -434,3 +436,19 @@ def test_stream_rereference(mock_lsl_stream_int):
     stream.connect()
     time.sleep(0.1)  # give a bit of time to slower CIs
     stream.add_reference_channels("5")
+    data, _ = stream.get_data()
+    data_ref = np.full(data.shape, np.arange(data.shape[0]).reshape(-1, 1))
+    data_ref[-1, :] = np.zeros(data.shape[1])
+    assert_allclose(data, data_ref)
+    stream.set_eeg_reference(("1", "2"))
+    data, _ = stream.get_data()
+    data_ref = np.full(
+        data.shape, np.arange(data.shape[0]).reshape(-1, 1), dtype=stream.dtype
+    )
+    data_ref[-1, :] = np.zeros(data.shape[1])
+    data_ref -= data_ref[[1, 2], :].mean(axis=0, keepdims=True)
+    assert_allclose(data, data_ref)
+    time.sleep(0.3)
+    data, _ = stream.get_data()
+    assert_allclose(data, data_ref)
+    stream.disconnect()

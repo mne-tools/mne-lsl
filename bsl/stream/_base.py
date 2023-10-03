@@ -721,24 +721,21 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
     def _pick(self, picks: NDArray[int]) -> None:
         """Interrupt acquisition and apply the channel selection."""
+        # for simplicity, don't allow to select channels after a reference schema has
+        # been set, even if we drop channels which are not part of the reference schema,
+        # else, we need to figure out where the dropped channel(s) are located relative
+        # to _ref_channels and _ref_from and edit those 2 variables accordingly.
+        if self._info["custom_ref_applied"] == FIFF.FIFFV_MNE_CUSTOM_REF_ON:
+            raise RuntimeError(
+                "The channel selection must be done before adding a re-refenrecing "
+                "schema with Stream.set_eeg_reference()."
+            )
+
         picks_inlet = picks[np.where(picks < self._picks_inlet.size)[0]]
         if picks_inlet.size == 0:
             raise RuntimeError(
                 "The requested channel selection would not leave any channel from the "
                 "LSL Stream."
-            )
-
-        ref_channels = np.intersect1d(picks, self._ref_channels)
-        if ref_channels.size == 0:
-            raise RuntimeError(
-                "The requested channel selection would not leave any reference channel "
-                "from the schema defined with Stream.set_eeg_reference()."
-            )
-        ref_from = np.intersect1d(picks, self._ref_from)
-        if ref_from.size == 0:
-            raise RuntimeError(
-                "The requested channel selection would not leave any channel to "
-                "re-reference with the schema defined with Stream.set_eeg_reference()."
             )
 
         with self._interrupt_acquisition():
@@ -750,9 +747,6 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             for ch in self._added_channels[::-1]:
                 if ch not in self.ch_names:
                     self._added_channels.remove(ch)
-
-            self._ref_channels = ref_channels
-            self._ref_from = ref_from
 
     @abstractmethod
     def _reset_variables(self) -> None:
