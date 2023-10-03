@@ -10,30 +10,32 @@
 
 [![Brain Streaming Layer](https://raw.githubusercontent.com/fcbg-hnp-meeg/bsl/main/doc/_static/icon-with-name/icon-with-name.svg)](https://fcbg-hnp-meeg.github.io/bsl)
 
-**BrainStreamingLayer** [(Documentation website)](https://fcbg-hnp-meeg.github.io/bsl)
+**MNE-LSL** [(Documentation website)](https://mne-tools.github.io/mne-lsl)
 provides a real-time brain signal streaming framework.
-**BSL** contains an improved python-binding for the Lab Streaming Layer C++ library,
-`bsl.lsl`, replacing `pylsl`. This low-level binding is used in high-level objects to
-interact with LSL streams.
+**MNE-LSL** contains an improved python-binding for the Lab Streaming Layer C++ library,
+`mne_lsl.lsl`, replacing `pylsl`. This low-level binding is used in high-level objects
+to interact with LSL streams.
 
 Any signal acquisition system supported by native LSL or OpenVibe is also
-supported by BSL. Since the data communication is based on TCP, signals can be
+supported by MNE-LSL. Since the data communication is based on TCP, signals can be
 transmitted wirelessly. For more information about LSL, please visit the
 [LSL github](https://github.com/sccn/labstreaminglayer).
 
 # Install
 
-BSL supports `python ≥ 3.9` and is available on [PyPI](https://pypi.org/project/bsl/).
+MNE-LSL supports `python ≥ 3.9` and is available on
+[PyPI](https://pypi.org/project/mne-lsl/).
 Install instruction can be found on the
-[documentation website](https://fcbg-hnp-meeg.github.io/bsl/dev/install.html).
+[documentation website](https://mne-tools.github.io/mne-lsl/dev/install.html).
 
 # Acknowledgment
 
-**BSL** is based on **NeuroDecode**. The original version developed by
+**MNE-LSL** is based on **BSL** and **NeuroDecode**. The original version developed by
 [**Kyuhwa Lee**](https://github.com/dbdq) was recognised at
 [Microsoft Brain Signal Decoding competition](https://github.com/dbdq/microsoft_decoding)
 with the First Prize Award (2016) after achieving high decoding accuracy.
-**BSL** is based on the refactor version by
+**MNE-LSL** is based on the refactor version, **BSL** by
+[**Mathieu Scheltienne**](https://github.com/mscheltienne) and
 [**Arnaud Desvachez**](https://github.com/dnastars) for the
 [Fondation Campus Biotech Geneva (FCBG)](https://github.com/fcbg-hnp-meeg) and
 development is still supported by the
