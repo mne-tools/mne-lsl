@@ -1,10 +1,11 @@
+import re
 import time
 from datetime import datetime, timezone
 
 import numpy as np
 import pytest
 from matplotlib import pyplot as plt
-from mne import Info, pick_info
+from mne import Info, pick_info, pick_types
 from mne.channels import DigMontage
 from mne.io import read_raw
 from mne.utils import check_version
@@ -398,3 +399,89 @@ def test_stream_invalid_interrupt():
     with pytest.raises(RuntimeError, match="requested but the stream is not connected"):
         with stream._interrupt_acquisition():
             pass
+
+
+def test_stream_rereference(mock_lsl_stream_int):
+    """Test re-referencing an EEG-like stream."""
+    stream = Stream(bufsize=0.4, name="BSL-Player-integers-pytest")
+    stream.connect()
+    time.sleep(0.1)  # give a bit of time to slower CIs
+    assert 0 < stream.n_new_samples
+    data, _ = stream.get_data()
+    assert_allclose(data, np.full(data.shape, np.arange(5).reshape(-1, 1)))
+
+    stream.set_eeg_reference("1")
+    data, _ = stream.get_data()
+    data_ref = np.full(data.shape, np.arange(data.shape[0]).reshape(-1, 1))
+    data_ref -= data_ref[1, :]
+    assert_allclose(data, data_ref)
+    time.sleep(0.3)
+    data, _ = stream.get_data()
+    assert_allclose(data, data_ref)
+
+    with pytest.raises(RuntimeError, match=re.escape("set_eeg_reference() can only")):
+        stream.set_eeg_reference("2")
+    with pytest.raises(
+        RuntimeError, match=re.escape("add_reference_channels() can only")
+    ):
+        stream.add_reference_channels("101")
+    with pytest.raises(RuntimeError, match="selection must be done before adding a"):
+        stream.drop_channels("4")
+
+    stream.disconnect()
+    assert stream._ref_channels is None
+    assert stream._ref_from is None
+    time.sleep(0.05)  # give a bit of time to slower CIs
+
+    stream.connect()
+    time.sleep(0.1)  # give a bit of time to slower CIs
+    stream.add_reference_channels("5")
+    data, _ = stream.get_data()
+    data_ref = np.full(data.shape, np.arange(data.shape[0]).reshape(-1, 1))
+    data_ref[-1, :] = np.zeros(data.shape[1])
+    assert_allclose(data, data_ref)
+    stream.set_eeg_reference(("1", "2"))
+    data, _ = stream.get_data()
+    data_ref = np.full(
+        data.shape, np.arange(data.shape[0]).reshape(-1, 1), dtype=stream.dtype
+    )
+    data_ref[-1, :] = np.zeros(data.shape[1])
+    data_ref -= data_ref[[1, 2], :].mean(axis=0, keepdims=True)
+    assert_allclose(data, data_ref)
+    time.sleep(0.3)
+    data, _ = stream.get_data()
+    assert_allclose(data, data_ref)
+    stream.disconnect()
+
+
+def test_stream_rereference_average(mock_lsl_stream_int):
+    """Test average re-referencing schema."""
+    stream = Stream(bufsize=0.4, name="BSL-Player-integers-pytest")
+    stream.connect()
+    time.sleep(0.1)  # give a bit of time to slower CIs
+    stream.set_channel_types({"2": "ecg"})  # channels: 0, 1, 2, 3, 4
+    data, _ = stream.get_data(picks="eeg")
+    picks = pick_types(stream.info, eeg=True)
+    data_ref = np.full(
+        (picks.size, data.shape[1]), np.arange(picks.size).reshape(-1, 1)
+    )
+    data_ref[-2:, :] += 1
+    assert_allclose(data, data_ref)
+    time.sleep(0.3)
+    data, _ = stream.get_data(picks="eeg")
+    assert_allclose(data, data_ref)
+
+    stream.set_eeg_reference("average")
+    data, _ = stream.get_data(picks="eeg")
+    data_ref = np.full(
+        (picks.size, data.shape[1]),
+        np.arange(picks.size).reshape(-1, 1),
+        dtype=stream.dtype,
+    )
+    data_ref[-2:, :] += 1
+    data_ref -= data_ref.mean(axis=0, keepdims=True)
+    assert_allclose(data, data_ref)
+    time.sleep(0.3)
+    data, _ = stream.get_data(picks="eeg")
+    assert_allclose(data, data_ref)
+    stream.disconnect()
