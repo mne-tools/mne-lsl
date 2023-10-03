@@ -3,4 +3,4 @@
 Tutorials
 =========
 
-This page contains examples using ``BSL``.
+This page contains examples using ``MNE-LSL``.

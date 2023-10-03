@@ -6,7 +6,7 @@ Install
 Default install
 ---------------
 
-``BSL`` requires Python version ``3.9`` or higher and is available on
+``MNE-LSL`` requires Python version ``3.9`` or higher and is available on
 `PyPI <project pypi_>`_. It is distributed with a compatible version of
 `liblsl <lsl lib c++_>`_.
 
@@ -16,13 +16,13 @@ Default install
 
         .. code-block:: console
 
-            $ pip install bsl
+            $ pip install mne-lsl
 
     .. tab-item:: Source
 
         .. code-block:: console
 
-            $ pip install git+https://github.com/fcbg-hnp-meeg/bsl
+            $ pip install git+https://github.com/mne-tools/mne-lsl
 
 Different liblsl version
 ------------------------
@@ -44,15 +44,16 @@ On Linux, ``liblsl`` requires ``libpugixml-dev`` and ``LabRecorder`` requires
 Qt
 --
 
-``BSL`` requires a Qt binding for the legacy :class:`~bsl.stream_viewer.StreamViewer`
-and for the future ``bsl.Viewer``. All 4 Qt bindings, ``PyQt5``, ``PyQt6``, ``PySide2``
-and ``PySide6`` are supported thanks to ``qtpy``. It is up to the user to make sure one
-of the binding is installed in the environment.
+``MNE-LSL`` requires a Qt binding for the legacy
+:class:`~mne_lsl.stream_viewer.StreamViewer` and for the future ``mne_lsl.Viewer``. All
+4 Qt bindings, ``PyQt5``, ``PyQt6``, ``PySide2`` and ``PySide6`` are supported thanks to
+``qtpy``. It is up to the user to make sure one of the binding is installed in the
+environment.
 
 .. warning::
 
-    The legacy :class:`~bsl.stream_viewer.StreamViewer` was developed and tested with
-    ``PyQt5`` only.
+    The legacy :class:`~mne_lsl.stream_viewer.StreamViewer` was developed and tested
+    with ``PyQt5`` only.
 
 Optional trigger dependencies
 -----------------------------
@@ -60,20 +61,21 @@ Optional trigger dependencies
 Parallel port
 ~~~~~~~~~~~~~
 
-:class:`~bsl.triggers.ParallelPortTrigger` sends trigger (8 bits values) to an on-board
-`parallel port`_.
+:class:`~mne_lsl.triggers.ParallelPortTrigger` sends trigger (8 bits values) to an
+on-board `parallel port`_.
 
 .. tab-set::
 
     .. tab-item:: Linux
 
         On Linux systems, the ``pyparallel`` library is required. It can be installed
-        either directly or by using the keyword ``triggers`` when installing ``BSL``:
+        either directly or by using the keyword ``triggers`` when installing
+        ``MNE-LSL``:
 
         .. code-block:: console
 
             $ pip install pyparallel
-            $ pip install bsl[triggers]
+            $ pip install mne_lsl[triggers]
 
         ``pyparallel`` requires the ``lp`` kernel module to be unloaded. The module can
         be prevented from loading at boot with a file ``blacklist-parallelport.conf``
@@ -104,12 +106,13 @@ The `Human Neuroscience Platform (FCBG) <fcbg hnp_>`_ has developed an
 :ref:`resources/arduino2lpt:Arduino to parallel port (LPT) converter` to replace
 on-board parallel ports and to offer hardware triggers to macOS devices. The
 ``pyserial`` library is required to interface with serial ports (USB). It can be
-installed either directly or by using the keyword ``triggers`` when installing ``BSL``:
+installed either directly or by using the keyword ``triggers`` when installing
+``MNE-LSL``:
 
 .. code-block:: console
 
     $ pip install pyserial
-    $ pip install bsl[triggers]
+    $ pip install mne_lsl[triggers]
 
 On Linux, the user should be added to the ``dialout`` group which owns the serial port
 used:

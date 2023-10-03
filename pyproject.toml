@@ -3,9 +3,9 @@ requires = ['setuptools >= 61.0.0']
 build-backend = 'setuptools.build_meta'
 
 [project]
-name = 'bsl'
-version = '0.7.0.dev'
-description = 'Real-time framework for online neuroscience research through LSL-compatible devices.'
+name = 'mne_lsl'
+version = '1.0.0.dev'
+description = 'Real-time framework integrated with MNE-Python for online neuroscience research through LSL-compatible devices.'
 readme = 'README.md'
 license = {file = 'LICENSE'}
 requires-python = '>=3.9'
@@ -88,7 +88,7 @@ style = [
     'ruff',
 ]
 test = [
-    'bsl[triggers]',
+    'mne_lsl[triggers]',
     'pyqt5',
     'pytest>=6.0',
     'pytest-cov',
@@ -96,38 +96,38 @@ test = [
     'requests',
 ]
 all = [
-    'bsl[build]',
-    'bsl[doc]',
-    'bsl[style]',
-    'bsl[test]',
-    'bsl[triggers]',
+    'mne_lsl[build]',
+    'mne_lsl[doc]',
+    'mne_lsl[style]',
+    'mne_lsl[test]',
+    'mne_lsl[triggers]',
 ]
 full = [
-    'bsl[all]',
+    'mne_lsl[all]',
 ]
 
 [project.urls]
-homepage = 'https://bsl-tools.github.io/'
-documentation = 'https://bsl-tools.github.io/'
-source = 'https://github.com/fcbg-hnp-meeg/bsl'
-tracker = 'https://github.com/fcbg-hnp-meeg/bsl/issues'
+homepage = 'https://mne-tools.github.io/mne-lsl'
+documentation = 'https://mne-tools.github.io/mne-lsl'
+source = 'https://github.com/mne-tools/mne-lsl'
+tracker = 'https://github.com/mne-tools/mne-lsl'
 
 [project.scripts]
-bsl-sys_info = 'bsl.commands.sys_info:run'
-bsl_player = 'bsl.commands.bsl_player:run'
-bsl_stream_viewer = 'bsl.commands.bsl_stream_viewer:run'
+mne_lsl-sys_info = 'mne_lsl.commands.sys_info:run'
+mne_lsl_player = 'mne_lsl.commands.mne_lsl_player:run'
+mne_lsl_stream_viewer = 'mne_lsl.commands.mne_lsl_stream_viewer:run'
 
 [tool.setuptools]
 include-package-data = false
 
 [tool.setuptools.packages.find]
-include = ['bsl*']
-exclude = ['bsl*tests']
+include = ['mne_lsl*']
+exclude = ['mne_lsl*tests']
 
 [tool.setuptools.package-data]
-"bsl.datasets" =["*registry.txt"]
-"bsl.lsl.lib" = ["*"]
-"bsl.stream_viewer.control_gui.settings" = ["*.ini"]
+"mne_lsl.datasets" =["*registry.txt"]
+"mne_lsl.lsl.lib" = ["*"]
+"mne_lsl.stream_viewer.control_gui.settings" = ["*.ini"]
 
 [tool.black]
 line-length = 88
@@ -163,7 +163,7 @@ extend_skip_glob = [
 convention = 'numpy'
 ignore-decorators = '(copy_doc|property|.*setter|.*getter|pyqtSlot|Slot)'
 match = '^(?!setup|__init__|test_).*\.py'
-match-dir = '^bsl.*'
+match-dir = '^mne_lsl.*'
 add_ignore = 'D100,D104,D107'
 
 [tool.ruff]
@@ -190,12 +190,12 @@ branch = true
 cover_pylib = false
 omit = [
     '**/__init__.py',
-    '**/bsl/_version.py',
-    '**/bsl/commands/*',
-    '**/bsl/conftest.py',
-    '**/bsl/triggers/io/**',
-    '**/bsl/utils/_tests.py',
-    '**/bsl/utils/_fixes.py',
+    '**/mne_lsl/_version.py',
+    '**/mne_lsl/commands/*',
+    '**/mne_lsl/conftest.py',
+    '**/mne_lsl/triggers/io/**',
+    '**/mne_lsl/utils/_tests.py',
+    '**/mne_lsl/utils/_fixes.py',
     '**/tests/**',
 ]
 

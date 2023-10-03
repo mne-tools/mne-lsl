@@ -9,7 +9,7 @@ Faster chunk pull
 ~~~~~~~~~~~~~~~~~
 
 Arguably the most important difference, pulling a chunk of numerical data with
-:meth:`~bsl.lsl.StreamInlet.pull_chunk` is much faster than with its
+:meth:`~mne_lsl.lsl.StreamInlet.pull_chunk` is much faster than with its
 `pylsl <lsl python_>`_ counterpart. `pylsl <lsl python_>`_ loads the retrieved samples
 one by one in a list of list, `here <pylsl pull_chunk_>`_.
 
@@ -43,42 +43,42 @@ depending on the number of values pulled, for instance retrieving 1024 samples w
 `pylsl <lsl python_>`_:
 
 * 7.87 ms ± 58 µs with ``pylsl``
-* 4.35 µs ± 134 ns with ``bsl.lsl``
+* 4.35 µs ± 134 ns with ``mne_lsl.lsl``
 
 Note that this performance improvement is absent for ``string`` based streams.
 
 Convenience methods
 ~~~~~~~~~~~~~~~~~~~
 
-A :class:`~bsl.lsl.StreamInfo` has several convenience methods to retrieve and set
+A :class:`~mne_lsl.lsl.StreamInfo` has several convenience methods to retrieve and set
 channel attributes: names, types, units.
 
 .. hlist::
     :columns: 2
 
-    * :meth:`~bsl.lsl.StreamInfo.get_channel_names`
-    * :meth:`~bsl.lsl.StreamInfo.get_channel_types`
-    * :meth:`~bsl.lsl.StreamInfo.get_channel_units`
-    * :meth:`~bsl.lsl.StreamInfo.set_channel_names`
-    * :meth:`~bsl.lsl.StreamInfo.set_channel_types`
-    * :meth:`~bsl.lsl.StreamInfo.set_channel_units`
+    * :meth:`~mne_lsl.lsl.StreamInfo.get_channel_names`
+    * :meth:`~mne_lsl.lsl.StreamInfo.get_channel_types`
+    * :meth:`~mne_lsl.lsl.StreamInfo.get_channel_units`
+    * :meth:`~mne_lsl.lsl.StreamInfo.set_channel_names`
+    * :meth:`~mne_lsl.lsl.StreamInfo.set_channel_types`
+    * :meth:`~mne_lsl.lsl.StreamInfo.set_channel_units`
 
 Those methods eliminate the need to interact with the ``XMLElement`` underlying tree,
-present in the :py:attr:`bsl.lsl.StreamInfo.desc` property.
+present in the :py:attr:`mne_lsl.lsl.StreamInfo.desc` property.
 
 Improve arguments
 ~~~~~~~~~~~~~~~~~
 
-The arguments of a `~bsl.lsl.StreamInfo`, `~bsl.lsl.StreamInlet`,
-`~bsl.lsl.StreamOutlet` support a wider variety of types. For instance:
+The arguments of a `~mne_lsl.lsl.StreamInfo`, `~mne_lsl.lsl.StreamInlet`,
+`~mne_lsl.lsl.StreamOutlet` support a wider variety of types. For instance:
 
 * ``dtype``, which correspond to the ``channel_format`` in `pylsl <lsl python_>`_, can
   be provided as a string or as a supported :class:`numpy.dtype`, e.g. ``np.int8``.
 * ``processing_flags`` can be provided as strings instead of the underlying integer
   mapping.
 
-Overall, the arguments are checked in ``bsl.lsl``. Any type or value mistake will raise
-an helpful error message.
+Overall, the arguments are checked in ``mne_lsl.lsl``. Any type or value mistake will
+raise an helpful error message.
 
 Unique resolve function
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -90,7 +90,7 @@ Unique resolve function
   property.
 * ``resolve_bypred`` which resolves all streams with a given predicate.
 
-:func:`bsl.lsl.resolve_streams` simplifies stream resolution with a unique function with
-similar functionalities.
+:func:`mne_lsl.lsl.resolve_streams` simplifies stream resolution with a unique function
+with similar functionalities.
 
 .. _pylsl pull_chunk: https://github.com/labstreaminglayer/pylsl/blob/16a4198087936386e866d7239bfde32d1fef6d6b/pylsl/pylsl.py#L862-L870

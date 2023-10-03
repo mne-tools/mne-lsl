@@ -30,7 +30,7 @@ jobs:
           python -m pip install --progress-bar off --upgrade pip setuptools wheel
           python -m pip install --progress-bar off main/.[doc]
       - name: Display system information
-        run: bsl-sys_info --developer
+        run: mne_lsl-sys_info --developer
       - name: Build doc
         run: sphinx-build ./main/doc ./doc-build/dev -W --keep-going
       - name: Upload documentation
