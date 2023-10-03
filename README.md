@@ -1,14 +1,14 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Imports: isort](https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336)](https://pycqa.github.io/isort/)
 [![codecov](https://codecov.io/gh/fcbg-hnp-meeg/bsl/branch/main/graph/badge.svg?token=NTKBYPGFDZ)](https://codecov.io/gh/fcbg-hnp-meeg/bsl)
-[![tests](https://github.com/fcbg-hnp-meeg/bsl/actions/workflows/pytest.yml/badge.svg?branch=main)](https://github.com/fcbg-hnp-meeg/bsl/actions/workflows/pytest.yml)
-[![build](https://github.com/fcbg-hnp-meeg/bsl/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/fcbg-hnp-meeg/bsl/actions/workflows/build.yml)
-[![doc](https://github.com/fcbg-hnp-meeg/bsl/actions/workflows/doc.yml/badge.svg?branch=main)](https://github.com/fcbg-hnp-meeg/bsl/actions/workflows/doc.yml)
+[![tests](https://github.com/mne-tools/mne-lsl/actions/workflows/pytest.yml/badge.svg?branch=main)](https://github.com/mne-tools/mne-lsl/actions/workflows/pytest.yml)
+[![doc](https://github.com/mne-tools/mne-lsl/actions/workflows/doc.yml/badge.svg?branch=main)](https://github.com/mne-tools/mne-lsl/actions/workflows/doc.yml)
 [![PyPI version](https://badge.fury.io/py/bsl.svg)](https://badge.fury.io/py/bsl)
 [![Downloads](https://static.pepy.tech/personalized-badge/bsl?period=total&units=international_system&left_color=grey&right_color=blue&left_text=pypi%20downloads)](https://pepy.tech/project/bsl)
 [![Downloads](https://static.pepy.tech/personalized-badge/bsl?period=month&units=international_system&left_color=grey&right_color=blue&left_text=pypi%20downloads/month)](https://pepy.tech/project/bsl)
 
-[![Brain Streaming Layer](https://raw.githubusercontent.com/fcbg-hnp-meeg/bsl/main/doc/_static/icon/icon.svg)](https://mne-tools.github.io/mne-lsl)
+{:.logo}
+[![MNE-LSL](https://raw.githubusercontent.com/mne-tools/mne-lsl/main/doc/_static/icon/icon.svg)](https://mne-tools.github.io/mne-lsl)
 
 **MNE-LSL** [(Documentation website)](https://mne-tools.github.io/mne-lsl)
 provides a real-time brain signal streaming framework.
@@ -46,3 +46,8 @@ development is still supported by the
 # Copyright and license
 
 The code is released under the [MIT License](https://opensource.org/licenses/MIT).
+
+.logo {
+  text-align: right;
+  width: 200px;
+}
