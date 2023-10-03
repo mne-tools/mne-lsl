@@ -600,7 +600,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             self._ref_from = picks
             data_ref = self._buffer[:, self._ref_channels].mean(axis=1, keepdims=True)
             self._buffer[:, self._ref_from] -= data_ref
-            self.info["custom_ref_applied"] == FIFF.FIFFV_MNE_CUSTOM_REF_ON
+            self.info["custom_ref_applied"] = FIFF.FIFFV_MNE_CUSTOM_REF_ON
 
     def set_meas_date(
         self, meas_date: Optional[Union[datetime, float, Tuple[float]]]
