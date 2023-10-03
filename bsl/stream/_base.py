@@ -589,7 +589,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
                     f"There are no channels of type {type_} in this stream."
                 )
         picks = _picks_to_idx(self._info, ch_type, "all", (), allow_empty=False)
-        if len(set(picks).intersection(set(picks_ref))) == 0:
+        if np.intersect1d(picks, picks_ref, assume_unique=True).size == 0:
             raise ValueError(
                 f"The new reference channels must be of the type(s) {ch_type} provided "
                 "in the argument 'ch_type'."

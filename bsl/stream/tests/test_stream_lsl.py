@@ -425,3 +425,12 @@ def test_stream_rereference(mock_lsl_stream_int):
         RuntimeError, match=re.escape("add_reference_channels() can only")
     ):
         stream.add_reference_channels("101")
+
+    stream.disconnect()
+    assert stream._ref_channels is None
+    assert stream._ref_from is None
+    time.sleep(0.05)  # give a bit of time to slower CIs
+
+    stream.connect()
+    time.sleep(0.1)  # give a bit of time to slower CIs
+    stream.add_reference_channels("5")
