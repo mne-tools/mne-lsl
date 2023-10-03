@@ -25,7 +25,7 @@ jobs:
           python -m pip install --progress-bar off --upgrade pip setuptools wheel
           python -m pip install --progress-bar off .[build]
       - name: Display system information
-        run: bsl-sys_info --developer
+        run: mne_lsl-sys_info --developer
       - name: Build and publish
         env:
           TWINE_USERNAME: __token__

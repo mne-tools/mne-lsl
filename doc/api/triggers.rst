@@ -1,7 +1,7 @@
 Triggers
 --------
 
-.. currentmodule:: bsl.triggers
+.. currentmodule:: mne_lsl.triggers
 
 Triggers are commonly used in combination with LSL to mark events in time.
 

@@ -1,9 +1,9 @@
 Utilities
 ---------
 
-.. currentmodule:: bsl
+.. currentmodule:: mne_lsl
 
-Logging utilities are available to interact with ``bsl`` logger.
+Logging utilities are available to interact with ``mne_lsl`` logger.
 
 .. autosummary::
    :toctree: ../generated/api

@@ -13,17 +13,17 @@ from typing import Dict, Optional
 import mne
 from sphinx_gallery.sorting import FileNameSortKey
 
-import bsl
+import mne_lsl
 
 # -- project information ---------------------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = "BSL"
+project = "MNE-LSL"
 author = "M. Scheltienne, A. Desvachez, K. Lee"
 copyright = f"{date.today().year}, {author}"
-release = bsl.__version__
-package = bsl.__name__
-gh_url = "https://github.com/fcbg-hnp-meeg/bsl"
+release = mne_lsl.__version__
+package = mne_lsl.__name__
+gh_url = "https://github.com/mne-tools/mne-lsl"
 
 # -- mne information -------------------------------------------------------------------
 
@@ -81,8 +81,8 @@ html_css_files = [
 ]
 html_title = project
 html_show_sphinx = False
-html_logo = "_static/icon-with-acronym/icon-with-acronym.svg"
-html_favicon = "_static/icon/bsl-icon.svg"
+html_logo = "_static/icon/icon.svg"
+html_favicon = "_static/icon/icon.svg"
 
 # Documentation to change footer icons:
 # https://pradyunsg.me/furo/customisation/footer/#changing-footer-icons
@@ -135,10 +135,6 @@ numpydoc_attributes_as_param_list = False
 # x-ref
 numpydoc_xref_param_type = True
 numpydoc_xref_aliases = {
-    # BSL
-    "StreamInfo": "bsl.lsl.StreamInfo",
-    "StreamInlet": "bsl.lsl.StreamInlet",
-    "StreamOutlet": "bsl.lsl.StreamOutlet",
     # Matplotlib
     "Axes": "matplotlib.axes.Axes",
     "Axes3D": "mpl_toolkits.mplot3d.axes3d.Axes3D",
@@ -151,6 +147,10 @@ numpydoc_xref_aliases = {
     "Info": "mne.Info",
     "Projection": "mne.Projection",
     "Raw": "mne.io.Raw",
+    # MNE-LSL
+    "StreamInfo": "mne_lsl.lsl.StreamInfo",
+    "StreamInlet": "mne_lsl.lsl.StreamInlet",
+    "StreamOutlet": "mne_lsl.lsl.StreamOutlet",
     # Numpy
     "dtype": "numpy.dtype",
     # Python
