@@ -1,6 +1,6 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Imports: isort](https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336)](https://pycqa.github.io/isort/)
-[![codecov](https://codecov.io/gh/fcbg-hnp-meeg/bsl/branch/main/graph/badge.svg?token=NTKBYPGFDZ)](https://codecov.io/gh/fcbg-hnp-meeg/bsl)
+[![codecov](https://codecov.io/gh/mne-tools/mne-lsl/graph/badge.svg?token=Xoeh6T13qi)](https://codecov.io/gh/mne-tools/mne-lsl)
 [![tests](https://github.com/mne-tools/mne-lsl/actions/workflows/pytest.yml/badge.svg?branch=main)](https://github.com/mne-tools/mne-lsl/actions/workflows/pytest.yml)
 [![doc](https://github.com/mne-tools/mne-lsl/actions/workflows/doc.yml/badge.svg?branch=main)](https://github.com/mne-tools/mne-lsl/actions/workflows/doc.yml)
 [![PyPI version](https://badge.fury.io/py/bsl.svg)](https://badge.fury.io/py/bsl)
