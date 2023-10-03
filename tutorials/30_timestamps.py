@@ -6,9 +6,9 @@ Stream timestamps
 
 An LSL stream is composed of samples received at a given time. Each device, each source,
 advertises its own time. If the source and the client are on the same physical computer,
-e.g. with a :class:`bsl.lsl.StreamOutlet` and a :class:`bsl.lsl.StreamInlet`, the same
-clock is used. But if the source and the client are on different computers, e.g.
-connected on a local ethernet network, the delay between the source and the client
+e.g. with a :class:`mne_lsl.lsl.StreamOutlet` and a :class:`mne_lsl.lsl.StreamInlet`,
+the same clock is used. But if the source and the client are on different computers,
+e.g. connected on a local ethernet network, the delay between the source and the client
 might be important.
 """
 
@@ -16,13 +16,13 @@ might be important.
 # Estimate the delay
 # ------------------
 #
-# At a low-level, a :class:`~bsl.lsl.StreamInlet` has a
-# :meth:`~bsl.lsl.StreamInlet.time_correction` method to estimate the time offset.
+# At a low-level, a :class:`~mne_lsl.lsl.StreamInlet` has a
+# :meth:`~mne_lsl.lsl.StreamInlet.time_correction` method to estimate the time offset.
 #
 # .. note::
 #
 #     For this tutorial purposes, a mock LSL stream is created using a
-#     :class:`~bsl.player.PlayerLSL`. See
+#     :class:`~mne_lsl.player.PlayerLSL`. See
 #     :ref:`sphx_glr_generated_tutorials_10_player.py` for additional information on
 #     mock LSL streams.
 
@@ -30,10 +30,10 @@ import time
 
 from matplotlib import pyplot as plt
 
-from bsl.datasets import sample
-from bsl.lsl import StreamInlet, resolve_streams
-from bsl.player import PlayerLSL as Player
-from bsl.stream import StreamLSL as Stream
+from mne_lsl.datasets import sample
+from mne_lsl.lsl import StreamInlet, resolve_streams
+from mne_lsl.player import PlayerLSL as Player
+from mne_lsl.stream import StreamLSL as Stream
 
 fname = sample.data_path() / "sample-ant-raw.fif"
 player = Player(fname)
@@ -47,15 +47,15 @@ del inlet
 
 # %%
 # With the example above, the time offset is very small because the source
-# (:class:`~bsl.player.PlayerLSL`) and the client (:class:`~bsl.lsl.StreamInlet`) are
-# both local, i.e. present on the same computer.
+# (:class:`~mne_lsl.player.PlayerLSL`) and the client
+# (:class:`~mne_lsl.lsl.StreamInlet`) are both local, i.e. present on the same computer.
 
 # %%
 # Timestamps in the Stream API
 # ----------------------------
 #
-# A :class:`~bsl.stream.StreamLSL` returns both the samples and the associated
-# timestamps when queried with :meth:`~bsl.stream.StreamLSL.get_data`.
+# A :class:`~mne_lsl.stream.StreamLSL` returns both the samples and the associated
+# timestamps when queried with :meth:`~mne_lsl.stream.StreamLSL.get_data`.
 
 stream = Stream(2, name=player.name)
 stream.connect()
@@ -72,9 +72,9 @@ ax.set_xlabel("Timestamps LSL")
 # %%
 # Free resources
 # --------------
-# When you are done with a :class:`~bsl.player.PlayerLSL` or
-# :class:`~bsl.stream.StreamLSL`, don't forget to free the resources they both use to
-# continuously mock an LSL stream or receive new data from an LSL stream.
+# When you are done with a :class:`~mne_lsl.player.PlayerLSL` or
+# :class:`~mne_lsl.stream.StreamLSL`, don't forget to free the resources they both use
+# to continuously mock an LSL stream or receive new data from an LSL stream.
 
 stream.disconnect()
 player.stop()

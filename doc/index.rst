@@ -10,7 +10,7 @@ Brain Streaming Layer
 =====================
 
 .. image:: _static/icon-with-name/icon-with-name.svg
-    :alt: BSL
+    :alt: MNE-LSL
     :class: logo
     :align: center
 
@@ -20,7 +20,7 @@ based on the `Lab Streaming Layer (LSL) <lsl intro_>`_.
 Install
 -------
 
-``BSL`` is available on `PyPI <project pypi_>`_ and is distributed with a compatible
+``MNE-LSL`` is available on `PyPI <project pypi_>`_ and is distributed with a compatible
 version of `liblsl <lsl lib c++_>`_.
 
 .. tab-set::
@@ -29,18 +29,18 @@ version of `liblsl <lsl lib c++_>`_.
 
         .. code-block:: console
 
-            $ pip install bsl
+            $ pip install mne-lsl
 
     .. tab-item:: Source
 
         .. code-block:: console
 
-            $ pip install git+https://github.com/fcbg-hnp-meeg/bsl
+            $ pip install git+https://github.com/mne-tools/mne-lsl
 
 Supporting institutions
 -----------------------
 
-The development of ``BSL`` is supported by the
+The development of ``MNE-LSL`` is supported by the
 `Human Neuroscience Platform, Fondation Campus Biotech Geneva <fcbg hnp_>`_.
 
 .. image:: _static/partners/fcbg-hnp-meeg.png
