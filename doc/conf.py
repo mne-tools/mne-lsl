@@ -81,8 +81,8 @@ html_css_files = [
 ]
 html_title = project
 html_show_sphinx = False
-html_logo = "_static/icon-with-acronym/icon-with-acronym.svg"
-html_favicon = "_static/icon/bsl-icon.svg"
+html_logo = "_static/icon/icon.svg"
+html_favicon = "_static/icon/icon.svg"
 
 # Documentation to change footer icons:
 # https://pradyunsg.me/furo/customisation/footer/#changing-footer-icons

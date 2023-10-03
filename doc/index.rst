@@ -6,13 +6,8 @@
 
     <style type="text/css">h1 {display:none;}</style>
 
-Brain Streaming Layer
-=====================
-
-.. image:: _static/icon-with-name/icon-with-name.svg
-    :alt: MNE-LSL
-    :class: logo
-    :align: center
+MNE-LSL
+=======
 
 Open-source Python package for real-time brain signal streaming framework
 based on the `Lab Streaming Layer (LSL) <lsl intro_>`_.
