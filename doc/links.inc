@@ -27,4 +27,4 @@
 
 .. project
 
-.. _project pypi: https://pypi.org/project/bsl/
+.. _project pypi: https://pypi.org/project/mne-lsl/
