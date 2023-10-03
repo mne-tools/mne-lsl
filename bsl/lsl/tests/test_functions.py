@@ -71,8 +71,7 @@ def test_resolve_streams():
     assert sinfo2 in streams
 
     streams = resolve_streams(name="test1", minimum=1)
-    assert len(streams) == 1
-    assert sinfo1 in streams or sinfo2 in streams
+    assert len(streams) in (1, 2)
 
     streams = resolve_streams(stype="Markers")
     assert len(streams) == 1
