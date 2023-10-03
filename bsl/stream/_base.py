@@ -597,9 +597,9 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
         with self._interrupt_acquisition():
             self._ref_channels = picks_ref
-            self._ref_to = picks
+            self._ref_from = picks
             data_ref = self._buffer[:, self._ref_channels].mean(axis=1, keepdims=True)
-            self._buffer[:, self._ref_to] -= data_ref
+            self._buffer[:, self._ref_from] -= data_ref
             self.info["custom_ref_applied"] == FIFF.FIFFV_MNE_CUSTOM_REF_ON
 
     def set_meas_date(
@@ -727,6 +727,19 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
                 "LSL Stream."
             )
 
+        ref_channels = np.intersect1d(picks, self._ref_channels)
+        if ref_channels.size == 0:
+            raise RuntimeError(
+                "The requested channel selection would not leave any reference channel "
+                "from the schema defined with Stream.set_eeg_reference()."
+            )
+        ref_from = np.intersect1d(picks, self._ref_from)
+        if ref_from.size == 0:
+            raise RuntimeError(
+                "The requested channel selection would not leave any channel to "
+                "re-reference with the schema defined with Stream.set_eeg_reference()."
+            )
+
         with self._interrupt_acquisition():
             self._info = pick_info(self._info, picks)
             self._picks_inlet = self._picks_inlet[picks_inlet]
@@ -737,8 +750,8 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
                 if ch not in self.ch_names:
                     self._added_channels.remove(ch)
 
-            # TODO: need to figure out what to do with the indices in self._ref_channels
-            # and in self._ref_to which are likely out of sync at this point.
+            self._ref_channels = ref_channels
+            self._ref_from = ref_from
 
     @abstractmethod
     def _reset_variables(self) -> None:
@@ -752,7 +765,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         self._picks_inlet = None
         self._added_channels = []
         self._ref_channels = None
-        self._ref_to = None
+        self._ref_from = None
         self._timestamps = None
         # This method needs to reset any stream-system-specific variables, e.g. an inlet
         # or a StreamInfo for LSL streams.

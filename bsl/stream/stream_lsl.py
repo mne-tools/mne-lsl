@@ -225,7 +225,7 @@ class StreamLSL(BaseStream):
 
             if self.info["custom_ref_applied"] == FIFF.FIFFV_MNE_CUSTOM_REF_ON:
                 data_ref = data[:, self._ref_channels].mean(axis=1, keepdims=True)
-                data[:, self._ref_to] -= data_ref
+                data[:, self._ref_from] -= data_ref
 
             # roll and update buffers
             self._buffer = np.roll(self._buffer, -timestamps.size, axis=0)
