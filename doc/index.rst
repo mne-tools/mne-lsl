@@ -2,10 +2,6 @@
 
 .. include:: ./links.inc
 
-.. raw:: html
-
-    <style type="text/css">h1 {display:none;}</style>
-
 MNE-LSL
 =======
 
