@@ -7,7 +7,7 @@
 [![Downloads](https://static.pepy.tech/personalized-badge/bsl?period=total&units=international_system&left_color=grey&right_color=blue&left_text=pypi%20downloads)](https://pepy.tech/project/bsl)
 [![Downloads](https://static.pepy.tech/personalized-badge/bsl?period=month&units=international_system&left_color=grey&right_color=blue&left_text=pypi%20downloads/month)](https://pepy.tech/project/bsl)
 
-<img src="https://raw.githubusercontent.com/fcbg-hnp-meeg/bsl/main/doc/_static/icon/icon.svg" alt="logo" width="200"/>
+<img src="https://raw.githubusercontent.com/mne-tools/mne-lsl/main/doc/_static/icon/icon.svg" alt="logo" width="200"/>
 
 **MNE-LSL** [(Documentation website)](https://mne-tools.github.io/mne-lsl)
 provides a real-time brain signal streaming framework.
