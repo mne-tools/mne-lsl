@@ -30,19 +30,20 @@ fname = testing.data_path() / "sample-eeg-ant-raw.fif"
 raw = read_raw(fname, preload=True)
 
 
-def test_stream(mock_lsl_stream):
+@pytest.mark.parametrize("acquisition_delay", (0.2, 0.001, 1))
+def test_stream(mock_lsl_stream, acquisition_delay):
     """Test a valid Stream."""
     # test connect/disconnect
     stream = Stream(bufsize=2, name="BSL-Player-pytest")
     assert stream.info is None
     assert not stream.connected
-    stream.connect()
+    stream.connect(acquisition_delay=acquisition_delay)
     assert isinstance(stream.info, Info)
     assert stream.connected
     stream.disconnect()
     assert stream.info is None
     assert not stream.connected
-    stream.connect()
+    stream.connect(acquisition_delay=acquisition_delay)
     assert isinstance(stream.info, Info)
     assert stream.connected
     # test content
@@ -128,10 +129,11 @@ def test_stream_double_connection(mock_lsl_stream, caplog):
     stream.disconnect()
 
 
-def test_stream_drop_channels(mock_lsl_stream):
+@pytest.mark.parametrize("acquisition_delay", (0.2, 0.001, 1))
+def test_stream_drop_channels(mock_lsl_stream, acquisition_delay):
     """Test dropping channels."""
     stream = Stream(bufsize=2, name="BSL-Player-pytest")
-    stream.connect()
+    stream.connect(acquisition_delay=acquisition_delay)
     stream.drop_channels("TRIGGER")
     raw_ = raw.copy().drop_channels("TRIGGER")
     assert stream.ch_names == raw_.ch_names
@@ -161,10 +163,11 @@ def test_stream_drop_channels(mock_lsl_stream):
     stream.disconnect()
 
 
-def test_stream_pick(mock_lsl_stream):
+@pytest.mark.parametrize("acquisition_delay", (0.2, 0.001, 1))
+def test_stream_pick(mock_lsl_stream, acquisition_delay):
     """Test channel selection."""
     stream = Stream(bufsize=2, name="BSL-Player-pytest")
-    stream.connect()
+    stream.connect(acquisition_delay=acquisition_delay)
     stream.info["bads"] = ["Fp2"]
     stream.pick("eeg", exclude="bads")
     raw_ = raw.copy()
@@ -295,10 +298,11 @@ def test_stream_channel_units(mock_lsl_stream):
     stream.disconnect()
 
 
-def test_stream_add_reference_channels(mock_lsl_stream):
+@pytest.mark.parametrize("acquisition_delay", (0.2, 0.001, 1))
+def test_stream_add_reference_channels(mock_lsl_stream, acquisition_delay):
     """Test add reference channels and channel selection."""
     stream = Stream(bufsize=2, name="BSL-Player-pytest")
-    stream.connect()
+    stream.connect(acquisition_delay=acquisition_delay)
     time.sleep(0.1)  # give a bit of time to slower CIs
     stream.add_reference_channels("CPz")
     raw_ = raw.copy().add_reference_channels("CPz")
@@ -351,10 +355,11 @@ def test_stream_repr(mock_lsl_stream):
     assert stream.__repr__() == "<Stream: OFF | (source: BSL>"
 
 
-def test_stream_get_data_picks(mock_lsl_stream):
+@pytest.mark.parametrize("acquisition_delay", (0.2, 0.001, 1))
+def test_stream_get_data_picks(mock_lsl_stream, acquisition_delay):
     """Test channel sub-selection when getting data."""
     stream = Stream(bufsize=2, name="BSL-Player-pytest")
-    stream.connect()
+    stream.connect(acquisition_delay=acquisition_delay)
     time.sleep(0.1)  # give a bit of time to slower CIs
     stream.add_reference_channels("CPz")
     raw_ = raw.copy().add_reference_channels("CPz")
@@ -401,10 +406,11 @@ def test_stream_invalid_interrupt():
             pass
 
 
-def test_stream_rereference(mock_lsl_stream_int):
+@pytest.mark.parametrize("acquisition_delay", (0.2, 0.001, 1))
+def test_stream_rereference(mock_lsl_stream_int, acquisition_delay):
     """Test re-referencing an EEG-like stream."""
     stream = Stream(bufsize=0.4, name="BSL-Player-integers-pytest")
-    stream.connect()
+    stream.connect(acquisition_delay=acquisition_delay)
     time.sleep(0.1)  # give a bit of time to slower CIs
     assert 0 < stream.n_new_samples
     data, _ = stream.get_data()
