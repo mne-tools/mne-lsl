@@ -9,7 +9,7 @@
 
 <img src="https://raw.githubusercontent.com/mne-tools/mne-lsl/main/doc/_static/icon/icon.svg" alt="logo" width="200"/>
 
-**MNE-LSL** [(Documentation website)](https://mne-tools.github.io/mne-lsl)
+**MNE-LSL** [(Documentation website)](https://mne.tools/mne-lsl/stable/index.html)
 provides a real-time brain signal streaming framework.
 **MNE-LSL** contains an improved python-binding for the Lab Streaming Layer C++ library,
 `mne_lsl.lsl`, replacing `pylsl`. This low-level binding is used in high-level objects
@@ -25,7 +25,7 @@ transmitted wirelessly. For more information about LSL, please visit the
 MNE-LSL supports `python ≥ 3.9` and is available on
 [PyPI](https://pypi.org/project/mne-lsl/).
 Install instruction can be found on the
-[documentation website](https://mne-tools.github.io/mne-lsl/dev/install.html).
+[documentation website](https://mne.tools/mne-lsl/stable/install.html).
 
 # Acknowledgment
 
