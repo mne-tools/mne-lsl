@@ -1,3 +1,4 @@
+import re
 import time
 from datetime import datetime, timezone
 
@@ -398,3 +399,29 @@ def test_stream_invalid_interrupt():
     with pytest.raises(RuntimeError, match="requested but the stream is not connected"):
         with stream._interrupt_acquisition():
             pass
+
+
+def test_stream_rereference(mock_lsl_stream_int):
+    """Test re-referencing an EEG-like stream."""
+    stream = Stream(bufsize=0.4, name="BSL-Player-integers-pytest")
+    stream.connect()
+    time.sleep(0.1)  # give a bit of time to slower CIs
+    assert 0 < stream.n_new_samples
+    data, _ = stream.get_data()
+    assert_allclose(data, np.full(data.shape, np.arange(5).reshape(-1, 1)))
+
+    stream.set_eeg_reference("1")
+    data, _ = stream.get_data()
+    data_ref = np.full(data.shape, np.arange(5).reshape(-1, 1))
+    data_ref -= data_ref[1, :]
+    assert_allclose(data, data_ref)
+    time.sleep(0.3)
+    data, _ = stream.get_data()
+    assert_allclose(data, data_ref)
+
+    with pytest.raises(RuntimeError, match=re.escape("set_eeg_reference() can only")):
+        stream.set_eeg_reference("2")
+    with pytest.raises(
+        RuntimeError, match=re.escape("add_reference_channels() can only")
+    ):
+        stream.add_reference_channels("101")
