@@ -25,7 +25,7 @@ jobs:
         uses: dacbd/create-issue-action@main
         with:
           token: ${{ github.token }}
-          title: pyLSL is out of sync with BSL
+          title: pyLSL is out of sync with MNE-LSL
           body: |
             Please visit https://github.com/labstreaminglayer/pylsl and review the changes.
             [Failed Run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
