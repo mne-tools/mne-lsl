@@ -24,7 +24,7 @@ class ParallelPortTrigger(BaseTrigger):
         detection.
     port_type : str | None
         Either ``'arduino'`` or ``'pport'`` depending on the connection.
-        If None, BSL attempts to infers the type of port from the address.
+        If None, attempts to infers the type of port from the address.
     delay : int
         Delay in milliseconds until which a new trigger cannot be sent. During
         this time, the pins of the LPT port remain in the same state.
@@ -164,7 +164,7 @@ class ParallelPortTrigger(BaseTrigger):
             raise RuntimeError(
                 "macOS does not support built-in parallel port. "
                 "Please use an arduino to LPT converter for hardware triggers "
-                "or bsl.triggers.LSLTrigger for software triggers."
+                "or mne_lsl.triggers.LSLTrigger for software triggers."
             )
         elif ParallelPort is None and system() != "Linux":
             raise RuntimeError(

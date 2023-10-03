@@ -1,6 +1,6 @@
 from io import StringIO
 
-from bsl.utils.config import sys_info
+from mne_lsl.utils.config import sys_info
 
 
 def test_sys_info():

@@ -3,8 +3,8 @@ from time import strftime
 import numpy as np
 import pytest
 
-from bsl import logger
-from bsl.lsl import StreamInfo, StreamInlet, StreamOutlet
+from mne_lsl import logger
+from mne_lsl.lsl import StreamInfo, StreamInlet, StreamOutlet
 
 logger.propagate = True
 

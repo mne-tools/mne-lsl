@@ -1,12 +1,12 @@
 import argparse
 
-from bsl.stream_viewer import StreamViewer
+from mne_lsl.stream_viewer import StreamViewer
 
 
 def run():
-    """Entrypoint for bsl_stream_viewer usage."""
+    """Entrypoint for mne_lsl_stream_viewer usage."""
     parser = argparse.ArgumentParser(
-        prog="BSL StreamViewer",
+        prog="MNE-LSL StreamViewer",
         description="Starts a real-time viewer for a stream on LSL network.",
     )
     parser.add_argument(

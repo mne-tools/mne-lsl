@@ -1,4 +1,4 @@
-"""PyQt5 Canvas for BSL's StreamViewer."""
+"""PyQt5 Canvas for MNE-LSL's StreamViewer."""
 
 import numpy as np
 import pyqtgraph as pg
@@ -13,7 +13,7 @@ from ._backend import _Backend, _Event
 
 @fill_doc
 class _BackendPyQtGraph(_Backend):
-    """PyQtGraph backend for BSL's StreamViewer.
+    """PyQtGraph backend for MNE-LSL's StreamViewer.
 
     Parameters
     ----------

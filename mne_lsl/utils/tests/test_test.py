@@ -2,8 +2,8 @@ import numpy as np
 import pytest
 from mne.io import read_raw
 
-from bsl.datasets import testing
-from bsl.utils._tests import match_stream_and_raw_data
+from mne_lsl.datasets import testing
+from mne_lsl.utils._tests import match_stream_and_raw_data
 
 fname = testing.data_path() / "sample-eeg-ant-raw.fif"
 raw = read_raw(fname, preload=True)

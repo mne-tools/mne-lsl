@@ -89,8 +89,8 @@ def resolve_streams(
     Returns
     -------
     sinfos : list
-        List of :class:`~bsl.lsl.StreamInfo` objects found on the network. While a
-        :class:`~bsl.lsl.StreamInfo` is not bound to an Inlet, the description field
+        List of :class:`~mne_lsl.lsl.StreamInfo` objects found on the network. While a
+        :class:`~mne_lsl.lsl.StreamInfo` is not bound to an Inlet, the description field
         remains empty.
     """
     check_type(timeout, ("numeric",), "timeout")

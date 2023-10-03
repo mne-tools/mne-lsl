@@ -45,7 +45,7 @@ class _BaseStreamInfo:
         self._dtype = idx2fmt[lib.lsl_get_channel_format(self._obj)]
 
     def __del__(self):
-        """Destroy a `~bsl.lsl.StreamInfo`."""
+        """Destroy a `~mne_lsl.lsl.StreamInfo`."""
         try:
             lib.lsl_destroy_streaminfo(self._obj)
         except Exception:
@@ -191,7 +191,7 @@ class _BaseStreamInfo:
         """Timestamp at which the stream was created.
 
         This is the time stamps at which the stream was first created, as determined by
-        :func:`bsl.lsl.local_clock` on the providing machine.
+        :func:`mne_lsl.lsl.local_clock` on the providing machine.
 
         :type: :class:`float`
         """
@@ -221,10 +221,10 @@ class _BaseStreamInfo:
 
     @property
     def uid(self) -> str:
-        """Unique ID of the `~bsl.lsl.StreamOutlet` instance.
+        """Unique ID of the `~mne_lsl.lsl.StreamOutlet` instance.
 
         This ID is guaranteed to be different across multiple instantiations of the same
-        :class:`~bsl.lsl.StreamOutlet`, e.g. after a re-start.
+        :class:`~mne_lsl.lsl.StreamOutlet`, e.g. after a re-start.
 
         :type: :class:`str`
         """
@@ -248,7 +248,7 @@ class _BaseStreamInfo:
 
         This yields an XML document (in string form) whose top-level element is
         ``<info>``. The info element contains one element for each field of the
-        `~bsl.lsl.StreamInfo` class, including:
+        `~mne_lsl.lsl.StreamInfo` class, including:
 
         * the core elements ``name``, ``type`` (eq. ``stype``), ``channel_count``
           (eq. ``n_channels``), ``nominal_srate`` (eq. ``sfreq``), ``channel_format``
@@ -472,7 +472,7 @@ class StreamInfo(_BaseStreamInfo):
     * Optional metadata about the stream content (channel labels, measurement units,
       ...).
     * Hosting information (uID, hostname, ...) if bound to a
-      :class:`~bsl.lsl.StreamInlet` or :class:`~bsl.lsl.StreamOutlet`.
+      :class:`~mne_lsl.lsl.StreamInlet` or :class:`~mne_lsl.lsl.StreamOutlet`.
 
     Parameters
     ----------

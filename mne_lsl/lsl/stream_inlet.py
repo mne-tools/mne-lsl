@@ -36,13 +36,14 @@ class StreamInlet:
         ``max_buffered`` seconds.
     recover : bool
         Attempt to silently recover lost streams that are recoverable (requires a
-        ``source_id`` to be specified in the :class:`~bsl.lsl.StreamInfo`).
+        ``source_id`` to be specified in the :class:`~mne_lsl.lsl.StreamInfo`).
     processing_flags : sequence of str | ``'all'`` | None
         Set the post-processing options. By default, post-processing is disabled. Any
         combination of the processing flags is valid. The available flags are:
 
         * ``'clocksync'``: Automatic clock synchronization, equivalent to
-          manually adding the estimated :meth:`~bsl.lsl.StreamInlet.time_correction`.
+          manually adding the estimated
+          :meth:`~mne_lsl.lsl.StreamInlet.time_correction`.
         * ``'dejitter'``: Remove jitter on the received timestamps with a
           smoothing algorithm.
         * ``'monotize'``: Force the timestamps to be monotically ascending.
@@ -124,7 +125,7 @@ class StreamInlet:
         self._stream_is_open = False
 
     def __del__(self):
-        """Destroy a :class:`~bsl.lsl.StreamInlet`.
+        """Destroy a :class:`~mne_lsl.lsl.StreamInlet`.
 
         The inlet will automatically disconnect.
         """
@@ -139,8 +140,8 @@ class StreamInlet:
 
         All samples pushed in at the other end from this moment onwards will be queued
         and eventually be delivered in response to
-        :meth:`~bsl.lsl.StreamInlet.pull_sample` or
-        :meth:`~bsl.lsl.StreamInlet.pull_chunk` calls. Pulling a sample without
+        :meth:`~mne_lsl.lsl.StreamInlet.pull_sample` or
+        :meth:`~mne_lsl.lsl.StreamInlet.pull_chunk` calls. Pulling a sample without
         subscribing to the stream with this method is permitted (the stream will be
         opened implicitly).
 
@@ -232,7 +233,7 @@ class StreamInlet:
         timestamp : float | None
             Acquisition timestamp on the remote machine. To map the timestamp to the
             local clock of the client machine, add the estimated time correction return
-            by :meth:`~bsl.lsl.StreamInlet.time_correction`. None if no sample was
+            by :meth:`~mne_lsl.lsl.StreamInlet.time_correction`. None if no sample was
             retrieved.
 
         Notes
@@ -293,7 +294,7 @@ class StreamInlet:
         timestamps : array of shape (n_samples,)
             Acquisition timestamp on the remote machine. To map the timestamp to the
             local clock of the client machine, add the estimated time correction return
-            by :meth:`~bsl.lsl.StreamInlet.time_correction`.
+            by :meth:`~mne_lsl.lsl.StreamInlet.time_correction`.
 
         Notes
         -----
@@ -403,7 +404,7 @@ class StreamInlet:
 
     @property
     def samples_available(self) -> int:
-        """Number of currently available samples on the :class:`~bsl.lsl.StreamOutlet`.
+        """Number of available samples on the :class:`~mne_lsl.lsl.StreamOutlet`.
 
         :type: :class:`int`
         """
@@ -419,7 +420,7 @@ class StreamInlet:
 
     # -------------------------------------------------------------------------
     def get_sinfo(self, timeout: Optional[float] = None) -> _BaseStreamInfo:
-        """:class:`~bsl.lsl.StreamInfo` corresponding to this Inlet.
+        """:class:`~mne_lsl.lsl.StreamInfo` corresponding to this Inlet.
 
         Parameters
         ----------

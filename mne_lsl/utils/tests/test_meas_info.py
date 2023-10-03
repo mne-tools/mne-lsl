@@ -4,9 +4,9 @@ from time import strftime
 
 import pytest
 
-from bsl import logger
-from bsl.lsl import StreamInfo
-from bsl.utils.meas_info import create_info
+from mne_lsl import logger
+from mne_lsl.lsl import StreamInfo
+from mne_lsl.utils.meas_info import create_info
 
 logger.propagate = True
 

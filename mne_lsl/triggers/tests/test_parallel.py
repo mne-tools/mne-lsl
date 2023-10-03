@@ -2,7 +2,7 @@ from platform import system
 
 import pytest
 
-from bsl.triggers import ParallelPortTrigger
+from mne_lsl.triggers import ParallelPortTrigger
 
 
 @pytest.mark.skipif(system() != "Linux", reason="requires Linux")

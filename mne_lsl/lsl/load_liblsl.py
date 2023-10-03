@@ -15,9 +15,9 @@ if TYPE_CHECKING:
 # and the minor version is given by version % 100.
 _VERSION_MIN = 115
 _VERSION_MAX = 116
-# Description of the current version packaged with BSL: 1.16.0
-_VERSION_BSL = 116
-_VERSION_BSL_PATCH = 0
+# Description of the current version packaged with MNE-LSL: 1.16.0
+_VERSION_MNE_LSL = 116
+_VERSION_MNE_LSL_PATCH = 0
 # liblsl objects created with the same protocol version are inter-compatible.
 _VERSION_PROTOCOL = 110
 
@@ -42,13 +42,13 @@ def load_liblsl() -> CDLL:
     lib = _find_liblsl_env()
     if lib is not None:
         return _set_types(lib)
-    lib = _find_liblsl_bsl()
+    lib = _find_liblsl_mne_lsl()
     if lib is not None:
         return _set_types(lib)
     else:
         raise RuntimeError(
-            "The liblsl library packaged with BSL could not be loaded. Please open an "
-            "issue on GitHub and provide the error traceback to the developers."
+            "The liblsl library packaged with MNE-LSL could not be loaded. Please open "
+            "an issue on GitHub and provide the error traceback to the developers."
         )
 
 
@@ -85,7 +85,7 @@ def _find_liblsl_env() -> Optional[CDLL]:
             logger.error(
                 "The LIBLSL '%s' provided in the environment variable 'LSL_LIB' is "
                 "outdated. The version is %i.%i while the minimum version required by "
-                "BSL is %i.%i.",
+                "MNE-LSL is %i.%i.",
                 libpath,
                 version // 100,
                 version % 100,
@@ -97,8 +97,8 @@ def _find_liblsl_env() -> Optional[CDLL]:
             logger.warning(
                 "The LIBLSL '%s' provided in the environment variable 'LSL_LIB' is not "
                 "officially supported. The version is %i.%i while the maximum "
-                "supported version required by BSL is %i.%i. Use this version at your "
-                "own risk.",
+                "supported version required by MNE-LSL is %i.%i. Use this version at "
+                "your own risk.",
                 libpath,
                 version // 100,
                 version % 100,
@@ -148,12 +148,12 @@ def _attempt_load_liblsl(libpath: Union[str, Path]) -> Tuple[str, Optional[int]]
     return libpath, version
 
 
-def _find_liblsl_bsl() -> Optional[CDLL]:
-    """Search for the LSL library packaged with BSL."""
+def _find_liblsl_mne_lsl() -> Optional[CDLL]:
+    """Search for the LSL library packaged with MNE-LSL."""
     libname = (
-        f"liblsl-{_VERSION_BSL // 100}"
-        + f".{_VERSION_BSL % 100}"
-        + f".{_VERSION_BSL_PATCH}-"
+        f"liblsl-{_VERSION_MNE_LSL // 100}"
+        + f".{_VERSION_MNE_LSL % 100}"
+        + f".{_VERSION_MNE_LSL_PATCH}-"
     )
 
     # check linux distribution
@@ -169,7 +169,7 @@ def _find_liblsl_bsl() -> Optional[CDLL]:
                     break
             else:
                 raise RuntimeError(
-                    "The liblsl library packaged with BSL supports "
+                    "The liblsl library packaged with MNE-LSL supports "
                     f"{', '.join(_SUPPORTED_DISTRO)} based distributions. "
                     f"{distro.name()} is not supported. Please build the liblsl "
                     "library from source and provide it in the environment variable "
@@ -177,7 +177,7 @@ def _find_liblsl_bsl() -> Optional[CDLL]:
                 )
         if distro.version() not in _SUPPORTED_DISTRO[distro_like]:
             raise RuntimeError(
-                "The liblsl library packaged with BSL supports distro_like "
+                "The liblsl library packaged with MNE-LSL supports distro_like "
                 "based distributions on versions "
                 f"{', '.join(_SUPPORTED_DISTRO[distro_like])}. Version "
                 f"{distro.version()} is not supported. Please build the liblsl library "
@@ -321,7 +321,7 @@ def _set_types(lib: CDLL) -> CDLL:
     lib.lsl_remove_child.argtypes = [c_void_p, c_void_p]
     lib.lsl_destroy_string.argtypes = [c_void_p]
 
-    # TODO: Check if the minimum version for BSL requires those try/except.
+    # TODO: Check if the minimum version for MNE-LSL requires those try/except.
     try:
         lib.lsl_pull_chunk_f.restype = c_long
         lib.lsl_pull_chunk_d.restype = c_long

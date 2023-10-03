@@ -7,8 +7,8 @@ from mne import create_info
 from mne.io import RawArray
 from pytest import fixture
 
-from bsl.datasets import testing
-from bsl.player import PlayerLSL
+from mne_lsl.datasets import testing
+from mne_lsl.player import PlayerLSL
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 def mock_lsl_stream():
     """Create a mock LSL stream for testing."""
     fname = testing.data_path() / "sample-eeg-ant-raw.fif"
-    with PlayerLSL(fname, "BSL-Player-pytest", chunk_size=16):
+    with PlayerLSL(fname, "Player-pytest", chunk_size=16):
         yield
 
 
@@ -36,5 +36,5 @@ def _integer_raw(tmp_path_factory) -> Path:
 @fixture(scope="module")
 def mock_lsl_stream_int(_integer_raw):
     """Create a mock LSL stream streaming the channel number continuously."""
-    with PlayerLSL(_integer_raw, "BSL-Player-integers-pytest", chunk_size=16):
+    with PlayerLSL(_integer_raw, "Player-integers-pytest", chunk_size=16):
         yield

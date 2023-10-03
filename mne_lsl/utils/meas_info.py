@@ -63,10 +63,10 @@ def create_info(
         an unknown type. If the ``stype`` provided is not among the MNE-known channel
         types, defaults to ``'misc'``.
     desc : StreamInfo | dict | None
-        If provided, dictionary or `~bsl.lsl.StreamInfo` containing the channel
-        information. A `~bsl.lsl.StreamInfo` contains the number of channels, sampling
-        frequency and stream type, which will be checked against the provided arguments
-        ``n_channels``, ``sfreq`` and ``stype``.
+        If provided, dictionary or `~mne_lsl.lsl.StreamInfo` containing the channel
+        information. A `~mne_lsl.lsl.StreamInfo` contains the number of channels,
+        sampling frequency and stream type, which will be checked against the provided
+        arguments ``n_channels``, ``sfreq`` and ``stype``.
 
     Returns
     -------
@@ -295,8 +295,9 @@ def _set_channel_units(info: Info, mapping: Dict[str, Union[str, int]]) -> None:
             else:
                 raise ValueError(
                     f"The human-readable unit {unit} for the channel {ch} "
-                    f"({info['chs'][idx]['unit']} is unknown to BSL. Please contact "
-                    "the developers on GitHub if you want to add support for this unit."
+                    f"({info['chs'][idx]['unit']} is unknown to MNE-LSL. Please "
+                    "contact the developers on GitHub if you want to add support for "
+                    "this unit."
                 )
         elif isinstance(unit, int):
             check_value(unit, _ch_unit_mul_named, "unit")

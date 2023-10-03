@@ -5,11 +5,11 @@ import mne
 import numpy as np
 import pytest
 
-from bsl.datasets import testing
-from bsl.lsl import StreamInlet, resolve_streams
-from bsl.player import PlayerLSL as Player
-from bsl.stream_viewer.scope import ScopeEEG
-from bsl.stream_viewer.scope._scope import _BUFFER_DURATION
+from mne_lsl.datasets import testing
+from mne_lsl.lsl import StreamInlet, resolve_streams
+from mne_lsl.player import PlayerLSL as Player
+from mne_lsl.stream_viewer.scope import ScopeEEG
+from mne_lsl.stream_viewer.scope._scope import _BUFFER_DURATION
 
 
 def test_scope_eeg():

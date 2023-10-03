@@ -13,14 +13,14 @@ class LSLTrigger(BaseTrigger):
     """Trigger sending values on an LSL outlet.
 
     Make sure you are recording the stream created by the
-    `~bsl.triggers.LSLTrigger` alongside your data. e.g. if you use
+    `~mne_lsl.triggers.LSLTrigger` alongside your data. e.g. if you use
     LabRecorder, update the stream list after creating the
-    `~bsl.triggers.LSLTrigger`.
+    `~mne_lsl.triggers.LSLTrigger`.
 
     .. warning::
 
-        Make sure to close the `~bsl.lsl.StreamOutlet` by calling the
-        `~bsl.triggers.LSLTrigger.close` method or by deleting the trigger
+        Make sure to close the `~mne_lsl.lsl.StreamOutlet` by calling the
+        `~mne_lsl.triggers.LSLTrigger.close` method or by deleting the trigger
         after use.
 
     Parameters
@@ -30,14 +30,14 @@ class LSLTrigger(BaseTrigger):
 
     Notes
     -----
-    The `~bsl.lsl.StreamOutlet` created has the following properties:
+    The `~mne_lsl.lsl.StreamOutlet` created has the following properties:
 
     * Name: ``f"{name}"``
     * Type: ``"Markers"``
     * Number of channels: 1
     * Sampling rate: Irregular
     * Data type: ``np.int8``
-    * Source ID: ``f"BSL-{name}"``
+    * Source ID: ``f"MNE-LSL-{name}"``
 
     The values sent must be in the range of strictly positive integers defined
     by ``np.int8``, 1 to 127 included.
@@ -53,7 +53,7 @@ class LSLTrigger(BaseTrigger):
             n_channels=1,
             sfreq=0.0,
             dtype="int8",
-            source_id=f"BSL-{name}",
+            source_id=f"MNE-LSL-{name}",
         )
         self._sinfo.set_channel_names(["STI"])
         self._sinfo.set_channel_types(["stim"])
@@ -93,7 +93,7 @@ class LSLTrigger(BaseTrigger):
     def sinfo(self) -> StreamInfo:
         """Description of the trigger outlet.
 
-        :type: `~bsl.lsl.StreamInfo`
+        :type: `~mne_lsl.lsl.StreamInfo`
         """
         return self._sinfo
 
@@ -101,6 +101,6 @@ class LSLTrigger(BaseTrigger):
     def outlet(self) -> StreamOutlet:
         """Trigger outlet.
 
-        :type: `~bsl.lsl.StreamOutlet`
+        :type: `~mne_lsl.lsl.StreamOutlet`
         """
         return self._outlet

@@ -20,14 +20,14 @@ def _make_registry(output: Optional[Union[str, Path]] = None) -> None:
     output : str | Path
         Path to the output registry file.
     """
-    folder = files("bsl").parent / "datasets" / "testing"
+    folder = files("mne_lsl").parent / "datasets" / "testing"
     if not folder.exists():
         raise RuntimeError(
             "The sample dataset registry can only be created from a clone of the "
             "repository."
         )
     output = (
-        files("bsl.datasets") / "testing-registry.txt" if output is None else output
+        files("mne_lsl.datasets") / "testing-registry.txt" if output is None else output
     )
     pooch.make_registry(folder, output=output, recursive=True)
 
@@ -38,9 +38,9 @@ def data_path() -> Path:
     Returns
     -------
     path : Path
-        Path to the sample dataset, by default in ``"~/bsl_data"``.
+        Path to the sample dataset, by default in ``"~/mne_data/mne_lsl"``.
     """
-    path = Path.home() / "bsl_data" / "testing"
+    path = Path.home() / "mne_data" / "mne_lsl" / "testing"
     base_url = "https://github.com/fcbg-hnp-meeg/bsl/raw/main/datasets/testing/"
-    registry = files("bsl.datasets") / "testing-registry.txt"
+    registry = files("mne_lsl.datasets") / "testing-registry.txt"
     return fetch_dataset(path, base_url, registry)

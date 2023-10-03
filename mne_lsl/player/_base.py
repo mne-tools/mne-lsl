@@ -197,8 +197,8 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
 
         Notes
         -----
-        If the human-readable unit of your channel is not yet supported by BSL, please
-        contact the developers on GitHub to add your units to the known set.
+        If the human-readable unit of your channel is not yet supported by MNE-LSL,
+        please contact the developers on GitHub to add your units to the known set.
         """
         self._check_not_started("set_channel_units()")
         ch_units_before = np.array(

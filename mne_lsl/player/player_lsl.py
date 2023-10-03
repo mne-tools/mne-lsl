@@ -25,9 +25,9 @@ class PlayerLSL(BasePlayer):
         Path to the file to re-play as a mock LSL stream. MNE-Python must be able to
         load the file with :func:`mne.io.read_raw`.
     name : str | None
-        Name of the mock LSL stream. If ``None``, the name ``BSL-Player`` is used.
+        Name of the mock LSL stream. If ``None``, the name ``MNE-LSL-Player`` is used.
     chunk_size : int ``≥ 1``
-        Number of samples pushed at once on the :class:`~bsl.lsl.StreamOutlet`.
+        Number of samples pushed at once on the :class:`~mne_lsl.lsl.StreamOutlet`.
 
     Notes
     -----
@@ -41,7 +41,7 @@ class PlayerLSL(BasePlayer):
     ) -> None:
         super().__init__(fname, chunk_size)
         check_type(name, (str, None), "name")
-        self._name = "BSL-Player" if name is None else name
+        self._name = "MNE-LSL-Player" if name is None else name
         # create stream info based on raw
         ch_types = self._raw.get_channel_types(unique=True)
         self._sinfo = StreamInfo(
@@ -50,7 +50,7 @@ class PlayerLSL(BasePlayer):
             n_channels=len(self._raw.info["ch_names"]),
             sfreq=self._raw.info["sfreq"],
             dtype=np.float64,
-            source_id="BSL",
+            source_id="MNE-LSL",
         )
         self._sinfo.set_channel_names(self._raw.info["ch_names"])
         self._sinfo.set_channel_types(self._raw.get_channel_types(unique=False))
@@ -70,7 +70,7 @@ class PlayerLSL(BasePlayer):
         self._sinfo.set_channel_names(self.info["ch_names"])
 
     def start(self) -> None:
-        """Start streaming data on the LSL `~bsl.lsl.StreamOutlet`."""
+        """Start streaming data on the LSL `~mne_lsl.lsl.StreamOutlet`."""
         if self._streaming_thread is not None:
             logger.warning(
                 "The player is already started. Use Player.stop() to stop streaming."
@@ -101,7 +101,7 @@ class PlayerLSL(BasePlayer):
         self._sinfo.set_channel_units(ch_units_after)
 
     def stop(self) -> None:
-        """Stop streaming data on the LSL :class:`~bsl.lsl.StreamOutlet`."""
+        """Stop streaming data on the LSL :class:`~mne_lsl.lsl.StreamOutlet`."""
         super().stop()
         del self._outlet
         self._reset_variables()
@@ -151,7 +151,7 @@ class PlayerLSL(BasePlayer):
 
     # ----------------------------------------------------------------------------------
     def __del__(self):
-        """Delete the player and destroy the :class:`~bsl.lsl.StreamOutlet`."""
+        """Delete the player and destroy the :class:`~mne_lsl.lsl.StreamOutlet`."""
         super().__del__()
         try:
             del self._outlet

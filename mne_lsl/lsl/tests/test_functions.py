@@ -2,7 +2,7 @@ import uuid
 
 import pytest
 
-from bsl.lsl import (
+from mne_lsl.lsl import (
     StreamInfo,
     StreamOutlet,
     library_version,
@@ -10,7 +10,7 @@ from bsl.lsl import (
     protocol_version,
     resolve_streams,
 )
-from bsl.lsl.load_liblsl import _VERSION_MAX, _VERSION_MIN, _VERSION_PROTOCOL
+from mne_lsl.lsl.load_liblsl import _VERSION_MAX, _VERSION_MIN, _VERSION_PROTOCOL
 
 
 def test_library_version():

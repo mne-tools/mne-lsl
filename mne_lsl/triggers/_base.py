@@ -23,12 +23,12 @@ class BaseTrigger(ABC):
             value = int(value)
         except TypeError:
             raise TypeError(
-                "The argument 'value' of a BSL trigger must be an integer "
+                "The argument 'value' of a trigger must be an integer "
                 "between 1 and 255 included."
             )
         if not (1 <= value <= 255):
             raise ValueError(
-                "The argument 'value' of a BSL trigger must be an integer "
+                "The argument 'value' of a trigger must be an integer "
                 "between 1 and 255 included."
             )
         return value

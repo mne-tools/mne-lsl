@@ -1,6 +1,6 @@
 import pytest
 
-from bsl.lsl.utils import _check_timeout
+from mne_lsl.lsl.utils import _check_timeout
 
 
 def test_check_timeout():

@@ -1,9 +1,9 @@
 import numpy as np
 import pytest
 
-from bsl import logger, set_log_level
-from bsl.lsl import StreamInfo, StreamInlet, StreamOutlet, resolve_streams
-from bsl.triggers import LSLTrigger
+from mne_lsl import logger, set_log_level
+from mne_lsl.lsl import StreamInfo, StreamInlet, StreamOutlet, resolve_streams
+from mne_lsl.triggers import LSLTrigger
 
 set_log_level("INFO")
 logger.propagate = True

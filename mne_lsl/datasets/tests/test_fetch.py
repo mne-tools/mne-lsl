@@ -2,7 +2,7 @@ from os import makedirs
 
 import pytest
 
-from bsl.datasets._fetch import _walk
+from mne_lsl.datasets._fetch import _walk
 
 
 def test_walk(tmp_path):

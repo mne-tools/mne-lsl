@@ -6,9 +6,9 @@ import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 
-from bsl.lsl import StreamInfo, StreamInlet, StreamOutlet
-from bsl.lsl.constants import string2numpy
-from bsl.lsl.stream_info import _BaseStreamInfo
+from mne_lsl.lsl import StreamInfo, StreamInlet, StreamOutlet
+from mne_lsl.lsl.constants import string2numpy
+from mne_lsl.lsl.stream_info import _BaseStreamInfo
 
 
 @pytest.mark.parametrize(

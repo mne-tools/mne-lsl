@@ -1,12 +1,12 @@
 import argparse
 
-from bsl.player import PlayerLSL
+from mne_lsl.player import PlayerLSL
 
 
 def run():
-    """Entrypoint for bsl_player usage."""
+    """Entrypoint for mne_lsl_player usage."""
     parser = argparse.ArgumentParser(
-        prog="BSL Player",
+        prog="MNE-LSL Player",
         description="Starts streaming data from an MNE-compatible file on the network.",
     )
     parser.add_argument(
@@ -29,7 +29,7 @@ def run():
         type=str,
         metavar="str",
         help="name of the stream displayed by LSL.",
-        default="BSL-Player",
+        default="MNE-LSL-Player",
     )
 
     args = parser.parse_args()

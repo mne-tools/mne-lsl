@@ -6,7 +6,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from bsl.utils._checks import (
+from mne_lsl.utils._checks import (
     check_type,
     check_value,
     check_verbose,

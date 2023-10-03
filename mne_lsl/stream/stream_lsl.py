@@ -24,7 +24,7 @@ from ._base import BaseStream
 if TYPE_CHECKING:
     from typing import Optional, Sequence, Union
 
-    from bsl.lsl.stream_info import _BaseStreamInfo
+    from mne_lsl.lsl.stream_info import _BaseStreamInfo
 
 
 @fill_doc
@@ -45,8 +45,8 @@ class StreamLSL(BaseStream):
     -----
     The 3 arguments ``name``, ``stype``, and ``source_id`` must uniquely identify an
     LSL stream. If this is not possible, please resolve the available LSL streams
-    with :func:`bsl.lsl.resolve_streams` and create an inlet with
-    :class:`~bsl.lsl.StreamInlet`.
+    with :func:`mne_lsl.lsl.resolve_streams` and create an inlet with
+    :class:`~mne_lsl.lsl.StreamInlet`.
     """
 
     def __init__(
@@ -110,7 +110,7 @@ class StreamLSL(BaseStream):
 
             * ``'clocksync'``: Automatic clock synchronization, equivalent to
               manually adding the estimated
-              :meth:`~bsl.lsl.StreamInlet.time_correction`.
+              :meth:`~mne_lsl.lsl.StreamInlet.time_correction`.
             * ``'dejitter'``: Remove jitter on the received timestamps with a
               smoothing algorithm.
             * ``'monotize'``: Force the timestamps to be monotically ascending.
@@ -120,7 +120,7 @@ class StreamLSL(BaseStream):
             timeout. The timeout value is applied once to every operation supporting it.
         acquisition_delay : float
             Delay in seconds between 2 acquisition during which chunks of data are
-            pulled from the :class:`~bsl.lsl.StreamInlet`.
+            pulled from the :class:`~mne_lsl.lsl.StreamInlet`.
 
         Notes
         -----
@@ -139,10 +139,10 @@ class StreamLSL(BaseStream):
             processing_flags == "threadsafe" or "threadsafe" in processing_flags
         ):
             raise ValueError(
-                "The 'threadsafe' processing flag should not be provided for a BSL "
-                "Stream. If you require access to the underlying StreamInlet in a "
-                "separate thread, please instantiate the StreamInlet directly from "
-                "bsl.lsl.StreamInlet."
+                "The 'threadsafe' processing flag should not be provided for an "
+                "MNE-LSL Stream. If you require access to the underlying StreamInlet "
+                "in a separate thread, please instantiate the StreamInlet directly "
+                "from mne_lsl.lsl.StreamInlet."
             )
         if processing_flags == "all":
             processing_flags = ("clocksync", "dejitter", "monotize")
@@ -157,7 +157,7 @@ class StreamLSL(BaseStream):
         if sinfos[0].dtype == "string":
             raise RuntimeError(
                 "The Stream class is designed for numerical types. It does not support "
-                "string LSL streams. Please use a bsl.lsl.StreamInlet directly to "
+                "string LSL streams. Please use a mne_lsl.lsl.StreamInlet directly to "
                 "interact with this stream."
             )
         # create inlet and retrieve stream info
@@ -306,7 +306,7 @@ class StreamLSL(BaseStream):
     def sinfo(self) -> Optional[_BaseStreamInfo]:
         """StreamInfo of the connected stream.
 
-        :type: :class:`~bsl.lsl.StreamInfo` | None
+        :type: :class:`~mne_lsl.lsl.StreamInfo` | None
         """
         return self._sinfo
 

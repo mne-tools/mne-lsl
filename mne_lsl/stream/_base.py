@@ -144,7 +144,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
                 if unit not in _HUMAN_UNITS[FIFF.FIFF_UNIT_V]:
                     raise ValueError(
                         f"The human-readable unit {unit} for the channel "
-                        f"{ref_channels[k]} is unknown to BSL. Please contact the "
+                        f"{ref_channels[k]} is unknown to MNE-LSL. Please contact the "
                         "developers on GitHub if you want to add support for that unit."
                     )
                 ref_units[k] = _HUMAN_UNITS[FIFF.FIFF_UNIT_V][unit]
@@ -232,7 +232,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         ----------
         acquisition_delay : float
             Delay in seconds between 2 acquisition during which chunks of data are
-            pulled from the :class:`~bsl.lsl.StreamInlet`.
+            pulled from the :class:`~mne_lsl.lsl.StreamInlet`.
         """
         if self.connected:
             logger.warning("The stream is already connected. Skipping.")
@@ -438,9 +438,9 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
         Notes
         -----
-        Contrary to MNE-Python, re-ordering channels is not supported in ``BSL``. Thus,
-        if explicit channel names are provided in ``picks``, they are sorted to match
-        the order of existing channel names.
+        Contrary to MNE-Python, re-ordering channels is not supported in ``MNE-LSL``.
+        Thus, if explicit channel names are provided in ``picks``, they are sorted to
+        match the order of existing channel names.
         """
         self._check_connected(name="pick()")
         picks = _picks_to_idx(self._info, picks, "all", exclude, allow_empty=False)
@@ -534,8 +534,8 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
         Notes
         -----
-        If the human-readable unit of your channel is not yet supported by BSL, please
-        contact the developers on GitHub to add your units to the known set.
+        If the human-readable unit of your channel is not yet supported by MNE-LSL,
+        please contact the developers on GitHub to add your units to the known set.
         """
         self._check_connected(name="set_channel_units()")
         _set_channel_units(self._info, mapping)

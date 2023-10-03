@@ -1,7 +1,7 @@
 import pytest
 
-from bsl import logger, set_log_level
-from bsl.triggers import MockTrigger
+from mne_lsl import logger, set_log_level
+from mne_lsl.triggers import MockTrigger
 
 set_log_level("INFO")
 logger.propagate = True

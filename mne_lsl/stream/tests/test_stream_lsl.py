@@ -18,11 +18,11 @@ else:
     from mne.io.constants import FIFF
     from mne.io.pick import _picks_to_idx
 
-from bsl import logger
-from bsl.datasets import testing
-from bsl.stream import StreamLSL as Stream
-from bsl.utils._tests import match_stream_and_raw_data
-from bsl.utils.logs import _use_log_level
+from mne_lsl import logger
+from mne_lsl.datasets import testing
+from mne_lsl.stream import StreamLSL as Stream
+from mne_lsl.utils._tests import match_stream_and_raw_data
+from mne_lsl.utils.logs import _use_log_level
 
 logger.propagate = True
 
@@ -34,7 +34,7 @@ raw = read_raw(fname, preload=True)
 def test_stream(mock_lsl_stream, acquisition_delay):
     """Test a valid Stream."""
     # test connect/disconnect
-    stream = Stream(bufsize=2, name="BSL-Player-pytest")
+    stream = Stream(bufsize=2, name="Player-pytest")
     assert stream.info is None
     assert not stream.connected
     stream.connect(acquisition_delay=acquisition_delay)
@@ -110,9 +110,9 @@ def test_stream_connection_no_args(mock_lsl_stream):
     stream.connect()
     assert isinstance(stream.info, Info)
     assert stream.connected
-    assert stream.name == "BSL-Player-pytest"
+    assert stream.name == "Player-pytest"
     assert stream.stype == ""
-    assert stream.source_id == "BSL"
+    assert stream.source_id == "MNE-LSL"
     stream.disconnect()
 
 
@@ -120,7 +120,7 @@ def test_stream_double_connection(mock_lsl_stream, caplog):
     """Test connecting twice to a stream."""
     caplog.set_level(30)  # WARNING
     caplog.clear()
-    stream = Stream(bufsize=2, name="BSL-Player-pytest")
+    stream = Stream(bufsize=2, name="Player-pytest")
     stream.connect()
     assert "stream is already connected" not in caplog.text
     caplog.clear()
@@ -132,7 +132,7 @@ def test_stream_double_connection(mock_lsl_stream, caplog):
 @pytest.mark.parametrize("acquisition_delay", (0.2, 0.001, 1))
 def test_stream_drop_channels(mock_lsl_stream, acquisition_delay):
     """Test dropping channels."""
-    stream = Stream(bufsize=2, name="BSL-Player-pytest")
+    stream = Stream(bufsize=2, name="Player-pytest")
     stream.connect(acquisition_delay=acquisition_delay)
     stream.drop_channels("TRIGGER")
     raw_ = raw.copy().drop_channels("TRIGGER")
@@ -166,7 +166,7 @@ def test_stream_drop_channels(mock_lsl_stream, acquisition_delay):
 @pytest.mark.parametrize("acquisition_delay", (0.2, 0.001, 1))
 def test_stream_pick(mock_lsl_stream, acquisition_delay):
     """Test channel selection."""
-    stream = Stream(bufsize=2, name="BSL-Player-pytest")
+    stream = Stream(bufsize=2, name="Player-pytest")
     stream.connect(acquisition_delay=acquisition_delay)
     stream.info["bads"] = ["Fp2"]
     stream.pick("eeg", exclude="bads")
@@ -215,7 +215,7 @@ def test_stream_pick(mock_lsl_stream, acquisition_delay):
 
 def test_stream_meas_date_and_anonymize(mock_lsl_stream):
     """Test stream measurement date."""
-    stream = Stream(bufsize=2, name="BSL-Player-pytest")
+    stream = Stream(bufsize=2, name="Player-pytest")
     stream.connect()
     assert stream.info["meas_date"] is None
     meas_date = datetime(2023, 1, 25, tzinfo=timezone.utc)
@@ -230,7 +230,7 @@ def test_stream_meas_date_and_anonymize(mock_lsl_stream):
 
 def test_stream_channel_types(mock_lsl_stream):
     """Test channel type getters and setters."""
-    stream = Stream(bufsize=2, name="BSL-Player-pytest")
+    stream = Stream(bufsize=2, name="Player-pytest")
     stream.connect()
     assert stream.get_channel_types(unique=True) == raw.get_channel_types(unique=True)
     assert stream.get_channel_types(unique=False) == raw.get_channel_types(unique=False)
@@ -245,7 +245,7 @@ def test_stream_channel_types(mock_lsl_stream):
 
 def test_stream_channel_names(mock_lsl_stream):
     """Test channel renaming."""
-    stream = Stream(bufsize=2, name="BSL-Player-pytest")
+    stream = Stream(bufsize=2, name="Player-pytest")
     stream.connect()
     assert stream.ch_names == raw.ch_names
     assert stream.info["ch_names"] == raw.ch_names
@@ -272,7 +272,7 @@ def test_stream_channel_names(mock_lsl_stream):
 
 def test_stream_channel_units(mock_lsl_stream):
     """Test channel unit getters and setters."""
-    stream = Stream(bufsize=2, name="BSL-Player-pytest")
+    stream = Stream(bufsize=2, name="Player-pytest")
     stream.connect()
     ch_units = stream.get_channel_units()
     assert ch_units == [(FIFF.FIFF_UNIT_V, FIFF.FIFF_UNITM_NONE)] * len(stream.ch_names)
@@ -301,7 +301,7 @@ def test_stream_channel_units(mock_lsl_stream):
 @pytest.mark.parametrize("acquisition_delay", (0.2, 0.001, 1))
 def test_stream_add_reference_channels(mock_lsl_stream, acquisition_delay):
     """Test add reference channels and channel selection."""
-    stream = Stream(bufsize=2, name="BSL-Player-pytest")
+    stream = Stream(bufsize=2, name="Player-pytest")
     stream.connect(acquisition_delay=acquisition_delay)
     time.sleep(0.1)  # give a bit of time to slower CIs
     stream.add_reference_channels("CPz")
@@ -344,21 +344,21 @@ def test_stream_repr(mock_lsl_stream):
     """Test the stream representation."""
     stream = Stream(bufsize=2)
     assert stream.__repr__() == "<Stream: OFF>"
-    stream = Stream(bufsize=2, name="BSL-Player-pytest")
-    assert stream.__repr__() == "<Stream: OFF | BSL-Player-pytest (source: unknown)>"
+    stream = Stream(bufsize=2, name="Player-pytest")
+    assert stream.__repr__() == "<Stream: OFF | Player-pytest (source: unknown)>"
     stream.connect()
-    assert stream.__repr__() == "<Stream: ON | BSL-Player-pytest (source: BSL)>"
+    assert stream.__repr__() == "<Stream: ON | Player-pytest (source: MNE-LSL)>"
     stream.disconnect()
-    stream = Stream(bufsize=2, name="BSL-Player-pytest", source_id="BSL")
-    assert stream.__repr__() == "<Stream: OFF | BSL-Player-pytest (source: BSL)>"
-    stream = Stream(bufsize=2, source_id="BSL")
-    assert stream.__repr__() == "<Stream: OFF | (source: BSL>"
+    stream = Stream(bufsize=2, name="Player-pytest", source_id="MNE-LSL")
+    assert stream.__repr__() == "<Stream: OFF | Player-pytest (source: MNE-LSL)>"
+    stream = Stream(bufsize=2, source_id="MNE-LSL")
+    assert stream.__repr__() == "<Stream: OFF | (source: MNE-LSL>"
 
 
 @pytest.mark.parametrize("acquisition_delay", (0.2, 0.001, 1))
 def test_stream_get_data_picks(mock_lsl_stream, acquisition_delay):
     """Test channel sub-selection when getting data."""
-    stream = Stream(bufsize=2, name="BSL-Player-pytest")
+    stream = Stream(bufsize=2, name="Player-pytest")
     stream.connect(acquisition_delay=acquisition_delay)
     time.sleep(0.1)  # give a bit of time to slower CIs
     stream.add_reference_channels("CPz")
@@ -380,7 +380,7 @@ def test_stream_get_data_picks(mock_lsl_stream, acquisition_delay):
 
 def test_stream_n_new_samples(mock_lsl_stream, caplog):
     """Test the number of new samples available."""
-    stream = Stream(bufsize=0.4, name="BSL-Player-pytest")
+    stream = Stream(bufsize=0.4, name="Player-pytest")
     assert stream.n_new_samples is None
     stream.connect()
     time.sleep(0.1)  # give a bit of time to slower CIs
@@ -399,7 +399,7 @@ def test_stream_n_new_samples(mock_lsl_stream, caplog):
 
 def test_stream_invalid_interrupt():
     """Test invalid acquisition interruption."""
-    stream = Stream(bufsize=0.4, name="BSL-Player-pytest")
+    stream = Stream(bufsize=0.4, name="Player-pytest")
     assert not stream.connected
     with pytest.raises(RuntimeError, match="requested but the stream is not connected"):
         with stream._interrupt_acquisition():
@@ -409,7 +409,7 @@ def test_stream_invalid_interrupt():
 @pytest.mark.parametrize("acquisition_delay", (0.2, 0.001, 1))
 def test_stream_rereference(mock_lsl_stream_int, acquisition_delay):
     """Test re-referencing an EEG-like stream."""
-    stream = Stream(bufsize=0.4, name="BSL-Player-integers-pytest")
+    stream = Stream(bufsize=0.4, name="Player-integers-pytest")
     stream.connect(acquisition_delay=acquisition_delay)
     time.sleep(0.1)  # give a bit of time to slower CIs
     assert 0 < stream.n_new_samples
@@ -462,7 +462,7 @@ def test_stream_rereference(mock_lsl_stream_int, acquisition_delay):
 
 def test_stream_rereference_average(mock_lsl_stream_int):
     """Test average re-referencing schema."""
-    stream = Stream(bufsize=0.4, name="BSL-Player-integers-pytest")
+    stream = Stream(bufsize=0.4, name="Player-integers-pytest")
     stream.connect()
     time.sleep(0.1)  # give a bit of time to slower CIs
     stream.set_channel_types({"2": "ecg"})  # channels: 0, 1, 2, 3, 4

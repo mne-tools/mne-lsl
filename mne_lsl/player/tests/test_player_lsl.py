@@ -11,11 +11,11 @@ if check_version("mne", "1.6"):
 else:
     from mne.io.constants import FIFF
 
-from bsl import logger
-from bsl.datasets import testing
-from bsl.lsl import StreamInlet, local_clock, resolve_streams
-from bsl.player import PlayerLSL as Player
-from bsl.utils._tests import match_stream_and_raw_data
+from mne_lsl import logger
+from mne_lsl.datasets import testing
+from mne_lsl.lsl import StreamInlet, local_clock, resolve_streams
+from mne_lsl.player import PlayerLSL as Player
+from mne_lsl.utils._tests import match_stream_and_raw_data
 
 logger.propagate = True
 
@@ -25,7 +25,7 @@ raw = read_raw(fname, preload=True)
 
 def test_player(caplog):
     """Test a working and valid player."""
-    name = "BSL-Player-test_player"
+    name = "Player-test_player"
     player = Player(fname, name, 16)
     assert "OFF" in player.__repr__()
     streams = resolve_streams(timeout=0.1)
@@ -79,7 +79,7 @@ def test_player(caplog):
 
 def test_player_context_manager():
     """Test a working and valid player as context manager."""
-    name = "BSL-Player-test_player_context_manager"
+    name = "Player-test_player_context_manager"
     streams = resolve_streams(timeout=0.1)
     assert len(streams) == 0
     with Player(fname, name, 16):
@@ -106,7 +106,7 @@ def test_player_invalid_arguments():
 
 def test_player_stop_invalid():
     """Test stopping a player that is not started."""
-    player = player = Player(fname, "BSL-Player-test_stop_player_invalid", 16)
+    player = player = Player(fname, "Player-test_stop_player_invalid", 16)
     with pytest.raises(RuntimeError, match="The player is not started"):
         player.stop()
     player.start()
@@ -115,7 +115,7 @@ def test_player_stop_invalid():
 
 def test_player_unit():
     """Test getting and setting the player channel units."""
-    name = "BSL-Player-test_player_unit"
+    name = "Player-test_player_unit"
     player = Player(fname, name, 16)
     assert player.get_channel_types() == raw.get_channel_types()
     assert player.get_channel_types(unique=True) == raw.get_channel_types(unique=True)
@@ -157,7 +157,7 @@ def test_player_unit():
 
 def test_player_rename_channels():
     """Test channel renaming."""
-    name = "BSL-Player-test_player_unit"
+    name = "Player-test_player_unit"
     player = Player(fname, name, 16)
     assert player._sinfo.get_channel_names() == player.info["ch_names"]
     player.start()
@@ -194,7 +194,7 @@ def test_player_rename_channels():
 
 def test_player_set_channel_types():
     """Test channel type setting."""
-    name = "BSL-Player-test_player_types"
+    name = "Player-test_player_types"
     player = Player(fname, name, 16)
     assert player._sinfo.get_channel_types() == player.get_channel_types(unique=False)
     assert player.get_channel_types(unique=False) == raw.get_channel_types(unique=False)
