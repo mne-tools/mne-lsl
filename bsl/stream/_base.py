@@ -574,12 +574,6 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
                 "and reconnect to reset the Stream."
             )
 
-        if isinstance(ref_channels, str):
-            ref_channels = [ref_channels]
-        check_type(ref_channels, (tuple, list), "ref_channels")
-        picks_ref = _picks_to_idx(
-            self._info, ref_channels, "all", (), allow_empty=False
-        )
         if isinstance(ch_type, str):
             ch_type = [ch_type]
         check_type(ch_type, (tuple, list), "ch_type")
@@ -589,10 +583,19 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
                     f"There are no channels of type {type_} in this stream."
                 )
         picks = _picks_to_idx(self._info, ch_type, "all", (), allow_empty=False)
+        if ref_channels == "average":
+            picks_ref = picks
+        else:
+            if isinstance(ref_channels, str):
+                ref_channels = [ref_channels]
+            check_type(ref_channels, (tuple, list), "ref_channels")
+            picks_ref = _picks_to_idx(
+                self._info, ref_channels, "all", (), allow_empty=False
+            )
         if np.intersect1d(picks, picks_ref, assume_unique=True).size == 0:
             raise ValueError(
-                f"The new reference channels must be of the type(s) {ch_type} provided "
-                "in the argument 'ch_type'."
+                f"The new reference channel(s) must be of the type(s) {ch_type} "
+                "provided in the argument 'ch_type'."
             )
 
         with self._interrupt_acquisition():

@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 import numpy as np
 import pytest
 from matplotlib import pyplot as plt
-from mne import Info, pick_info
+from mne import Info, pick_info, pick_types
 from mne.channels import DigMontage
 from mne.io import read_raw
 from mne.utils import check_version
@@ -450,5 +450,38 @@ def test_stream_rereference(mock_lsl_stream_int):
     assert_allclose(data, data_ref)
     time.sleep(0.3)
     data, _ = stream.get_data()
+    assert_allclose(data, data_ref)
+    stream.disconnect()
+
+
+def test_stream_rereference_average(mock_lsl_stream_int):
+    """Test average re-referencing schema."""
+    stream = Stream(bufsize=0.4, name="BSL-Player-integers-pytest")
+    stream.connect()
+    time.sleep(0.1)  # give a bit of time to slower CIs
+    stream.set_channel_types({"2": "ecg"})  # channels: 0, 1, 2, 3, 4
+    data, _ = stream.get_data(picks="eeg")
+    picks = pick_types(stream.info, eeg=True)
+    data_ref = np.full(
+        (picks.size, data.shape[1]), np.arange(picks.size).reshape(-1, 1)
+    )
+    data_ref[-2:, :] += 1
+    assert_allclose(data, data_ref)
+    time.sleep(0.3)
+    data, _ = stream.get_data(picks="eeg")
+    assert_allclose(data, data_ref)
+
+    stream.set_eeg_reference("average")
+    data, _ = stream.get_data(picks="eeg")
+    data_ref = np.full(
+        (picks.size, data.shape[1]),
+        np.arange(picks.size).reshape(-1, 1),
+        dtype=stream.dtype,
+    )
+    data_ref[-2:, :] += 1
+    data_ref -= data_ref.mean(axis=0, keepdims=True)
+    assert_allclose(data, data_ref)
+    time.sleep(0.3)
+    data, _ = stream.get_data(picks="eeg")
     assert_allclose(data, data_ref)
     stream.disconnect()
