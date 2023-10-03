@@ -5,8 +5,8 @@ Introduction to the Player API
 .. include:: ./../../links.inc
 
 During the development of a project, it's very helpful to test on a mock LSL stream
-replicating an experimental condition. The :class:`~bsl.player.PlayerLSL` can create a
-mock LSL stream from any `MNE <mne stable_>`_ readable file.
+replicating an experimental condition. The :class:`~mne_lsl.player.PlayerLSL` can create
+a mock LSL stream from any `MNE <mne stable_>`_ readable file.
 
 .. note::
 
@@ -19,9 +19,9 @@ mock LSL stream from any `MNE <mne stable_>`_ readable file.
 # Create a mock LSL Stream
 # ------------------------
 #
-# A :class:`~bsl.player.PlayerLSL` requires a valid path to an existing file which can
-# be read by `MNE <mne stable_>`_. In this case, the sample data ``sample-ant-raw.fif``
-# recorded on an ANT Neuro 64 channel EEG amplifier.
+# A :class:`~mne_lsl.player.PlayerLSL` requires a valid path to an existing file which
+# can be read by `MNE <mne stable_>`_. In this case, the sample data
+# ``sample-ant-raw.fif`` recorded on an ANT Neuro 64 channel EEG amplifier.
 
 import time
 
@@ -29,10 +29,10 @@ import numpy as np
 from matplotlib import pyplot as plt
 from mne import pick_types, set_log_level
 
-from bsl.datasets import sample
-from bsl.lsl import StreamInlet, resolve_streams
-from bsl.player import PlayerLSL as Player
-from bsl.stream import StreamLSL as Stream
+from mne_lsl.datasets import sample
+from mne_lsl.lsl import StreamInlet, resolve_streams
+from mne_lsl.player import PlayerLSL as Player
+from mne_lsl.stream import StreamLSL as Stream
 
 set_log_level("WARNING")
 
@@ -41,16 +41,16 @@ player = Player(fname)
 player.start()
 
 # %%
-# Once started, a :class:`~bsl.player.PlayerLSL` will continuously stream data from the
-# file until stopped. If the end of file is reached, it will loop back to the beginning
-# thus inducing a discontinuity in the signal.
+# Once started, a :class:`~mne_lsl.player.PlayerLSL` will continuously stream data from
+# the file until stopped. If the end of file is reached, it will loop back to the
+# beginning thus inducing a discontinuity in the signal.
 
 streams = resolve_streams()
 print(streams[0])
 
 # %%
 # You can connect to the stream as you would with any other LSL stream, e.g. with a
-# :class:`bsl.lsl.StreamInlet`:
+# :class:`mne_lsl.lsl.StreamInlet`:
 
 inlet = StreamInlet(streams[0])
 inlet.open_stream()
@@ -59,7 +59,7 @@ print(data.shape)  # (n_samples, n_channels)
 del inlet
 
 # %%
-# or with a :class:`bsl.stream.StreamLSL`:
+# or with a :class:`mne_lsl.stream.StreamLSL`:
 
 stream = Stream(bufsize=2, name=player.name)
 stream.connect()
@@ -98,7 +98,7 @@ plt.show()
 # But most systems do not stream in SI units as it can be inconvenient to work with very
 # small floats. For instance, an ANT amplifier stream in microvolts. Thus, to replicate
 # our experimental condition, the correct streaming unit must be set with
-# :meth:`bsl.player.PlayerLSL.set_channel_units`.
+# :meth:`mne_lsl.player.PlayerLSL.set_channel_units`.
 #
 # .. note::
 #
@@ -138,9 +138,9 @@ plt.show()
 #     The value range seems important for EEG channels, but the sample dataset is not
 #     filtered. Thus, a large DC offset is present.
 #
-# The :class:`~bsl.stream.StreamLSL` object will be able to interpret the channel unit
-# and will report that the EEG, EOG, ECG channels are streamed in microvolts while the
-# trigger channel is streamed in volts.
+# The :class:`~mne_lsl.stream.StreamLSL` object will be able to interpret the channel
+# unit and will report that the EEG, EOG, ECG channels are streamed in microvolts while
+# the trigger channel is streamed in volts.
 
 ecg_idx = pick_types(stream.info, ecg=True)[0]
 stim_idx = pick_types(stream.info, stim=True)[0]
@@ -158,8 +158,8 @@ print(
 # Context manager
 # ---------------
 #
-# A :class:`~bsl.player.PlayerLSL` can also be used as a context manager, to handle the
-# :meth:`bsl.player.PlayerLSL.start` and :meth:`bsl.player.PlayerLSL.stop`.
+# A :class:`~mne_lsl.player.PlayerLSL` can also be used as a context manager, to handle
+# the :meth:`mne_lsl.player.PlayerLSL.start` and :meth:`mne_lsl.player.PlayerLSL.stop`.
 
 del stream
 player.stop()

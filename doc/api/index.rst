@@ -2,7 +2,7 @@ API References
 ==============
 
 This is the reference for classes (``CamelCase`` names) and functions
-(``underscore_case`` names) of ``bsl`` grouped thematically.
+(``underscore_case`` names) of ``mne_lsl`` grouped thematically.
 
 .. toctree::
     :maxdepth: 2
