@@ -53,6 +53,7 @@ dependencies = [
     'psutil',
     'pyqtgraph',
     'qtpy',
+    'requests',
     'scipy',
 ]
 

@@ -2,6 +2,7 @@ from __future__ import annotations  # c.f. PEP 563, PEP 649
 
 import os
 import platform
+import subprocess
 import tarfile
 import zipfile
 from ctypes import CDLL, c_char_p, c_double, c_long, c_void_p, sizeof
@@ -240,13 +241,55 @@ def _pooch_processor_liblsl(fname: str, action: str, pooch: Pooch) -> str:
     fname : str
         The full path to the file in the local data storage.
     """
-    if _PLATFORM == "linux":
-        return fname
-
     folder = files("mne_lsl.lsl") / "lib"
     fname = Path(fname)
     uncompressed = folder / f"{fname.name}.archive"
-    if _PLATFORM == "darwin":
+
+    if _PLATFORM == "linux" and fname.endswith(".deb"):
+        result = subprocess.run(["ar", "x", fname, "--output", str(uncompressed)])
+        if result.returncode != 0:
+            logger.warning(
+                "Could not run 'ar x' command to unpack debian package. Do you have "
+                "binutils installed with 'sudo apt install binutils'?"
+            )
+            return str(fname)
+
+        # untar control and data
+        with tarfile.open(uncompressed / "control.tar.gz") as archive:
+            archive.extractall(uncompressed / "control")
+        with tarfile.open(uncompressed / "data.tar.gz") as archive:
+            archive.extractall(uncompressed / "data")
+
+        # parse dependencies for logging information
+        with open(uncompressed / "control" / "control", "r") as file:
+            lines = file.readlines()
+        lines = [
+            line.split("Depends:")[1].strip()
+            for line in lines
+            if line.startswith("Depends:")
+        ]
+        if len(lines) != 1:
+            logger.warning(
+                "Dependencies from debian liblsl package could not be parsed."
+            )
+        else:
+            logger.info(
+                "Attempting to retrieve liblsl from the release page. It requires %s.",
+                lines[0]
+            )
+        files_ = [
+            elt
+            for elt in (uncompressed / "data" / "lib").iterdir()
+            if elt.is_file() and not elt.is_symlink()
+        ]
+        assert len(files_) == 1, "Please contact the developers on GitHub."
+        target = (folder / fname.name).with_suffix(_PLATFORM_SUFFIXES["linux"])
+        move(files_[0], target)
+
+    elif _PLATFORM == "linux":
+        return str(fname)  # let's try to load it and hope for the best
+
+    elif _PLATFORM == "darwin":
         with tarfile.open(fname, "r:bz2") as archive:
             archive.extractall(uncompressed)
         files_ = [
@@ -259,6 +302,7 @@ def _pooch_processor_liblsl(fname: str, action: str, pooch: Pooch) -> str:
             _PLATFORM_SUFFIXES["darwin"]
         )
         move(files_[0], target)
+
     elif _PLATFORM == "windows":
         with zipfile.ZipFile(fname, "r") as archive:
             archive.extractall(uncompressed)
