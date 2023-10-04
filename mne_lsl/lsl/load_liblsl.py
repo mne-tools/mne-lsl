@@ -82,7 +82,7 @@ def _find_liblsl() -> Optional[CDLL]:
             )
             continue
         if not libpath.exists():
-            logger.warning("The LIBLSL '%s' does not exist.")
+            logger.warning("The LIBLSL '%s' does not exist.", libpath)
             continue
         libpath, version = _attempt_load_liblsl(libpath)
         if version is None:
@@ -105,33 +105,6 @@ def _find_liblsl() -> Optional[CDLL]:
     else:
         lib = None  # only executed if we did not break the for loop
     return lib
-
-
-def _attempt_load_liblsl(libpath: Union[str, Path]) -> Tuple[str, Optional[int]]:
-    """Try loading a binary LSL library.
-
-    Parameters
-    ----------
-    libpath : Path
-        Path to the binary LSL library.
-
-    Returns
-    -------
-    libpath : str
-        Path to the binary LSL library, converted to string for the given OS.
-    version : int
-        Version of the binary LSL library.
-        The major version is version // 100.
-        The minor version is version % 100.
-    """
-    libpath = str(Path) if isinstance(libpath, Path) else libpath
-    try:
-        lib = CDLL(libpath)
-        version = lib.lsl_library_version()
-        del lib
-    except OSError:
-        version = None
-    return libpath, version
 
 
 def _fetch_liblsl() -> Optional[CDLL]:
@@ -233,8 +206,42 @@ def _fetch_liblsl() -> Optional[CDLL]:
         fname=asset["name"],
         path=libpath.parent,
         processor=_pooch_processor_liblsl,
+        known_hash=None,
     )
-    return CDLL(libpath)
+    libpath, version = _attempt_load_liblsl(libpath)
+    if version is None:
+        logger.warning("The LIBLSL '%s' can not be loaded.", libpath)
+        lib = None
+    else:
+        lib = CDLL(libpath)
+    return lib
+
+
+def _attempt_load_liblsl(libpath: Union[str, Path]) -> Tuple[str, Optional[int]]:
+    """Try loading a binary LSL library.
+
+    Parameters
+    ----------
+    libpath : Path
+        Path to the binary LSL library.
+
+    Returns
+    -------
+    libpath : str
+        Path to the binary LSL library, converted to string for the given OS.
+    version : int
+        Version of the binary LSL library.
+        The major version is version // 100.
+        The minor version is version % 100.
+    """
+    libpath = str(Path) if isinstance(libpath, Path) else libpath
+    try:
+        lib = CDLL(libpath)
+        version = lib.lsl_library_version()
+        del lib
+    except OSError:
+        version = None
+    return libpath, version
 
 
 def _pooch_processor_liblsl(fname: str, action: str, pooch: Pooch) -> str:
@@ -271,7 +278,7 @@ def _pooch_processor_liblsl(fname: str, action: str, pooch: Pooch) -> str:
             for elt in (uncompressed / "lib").iterdir()
             if elt.is_file() and not elt.is_symlink()
         ]
-        assert len(files) == 1, "Please contact the developers on GitHub."
+        assert len(files_) == 1, "Please contact the developers on GitHub."
         target = (folder / f"{fname.name.split('.tar.bz2')[0]}").with_suffix(
             _PLATFORM_SUFFIXES["darwin"]
         )
@@ -284,7 +291,7 @@ def _pooch_processor_liblsl(fname: str, action: str, pooch: Pooch) -> str:
             for elt in (uncompressed / "bin").iterdir()
             if elt.is_file() and elt.suffix == _PLATFORM_SUFFIXES["windows"]
         ]
-        assert len(files) == 1, "Please contact the developers on GitHub."
+        assert len(files_) == 1, "Please contact the developers on GitHub."
         target = (folder / fname.name).with_suffix(_PLATFORM_SUFFIXES["windows"])
         move(files_[0], target)
 
