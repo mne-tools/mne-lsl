@@ -2,7 +2,6 @@ from __future__ import annotations  # c.f. PEP 563, PEP 649
 
 import os
 import platform
-import requests
 import tarfile
 import zipfile
 from ctypes import CDLL, c_char_p, c_double, c_long, c_void_p, sizeof
@@ -13,6 +12,7 @@ from shutil import move, rmtree
 from typing import TYPE_CHECKING
 
 import pooch
+import requests
 
 from ..utils.logs import logger
 
@@ -210,38 +210,14 @@ def _fetch_liblsl() -> Optional[CDLL]:
     )
     libpath, version = _attempt_load_liblsl(libpath)
     if version is None:
-        logger.warning("The LIBLSL '%s' can not be loaded.", libpath)
+        logger.warning(
+            "The downloaded LIBLSL '%s' can not be loaded. It will be removed.", libpath
+        )
+        Path(libpath).unlink()
         lib = None
     else:
         lib = CDLL(libpath)
     return lib
-
-
-def _attempt_load_liblsl(libpath: Union[str, Path]) -> Tuple[str, Optional[int]]:
-    """Try loading a binary LSL library.
-
-    Parameters
-    ----------
-    libpath : Path
-        Path to the binary LSL library.
-
-    Returns
-    -------
-    libpath : str
-        Path to the binary LSL library, converted to string for the given OS.
-    version : int
-        Version of the binary LSL library.
-        The major version is version // 100.
-        The minor version is version % 100.
-    """
-    libpath = str(libpath) if isinstance(libpath, Path) else libpath
-    try:
-        lib = CDLL(libpath)
-        version = lib.lsl_library_version()
-        del lib
-    except OSError:
-        version = None
-    return libpath, version
 
 
 def _pooch_processor_liblsl(fname: str, action: str, pooch: Pooch) -> str:
@@ -269,7 +245,7 @@ def _pooch_processor_liblsl(fname: str, action: str, pooch: Pooch) -> str:
 
     folder = files("mne_lsl.lsl") / "lib"
     fname = Path(fname)
-    uncompressed = folder / f"{fname.name}.achive"
+    uncompressed = folder / f"{fname.name}.archive"
     if _PLATFORM == "darwin":
         with tarfile.open(fname, "r:bz2") as archive:
             archive.extractall(uncompressed)
@@ -299,6 +275,33 @@ def _pooch_processor_liblsl(fname: str, action: str, pooch: Pooch) -> str:
     fname.unlink()
     rmtree(uncompressed)
     return str(target)
+
+
+def _attempt_load_liblsl(libpath: Union[str, Path]) -> Tuple[str, Optional[int]]:
+    """Try loading a binary LSL library.
+
+    Parameters
+    ----------
+    libpath : Path
+        Path to the binary LSL library.
+
+    Returns
+    -------
+    libpath : str
+        Path to the binary LSL library, converted to string for the given OS.
+    version : int
+        Version of the binary LSL library.
+        The major version is version // 100.
+        The minor version is version % 100.
+    """
+    libpath = str(libpath) if isinstance(libpath, Path) else libpath
+    try:
+        lib = CDLL(libpath)
+        version = lib.lsl_library_version()
+        del lib
+    except OSError:
+        version = None
+    return libpath, version
 
 
 def _set_types(lib: CDLL) -> CDLL:
