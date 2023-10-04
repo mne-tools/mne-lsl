@@ -246,7 +246,7 @@ def _pooch_processor_liblsl(fname: str, action: str, pooch: Pooch) -> str:
     uncompressed = folder / f"{fname.name}.archive"
 
     if _PLATFORM == "linux" and fname.suffix == ".deb":
-        result = subprocess.run(["ar", "x", fname, "--output", str(uncompressed)])
+        result = subprocess.run(["ar", "x", str(fname), "--output", str(uncompressed)])
         if result.returncode != 0:
             logger.warning(
                 "Could not run 'ar x' command to unpack debian package. Do you have "
