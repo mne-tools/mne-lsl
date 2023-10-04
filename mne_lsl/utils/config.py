@@ -8,6 +8,7 @@ import psutil
 from packaging.requirements import Requirement
 
 from ._checks import check_type
+from .logs import _use_log_level
 
 
 def sys_info(fid: Optional[IO] = None, developer: bool = False):
@@ -44,14 +45,15 @@ def sys_info(fid: Optional[IO] = None, developer: bool = False):
     # package information
     out(f"{package}:".ljust(ljust) + version(package) + "\n")
     try:
-        from ..lsl import library_version
+        with _use_log_level("CRITICAL"):
+            from ..lsl import library_version
         out(
             "liblsl:".ljust(ljust)
             + f"{library_version() // 100}.{library_version() % 100}"
             + "\n"
         )
     except Exception:
-        out("liblsl:".ljust(ljust) + "not found.")
+        out("liblsl:".ljust(ljust) + "not found.\n")
 
     # dependencies
     out("\nCore dependencies\n")
