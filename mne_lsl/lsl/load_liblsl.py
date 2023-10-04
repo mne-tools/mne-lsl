@@ -245,7 +245,7 @@ def _pooch_processor_liblsl(fname: str, action: str, pooch: Pooch) -> str:
     fname = Path(fname)
     uncompressed = folder / f"{fname.name}.archive"
 
-    if _PLATFORM == "linux" and fname.endswith(".deb"):
+    if _PLATFORM == "linux" and fname.suffix == ".deb":
         result = subprocess.run(["ar", "x", fname, "--output", str(uncompressed)])
         if result.returncode != 0:
             logger.warning(
