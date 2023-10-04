@@ -36,7 +36,6 @@ _PLATFORM_SUFFIXES = {
 # variables which should be kept in sync with liblsl release
 _SUPPORTED_DISTRO = {
     "ubuntu": ("18.04", "20.04", "22.04"),
-    "pureos": ("10",)
 }
 
 
@@ -48,18 +47,9 @@ def load_liblsl() -> CDLL:
             "provide the error traceback to the developers."
         )
     lib = _find_liblsl()
-    if lib is not None:
-        return _set_types(lib)
-    lib = _fetch_liblsl()
-    if lib is not None:
-        return _set_types(lib)
-    else:
-        raise RuntimeError(
-            "The liblsl library could not be found on your system or fetched by "
-            "MNE-LSL for your platform. Please visit the liblsl repository "
-            "(https://github.com/sccn/liblsl) to find a release for your platform or "
-            "instruction to build the library on your platforn."
-        )
+    if lib is None:
+        lib = _fetch_liblsl()
+    return _set_types(lib)
 
 
 def _find_liblsl() -> Optional[CDLL]:
@@ -117,8 +107,14 @@ def _fetch_liblsl() -> Optional[CDLL]:
     lib : CDLL | None
         Loaded binary LSL library. None if not found for this platform.
     """
-    response = requests.get("https://api.github.com/repos/sccn/liblsl/releases/latest")
-    assets = [elt for elt in response.json()["assets"] if "liblsl" in elt["name"]]
+    try:
+        response = requests.get(
+            "https://api.github.com/repos/sccn/liblsl/releases/latest"
+        )
+        assets = [elt for elt in response.json()["assets"] if "liblsl" in elt["name"]]
+    except Exception as error:
+        logger.exception(error)
+        raise RuntimeError("The latest release of liblsl could not be fetch.")
     # let's try to filter assets for our platform
     if _PLATFORM == "linux":
         import distro
@@ -149,14 +145,16 @@ def _fetch_liblsl() -> Optional[CDLL]:
                 "system directories or provide it in the environment variable "
                 "MNE_LSL_LIB."
             )
+        # TODO: check that POP_OS! distro.codename() does match Ubuntu codenames, else
+        # we also need a mpping between the version and the ubuntu codename.
         assets = [elt for elt in assets if distro.codename() in elt["name"]]
 
     elif _PLATFORM == "darwin":
         assets = [elt for elt in assets if "OSX" in elt["name"]]
         if platform.processor() == "arm":
             assets = [elt for elt in assets if "arm" in elt["name"]]
-            # fix for M1-M2 while liblsl doesn't consistently release a version for arm
-            # architecture with every release
+            # TODO: fix for M1-M2 while liblsl doesn't consistently release a version
+            # for arm64 architecture with every release.
             if len(assets) == 0:
                 assets = [
                     dict(
@@ -184,8 +182,20 @@ def _fetch_liblsl() -> Optional[CDLL]:
                 "issue on GitHub and provide the error traceback to the developers."
             )
 
-    if len(assets) != 1:
-        return None
+    if len(assets) == 0:
+        raise RuntimeError(
+            "MNE-LSL could not find a liblsl on the github release page which match "
+            "your architecture. Please build the liblsl library from source "
+            "(https://github.com/sccn/liblsl) and install it in the system directories "
+            "or provide it in the environment variable MNE_LSL_LIB."
+        )
+    elif len(assets) != 1:
+        raise RuntimeError(
+            "MNE-LSL found multiple liblsl on the github release page which match "
+            "your architecture. Please visit liblsl library github page "
+            "(https://github.com/sccn/liblsl) and install a release in the system "
+            "directories (or provide its path in the environment variable MNE_LSL_LIB)."
+        )
 
     asset = assets[0]
     folder = files("mne_lsl.lsl") / "lib"
@@ -196,11 +206,11 @@ def _fetch_liblsl() -> Optional[CDLL]:
         if version is None:
             logger.warning(
                 "Previously downloaded liblsl '%s' could not be loaded. It will be "
-                "removed."
+                "removed and downloaded again."
             )
             libpath.unlink(missing_ok=False)
         else:
-            return CDLL(libpath)
+            return CDLL(str(libpath))
 
     # liblsl was not already present in mne_lsl/lsl/lib, thus we need to download it
     libpath = pooch.retrieve(
@@ -212,13 +222,14 @@ def _fetch_liblsl() -> Optional[CDLL]:
     )
     libpath, version = _attempt_load_liblsl(libpath)
     if version is None:
-        logger.warning(
-            "The downloaded LIBLSL '%s' can not be loaded. It will be removed.", libpath
-        )
         Path(libpath).unlink()
-        lib = None
-    else:
-        lib = CDLL(libpath)
+        raise RuntimeError(
+            f"MNE-LSL could not load the downloaded liblsl '{libpath}'. Please build "
+            "the liblsl library from source (https://github.com/sccn/liblsl) and "
+            "install it in the system directories or provide it in the environment "
+            "variable MNE_LSL_LIB."
+        )
+    lib = CDLL(libpath)
     return lib
 
 
