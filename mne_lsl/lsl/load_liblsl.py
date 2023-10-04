@@ -36,6 +36,7 @@ _PLATFORM_SUFFIXES = {
 # variables which should be kept in sync with liblsl release
 _SUPPORTED_DISTRO = {
     "ubuntu": ("18.04", "20.04", "22.04"),
+    "pureos": ("10",)
 }
 
 
