@@ -180,8 +180,17 @@ def _fetch_liblsl() -> Optional[CDLL]:
         assets = [elt for elt in assets if "OSX" in elt["name"]]
         if platform.processor() == "arm":
             assets = [elt for elt in assets if "arm" in elt["name"]]
+            # fix for M1-M2 while liblsl doesn't consistently release a version for arm
+            # architecture with every release
+            if len(assets) == 0:
+                assets = [
+                    dict(
+                        name="liblsl-1.16.0-OSX_arm64.tar.bz2",
+                        browser_download_url="https://github.com/sccn/liblsl/releases/download/v1.16.0/liblsl-1.16.0-OSX_arm64.tar.bz2",  # noqa: E501
+                    )
+                ]
         elif platform.processor() == "i386":
-            assets = [elt for elt in assets if "arm" in elt["name"]]
+            assets = [elt for elt in assets if "amd64" in elt["name"]]
         else:
             raise RuntimeError(
                 "The processor architecture could not be determined. Please open an "
