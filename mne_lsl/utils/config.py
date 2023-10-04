@@ -47,10 +47,10 @@ def sys_info(fid: Optional[IO] = None, developer: bool = False):
     try:
         with _use_log_level("CRITICAL"):
             from ..lsl import library_version
+            from ..lsl.load_liblsl import lib
         out(
             "liblsl:".ljust(ljust)
-            + f"{library_version() // 100}.{library_version() % 100}"
-            + "\n"
+            + f"{library_version() // 100}.{library_version() % 100} ({lib._name})\n"
         )
     except Exception:
         out("liblsl:".ljust(ljust) + "not found.\n")
