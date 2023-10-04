@@ -1,6 +1,4 @@
-import platform
-
-from mne_lsl.lsl.load_liblsl import _PLATFORM_SUFFIXES
+from mne_lsl.lsl.load_liblsl import _PLATFORM_SUFFIXES, _PLATFORM
 
 
 def test_os_detection():
@@ -8,4 +6,4 @@ def test_os_detection():
 
     Make sure platform.system() returns a valid entry.
     """
-    assert platform.system() in _PLATFORM_SUFFIXES
+    assert _PLATFORM in _PLATFORM_SUFFIXES
