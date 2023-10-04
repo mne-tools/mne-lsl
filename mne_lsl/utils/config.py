@@ -7,7 +7,6 @@ from typing import IO, Callable, List, Optional
 import psutil
 from packaging.requirements import Requirement
 
-from ..lsl import library_version
 from ._checks import check_type
 
 
@@ -44,11 +43,15 @@ def sys_info(fid: Optional[IO] = None, developer: bool = False):
     out(f"{psutil.swap_memory().total / float(2 ** 30):0.1f} GB\n")
     # package information
     out(f"{package}:".ljust(ljust) + version(package) + "\n")
-    out(
-        "liblsl:".ljust(ljust)
-        + f"{library_version() // 100}.{library_version() % 100}"
-        + "\n"
-    )
+    try:
+        from ..lsl import library_version
+        out(
+            "liblsl:".ljust(ljust)
+            + f"{library_version() // 100}.{library_version() % 100}"
+            + "\n"
+        )
+    except Exception:
+        out("liblsl:".ljust(ljust) + "not found.")
 
     # dependencies
     out("\nCore dependencies\n")
