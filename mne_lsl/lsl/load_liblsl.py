@@ -234,7 +234,7 @@ def _attempt_load_liblsl(libpath: Union[str, Path]) -> Tuple[str, Optional[int]]
         The major version is version // 100.
         The minor version is version % 100.
     """
-    libpath = str(Path) if isinstance(libpath, Path) else libpath
+    libpath = str(libpath) if isinstance(libpath, Path) else libpath
     try:
         lib = CDLL(libpath)
         version = lib.lsl_library_version()
