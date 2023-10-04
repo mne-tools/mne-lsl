@@ -245,9 +245,10 @@ def _pooch_processor_liblsl(fname: str, action: str, pooch: Pooch) -> str:
     fname : str
         The full path of the file in the local data storage.
     action : str
-        Either: "download" (file doesn't exist and will be downloaded),
-        "update" (file is outdated and will be downloaded), or "fetch"
-        (file exists and is updated so no download is necessary).
+        Either:
+        * "download" (file doesn't exist and will be downloaded)
+        * "update" (file is outdated and will be downloaded)
+        * "fetch" (file exists and is updated so no download is necessary)
     pooch : Pooch
         The instance of the Pooch class that is calling this function.
 
