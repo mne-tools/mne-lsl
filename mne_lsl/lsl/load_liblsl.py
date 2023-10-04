@@ -63,10 +63,22 @@ def _find_liblsl() -> Optional[CDLL]:
     for libpath in (os.environ.get("MNE_LSL_LIB", None), find_library("lsl")):
         if libpath is None:
             continue
+
+        # for linux, find_library does not return an absolute path, so we can not try to
+        # triage based on the libpath.
+        if _PLATFORM == "linux":
+            try:
+                libpath, version = _attempt_load_liblsl(libpath)
+            except Exception:
+                logger.warning("The liblsl '%s' could not be loaded.", libpath)
+                continue
+            lib = CDLL(libpath)
+            break
+
         libpath = Path(libpath)
         if libpath.suffix != _PLATFORM_SUFFIXES[_PLATFORM]:
             logger.warning(
-                "The LIBLSL '%s' ends with '%s' which is different from the expected "
+                "The liblsl '%s' ends with '%s' which is different from the expected "
                 "extension '%s' for this OS.",
                 libpath,
                 libpath.suffix,
