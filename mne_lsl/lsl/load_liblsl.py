@@ -275,7 +275,7 @@ def _pooch_processor_liblsl(fname: str, action: str, pooch: Pooch) -> str:
         else:
             logger.info(
                 "Attempting to retrieve liblsl from the release page. It requires %s.",
-                lines[0]
+                lines[0],
             )
         files_ = [
             elt
