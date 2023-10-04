@@ -64,9 +64,9 @@ def _find_liblsl() -> Optional[CDLL]:
         if libpath is None:
             continue
 
-        # for linux, find_library does not return an absolute path, so we can not try to
-        # triage based on the libpath.
         if _PLATFORM == "linux":
+            # for linux, find_library does not return an absolute path, so we can not
+            # try to triage based on the libpath.
             libpath, version = _attempt_load_liblsl(libpath)
         else:
             libpath = Path(libpath)
