@@ -28,7 +28,7 @@ jobs:
       - name: Install linux dependencies
         run: |
           sudo apt update
-          sudo apt install -y binutils libpugixml-dev qtbase5-dev qt5-qmake
+          sudo apt install -y libpugixml-dev qtbase5-dev qt5-qmake
       - name: Install package
         run: |
           python -m pip install --progress-bar off --upgrade pip setuptools wheel
