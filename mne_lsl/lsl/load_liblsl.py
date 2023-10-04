@@ -67,28 +67,22 @@ def _find_liblsl() -> Optional[CDLL]:
         # for linux, find_library does not return an absolute path, so we can not try to
         # triage based on the libpath.
         if _PLATFORM == "linux":
-            try:
-                libpath, version = _attempt_load_liblsl(libpath)
-            except Exception:
-                logger.warning("The liblsl '%s' could not be loaded.", libpath)
+            libpath, version = _attempt_load_liblsl(libpath)
+        else:
+            libpath = Path(libpath)
+            if libpath.suffix != _PLATFORM_SUFFIXES[_PLATFORM]:
+                logger.warning(
+                    "The liblsl '%s' ends with '%s' which is different from the "
+                    "expected extension '%s' for this OS.",
+                    libpath,
+                    libpath.suffix,
+                    _PLATFORM_SUFFIXES[_PLATFORM],
+                )
                 continue
-            lib = CDLL(libpath)
-            break
-
-        libpath = Path(libpath)
-        if libpath.suffix != _PLATFORM_SUFFIXES[_PLATFORM]:
-            logger.warning(
-                "The liblsl '%s' ends with '%s' which is different from the expected "
-                "extension '%s' for this OS.",
-                libpath,
-                libpath.suffix,
-                _PLATFORM_SUFFIXES[_PLATFORM],
-            )
-            continue
-        if not libpath.exists():
-            logger.warning("The LIBLSL '%s' does not exist.", libpath)
-            continue
-        libpath, version = _attempt_load_liblsl(libpath)
+            if not libpath.exists():
+                logger.warning("The LIBLSL '%s' does not exist.", libpath)
+                continue
+            libpath, version = _attempt_load_liblsl(libpath)
         if version is None:
             logger.warning("The LIBLSL '%s' can not be loaded.", libpath)
             continue
