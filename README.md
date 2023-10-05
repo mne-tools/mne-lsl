@@ -9,7 +9,7 @@
 
 <img align="right" src="https://raw.githubusercontent.com/mne-tools/mne-lsl/main/doc/_static/icon/icon.svg" alt="logo" width="200"/>
 
-<p align="justify">
+<div style="text-align: justify">
 **MNE-LSL** [(Documentation website)](https://mne.tools/mne-lsl)
 provides a real-time brain signal streaming framework.
 **MNE-LSL** contains an improved python-binding for the Lab Streaming Layer C++ library,
@@ -20,7 +20,7 @@ Any signal acquisition system supported by native LSL or OpenVibe is also
 supported by MNE-LSL. Since the data communication is based on TCP, signals can be
 transmitted wirelessly. For more information about LSL, please visit the
 [LSL github](https://github.com/sccn/labstreaminglayer).
-</p>
+</div>
 
 # Install
 
@@ -33,7 +33,7 @@ Install instruction can be found on the
 
 <img align="right" src="https://raw.githubusercontent.com/mne-tools/mne-lsl/main/doc/_static/partners/fcbg-hnp-meeg.png" width=150>
 
-<p align="justify">
+<div style="text-align: justify">
 **MNE-LSL** is based on **BSL** and **NeuroDecode**. The original version developed by
 [**Kyuhwa Lee**](https://github.com/dbdq) was recognised at
 [Microsoft Brain Signal Decoding competition](https://github.com/dbdq/microsoft_decoding)
@@ -44,7 +44,7 @@ with the First Prize Award (2016).
 [Fondation Campus Biotech Geneva (FCBG)](https://github.com/fcbg-hnp-meeg) and
 development is still supported by the
 [Human Neuroscience Platform (FCBG)](https://hnp.fcbg.ch/).
-</p>
+</div>
 
 # Copyright and license
 
