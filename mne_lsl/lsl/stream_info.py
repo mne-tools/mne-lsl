@@ -387,19 +387,19 @@ class _BaseStreamInfo:
         info : Info
             :class:`~mne.Info` containing the measurement information.
         """
-        self._sinfo.set_channel_names(info["ch_names"])
-        self._sinfo.set_channel_types(info.get_channel_types(unique=False))
-        self._sinfo.set_channel_units([ch["unit_mul"] for ch in info["chs"]])
+        self.set_channel_names(info["ch_names"])
+        self.set_channel_types(info.get_channel_types(unique=False))
+        self.set_channel_units([ch["unit_mul"] for ch in info["chs"]])
         # integer codes
         for ch_info in ("kind", "coil_type", "coord_frame"):
-            self._sinfo._set_channel_info(
+            self._set_channel_info(
                 [str(int(ch[ch_info])) for ch in info["chs"]], ch_info
             )
         # floats, range and cal are multiplied together here because since they are
         # small, it's best to handle the floating point multiplication before
         # transmission.
-        self._sinfo._set_channel_info(
-            [str(ch["range"] * ch["cal"]) for ch in info["chs"]]
+        self._set_channel_info(
+            [str(ch["range"] * ch["cal"]) for ch in info["chs"]], "range_cal"
         )
 
         # non-channel variables
@@ -409,11 +409,13 @@ class _BaseStreamInfo:
             filters = self.desc.child("filters")
         for filt in ("highpass", "lowpass"):
             if filters.child(filt).empty():
-                filters.append_child_value(filt, info[filt])
+                filters.append_child_value(filt, str(info[filt]))
             else:
-                filters.child(filt).first_child().set_value(info[filt])
+                filters.child(filt).first_child().set_value(str(info[filt]))
 
         # projectors and digitization
+        self._set_channel_projectors(info["projs"])
+        self._set_digitization(info["dig"])
 
 
     def set_channel_names(self, ch_names: Union[List[str], Tuple[str]]) -> None:
@@ -518,10 +520,46 @@ class _BaseStreamInfo:
             ch = ch_next
 
     def _set_channel_projectors(self, projs: List[Projection]) -> None:
-        pass
+        """Set the SSP projector."""
+        check_type(projs, (list,), "projs")
 
-    def _set_digitization(self, List[DigPoint]) -> None:
-        pass
+    def _set_digitization(self, dig_points: List[DigPoint]) -> None:
+        """Set the digitization points."""
+        check_type(dig_points, (list,), "dig_points")
+        if self.desc.child("dig").empty():
+            dig = self.desc.append_child("dig")
+        else:
+            dig = self.desc.child("dig")
+
+        # fill the 'point' element of the tree and overwrite existing integer codes
+        point = dig.child("point")
+        for dig_point in dig_points:
+            if point.empty():
+                point = dig.append_child("point")
+
+            for key in ("kind", "ident"):
+                value = str(int(dig_point[key]))
+                if point.child(key).empty():
+                    point.append_child_value(key, value)
+                else:
+                    point.child(key).first_child().set_value(value)
+
+            loc = point.child("loc")
+            if loc.empty():
+                loc = point.append_child("loc")
+            for key, value in zip(("X", "Y", "Z"), dig_point["r"]):
+                if loc.child(key).empty():
+                    loc.append_child_value(key, str(value))
+                else:
+                    loc.child(key).first_child/().set_value(str(value))
+            point = point.next_sibling()
+
+        # in case the original sinfo was tempered with and had more 'point' than the
+        # correct number of points
+        while not point.empty():
+            point_next = point.next_sibling()
+            dig.remove_child(point)
+            point = point_next
 
 
 class StreamInfo(_BaseStreamInfo):
