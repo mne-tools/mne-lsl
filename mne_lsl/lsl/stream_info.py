@@ -554,67 +554,34 @@ class _BaseStreamInfo:
             projectors = self.desc.child("projectors")
 
         # fill the 'channel/name' element of the tree and overwrite existing values
-        ch = projectors.child("projector")
-        for ch_info in projs:
-            if ch.empty():
-                ch = projectors.append_child("projector")
+        projector = projectors.child("projector")
+        for proj in projs:
+            if projector.empty():
+                projector = projectors.append_child("projector")
 
-            if ch.child("desc").empty():
-                ch.append_child_value("desc", ch_info["desc"])
+            if projector.child("desc").empty():
+                projector.append_child_value("desc", proj["desc"])
             else:
-                ch.child("desc").first_child().set_value(ch_info["desc"])
+                projector.child("desc").first_child().set_value(proj["desc"])
 
-            value = str(int(ch_info["kind"]))
-            if ch.child("kind").empty():
-                ch.append_child_value("kind", value)
+            value = str(int(proj["kind"]))
+            if projector.child("kind").empty():
+                projector.append_child_value("kind", value)
             else:
-                ch.child("kind").first_child().set_value(value)
+                projector.child("kind").first_child().set_value(value)
 
-            ch = ch.next_sibling()
+            # data = projector.child("data")
+            # if data.empty():
+            #     data = projector.append_child("data")
+
+            projector = projector.next_sibling()
 
         # in case the original sinfo was tempered with and had more 'channel' than the
         # correct number of channels
-        while not ch.empty():
-            ch_next = ch.next_sibling()
-            projectors.remove_child(ch)
-            ch = ch_next
-
-
-        # check_type(projectors, (list,), "projs")
-        # if self.desc.child("projs").empty():
-        #     projs = self.desc.append_child("projs")
-        # else:
-        #     projs = self.desc.child("projs")
-
-        # # fill the 'projector' element of the tree
-        # proj = projs.child("proj")
-        # for projector in projectors:
-        #     if proj.empty():
-        #         proj = projs.append_child("proj")
-
-        #     # kind
-        #     value = str(int(projector["kind"]))
-        #     if proj.child("kind").empty():
-        #         proj.append_child_value("kind", value)
-        #     else:
-        #         proj.child("kind").first_child().set_value(value)
-
-        #     # desc
-        #     if proj.child("desc").empty():
-        #         proj.append_child_value("desc", projector["desc"])
-        #     else:
-        #         proj.child("desc").first_child().set_value(projector["desc"])
-
-        #     proj.next_sibling()
-
-        # # in case the original sinfo was tempered with and had more 'channel' than the
-        # # correct number of channels
-        # while not projector.empty():
-        #     projector_next = projector.next_sibling()
-        #     projectors.remove_child(projector)
-        #     projector = projector_next
-
-
+        while not projector.empty():
+            projector_next = projector.next_sibling()
+            projectors.remove_child(projector)
+            projector = projector_next
 
 
 
