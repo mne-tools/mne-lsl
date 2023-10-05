@@ -554,15 +554,22 @@ class _BaseStreamInfo:
             projectors = self.desc.child("projectors")
 
         # fill the 'channel/name' element of the tree and overwrite existing values
-        ch = projectors.child("channel")
+        ch = projectors.child("projector")
         for ch_info in projs:
             if ch.empty():
-                ch = projectors.append_child("channel")
+                ch = projectors.append_child("projector")
 
             if ch.child("desc").empty():
                 ch.append_child_value("desc", ch_info["desc"])
             else:
-                ch.child("des").first_child().set_value(ch_info["desc"])
+                ch.child("desc").first_child().set_value(ch_info["desc"])
+
+            value = str(int(ch_info["kind"]))
+            if ch.child("kind").empty():
+                ch.append_child_value("kind", value)
+            else:
+                ch.child("kind").first_child().set_value(value)
+
             ch = ch.next_sibling()
 
         # in case the original sinfo was tempered with and had more 'channel' than the
