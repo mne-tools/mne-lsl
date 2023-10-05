@@ -27,6 +27,7 @@ def sys_info(fid: Optional[IO] = None, developer: bool = False):
     ljust = 26
     out = partial(print, end="", file=fid)
     package = __package__.split(".")[0]
+    unicode = sys.stdout.encoding.lower().startswith("utf")
 
     # OS information
     out("Platform:".ljust(ljust) + platform.platform() + "\n")
@@ -53,13 +54,16 @@ def sys_info(fid: Optional[IO] = None, developer: bool = False):
             + f"{library_version() // 100}.{library_version() % 100} ({lib._name})\n"
         )
     except Exception:
-        out("liblsl:".ljust(ljust) + "not found.\n")
+        if unicode:
+            out("liblsl:".ljust(ljust) + "⚠ not found ⚠\n")
+        else:
+            out("liblsl:".ljust(ljust) + "not found\n")
 
     # dependencies
     out("\nCore dependencies\n")
     dependencies = [Requirement(elt) for elt in requires(package)]
     core_dependencies = [dep for dep in dependencies if "extra" not in str(dep.marker)]
-    _list_dependencies_info(out, ljust, package, core_dependencies)
+    _list_dependencies_info(out, ljust, package, core_dependencies, unicode)
 
     # extras
     if developer:
@@ -78,17 +82,19 @@ def sys_info(fid: Optional[IO] = None, developer: bool = False):
             if len(extra_dependencies) == 0:
                 continue
             out(f"\nOptional '{key}' dependencies\n")
-            _list_dependencies_info(out, ljust, package, extra_dependencies)
+            _list_dependencies_info(out, ljust, package, extra_dependencies, unicode)
 
 
 def _list_dependencies_info(
-    out: Callable, ljust: int, package: str, dependencies: List[Requirement]
+    out: Callable,
+    ljust: int,
+    package: str,
+    dependencies: List[Requirement],
+    unicode: bool,
 ):
     """List dependencies names and versions."""
-    unicode = sys.stdout.encoding.lower().startswith("utf")
     if unicode:
         ljust += 1
-
     not_found: List[Requirement] = list()
     for dep in dependencies:
         if dep.name == package:
