@@ -402,6 +402,30 @@ class _BaseStreamInfo:
             [str(ch["range"] * ch["cal"]) for ch in info["chs"]], "range_cal"
         )
 
+        # channel location
+        # fmt: off
+        loc_names = (
+            "R0x", "R0y", "R0z",
+            "Exx", "Exy", "Exz",
+            "Eyx", "Eyy", "Eyz",
+            "Ezx", "Ezy", "Ezz",
+        )
+        # fmt: on
+        assert not self.desc.child("channels").empty()  # sanity-check
+        channels = self.desc.child("channels")
+        ch = channels.child("channel")
+        for ch_info in info["chs"]:
+            loc = ch.child("loc")
+            if loc.empty():
+                loc = ch.append_child("loc")
+            for key, value in zip(loc_names, ch_info["loc"]):
+                if loc.child(key).empty():
+                    loc.append_child_value(key, str(value))
+                else:
+                    loc.child(key).first_child / ().set_value(str(value))
+            ch = ch.next_sibling()
+        assert ch.empty()  # sanity-check
+
         # non-channel variables
         if self.desc.child("filters").empty():
             filters = self.desc.append_child("filters")
@@ -416,7 +440,6 @@ class _BaseStreamInfo:
         # projectors and digitization
         self._set_channel_projectors(info["projs"])
         self._set_digitization(info["dig"])
-
 
     def set_channel_names(self, ch_names: Union[List[str], Tuple[str]]) -> None:
         """Set the channel names in the description. Existing labels are overwritten.
@@ -466,8 +489,12 @@ class _BaseStreamInfo:
         MNE.
         """
         check_type(ch_units, (list, tuple, np.ndarray, str, "int-like"), "ch_units")
-        if isinstance(ch_units, (str, int)):
-            ch_units = [str(ch_units)] * self.n_channels
+        if isinstance(ch_units, int):
+            ch_units = [
+                ensure_int(ch_unit, "ch_unit") for ch_unit in ch_units
+            ] * self.n_channels
+        elif isinstance(ch_units, str):
+            ch_units = [ch_units] * self.n_channels
         else:
             if isinstance(ch_units, np.ndarray):
                 if ch_units.ndim != 1:
@@ -478,7 +505,7 @@ class _BaseStreamInfo:
                     )
                 ch_units = [ensure_int(ch_unit, "ch_unit") for ch_unit in ch_units]
             ch_units = [
-                str(ch_unit) if isinstance(ch_unit, int) else ch_unit
+                str(int(ch_unit)) if isinstance(ch_unit, int) else ch_unit
                 for ch_unit in ch_units
             ]
         self._set_channel_info(ch_units, "ch_unit")
@@ -519,9 +546,116 @@ class _BaseStreamInfo:
             channels.remove_child(ch)
             ch = ch_next
 
-    def _set_channel_projectors(self, projs: List[Projection]) -> None:
+    def _set_channel_projectors(self, projectors: List[Projection]) -> None:
         """Set the SSP projector."""
-        check_type(projs, (list,), "projs")
+        if self.desc.child("projectors").empty():
+            channels = self.desc.append_child("projectors")
+        else:
+            channels = self.desc.child("projectors")
+
+        # fill the 'channel/name' element of the tree and overwrite existing values
+        ch = channels.child("projectors")
+        for ch_info in projectors:
+            if ch.empty():
+                ch = channels.append_child("projectors")
+
+            if ch.child("desc").empty():
+                ch.append_child_value("desc", ch_info["desc"])
+            else:
+                ch.child("desc").first_child().set_value(ch_info["desc"])
+            ch = ch.next_sibling()
+
+        # in case the original sinfo was tempered with and had more 'channel' than the
+        # correct number of channels
+        while not ch.empty():
+            ch_next = ch.next_sibling()
+            channels.remove_child(ch)
+            ch = ch_next
+
+
+        # check_type(projectors, (list,), "projs")
+        # if self.desc.child("projs").empty():
+        #     projs = self.desc.append_child("projs")
+        # else:
+        #     projs = self.desc.child("projs")
+
+        # # fill the 'projector' element of the tree
+        # proj = projs.child("proj")
+        # for projector in projectors:
+        #     if proj.empty():
+        #         proj = projs.append_child("proj")
+
+        #     # kind
+        #     value = str(int(projector["kind"]))
+        #     if proj.child("kind").empty():
+        #         proj.append_child_value("kind", value)
+        #     else:
+        #         proj.child("kind").first_child().set_value(value)
+
+        #     # desc
+        #     if proj.child("desc").empty():
+        #         proj.append_child_value("desc", projector["desc"])
+        #     else:
+        #         proj.child("desc").first_child().set_value(projector["desc"])
+
+        #     proj.next_sibling()
+
+        # # in case the original sinfo was tempered with and had more 'channel' than the
+        # # correct number of channels
+        # while not projector.empty():
+        #     projector_next = projector.next_sibling()
+        #     projectors.remove_child(projector)
+        #     projector = projector_next
+
+
+
+
+
+        # # fill the 'projector' element of the tree and overwrite existing integer codes
+        # projector = projectors.child("projector")
+        # for proj in projs:
+        #     if projector.empty():
+        #         projector = projectors.append_child("projector")
+
+        #     for key in ("kind", "desc"):
+        #         value = (
+        #             str(int(proj[key]))
+        #             if isinstance(proj[key], int)
+        #             else str(proj[key])
+        #         )
+        #         if projector.child(key).empty():
+        #             projector.append_child_value(key, value)
+        #         else:
+        #             projector.child(key).first_child().set_value(value)
+
+        #     ch = projector.child("channel")
+        #     for ch_name, ch_data in zip(
+        #         proj["data"]["col_names"], np.squeeze(proj["data"]["data"])
+        #     ):
+        #         if ch.empty():
+        #             ch = projector.append_child("channel")
+        #         if ch.child("label").empty():
+        #             ch.append_child_value("label", ch_name)
+        #         else:
+        #             ch.child("label").first_child().set_value(ch_name)
+        #         if ch.child("data").empty():
+        #             ch.append_child_value("data", str(ch_data))
+        #         else:
+        #             ch.child("data").first_child().set_value(str(ch_data))
+        #         ch = ch.next_sibling()
+
+        #     # in case the original sinfo was tempered with and had more 'channel'
+        #     # than the correct number of channels
+        #     while not ch.empty():
+        #         ch_next = ch.next_sibling()
+        #         projector.remove_child(ch)
+        #         ch = ch_next
+        #     projector.next_sibling()
+
+        # while not projector.empty():
+        #     projector_next = projector.next_sibling()
+        #     projectors.remove(projector)
+        #     projector = projector_next
 
     def _set_digitization(self, dig_points: List[DigPoint]) -> None:
         """Set the digitization points."""
@@ -551,7 +685,7 @@ class _BaseStreamInfo:
                 if loc.child(key).empty():
                     loc.append_child_value(key, str(value))
                 else:
-                    loc.child(key).first_child/().set_value(str(value))
+                    loc.child(key).first_child / ().set_value(str(value))
             point = point.next_sibling()
 
         # in case the original sinfo was tempered with and had more 'point' than the
