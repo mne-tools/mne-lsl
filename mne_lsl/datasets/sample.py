@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pooch
+from mne.utils import get_config
 
 from ._fetch import fetch_dataset
 
@@ -40,7 +41,7 @@ def data_path() -> Path:
     path : Path
         Path to the sample dataset, by default in ``"~/mne_data/mne_lsl"``.
     """
-    path = Path.home() / "mne_data" / "mne_lsl" / "sample"
+    path = Path(get_config("MNE_DATA", Path.home())).expanduser() / "mne_lsl" / "sample"
     base_url = "https://github.com/mne-tools/mne-lsl/raw/main/datasets/sample/"
     registry = files("mne_lsl.datasets") / "sample-registry.txt"
     return fetch_dataset(path, base_url, registry)
