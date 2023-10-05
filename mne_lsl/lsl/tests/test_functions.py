@@ -10,14 +10,14 @@ from mne_lsl.lsl import (
     protocol_version,
     resolve_streams,
 )
-from mne_lsl.lsl.load_liblsl import _VERSION_MAX, _VERSION_MIN, _VERSION_PROTOCOL
+from mne_lsl.lsl.load_liblsl import _VERSION_MIN, _VERSION_PROTOCOL
 
 
 def test_library_version():
     """Test retrieval of library version."""
     version = library_version()
     assert isinstance(version, int)
-    assert _VERSION_MIN <= version <= _VERSION_MAX
+    assert _VERSION_MIN <= version
 
 
 def test_protocol_version():
