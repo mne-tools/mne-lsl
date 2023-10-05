@@ -570,9 +570,29 @@ class _BaseStreamInfo:
             else:
                 projector.child("kind").first_child().set_value(value)
 
-            # data = projector.child("data")
-            # if data.empty():
-            #     data = projector.append_child("data")
+            data = projector.child("data")
+            if data.empty():
+                data = projector.append_child("data")
+            ch = data.child("channel")
+            for ch_name, ch_data in zip(
+                proj["data"]["col_names"], np.squeeze(proj["data"]["data"])
+            ):
+                if ch.empty():
+                    ch = data.append_child("channel")
+                if ch.child("label").empty():
+                    ch.append_child_value("label", ch_name)
+                else:
+                    ch.child("label").first_child().set_value(ch_name)
+                if ch.child("data").empty():
+                    ch.append_child_value("data", str(ch_data))
+                else:
+                    ch.child("data").first_child().set_value(str(ch_data))
+                ch = ch.next_sibling()
+
+            while not ch.empty():
+                ch_next = ch.next_sibling()
+                data.remove_child(ch)
+                ch = ch_next
 
             projector = projector.next_sibling()
 
@@ -582,54 +602,6 @@ class _BaseStreamInfo:
             projector_next = projector.next_sibling()
             projectors.remove_child(projector)
             projector = projector_next
-
-
-
-        # # fill the 'projector' element of the tree and overwrite existing integer codes
-        # projector = projectors.child("projector")
-        # for proj in projs:
-        #     if projector.empty():
-        #         projector = projectors.append_child("projector")
-
-        #     for key in ("kind", "desc"):
-        #         value = (
-        #             str(int(proj[key]))
-        #             if isinstance(proj[key], int)
-        #             else str(proj[key])
-        #         )
-        #         if projector.child(key).empty():
-        #             projector.append_child_value(key, value)
-        #         else:
-        #             projector.child(key).first_child().set_value(value)
-
-        #     ch = projector.child("channel")
-        #     for ch_name, ch_data in zip(
-        #         proj["data"]["col_names"], np.squeeze(proj["data"]["data"])
-        #     ):
-        #         if ch.empty():
-        #             ch = projector.append_child("channel")
-        #         if ch.child("label").empty():
-        #             ch.append_child_value("label", ch_name)
-        #         else:
-        #             ch.child("label").first_child().set_value(ch_name)
-        #         if ch.child("data").empty():
-        #             ch.append_child_value("data", str(ch_data))
-        #         else:
-        #             ch.child("data").first_child().set_value(str(ch_data))
-        #         ch = ch.next_sibling()
-
-        #     # in case the original sinfo was tempered with and had more 'channel'
-        #     # than the correct number of channels
-        #     while not ch.empty():
-        #         ch_next = ch.next_sibling()
-        #         projector.remove_child(ch)
-        #         ch = ch_next
-        #     projector.next_sibling()
-
-        # while not projector.empty():
-        #     projector_next = projector.next_sibling()
-        #     projectors.remove(projector)
-        #     projector = projector_next
 
     def _set_digitization(self, dig_points: List[DigPoint]) -> None:
         """Set the digitization points."""
