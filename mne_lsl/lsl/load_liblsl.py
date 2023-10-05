@@ -15,6 +15,7 @@ from typing import TYPE_CHECKING
 import pooch
 import requests
 
+from ..utils._path import walk
 from ..utils.logs import logger
 
 if TYPE_CHECKING:
@@ -264,6 +265,7 @@ def _pooch_processor_liblsl(fname: str, action: str, pooch: Pooch) -> str:
     uncompressed = folder / f"{fname.name}.archive"
 
     if _PLATFORM == "linux" and fname.suffix == ".deb":
+        os.makedirs(uncompressed, exist_ok=True)
         result = subprocess.run(["ar", "x", str(fname), "--output", str(uncompressed)])
         if result.returncode != 0:
             logger.warning(
@@ -295,14 +297,13 @@ def _pooch_processor_liblsl(fname: str, action: str, pooch: Pooch) -> str:
                 "Attempting to retrieve liblsl from the release page. It requires %s.",
                 lines[0],
             )
-        files_ = [
-            elt
-            for elt in (uncompressed / "data" / "lib").iterdir()
-            if elt.is_file() and not elt.is_symlink()
-        ]
-        assert len(files_) == 1, "Please contact the developers on GitHub."
+
+        for file in walk(uncompressed / "data"):
+            if file.is_symlink() and file.parent.name != "lib":
+                continue
+            break
         target = (folder / fname.name).with_suffix(_PLATFORM_SUFFIXES["linux"])
-        move(files_[0], target)
+        move(file, target)
 
     elif _PLATFORM == "linux":
         return str(fname)  # let's try to load it and hope for the best
@@ -310,28 +311,27 @@ def _pooch_processor_liblsl(fname: str, action: str, pooch: Pooch) -> str:
     elif _PLATFORM == "darwin":
         with tarfile.open(fname, "r:bz2") as archive:
             archive.extractall(uncompressed)
-        files_ = [
-            elt
-            for elt in (uncompressed / "lib").iterdir()
-            if elt.is_file() and not elt.is_symlink()
-        ]
-        assert len(files_) == 1, "Please contact the developers on GitHub."
+        for file in walk(uncompressed):
+            if file.is_symlink() and file.parent.name != "lib":
+                continue
+            break
         target = (folder / f"{fname.name.split('.tar.bz2')[0]}").with_suffix(
             _PLATFORM_SUFFIXES["darwin"]
         )
-        move(files_[0], target)
+        move(file, target)
 
     elif _PLATFORM == "windows":
         with zipfile.ZipFile(fname, "r") as archive:
             archive.extractall(uncompressed)
-        files_ = [
-            elt
-            for elt in (uncompressed / "bin").iterdir()
-            if elt.is_file() and elt.suffix == _PLATFORM_SUFFIXES["windows"]
-        ]
-        assert len(files_) == 1, "Please contact the developers on GitHub."
+        for file in walk(uncompressed):
+            if (
+                file.suffix != _PLATFORM_SUFFIXES["windows"]
+                and file.parent.name != "bin"
+            ):
+                continue
+            break
         target = (folder / fname.name).with_suffix(_PLATFORM_SUFFIXES["windows"])
-        move(files_[0], target)
+        move(file, target)
 
     # clean-up
     fname.unlink()
