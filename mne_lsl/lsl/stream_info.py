@@ -14,14 +14,20 @@ from .utils import XMLElement
 if TYPE_CHECKING:
     from typing import Any, List, Optional, Tuple, Union
 
-    from mne import Info
+    from mne import Info, Projection
+    from mne.utils import check_version
     from numpy.typing import DTypeLike, NDArray
+
+    if check_version("mne", "1.6"):
+        from mne._fiff._digitization import DigPoint
+    else:
+        from mne.io._digitization import DigPoint
 
 
 _MAPPING_LSL = {
-    "ch_names": "label",
-    "ch_types": "type",
-    "ch_units": "unit",
+    "ch_name": "label",
+    "ch_type": "type",
+    "ch_unit": "unit",
 }
 
 
@@ -308,7 +314,7 @@ class _BaseStreamInfo:
                 the ``desc`` property is tempered with outside of the defined getter and
                 setter.
         """
-        return self._get_channel_info("ch_names")
+        return self._get_channel_info("ch_name")
 
     def get_channel_types(self) -> Optional[List[str]]:
         """Get the channel types in the description.
@@ -326,7 +332,7 @@ class _BaseStreamInfo:
                 the ``desc`` property is tempered with outside of the defined getter and
                 setter.
         """
-        return self._get_channel_info("ch_types")
+        return self._get_channel_info("ch_type")
 
     def get_channel_units(self) -> Optional[List[str]]:
         """Get the channel units in the description.
@@ -344,18 +350,19 @@ class _BaseStreamInfo:
                 the ``desc`` property is tempered with outside of the defined getter and
                 setter.
         """
-        return self._get_channel_info("ch_units")
+        return self._get_channel_info("ch_unit")
 
     def _get_channel_info(self, name: str) -> Optional[List[str]]:
         """Get the 'channel/name' element in the XML tree."""
         if self.desc.child("channels").empty():
             return None
+        name = _MAPPING_LSL.get(name, name)
 
         channels = self.desc.child("channels")
         ch_infos = list()
         ch = channels.child("channel")
         while not ch.empty():
-            ch_info = ch.child(_MAPPING_LSL[name]).first_child().value()
+            ch_info = ch.child(name).first_child().value()
             if len(ch_info) != 0:
                 ch_infos.append(ch_info)
             else:
@@ -380,7 +387,34 @@ class _BaseStreamInfo:
         info : Info
             :class:`~mne.Info` containing the measurement information.
         """
-        raise NotImplementedError
+        self._sinfo.set_channel_names(info["ch_names"])
+        self._sinfo.set_channel_types(info.get_channel_types(unique=False))
+        self._sinfo.set_channel_units([ch["unit_mul"] for ch in info["chs"]])
+        # integer codes
+        for ch_info in ("kind", "coil_type", "coord_frame"):
+            self._sinfo._set_channel_info(
+                [str(int(ch[ch_info])) for ch in info["chs"]], ch_info
+            )
+        # floats, range and cal are multiplied together here because since they are
+        # small, it's best to handle the floating point multiplication before
+        # transmission.
+        self._sinfo._set_channel_info(
+            [str(ch["range"] * ch["cal"]) for ch in info["chs"]]
+        )
+
+        # non-channel variables
+        if self.desc.child("filters").empty():
+            filters = self.desc.append_child("filters")
+        else:
+            filters = self.desc.child("filters")
+        for filt in ("highpass", "lowpass"):
+            if filters.child(filt).empty():
+                filters.append_child_value(filt, info[filt])
+            else:
+                filters.child(filt).first_child().set_value(info[filt])
+
+        # projectors and digitization
+
 
     def set_channel_names(self, ch_names: Union[List[str], Tuple[str]]) -> None:
         """Set the channel names in the description. Existing labels are overwritten.
@@ -390,7 +424,7 @@ class _BaseStreamInfo:
         ch_names : list of str
             List of channel names, matching the number of total channels.
         """
-        self._set_channel_info(ch_names, "ch_names")
+        self._set_channel_info(ch_names, "ch_name")
 
     def set_channel_types(self, ch_types: Union[str, List[str]]) -> None:
         """Set the channel types in the description. Existing types are overwritten.
@@ -406,7 +440,7 @@ class _BaseStreamInfo:
         ch_types = (
             [ch_types] * self.n_channels if isinstance(ch_types, str) else ch_types
         )
-        self._set_channel_info(ch_types, "ch_types")
+        self._set_channel_info(ch_types, "ch_type")
 
     def set_channel_units(
         self, ch_units: Union[str, List[str], int, List[int], NDArray[int]]
@@ -445,7 +479,7 @@ class _BaseStreamInfo:
                 str(ch_unit) if isinstance(ch_unit, int) else ch_unit
                 for ch_unit in ch_units
             ]
-        self._set_channel_info(ch_units, "ch_units")
+        self._set_channel_info(ch_units, "ch_unit")
 
     def _set_channel_info(self, ch_infos: List[str], name: str) -> None:
         """Set the 'channel/name' element in the XML tree."""
@@ -457,6 +491,7 @@ class _BaseStreamInfo:
                 f"The number of provided channel {name.lstrip('ch_')} {len(ch_infos)} "
                 f"must match the number of channels {self.n_channels}."
             )
+        name = _MAPPING_LSL.get(name, name)
 
         if self.desc.child("channels").empty():
             channels = self.desc.append_child("channels")
@@ -469,10 +504,10 @@ class _BaseStreamInfo:
             if ch.empty():
                 ch = channels.append_child("channel")
 
-            if ch.child(_MAPPING_LSL[name]).empty():
-                ch.append_child_value(_MAPPING_LSL[name], ch_info)
+            if ch.child(name).empty():
+                ch.append_child_value(name, ch_info)
             else:
-                ch.child(_MAPPING_LSL[name]).first_child().set_value(ch_info)
+                ch.child(name).first_child().set_value(ch_info)
             ch = ch.next_sibling()
 
         # in case the original sinfo was tempered with and had more 'channel' than the
@@ -481,6 +516,12 @@ class _BaseStreamInfo:
             ch_next = ch.next_sibling()
             channels.remove_child(ch)
             ch = ch_next
+
+    def _set_channel_projectors(self, projs: List[Projection]) -> None:
+        pass
+
+    def _set_digitization(self, List[DigPoint]) -> None:
+        pass
 
 
 class StreamInfo(_BaseStreamInfo):
