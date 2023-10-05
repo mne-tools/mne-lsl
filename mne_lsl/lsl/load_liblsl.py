@@ -299,7 +299,7 @@ def _pooch_processor_liblsl(fname: str, action: str, pooch: Pooch) -> str:
             )
 
         for file in walk(uncompressed / "data"):
-            if file.is_symlink() and file.parent.name != "lib":
+            if file.is_symlink() or file.parent.name != "lib":
                 continue
             break
         target = (folder / fname.name).with_suffix(_PLATFORM_SUFFIXES["linux"])
@@ -312,11 +312,11 @@ def _pooch_processor_liblsl(fname: str, action: str, pooch: Pooch) -> str:
         with tarfile.open(fname, "r:bz2") as archive:
             archive.extractall(uncompressed)
         for file in walk(uncompressed):
-            if file.is_symlink() and file.parent.name != "lib":
+            if file.is_symlink() or file.parent.name != "lib":
                 continue
             break
-        target = (folder / f"{fname.name.split('.tar.bz2')[0]}").with_suffix(
-            _PLATFORM_SUFFIXES["darwin"]
+        target = (
+            folder / f"{fname.name.split('.tar.bz2')[0]}{_PLATFORM_SUFFIXES['darwin']}"
         )
         move(file, target)
 
@@ -326,7 +326,7 @@ def _pooch_processor_liblsl(fname: str, action: str, pooch: Pooch) -> str:
         for file in walk(uncompressed):
             if (
                 file.suffix != _PLATFORM_SUFFIXES["windows"]
-                and file.parent.name != "bin"
+                or file.parent.name != "bin"
             ):
                 continue
             break
