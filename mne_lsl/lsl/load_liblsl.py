@@ -38,6 +38,12 @@ _PLATFORM_SUFFIXES = {
 _SUPPORTED_DISTRO = {
     "ubuntu": ("18.04", "20.04", "22.04"),
 }
+# generic error message
+_ERROR_MSG = (
+    "Please visit liblsl library github page "
+    + "(https://github.com/sccn/liblsl) and install a release in the system "
+    + "directories or provide its path in the environment variable MNE_LSL_LIB."
+)
 
 
 def load_liblsl() -> CDLL:
@@ -137,20 +143,14 @@ def _fetch_liblsl() -> Optional[CDLL]:
                 raise RuntimeError(
                     "The liblsl library released on GitHub supports "
                     f"{', '.join(_SUPPORTED_DISTRO)} based distributions. "
-                    f"{distro.name()} is not supported. Please build the liblsl "
-                    "library from source (https://github.com/sccn/liblsl) and install "
-                    "it in the system directories or provide it in the environment "
-                    "variable MNE_LSL_LIB."
+                    f"{distro.name()} is not supported. " + _ERROR_MSG
                 )
         if distro.version() not in _SUPPORTED_DISTRO[distro_like]:
             raise RuntimeError(
                 "The liblsl library released on GitHub supports "
                 f"{', '.join(_SUPPORTED_DISTRO)} based distributions on versions "
                 f"{', '.join(_SUPPORTED_DISTRO[distro_like])}. Version "
-                f"{distro.version()} is not supported. Please build the liblsl library "
-                "from source (https://github.com/sccn/liblsl) and install it in the "
-                "system directories or provide it in the environment variable "
-                "MNE_LSL_LIB."
+                f"{distro.version()} is not supported. " + _ERROR_MSG
             )
         # TODO: check that POP_OS! distro.codename() does match Ubuntu codenames, else
         # we also need a mpping between the version and the ubuntu codename.
@@ -192,21 +192,24 @@ def _fetch_liblsl() -> Optional[CDLL]:
     if len(assets) == 0:
         raise RuntimeError(
             "MNE-LSL could not find a liblsl on the github release page which match "
-            "your architecture. Please build the liblsl library from source "
-            "(https://github.com/sccn/liblsl) and install it in the system directories "
-            "or provide it in the environment variable MNE_LSL_LIB."
+            "your architecture. " + _ERROR_MSG
         )
     elif len(assets) != 1:
         raise RuntimeError(
             "MNE-LSL found multiple liblsl on the github release page which match "
-            "your architecture. Please visit liblsl library github page "
-            "(https://github.com/sccn/liblsl) and install a release in the system "
-            "directories (or provide its path in the environment variable MNE_LSL_LIB)."
+            "your architecture. " + _ERROR_MSG
         )
 
     asset = assets[0]
     folder = files("mne_lsl.lsl") / "lib"
-    os.makedirs(folder, exist_ok=True)
+    try:
+        os.makedirs(folder, exist_ok=True)
+    except Exception as error:
+        logger.exception(error)
+        raise RuntimeError(
+            "MNE-LSL could not create the directory 'lib' in which to download liblsl "
+            "for your platform. " + _ERROR_MSG
+        )
     libpath = (folder / asset["name"]).with_suffix(_PLATFORM_SUFFIXES[_PLATFORM])
     if libpath.exists():
         _, version = _attempt_load_liblsl(libpath)
@@ -231,10 +234,7 @@ def _fetch_liblsl() -> Optional[CDLL]:
     if version is None:
         Path(libpath).unlink()
         raise RuntimeError(
-            f"MNE-LSL could not load the downloaded liblsl '{libpath}'. Please build "
-            "the liblsl library from source (https://github.com/sccn/liblsl) and "
-            "install it in the system directories or provide it in the environment "
-            "variable MNE_LSL_LIB."
+            f"MNE-LSL could not load the downloaded liblsl '{libpath}'. " + _ERROR_MSG
         )
     lib = CDLL(libpath)
     return lib
