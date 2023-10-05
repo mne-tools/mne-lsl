@@ -546,30 +546,30 @@ class _BaseStreamInfo:
             channels.remove_child(ch)
             ch = ch_next
 
-    def _set_channel_projectors(self, projectors: List[Projection]) -> None:
+    def _set_channel_projectors(self, projs: List[Projection]) -> None:
         """Set the SSP projector."""
         if self.desc.child("projectors").empty():
-            channels = self.desc.append_child("projectors")
+            projectors = self.desc.append_child("projectors")
         else:
-            channels = self.desc.child("projectors")
+            projectors = self.desc.child("projectors")
 
         # fill the 'channel/name' element of the tree and overwrite existing values
-        ch = channels.child("projectors")
-        for ch_info in projectors:
+        ch = projectors.child("channel")
+        for ch_info in projs:
             if ch.empty():
-                ch = channels.append_child("projectors")
+                ch = projectors.append_child("channel")
 
             if ch.child("desc").empty():
                 ch.append_child_value("desc", ch_info["desc"])
             else:
-                ch.child("desc").first_child().set_value(ch_info["desc"])
+                ch.child("des").first_child().set_value(ch_info["desc"])
             ch = ch.next_sibling()
 
         # in case the original sinfo was tempered with and had more 'channel' than the
         # correct number of channels
         while not ch.empty():
             ch_next = ch.next_sibling()
-            channels.remove_child(ch)
+            projectors.remove_child(ch)
             ch = ch_next
 
 
