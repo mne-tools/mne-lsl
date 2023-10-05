@@ -2,7 +2,7 @@ from os import makedirs
 
 import pytest
 
-from mne_lsl.datasets._fetch import _walk
+from mne_lsl.utils._path import walk
 
 
 def test_walk(tmp_path):
@@ -20,7 +20,7 @@ def test_walk(tmp_path):
     fname4 = tmp_path / "dir1" / "dir2" / "file1"
     with open(fname4, "w"):
         pass
-    files = list(_walk(tmp_path))
+    files = list(walk(tmp_path))
     assert all(fname in files for fname in (fname1, fname2, fname3, fname4))
     with pytest.raises(RuntimeError, match="not a directory"):
-        list(_walk(fname1))
+        list(walk(fname1))

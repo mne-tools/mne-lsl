@@ -21,6 +21,6 @@ def walk(path: Path) -> Generator[Path, None, None]:
         )
     for entry in path.iterdir():
         if entry.is_dir():
-            yield from _walk(entry)
+            yield from walk(entry)
         else:
             yield entry
