@@ -63,7 +63,7 @@ jobs:
         with:
           name: doc-dev
           path: ./doc-dev
-      - name: Deploy 🚀
+      - name: Deploy
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: ./doc-dev
@@ -71,4 +71,4 @@ jobs:
           git-config-name: 'github-actions[bot]'
           git-config-email: 'github-actions[bot]@users.noreply.github.com'
           single-commit: true
-          force: false
+          force: true
