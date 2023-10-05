@@ -14,6 +14,7 @@ from .utils import XMLElement
 if TYPE_CHECKING:
     from typing import Any, List, Optional, Tuple, Union
 
+    from mne import Info
     from numpy.typing import DTypeLike, NDArray
 
 
@@ -281,6 +282,16 @@ class _BaseStreamInfo:
         return XMLElement(lib.lsl_get_desc(self._obj))
 
     # -- Getters and setters for data description --------------------------------------
+    def get_channel_info(self, info: Info) -> None:
+        """Get the FIFF measurement :class:`~mne.Info` in the description.
+
+        Returns
+        -------
+        info : Info
+            :class:`~mne.Info` containing the measurement information.
+        """
+        raise NotImplementedError
+
     def get_channel_names(self) -> Optional[List[str]]:
         """Get the channel names in the description.
 
@@ -360,6 +371,16 @@ class _BaseStreamInfo:
                 self.n_channels,
             )
         return ch_infos
+
+    def set_channel_info(self, info: Info) -> None:
+        """Set the channel info from a FIFF measurement :class:`~mne.Info`.
+
+        Parameters
+        ----------
+        info : Info
+            :class:`~mne.Info` containing the measurement information.
+        """
+        raise NotImplementedError
 
     def set_channel_names(self, ch_names: Union[List[str], Tuple[str]]) -> None:
         """Set the channel names in the description. Existing labels are overwritten.
