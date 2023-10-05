@@ -32,7 +32,7 @@ Install instruction can be found on the
 **MNE-LSL** is based on **BSL** and **NeuroDecode**. The original version developed by
 [**Kyuhwa Lee**](https://github.com/dbdq) was recognised at
 [Microsoft Brain Signal Decoding competition](https://github.com/dbdq/microsoft_decoding)
-with the First Prize Award (2016) after achieving high decoding accuracy.
+with the First Prize Award (2016).
 **MNE-LSL** is based on the refactor version, **BSL** by
 [**Mathieu Scheltienne**](https://github.com/mscheltienne) and
 [**Arnaud Desvachez**](https://github.com/dnastars) for the
