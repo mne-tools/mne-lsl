@@ -342,6 +342,26 @@ class _BaseStreamInfo:
                             "Could not cast 'range_cal' factor %s to float.", range_cal
                         )
 
+        # filters
+        filters = self.desc.child("filters")
+        if not filters.empty() and self.sfreq != 0:
+            highpass = filters.child("highpass").first_child().value()
+            lowpass = filters.child("lowpass").first_child().value()
+            with info._unlock():
+                for name, value in zip(("highpass", "lowpass"), (highpass, lowpass)):
+                    if len(value) != 0:
+                        try:
+                            info[name] = float(value)
+                        except ValueError:
+                            logger.warning(
+                                "Could not cast '%s' %s to float.", name, value
+                            )
+        elif not filters.empty() and self.sfreq == 0:
+            logger.warninig(
+                "Node 'filters' found in the description of an irregularly sampled "
+                "stream. This is inconsistent and will be skipped."
+            )
+
         return info
 
     def get_channel_names(self) -> Optional[List[str]]:
