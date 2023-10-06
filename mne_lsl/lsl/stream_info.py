@@ -17,13 +17,23 @@ from .utils import XMLElement
 if check_version("mne", "1.6"):
     from mne._fiff._digitization import DigPoint
     from mne._fiff.constants import (
+        FIFF,
         _ch_coil_type_named,
         _ch_kind_named,
         _coord_frame_named,
+        _dig_cardinal_named,
+        _dig_kind_named,
     )
 else:
     from mne.io._digitization import DigPoint
-    from mne.io.constants import _ch_coil_type_named, _ch_kind_named, _coord_frame_named
+    from mne.io.constants import (
+        FIFF,
+        _ch_coil_type_named,
+        _ch_kind_named,
+        _coord_frame_named,
+        _dig_cardinal_named,
+        _dig_kind_named,
+    )
 
 
 if TYPE_CHECKING:
@@ -362,6 +372,10 @@ class _BaseStreamInfo:
                 "stream. This is inconsistent and will be skipped."
             )
 
+        projs = self._get_channel_projectors()
+        dig = self._get_digitization()
+        with info._unlock(update_redundant=True, check_after=True):
+            info["dig"] = dig
         return info
 
     def get_channel_names(self) -> Optional[List[str]]:
@@ -444,6 +458,50 @@ class _BaseStreamInfo:
                 self.n_channels,
             )
         return ch_infos
+
+    def _get_channel_projectors(self) -> List[Projection]:
+        """Get the SSP vectors in the XML tree."""
+        pass
+
+    def _get_digitization(self) -> List[DigPoint]:
+        """Get the digitization in the XML tree."""
+        dig = self.desc.child("dig")
+        dig_points = list()
+        point = dig.child("point")
+        while not point.empty():
+            kind = point.child("kind").first_child().value()
+            kind = _BaseStreamInfo._get_fiff_int_named(
+                kind, "dig_kind", _dig_kind_named
+            )
+            if kind is None:
+                continue
+            ident = point.child("ident").first_child().value()
+            if kind == FIFF.FIFFV_POINT_CARDINAL:
+                ident = _BaseStreamInfo._get_fiff_int_named(
+                    ident, "dig_ident", _dig_cardinal_named,
+                )
+            else:
+                try:
+                    ident = int(ident)
+                except ValueError:
+                    logger.warning("Could not cast 'ident' %s to integer.", ident)
+                    continue
+            loc = point.child("loc")
+            r = [loc.child(pos).first_child().value() for pos in ("X", "Y", "Z")]
+            point = point.next_sibling()
+            if ident is None or any(len(elt) == 0 for elt in r):
+                continue
+            try:
+                r = np.array([float(elt) for elt in r], dtype=np.float32)
+            except ValueError:
+                logger.warning("Could not cast dig point location %s to float.", r)
+                continue
+            dig_points.append(
+                DigPoint(
+                    kind=kind, ident=ident, r=r, coord_frame=FIFF.FIFFV_COORD_HEAD
+                )
+            )
+        return dig_points
 
     def set_channel_info(self, info: Info) -> None:
         """Set the channel info from a FIFF measurement :class:`~mne.Info`.
@@ -571,28 +629,6 @@ class _BaseStreamInfo:
             ]
         self._set_channel_info(ch_units, "ch_unit")
 
-    def _set_digitization(self, dig_points: List[DigPoint]) -> None:
-        """Set the digitization points."""
-        check_type(dig_points, (list,), "dig_points")
-        for elt in dig_points:
-            check_type(elt, (DigPoint,), "dig_point")
-        dig = _BaseStreamInfo._add_first_node(self.desc, "dig")
-        # fill the 'point' element of the tree and overwrite existing integer codes
-        point = dig.child("point")
-        for dig_point in dig_points:
-            point = dig.append_child("point") if point.empty() else point
-            _BaseStreamInfo._set_description_node(
-                point, {key: dig_point[key] for key in ("kind", "ident")}
-            )
-            loc = point.child("loc")
-            if loc.empty():
-                loc = point.append_child("loc")
-            _BaseStreamInfo._set_description_node(
-                loc, {key: value for key, value in zip(("X", "Y", "Z"), dig_point["r"])}
-            )
-            point = point.next_sibling()
-        _BaseStreamInfo._prune_description_node(point, dig)
-
     def _set_channel_info(self, ch_infos: List[str], name: str) -> None:
         """Set the 'channel/name' element in the XML tree."""
         check_type(ch_infos, (list, tuple), name)
@@ -645,6 +681,28 @@ class _BaseStreamInfo:
             projector = projector.next_sibling()
         _BaseStreamInfo._prune_description_node(projector, projectors)
 
+    def _set_digitization(self, dig_points: List[DigPoint]) -> None:
+        """Set the digitization points."""
+        check_type(dig_points, (list,), "dig_points")
+        for elt in dig_points:
+            check_type(elt, (DigPoint,), "dig_point")
+        dig = _BaseStreamInfo._add_first_node(self.desc, "dig")
+        # fill the 'point' element of the tree and overwrite existing integer codes
+        point = dig.child("point")
+        for dig_point in dig_points:
+            point = dig.append_child("point") if point.empty() else point
+            _BaseStreamInfo._set_description_node(
+                point, {key: dig_point[key] for key in ("kind", "ident")}
+            )
+            loc = point.child("loc")
+            if loc.empty():
+                loc = point.append_child("loc")
+            _BaseStreamInfo._set_description_node(
+                loc, {key: value for key, value in zip(("X", "Y", "Z"), dig_point["r"])}
+            )
+            point = point.next_sibling()
+        _BaseStreamInfo._prune_description_node(point, dig)
+
     # -- Helper methods to interact with the XMLElement tree ---------------------------
     @staticmethod
     def _add_first_node(desc: XMLElement, name: str) -> XMLElement:
@@ -678,7 +736,7 @@ class _BaseStreamInfo:
     # -- Helper methods to retrieve FIFF elements in the XMLElement tree ---------------
     @staticmethod
     def _get_fiff_int_named(
-        value: Optional[str], name: str, mapping: Dict[int, int]
+        value: Optional[str], name: str, mapping: Dict[int, int],
     ) -> Optional[int]:
         """Try to retrieve the FIFF integer code from the str representation."""
         if value is None:
