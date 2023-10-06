@@ -29,7 +29,7 @@ Different liblsl version
 ------------------------
 
 If you prefer to use a different version of `liblsl <lsl lib c++_>`_ than the
-automatically downlaoded one, or if your platform is not supported, you can build
+automatically downloaded one, or if your platform is not supported, you can build
 `liblsl <lsl lib c++_>`_ from source and provide the path to the library in an
 environment variable ``MNE_LSL_LIB``.
 
