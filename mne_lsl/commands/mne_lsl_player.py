@@ -14,14 +14,12 @@ def run():
         type=str,
         help="path to the File to stream via LSL.",
     )
-    parser.add_argument("type", type=str, help="type of mock stream (supported: lsl).")
     parser.add_argument(
-        "-c",
-        "--chunk_size",
-        type=int,
-        metavar="int",
-        help="number of samples pushed at once via LSL.",
-        default=16,
+        "-t",
+        "--type",
+        type=str,
+        help="type of mock stream (supported: lsl).",
+        default="lsl",
     )
     parser.add_argument(
         "-n",
@@ -30,6 +28,14 @@ def run():
         metavar="str",
         help="name of the stream displayed by LSL.",
         default="MNE-LSL-Player",
+    )
+    parser.add_argument(
+        "-c",
+        "--chunk_size",
+        type=int,
+        metavar="int",
+        help="number of samples pushed at once via LSL.",
+        default=16,
     )
 
     args = parser.parse_args()
