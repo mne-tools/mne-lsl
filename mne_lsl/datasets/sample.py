@@ -7,8 +7,8 @@ from typing import TYPE_CHECKING
 import pooch
 from mne.utils import get_config
 
-from ._fetch import fetch_dataset
 from ..utils._checks import ensure_path
+from ._fetch import fetch_dataset
 
 if TYPE_CHECKING:
     from typing import Optional, Union
@@ -42,6 +42,6 @@ def data_path() -> Path:
         Path to the sample dataset, by default in ``"~/mne_data/mne_lsl"``.
     """
     path = Path(get_config("MNE_DATA", Path.home())).expanduser() / "mne_lsl" / "sample"
-    base_url = "https://github.com/mscheltienne/mne-lsl-datasets/raw/main/datasets/sample/"  # noqa: E501
+    base_url = "https://github.com/mscheltienne/mne-lsl-datasets/raw/main/sample"
     registry = files("mne_lsl.datasets") / "sample-registry.txt"
     return fetch_dataset(path, base_url, registry)
