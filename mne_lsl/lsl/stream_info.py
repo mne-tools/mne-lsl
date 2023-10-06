@@ -4,6 +4,8 @@ from ctypes import c_char_p, c_double, c_void_p
 from typing import TYPE_CHECKING
 
 import numpy as np
+from mne import Info, Projection
+from mne.utils import check_version
 
 from ..utils._checks import check_type, check_value, ensure_int
 from ..utils.logs import logger
@@ -11,17 +13,16 @@ from .constants import fmt2idx, fmt2numpy, idx2fmt, numpy2fmt, string2fmt
 from .load_liblsl import lib
 from .utils import XMLElement
 
+if check_version("mne", "1.6"):
+    from mne._fiff._digitization import DigPoint
+else:
+    from mne.io._digitization import DigPoint
+
+
 if TYPE_CHECKING:
     from typing import Any, Dict, List, Optional, Tuple, Union
 
-    from mne import Info, Projection
-    from mne.utils import check_version
     from numpy.typing import DTypeLike, NDArray
-
-    if check_version("mne", "1.6"):
-        from mne._fiff._digitization import DigPoint
-    else:
-        from mne.io._digitization import DigPoint
 
 
 _MAPPING_LSL = {
@@ -387,6 +388,7 @@ class _BaseStreamInfo:
         info : Info
             :class:`~mne.Info` containing the measurement information.
         """
+        check_type(info, (Info,), "info")
         self.set_channel_names(info["ch_names"])
         self.set_channel_types(info.get_channel_types(unique=False))
         self.set_channel_units([ch["unit_mul"] for ch in info["chs"]])
@@ -417,11 +419,9 @@ class _BaseStreamInfo:
         for ch_info in info["chs"]:
             loc = ch.child("loc")
             loc = ch.append_child("loc") if loc.empty() else loc
-            for key, value in zip(loc_names, ch_info["loc"]):
-                if loc.child(key).empty():
-                    loc.append_child_value(key, str(value))
-                else:
-                    loc.child(key).first_child / ().set_value(str(value))
+            _BaseStreamInfo._set_description_node(
+                loc, {key: value for key, value in zip(loc_names, ch_info["loc"])}
+            )
             ch = ch.next_sibling()
         assert ch.empty()  # sanity-check
 
@@ -504,6 +504,28 @@ class _BaseStreamInfo:
             ]
         self._set_channel_info(ch_units, "ch_unit")
 
+    def _set_digitization(self, dig_points: List[DigPoint]) -> None:
+        """Set the digitization points."""
+        check_type(dig_points, (list,), "dig_points")
+        for elt in dig_points:
+            check_type(elt, (DigPoint,), "dig_point")
+        dig = _BaseStreamInfo._add_first_node(self.desc, "dig")
+        # fill the 'point' element of the tree and overwrite existing integer codes
+        point = dig.child("point")
+        for dig_point in dig_points:
+            point = dig.append_child("point") if point.empty() else point
+            _BaseStreamInfo._set_description_node(
+                point, {key: dig_point[key] for key in ("kind", "ident")}
+            )
+            loc = point.child("loc")
+            if loc.empty():
+                loc = point.append_child("loc")
+            _BaseStreamInfo._set_description_node(
+                loc, {key: value for key, value in zip(("X", "Y", "Z"), dig_point["r"])}
+            )
+            point = point.next_sibling()
+        _BaseStreamInfo._prune_description_node(point, dig)
+
     def _set_channel_info(self, ch_infos: List[str], name: str) -> None:
         """Set the 'channel/name' element in the XML tree."""
         check_type(ch_infos, (list, tuple), name)
@@ -527,26 +549,19 @@ class _BaseStreamInfo:
 
     def _set_channel_projectors(self, projs: List[Projection]) -> None:
         """Set the SSP projector."""
-        if self.desc.child("projectors").empty():
-            projectors = self.desc.append_child("projectors")
-        else:
-            projectors = self.desc.child("projectors")
-
+        check_type(projs, (list,), "projs")
+        for elt in projs:
+            check_type(elt, (Projection,), "proj")
+        projectors = _BaseStreamInfo._add_first_node(self.desc, "projectors")
         # fill the 'channel/name' element of the tree and overwrite existing values
         projector = projectors.child("projector")
         for proj in projs:
-            projector = projectors.append_child("projector") if projector.empty() else projector
-
-            if projector.child("desc").empty():
-                projector.append_child_value("desc", proj["desc"])
-            else:
-                projector.child("desc").first_child().set_value(proj["desc"])
-
-            value = str(int(proj["kind"]))
-            if projector.child("kind").empty():
-                projector.append_child_value("kind", value)
-            else:
-                projector.child("kind").first_child().set_value(value)
+            projector = (
+                projectors.append_child("projector") if projector.empty() else projector
+            )
+            _BaseStreamInfo._set_description_node(
+                projector, {key: proj[key] for key in ("desc", "kind")}
+            )
 
             data = projector.child("data")
             data = projector.append_child("data") if data.empty() else data
@@ -555,38 +570,13 @@ class _BaseStreamInfo:
                 proj["data"]["col_names"], np.squeeze(proj["data"]["data"])
             ):
                 ch = data.append_child("channel") if ch.empty() else ch
-                if ch.child("label").empty():
-                    ch.append_child_value("label", ch_name)
-                else:
-                    ch.child("label").first_child().set_value(ch_name)
-                if ch.child("data").empty():
-                    ch.append_child_value("data", str(ch_data))
-                else:
-                    ch.child("data").first_child().set_value(str(ch_data))
+                _BaseStreamInfo._set_description_node(
+                    ch, {"label": ch_name, "data": ch_data}
+                )
                 ch = ch.next_sibling()
             _BaseStreamInfo._prune_description_node(ch, data)
             projector = projector.next_sibling()
         _BaseStreamInfo._prune_description_node(projector, projectors)
-
-    def _set_digitization(self, dig_points: List[DigPoint]) -> None:
-        """Set the digitization points."""
-        check_type(dig_points, (list,), "dig_points")
-        dig = _BaseStreamInfo._add_first_node(self.desc, "dig")
-        # fill the 'point' element of the tree and overwrite existing integer codes
-        point = dig.child("point")
-        for dig_point in dig_points:
-            point = dig.append_child("point") if point.empty() else point
-            _BaseStreamInfo._set_description_node(
-                point, {key: dig_point[key] for key in ("kind", "ident")}
-            )
-            loc = point.child("loc")
-            if loc.empty():
-                loc = point.append_child("loc")
-            _BaseStreamInfo._set_description_node(
-                loc, {key: value for key, value in zip(("X", "Y", "Z"), dig_point["r"])}
-            )
-            point = point.next_sibling()
-        _BaseStreamInfo._prune_description_node(point, dig)
 
     # -- Helper methods to interact with the XMLElement tree ---------------------------
     @staticmethod
@@ -599,16 +589,6 @@ class _BaseStreamInfo:
         return node
 
     @staticmethod
-    def _set_description_node(node, mapping: Dict[str, Any]) -> None:
-        """Set the key: value childs of a node."""
-        for key, value in mapping.items():
-            value = str(int(value)) if isinstance(value, int) else str(value)
-            if node.child(key).empty():
-                node.append_child_value(key, value)
-            else:
-                node.child(key).first_child().set_value(value)
-
-    @staticmethod
     def _prune_description_node(node, parent) -> None:
         """Prune a node and remove outdated entries."""
         # this is useful in case the sinfo is tepered with and had more entries of type
@@ -617,6 +597,16 @@ class _BaseStreamInfo:
             node_next = node.next_sibling()
             parent.remove_child(node)
             node = node_next
+
+    @staticmethod
+    def _set_description_node(node, mapping: Dict[str, Any]) -> None:
+        """Set the key: value child(s) of a node."""
+        for key, value in mapping.items():
+            value = str(int(value)) if isinstance(value, int) else str(value)
+            if node.child(key).empty():
+                node.append_child_value(key, value)
+            else:
+                node.child(key).first_child().set_value(value)
 
 
 class StreamInfo(_BaseStreamInfo):
