@@ -9,14 +9,21 @@ from mne.utils import check_version
 
 from ..utils._checks import check_type, check_value, ensure_int
 from ..utils.logs import logger
+from ..utils.meas_info import create_info
 from .constants import fmt2idx, fmt2numpy, idx2fmt, numpy2fmt, string2fmt
 from .load_liblsl import lib
 from .utils import XMLElement
 
 if check_version("mne", "1.6"):
     from mne._fiff._digitization import DigPoint
+    from mne._fiff.constants import (
+        _ch_coil_type_named,
+        _ch_kind_named,
+        _coord_frame_named,
+    )
 else:
     from mne.io._digitization import DigPoint
+    from mne.io.constants import _ch_coil_type_named, _ch_kind_named, _coord_frame_named
 
 
 if TYPE_CHECKING:
@@ -289,7 +296,7 @@ class _BaseStreamInfo:
         return XMLElement(lib.lsl_get_desc(self._obj))
 
     # -- Getters and setters for data description --------------------------------------
-    def get_channel_info(self, info: Info) -> None:
+    def get_channel_info(self) -> Info:
         """Get the FIFF measurement :class:`~mne.Info` in the description.
 
         Returns
@@ -297,7 +304,45 @@ class _BaseStreamInfo:
         info : Info
             :class:`~mne.Info` containing the measurement information.
         """
-        raise NotImplementedError
+        info = create_info(self.n_channels, self.sfreq, self.stype, self)
+        # complete the info object with additional information present from the FIFF
+        # standard format.
+        kinds = self._get_channel_info("kind")
+        coil_types = self._get_channel_info("coil_type")
+        coord_frames = self._get_channel_info("coord_frame")
+        range_cals = self._get_channel_info("range_cal")
+        # TODO: locs
+
+        with info._unlock(update_redundant=True, check_after=True):
+            for k, (kind, coil_type, coord_frame, range_cal) in enumerate(
+                zip(kinds, coil_types, coord_frames, range_cals)
+            ):
+                kind = _BaseStreamInfo._get_fiff_int_named(kind, "kind", _ch_kind_named)
+                if kind is not None:
+                    info["chs"][k]["kind"] = kind
+
+                coil_type = _BaseStreamInfo._get_fiff_int_named(
+                    coil_type, "coil_type", _ch_coil_type_named
+                )
+                if coil_type is not None:
+                    info["chs"][k]["coil_type"] = coil_type
+
+                coord_frame = _BaseStreamInfo._get_fiff_int_named(
+                    coord_frame, "coord_frame", _coord_frame_named
+                )
+                if coord_frame is not None:
+                    info["chs"][k]["coord_frame"] = coord_frame
+
+                if range_cal is not None:
+                    try:
+                        info["chs"][k]["range"] = 1.0
+                        info["chs"][k]["cal"] = float(range_cal)
+                    except ValueError:
+                        logger.warning(
+                            "Could not cast 'range_cal' factor %s to float.", range_cal
+                        )
+
+        return info
 
     def get_channel_names(self) -> Optional[List[str]]:
         """Get the channel names in the description.
@@ -609,6 +654,29 @@ class _BaseStreamInfo:
                 node.append_child_value(key, value)
             else:
                 node.child(key).first_child().set_value(value)
+
+    # -- Helper methods to retrieve FIFF elements in the XMLElement tree ---------------
+    @staticmethod
+    def _get_fiff_int_named(
+        value: Optional[str], name: str, mapping: Dict[int, int]
+    ) -> Optional[int]:
+        """Try to retrieve the FIFF integer code from the str representation."""
+        if value is None:
+            return None
+        try:
+            idx = int(value)
+            value = mapping[idx]
+            return value
+        except ValueError:
+            logger.warning("Could not cast '%s' %s to integer.", name, value)
+        except KeyError:
+            logger.warning(
+                "Could not convert '%s' %i to a known FIFF code: %s.",
+                name,
+                int(value),
+                tuple(mapping.keys()),
+            )
+        return None
 
 
 class StreamInfo(_BaseStreamInfo):
