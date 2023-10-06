@@ -47,6 +47,14 @@ _MAPPING_LSL = {
     "ch_type": "type",
     "ch_unit": "unit",
 }
+# fmt: off
+_LOC_NAMES = (
+    "R0x", "R0y", "R0z",
+    "Exx", "Exy", "Exz",
+    "Eyx", "Eyy", "Eyz",
+    "Ezx", "Ezy", "Ezz",
+)
+# fmt: on
 
 
 class _BaseStreamInfo:
@@ -321,11 +329,26 @@ class _BaseStreamInfo:
         coil_types = self._get_channel_info("coil_type")
         coord_frames = self._get_channel_info("coord_frame")
         range_cals = self._get_channel_info("range_cal")
-        # TODO: locs
+
+        locs = list()
+        channels = self.desc.child("channels")
+        ch = channels.child("channel")
+        while not ch.empty():
+            loc_array = list()
+            loc = ch.child("loc")
+            for loc_name in _LOC_NAMES:
+                try:
+                    value = float(loc.child(loc_name).first_child().value())
+                except ValueError:
+                    value = np.nan
+                loc_array.append(value)
+            locs.append(loc_array)
+            ch = ch.next_sibling()
+        locs = np.array(locs)
 
         with info._unlock(update_redundant=True, check_after=True):
-            for k, (kind, coil_type, coord_frame, range_cal) in enumerate(
-                zip(kinds, coil_types, coord_frames, range_cals)
+            for k, (kind, coil_type, coord_frame, range_cal, loc) in enumerate(
+                zip(kinds, coil_types, coord_frames, range_cals, locs)
             ):
                 kind = _BaseStreamInfo._get_fiff_int_named(kind, "kind", _ch_kind_named)
                 if kind is not None:
@@ -351,6 +374,8 @@ class _BaseStreamInfo:
                         logger.warning(
                             "Could not cast 'range_cal' factor %s to float.", range_cal
                         )
+
+                info["chs"][k]["loc"] = loc
 
         # filters
         filters = self.desc.child("filters")
@@ -438,8 +463,8 @@ class _BaseStreamInfo:
             return None
         name = _MAPPING_LSL.get(name, name)
 
-        channels = self.desc.child("channels")
         ch_infos = list()
+        channels = self.desc.child("channels")
         ch = channels.child("channel")
         while not ch.empty():
             ch_info = ch.child(name).first_child().value()
@@ -528,14 +553,6 @@ class _BaseStreamInfo:
         )
 
         # channel location
-        # fmt: off
-        loc_names = (
-            "R0x", "R0y", "R0z",
-            "Exx", "Exy", "Exz",
-            "Eyx", "Eyy", "Eyz",
-            "Ezx", "Ezy", "Ezz",
-        )
-        # fmt: on
         assert not self.desc.child("channels").empty()  # sanity-check
         channels = self.desc.child("channels")
         ch = channels.child("channel")
@@ -543,7 +560,7 @@ class _BaseStreamInfo:
             loc = ch.child("loc")
             loc = ch.append_child("loc") if loc.empty() else loc
             _BaseStreamInfo._set_description_node(
-                loc, {key: value for key, value in zip(loc_names, ch_info["loc"])}
+                loc, {key: value for key, value in zip(_LOC_NAMES, ch_info["loc"])}
             )
             ch = ch.next_sibling()
         assert ch.empty()  # sanity-check
