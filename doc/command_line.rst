@@ -15,12 +15,13 @@ with the command:
 
 .. code-block:: console
 
-    $ mne_lsl_player file lsl
+    $ mne_lsl_player file
 
 With the arguments:
 
 * ``file`` (mandatory): :term:`file-like <python:file object>`, file to stream.
-* ``type`` (mandatory): type of stream to mock, among (``lsl``,)
+* ``-type``, ``--type`` (optional, default ``lsl``): type of stream to mock, among
+  (``lsl``,)
 * ``-n``, ``--name`` (optional, default ``MNE-LSL-Player``): :class:`str`, name of the
   LSL stream.
 * ``-c``, ``--chunk_size`` (optional, default ``16``): :class:`int`, number of samples
@@ -48,7 +49,3 @@ The :class:`~mne_lsl.stream_viewer.StreamViewer` opens 2 windows:
 
 - A controller to select the channels to plot and set different plotting parameters.
 - A plotting window using the ``pyqtgraph`` backend displaying the signal in real-time.
-
-.. image:: _static/stream_viewer/stream_viewer.gif
-   :alt: StreamViewer
-   :align: center

@@ -7,26 +7,26 @@ from typing import TYPE_CHECKING
 import pooch
 from mne.utils import get_config
 
+from ..utils._checks import ensure_path
 from ._fetch import fetch_dataset
 
 if TYPE_CHECKING:
     from typing import Optional, Union
 
 
-def _make_registry(output: Optional[Union[str, Path]] = None) -> None:
+def _make_registry(
+    folder: Union[str, Path], output: Optional[Union[str, Path]] = None
+) -> None:
     """Create the registry file for the sample dataset.
 
     Parameters
     ----------
+    folder : path-like
+        Path to the sample dataset.
     output : str | Path
         Path to the output registry file.
     """
-    folder = files("mne_lsl").parent / "datasets" / "testing"
-    if not folder.exists():
-        raise RuntimeError(
-            "The sample dataset registry can only be created from a clone of the "
-            "repository."
-        )
+    folder = ensure_path(folder, must_exist=True)
     output = (
         files("mne_lsl.datasets") / "testing-registry.txt" if output is None else output
     )
@@ -44,6 +44,6 @@ def data_path() -> Path:
     path = (
         Path(get_config("MNE_DATA", Path.home())).expanduser() / "mne_lsl" / "testing"
     )
-    base_url = "https://github.com/mne-tools/mne-lsl/raw/main/datasets/testing/"
+    base_url = "https://github.com/mscheltienne/mne-lsl-datasets/raw/main/testing"
     registry = files("mne_lsl.datasets") / "testing-registry.txt"
     return fetch_dataset(path, base_url, registry)

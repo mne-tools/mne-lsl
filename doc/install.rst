@@ -7,8 +7,9 @@ Default install
 ---------------
 
 ``MNE-LSL`` requires Python version ``3.9`` or higher and is available on
-`PyPI <project pypi_>`_. It is distributed with a compatible version of
-`liblsl <lsl lib c++_>`_.
+`PyPI <project pypi_>`_. It requires ``liblsl`` which will be either fetch from the path
+in the environment variable ``MNE_LSL_LIB``, or from the system directories or
+downloaded from the release page on compatible platforms.
 
 .. tab-set::
 
@@ -27,9 +28,10 @@ Default install
 Different liblsl version
 ------------------------
 
-If you prefer to use a different version of `liblsl <lsl lib c++_>`_, or if your
-platform is not supported, you can provide the path to the library in an environment
-variable ``LSL_LIB``.
+If you prefer to use a different version of `liblsl <lsl lib c++_>`_ than the
+automatically downloaded one, or if your platform is not supported, you can build
+`liblsl <lsl lib c++_>`_ from source and provide the path to the library in an
+environment variable ``MNE_LSL_LIB``.
 
 liblsl and LabRecorder dependencies
 -----------------------------------
