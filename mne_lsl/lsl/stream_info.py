@@ -392,7 +392,7 @@ class _BaseStreamInfo:
                                 "Could not cast '%s' %s to float.", name, value
                             )
         elif not filters.empty() and self.sfreq == 0:
-            logger.warninig(
+            logger.warning(
                 "Node 'filters' found in the description of an irregularly sampled "
                 "stream. This is inconsistent and will be skipped."
             )
