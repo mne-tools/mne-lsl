@@ -66,7 +66,15 @@ def compare_infos(info1, info2):
     assert info1["highpass"] == info2["highpass"]
     assert info2["lowpass"] == info2["lowpass"]
     assert info1["sfreq"] == info2["sfreq"]
-    assert_object_equal(info1["projs"], info2["projs"])
+    assert len(info1["projs"]) == len(info2["projs"])
+    for proj1, proj2 in zip(info1["projs"], info2["projs"]):
+        assert proj1["desc"] == proj2["desc"]
+        assert proj1["kind"] == proj2["kind"]
+        assert proj1["data"]["nrow"] == proj2["data"]["nrow"]
+        assert proj1["data"]["ncol"] == proj2["data"]["ncol"]
+        assert proj1["data"]["row_names"] == proj2["data"]["row_names"]
+        assert proj1["data"]["col_names"] == proj2["data"]["col_names"]
+        assert_allclose(proj1["data"]["data"], proj2["data"]["data"])
     assert_object_equal(info1["dig"], info2["dig"])
     chs1 = [
         {

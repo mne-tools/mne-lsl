@@ -537,11 +537,11 @@ class _BaseStreamInfo:
 
             assert len(ch_names) == len(ch_datas)  # sanity-check
             proj_data = {
-                "data": np.array(ch_datas).reshape(1, -1),
-                "ncol": len(ch_names),
-                "col_names": ch_names,
                 "nrow": 1,
+                "ncol": len(ch_names),
                 "row_names": None,
+                "col_names": ch_names,
+                "data": np.array(ch_datas).reshape(1, -1),
             }
             projs.append(Projection(data=proj_data, desc=desc, kind=kind))
             projector = projector.next_sibling()
