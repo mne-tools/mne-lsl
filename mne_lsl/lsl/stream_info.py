@@ -432,8 +432,10 @@ class _BaseStreamInfo:
         )
 
         # projectors and digitization
-        self._set_channel_projectors(info["projs"])
-        self._set_digitization(info["dig"])
+        if len(info["projs"]) != 0:
+            self._set_channel_projectors(info["projs"])
+        if info["dig"] is not None:
+            self._set_digitization(info["dig"])
 
     def set_channel_names(self, ch_names: Union[List[str], Tuple[str]]) -> None:
         """Set the channel names in the description. Existing labels are overwritten.
