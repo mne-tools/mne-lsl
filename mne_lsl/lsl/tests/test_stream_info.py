@@ -2,6 +2,7 @@ from time import strftime
 
 import numpy as np
 import pytest
+from mne.utils import assert_object_equal
 
 from mne_lsl import logger
 from mne_lsl.lsl import StreamInfo, StreamInlet, StreamOutlet
@@ -215,3 +216,8 @@ def test_invalid_stream_info():
         StreamInfo("pytest", "eeg", -101, 101, "float32", strftime("%H%M%S"))
     with pytest.raises(ValueError, match="'sfreq' must be a positive"):
         StreamInfo("pytest", "eeg", 101, -101, "float32", strftime("%H%M%S"))
+
+
+def test_stream_info_desc_from_info():
+    """Test filling a description from an Info object."""
+    pass
