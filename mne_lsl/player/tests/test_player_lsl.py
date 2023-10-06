@@ -60,7 +60,7 @@ def test_player(caplog):
     assert sinfo.get_channel_names() == player.info["ch_names"]
     assert sinfo.get_channel_types() == player.get_channel_types()
     assert sinfo.get_channel_units() == [
-        str(ch["unit_mul"]) for ch in player.info["chs"]
+        str(int(ch["unit_mul"])) for ch in player.info["chs"]
     ]
 
     # check player vs raw
