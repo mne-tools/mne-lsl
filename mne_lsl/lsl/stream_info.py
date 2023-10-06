@@ -346,7 +346,7 @@ class _BaseStreamInfo:
             ch = ch.next_sibling()
         locs = np.array(locs)
 
-        with info._unlock(update_redundant=True, check_after=True):
+        with info._unlock(update_redundant=True):
             for k, (kind, coil_type, coord_frame, range_cal, loc) in enumerate(
                 zip(kinds, coil_types, coord_frames, range_cals, locs)
             ):
@@ -400,7 +400,9 @@ class _BaseStreamInfo:
         projs = self._get_channel_projectors()
         dig = self._get_digitization()
         with info._unlock(update_redundant=True, check_after=True):
-            info["dig"] = dig
+            info["projs"] = projs
+            if len(dig) != 0:
+                info["dig"] = dig
         return info
 
     def get_channel_names(self) -> Optional[List[str]]:
@@ -486,7 +488,64 @@ class _BaseStreamInfo:
 
     def _get_channel_projectors(self) -> List[Projection]:
         """Get the SSP vectors in the XML tree."""
-        pass
+        projs = list()
+        projectors = self.desc.child("projectors")
+        projector = projectors.child("projector")
+        while not projector.empty():
+            desc = projector.child("desc").first_child().value()
+            if len(desc) == 0:
+                logger.warning(
+                    "An SSP projector without description was found. Skipping."
+                )
+                projector = projector.next_sibling()
+                continue
+            kind = projector.child("kind").first_child().value()
+            try:
+                kind = int(kind)
+            except ValueError:
+                logger.warning("Could not cast the SSP kind %s to integer.", kind)
+                projector = projector.next_sibling()
+                continue
+
+            ch_names = list()
+            ch_datas = list()
+            data = projector.child("data")
+            ch = data.child("channel")
+            while not ch.empty():
+                ch_name = ch.child("label").first_child().value()
+                if len(ch_name) == 0:
+                    logger.warning(
+                        "SSP projector has an empty-channel label. The channel will "
+                        "be skipped."
+                    )
+                    ch.next_sibling()
+                    continue
+                ch_data = ch.child("data").first_child().value()
+                try:
+                    ch_data = float(ch_data)
+                except ValueError:
+                    logger.warning(
+                        "Could not cast the SSP value %s for channel %s to float.",
+                        ch_data,
+                        ch_name,
+                    )
+                    ch.next_sibling()
+                    continue
+                ch_names.append(ch_name)
+                ch_datas.append(ch_data)
+                ch = ch.next_sibling()
+
+            assert len(ch_names) == len(ch_datas)  # sanity-check
+            proj_data = {
+                "data": np.array(ch_datas).reshape(1, -1),
+                "ncol": len(ch_names),
+                "col_names": ch_names,
+                "nrow": 1,
+                "row_names": None,
+            }
+            projs.append(Projection(data=proj_data, desc=desc, kind=kind))
+            projector = projector.next_sibling()
+        return projs
 
     def _get_digitization(self) -> List[DigPoint]:
         """Get the digitization in the XML tree."""
@@ -499,6 +558,7 @@ class _BaseStreamInfo:
                 kind, "dig_kind", _dig_kind_named
             )
             if kind is None:
+                point = point.next_sibling()
                 continue
             ident = point.child("ident").first_child().value()
             if kind == FIFF.FIFFV_POINT_CARDINAL:
@@ -512,20 +572,23 @@ class _BaseStreamInfo:
                     ident = int(ident)
                 except ValueError:
                     logger.warning("Could not cast 'ident' %s to integer.", ident)
+                    point = point.next_sibling()
                     continue
             loc = point.child("loc")
             r = [loc.child(pos).first_child().value() for pos in ("X", "Y", "Z")]
-            point = point.next_sibling()
             if ident is None or any(len(elt) == 0 for elt in r):
+                point = point.next_sibling()
                 continue
             try:
                 r = np.array([float(elt) for elt in r], dtype=np.float32)
             except ValueError:
                 logger.warning("Could not cast dig point location %s to float.", r)
+                point = point.next_sibling()
                 continue
             dig_points.append(
                 DigPoint(kind=kind, ident=ident, r=r, coord_frame=FIFF.FIFFV_COORD_HEAD)
             )
+            point = point.next_sibling()
         return dig_points
 
     def set_channel_info(self, info: Info) -> None:
