@@ -1,1 +1,2 @@
 sample-eeg-ant-raw.fif 756a69ee1aaff62ae41f335e0b04524b971d6e2c6ab93142670d5e79236fbd58
+sample_audvis_raw.fif 896d336d271b601fc14b55be2f941b9fcb4093fef1b2d3416813dca5d7d3a444
