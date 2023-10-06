@@ -52,9 +52,7 @@ class PlayerLSL(BasePlayer):
             dtype=np.float64,
             source_id="MNE-LSL",
         )
-        self._sinfo.set_channel_names(self._raw.info["ch_names"])
-        self._sinfo.set_channel_types(self._raw.get_channel_types(unique=False))
-        self._sinfo.set_channel_units([ch["unit_mul"] for ch in self._raw.info["chs"]])
+        self._sinfo.set_channel_info(self._raw.info)
         # create additional streaming variables
         self._reset_variables()
 

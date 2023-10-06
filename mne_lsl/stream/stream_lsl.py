@@ -18,7 +18,6 @@ from ..lsl.constants import fmt2numpy
 from ..utils._checks import check_type
 from ..utils._docs import fill_doc
 from ..utils.logs import logger
-from ..utils.meas_info import create_info
 from ._base import BaseStream
 
 if TYPE_CHECKING:
@@ -172,12 +171,7 @@ class StreamLSL(BaseStream):
         self._stype = self._sinfo.stype
         self._source_id = self._sinfo.source_id
         # create MNE info from the LSL stream info returned by an open stream inlet
-        self._info = create_info(
-            self._sinfo.n_channels,
-            self._sinfo.sfreq,
-            self._sinfo.stype,
-            self._sinfo,
-        )
+        self._info = self._sinfo.get_channel_info()
         # initiate time-correction
         tc = self._inlet.time_correction(timeout=timeout)
         logger.info("The estimated timestamp offset is %.2f seconds.", tc)

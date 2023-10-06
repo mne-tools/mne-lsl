@@ -13,7 +13,6 @@ else:
     from mne.io.constants import FIFF, _ch_unit_mul_named
     from mne.io.pick import get_channel_type_constants
 
-from ..lsl.stream_info import _BaseStreamInfo
 from ._checks import check_type, check_value, ensure_int
 from .logs import logger
 
@@ -21,6 +20,8 @@ if TYPE_CHECKING:
     from typing import Any, Dict, List, Optional, Tuple, Union
 
     from mne import Info
+
+    from ..lsl.stream_info import _BaseStreamInfo
 
 
 _CH_TYPES_DICT = get_channel_type_constants(include_defaults=True)
@@ -50,7 +51,7 @@ def create_info(
     stype: str,
     desc: Optional[_BaseStreamInfo, Dict[str, Any]],
 ) -> Info:
-    """Create an `mne.Info` object from an LSL stream attributes.
+    """Create a minimal `mne.Info` object from an LSL stream attributes.
 
     Parameters
     ----------
@@ -78,6 +79,8 @@ def create_info(
     If the argument ``desc`` is not aligned with ``n_channels``, it is ignored and an
     `mne.Info` with the number of channels definbed in ``n_channels`` is created.
     """
+    from ..lsl.stream_info import _BaseStreamInfo
+
     n_channels = ensure_int(n_channels, "n_channels")
     check_type(sfreq, ("numeric",), "sfreq")
     check_type(stype, (str,), "stype")
@@ -110,6 +113,7 @@ def create_info(
             if sfreq == 0:
                 info["sfreq"] = sfreq
                 info["lowpass"] = 0.0
+                info["highpass"] = 0.0
             for ch, ch_unit in zip(info["chs"], ch_units):
                 ch["unit_mul"] = ch_unit
         # add manufacturer information if available
@@ -139,7 +143,7 @@ def create_info(
 
 # --------------------- Functions to read from a description sinfo ---------------------
 def _read_desc_sinfo(
-    n_channels: int, stype: str, desc: str
+    n_channels: int, stype: str, desc: _BaseStreamInfo
 ) -> Tuple[List[str], List[str], List[int], Optional[str]]:
     """Read channel information from a StreamInfo.
 

@@ -2,9 +2,13 @@ from time import strftime
 
 import numpy as np
 import pytest
+from mne import create_info
+from mne.io import read_raw_fif
 
 from mne_lsl import logger
+from mne_lsl.datasets import testing
 from mne_lsl.lsl import StreamInfo, StreamInlet, StreamOutlet
+from mne_lsl.utils._tests import compare_infos
 
 logger.propagate = True
 
@@ -215,3 +219,31 @@ def test_invalid_stream_info():
         StreamInfo("pytest", "eeg", -101, 101, "float32", strftime("%H%M%S"))
     with pytest.raises(ValueError, match="'sfreq' must be a positive"):
         StreamInfo("pytest", "eeg", 101, -101, "float32", strftime("%H%M%S"))
+
+
+def test_stream_info_desc_from_info():
+    """Test filling a description from an Info object."""
+    info = create_info(5, 1000, "eeg")
+    sinfo = StreamInfo("test", "eeg", 5, 1000, np.float32, strftime("%H%M%S"))
+    sinfo.set_channel_info(info)
+    info_retrieved = sinfo.get_channel_info()
+    compare_infos(info, info_retrieved)
+
+    # test with FIFF file from the MNE sample dataset
+    fname = testing.data_path() / "sample_audvis_raw.fif"
+    raw = read_raw_fif(fname, preload=False)
+    sinfo = StreamInfo(
+        "test", "", len(raw.ch_names), raw.info["sfreq"], np.float32, strftime("%H%M%S")
+    )
+    sinfo.set_channel_info(raw.info)
+    info_retrieved = sinfo.get_channel_info()
+    compare_infos(raw.info, info_retrieved)
+
+    # test from Outlet/Inlet
+    outlet = StreamOutlet(sinfo)
+    info_retrieved = outlet.get_sinfo().get_channel_info()
+    compare_infos(raw.info, info_retrieved)
+    inlet = StreamInlet(sinfo)
+    inlet.open_stream()
+    info_retrieved = inlet.get_sinfo().get_channel_info()
+    compare_infos(raw.info, info_retrieved)
