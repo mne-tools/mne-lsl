@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 import pytest
+from mne.utils import assert_object_equal
 from numpy.testing import assert_allclose
 
 if TYPE_CHECKING:
@@ -57,3 +58,59 @@ def requires_module(function: Callable, name: str):
         skip = True
     reason = f"Test {function.__name__} skipped, requires {name}."
     return pytest.mark.skipif(skip, reason=reason)(function)
+
+
+def compare_infos(info1, info2):
+    """Check that 2 infos are similar, even if some minor attribute deviate."""
+    assert info1["ch_names"] == info2["ch_names"]
+    assert info1["highpass"] == info2["highpass"]
+    assert info2["lowpass"] == info2["lowpass"]
+    assert info1["sfreq"] == info2["sfreq"]
+    assert len(info1["projs"]) == len(info2["projs"])
+    for proj1, proj2 in zip(info1["projs"], info2["projs"]):
+        assert proj1["desc"] == proj2["desc"]
+        assert proj1["kind"] == proj2["kind"]
+        assert proj1["data"]["nrow"] == proj2["data"]["nrow"]
+        assert proj1["data"]["ncol"] == proj2["data"]["ncol"]
+        assert proj1["data"]["row_names"] == proj2["data"]["row_names"]
+        assert proj1["data"]["col_names"] == proj2["data"]["col_names"]
+        assert_allclose(proj1["data"]["data"], proj2["data"]["data"])
+    assert_object_equal(info1["dig"], info2["dig"])
+    chs1 = [
+        {
+            key: value
+            for key, value in elt.items()
+            if key
+            in (
+                "kind",
+                "coil_type",
+                "loc",
+                "unit",
+                "unit_mul",
+                "ch_name",
+                "coord_frame",
+            )
+        }
+        for elt in info1["chs"]
+    ]
+    chs2 = [
+        {
+            key: value
+            for key, value in elt.items()
+            if key
+            in (
+                "kind",
+                "coil_type",
+                "loc",
+                "unit",
+                "unit_mul",
+                "ch_name",
+                "coord_frame",
+            )
+        }
+        for elt in info2["chs"]
+    ]
+    assert_object_equal(chs1, chs2)
+    range_cal1 = [elt["range"] * elt["cal"] for elt in info1["chs"]]
+    range_cal2 = [elt["range"] * elt["cal"] for elt in info2["chs"]]
+    assert_allclose(range_cal1, range_cal2)
