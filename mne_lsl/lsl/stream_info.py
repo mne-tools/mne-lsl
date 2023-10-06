@@ -582,7 +582,7 @@ class _BaseStreamInfo:
 
     # -- Helper methods to interact with the XMLElement tree ---------------------------
     @staticmethod
-    def _add_first_node(desc, name: str):
+    def _add_first_node(desc: XMLElement, name: str) -> XMLElement:
         """Add the first node in the description and return it."""
         if desc.child(name).empty():
             node = desc.append_child(name)
@@ -591,7 +591,7 @@ class _BaseStreamInfo:
         return node
 
     @staticmethod
-    def _prune_description_node(node, parent) -> None:
+    def _prune_description_node(node: XMLElement, parent: XMLElement) -> None:
         """Prune a node and remove outdated entries."""
         # this is useful in case the sinfo is tepered with and had more entries of type
         # 'node' than it should.
@@ -601,7 +601,7 @@ class _BaseStreamInfo:
             node = node_next
 
     @staticmethod
-    def _set_description_node(node, mapping: Dict[str, Any]) -> None:
+    def _set_description_node(node: XMLElement, mapping: Dict[str, Any]) -> None:
         """Set the key: value child(s) of a node."""
         for key, value in mapping.items():
             value = str(int(value)) if isinstance(value, int) else str(value)
