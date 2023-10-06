@@ -2,9 +2,11 @@ from time import strftime
 
 import numpy as np
 import pytest
+from mne import create_info
 from mne.utils import assert_object_equal
 
 from mne_lsl import logger
+from mne_lsl.datasets import testing
 from mne_lsl.lsl import StreamInfo, StreamInlet, StreamOutlet
 
 logger.propagate = True
@@ -220,4 +222,10 @@ def test_invalid_stream_info():
 
 def test_stream_info_desc_from_info():
     """Test filling a description from an Info object."""
-    pass
+    info = create_info(5, 1000, "eeg")
+    sinfo = StreamInfo("test", "eeg", 5, 1000, np.float32)
+    sinfo.set_channel_info(info)
+    info_retrieved = sinfo.get_channel_info()
+    assert_object_equal(info, info_retrieved)
+
+    # test with FIFF file from the MNE sample dataset
