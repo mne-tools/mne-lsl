@@ -478,7 +478,9 @@ class _BaseStreamInfo:
             ident = point.child("ident").first_child().value()
             if kind == FIFF.FIFFV_POINT_CARDINAL:
                 ident = _BaseStreamInfo._get_fiff_int_named(
-                    ident, "dig_ident", _dig_cardinal_named,
+                    ident,
+                    "dig_ident",
+                    _dig_cardinal_named,
                 )
             else:
                 try:
@@ -497,9 +499,7 @@ class _BaseStreamInfo:
                 logger.warning("Could not cast dig point location %s to float.", r)
                 continue
             dig_points.append(
-                DigPoint(
-                    kind=kind, ident=ident, r=r, coord_frame=FIFF.FIFFV_COORD_HEAD
-                )
+                DigPoint(kind=kind, ident=ident, r=r, coord_frame=FIFF.FIFFV_COORD_HEAD)
             )
         return dig_points
 
@@ -736,7 +736,9 @@ class _BaseStreamInfo:
     # -- Helper methods to retrieve FIFF elements in the XMLElement tree ---------------
     @staticmethod
     def _get_fiff_int_named(
-        value: Optional[str], name: str, mapping: Dict[int, int],
+        value: Optional[str],
+        name: str,
+        mapping: Dict[int, int],
     ) -> Optional[int]:
         """Try to retrieve the FIFF integer code from the str representation."""
         if value is None:
