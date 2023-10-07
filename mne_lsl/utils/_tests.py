@@ -66,8 +66,11 @@ def compare_infos(info1, info2):
     assert info1["highpass"] == info2["highpass"]
     assert info2["lowpass"] == info2["lowpass"]
     assert info1["sfreq"] == info2["sfreq"]
+    # projectors
     assert len(info1["projs"]) == len(info2["projs"])
-    for proj1, proj2 in zip(info1["projs"], info2["projs"]):
+    projs1 = sorted(info1["projs"], key=lambda x: x["desc"])
+    projs2 = sorted(info2["projs"], key=lambda x: x["desc"])
+    for proj1, proj2 in zip(projs1, projs2):
         assert proj1["desc"] == proj2["desc"]
         assert proj1["kind"] == proj2["kind"]
         assert proj1["data"]["nrow"] == proj2["data"]["nrow"]
@@ -75,7 +78,21 @@ def compare_infos(info1, info2):
         assert proj1["data"]["row_names"] == proj2["data"]["row_names"]
         assert proj1["data"]["col_names"] == proj2["data"]["col_names"]
         assert_allclose(proj1["data"]["data"], proj2["data"]["data"])
-    assert_object_equal(info1["dig"], info2["dig"])
+    # digitization
+    if info1["dig"] is not None and info2["dig"] is not None:
+        assert len(info1["dig"]) == len(info2["dig"])
+        digs1 = sorted(info1["dig"], key=lambda x: (x["kind"], x["ident"]))
+        digs2 = sorted(info2["dig"], key=lambda x: (x["kind"], x["ident"]))
+        for dig1, dig2 in zip(digs1, digs2):
+            assert dig1["kind"] == dig2["kind"]
+            assert dig1["ident"] == dig2["ident"]
+            assert dig1["coord_frame"] == dig2["coord_frame"]
+            assert_allclose(dig1["r"], dig2["r"])
+    elif info1["dig"] is None and info2["dig"] is None:
+        pass
+    else:
+        raise AssertionError
+    # channel information, strict order
     chs1 = [
         {
             key: value
