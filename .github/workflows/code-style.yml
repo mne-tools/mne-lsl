@@ -43,3 +43,5 @@ jobs:
         run: pydocstyle .
       - name: Run bibclean
         run: bibclean-check doc/references.bib
+      - name: Run toml-sort
+        run: toml-sort pyproject.toml --all --ignore-case --check

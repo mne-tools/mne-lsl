@@ -91,6 +91,7 @@ style = [
   'isort',
   'pydocstyle[toml]',
   'ruff'
+  'toml-sort',
 ]
 test = [
   'mne_lsl[triggers]',
