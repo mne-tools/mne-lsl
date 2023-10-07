@@ -3,9 +3,6 @@
 [![codecov](https://codecov.io/gh/mne-tools/mne-lsl/graph/badge.svg?token=Xoeh6T13qi)](https://codecov.io/gh/mne-tools/mne-lsl)
 [![tests](https://github.com/mne-tools/mne-lsl/actions/workflows/pytest.yml/badge.svg?branch=main)](https://github.com/mne-tools/mne-lsl/actions/workflows/pytest.yml)
 [![doc](https://github.com/mne-tools/mne-lsl/actions/workflows/doc.yml/badge.svg?branch=main)](https://github.com/mne-tools/mne-lsl/actions/workflows/doc.yml)
-[![PyPI version](https://badge.fury.io/py/bsl.svg)](https://badge.fury.io/py/bsl)
-[![Downloads](https://static.pepy.tech/personalized-badge/bsl?period=total&units=international_system&left_color=grey&right_color=blue&left_text=pypi%20downloads)](https://pepy.tech/project/bsl)
-[![Downloads](https://static.pepy.tech/personalized-badge/bsl?period=month&units=international_system&left_color=grey&right_color=blue&left_text=pypi%20downloads/month)](https://pepy.tech/project/bsl)
 
 <img align="right" src="https://raw.githubusercontent.com/mne-tools/mne-lsl/main/doc/_static/icon/icon.svg" alt="logo" width="200"/>
 
