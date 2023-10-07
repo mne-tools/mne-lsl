@@ -90,8 +90,8 @@ style = [
   'codespell',
   'isort',
   'pydocstyle[toml]',
-  'ruff'
-  'toml-sort',
+  'ruff',
+  'toml-sort'
 ]
 test = [
   'mne_lsl[triggers]',
