@@ -10,124 +10,113 @@ readme = 'README.md'
 license = {file = 'LICENSE'}
 requires-python = '>=3.9'
 authors = [
-    {name = 'Mathieu Scheltienne', email = 'mathieu.scheltienne@fcbg.ch'},
-    {name = 'Arnaud Desvachez', email = 'arnaud.desvachez@gmail.com'},
-    {name = 'Kyuhwa Lee', email = 'lee.kyuh@gmail.com'},
+  {name = 'Mathieu Scheltienne', email = 'mathieu.scheltienne@fcbg.ch'},
+  {name = 'Arnaud Desvachez', email = 'arnaud.desvachez@gmail.com'},
+  {name = 'Kyuhwa Lee', email = 'lee.kyuh@gmail.com'}
 ]
 maintainers = [
-    {name = 'Mathieu Scheltienne', email = 'mathieu.scheltienne@fcbg.ch'},
+  {name = 'Mathieu Scheltienne', email = 'mathieu.scheltienne@fcbg.ch'}
 ]
 keywords = [
-    'brain',
-    'EEG',
-    'eeg',
-    'electroencephalography',
-    'LSL',
-    'labstreaminglayer',
-    'neuroimaging',
-    'neuroscience',
-    'python',
-    'real-time',
+  'brain',
+  'EEG',
+  'eeg',
+  'electroencephalography',
+  'LSL',
+  'labstreaminglayer',
+  'neuroimaging',
+  'neuroscience',
+  'python',
+  'real-time'
 ]
 classifiers = [
-    'Intended Audience :: Developers',
-    'Intended Audience :: Science/Research',
-    'License :: OSI Approved :: BSD License',
-    'Natural Language :: English',
-    'Operating System :: MacOS',
-    'Operating System :: Microsoft :: Windows',
-    'Operating System :: Unix',
-    'Programming Language :: Python :: 3 :: Only',
-    'Programming Language :: Python :: 3.9',
-    'Programming Language :: Python :: 3.10',
-    'Programming Language :: Python :: 3.11',
-    'Topic :: Scientific/Engineering',
-    'Topic :: Software Development',
+  'Intended Audience :: Developers',
+  'Intended Audience :: Science/Research',
+  'License :: OSI Approved :: BSD License',
+  'Natural Language :: English',
+  'Operating System :: MacOS',
+  'Operating System :: Microsoft :: Windows',
+  'Operating System :: Unix',
+  'Programming Language :: Python :: 3 :: Only',
+  'Programming Language :: Python :: 3.9',
+  'Programming Language :: Python :: 3.10',
+  'Programming Language :: Python :: 3.11',
+  'Topic :: Scientific/Engineering',
+  'Topic :: Software Development'
 ]
 dependencies = [
-    'distro; sys_platform == "linux"',
-    'mne>=1.4.2',
-    'numpy>=1.21',
-    'packaging',
-    'pooch',
-    'psutil',
-    'pyqtgraph',
-    'qtpy',
-    'requests',
-    'scipy',
+  'distro; sys_platform == "linux"',
+  'mne>=1.4.2',
+  'numpy>=1.21',
+  'packaging',
+  'pooch',
+  'psutil',
+  'pyqtgraph',
+  'qtpy',
+  'requests',
+  'scipy'
 ]
 
 [project.optional-dependencies]
 build = [
-    'build',
-    'twine',
+  'build',
+  'twine'
 ]
 doc = [
-    'furo',
-    'matplotlib',
-    'memory-profiler',
-    'numpydoc',
-    'pyqt5',
-    'sphinx!=7.2.*',
-    'sphinxcontrib-bibtex',
-    'sphinx-copybutton',
-    'sphinx-design',
-    'sphinx-gallery',
-    'sphinx-issues',
-    'sphinx-remove-toctrees @ git+https://github.com/mscheltienne/sphinx-remove-toctrees',
+  'furo',
+  'matplotlib',
+  'memory-profiler',
+  'numpydoc',
+  'pyqt5',
+  'sphinx!=7.2.*',
+  'sphinxcontrib-bibtex',
+  'sphinx-copybutton',
+  'sphinx-design',
+  'sphinx-gallery',
+  'sphinx-issues',
+  'sphinx-remove-toctrees @ git+https://github.com/mscheltienne/sphinx-remove-toctrees'
 ]
 triggers = [
-    'pyparallel; sys_platform == "linux"',
-    'pyserial',
+  'pyparallel; sys_platform == "linux"',
+  'pyserial'
 ]
 style = [
-    'bibclean',
-    'black',
-    'codespell',
-    'isort',
-    'pydocstyle[toml]',
-    'ruff',
+  'bibclean',
+  'black',
+  'codespell',
+  'isort',
+  'pydocstyle[toml]',
+  'ruff'
 ]
 test = [
-    'mne_lsl[triggers]',
-    'pyqt5',
-    'pytest>=6.0',
-    'pytest-cov',
-    'pytest-timeout',
-    'requests',
+  'mne_lsl[triggers]',
+  'pyqt5',
+  'pytest>=6.0',
+  'pytest-cov',
+  'pytest-timeout',
+  'requests'
 ]
 all = [
-    'mne_lsl[build]',
-    'mne_lsl[doc]',
-    'mne_lsl[style]',
-    'mne_lsl[test]',
-    'mne_lsl[triggers]',
+  'mne_lsl[build]',
+  'mne_lsl[doc]',
+  'mne_lsl[style]',
+  'mne_lsl[test]',
+  'mne_lsl[triggers]'
 ]
 full = [
-    'mne_lsl[all]',
+  'mne_lsl[all]'
 ]
-
-[project.urls]
-homepage = 'https://mne-tools.github.io/mne-lsl'
-documentation = 'https://mne-tools.github.io/mne-lsl'
-source = 'https://github.com/mne-tools/mne-lsl'
-tracker = 'https://github.com/mne-tools/mne-lsl'
 
 [project.scripts]
 mne_lsl-sys_info = 'mne_lsl.commands.sys_info:run'
 mne_lsl_player = 'mne_lsl.commands.mne_lsl_player:run'
 mne_lsl_stream_viewer = 'mne_lsl.commands.mne_lsl_stream_viewer:run'
 
-[tool.setuptools]
-include-package-data = false
-
-[tool.setuptools.packages.find]
-include = ['mne_lsl*']
-exclude = ['mne_lsl*tests']
-
-[tool.setuptools.package-data]
-"mne_lsl.datasets" =["*registry.txt"]
-"mne_lsl.stream_viewer.control_gui.settings" = ["*.ini"]
+[project.urls]
+homepage = 'https://mne-tools.github.io/mne-lsl'
+documentation = 'https://mne-tools.github.io/mne-lsl'
+source = 'https://github.com/mne-tools/mne-lsl'
+tracker = 'https://github.com/mne-tools/mne-lsl'
 
 [tool.black]
 line-length = 88
@@ -145,18 +134,40 @@ extend-exclude = '''
 )
 '''
 
+[tool.coverage.report]
+exclude_lines = [
+  'pragma: no cover',
+  'if __name__ == .__main__.:',
+  'if TYPE_CHECKING:'
+]
+precision = 2
+
+[tool.coverage.run]
+branch = true
+cover_pylib = false
+omit = [
+  '**/__init__.py',
+  '**/mne_lsl/_version.py',
+  '**/mne_lsl/commands/*',
+  '**/mne_lsl/conftest.py',
+  '**/mne_lsl/triggers/io/**',
+  '**/mne_lsl/utils/_tests.py',
+  '**/mne_lsl/utils/_fixes.py',
+  '**/tests/**'
+]
+
 [tool.isort]
 profile = 'black'
 multi_line_output = 3
 line_length = 88
 py_version = 39
 extend_skip_glob = [
-    '.github/*',
-    'datasets/*',
-    'doc/*',
-    'pyproject.toml',
-    'setup.py',
-    'tutorials/*',
+  '.github/*',
+  'datasets/*',
+  'doc/*',
+  'pyproject.toml',
+  'setup.py',
+  'tutorials/*'
 ]
 
 [tool.pydocstyle]
@@ -166,43 +177,32 @@ match = '^(?!setup|__init__|test_).*\.py'
 match-dir = '^mne_lsl.*'
 add_ignore = 'D100,D104,D107'
 
-[tool.ruff]
-line-length = 88
-extend-exclude = [
-    '.github/*',
-    'datasets/*',
-    'doc/*',
-    'pyproject.toml',
-    'setup.py',
-    'tutorials/*',
-]
-
-[tool.ruff.per-file-ignores]
-"__init__.py" = ["F401"]
-
 [tool.pytest.ini_options]
 minversion = '6.0'
 addopts = '--durations 20 --junit-xml=junit-results.xml --verbose'
 filterwarnings = []
 
-[tool.coverage.run]
-branch = true
-cover_pylib = false
-omit = [
-    '**/__init__.py',
-    '**/mne_lsl/_version.py',
-    '**/mne_lsl/commands/*',
-    '**/mne_lsl/conftest.py',
-    '**/mne_lsl/triggers/io/**',
-    '**/mne_lsl/utils/_tests.py',
-    '**/mne_lsl/utils/_fixes.py',
-    '**/tests/**',
+[tool.ruff]
+line-length = 88
+extend-exclude = [
+  '.github/*',
+  'datasets/*',
+  'doc/*',
+  'pyproject.toml',
+  'setup.py',
+  'tutorials/*'
 ]
 
-[tool.coverage.report]
-exclude_lines = [
-    'pragma: no cover',
-    'if __name__ == .__main__.:',
-    'if TYPE_CHECKING:',
-]
-precision = 2
+[tool.ruff.per-file-ignores]
+"__init__.py" = ["F401"]
+
+[tool.setuptools]
+include-package-data = false
+
+[tool.setuptools.package-data]
+"mne_lsl.datasets" = ["*registry.txt"]
+"mne_lsl.stream_viewer.control_gui.settings" = ["*.ini"]
+
+[tool.setuptools.packages.find]
+include = ['mne_lsl*']
+exclude = ['mne_lsl*tests']
