@@ -62,7 +62,6 @@ all = [
   'mne_lsl[doc]',
   'mne_lsl[style]',
   'mne_lsl[test]',
-  'mne_lsl[triggers]',
 ]
 build = [
   'build',
@@ -95,16 +94,11 @@ style = [
   'toml-sort',
 ]
 test = [
-  'mne_lsl[triggers]',
   'pyqt5',
   'pytest-cov',
   'pytest-timeout',
   'pytest>=6.0',
   'requests',
-]
-triggers = [
-  'pyparallel; sys_platform == "linux"',
-  'pyserial',
 ]
 
 [project.scripts]
@@ -150,7 +144,6 @@ omit = [
   '**/mne_lsl/_version.py',
   '**/mne_lsl/commands/*',
   '**/mne_lsl/conftest.py',
-  '**/mne_lsl/triggers/io/**',
   '**/mne_lsl/utils/_fixes.py',
   '**/mne_lsl/utils/_tests.py',
   '**/tests/**',
