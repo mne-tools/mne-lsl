@@ -44,4 +44,5 @@ development is still supported by the
 
 # Copyright and license
 
-The code is released under the [MIT License](https://opensource.org/licenses/MIT).
+The code is released under the
+[BSD 3-Clause License](https://opensource.org/license/bsd-3-clause/).
