@@ -10,15 +10,12 @@ This is the reference for classes (``CamelCase`` names) and functions
 
     most-used classes.rst
     lsl (low-level).rst
-    triggers.rst
     utilities.rst
     legacy.rst
 
 .. include:: most-used classes.rst
 
 .. include:: lsl (low-level).rst
-
-.. include:: triggers.rst
 
 .. include:: utilities.rst
 
