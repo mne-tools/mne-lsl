@@ -78,13 +78,13 @@ def test_stream_invalid():
     """Test creation and connection to an invalid stream."""
     with pytest.raises(RuntimeError, match="do not uniquely identify an LSL stream"):
         stream = Stream(bufsize=2, name="101")
-        stream.connect()
+        stream.connect(0.2)
     with pytest.raises(RuntimeError, match="do not uniquely identify an LSL stream"):
         stream = Stream(bufsize=2, stype="EEG")
-        stream.connect()
+        stream.connect(0.2)
     with pytest.raises(RuntimeError, match="do not uniquely identify an LSL stream"):
         stream = Stream(bufsize=2, source_id="101")
-        stream.connect()
+        stream.connect(0.2)
     with pytest.raises(TypeError, match="must be an instance of numeric"):
         Stream(bufsize="101")
     with pytest.raises(ValueError, match="must be a strictly positive number"):
@@ -107,7 +107,7 @@ def test_stream_connection_no_args(mock_lsl_stream):
     assert stream.name is None
     assert stream.stype is None
     assert stream.source_id is None
-    stream.connect()
+    stream.connect(0.2)
     assert isinstance(stream.info, Info)
     assert stream.connected
     assert stream.name == "Player-pytest"
@@ -121,10 +121,10 @@ def test_stream_double_connection(mock_lsl_stream, caplog):
     caplog.set_level(30)  # WARNING
     caplog.clear()
     stream = Stream(bufsize=2, name="Player-pytest")
-    stream.connect()
+    stream.connect(0.2)
     assert "stream is already connected" not in caplog.text
     caplog.clear()
-    stream.connect()
+    stream.connect(0.5)
     assert "stream is already connected" in caplog.text
     stream.disconnect()
 
@@ -216,7 +216,7 @@ def test_stream_pick(mock_lsl_stream, acquisition_delay):
 def test_stream_meas_date_and_anonymize(mock_lsl_stream):
     """Test stream measurement date."""
     stream = Stream(bufsize=2, name="Player-pytest")
-    stream.connect()
+    stream.connect(0.005)
     assert stream.info["meas_date"] is None
     meas_date = datetime(2023, 1, 25, tzinfo=timezone.utc)
     stream.set_meas_date(meas_date)
@@ -231,7 +231,7 @@ def test_stream_meas_date_and_anonymize(mock_lsl_stream):
 def test_stream_channel_types(mock_lsl_stream):
     """Test channel type getters and setters."""
     stream = Stream(bufsize=2, name="Player-pytest")
-    stream.connect()
+    stream.connect(0.005)
     assert stream.get_channel_types(unique=True) == raw.get_channel_types(unique=True)
     assert stream.get_channel_types(unique=False) == raw.get_channel_types(unique=False)
     assert "eeg" in stream
@@ -246,7 +246,7 @@ def test_stream_channel_types(mock_lsl_stream):
 def test_stream_channel_names(mock_lsl_stream):
     """Test channel renaming."""
     stream = Stream(bufsize=2, name="Player-pytest")
-    stream.connect()
+    stream.connect(0.001)
     assert stream.ch_names == raw.ch_names
     assert stream.info["ch_names"] == raw.ch_names
     stream.rename_channels({"M1": "EMG1", "M2": "EMG2"})
@@ -273,7 +273,7 @@ def test_stream_channel_names(mock_lsl_stream):
 def test_stream_channel_units(mock_lsl_stream):
     """Test channel unit getters and setters."""
     stream = Stream(bufsize=2, name="Player-pytest")
-    stream.connect()
+    stream.connect(0.1)
     ch_units = stream.get_channel_units()
     assert ch_units == [(FIFF.FIFF_UNIT_V, FIFF.FIFF_UNITM_NONE)] * len(stream.ch_names)
     stream.set_channel_units({"vEOG": "microvolts", "hEOG": "uv", "TRIGGER": 3})
@@ -346,7 +346,7 @@ def test_stream_repr(mock_lsl_stream):
     assert stream.__repr__() == "<Stream: OFF>"
     stream = Stream(bufsize=2, name="Player-pytest")
     assert stream.__repr__() == "<Stream: OFF | Player-pytest (source: unknown)>"
-    stream.connect()
+    stream.connect(0.2)
     assert stream.__repr__() == "<Stream: ON | Player-pytest (source: MNE-LSL)>"
     stream.disconnect()
     stream = Stream(bufsize=2, name="Player-pytest", source_id="MNE-LSL")
@@ -382,7 +382,7 @@ def test_stream_n_new_samples(mock_lsl_stream, caplog):
     """Test the number of new samples available."""
     stream = Stream(bufsize=0.4, name="Player-pytest")
     assert stream.n_new_samples is None
-    stream.connect()
+    stream.connect(0.08)
     time.sleep(0.1)  # give a bit of time to slower CIs
     assert 0 < stream.n_new_samples
     _, _ = stream.get_data()
@@ -439,7 +439,7 @@ def test_stream_rereference(mock_lsl_stream_int, acquisition_delay):
     assert stream._ref_from is None
     time.sleep(0.05)  # give a bit of time to slower CIs
 
-    stream.connect()
+    stream.connect(0.01)
     time.sleep(0.1)  # give a bit of time to slower CIs
     stream.add_reference_channels("5")
     data, _ = stream.get_data()
@@ -463,7 +463,7 @@ def test_stream_rereference(mock_lsl_stream_int, acquisition_delay):
 def test_stream_rereference_average(mock_lsl_stream_int):
     """Test average re-referencing schema."""
     stream = Stream(bufsize=0.4, name="Player-integers-pytest")
-    stream.connect()
+    stream.connect(0.01)
     time.sleep(0.1)  # give a bit of time to slower CIs
     stream.set_channel_types({"2": "ecg"})  # channels: 0, 1, 2, 3, 4
     data, _ = stream.get_data(picks="eeg")

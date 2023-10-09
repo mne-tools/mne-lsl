@@ -62,7 +62,7 @@ del inlet
 # or with a :class:`mne_lsl.stream.StreamLSL`:
 
 stream = Stream(bufsize=2, name=player.name)
-stream.connect()
+stream.connect(0.2)
 stream.info
 time.sleep(1)
 data, ts = stream.get_data(winsize=1)
@@ -117,7 +117,7 @@ player.start()
 # %%
 
 stream = Stream(bufsize=2, name=player.name)
-stream.connect()
+stream.connect(0.2)
 time.sleep(1)
 data_rescale, ts_rescale = stream.get_data(winsize=1, picks="Fz")
 f, ax = plt.subplots(2, 1, constrained_layout=True)
@@ -166,6 +166,6 @@ player.stop()
 
 with player:
     stream = Stream(bufsize=2)
-    stream.connect()
+    stream.connect(0.01)
     print(stream.info)
     stream.disconnect()

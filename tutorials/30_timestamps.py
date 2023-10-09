@@ -58,7 +58,7 @@ del inlet
 # timestamps when queried with :meth:`~mne_lsl.stream.StreamLSL.get_data`.
 
 stream = Stream(2, name=player.name)
-stream.connect()
+stream.connect(0.2)
 time.sleep(2)
 data, ts = stream.get_data(picks="ECG")
 f, ax = plt.subplots(1, 1, figsize=(10, 5), constrained_layout=True)

@@ -52,7 +52,7 @@ fname = sample.data_path() / "sample-ant-aux-raw.fif"
 player = Player(fname)
 player.start()
 stream = Stream(bufsize=5)  # 5 seconds of buffer
-stream.connect()
+stream.connect(0.2)
 stream.info
 
 # %%

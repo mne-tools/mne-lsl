@@ -224,7 +224,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
     @abstractmethod
     def connect(
         self,
-        acquisition_delay: float = 0.2,
+        acquisition_delay: float,
     ) -> None:
         """Connect to the stream and initiate data collection in the buffer.
 
