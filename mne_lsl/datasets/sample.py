@@ -41,7 +41,12 @@ def data_path() -> Path:
     path : Path
         Path to the sample dataset, by default in ``"~/mne_data/MNE-LSL"``.
     """
-    path = Path(get_config("MNE_DATA", Path.home())).expanduser() / "mne_data" / "MNE-LSL" / "sample"
+    path = (
+        Path(get_config("MNE_DATA", Path.home())).expanduser()
+        / "mne_data"
+        / "MNE-LSL"
+        / "sample"
+    )
     base_url = "https://github.com/mscheltienne/mne-lsl-datasets/raw/main/sample"
     registry = files("mne_lsl.datasets") / "sample-registry.txt"
     return fetch_dataset(path, base_url, registry)

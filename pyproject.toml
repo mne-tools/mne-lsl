@@ -117,7 +117,6 @@ extend-exclude = '''
 (
       __pycache__
     | \.github
-    | datasets/
     | doc/
     | pyproject.toml
     | setup.py
@@ -152,7 +151,6 @@ omit = [
 [tool.isort]
 extend_skip_glob = [
   '.github/*',
-  'datasets/*',
   'doc/*',
   'pyproject.toml',
   'setup.py',
@@ -178,7 +176,6 @@ minversion = '6.0'
 [tool.ruff]
 extend-exclude = [
   '.github/*',
-  'datasets/*',
   'doc/*',
   'pyproject.toml',
   'setup.py',
