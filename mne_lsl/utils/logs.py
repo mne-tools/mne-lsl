@@ -1,15 +1,21 @@
+from __future__ import annotations  # c.f. PEP 563, PEP 649
+
 import logging
 from functools import wraps
 from pathlib import Path
-from typing import Callable, Optional, Union
+from typing import TYPE_CHECKING
 
 from ._checks import check_verbose
 from ._docs import fill_doc
 from ._fixes import _WrapStdOut
 
+if TYPE_CHECKING:
+    from logging import Logger
+    from typing import Callable, Optional, Union
+
 
 @fill_doc
-def _init_logger(*, verbose: Optional[Union[bool, str, int]] = None) -> logging.Logger:
+def _init_logger(*, verbose: Optional[Union[bool, str, int]] = None) -> Logger:
     """Initialize a logger.
 
     Assigns sys.stdout as the first handler of the logger.
@@ -150,15 +156,20 @@ class _use_log_level:
     %(verbose)s
     """
 
-    def __init__(self, verbose: Union[bool, str, int, None] = None):
-        self._old_level = logger.level
-        self._level = verbose
+    def __init__(
+        self,
+        verbose: Union[bool, str, int, None] = None,
+        logger_obj: Optional[Logger] = None,
+    ):
+        self._logger = logger_obj if logger_obj is not None else logger
+        self._old_level = self._logger.level
+        self._level = check_verbose(verbose)
 
     def __enter__(self):
-        set_log_level(self._level)
+        self._logger.setLevel(self._level)
 
     def __exit__(self, *args):
-        set_log_level(self._old_level)
+        self._logger.setLevel(self._old_level)
 
 
 logger = _init_logger(verbose="WARNING")  # equivalent to verbose=None
