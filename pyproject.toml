@@ -58,10 +58,10 @@ version = '1.0.0.dev'
 
 [project.optional-dependencies]
 all = [
-  'mne_lsl[build]',
-  'mne_lsl[doc]',
-  'mne_lsl[style]',
-  'mne_lsl[test]',
+  'mne-lsl[build]',
+  'mne-lsl[doc]',
+  'mne-lsl[style]',
+  'mne-lsl[test]',
 ]
 build = [
   'build',
@@ -82,7 +82,7 @@ doc = [
   'sphinxcontrib-bibtex',
 ]
 full = [
-  'mne_lsl[all]',
+  'mne-lsl[all]',
 ]
 style = [
   'bibclean',
