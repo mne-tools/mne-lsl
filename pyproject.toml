@@ -51,7 +51,7 @@ license = {file = 'LICENSE'}
 maintainers = [
   {email = 'mathieu.scheltienne@fcbg.ch', name = 'Mathieu Scheltienne'},
 ]
-name = 'mne_lsl'
+name = 'mne-lsl'
 readme = 'README.md'
 requires-python = '>=3.9'
 version = '1.0.0.dev'
