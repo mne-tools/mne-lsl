@@ -223,7 +223,7 @@ def _fetch_liblsl() -> Optional[CDLL]:
             return CDLL(str(libpath))
 
     # liblsl was not already present in mne_lsl/lsl/lib, thus we need to download it
-    with _use_log_level("WARNING", logger=pooch.get_logger()):
+    with _use_log_level("WARNING", pooch.get_logger()):
         libpath = pooch.retrieve(
             url=asset["browser_download_url"],
             fname=asset["name"],
