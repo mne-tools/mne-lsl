@@ -16,7 +16,7 @@ import pooch
 import requests
 
 from ..utils._path import walk
-from ..utils.logs import logger, _use_log_level
+from ..utils.logs import logger
 
 if TYPE_CHECKING:
     from typing import Optional, Tuple, Union
@@ -223,14 +223,13 @@ def _fetch_liblsl() -> Optional[CDLL]:
             return CDLL(str(libpath))
 
     # liblsl was not already present in mne_lsl/lsl/lib, thus we need to download it
-    with _use_log_level("WARNING", pooch.get_logger()):
-        libpath = pooch.retrieve(
-            url=asset["browser_download_url"],
-            fname=asset["name"],
-            path=libpath.parent,
-            processor=_pooch_processor_liblsl,
-            known_hash=None,
-        )
+    libpath = pooch.retrieve(
+        url=asset["browser_download_url"],
+        fname=asset["name"],
+        path=libpath.parent,
+        processor=_pooch_processor_liblsl,
+        known_hash=None,
+    )
     libpath, version = _attempt_load_liblsl(libpath)
     if version is None:
         Path(libpath).unlink()

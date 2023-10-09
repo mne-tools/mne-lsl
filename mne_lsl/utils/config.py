@@ -46,9 +46,16 @@ def sys_info(fid: Optional[IO] = None, developer: bool = False):
     # package information
     out(f"{package}:".ljust(ljust) + version(package) + "\n")
     try:
-        with _use_log_level("CRITICAL"):
-            from ..lsl import library_version
-            from ..lsl.load_liblsl import lib
+        try:
+            from pooch import get_logger
+
+            with _use_log_level("CRITICAL"), _use_log_level("WARNING", get_logger()):
+                from ..lsl import library_version
+                from ..lsl.load_liblsl import lib
+        except ImportError:
+            with _use_log_level("CRITICAL"):
+                from ..lsl import library_version
+                from ..lsl.load_liblsl import lib
         out(
             "liblsl:".ljust(ljust)
             + f"{library_version() // 100}.{library_version() % 100} ({lib._name})\n"
