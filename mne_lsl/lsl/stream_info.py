@@ -796,7 +796,7 @@ class _BaseStreamInfo:
     @staticmethod
     def _prune_description_node(node: XMLElement, parent: XMLElement) -> None:
         """Prune a node and remove outdated entries."""
-        # this is useful in case the sinfo is tepered with and had more entries of type
+        # this is useful in case the sinfo is tempered with and had more entries of type
         # 'node' than it should.
         while not node.empty():
             node_next = node.next_sibling()
