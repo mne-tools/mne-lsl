@@ -4,7 +4,7 @@
 [![tests](https://github.com/mne-tools/mne-lsl/actions/workflows/pytest.yml/badge.svg?branch=main)](https://github.com/mne-tools/mne-lsl/actions/workflows/pytest.yml)
 [![doc](https://github.com/mne-tools/mne-lsl/actions/workflows/doc.yml/badge.svg?branch=main)](https://github.com/mne-tools/mne-lsl/actions/workflows/doc.yml)
 
-<img align="right" src="https://raw.githubusercontent.com/mne-tools/mne-lsl/main/doc/_static/icon/icon.svg" alt="logo" width="200"/>
+<img align="right" src="https://raw.githubusercontent.com/mne-tools/mne-lsl/main/doc/_static/logos/logo-mne-hex.svg" alt="logo" width="200"/>
 
 **MNE-LSL** [(Documentation website)](https://mne.tools/mne-lsl)
 provides a real-time brain signal streaming framework.
