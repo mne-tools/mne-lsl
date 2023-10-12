@@ -40,7 +40,7 @@ jobs:
       - name: Build doc
         run: sphinx-build ./main/doc ./doc-build/dev -W --keep-going
       - name: Prune sphinx environment
-        run: sudo rm ./doc-build/dev/.doctrees/environment.pickle
+        run: sudo rm ./doc-build/dev/.doctrees
       - name: Upload documentation
         uses: actions/upload-artifact@v3
         with:
