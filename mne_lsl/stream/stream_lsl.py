@@ -207,6 +207,8 @@ class StreamLSL(BaseStream):
             # pull data
             data, timestamps = self._inlet.pull_chunk(timeout=0.0)
             if timestamps.size == 0:
+                if not self._interrupt:
+                    self._create_acquisition_thread(self._acquisition_delay)
                 return None  # interrupt early
 
             # process acquisition window
@@ -242,14 +244,9 @@ class StreamLSL(BaseStream):
                 )
         except Exception as error:
             logger.exception(error)
-            self._reset_variables()
-            return None  # equivalent to an interrupt
+            self._reset_variables()  # disconnects from the stream
         else:
-            if self._interrupt:
-                # don't recreate the thread if we are trying to interrupt acquisition
-                return None
-            else:
-                # recreate the timer thread as it is one-call only
+            if not self._interrupt:
                 self._create_acquisition_thread(self._acquisition_delay)
 
     def _reset_variables(self) -> None:
