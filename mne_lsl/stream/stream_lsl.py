@@ -244,7 +244,7 @@ class StreamLSL(BaseStream):
                 )
         except Exception as error:
             logger.exception(error)
-            self.disconnect()
+            self._reset_variables()  # disconnects from the stream
         else:
             if not self._interrupt:
                 self._create_acquisition_thread(self._acquisition_delay)
