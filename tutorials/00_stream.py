@@ -74,7 +74,7 @@ fname = sample.data_path() / "sample-ant-raw.fif"
 player = Player(fname)
 player.start()
 stream = Stream(bufsize=5)  # 5 seconds of buffer
-stream.connect()
+stream.connect(acquisition_delay=0.2)
 
 # %%
 # Stream information
@@ -175,9 +175,9 @@ plt.show()
 # Note also the varying number of samples in each of the 3 data query separated by
 # 0.5 seconds. When connecting to a Stream with
 # :meth:`mne_lsl.stream.StreamLSL.connect`, an ``acquisition_delay`` is defined. It
-# corresponds to the delay between 2 updates of the ringbuffer, by default 200 ms. Thus,
-# with a 500 ms sleep in this example, the number of samples updated in the ringbuffer
-# will vary every 2 iterations.
+# corresponds to the delay between 2 updates of the ringbuffer, 200 ms in this example.
+# Thus, with a 500 ms sleep in this example, the number of samples updated in the
+# ringbuffer will vary every 2 iterations.
 
 # %%
 # Apply processing to the buffer

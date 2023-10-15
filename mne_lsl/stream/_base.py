@@ -111,7 +111,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
         # don't allow to add reference channels after a custom reference has been set
         # with Stream.set_eeg_reference, for simplicity.
-        if self.info["custom_ref_applied"] == FIFF.FIFFV_MNE_CUSTOM_REF_ON:
+        if self._info["custom_ref_applied"] == FIFF.FIFFV_MNE_CUSTOM_REF_ON:
             raise RuntimeError(
                 "The method Stream.add_reference_channels() can only be called before "
                 "Stream.set_eeg_reference is called and the reference is changed. "
@@ -224,7 +224,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
     @abstractmethod
     def connect(
         self,
-        acquisition_delay: float = 0.2,
+        acquisition_delay: float,
     ) -> None:
         """Connect to the stream and initiate data collection in the buffer.
 
@@ -232,15 +232,15 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         ----------
         acquisition_delay : float
             Delay in seconds between 2 acquisition during which chunks of data are
-            pulled from the :class:`~mne_lsl.lsl.StreamInlet`.
+            pulled from the connected device.
         """
         if self.connected:
             logger.warning("The stream is already connected. Skipping.")
             return None
         check_type(acquisition_delay, ("numeric",), "acquisition_delay")
-        if acquisition_delay <= 0:
+        if acquisition_delay < 0:
             raise ValueError(
-                "The acquisition delay must be a strictly positive number "
+                "The acquisition delay must be a positive number "
                 "defining the delay at which new samples are acquired in seconds. For "
                 "instance, 0.2 corresponds to a pull every 200 ms. The provided "
                 f"{acquisition_delay} is invalid."
@@ -380,8 +380,8 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
                 ), "The window size must be a strictly positive number."
                 n_samples = (
                     winsize
-                    if self._inlet.sfreq == 0
-                    else ceil(winsize * self._inlet.sfreq)
+                    if self._info["sfreq"] == 0
+                    else ceil(winsize * self._info["sfreq"])
                 )
             # Support channel selection since the performance impact is small.
             # >>> %timeit _picks_to_idx(raw.info, "eeg")
@@ -567,7 +567,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         # allow only one-call to this function for simplicity, and if one day someone
         # want to apply 2 or more different reference to 2 or more types of channels,
         # then we can remove this limitation.
-        if self.info["custom_ref_applied"] == FIFF.FIFFV_MNE_CUSTOM_REF_ON:
+        if self._info["custom_ref_applied"] == FIFF.FIFFV_MNE_CUSTOM_REF_ON:
             raise RuntimeError(
                 "The method Stream.set_eeg_reference() can only be called once. "
                 "If you want to change the reference of this Stream, please disconnect "
@@ -688,7 +688,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
     def _check_connected_and_regular_sampling(self, name: str):
         """Check that the stream has a regular sampling rate."""
         self._check_connected(name)
-        if self.info["sfreq"] == 0:
+        if self._info["sfreq"] == 0:
             raise RuntimeError(
                 f"The method {type(self).__name__}.{name} can not be used on a stream "
                 "with an irregular sampling rate."
