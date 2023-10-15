@@ -1,5 +1,6 @@
 from __future__ import annotations  # c.f. PEP 563, PEP 649
 
+import time
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from math import ceil
@@ -265,6 +266,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         self._interrupt = True
         while self._acquisition_thread.is_alive():
             self._acquisition_thread.cancel()
+        time.sleep(0.001)  # give a bit of time to the CPU
         # This method needs to close any inlet/network object and need to end with
         # self._reset_variables().
 
@@ -718,6 +720,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         self._interrupt = True
         while self._acquisition_thread.is_alive():
             self._acquisition_thread.cancel()
+        time.sleep(0.001)  # give a bit of time to the CPU
         yield
         self._interrupt = False
         self._create_acquisition_thread(0)
