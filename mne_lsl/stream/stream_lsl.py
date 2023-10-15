@@ -95,14 +95,17 @@ class StreamLSL(BaseStream):
 
     def connect(
         self,
+        acquisition_delay: float = 0.001,
         processing_flags: Optional[Union[str, Sequence[str]]] = None,
         timeout: Optional[float] = 2,
-        acquisition_delay: float = 0.2,
     ) -> None:
         """Connect to the LSL stream and initiate data collection in the buffer.
 
         Parameters
         ----------
+        acquisition_delay : float
+            Delay in seconds between 2 acquisition during which chunks of data are
+            pulled from the :class:`~mne_lsl.lsl.StreamInlet`.
         processing_flags : list of str | ``'all'`` | None
             Set the post-processing options. By default, post-processing is disabled.
             Any combination of the processing flags is valid. The available flags are:
@@ -117,9 +120,6 @@ class StreamLSL(BaseStream):
         timeout : float | None
             Optional timeout (in seconds) of the operation. ``None`` disables the
             timeout. The timeout value is applied once to every operation supporting it.
-        acquisition_delay : float
-            Delay in seconds between 2 acquisition during which chunks of data are
-            pulled from the :class:`~mne_lsl.lsl.StreamInlet`.
 
         Notes
         -----
