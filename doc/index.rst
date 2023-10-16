@@ -41,8 +41,8 @@ The development of ``MNE-LSL`` is supported by the
 .. toctree::
     :hidden:
 
-    install.rst
+    resources/install.rst
     api/index.rst
-    command_line.rst
+    resources/command_line.rst
     generated/tutorials/index.rst
     changes/index.rst

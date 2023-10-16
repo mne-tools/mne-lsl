@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 import numpy as np
 import pytest
 from matplotlib import pyplot as plt
-from mne import Info, pick_info, pick_types
+from mne import Info, pick_info, pick_types, set_log_level
 from mne.channels import DigMontage
 from mne.io import read_raw
 from mne.utils import check_version
@@ -26,6 +26,7 @@ from mne_lsl.utils.logs import _use_log_level
 
 logger.propagate = True
 
+set_log_level("WARNING")  # MNE logger
 fname = testing.data_path() / "sample-eeg-ant-raw.fif"
 raw = read_raw(fname, preload=True)
 

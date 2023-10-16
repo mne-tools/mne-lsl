@@ -54,7 +54,7 @@ maintainers = [
 name = 'mne_lsl'
 readme = 'README.md'
 requires-python = '>=3.9'
-version = '1.0.0.dev'
+version = '1.0.0'
 
 [project.optional-dependencies]
 all = [
@@ -78,7 +78,7 @@ doc = [
   'sphinx-design',
   'sphinx-gallery',
   'sphinx-issues',
-  'sphinx-remove-toctrees @ git+https://github.com/mscheltienne/sphinx-remove-toctrees',
+  'sphinx-remove-toctrees',
   'sphinxcontrib-bibtex',
 ]
 full = [
@@ -107,10 +107,10 @@ mne_lsl_player = 'mne_lsl.commands.mne_lsl_player:run'
 mne_lsl_stream_viewer = 'mne_lsl.commands.mne_lsl_stream_viewer:run'
 
 [project.urls]
-documentation = 'https://mne-tools.github.io/mne-lsl'
-homepage = 'https://mne-tools.github.io/mne-lsl'
+documentation = 'https://mne.tools/mne-lsl'
+homepage = 'https://mne.tools/mne-lsl'
 source = 'https://github.com/mne-tools/mne-lsl'
-tracker = 'https://github.com/mne-tools/mne-lsl'
+tracker = 'https://github.com/mne-tools/mne-lsl/issues'
 
 [tool.black]
 extend-exclude = '''
