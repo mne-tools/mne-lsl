@@ -19,6 +19,12 @@ downloaded from the release page on compatible platforms.
 
             $ pip install mne-lsl
 
+    .. tab-item:: conda-forge
+
+        .. code-block:: console
+
+            $ conda install -c conda-forge mne-lsl
+
     .. tab-item:: Source
 
         .. code-block:: console

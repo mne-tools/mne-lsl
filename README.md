@@ -3,6 +3,10 @@
 [![codecov](https://codecov.io/gh/mne-tools/mne-lsl/graph/badge.svg?token=Xoeh6T13qi)](https://codecov.io/gh/mne-tools/mne-lsl)
 [![tests](https://github.com/mne-tools/mne-lsl/actions/workflows/pytest.yml/badge.svg?branch=main)](https://github.com/mne-tools/mne-lsl/actions/workflows/pytest.yml)
 [![doc](https://github.com/mne-tools/mne-lsl/actions/workflows/doc.yml/badge.svg?branch=main)](https://github.com/mne-tools/mne-lsl/actions/workflows/doc.yml)
+[![PyPI version](https://badge.fury.io/py/mne-lsl.svg)](https://badge.fury.io/py/mne-lsl)
+[![Conda Version](https://img.shields.io/conda/vn/conda-forge/mne-lsl.svg)](https://anaconda.org/conda-forge/mne-lsl)
+[![Conda Downloads](https://img.shields.io/conda/dn/conda-forge/mne-lsl.svg)](https://anaconda.org/conda-forge/mne-lsl)
+[![Conda Platforms](https://img.shields.io/conda/pn/conda-forge/mne-lsl.svg)](https://anaconda.org/conda-forge/mne-lsl)
 
 <img align="right" src="https://raw.githubusercontent.com/mne-tools/mne-lsl/main/doc/_static/logos/logo-mne-hex.svg" alt="logo" width="200"/>
 
@@ -20,7 +24,8 @@ transmitted wirelessly. For more information about LSL, please visit the
 # Install
 
 MNE-LSL supports `python ≥ 3.9` and is available on
-[PyPI](https://pypi.org/project/mne-lsl/).
+[PyPI](https://pypi.org/project/mne-lsl/) and on
+[conda-forge](https://anaconda.org/conda-forge/mne-lsl).
 Install instruction can be found on the
 [documentation website](https://mne.tools/mne-lsl/stable/install.html).
 
