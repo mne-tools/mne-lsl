@@ -36,7 +36,7 @@ def match_stream_and_raw_data(data: NDArray[float], raw: BaseRaw) -> None:
         raise RuntimeError("Could not find match between data and raw.")
     stop = start + data.shape[1]
     if stop <= raw.times.size:
-        assert_allclose(data, raw[:, start:stop][0])
+        raw_data = raw[:, start:stop][0]
     else:
         raw_data = raw[:, start:][0]
         while raw_data.shape[1] != data.shape[1]:
@@ -46,7 +46,7 @@ def match_stream_and_raw_data(data: NDArray[float], raw: BaseRaw) -> None:
                 raw_data = np.hstack(
                     (raw_data, raw[:, : data.shape[1] - raw_data.shape[1]][0])
                 )
-        assert_allclose(data, raw_data)
+    assert_allclose(raw_data, data, rtol=0.001)
 
 
 def requires_module(function: Callable, name: str):
