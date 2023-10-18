@@ -169,9 +169,9 @@ match = '^(?!setup|__init__|test_).*\.py'
 match-dir = '^mne_lsl.*'
 
 [tool.pytest.ini_options]
-addopts = '--durations 20 --junit-xml=junit-results.xml --verbose'
-filterwarnings = []
+addopts = '--durations=20 --junit-xml=junit-results.xml -ra -v --cov-report= --tb=short'
 minversion = '6.0'
+junit_family = "xunit2"
 
 [tool.ruff]
 extend-exclude = [

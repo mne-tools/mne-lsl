@@ -25,7 +25,9 @@ def pytest_configure(config):
     warning_lines += r"""
     # numpy 2.0 <-> SciPy
     ignore:numpy\.core\._multiarray_umath.*:DeprecationWarning
-    """  # noqa: E501
+    ignore:numpy\.core\.multiarray is deprecated.*:DeprecationWarning
+    ignore:datetime\.datetime\.utcfromtimestamp.*:DeprecationWarning
+    """
     for warning_line in warning_lines.split("\n"):
         warning_line = warning_line.strip()
         if warning_line and not warning_line.startswith("#"):
