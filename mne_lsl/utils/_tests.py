@@ -33,8 +33,7 @@ def match_stream_and_raw_data(data: NDArray[float], raw: BaseRaw) -> None:
     good = np.where(good)[0]
     if len(good) != 1:
         raise RuntimeError(
-            "Could not find match between data and raw "
-            f"(found {len(good)} options)."
+            "Could not find match between data and raw " f"(found {len(good)} options)."
         )
     start = good[0]
     del good

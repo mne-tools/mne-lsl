@@ -2,7 +2,7 @@ name: doc
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.number }}-${{ github.event.ref }}
   cancel-in-progress: true
-on:
+on:  # yamllint disable-line rule:truthy
   pull_request:
   push:
     branches: [main]

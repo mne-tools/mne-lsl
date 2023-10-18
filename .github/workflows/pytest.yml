@@ -2,7 +2,7 @@ name: pytest
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.number }}-${{ github.event.ref }}
   cancel-in-progress: true
-on:
+on:  # yamllint disable-line rule:truthy
   pull_request:
   push:
     branches: [main]
@@ -48,10 +48,10 @@ jobs:
         uses: codecov/codecov-action@v3
         with:
           files: ./coverage.xml
-          flags: unittests # optional
-          name: codecov-umbrella # optional
-          fail_ci_if_error: false # optional (default = false)
-          verbose: true # optional (default = false)
+          flags: unittests  # optional
+          name: codecov-umbrella  # optional
+          fail_ci_if_error: false  # optional (default = false)
+          verbose: true  # optional (default = false)
 
   pytest-pip-pre:
     timeout-minutes: 30
@@ -92,7 +92,7 @@ jobs:
         uses: codecov/codecov-action@v3
         with:
           files: ./coverage.xml
-          flags: unittests # optional
-          name: codecov-umbrella # optional
-          fail_ci_if_error: false # optional (default = false)
-          verbose: true # optional (default = false)
+          flags: unittests  # optional
+          name: codecov-umbrella  # optional
+          fail_ci_if_error: false  # optional (default = false)
+          verbose: true  # optional (default = false)
