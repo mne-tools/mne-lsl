@@ -63,7 +63,7 @@ def test_stream(mock_lsl_stream, acquisition_delay):
     assert stream.get_channel_types() == raw.get_channel_types()
     assert stream.info["sfreq"] == raw.info["sfreq"]
     # check fs and that the returned data array is in raw a couple of times
-    time.sleep(0.1)
+    time.sleep(0.1)  # give a bit of time to the stream to acquire the first chunks
     for _ in range(3):
         data, ts = stream.get_data(winsize=0.1)
         assert ts.size == data.shape[1]
@@ -146,6 +146,7 @@ def test_stream_drop_channels(mock_lsl_stream, acquisition_delay):
     """Test dropping channels."""
     stream = Stream(bufsize=2, name="Player-pytest")
     stream.connect(acquisition_delay=acquisition_delay)
+    time.sleep(0.1)  # give a bit of time to the stream to acquire the first chunks
     stream.drop_channels("TRIGGER")
     raw_ = raw.copy().drop_channels("TRIGGER")
     assert stream.ch_names == raw_.ch_names
@@ -178,6 +179,7 @@ def test_stream_pick(mock_lsl_stream, acquisition_delay):
     """Test channel selection."""
     stream = Stream(bufsize=2, name="Player-pytest")
     stream.connect(acquisition_delay=acquisition_delay)
+    time.sleep(0.1)  # give a bit of time to the stream to acquire the first chunks
     stream.info["bads"] = ["Fp2"]
     stream.pick("eeg", exclude="bads")
     raw_ = raw.copy()
@@ -256,6 +258,7 @@ def test_stream_channel_names(mock_lsl_stream):
     """Test channel renaming."""
     stream = Stream(bufsize=2, name="Player-pytest")
     stream.connect()
+    time.sleep(0.1)
     assert stream.ch_names == raw.ch_names
     assert stream.info["ch_names"] == raw.ch_names
     stream.rename_channels({"M1": "EMG1", "M2": "EMG2"})
@@ -282,6 +285,7 @@ def test_stream_channel_units(mock_lsl_stream):
     """Test channel unit getters and setters."""
     stream = Stream(bufsize=2, name="Player-pytest")
     stream.connect()
+    time.sleep(0.1)
     ch_units = stream.get_channel_units()
     assert ch_units == [(FIFF.FIFF_UNIT_V, FIFF.FIFF_UNITM_NONE)] * len(stream.ch_names)
     stream.set_channel_units({"vEOG": "microvolts", "hEOG": "uv", "TRIGGER": 3})
@@ -309,6 +313,7 @@ def test_stream_add_reference_channels(mock_lsl_stream, acquisition_delay):
     """Test add reference channels and channel selection."""
     stream = Stream(bufsize=2, name="Player-pytest")
     stream.connect(acquisition_delay=acquisition_delay)
+    time.sleep(0.1)  # give a bit of time to slower CIs
     stream.add_reference_channels("CPz")
     raw_ = raw.copy().add_reference_channels("CPz")
     assert stream.ch_names == raw_.ch_names
@@ -363,6 +368,7 @@ def test_stream_get_data_picks(mock_lsl_stream, acquisition_delay):
     """Test channel sub-selection when getting data."""
     stream = Stream(bufsize=2, name="Player-pytest")
     stream.connect(acquisition_delay=acquisition_delay)
+    time.sleep(0.1)  # give a bit of time to slower CIs
     stream.add_reference_channels("CPz")
     raw_ = raw.copy().add_reference_channels("CPz")
     raw_.pick("eeg")
@@ -384,7 +390,8 @@ def test_stream_n_new_samples(mock_lsl_stream, caplog):
     stream = Stream(bufsize=0.4, name="Player-pytest")
     assert stream.n_new_samples is None
     stream.connect()
-    assert 0 < stream.n_new_samples
+    time.sleep(0.1)  # give a bit of time to slower CIs
+    assert stream.n_new_samples > 0
     _, _ = stream.get_data()
     # Between the above call and this one, samples could come in...
     # but hopefully not many
@@ -412,7 +419,8 @@ def test_stream_rereference(mock_lsl_stream_int, acquisition_delay):
     """Test re-referencing an EEG-like stream."""
     stream = Stream(bufsize=0.4, name="Player-integers-pytest")
     stream.connect(acquisition_delay=acquisition_delay)
-    assert 0 < stream.n_new_samples
+    time.sleep(0.1)  # give a bit of time to slower CIs
+    assert stream.n_new_samples > 0
     data, _ = stream.get_data()
     assert_allclose(data, np.full(data.shape, np.arange(5).reshape(-1, 1)))
 
@@ -437,8 +445,10 @@ def test_stream_rereference(mock_lsl_stream_int, acquisition_delay):
     stream.disconnect()
     assert stream._ref_channels is None
     assert stream._ref_from is None
+    time.sleep(0.05)  # give a bit of time to slower CIs
 
     stream.connect()
+    time.sleep(0.1)  # give a bit of time to slower CIs
     stream.add_reference_channels("5")
     data, _ = stream.get_data()
     data_ref = np.full(data.shape, np.arange(data.shape[0]).reshape(-1, 1))
@@ -462,6 +472,7 @@ def test_stream_rereference_average(mock_lsl_stream_int):
     """Test average re-referencing schema."""
     stream = Stream(bufsize=0.4, name="Player-integers-pytest")
     stream.connect()
+    time.sleep(0.1)  # give a bit of time to slower CIs
     stream.set_channel_types({"2": "ecg"})  # channels: 0, 1, 2, 3, 4
     data, _ = stream.get_data(picks="eeg")
     picks = pick_types(stream.info, eeg=True)
