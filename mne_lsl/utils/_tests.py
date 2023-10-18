@@ -29,11 +29,15 @@ def sha256sum(fname):
 
 def match_stream_and_raw_data(data: NDArray[float], raw: BaseRaw) -> None:
     """Check if the data array is part of the provided raw."""
-    for start in range(raw.times.size):
-        if np.allclose(np.squeeze(raw[:, start][0]), data[:, 0], atol=0, rtol=1e-8):
-            break
-    else:
-        raise RuntimeError("Could not find match between data and raw.")
+    good = np.isclose(raw[:][0], data[:, :1], atol=1e-10, rtol=1e-8).all(axis=0)
+    good = np.where(good)[0]
+    if len(good) != 1:
+        raise RuntimeError(
+            "Could not find match between data and raw "
+            f"(found {len(good)} options)."
+        )
+    start = good[0]
+    del good
     stop = start + data.shape[1]
     if stop <= raw.times.size:
         raw_data = raw[:, start:stop][0]

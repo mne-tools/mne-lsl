@@ -11,14 +11,14 @@ from mne import pick_info, pick_types
 from mne.channels import rename_channels
 from mne.utils import check_version
 
-if check_version("mne", "1.5"):
-    from mne.io.constants import FIFF, _ch_unit_mul_named
-    from mne.io.meas_info import ContainsMixin, SetChannelsMixin
-    from mne.io.pick import _picks_to_idx
-elif check_version("mne", "1.6"):
+if check_version("mne", "1.6"):
     from mne._fiff.constants import FIFF, _ch_unit_mul_named
     from mne._fiff.meas_info import ContainsMixin, SetChannelsMixin
     from mne._fiff.pick import _picks_to_idx
+elif check_version("mne", "1.5"):
+    from mne.io.constants import FIFF, _ch_unit_mul_named
+    from mne.io.meas_info import ContainsMixin, SetChannelsMixin
+    from mne.io.pick import _picks_to_idx
 else:
     from mne.io.constants import FIFF, _ch_unit_mul_named
     from mne.io.meas_info import ContainsMixin

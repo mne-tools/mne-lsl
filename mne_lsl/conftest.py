@@ -1,5 +1,6 @@
 from __future__ import annotations  # c.f. PEP 563, PEP 649
 
+import os
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -13,6 +14,22 @@ from mne_lsl.player import PlayerLSL
 if TYPE_CHECKING:
     from pathlib import Path
 
+
+def pytest_configure(config):
+    """Configure pytest options."""
+    if os.getenv("MNE_IGNORE_WARNINGS_IN_TESTS", "") != "true":
+        first_kind = "error"
+    else:
+        first_kind = "always"
+    warning_lines = f"    {first_kind}::"
+    warning_lines += r"""
+    # numpy 2.0 <-> SciPy
+    ignore:numpy\.core\._multiarray_umath.*:DeprecationWarning
+    """  # noqa: E501
+    for warning_line in warning_lines.split("\n"):
+        warning_line = warning_line.strip()
+        if warning_line and not warning_line.startswith("#"):
+            config.addinivalue_line("filterwarnings", warning_line)
 
 @fixture(scope="module")
 def mock_lsl_stream():
