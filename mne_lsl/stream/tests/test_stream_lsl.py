@@ -31,11 +31,16 @@ fname = testing.data_path() / "sample-eeg-ant-raw.fif"
 raw = read_raw(fname, preload=True)
 
 
-@pytest.fixture()
-def acquisition_delay():
+@pytest.fixture(
+    params=(
+        0.001,
+        0.2,
+        pytest.param(1, marks=pytest.mark.slow),
+    ),
+)
+def acquisition_delay(request):
     """Yield the acquisition delay of the mock LSL stream."""
-    for delay in (0.001, 0.2, 1):
-        yield delay
+    yield request.param
 
 
 def test_stream(mock_lsl_stream, acquisition_delay):
@@ -58,6 +63,7 @@ def test_stream(mock_lsl_stream, acquisition_delay):
     assert stream.get_channel_types() == raw.get_channel_types()
     assert stream.info["sfreq"] == raw.info["sfreq"]
     # check fs and that the returned data array is in raw a couple of times
+    time.sleep(0.1)
     for _ in range(3):
         data, ts = stream.get_data(winsize=0.1)
         assert ts.size == data.shape[1]

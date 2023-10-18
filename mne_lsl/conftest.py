@@ -17,6 +17,8 @@ if TYPE_CHECKING:
 
 def pytest_configure(config):
     """Configure pytest options."""
+    for marker in ("slow",):
+        config.addinivalue_line("markers", marker)
     if os.getenv("MNE_IGNORE_WARNINGS_IN_TESTS", "") != "true":
         first_kind = "error"
     else:
@@ -32,6 +34,7 @@ def pytest_configure(config):
         warning_line = warning_line.strip()
         if warning_line and not warning_line.startswith("#"):
             config.addinivalue_line("filterwarnings", warning_line)
+
 
 @fixture(scope="module")
 def mock_lsl_stream():
