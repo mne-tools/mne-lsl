@@ -134,6 +134,7 @@ def test_stream_double_connection(mock_lsl_stream, caplog):
     caplog.clear()
     stream = Stream(bufsize=2, name="Player-pytest")
     stream.connect()
+    time.sleep(0.1)  # give a bit of time to the stream to acquire the first chunks
     assert "stream is already connected" not in caplog.text
     caplog.clear()
     stream.connect()
