@@ -1,7 +1,7 @@
 from __future__ import annotations  # c.f. PEP 563, PEP 649
 
-from math import ceil
 import os
+from math import ceil
 from typing import TYPE_CHECKING
 
 import numpy as np
