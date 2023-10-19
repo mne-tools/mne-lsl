@@ -175,7 +175,7 @@ def test_stream_pick(mock_lsl_stream, acquisition_delay, raw):
     """Test channel selection."""
     stream = Stream(bufsize=2, name=mock_lsl_stream.name)
     stream.connect(acquisition_delay=acquisition_delay)
-    time.sleep(0.1)  # give a bit of time to the stream to acquire the first chunks
+    time.sleep(0.2)  # give a bit of time to the stream to acquire the first chunks
     stream.info["bads"] = ["Fp2"]
     stream.pick("eeg", exclude="bads")
     raw_ = raw.copy()
@@ -254,7 +254,7 @@ def test_stream_channel_names(mock_lsl_stream, raw):
     """Test channel renaming."""
     stream = Stream(bufsize=2, name=mock_lsl_stream.name)
     stream.connect()
-    time.sleep(0.1)
+    time.sleep(0.2)
     assert stream.ch_names == raw.ch_names
     assert stream.info["ch_names"] == raw.ch_names
     stream.rename_channels({"M1": "EMG1", "M2": "EMG2"})
@@ -281,7 +281,7 @@ def test_stream_channel_units(mock_lsl_stream, raw):
     """Test channel unit getters and setters."""
     stream = Stream(bufsize=2, name=mock_lsl_stream.name)
     stream.connect()
-    time.sleep(0.1)
+    time.sleep(0.2)
     ch_units = stream.get_channel_units()
     assert ch_units == [(FIFF.FIFF_UNIT_V, FIFF.FIFF_UNITM_NONE)] * len(stream.ch_names)
     stream.set_channel_units({"vEOG": "microvolts", "hEOG": "uv", "TRIGGER": 3})
@@ -309,7 +309,7 @@ def test_stream_add_reference_channels(mock_lsl_stream, acquisition_delay, raw):
     """Test add reference channels and channel selection."""
     stream = Stream(bufsize=2, name=mock_lsl_stream.name)
     stream.connect(acquisition_delay=acquisition_delay)
-    time.sleep(0.1)  # give a bit of time to slower CIs
+    time.sleep(0.2)  # give a bit of time to slower CIs
     stream.add_reference_channels("CPz")
     raw_ = raw.copy().add_reference_channels("CPz")
     assert stream.ch_names == raw_.ch_names
