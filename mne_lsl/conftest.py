@@ -19,6 +19,8 @@ def pytest_configure(config):
     """Configure pytest options."""
     for marker in ("slow",):
         config.addinivalue_line("markers", marker)
+    if "MNE_LSL_RAISE_STREAM_ERRORS" not in os.environ:
+        os.environ["MNE_LSL_RAISE_STREAM_ERRORS"] = "true"
     if os.getenv("MNE_IGNORE_WARNINGS_IN_TESTS", "") != "true":
         first_kind = "error"
     else:

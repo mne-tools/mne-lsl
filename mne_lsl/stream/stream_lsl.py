@@ -198,12 +198,15 @@ class StreamLSL(BaseStream):
     def disconnect(self) -> None:
         """Disconnect from the LSL stream and interrupt data collection."""
         super().disconnect()
-        self._inlet.close_stream()
-        del self._inlet
-        self._reset_variables()
+        inlet = self._inlet
+        self._inlet = None  # prevent _acquire from being called
+        inlet.close_stream()
+        self._reset_variables()  # also sets self._inlet = None
 
     def _acquire(self) -> None:
         """Update function pulling new samples in the buffer at a regular interval."""
+        if not getattr(self, "_inlet", None):
+            return  # stream disconnected
         try:
             # pull data
             data, timestamps = self._inlet.pull_chunk(timeout=0.0)
@@ -213,6 +216,10 @@ class StreamLSL(BaseStream):
                 return None  # interrupt early
 
             # process acquisition window
+            assert data.ndim == 2 and data.shape[-1] == self._inlet.n_channels, (
+                data.shape,
+                self._inlet.n_channels,
+            )
             data = data[:, self._picks_inlet]
             if len(self._added_channels) != 0:
                 refs = np.zeros(

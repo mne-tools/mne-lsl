@@ -21,8 +21,6 @@ jobs:
     defaults:
       run:
         shell: bash
-    env:
-      MNE_LSL_RAISE_STREAM_ERRORS: "true"
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
