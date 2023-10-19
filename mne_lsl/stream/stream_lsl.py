@@ -1,6 +1,7 @@
 from __future__ import annotations  # c.f. PEP 563, PEP 649
 
 from math import ceil
+import os
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -245,6 +246,8 @@ class StreamLSL(BaseStream):
         except Exception as error:
             logger.exception(error)
             self._reset_variables()  # disconnects from the stream
+            if os.getenv("MNE_LSL_RAISE_STREAM_ERRORS", "false").lower() == "true":
+                raise
         else:
             if not self._interrupt:
                 self._create_acquisition_thread(self._acquisition_delay)

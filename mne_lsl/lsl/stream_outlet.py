@@ -77,7 +77,7 @@ class StreamOutlet:
         The outlet will no longer be discoverable after destruction and all connected
         inlets will stop delivering data.
         """
-        if not self._obj:
+        if not getattr(self, "_obj", None):
             return
         try:
             lib.lsl_destroy_outlet(self._obj)

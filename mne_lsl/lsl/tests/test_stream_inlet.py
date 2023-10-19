@@ -148,18 +148,12 @@ def test_pull_str_chunk():
     assert data == [x[2]]  # chunk is nested
 
 
-@pytest.mark.xfail(
-    reason="liblsl bug with 20.04 and 22.04 LTS, "
-    + "https://github.com/sccn/liblsl/issues/179",
-    raises=TimeoutError,
-    run=False,
-)
 def test_get_sinfo():
     """Test getting a StreamInfo from an Inlet."""
     sinfo = StreamInfo("test", "", 2, 0.0, "string", uuid.uuid4().hex[:6])
     outlet = StreamOutlet(sinfo)  # noqa: F841
     inlet = StreamInlet(sinfo)
-    with pytest.raises(TimeoutError):
+    with pytest.raises(RuntimeError, match=r"StreamInlet\.open_stream"):
         inlet.get_sinfo(timeout=0.5)
     inlet.open_stream(timeout=5)
     sinfo = inlet.get_sinfo(timeout=5)
