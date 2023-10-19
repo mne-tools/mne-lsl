@@ -5,9 +5,8 @@ from datetime import datetime, timezone
 import numpy as np
 import pytest
 from matplotlib import pyplot as plt
-from mne import Info, pick_info, pick_types, set_log_level
+from mne import Info, pick_info, pick_types
 from mne.channels import DigMontage
-from mne.io import read_raw
 from mne.utils import check_version
 from numpy.testing import assert_allclose
 
@@ -19,16 +18,11 @@ else:
     from mne.io.pick import _picks_to_idx
 
 from mne_lsl import logger
-from mne_lsl.datasets import testing
 from mne_lsl.stream import StreamLSL as Stream
 from mne_lsl.utils._tests import match_stream_and_raw_data
 from mne_lsl.utils.logs import _use_log_level
 
 logger.propagate = True
-
-set_log_level("WARNING")  # MNE logger
-fname = testing.data_path() / "sample-eeg-ant-raw.fif"
-raw = read_raw(fname, preload=True)
 
 
 @pytest.fixture(
@@ -43,7 +37,7 @@ def acquisition_delay(request):
     yield request.param
 
 
-def test_stream(mock_lsl_stream, acquisition_delay):
+def test_stream(mock_lsl_stream, acquisition_delay, raw):
     """Test a valid Stream."""
     # test connect/disconnect
     stream = Stream(bufsize=2, name="Player-pytest")
@@ -142,13 +136,15 @@ def test_stream_double_connection(mock_lsl_stream, caplog):
     stream.disconnect()
 
 
-def test_stream_drop_channels(mock_lsl_stream, acquisition_delay):
+def test_stream_drop_channels(mock_lsl_stream, acquisition_delay, raw):
     """Test dropping channels."""
     stream = Stream(bufsize=2, name="Player-pytest")
     stream.connect(acquisition_delay=acquisition_delay)
     time.sleep(0.1)  # give a bit of time to the stream to acquire the first chunks
-    stream.drop_channels("TRIGGER")
-    raw_ = raw.copy().drop_channels("TRIGGER")
+    # Do not drop TRIGGER as it contains our increasing timestamps
+    assert raw.ch_names[-1] == "TRIGGER"
+    stream.drop_channels("hEOG")
+    raw_ = raw.copy().drop_channels("hEOG")
     assert stream.ch_names == raw_.ch_names
     for _ in range(3):
         data, _ = stream.get_data(winsize=0.1)
@@ -175,7 +171,7 @@ def test_stream_drop_channels(mock_lsl_stream, acquisition_delay):
     stream.disconnect()
 
 
-def test_stream_pick(mock_lsl_stream, acquisition_delay):
+def test_stream_pick(mock_lsl_stream, acquisition_delay, raw):
     """Test channel selection."""
     stream = Stream(bufsize=2, name="Player-pytest")
     stream.connect(acquisition_delay=acquisition_delay)
@@ -239,7 +235,7 @@ def test_stream_meas_date_and_anonymize(mock_lsl_stream):
     stream.disconnect()
 
 
-def test_stream_channel_types(mock_lsl_stream):
+def test_stream_channel_types(mock_lsl_stream, raw):
     """Test channel type getters and setters."""
     stream = Stream(bufsize=2, name="Player-pytest")
     stream.connect()
@@ -254,7 +250,7 @@ def test_stream_channel_types(mock_lsl_stream):
     stream.disconnect()
 
 
-def test_stream_channel_names(mock_lsl_stream):
+def test_stream_channel_names(mock_lsl_stream, raw):
     """Test channel renaming."""
     stream = Stream(bufsize=2, name="Player-pytest")
     stream.connect()
@@ -281,7 +277,7 @@ def test_stream_channel_names(mock_lsl_stream):
     stream.disconnect()
 
 
-def test_stream_channel_units(mock_lsl_stream):
+def test_stream_channel_units(mock_lsl_stream, raw):
     """Test channel unit getters and setters."""
     stream = Stream(bufsize=2, name="Player-pytest")
     stream.connect()
@@ -309,7 +305,7 @@ def test_stream_channel_units(mock_lsl_stream):
     stream.disconnect()
 
 
-def test_stream_add_reference_channels(mock_lsl_stream, acquisition_delay):
+def test_stream_add_reference_channels(mock_lsl_stream, acquisition_delay, raw):
     """Test add reference channels and channel selection."""
     stream = Stream(bufsize=2, name="Player-pytest")
     stream.connect(acquisition_delay=acquisition_delay)
@@ -364,7 +360,7 @@ def test_stream_repr(mock_lsl_stream):
     assert stream.__repr__() == "<Stream: OFF | (source: MNE-LSL>"
 
 
-def test_stream_get_data_picks(mock_lsl_stream, acquisition_delay):
+def test_stream_get_data_picks(mock_lsl_stream, acquisition_delay, raw):
     """Test channel sub-selection when getting data."""
     stream = Stream(bufsize=2, name="Player-pytest")
     stream.connect(acquisition_delay=acquisition_delay)

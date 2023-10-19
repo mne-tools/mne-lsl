@@ -293,10 +293,12 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
     def __enter__(self):
         """Context manager entry point."""
         self.start()
+        return self
 
     def __exit__(self, exc_type, exc_value, exc_tracebac):
         """Context manager exit point."""
-        self.stop()
+        if self._streaming_thread is not None:  # might have called stop manually
+            self.stop()
 
     @staticmethod
     def __repr__(self):

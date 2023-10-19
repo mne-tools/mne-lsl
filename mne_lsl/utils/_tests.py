@@ -29,7 +29,10 @@ def sha256sum(fname):
 
 def match_stream_and_raw_data(data: NDArray[float], raw: BaseRaw) -> None:
     """Check if the data array is part of the provided raw."""
-    good = np.isclose(raw[:][0], data[:, :1], atol=1e-10, rtol=1e-8).all(axis=0)
+    got_data = raw[:][0]
+    # Sample numbers should be in the last row of the data, but could loop so are
+    # not necessarily always increasing by 1
+    good = np.isclose(got_data, data[:, :1], atol=1e-10, rtol=1e-8).all(axis=0)
     good = np.where(good)[0]
     if len(good) != 1:
         raise RuntimeError(

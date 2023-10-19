@@ -4,8 +4,8 @@ import os
 from typing import TYPE_CHECKING
 
 import numpy as np
-from mne import create_info
-from mne.io import RawArray
+from mne import create_info, set_log_level
+from mne.io import Raw, RawArray, read_raw_fif
 from pytest import fixture
 
 from mne_lsl.datasets import testing
@@ -36,14 +36,31 @@ def pytest_configure(config):
         warning_line = warning_line.strip()
         if warning_line and not warning_line.startswith("#"):
             config.addinivalue_line("filterwarnings", warning_line)
+    set_log_level("WARNING")  # MNE logger
 
 
-@fixture(scope="module")
-def mock_lsl_stream():
-    """Create a mock LSL stream for testing."""
+@fixture(scope="session")
+def fname(tmp_path_factory) -> Path:
+    """Yield fname of a file with sample numbers in the last channel."""
     fname = testing.data_path() / "sample-eeg-ant-raw.fif"
-    with PlayerLSL(fname, "Player-pytest", chunk_size=16):
-        yield
+    raw = read_raw_fif(fname, preload=True)
+    raw._data[-1] = np.arange(1, len(raw.times) + 1) * 1e-6
+    fname_mod = tmp_path_factory.mktemp("data") / "sample-eeg-ant-raw.fif"
+    raw.save(fname_mod)
+    return fname_mod
+
+
+@fixture(scope="function")
+def raw(fname) -> Raw:
+    """Return the raw file corresponding to fname."""
+    return read_raw_fif(fname, preload=True)
+
+
+@fixture(scope="function")
+def mock_lsl_stream(fname):
+    """Create a mock LSL stream for testing."""
+    with PlayerLSL(fname, "Player-pytest", chunk_size=16) as player:
+        yield player
 
 
 @fixture(scope="session")
@@ -60,5 +77,5 @@ def _integer_raw(tmp_path_factory) -> Path:
 @fixture(scope="module")
 def mock_lsl_stream_int(_integer_raw):
     """Create a mock LSL stream streaming the channel number continuously."""
-    with PlayerLSL(_integer_raw, "Player-integers-pytest", chunk_size=16):
-        yield
+    with PlayerLSL(_integer_raw, "Player-integers-pytest", chunk_size=16) as player:
+        yield player
