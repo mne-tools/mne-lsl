@@ -718,9 +718,11 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         self._interrupt = True
         while self._acquisition_thread.is_alive():
             self._acquisition_thread.cancel()
-        yield
-        self._interrupt = False
-        self._create_acquisition_thread(0)
+        try:  # ensure "finally" is reached even when failures occur
+            yield
+        finally:
+            self._interrupt = False
+            self._create_acquisition_thread(0)
 
     def _pick(self, picks: NDArray[int]) -> None:
         """Interrupt acquisition and apply the channel selection."""

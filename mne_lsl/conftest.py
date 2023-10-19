@@ -57,9 +57,10 @@ def raw(fname) -> Raw:
 
 
 @fixture(scope="function")
-def mock_lsl_stream(fname):
+def mock_lsl_stream(fname, request):
     """Create a mock LSL stream for testing."""
-    with PlayerLSL(fname, "Player-pytest", chunk_size=16) as player:
+    name = f"P_{request.node.name}"
+    with PlayerLSL(fname, name, chunk_size=16) as player:
         yield player
 
 
@@ -75,7 +76,8 @@ def _integer_raw(tmp_path_factory) -> Path:
 
 
 @fixture(scope="module")
-def mock_lsl_stream_int(_integer_raw):
+def mock_lsl_stream_int(_integer_raw, request):
     """Create a mock LSL stream streaming the channel number continuously."""
-    with PlayerLSL(_integer_raw, "Player-integers-pytest", chunk_size=16) as player:
+    name = f"P_{request.node.name}"
+    with PlayerLSL(_integer_raw, name, chunk_size=16) as player:
         yield player

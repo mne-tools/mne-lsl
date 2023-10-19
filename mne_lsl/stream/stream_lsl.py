@@ -207,13 +207,15 @@ class StreamLSL(BaseStream):
         """Update function pulling new samples in the buffer at a regular interval."""
         if not getattr(self, "_inlet", None):
             return  # stream disconnected
+        if getattr(self, "_interrupt", False):
+            return  # stream interrupted (don't continue)
         try:
             # pull data
             data, timestamps = self._inlet.pull_chunk(timeout=0.0)
             if timestamps.size == 0:
                 if not self._interrupt:
                     self._create_acquisition_thread(self._acquisition_delay)
-                return None  # interrupt early
+                return  # interrupt early
 
             # process acquisition window
             assert data.ndim == 2 and data.shape[-1] == self._inlet.n_channels, (
