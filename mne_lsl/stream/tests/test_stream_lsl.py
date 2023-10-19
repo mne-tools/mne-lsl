@@ -33,9 +33,9 @@ raw = read_raw(fname, preload=True)
 
 @pytest.fixture(
     params=(
-        0.001,
-        0.2,
-        pytest.param(1, marks=pytest.mark.slow),
+        pytest.param(0.001, id="1ms"),
+        pytest.param(0.2, id="200ms"),
+        pytest.param(1, id="1s", marks=pytest.mark.slow),
     ),
 )
 def acquisition_delay(request):

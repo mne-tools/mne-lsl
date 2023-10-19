@@ -220,7 +220,7 @@ class StreamLSL(BaseStream):
                 data.shape,
                 self._inlet.n_channels,
             )
-            data = data[:, self._picks_inlet]
+            data = data[:, self._picks_inlet]  # subselect channels
             if len(self._added_channels) != 0:
                 refs = np.zeros(
                     (timestamps.size, len(self._added_channels)), dtype=self.dtype
@@ -234,10 +234,15 @@ class StreamLSL(BaseStream):
             # roll and update buffers
             self._buffer = np.roll(self._buffer, -timestamps.size, axis=0)
             self._timestamps = np.roll(self._timestamps, -timestamps.size, axis=0)
-            # fmt: off
-            self._buffer[-timestamps.size :, :] = data[-self._timestamps.size :, :]  # noqa: E203, E501
-            self._timestamps[-timestamps.size :] = timestamps[-self._timestamps.size :]  # noqa: E203, E501
-            # fmt: on
+            assert self._buffer.ndim == 2
+            assert self._buffer.shape[1] == data.shape[1], (
+                self._buffer.shape,
+                data.shape,
+                self._inlet.n_channels,
+                self._picks_inlet.size,
+            )
+            self._buffer[-timestamps.size :, :] = data[-self._timestamps.size :, :]
+            self._timestamps[-timestamps.size :] = timestamps[-self._timestamps.size :]
             # update the number of new samples available
             self._n_new_samples += min(timestamps.size, self.n_buffer)
             if (
