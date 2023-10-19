@@ -349,13 +349,14 @@ def test_stream_repr(mock_lsl_stream):
     """Test the stream representation."""
     stream = Stream(bufsize=2)
     assert stream.__repr__() == "<Stream: OFF>"
-    stream = Stream(bufsize=2, name=mock_lsl_stream.name)
-    assert stream.__repr__() == "<Stream: OFF | Player-pytest (source: unknown)>"
+    name = mock_lsl_stream.name
+    stream = Stream(bufsize=2, name=name)
+    assert stream.__repr__() == f"<Stream: OFF | {name} (source: unknown)>"
     stream.connect()
-    assert stream.__repr__() == "<Stream: ON | Player-pytest (source: MNE-LSL)>"
+    assert stream.__repr__() == f"<Stream: ON | {name} (source: MNE-LSL)>"
     stream.disconnect()
-    stream = Stream(bufsize=2, name=mock_lsl_stream.name, source_id="MNE-LSL")
-    assert stream.__repr__() == "<Stream: OFF | Player-pytest (source: MNE-LSL)>"
+    stream = Stream(bufsize=2, name=name, source_id="MNE-LSL")
+    assert stream.__repr__() == f"<Stream: OFF | {name} (source: MNE-LSL)>"
     stream = Stream(bufsize=2, source_id="MNE-LSL")
     assert stream.__repr__() == "<Stream: OFF | (source: MNE-LSL>"
 
@@ -364,7 +365,7 @@ def test_stream_get_data_picks(mock_lsl_stream, acquisition_delay, raw):
     """Test channel sub-selection when getting data."""
     stream = Stream(bufsize=2, name=mock_lsl_stream.name)
     stream.connect(acquisition_delay=acquisition_delay)
-    time.sleep(0.1)  # give a bit of time to slower CIs
+    time.sleep(0.2)  # give a bit of time to slower CIs
     stream.add_reference_channels("CPz")
     raw_ = raw.copy().add_reference_channels("CPz")
     raw_.pick("eeg")
