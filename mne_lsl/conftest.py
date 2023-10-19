@@ -30,6 +30,7 @@ def pytest_configure(config):
     # numpy 2.0 <-> SciPy
     ignore:numpy\.core\._multiarray_umath.*:DeprecationWarning
     ignore:numpy\.core\.multiarray is deprecated.*:DeprecationWarning
+    ignore:numpy\.core\.numeric is deprecated.*:DeprecationWarning
     ignore:datetime\.datetime\.utcfromtimestamp.*:DeprecationWarning
     """
     for warning_line in warning_lines.split("\n"):
