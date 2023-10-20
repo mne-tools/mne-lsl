@@ -67,26 +67,21 @@ class StreamLSL(BaseStream):
 
     def __repr__(self):
         """Representation of the instance."""
-        if self.connected:
+        try:
+            conn = self.connected
+        except AssertionError:  # can raise on `assert`, e.g., in mid-disconnect or del
+            conn = False
+        if conn:
             status = "ON"
-            if len(self._source_id) != 0:
-                desc = f"{self._name} (source: {self._source_id})"
-            else:
-                desc = f"{self._name} (source: unknown)"
+            desc = f"{self._name} (source: {self._source_id or 'unknown'})"
         else:
             status = "OFF"
-            if self._name is not None and self._source_id is not None:
-                if len(self._source_id) != 0:
-                    desc = f"{self._name} (source: {self._source_id})"
-                else:
-                    desc = f"{self._name} (source: unknown)"
-            elif self._name is not None and self._source_id is None:
-                desc = f"{self._name} (source: unknown)"
-            elif self._name is None and self._source_id is not None:
-                if len(self._source_id) != 0:
-                    desc = f"(source: {self._source_id}"
-                else:
-                    desc = None
+            _name = getattr(self, "_name", None)  # could be del'ed
+            _source_id = getattr(self, "_source_id", "")
+            if _name is not None:
+                desc = f"{_name} (source: {_source_id or 'unknown'})"
+            elif _source_id:
+                desc = f"(source: {self._source_id}"
             else:
                 desc = None
         if desc is None:
