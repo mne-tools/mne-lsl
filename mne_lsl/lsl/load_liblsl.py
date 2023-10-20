@@ -122,7 +122,8 @@ def _fetch_liblsl() -> Optional[CDLL]:
     """
     try:
         response = requests.get(
-            "https://api.github.com/repos/sccn/liblsl/releases/latest"
+            "https://api.github.com/repos/sccn/liblsl/releases/latest",
+            timeout=15,
         )
         assets = [elt for elt in response.json()["assets"] if "liblsl" in elt["name"]]
     except Exception as error:
