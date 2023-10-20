@@ -199,6 +199,7 @@ class StreamLSL(BaseStream):
         """Disconnect from the LSL stream and interrupt data collection."""
         super().disconnect()
         inlet = self._inlet
+        logger.debug(f"Calling inlet.close_stream() for {self}")
         self._inlet = None  # prevent _acquire from being called
         inlet.close_stream()
         self._reset_variables()  # also sets self._inlet = None

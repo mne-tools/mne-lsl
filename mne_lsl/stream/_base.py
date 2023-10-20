@@ -68,6 +68,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
     def __del__(self):
         """Try to disconnect the stream when deleting the object."""
+        logger.debug(f"Deleting {self}")
         try:
             self.disconnect()
         except Exception:

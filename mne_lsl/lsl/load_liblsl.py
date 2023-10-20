@@ -495,4 +495,5 @@ def _set_types(lib: CDLL) -> CDLL:
 
 
 # load library
+print("loadin")
 lib = load_liblsl()
