@@ -53,7 +53,7 @@ class PlayerLSL(BasePlayer):
             source_id="MNE-LSL",
         )
         self._sinfo.set_channel_info(self._raw.info)
-        logger.debug(f"Set channel info {self._name}")
+        logger.debug("Set channel info %s", self._name)
         # create additional streaming variables
         self._reset_variables()
 
@@ -81,7 +81,7 @@ class PlayerLSL(BasePlayer):
         self._streaming_thread.daemon = True
         self._target_timestamp = local_clock()
         self._streaming_thread.start()
-        logger.debug(f"Started streaming thread {self._name}")
+        logger.debug("Started streaming thread %s", self._name)
 
     @copy_doc(BasePlayer.set_channel_types)
     def set_channel_types(
@@ -112,7 +112,7 @@ class PlayerLSL(BasePlayer):
             # retrieve data and push to the stream outlet
             start = self._start_idx
             if start == 0:
-                logger.debug(f"First _stream ping {self._name}")
+                logger.debug("First _stream ping %s", self._name)
             stop = start + self._chunk_size
             if stop <= self._raw.times.size:
                 data = self._raw[:, start:stop][0].T
@@ -147,7 +147,7 @@ class PlayerLSL(BasePlayer):
 
     def _reset_variables(self) -> None:
         """Reset variables for streaming."""
-        logger.debug(f"Resetting variables {self._name}")
+        logger.debug("Resetting variables %s", self._name)
         super()._reset_variables()
         self._outlet = None
         self._target_timestamp = None
