@@ -193,6 +193,7 @@ def test_stream_pick(mock_lsl_stream, acquisition_delay, raw):
     raw_.set_channel_types({"M1": "emg", "M2": "emg"})
     raw_.pick("eeg")
     assert stream.ch_names == raw_.ch_names
+    time.sleep(0.2)
     for _ in range(3):
         data, _ = stream.get_data(winsize=0.1)
         match_stream_and_raw_data(data, raw_)

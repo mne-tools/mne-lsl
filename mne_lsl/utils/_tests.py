@@ -41,6 +41,7 @@ def match_stream_and_raw_data(data: NDArray[float], raw: BaseRaw) -> None:
     start = good[0]
     del good
     stop = start + data.shape[1]
+    n_fetch = 1
     if stop <= raw.times.size:
         raw_data = raw[:, start:stop][0]
     else:
@@ -52,7 +53,9 @@ def match_stream_and_raw_data(data: NDArray[float], raw: BaseRaw) -> None:
                 raw_data = np.hstack(
                     (raw_data, raw[:, : data.shape[1] - raw_data.shape[1]][0])
                 )
-    assert_allclose(raw_data, data, rtol=0.001)
+        n_fetch += 1
+    err_msg = f"data mismatch after {n_fetch} fetch(es)"
+    assert_allclose(raw_data, data, rtol=0.001, err_msg=err_msg)
 
 
 def requires_module(function: Callable, name: str):
