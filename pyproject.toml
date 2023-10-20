@@ -133,6 +133,10 @@ exclude_lines = [
   'if TYPE_CHECKING:',
   'pragma: no cover',
 ]
+omit = [
+    '**/mne_lsl/stream_viewer/backends/*',
+    '**/mne_lsl/stream_viewer/control_gui/*',
+]
 precision = 2
 
 [tool.coverage.run]
