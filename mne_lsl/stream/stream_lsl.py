@@ -296,11 +296,11 @@ class StreamLSL(BaseStream):
         )
         if super().connected:
             # sanity-check
-            assert not any(getattr(self, attr) is None for attr in attributes)
+            assert not any(getattr(self, attr, None) is None for attr in attributes)
             return True
         else:
             # sanity-check
-            assert all(getattr(self, attr) is None for attr in attributes)
+            assert all(getattr(self, attr, None) is None for attr in attributes)
             return False
 
     @property
