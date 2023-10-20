@@ -805,11 +805,11 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             "_picks_inlet",
             "_timestamps",
         )
-        if all(getattr(self, attr) is None for attr in attributes):
+        if all(getattr(self, attr, None) is None for attr in attributes):
             return False
         else:
             # sanity-check
-            assert not any(getattr(self, attr) is None for attr in attributes)
+            assert not any(getattr(self, attr, None) is None for attr in attributes)
             return True
 
     @property
