@@ -61,6 +61,7 @@ def pytest_configure(config):
 
 
 def pytest_sessionfinish(session, exitstatus):
+    """Clean up the pytest session."""
     try:
         os.unlink(lsl_cfg.name)
     except Exception:
