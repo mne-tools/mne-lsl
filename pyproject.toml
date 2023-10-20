@@ -92,6 +92,7 @@ style = [
   'pydocstyle[toml]',
   'ruff',
   'toml-sort',
+  'yamlint',
 ]
 test = [
   'pyqt5',
@@ -134,8 +135,8 @@ exclude_lines = [
   'pragma: no cover',
 ]
 omit = [
-    '**/mne_lsl/stream_viewer/backends/*',
-    '**/mne_lsl/stream_viewer/control_gui/*',
+  '**/mne_lsl/stream_viewer/backends/*',
+  '**/mne_lsl/stream_viewer/control_gui/*',
 ]
 precision = 2
 
