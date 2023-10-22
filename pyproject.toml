@@ -135,8 +135,7 @@ exclude_lines = [
   'pragma: no cover',
 ]
 omit = [
-  '**/mne_lsl/stream_viewer/backends/*',
-  '**/mne_lsl/stream_viewer/control_gui/*',
+  '**/mne_lsl/stream_viewer/*',
 ]
 precision = 2
 

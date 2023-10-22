@@ -34,12 +34,10 @@ def _init_logger(*, verbose: Optional[Union[bool, str, int]] = None) -> Logger:
     logger = logging.getLogger(__package__.split(".utils", maxsplit=1)[0])
     logger.propagate = False
     logger.setLevel(verbose)
-
     # add the main handler
     handler = logging.StreamHandler(_WrapStdOut())
     handler.setFormatter(_LoggerFormatter())
     logger.addHandler(handler)
-
     return logger
 
 
@@ -167,6 +165,7 @@ class _use_log_level:
 
     def __enter__(self):
         self._logger.setLevel(self._level)
+        return self
 
     def __exit__(self, *args):
         self._logger.setLevel(self._old_level)
