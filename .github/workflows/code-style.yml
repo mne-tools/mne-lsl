@@ -45,3 +45,5 @@ jobs:
         run: bibclean-check doc/references.bib
       - name: Run toml-sort
         run: toml-sort pyproject.toml --check
+      - name: Run yamllint
+        run: yamllint ./github -c .yamllint.yml --strict

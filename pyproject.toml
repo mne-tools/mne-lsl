@@ -92,7 +92,7 @@ style = [
   'pydocstyle[toml]',
   'ruff',
   'toml-sort',
-  'yamlint',
+  'yamllint',
 ]
 test = [
   'pyqt5',
