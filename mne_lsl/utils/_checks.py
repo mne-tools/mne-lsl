@@ -3,7 +3,6 @@
 import logging
 import operator
 import os
-from collections.abc import Sequence
 from pathlib import Path
 from typing import Any, Optional
 
@@ -64,7 +63,7 @@ _types = {
     "path-like": (str, Path, os.PathLike),
     "int-like": (_IntLike(),),
     "callable": (_Callable(),),
-    "array-like": (Sequence, np.ndarray),
+    "array-like": (list, tuple, set, np.ndarray),
 }
 
 
