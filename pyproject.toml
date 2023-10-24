@@ -174,7 +174,7 @@ match-dir = '^mne_lsl.*'
 
 [tool.pytest.ini_options]
 addopts = '--durations=20 --junit-xml=junit-results.xml -ra -v --cov-report= --tb=short --color=yes'
-junit_family = "xunit2"
+junit_family = 'xunit2'
 minversion = '6.0'
 
 [tool.ruff]
@@ -188,14 +188,14 @@ extend-exclude = [
 line-length = 88
 
 [tool.ruff.per-file-ignores]
-"__init__.py" = ["F401"]
+'__init__.py' = ['F401']
 
 [tool.setuptools]
 include-package-data = false
 
 [tool.setuptools.package-data]
-"mne_lsl.datasets" = ["*registry.txt"]
-"mne_lsl.stream_viewer.control_gui.settings" = ["*.ini"]
+'mne_lsl.datasets' = ['*registry.txt']
+'mne_lsl.stream_viewer.control_gui.settings' = ['*.ini']
 
 [tool.setuptools.packages.find]
 exclude = ['mne_lsl*tests']
