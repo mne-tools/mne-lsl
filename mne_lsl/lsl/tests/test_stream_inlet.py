@@ -41,6 +41,8 @@ def test_pull_numerical_sample(dtype_str, dtype):
     outlet.push_sample(x.astype(np.float64 if dtype != np.float64 else np.float32))
     data, ts = inlet.pull_sample(timeout=5)
     _test_numerical_data(data, x, dtype, ts)
+    del inlet
+    del outlet
 
 
 def test_pull_str_sample():
@@ -60,6 +62,8 @@ def test_pull_str_sample():
     data, ts = inlet.pull_sample(timeout=0)
     assert ts is None
     assert isinstance(data, list) and len(data) == 0
+    del inlet
+    del outlet
 
 
 @pytest.mark.parametrize(
@@ -112,6 +116,8 @@ def test_pull_numerical_chunk(dtype_str, dtype):
         ValueError, match="'max_samples' must be a strictly positive integer"
     ):
         data, ts = inlet.pull_chunk(max_samples=-101)
+    del inlet
+    del outlet
 
 
 def test_pull_str_chunk():
@@ -146,6 +152,8 @@ def test_pull_str_chunk():
     assert data == x[1]
     data, ts = inlet.pull_chunk(max_samples=5, timeout=1)
     assert data == [x[2]]  # chunk is nested
+    del inlet
+    del outlet
 
 
 def test_get_sinfo():
@@ -158,6 +166,8 @@ def test_get_sinfo():
     inlet.open_stream(timeout=5)
     sinfo = inlet.get_sinfo(timeout=5)
     assert isinstance(sinfo, _BaseStreamInfo)
+    del inlet
+    del outlet
 
 
 @pytest.mark.xfail(
@@ -198,6 +208,8 @@ def test_inlet_methods(dtype_str, dtype):
     assert inlet.samples_available == 0
     outlet.push_chunk(x)
     assert inlet.samples_available == 3
+    del inlet
+    del outlet
 
 
 @pytest.mark.parametrize(
@@ -227,6 +239,8 @@ def test_processing_flags(dtype_str, flags):
     assert inlet.samples_available == 0
     data, ts = inlet.pull_chunk(max_samples=1, timeout=0)
     assert data.size == ts.size == 0
+    del inlet
+    del outlet
 
 
 def test_processing_flags_invalid():
@@ -247,6 +261,8 @@ def test_time_correction():
     inlet.open_stream(timeout=5)
     tc = inlet.time_correction(timeout=3)
     assert isinstance(tc, float)
+    del inlet
+    del outlet
 
 
 def _test_properties(inlet, dtype_str, n_channels, name, sfreq, stype):

@@ -1,7 +1,7 @@
 from __future__ import annotations  # c.f. PEP 563, PEP 649
 
 import os
-import tempfile
+from tempfile import NamedTemporaryFile
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -18,16 +18,11 @@ from mne_lsl.datasets import testing  # ignore: E402
 # 2023-10-20 09:38:21.639 (   9.656s) [pytest          ]         tcp_server.cpp:160      1| Created IPv4 TCP acceptor for P_test_stream_add_reference_channels[1s] @ port 16572  # noqa: E501
 # 2023-10-20 09:38:21.639 (   9.656s) [pytest          ]         tcp_server.cpp:171      1| Created IPv6 TCP acceptor for P_test_stream_add_reference_channels[1s] @ port 16578  # noqa: E501
 # 2023-10-20 09:38:21.648 (   9.665s) [IO_P_test_stre  ]         udp_server.cpp:136      3| 0x43e9310 query matches, replying to port 16574  # noqa: E501
-lsl_cfg = tempfile.NamedTemporaryFile("w", prefix="lsl", suffix=".cfg", delete=False)
+lsl_cfg = NamedTemporaryFile("w", prefix="lsl", suffix=".cfg", delete=False)
 if "LSLAPICFG" not in os.environ:
     level = int(os.getenv("MNE_LSL_LOG_LEVEL", "2"))
     with lsl_cfg as fid:
-        fid.write(
-            f"""
-[log]
-level = {level}
-"""
-        )
+        fid.write(f"[log]\nlevel = {level}")
     os.environ["LSLAPICFG"] = lsl_cfg.name
 
 if TYPE_CHECKING:
