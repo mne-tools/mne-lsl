@@ -170,7 +170,7 @@ class StreamLSL(BaseStream):
         self._info = self._sinfo.get_channel_info()
         # initiate time-correction
         tc = self._inlet.time_correction(timeout=timeout)
-        logger.info("The estimated timestamp offset is %.2f seconds.", tc)
+        logger.info("The estimated timestamp offset is %.2f ms.", tc * 1000)
         # create buffer of shape (n_samples, n_channels) and (n_samples,)
         if self._inlet.sfreq == 0:
             self._buffer = np.zeros(
