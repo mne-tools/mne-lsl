@@ -185,6 +185,7 @@ def test_stream_pick(mock_lsl_stream, acquisition_delay, raw):
     raw_.info["bads"] = ["Fp2"]
     raw_.pick("eeg", exclude="bads")
     assert stream.ch_names == raw_.ch_names
+    time.sleep(0.1)
     for _ in range(3):
         data, _ = stream.get_data(winsize=0.1)
         match_stream_and_raw_data(data, raw_)
@@ -206,6 +207,7 @@ def test_stream_pick(mock_lsl_stream, acquisition_delay, raw):
     stream.drop_channels(["F1", "F2"])
     raw_.drop_channels(["F1", "F2"])
     assert stream.ch_names == raw_.ch_names
+    time.sleep(0.1)
     for _ in range(3):
         data, _ = stream.get_data(winsize=0.1)
         match_stream_and_raw_data(data, raw_)
@@ -217,6 +219,7 @@ def test_stream_pick(mock_lsl_stream, acquisition_delay, raw):
     )
     raw_.pick([raw_.ch_names[1], raw_.ch_names[3], raw_.ch_names[5], raw_.ch_names[8]])
     assert stream.ch_names == raw_.ch_names
+    time.sleep(0.1)
     for _ in range(3):
         data, _ = stream.get_data(winsize=0.1)
         match_stream_and_raw_data(data, raw_)
@@ -274,6 +277,7 @@ def test_stream_channel_names(mock_lsl_stream, raw):
     assert stream.ch_names == raw_.ch_names
     assert stream.info["ch_names"] == raw_.ch_names
     # acquire a couple of chunks
+    time.sleep(0.1)
     for _ in range(3):
         data, _ = stream.get_data(winsize=0.1)
         match_stream_and_raw_data(data, raw_)
@@ -302,6 +306,7 @@ def test_stream_channel_units(mock_lsl_stream, raw):
     assert ch_units[stream.ch_names.index("Fp1")][1] == -6
     assert ch_units[stream.ch_names.index("vEOG")][1] == 6
     # acquire a couple of chunks
+    time.sleep(0.1)
     for _ in range(3):
         data, _ = stream.get_data(winsize=0.1)
         match_stream_and_raw_data(data, raw_)
@@ -317,6 +322,7 @@ def test_stream_add_reference_channels(mock_lsl_stream, acquisition_delay, raw):
     stream.add_reference_channels("CPz")
     raw_ = raw.copy().add_reference_channels("CPz")
     assert stream.ch_names == raw_.ch_names
+    time.sleep(0.1)
     # acquire a couple of chunks
     for _ in range(3):
         data, _ = stream.get_data(winsize=0.1)
@@ -326,6 +332,7 @@ def test_stream_add_reference_channels(mock_lsl_stream, acquisition_delay, raw):
     raw_.add_reference_channels(["Ref1", "Ref2"])
     assert stream.ch_names == raw_.ch_names
     # acquire a couple of chunks
+    time.sleep(0.1)
     for _ in range(3):
         data, _ = stream.get_data(winsize=0.1)
         match_stream_and_raw_data(data, raw_)
@@ -333,6 +340,7 @@ def test_stream_add_reference_channels(mock_lsl_stream, acquisition_delay, raw):
     # pick channels
     stream.pick("eeg")
     raw_.pick("eeg")
+    time.sleep(0.1)
     for _ in range(3):
         data, _ = stream.get_data(winsize=0.1)
         match_stream_and_raw_data(data, raw_)
@@ -342,6 +350,7 @@ def test_stream_add_reference_channels(mock_lsl_stream, acquisition_delay, raw):
     # add reference channel again
     stream.add_reference_channels("Ref3")
     raw_.add_reference_channels("Ref3")
+    time.sleep(0.1)
     for _ in range(3):
         data, _ = stream.get_data(winsize=0.1)
         match_stream_and_raw_data(data, raw_)
