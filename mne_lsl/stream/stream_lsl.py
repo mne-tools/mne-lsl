@@ -196,7 +196,7 @@ class StreamLSL(BaseStream):
         inlet = self._inlet
         logger.debug("Calling inlet.close_stream() for %s", self)
         self._inlet = None  # prevent _acquire from being called
-        inlet.close_stream()
+        del inlet
         self._reset_variables()  # also sets self._inlet = None
 
     def _acquire(self) -> None:
