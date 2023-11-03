@@ -55,7 +55,7 @@ def match_stream_and_raw_data(data: NDArray[float], raw: BaseRaw) -> None:
                 )
         n_fetch += 1
     err_msg = f"data mismatch after {n_fetch} fetch(es)"
-    assert_allclose(raw_data, data, rtol=0.001, err_msg=err_msg)
+    assert_allclose(data, raw_data, rtol=0.001, err_msg=err_msg)
 
 
 def requires_module(name: str):  # pragma: no cover
