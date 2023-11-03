@@ -146,6 +146,7 @@ def test_stream_drop_channels(mock_lsl_stream, acquisition_delay, raw):
     stream.drop_channels("hEOG")
     raw_ = raw.copy().drop_channels("hEOG")
     assert stream.ch_names == raw_.ch_names
+    time.sleep(0.1)
     for _ in range(3):
         data, _ = stream.get_data(winsize=0.1)
         match_stream_and_raw_data(data, raw_)
@@ -153,6 +154,7 @@ def test_stream_drop_channels(mock_lsl_stream, acquisition_delay, raw):
     stream.drop_channels(["Fp1", "Fp2"])
     raw_ = raw_.drop_channels(["Fp1", "Fp2"])
     assert stream.ch_names == raw_.ch_names
+    time.sleep(0.1)
     for _ in range(3):
         data, _ = stream.get_data(winsize=0.1)
         match_stream_and_raw_data(data, raw_)
@@ -164,6 +166,7 @@ def test_stream_drop_channels(mock_lsl_stream, acquisition_delay, raw):
     raw_.set_channel_types({"M1": "emg", "M2": "emg"})
     raw_.pick("emg")
     assert stream.ch_names == raw_.ch_names
+    time.sleep(0.1)
     for _ in range(3):
         data, _ = stream.get_data(winsize=0.1)
         match_stream_and_raw_data(data, raw_)
@@ -371,11 +374,13 @@ def test_stream_get_data_picks(mock_lsl_stream, acquisition_delay, raw):
     raw_ = raw.copy().add_reference_channels("CPz")
     raw_.pick("eeg")
     # acquire a couple of chunks
+    time.sleep(0.1)
     for _ in range(3):
         data, _ = stream.get_data(winsize=0.1, picks="eeg")
         match_stream_and_raw_data(data, raw_)
         time.sleep(1.1 * acquisition_delay)
     raw_.pick(["Fp1", "F2", "F4"])
+    time.sleep(0.1)
     for _ in range(3):
         data, _ = stream.get_data(winsize=0.1, picks=["Fp1", "F2", "F4"])
         match_stream_and_raw_data(data, raw_)
