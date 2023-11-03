@@ -22,7 +22,7 @@ lsl_cfg = NamedTemporaryFile("w", prefix="lsl", suffix=".cfg", delete=False)
 if "LSLAPICFG" not in os.environ:
     level = int(os.getenv("MNE_LSL_LOG_LEVEL", "2"))
     with lsl_cfg as fid:
-        fid.write(f"[log]\nlevel = {level}")
+        fid.write(f"[log]\nlevel = {level}\n\n[multicast]\nResolveScope = machine")
     os.environ["LSLAPICFG"] = lsl_cfg.name
 
 if TYPE_CHECKING:
@@ -56,7 +56,7 @@ def pytest_configure(config: Config) -> None:
         if warning_line and not warning_line.startswith("#"):
             config.addinivalue_line("filterwarnings", warning_line)
     set_log_level_mne("WARNING")  # MNE logger
-    set_log_level("DEBUG")  # MNE-lsl logger
+    set_log_level("WARNING")  # MNE-lsl logger
 
 
 def pytest_sessionfinish(session, exitstatus) -> None:
