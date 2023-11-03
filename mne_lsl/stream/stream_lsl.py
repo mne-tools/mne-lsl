@@ -239,6 +239,8 @@ class StreamLSL(BaseStream):
                 self._inlet.n_channels,
                 self._picks_inlet.size,
             )
+            # select the last self._timestamps.size samples from data and timestamps in
+            # case more samples than the buffer can hold were retrieved.
             self._buffer[-timestamps.size :, :] = data[-self._timestamps.size :, :]
             self._timestamps[-timestamps.size :] = timestamps[-self._timestamps.size :]
             # update the number of new samples available
