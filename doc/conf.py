@@ -5,6 +5,8 @@
 
 
 import inspect
+import subprocess
+import sys
 from datetime import date
 from importlib import import_module
 from pathlib import Path
@@ -36,13 +38,12 @@ release_mne = mne.__version__
 # If your documentation needs a minimal Sphinx version, state it here.
 needs_sphinx = "5.0"
 
-# The document name of the “root” document, that is, the document that contains
-# the root toctree directive.
+# The document name of the “root” document, that is, the document that contains the root
+# toctree directive.
 root_doc = "index"
 
-# Add any Sphinx extension module names here, as strings. They can be
-# extensions coming with Sphinx (named "sphinx.ext.*") or your custom
-# ones.
+# Add any Sphinx extension module names here, as strings. They can be extensions coming
+# with Sphinx (named "sphinx.ext.*") or your custom ones.
 extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.autosectionlabel",
@@ -68,9 +69,9 @@ nitpick_ignore = []
 # A list of ignored prefixes for module index sorting.
 modindex_common_prefix = [f"{package}."]
 
-# The name of a reST role (builtin or Sphinx extension) to use as the default
-# role, that is, for text marked up `like this`. This can be set to 'py:obj' to
-# make `filter` a cross-reference to the Python function “filter”.
+# The name of a reST role (builtin or Sphinx extension) to use as the default role, that
+# is, for text marked up `like this`. This can be set to 'py:obj' to make `filter` a
+# cross-reference to the Python function “filter”.
 default_role = "py:obj"
 
 # -- options for HTML output -----------------------------------------------------------
@@ -255,15 +256,25 @@ def linkcode_resolve(domain: str, info: Dict[str, str]) -> Optional[str]:
 
 
 # -- sphinx-gallery --------------------------------------------------------------------
+if sys.platform.startswith("win"):
+    try:
+        subprocess.check_call(["optipng", "--version"])
+        compress_images = ("images", "thumbnails")
+    except Exception:
+        compress_images = ()
+else:
+    compress_images = ("images", "thumbnails")
+
 sphinx_gallery_conf = {
     "backreferences_dir": "generated/backreferences",
+    "compress_images": compress_images,
     "doc_module": (f"{package}",),
     "examples_dirs": ["../tutorials"],
     "exclude_implicit_doc": {},  # set
     "filename_pattern": r"\d{2}_",
     "gallery_dirs": ["generated/tutorials"],
     "line_numbers": False,
-    "plot_gallery": True,
+    "plot_gallery": "True",  # str, to enable overwrite from CLI without warning
     "reference_url": {f"{package}": None},
     "remove_config_comments": True,
     "show_memory": True,
@@ -272,3 +283,9 @@ sphinx_gallery_conf = {
 
 # -- sphinx-remove-toctrees ------------------------------------------------------------
 remove_from_toctrees = ["generated/api/*"]
+
+# -- linkcheck -------------------------------------------------------------------------
+linkcheck_anchors = False  # saves a bit of time
+linkcheck_timeout = 15  # some can be quite slow
+linkcheck_retries = 3
+linkcheck_ignore = []  # will be compiled to regex
