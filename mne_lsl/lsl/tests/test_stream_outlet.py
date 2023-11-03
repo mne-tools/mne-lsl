@@ -36,11 +36,12 @@ def test_push_numerical_sample(dtype_str, dtype):
     outlet.push_sample(x)
     data, ts = inlet.pull_sample(timeout=5)
     assert_allclose(data, x)
-
     with pytest.raises(ValueError, match=re.escape("shape should be (n_channels,)")):
         outlet.push_sample(np.array([1, 2, 3, 4, 5, 6], dtype=dtype).reshape((2, 3)))
     with pytest.raises(ValueError, match="2 elements are expected"):
         outlet.push_sample(np.array([1, 2, 3, 4, 5], dtype=dtype))
+    del inlet
+    del outlet
 
 
 def test_push_str_sample():
@@ -57,6 +58,8 @@ def test_push_str_sample():
     outlet.push_sample(x)
     data, ts = inlet.pull_sample(timeout=5)
     assert data == x
+    del inlet
+    del outlet
 
 
 @pytest.mark.parametrize(
@@ -131,6 +134,8 @@ def test_wait_for_consumers():
     inlet.open_stream(timeout=5)
     assert outlet.wait_for_consumers(timeout=0.2)
     assert outlet.has_consumers
+    del inlet
+    del outlet
 
 
 def test_invalid_outlet():

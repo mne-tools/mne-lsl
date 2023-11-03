@@ -212,6 +212,9 @@ def test_stream_info_properties():
     assert isinstance(sinfo_.uid, str)
     assert len(sinfo_.uid) != 0
 
+    del inlet
+    del outlet
+
 
 def test_invalid_stream_info():
     """Test creation of an invalid StreamInfo."""
@@ -247,3 +250,6 @@ def test_stream_info_desc_from_info():
     inlet.open_stream()
     info_retrieved = inlet.get_sinfo().get_channel_info()
     compare_infos(raw.info, info_retrieved)
+
+    del inlet
+    del outlet
