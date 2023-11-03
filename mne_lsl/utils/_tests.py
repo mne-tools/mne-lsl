@@ -58,15 +58,20 @@ def match_stream_and_raw_data(data: NDArray[float], raw: BaseRaw) -> None:
     assert_allclose(raw_data, data, rtol=0.001, err_msg=err_msg)
 
 
-def requires_module(function: Callable, name: str):
+def requires_module(name: str):  # pragma: no cover
     """Skip a test if package is not available (decorator)."""
     try:
         import_module(name)
         skip = False
     except ImportError:
         skip = True
-    reason = f"Test {function.__name__} skipped, requires {name}."
-    return pytest.mark.skipif(skip, reason=reason)(function)
+
+    def decorator(function: Callable):
+        return pytest.mark.skipif(
+            skip, reason=f"Test {function.__name__} skipped, requires {name}."
+        )(function)
+
+    return decorator
 
 
 def compare_infos(info1, info2):

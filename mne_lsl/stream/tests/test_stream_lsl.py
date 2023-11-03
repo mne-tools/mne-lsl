@@ -63,7 +63,7 @@ def test_stream(mock_lsl_stream, acquisition_delay, raw):
         assert ts.size == data.shape[1]
         assert_allclose(1 / np.diff(ts), stream.info["sfreq"])
         match_stream_and_raw_data(data, raw)
-        time.sleep(1.1 * acquisition_delay)
+        _sleep_until_new_data(acquisition_delay, mock_lsl_stream)
     # montage
     stream.set_montage("standard_1020")
     stream.plot_sensors()
@@ -150,7 +150,7 @@ def test_stream_drop_channels(mock_lsl_stream, acquisition_delay, raw):
     for _ in range(3):
         data, _ = stream.get_data(winsize=0.1)
         match_stream_and_raw_data(data, raw_)
-        time.sleep(1.1 * acquisition_delay)
+        _sleep_until_new_data(acquisition_delay, mock_lsl_stream)
     stream.drop_channels(["Fp1", "Fp2"])
     raw_ = raw_.drop_channels(["Fp1", "Fp2"])
     assert stream.ch_names == raw_.ch_names
@@ -158,7 +158,7 @@ def test_stream_drop_channels(mock_lsl_stream, acquisition_delay, raw):
     for _ in range(3):
         data, _ = stream.get_data(winsize=0.1)
         match_stream_and_raw_data(data, raw_)
-        time.sleep(1.1 * acquisition_delay)
+        _sleep_until_new_data(acquisition_delay, mock_lsl_stream)
 
     # test pick after drop
     stream.set_channel_types({"M1": "emg", "M2": "emg"})
@@ -170,7 +170,7 @@ def test_stream_drop_channels(mock_lsl_stream, acquisition_delay, raw):
     for _ in range(3):
         data, _ = stream.get_data(winsize=0.1)
         match_stream_and_raw_data(data, raw_)
-        time.sleep(1.1 * acquisition_delay)
+        _sleep_until_new_data(acquisition_delay, mock_lsl_stream)
     stream.disconnect()
 
 
@@ -189,7 +189,7 @@ def test_stream_pick(mock_lsl_stream, acquisition_delay, raw):
     for _ in range(3):
         data, _ = stream.get_data(winsize=0.1)
         match_stream_and_raw_data(data, raw_)
-        time.sleep(1.1 * acquisition_delay)
+        _sleep_until_new_data(acquisition_delay, mock_lsl_stream)
 
     # change channel types for testing and pick again
     stream.set_channel_types({"M1": "emg", "M2": "emg"})
@@ -201,7 +201,7 @@ def test_stream_pick(mock_lsl_stream, acquisition_delay, raw):
     for _ in range(3):
         data, _ = stream.get_data(winsize=0.1)
         match_stream_and_raw_data(data, raw_)
-        time.sleep(1.1 * acquisition_delay)
+        _sleep_until_new_data(acquisition_delay, mock_lsl_stream)
 
     # test dropping channels after pick
     stream.drop_channels(["F1", "F2"])
@@ -211,7 +211,7 @@ def test_stream_pick(mock_lsl_stream, acquisition_delay, raw):
     for _ in range(3):
         data, _ = stream.get_data(winsize=0.1)
         match_stream_and_raw_data(data, raw_)
-        time.sleep(1.1 * acquisition_delay)
+        _sleep_until_new_data(acquisition_delay, mock_lsl_stream)
 
     # test lack of re-order via pick
     stream.pick(
@@ -223,7 +223,7 @@ def test_stream_pick(mock_lsl_stream, acquisition_delay, raw):
     for _ in range(3):
         data, _ = stream.get_data(winsize=0.1)
         match_stream_and_raw_data(data, raw_)
-        time.sleep(1.1 * acquisition_delay)
+        _sleep_until_new_data(acquisition_delay, mock_lsl_stream)
     stream.disconnect()
 
 
@@ -327,7 +327,7 @@ def test_stream_add_reference_channels(mock_lsl_stream, acquisition_delay, raw):
     for _ in range(3):
         data, _ = stream.get_data(winsize=0.1)
         match_stream_and_raw_data(data, raw_)
-        time.sleep(1.1 * acquisition_delay)
+        _sleep_until_new_data(acquisition_delay, mock_lsl_stream)
     stream.add_reference_channels(["Ref1", "Ref2"])
     raw_.add_reference_channels(["Ref1", "Ref2"])
     assert stream.ch_names == raw_.ch_names
@@ -336,7 +336,7 @@ def test_stream_add_reference_channels(mock_lsl_stream, acquisition_delay, raw):
     for _ in range(3):
         data, _ = stream.get_data(winsize=0.1)
         match_stream_and_raw_data(data, raw_)
-        time.sleep(1.1 * acquisition_delay)
+        _sleep_until_new_data(acquisition_delay, mock_lsl_stream)
     # pick channels
     stream.pick("eeg")
     raw_.pick("eeg")
@@ -344,7 +344,7 @@ def test_stream_add_reference_channels(mock_lsl_stream, acquisition_delay, raw):
     for _ in range(3):
         data, _ = stream.get_data(winsize=0.1)
         match_stream_and_raw_data(data, raw_)
-        time.sleep(1.1 * acquisition_delay)
+        _sleep_until_new_data(acquisition_delay, mock_lsl_stream)
     with pytest.raises(RuntimeError, match="selection would not leave any channel"):
         stream.pick("CPz")
     # add reference channel again
@@ -354,7 +354,7 @@ def test_stream_add_reference_channels(mock_lsl_stream, acquisition_delay, raw):
     for _ in range(3):
         data, _ = stream.get_data(winsize=0.1)
         match_stream_and_raw_data(data, raw_)
-        time.sleep(1.1 * acquisition_delay)
+        _sleep_until_new_data(acquisition_delay, mock_lsl_stream)
     stream.disconnect()
 
 
@@ -387,13 +387,13 @@ def test_stream_get_data_picks(mock_lsl_stream, acquisition_delay, raw):
     for _ in range(3):
         data, _ = stream.get_data(winsize=0.1, picks="eeg")
         match_stream_and_raw_data(data, raw_)
-        time.sleep(1.1 * acquisition_delay)
+        _sleep_until_new_data(acquisition_delay, mock_lsl_stream)
     raw_.pick(["Fp1", "F2", "F4"])
     time.sleep(0.1)
     for _ in range(3):
         data, _ = stream.get_data(winsize=0.1, picks=["Fp1", "F2", "F4"])
         match_stream_and_raw_data(data, raw_)
-        time.sleep(1.1 * acquisition_delay)
+        _sleep_until_new_data(acquisition_delay, mock_lsl_stream)
     stream.disconnect()
 
 
@@ -441,7 +441,7 @@ def test_stream_rereference(mock_lsl_stream_int, acquisition_delay):
     data_ref = np.full(data.shape, np.arange(data.shape[0]).reshape(-1, 1))
     data_ref -= data_ref[1, :]
     assert_allclose(data, data_ref)
-    time.sleep(1.1 * acquisition_delay)
+    _sleep_until_new_data(acquisition_delay, mock_lsl_stream_int)
     data, _ = stream.get_data()
     assert_allclose(data, data_ref)
 
@@ -511,3 +511,13 @@ def test_stream_rereference_average(mock_lsl_stream_int):
     data, _ = stream.get_data(picks="eeg")
     assert_allclose(data, data_ref)
     stream.disconnect()
+
+
+def _sleep_until_new_data(acq_delay, player):
+    """Sleep until new data is available, majorated by 10%."""
+    time.sleep(
+        max(
+            1.1 * acq_delay,
+            1.1 * (player.info["sfreq"] / player.chunk_size),
+        )
+    )
