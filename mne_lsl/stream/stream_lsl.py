@@ -244,7 +244,7 @@ class StreamLSL(BaseStream):
             self._buffer[-timestamps.size :, :] = data[-self._timestamps.size :, :]
             self._timestamps[-timestamps.size :] = timestamps[-self._timestamps.size :]
             # update the number of new samples available
-            self._n_new_samples += min(timestamps.size, self.n_buffer)
+            self._n_new_samples += min(timestamps.size, self._timestamps.size)
             if (
                 self._timestamps.size < self._n_new_samples
                 or self._timestamps.size < timestamps.size
