@@ -518,6 +518,6 @@ def _sleep_until_new_data(acq_delay, player):
     time.sleep(
         max(
             1.1 * acq_delay,
-            1.1 * (player.info["sfreq"] / player.chunk_size),
+            1.1 * (player.chunk_size / player.info["sfreq"]),
         )
     )
