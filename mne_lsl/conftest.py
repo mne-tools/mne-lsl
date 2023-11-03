@@ -22,7 +22,7 @@ lsl_cfg = NamedTemporaryFile("w", prefix="lsl", suffix=".cfg", delete=False)
 if "LSLAPICFG" not in os.environ:
     level = int(os.getenv("MNE_LSL_LOG_LEVEL", "2"))
     with lsl_cfg as fid:
-        fid.write(f"[log]\nlevel = {level}\n\n[multicast]\nResolveScope = machine")
+        fid.write(f"[log]\nlevel = {level}\n\n[multicast]\nResolveScope = link")
     os.environ["LSLAPICFG"] = lsl_cfg.name
 
 if TYPE_CHECKING:
