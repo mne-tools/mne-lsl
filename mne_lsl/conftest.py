@@ -11,7 +11,7 @@ from mne.io import Raw, RawArray, read_raw_fif
 from pytest import fixture
 
 from mne_lsl import set_log_level
-from mne_lsl.datasets import testing  # ignore: E402
+from mne_lsl.datasets import testing
 
 # Set debug logging in LSL, e.g.:
 # 2023-10-20 09:38:21.639 (   9.656s) [pytest          ]         udp_server.cpp:88       2| P_test_stream_add_reference_channels[1s]: Started multicast udp server at ff05:113d:6fdd:2c17:a643:ffe2:1bd1:3cd2 port 16571 (addr 0x43f93a0)  # noqa: E501
@@ -28,8 +28,10 @@ if "LSLAPICFG" not in os.environ:
 if TYPE_CHECKING:
     from pathlib import Path
 
+    from pytest import Config
 
-def pytest_configure(config):
+
+def pytest_configure(config: Config) -> None:
     """Configure pytest options."""
     for marker in ("slow",):
         config.addinivalue_line("markers", marker)
@@ -57,7 +59,7 @@ def pytest_configure(config):
     set_log_level("DEBUG")  # MNE-lsl logger
 
 
-def pytest_sessionfinish(session, exitstatus):
+def pytest_sessionfinish(session, exitstatus) -> None:
     """Clean up the pytest session."""
     try:
         os.unlink(lsl_cfg.name)
@@ -86,7 +88,7 @@ def raw(fname) -> Raw:
 def mock_lsl_stream(fname, request):
     """Create a mock LSL stream for testing."""
     # Nest PlayerLSL import so temp config gets written first
-    from mne_lsl.player import PlayerLSL  # ignore: E402
+    from mne_lsl.player import PlayerLSL  # noqa: E402
 
     name = f"P_{request.node.name}"
     with PlayerLSL(fname, name, chunk_size=16) as player:
@@ -107,7 +109,7 @@ def _integer_raw(tmp_path_factory) -> Path:
 @fixture(scope="module")
 def mock_lsl_stream_int(_integer_raw, request):
     """Create a mock LSL stream streaming the channel number continuously."""
-    from mne_lsl.player import PlayerLSL  # ignore: E402
+    from mne_lsl.player import PlayerLSL  # noqa: E402
 
     name = f"P_{request.node.name}"
     with PlayerLSL(_integer_raw, name, chunk_size=16) as player:
