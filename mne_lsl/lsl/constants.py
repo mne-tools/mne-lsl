@@ -1,6 +1,15 @@
 import platform
 import struct
-from ctypes import c_byte, c_char_p, c_double, c_float, c_int, c_longlong, c_short
+from ctypes import (
+    c_byte,
+    c_char,
+    c_char_p,
+    c_double,
+    c_float,
+    c_int,
+    c_longlong,
+    c_short,
+)
 
 import numpy as np
 
@@ -62,13 +71,17 @@ if struct.calcsize("P") != 4 and platform.system() != "Windows":
     push_sample_int64 = lib.lsl_push_sample_ltp
     pull_sample_int64 = lib.lsl_pull_sample_l
     push_chunk_int64 = lib.lsl_push_chunk_ltp
+    push_chunk_int64_n = lib.lsl_push_chunk_ltnp
     pull_chunk_int64 = lib.lsl_pull_chunk_l
 else:
 
     def push_sample_int64(*_):  # noqa: D103
         raise NotImplementedError("int64 is not yet supported on your platform.")
 
-    pull_sample_int64 = push_chunk_int64 = pull_chunk_int64 = push_sample_int64
+    pull_sample_int64 = push_sample_int64
+    push_chunk_int64 = push_sample_int64
+    push_chunk_int64_n = push_sample_int64
+    pull_chunk_int64 = push_sample_int64
 
 # -------------------
 # Push/Pull functions
@@ -109,6 +122,15 @@ fmt2pull_chunk = {
     c_short: lib.lsl_pull_chunk_s,
     c_byte: lib.lsl_pull_chunk_c,
     c_longlong: pull_chunk_int64,
+}
+fmt2push_chunk_n = {
+    c_float: lib.lsl_push_chunk_ftnp,
+    c_double: lib.lsl_push_chunk_dtnp,
+    c_char_p: lib.lsl_push_chunk_strtnp,
+    c_int: lib.lsl_push_chunk_itnp,
+    c_short: lib.lsl_push_chunk_stnp,
+    c_byte: lib.lsl.push_chunk_ctnp,
+    c_longlong: push_chunk_int64_n,
 }
 
 # ---------------------
