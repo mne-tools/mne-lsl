@@ -15,6 +15,7 @@ from typing import TYPE_CHECKING
 import pooch
 import requests
 
+from .. import __version__
 from ..utils._path import walk
 from ..utils.logs import logger
 
@@ -124,8 +125,9 @@ def _fetch_liblsl() -> Optional[CDLL]:
         response = requests.get(
             "https://api.github.com/repos/sccn/liblsl/releases/latest",
             timeout=15,
+            headers={"user-agent": f"mne-lsl/{__version__}"},
         )
-        logger.debug("Reponse code: %s", response.status_code)
+        logger.debug("Response code: %s", response.status_code)
         assets = [elt for elt in response.json()["assets"] if "liblsl" in elt["name"]]
     except Exception as error:
         logger.exception(error)
