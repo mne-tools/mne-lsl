@@ -72,6 +72,7 @@ def _find_liblsl() -> Optional[CDLL]:
         if libpath is None:
             continue
 
+        logger.debug("Attempting to load libpath %s", libpath)
         if _PLATFORM == "linux":
             # for linux, find_library does not return an absolute path, so we can not
             # try to triage based on the libpath.
