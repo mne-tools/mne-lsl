@@ -1,14 +1,6 @@
 import platform
 import struct
-from ctypes import (
-    c_byte,
-    c_char_p,
-    c_double,
-    c_float,
-    c_int,
-    c_longlong,
-    c_short,
-)
+from ctypes import c_byte, c_char_p, c_double, c_float, c_int, c_longlong, c_short
 
 import numpy as np
 
