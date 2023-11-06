@@ -7,7 +7,8 @@ import numpy as np
 
 from ..utils._checks import check_type, ensure_int
 from ..utils._docs import copy_doc
-from .constants import fmt2numpy, fmt2push_chunk, fmt2push_sample
+from ..utils.logs import logger
+from .constants import fmt2numpy, fmt2push_chunk, fmt2push_chunk_n, fmt2push_sample
 from .load_liblsl import lib
 from .stream_info import _BaseStreamInfo
 from .utils import _check_timeout, handle_error
@@ -69,6 +70,7 @@ class StreamOutlet:
         # outlet properties
         self._do_push_sample = fmt2push_sample[self._dtype]
         self._do_push_chunk = fmt2push_chunk[self._dtype]
+        self._do_push_chunk_n = fmt2push_chunk_n[self._dtype]
         self._buffer_sample = self._dtype * self._n_channels
 
     def __del__(self):
@@ -151,9 +153,11 @@ class StreamOutlet:
             strings are transmitted, a list of sublist containing ``(n_channels,)`` is
             required. If numericals are transmitted, a numpy array of shape
             ``(n_samples, n_channels)`` is required.
-        timestamp : float
-            The acquisition timestamp of the last sample, in agreement with
+        timestamp : float | array of shape (n_samples,)
+            If a float, the acquisition timestamp of the last sample, in agreement with
             :func:`mne_lsl.lsl.local_clock`. The default, ``0``, uses the current time.
+            If an array, the acquisition timestamp of each sample, in agreement with
+            :func:`mne_lsl.lsl.local_clock`.
         pushThrough : bool
             If True, push the sample through to the receivers instead of buffering it
             with subsequent samples. Note that the ``chunk_size`` defined when creating
@@ -162,17 +166,17 @@ class StreamOutlet:
         """
         if self._dtype == c_char_p:
             assert isinstance(x, list), "'x' must be a list if strings are pushed."
-            x = [v for sample in x for v in sample]  # flatten
             n_samples = len(x)
-            if n_samples % self._n_channels != 0:  # quick incomplete test
+            x = [v for sample in x for v in sample]  # flatten
+            n_elements = len(x)
+            if n_elements % self._n_channels != 0:  # quick incomplete test
                 raise ValueError(
                     "The samples to push 'x' must contain one element per channel at "
                     "each time-point. Thus, the shape should be (n_samples, "
                     "n_channels)."
                 )
             x = [v.encode("utf-8") for v in x]
-            n_samples = len(x)
-            data_buffer = (self._dtype * n_samples)(*x)
+            data_buffer = (self._dtype * n_elements)(*x)
         else:
             assert isinstance(
                 x, np.ndarray
@@ -186,15 +190,45 @@ class StreamOutlet:
             npdtype = fmt2numpy[self._dtype]
             x = x if x.dtype == npdtype else x.astype(npdtype)
             x = x if x.flags["C_CONTIGUOUS"] else np.ascontiguousarray(x)
-            n_samples = x.size
-            data_buffer = (self._dtype * n_samples).from_buffer(x)
+            n_elements = x.size
+            n_samples = x.shape[0]
+            data_buffer = (self._dtype * n_elements).from_buffer(x)
+
+        if n_samples == 1:
+            logger.warning("A single sample is pushed. Consider using push_sample().")
+
+        # convert timestamps to the corresponding ctype
+        if isinstance(timestamp, float):
+            timestamp_c = c_double(timestamp)
+            liblsl_push_chunk_func = self._do_push_chunk
+            if self.sfreq == 0.0 and n_samples != 1:
+                logger.warning(
+                    "The stream is irregularly sampled and timestamp is a float and "
+                    "will be applied to all samples. Consider using an array of "
+                    "timestamps to provide the individual timestamps for each sample."
+                )
+        else:
+            assert isinstance(timestamp, np.ndarray), "'timestamp' must be an array."
+            if timestamp.ndim != 1 or timestamp.size != n_samples:
+                raise ValueError(
+                    "The timestamps to push 'timestamp' must contain one element per "
+                    "sample. Thus, the shape should be (n_samples,), "
+                    f"{timestamp.shape} is invalid."
+                )
+            timestamp = (
+                timestamp
+                if timestamp.flags["C_CONTIGUOUS"]
+                else np.ascontiguousarray(timestamp)
+            )
+            timestamp_c = (c_double * timestamp.size)(*timestamp)
+            liblsl_push_chunk_func = self._do_push_chunk_n
 
         handle_error(
-            self._do_push_chunk(
+            liblsl_push_chunk_func(
                 self._obj,
                 data_buffer,
-                c_long(n_samples),
-                c_double(timestamp),
+                c_long(n_elements),
+                timestamp_c,
                 c_int(pushThrough),
             )
         )

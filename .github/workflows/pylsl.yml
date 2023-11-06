@@ -12,7 +12,7 @@ jobs:
     timeout-minutes: 2
     runs-on: ubuntu-latest
     env:
-      SHA256_PYLSL: dd9222ee3894c43535b40aee542a2c8cb6062a467d4b103bd3c3a713d7c7690c
+      SHA256_PYLSL: bfc97bf83b78dac0141ddca3fee7f9c0b34a27eccb469d280040cd30085bec13
     steps:
       - name: Checkout pylsl repository
         uses: actions/checkout@v4
