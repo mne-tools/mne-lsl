@@ -207,7 +207,7 @@ class StreamOutlet:
                 )
         else:
             assert isinstance(timestamp, np.ndarray), "'timestamp' must be an array."
-            if timestamp.ndim != 1 or timestamp.size != x.shape[0]:
+            if timestamp.ndim != 1 or timestamp.size != n_samples:
                 raise ValueError(
                     "The timestamps to push 'timestamp' must contain one element per "
                     "sample. Thus, the shape should be (n_samples,), "
@@ -220,7 +220,7 @@ class StreamOutlet:
             liblsl_push_chunk_func(
                 self._obj,
                 data_buffer,
-                c_long(n_samples),
+                c_long(n_elements),
                 timestamp_c,
                 c_int(pushThrough),
             )
