@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 
-from mne_lsl.lsl import StreamInfo, StreamInlet, StreamOutlet
+from mne_lsl.lsl import StreamInfo, StreamInlet, StreamOutlet, local_clock
 from mne_lsl.lsl.constants import string2numpy
 from mne_lsl.lsl.stream_info import _BaseStreamInfo
 
@@ -144,6 +144,69 @@ def test_invalid_outlet():
         ValueError, match="'max_buffered' must contain a positive number"
     ):
         StreamOutlet(sinfo, max_buffered=-101)
+
+
+@pytest.mark.parametrize(
+    "dtype_str, dtype",
+    [
+        ("float32", np.float32),
+        ("float64", np.float64),
+        ("int8", np.int8),
+        ("int16", np.int16),
+        ("int32", np.int32),
+        ("string", None),
+    ],
+)
+def test_push_chunk_timestamps(dtype_str, dtype):
+    """Test push_chunk with timestamps."""
+    if dtype_str == "string":
+        x = [["1", "4"], ["2", "5"], ["3", "6"]]
+    else:
+        x = np.array([[1, 4], [2, 5], [3, 6]], dtype=dtype)
+    # create stream description
+    sinfo = StreamInfo("test", "", 2, 1.0, dtype_str, uuid.uuid4().hex[:6])
+    outlet = StreamOutlet(sinfo, chunk_size=3)
+    _test_properties(outlet, dtype_str, 2, "test", 1.0, "")
+    inlet = StreamInlet(sinfo)
+    inlet.open_stream()
+    time.sleep(0.1)  # sleep required because of pylsl inlet
+    # float
+    now = np.ceil(local_clock())
+    outlet.push_chunk(x, timestamp=now)
+    data, ts = inlet.pull_chunk(timeout=5)
+    if dtype_str == "string":
+        assert x == data
+    else:
+        assert_allclose(x, data)
+    assert_allclose(ts, np.arange(now - len(x) + 1, now + 1))
+    # array
+    now = np.ceil(local_clock())
+    timestamps = np.array([now, now + 1.1, now + 2.2])
+    outlet.push_chunk(x, timestamp=timestamps)
+    data, ts = inlet.pull_chunk(timeout=5)
+    if dtype_str == "string":
+        assert x == data
+    else:
+        assert_allclose(x, data)
+    assert_allclose(ts, timestamps)
+    # invalid
+    with pytest.raises(
+        AssertionError,
+        match="must be an array.",
+    ):
+        outlet.push_chunk(x, timestamp=[1, 2, 3])
+    with pytest.raises(
+        ValueError,
+        match="must contain one element per sample",
+    ):
+        outlet.push_chunk(x, timestamp=np.arange(6).reshape(2, 3))
+    with pytest.raises(
+        ValueError,
+        match="must contain one element per sample",
+    ):
+        outlet.push_chunk(x, timestamp=np.arange(4))
+    del inlet
+    del outlet
 
 
 def _test_properties(outlet, dtype_str, n_channels, name, sfreq, stype):
