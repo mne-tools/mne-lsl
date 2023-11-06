@@ -189,7 +189,6 @@ def test_push_chunk_timestamps(dtype_str, dtype):
     else:
         assert_allclose(x, data)
     assert_allclose(ts, timestamps)
-
     # invalid
     with pytest.raises(
         AssertionError,
@@ -211,6 +210,8 @@ def test_push_chunk_timestamps(dtype_str, dtype):
             [["1", "4"], ["2", "5"], ["3", "6"]],
             ts=np.arange(4),
         )
+    del inlet
+    del outlet
 
 
 def _test_properties(outlet, dtype_str, n_channels, name, sfreq, stype):
