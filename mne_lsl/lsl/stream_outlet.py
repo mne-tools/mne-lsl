@@ -195,7 +195,7 @@ class StreamOutlet:
         if n_samples == 1:
             logger.warning("A single sample is pushed. Consider using push_sample().")
 
-        # convert timestamps to corresponds ctype
+        # convert timestamps to the corresponding ctype
         if isinstance(timestamp, float):
             timestamp_c = c_double(timestamp)
             liblsl_push_chunk_func = self._do_push_chunk
