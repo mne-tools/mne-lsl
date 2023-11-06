@@ -194,13 +194,13 @@ def test_push_chunk_timestamps(dtype_str, dtype):
         AssertionError,
         match="must be an array.",
     ):
-        outlet.push_chunk((["1", "4"], ["2", "5"], ["3", "6"]), ts=[1, 2, 3])
+        outlet.push_chunk((["1", "4"], ["2", "5"], ["3", "6"]), timestamp=[1, 2, 3])
     with pytest.raises(
         ValueError,
         match="must contain one element per sample",
     ):
         outlet.push_chunk(
-            [["1", "4"], ["2", "5"], ["3", "6"]], ts=np.arange(6).reshape(2, 3)
+            [["1", "4"], ["2", "5"], ["3", "6"]], timestamp=np.arange(6).reshape(2, 3)
         )
     with pytest.raises(
         ValueError,
@@ -208,7 +208,7 @@ def test_push_chunk_timestamps(dtype_str, dtype):
     ):
         outlet.push_chunk(
             [["1", "4"], ["2", "5"], ["3", "6"]],
-            ts=np.arange(4),
+            timestamp=np.arange(4),
         )
     del inlet
     del outlet

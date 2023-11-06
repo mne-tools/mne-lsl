@@ -2,7 +2,6 @@ import platform
 import struct
 from ctypes import (
     c_byte,
-    c_char,
     c_char_p,
     c_double,
     c_float,
