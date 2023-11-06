@@ -129,7 +129,7 @@ fmt2push_chunk_n = {
     c_char_p: lib.lsl_push_chunk_strtnp,
     c_int: lib.lsl_push_chunk_itnp,
     c_short: lib.lsl_push_chunk_stnp,
-    c_byte: lib.lsl.push_chunk_ctnp,
+    c_byte: lib.lsl_push_chunk_ctnp,
     c_longlong: push_chunk_int64_n,
 }
 
