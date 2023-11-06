@@ -213,6 +213,11 @@ class StreamOutlet:
                     "sample. Thus, the shape should be (n_samples,), "
                     f"{timestamp.shape} is invalid."
                 )
+            timestamp = (
+                timestamp
+                if timestamp.flags["C_CONTIGUOUS"]
+                else np.ascontiguousarray(timestamp)
+            )
             timestamp_c = (c_double * timestamp.size)(*timestamp)
             liblsl_push_chunk_func = self._do_push_chunk_n
 

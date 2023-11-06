@@ -190,6 +190,28 @@ def test_push_chunk_timestamps(dtype_str, dtype):
         assert_allclose(x, data)
     assert_allclose(ts, timestamps)
 
+    # invalid
+    with pytest.raises(
+        AssertionError,
+        match="must be an array.",
+    ):
+        outlet.push_chunk((["1", "4"], ["2", "5"], ["3", "6"]), ts=[1, 2, 3])
+    with pytest.raises(
+        ValueError,
+        match="must contain one element per sample",
+    ):
+        outlet.push_chunk(
+            [["1", "4"], ["2", "5"], ["3", "6"]], ts=np.arange(6).reshape(2, 3)
+        )
+    with pytest.raises(
+        ValueError,
+        match="must contain one element per sample",
+    ):
+        outlet.push_chunk(
+            [["1", "4"], ["2", "5"], ["3", "6"]],
+            ts=np.arange(4),
+        )
+
 
 def _test_properties(outlet, dtype_str, n_channels, name, sfreq, stype):
     """Test the properties of an outlet against expected values."""
