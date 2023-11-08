@@ -70,7 +70,7 @@ class DataTrace(PlotCurveItem):
 
     # TODO: We need to support channels with different scales, and this seems difficult
     # to do by "splitting" the y-range into multiple sub-axis with different scales.
-    # Instead, scaling factor should be applied to the data before plotting.
+    # Instead, a scaling factor should be applied to the data before plotting.
     def update_ypos(self) -> None:
         self._ypos = self._idx
         self.setPos(0, self._ypos)
