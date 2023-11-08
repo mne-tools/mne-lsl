@@ -1,9 +1,14 @@
 from __future__ import annotations  # c.f. PEP 563, PEP 649
 
+from typing import TYPE_CHECKING
+
 import numpy as np
 
 from pyqtgraph import AxisItem, GraphicsLayoutWidget, PlotCurveItem, PlotItem
 from qtpy.QtWidgets import QMainWindow
+
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
 
 
 class Viewer(QMainWindow):
@@ -40,6 +45,8 @@ class ViewerPlotItem(PlotItem):
             **kwargs,
         )
         self.getViewBox().invertY(True)
+        self.getViewBox().setMouseEnabled(x=False, y=False)
+        self.getViewBox().disableAutoRange()
         self.hideButtons()
 
 
@@ -56,8 +63,20 @@ class ChannelAxis(AxisItem):
 class DataTrace(PlotCurveItem):
     def __init__(self, data: NDArray[float], idx: int, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        self.setData(np.arange(data.shape[0]), data[:, idx])
-        self.setPos(0, idx)
+        self._idx = idx
+        self._data = data
+        self.update_data()
+        self.update_ypos()
+
+    # TODO: We need to support channels with different scales, and this seems difficult
+    # to do by "splitting" the y-range into multiple sub-axis with different scales.
+    # Instead, scaling factor should be applied to the data before plotting.
+    def update_ypos(self) -> None:
+        self._ypos = self._idx
+        self.setPos(0, self._ypos)
+
+    def update_data(self) -> None:
+        self.setData(np.arange(self._data.shape[0]), self._data[:, self._idx])
 
 
 if __name__ == "__main__":
