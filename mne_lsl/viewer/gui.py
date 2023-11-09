@@ -8,6 +8,8 @@ from pyqtgraph import AxisItem, GraphicsLayoutWidget, PlotCurveItem, PlotItem
 from qtpy.QtWidgets import QMainWindow
 
 if TYPE_CHECKING:
+    from typing import List
+
     from numpy.typing import NDArray
 
 
@@ -72,7 +74,6 @@ class TimeAxis(AxisItem):
         self._major = 1.0
         self._minor = 0.25
         self.enableAutoSIPrefix(False)
-        self.setTickSpacing(major=self.major, minor=self.minor)
         self.update_ticks()
 
     def update_ticks(self) -> None:
@@ -102,7 +103,6 @@ class TimeAxis(AxisItem):
     def major(self, major: float) -> float:
         assert 0 < major, "'major' should be a positive number."
         self._major = major
-        self.setTickSpacing(major=self.major, minor=self.minor)
         self.update_ticks()
 
     @property
@@ -114,13 +114,26 @@ class TimeAxis(AxisItem):
     def minor(self, minor: float) -> float:
         assert 0 < minor, "'minor' should be a positive number."
         self._minor = minor
-        self.setTickSpacing(major=self.major, minor=self.minor)
         self.update_ticks()
 
 
 class ChannelAxis(AxisItem):
-    def __init__(self) -> None:
+    def __init__(self, ch_names: List[str]) -> None:
         super().__init__(orientation="left")
+        self._ch_names = ch_names
+        self.enableAutoSIPrefix(False)
+
+    def update_ticks(self) -> None:
+        super().setTicks([self.ch_names, []])
+
+    @property
+    def ch_names(self) -> List[str]:
+        return self._ch_names
+
+    @ch_names.setter
+    def ch_names(self, ch_names: List[str]) -> None:
+        self._ch_names = ch_names
+        self.update_ticks()
 
 
 class DataTrace(PlotCurveItem):
