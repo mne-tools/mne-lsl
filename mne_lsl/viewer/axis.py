@@ -72,7 +72,9 @@ class ChannelAxis(AxisItem):
         self.enableAutoSIPrefix(False)
 
     def update_ticks(self) -> None:
-        super().setTicks([self.ch_names, []])
+        super().setTicks(
+            [[(idx, ch_name) for idx, ch_name in enumerate(self.ch_names)], []]
+        )
 
     @property
     def ch_names(self) -> List[str]:
