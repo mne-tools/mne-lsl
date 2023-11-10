@@ -8,7 +8,7 @@ from .load_liblsl import lib
 from .stream_info import _BaseStreamInfo
 
 if TYPE_CHECKING:
-    from typing import List, Optional
+    from typing import Optional
 
 
 def library_version() -> int:
@@ -59,7 +59,7 @@ def resolve_streams(
     stype: Optional[str] = None,
     source_id: Optional[str] = None,
     minimum: int = 1,
-) -> List[_BaseStreamInfo]:
+) -> list[_BaseStreamInfo]:
     """Resolve streams on the network.
 
     This function returns all currently available streams from any outlet on the

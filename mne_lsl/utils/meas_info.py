@@ -17,7 +17,7 @@ from ._checks import check_type, check_value, ensure_int
 from .logs import logger
 
 if TYPE_CHECKING:
-    from typing import Any, Dict, List, Optional, Tuple, Union
+    from typing import Any, Optional, Union
 
     from mne import Info
 
@@ -49,7 +49,7 @@ def create_info(
     n_channels: int,
     sfreq: float,
     stype: str,
-    desc: Optional[_BaseStreamInfo, Dict[str, Any]],
+    desc: Optional[_BaseStreamInfo, dict[str, Any]],
 ) -> Info:
     """Create a minimal `mne.Info` object from an LSL stream attributes.
 
@@ -144,7 +144,7 @@ def create_info(
 # --------------------- Functions to read from a description sinfo ---------------------
 def _read_desc_sinfo(
     n_channels: int, stype: str, desc: _BaseStreamInfo
-) -> Tuple[List[str], List[str], List[int], Optional[str]]:
+) -> tuple[list[str], list[str], list[int], Optional[str]]:
     """Read channel information from a StreamInfo.
 
     If the StreamInfo is retrieved by resolve_streams, the description will be empty.
@@ -202,8 +202,8 @@ def _read_desc_sinfo(
 
 # --------------------- Functions to read from a description dict ----------------------
 def _read_desc_dict(
-    n_channels: int, stype: str, desc: Dict[str, Any]
-) -> Tuple[List[str], List[str], List[int], Optional[str]]:
+    n_channels: int, stype: str, desc: dict[str, Any]
+) -> tuple[list[str], list[str], list[int], Optional[str]]:
     """Read channel information from a description dictionary.
 
     A dictionary is returned from loading an XDF file.
@@ -221,9 +221,9 @@ def _read_desc_dict(
 
 
 def _get_ch_types_and_units(
-    channels: List[Dict[str, Any]],
+    channels: list[dict[str, Any]],
     stype: str,
-) -> Tuple[List[str], List[int]]:
+) -> tuple[list[str], list[int]]:
     """Get the channel types and units from a stream description."""
     ch_types = list()
     ch_units = list()
@@ -273,7 +273,7 @@ def _safe_get(channel, item, default) -> str:
 
 
 # ----------------------------- Functions to edit an Info ------------------------------
-def _set_channel_units(info: Info, mapping: Dict[str, Union[str, int]]) -> None:
+def _set_channel_units(info: Info, mapping: dict[str, Union[str, int]]) -> None:
     """Set the channel unit multiplication factor."""
     check_type(mapping, (dict,), "mapping")
     mapping_idx = dict()  # to avoid overwriting the input dictionary
