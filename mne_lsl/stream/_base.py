@@ -38,6 +38,8 @@ if TYPE_CHECKING:
     from mne.channels import DigMontage
     from numpy.typing import DTypeLike, NDArray
 
+    from .._typing import ScalarFloatType, ScalarIntType
+
 
 @fill_doc
 class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
@@ -343,8 +345,8 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
     def get_data(
         self,
         winsize: Optional[float] = None,
-        picks: Optional[str, list[str], list[int], NDArray[int]] = None,
-    ) -> tuple[NDArray[float], NDArray[float]]:
+        picks: Optional[str, list[str], list[int], NDArray[+ScalarIntType]] = None,
+    ) -> tuple[NDArray[+ScalarFloatType], NDArray[np.float64]]:
         """Retrieve the latest data from the buffer.
 
         Parameters
@@ -722,7 +724,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         self._interrupt = False
         self._create_acquisition_thread(0)
 
-    def _pick(self, picks: NDArray[int]) -> None:
+    def _pick(self, picks: NDArray[+ScalarIntType]) -> None:
         """Interrupt acquisition and apply the channel selection."""
         # for simplicity, don't allow to select channels after a reference schema has
         # been set, even if we drop channels which are not part of the reference schema,
