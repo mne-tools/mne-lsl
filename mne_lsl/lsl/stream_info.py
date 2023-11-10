@@ -37,7 +37,7 @@ else:
 
 
 if TYPE_CHECKING:
-    from typing import Any, Dict, List, Optional, Tuple, Union
+    from typing import Any, Optional, Union
 
     from numpy.typing import DTypeLike, NDArray
 
@@ -405,7 +405,7 @@ class _BaseStreamInfo:
                 info["dig"] = dig
         return info
 
-    def get_channel_names(self) -> Optional[List[str]]:
+    def get_channel_names(self) -> Optional[list[str]]:
         """Get the channel names in the description.
 
         Returns
@@ -423,7 +423,7 @@ class _BaseStreamInfo:
         """
         return self._get_channel_info("ch_name")
 
-    def get_channel_types(self) -> Optional[List[str]]:
+    def get_channel_types(self) -> Optional[list[str]]:
         """Get the channel types in the description.
 
         Returns
@@ -441,7 +441,7 @@ class _BaseStreamInfo:
         """
         return self._get_channel_info("ch_type")
 
-    def get_channel_units(self) -> Optional[List[str]]:
+    def get_channel_units(self) -> Optional[list[str]]:
         """Get the channel units in the description.
 
         Returns
@@ -459,7 +459,7 @@ class _BaseStreamInfo:
         """
         return self._get_channel_info("ch_unit")
 
-    def _get_channel_info(self, name: str) -> Optional[List[str]]:
+    def _get_channel_info(self, name: str) -> Optional[list[str]]:
         """Get the 'channel/name' element in the XML tree."""
         if self.desc.child("channels").empty():
             return None
@@ -486,7 +486,7 @@ class _BaseStreamInfo:
             )
         return ch_infos
 
-    def _get_channel_projectors(self) -> List[Projection]:
+    def _get_channel_projectors(self) -> list[Projection]:
         """Get the SSP vectors in the XML tree."""
         projs = list()
         projectors = self.desc.child("projectors")
@@ -547,7 +547,7 @@ class _BaseStreamInfo:
             projector = projector.next_sibling()
         return projs
 
-    def _get_digitization(self) -> List[DigPoint]:
+    def _get_digitization(self) -> list[DigPoint]:
         """Get the digitization in the XML tree."""
         dig = self.desc.child("dig")
         dig_points = list()
@@ -640,7 +640,7 @@ class _BaseStreamInfo:
         if info["dig"] is not None:
             self._set_digitization(info["dig"])
 
-    def set_channel_names(self, ch_names: Union[List[str], Tuple[str]]) -> None:
+    def set_channel_names(self, ch_names: Union[list[str], tuple[str]]) -> None:
         """Set the channel names in the description. Existing labels are overwritten.
 
         Parameters
@@ -650,7 +650,7 @@ class _BaseStreamInfo:
         """
         self._set_channel_info(ch_names, "ch_name")
 
-    def set_channel_types(self, ch_types: Union[str, List[str]]) -> None:
+    def set_channel_types(self, ch_types: Union[str, list[str]]) -> None:
         """Set the channel types in the description. Existing types are overwritten.
 
         The types are given as human readable strings, e.g. ``'eeg'``.
@@ -667,7 +667,7 @@ class _BaseStreamInfo:
         self._set_channel_info(ch_types, "ch_type")
 
     def set_channel_units(
-        self, ch_units: Union[str, List[str], int, List[int], NDArray[int]]
+        self, ch_units: Union[str, list[str], int, list[int], NDArray[int]]
     ) -> None:
         """Set the channel units in the description. Existing units are overwritten.
 
@@ -709,7 +709,7 @@ class _BaseStreamInfo:
             ]
         self._set_channel_info(ch_units, "ch_unit")
 
-    def _set_channel_info(self, ch_infos: List[str], name: str) -> None:
+    def _set_channel_info(self, ch_infos: list[str], name: str) -> None:
         """Set the 'channel/name' element in the XML tree."""
         check_type(ch_infos, (list, tuple), name)
         for ch_info in ch_infos:
@@ -730,7 +730,7 @@ class _BaseStreamInfo:
             ch = ch.next_sibling()
         _BaseStreamInfo._prune_description_node(ch, channels)
 
-    def _set_channel_projectors(self, projs: List[Projection]) -> None:
+    def _set_channel_projectors(self, projs: list[Projection]) -> None:
         """Set the SSP projector."""
         check_type(projs, (list,), "projs")
         for elt in projs:
@@ -761,7 +761,7 @@ class _BaseStreamInfo:
             projector = projector.next_sibling()
         _BaseStreamInfo._prune_description_node(projector, projectors)
 
-    def _set_digitization(self, dig_points: List[DigPoint]) -> None:
+    def _set_digitization(self, dig_points: list[DigPoint]) -> None:
         """Set the digitization points."""
         check_type(dig_points, (list,), "dig_points")
         for elt in dig_points:
@@ -804,7 +804,7 @@ class _BaseStreamInfo:
             node = node_next
 
     @staticmethod
-    def _set_description_node(node: XMLElement, mapping: Dict[str, Any]) -> None:
+    def _set_description_node(node: XMLElement, mapping: dict[str, Any]) -> None:
         """Set the key: value child(s) of a node."""
         for key, value in mapping.items():
             value = str(int(value)) if isinstance(value, int) else str(value)
@@ -818,7 +818,7 @@ class _BaseStreamInfo:
     def _get_fiff_int_named(
         value: Optional[str],
         name: str,
-        mapping: Dict[int, int],
+        mapping: dict[int, int],
     ) -> Optional[int]:
         """Try to retrieve the FIFF integer code from the str representation."""
         if value is None:

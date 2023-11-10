@@ -2,7 +2,7 @@ import platform
 import sys
 from functools import partial
 from importlib.metadata import requires, version
-from typing import IO, Callable, List, Optional
+from typing import IO, Callable, Optional
 
 import psutil
 from packaging.requirements import Requirement
@@ -96,13 +96,13 @@ def _list_dependencies_info(
     out: Callable,
     ljust: int,
     package: str,
-    dependencies: List[Requirement],
+    dependencies: list[Requirement],
     unicode: bool,
 ):
     """List dependencies names and versions."""
     if unicode:
         ljust += 1
-    not_found: List[Requirement] = list()
+    not_found: list[Requirement] = list()
     for dep in dependencies:
         if dep.name == package:
             continue

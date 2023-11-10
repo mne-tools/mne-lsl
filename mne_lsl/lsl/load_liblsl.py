@@ -19,7 +19,7 @@ from ..utils._path import walk
 from ..utils.logs import logger
 
 if TYPE_CHECKING:
-    from typing import Optional, Tuple, Union
+    from typing import Optional, Union
 
     from pooch import Pooch
 
@@ -339,7 +339,7 @@ def _pooch_processor_liblsl(fname: str, action: str, pooch: Pooch) -> str:
     return str(target)
 
 
-def _attempt_load_liblsl(libpath: Union[str, Path]) -> Tuple[str, Optional[int]]:
+def _attempt_load_liblsl(libpath: Union[str, Path]) -> tuple[str, Optional[int]]:
     """Try loading a binary LSL library.
 
     Parameters

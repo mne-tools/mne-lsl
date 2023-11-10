@@ -27,7 +27,7 @@ from ..utils.meas_info import _set_channel_units
 if TYPE_CHECKING:
     from datetime import datetime
     from pathlib import Path
-    from typing import Callable, Dict, List, Optional, Tuple, Union
+    from typing import Callable, Optional, Union
 
     from mne import Info
 
@@ -87,7 +87,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
     @fill_doc
     def get_channel_units(
         self, picks=None, only_data_chs: bool = False
-    ) -> List[Tuple[int, int]]:
+    ) -> list[tuple[int, int]]:
         """Get a list of channel unit for each channel.
 
         Parameters
@@ -118,7 +118,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
     @fill_doc
     def rename_channels(
         self,
-        mapping: Union[Dict[str, str], Callable],
+        mapping: Union[dict[str, str], Callable],
         allow_duplicates: bool = False,
         *,
         verbose=None,
@@ -147,7 +147,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
     @abstractmethod
     @fill_doc
     def set_channel_types(
-        self, mapping: Dict[str, str], *, on_unit_change: str = "warn", verbose=None
+        self, mapping: dict[str, str], *, on_unit_change: str = "warn", verbose=None
     ) -> None:
         """Define the sensor type of channels.
 
@@ -175,7 +175,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         self._sinfo.set_channel_types(self.get_channel_types(unique=False))
 
     @abstractmethod
-    def set_channel_units(self, mapping: Dict[str, Union[str, int]]) -> None:
+    def set_channel_units(self, mapping: dict[str, Union[str, int]]) -> None:
         """Define the channel unit multiplication factor.
 
         By convention, MNE stores data in SI units. But systems often stream in non-SI
@@ -217,7 +217,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         )
 
     def set_meas_date(
-        self, meas_date: Optional[Union[datetime, float, Tuple[float]]]
+        self, meas_date: Optional[Union[datetime, float, tuple[float]]]
     ) -> None:
         """Set the measurement start date.
 
@@ -307,7 +307,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
 
     # ----------------------------------------------------------------------------------
     @property
-    def ch_names(self) -> List[str]:
+    def ch_names(self) -> list[str]:
         """Name of the channels.
 
         :type: :class:`list` of :class:`str`
