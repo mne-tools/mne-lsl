@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 
     from numpy.typing import DTypeLike, NDArray
 
-    from .._typing import ScalarFloatType
+    from .._typing import ScalarFloatType, ScalarType
 
 
 class StreamOutlet:
@@ -88,7 +88,7 @@ class StreamOutlet:
 
     def push_sample(
         self,
-        x: Union[list[str], NDArray[+ScalarFloatType]],
+        x: Union[list[str], NDArray[+ScalarType]],
         timestamp: float = 0.0,
         pushThrough: bool = True,
     ) -> None:
@@ -140,7 +140,7 @@ class StreamOutlet:
 
     def push_chunk(
         self,
-        x: Union[list[list[str]], NDArray[+ScalarFloatType]],
+        x: Union[list[list[str]], NDArray[+ScalarType]],
         timestamp: Union[float, NDArray[+ScalarFloatType]] = 0.0,
         pushThrough: bool = True,
     ) -> None:

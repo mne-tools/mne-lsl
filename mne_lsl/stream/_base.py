@@ -38,7 +38,7 @@ if TYPE_CHECKING:
     from mne.channels import DigMontage
     from numpy.typing import DTypeLike, NDArray
 
-    from .._typing import ScalarFloatType, ScalarIntType
+    from .._typing import ScalarIntType, ScalarType
 
 
 @fill_doc
@@ -345,8 +345,10 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
     def get_data(
         self,
         winsize: Optional[float] = None,
-        picks: Optional[str, list[str], list[int], NDArray[+ScalarIntType]] = None,
-    ) -> tuple[NDArray[+ScalarFloatType], NDArray[np.float64]]:
+        picks: Optional[
+            Union[str, list[str], list[int], NDArray[+ScalarIntType]]
+        ] = None,
+    ) -> tuple[NDArray[+ScalarType], NDArray[np.float64]]:
         """Retrieve the latest data from the buffer.
 
         Parameters
