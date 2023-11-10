@@ -14,9 +14,11 @@ from .stream_info import _BaseStreamInfo
 from .utils import _check_timeout, handle_error
 
 if TYPE_CHECKING:
-    from typing import List, Optional, Union
+    from typing import Optional, Union
 
     from numpy.typing import DTypeLike, NDArray
+
+    from .._typing import ScalarFloatType
 
 
 class StreamOutlet:
@@ -86,7 +88,7 @@ class StreamOutlet:
 
     def push_sample(
         self,
-        x: Union[List[str], NDArray[float]],
+        x: Union[list[str], NDArray[+ScalarFloatType]],
         timestamp: float = 0.0,
         pushThrough: bool = True,
     ) -> None:
@@ -138,8 +140,8 @@ class StreamOutlet:
 
     def push_chunk(
         self,
-        x: Union[List[List[str]], NDArray[float]],
-        timestamp: float = 0.0,
+        x: Union[list[list[str]], NDArray[+ScalarFloatType]],
+        timestamp: Union[float, NDArray[+ScalarFloatType]] = 0.0,
         pushThrough: bool = True,
     ) -> None:
         """Push a chunk of samples into the :class:`~mne_lsl.lsl.StreamOutlet`.
@@ -218,7 +220,7 @@ class StreamOutlet:
                 if timestamp.flags["C_CONTIGUOUS"]
                 else np.ascontiguousarray(timestamp)
             )
-            timestamp_c = (c_double * timestamp.size)(*timestamp)
+            timestamp_c = (c_double * timestamp.size)(*timestamp.astype(np.float64))
             liblsl_push_chunk_func = self._do_push_chunk_n
 
         handle_error(
