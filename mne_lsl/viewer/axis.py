@@ -1,12 +1,7 @@
 from __future__ import annotations  # c.f. PEP 563, PEP 649
 
-from typing import TYPE_CHECKING
-
 import numpy as np
 from pyqtgraph import AxisItem
-
-if TYPE_CHECKING:
-    from typing import List
 
 
 class TimeAxis(AxisItem):
@@ -66,7 +61,7 @@ class ChannelAxis(AxisItem):
     # TODO: The channel name color should depend on the channel type, thus the pen
     # should change depending on the channel type.
 
-    def __init__(self, ch_names: List[str]) -> None:
+    def __init__(self, ch_names: list[str]) -> None:
         super().__init__(orientation="left")
         self._ch_names = ch_names
         self.enableAutoSIPrefix(False)

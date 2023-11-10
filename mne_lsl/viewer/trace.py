@@ -8,11 +8,13 @@ from pyqtgraph import PlotCurveItem
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
+    from .._typing import ScalarType
+
 
 class DataTrace(PlotCurveItem):
     def __init__(
         self,
-        data: NDArray[float],
+        data: NDArray[+ScalarType],
         duration: float,
         scaling: float,
         ypos: int,

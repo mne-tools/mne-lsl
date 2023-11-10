@@ -1,16 +1,11 @@
 from __future__ import annotations  # c.f. PEP 563, PEP 649
 
-from typing import TYPE_CHECKING
-
 import numpy as np
 from pyqtgraph import GraphicsLayoutWidget, PlotItem
 from qtpy.QtWidgets import QMainWindow
 
 from .axis import ChannelAxis, TimeAxis
 from .trace import DataTrace
-
-if TYPE_CHECKING:
-    from typing import List
 
 
 class Viewer(QMainWindow):
@@ -52,7 +47,7 @@ class ViewerGraphicsLayoutWidget(GraphicsLayoutWidget):
 
 
 class ViewerPlotItem(PlotItem):
-    def __init__(self, duration: float, ch_names: List[str]) -> None:
+    def __init__(self, duration: float, ch_names: list[str]) -> None:
         self.axis_time = TimeAxis(duration)
         self.axis_channel = ChannelAxis(ch_names)
         super().__init__(axisItem={"bottom": self.axis_time, "left": self.axis_channel})
