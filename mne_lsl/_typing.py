@@ -1,5 +1,20 @@
+from __future__ import annotations  # c.f. PEP 563, PEP 649
+
+from typing import TYPE_CHECKING
+
 import numpy as np
 
-ScalarFloatType = (np.float32, np.float64)
-ScalarIntType = (np.int8, np.int16, np.int32, np.int64)
-ScalarUnsignedIntType = (np.uint8, np.uint16, np.uint32, np.uint64)
+if TYPE_CHECKING:
+    from numpy.typing import DTypeLike
+
+
+ScalarFloatType: tuple[DTypeLike, ...] = (np.float32, np.float64)
+ScalarIntType: tuple[DTypeLike, ...] = (np.int8, np.int16, np.int32, np.int64)
+ScalarType: tuple[DTypeLike, ...] = (
+    np.int8,
+    np.int16,
+    np.int32,
+    np.int64,
+    np.float32,
+    np.float64,
+)
