@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 import numpy as np
 import pytest
 from mne.utils import assert_object_equal
-from numpy.testing import assert_allclose
+from numpy.testing import assert_allclose, assert_array_equal
 
 if TYPE_CHECKING:
     from typing import Callable
@@ -35,7 +35,7 @@ def match_stream_and_raw_data(data: NDArray[float], raw: BaseRaw) -> None:
     good = np.where(good)[0]
     if len(good) != 1:
         raise RuntimeError(
-            "Could not find match between data and raw " f"(found {len(good)} options)."
+            f"Could not find match between data and raw (found {len(good)} options)."
         )
     start = good[0]
     del good
@@ -53,8 +53,31 @@ def match_stream_and_raw_data(data: NDArray[float], raw: BaseRaw) -> None:
                     (raw_data, raw[:, : data.shape[1] - raw_data.shape[1]][0])
                 )
         n_fetch += 1
-    err_msg = f"data mismatch after {n_fetch} fetch(es)"
-    assert_allclose(data, raw_data, rtol=0.001, err_msg=err_msg)
+    data_samp_nums = data[-1]
+    raw_samp_nums = raw_data[-1]
+    after = f"after {n_fetch} fetch(es)"
+    raw_deltas = np.diff(raw_samp_nums)
+    raw_delta_idx = np.where(raw_deltas != 1)[0]
+    raw_deltas = raw_deltas[raw_delta_idx]
+    data_deltas = np.diff(data_samp_nums)
+    data_delta_idx = np.where(data_deltas != 1)[0]
+    data_deltas = data_deltas[data_delta_idx]
+    assert_array_equal(
+        raw_deltas,
+        data_deltas,
+        err_msg=f"Deltas mismatch @ {raw_delta_idx} vs {data_delta_idx}, {after}",
+    )
+    assert_array_equal(
+        data_samp_nums,
+        raw_samp_nums,
+        err_msg=f"sample numbers mismatch {after}",
+    )
+    assert_allclose(
+        data[:-1],
+        raw_data[:-1],
+        rtol=0.001,
+        err_msg=f"data mismatch {after}",
+    )
 
 
 def requires_module(name: str):  # pragma: no cover
