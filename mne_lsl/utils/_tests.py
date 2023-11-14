@@ -37,7 +37,7 @@ def match_stream_and_raw_data(data: NDArray[float], raw: BaseRaw) -> None:
         ch = raw.ch_names.index("Samples")
         start = data[ch, :][0]
         if start != int(start):
-            idx = raw.get_data(picks="Samples").squeeze().astype(int)
+            idx = raw.get_data(picks="Samples").squeeze()
             raise RuntimeError(
                 f"Could not cast the stream sample idx channel to int. Start '{start}' "
                 f"should be an integer. Sample channel in raw {idx} vs stream "
