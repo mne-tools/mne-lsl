@@ -1,5 +1,6 @@
 from __future__ import annotations  # c.f. PEP 563, PEP 649
 
+import inspect
 import os
 from tempfile import NamedTemporaryFile
 from typing import TYPE_CHECKING
@@ -64,6 +65,25 @@ def pytest_sessionfinish(session, exitstatus) -> None:
         os.unlink(lsl_cfg.name)
     except Exception:
         pass
+
+
+def _closer():
+    # We cannot rely on just "del inlet" / "del outlet" because Python's garbage
+    # collector can run whenever it feels like it, and AFAIK the garbage collection
+    # order is not guaranteed. So let's explicitly __del__ ourselves, knowing that
+    # our __del__s are smart enough to be no-ops if called more than once.
+    loc = inspect.currentframe().f_back.f_locals
+    for name in ("inlet", "outlet"):
+        if name in loc:
+            loc[name].__del__()
+    if "player" in loc:
+        loc["player"].stop()
+
+
+@fixture(scope="function")
+def close_io():
+    """Return function that will close inlet, outlet, and player vars if present."""
+    return _closer
 
 
 @fixture(scope="session")

@@ -18,7 +18,7 @@ from mne_lsl.utils._tests import match_stream_and_raw_data
 logger.propagate = True
 
 
-def test_player(caplog, fname, raw):
+def test_player(caplog, fname, raw, close_io):
     """Test a working and valid player."""
     name = "Player-test_player"
     player = Player(fname, name, 16)
@@ -68,8 +68,7 @@ def test_player(caplog, fname, raw):
 
     # check that the returned data array is in raw
     match_stream_and_raw_data(data.T, raw)
-    del inlet
-    player.stop()
+    close_io()
 
 
 def test_player_context_manager(fname):
@@ -108,7 +107,7 @@ def test_player_stop_invalid(fname):
     player.stop()
 
 
-def test_player_unit(mock_lsl_stream, raw):
+def test_player_unit(mock_lsl_stream, raw, close_io):
     """Test getting and setting the player channel units."""
     player = mock_lsl_stream
     name = player.name
@@ -125,8 +124,7 @@ def test_player_unit(mock_lsl_stream, raw):
     inlet = _create_inlet(name)
     data, _ = inlet.pull_chunk()
     match_stream_and_raw_data(data.T, raw)
-    del inlet
-    player.stop()
+    close_io()
 
     # try setting channel units after stopping the player
     player.set_channel_units({"F7": -6, "Fpz": "uv", "Fp2": "microvolts"})
@@ -135,8 +133,7 @@ def test_player_unit(mock_lsl_stream, raw):
     data, _ = inlet.pull_chunk()
     raw_ = raw.copy().apply_function(lambda x: x * 1e6, picks=["F7", "Fpz", "Fp2"])
     match_stream_and_raw_data(data.T, raw_)
-    del inlet
-    player.stop()
+    close_io()
 
     # try re-setting the channel unit
     player.set_channel_units({"F7": -3})
@@ -147,11 +144,10 @@ def test_player_unit(mock_lsl_stream, raw):
     raw_.apply_function(lambda x: x * 1e3, picks="F7")
     raw_.apply_function(lambda x: x * 1e6, picks=["Fpz", "Fp2"])
     match_stream_and_raw_data(data.T, raw_)
-    del inlet
-    player.stop()
+    close_io()
 
 
-def test_player_rename_channels(mock_lsl_stream, raw):
+def test_player_rename_channels(mock_lsl_stream, raw, close_io):
     """Test channel renaming."""
     player = mock_lsl_stream
     name = player.name
@@ -161,8 +157,7 @@ def test_player_rename_channels(mock_lsl_stream, raw):
     inlet = _create_inlet(name)
     sinfo = inlet.get_sinfo()
     assert sinfo.get_channel_names() == player.info["ch_names"]
-    del inlet
-    player.stop()
+    close_io()
 
     # test changing channel names
     player.rename_channels({"F7": "EEG1", "Fp2": "EEG2"})
@@ -172,8 +167,7 @@ def test_player_rename_channels(mock_lsl_stream, raw):
     sinfo = inlet.get_sinfo()
     assert sinfo.get_channel_names() == player.info["ch_names"]
     assert sinfo.get_channel_names() == raw_.info["ch_names"]
-    del inlet
-    player.stop()
+    close_io()
 
     # test re-changing the channel names
     player.rename_channels({"EEG1": "EEG101", "EEG2": "EEG202"})
@@ -183,11 +177,10 @@ def test_player_rename_channels(mock_lsl_stream, raw):
     sinfo = inlet.get_sinfo()
     assert sinfo.get_channel_names() == player.info["ch_names"]
     assert sinfo.get_channel_names() == raw_.info["ch_names"]
-    del inlet
-    player.stop()
+    close_io()
 
 
-def test_player_set_channel_types(mock_lsl_stream, raw):
+def test_player_set_channel_types(mock_lsl_stream, raw, close_io):
     """Test channel type setting."""
     player = mock_lsl_stream
     name = player.name
@@ -198,8 +191,7 @@ def test_player_set_channel_types(mock_lsl_stream, raw):
     inlet = _create_inlet(name)
     sinfo = inlet.get_sinfo()
     assert sinfo.get_channel_types() == player.get_channel_types(unique=False)
-    del inlet
-    player.stop()
+    close_io()
 
     # test changing types
     player.set_channel_types(mapping={"F7": "eog", "Fp2": "eog"})
@@ -209,8 +201,7 @@ def test_player_set_channel_types(mock_lsl_stream, raw):
     sinfo = inlet.get_sinfo()
     assert sinfo.get_channel_types() == player.get_channel_types(unique=False)
     assert sinfo.get_channel_types() == raw_.get_channel_types(unique=False)
-    del inlet
-    player.stop()
+    close_io()
 
     # test rechanging types
     player.set_channel_types(mapping={"F7": "eeg", "Fp2": "ecg"})
@@ -220,8 +211,7 @@ def test_player_set_channel_types(mock_lsl_stream, raw):
     sinfo = inlet.get_sinfo()
     assert sinfo.get_channel_types() == player.get_channel_types(unique=False)
     assert sinfo.get_channel_types() == raw_.get_channel_types(unique=False)
-    del inlet
-    player.stop()
+    close_io()
 
     # test unique
     assert sorted(player.get_channel_types(unique=True)) == sorted(

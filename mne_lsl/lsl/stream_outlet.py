@@ -92,14 +92,14 @@ class StreamOutlet:
         The outlet will no longer be discoverable after destruction and all connected
         inlets will stop delivering data.
         """
-        if not getattr(self, "_obj", None):
+        if self.__obj is None:
             return
-        try:
-            with self._lock:
-                lib.lsl_destroy_outlet(self._obj)
-                self._obj = None
-        except Exception:
-            pass
+        with self._lock:
+            obj, self._obj = self._obj, None
+            try:
+                lib.lsl_destroy_outlet(obj)
+            except Exception as exc:
+                logger.warning("Error destroying outlet: %s", str(exc))
 
     def push_sample(
         self,

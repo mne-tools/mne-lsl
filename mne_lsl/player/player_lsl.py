@@ -153,7 +153,6 @@ class PlayerLSL(BasePlayer):
                 # don't recreate the thread if we are trying to interrupt streaming
                 return None
             else:
-                logger.debug("%s: Sleeping for %s", self._name, delay)
                 # recreate the timer thread as it is one-call only
                 self._streaming_thread = Timer(delay, self._stream)
                 self._streaming_thread.daemon = True
