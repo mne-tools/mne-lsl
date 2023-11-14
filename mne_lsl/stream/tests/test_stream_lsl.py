@@ -55,7 +55,7 @@ def _mock_lsl_stream_int(_integer_raw, request):
     from mne_lsl.player import PlayerLSL  # noqa: E402
 
     name = f"P_{request.node.name}"
-    with PlayerLSL(_integer_raw, name, chunk_size=16) as player:
+    with PlayerLSL(_integer_raw, name) as player:
         yield player
 
 

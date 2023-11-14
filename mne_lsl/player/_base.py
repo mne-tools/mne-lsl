@@ -51,7 +51,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
     """
 
     @abstractmethod
-    def __init__(self, fname: Union[str, Path], chunk_size: int = 16) -> None:
+    def __init__(self, fname: Union[str, Path], chunk_size: int = 64) -> None:
         self._fname = ensure_path(fname, must_exist=True)
         self._chunk_size = ensure_int(chunk_size, "chunk_size")
         if self._chunk_size <= 0:

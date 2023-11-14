@@ -112,5 +112,5 @@ def mock_lsl_stream(fname, request):
     from mne_lsl.player import PlayerLSL  # noqa: E402
 
     name = f"P_{request.node.name}"
-    with PlayerLSL(fname, name, chunk_size=16) as player:
+    with PlayerLSL(fname, name) as player:
         yield player

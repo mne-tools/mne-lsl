@@ -92,7 +92,10 @@ class StreamOutlet:
         The outlet will no longer be discoverable after destruction and all connected
         inlets will stop delivering data.
         """
-        if self.__obj is None:
+        try:
+            if self.__obj is None:
+                return
+        except AttributeError:  # in the process of deletion, __obj was already None
             return
         with self._lock:
             obj, self._obj = self._obj, None
