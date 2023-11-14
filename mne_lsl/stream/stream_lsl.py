@@ -2,6 +2,7 @@ from __future__ import annotations  # c.f. PEP 563, PEP 649
 
 import os
 from math import ceil
+from threading import Lock
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -63,6 +64,7 @@ class StreamLSL(BaseStream):
         self._name = name
         self._stype = stype
         self._source_id = source_id
+        self._inlet_lock = Lock()
         self._reset_variables()
 
     def __repr__(self):
@@ -193,9 +195,10 @@ class StreamLSL(BaseStream):
     def disconnect(self) -> None:
         """Disconnect from the LSL stream and interrupt data collection."""
         super().disconnect()
-        inlet = self._inlet
-        logger.debug("Calling inlet.close_stream() for %s", self)
-        self._inlet = None  # prevent _acquire from being called
+        with self._inlet_lock:
+            inlet = self._inlet
+            logger.debug("Calling inlet.close_stream() for %s", self)
+            self._inlet = None  # prevent _acquire from being called
         del inlet
         self._reset_variables()  # also sets self._inlet = None
 
@@ -207,16 +210,19 @@ class StreamLSL(BaseStream):
             return  # stream interrupted (don't continue)
         try:
             # pull data
-            data, timestamps = self._inlet.pull_chunk(timeout=0.0)
+            with self._inlet_lock:
+                data, timestamps = self._inlet.pull_chunk(timeout=0.0)
             if timestamps.size == 0:
                 if not self._interrupt:
                     self._create_acquisition_thread(self._acquisition_delay)
                 return  # interrupt early
 
             # process acquisition window
-            assert data.ndim == 2 and data.shape[-1] == self._inlet.n_channels, (
+            with self._inlet_lock:
+                n_channels = self._inlet.n_channels
+            assert data.ndim == 2 and data.shape[-1] == n_channels, (
                 data.shape,
-                self._inlet.n_channels,
+                n_channels,
             )
             data = data[:, self._picks_inlet]  # subselect channels
             if len(self._added_channels) != 0:
@@ -236,7 +242,7 @@ class StreamLSL(BaseStream):
             assert self._buffer.shape[1] == data.shape[1], (
                 self._buffer.shape,
                 data.shape,
-                self._inlet.n_channels,
+                n_channels,
                 self._picks_inlet.size,
             )
             # select the last self._timestamps.size samples from data and timestamps in
@@ -268,7 +274,8 @@ class StreamLSL(BaseStream):
         """Reset variables define after connection."""
         super()._reset_variables()
         self._sinfo = None
-        self._inlet = None
+        with self._inlet_lock:
+            self._inlet = None
 
     # ----------------------------------------------------------------------------------
     @property

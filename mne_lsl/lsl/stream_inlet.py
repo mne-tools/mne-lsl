@@ -124,6 +124,16 @@ class StreamInlet:
         # variable to define if the stream is open or not  sinfo_ = inlet.get_sinfo()
         self._stream_is_open = False
 
+    @property
+    def _obj(self):
+        if self.__obj is None:
+            raise RuntimeError("The StreamInlet has been destroyed.")
+        return self.__obj
+
+    @_obj.setter
+    def _obj(self, obj):
+        self.__obj = obj
+
     def __del__(self):
         """Destroy a :class:`~mne_lsl.lsl.StreamInlet`.
 

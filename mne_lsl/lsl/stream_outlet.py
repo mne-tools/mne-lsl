@@ -56,6 +56,7 @@ class StreamOutlet:
                 f"{max_buffered} is invalid."
             )
         self._obj = lib.lsl_create_outlet(sinfo._obj, chunk_size, max_buffered)
+        assert self.__obj is not None
         self._obj = c_void_p(self._obj)
         if not self._obj:
             raise RuntimeError("The StreamOutlet could not be created.")
@@ -73,6 +74,16 @@ class StreamOutlet:
         self._do_push_chunk_n = fmt2push_chunk_n[self._dtype]
         self._buffer_sample = self._dtype * self._n_channels
 
+    @property
+    def _obj(self):
+        if self.__obj is None:
+            raise RuntimeError("The StreamOutlet has been destroyed.")
+        return self.__obj
+
+    @_obj.setter
+    def _obj(self, obj):
+        self.__obj = obj
+
     def __del__(self):
         """Destroy a :class:`~mne_lsl.lsl.StreamOutlet`.
 
@@ -83,6 +94,7 @@ class StreamOutlet:
             return
         try:
             lib.lsl_destroy_outlet(self._obj)
+            self._obj = None
         except Exception:
             pass
 

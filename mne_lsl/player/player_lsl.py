@@ -1,6 +1,6 @@
 from __future__ import annotations  # c.f. PEP 563, PEP 649
 
-from threading import Timer
+from threading import Lock, Timer
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -28,6 +28,8 @@ class PlayerLSL(BasePlayer):
         Name of the mock LSL stream. If ``None``, the name ``MNE-LSL-Player`` is used.
     chunk_size : int ``≥ 1``
         Number of samples pushed at once on the :class:`~mne_lsl.lsl.StreamOutlet`.
+        If these chunks are too small then the thread-based timing might not work
+        properly.
 
     Notes
     -----
@@ -37,7 +39,7 @@ class PlayerLSL(BasePlayer):
     """
 
     def __init__(
-        self, fname: Union[str, Path], name: Optional[str] = None, chunk_size: int = 16
+        self, fname: Union[str, Path], name: Optional[str] = None, chunk_size: int = 64
     ) -> None:
         super().__init__(fname, chunk_size)
         check_type(name, (str, None), "name")
@@ -53,7 +55,8 @@ class PlayerLSL(BasePlayer):
             source_id="MNE-LSL",
         )
         self._sinfo.set_channel_info(self._raw.info)
-        logger.debug("Set channel info %s", self._name)
+        logger.debug("%s: set channel info", self._name)
+        self._outlet_lock = Lock()
         # create additional streaming variables
         self._reset_variables()
 
@@ -72,16 +75,19 @@ class PlayerLSL(BasePlayer):
         """Start streaming data on the LSL `~mne_lsl.lsl.StreamOutlet`."""
         if self._streaming_thread is not None:
             logger.warning(
-                "The player is already started. Use Player.stop() to stop streaming."
+                "%s: The player is already started. "
+                "Use Player.stop() to stop streaming.",
+                self._name,
             )
             return None
-        self._outlet = StreamOutlet(self._sinfo, self._chunk_size)
+        with self._outlet_lock:
+            self._outlet = StreamOutlet(self._sinfo, self._chunk_size)
         self._streaming_delay = self.chunk_size / self.info["sfreq"]
         self._streaming_thread = Timer(0, self._stream)
         self._streaming_thread.daemon = True
         self._target_timestamp = local_clock()
         self._streaming_thread.start()
-        logger.debug("Started streaming thread %s", self._name)
+        logger.debug("%s: Started streaming thread", self._name)
 
     @copy_doc(BasePlayer.set_channel_types)
     def set_channel_types(
@@ -102,8 +108,10 @@ class PlayerLSL(BasePlayer):
 
     def stop(self) -> None:
         """Stop streaming data on the LSL :class:`~mne_lsl.lsl.StreamOutlet`."""
+        logger.debug("%s: Stopping", self._name)
         super().stop()
-        del self._outlet
+        with self._outlet_lock:
+            del self._outlet
         self._reset_variables()
 
     @copy_doc(BasePlayer._stream)
@@ -126,8 +134,17 @@ class PlayerLSL(BasePlayer):
             # this non-real time replay scenario is the timestamp of the last sample in
             # the chunk.
             self._target_timestamp += self._streaming_delay
-            self._outlet.push_chunk(data, timestamp=self._target_timestamp)
-        except Exception:
+            logger.debug(
+                "%s: Pushing chunk %s:%s, timestamp=%s",
+                self._name,
+                start,
+                stop,
+                self._target_timestamp,
+            )
+            with self._outlet_lock:
+                self._outlet.push_chunk(data, timestamp=self._target_timestamp)
+        except Exception as exc:
+            logger.debug("%s: Stopping due to exception: %s", self._name, exc)
             self._reset_variables()
             return None  # equivalent to an interrupt
         else:
@@ -135,11 +152,12 @@ class PlayerLSL(BasePlayer):
             # for the next thread to remain in the neighbourhood of _target_timestamp
             # for the following wake.
             delta = self._target_timestamp - self._streaming_delay - local_clock()
-            delay = self._streaming_delay + delta
+            delay = max(self._streaming_delay + delta, 0)
             if self._interrupt:
                 # don't recreate the thread if we are trying to interrupt streaming
                 return None
             else:
+                logger.debug("%s: Sleeping for %s", self._name, delay)
                 # recreate the timer thread as it is one-call only
                 self._streaming_thread = Timer(delay, self._stream)
                 self._streaming_thread.daemon = True
@@ -149,7 +167,8 @@ class PlayerLSL(BasePlayer):
         """Reset variables for streaming."""
         logger.debug("Resetting variables %s", self._name)
         super()._reset_variables()
-        self._outlet = None
+        with self._outlet_lock:
+            self._outlet = None
         self._target_timestamp = None
 
     # ----------------------------------------------------------------------------------
@@ -157,7 +176,8 @@ class PlayerLSL(BasePlayer):
         """Delete the player and destroy the :class:`~mne_lsl.lsl.StreamOutlet`."""
         super().__del__()
         try:
-            del self._outlet
+            with self._outlet_lock:
+                del self._outlet
         except Exception:
             pass
 
