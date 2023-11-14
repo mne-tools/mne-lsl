@@ -28,6 +28,12 @@ from mne_lsl.utils.logs import _use_log_level
 logger.propagate = True
 
 
+bad_gh_macos = pytest.mark.skipif(
+    platform.system() == "Darwin" and os.getenv("GITHUB_ACTIONS", "") == "true",
+    reason="Unreliable on macOS CI",
+)
+
+
 @pytest.fixture(
     params=(
         pytest.param(0.001, id="1ms"),
@@ -160,10 +166,9 @@ def test_stream_double_connection(mock_lsl_stream, caplog):
     stream.disconnect()
 
 
+@bad_gh_macos
 def test_stream_drop_channels(mock_lsl_stream, acquisition_delay, raw):
     """Test dropping channels."""
-    if platform.system() == "Darwin" and os.getenv("GITHUB_ACTIONS", "") == "true":
-        pytest.skip("Unreliable on macOS CI")
     stream = Stream(bufsize=2, name=mock_lsl_stream.name)
     stream.connect(acquisition_delay=acquisition_delay)
     time.sleep(0.1)  # give a bit of time to the stream to acquire the first chunks
@@ -283,6 +288,7 @@ def test_stream_channel_types(mock_lsl_stream, raw):
     stream.disconnect()
 
 
+@bad_gh_macos
 def test_stream_channel_names(mock_lsl_stream, raw):
     """Test channel renaming."""
     stream = Stream(bufsize=2, name=mock_lsl_stream.name)
