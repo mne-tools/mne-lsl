@@ -387,7 +387,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             # Support channel selection since the performance impact is small.
             # >>> %timeit _picks_to_idx(raw.info, "eeg")
             # 256 µs ± 5.03 µs per loop
-            # >>> %timeit _picks_to_idx(raw.info, ["Fp1", "vEOG"])
+            # >>> %timeit _picks_to_idx(raw.info, ["F7", "vEOG"])
             # 8.68 µs ± 113 ns per loop
             # >>> %timeit _picks_to_idx(raw.info, None)
             # 253 µs ± 1.22 µs per loop

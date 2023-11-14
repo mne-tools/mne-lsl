@@ -5,9 +5,8 @@ from tempfile import NamedTemporaryFile
 from typing import TYPE_CHECKING
 
 import numpy as np
-from mne import create_info
 from mne import set_log_level as set_log_level_mne
-from mne.io import Raw, RawArray, read_raw_fif
+from mne.io import Raw, read_raw_fif
 from pytest import fixture
 
 from mne_lsl import set_log_level
@@ -69,10 +68,12 @@ def pytest_sessionfinish(session, exitstatus) -> None:
 
 @fixture(scope="session")
 def fname(tmp_path_factory) -> Path:
-    """Yield fname of a file with sample numbers in the last channel."""
+    """Yield fname of a file with sample numbers in the first channel."""
     fname = testing.data_path() / "sample-eeg-ant-raw.fif"
     raw = read_raw_fif(fname, preload=True)
-    raw._data[-1] = np.arange(1, len(raw.times) + 1) * 1e-6
+    raw._data[0] = np.arange(len(raw.times))
+    raw.rename_channels({raw.ch_names[0]: "Samples"})
+    raw.set_channel_types({raw.ch_names[0]: "misc"}, on_unit_change="ignore")
     fname_mod = tmp_path_factory.mktemp("data") / "sample-eeg-ant-raw.fif"
     raw.save(fname_mod)
     return fname_mod
@@ -87,30 +88,9 @@ def raw(fname) -> Raw:
 @fixture(scope="function")
 def mock_lsl_stream(fname, request):
     """Create a mock LSL stream for testing."""
-    # Nest PlayerLSL import so temp config gets written first
+    # nest PlayerLSL import so temp config gets written first
     from mne_lsl.player import PlayerLSL  # noqa: E402
 
     name = f"P_{request.node.name}"
     with PlayerLSL(fname, name, chunk_size=16) as player:
-        yield player
-
-
-@fixture(scope="session")
-def _integer_raw(tmp_path_factory) -> Path:
-    """Create a Raw object with each channel containing its idx continuously."""
-    info = create_info(5, 1000, "eeg")
-    data = np.full((5, 1000), np.arange(5).reshape(-1, 1))
-    raw = RawArray(data, info)
-    fname = tmp_path_factory.mktemp("data") / "int-raw.fif"
-    raw.save(fname)
-    return fname
-
-
-@fixture(scope="module")
-def mock_lsl_stream_int(_integer_raw, request):
-    """Create a mock LSL stream streaming the channel number continuously."""
-    from mne_lsl.player import PlayerLSL  # noqa: E402
-
-    name = f"P_{request.node.name}"
-    with PlayerLSL(_integer_raw, name, chunk_size=16) as player:
         yield player

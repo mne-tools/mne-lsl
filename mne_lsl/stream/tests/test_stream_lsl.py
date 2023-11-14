@@ -5,8 +5,9 @@ from datetime import datetime, timezone
 import numpy as np
 import pytest
 from matplotlib import pyplot as plt
-from mne import Info, pick_info, pick_types
+from mne import Info, create_info, pick_info, pick_types
 from mne.channels import DigMontage
+from mne.io import RawArray
 from mne.utils import check_version
 from numpy.testing import assert_allclose
 
@@ -35,6 +36,27 @@ logger.propagate = True
 def acquisition_delay(request):
     """Yield the acquisition delay of the mock LSL stream."""
     yield request.param
+
+
+@pytest.fixture(scope="module")
+def _integer_raw(tmp_path_factory):
+    """Create a Raw object with each channel containing its idx continuously."""
+    info = create_info(5, 1000, "eeg")
+    data = np.full((5, 1000), np.arange(5).reshape(-1, 1))
+    raw = RawArray(data, info)
+    fname = tmp_path_factory.mktemp("data") / "int-raw.fif"
+    raw.save(fname)
+    return fname
+
+
+@pytest.fixture(scope="function")
+def _mock_lsl_stream_int(_integer_raw, request):
+    """Create a mock LSL stream streaming the channel number continuously."""
+    from mne_lsl.player import PlayerLSL  # noqa: E402
+
+    name = f"P_{request.node.name}"
+    with PlayerLSL(_integer_raw, name, chunk_size=16) as player:
+        yield player
 
 
 def test_stream(mock_lsl_stream, acquisition_delay, raw):
@@ -151,8 +173,8 @@ def test_stream_drop_channels(mock_lsl_stream, acquisition_delay, raw):
         data, _ = stream.get_data(winsize=0.1)
         match_stream_and_raw_data(data, raw_)
         _sleep_until_new_data(acquisition_delay, mock_lsl_stream)
-    stream.drop_channels(["Fp1", "Fp2"])
-    raw_ = raw_.drop_channels(["Fp1", "Fp2"])
+    stream.drop_channels(["F7", "Fp2"])
+    raw_ = raw_.drop_channels(["F7", "Fp2"])
     assert stream.ch_names == raw_.ch_names
     time.sleep(0.2)
     for _ in range(3):
@@ -291,7 +313,9 @@ def test_stream_channel_units(mock_lsl_stream, raw):
     stream.connect()
     time.sleep(0.1)
     ch_units = stream.get_channel_units()
-    assert ch_units == [(FIFF.FIFF_UNIT_V, FIFF.FIFF_UNITM_NONE)] * len(stream.ch_names)
+    assert ch_units == [(FIFF.FIFF_UNIT_NONE, FIFF.FIFF_UNITM_NONE)] + [
+        (FIFF.FIFF_UNIT_V, FIFF.FIFF_UNITM_NONE)
+    ] * (len(stream.ch_names) - 1)
     stream.set_channel_units({"vEOG": "microvolts", "hEOG": "uv", "TRIGGER": 3})
     ch_units = stream.get_channel_units()
     assert ch_units[stream.ch_names.index("vEOG")][1] == -6
@@ -299,11 +323,11 @@ def test_stream_channel_units(mock_lsl_stream, raw):
     assert ch_units[stream.ch_names.index("TRIGGER")][1] == 3
 
     # set channel units after channel selection
-    stream.pick(["vEOG", "hEOG", "TRIGGER", "Fp1", "Fp2"])
-    raw_ = raw.copy().pick(["Fp1", "Fp2", "vEOG", "hEOG", "TRIGGER"])
-    stream.set_channel_units({"Fp1": -6, "vEOG": 6})
+    stream.pick(["vEOG", "hEOG", "TRIGGER", "F7", "Fp2"])
+    raw_ = raw.copy().pick(["Fp2", "F7", "vEOG", "hEOG", "TRIGGER"])
+    stream.set_channel_units({"F7": -6, "vEOG": 6})
     ch_units = stream.get_channel_units()
-    assert ch_units[stream.ch_names.index("Fp1")][1] == -6
+    assert ch_units[stream.ch_names.index("F7")][1] == -6
     assert ch_units[stream.ch_names.index("vEOG")][1] == 6
     # acquire a couple of chunks
     time.sleep(0.2)
@@ -388,10 +412,10 @@ def test_stream_get_data_picks(mock_lsl_stream, acquisition_delay, raw):
         data, _ = stream.get_data(winsize=0.1, picks="eeg")
         match_stream_and_raw_data(data, raw_)
         _sleep_until_new_data(acquisition_delay, mock_lsl_stream)
-    raw_.pick(["Fp1", "F2", "F4"])
+    raw_.pick(["F7", "F2", "F4"])
     time.sleep(0.2)
     for _ in range(3):
-        data, _ = stream.get_data(winsize=0.1, picks=["Fp1", "F2", "F4"])
+        data, _ = stream.get_data(winsize=0.1, picks=["F7", "F2", "F4"])
         match_stream_and_raw_data(data, raw_)
         _sleep_until_new_data(acquisition_delay, mock_lsl_stream)
     stream.disconnect()
@@ -427,9 +451,9 @@ def test_stream_invalid_interrupt(mock_lsl_stream):
             pass
 
 
-def test_stream_rereference(mock_lsl_stream_int, acquisition_delay):
+def test_stream_rereference(_mock_lsl_stream_int, acquisition_delay):
     """Test re-referencing an EEG-like stream."""
-    stream = Stream(bufsize=0.4, name=mock_lsl_stream_int.name)
+    stream = Stream(bufsize=0.4, name=_mock_lsl_stream_int.name)
     stream.connect(acquisition_delay=acquisition_delay)
     time.sleep(0.1)  # give a bit of time to slower CIs
     assert stream.n_new_samples > 0
@@ -441,7 +465,7 @@ def test_stream_rereference(mock_lsl_stream_int, acquisition_delay):
     data_ref = np.full(data.shape, np.arange(data.shape[0]).reshape(-1, 1))
     data_ref -= data_ref[1, :]
     assert_allclose(data, data_ref)
-    _sleep_until_new_data(acquisition_delay, mock_lsl_stream_int)
+    _sleep_until_new_data(acquisition_delay, _mock_lsl_stream_int)
     data, _ = stream.get_data()
     assert_allclose(data, data_ref)
 
@@ -475,15 +499,15 @@ def test_stream_rereference(mock_lsl_stream_int, acquisition_delay):
     data_ref[-1, :] = np.zeros(data.shape[1])
     data_ref -= data_ref[[1, 2], :].mean(axis=0, keepdims=True)
     assert_allclose(data, data_ref)
-    _sleep_until_new_data(stream._acquisition_delay, mock_lsl_stream_int)
+    _sleep_until_new_data(stream._acquisition_delay, _mock_lsl_stream_int)
     data, _ = stream.get_data()
     assert_allclose(data, data_ref)
     stream.disconnect()
 
 
-def test_stream_rereference_average(mock_lsl_stream_int):
+def test_stream_rereference_average(_mock_lsl_stream_int):
     """Test average re-referencing schema."""
-    stream = Stream(bufsize=0.4, name=mock_lsl_stream_int.name)
+    stream = Stream(bufsize=0.4, name=_mock_lsl_stream_int.name)
     stream.connect()
     time.sleep(0.1)  # give a bit of time to slower CIs
     stream.set_channel_types({"2": "ecg"})  # channels: 0, 1, 2, 3, 4
@@ -494,7 +518,7 @@ def test_stream_rereference_average(mock_lsl_stream_int):
     )
     data_ref[-2:, :] += 1
     assert_allclose(data, data_ref)
-    _sleep_until_new_data(stream._acquisition_delay, mock_lsl_stream_int)
+    _sleep_until_new_data(stream._acquisition_delay, _mock_lsl_stream_int)
     data, _ = stream.get_data(picks="eeg")
     assert_allclose(data, data_ref)
 
@@ -508,7 +532,7 @@ def test_stream_rereference_average(mock_lsl_stream_int):
     data_ref[-2:, :] += 1
     data_ref -= data_ref.mean(axis=0, keepdims=True)
     assert_allclose(data, data_ref)
-    _sleep_until_new_data(stream._acquisition_delay, mock_lsl_stream_int)
+    _sleep_until_new_data(stream._acquisition_delay, _mock_lsl_stream_int)
     data, _ = stream.get_data(picks="eeg")
     assert_allclose(data, data_ref)
     stream.disconnect()

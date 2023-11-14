@@ -29,16 +29,32 @@ def sha256sum(fname):
 
 def match_stream_and_raw_data(data: NDArray[float], raw: BaseRaw) -> None:
     """Check if the data array is part of the provided raw."""
-    # Sample numbers should be in the last row of the data, but could loop so are
-    # not necessarily always increasing by 1
-    good = np.isclose(raw[:][0], data[:, :1], atol=1e-10, rtol=1e-8).all(axis=0)
-    good = np.where(good)[0]
-    if len(good) != 1:
-        raise RuntimeError(
-            f"Could not find match between data and raw (found {len(good)} options)."
-        )
-    start = good[0]
-    del good
+    if "Samples" in raw.ch_names:
+        # the stream was emitted from a file with the samples idx in a channel,
+        # thus we match the stream and raw data based on this sample idx.
+        # /!\ in data, the sample idx does not necessarily increase by 1 because of
+        # potential loop in the player.
+        ch = raw.ch_names.index("Samples")
+        start = data[ch, :][0]
+        if start != int(start):
+            idx = raw.get_data(picks="Samples").squeeze().astype(int)
+            raise RuntimeError(
+                f"Could not cast the stream sample idx channel to int. Start '{start}' "
+                f"should be an integer. Sample channel in raw {idx} vs stream "
+                f"{data[ch, :]}."
+            )
+        start = int(start)
+    else:
+        # the stream was emitted from a file without the sample idx in a channel, thus
+        # we match the stream and raw data based on the first (n_channels,) samples.
+        good = np.isclose(raw[:][0], data[:, :1], atol=1e-10, rtol=1e-8).all(axis=0)
+        good = np.where(good)[0]
+        if len(good) != 1:
+            raise RuntimeError(
+                f"Could not match stream and raw data (found {len(good)} options)."
+            )
+        start = int(good[0])
+        del good
     stop = start + data.shape[1]
     n_fetch = 1
     if stop <= raw.times.size:
@@ -53,30 +69,28 @@ def match_stream_and_raw_data(data: NDArray[float], raw: BaseRaw) -> None:
                     (raw_data, raw[:, : data.shape[1] - raw_data.shape[1]][0])
                 )
         n_fetch += 1
-    data_samp_nums = data[-1]
-    raw_samp_nums = raw_data[-1]
-    after = f"after {n_fetch} fetch(es)"
-    raw_deltas = np.diff(raw_samp_nums)
-    raw_delta_idx = np.where(raw_deltas != 1)[0]
-    raw_deltas = raw_deltas[raw_delta_idx]
-    data_deltas = np.diff(data_samp_nums)
-    data_delta_idx = np.where(data_deltas != 1)[0]
-    data_deltas = data_deltas[data_delta_idx]
-    assert_array_equal(
-        raw_deltas,
-        data_deltas,
-        err_msg=f"Deltas mismatch @ {raw_delta_idx} vs {data_delta_idx}, {after}",
-    )
-    assert_array_equal(
-        data_samp_nums,
-        raw_samp_nums,
-        err_msg=f"sample numbers mismatch {after}",
-    )
+
+    if "Samples" in raw.ch_names:
+        data_samp_nums = data[ch, :]
+        raw_samp_nums = raw_data[ch, :]
+        raw_deltas = np.diff(raw_samp_nums)
+        raw_delta_idx = np.where(raw_deltas != 1)[0]
+        data_deltas = np.diff(data_samp_nums)
+        data_delta_idx = np.where(data_deltas != 1)[0]
+        assert_array_equal(
+            data_samp_nums,
+            raw_samp_nums,
+            err_msg=(
+                f"Samples mismatch, after {n_fetch} fetch(es), with deltas:\n"
+                f"  Raw: {raw_delta_idx} ({raw_deltas[raw_delta_idx]})\n"
+                f"  Stream: {data_delta_idx} ({data_deltas[data_delta_idx]})"
+            ),
+        )
     assert_allclose(
-        data[:-1],
-        raw_data[:-1],
+        data,
+        raw_data,
         rtol=0.001,
-        err_msg=f"data mismatch {after}",
+        err_msg=f"data mismatch, after {n_fetch} fetch(es).",
     )
 
 
