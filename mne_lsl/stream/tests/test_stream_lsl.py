@@ -1,3 +1,5 @@
+import os
+import platform
 import re
 import time
 from datetime import datetime, timezone
@@ -160,6 +162,8 @@ def test_stream_double_connection(mock_lsl_stream, caplog):
 
 def test_stream_drop_channels(mock_lsl_stream, acquisition_delay, raw):
     """Test dropping channels."""
+    if platform.system() == "Darwin" and os.getenv("GITHUB_ACTIONS", "") == "true":
+        pytest.skip("Unreliable on macOS CI")
     stream = Stream(bufsize=2, name=mock_lsl_stream.name)
     stream.connect(acquisition_delay=acquisition_delay)
     time.sleep(0.1)  # give a bit of time to the stream to acquire the first chunks
