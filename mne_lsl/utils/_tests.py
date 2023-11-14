@@ -1,6 +1,7 @@
 from __future__ import annotations  # c.f. PEP 563, PEP 649
 
 import hashlib
+import platform
 from importlib import import_module
 from typing import TYPE_CHECKING
 
@@ -86,10 +87,13 @@ def match_stream_and_raw_data(data: NDArray[float], raw: BaseRaw) -> None:
                 f"  Stream: {data_delta_idx} ({data_deltas[data_delta_idx]})"
             ),
         )
+    # On macOS we get differences like -0.030293 vs -0.03031, -0.030286 vs -0.030313
+    atol = 0.0001 if platform.system() == "Darwin" else 0.0
     assert_allclose(
         data,
         raw_data,
         rtol=0.001,
+        atol=atol,
         err_msg=f"data mismatch, after {n_fetch} fetch(es).",
     )
 
