@@ -1,6 +1,7 @@
 from __future__ import annotations  # c.f. PEP 563, PEP 649
 
 from ctypes import c_char_p, c_double, c_int, c_long, c_void_p
+from threading import Lock
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -55,6 +56,7 @@ class StreamOutlet:
                 "The argument 'max_buffered' must contain a positive number. "
                 f"{max_buffered} is invalid."
             )
+        self._lock = Lock()
         self._obj = lib.lsl_create_outlet(sinfo._obj, chunk_size, max_buffered)
         assert self.__obj is not None
         self._obj = c_void_p(self._obj)
@@ -93,8 +95,9 @@ class StreamOutlet:
         if not getattr(self, "_obj", None):
             return
         try:
-            lib.lsl_destroy_outlet(self._obj)
-            self._obj = None
+            with self._lock:
+                lib.lsl_destroy_outlet(self._obj)
+                self._obj = None
         except Exception:
             pass
 
@@ -141,14 +144,15 @@ class StreamOutlet:
                 f"{self._n_channels} elements are expected. {len(x)} is invalid."
             )
 
-        handle_error(
-            self._do_push_sample(
-                self._obj,
-                self._buffer_sample(*x),
-                c_double(timestamp),
-                c_int(pushThrough),
+        with self._lock:
+            handle_error(
+                self._do_push_sample(
+                    self._obj,
+                    self._buffer_sample(*x),
+                    c_double(timestamp),
+                    c_int(pushThrough),
+                )
             )
-        )
 
     def push_chunk(
         self,
@@ -235,15 +239,16 @@ class StreamOutlet:
             timestamp_c = (c_double * timestamp.size)(*timestamp)
             liblsl_push_chunk_func = self._do_push_chunk_n
 
-        handle_error(
-            liblsl_push_chunk_func(
-                self._obj,
-                data_buffer,
-                c_long(n_elements),
-                timestamp_c,
-                c_int(pushThrough),
+        with self._lock:
+            handle_error(
+                liblsl_push_chunk_func(
+                    self._obj,
+                    data_buffer,
+                    c_long(n_elements),
+                    timestamp_c,
+                    c_int(pushThrough),
+                )
             )
-        )
 
     def wait_for_consumers(self, timeout: Optional[float]) -> bool:
         """Wait (block) until at least one :class:`~mne_lsl.lsl.StreamInlet` connects.
@@ -264,7 +269,8 @@ class StreamOutlet:
         Any application inlet will be recognized.
         """
         timeout = _check_timeout(timeout)
-        return bool(lib.lsl_wait_for_consumers(self._obj, c_double(timeout)))
+        with self._lock:
+            return bool(lib.lsl_wait_for_consumers(self._obj, c_double(timeout)))
 
     # -------------------------------------------------------------------------
     @copy_doc(_BaseStreamInfo.dtype)
@@ -306,7 +312,8 @@ class StreamOutlet:
         This function does not filter the search for :class:`mne_lsl.lsl.StreamInlet`.
         Any application inlet will be recognized.
         """
-        return bool(lib.lsl_have_consumers(self._obj))
+        with self._lock:
+            return bool(lib.lsl_have_consumers(self._obj))
 
     # -------------------------------------------------------------------------
     def get_sinfo(self) -> _BaseStreamInfo:
@@ -317,4 +324,5 @@ class StreamOutlet:
         sinfo : StreamInfo
             Description of the stream connected to the outlet.
         """
-        return _BaseStreamInfo(lib.lsl_get_info(self._obj))
+        with self._lock:
+            return _BaseStreamInfo(lib.lsl_get_info(self._obj))

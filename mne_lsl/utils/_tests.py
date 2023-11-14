@@ -78,6 +78,8 @@ def match_stream_and_raw_data(data: NDArray[float], raw: BaseRaw) -> None:
         raw_delta_idx = np.where(raw_deltas != 1)[0]
         data_deltas = np.diff(data_samp_nums)
         data_delta_idx = np.where(data_deltas != 1)[0]
+        raw_deltas = np.round(raw_deltas).astype(int)
+        data_deltas = np.round(data_deltas).astype(int)
         assert_array_equal(
             data_samp_nums,
             raw_samp_nums,

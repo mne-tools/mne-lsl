@@ -1,6 +1,6 @@
 from __future__ import annotations  # c.f. PEP 563, PEP 649
 
-from threading import Lock, Timer
+from threading import Timer
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -56,7 +56,6 @@ class PlayerLSL(BasePlayer):
         )
         self._sinfo.set_channel_info(self._raw.info)
         logger.debug("%s: set channel info", self._name)
-        self._outlet_lock = Lock()
         # create additional streaming variables
         self._reset_variables()
 
@@ -80,8 +79,7 @@ class PlayerLSL(BasePlayer):
                 self._name,
             )
             return None
-        with self._outlet_lock:
-            self._outlet = StreamOutlet(self._sinfo, self._chunk_size)
+        self._outlet = StreamOutlet(self._sinfo, self._chunk_size)
         self._streaming_delay = self.chunk_size / self.info["sfreq"]
         self._streaming_thread = Timer(0, self._stream)
         self._streaming_thread.daemon = True
@@ -110,8 +108,7 @@ class PlayerLSL(BasePlayer):
         """Stop streaming data on the LSL :class:`~mne_lsl.lsl.StreamOutlet`."""
         logger.debug("%s: Stopping", self._name)
         super().stop()
-        with self._outlet_lock:
-            del self._outlet
+        self._outlet = None
         self._reset_variables()
 
     @copy_doc(BasePlayer._stream)
@@ -141,8 +138,7 @@ class PlayerLSL(BasePlayer):
                 stop,
                 self._target_timestamp,
             )
-            with self._outlet_lock:
-                self._outlet.push_chunk(data, timestamp=self._target_timestamp)
+            self._outlet.push_chunk(data, timestamp=self._target_timestamp)
         except Exception as exc:
             logger.debug("%s: Stopping due to exception: %s", self._name, exc)
             self._reset_variables()
@@ -167,19 +163,14 @@ class PlayerLSL(BasePlayer):
         """Reset variables for streaming."""
         logger.debug("Resetting variables %s", self._name)
         super()._reset_variables()
-        with self._outlet_lock:
-            self._outlet = None
+        self._outlet = None
         self._target_timestamp = None
 
     # ----------------------------------------------------------------------------------
     def __del__(self):
         """Delete the player and destroy the :class:`~mne_lsl.lsl.StreamOutlet`."""
         super().__del__()
-        try:
-            with self._outlet_lock:
-                del self._outlet
-        except Exception:
-            pass
+        self._outlet = None
 
     def __repr__(self):
         """Representation of the instance."""
