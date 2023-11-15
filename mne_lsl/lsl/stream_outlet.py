@@ -161,7 +161,6 @@ class StreamOutlet:
 
     def push_chunk(
         self,
-        x: Union[List[List[str]], NDArray[float]],
         x: Union[list[list[str]], NDArray[+ScalarType]],
         timestamp: Optional[Union[float, NDArray[+ScalarFloatType]]] = None,
         pushThrough: bool = True,
