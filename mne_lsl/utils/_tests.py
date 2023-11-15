@@ -16,6 +16,8 @@ if TYPE_CHECKING:
     from mne.io import BaseRaw
     from numpy.typing import NDArray
 
+    from .._typing import ScalarType
+
 
 def sha256sum(fname):
     """Efficiently hash a file."""
@@ -28,7 +30,7 @@ def sha256sum(fname):
     return h.hexdigest()
 
 
-def match_stream_and_raw_data(data: NDArray[float], raw: BaseRaw) -> None:
+def match_stream_and_raw_data(data: NDArray[+ScalarType], raw: BaseRaw) -> None:
     """Check if the data array is part of the provided raw."""
     if "Samples" in raw.ch_names:
         # the stream was emitted from a file with the samples idx in a channel,

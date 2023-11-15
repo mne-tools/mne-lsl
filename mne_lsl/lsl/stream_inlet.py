@@ -17,9 +17,11 @@ from .stream_info import _BaseStreamInfo
 from .utils import _check_timeout, _free_char_p_array_memory, handle_error
 
 if TYPE_CHECKING:
-    from typing import List, Optional, Sequence, Tuple, Union
+    from typing import Optional, Sequence, Union
 
     from numpy.typing import DTypeLike, NDArray
+
+    from .._typing import ScalarType
 
 
 class StreamInlet:
@@ -243,7 +245,7 @@ class StreamInlet:
 
     def pull_sample(
         self, timeout: Optional[float] = 0.0
-    ) -> Tuple[Union[List[str], NDArray[float]], Optional[float]]:
+    ) -> tuple[Union[list[str], NDArray[+ScalarType]], Optional[float]]:
         """Pull a single sample from the inlet.
 
         Parameters
@@ -300,7 +302,7 @@ class StreamInlet:
         self,
         timeout: Optional[float] = 0.0,
         max_samples: int = 1024,
-    ) -> Tuple[Union[List[List[str]], NDArray[float]], NDArray[float]]:
+    ) -> tuple[Union[list[list[str]], NDArray[+ScalarType]], NDArray[np.float64]]:
         """Pull a chunk of samples from the inlet.
 
         Parameters

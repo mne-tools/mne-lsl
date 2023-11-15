@@ -13,7 +13,7 @@ from ._base import BasePlayer
 
 if TYPE_CHECKING:
     from pathlib import Path
-    from typing import Callable, Dict, Optional, Union
+    from typing import Callable, Optional, Union
 
 
 class PlayerLSL(BasePlayer):
@@ -62,7 +62,7 @@ class PlayerLSL(BasePlayer):
     @copy_doc(BasePlayer.rename_channels)
     def rename_channels(
         self,
-        mapping: Union[Dict[str, str], Callable],
+        mapping: Union[dict[str, str], Callable],
         allow_duplicates: bool = False,
         *,
         verbose=None,
@@ -89,7 +89,7 @@ class PlayerLSL(BasePlayer):
 
     @copy_doc(BasePlayer.set_channel_types)
     def set_channel_types(
-        self, mapping: Dict[str, str], *, on_unit_change: str = "warn", verbose=None
+        self, mapping: dict[str, str], *, on_unit_change: str = "warn", verbose=None
     ) -> None:
         super().set_channel_types(
             mapping, on_unit_change=on_unit_change, verbose=verbose
@@ -97,7 +97,7 @@ class PlayerLSL(BasePlayer):
         self._sinfo.set_channel_types(self.get_channel_types(unique=False))
 
     @copy_doc(BasePlayer.set_channel_units)
-    def set_channel_units(self, mapping: Dict[str, Union[str, int]]) -> None:
+    def set_channel_units(self, mapping: dict[str, Union[str, int]]) -> None:
         super().set_channel_units(mapping)
         ch_units_after = np.array(
             [ch["unit_mul"] for ch in self.info["chs"]], dtype=np.int8

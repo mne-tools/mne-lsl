@@ -32,11 +32,13 @@ from ..utils.meas_info import _HUMAN_UNITS, _set_channel_units
 
 if TYPE_CHECKING:
     from datetime import datetime
-    from typing import Callable, Dict, List, Optional, Tuple, Union
+    from typing import Callable, Optional, Union
 
     from mne import Info
     from mne.channels import DigMontage
     from numpy.typing import DTypeLike, NDArray
+
+    from .._typing import ScalarIntType, ScalarType
 
 
 @fill_doc
@@ -86,9 +88,9 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
     @fill_doc
     def add_reference_channels(
         self,
-        ref_channels: Union[str, List[str], Tuple[str]],
+        ref_channels: Union[str, list[str], tuple[str]],
         ref_units: Optional[
-            Union[str, int, List[Union[str, int]], Tuple[Union[str, int]]]
+            Union[str, int, list[Union[str, int]], tuple[Union[str, int]]]
         ] = None,
     ) -> None:
         """Add EEG reference channels to data that consists of all zeros.
@@ -269,7 +271,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         # This method needs to close any inlet/network object and need to end with
         # self._reset_variables().
 
-    def drop_channels(self, ch_names: Union[str, List[str], Tuple[str]]) -> None:
+    def drop_channels(self, ch_names: Union[str, list[str], tuple[str]]) -> None:
         """Drop channel(s).
 
         Parameters
@@ -303,7 +305,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
     @copy_doc(ContainsMixin.get_channel_types)
     def get_channel_types(
         self, picks=None, unique=False, only_data_chs=False
-    ) -> List[str]:
+    ) -> list[str]:
         self._check_connected(name="get_channel_types()")
         return super().get_channel_types(
             picks=picks, unique=unique, only_data_chs=only_data_chs
@@ -312,7 +314,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
     @fill_doc
     def get_channel_units(
         self, picks=None, only_data_chs: bool = False
-    ) -> List[Tuple[int, int]]:
+    ) -> list[tuple[int, int]]:
         """Get a list of channel unit for each channel.
 
         Parameters
@@ -344,8 +346,10 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
     def get_data(
         self,
         winsize: Optional[float] = None,
-        picks: Optional[str, List[str], List[int], NDArray[int]] = None,
-    ) -> Tuple[NDArray[float], NDArray[float]]:
+        picks: Optional[
+            Union[str, list[str], list[int], NDArray[+ScalarIntType]]
+        ] = None,
+    ) -> tuple[NDArray[+ScalarType], NDArray[np.float64]]:
         """Retrieve the latest data from the buffer.
 
         Parameters
@@ -456,7 +460,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
     @fill_doc
     def rename_channels(
         self,
-        mapping: Union[Dict[str, str], Callable],
+        mapping: Union[dict[str, str], Callable],
         allow_duplicates: bool = False,
         *,
         verbose=None,
@@ -493,7 +497,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
     @fill_doc
     def set_channel_types(
-        self, mapping: Dict[str, str], *, on_unit_change: str = "warn", verbose=None
+        self, mapping: dict[str, str], *, on_unit_change: str = "warn", verbose=None
     ) -> None:
         """Define the sensor type of channels.
 
@@ -519,7 +523,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             mapping=mapping, on_unit_change=on_unit_change, verbose=verbose
         )
 
-    def set_channel_units(self, mapping: Dict[str, Union[str, int]]) -> None:
+    def set_channel_units(self, mapping: dict[str, Union[str, int]]) -> None:
         """Define the channel unit multiplication factor.
 
         The unit itself is defined by the sensor type. Use
@@ -544,8 +548,8 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
     @fill_doc
     def set_eeg_reference(
         self,
-        ref_channels: Union[str, List[str], Tuple[str]],
-        ch_type: Union[str, List[str], Tuple[str]] = "eeg",
+        ref_channels: Union[str, list[str], tuple[str]],
+        ch_type: Union[str, list[str], tuple[str]] = "eeg",
     ) -> None:
         """Specify which reference to use for EEG-like data.
 
@@ -608,7 +612,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
                 self._info["custom_ref_applied"] = FIFF.FIFFV_MNE_CUSTOM_REF_ON
 
     def set_meas_date(
-        self, meas_date: Optional[Union[datetime, float, Tuple[float]]]
+        self, meas_date: Optional[Union[datetime, float, tuple[float]]]
     ) -> None:
         """Set the measurement start date.
 
@@ -725,7 +729,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             self._interrupt = False
             self._create_acquisition_thread(0)
 
-    def _pick(self, picks: NDArray[int]) -> None:
+    def _pick(self, picks: NDArray[+ScalarIntType]) -> None:
         """Interrupt acquisition and apply the channel selection."""
         # for simplicity, don't allow to select channels after a reference schema has
         # been set, even if we drop channels which are not part of the reference schema,
@@ -783,7 +787,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
     # ----------------------------------------------------------------------------------
     @property
-    def ch_names(self) -> List[str]:
+    def ch_names(self) -> list[str]:
         """Name of the channels.
 
         :type: :class:`list` of :class:`str`
