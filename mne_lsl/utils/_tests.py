@@ -89,7 +89,8 @@ def match_stream_and_raw_data(data: NDArray[float], raw: BaseRaw) -> None:
                 f"  Stream: {data_delta_idx} ({data_deltas[data_delta_idx]})"
             ),
         )
-    # On macOS we get differences like -0.030293 vs -0.03031, -0.030286 vs -0.030313
+    # TODO: Fix the tolerance, on macOS we get differences like
+    # -0.030293 vs -0.03031, -0.030286 vs -0.030313, ...
     atol = 0.0001 if platform.system() == "Darwin" else 0.0
     assert_allclose(
         data,
