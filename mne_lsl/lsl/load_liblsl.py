@@ -15,6 +15,7 @@ from typing import TYPE_CHECKING
 import pooch
 import requests
 
+from .. import __version__
 from ..utils._path import walk
 from ..utils.logs import logger
 
@@ -71,6 +72,7 @@ def _find_liblsl() -> Optional[CDLL]:
         if libpath is None:
             continue
 
+        logger.debug("Attempting to load libpath %s", libpath)
         if _PLATFORM == "linux":
             # for linux, find_library does not return an absolute path, so we can not
             # try to triage based on the libpath.
@@ -122,8 +124,11 @@ def _fetch_liblsl() -> Optional[CDLL]:
     """
     try:
         response = requests.get(
-            "https://api.github.com/repos/sccn/liblsl/releases/latest"
+            "https://api.github.com/repos/sccn/liblsl/releases/latest",
+            timeout=15,
+            headers={"user-agent": f"mne-lsl/{__version__}"},
         )
+        logger.debug("Response code: %s", response.status_code)
         assets = [elt for elt in response.json()["assets"] if "liblsl" in elt["name"]]
     except Exception as error:
         logger.exception(error)

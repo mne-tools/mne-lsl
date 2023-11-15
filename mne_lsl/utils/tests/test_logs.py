@@ -5,12 +5,25 @@ from typing import Optional, Union
 
 import pytest
 
-from mne_lsl.utils.logs import add_file_handler, logger, set_log_level, verbose
+from mne_lsl.utils.logs import (
+    _use_log_level,
+    add_file_handler,
+    logger,
+    set_log_level,
+    verbose,
+)
 
 logger.propagate = True
 
 
-def test_default_log_level(caplog):
+@pytest.fixture()
+def safe_level():
+    """Safely call set_log_level in tests."""
+    with _use_log_level(None):
+        yield
+
+
+def test_default_log_level(caplog, safe_level):
     """Test the default log level."""
     set_log_level("WARNING")  # set to default
 
@@ -36,7 +49,7 @@ def test_default_log_level(caplog):
 
 
 @pytest.mark.parametrize("level", ("DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"))
-def test_logger(level, caplog):
+def test_logger(level, caplog, safe_level):
     """Test basic logger functionalities."""
     level_functions = {
         "DEBUG": logger.debug,
@@ -63,7 +76,7 @@ def test_logger(level, caplog):
             assert "101" not in caplog.text
 
 
-def test_verbose(caplog):
+def test_verbose(caplog, safe_level):
     """Test verbose decorator."""
 
     # function

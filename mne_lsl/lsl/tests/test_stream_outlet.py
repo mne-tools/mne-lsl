@@ -21,7 +21,7 @@ from mne_lsl.lsl.stream_info import _BaseStreamInfo
         ("int32", np.int32),
     ],
 )
-def test_push_numerical_sample(dtype_str, dtype):
+def test_push_numerical_sample(dtype_str, dtype, close_io):
     """Test push_sample with numerical values."""
     x = np.array([1, 2], dtype=dtype)
     assert x.shape == (2,) and x.dtype == dtype
@@ -36,14 +36,14 @@ def test_push_numerical_sample(dtype_str, dtype):
     outlet.push_sample(x)
     data, ts = inlet.pull_sample(timeout=5)
     assert_allclose(data, x)
-
     with pytest.raises(ValueError, match=re.escape("shape should be (n_channels,)")):
         outlet.push_sample(np.array([1, 2, 3, 4, 5, 6], dtype=dtype).reshape((2, 3)))
     with pytest.raises(ValueError, match="2 elements are expected"):
         outlet.push_sample(np.array([1, 2, 3, 4, 5], dtype=dtype))
+    close_io()
 
 
-def test_push_str_sample():
+def test_push_str_sample(close_io):
     """Test push_sample with strings."""
     x = ["1", "2"]
     # create stream descriptions
@@ -57,6 +57,7 @@ def test_push_str_sample():
     outlet.push_sample(x)
     data, ts = inlet.pull_sample(timeout=5)
     assert data == x
+    close_io()
 
 
 @pytest.mark.parametrize(
@@ -118,7 +119,7 @@ def test_push_str_chunk():
         outlet.push_chunk([["1", "4"], ["2", "5"], ["3", "6"], ["7"]])
 
 
-def test_wait_for_consumers():
+def test_wait_for_consumers(close_io):
     """Test wait for client."""
     sinfo = StreamInfo("test", "EEG", 2, 100.0, "float32", uuid.uuid4().hex[:6])
     outlet = StreamOutlet(sinfo, chunk_size=3)
@@ -131,6 +132,7 @@ def test_wait_for_consumers():
     inlet.open_stream(timeout=5)
     assert outlet.wait_for_consumers(timeout=0.2)
     assert outlet.has_consumers
+    close_io()
 
 
 def test_invalid_outlet():
@@ -157,7 +159,7 @@ def test_invalid_outlet():
         ("string", None),
     ],
 )
-def test_push_chunk_timestamps(dtype_str, dtype):
+def test_push_chunk_timestamps(dtype_str, dtype, close_io):
     """Test push_chunk with timestamps."""
     if dtype_str == "string":
         x = [["1", "4"], ["2", "5"], ["3", "6"]]
@@ -205,8 +207,7 @@ def test_push_chunk_timestamps(dtype_str, dtype):
         match="must contain one element per sample",
     ):
         outlet.push_chunk(x, timestamp=np.arange(4))
-    del inlet
-    del outlet
+    close_io()
 
 
 def _test_properties(outlet, dtype_str, n_channels, name, sfreq, stype):

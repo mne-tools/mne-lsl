@@ -1,6 +1,7 @@
 from __future__ import annotations  # c.f. PEP 563, PEP 649
 
 from ctypes import c_char_p, c_double, c_int, c_long, c_void_p
+from threading import Lock
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -57,7 +58,9 @@ class StreamOutlet:
                 "The argument 'max_buffered' must contain a positive number. "
                 f"{max_buffered} is invalid."
             )
+        self._lock = Lock()
         self._obj = lib.lsl_create_outlet(sinfo._obj, chunk_size, max_buffered)
+        assert self.__obj is not None
         self._obj = c_void_p(self._obj)
         if not self._obj:
             raise RuntimeError("The StreamOutlet could not be created.")
@@ -75,6 +78,16 @@ class StreamOutlet:
         self._do_push_chunk_n = fmt2push_chunk_n[self._dtype]
         self._buffer_sample = self._dtype * self._n_channels
 
+    @property
+    def _obj(self):
+        if self.__obj is None:
+            raise RuntimeError("The StreamOutlet has been destroyed.")
+        return self.__obj
+
+    @_obj.setter
+    def _obj(self, obj):
+        self.__obj = obj
+
     def __del__(self):
         """Destroy a :class:`~mne_lsl.lsl.StreamOutlet`.
 
@@ -82,9 +95,16 @@ class StreamOutlet:
         inlets will stop delivering data.
         """
         try:
-            lib.lsl_destroy_outlet(self._obj)
-        except Exception:
-            pass
+            if self.__obj is None:
+                return
+        except AttributeError:  # in the process of deletion, __obj was already None
+            return
+        with self._lock:
+            obj, self._obj = self._obj, None
+            try:
+                lib.lsl_destroy_outlet(obj)
+            except Exception as exc:
+                logger.warning("Error destroying outlet: %s", str(exc))
 
     def push_sample(
         self,
@@ -129,19 +149,20 @@ class StreamOutlet:
                 f"{self._n_channels} elements are expected. {len(x)} is invalid."
             )
 
-        handle_error(
-            self._do_push_sample(
-                self._obj,
-                self._buffer_sample(*x),
-                c_double(timestamp),
-                c_int(pushThrough),
+        with self._lock:
+            handle_error(
+                self._do_push_sample(
+                    self._obj,
+                    self._buffer_sample(*x),
+                    c_double(timestamp),
+                    c_int(pushThrough),
+                )
             )
-        )
 
     def push_chunk(
         self,
         x: Union[list[list[str]], NDArray[+ScalarType]],
-        timestamp: Union[float, NDArray[+ScalarFloatType]] = 0.0,
+        timestamp: Optional[Union[float, NDArray[+ScalarFloatType]]] = None,
         pushThrough: bool = True,
     ) -> None:
         """Push a chunk of samples into the :class:`~mne_lsl.lsl.StreamOutlet`.
@@ -153,9 +174,9 @@ class StreamOutlet:
             strings are transmitted, a list of sublist containing ``(n_channels,)`` is
             required. If numericals are transmitted, a numpy array of shape
             ``(n_samples, n_channels)`` is required.
-        timestamp : float | array of shape (n_samples,)
+        timestamp : float | array of shape (n_samples,) | None
             If a float, the acquisition timestamp of the last sample, in agreement with
-            :func:`mne_lsl.lsl.local_clock`. The default, ``0``, uses the current time.
+            :func:`mne_lsl.lsl.local_clock`. ``None`` (default) uses the current time.
             If an array, the acquisition timestamp of each sample, in agreement with
             :func:`mne_lsl.lsl.local_clock`.
         pushThrough : bool
@@ -198,7 +219,9 @@ class StreamOutlet:
             logger.warning("A single sample is pushed. Consider using push_sample().")
 
         # convert timestamps to the corresponding ctype
-        if isinstance(timestamp, float):
+        if timestamp is None:
+            timestamp = np.zeros(n_samples, dtype=np.float64) if self.sfreq == 0 else 0
+        if isinstance(timestamp, (float, int)):
             timestamp_c = c_double(timestamp)
             liblsl_push_chunk_func = self._do_push_chunk
             if self.sfreq == 0.0 and n_samples != 1:
@@ -223,15 +246,16 @@ class StreamOutlet:
             timestamp_c = (c_double * timestamp.size)(*timestamp.astype(np.float64))
             liblsl_push_chunk_func = self._do_push_chunk_n
 
-        handle_error(
-            liblsl_push_chunk_func(
-                self._obj,
-                data_buffer,
-                c_long(n_elements),
-                timestamp_c,
-                c_int(pushThrough),
+        with self._lock:
+            handle_error(
+                liblsl_push_chunk_func(
+                    self._obj,
+                    data_buffer,
+                    c_long(n_elements),
+                    timestamp_c,
+                    c_int(pushThrough),
+                )
             )
-        )
 
     def wait_for_consumers(self, timeout: Optional[float]) -> bool:
         """Wait (block) until at least one :class:`~mne_lsl.lsl.StreamInlet` connects.
@@ -252,7 +276,8 @@ class StreamOutlet:
         Any application inlet will be recognized.
         """
         timeout = _check_timeout(timeout)
-        return bool(lib.lsl_wait_for_consumers(self._obj, c_double(timeout)))
+        with self._lock:
+            return bool(lib.lsl_wait_for_consumers(self._obj, c_double(timeout)))
 
     # -------------------------------------------------------------------------
     @copy_doc(_BaseStreamInfo.dtype)
@@ -294,7 +319,8 @@ class StreamOutlet:
         This function does not filter the search for :class:`mne_lsl.lsl.StreamInlet`.
         Any application inlet will be recognized.
         """
-        return bool(lib.lsl_have_consumers(self._obj))
+        with self._lock:
+            return bool(lib.lsl_have_consumers(self._obj))
 
     # -------------------------------------------------------------------------
     def get_sinfo(self) -> _BaseStreamInfo:
@@ -305,4 +331,5 @@ class StreamOutlet:
         sinfo : StreamInfo
             Description of the stream connected to the outlet.
         """
-        return _BaseStreamInfo(lib.lsl_get_info(self._obj))
+        with self._lock:
+            return _BaseStreamInfo(lib.lsl_get_info(self._obj))

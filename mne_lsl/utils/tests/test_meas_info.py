@@ -13,7 +13,7 @@ logger.propagate = True
 
 def test_valid_info(caplog):
     """Test creation of valid info."""
-    ch_names = ["Fp1", "Fp2", "Trigger", "EOG"]
+    ch_names = ["F7", "Fp2", "Trigger", "EOG"]
     ch_types = ["eeg", "eeg", "stim", "eog"]
     ch_units = ["uv", "uv", "V", "uV"]
     # nested
@@ -67,7 +67,7 @@ def test_valid_info(caplog):
     assert [ch["unit_mul"] for ch in info["chs"]] == [0, 0]
 
     # units as integers
-    ch_names = ["Fp1", "Fp2", "Trigger", "EOG"]
+    ch_names = ["F7", "Fp2", "Trigger", "EOG"]
     ch_types = ["eeg", "eeg", "stim", "eog"]
     ch_units = ["-6", "-6", "0", "uV"]
     # nested
@@ -88,7 +88,7 @@ def test_valid_info(caplog):
 
 def test_invalid_info():
     """Test creation of invalid info."""
-    ch_names = ["Fp1", "Fp2", "Trigger", "EOG"]
+    ch_names = ["F7", "Fp2", "Trigger", "EOG"]
     ch_types = ["wrong_type", "eeg", "stim", "eog"]
     ch_units = ["uv", "uv", "V", "uV"]
 
@@ -141,7 +141,7 @@ def test_invalid_info():
 
 def test_manufacturer():
     """Test creation of a valid info with a manufacturer entry."""
-    ch_names = ["Fp1", "Fp2", "STI101", "EOG"]
+    ch_names = ["F7", "Fp2", "STI101", "EOG"]
     ch_types = ["eeg", "eeg", "stim", "eog"]
     # nested
     desc = dict(channels=list(), manufacturer=list())
@@ -170,7 +170,7 @@ def test_manufacturer():
 def test_valid_info_from_sinfo():
     """Test creation of a valid info from a SreamInfo."""
     sinfo = StreamInfo("pytest", "eeg", 4, 101, "float32", strftime("%H%M%S"))
-    ch_names = ["Fp1", "Fp2", "STI101", "EOG"]
+    ch_names = ["F7", "Fp2", "STI101", "EOG"]
     ch_types = ["eeg", "eeg", "stim", "eog"]
     sinfo.set_channel_names(ch_names)
     sinfo.set_channel_types(ch_types)
@@ -192,7 +192,7 @@ def test_valid_info_from_sinfo():
 
     # stream info without a main channel type
     sinfo = StreamInfo("pytest", "", 4, 101, "float32", strftime("%H%M%S"))
-    ch_names = ["Fp1", "Fp2", "STI101", "EOG"]
+    ch_names = ["F7", "Fp2", "STI101", "EOG"]
     ch_types = ["eeg", "eeg", "stim", "eog"]
     sinfo.set_channel_names(ch_names)
     sinfo.set_channel_types(ch_types)

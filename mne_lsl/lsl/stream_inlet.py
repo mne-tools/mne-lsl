@@ -3,12 +3,14 @@ from __future__ import annotations  # c.f. PEP 563, PEP 649
 import time
 from ctypes import byref, c_char_p, c_double, c_int, c_size_t, c_void_p
 from functools import reduce
+from threading import Lock
 from typing import TYPE_CHECKING
 
 import numpy as np
 
 from ..utils._checks import check_type, check_value, ensure_int
 from ..utils._docs import copy_doc
+from ..utils.logs import logger
 from .constants import fmt2numpy, fmt2pull_chunk, fmt2pull_sample, post_processing_flags
 from .load_liblsl import lib
 from .stream_info import _BaseStreamInfo
@@ -81,6 +83,7 @@ class StreamInlet:
         self._obj = c_void_p(self._obj)
         if not self._obj:
             raise RuntimeError("The StreamInlet could not be created.")
+        self._lock = Lock()
 
         # set preprocessing of the inlet
         if processing_flags is not None:
@@ -108,7 +111,8 @@ class StreamInlet:
                 ]
                 processing_flags = reduce(lambda x, y: x | y, processing_flags)
             assert processing_flags > 0  # sanity-check
-            handle_error(lib.lsl_set_postprocessing(self._obj, processing_flags))
+            with self._lock:
+                handle_error(lib.lsl_set_postprocessing(self._obj, processing_flags))
 
         # properties from the StreamInfo
         self._dtype = sinfo._dtype
@@ -126,16 +130,34 @@ class StreamInlet:
         # variable to define if the stream is open or not  sinfo_ = inlet.get_sinfo()
         self._stream_is_open = False
 
+    @property
+    def _obj(self):
+        if self.__obj is None:
+            raise RuntimeError("The StreamInlet has been destroyed.")
+        return self.__obj
+
+    @_obj.setter
+    def _obj(self, obj):
+        self.__obj = obj
+
     def __del__(self):
         """Destroy a :class:`~mne_lsl.lsl.StreamInlet`.
 
         The inlet will automatically disconnect.
         """
+        if self.__obj is None:
+            return
         try:
-            lib.lsl_destroy_inlet(self._obj)
-            self._stream_is_open = False
-        except Exception:
-            pass
+            self.close_stream()
+        except Exception as exc:
+            logger.warning("Error closing stream: %s", str(exc))
+        self._stream_is_open = False
+        with self._lock:
+            obj, self._obj = self._obj, None
+            try:
+                lib.lsl_destroy_inlet(obj)
+            except Exception as exc:
+                logger.warning("Error destroying inlet: %s", str(exc))
 
     def open_stream(self, timeout: Optional[float] = None) -> None:
         """Subscribe to a data stream.
@@ -160,7 +182,8 @@ class StreamInlet:
         """
         timeout = _check_timeout(timeout)
         errcode = c_int()
-        lib.lsl_open_stream(self._obj, c_double(timeout), byref(errcode))
+        with self._lock:
+            lib.lsl_open_stream(self._obj, c_double(timeout), byref(errcode))
         handle_error(errcode)
         # block a bit longer because of a bug in liblsl
         # this sleep can be removed once the minimum version supported includes
@@ -184,7 +207,10 @@ class StreamInlet:
             not arrive at the inlet. c.f. this
             `github issue <https://github.com/sccn/liblsl/issues/180>`_.
         """
-        lib.lsl_close_stream(self._obj)
+        if not self._stream_is_open:
+            return
+        with self._lock:
+            lib.lsl_close_stream(self._obj)
         self._stream_is_open = False
 
     def time_correction(self, timeout: Optional[float] = None) -> float:
@@ -210,7 +236,10 @@ class StreamInlet:
         """
         timeout = _check_timeout(timeout)
         errcode = c_int()
-        result = lib.lsl_time_correction(self._obj, c_double(timeout), byref(errcode))
+        with self._lock:
+            result = lib.lsl_time_correction(
+                self._obj, c_double(timeout), byref(errcode)
+            )
         handle_error(errcode)
         return result
 
@@ -246,13 +275,14 @@ class StreamInlet:
         timeout = _check_timeout(timeout)
 
         errcode = c_int()
-        timestamp = self._do_pull_sample(
-            self._obj,
-            byref(self._buffer_data[1]),
-            self._n_channels,
-            c_double(timeout),
-            byref(errcode),
-        )
+        with self._lock:
+            timestamp = self._do_pull_sample(
+                self._obj,
+                byref(self._buffer_data[1]),
+                self._n_channels,
+                c_double(timeout),
+                byref(errcode),
+            )
         handle_error(errcode)
         if not self._stream_is_open:
             self._stream_is_open = True
@@ -329,15 +359,16 @@ class StreamInlet:
 
         # read data into it
         errcode = c_int()
-        n_samples_data = self._do_pull_chunk(
-            self._obj,
-            byref(data_buffer),
-            byref(ts_buffer),
-            c_size_t(max_samples_data),
-            c_size_t(max_samples),
-            c_double(timeout),
-            byref(errcode),
-        )
+        with self._lock:
+            n_samples_data = self._do_pull_chunk(
+                self._obj,
+                byref(data_buffer),
+                byref(ts_buffer),
+                c_size_t(max_samples_data),
+                c_size_t(max_samples),
+                c_double(timeout),
+                byref(errcode),
+            )
         handle_error(errcode)
         if not self._stream_is_open:
             self._stream_is_open = True
@@ -376,7 +407,8 @@ class StreamInlet:
         n_dropped : int
             Number of dropped samples.
         """
-        return lib.lsl_inlet_flush(self._obj)
+        with self._lock:
+            return lib.lsl_inlet_flush(self._obj)
 
     # -------------------------------------------------------------------------
     @copy_doc(_BaseStreamInfo.dtype)
@@ -410,7 +442,8 @@ class StreamInlet:
 
         :type: :class:`int`
         """
-        return lib.lsl_samples_available(self._obj)  # 354 ns ± 6.04 ns per loop
+        with self._lock:
+            return lib.lsl_samples_available(self._obj)  # 354 ns ± 6.04 ns per loop
 
     @property
     def was_clock_reset(self) -> bool:
@@ -418,7 +451,8 @@ class StreamInlet:
 
         :type: :class:`bool`
         """
-        return bool(lib.lsl_was_clock_reset(self._obj))
+        with self._lock:
+            return bool(lib.lsl_was_clock_reset(self._obj))
 
     # -------------------------------------------------------------------------
     def get_sinfo(self, timeout: Optional[float] = None) -> _BaseStreamInfo:
@@ -442,6 +476,7 @@ class StreamInlet:
             )
         timeout = _check_timeout(timeout)
         errcode = c_int()
-        result = lib.lsl_get_fullinfo(self._obj, c_double(timeout), byref(errcode))
+        with self._lock:
+            result = lib.lsl_get_fullinfo(self._obj, c_double(timeout), byref(errcode))
         handle_error(errcode)
         return _BaseStreamInfo(result)

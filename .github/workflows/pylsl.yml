@@ -2,10 +2,10 @@ name: pylsl
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.number }}-${{ github.event.ref }}
   cancel-in-progress: true
-on:
+on:  # yamllint disable-line rule:truthy
   workflow_dispatch:
   schedule:
-  - cron: '0 8 * * 1'
+    - cron: '0 8 * * 1'
 
 jobs:
   sha256:

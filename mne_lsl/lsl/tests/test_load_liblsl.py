@@ -1,3 +1,4 @@
+import pytest
 import requests
 
 from mne_lsl.lsl.load_liblsl import _PLATFORM, _PLATFORM_SUFFIXES, _SUPPORTED_DISTRO
@@ -11,6 +12,7 @@ def test_os_detection():
     assert _PLATFORM in _PLATFORM_SUFFIXES
 
 
+@pytest.mark.xfail(raises=KeyError, reason="403 Forbidden Error on GitHub API request.")
 def test_distro_support():
     """Test that the variables are in sync with the latest liblsl release."""
     response = requests.get("https://api.github.com/repos/sccn/liblsl/releases/latest")
