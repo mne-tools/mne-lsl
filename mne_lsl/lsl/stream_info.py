@@ -429,7 +429,7 @@ class _BaseStreamInfo:
         Returns
         -------
         ch_types : list of str or ``None`` | None
-            List of channel names, matching the number of total channels.
+            List of channel types, matching the number of total channels.
             If ``None``, the channel types are not set.
 
             .. warning::
@@ -679,19 +679,18 @@ class _BaseStreamInfo:
         ----------
         ch_units : list of str | list of int | array of int | str | int
             List of channel units, matching the number of total channels.
-            If a single `str` or `int` is provided, the unit is applied to all channels.
+            If a single :class:`str` or :class:`int` is provided, the unit is applied to
+            all channels.
 
         Notes
         -----
-        Some channel types do not have a unit. The `str` ``none`` or the `int` 0 should
-        be used to denote this channel unit, corresponding to ``FIFF_UNITM_NONE`` in
-        MNE.
+        Some channel types doch_units not have a unit. The `str` ``none`` or the
+        :class:`int` 0 should be used to denote this channel unit, corresponding to
+        ``FIFF_UNITM_NONE`` in MNE-Python.
         """
         check_type(ch_units, (list, tuple, np.ndarray, str, "int-like"), "ch_units")
         if isinstance(ch_units, int):
-            ch_units = [
-                ensure_int(ch_unit, "ch_unit") for ch_unit in ch_units
-            ] * self.n_channels
+            ch_units = [ensure_int(ch_units, "ch_units")] * self.n_channels
         elif isinstance(ch_units, str):
             ch_units = [ch_units] * self.n_channels
         else:
