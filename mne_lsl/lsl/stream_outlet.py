@@ -160,7 +160,7 @@ class StreamOutlet:
     def push_chunk(
         self,
         x: Union[List[List[str]], NDArray[float]],
-        timestamp: float = 0.0,
+        timestamp: Optional[float] = None,
         pushThrough: bool = True,
     ) -> None:
         """Push a chunk of samples into the :class:`~mne_lsl.lsl.StreamOutlet`.
@@ -172,9 +172,9 @@ class StreamOutlet:
             strings are transmitted, a list of sublist containing ``(n_channels,)`` is
             required. If numericals are transmitted, a numpy array of shape
             ``(n_samples, n_channels)`` is required.
-        timestamp : float | array of shape (n_samples,)
+        timestamp : float | array of shape (n_samples,) | None
             If a float, the acquisition timestamp of the last sample, in agreement with
-            :func:`mne_lsl.lsl.local_clock`. The default, ``0``, uses the current time.
+            :func:`mne_lsl.lsl.local_clock`. ``None`` (default) uses the current time.
             If an array, the acquisition timestamp of each sample, in agreement with
             :func:`mne_lsl.lsl.local_clock`.
         pushThrough : bool
@@ -217,7 +217,9 @@ class StreamOutlet:
             logger.warning("A single sample is pushed. Consider using push_sample().")
 
         # convert timestamps to the corresponding ctype
-        if isinstance(timestamp, float):
+        if timestamp is None:
+            timestamp = np.zeros(n_samples, dtype=np.float64) if self.sfreq == 0 else 0
+        if isinstance(timestamp, (float, int)):
             timestamp_c = c_double(timestamp)
             liblsl_push_chunk_func = self._do_push_chunk
             if self.sfreq == 0.0 and n_samples != 1:

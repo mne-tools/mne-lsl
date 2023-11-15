@@ -79,11 +79,11 @@ def test_pull_numerical_chunk(dtype_str, dtype, close_io):
     x = np.array([[1, 4], [2, 5], [3, 6]], dtype=dtype)
     assert x.shape == (3, 2) and x.dtype == dtype
     # create stream description
-    sinfo = StreamInfo("test", "", 2, 0.0, dtype_str, uuid.uuid4().hex[:6])
+    sinfo = StreamInfo("test", "", 2, 1.0, dtype_str, uuid.uuid4().hex[:6])
     outlet = StreamOutlet(sinfo, chunk_size=3)
     inlet = StreamInlet(sinfo)
     inlet.open_stream(timeout=5)
-    _test_properties(inlet, dtype_str, 2, "test", 0.0, "")
+    _test_properties(inlet, dtype_str, 2, "test", 1.0, "")
     outlet.push_chunk(x)
     data, ts = inlet.pull_chunk(max_samples=3, timeout=5)
     _test_numerical_data(data, x, dtype, ts, 3)
