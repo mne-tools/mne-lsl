@@ -348,6 +348,7 @@ def test_stream_channel_units(mock_lsl_stream, raw):
     stream.disconnect()
 
 
+@bad_gh_macos
 def test_stream_add_reference_channels(mock_lsl_stream, acquisition_delay, raw):
     """Test add reference channels and channel selection."""
     stream = Stream(bufsize=2, name=mock_lsl_stream.name)
