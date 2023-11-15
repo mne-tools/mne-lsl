@@ -269,20 +269,6 @@ if sys.platform.startswith("win"):
 else:
     compress_images = ("images", "thumbnails")
 
-
-def reset_io(gallery_conf, fname):
-    loc = inspect.currentframe().f_back.f_locals
-    for name in ("inlet", "outlet"):
-        if name in loc:
-            loc[name].__del__()
-    if "stream" in loc:
-        loc["stream"].disconnect()
-        loc["stream"].__del__()
-    if "player" in loc:
-        loc["player"].stop()
-        loc["player"].__del__()
-
-
 sphinx_gallery_conf = {
     "backreferences_dir": "generated/backreferences",
     "compress_images": compress_images,
@@ -295,8 +281,6 @@ sphinx_gallery_conf = {
     "plot_gallery": "True",  # str, to enable overwrite from CLI without warning
     "reference_url": {f"{package}": None},
     "remove_config_comments": True,
-    "reset_modules": ("matplotlib", reset_io),
-    "reset_modules_order": "both",
     "show_memory": True,
     "within_subsection_order": FileNameSortKey,
 }

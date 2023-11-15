@@ -105,3 +105,13 @@ stream.info
 
 # %%
 # TODO: section about setting the channel units
+
+# %%
+# Free resources
+# --------------
+# When you are done with a :class:`~mne_lsl.player.PlayerLSL` or
+# :class:`~mne_lsl.stream.StreamLSL`, don't forget to free the resources they both use
+# to continuously mock an LSL stream or receive new data from an LSL stream.
+
+stream.disconnect()
+player.stop()
