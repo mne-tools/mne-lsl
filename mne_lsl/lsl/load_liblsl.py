@@ -347,7 +347,7 @@ def _pooch_processor_liblsl(fname: str, action: str, pooch: Pooch) -> str:
             ):
                 continue
             break
-        target = fname.name.with_suffix(_PLATFORM_SUFFIXES["windows"])
+        target = fname.with_suffix(_PLATFORM_SUFFIXES["windows"])
         logger.debug("Moving '%s' to '%s'.", file, target)
         move(file, target)
 
