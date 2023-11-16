@@ -118,8 +118,13 @@ def _find_liblsl() -> Optional[CDLL]:
     return lib
 
 
-def _fetch_liblsl() -> Optional[CDLL]:
+def _fetch_liblsl(folder: Path = files("mne_lsl.lsl") / "lib") -> Optional[CDLL]:
     """Fetch liblsl on the release page.
+
+    Parameters
+    ----------
+    folder : Path
+        Folder where the fetched liblsl is stored.
 
     Returns
     -------
@@ -210,7 +215,6 @@ def _fetch_liblsl() -> Optional[CDLL]:
         )
 
     asset = assets[0]
-    folder = files("mne_lsl.lsl") / "lib"
     try:
         os.makedirs(folder, exist_ok=True)
     except Exception as error:
