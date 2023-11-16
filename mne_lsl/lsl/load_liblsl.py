@@ -41,9 +41,9 @@ _SUPPORTED_DISTRO = {
 }
 # generic error message
 _ERROR_MSG = (
-    "Please visit liblsl library github page "
-    + "(https://github.com/sccn/liblsl) and install a release in the system "
-    + "directories or provide its path in the environment variable MNE_LSL_LIB."
+    "Please visit liblsl library github page (https://github.com/sccn/liblsl) and "
+    "install a release in the system directories or provide its path in the "
+    "environment variable MNE_LSL_LIB or PYLSL_LIB."
 )
 
 
@@ -68,7 +68,11 @@ def _find_liblsl() -> Optional[CDLL]:
     lib : CDLL | None
         Loaded binary LSL library. None if not found.
     """
-    for libpath in (os.environ.get("MNE_LSL_LIB", None), find_library("lsl")):
+    for libpath in (
+        os.environ.get("MNE_LSL_LIB", None),
+        os.environ.get("PYLSL_LIB", None),
+        find_library("lsl"),
+    ):
         if libpath is None:
             continue
 
