@@ -1,3 +1,4 @@
+import platform
 from pathlib import Path
 
 import pytest
@@ -42,6 +43,10 @@ def test_distro_support():
     assert _SUPPORTED_DISTRO["ubuntu"] == ("18.04", "20.04", "22.04")
 
 
+@pytest.mark.skipif(
+    platform.system().lower().strip() == "windows",
+    reason="PermissionError: [WinError 5] Access is denied",
+)
 @pytest.mark.xfail(raises=KeyError, reason="403 Forbidden Error on GitHub API request.")
 def test_fetch_liblsl(tmp_path):
     """Test on-the-fly fetch of liblsl."""
