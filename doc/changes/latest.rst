@@ -27,7 +27,7 @@ Enhancements
 Bugs
 ----
 
-- Fix flaky test on CIs (:pr:`168` by `Eric Larson`_ and `Mathieu Scheltienne`_)
+- Fix flaky tests on CIs (:pr:`168` by `Eric Larson`_ and `Mathieu Scheltienne`_)
 
 API and behavior changes
 ------------------------
