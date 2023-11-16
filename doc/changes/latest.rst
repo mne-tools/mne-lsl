@@ -28,6 +28,7 @@ Bugs
 ----
 
 - Fix flaky tests on CIs (:pr:`168` by `Eric Larson`_ and `Mathieu Scheltienne`_)
+- Fix re-download of existing ``liblsl`` on macOS and test ``liblsl`` fetching (:pr:`176` by `Mathieu Scheltienne`_)
 
 API and behavior changes
 ------------------------
