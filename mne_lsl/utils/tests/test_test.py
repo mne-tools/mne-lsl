@@ -1,16 +1,21 @@
 import numpy as np
 import pytest
-from mne.io import read_info, read_raw
+from mne.io import read_info, read_raw_fif
 
 from mne_lsl.datasets import testing
 from mne_lsl.utils._tests import compare_infos, match_stream_and_raw_data
 
-raw = read_raw(testing.data_path() / "sample-eeg-ant-raw.fif", preload=True)
-info = read_info(testing.data_path() / "sample_audvis_raw.fif")
+
+@pytest.fixture(scope="function")
+def _raw_without_samples():
+    fname = testing.data_path() / "sample-eeg-ant-raw.fif"
+    return read_raw_fif(fname, preload=True)
 
 
-def test_match_stream_and_raw_data():
+@pytest.mark.parametrize("raw_object", ("raw", "_raw_without_samples"))
+def test_match_stream_and_raw_data(raw_object, request):
     """Test that the data match works as intended."""
+    raw = request.getfixturevalue(raw_object)
     # test default working match
     data = raw.get_data()  # (n_channels, n_samples)
     match_stream_and_raw_data(data[:, 10:100], raw)
@@ -31,16 +36,23 @@ def test_match_stream_and_raw_data():
     match_stream_and_raw_data(np.hstack((data[:, -1:], data[:, :1])), raw)
 
     # tolerance error
-    with pytest.raises(AssertionError, match="Not equal to tolerance"):
+    with pytest.raises(
+        AssertionError, match="(Not equal to tolerance)|(Arrays are not equal)"
+    ):
         match_stream_and_raw_data(np.hstack((data[:, :200], data[:, 1700:])), raw)
 
     # shape error
-    with pytest.raises(ValueError, match="operands could not be broadcast together"):
+    with pytest.raises(
+        (ValueError, AssertionError),
+        match="(Not equal to tolerance)|(operands could not be broadcast together)",
+    ):
         match_stream_and_raw_data(data[:10, 10:100], raw)
 
 
-def test_compare_infos():
+def test_compare_infos(raw):
     """Test that the partial info comparison works as intended."""
+    info = read_info(testing.data_path() / "sample_audvis_raw.fif")
+
     with pytest.raises(AssertionError):
         compare_infos(info, raw.info)
 

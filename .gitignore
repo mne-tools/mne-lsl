@@ -130,6 +130,9 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+# VSCode
+.vscode
+
 # --------------------------------------------------------------------------------------
 .DS_Store
 __pycache__

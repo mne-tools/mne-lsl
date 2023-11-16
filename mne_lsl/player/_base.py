@@ -8,12 +8,12 @@ from mne import rename_channels
 from mne.io import read_raw
 from mne.utils import check_version
 
-if check_version("mne", "1.5"):
-    from mne.io.meas_info import ContainsMixin, SetChannelsMixin
-    from mne.io.pick import _picks_to_idx
-elif check_version("mne", "1.6"):
+if check_version("mne", "1.6"):
     from mne._fiff.meas_info import ContainsMixin, SetChannelsMixin
     from mne._fiff.pick import _picks_to_idx
+elif check_version("mne", "1.5"):
+    from mne.io.meas_info import ContainsMixin, SetChannelsMixin
+    from mne.io.pick import _picks_to_idx
 else:
     from mne.io.meas_info import ContainsMixin
     from mne.io.pick import _picks_to_idx
@@ -51,7 +51,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
     """
 
     @abstractmethod
-    def __init__(self, fname: Union[str, Path], chunk_size: int = 16) -> None:
+    def __init__(self, fname: Union[str, Path], chunk_size: int = 64) -> None:
         self._fname = ensure_path(fname, must_exist=True)
         self._chunk_size = ensure_int(chunk_size, "chunk_size")
         if self._chunk_size <= 0:
@@ -293,10 +293,12 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
     def __enter__(self):
         """Context manager entry point."""
         self.start()
+        return self
 
     def __exit__(self, exc_type, exc_value, exc_tracebac):
         """Context manager exit point."""
-        self.stop()
+        if self._streaming_thread is not None:  # might have called stop manually
+            self.stop()
 
     @staticmethod
     def __repr__(self):

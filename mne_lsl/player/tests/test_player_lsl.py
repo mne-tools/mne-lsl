@@ -2,7 +2,6 @@ from pathlib import Path
 
 import numpy as np
 import pytest
-from mne.io import read_raw
 from mne.utils import check_version
 from numpy.testing import assert_allclose
 
@@ -12,21 +11,17 @@ else:
     from mne.io.constants import FIFF
 
 from mne_lsl import logger
-from mne_lsl.datasets import testing
 from mne_lsl.lsl import StreamInlet, local_clock, resolve_streams
 from mne_lsl.player import PlayerLSL as Player
 from mne_lsl.utils._tests import match_stream_and_raw_data
 
 logger.propagate = True
 
-fname = testing.data_path() / "sample-eeg-ant-raw.fif"
-raw = read_raw(fname, preload=True)
 
-
-def test_player(caplog):
+def test_player(caplog, fname, raw, close_io):
     """Test a working and valid player."""
     name = "Player-test_player"
-    player = Player(fname, name, 16)
+    player = Player(fname, name)
     assert "OFF" in player.__repr__()
     streams = resolve_streams(timeout=0.1)
     assert len(streams) == 0
@@ -73,16 +68,15 @@ def test_player(caplog):
 
     # check that the returned data array is in raw
     match_stream_and_raw_data(data.T, raw)
-    del inlet
-    player.stop()
+    close_io()
 
 
-def test_player_context_manager():
+def test_player_context_manager(fname):
     """Test a working and valid player as context manager."""
     name = "Player-test_player_context_manager"
     streams = resolve_streams(timeout=0.1)
     assert len(streams) == 0
-    with Player(fname, name, 16):
+    with Player(fname, name):
         streams = resolve_streams(timeout=0.1)
         assert len(streams) == 1
         assert streams[0].name == name
@@ -90,7 +84,7 @@ def test_player_context_manager():
     assert len(streams) == 0
 
 
-def test_player_invalid_arguments():
+def test_player_invalid_arguments(fname):
     """Test creation of a player with invalid arguments."""
     with pytest.raises(FileNotFoundError, match="does not exist"):
         Player("invalid-fname.something")
@@ -104,81 +98,76 @@ def test_player_invalid_arguments():
         Player(fname, name="101", chunk_size=-101)
 
 
-def test_player_stop_invalid():
+def test_player_stop_invalid(fname):
     """Test stopping a player that is not started."""
-    player = player = Player(fname, "Player-test_stop_player_invalid", 16)
+    player = Player(fname, "Player-test_stop_player_invalid")
     with pytest.raises(RuntimeError, match="The player is not started"):
         player.stop()
     player.start()
     player.stop()
 
 
-def test_player_unit():
+def test_player_unit(mock_lsl_stream, raw, close_io):
     """Test getting and setting the player channel units."""
-    name = "Player-test_player_unit"
-    player = Player(fname, name, 16)
+    player = mock_lsl_stream
+    name = player.name
     assert player.get_channel_types() == raw.get_channel_types()
     assert player.get_channel_types(unique=True) == raw.get_channel_types(unique=True)
     ch_units = player.get_channel_units()
-    assert ch_units == [(FIFF.FIFF_UNIT_V, FIFF.FIFF_UNITM_NONE)] * len(player.ch_names)
+    assert ch_units == [(FIFF.FIFF_UNIT_NONE, FIFF.FIFF_UNITM_NONE)] + [
+        (FIFF.FIFF_UNIT_V, FIFF.FIFF_UNITM_NONE)
+    ] * (len(player.ch_names) - 1)
 
     # try setting channel units on a started player
-    player.start()
     with pytest.raises(RuntimeError, match="player is already started"):
-        player.set_channel_units({"Fp1": -6, "Fpz": "uv", "Fp2": "microvolts"})
+        player.set_channel_units({"F7": -6, "Fpz": "uv", "Fp2": "microvolts"})
     inlet = _create_inlet(name)
     data, _ = inlet.pull_chunk()
     match_stream_and_raw_data(data.T, raw)
-    del inlet
-    player.stop()
+    close_io()
 
     # try setting channel units after stopping the player
-    player.set_channel_units({"Fp1": -6, "Fpz": "uv", "Fp2": "microvolts"})
+    player.set_channel_units({"F7": -6, "Fpz": "uv", "Fp2": "microvolts"})
     player.start()
     inlet = _create_inlet(name)
     data, _ = inlet.pull_chunk()
-    raw_ = raw.copy().apply_function(lambda x: x * 1e6, picks=["Fp1", "Fpz", "Fp2"])
+    raw_ = raw.copy().apply_function(lambda x: x * 1e6, picks=["F7", "Fpz", "Fp2"])
     match_stream_and_raw_data(data.T, raw_)
-    del inlet
-    player.stop()
+    close_io()
 
     # try re-setting the channel unit
-    player.set_channel_units({"Fp1": -3})
+    player.set_channel_units({"F7": -3})
     player.start()
     inlet = _create_inlet(name)
     data, _ = inlet.pull_chunk()
     raw_ = raw.copy()
-    raw_.apply_function(lambda x: x * 1e3, picks="Fp1")
+    raw_.apply_function(lambda x: x * 1e3, picks="F7")
     raw_.apply_function(lambda x: x * 1e6, picks=["Fpz", "Fp2"])
     match_stream_and_raw_data(data.T, raw_)
-    del inlet
-    player.stop()
+    close_io()
 
 
-def test_player_rename_channels():
+def test_player_rename_channels(mock_lsl_stream, raw, close_io):
     """Test channel renaming."""
-    name = "Player-test_player_unit"
-    player = Player(fname, name, 16)
+    player = mock_lsl_stream
+    name = player.name
     assert player._sinfo.get_channel_names() == player.info["ch_names"]
-    player.start()
     with pytest.raises(RuntimeError, match="player is already started"):
-        player.rename_channels(mapping={"Fp1": "EEG1"})
+        player.rename_channels(mapping={"F7": "EEG1"})
     inlet = _create_inlet(name)
     sinfo = inlet.get_sinfo()
     assert sinfo.get_channel_names() == player.info["ch_names"]
-    del inlet
-    player.stop()
+    close_io()
 
     # test changing channel names
-    player.rename_channels({"Fp1": "EEG1", "Fp2": "EEG2"})
-    raw_ = raw.copy().rename_channels({"Fp1": "EEG1", "Fp2": "EEG2"})
+    player.rename_channels({"F7": "EEG1", "Fp2": "EEG2"})
+    raw_ = raw.copy().rename_channels({"F7": "EEG1", "Fp2": "EEG2"})
     player.start()
     inlet = _create_inlet(name)
     sinfo = inlet.get_sinfo()
     assert sinfo.get_channel_names() == player.info["ch_names"]
     assert sinfo.get_channel_names() == raw_.info["ch_names"]
-    del inlet
-    player.stop()
+    close_io()
 
     # test re-changing the channel names
     player.rename_channels({"EEG1": "EEG101", "EEG2": "EEG202"})
@@ -188,46 +177,41 @@ def test_player_rename_channels():
     sinfo = inlet.get_sinfo()
     assert sinfo.get_channel_names() == player.info["ch_names"]
     assert sinfo.get_channel_names() == raw_.info["ch_names"]
-    del inlet
-    player.stop()
+    close_io()
 
 
-def test_player_set_channel_types():
+def test_player_set_channel_types(mock_lsl_stream, raw, close_io):
     """Test channel type setting."""
-    name = "Player-test_player_types"
-    player = Player(fname, name, 16)
+    player = mock_lsl_stream
+    name = player.name
     assert player._sinfo.get_channel_types() == player.get_channel_types(unique=False)
     assert player.get_channel_types(unique=False) == raw.get_channel_types(unique=False)
-    player.start()
     with pytest.raises(RuntimeError, match="player is already started"):
-        player.set_channel_types(mapping={"Fp1": "misc"})
+        player.set_channel_types(mapping={"F7": "misc"})
     inlet = _create_inlet(name)
     sinfo = inlet.get_sinfo()
     assert sinfo.get_channel_types() == player.get_channel_types(unique=False)
-    del inlet
-    player.stop()
+    close_io()
 
     # test changing types
-    player.set_channel_types(mapping={"Fp1": "eog", "Fp2": "eog"})
-    raw_ = raw.copy().set_channel_types(mapping={"Fp1": "eog", "Fp2": "eog"})
+    player.set_channel_types(mapping={"F7": "eog", "Fp2": "eog"})
+    raw_ = raw.copy().set_channel_types(mapping={"F7": "eog", "Fp2": "eog"})
     player.start()
     inlet = _create_inlet(name)
     sinfo = inlet.get_sinfo()
     assert sinfo.get_channel_types() == player.get_channel_types(unique=False)
     assert sinfo.get_channel_types() == raw_.get_channel_types(unique=False)
-    del inlet
-    player.stop()
+    close_io()
 
     # test rechanging types
-    player.set_channel_types(mapping={"Fp1": "eeg", "Fp2": "ecg"})
+    player.set_channel_types(mapping={"F7": "eeg", "Fp2": "ecg"})
     raw_ = raw.copy().set_channel_types(mapping={"Fp2": "ecg"})
     player.start()
     inlet = _create_inlet(name)
     sinfo = inlet.get_sinfo()
     assert sinfo.get_channel_types() == player.get_channel_types(unique=False)
     assert sinfo.get_channel_types() == raw_.get_channel_types(unique=False)
-    del inlet
-    player.stop()
+    close_io()
 
     # test unique
     assert sorted(player.get_channel_types(unique=True)) == sorted(

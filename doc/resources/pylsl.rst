@@ -69,8 +69,8 @@ present in the :py:attr:`mne_lsl.lsl.StreamInfo.desc` property.
 Improve arguments
 ~~~~~~~~~~~~~~~~~
 
-The arguments of a `~mne_lsl.lsl.StreamInfo`, `~mne_lsl.lsl.StreamInlet`,
-`~mne_lsl.lsl.StreamOutlet` support a wider variety of types. For instance:
+The arguments of a :class:`~mne_lsl.lsl.StreamInfo`, :class:`~mne_lsl.lsl.StreamInlet`,
+:class:`~mne_lsl.lsl.StreamOutlet` support a wider variety of types. For instance:
 
 * ``dtype``, which correspond to the ``channel_format`` in `pylsl <lsl python_>`_, can
   be provided as a string or as a supported :class:`numpy.dtype`, e.g. ``np.int8``.

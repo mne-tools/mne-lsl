@@ -11,14 +11,14 @@ from mne import pick_info, pick_types
 from mne.channels import rename_channels
 from mne.utils import check_version
 
-if check_version("mne", "1.5"):
-    from mne.io.constants import FIFF, _ch_unit_mul_named
-    from mne.io.meas_info import ContainsMixin, SetChannelsMixin
-    from mne.io.pick import _picks_to_idx
-elif check_version("mne", "1.6"):
+if check_version("mne", "1.6"):
     from mne._fiff.constants import FIFF, _ch_unit_mul_named
     from mne._fiff.meas_info import ContainsMixin, SetChannelsMixin
     from mne._fiff.pick import _picks_to_idx
+elif check_version("mne", "1.5"):
+    from mne.io.constants import FIFF, _ch_unit_mul_named
+    from mne.io.meas_info import ContainsMixin, SetChannelsMixin
+    from mne.io.pick import _picks_to_idx
 else:
     from mne.io.constants import FIFF, _ch_unit_mul_named
     from mne.io.meas_info import ContainsMixin
@@ -70,6 +70,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
     def __del__(self):
         """Try to disconnect the stream when deleting the object."""
+        logger.debug("Deleting %s", self)
         try:
             self.disconnect()
         except Exception:
@@ -390,7 +391,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             # Support channel selection since the performance impact is small.
             # >>> %timeit _picks_to_idx(raw.info, "eeg")
             # 256 µs ± 5.03 µs per loop
-            # >>> %timeit _picks_to_idx(raw.info, ["Fp1", "vEOG"])
+            # >>> %timeit _picks_to_idx(raw.info, ["F7", "vEOG"])
             # 8.68 µs ± 113 ns per loop
             # >>> %timeit _picks_to_idx(raw.info, None)
             # 253 µs ± 1.22 µs per loop
@@ -722,9 +723,11 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         self._interrupt = True
         while self._acquisition_thread.is_alive():
             self._acquisition_thread.cancel()
-        yield
-        self._interrupt = False
-        self._create_acquisition_thread(0)
+        try:  # ensure "finally" is reached even when failures occur
+            yield
+        finally:
+            self._interrupt = False
+            self._create_acquisition_thread(0)
 
     def _pick(self, picks: NDArray[+ScalarIntType]) -> None:
         """Interrupt acquisition and apply the channel selection."""
@@ -806,11 +809,11 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             "_picks_inlet",
             "_timestamps",
         )
-        if all(getattr(self, attr) is None for attr in attributes):
+        if all(getattr(self, attr, None) is None for attr in attributes):
             return False
         else:
             # sanity-check
-            assert not any(getattr(self, attr) is None for attr in attributes)
+            assert not any(getattr(self, attr, None) is None for attr in attributes)
             return True
 
     @property

@@ -1,5 +1,6 @@
 from __future__ import annotations  # c.f. PEP 563, PEP 649
 
+import os
 from math import ceil
 from typing import TYPE_CHECKING
 
@@ -66,26 +67,21 @@ class StreamLSL(BaseStream):
 
     def __repr__(self):
         """Representation of the instance."""
-        if self.connected:
+        try:
+            conn = self.connected
+        except AssertionError:  # can raise on `assert`, e.g., in mid-disconnect or del
+            conn = False
+        if conn:
             status = "ON"
-            if len(self._source_id) != 0:
-                desc = f"{self._name} (source: {self._source_id})"
-            else:
-                desc = f"{self._name} (source: unknown)"
+            desc = f"{self._name} (source: {self._source_id or 'unknown'})"
         else:
             status = "OFF"
-            if self._name is not None and self._source_id is not None:
-                if len(self._source_id) != 0:
-                    desc = f"{self._name} (source: {self._source_id})"
-                else:
-                    desc = f"{self._name} (source: unknown)"
-            elif self._name is not None and self._source_id is None:
-                desc = f"{self._name} (source: unknown)"
-            elif self._name is None and self._source_id is not None:
-                if len(self._source_id) != 0:
-                    desc = f"(source: {self._source_id}"
-                else:
-                    desc = None
+            _name = getattr(self, "_name", None)  # could be del'ed
+            _source_id = getattr(self, "_source_id", "")
+            if _name is not None:
+                desc = f"{_name} (source: {_source_id or 'unknown'})"
+            elif _source_id:
+                desc = f"(source: {self._source_id}"
             else:
                 desc = None
         if desc is None:
@@ -174,7 +170,7 @@ class StreamLSL(BaseStream):
         self._info = self._sinfo.get_channel_info()
         # initiate time-correction
         tc = self._inlet.time_correction(timeout=timeout)
-        logger.info("The estimated timestamp offset is %.2f seconds.", tc)
+        logger.info("The estimated timestamp offset is %.2f ms.", tc * 1000)
         # create buffer of shape (n_samples, n_channels) and (n_samples,)
         if self._inlet.sfreq == 0:
             self._buffer = np.zeros(
@@ -197,22 +193,31 @@ class StreamLSL(BaseStream):
     def disconnect(self) -> None:
         """Disconnect from the LSL stream and interrupt data collection."""
         super().disconnect()
-        self._inlet.close_stream()
-        del self._inlet
-        self._reset_variables()
+        logger.debug("Calling inlet.close_stream() for %s", str(self))
+        self._inlet = None  # prevent _acquire from being called
+        self._reset_variables()  # also sets self._inlet = None
 
     def _acquire(self) -> None:
         """Update function pulling new samples in the buffer at a regular interval."""
+        if not getattr(self, "_inlet", None):
+            return  # stream disconnected
+        if getattr(self, "_interrupt", False):
+            return  # stream interrupted (don't continue)
         try:
             # pull data
             data, timestamps = self._inlet.pull_chunk(timeout=0.0)
             if timestamps.size == 0:
                 if not self._interrupt:
                     self._create_acquisition_thread(self._acquisition_delay)
-                return None  # interrupt early
+                return  # interrupt early
 
             # process acquisition window
-            data = data[:, self._picks_inlet]
+            n_channels = self._inlet.n_channels
+            assert data.ndim == 2 and data.shape[-1] == n_channels, (
+                data.shape,
+                n_channels,
+            )
+            data = data[:, self._picks_inlet]  # subselect channels
             if len(self._added_channels) != 0:
                 refs = np.zeros(
                     (timestamps.size, len(self._added_channels)), dtype=self.dtype
@@ -226,12 +231,19 @@ class StreamLSL(BaseStream):
             # roll and update buffers
             self._buffer = np.roll(self._buffer, -timestamps.size, axis=0)
             self._timestamps = np.roll(self._timestamps, -timestamps.size, axis=0)
-            # fmt: off
-            self._buffer[-timestamps.size :, :] = data[-self._timestamps.size :, :]  # noqa: E203, E501
-            self._timestamps[-timestamps.size :] = timestamps[-self._timestamps.size :]  # noqa: E203, E501
-            # fmt: on
+            assert self._buffer.ndim == 2
+            assert self._buffer.shape[1] == data.shape[1], (
+                self._buffer.shape,
+                data.shape,
+                n_channels,
+                self._picks_inlet.size,
+            )
+            # select the last self._timestamps.size samples from data and timestamps in
+            # case more samples than the buffer can hold were retrieved.
+            self._buffer[-timestamps.size :, :] = data[-self._timestamps.size :, :]
+            self._timestamps[-timestamps.size :] = timestamps[-self._timestamps.size :]
             # update the number of new samples available
-            self._n_new_samples += min(timestamps.size, self.n_buffer)
+            self._n_new_samples += min(timestamps.size, self._timestamps.size)
             if (
                 self._timestamps.size < self._n_new_samples
                 or self._timestamps.size < timestamps.size
@@ -245,6 +257,8 @@ class StreamLSL(BaseStream):
         except Exception as error:
             logger.exception(error)
             self._reset_variables()  # disconnects from the stream
+            if os.getenv("MNE_LSL_RAISE_STREAM_ERRORS", "false").lower() == "true":
+                raise
         else:
             if not self._interrupt:
                 self._create_acquisition_thread(self._acquisition_delay)
@@ -278,11 +292,11 @@ class StreamLSL(BaseStream):
         )
         if super().connected:
             # sanity-check
-            assert not any(getattr(self, attr) is None for attr in attributes)
+            assert not any(getattr(self, attr, None) is None for attr in attributes)
             return True
         else:
             # sanity-check
-            assert all(getattr(self, attr) is None for attr in attributes)
+            assert all(getattr(self, attr, None) is None for attr in attributes)
             return False
 
     @property
