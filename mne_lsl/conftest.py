@@ -68,10 +68,13 @@ def pytest_sessionfinish(session, exitstatus) -> None:
 
 
 def _closer():
-    # We cannot rely on just "del inlet" / "del outlet" because Python's garbage
-    # collector can run whenever it feels like it, and AFAIK the garbage collection
-    # order is not guaranteed. So let's explicitly __del__ ourselves, knowing that
-    # our __del__s are smart enough to be no-ops if called more than once.
+    """Delete inlet, outlet, and player vars if present.
+
+    We cannot rely on just "del inlet" / "del outlet" because Python's garbage collector
+    can run whenever it feels like it, and AFAIK the garbage collection order is not
+    guaranteed. So let's explicitly __del__ ourselves, knowing that our __del__s are
+    smart enough to be no-ops if called more than once.
+    """
     loc = inspect.currentframe().f_back.f_locals
     for name in ("inlet", "outlet"):
         if name in loc:
@@ -108,7 +111,7 @@ def raw(fname) -> Raw:
 @fixture(scope="function")
 def mock_lsl_stream(fname, request):
     """Create a mock LSL stream for testing."""
-    # nest PlayerLSL import so temp config gets written first
+    # nest the PlayerLSL import to first write the temporary LSL configuration file
     from mne_lsl.player import PlayerLSL  # noqa: E402
 
     name = f"P_{request.node.name}"
