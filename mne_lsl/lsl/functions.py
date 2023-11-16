@@ -106,7 +106,6 @@ def resolve_streams(
         streams = [_BaseStreamInfo(buffer[k]) for k in range(num_found)]
         streams = list(set(streams))  # remove duplicates
         return streams
-
     minimum = ensure_int(minimum, "minimum")
     if minimum <= 0:
         raise ValueError(
@@ -127,7 +126,6 @@ def resolve_streams(
         check_type(prop, (str,), name)
         # rename properties for lsl compatibility
         name = "type" if name == "stype" else name
-
         num_found = lib.lsl_resolve_byprop(
             byref(buffer),
             1024,
@@ -137,7 +135,7 @@ def resolve_streams(
             c_double(timeout),
         )
         new_streams = [_BaseStreamInfo(buffer[k]) for k in range(num_found)]
-        # now delete the ones that dn't have all the correct properties
+        # now delete the ones that don't have all the correct properties
         stream2delete = list()
         for k, stream in enumerate(new_streams):
             for prop, name in properties:
