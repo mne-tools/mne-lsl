@@ -4,6 +4,7 @@
 [![tests](https://github.com/mne-tools/mne-lsl/actions/workflows/pytest.yml/badge.svg?branch=main)](https://github.com/mne-tools/mne-lsl/actions/workflows/pytest.yml)
 [![doc](https://github.com/mne-tools/mne-lsl/actions/workflows/doc.yml/badge.svg?branch=main)](https://github.com/mne-tools/mne-lsl/actions/workflows/doc.yml)
 [![PyPI version](https://badge.fury.io/py/mne-lsl.svg)](https://badge.fury.io/py/mne-lsl)
+[![Downloads](https://static.pepy.tech/badge/mne-lsl)](https://pepy.tech/project/mne-lsl)
 [![Conda Version](https://img.shields.io/conda/vn/conda-forge/mne-lsl.svg)](https://anaconda.org/conda-forge/mne-lsl)
 [![Conda Downloads](https://img.shields.io/conda/dn/conda-forge/mne-lsl.svg)](https://anaconda.org/conda-forge/mne-lsl)
 [![Conda Platforms](https://img.shields.io/conda/pn/conda-forge/mne-lsl.svg)](https://anaconda.org/conda-forge/mne-lsl)

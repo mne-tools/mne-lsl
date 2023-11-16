@@ -42,8 +42,8 @@ size is specified at instantiation through the ``bufsize`` argument.
 # * The "tail" pointer, also called "end" or "write", which corresponds to the next
 #   data block that will be overwritten with new data.
 #
-# With a `~mne_lsl.stream.StreamLSL`, the pointers are hidden and the head pointer is
-# always updated to the last received sample.
+# With a :class:`~mne_lsl.stream.StreamLSL`, the pointers are hidden and the head
+# pointer is always updated to the last received sample.
 
 # %%
 # Connect to a Stream
@@ -87,8 +87,8 @@ stream.connect(acquisition_delay=0.2)
 stream.info
 
 # %%
-# Depending on the LSL Stream source, the `~mne_lsl.stream.StreamLSL` may or may not be
-# able to correctly read the channel names, types and units.
+# Depending on the LSL Stream source, the :class:`~mne_lsl.stream.StreamLSL` may or may
+# not be able to correctly read the channel names, types and units.
 #
 # * If the channel names are not readable or present, numbers will be used.
 # * If the channel types are not readable or present, the stream type or ``'misc'`` will

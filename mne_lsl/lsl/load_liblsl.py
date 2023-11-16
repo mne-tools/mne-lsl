@@ -41,9 +41,9 @@ _SUPPORTED_DISTRO = {
 }
 # generic error message
 _ERROR_MSG = (
-    "Please visit liblsl library github page "
-    + "(https://github.com/sccn/liblsl) and install a release in the system "
-    + "directories or provide its path in the environment variable MNE_LSL_LIB."
+    "Please visit liblsl library github page (https://github.com/sccn/liblsl) and "
+    "install a release in the system directories or provide its path in the "
+    "environment variable MNE_LSL_LIB or PYLSL_LIB."
 )
 
 
@@ -68,7 +68,11 @@ def _find_liblsl() -> Optional[CDLL]:
     lib : CDLL | None
         Loaded binary LSL library. None if not found.
     """
-    for libpath in (os.environ.get("MNE_LSL_LIB", None), find_library("lsl")):
+    for libpath in (
+        os.environ.get("MNE_LSL_LIB", None),
+        os.environ.get("PYLSL_LIB", None),
+        find_library("lsl"),
+    ):
         if libpath is None:
             continue
 
@@ -114,8 +118,13 @@ def _find_liblsl() -> Optional[CDLL]:
     return lib
 
 
-def _fetch_liblsl() -> Optional[CDLL]:
+def _fetch_liblsl(folder: Path = files("mne_lsl.lsl") / "lib") -> Optional[CDLL]:
     """Fetch liblsl on the release page.
+
+    Parameters
+    ----------
+    folder : Path
+        Folder where the fetched liblsl is stored.
 
     Returns
     -------
@@ -206,7 +215,7 @@ def _fetch_liblsl() -> Optional[CDLL]:
         )
 
     asset = assets[0]
-    folder = files("mne_lsl.lsl") / "lib"
+    logger.debug("Fetching liblsl into '%s'.", folder)
     try:
         os.makedirs(folder, exist_ok=True)
     except Exception as error:
@@ -215,7 +224,13 @@ def _fetch_liblsl() -> Optional[CDLL]:
             "MNE-LSL could not create the directory 'lib' in which to download liblsl "
             "for your platform. " + _ERROR_MSG
         )
-    libpath = (folder / asset["name"]).with_suffix(_PLATFORM_SUFFIXES[_PLATFORM])
+    if _PLATFORM == "darwin":
+        libpath = (
+            folder
+            / f"{asset['name'].split('.tar.bz2')[0]}{_PLATFORM_SUFFIXES['darwin']}"
+        )
+    else:
+        libpath = (folder / asset["name"]).with_suffix(_PLATFORM_SUFFIXES[_PLATFORM])
     if libpath.exists():
         _, version = _attempt_load_liblsl(libpath)
         if version is None:
@@ -265,9 +280,9 @@ def _pooch_processor_liblsl(fname: str, action: str, pooch: Pooch) -> str:
     fname : str
         The full path to the file in the local data storage.
     """
-    folder = files("mne_lsl.lsl") / "lib"
     fname = Path(fname)
-    uncompressed = folder / f"{fname.name}.archive"
+    uncompressed = fname.with_suffix(".archive")
+    logger.debug("Processing %s with pooch.", fname)
 
     if _PLATFORM == "linux" and fname.suffix == ".deb":
         os.makedirs(uncompressed, exist_ok=True)
@@ -307,7 +322,8 @@ def _pooch_processor_liblsl(fname: str, action: str, pooch: Pooch) -> str:
             if file.is_symlink() or file.parent.name != "lib":
                 continue
             break
-        target = (folder / fname.name).with_suffix(_PLATFORM_SUFFIXES["linux"])
+        target = fname.with_suffix(_PLATFORM_SUFFIXES["linux"])
+        logger.debug("Moving '%s' to '%s'.", file, target)
         move(file, target)
 
     elif _PLATFORM == "linux":
@@ -321,8 +337,10 @@ def _pooch_processor_liblsl(fname: str, action: str, pooch: Pooch) -> str:
                 continue
             break
         target = (
-            folder / f"{fname.name.split('.tar.bz2')[0]}{_PLATFORM_SUFFIXES['darwin']}"
+            fname.parent
+            / f"{fname.name.split('.tar.bz2')[0]}{_PLATFORM_SUFFIXES['darwin']}"
         )
+        logger.debug("Moving '%s' to '%s'.", file, target)
         move(file, target)
 
     elif _PLATFORM == "windows":
@@ -335,7 +353,8 @@ def _pooch_processor_liblsl(fname: str, action: str, pooch: Pooch) -> str:
             ):
                 continue
             break
-        target = (folder / fname.name).with_suffix(_PLATFORM_SUFFIXES["windows"])
+        target = fname.with_suffix(_PLATFORM_SUFFIXES["windows"])
+        logger.debug("Moving '%s' to '%s'.", file, target)
         move(file, target)
 
     # clean-up

@@ -49,9 +49,9 @@ def create_info(
     n_channels: int,
     sfreq: float,
     stype: str,
-    desc: Optional[_BaseStreamInfo, dict[str, Any]],
+    desc: Optional[Union[_BaseStreamInfo, dict[str, Any]]],
 ) -> Info:
-    """Create a minimal `mne.Info` object from an LSL stream attributes.
+    """Create a minimal :class:`mne.Info` object from an LSL stream attributes.
 
     Parameters
     ----------
@@ -64,20 +64,20 @@ def create_info(
         an unknown type. If the ``stype`` provided is not among the MNE-known channel
         types, defaults to ``'misc'``.
     desc : StreamInfo | dict | None
-        If provided, dictionary or `~mne_lsl.lsl.StreamInfo` containing the channel
-        information. A `~mne_lsl.lsl.StreamInfo` contains the number of channels,
-        sampling frequency and stream type, which will be checked against the provided
-        arguments ``n_channels``, ``sfreq`` and ``stype``.
+        If provided, dictionary or :class:`~mne_lsl.lsl.StreamInfo` containing the
+        channel information. A `~mne_lsl.lsl.StreamInfo` contains the number of
+        channels,csampling frequency and stream type, which will be checked against the
+        providedcarguments ``n_channels``, ``sfreq`` and ``stype``.
 
     Returns
     -------
     info : Info
-        MNE `~mne.Info` object corresponding.
+        MNE :class:`~mne.Info` object corresponding.
 
     Notes
     -----
     If the argument ``desc`` is not aligned with ``n_channels``, it is ignored and an
-    `mne.Info` with the number of channels definbed in ``n_channels`` is created.
+    :class:`mne.Info` with the number of channels definbed in ``n_channels`` is created.
     """
     from ..lsl.stream_info import _BaseStreamInfo
 

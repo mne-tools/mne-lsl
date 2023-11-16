@@ -11,15 +11,17 @@ from mne.utils import assert_object_equal
 from numpy.testing import assert_allclose, assert_array_equal
 
 if TYPE_CHECKING:
-    from typing import Callable
+    from pathlib import Path
+    from typing import Callable, Union
 
+    from mne import Info
     from mne.io import BaseRaw
     from numpy.typing import NDArray
 
     from .._typing import ScalarType
 
 
-def sha256sum(fname):
+def sha256sum(fname: Union[str, Path]) -> str:
     """Efficiently hash a file."""
     h = hashlib.sha256()
     b = bytearray(128 * 1024)
@@ -119,7 +121,7 @@ def requires_module(name: str):  # pragma: no cover
     return decorator
 
 
-def compare_infos(info1, info2):
+def compare_infos(info1: Info, info2: Info) -> None:
     """Check that 2 infos are similar, even if some minor attribute deviate."""
     assert info1["ch_names"] == info2["ch_names"]
     assert info1["highpass"] == info2["highpass"]

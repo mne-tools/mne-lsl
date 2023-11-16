@@ -256,7 +256,7 @@ class _BaseStreamInfo:
 
     @property
     def uid(self) -> str:
-        """Unique ID of the `~mne_lsl.lsl.StreamOutlet` instance.
+        """Unique ID of the :class:`~mne_lsl.lsl.StreamOutlet` instance.
 
         This ID is guaranteed to be different across multiple instantiations of the same
         :class:`~mne_lsl.lsl.StreamOutlet`, e.g. after a re-start.
@@ -283,7 +283,7 @@ class _BaseStreamInfo:
 
         This yields an XML document (in string form) whose top-level element is
         ``<info>``. The info element contains one element for each field of the
-        `~mne_lsl.lsl.StreamInfo` class, including:
+        :class:`~mne_lsl.lsl.StreamInfo` class, including:
 
         * the core elements ``name``, ``type`` (eq. ``stype``), ``channel_count``
           (eq. ``n_channels``), ``nominal_srate`` (eq. ``sfreq``), ``channel_format``
@@ -661,7 +661,7 @@ class _BaseStreamInfo:
         ----------
         ch_types : list of str | str
             List of channel types, matching the number of total channels.
-            If a single `str` is provided, the type is applied to all channels.
+            If a single :class:`str` is provided, the type is applied to all channels.
         """
         ch_types = (
             [ch_types] * self.n_channels if isinstance(ch_types, str) else ch_types
@@ -686,7 +686,7 @@ class _BaseStreamInfo:
 
         Notes
         -----
-        Some channel types doch_units not have a unit. The `str` ``none`` or the
+        Some channel types doch_units not have a unit. The :class:`str` ``none`` or the
         :class:`int` 0 should be used to denote this channel unit, corresponding to
         ``FIFF_UNITM_NONE`` in MNE-Python.
         """

@@ -232,7 +232,7 @@ class StreamInlet:
         time_correction : float
             Current estimate of the time correction. This number needs to be added to a
             timestamp that was remotely generated via ``local_clock()`` to map it into
-            the local clock domain of the client machine.
+            the :func:`~mne_lsl.lsl.local_clock` domain of the client machine.
         """
         timeout = _check_timeout(timeout)
         errcode = c_int()
