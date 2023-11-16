@@ -224,7 +224,13 @@ def _fetch_liblsl(folder: Path = files("mne_lsl.lsl") / "lib") -> Optional[CDLL]
             "MNE-LSL could not create the directory 'lib' in which to download liblsl "
             "for your platform. " + _ERROR_MSG
         )
-    libpath = (folder / asset["name"]).with_suffix(_PLATFORM_SUFFIXES[_PLATFORM])
+    if _PLATFORM == "darwin":
+        libpath = (
+            folder
+            / f"{asset['name'].split('.tar.bz2')[0]}{_PLATFORM_SUFFIXES['darwin']}"
+        )
+    else:
+        libpath = (folder / asset["name"]).with_suffix(_PLATFORM_SUFFIXES[_PLATFORM])
     if libpath.exists():
         _, version = _attempt_load_liblsl(libpath)
         if version is None:
