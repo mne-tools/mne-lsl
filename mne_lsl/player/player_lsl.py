@@ -71,7 +71,7 @@ class PlayerLSL(BasePlayer):
         self._sinfo.set_channel_names(self.info["ch_names"])
 
     def start(self) -> None:
-        """Start streaming data on the LSL `~mne_lsl.lsl.StreamOutlet`."""
+        """Start streaming data on the LSL :class:`~mne_lsl.lsl.StreamOutlet`."""
         if self._streaming_thread is not None:
             logger.warning(
                 "%s: The player is already started. "
