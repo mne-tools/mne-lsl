@@ -45,7 +45,7 @@ def test_distro_support():
 
 @pytest.mark.skipif(
     platform.system().lower().strip() == "windows",
-    reason="PermissionError: [WinError 5] Access is denied",
+    reason="PermissionError: [WinError 5] Access is denied.",
 )
 @pytest.mark.xfail(raises=KeyError, reason="403 Forbidden Error on GitHub API request.")
 def test_fetch_liblsl(tmp_path):
