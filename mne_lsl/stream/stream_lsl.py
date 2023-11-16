@@ -224,7 +224,7 @@ class StreamLSL(BaseStream):
                 )
                 data = np.hstack((data, refs), dtype=self.dtype)
 
-            if self.info["custom_ref_applied"] == FIFF.FIFFV_MNE_CUSTOM_REF_ON:
+            if self._info["custom_ref_applied"] == FIFF.FIFFV_MNE_CUSTOM_REF_ON:
                 data_ref = data[:, self._ref_channels].mean(axis=1, keepdims=True)
                 data[:, self._ref_from] -= data_ref
 
