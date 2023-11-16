@@ -1,6 +1,7 @@
+from pathlib import Path
+
 import pytest
 import requests
-from pathlib import Path
 
 from mne_lsl import __version__
 from mne_lsl.lsl.load_liblsl import (
