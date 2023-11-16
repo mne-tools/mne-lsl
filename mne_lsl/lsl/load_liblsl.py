@@ -215,6 +215,7 @@ def _fetch_liblsl(folder: Path = files("mne_lsl.lsl") / "lib") -> Optional[CDLL]
         )
 
     asset = assets[0]
+    logger.debug("Fetching liblsl into '%s'.", folder)
     try:
         os.makedirs(folder, exist_ok=True)
     except Exception as error:
@@ -273,9 +274,9 @@ def _pooch_processor_liblsl(fname: str, action: str, pooch: Pooch) -> str:
     fname : str
         The full path to the file in the local data storage.
     """
-    folder = files("mne_lsl.lsl") / "lib"
     fname = Path(fname)
-    uncompressed = folder / f"{fname.name}.archive"
+    uncompressed = fname.with_suffix(".archive")
+    logger.debug("Processing %s with pooch.", fname)
 
     if _PLATFORM == "linux" and fname.suffix == ".deb":
         os.makedirs(uncompressed, exist_ok=True)
@@ -315,7 +316,8 @@ def _pooch_processor_liblsl(fname: str, action: str, pooch: Pooch) -> str:
             if file.is_symlink() or file.parent.name != "lib":
                 continue
             break
-        target = (folder / fname.name).with_suffix(_PLATFORM_SUFFIXES["linux"])
+        target = fname.with_suffix(_PLATFORM_SUFFIXES["linux"])
+        logger.debug("Moving '%s' to '%s'.", file, target)
         move(file, target)
 
     elif _PLATFORM == "linux":
@@ -329,8 +331,10 @@ def _pooch_processor_liblsl(fname: str, action: str, pooch: Pooch) -> str:
                 continue
             break
         target = (
-            folder / f"{fname.name.split('.tar.bz2')[0]}{_PLATFORM_SUFFIXES['darwin']}"
+            fname.parent
+            / f"{fname.name.split('.tar.bz2')[0]}{_PLATFORM_SUFFIXES['darwin']}"
         )
+        logger.debug("Moving '%s' to '%s'.", file, target)
         move(file, target)
 
     elif _PLATFORM == "windows":
@@ -343,7 +347,8 @@ def _pooch_processor_liblsl(fname: str, action: str, pooch: Pooch) -> str:
             ):
                 continue
             break
-        target = (folder / fname.name).with_suffix(_PLATFORM_SUFFIXES["windows"])
+        target = fname.name.with_suffix(_PLATFORM_SUFFIXES["windows"])
+        logger.debug("Moving '%s' to '%s'.", file, target)
         move(file, target)
 
     # clean-up
