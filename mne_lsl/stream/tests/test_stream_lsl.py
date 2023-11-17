@@ -436,7 +436,7 @@ def test_stream_get_data_picks(mock_lsl_stream, acquisition_delay, raw):
 def test_stream_n_new_samples(mock_lsl_stream, caplog):
     """Test the number of new samples available."""
     stream = Stream(bufsize=0.4, name=mock_lsl_stream.name)
-    assert stream.n_new_samples is None
+    assert stream._n_new_samples is None
     stream.connect()
     time.sleep(0.1)  # give a bit of time to slower CIs
     assert stream.n_new_samples > 0
