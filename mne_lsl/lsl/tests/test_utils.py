@@ -59,4 +59,4 @@ def test_xml_element():
     assert xml.first_child().name() == "channels"
     assert xml.last_child().name() == "channels"
     assert xml.first_child().first_child().name() == "channel"
-    assert xml.first_child().first_child().name() == "channels"
+    assert xml.first_child().first_child().parent().name() == "channels"
