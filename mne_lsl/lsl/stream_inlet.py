@@ -11,10 +11,10 @@ import numpy as np
 from ..utils._checks import check_type, check_value, ensure_int
 from ..utils._docs import copy_doc
 from ..utils.logs import logger
+from ._utils import check_timeout, free_char_p_array_memory, handle_error
 from .constants import fmt2numpy, fmt2pull_chunk, fmt2pull_sample, post_processing_flags
 from .load_liblsl import lib
 from .stream_info import _BaseStreamInfo
-from ._utils import check_timeout, free_char_p_array_memory, handle_error
 
 if TYPE_CHECKING:
     from typing import Optional, Sequence, Union
