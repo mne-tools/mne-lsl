@@ -12,7 +12,7 @@ from ..utils.logs import logger
 from ..utils.meas_info import create_info
 from .constants import fmt2idx, fmt2numpy, idx2fmt, numpy2fmt, string2fmt
 from .load_liblsl import lib
-from .utils import XMLElement
+from ._utils import XMLElement
 
 if check_version("mne", "1.6"):
     from mne._fiff._digitization import DigPoint
