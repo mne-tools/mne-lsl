@@ -72,13 +72,13 @@ def test_stream(mock_lsl_stream, acquisition_delay, raw):
     """Test a valid Stream."""
     # test connect/disconnect
     stream = Stream(bufsize=2, name=mock_lsl_stream.name)
-    assert stream.info is None
+    assert stream._info is None
     assert not stream.connected
     stream.connect(acquisition_delay=acquisition_delay)
     assert isinstance(stream.info, Info)
     assert stream.connected
     stream.disconnect()
-    assert stream.info is None
+    assert stream._info is None
     assert not stream.connected
     stream.connect(acquisition_delay=acquisition_delay)
     assert isinstance(stream.info, Info)
@@ -139,7 +139,7 @@ def test_stream_invalid():
 def test_stream_connection_no_args(mock_lsl_stream):
     """Test connection to the only available stream."""
     stream = Stream(bufsize=2)
-    assert stream.info is None
+    assert stream._info is None
     assert not stream.connected
     assert stream.name is None
     assert stream.stype is None
