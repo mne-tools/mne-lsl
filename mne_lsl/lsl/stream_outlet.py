@@ -9,10 +9,10 @@ import numpy as np
 from ..utils._checks import check_type, ensure_int
 from ..utils._docs import copy_doc
 from ..utils.logs import logger
+from ._utils import check_timeout, handle_error
 from .constants import fmt2numpy, fmt2push_chunk, fmt2push_chunk_n, fmt2push_sample
 from .load_liblsl import lib
 from .stream_info import _BaseStreamInfo
-from .utils import _check_timeout, handle_error
 
 if TYPE_CHECKING:
     from typing import Optional, Union
@@ -275,7 +275,7 @@ class StreamOutlet:
         This function does not filter the search for :class:`mne_lsl.lsl.StreamInlet`.
         Any application inlet will be recognized.
         """
-        timeout = _check_timeout(timeout)
+        timeout = check_timeout(timeout)
         with self._lock:
             return bool(lib.lsl_wait_for_consumers(self._obj, c_double(timeout)))
 

@@ -761,9 +761,9 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
     @abstractmethod
     def _reset_variables(self) -> None:
         """Reset variables define after connection."""
-        self._info = None
-        self._acquisition_delay = None
         self._acquisition_thread = None
+        self._acquisition_delay = None
+        self._info = None
         self._interrupt = False
         self._buffer = None
         self._n_new_samples = None
@@ -822,28 +822,30 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         return getattr(self._buffer, "dtype", None)
 
     @property
-    def info(self) -> Optional[Info]:
+    def info(self) -> Info:
         """Info of the LSL stream.
 
-        :type: :class:`~mne.Info` | None
+        :type: :class:`~mne.Info`
         """
+        self._check_connected(name="info")
         return self._info
 
     @property
-    def n_buffer(self) -> Optional[int]:
+    def n_buffer(self) -> int:
         """Number of samples that can be stored in the buffer.
 
-        :type: :class:`int` | None
+        :type: :class:`int`
         """
         self._check_connected(name="n_buffer")
         return self._timestamps.size
 
     @property
-    def n_new_samples(self) -> Optional[int]:
+    def n_new_samples(self) -> int:
         """Number of new samples available in the buffer.
 
         The number of new samples is reset at every ``Stream.get_data`` call.
 
-        :type: :class:`int` | None
+        :type: :class:`int`
         """
+        self._check_connected(name="n_new_samples")
         return self._n_new_samples

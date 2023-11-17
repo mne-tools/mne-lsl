@@ -30,7 +30,7 @@ logger.propagate = True
 
 bad_gh_macos = pytest.mark.skipif(
     platform.system() == "Darwin" and os.getenv("GITHUB_ACTIONS", "") == "true",
-    reason="Unreliable on macOS CI",
+    reason="Unreliable on macOS CIs.",
 )
 
 
@@ -72,13 +72,13 @@ def test_stream(mock_lsl_stream, acquisition_delay, raw):
     """Test a valid Stream."""
     # test connect/disconnect
     stream = Stream(bufsize=2, name=mock_lsl_stream.name)
-    assert stream.info is None
+    assert stream._info is None
     assert not stream.connected
     stream.connect(acquisition_delay=acquisition_delay)
     assert isinstance(stream.info, Info)
     assert stream.connected
     stream.disconnect()
-    assert stream.info is None
+    assert stream._info is None
     assert not stream.connected
     stream.connect(acquisition_delay=acquisition_delay)
     assert isinstance(stream.info, Info)
@@ -139,7 +139,7 @@ def test_stream_invalid():
 def test_stream_connection_no_args(mock_lsl_stream):
     """Test connection to the only available stream."""
     stream = Stream(bufsize=2)
-    assert stream.info is None
+    assert stream._info is None
     assert not stream.connected
     assert stream.name is None
     assert stream.stype is None
@@ -436,7 +436,7 @@ def test_stream_get_data_picks(mock_lsl_stream, acquisition_delay, raw):
 def test_stream_n_new_samples(mock_lsl_stream, caplog):
     """Test the number of new samples available."""
     stream = Stream(bufsize=0.4, name=mock_lsl_stream.name)
-    assert stream.n_new_samples is None
+    assert stream._n_new_samples is None
     stream.connect()
     time.sleep(0.1)  # give a bit of time to slower CIs
     assert stream.n_new_samples > 0

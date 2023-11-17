@@ -184,7 +184,7 @@ def handle_error(errcode):
 
 
 # -- Memory function ----------------------------------------------------------
-def _free_char_p_array_memory(char_p_array):
+def free_char_p_array_memory(char_p_array):
     num_elements = len(char_p_array)
     pointers = cast(char_p_array, POINTER(c_void_p))
     for p in range(num_elements):
@@ -193,7 +193,7 @@ def _free_char_p_array_memory(char_p_array):
 
 
 # -- Static checker -----------------------------------------------------------
-def _check_timeout(timeout: Optional[float]) -> float:
+def check_timeout(timeout: Optional[float]) -> float:
     """Check that the provided timeout is valid.
 
     Parameters
