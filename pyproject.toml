@@ -143,6 +143,7 @@ branch = true
 cover_pylib = false
 omit = [
   '**/__init__.py',
+  '**/mne_lsl/_typing.py',
   '**/mne_lsl/_version.py',
   '**/mne_lsl/commands/*',
   '**/mne_lsl/conftest.py',

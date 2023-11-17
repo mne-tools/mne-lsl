@@ -52,7 +52,7 @@ def sys_info(fid: Optional[IO] = None, developer: bool = False):
             with _use_log_level("CRITICAL"), _use_log_level("WARNING", get_logger()):
                 from ..lsl import library_version
                 from ..lsl.load_liblsl import lib
-        except ImportError:
+        except ImportError:  # pragma: no cover
             with _use_log_level("CRITICAL"):
                 from ..lsl import library_version
                 from ..lsl.load_liblsl import lib
@@ -60,7 +60,7 @@ def sys_info(fid: Optional[IO] = None, developer: bool = False):
             "liblsl:".ljust(ljust)
             + f"{library_version() // 100}.{library_version() % 100} ({lib._name})\n"
         )
-    except Exception:
+    except Exception:  # pragma: no cover
         if unicode:
             out("liblsl:".ljust(ljust) + "⚠ not found ⚠\n")
         else:
@@ -86,7 +86,7 @@ def sys_info(fid: Optional[IO] = None, developer: bool = False):
                 for dep in dependencies
                 if all(elt in str(dep.marker) for elt in ("extra", key))
             ]
-            if len(extra_dependencies) == 0:
+            if len(extra_dependencies) == 0:  # pragma: no cover
                 continue
             out(f"\nOptional '{key}' dependencies\n")
             _list_dependencies_info(out, ljust, package, extra_dependencies, unicode)
@@ -126,7 +126,7 @@ def _list_dependencies_info(
                 from matplotlib import pyplot as plt
 
                 backend = plt.get_backend()
-            except Exception:
+            except Exception:  # pragma: no cover
                 backend = "Not found"
 
             output += f" (backend: {backend})"
