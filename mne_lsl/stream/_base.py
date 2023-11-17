@@ -761,9 +761,9 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
     @abstractmethod
     def _reset_variables(self) -> None:
         """Reset variables define after connection."""
-        self._info = None
-        self._acquisition_delay = None
         self._acquisition_thread = None
+        self._acquisition_delay = None
+        self._info = None
         self._interrupt = False
         self._buffer = None
         self._n_new_samples = None

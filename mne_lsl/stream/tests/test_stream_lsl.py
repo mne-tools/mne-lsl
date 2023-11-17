@@ -30,7 +30,7 @@ logger.propagate = True
 
 bad_gh_macos = pytest.mark.skipif(
     platform.system() == "Darwin" and os.getenv("GITHUB_ACTIONS", "") == "true",
-    reason="Unreliable on macOS CI",
+    reason="Unreliable on macOS CIs.",
 )
 
 
