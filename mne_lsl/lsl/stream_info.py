@@ -316,7 +316,7 @@ class _BaseStreamInfo:
         return XMLElement(lib.lsl_get_desc(self._obj))
 
     # -- Getters and setters for data description --------------------------------------
-    def get_channel_info(self) -> Info:
+    def (self) -> Info:
         """Get the FIFF measurement :class:`~mne.Info` in the description.
 
         Returns
@@ -346,37 +346,37 @@ class _BaseStreamInfo:
                 loc_array.append(value)
             locs.append(loc_array)
             ch = ch.next_sibling()
-        locs = np.array(locs)
+        locs = (
+            np.array([[np.nan] * 12] * self.n_channels)
+            if len(locs) == 0
+            else np.array(locs)
+        )
 
         with info._unlock(update_redundant=True):
-            for k, (kind, coil_type, coord_frame, range_cal, loc) in enumerate(
-                zip(kinds, coil_types, coord_frames, range_cals, locs)
+            for var, name, fiff_named in (
+                (kinds, "kind", _ch_kind_named),
+                (coil_types, "coil_type", _ch_coil_type_named),
+                (coord_frames, "coord_frame", _coord_frame_named),
             ):
-                kind = _BaseStreamInfo._get_fiff_int_named(kind, "kind", _ch_kind_named)
-                if kind is not None:
-                    info["chs"][k]["kind"] = kind
+                if var is None:
+                    continue
+                for k, value in enumerate(var):
+                    value = _BaseStreamInfo._get_fiff_int_named(value, name, fiff_named)
+                    if value is not None:
+                        info["chs"][k][name] = value
 
-                coil_type = _BaseStreamInfo._get_fiff_int_named(
-                    coil_type, "coil_type", _ch_coil_type_named
-                )
-                if coil_type is not None:
-                    info["chs"][k]["coil_type"] = coil_type
-
-                coord_frame = _BaseStreamInfo._get_fiff_int_named(
-                    coord_frame, "coord_frame", _coord_frame_named
-                )
-                if coord_frame is not None:
-                    info["chs"][k]["coord_frame"] = coord_frame
-
-                if range_cal is not None:
-                    try:
-                        info["chs"][k]["range"] = 1.0
-                        info["chs"][k]["cal"] = float(range_cal)
-                    except ValueError:
-                        logger.warning(
-                            "Could not cast 'range_cal' factor %s to float.", range_cal
-                        )
-
+            if range_cals is not None:
+                for k, range_cal in enumerate(range_cals):
+                    if range_cal is not None:
+                        try:
+                            info["chs"][k]["range"] = 1.0
+                            info["chs"][k]["cal"] = float(range_cal)
+                        except ValueError:
+                            logger.warning(
+                                "Could not cast 'range_cal' factor %s to float.",
+                                range_cal,
+                            )
+            for k, loc in enumerate(locs):
                 info["chs"][k]["loc"] = loc
 
         # filters
