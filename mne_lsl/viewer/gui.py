@@ -57,11 +57,3 @@ class ViewerPlotItem(PlotItem):
         self.axis_time.linkToView(self.getViewBox())
         self.axis_channel.linkToView(self.getViewBox())
         self.hideButtons()
-
-
-if __name__ == "__main__":
-    from qtpy.QtWidgets import QApplication
-
-    app = QApplication([])
-    window = Viewer()
-    app.exec()
