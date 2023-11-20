@@ -26,3 +26,4 @@ Version 1.1
 - Add support for the environment variable ``PYLSL_LIB`` to specify the path to a user-defined ``liblsl`` (:pr:`176` by `Mathieu Scheltienne`_)
 - Fix re-download of existing ``liblsl`` on macOS and test ``liblsl`` fetching (:pr:`176` by `Mathieu Scheltienne`_)
 - Make LSL utilities module private (:pr:`177` by `Mathieu Scheltienne`_)
+- Match argument order between ``BasePlayer`` and :class:`~mne_lsl.player.PlayerLSL` (:pr:`178` by `Mathieu Scheltienne`_)
