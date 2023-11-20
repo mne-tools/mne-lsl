@@ -114,6 +114,5 @@ def mock_lsl_stream(fname, request):
     # nest the PlayerLSL import to first write the temporary LSL configuration file
     from mne_lsl.player import PlayerLSL  # noqa: E402
 
-    name = f"P_{request.node.name}"
-    with PlayerLSL(fname, name) as player:
+    with PlayerLSL(fname, name=f"P_{request.node.name}") as player:
         yield player

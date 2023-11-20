@@ -24,12 +24,12 @@ class PlayerLSL(BasePlayer):
     fname : path-like
         Path to the file to re-play as a mock LSL stream. MNE-Python must be able to
         load the file with :func:`mne.io.read_raw`.
-    name : str | None
-        Name of the mock LSL stream. If ``None``, the name ``MNE-LSL-Player`` is used.
     chunk_size : int ``≥ 1``
         Number of samples pushed at once on the :class:`~mne_lsl.lsl.StreamOutlet`.
         If these chunks are too small then the thread-based timing might not work
         properly.
+    name : str | None
+        Name of the mock LSL stream. If ``None``, the name ``MNE-LSL-Player`` is used.
 
     Notes
     -----
@@ -39,7 +39,7 @@ class PlayerLSL(BasePlayer):
     """
 
     def __init__(
-        self, fname: Union[str, Path], name: Optional[str] = None, chunk_size: int = 64
+        self, fname: Union[str, Path], chunk_size: int = 64, name: Optional[str] = None
     ) -> None:
         super().__init__(fname, chunk_size)
         check_type(name, (str, None), "name")

@@ -54,7 +54,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
     def __init__(
         self,
         bufsize: float,
-    ):
+    ) -> None:
         check_type(bufsize, ("numeric",), "bufsize")
         if bufsize <= 0:
             raise ValueError(
@@ -64,7 +64,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         self._bufsize = bufsize
 
     @copy_doc(ContainsMixin.__contains__)
-    def __contains__(self, ch_type) -> bool:
+    def __contains__(self, ch_type: str) -> bool:
         self._check_connected("the 'in' operator")
         return super().__contains__(ch_type)
 
@@ -77,7 +77,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             pass
 
     @abstractmethod
-    def __repr__(self):
+    def __repr__(self) -> str:  # pragma: no cover
         """Representation of the instance."""
         # This method needs to define the str representation of the class based on the
         # attributes of the Stream. For instance, an LSL stream is defined by 3
@@ -208,7 +208,13 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             self._buffer = np.hstack((self._buffer, refs), dtype=self.dtype)
 
     @fill_doc
-    def anonymize(self, daysback=None, keep_his=False, *, verbose=None):
+    def anonymize(
+        self,
+        daysback: Optional[int] = None,
+        keep_his: bool = False,
+        *,
+        verbose: Optional[Union[bool, str, int]] = None,
+    ) -> None:
         """Anonymize the measurement information in-place.
 
         Parameters
@@ -417,10 +423,6 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         self._check_connected(name="get_montage()")
         return super().get_montage()
 
-    def load_stream_config(self) -> None:
-        """Load a stream configuration. Not implemented."""
-        raise NotImplementedError
-
     def plot(self):
         """Open a real-time stream viewer. Not implemented."""
         self._check_connected(name="plot()")
@@ -463,7 +465,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         mapping: Union[dict[str, str], Callable],
         allow_duplicates: bool = False,
         *,
-        verbose=None,
+        verbose: Optional[Union[bool, str, int]] = None,
     ) -> None:
         """Rename channels.
 
@@ -486,10 +488,6 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             verbose=verbose,
         )
 
-    def save_stream_config(self) -> None:
-        """Save a stream configuration. Not implemented."""
-        raise NotImplementedError
-
     def set_bipolar_reference(self):
         """Set a bipolar reference. Not implemented."""
         self._check_connected_and_regular_sampling("set_bipolar_reference()")
@@ -497,7 +495,11 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
     @fill_doc
     def set_channel_types(
-        self, mapping: dict[str, str], *, on_unit_change: str = "warn", verbose=None
+        self,
+        mapping: dict[str, str],
+        *,
+        on_unit_change: str = "warn",
+        verbose: Optional[Union[bool, str, int]] = None,
     ) -> None:
         """Define the sensor type of channels.
 
@@ -636,12 +638,12 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
     @fill_doc
     def set_montage(
         self,
-        montage,
-        match_case=True,
-        match_alias=False,
-        on_missing="raise",
+        montage: Optional[Union[str, DigMontage]],
+        match_case: bool = True,
+        match_alias: Union[bool, dict[str, str]] = False,
+        on_missing: str = "raise",
         *,
-        verbose=None,
+        verbose: Optional[Union[bool, str, int]] = None,
     ) -> None:
         """Set %(montage_types)s channel positions and digitization points.
 
@@ -677,7 +679,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         )
 
     @staticmethod
-    def _acquire(self) -> None:
+    def _acquire(self) -> None:  # pragma: no cover
         """Update function pulling new samples in the buffer at a regular interval."""
         pass
 

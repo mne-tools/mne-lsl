@@ -16,7 +16,7 @@
 
 .. _latest:
 
-Version 1.1
+Version 1.2
 ===========
 
 Enhancements
@@ -27,10 +27,14 @@ Enhancements
 Bugs
 ----
 
-- Fix flaky tests on CIs (:pr:`168` by `Eric Larson`_ and `Mathieu Scheltienne`_)
-- Fix re-download of existing ``liblsl`` on macOS and test ``liblsl`` fetching (:pr:`176` by `Mathieu Scheltienne`_)
+- xxx
 
 API and behavior changes
 ------------------------
 
 - xxx
+
+Authors
+-------
+
+* `Mathieu Scheltienne`_
