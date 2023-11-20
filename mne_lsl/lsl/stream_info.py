@@ -316,7 +316,7 @@ class _BaseStreamInfo:
         return XMLElement(lib.lsl_get_desc(self._obj))
 
     # -- Getters and setters for data description --------------------------------------
-    def (self) -> Info:
+    def get_channel_info(self) -> Info:
         """Get the FIFF measurement :class:`~mne.Info` in the description.
 
         Returns
