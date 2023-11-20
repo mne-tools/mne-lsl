@@ -133,6 +133,7 @@ class StreamLSL(BaseStream):
         if processing_flags is not None and (
             processing_flags == "threadsafe" or "threadsafe" in processing_flags
         ):
+            self._reset_variables()
             raise ValueError(
                 "The 'threadsafe' processing flag should not be provided for an "
                 "MNE-LSL Stream. If you require access to the underlying StreamInlet "
@@ -144,12 +145,14 @@ class StreamLSL(BaseStream):
         # resolve and connect to available streams
         sinfos = resolve_streams(timeout, self._name, self._stype, self._source_id)
         if len(sinfos) != 1:
+            self._reset_variables()
             raise RuntimeError(
                 "The provided arguments 'name', 'stype', and 'source_id' do not "
                 f"uniquely identify an LSL stream. {len(sinfos)} were found: "
                 f"{[(sinfo.name, sinfo.stype, sinfo.source_id) for sinfo in sinfos]}."
             )
         if sinfos[0].dtype == "string":
+            self._reset_variables()
             raise RuntimeError(
                 "The Stream class is designed for numerical types. It does not support "
                 "string LSL streams. Please use a mne_lsl.lsl.StreamInlet directly to "
