@@ -41,7 +41,7 @@ def run():
     args = parser.parse_args()
 
     if args.type.lower().strip() == "lsl":
-        player = PlayerLSL(args.fname, args.name, args.chunk_size)
+        player = PlayerLSL(args.fname, args.chunk_size, args.name)
     else:
         raise ValueError(
             "Argument 'type' could not be interpreted as a known player. "
