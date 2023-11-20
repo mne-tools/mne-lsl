@@ -64,7 +64,13 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         # This method should end on a self._reset_variables()
 
     @fill_doc
-    def anonymize(self, daysback=None, keep_his=False, *, verbose=None):
+    def anonymize(
+        self,
+        daysback: Optional[int] = None,
+        keep_his: bool = False,
+        *,
+        verbose: Optional[Union[bool, str, int]] = None,
+    ) -> None:
         """Anonymize the measurement information in-place.
 
         Parameters
@@ -121,7 +127,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         mapping: Union[dict[str, str], Callable],
         allow_duplicates: bool = False,
         *,
-        verbose=None,
+        verbose: Optional[Union[bool, str, int]] = None,
     ) -> None:
         """Rename channels.
 
@@ -140,14 +146,18 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         rename_channels(self.info, mapping, allow_duplicates)
 
     @abstractmethod
-    def start(self) -> None:
+    def start(self) -> None:  # pragma: no cover
         """Start streaming data."""
         pass
 
     @abstractmethod
     @fill_doc
     def set_channel_types(
-        self, mapping: dict[str, str], *, on_unit_change: str = "warn", verbose=None
+        self,
+        mapping: dict[str, str],
+        *,
+        on_unit_change: str = "warn",
+        verbose: Optional[Union[bool, str, int]] = None,
     ) -> None:
         """Define the sensor type of channels.
 
@@ -217,7 +227,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         )
 
     def set_meas_date(
-        self, meas_date: Optional[Union[datetime, float, tuple[float]]]
+        self, meas_date: Optional[Union[datetime, float, tuple[float, float]]]
     ) -> None:
         """Set the measurement start date.
 
@@ -263,7 +273,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
             )
 
     @abstractmethod
-    def _stream(self) -> None:
+    def _stream(self) -> None:  # pragma: no cover
         """Push a chunk of data from the raw object to the real-time stream.
 
         Don't use raw.get_data but indexing which is faster.
@@ -301,7 +311,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
             self.stop()
 
     @staticmethod
-    def __repr__(self):
+    def __repr__(self):  # pragma: no cover
         """Representation of the instance."""
         # This method must define the string representation of the player, e.g.
         # <Player: {self._fname}>
