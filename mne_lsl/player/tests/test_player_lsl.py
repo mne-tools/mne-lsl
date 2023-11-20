@@ -21,7 +21,7 @@ logger.propagate = True
 def test_player(caplog, fname, raw, close_io):
     """Test a working and valid player."""
     name = "Player-test_player"
-    player = Player(fname, name)
+    player = Player(fname, name=name)
     assert "OFF" in player.__repr__()
     streams = resolve_streams(timeout=0.1)
     assert len(streams) == 0
@@ -76,7 +76,7 @@ def test_player_context_manager(fname):
     name = "Player-test_player_context_manager"
     streams = resolve_streams(timeout=0.1)
     assert len(streams) == 0
-    with Player(fname, name):
+    with Player(fname, name=name):
         streams = resolve_streams(timeout=0.1)
         assert len(streams) == 1
         assert streams[0].name == name
@@ -100,7 +100,7 @@ def test_player_invalid_arguments(fname):
 
 def test_player_stop_invalid(fname):
     """Test stopping a player that is not started."""
-    player = Player(fname, "Player-test_stop_player_invalid")
+    player = Player(fname, name="Player-test_stop_player_invalid")
     with pytest.raises(RuntimeError, match="The player is not started"):
         player.stop()
     player.start()

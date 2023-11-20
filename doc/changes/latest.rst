@@ -19,18 +19,11 @@
 Version 1.1
 ===========
 
-Enhancements
-------------
-
-- xxx
-
-Bugs
-----
-
 - Fix flaky tests on CIs (:pr:`168` by `Eric Larson`_ and `Mathieu Scheltienne`_)
+- Fix setting channel unit on a :class:`~mne_lsl.lsl.StreamInfo` with integers (:pr:`168` by `Eric Larson`_ and `Mathieu Scheltienne`_)
+- Add support for ``timestamp`` :class:`~numpy.ndarray` in a push operation to provide individual timestamp for every sample (:pr:`172` by `Mathieu Scheltienne`_)
+- Improve type-hints, including LSL scalar types for :class:`~numpy.ndarray` (:pr:`175` by `Mathieu Scheltienne`_)
+- Add support for the environment variable ``PYLSL_LIB`` to specify the path to a user-defined ``liblsl`` (:pr:`176` by `Mathieu Scheltienne`_)
 - Fix re-download of existing ``liblsl`` on macOS and test ``liblsl`` fetching (:pr:`176` by `Mathieu Scheltienne`_)
-
-API and behavior changes
-------------------------
-
-- xxx
+- Make LSL utilities module private (:pr:`177` by `Mathieu Scheltienne`_)
+- Match argument order between ``BasePlayer`` and :class:`~mne_lsl.player.PlayerLSL` (:pr:`178` by `Mathieu Scheltienne`_)

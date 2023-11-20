@@ -63,8 +63,7 @@ def _mock_lsl_stream_int(_integer_raw, request):
     # nest the PlayerLSL import to first write the temporary LSL configuration file
     from mne_lsl.player import PlayerLSL  # noqa: E402
 
-    name = f"P_{request.node.name}"
-    with PlayerLSL(_integer_raw, name) as player:
+    with PlayerLSL(_integer_raw, name=f"P_{request.node.name}") as player:
         yield player
 
 
