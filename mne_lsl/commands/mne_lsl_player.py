@@ -15,11 +15,12 @@ def run():
         help="path to the File to stream via LSL.",
     )
     parser.add_argument(
-        "-t",
-        "--type",
-        type=str,
-        help="type of mock stream (supported: lsl).",
-        default="lsl",
+        "-c",
+        "--chunk_size",
+        type=int,
+        metavar="int",
+        help="number of samples pushed at once via LSL.",
+        default=16,
     )
     parser.add_argument(
         "-n",
@@ -29,25 +30,8 @@ def run():
         help="name of the stream displayed by LSL.",
         default="MNE-LSL-Player",
     )
-    parser.add_argument(
-        "-c",
-        "--chunk_size",
-        type=int,
-        metavar="int",
-        help="number of samples pushed at once via LSL.",
-        default=16,
-    )
-
     args = parser.parse_args()
-
-    if args.type.lower().strip() == "lsl":
-        player = PlayerLSL(args.fname, args.chunk_size, args.name)
-    else:
-        raise ValueError(
-            "Argument 'type' could not be interpreted as a known player. "
-            f"Supported values are (lsl,). '{args.type}' is invalid."
-        )
-
+    player = PlayerLSL(args.fname, args.chunk_size, args.name)
     player.start()
     input(">> Press ENTER to stop replaying data \n")
     player.stop()
