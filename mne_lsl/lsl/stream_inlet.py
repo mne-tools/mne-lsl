@@ -11,10 +11,10 @@ import numpy as np
 from ..utils._checks import check_type, check_value, ensure_int
 from ..utils._docs import copy_doc
 from ..utils.logs import logger
+from ._utils import check_timeout, free_char_p_array_memory, handle_error
 from .constants import fmt2numpy, fmt2pull_chunk, fmt2pull_sample, post_processing_flags
 from .load_liblsl import lib
 from .stream_info import _BaseStreamInfo
-from .utils import _check_timeout, _free_char_p_array_memory, handle_error
 
 if TYPE_CHECKING:
     from typing import Optional, Sequence, Union
@@ -180,7 +180,7 @@ class StreamInlet:
         Opening a stream is a non-blocking operation. Thus, samples pushed on an outlet
         while the stream is not yet open will be missed.
         """
-        timeout = _check_timeout(timeout)
+        timeout = check_timeout(timeout)
         errcode = c_int()
         with self._lock:
             lib.lsl_open_stream(self._obj, c_double(timeout), byref(errcode))
@@ -234,7 +234,7 @@ class StreamInlet:
             timestamp that was remotely generated via ``local_clock()`` to map it into
             the :func:`~mne_lsl.lsl.local_clock` domain of the client machine.
         """
-        timeout = _check_timeout(timeout)
+        timeout = check_timeout(timeout)
         errcode = c_int()
         with self._lock:
             result = lib.lsl_time_correction(
@@ -272,7 +272,7 @@ class StreamInlet:
         Note that if ``timeout`` is reached and no sample is available, an empty
         ``sample`` is returned and ``timestamp`` is set to None.
         """
-        timeout = _check_timeout(timeout)
+        timeout = check_timeout(timeout)
 
         errcode = c_int()
         with self._lock:
@@ -290,7 +290,7 @@ class StreamInlet:
         if timestamp:
             if self._dtype == c_char_p:
                 sample = [v.decode("utf-8") for v in self._buffer_data[1]]
-                _free_char_p_array_memory(self._buffer_data[1])
+                free_char_p_array_memory(self._buffer_data[1])
             else:
                 sample = np.frombuffer(self._buffer_data[1], dtype=self._dtype)
         else:
@@ -339,7 +339,7 @@ class StreamInlet:
         Note that if ``timeout`` is reached and no sample is available, empty
         ``samples`` and ``timestamps`` arrays are returned.
         """
-        timeout = _check_timeout(timeout)
+        timeout = check_timeout(timeout)
         if not isinstance(max_samples, int):
             max_samples = int(max_samples)
         if max_samples <= 0:
@@ -382,7 +382,7 @@ class StreamInlet:
                 ]
                 for s in range(int(n_samples))
             ]
-            _free_char_p_array_memory(data_buffer)
+            free_char_p_array_memory(data_buffer)
         else:
             # this is 400-500x faster than the list approach
             samples = np.frombuffer(data_buffer, dtype=self._dtype)[
@@ -474,7 +474,7 @@ class StreamInlet:
                 "The StreamInlet is not open. Please use 'StreamInlet.open_stream() "
                 "before retrieving the attached StreamInfo."
             )
-        timeout = _check_timeout(timeout)
+        timeout = check_timeout(timeout)
         errcode = c_int()
         with self._lock:
             result = lib.lsl_get_fullinfo(self._obj, c_double(timeout), byref(errcode))

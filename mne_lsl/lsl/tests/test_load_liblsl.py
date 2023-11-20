@@ -1,3 +1,4 @@
+import os
 import platform
 from pathlib import Path
 
@@ -44,7 +45,7 @@ def test_distro_support():
 
 
 @pytest.mark.skipif(
-    platform.system().lower().strip() == "windows",
+    platform.system() == "Windows" and os.getenv("GITHUB_ACTIONS", "") == "true",
     reason="PermissionError: [WinError 5] Access is denied.",
 )
 @pytest.mark.xfail(reason="403 Forbidden Error on GitHub API request.")
