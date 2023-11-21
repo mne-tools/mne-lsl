@@ -1,24 +1,56 @@
+ci:
+    skip: [codespell, pydocstyle, yamllint]
+
 repos:
-  - repo: https://github.com/psf/black
-    rev: 23.11.0
-    hooks:
-      - id: black
-        args: [--quiet]
+    - repo: https://github.com/pycqa/isort
+      rev: 5.12.0
+      hooks:
+          - id: isort
+            files: mne_lsl
 
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.1.6
-    hooks:
-      - id: ruff
-        name: ruff
+    - repo: https://github.com/psf/black-pre-commit-mirror
+      rev: 23.10.1
+      hooks:
+          - id: black
+            args: [--quiet]
+            files: mne_lsl
 
-  - repo: https://github.com/adrienverge/yamllint.git
-    rev: v1.33.0
-    hooks:
-      - id: yamllint
-        args: [--strict, -c, .yamllint.yml]
+    - repo: https://github.com/astral-sh/ruff-pre-commit
+      rev: v0.1.4
+      hooks:
+          - id: ruff
+            args: [--fix, --exit-non-zero-on-fix]
+            files: mne_lsl
 
-  - repo: https://github.com/pycqa/isort
-    rev: 5.12.0
-    hooks:
-      - id: isort
-        name: isort (python)
+    - repo: https://github.com/codespell-project/codespell
+      rev: v2.2.6
+      hooks:
+          - id: codespell
+            args: [--check-filenames, --ignore-words=.codespellignore, --skip=*.svg]
+
+    - repo: https://github.com/pycqa/pydocstyle
+      rev: 6.3.0
+      hooks:
+          - id: pydocstyle
+            files: mne_lsl
+            additional_dependencies: [tomli]
+
+    - repo: https://github.com/mscheltienne/bibclean
+      rev: 0.7.1
+      hooks:
+          - id: bibclean-fix
+            files: doc/references.bib
+            args: [--exit-non-zero-on-fix]
+
+    - repo: https://github.com/pappasam/toml-sort
+      rev: v0.23.1
+      hooks:
+          - id: toml-sort-fix
+            files: pyproject.toml
+
+    - repo: https://github.com/adrienverge/yamllint
+      rev: v1.32.0
+      hooks:
+          - id: yamllint
+            args: [--strict, -c, .yamllint.yaml]
+            files: (.github/|.codecov.yaml|.pre-commit-config.yaml|.yamllint.yaml)
