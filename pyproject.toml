@@ -198,7 +198,7 @@ include-package-data = false
 'mne_lsl.stream_viewer.control_gui.settings' = ['*.ini']
 
 [tool.setuptools.packages.find]
-exclude = ['mne_lsl*tests', 'mne_lsl*conftest', 'mne_lsl/utils/_tests']
+exclude = ['mne_lsl*tests']
 include = ['mne_lsl*']
 
 [tool.tomlsort]
