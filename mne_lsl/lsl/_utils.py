@@ -184,7 +184,7 @@ def handle_error(errcode):
 
 
 # -- Memory function ----------------------------------------------------------
-def free_char_p_array_memory(char_p_array):
+def free_char_p_array_memory(char_p_array):  # noqa: D103
     num_elements = len(char_p_array)
     pointers = cast(char_p_array, POINTER(c_void_p))
     for p in range(num_elements):
