@@ -177,8 +177,6 @@ def test_stream_drop_channels(mock_lsl_stream, acquisition_delay, raw):
     stream = Stream(bufsize=2, name=mock_lsl_stream.name)
     stream.connect(acquisition_delay=acquisition_delay)
     time.sleep(0.1)  # give a bit of time to the stream to acquire the first chunks
-    # Do not drop TRIGGER as it contains our increasing timestamps
-    assert raw.ch_names[-1] == "TRIGGER"
     stream.drop_channels("hEOG")
     raw_ = raw.copy().drop_channels("hEOG")
     assert stream.ch_names == raw_.ch_names
@@ -207,6 +205,13 @@ def test_stream_drop_channels(mock_lsl_stream, acquisition_delay, raw):
         data, _ = stream.get_data(winsize=0.1)
         match_stream_and_raw_data(data, raw_)
         _sleep_until_new_data(acquisition_delay, mock_lsl_stream)
+
+    # test invalid channel names
+    with pytest.raises(ValueError, match="must contain existing channel names."):
+        stream.drop_channels(["101", "F6"])
+    with pytest.raises(ValueError, match="must contain existing channel names."):
+        stream.drop_channels("101")
+
     stream.disconnect()
 
 

@@ -2,6 +2,7 @@ from __future__ import annotations  # c.f. PEP 563, PEP 649
 
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
+from warnings import warn
 
 import numpy as np
 from mne import rename_channels
@@ -21,7 +22,6 @@ else:
 
 from ..utils._checks import check_type, ensure_int, ensure_path
 from ..utils._docs import fill_doc
-from ..utils.logs import logger
 from ..utils.meas_info import _set_channel_units
 
 if TYPE_CHECKING:
@@ -84,9 +84,11 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         %(anonymize_info_notes)s
         """
         self._check_not_started("anonymize()")
-        logger.warning(
+        warn(
             "Player.anonymize() is partially implemented and does not impact the "
-            "stream information yet."
+            "stream information yet.",
+            RuntimeWarning,
+            stacklevel=1,
         )
         super().anonymize(daysback=daysback, keep_his=keep_his, verbose=verbose)
 
@@ -246,9 +248,11 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         anonymize
         """
         self._check_not_started(name=f"{type(self).__name__}.set_meas_date()")
-        logger.warning(
+        warn(
             "Player.set_meas_date() is partially implemented and does not impact the "
-            "stream information yet."
+            "stream information yet.",
+            RuntimeWarning,
+            stacklevel=1,
         )
         super().set_meas_date(meas_date)
 

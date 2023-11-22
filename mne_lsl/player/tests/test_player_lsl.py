@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from pathlib import Path
 
 import numpy as np
@@ -16,6 +17,16 @@ from mne_lsl.player import PlayerLSL as Player
 from mne_lsl.utils._tests import match_stream_and_raw_data
 
 logger.propagate = True
+
+
+def _create_inlet(name: str) -> StreamInlet:
+    """Create an inlet to the open-stream."""
+    streams = resolve_streams()
+    assert len(streams) == 1
+    assert streams[0].name == name
+    inlet = StreamInlet(streams[0])
+    inlet.open_stream()
+    return inlet
 
 
 def test_player(caplog, fname, raw, close_io):
@@ -219,11 +230,41 @@ def test_player_set_channel_types(mock_lsl_stream, raw, close_io):
     )
 
 
-def _create_inlet(name: str) -> StreamInlet:
-    """Create an inlet to the open-stream."""
-    streams = resolve_streams()
-    assert len(streams) == 1
-    assert streams[0].name == name
-    inlet = StreamInlet(streams[0])
-    inlet.open_stream()
-    return inlet
+def test_player_anonymize(fname, close_io):
+    """Test anonymization."""
+    name = "Player-test_player"
+    player = Player(fname, name=name)
+    assert player.name == name
+    assert player.fname == fname
+    player.info["subject_info"] = dict(
+        id=101,
+        first_name="Mathieu",
+        sex=1,
+    )
+    with pytest.warns(RuntimeWarning, match="partially implemented"):
+        player.anonymize()
+    assert player.info["subject_info"] == dict(id=0, first_name="mne_anonymize", sex=0)
+    player.start()
+    assert "ON" in player.__repr__()
+    with pytest.raises(RuntimeError, match="player is already started"):
+        player.anonymize()
+    close_io()
+
+
+def test_player_set_meas_date(fname, close_io):
+    """Test player measurement date."""
+    name = "Player-test_player"
+    player = Player(fname, name=name)
+    assert player.name == name
+    assert player.fname == fname
+    assert player.info["meas_date"] is None
+    with pytest.warns(RuntimeWarning, match="partially implemented"):
+        meas_date = datetime(2023, 1, 25, tzinfo=timezone.utc)
+        player.set_meas_date(meas_date)
+    assert player.info["meas_date"] == meas_date
+    player.start()
+    assert "ON" in player.__repr__()
+    with pytest.raises(RuntimeError, match="player is already started"):
+        player.set_meas_date(datetime(2020, 1, 25, tzinfo=timezone.utc))
+    assert player.info["meas_date"] == meas_date
+    close_io()
