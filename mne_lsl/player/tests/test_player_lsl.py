@@ -18,6 +18,16 @@ from mne_lsl.utils._tests import match_stream_and_raw_data
 logger.propagate = True
 
 
+def _create_inlet(name: str) -> StreamInlet:
+    """Create an inlet to the open-stream."""
+    streams = resolve_streams()
+    assert len(streams) == 1
+    assert streams[0].name == name
+    inlet = StreamInlet(streams[0])
+    inlet.open_stream()
+    return inlet
+
+
 def test_player(caplog, fname, raw, close_io):
     """Test a working and valid player."""
     name = "Player-test_player"
@@ -219,11 +229,21 @@ def test_player_set_channel_types(mock_lsl_stream, raw, close_io):
     )
 
 
-def _create_inlet(name: str) -> StreamInlet:
-    """Create an inlet to the open-stream."""
-    streams = resolve_streams()
-    assert len(streams) == 1
-    assert streams[0].name == name
-    inlet = StreamInlet(streams[0])
-    inlet.open_stream()
-    return inlet
+def test_player_anonymize(fname, close_io):
+    """Test anonymization."""
+    name = "Player-test_player"
+    player = Player(fname, name=name)
+    assert player.name == name
+    player.info["subject_info"] = dict(
+        id=101,
+        first_name="Mathieu",
+        sex=1,
+    )
+    with pytest.warns(RuntimeWarning, match="partially implemented"):
+        player.anonymize()
+    assert player.info["subject_info"] == dict(id=0, first_name="mne_anonymize", sex=0)
+    player.start()
+    assert "ON" in player.__repr__()
+    with pytest.raises(RuntimeError, match="player is already started"):
+        player.anonymize()
+    close_io()
