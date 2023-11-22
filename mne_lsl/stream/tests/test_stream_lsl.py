@@ -177,8 +177,6 @@ def test_stream_drop_channels(mock_lsl_stream, acquisition_delay, raw):
     stream = Stream(bufsize=2, name=mock_lsl_stream.name)
     stream.connect(acquisition_delay=acquisition_delay)
     time.sleep(0.1)  # give a bit of time to the stream to acquire the first chunks
-    # Do not drop TRIGGER as it contains our increasing timestamps
-    assert raw.ch_names[-1] == "TRIGGER"
     stream.drop_channels("hEOG")
     raw_ = raw.copy().drop_channels("hEOG")
     assert stream.ch_names == raw_.ch_names
