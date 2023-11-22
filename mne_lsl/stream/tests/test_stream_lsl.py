@@ -205,6 +205,13 @@ def test_stream_drop_channels(mock_lsl_stream, acquisition_delay, raw):
         data, _ = stream.get_data(winsize=0.1)
         match_stream_and_raw_data(data, raw_)
         _sleep_until_new_data(acquisition_delay, mock_lsl_stream)
+
+    # test invalid channel names
+    with pytest.raises(ValueError, match="must contain existing channel names."):
+        stream.drop_channels(["101", "F6"])
+    with pytest.raises(ValueError, match="must contain existing channel names."):
+        stream.drop_channels("101")
+
     stream.disconnect()
 
 
