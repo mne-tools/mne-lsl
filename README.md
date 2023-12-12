@@ -28,7 +28,7 @@ MNE-LSL supports `python ≥ 3.9` and is available on
 [PyPI](https://pypi.org/project/mne-lsl/) and on
 [conda-forge](https://anaconda.org/conda-forge/mne-lsl).
 Install instruction can be found on the
-[documentation website](https://mne.tools/mne-lsl/stable/install.html).
+[documentation website](https://mne.tools/mne-lsl/stable/resources/install.html).
 
 # Acknowledgment
 
