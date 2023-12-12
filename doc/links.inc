@@ -23,8 +23,11 @@
 .. mne
 
 .. _mne stable: https://mne.tools/stable/index.html
+.. _mne installers: https://mne.tools/stable/install/installers.html
 
 
 .. project
 
 .. _project pypi: https://pypi.org/project/mne-lsl/
+.. _project conda: https://anaconda.org/conda-forge/mne-lsl
+.. _project github: https://github.com/mne-tools/mne-lsl

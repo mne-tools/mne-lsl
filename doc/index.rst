@@ -16,13 +16,33 @@ version of `liblsl <lsl lib c++_>`_.
 
 .. tab-set::
 
+    .. tab-item:: MNE installers
+
+        As of MNE-Python 1.6, ``mne-lsl`` is distributed in the
+        `MNE standalone installers <mne installers_>`_.
+
+        The installers create a conda environment with the entire MNE-ecosystem
+        setup, and more! This installation method is recommended for beginners.
+
     .. tab-item:: PyPI
+
+        ``mne-lsl`` can be installed from `PyPI <project pypi_>`_ using pip:
 
         .. code-block:: console
 
             $ pip install mne-lsl
 
+    .. tab-item:: Conda
+
+        ``mne-lsl`` can be installed from `conda-forge <project conda_>`_ using conda:
+
+        .. code-block:: console
+
+            $ conda install -c conda-forge mne-lsl
+
     .. tab-item:: Source
+
+        ``mne-lsl`` can be installed from `GitHub <project github_>`_:
 
         .. code-block:: console
 
