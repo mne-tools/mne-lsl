@@ -16,7 +16,8 @@
 .. lsl
 
 .. _lsl intro: https://labstreaminglayer.readthedocs.io/info/intro.html
-.. _lsl lib c++: https://github.com/sccn/liblsl
+.. _lsl lib: https://github.com/sccn/liblsl
+.. _lsl lib release: https://github.com/sccn/liblsl/releases
 .. _lsl python: https://github.com/labstreaminglayer/pylsl
 
 
