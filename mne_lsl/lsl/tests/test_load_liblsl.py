@@ -1,5 +1,6 @@
 import os
 import platform
+from itertools import chain
 from pathlib import Path
 
 import pytest
@@ -36,11 +37,13 @@ def test_distro_support():
         if "liblsl" in elt["name"] and not any(x in elt["name"] for x in ("OSX", "Win"))
     ]
     assets = sorted(assets)
-    assert len(assets) == 3, f"Supported liblsl are {', '.join(assets)}."
-    assert "bionic" in assets[0]  # 18.04 LTS
-    assert "focal" in assets[1]  # 20.04 LTS
-    assert "jammy" in assets[2]  # 22.04 LTS
+    assert len(assets) == len(
+        list(chain(*_SUPPORTED_DISTRO.values()))
+    ), f"Supported liblsl are {', '.join(assets)}."
+    for key in ("bookworm", "bionic", "focal", "jammy"):
+        assert any(key in asset for asset in assets)
     # confirm that it matches _SUPPORTED_DISTRO
+    assert _SUPPORTED_DISTRO["debian"] == ("12",)
     assert _SUPPORTED_DISTRO["ubuntu"] == ("18.04", "20.04", "22.04")
 
 

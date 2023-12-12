@@ -37,6 +37,8 @@ _PLATFORM_SUFFIXES = {
 }
 # variables which should be kept in sync with liblsl release
 _SUPPORTED_DISTRO = {
+    # TODO: check if liblsl bookworm works as expected with mne-lsl
+    "debian": ("12",),
     "ubuntu": ("18.04", "20.04", "22.04"),
 }
 # generic error message
@@ -162,7 +164,7 @@ def _fetch_liblsl(folder: Path = files("mne_lsl.lsl") / "lib") -> Optional[CDLL]
         if distro.version() not in _SUPPORTED_DISTRO[distro_like]:
             raise RuntimeError(
                 "The liblsl library released on GitHub supports "
-                f"{', '.join(_SUPPORTED_DISTRO)} based distributions on versions "
+                f"{distro_like} based distributions on versions "
                 f"{', '.join(_SUPPORTED_DISTRO[distro_like])}. Version "
                 f"{distro.version()} is not supported. " + _ERROR_MSG
             )
