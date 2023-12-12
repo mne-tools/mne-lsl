@@ -6,7 +6,7 @@ LSL (low-level)
 .. currentmodule:: mne_lsl.lsl
 
 If the high-level API is not sufficient, the low-level API interface directly with
-`liblsl <lsl lib c++_>`_, with a similar API to `pylsl <lsl python_>`_.
+`liblsl <lsl lib_>`_, with a similar API to `pylsl <lsl python_>`_.
 
 Compared to `pylsl <lsl python_>`_, ``mne_lsl.lsl`` pulls a chunk of *numerical* data
 faster thanks to ``numpy``. In numbers, pulling a 1024 samples chunk with 65 channels in

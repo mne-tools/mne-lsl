@@ -11,8 +11,9 @@ based on the `Lab Streaming Layer (LSL) <lsl intro_>`_.
 Install
 -------
 
-``MNE-LSL`` is available on `PyPI <project pypi_>`_ and is distributed with a compatible
-version of `liblsl <lsl lib c++_>`_.
+``MNE-LSL`` is available on `PyPI <project pypi_>`_ and `conda-forge <project conda_>`_.
+It requires a compatible version of `liblsl <lsl lib_>`_ which will be automatically
+fetched from the `liblsl release page <lsl lib release_>`_ if possible.
 
 .. tab-set::
 
