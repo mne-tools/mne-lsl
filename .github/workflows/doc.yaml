@@ -40,7 +40,7 @@ jobs:
       - name: Prune sphinx environment
         run: rm -R ./doc/_build/html/.doctrees
       - name: Upload documentation
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: doc-dev
           path: ./doc/_build/html
