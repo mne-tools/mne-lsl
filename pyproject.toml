@@ -121,7 +121,7 @@ tracker = 'https://github.com/mne-tools/mne-lsl/issues'
 check-filenames = true
 check-hidden = true
 ignore-words = '.codespellignore'
-skip = 'build,.git,.mypy_cache,.pytest_cache,doc/_static/logos'
+skip = 'build,.git,.mypy_cache,.pytest_cache,doc/_static/logos/*'
 
 [tool.coverage.report]
 exclude_lines = [
