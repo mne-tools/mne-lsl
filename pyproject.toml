@@ -87,14 +87,14 @@ full = [
 stubs = [
   'isort',
   'mypy',
-  'ruff',
+  'ruff>=0.1.8',
 ]
 style = [
   'bibclean',
   'codespell[toml]>=2.2.4',
   'isort',
   'pydocstyle[toml]',
-  'ruff',
+  'ruff>=0.1.8',
   'toml-sort',
   'yamllint',
 ]
