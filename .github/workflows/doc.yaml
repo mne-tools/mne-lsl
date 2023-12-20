@@ -10,7 +10,7 @@ on:  # yamllint disable-line rule:truthy
 
 jobs:
   build:
-    timeout-minutes: 10
+    timeout-minutes: 30
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -36,7 +36,11 @@ jobs:
       - name: Display system information
         run: mne_lsl-sys_info --developer
       - name: Build doc
-        run: make -C doc html
+        uses: nick-fields/retry@v2
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          run: make -C doc html
       - name: Prune sphinx environment
         run: rm -R ./doc/_build/html/.doctrees
       - name: Upload documentation

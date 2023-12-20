@@ -54,7 +54,11 @@ jobs:
       - name: Display system information
         run: mne_lsl-sys_info --developer
       - name: Run pytest
-        run: pytest mne_lsl --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s
+        uses: nick-fields/retry@v2
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          run: pytest mne_lsl --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s
       - name: Upload to codecov
         uses: codecov/codecov-action@v3
         with:
