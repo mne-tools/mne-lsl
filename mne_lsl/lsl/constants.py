@@ -127,7 +127,7 @@ fmt2push_chunk_n = {
 # ---------------------
 # Post processing flags
 # ---------------------
-post_processing_flags = {
+post_processing_flags: dict[str, int] = {
     "clocksync": 1,
     "dejitter": 2,
     "monotize": 4,

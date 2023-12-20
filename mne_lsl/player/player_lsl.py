@@ -65,7 +65,7 @@ class PlayerLSL(BasePlayer):
         mapping: Union[dict[str, str], Callable],
         allow_duplicates: bool = False,
         *,
-        verbose=None,
+        verbose: Optional[Union[bool, str, int]] = None,
     ) -> None:
         super().rename_channels(mapping, allow_duplicates)
         self._sinfo.set_channel_names(self.info["ch_names"])
@@ -89,7 +89,11 @@ class PlayerLSL(BasePlayer):
 
     @copy_doc(BasePlayer.set_channel_types)
     def set_channel_types(
-        self, mapping: dict[str, str], *, on_unit_change: str = "warn", verbose=None
+        self,
+        mapping: dict[str, str],
+        *,
+        on_unit_change: str = "warn",
+        verbose: Optional[Union[bool, str, int]] = None,
     ) -> None:
         super().set_channel_types(
             mapping, on_unit_change=on_unit_change, verbose=verbose

@@ -1,36 +1,18 @@
-from __future__ import annotations  # c.f. PEP 563, PEP 649
-
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING
-from warnings import warn
+from datetime import datetime as datetime
+from pathlib import Path
+from typing import Any, Callable, Optional, Union
 
-import numpy as np
-from mne import rename_channels
-from mne.io import read_raw
-from mne.utils import check_version
+from _typeshed import Incomplete
+from mne import Info
+from mne.channels.channels import SetChannelsMixin
+from mne.io.meas_info import ContainsMixin
 
-if check_version("mne", "1.6"):
-    from mne._fiff.meas_info import ContainsMixin, SetChannelsMixin
-    from mne._fiff.pick import _picks_to_idx
-elif check_version("mne", "1.5"):
-    from mne.io.meas_info import ContainsMixin, SetChannelsMixin
-    from mne.io.pick import _picks_to_idx
-else:
-    from mne.io.meas_info import ContainsMixin
-    from mne.io.pick import _picks_to_idx
-    from mne.channels.channels import SetChannelsMixin
-
-from ..utils._checks import check_type, ensure_int, ensure_path
-from ..utils._docs import fill_doc
-from ..utils.meas_info import _set_channel_units
-
-if TYPE_CHECKING:
-    from datetime import datetime
-    from pathlib import Path
-    from typing import Any, Callable, Optional, Union
-
-    from mne import Info
-
+from ..utils._checks import check_type as check_type
+from ..utils._checks import ensure_int as ensure_int
+from ..utils._checks import ensure_path as ensure_path
+from ..utils._docs import fill_doc as fill_doc
+from ..utils.meas_info import _set_channel_units as _set_channel_units
 
 class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
     """Class for creating a mock real-time stream.
@@ -50,57 +32,84 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
     a small discontinuity in the data stream.
     """
 
-    @abstractmethod
-    def __init__(self, fname: Union[str, Path], chunk_size: int = 64) -> None:
-        self._fname = ensure_path(fname, must_exist=True)
-        self._chunk_size = ensure_int(chunk_size, "chunk_size")
-        if self._chunk_size <= 0:
-            raise ValueError(
-                "The argument 'chunk_size' must be a strictly positive integer. "
-                f"{chunk_size} is invalid."
-            )
-        # load raw recording
-        self._raw = read_raw(self._fname, preload=True)
-        # This method should end on a self._reset_variables()
+    _fname: Incomplete
+    _chunk_size: Incomplete
+    _raw: Incomplete
 
-    @fill_doc
+    @abstractmethod
+    def __init__(self, fname: Union[str, Path], chunk_size: int = ...): ...
     def anonymize(
         self,
-        daysback: Optional[int] = None,
-        keep_his: bool = False,
+        daysback: Optional[int] = ...,
+        keep_his: bool = ...,
         *,
-        verbose: Optional[Union[bool, str, int]] = None,
+        verbose: Optional[Union[bool, str, int]] = ...,
     ) -> None:
         """Anonymize the measurement information in-place.
 
         Parameters
         ----------
-        %(daysback_anonymize_info)s
-        %(keep_his_anonymize_info)s
-        %(verbose)s
+        daysback : int | None
+            Number of days to subtract from all dates.
+            If ``None`` (default), the acquisition date, ``info['meas_date']``,
+            will be set to ``January 1ˢᵗ, 2000``. This parameter is ignored if
+            ``info['meas_date']`` is ``None`` (i.e., no acquisition date has been set).
+        keep_his : bool
+            If ``True``, ``his_id`` of ``subject_info`` will **not** be overwritten.
+            Defaults to ``False``.
+
+            .. warning:: This could mean that ``info`` is not fully
+                         anonymized. Use with caution.
+        verbose : int | str | bool | None
+            Sets the verbosity level. The verbosity increases gradually between
+            ``"CRITICAL"``, ``"ERROR"``, ``"WARNING"``, ``"INFO"`` and ``"DEBUG"``.
+            If None is provided, the verbosity is set to ``"WARNING"``.
+            If a bool is provided, the verbosity is set to ``"WARNING"`` for False and
+            to ``"INFO"`` for True.
 
         Notes
         -----
-        %(anonymize_info_notes)s
-        """
-        self._check_not_started("anonymize()")
-        warn(
-            "Player.anonymize() is partially implemented and does not impact the "
-            "stream information yet.",
-            RuntimeWarning,
-            stacklevel=1,
-        )
-        super().anonymize(daysback=daysback, keep_his=keep_his, verbose=verbose)
+        Removes potentially identifying information if it exists in ``info``.
+        Specifically for each of the following we use:
 
-    @fill_doc
+        - meas_date, file_id, meas_id
+                A default value, or as specified by ``daysback``.
+        - subject_info
+                Default values, except for 'birthday' which is adjusted
+                to maintain the subject age.
+        - experimenter, proj_name, description
+                Default strings.
+        - utc_offset
+                ``None``.
+        - proj_id
+                Zeros.
+        - proc_history
+                Dates use the ``meas_date`` logic, and experimenter a default string.
+        - helium_info, device_info
+                Dates use the ``meas_date`` logic, meta info uses defaults.
+
+        If ``info['meas_date']`` is ``None``, it will remain ``None`` during processing
+        the above fields.
+
+        Operates in place.
+        """
+
     def get_channel_units(
-        self, picks=None, only_data_chs: bool = False
+        self, picks: Incomplete | None = ..., only_data_chs: bool = ...
     ) -> list[tuple[int, int]]:
         """Get a list of channel unit for each channel.
 
         Parameters
         ----------
-        %(picks_all)s
+        picks : str | array-like | slice | None
+            Channels to include. Slices and lists of integers will be interpreted as
+            channel indices. In lists, channel *type* strings (e.g., ``['meg',
+            'eeg']``) will pick channels of those types, channel *name* strings (e.g.,
+            ``['MEG0111', 'MEG2623']`` will pick the given channels. Can also be the
+            string values "all" to pick all channels, or "data" to pick :term:`data
+            channels`. None (default) will pick all channels. Note that channels in
+            ``info['bads']`` *will be included* if their names or indices are
+            explicitly provided.
         only_data_chs : bool
             Whether to ignore non-data channels. Default is ``False``.
 
@@ -112,24 +121,14 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
             element contains the unit multiplication factor, e.g. ``-6 (FIFF_UNITM_MU)``
             for micro (corresponds to ``1e-6``).
         """
-        check_type(only_data_chs, (bool,), "only_data_chs")
-        none = "data" if only_data_chs else "all"
-        picks = _picks_to_idx(self.info, picks, none, (), allow_empty=False)
-        channel_units = list()
-        for idx in picks:
-            channel_units.append(
-                (self.info["chs"][idx]["unit"], self.info["chs"][idx]["unit_mul"])
-            )
-        return channel_units
 
     @abstractmethod
-    @fill_doc
     def rename_channels(
         self,
         mapping: Union[dict[str, str], Callable],
-        allow_duplicates: bool = False,
+        allow_duplicates: bool = ...,
         *,
-        verbose: Optional[Union[bool, str, int]] = None,
+        verbose: Optional[Union[bool, str, int]] = ...,
     ) -> None:
         """Rename channels.
 
@@ -142,24 +141,25 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         allow_duplicates : bool
             If True (default False), allow duplicates, which will automatically be
             renamed with ``-N`` at the end.
-        %(verbose)s
+        verbose : int | str | bool | None
+            Sets the verbosity level. The verbosity increases gradually between
+            ``"CRITICAL"``, ``"ERROR"``, ``"WARNING"``, ``"INFO"`` and ``"DEBUG"``.
+            If None is provided, the verbosity is set to ``"WARNING"``.
+            If a bool is provided, the verbosity is set to ``"WARNING"`` for False and
+            to ``"INFO"`` for True.
         """
-        self._check_not_started("rename_channels()")
-        rename_channels(self.info, mapping, allow_duplicates)
 
     @abstractmethod
-    def start(self) -> None:  # pragma: no cover
+    def start(self) -> None:
         """Start streaming data."""
-        pass
 
     @abstractmethod
-    @fill_doc
     def set_channel_types(
         self,
         mapping: dict[str, str],
         *,
-        on_unit_change: str = "warn",
-        verbose: Optional[Union[bool, str, int]] = None,
+        on_unit_change: str = ...,
+        verbose: Optional[Union[bool, str, int]] = ...,
     ) -> None:
         """Define the sensor type of channels.
 
@@ -178,13 +178,13 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
             match the new sensor type.
 
             .. versionadded:: MNE 1.4
-        %(verbose)s
+        verbose : int | str | bool | None
+            Sets the verbosity level. The verbosity increases gradually between
+            ``"CRITICAL"``, ``"ERROR"``, ``"WARNING"``, ``"INFO"`` and ``"DEBUG"``.
+            If None is provided, the verbosity is set to ``"WARNING"``.
+            If a bool is provided, the verbosity is set to ``"WARNING"`` for False and
+            to ``"INFO"`` for True.
         """
-        self._check_not_started("set_channel_types()")
-        super().set_channel_types(
-            mapping=mapping, on_unit_change=on_unit_change, verbose=verbose
-        )
-        self._sinfo.set_channel_types(self.get_channel_types(unique=False))
 
     @abstractmethod
     def set_channel_units(self, mapping: dict[str, Union[str, int]]) -> None:
@@ -212,21 +212,6 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         If the human-readable unit of your channel is not yet supported by MNE-LSL,
         please contact the developers on GitHub to add your units to the known set.
         """
-        self._check_not_started("set_channel_units()")
-        ch_units_before = np.array(
-            [ch["unit_mul"] for ch in self.info["chs"]], dtype=np.int8
-        )
-        _set_channel_units(self.info, mapping)
-        ch_units_after = np.array(
-            [ch["unit_mul"] for ch in self.info["chs"]], dtype=np.int8
-        )
-        # re-scale channels
-        factors = ch_units_before - ch_units_after
-        self._raw.apply_function(
-            lambda x: (x.T * np.power(np.ones(factors.shape) * 10, factors)).T,
-            channel_wise=False,
-            picks="all",
-        )
 
     def set_meas_date(
         self, meas_date: Optional[Union[datetime, float, tuple[float, float]]]
@@ -247,37 +232,17 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         --------
         anonymize
         """
-        self._check_not_started(name=f"{type(self).__name__}.set_meas_date()")
-        warn(
-            "Player.set_meas_date() is partially implemented and does not impact the "
-            "stream information yet.",
-            RuntimeWarning,
-            stacklevel=1,
-        )
-        super().set_meas_date(meas_date)
+    _interrupt: bool
 
     @abstractmethod
     def stop(self) -> None:
         """Stop streaming data on the mock real-time stream."""
-        if self._streaming_thread is None:
-            raise RuntimeError(
-                "The player is not started. Use Player.start() to begin streaming."
-            )
-        self._interrupt = True
-        while self._streaming_thread.is_alive():
-            self._streaming_thread.cancel()
-        # This method must end with self._reset_variables()
 
     def _check_not_started(self, name: str):
         """Check that the player is not started before calling the function 'name'."""
-        if self._streaming_thread is not None:
-            raise RuntimeError(
-                "The player is already started. Please stop the streaming before using "
-                f"{{type(self).__name__}}.{name}."
-            )
 
     @abstractmethod
-    def _stream(self) -> None:  # pragma: no cover
+    def _stream(self) -> None:
         """Push a chunk of data from the raw object to the real-time stream.
 
         Don't use raw.get_data but indexing which is faster.
@@ -289,46 +254,32 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         >>> [In] %timeit np.ascontiguousarray(raw[:, 0:16][0].T)
         >>> 23.7 µs ± 183 ns per loop
         """
-        pass
+    _start_idx: int
+    _streaming_delay: Incomplete
+    _streaming_thread: Incomplete
 
     def _reset_variables(self) -> None:
         """Reset variables for streaming."""
-        self._start_idx = 0
-        self._streaming_delay = None
-        self._streaming_thread = None
-        self._interrupt = False
 
-    # ----------------------------------------------------------------------------------
-    def __del__(self):
+    def __del__(self) -> None:
         """Delete the player."""
-        if hasattr(self, "_streaming_thread") and self._streaming_thread is not None:
-            self.stop()
 
     def __enter__(self):
         """Context manager entry point."""
-        self.start()
-        return self
 
     def __exit__(self, exc_type: Any, exc_value: Any, exc_traceback: Any):
         """Context manager exit point."""
-        if self._streaming_thread is not None:  # might have called stop manually
-            self.stop()
 
     @staticmethod
-    def __repr__(self):  # pragma: no cover
+    def __repr__(self) -> str:
         """Representation of the instance."""
-        # This method must define the string representation of the player, e.g.
-        # <Player: {self._fname}>
-        pass
 
-    # ----------------------------------------------------------------------------------
     @property
     def ch_names(self) -> list[str]:
         """Name of the channels.
 
         :type: :class:`list` of :class:`str`
         """
-        return self.info.ch_names
 
     @property
     def chunk_size(self) -> int:
@@ -336,7 +287,6 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
 
         :type: :class:`int`
         """
-        return self._chunk_size
 
     @property
     def fname(self) -> Path:
@@ -344,7 +294,6 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
 
         :type: :class:`~pathlib.Path`
         """
-        return self._fname
 
     @property
     def info(self) -> Info:
@@ -352,4 +301,3 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
 
         :type: :class:`~mne.Info`
         """
-        return self._raw.info

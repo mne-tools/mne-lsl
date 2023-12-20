@@ -13,7 +13,7 @@ from ._fetch import fetch_dataset
 if TYPE_CHECKING:
     from typing import Optional, Union
 
-_REGISTRY = files("mne_lsl.datasets") / "testing-registry.txt"
+_REGISTRY: Path = files("mne_lsl.datasets") / "testing-registry.txt"
 
 
 def _make_registry(
@@ -25,7 +25,7 @@ def _make_registry(
     ----------
     folder : path-like
         Path to the sample dataset.
-    output : str | Path
+    output : path-like
         Path to the output registry file.
     """
     folder = ensure_path(folder, must_exist=True)

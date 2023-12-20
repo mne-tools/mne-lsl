@@ -60,6 +60,7 @@ version = '1.2.0.dev0'
 all = [
   'mne_lsl[build]',
   'mne_lsl[doc]',
+  'mne_lsl[stubs]',
   'mne_lsl[style]',
   'mne_lsl[test]',
 ]
@@ -83,13 +84,17 @@ doc = [
 full = [
   'mne_lsl[all]',
 ]
+stubs = [
+  'isort',
+  'mypy',
+  'ruff>=0.1.8',
+]
 style = [
   'bibclean',
-  'black',
-  'codespell',
+  'codespell[toml]>=2.2.4',
   'isort',
   'pydocstyle[toml]',
-  'ruff',
+  'ruff>=0.1.8',
   'toml-sort',
   'yamllint',
 ]
@@ -112,20 +117,11 @@ homepage = 'https://mne.tools/mne-lsl'
 source = 'https://github.com/mne-tools/mne-lsl'
 tracker = 'https://github.com/mne-tools/mne-lsl/issues'
 
-[tool.black]
-extend-exclude = '''
-(
-      __pycache__
-    | \.github
-    | doc/
-    | pyproject.toml
-    | setup.py
-    | tutorials/
-)
-'''
-include = '\.pyi?$'
-line-length = 88
-target-version = ['py39']
+[tool.codespell]
+check-filenames = true
+check-hidden = true
+ignore-words = '.codespellignore'
+skip = 'build,.git,.mypy_cache,.pytest_cache,doc/_static/logos/*'
 
 [tool.coverage.report]
 exclude_lines = [
@@ -186,8 +182,14 @@ extend-exclude = [
   'tutorials/*',
 ]
 line-length = 88
+select = ["E", "F", "W"]
+target-version = 'py39'
+
+[tool.ruff.format]
+docstring-code-format = true
 
 [tool.ruff.per-file-ignores]
+'*.pyi' = ['E501']
 '__init__.py' = ['F401']
 
 [tool.setuptools]

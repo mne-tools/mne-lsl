@@ -25,12 +25,12 @@ if TYPE_CHECKING:
 
 
 _CH_TYPES_DICT = get_channel_type_constants(include_defaults=True)
-_STIM_TYPES = (
+_STIM_TYPES: tuple[str, ...] = (
     "marker",
     "markers",
     "stim",
 )
-_HUMAN_UNITS = {
+_HUMAN_UNITS: dict[int, dict[str, int]] = {
     FIFF.FIFF_UNIT_V: {
         "v": _ch_unit_mul_named[0],
         "volt": _ch_unit_mul_named[0],

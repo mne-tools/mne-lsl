@@ -156,12 +156,12 @@ class _use_log_level:
 
     def __init__(
         self,
-        verbose: Union[bool, str, int, None] = None,
+        verbose: Optional[Union[bool, str, int]] = None,
         logger_obj: Optional[Logger] = None,
     ):
-        self._logger = logger_obj if logger_obj is not None else logger
-        self._old_level = self._logger.level
-        self._level = check_verbose(verbose)
+        self._logger: Logger = logger_obj if logger_obj is not None else logger
+        self._old_level: int = self._logger.level
+        self._level: int = check_verbose(verbose)
 
     def __enter__(self):
         self._logger.setLevel(self._level)

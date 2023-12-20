@@ -26,23 +26,23 @@ if TYPE_CHECKING:
 
 # Minimum liblsl version. The major version is given by version // 100
 # and the minor version is given by version % 100.
-_VERSION_MIN = 115
+_VERSION_MIN: int = 115
 # liblsl objects created with the same protocol version are inter-compatible.
-_VERSION_PROTOCOL = 110
-_PLATFORM = platform.system().lower().strip()
-_PLATFORM_SUFFIXES = {
+_VERSION_PROTOCOL: int = 110
+_PLATFORM: str = platform.system().lower().strip()
+_PLATFORM_SUFFIXES: dict[str, str] = {
     "windows": ".dll",
     "darwin": ".dylib",
     "linux": ".so",
 }
 # variables which should be kept in sync with liblsl release
-_SUPPORTED_DISTRO = {
+_SUPPORTED_DISTRO: dict[str, tuple[str, ...]] = {
     # TODO: check if liblsl bookworm works as expected with mne-lsl
     "debian": ("12",),
     "ubuntu": ("18.04", "20.04", "22.04"),
 }
 # generic error message
-_ERROR_MSG = (
+_ERROR_MSG: str = (
     "Please visit liblsl library github page (https://github.com/sccn/liblsl) and "
     "install a release in the system directories or provide its path in the "
     "environment variable MNE_LSL_LIB or PYLSL_LIB."

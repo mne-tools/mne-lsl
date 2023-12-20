@@ -27,17 +27,16 @@ keys: tuple[str, ...] = (
 )
 
 for key in keys:
-    entry = docdict_mne[key]
+    entry: str = docdict_mne[key]
     if ".. versionchanged::" in entry:
         entry = entry.replace(".. versionchanged::", ".. versionchanged:: MNE ")
     if ".. versionadded::" in entry:
         entry = entry.replace(".. versionadded::", ".. versionadded:: MNE ")
     docdict[key] = entry
+del key
 
 # -----------------------------------------------
-docdict[
-    "stream_bufsize"
-] = """
+docdict["stream_bufsize"] = """
 bufsize : float | int
     Size of the buffer keeping track of the data received from the stream. If
     the stream sampling rate ``sfreq`` is regular, ``bufsize`` is expressed in
@@ -46,9 +45,7 @@ bufsize : float | int
     expressed in samples. The buffer will hold the last ``bufsize`` samples."""
 
 # -----------------------------------------------
-docdict[
-    "verbose"
-] = """
+docdict["verbose"] = """
 verbose : int | str | bool | None
     Sets the verbosity level. The verbosity increases gradually between
     ``"CRITICAL"``, ``"ERROR"``, ``"WARNING"``, ``"INFO"`` and ``"DEBUG"``.
@@ -106,16 +103,16 @@ def fill_doc(f: Callable) -> Callable:
 def _indentcount_lines(lines: list[str]) -> int:
     """Minimum indent for all lines in line list.
 
-    >>> lines = [' one', '  two', '   three']
+    >>> lines = [" one", "  two", "   three"]
     >>> indentcount_lines(lines)
     1
     >>> lines = []
     >>> indentcount_lines(lines)
     0
-    >>> lines = [' one']
+    >>> lines = [" one"]
     >>> indentcount_lines(lines)
     1
-    >>> indentcount_lines(['    '])
+    >>> indentcount_lines(["    "])
     0
     """
     indent = sys.maxsize
@@ -156,7 +153,7 @@ def copy_doc(source: Callable) -> Callable:
     >>> class B(A):
     ...     @copy_doc(A.m1)
     ...     def m1():
-    ...         ''' this gets appended'''
+    ...         '''this gets appended'''
     ...         pass
     >>> print(B.m1.__doc__)
     Docstring for m1 this gets appended
