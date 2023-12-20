@@ -40,7 +40,7 @@ jobs:
         with:
           timeout_minutes: 10
           max_attempts: 3
-          run: make -C doc html
+          command: make -C doc html
       - name: Prune sphinx environment
         run: rm -R ./doc/_build/html/.doctrees
       - name: Upload documentation
