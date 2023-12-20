@@ -33,6 +33,7 @@ for key in keys:
     if ".. versionadded::" in entry:
         entry = entry.replace(".. versionadded::", ".. versionadded:: MNE ")
     docdict[key] = entry
+del key
 
 # -----------------------------------------------
 docdict["stream_bufsize"] = """
