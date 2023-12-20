@@ -9,8 +9,11 @@ from mypy import stubgen
 
 import mne_lsl
 
-# generate stub files, including private members and docstrings
 directory = Path(mne_lsl.__file__).parent
+# remove existing stub files
+for file in directory.rglob("*.pyi"):
+    file.unlink()
+# generate stub files, including private members and docstrings
 files = [
     str(file.as_posix())
     for file in directory.rglob("*.py")
