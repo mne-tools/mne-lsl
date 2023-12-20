@@ -26,6 +26,7 @@ keys: tuple[str, ...] = (
     "ref_channels",
 )
 
+key: str
 for key in keys:
     entry = docdict_mne[key]
     if ".. versionchanged::" in entry:

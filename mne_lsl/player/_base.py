@@ -27,7 +27,7 @@ from ..utils.meas_info import _set_channel_units
 if TYPE_CHECKING:
     from datetime import datetime
     from pathlib import Path
-    from typing import Callable, Optional, Union
+    from typing import Any, Callable, Optional, Union
 
     from mne import Info
 
@@ -309,7 +309,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         self.start()
         return self
 
-    def __exit__(self, exc_type, exc_value, exc_tracebac):
+    def __exit__(self, exc_type: Any, exc_value: Any, exc_traceback: Any):
         """Context manager exit point."""
         if self._streaming_thread is not None:  # might have called stop manually
             self.stop()
