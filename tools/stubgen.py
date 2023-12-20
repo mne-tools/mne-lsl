@@ -15,6 +15,7 @@ files = [
     str(file.as_posix())
     for file in directory.rglob("*.py")
     if file.parent.name not in ("commands", "tests")
+    and "stream_viewer" not in str(file.parent)
     and file.name not in ("conftest.py", "_tests.py", "_version.py")
 ]
 stubgen.main(
