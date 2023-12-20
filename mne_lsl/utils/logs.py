@@ -156,7 +156,7 @@ class _use_log_level:
 
     def __init__(
         self,
-        verbose: Union[bool, str, int, None] = None,
+        verbose: Optional[Union[bool, str, int]] = None,
         logger_obj: Optional[Logger] = None,
     ):
         self._logger: Logger = logger_obj if logger_obj is not None else logger

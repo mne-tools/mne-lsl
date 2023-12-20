@@ -25,7 +25,7 @@ def _make_registry(
     ----------
     folder : path-like
         Path to the sample dataset.
-    output : str | Path
+    output : path-like
         Path to the output registry file.
     """
     folder = ensure_path(folder, must_exist=True)

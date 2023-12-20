@@ -98,7 +98,7 @@ def _list_dependencies_info(
     package: str,
     dependencies: list[Requirement],
     unicode: bool,
-):
+) -> None:
     """List dependencies names and versions."""
     if unicode:
         ljust += 1
