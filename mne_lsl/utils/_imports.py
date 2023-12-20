@@ -7,7 +7,7 @@ import importlib
 
 # A mapping from import name to package name (on PyPI) when the package name
 # is different.
-INSTALL_MAPPING = {
+_INSTALL_MAPPING: dict[str, str] = {
     "codespell_lib": "codespell",
     "cv2": "opencv-python",
     "parallel": "pyparallel",
@@ -46,7 +46,7 @@ def import_optional_dependency(
         None is returned when the package is not found and raise_error is
         False.
     """
-    package_name = INSTALL_MAPPING.get(name)
+    package_name = _INSTALL_MAPPING.get(name)
     install_name = package_name if package_name is not None else name
 
     try:

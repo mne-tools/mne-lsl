@@ -13,7 +13,7 @@ from ._fetch import fetch_dataset
 if TYPE_CHECKING:
     from typing import Optional, Union
 
-_REGISTRY = files("mne_lsl.datasets") / "testing-registry.txt"
+_REGISTRY: Path = files("mne_lsl.datasets") / "testing-registry.txt"
 
 
 def _make_registry(
