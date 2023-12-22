@@ -4,7 +4,7 @@ from typing import Optional
 _INSTALL_MAPPING: dict[str, str]
 
 def import_optional_dependency(
-    name: str, extra: str = ..., raise_error: bool = ...
+    name: str, extra: str = "", raise_error: bool = True
 ) -> Optional[ModuleType]:
     """Import an optional dependency.
 

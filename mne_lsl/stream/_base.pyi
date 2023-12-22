@@ -77,7 +77,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         ref_channels: Union[str, list[str], tuple[str]],
         ref_units: Optional[
             Union[str, int, list[Union[str, int]], tuple[Union[str, int]]]
-        ] = ...,
+        ] = None,
     ) -> None:
         """Add EEG reference channels to data that consists of all zeros.
 
@@ -102,10 +102,10 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
     def anonymize(
         self,
-        daysback: Optional[int] = ...,
-        keep_his: bool = ...,
+        daysback: Optional[int] = None,
+        keep_his: bool = False,
         *,
-        verbose: Optional[Union[bool, str, int]] = ...,
+        verbose: Optional[Union[bool, str, int]] = None,
     ) -> None:
         """Anonymize the measurement information in-place.
 
@@ -192,9 +192,9 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
     def get_channel_types(
         self,
-        picks: Incomplete | None = ...,
-        unique: bool = ...,
-        only_data_chs: bool = ...,
+        picks: Incomplete | None = None,
+        unique: bool = False,
+        only_data_chs: bool = False,
     ) -> list[str]:
         """Get a list of channel type for each channel.
 
@@ -221,7 +221,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         """
 
     def get_channel_units(
-        self, picks: Incomplete | None = ..., only_data_chs: bool = ...
+        self, picks: Incomplete | None = None, only_data_chs: bool = False
     ) -> list[tuple[int, int]]:
         """Get a list of channel unit for each channel.
 
@@ -250,8 +250,8 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
     def get_data(
         self,
-        winsize: Optional[float] = ...,
-        picks: Optional[Union[str, list[str], list[int], NDArray[None]]] = ...,
+        winsize: Optional[float] = None,
+        picks: Optional[Union[str, list[str], list[int], NDArray[None]]] = None,
     ) -> tuple[NDArray[None], NDArray[np.float64]]:
         """Retrieve the latest data from the buffer.
 
@@ -308,7 +308,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
     def plot(self) -> None:
         """Open a real-time stream viewer. Not implemented."""
 
-    def pick(self, picks, exclude=...) -> None:
+    def pick(self, picks, exclude=()) -> None:
         """Pick a subset of channels.
 
         Parameters
@@ -343,9 +343,9 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
     def rename_channels(
         self,
         mapping: Union[dict[str, str], Callable],
-        allow_duplicates: bool = ...,
+        allow_duplicates: bool = False,
         *,
-        verbose: Optional[Union[bool, str, int]] = ...,
+        verbose: Optional[Union[bool, str, int]] = None,
     ) -> None:
         """Rename channels.
 
@@ -373,8 +373,8 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         self,
         mapping: dict[str, str],
         *,
-        on_unit_change: str = ...,
-        verbose: Optional[Union[bool, str, int]] = ...,
+        on_unit_change: str = "warn",
+        verbose: Optional[Union[bool, str, int]] = None,
     ) -> None:
         """Define the sensor type of channels.
 
@@ -426,7 +426,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
     def set_eeg_reference(
         self,
         ref_channels: Union[str, list[str], tuple[str]],
-        ch_type: Union[str, list[str], tuple[str]] = ...,
+        ch_type: Union[str, list[str], tuple[str]] = "eeg",
     ) -> None:
         """Specify which reference to use for EEG-like data.
 
@@ -468,11 +468,11 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
     def set_montage(
         self,
         montage: Optional[Union[str, DigMontage]],
-        match_case: bool = ...,
-        match_alias: Union[bool, dict[str, str]] = ...,
-        on_missing: str = ...,
+        match_case: bool = True,
+        match_alias: Union[bool, dict[str, str]] = False,
+        on_missing: str = "raise",
         *,
-        verbose: Optional[Union[bool, str, int]] = ...,
+        verbose: Optional[Union[bool, str, int]] = None,
     ) -> None:
         """Set EEG/sEEG/ECoG/DBS/fNIRS channel positions and digitization points.
 

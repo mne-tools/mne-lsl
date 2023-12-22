@@ -26,13 +26,13 @@ class XMLElement:
     def child(self, name):
         """Get a child with a specified name."""
 
-    def next_sibling(self, name: Incomplete | None = ...):
+    def next_sibling(self, name: Incomplete | None = None):
         """Get the next sibling in the children list of the parent node.
 
         If a name is provided, the next sibling with the given name is returned.
         """
 
-    def previous_sibling(self, name: Incomplete | None = ...):
+    def previous_sibling(self, name: Incomplete | None = None):
         """Get the previous sibling in the children list of the parent node.
 
         If a name is provided, the previous sibling with the given name is returned.
@@ -56,7 +56,7 @@ class XMLElement:
     def value(self):
         """Value of the element."""
 
-    def child_value(self, name: Incomplete | None = ...):
+    def child_value(self, name: Incomplete | None = None):
         """Get child value (value of the first child that is text).
 
         If a name is provided, then the value of the first child with the given name is
