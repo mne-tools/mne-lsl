@@ -37,14 +37,14 @@ class PlayerLSL(BasePlayer):
     _sinfo: Incomplete
 
     def __init__(
-        self, fname: Union[str, Path], chunk_size: int = ..., name: Optional[str] = ...
+        self, fname: Union[str, Path], chunk_size: int = 64, name: Optional[str] = None
     ) -> None: ...
     def rename_channels(
         self,
         mapping: Union[dict[str, str], Callable],
-        allow_duplicates: bool = ...,
+        allow_duplicates: bool = False,
         *,
-        verbose: Optional[Union[bool, str, int]] = ...,
+        verbose: Optional[Union[bool, str, int]] = None,
     ) -> None:
         """Rename channels.
 
@@ -76,8 +76,8 @@ class PlayerLSL(BasePlayer):
         self,
         mapping: dict[str, str],
         *,
-        on_unit_change: str = ...,
-        verbose: Optional[Union[bool, str, int]] = ...,
+        on_unit_change: str = "warn",
+        verbose: Optional[Union[bool, str, int]] = None,
     ) -> None:
         """Define the sensor type of channels.
 

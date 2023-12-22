@@ -48,7 +48,7 @@ class StreamOutlet:
     _buffer_sample: Incomplete
 
     def __init__(
-        self, sinfo: _BaseStreamInfo, chunk_size: int = ..., max_buffered: float = ...
+        self, sinfo: _BaseStreamInfo, chunk_size: int = 1, max_buffered: float = 360
     ) -> None: ...
     @property
     def _obj(self): ...
@@ -66,8 +66,8 @@ class StreamOutlet:
     def push_sample(
         self,
         x: Union[list[str], NDArray[None]],
-        timestamp: float = ...,
-        pushThrough: bool = ...,
+        timestamp: float = 0.0,
+        pushThrough: bool = True,
     ) -> None:
         """Push a sample into the :class:`~mne_lsl.lsl.StreamOutlet`.
 
@@ -90,8 +90,8 @@ class StreamOutlet:
     def push_chunk(
         self,
         x: Union[list[list[str]], NDArray[None]],
-        timestamp: Optional[Union[float, NDArray[None]]] = ...,
-        pushThrough: bool = ...,
+        timestamp: Optional[Union[float, NDArray[None]]] = None,
+        pushThrough: bool = True,
     ) -> None:
         """Push a chunk of samples into the :class:`~mne_lsl.lsl.StreamOutlet`.
 

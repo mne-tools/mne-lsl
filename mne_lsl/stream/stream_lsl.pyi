@@ -45,9 +45,9 @@ class StreamLSL(BaseStream):
     def __init__(
         self,
         bufsize: float,
-        name: Optional[str] = ...,
-        stype: Optional[str] = ...,
-        source_id: Optional[str] = ...,
+        name: Optional[str] = None,
+        stype: Optional[str] = None,
+        source_id: Optional[str] = None,
     ) -> None: ...
     def __repr__(self) -> str:
         """Representation of the instance."""
@@ -60,9 +60,9 @@ class StreamLSL(BaseStream):
 
     def connect(
         self,
-        acquisition_delay: float = ...,
-        processing_flags: Optional[Union[str, Sequence[str]]] = ...,
-        timeout: Optional[float] = ...,
+        acquisition_delay: float = 0.001,
+        processing_flags: Optional[Union[str, Sequence[str]]] = None,
+        timeout: Optional[float] = 2,
     ) -> None:
         """Connect to the LSL stream and initiate data collection in the buffer.
 

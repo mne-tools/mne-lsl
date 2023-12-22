@@ -37,13 +37,13 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
     _raw: Incomplete
 
     @abstractmethod
-    def __init__(self, fname: Union[str, Path], chunk_size: int = ...): ...
+    def __init__(self, fname: Union[str, Path], chunk_size: int = 64): ...
     def anonymize(
         self,
-        daysback: Optional[int] = ...,
-        keep_his: bool = ...,
+        daysback: Optional[int] = None,
+        keep_his: bool = False,
         *,
-        verbose: Optional[Union[bool, str, int]] = ...,
+        verbose: Optional[Union[bool, str, int]] = None,
     ) -> None:
         """Anonymize the measurement information in-place.
 
@@ -95,7 +95,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         """
 
     def get_channel_units(
-        self, picks: Incomplete | None = ..., only_data_chs: bool = ...
+        self, picks: Incomplete | None = None, only_data_chs: bool = False
     ) -> list[tuple[int, int]]:
         """Get a list of channel unit for each channel.
 
@@ -126,9 +126,9 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
     def rename_channels(
         self,
         mapping: Union[dict[str, str], Callable],
-        allow_duplicates: bool = ...,
+        allow_duplicates: bool = False,
         *,
-        verbose: Optional[Union[bool, str, int]] = ...,
+        verbose: Optional[Union[bool, str, int]] = None,
     ) -> None:
         """Rename channels.
 
@@ -158,8 +158,8 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         self,
         mapping: dict[str, str],
         *,
-        on_unit_change: str = ...,
-        verbose: Optional[Union[bool, str, int]] = ...,
+        on_unit_change: str = "warn",
+        verbose: Optional[Union[bool, str, int]] = None,
     ) -> None:
         """Define the sensor type of channels.
 

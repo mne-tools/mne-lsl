@@ -42,11 +42,11 @@ def local_clock() -> float:
     """
 
 def resolve_streams(
-    timeout: float = ...,
-    name: Optional[str] = ...,
-    stype: Optional[str] = ...,
-    source_id: Optional[str] = ...,
-    minimum: int = ...,
+    timeout: float = 1.0,
+    name: Optional[str] = None,
+    stype: Optional[str] = None,
+    source_id: Optional[str] = None,
+    minimum: int = 1,
 ) -> list[_BaseStreamInfo]:
     """Resolve streams on the network.
 

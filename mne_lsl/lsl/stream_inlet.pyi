@@ -68,10 +68,10 @@ class StreamInlet:
     def __init__(
         self,
         sinfo: _BaseStreamInfo,
-        chunk_size: int = ...,
-        max_buffered: float = ...,
-        recover: bool = ...,
-        processing_flags: Optional[Union[str, Sequence[str]]] = ...,
+        chunk_size: int = 0,
+        max_buffered: float = 360,
+        recover: bool = True,
+        processing_flags: Optional[Union[str, Sequence[str]]] = None,
     ) -> None: ...
     @property
     def _obj(self): ...
@@ -85,7 +85,7 @@ class StreamInlet:
         The inlet will automatically disconnect.
         """
 
-    def open_stream(self, timeout: Optional[float] = ...) -> None:
+    def open_stream(self, timeout: Optional[float] = None) -> None:
         """Subscribe to a data stream.
 
         All samples pushed in at the other end from this moment onwards will be queued
@@ -124,7 +124,7 @@ class StreamInlet:
             `github issue <https://github.com/sccn/liblsl/issues/180>`_.
         """
 
-    def time_correction(self, timeout: Optional[float] = ...) -> float:
+    def time_correction(self, timeout: Optional[float] = None) -> float:
         """Retrieve an estimated time correction offset for the given stream.
 
         The first call to this function takes several milliseconds until a reliable
@@ -147,7 +147,7 @@ class StreamInlet:
         """
 
     def pull_sample(
-        self, timeout: Optional[float] = ...
+        self, timeout: Optional[float] = 0.0
     ) -> tuple[Union[list[str], NDArray[None]], Optional[float]]:
         """Pull a single sample from the inlet.
 
@@ -177,7 +177,7 @@ class StreamInlet:
         """
 
     def pull_chunk(
-        self, timeout: Optional[float] = ..., max_samples: int = ...
+        self, timeout: Optional[float] = 0.0, max_samples: int = 1024
     ) -> tuple[Union[list[list[str]], NDArray[None]], NDArray[np.float64]]:
         """Pull a chunk of samples from the inlet.
 
@@ -290,7 +290,7 @@ class StreamInlet:
         :type: :class:`bool`
         """
 
-    def get_sinfo(self, timeout: Optional[float] = ...) -> _BaseStreamInfo:
+    def get_sinfo(self, timeout: Optional[float] = None) -> _BaseStreamInfo:
         """:class:`~mne_lsl.lsl.StreamInfo` corresponding to this Inlet.
 
         Parameters

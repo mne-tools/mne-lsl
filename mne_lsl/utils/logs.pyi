@@ -9,7 +9,7 @@ from ._checks import check_verbose as check_verbose
 from ._docs import fill_doc as fill_doc
 from ._fixes import _WrapStdOut as _WrapStdOut
 
-def _init_logger(*, verbose: Optional[Union[bool, str, int]] = ...) -> Logger:
+def _init_logger(*, verbose: Optional[Union[bool, str, int]] = None) -> Logger:
     """Initialize a logger.
 
     Assigns sys.stdout as the first handler of the logger.
@@ -31,10 +31,10 @@ def _init_logger(*, verbose: Optional[Union[bool, str, int]] = ...) -> Logger:
 
 def add_file_handler(
     fname: Union[str, Path],
-    mode: str = ...,
-    encoding: Optional[str] = ...,
+    mode: str = "a",
+    encoding: Optional[str] = None,
     *,
-    verbose: Optional[Union[bool, str, int]] = ...,
+    verbose: Optional[Union[bool, str, int]] = None,
 ) -> None:
     """Add a file handler to the logger.
 
@@ -115,8 +115,8 @@ class _use_log_level:
 
     def __init__(
         self,
-        verbose: Optional[Union[bool, str, int]] = ...,
-        logger_obj: Optional[Logger] = ...,
+        verbose: Optional[Union[bool, str, int]] = None,
+        logger_obj: Optional[Logger] = None,
     ) -> None: ...
     def __enter__(self): ...
     def __exit__(self, *args) -> None: ...
