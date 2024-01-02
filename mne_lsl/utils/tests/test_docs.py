@@ -1,8 +1,11 @@
 """Test _docs.py"""
 
+import re
+from pathlib import Path
+
 import pytest
 
-from mne_lsl.utils._docs import copy_doc, fill_doc
+from mne_lsl.utils._docs import _KEYS_MNE, copy_doc, docdict, fill_doc
 from mne_lsl.utils.logs import verbose
 
 
@@ -207,3 +210,19 @@ def test_copy_doc_class():
     assert foo.method1.__doc__ == foo2.method2.__doc__
     assert foo.method1.__doc__ == foo2.method3.__doc__
     assert foo.method1.__doc__ == foo2.method4.__doc__
+
+
+def test_docdict_order():
+    """Test that docdict is alphabetical."""
+    # read the file as text, and get entries via regex
+    docdict_ = docdict.copy()
+    for key in _KEYS_MNE:
+        del docdict_[key]
+    docs_path = Path(__file__).parents[1] / "_docs.py"
+    assert docs_path.is_file()
+    with open(docs_path, "r", encoding="UTF-8") as fid:
+        docs = fid.read()
+    entries = re.findall(r'docdict\[(?:\n    )?["\'](.+)["\']\n?\] = ', docs)
+    # test length, uniqueness and order
+    assert len(docdict_) == len(entries)
+    assert sorted(entries) == entries
