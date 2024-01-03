@@ -98,7 +98,9 @@ jobs:
           python -m pip install --progress-bar off --upgrade pip setuptools wheel
           python -m pip install --progress-bar off .[test]
           python -m pip install --progress-bar off --upgrade git+https://github.com/mne-tools/mne-python
-          python -m pip install --progress-bar off --upgrade --pre --only-binary :all: -i https://pypi.anaconda.org/scientific-python-nightly-wheels/simple --timeout=180 numpy scipy matplotlib
+          python -m pip install matplotlib
+          python -m pip install --progress-bar off --upgrade --no-deps --pre --only-binary :all: -i https://pypi.anaconda.org/scientific-python-nightly-wheels/simple --timeout=180 matplotlib
+          python -m pip install --progress-bar off --upgrade --pre --only-binary :all: -i https://pypi.anaconda.org/scientific-python-nightly-wheels/simple --timeout=180 numpy scipy
       - name: Display system information
         run: mne_lsl-sys_info --developer
       - name: Run pytest
