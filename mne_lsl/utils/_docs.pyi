@@ -1,7 +1,7 @@
 from typing import Callable
 
 docdict: dict[str, str]
-keys: tuple[str, ...]
+_KEYS_MNE: tuple[str, ...]
 entry: str
 docdict_indented: dict[int, dict[str, str]]
 
