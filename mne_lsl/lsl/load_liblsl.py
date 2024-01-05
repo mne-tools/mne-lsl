@@ -15,7 +15,7 @@ from typing import TYPE_CHECKING
 import pooch
 import requests
 
-from .. import __version__
+from .._version import __version__
 from ..utils._path import walk
 from ..utils.logs import logger
 
