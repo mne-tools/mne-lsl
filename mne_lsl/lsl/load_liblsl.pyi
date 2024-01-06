@@ -5,7 +5,7 @@ from typing import Optional, Union
 from _typeshed import Incomplete
 from pooch import Pooch
 
-from .. import __version__ as __version__
+from .._version import __version__ as __version__
 from ..utils._path import walk as walk
 from ..utils.logs import logger as logger
 
