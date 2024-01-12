@@ -94,7 +94,7 @@ class StreamLSL(BaseStream):
         acquisition_delay: float = 0.001,
         processing_flags: Optional[Union[str, Sequence[str]]] = None,
         timeout: Optional[float] = 2,
-    ) -> None:
+    ) -> StreamLSL:
         """Connect to the LSL stream and initiate data collection in the buffer.
 
         Parameters
@@ -116,6 +116,11 @@ class StreamLSL(BaseStream):
         timeout : float | None
             Optional timeout (in seconds) of the operation. ``None`` disables the
             timeout. The timeout value is applied once to every operation supporting it.
+
+        Returns
+        -------
+        stream : instance of :class:`~mne_lsl.stream.StreamLSL`
+            The stream instance modified in-place.
 
         Notes
         -----
@@ -192,13 +197,21 @@ class StreamLSL(BaseStream):
         self._picks_inlet = np.arange(0, self._inlet.n_channels)
         # define the acquisition thread
         self._create_acquisition_thread(0)
+        return self
 
-    def disconnect(self) -> None:
-        """Disconnect from the LSL stream and interrupt data collection."""
+    def disconnect(self) -> StreamLSL:
+        """Disconnect from the LSL stream and interrupt data collection.
+
+        Returns
+        -------
+        stream : instance of :class:`~mne_lsl.stream.StreamLSL`
+            The stream instance modified in-place.
+        """
         super().disconnect()
         logger.debug("Calling inlet.close_stream() for %s", str(self))
         self._inlet = None  # prevent _acquire from being called
         self._reset_variables()  # also sets self._inlet = None
+        return self
 
     def _acquire(self) -> None:
         """Update function pulling new samples in the buffer at a regular interval."""

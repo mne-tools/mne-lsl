@@ -92,7 +92,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         ref_units: Optional[
             Union[str, int, list[Union[str, int]], tuple[Union[str, int]]]
         ] = None,
-    ) -> None:
+    ) -> BaseStream:
         """Add EEG reference channels to data that consists of all zeros.
 
         Adds EEG reference channels that are not part of the streamed data. This is
@@ -109,6 +109,11 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             If not provided, the added EEG reference channel has a unit multiplication
             factor set to ``0`` which corresponds to Volts. Use
             ``Stream.set_channel_units`` to change the unit multiplication factor.
+
+        Returns
+        -------
+        stream : instance of ``Stream``
+            The stream instance modified in-place.
         """
         self._check_connected_and_regular_sampling("add_reference_channels()")
 
@@ -207,6 +212,8 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             self._added_channels.extend(ref_channels)  # save reference channels
             self._buffer = np.hstack((self._buffer, refs), dtype=self.dtype)
 
+        return self
+
     @fill_doc
     def anonymize(
         self,
@@ -214,7 +221,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         keep_his: bool = False,
         *,
         verbose: Optional[Union[bool, str, int]] = None,
-    ) -> None:
+    ) -> BaseStream:
         """Anonymize the measurement information in-place.
 
         Parameters
@@ -223,18 +230,24 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         %(keep_his_anonymize_info)s
         %(verbose)s
 
+        Returns
+        -------
+        stream : instance of ``Stream``
+            The stream instance modified in-place.
+
         Notes
         -----
         %(anonymize_info_notes)s
         """
         self._check_connected(name="anonymize()")
         super().anonymize(daysback=daysback, keep_his=keep_his, verbose=verbose)
+        return self
 
     @abstractmethod
     def connect(
         self,
         acquisition_delay: float,
-    ) -> None:
+    ) -> BaseStream:
         """Connect to the stream and initiate data collection in the buffer.
 
         Parameters
@@ -242,6 +255,11 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         acquisition_delay : float
             Delay in seconds between 2 acquisition during which chunks of data are
             pulled from the connected device.
+
+        Returns
+        -------
+        stream : instance of ``Stream``
+            The stream instance modified in-place.
         """
         if self.connected:
             logger.warning("The stream is already connected. Skipping.")
@@ -268,8 +286,14 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         # methods.
 
     @abstractmethod
-    def disconnect(self) -> None:
-        """Disconnect from the LSL stream and interrupt data collection."""
+    def disconnect(self) -> BaseStream:
+        """Disconnect from the LSL stream and interrupt data collection.
+
+        Returns
+        -------
+        stream : instance of ``Stream``
+            The stream instance modified in-place.
+        """
         self._check_connected(name="disconnect()")
         self._interrupt = True
         while self._acquisition_thread.is_alive():
@@ -277,13 +301,18 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         # This method needs to close any inlet/network object and need to end with
         # self._reset_variables().
 
-    def drop_channels(self, ch_names: Union[str, list[str], tuple[str]]) -> None:
+    def drop_channels(self, ch_names: Union[str, list[str], tuple[str]]) -> BaseStream:
         """Drop channel(s).
 
         Parameters
         ----------
         ch_names : str | list of str
             Name or list of names of channels to remove.
+
+        Returns
+        -------
+        stream : instance of ``Stream``
+            The stream instance modified in-place.
 
         See Also
         --------
@@ -302,9 +331,16 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
         picks = np.setdiff1d(np.arange(len(self._info.ch_names)), idx)
         self._pick(picks)
+        return self
 
-    def filter(self) -> None:
-        """Filter the stream. Not implemented."""
+    def filter(self) -> BaseStream:
+        """Filter the stream. Not implemented.
+
+        Returns
+        -------
+        stream : instance of ``Stream``
+            The stream instance modified in-place.
+        """
         self._check_connected_and_regular_sampling("filter()")
         raise NotImplementedError
 
@@ -379,8 +415,8 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         Notes
         -----
         The number of newly available samples stored in the property ``n_new_samples``
-        is reset at every function call, even if all channels were not selected with
-        the argument ``picks``.
+        is reset at every function call, even if all channels were not selected with the
+        argument ``picks``.
         """
         try:
             if winsize is None:
@@ -429,7 +465,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         raise NotImplementedError
 
     @fill_doc
-    def pick(self, picks, exclude=()) -> None:
+    def pick(self, picks, exclude=()) -> BaseStream:
         """Pick a subset of channels.
 
         Parameters
@@ -438,6 +474,11 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         exclude : str | list of str
             Set of channels to exclude, only used when picking is based on types, e.g.
             ``exclude='bads'`` when ``picks="meg"``.
+
+        Returns
+        -------
+        stream : instance of ``Stream``
+            The stream instance modified in-place.
 
         See Also
         --------
@@ -453,6 +494,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         picks = _picks_to_idx(self._info, picks, "all", exclude, allow_empty=False)
         picks = np.sort(picks)
         self._pick(picks)
+        return self
 
     def record(self):
         """Record the stream data to disk. Not implemented."""
@@ -466,7 +508,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         allow_duplicates: bool = False,
         *,
         verbose: Optional[Union[bool, str, int]] = None,
-    ) -> None:
+    ) -> BaseStream:
         """Rename channels.
 
         Parameters
@@ -479,6 +521,11 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             If True (default False), allow duplicates, which will automatically be
             renamed with ``-N`` at the end.
         %(verbose)s
+
+        Returns
+        -------
+        stream : instance of ``Stream``
+            The stream instance modified in-place.
         """
         self._check_connected(name="rename_channels()")
         rename_channels(
@@ -487,9 +534,16 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             allow_duplicates=allow_duplicates,
             verbose=verbose,
         )
+        return self
 
-    def set_bipolar_reference(self):
-        """Set a bipolar reference. Not implemented."""
+    def set_bipolar_reference(self) -> BaseStream:
+        """Set a bipolar reference. Not implemented.
+
+        Returns
+        -------
+        stream : instance of ``Stream``
+            The stream instance modified in-place.
+        """
         self._check_connected_and_regular_sampling("set_bipolar_reference()")
         raise NotImplementedError
 
@@ -500,7 +554,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         *,
         on_unit_change: str = "warn",
         verbose: Optional[Union[bool, str, int]] = None,
-    ) -> None:
+    ) -> BaseStream:
         """Define the sensor type of channels.
 
         If the new channel type changes the unit type, e.g. from ``T/m`` to ``V``, the
@@ -519,13 +573,19 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
             .. versionadded:: MNE 1.4
         %(verbose)s
+
+        Returns
+        -------
+        stream : instance of ``Stream``
+            The stream instance modified in-place.
         """
         self._check_connected(name="set_channel_types()")
         super().set_channel_types(
             mapping=mapping, on_unit_change=on_unit_change, verbose=verbose
         )
+        return self
 
-    def set_channel_units(self, mapping: dict[str, Union[str, int]]) -> None:
+    def set_channel_units(self, mapping: dict[str, Union[str, int]]) -> BaseStream:
         """Define the channel unit multiplication factor.
 
         The unit itself is defined by the sensor type. Use
@@ -539,6 +599,11 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             The unit can be given as a human-readable string or as a unit multiplication
             factor, e.g. ``-6`` for microvolts corresponding to ``1e-6``.
 
+        Returns
+        -------
+        stream : instance of ``Stream``
+            The stream instance modified in-place.
+
         Notes
         -----
         If the human-readable unit of your channel is not yet supported by MNE-LSL,
@@ -546,13 +611,14 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         """
         self._check_connected(name="set_channel_units()")
         _set_channel_units(self._info, mapping)
+        return self
 
     @fill_doc
     def set_eeg_reference(
         self,
         ref_channels: Union[str, list[str], tuple[str]],
         ch_type: Union[str, list[str], tuple[str]] = "eeg",
-    ) -> None:
+    ) -> BaseStream:
         """Specify which reference to use for EEG-like data.
 
         Use this function to explicitly specify the desired reference for EEG-like
@@ -568,6 +634,11 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         ch_type : str | list of str
             The name of the channel type to apply the reference to. Valid channel types
             are ``'eeg'``, ``'ecog'``, ``'seeg'``, ``'dbs'``.
+
+        Returns
+        -------
+        stream : instance of ``Stream``
+            The stream instance modified in-place.
         """
         self._check_connected_and_regular_sampling("set_eeg_reference()")
 
@@ -613,9 +684,11 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             with self._info._unlock():
                 self._info["custom_ref_applied"] = FIFF.FIFFV_MNE_CUSTOM_REF_ON
 
+        return self
+
     def set_meas_date(
         self, meas_date: Optional[Union[datetime, float, tuple[float]]]
-    ) -> None:
+    ) -> BaseStream:
         """Set the measurement start date.
 
         Parameters
@@ -628,12 +701,18 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             object will be automatically created. If None, will remove
             the time reference.
 
+        Returns
+        -------
+        stream : instance of ``Stream``
+            The stream instance modified in-place.
+
         See Also
         --------
         anonymize
         """
         self._check_connected(name="set_meas_date()")
         super().set_meas_date(meas_date)
+        return self
 
     @fill_doc
     def set_montage(
@@ -644,7 +723,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         on_missing: str = "raise",
         *,
         verbose: Optional[Union[bool, str, int]] = None,
-    ) -> None:
+    ) -> BaseStream:
         """Set %(montage_types)s channel positions and digitization points.
 
         Parameters
@@ -654,6 +733,11 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         %(match_alias)s
         %(on_missing_montage)s
         %(verbose)s
+
+        Returns
+        -------
+        stream : instance of ``Stream``
+            The stream instance modified in-place.
 
         See Also
         --------
@@ -677,6 +761,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             on_missing=on_missing,
             verbose=verbose,
         )
+        return self
 
     @staticmethod
     def _acquire(self) -> None:  # pragma: no cover
