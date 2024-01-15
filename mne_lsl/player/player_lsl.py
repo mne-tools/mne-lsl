@@ -4,6 +4,8 @@ from threading import Timer
 from typing import TYPE_CHECKING
 
 import numpy as np
+from mne import Annotations
+from mne.annotations import _handle_meas_date
 
 from ..lsl import StreamInfo, StreamOutlet, local_clock
 from ..utils._checks import check_type
@@ -14,8 +16,6 @@ from ._base import BasePlayer
 if TYPE_CHECKING:
     from pathlib import Path
     from typing import Callable, Optional, Union
-
-    from mne import Annotations
 
 
 class PlayerLSL(BasePlayer):
@@ -241,12 +241,16 @@ class PlayerLSL(BasePlayer):
 
     # ----------------------------------------------------------------------------------
     @property
-    def annotations(self) -> Optional[Annotations]:
+    def annotations(self) -> Annotations:
         """Annotations attached to the raw object, if streamed.
 
-        :type: :class:`~mne.Annotations` | None
+        :type: :class:`~mne.Annotations`
         """
-        return self._raw.annotations if self._annotations else None
+        return (
+            self._raw.annotations
+            if self._annotations
+            else Annotations([], [], [], _handle_meas_date(self.info["meas_date"]))
+        )
 
     @property
     def name(self) -> str:
