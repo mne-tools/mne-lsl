@@ -303,7 +303,7 @@ def _pooch_processor_liblsl(fname: str, action: str, pooch: Pooch) -> str:
             archive.extractall(uncompressed / "data")
 
         # parse dependencies for logging information
-        with open(uncompressed / "control" / "control", "r") as file:
+        with open(uncompressed / "control" / "control") as file:
             lines = file.readlines()
         lines = [
             line.split("Depends:")[1].strip()
