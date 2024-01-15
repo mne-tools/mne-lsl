@@ -22,7 +22,8 @@ from ..utils.logs import logger
 from ._base import BaseStream
 
 if TYPE_CHECKING:
-    from typing import Optional, Sequence, Union
+    from collections.abc import Sequence
+    from typing import Optional, Union
 
     from mne_lsl.lsl.stream_info import _BaseStreamInfo
 

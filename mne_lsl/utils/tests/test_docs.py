@@ -220,7 +220,7 @@ def test_docdict_order():
         del docdict_[key]
     docs_path = Path(__file__).parents[1] / "_docs.py"
     assert docs_path.is_file()
-    with open(docs_path, "r", encoding="UTF-8") as fid:
+    with open(docs_path, encoding="UTF-8") as fid:
         docs = fid.read()
     entries = re.findall(r'docdict\[(?:\n    )?["\'](.+)["\']\n?\] = ', docs)
     # test length, uniqueness and order

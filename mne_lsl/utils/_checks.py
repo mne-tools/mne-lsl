@@ -155,9 +155,9 @@ def check_value(
         if len(allowed_values) == 1:
             options = "The only allowed value is %s" % repr(allowed_values[0])
         elif len(allowed_values) == 2:
-            options = "Allowed values are %s and %s" % (
-                repr(allowed_values[0]),
-                repr(allowed_values[1]),
+            options = (
+                f"Allowed values are {repr(allowed_values[0])} "
+                f"and {repr(allowed_values[1])}"
             )
         else:
             options = "Allowed values are "

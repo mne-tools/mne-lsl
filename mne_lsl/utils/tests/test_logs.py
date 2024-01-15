@@ -146,7 +146,7 @@ def test_file_handler(tmp_path):
 
     logger.handlers[-1].close()
 
-    with open(fname, mode="r") as file:
+    with open(fname) as file:
         lines = file.readlines()
 
     assert len(lines) == 2
