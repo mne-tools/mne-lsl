@@ -76,20 +76,22 @@ class PlayerLSL(BasePlayer):
         self._sinfo.set_channel_info(self._raw.info)
         logger.debug("%s: set channel info", self._name)
         if self._annotations:
-            annotations_names = sorted(set(self._raw.annotations.description))
+            self._annotations_names = sorted(set(self._raw.annotations.description))
             self._sinfo_annotations = StreamInfo(
                 name=f"{self._name}-annotations",
                 stype="annotations",
-                n_channels=len(annotations_names),
+                n_channels=len(self._annotations_names),
                 sfreq=0.0,
                 dtype=np.float64,
                 source_id="MNE-LSL",
             )
-            self._sinfo_annotations.set_channel_names(annotations_names)
+            self._sinfo_annotations.set_channel_names(self._annotations_names)
             self._sinfo_annotations.set_channel_types("annotations")
             self._sinfo_annotations.set_channel_units("none")
+            self._annotations_idx = self._raw.time_as_index(self._raw.annotations.onset)
         else:
             self._sinfo_annotations = None
+            self._annotations_idx = None
         # create additional streaming variables
         self._reset_variables()
 
@@ -188,6 +190,7 @@ class PlayerLSL(BasePlayer):
             # 'timestamp' expects the timestamp of the most 'recent' sample, which in
             # this non-real time replay scenario is the timestamp of the last sample in
             # the chunk.
+            start_timestamp = self._target_timestamp
             self._target_timestamp += self._streaming_delay
             logger.debug(
                 "%s: Pushing chunk %s:%s, timestamp=%s",
@@ -197,6 +200,7 @@ class PlayerLSL(BasePlayer):
                 self._target_timestamp,
             )
             self._outlet.push_chunk(data, timestamp=self._target_timestamp)
+            self._stream_annotations(start, stop, start_timestamp)
         except Exception as exc:
             logger.debug("%s: Stopping due to exception: %s", self._name, exc)
             self._reset_variables()
@@ -215,6 +219,33 @@ class PlayerLSL(BasePlayer):
                 self._streaming_thread = Timer(delay, self._stream)
                 self._streaming_thread.daemon = True
                 self._streaming_thread.start()
+
+    def _stream_annotations(
+        self, start: int, stop: int, start_timestamp: float
+    ) -> None:
+        """Push annotations in a chunk."""
+        if not self._annotations:
+            return None
+        # get the annotations in the chunk
+        if start < stop:
+            mask = (self._annotations_idx >= start) & (self._annotations_idx < stop)
+            idx = self._annotations_idx[mask]
+        else:  # start > stop, equality is impossible or chunk_size would be equal to 0.
+            mask1 = self._annotations_idx >= start
+            mask2 = self._annotations_idx < stop
+            idx = np.hstack(
+                [self._annotations_idx[mask1], self._annotations_idx[mask2]]
+            )
+        # estimate LSL timestamp of each annotation
+        timestamps = start_timestamp + annotations.onset[idx] - self._raw.times[start]
+        # one-hot encode the description and duration in the channels
+        idx = [
+            self._annotations_names.index(desc) for desc in annotations.description[idx]
+        ]
+        data = np.zeros((timestamps.size, len(self._annotations_names)))
+        data = data[np.arange(timestamps.size), idx] = annotations.duration[idx]
+        # push as a chunk all annotations in the [start:stop] range
+        self._outlet_annotations.push_chunk(data, timestamps)
 
     def _reset_variables(self) -> None:
         """Reset variables for streaming."""
