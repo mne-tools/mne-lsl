@@ -34,7 +34,7 @@ stubgen.main(
     ]
 )
 stubs = list(directory.rglob("*.pyi"))
-config = str((directory.parent / "pyproject.toml"))
+config = str(directory.parent / "pyproject.toml")
 config_isort = isort.settings.Config(config)
 
 # expand docstrings and inject into stub files
