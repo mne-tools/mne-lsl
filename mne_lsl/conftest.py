@@ -13,6 +13,11 @@ from pytest import fixture
 from mne_lsl import set_log_level
 from mne_lsl.datasets import testing
 
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from pytest import Config
+
 # Set debug logging in LSL, e.g.:
 # 2023-10-20 09:38:21.639 (   9.656s) [pytest          ]         udp_server.cpp:88       2| P_test_stream_add_reference_channels[1s]: Started multicast udp server at ff05:113d:6fdd:2c17:a643:ffe2:1bd1:3cd2 port 16571 (addr 0x43f93a0)  # noqa: E501
 # 2023-10-20 09:38:21.639 (   9.656s) [pytest          ]         tcp_server.cpp:160      1| Created IPv4 TCP acceptor for P_test_stream_add_reference_channels[1s] @ port 16572  # noqa: E501
@@ -24,11 +29,6 @@ if "LSLAPICFG" not in os.environ:
     with lsl_cfg as fid:
         fid.write(f"[log]\nlevel = {level}\n\n[multicast]\nResolveScope = link")
     os.environ["LSLAPICFG"] = lsl_cfg.name
-
-if TYPE_CHECKING:
-    from pathlib import Path
-
-    from pytest import Config
 
 
 def pytest_configure(config: Config) -> None:

@@ -66,7 +66,7 @@ class PlayerLSL(BasePlayer):
         # create stream info based on raw
         ch_types = self._raw.get_channel_types(unique=True)
         self._sinfo = StreamInfo(
-            name=f"{self._name}-annotations",
+            name=self._name,
             stype=ch_types[0] if len(ch_types) == 1 else "",
             n_channels=len(self._raw.info["ch_names"]),
             sfreq=self._raw.info["sfreq"],
@@ -78,7 +78,7 @@ class PlayerLSL(BasePlayer):
         if self._annotations:
             annotations_names = sorted(set(self._raw.annotations.description))
             self._sinfo_annotations = StreamInfo(
-                name=self._name,
+                name=f"{self._name}-annotations",
                 stype="annotations",
                 n_channels=len(annotations_names),
                 sfreq=0.0,
@@ -88,6 +88,8 @@ class PlayerLSL(BasePlayer):
             self._sinfo_annotations.set_channel_names(annotations_names)
             self._sinfo_annotations.set_channel_types("annotations")
             self._sinfo_annotations.set_channel_units("none")
+        else:
+            self._sinfo_annotations = None
         # create additional streaming variables
         self._reset_variables()
 
