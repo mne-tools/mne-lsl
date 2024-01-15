@@ -15,6 +15,8 @@ if TYPE_CHECKING:
     from pathlib import Path
     from typing import Callable, Optional, Union
 
+    from mne import Annotations
+
 
 class PlayerLSL(BasePlayer):
     """Class for creating a mock LSL stream.
@@ -30,6 +32,13 @@ class PlayerLSL(BasePlayer):
         properly.
     name : str | None
         Name of the mock LSL stream. If ``None``, the name ``MNE-LSL-Player`` is used.
+    annotations : bool | None
+        If ``True``, an :class:`~mne_lsl.lsl.StreamOutlet` is created for the
+        :class:`~mne.Annotations` of the :class:`~mne.io.Raw` object. If ``False``,
+        :class:`~mne.Annotations` are ignored and the :clas:`~mne_lsl.lsl.StreamOutlet`
+        is not created. If ``None`` (default), the :class:`~mne_lsl.lsl.StreamOutlet` is
+        created only if the :class:`~mne.io.Raw` object has :class:`~mne.Annotations` to
+        push.
 
     Notes
     -----
@@ -39,15 +48,25 @@ class PlayerLSL(BasePlayer):
     """
 
     def __init__(
-        self, fname: Union[str, Path], chunk_size: int = 64, name: Optional[str] = None
+        self,
+        fname: Union[str, Path],
+        chunk_size: int = 64,
+        name: Optional[str] = None,
+        annotations: Optional[bool] = None,
     ) -> None:
         super().__init__(fname, chunk_size)
         check_type(name, (str, None), "name")
+        check_type(annotations, (bool, None), "annotations")
         self._name = "MNE-LSL-Player" if name is None else name
+        # look for annotations
+        if annotations is None:
+            self._annotations = True if len(self._raw.annotations) != 0 else False
+        else:
+            self._annotations = annotations
         # create stream info based on raw
         ch_types = self._raw.get_channel_types(unique=True)
         self._sinfo = StreamInfo(
-            name=self._name,
+            name=f"{self._name}-annotations",
             stype=ch_types[0] if len(ch_types) == 1 else "",
             n_channels=len(self._raw.info["ch_names"]),
             sfreq=self._raw.info["sfreq"],
@@ -56,6 +75,19 @@ class PlayerLSL(BasePlayer):
         )
         self._sinfo.set_channel_info(self._raw.info)
         logger.debug("%s: set channel info", self._name)
+        if self._annotations:
+            annotations_names = sorted(set(self._raw.annotations.description))
+            self._sinfo_annotations = StreamInfo(
+                name=self._name,
+                stype="annotations",
+                n_channels=len(annotations_names),
+                sfreq=0.0,
+                dtype=np.float64,
+                source_id="MNE-LSL",
+            )
+            self._sinfo_annotations.set_channel_names(annotations_names)
+            self._sinfo_annotations.set_channel_types("annotations")
+            self._sinfo_annotations.set_channel_units("none")
         # create additional streaming variables
         self._reset_variables()
 
@@ -87,6 +119,9 @@ class PlayerLSL(BasePlayer):
             )
             return None
         self._outlet = StreamOutlet(self._sinfo, self._chunk_size)
+        self._outlet_annotations = (
+            StreamOutlet(self._sinfo_annotations, 1) if self._annotations else None
+        )
         self._streaming_delay = self.chunk_size / self.info["sfreq"]
         self._streaming_thread = Timer(0, self._stream)
         self._streaming_thread.daemon = True
@@ -184,6 +219,7 @@ class PlayerLSL(BasePlayer):
         logger.debug("Resetting variables %s", self._name)
         super()._reset_variables()
         self._outlet = None
+        self._outlet_annotations = None
         self._target_timestamp = None
 
     # ----------------------------------------------------------------------------------
@@ -191,6 +227,7 @@ class PlayerLSL(BasePlayer):
         """Delete the player and destroy the :class:`~mne_lsl.lsl.StreamOutlet`."""
         super().__del__()
         self._outlet = None
+        self._outlet_annotations = None
 
     def __repr__(self):
         """Representation of the instance."""
@@ -201,6 +238,14 @@ class PlayerLSL(BasePlayer):
         return f"<Player: {self.name} | {status} | {self._fname}>"
 
     # ----------------------------------------------------------------------------------
+    @property
+    def annotations(self) -> Optional[Annotations]:
+        """Annotations attached to the raw object, if streamed.
+
+        :type: :class:`~mne.Annotations` | None
+        """
+        return self._raw.annotations if self._annotations else None
+
     @property
     def name(self) -> str:
         """Name of the LSL stream.
