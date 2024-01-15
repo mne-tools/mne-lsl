@@ -66,12 +66,19 @@ class PlayerLSL(BasePlayer):
         allow_duplicates: bool = False,
         *,
         verbose: Optional[Union[bool, str, int]] = None,
-    ) -> None:
+    ) -> PlayerLSL:
         super().rename_channels(mapping, allow_duplicates)
         self._sinfo.set_channel_names(self.info["ch_names"])
+        return self
 
-    def start(self) -> None:
-        """Start streaming data on the LSL :class:`~mne_lsl.lsl.StreamOutlet`."""
+    def start(self) -> PlayerLSL:
+        """Start streaming data on the LSL :class:`~mne_lsl.lsl.StreamOutlet`.
+
+        Returns
+        -------
+        player : instance of :class:`~mne_lsl.player.PlayerLSL`
+            The player instance modified in-place.
+        """
         if self._streaming_thread is not None:
             logger.warning(
                 "%s: The player is already started. "
@@ -86,6 +93,7 @@ class PlayerLSL(BasePlayer):
         self._target_timestamp = local_clock()
         self._streaming_thread.start()
         logger.debug("%s: Started streaming thread", self._name)
+        return self
 
     @copy_doc(BasePlayer.set_channel_types)
     def set_channel_types(
@@ -94,26 +102,35 @@ class PlayerLSL(BasePlayer):
         *,
         on_unit_change: str = "warn",
         verbose: Optional[Union[bool, str, int]] = None,
-    ) -> None:
+    ) -> PlayerLSL:
         super().set_channel_types(
             mapping, on_unit_change=on_unit_change, verbose=verbose
         )
         self._sinfo.set_channel_types(self.get_channel_types(unique=False))
+        return self
 
     @copy_doc(BasePlayer.set_channel_units)
-    def set_channel_units(self, mapping: dict[str, Union[str, int]]) -> None:
+    def set_channel_units(self, mapping: dict[str, Union[str, int]]) -> PlayerLSL:
         super().set_channel_units(mapping)
         ch_units_after = np.array(
             [ch["unit_mul"] for ch in self.info["chs"]], dtype=np.int8
         )
         self._sinfo.set_channel_units(ch_units_after)
+        return self
 
-    def stop(self) -> None:
-        """Stop streaming data on the LSL :class:`~mne_lsl.lsl.StreamOutlet`."""
+    def stop(self) -> PlayerLSL:
+        """Stop streaming data on the LSL :class:`~mne_lsl.lsl.StreamOutlet`.
+
+        Returns
+        -------
+        player : instance of :class:`~mne_lsl.player.PlayerLSL`
+            The player instance modified in-place.
+        """
         logger.debug("%s: Stopping", self._name)
         super().stop()
         self._outlet = None
         self._reset_variables()
+        return self
 
     @copy_doc(BasePlayer._stream)
     def _stream(self) -> None:

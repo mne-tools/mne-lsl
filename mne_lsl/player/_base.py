@@ -70,7 +70,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         keep_his: bool = False,
         *,
         verbose: Optional[Union[bool, str, int]] = None,
-    ) -> None:
+    ) -> BasePlayer:
         """Anonymize the measurement information in-place.
 
         Parameters
@@ -78,6 +78,11 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         %(daysback_anonymize_info)s
         %(keep_his_anonymize_info)s
         %(verbose)s
+
+        Returns
+        -------
+        player : instance of ``Player``
+            The player instance modified in-place.
 
         Notes
         -----
@@ -91,6 +96,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
             stacklevel=1,
         )
         super().anonymize(daysback=daysback, keep_his=keep_his, verbose=verbose)
+        return self
 
     @fill_doc
     def get_channel_units(
@@ -130,7 +136,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         allow_duplicates: bool = False,
         *,
         verbose: Optional[Union[bool, str, int]] = None,
-    ) -> None:
+    ) -> BasePlayer:
         """Rename channels.
 
         Parameters
@@ -143,12 +149,17 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
             If True (default False), allow duplicates, which will automatically be
             renamed with ``-N`` at the end.
         %(verbose)s
+
+        Returns
+        -------
+        player : instance of ``Player``
+            The player instance modified in-place.
         """
         self._check_not_started("rename_channels()")
         rename_channels(self.info, mapping, allow_duplicates)
 
     @abstractmethod
-    def start(self) -> None:  # pragma: no cover
+    def start(self) -> BasePlayer:  # pragma: no cover
         """Start streaming data."""
         pass
 
@@ -160,7 +171,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         *,
         on_unit_change: str = "warn",
         verbose: Optional[Union[bool, str, int]] = None,
-    ) -> None:
+    ) -> BasePlayer:
         """Define the sensor type of channels.
 
         If the new channel type changes the unit type, e.g. from ``T/m`` to ``V``, the
@@ -179,15 +190,21 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
 
             .. versionadded:: MNE 1.4
         %(verbose)s
+
+        Returns
+        -------
+        player : instance of ``Player``
+            The player instance modified in-place.
         """
         self._check_not_started("set_channel_types()")
         super().set_channel_types(
             mapping=mapping, on_unit_change=on_unit_change, verbose=verbose
         )
         self._sinfo.set_channel_types(self.get_channel_types(unique=False))
+        return self
 
     @abstractmethod
-    def set_channel_units(self, mapping: dict[str, Union[str, int]]) -> None:
+    def set_channel_units(self, mapping: dict[str, Union[str, int]]) -> BasePlayer:
         """Define the channel unit multiplication factor.
 
         By convention, MNE stores data in SI units. But systems often stream in non-SI
@@ -206,6 +223,11 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
             A dictionary mapping a channel to a unit, e.g. ``{'EEG061': 'microvolts'}``.
             The unit can be given as a human-readable string or as a unit multiplication
             factor, e.g. ``-6`` for microvolts corresponding to ``1e-6``.
+
+        Returns
+        -------
+        player : instance of ``Player``
+            The player instance modified in-place.
 
         Notes
         -----
@@ -227,10 +249,11 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
             channel_wise=False,
             picks="all",
         )
+        return self
 
     def set_meas_date(
         self, meas_date: Optional[Union[datetime, float, tuple[float, float]]]
-    ) -> None:
+    ) -> BasePlayer:
         """Set the measurement start date.
 
         Parameters
@@ -242,6 +265,11 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
             ``(meas_date, 0)``) can also be passed and a datetime
             object will be automatically created. If None, will remove
             the time reference.
+
+        Returns
+        -------
+        player : instance of ``Player``
+            The player instance modified in-place.
 
         See Also
         --------
@@ -255,9 +283,10 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
             stacklevel=1,
         )
         super().set_meas_date(meas_date)
+        return self
 
     @abstractmethod
-    def stop(self) -> None:
+    def stop(self) -> BasePlayer:
         """Stop streaming data on the mock real-time stream."""
         if self._streaming_thread is None:
             raise RuntimeError(

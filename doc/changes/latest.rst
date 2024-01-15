@@ -22,7 +22,7 @@ Version 1.2
 Enhancements
 ------------
 
-- xxx
+- Apply MNE design philosophy by returning ``self`` in the methods modifying a :class:`~mne_lsl.stream.StreamLSL` and :class:`~mne_lsl.player.PlayerLSL` in-place (:pr:`200` by `Mathieu Scheltienne`_)
 
 Bugs
 ----
