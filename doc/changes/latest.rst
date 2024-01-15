@@ -23,6 +23,7 @@ Enhancements
 ------------
 
 - Apply MNE design philosophy by returning ``self`` in the methods modifying a :class:`~mne_lsl.stream.StreamLSL` and :class:`~mne_lsl.player.PlayerLSL` in-place (:pr:`200` by `Mathieu Scheltienne`_)
+- Add argument ``annotations`` to :class:`~mne_lsl.player.PlayerLSL` to stream annotations on a separate :class:`~mne_lsl.lsl.StreamOutlet` (:pr:`202` by `Mathieu Scheltienne`_)
 
 Bugs
 ----
