@@ -24,6 +24,8 @@ With the arguments:
   pushed at once.
 * ``-n``, ``--name`` (optional, default ``MNE-LSL-Player``): :class:`str`, name of the
   LSL stream.
+* ``--annotations`` (optional): enable streaming of annotations on a second
+  :class:`~mne_lsl.lsl.StreamOutlet`.
 
 StreamViewer
 ------------
