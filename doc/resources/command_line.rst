@@ -19,7 +19,8 @@ with the command:
 
 With the arguments:
 
-* ``file`` (mandatory): :term:`file-like <python:file object>`, file to stream.
+* ``file`` (mandatory): :term:`file-like <python:file object>`, file to stream (must be
+  (readable with :func:`mne.io.read_raw`).
 * ``-c``, ``--chunk_size`` (optional, default ``16``): :class:`int`, number of samples
   pushed at once.
 * ``-n``, ``--name`` (optional, default ``MNE-LSL-Player``): :class:`str`, name of the
