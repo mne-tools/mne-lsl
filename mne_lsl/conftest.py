@@ -6,6 +6,7 @@ from tempfile import NamedTemporaryFile
 from typing import TYPE_CHECKING
 
 import numpy as np
+from mne import Annotations
 from mne import set_log_level as set_log_level_mne
 from mne.io import Raw, read_raw_fif
 from pytest import fixture
@@ -93,7 +94,7 @@ def close_io():
 def fname(tmp_path_factory) -> Path:
     """Yield fname of a file with sample numbers in the first channel."""
     fname = testing.data_path() / "sample-eeg-ant-raw.fif"
-    raw = read_raw_fif(fname, preload=True)
+    raw = read_raw_fif(fname, preload=True)  # 67 channels x 2049 samples -> 2 seconds
     raw._data[0] = np.arange(len(raw.times))
     raw.rename_channels({raw.ch_names[0]: "Samples"})
     raw.set_channel_types({raw.ch_names[0]: "misc"}, on_unit_change="ignore")
@@ -103,13 +104,25 @@ def fname(tmp_path_factory) -> Path:
 
 
 @fixture(scope="function")
-def raw(fname) -> Raw:
+def raw(fname: Path) -> Raw:
     """Return the raw file corresponding to fname."""
     return read_raw_fif(fname, preload=True)
 
 
 @fixture(scope="function")
-def mock_lsl_stream(fname, request):
+def raw_annotations(raw: Raw) -> Raw:
+    """Return a raw file with annotations."""
+    annotations = Annotations(
+        onset=[0.1, 0.4, 0.5, 0.8, 0.95, 1.1, 1.3],
+        duration=[0.2, 0.2, 0.2, 0.1, 0.05, 0.4, 0.55],
+        description=["test1", "test1", "test1", "test2", "test3", "bad_test", "test1"],
+    )
+    raw.set_annotations(annotations)
+    return raw
+
+
+@fixture(scope="function")
+def mock_lsl_stream(fname: Path, request):
     """Create a mock LSL stream for testing."""
     # nest the PlayerLSL import to first write the temporary LSL configuration file
     from mne_lsl.player import PlayerLSL  # noqa: E402

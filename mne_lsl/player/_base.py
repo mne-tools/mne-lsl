@@ -6,7 +6,7 @@ from warnings import warn
 
 import numpy as np
 from mne import rename_channels
-from mne.io import read_raw
+from mne.io import BaseRaw, read_raw
 from mne.utils import check_version
 
 if check_version("mne", "1.6"):
@@ -37,9 +37,10 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
 
     Parameters
     ----------
-    fname : path-like
+    fname : path-like | Raw
         Path to the file to re-play as a mock real-time stream. MNE-Python must be able
-        to load the file with :func:`mne.io.read_raw`.
+        to load the file with :func:`mne.io.read_raw`. An :class:`~mne.io.Raw` object
+        can be provided directly.
     chunk_size : int ``≥ 1``
         Number of samples pushed at once on the mock real-time stream.
 
@@ -51,8 +52,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
     """
 
     @abstractmethod
-    def __init__(self, fname: Union[str, Path], chunk_size: int = 64) -> None:
-        self._fname = ensure_path(fname, must_exist=True)
+    def __init__(self, fname: Union[str, Path, BaseRaw], chunk_size: int = 64) -> None:
         self._chunk_size = ensure_int(chunk_size, "chunk_size")
         if self._chunk_size <= 0:
             raise ValueError(
@@ -60,7 +60,11 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
                 f"{chunk_size} is invalid."
             )
         # load raw recording
-        self._raw = read_raw(self._fname, preload=True)
+        if isinstance(fname, BaseRaw):
+            self._raw = fname
+        else:
+            self._fname = ensure_path(fname, must_exist=True)
+            self._raw = read_raw(self._fname, preload=True)
         # This method should end on a self._reset_variables()
 
     @fill_doc
