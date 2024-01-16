@@ -1,6 +1,7 @@
 from __future__ import annotations  # c.f. PEP 563, PEP 649
 
 from abc import ABC, abstractmethod
+from pathlib import Path
 from typing import TYPE_CHECKING
 from warnings import warn
 
@@ -26,7 +27,6 @@ from ..utils.meas_info import _set_channel_units
 
 if TYPE_CHECKING:
     from datetime import datetime
-    from pathlib import Path
     from typing import Any, Callable, Optional, Union
 
     from mne import Info
@@ -61,6 +61,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
             )
         # load raw recording
         if isinstance(fname, BaseRaw):
+            self._fname = Path(fname.filenames[0])
             self._raw = fname
         else:
             self._fname = ensure_path(fname, must_exist=True)
@@ -95,9 +96,9 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         self._check_not_started("anonymize()")
         warn(
             "Player.anonymize() is partially implemented and does not impact the "
-            "stream information yet.",
+            "stream information yet. It will call Player.set_meas_date() internally.",
             RuntimeWarning,
-            stacklevel=1,
+            stacklevel=2,
         )
         super().anonymize(daysback=daysback, keep_his=keep_his, verbose=verbose)
         return self
@@ -284,7 +285,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
             "Player.set_meas_date() is partially implemented and does not impact the "
             "stream information yet.",
             RuntimeWarning,
-            stacklevel=1,
+            stacklevel=2,
         )
         super().set_meas_date(meas_date)
         return self

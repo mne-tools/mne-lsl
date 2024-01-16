@@ -2,6 +2,7 @@ from __future__ import annotations  # c.f. PEP 563, PEP 649
 
 from threading import Timer
 from typing import TYPE_CHECKING
+from warnings import warn
 
 import numpy as np
 from mne import Annotations
@@ -121,10 +122,11 @@ class PlayerLSL(BasePlayer):
             The player instance modified in-place.
         """
         if self._streaming_thread is not None:
-            logger.warning(
-                "%s: The player is already started. "
+            warn(
+                f"{self._name}: The player is already started. "
                 "Use Player.stop() to stop streaming.",
-                self._name,
+                RuntimeWarning,
+                stacklevel=2,
             )
             return None
         self._outlet = StreamOutlet(self._sinfo, self._chunk_size)
