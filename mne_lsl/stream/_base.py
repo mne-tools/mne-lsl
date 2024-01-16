@@ -263,7 +263,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         """
         if self.connected:
             logger.warning("The stream is already connected. Skipping.")
-            return None
+            return self
         check_type(acquisition_delay, ("numeric",), "acquisition_delay")
         if acquisition_delay < 0:
             raise ValueError(

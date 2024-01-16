@@ -137,7 +137,7 @@ class PlayerLSL(BasePlayer):
                 RuntimeWarning,
                 stacklevel=2,
             )
-            return None
+            return self
         self._outlet = StreamOutlet(self._sinfo, self._chunk_size)
         self._outlet_annotations = (
             StreamOutlet(self._sinfo_annotations, 1) if self._annotations else None
