@@ -28,7 +28,7 @@ def _find_liblsl() -> Optional[CDLL]:
         Loaded binary LSL library. None if not found.
     """
 
-def _fetch_liblsl(folder: Path = ...) -> Optional[CDLL]:
+def _fetch_liblsl(folder: Path=...) -> Optional[CDLL]:
     """Fetch liblsl on the release page.
 
     Parameters
@@ -94,5 +94,4 @@ def _set_types(lib: CDLL) -> CDLL:
     lib : CDLL
         Loaded binary LSL library with the return types set.
     """
-
 lib: Incomplete

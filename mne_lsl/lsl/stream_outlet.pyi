@@ -35,7 +35,6 @@ class StreamOutlet:
         buffered is ``max_buffered * 100`` if the sampling rate is irregular, else it's
         ``max_buffered`` seconds.
     """
-
     _lock: Incomplete
     _dtype: Incomplete
     _name: Incomplete
@@ -47,15 +46,18 @@ class StreamOutlet:
     _do_push_chunk_n: Incomplete
     _buffer_sample: Incomplete
 
-    def __init__(
-        self, sinfo: _BaseStreamInfo, chunk_size: int = 1, max_buffered: float = 360
-    ) -> None: ...
+    def __init__(self, sinfo: _BaseStreamInfo, chunk_size: int=1, max_buffered: float=360) -> None:
+        ...
+
     @property
-    def _obj(self): ...
+    def _obj(self):
+        ...
     __obj: Incomplete
 
     @_obj.setter
-    def _obj(self, obj) -> None: ...
+    def _obj(self, obj) -> None:
+        ...
+
     def __del__(self) -> None:
         """Destroy a :class:`~mne_lsl.lsl.StreamOutlet`.
 
@@ -63,12 +65,7 @@ class StreamOutlet:
         inlets will stop delivering data.
         """
 
-    def push_sample(
-        self,
-        x: Union[list[str], NDArray[None]],
-        timestamp: float = 0.0,
-        pushThrough: bool = True,
-    ) -> None:
+    def push_sample(self, x: Union[list[str], NDArray[None]], timestamp: float=0.0, pushThrough: bool=True) -> None:
         """Push a sample into the :class:`~mne_lsl.lsl.StreamOutlet`.
 
         Parameters
@@ -87,12 +84,7 @@ class StreamOutlet:
             ``pushThrough`` flag.
         """
 
-    def push_chunk(
-        self,
-        x: Union[list[list[str]], NDArray[None]],
-        timestamp: Optional[Union[float, NDArray[None]]] = None,
-        pushThrough: bool = True,
-    ) -> None:
+    def push_chunk(self, x: Union[list[list[str]], NDArray[None]], timestamp: Optional[Union[float, NDArray[None]]]=None, pushThrough: bool=True) -> None:
         """Push a chunk of samples into the :class:`~mne_lsl.lsl.StreamOutlet`.
 
         Parameters

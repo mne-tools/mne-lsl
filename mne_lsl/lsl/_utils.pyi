@@ -11,7 +11,6 @@ class XMLElement:
     attributes are omitted. Insider note: The interface is modeled after a subset of
     pugixml's node type and is compatible with it.
     """
-
     e: Incomplete
 
     def __init__(self, handle) -> None:
@@ -26,13 +25,13 @@ class XMLElement:
     def child(self, name):
         """Get a child with a specified name."""
 
-    def next_sibling(self, name: Incomplete | None = None):
+    def next_sibling(self, name: Incomplete | None=None):
         """Get the next sibling in the children list of the parent node.
 
         If a name is provided, the next sibling with the given name is returned.
         """
 
-    def previous_sibling(self, name: Incomplete | None = None):
+    def previous_sibling(self, name: Incomplete | None=None):
         """Get the previous sibling in the children list of the parent node.
 
         If a name is provided, the previous sibling with the given name is returned.
@@ -56,7 +55,7 @@ class XMLElement:
     def value(self):
         """Value of the element."""
 
-    def child_value(self, name: Incomplete | None = None):
+    def child_value(self, name: Incomplete | None=None):
         """Get child value (value of the first child that is text).
 
         If a name is provided, then the value of the first child with the given name is
@@ -105,9 +104,14 @@ class XMLElement:
     def remove_child(self, rhs) -> None:
         """Remove a given child element, specified by name or as element."""
 
-class LostError(RuntimeError): ...
-class InvalidArgumentError(RuntimeError): ...
-class InternalError(RuntimeError): ...
+class LostError(RuntimeError):
+    ...
+
+class InvalidArgumentError(RuntimeError):
+    ...
+
+class InternalError(RuntimeError):
+    ...
 
 def handle_error(errcode) -> None:
     """Error handler function.
@@ -115,7 +119,9 @@ def handle_error(errcode) -> None:
     Translates an error code into an exception.
     """
 
-def free_char_p_array_memory(char_p_array) -> None: ...
+def free_char_p_array_memory(char_p_array) -> None:
+    ...
+
 def check_timeout(timeout: Optional[float]) -> float:
     """Check that the provided timeout is valid.
 

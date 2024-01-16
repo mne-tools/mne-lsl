@@ -5,4 +5,5 @@ class _WrapStdOut:
     sphinx-gallery) work properly.
     """
 
-    def __getattr__(self, name): ...
+    def __getattr__(self, name):
+        ...

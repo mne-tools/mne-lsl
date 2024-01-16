@@ -1,4 +1,5 @@
-from typing import Optional, Sequence, Union
+from collections.abc import Sequence as Sequence
+from typing import Optional, Union
 
 from _typeshed import Incomplete
 
@@ -37,18 +38,13 @@ class StreamLSL(BaseStream):
     with :func:`mne_lsl.lsl.resolve_streams` and create an inlet with
     :class:`~mne_lsl.lsl.StreamInlet`.
     """
-
     _name: Incomplete
     _stype: Incomplete
     _source_id: Incomplete
 
-    def __init__(
-        self,
-        bufsize: float,
-        name: Optional[str] = None,
-        stype: Optional[str] = None,
-        source_id: Optional[str] = None,
-    ) -> None: ...
+    def __init__(self, bufsize: float, name: Optional[str]=None, stype: Optional[str]=None, source_id: Optional[str]=None) -> None:
+        ...
+
     def __repr__(self) -> str:
         """Representation of the instance."""
     _inlet: Incomplete
@@ -58,12 +54,7 @@ class StreamLSL(BaseStream):
     _timestamps: Incomplete
     _picks_inlet: Incomplete
 
-    def connect(
-        self,
-        acquisition_delay: float = 0.001,
-        processing_flags: Optional[Union[str, Sequence[str]]] = None,
-        timeout: Optional[float] = 2,
-    ) -> None:
+    def connect(self, acquisition_delay: float=0.001, processing_flags: Optional[Union[str, Sequence[str]]]=None, timeout: Optional[float]=2) -> StreamLSL:
         """Connect to the LSL stream and initiate data collection in the buffer.
 
         Parameters
@@ -86,6 +77,11 @@ class StreamLSL(BaseStream):
             Optional timeout (in seconds) of the operation. ``None`` disables the
             timeout. The timeout value is applied once to every operation supporting it.
 
+        Returns
+        -------
+        stream : instance of :class:`~mne_lsl.stream.StreamLSL`
+            The stream instance modified in-place.
+
         Notes
         -----
         If all 3 stream identifiers ``name``, ``stype`` and ``source_id`` are left to
@@ -95,8 +91,14 @@ class StreamLSL(BaseStream):
         matching the identifier is found.
         """
 
-    def disconnect(self) -> None:
-        """Disconnect from the LSL stream and interrupt data collection."""
+    def disconnect(self) -> StreamLSL:
+        """Disconnect from the LSL stream and interrupt data collection.
+
+        Returns
+        -------
+        stream : instance of :class:`~mne_lsl.stream.StreamLSL`
+            The stream instance modified in-place.
+        """
 
     def _acquire(self) -> None:
         """Update function pulling new samples in the buffer at a regular interval."""

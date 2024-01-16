@@ -1,4 +1,5 @@
-from typing import Optional, Sequence, Union
+from collections.abc import Sequence as Sequence
+from typing import Optional, Union
 
 import numpy as np
 from _typeshed import Incomplete
@@ -52,7 +53,6 @@ class StreamInlet:
         * ``'threadsafe'``: Post-processing is thread-safe, thus the same
           inlet can be read from multiple threads.
     """
-
     _lock: Incomplete
     _dtype: Incomplete
     _name: Incomplete
@@ -65,27 +65,25 @@ class StreamInlet:
     _buffer_ts: Incomplete
     _stream_is_open: bool
 
-    def __init__(
-        self,
-        sinfo: _BaseStreamInfo,
-        chunk_size: int = 0,
-        max_buffered: float = 360,
-        recover: bool = True,
-        processing_flags: Optional[Union[str, Sequence[str]]] = None,
-    ) -> None: ...
+    def __init__(self, sinfo: _BaseStreamInfo, chunk_size: int=0, max_buffered: float=360, recover: bool=True, processing_flags: Optional[Union[str, Sequence[str]]]=None) -> None:
+        ...
+
     @property
-    def _obj(self): ...
+    def _obj(self):
+        ...
     __obj: Incomplete
 
     @_obj.setter
-    def _obj(self, obj) -> None: ...
+    def _obj(self, obj) -> None:
+        ...
+
     def __del__(self) -> None:
         """Destroy a :class:`~mne_lsl.lsl.StreamInlet`.
 
         The inlet will automatically disconnect.
         """
 
-    def open_stream(self, timeout: Optional[float] = None) -> None:
+    def open_stream(self, timeout: Optional[float]=None) -> None:
         """Subscribe to a data stream.
 
         All samples pushed in at the other end from this moment onwards will be queued
@@ -124,7 +122,7 @@ class StreamInlet:
             `github issue <https://github.com/sccn/liblsl/issues/180>`_.
         """
 
-    def time_correction(self, timeout: Optional[float] = None) -> float:
+    def time_correction(self, timeout: Optional[float]=None) -> float:
         """Retrieve an estimated time correction offset for the given stream.
 
         The first call to this function takes several milliseconds until a reliable
@@ -146,9 +144,7 @@ class StreamInlet:
             the :func:`~mne_lsl.lsl.local_clock` domain of the client machine.
         """
 
-    def pull_sample(
-        self, timeout: Optional[float] = 0.0
-    ) -> tuple[Union[list[str], NDArray[None]], Optional[float]]:
+    def pull_sample(self, timeout: Optional[float]=0.0) -> tuple[Union[list[str], NDArray[None]], Optional[float]]:
         """Pull a single sample from the inlet.
 
         Parameters
@@ -176,9 +172,7 @@ class StreamInlet:
         ``sample`` is returned and ``timestamp`` is set to None.
         """
 
-    def pull_chunk(
-        self, timeout: Optional[float] = 0.0, max_samples: int = 1024
-    ) -> tuple[Union[list[list[str]], NDArray[None]], NDArray[np.float64]]:
+    def pull_chunk(self, timeout: Optional[float]=0.0, max_samples: int=1024) -> tuple[Union[list[list[str]], NDArray[None]], NDArray[np.float64]]:
         """Pull a chunk of samples from the inlet.
 
         Parameters
@@ -290,7 +284,7 @@ class StreamInlet:
         :type: :class:`bool`
         """
 
-    def get_sinfo(self, timeout: Optional[float] = None) -> _BaseStreamInfo:
+    def get_sinfo(self, timeout: Optional[float]=None) -> _BaseStreamInfo:
         """:class:`~mne_lsl.lsl.StreamInfo` corresponding to this Inlet.
 
         Parameters

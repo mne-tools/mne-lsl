@@ -34,11 +34,12 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         If the stream sampling rate ``sfreq`` is irregular, ``bufsize`` is
         expressed in samples. The buffer will hold the last ``bufsize`` samples.
     """
-
     _bufsize: Incomplete
 
     @abstractmethod
-    def __init__(self, bufsize: float): ...
+    def __init__(self, bufsize: float):
+        ...
+
     def __contains__(self, ch_type: str) -> bool:
         """Check channel type membership.
 
@@ -72,13 +73,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         """Representation of the instance."""
     _buffer: Incomplete
 
-    def add_reference_channels(
-        self,
-        ref_channels: Union[str, list[str], tuple[str]],
-        ref_units: Optional[
-            Union[str, int, list[Union[str, int]], tuple[Union[str, int]]]
-        ] = None,
-    ) -> None:
+    def add_reference_channels(self, ref_channels: Union[str, list[str], tuple[str]], ref_units: Optional[Union[str, int, list[Union[str, int]], tuple[Union[str, int]]]]=None) -> BaseStream:
         """Add EEG reference channels to data that consists of all zeros.
 
         Adds EEG reference channels that are not part of the streamed data. This is
@@ -98,15 +93,14 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             If not provided, the added EEG reference channel has a unit multiplication
             factor set to ``0`` which corresponds to Volts. Use
             ``Stream.set_channel_units`` to change the unit multiplication factor.
+
+        Returns
+        -------
+        stream : instance of ``Stream``
+            The stream instance modified in-place.
         """
 
-    def anonymize(
-        self,
-        daysback: Optional[int] = None,
-        keep_his: bool = False,
-        *,
-        verbose: Optional[Union[bool, str, int]] = None,
-    ) -> None:
+    def anonymize(self, daysback: Optional[int]=None, keep_his: bool=False, *, verbose: Optional[Union[bool, str, int]]=None) -> BaseStream:
         """Anonymize the measurement information in-place.
 
         Parameters
@@ -119,7 +113,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         keep_his : bool
             If ``True``, ``his_id`` of ``subject_info`` will **not** be overwritten.
             Defaults to ``False``.
-
+        
             .. warning:: This could mean that ``info`` is not fully
                          anonymized. Use with caution.
         verbose : int | str | bool | None
@@ -129,11 +123,16 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             If a bool is provided, the verbosity is set to ``"WARNING"`` for False and
             to ``"INFO"`` for True.
 
+        Returns
+        -------
+        stream : instance of ``Stream``
+            The stream instance modified in-place.
+
         Notes
         -----
         Removes potentially identifying information if it exists in ``info``.
         Specifically for each of the following we use:
-
+        
         - meas_date, file_id, meas_id
                 A default value, or as specified by ``daysback``.
         - subject_info
@@ -149,17 +148,17 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
                 Dates use the ``meas_date`` logic, and experimenter a default string.
         - helium_info, device_info
                 Dates use the ``meas_date`` logic, meta info uses defaults.
-
+        
         If ``info['meas_date']`` is ``None``, it will remain ``None`` during processing
         the above fields.
-
+        
         Operates in place.
         """
     _acquisition_delay: Incomplete
     _n_new_samples: int
 
     @abstractmethod
-    def connect(self, acquisition_delay: float) -> None:
+    def connect(self, acquisition_delay: float) -> BaseStream:
         """Connect to the stream and initiate data collection in the buffer.
 
         Parameters
@@ -167,14 +166,25 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         acquisition_delay : float
             Delay in seconds between 2 acquisition during which chunks of data are
             pulled from the connected device.
+
+        Returns
+        -------
+        stream : instance of ``Stream``
+            The stream instance modified in-place.
         """
     _interrupt: bool
 
     @abstractmethod
-    def disconnect(self) -> None:
-        """Disconnect from the LSL stream and interrupt data collection."""
+    def disconnect(self) -> BaseStream:
+        """Disconnect from the LSL stream and interrupt data collection.
 
-    def drop_channels(self, ch_names: Union[str, list[str], tuple[str]]) -> None:
+        Returns
+        -------
+        stream : instance of ``Stream``
+            The stream instance modified in-place.
+        """
+
+    def drop_channels(self, ch_names: Union[str, list[str], tuple[str]]) -> BaseStream:
         """Drop channel(s).
 
         Parameters
@@ -182,32 +192,38 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         ch_names : str | list of str
             Name or list of names of channels to remove.
 
+        Returns
+        -------
+        stream : instance of ``Stream``
+            The stream instance modified in-place.
+
         See Also
         --------
         pick
         """
 
-    def filter(self) -> None:
-        """Filter the stream. Not implemented."""
+    def filter(self) -> BaseStream:
+        """Filter the stream. Not implemented.
 
-    def get_channel_types(
-        self,
-        picks: Incomplete | None = None,
-        unique: bool = False,
-        only_data_chs: bool = False,
-    ) -> list[str]:
+        Returns
+        -------
+        stream : instance of ``Stream``
+            The stream instance modified in-place.
+        """
+
+    def get_channel_types(self, picks: Incomplete | None=None, unique: bool=False, only_data_chs: bool=False) -> list[str]:
         """Get a list of channel type for each channel.
 
         Parameters
         ----------
         picks : str | array-like | slice | None
-            Channels to include. Slices and lists of integers will be interpreted as
-            channel indices. In lists, channel *type* strings (e.g., ``['meg',
-            'eeg']``) will pick channels of those types, channel *name* strings (e.g.,
-            ``['MEG0111', 'MEG2623']`` will pick the given channels. Can also be the
-            string values "all" to pick all channels, or "data" to pick :term:`data
-            channels`. None (default) will pick all channels. Note that channels in
-            ``info['bads']`` *will be included* if their names or indices are
+            Channels to include. Slices and lists of integers will be interpreted as 
+            channel indices. In lists, channel *type* strings (e.g., ``['meg', 
+            'eeg']``) will pick channels of those types, channel *name* strings (e.g., 
+            ``['MEG0111', 'MEG2623']`` will pick the given channels. Can also be the 
+            string values "all" to pick all channels, or "data" to pick :term:`data 
+            channels`. None (default) will pick all channels. Note that channels in 
+            ``info['bads']`` *will be included* if their names or indices are 
             explicitly provided.
         unique : bool
             Whether to return only unique channel types. Default is ``False``.
@@ -220,21 +236,19 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             The channel types.
         """
 
-    def get_channel_units(
-        self, picks: Incomplete | None = None, only_data_chs: bool = False
-    ) -> list[tuple[int, int]]:
+    def get_channel_units(self, picks: Incomplete | None=None, only_data_chs: bool=False) -> list[tuple[int, int]]:
         """Get a list of channel unit for each channel.
 
         Parameters
         ----------
         picks : str | array-like | slice | None
-            Channels to include. Slices and lists of integers will be interpreted as
-            channel indices. In lists, channel *type* strings (e.g., ``['meg',
-            'eeg']``) will pick channels of those types, channel *name* strings (e.g.,
-            ``['MEG0111', 'MEG2623']`` will pick the given channels. Can also be the
-            string values "all" to pick all channels, or "data" to pick :term:`data
-            channels`. None (default) will pick all channels. Note that channels in
-            ``info['bads']`` *will be included* if their names or indices are
+            Channels to include. Slices and lists of integers will be interpreted as 
+            channel indices. In lists, channel *type* strings (e.g., ``['meg', 
+            'eeg']``) will pick channels of those types, channel *name* strings (e.g., 
+            ``['MEG0111', 'MEG2623']`` will pick the given channels. Can also be the 
+            string values "all" to pick all channels, or "data" to pick :term:`data 
+            channels`. None (default) will pick all channels. Note that channels in 
+            ``info['bads']`` *will be included* if their names or indices are 
             explicitly provided.
         only_data_chs : bool
             Whether to ignore non-data channels. Default is ``False``.
@@ -248,11 +262,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             for micro (corresponds to ``1e-6``).
         """
 
-    def get_data(
-        self,
-        winsize: Optional[float] = None,
-        picks: Optional[Union[str, list[str], list[int], NDArray[None]]] = None,
-    ) -> tuple[NDArray[None], NDArray[np.float64]]:
+    def get_data(self, winsize: Optional[float]=None, picks: Optional[Union[str, list[str], list[int], NDArray[None]]]=None) -> tuple[NDArray[None], NDArray[np.float64]]:
         """Retrieve the latest data from the buffer.
 
         Parameters
@@ -265,13 +275,13 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             The window will view the last ``winsize`` samples. If ``None``, the entire
             buffer is returned.
         picks : str | array-like | slice | None
-            Channels to include. Slices and lists of integers will be interpreted as
-            channel indices. In lists, channel *type* strings (e.g., ``['meg',
-            'eeg']``) will pick channels of those types, channel *name* strings (e.g.,
-            ``['MEG0111', 'MEG2623']`` will pick the given channels. Can also be the
-            string values "all" to pick all channels, or "data" to pick :term:`data
-            channels`. None (default) will pick all channels. Note that channels in
-            ``info['bads']`` *will be included* if their names or indices are
+            Channels to include. Slices and lists of integers will be interpreted as 
+            channel indices. In lists, channel *type* strings (e.g., ``['meg', 
+            'eeg']``) will pick channels of those types, channel *name* strings (e.g., 
+            ``['MEG0111', 'MEG2623']`` will pick the given channels. Can also be the 
+            string values "all" to pick all channels, or "data" to pick :term:`data 
+            channels`. None (default) will pick all channels. Note that channels in 
+            ``info['bads']`` *will be included* if their names or indices are 
             explicitly provided.
 
         Returns
@@ -284,8 +294,8 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         Notes
         -----
         The number of newly available samples stored in the property ``n_new_samples``
-        is reset at every function call, even if all channels were not selected with
-        the argument ``picks``.
+        is reset at every function call, even if all channels were not selected with the
+        argument ``picks``.
         """
 
     def get_montage(self) -> Optional[DigMontage]:
@@ -293,7 +303,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
         Returns
         -------
-
+        
         montage : None | str | DigMontage
             A montage containing channel positions. If a string or
             :class:`~mne.channels.DigMontage` is
@@ -308,23 +318,28 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
     def plot(self) -> None:
         """Open a real-time stream viewer. Not implemented."""
 
-    def pick(self, picks, exclude=()) -> None:
+    def pick(self, picks, exclude=()) -> BaseStream:
         """Pick a subset of channels.
 
         Parameters
         ----------
         picks : str | array-like | slice | None
-            Channels to include. Slices and lists of integers will be interpreted as
-            channel indices. In lists, channel *type* strings (e.g., ``['meg',
-            'eeg']``) will pick channels of those types, channel *name* strings (e.g.,
-            ``['MEG0111', 'MEG2623']`` will pick the given channels. Can also be the
-            string values "all" to pick all channels, or "data" to pick :term:`data
-            channels`. None (default) will pick all channels. Note that channels in
-            ``info['bads']`` *will be included* if their names or indices are
+            Channels to include. Slices and lists of integers will be interpreted as 
+            channel indices. In lists, channel *type* strings (e.g., ``['meg', 
+            'eeg']``) will pick channels of those types, channel *name* strings (e.g., 
+            ``['MEG0111', 'MEG2623']`` will pick the given channels. Can also be the 
+            string values "all" to pick all channels, or "data" to pick :term:`data 
+            channels`. None (default) will pick all channels. Note that channels in 
+            ``info['bads']`` *will be included* if their names or indices are 
             explicitly provided.
         exclude : str | list of str
             Set of channels to exclude, only used when picking is based on types, e.g.
             ``exclude='bads'`` when ``picks="meg"``.
+
+        Returns
+        -------
+        stream : instance of ``Stream``
+            The stream instance modified in-place.
 
         See Also
         --------
@@ -340,13 +355,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
     def record(self) -> None:
         """Record the stream data to disk. Not implemented."""
 
-    def rename_channels(
-        self,
-        mapping: Union[dict[str, str], Callable],
-        allow_duplicates: bool = False,
-        *,
-        verbose: Optional[Union[bool, str, int]] = None,
-    ) -> None:
+    def rename_channels(self, mapping: Union[dict[str, str], Callable], allow_duplicates: bool=False, *, verbose: Optional[Union[bool, str, int]]=None) -> BaseStream:
         """Rename channels.
 
         Parameters
@@ -364,18 +373,23 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             If None is provided, the verbosity is set to ``"WARNING"``.
             If a bool is provided, the verbosity is set to ``"WARNING"`` for False and
             to ``"INFO"`` for True.
+
+        Returns
+        -------
+        stream : instance of ``Stream``
+            The stream instance modified in-place.
         """
 
-    def set_bipolar_reference(self) -> None:
-        """Set a bipolar reference. Not implemented."""
+    def set_bipolar_reference(self) -> BaseStream:
+        """Set a bipolar reference. Not implemented.
 
-    def set_channel_types(
-        self,
-        mapping: dict[str, str],
-        *,
-        on_unit_change: str = "warn",
-        verbose: Optional[Union[bool, str, int]] = None,
-    ) -> None:
+        Returns
+        -------
+        stream : instance of ``Stream``
+            The stream instance modified in-place.
+        """
+
+    def set_channel_types(self, mapping: dict[str, str], *, on_unit_change: str='warn', verbose: Optional[Union[bool, str, int]]=None) -> BaseStream:
         """Define the sensor type of channels.
 
         If the new channel type changes the unit type, e.g. from ``T/m`` to ``V``, the
@@ -399,9 +413,14 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             If None is provided, the verbosity is set to ``"WARNING"``.
             If a bool is provided, the verbosity is set to ``"WARNING"`` for False and
             to ``"INFO"`` for True.
+
+        Returns
+        -------
+        stream : instance of ``Stream``
+            The stream instance modified in-place.
         """
 
-    def set_channel_units(self, mapping: dict[str, Union[str, int]]) -> None:
+    def set_channel_units(self, mapping: dict[str, Union[str, int]]) -> BaseStream:
         """Define the channel unit multiplication factor.
 
         The unit itself is defined by the sensor type. Use
@@ -415,6 +434,11 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             The unit can be given as a human-readable string or as a unit multiplication
             factor, e.g. ``-6`` for microvolts corresponding to ``1e-6``.
 
+        Returns
+        -------
+        stream : instance of ``Stream``
+            The stream instance modified in-place.
+
         Notes
         -----
         If the human-readable unit of your channel is not yet supported by MNE-LSL,
@@ -423,11 +447,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
     _ref_channels: Incomplete
     _ref_from: Incomplete
 
-    def set_eeg_reference(
-        self,
-        ref_channels: Union[str, list[str], tuple[str]],
-        ch_type: Union[str, list[str], tuple[str]] = "eeg",
-    ) -> None:
+    def set_eeg_reference(self, ref_channels: Union[str, list[str], tuple[str]], ch_type: Union[str, list[str], tuple[str]]='eeg') -> BaseStream:
         """Specify which reference to use for EEG-like data.
 
         Use this function to explicitly specify the desired reference for EEG-like
@@ -443,11 +463,14 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         ch_type : str | list of str
             The name of the channel type to apply the reference to. Valid channel types
             are ``'eeg'``, ``'ecog'``, ``'seeg'``, ``'dbs'``.
+
+        Returns
+        -------
+        stream : instance of ``Stream``
+            The stream instance modified in-place.
         """
 
-    def set_meas_date(
-        self, meas_date: Optional[Union[datetime, float, tuple[float]]]
-    ) -> None:
+    def set_meas_date(self, meas_date: Optional[Union[datetime, float, tuple[float]]]) -> BaseStream:
         """Set the measurement start date.
 
         Parameters
@@ -460,20 +483,17 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             object will be automatically created. If None, will remove
             the time reference.
 
+        Returns
+        -------
+        stream : instance of ``Stream``
+            The stream instance modified in-place.
+
         See Also
         --------
         anonymize
         """
 
-    def set_montage(
-        self,
-        montage: Optional[Union[str, DigMontage]],
-        match_case: bool = True,
-        match_alias: Union[bool, dict[str, str]] = False,
-        on_missing: str = "raise",
-        *,
-        verbose: Optional[Union[bool, str, int]] = None,
-    ) -> None:
+    def set_montage(self, montage: Optional[Union[str, DigMontage]], match_case: bool=True, match_alias: Union[bool, dict[str, str]]=False, on_missing: str='raise', *, verbose: Optional[Union[bool, str, int]]=None) -> BaseStream:
         """Set EEG/sEEG/ECoG/DBS/fNIRS channel positions and digitization points.
 
         Parameters
@@ -489,7 +509,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             :class:`~mne.Info`.
         match_case : bool
             If True (default), channel name matching will be case sensitive.
-
+        
             .. versionadded:: MNE  0.20
         match_alias : bool | dict
             Whether to use a lookup table to match unrecognized channel location names
@@ -497,12 +517,12 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             ``mne.io.constants.CHANNEL_LOC_ALIASES``. If a :class:`dict` is passed, it
             will be used instead, and should map from non-standard channel names to
             names in the specified ``montage``. Default is ``False``.
-
+        
             .. versionadded:: MNE  0.23
         on_missing : 'raise' | 'warn' | 'ignore'
             Can be ``'raise'`` (default) to raise an error, ``'warn'`` to emit a
             warning, or ``'ignore'`` to ignore when channels have missing coordinates.
-
+        
             .. versionadded:: MNE  0.20.1
         verbose : int | str | bool | None
             Sets the verbosity level. The verbosity increases gradually between
@@ -510,6 +530,11 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             If None is provided, the verbosity is set to ``"WARNING"``.
             If a bool is provided, the verbosity is set to ``"WARNING"`` for False and
             to ``"INFO"`` for True.
+
+        Returns
+        -------
+        stream : instance of ``Stream``
+            The stream instance modified in-place.
 
         See Also
         --------

@@ -6,9 +6,7 @@ from ._fetch import fetch_dataset as fetch_dataset
 
 _REGISTRY: Path
 
-def _make_registry(
-    folder: Union[str, Path], output: Optional[Union[str, Path]] = None
-) -> None:
+def _make_registry(folder: Union[str, Path], output: Optional[Union[str, Path]]=None) -> None:
     """Create the registry file for the testing dataset.
 
     Parameters

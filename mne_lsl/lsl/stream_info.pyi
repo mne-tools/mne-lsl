@@ -34,11 +34,12 @@ class _BaseStreamInfo:
       ...)
     * Hosting information (uID, hostname, ...) if bound to an inlet or outlet
     """
-
     _obj: Incomplete
     _dtype: Incomplete
 
-    def __init__(self, obj) -> None: ...
+    def __init__(self, obj) -> None:
+        ...
+
     def __del__(self) -> None:
         """Destroy a `~mne_lsl.lsl.StreamInfo`."""
 
@@ -301,9 +302,7 @@ class _BaseStreamInfo:
             If a single :class:`str` is provided, the type is applied to all channels.
         """
 
-    def set_channel_units(
-        self, ch_units: Union[str, list[str], int, list[int], NDArray[None]]
-    ) -> None:
+    def set_channel_units(self, ch_units: Union[str, list[str], int, list[int], NDArray[None]]) -> None:
         """Set the channel units in the description. Existing units are overwritten.
 
         The units are given as human readable strings, e.g. ``'microvolts'``, or as
@@ -346,9 +345,7 @@ class _BaseStreamInfo:
         """Set the key: value child(s) of a node."""
 
     @staticmethod
-    def _get_fiff_int_named(
-        value: Optional[str], name: str, mapping: dict[int, int]
-    ) -> Optional[int]:
+    def _get_fiff_int_named(value: Optional[str], name: str, mapping: dict[int, int]) -> Optional[int]:
         """Try to retrieve the FIFF integer code from the str representation."""
 
 class StreamInfo(_BaseStreamInfo):
@@ -390,15 +387,9 @@ class StreamInfo(_BaseStreamInfo):
         from failure by finding a stream with the same ``source_id`` on the network.
     """
 
-    def __init__(
-        self,
-        name: str,
-        stype: str,
-        n_channels: int,
-        sfreq: float,
-        dtype: str,
-        source_id: str,
-    ) -> None: ...
+    def __init__(self, name: str, stype: str, n_channels: int, sfreq: float, dtype: str, source_id: str) -> None:
+        ...
+
     @staticmethod
     def _dtype2idxfmt(dtype: Union[str, int, DTypeLike]) -> int:
         """Convert a string format to its LSL integer value."""

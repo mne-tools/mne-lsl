@@ -31,20 +31,15 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
     the end-of-file is reached, the player loops back to the beginning which can lead to
     a small discontinuity in the data stream.
     """
-
     _fname: Incomplete
     _chunk_size: Incomplete
     _raw: Incomplete
 
     @abstractmethod
-    def __init__(self, fname: Union[str, Path], chunk_size: int = 64): ...
-    def anonymize(
-        self,
-        daysback: Optional[int] = None,
-        keep_his: bool = False,
-        *,
-        verbose: Optional[Union[bool, str, int]] = None,
-    ) -> None:
+    def __init__(self, fname: Union[str, Path], chunk_size: int=64):
+        ...
+
+    def anonymize(self, daysback: Optional[int]=None, keep_his: bool=False, *, verbose: Optional[Union[bool, str, int]]=None) -> BasePlayer:
         """Anonymize the measurement information in-place.
 
         Parameters
@@ -57,7 +52,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         keep_his : bool
             If ``True``, ``his_id`` of ``subject_info`` will **not** be overwritten.
             Defaults to ``False``.
-
+        
             .. warning:: This could mean that ``info`` is not fully
                          anonymized. Use with caution.
         verbose : int | str | bool | None
@@ -67,11 +62,16 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
             If a bool is provided, the verbosity is set to ``"WARNING"`` for False and
             to ``"INFO"`` for True.
 
+        Returns
+        -------
+        player : instance of ``Player``
+            The player instance modified in-place.
+
         Notes
         -----
         Removes potentially identifying information if it exists in ``info``.
         Specifically for each of the following we use:
-
+        
         - meas_date, file_id, meas_id
                 A default value, or as specified by ``daysback``.
         - subject_info
@@ -87,28 +87,26 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
                 Dates use the ``meas_date`` logic, and experimenter a default string.
         - helium_info, device_info
                 Dates use the ``meas_date`` logic, meta info uses defaults.
-
+        
         If ``info['meas_date']`` is ``None``, it will remain ``None`` during processing
         the above fields.
-
+        
         Operates in place.
         """
 
-    def get_channel_units(
-        self, picks: Incomplete | None = None, only_data_chs: bool = False
-    ) -> list[tuple[int, int]]:
+    def get_channel_units(self, picks: Incomplete | None=None, only_data_chs: bool=False) -> list[tuple[int, int]]:
         """Get a list of channel unit for each channel.
 
         Parameters
         ----------
         picks : str | array-like | slice | None
-            Channels to include. Slices and lists of integers will be interpreted as
-            channel indices. In lists, channel *type* strings (e.g., ``['meg',
-            'eeg']``) will pick channels of those types, channel *name* strings (e.g.,
-            ``['MEG0111', 'MEG2623']`` will pick the given channels. Can also be the
-            string values "all" to pick all channels, or "data" to pick :term:`data
-            channels`. None (default) will pick all channels. Note that channels in
-            ``info['bads']`` *will be included* if their names or indices are
+            Channels to include. Slices and lists of integers will be interpreted as 
+            channel indices. In lists, channel *type* strings (e.g., ``['meg', 
+            'eeg']``) will pick channels of those types, channel *name* strings (e.g., 
+            ``['MEG0111', 'MEG2623']`` will pick the given channels. Can also be the 
+            string values "all" to pick all channels, or "data" to pick :term:`data 
+            channels`. None (default) will pick all channels. Note that channels in 
+            ``info['bads']`` *will be included* if their names or indices are 
             explicitly provided.
         only_data_chs : bool
             Whether to ignore non-data channels. Default is ``False``.
@@ -123,13 +121,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         """
 
     @abstractmethod
-    def rename_channels(
-        self,
-        mapping: Union[dict[str, str], Callable],
-        allow_duplicates: bool = False,
-        *,
-        verbose: Optional[Union[bool, str, int]] = None,
-    ) -> None:
+    def rename_channels(self, mapping: Union[dict[str, str], Callable], allow_duplicates: bool=False, *, verbose: Optional[Union[bool, str, int]]=None) -> BasePlayer:
         """Rename channels.
 
         Parameters
@@ -147,20 +139,19 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
             If None is provided, the verbosity is set to ``"WARNING"``.
             If a bool is provided, the verbosity is set to ``"WARNING"`` for False and
             to ``"INFO"`` for True.
+
+        Returns
+        -------
+        player : instance of ``Player``
+            The player instance modified in-place.
         """
 
     @abstractmethod
-    def start(self) -> None:
+    def start(self) -> BasePlayer:
         """Start streaming data."""
 
     @abstractmethod
-    def set_channel_types(
-        self,
-        mapping: dict[str, str],
-        *,
-        on_unit_change: str = "warn",
-        verbose: Optional[Union[bool, str, int]] = None,
-    ) -> None:
+    def set_channel_types(self, mapping: dict[str, str], *, on_unit_change: str='warn', verbose: Optional[Union[bool, str, int]]=None) -> BasePlayer:
         """Define the sensor type of channels.
 
         If the new channel type changes the unit type, e.g. from ``T/m`` to ``V``, the
@@ -184,10 +175,15 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
             If None is provided, the verbosity is set to ``"WARNING"``.
             If a bool is provided, the verbosity is set to ``"WARNING"`` for False and
             to ``"INFO"`` for True.
+
+        Returns
+        -------
+        player : instance of ``Player``
+            The player instance modified in-place.
         """
 
     @abstractmethod
-    def set_channel_units(self, mapping: dict[str, Union[str, int]]) -> None:
+    def set_channel_units(self, mapping: dict[str, Union[str, int]]) -> BasePlayer:
         """Define the channel unit multiplication factor.
 
         By convention, MNE stores data in SI units. But systems often stream in non-SI
@@ -207,15 +203,18 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
             The unit can be given as a human-readable string or as a unit multiplication
             factor, e.g. ``-6`` for microvolts corresponding to ``1e-6``.
 
+        Returns
+        -------
+        player : instance of ``Player``
+            The player instance modified in-place.
+
         Notes
         -----
         If the human-readable unit of your channel is not yet supported by MNE-LSL,
         please contact the developers on GitHub to add your units to the known set.
         """
 
-    def set_meas_date(
-        self, meas_date: Optional[Union[datetime, float, tuple[float, float]]]
-    ) -> None:
+    def set_meas_date(self, meas_date: Optional[Union[datetime, float, tuple[float, float]]]) -> BasePlayer:
         """Set the measurement start date.
 
         Parameters
@@ -228,6 +227,11 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
             object will be automatically created. If None, will remove
             the time reference.
 
+        Returns
+        -------
+        player : instance of ``Player``
+            The player instance modified in-place.
+
         See Also
         --------
         anonymize
@@ -235,7 +239,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
     _interrupt: bool
 
     @abstractmethod
-    def stop(self) -> None:
+    def stop(self) -> BasePlayer:
         """Stop streaming data on the mock real-time stream."""
 
     def _check_not_started(self, name: str):
