@@ -76,7 +76,12 @@ class PlayerLSL(BasePlayer):
         self._sinfo.set_channel_info(self._raw.info)
         logger.debug("%s: set channel info", self._name)
         if self._annotations:
-            self._annotations_names = sorted(set(self._raw.annotations.description))
+            self._annotations_names = {
+                name: idx
+                for idx, name in enumerate(
+                    sorted(set(self._raw.annotations.description))
+                )
+            }
             self._sinfo_annotations = StreamInfo(
                 name=f"{self._name}-annotations",
                 stype="annotations",
@@ -85,7 +90,7 @@ class PlayerLSL(BasePlayer):
                 dtype=np.float64,
                 source_id="MNE-LSL",
             )
-            self._sinfo_annotations.set_channel_names(self._annotations_names)
+            self._sinfo_annotations.set_channel_names(list(self._annotations_names))
             self._sinfo_annotations.set_channel_types("annotations")
             self._sinfo_annotations.set_channel_units("none")
             self._annotations_idx = self._raw.time_as_index(self._raw.annotations.onset)
@@ -239,9 +244,7 @@ class PlayerLSL(BasePlayer):
         # estimate LSL timestamp of each annotation
         timestamps = start_timestamp + annotations.onset[idx] - self._raw.times[start]
         # one-hot encode the description and duration in the channels
-        idx = [
-            self._annotations_names.index(desc) for desc in annotations.description[idx]
-        ]
+        idx = [self._annotations_names[desc] for desc in annotations.description[idx]]
         data = np.zeros((timestamps.size, len(self._annotations_names)))
         data = data[np.arange(timestamps.size), idx] = annotations.duration[idx]
         # push as a chunk all annotations in the [start:stop] range
