@@ -269,7 +269,7 @@ def test_player_set_channel_types(mock_lsl_stream, raw, close_io):
 
 def test_player_anonymize(fname, close_io):
     """Test anonymization."""
-    name = "Player-test_player"
+    name = "Player-test_player_anonymize"
     player = Player(fname, name=name)
     assert player.name == name
     assert player.fname == fname
@@ -290,7 +290,7 @@ def test_player_anonymize(fname, close_io):
 
 def test_player_set_meas_date(fname, close_io):
     """Test player measurement date."""
-    name = "Player-test_player"
+    name = "Player-test_player_set_meas_date"
     player = Player(fname, name=name)
     assert player.name == name
     assert player.fname == fname
@@ -309,4 +309,28 @@ def test_player_set_meas_date(fname, close_io):
 
 def test_player_annotations(raw_annotations):
     """Test player with annotations."""
-    pass
+    name = "Player-test_player_annotations"
+    player = Player(raw_annotations, name=name)
+    assert player.name == name
+    assert player.fname == Path(raw_annotations.filenames[0])
+    streams = resolve_streams(timeout=0.1)
+    assert len(streams) == 0
+    player.start()
+    streams = resolve_streams()
+    assert len(streams) == 2
+    assert any(stream.name == name for stream in streams)
+    assert any(stream.name == f"{name}-annotations" for stream in streams)
+
+    # find annotation stream and open an inlet
+    streams = sorted(streams, key=lambda stream: stream.name)
+    inlet = StreamInlet(streams[0])
+    inlet.open_stream()
+    inlet_annotations = StreamInlet(streams[1])
+    inlet_annotations.open_stream()
+
+    # compare inlet stream info and annotations
+    sinfo = inlet_annotations.get_sinfo()
+    assert sinfo.n_channels == len(set(raw_annotations.annotations.description))
+    assert sinfo.get_channel_names() == sorted(
+        set(raw_annotations.annotations.description)
+    )
