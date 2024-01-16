@@ -184,6 +184,7 @@ class PlayerLSL(BasePlayer):
         logger.debug("%s: Stopping", self._name)
         super().stop()
         self._outlet = None
+        self._outlet_annotations = None
         self._reset_variables()
         return self
 
@@ -222,15 +223,14 @@ class PlayerLSL(BasePlayer):
             self._reset_variables()
             return None  # equivalent to an interrupt
         else:
-            # figure out how early or late the thread woke up and compensate the delay
-            # for the next thread to remain in the neighbourhood of _target_timestamp
-            # for the following wake.
-            delta = self._target_timestamp - self._streaming_delay - local_clock()
-            delay = max(self._streaming_delay + delta, 0)
             if self._interrupt:
-                # don't recreate the thread if we are trying to interrupt streaming
-                return None
+                return None  # don't recreate the thread if we are interrupting
             else:
+                # figure out how early or late the thread woke up and compensate the
+                # delay for the next thread to remain in the neighbourhood of
+                # _target_timestamp for the following wake.
+                delta = self._target_timestamp - self._streaming_delay - local_clock()
+                delay = max(self._streaming_delay + delta, 0)
                 # recreate the timer thread as it is one-call only
                 self._streaming_thread = Timer(delay, self._stream)
                 self._streaming_thread.daemon = True
