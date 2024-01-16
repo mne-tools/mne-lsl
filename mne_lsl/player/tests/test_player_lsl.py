@@ -83,7 +83,7 @@ def test_player_context_manager(fname):
     streams = resolve_streams(timeout=0.1)
     assert len(streams) == 0
     with Player(fname, name=name):
-        streams = resolve_streams(timeout=0.1)
+        streams = resolve_streams()
         assert len(streams) == 1
         assert streams[0].name == name
     streams = resolve_streams(timeout=0.1)
@@ -96,7 +96,7 @@ def test_player_context_manager_raw(raw):
     streams = resolve_streams(timeout=0.1)
     assert len(streams) == 0
     with Player(raw, name=name) as player:
-        streams = resolve_streams(timeout=0.1)
+        streams = resolve_streams()
         assert len(streams) == 1
         assert streams[0].name == name
         assert player.info["ch_names"] == raw.info["ch_names"]
@@ -105,7 +105,7 @@ def test_player_context_manager_raw(raw):
 
     with pytest.warns(RuntimeWarning, match="raw file has no annotations"):
         with Player(raw, name=name, annotations=True) as player:
-            streams = resolve_streams(timeout=0.1)
+            streams = resolve_streams()
             assert len(streams) == 1
             assert streams[0].name == name
             assert player.info["ch_names"] == raw.info["ch_names"]
@@ -117,7 +117,7 @@ def test_player_context_manager_raw_annotations(raw_annotations):
     streams = resolve_streams(timeout=0.1)
     assert len(streams) == 0
     with Player(raw_annotations, name=name, annotations=False) as player:
-        streams = resolve_streams(timeout=0.1)
+        streams = resolve_streams()
         assert len(streams) == 1
         assert streams[0].name == name
         assert player.info["ch_names"] == raw_annotations.info["ch_names"]
@@ -125,11 +125,13 @@ def test_player_context_manager_raw_annotations(raw_annotations):
     assert len(streams) == 0
 
     with Player(raw_annotations, name=name) as player:
-        streams = resolve_streams(timeout=0.1)
+        streams = resolve_streams()
         assert len(streams) == 2
         assert any(stream.name == name for stream in streams)
         assert any(stream.name == f"{name}-annotations" for stream in streams)
         assert player.info["ch_names"] == raw_annotations.info["ch_names"]
+    streams = resolve_streams(timeout=0.1)
+    assert len(streams) == 0
 
 
 def test_player_invalid_arguments(fname):
