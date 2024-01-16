@@ -63,7 +63,16 @@ class PlayerLSL(BasePlayer):
         if annotations is None:
             self._annotations = True if len(self._raw.annotations) != 0 else False
         else:
-            self._annotations = annotations
+            if annotations and len(self._raw.annotations) == 0:
+                warn(
+                    f"{self._name}: The raw file has no annotations. The annotations "
+                    "will be ignored.",
+                    RuntimeWarning,
+                    stacklevel=2,
+                )
+                self._annotations = False
+            else:
+                self._annotations = annotations
         # create stream info based on raw
         ch_types = self._raw.get_channel_types(unique=True)
         self._sinfo = StreamInfo(

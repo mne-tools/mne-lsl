@@ -11,12 +11,9 @@ if check_version("mne", "1.6"):
 else:
     from mne.io.constants import FIFF
 
-from mne_lsl import logger
 from mne_lsl.lsl import StreamInlet, local_clock, resolve_streams
 from mne_lsl.player import PlayerLSL as Player
 from mne_lsl.utils._tests import match_stream_and_raw_data
-
-logger.propagate = True
 
 
 def _create_inlet(name: str) -> StreamInlet:
@@ -29,7 +26,7 @@ def _create_inlet(name: str) -> StreamInlet:
     return inlet
 
 
-def test_player(caplog, fname, raw, close_io):
+def test_player(fname, raw, close_io):
     """Test a working and valid player."""
     name = "Player-test_player"
     player = Player(fname, name=name)
@@ -43,10 +40,8 @@ def test_player(caplog, fname, raw, close_io):
     assert streams[0].name == name
 
     # try double start
-    caplog.set_level(30)  # WARNING
-    caplog.clear()
-    player.start()
-    assert "player is already started" in caplog.text
+    with pytest.warns(RuntimeWarning, match="player is already started"):
+        player.start()
 
     # connect an inlet to the player
     inlet = StreamInlet(streams[0])
@@ -93,6 +88,48 @@ def test_player_context_manager(fname):
         assert streams[0].name == name
     streams = resolve_streams(timeout=0.1)
     assert len(streams) == 0
+
+
+def test_player_context_manager_raw(raw):
+    """Test a working and valid player as context manager from a raw object."""
+    name = "Player-test_player_context_manager_raw"
+    streams = resolve_streams(timeout=0.1)
+    assert len(streams) == 0
+    with Player(raw, name=name) as player:
+        streams = resolve_streams(timeout=0.1)
+        assert len(streams) == 1
+        assert streams[0].name == name
+        assert player.info["ch_names"] == raw.info["ch_names"]
+    streams = resolve_streams(timeout=0.1)
+    assert len(streams) == 0
+
+    with pytest.warns(RuntimeWarning, match="raw file has no annotations"):
+        with Player(raw, name=name, annotations=True) as player:
+            streams = resolve_streams(timeout=0.1)
+            assert len(streams) == 1
+            assert streams[0].name == name
+            assert player.info["ch_names"] == raw.info["ch_names"]
+
+
+def test_player_context_manager_raw_annotations(raw_annotations):
+    """Test a working player as context manager from a raw object with annotations."""
+    name = "Player-test_player_context_manager_raw"
+    streams = resolve_streams(timeout=0.1)
+    assert len(streams) == 0
+    with Player(raw_annotations, name=name, annotations=False) as player:
+        streams = resolve_streams(timeout=0.1)
+        assert len(streams) == 1
+        assert streams[0].name == name
+        assert player.info["ch_names"] == raw_annotations.info["ch_names"]
+    streams = resolve_streams(timeout=0.1)
+    assert len(streams) == 0
+
+    with Player(raw_annotations, name=name) as player:
+        streams = resolve_streams(timeout=0.1)
+        assert len(streams) == 2
+        assert any(stream.name == name for stream in streams)
+        assert any(stream.name == f"{name}-annotations" for stream in streams)
+        assert player.info["ch_names"] == raw_annotations.info["ch_names"]
 
 
 def test_player_invalid_arguments(fname):
@@ -268,3 +305,8 @@ def test_player_set_meas_date(fname, close_io):
         player.set_meas_date(datetime(2020, 1, 25, tzinfo=timezone.utc))
     assert player.info["meas_date"] == meas_date
     close_io()
+
+
+def test_player_annotations(raw_annotations):
+    """Test player with annotations."""
+    pass
