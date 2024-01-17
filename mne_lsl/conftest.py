@@ -79,12 +79,20 @@ def _closer():
     smart enough to be no-ops if called more than once.
     """
     loc = inspect.currentframe().f_back.f_locals
+    inlets, outlets, players = [], [], []
     for var in loc.values():
-        if isinstance(var, (StreamInlet, StreamOutlet)):
-            var.__del__()
-    for var in loc.values():
-        if isinstance(var, BasePlayer):
-            var.stop()
+        if isinstance(var, StreamInlet):
+            inlets.append(var)
+        elif isinstance(var, StreamOutlet):
+            outlets.append(var)
+        elif isinstance(var, BasePlayer):
+            players.append(var)
+    for inlet in inlets:
+        inlet.__del__()
+    for outlet in outlets:
+        outlet.__del__()
+    for player in players:
+        player.stop()
 
 
 @fixture(scope="function")
