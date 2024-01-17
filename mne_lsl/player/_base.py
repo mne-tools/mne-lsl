@@ -23,7 +23,6 @@ else:
 
 from ..utils._checks import check_type, ensure_int, ensure_path
 from ..utils._docs import fill_doc
-from ..utils.logs import logger
 from ..utils.meas_info import _set_channel_units
 
 if TYPE_CHECKING:
