@@ -80,13 +80,14 @@ def _closer():
     """
     loc = inspect.currentframe().f_back.f_locals
     inlets, outlets, players = [], [], []
-    for var in loc.values():
+    for var in loc.values():  # go through the frame only once
         if isinstance(var, StreamInlet):
             inlets.append(var)
         elif isinstance(var, StreamOutlet):
             outlets.append(var)
         elif isinstance(var, BasePlayer):
             players.append(var)
+    # delete inlets before outlets
     for inlet in inlets:
         inlet.__del__()
     for outlet in outlets:
