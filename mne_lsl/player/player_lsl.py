@@ -245,13 +245,11 @@ class PlayerLSL(BasePlayer):
         # get the annotations in the chunk
         if start < stop:
             mask = (self._annotations_idx >= start) & (self._annotations_idx < stop)
-            idx = self._annotations_idx[mask]
+            idx = np.where(mask)[0]
         else:  # start > stop, equality is impossible or chunk_size would be equal to 0.
             mask1 = self._annotations_idx >= start
             mask2 = self._annotations_idx < stop
-            idx = np.hstack(
-                [self._annotations_idx[mask1], self._annotations_idx[mask2]]
-            )
+            idx = np.hstack([np.where(mask1)[0], np.where(mask2)[0]])
         if idx.size == 0:
             return None
         # estimate LSL timestamp of each annotation
@@ -259,11 +257,14 @@ class PlayerLSL(BasePlayer):
             start_timestamp + self.annotations.onset[idx] - self._raw.times[start]
         )
         # one-hot encode the description and duration in the channels
-        idx = [
-            self._annotations_names[desc] for desc in self.annotations.description[idx]
-        ]
+        idx_ = np.array(
+            [
+                self._annotations_names[desc]
+                for desc in self.annotations.description[idx]
+            ]
+        )
         data = np.zeros((timestamps.size, len(self._annotations_names)))
-        data = data[np.arange(timestamps.size), idx] = self.annotations.duration[idx]
+        data[np.arange(timestamps.size), idx_] = self.annotations.duration[idx]
         # push as a chunk all annotations in the [start:stop] range
         self._outlet_annotations.push_chunk(data, timestamps)
 
