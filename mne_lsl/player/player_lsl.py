@@ -252,6 +252,8 @@ class PlayerLSL(BasePlayer):
             idx = np.hstack(
                 [self._annotations_idx[mask1], self._annotations_idx[mask2]]
             )
+        if idx.size == 0:
+            return None
         # estimate LSL timestamp of each annotation
         timestamps = (
             start_timestamp + self.annotations.onset[idx] - self._raw.times[start]
