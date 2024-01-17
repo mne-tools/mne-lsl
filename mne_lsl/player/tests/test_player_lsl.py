@@ -22,7 +22,7 @@ def _create_inlet(name: str) -> StreamInlet:
     assert len(streams) == 1
     assert streams[0].name == name
     inlet = StreamInlet(streams[0])
-    inlet.open_stream()
+    inlet.open_stream(timeout=10)
     return inlet
 
 
@@ -45,7 +45,7 @@ def test_player(fname, raw, close_io):
 
     # connect an inlet to the player
     inlet = StreamInlet(streams[0])
-    inlet.open_stream()
+    inlet.open_stream(timeout=10)
     data, ts = inlet.pull_chunk()
     now = local_clock()
     assert_allclose(now, ts[-1], rtol=0, atol=0.1)  # 100 ms of freedom for slower CIs
@@ -326,9 +326,9 @@ def test_player_annotations(raw_annotations):
     # find annotation stream and open an inlet
     streams = sorted(streams, key=lambda stream: stream.name)
     inlet = StreamInlet(streams[0])
-    inlet.open_stream()
+    inlet.open_stream(timeout=10)
     inlet_annotations = StreamInlet(streams[1])
-    inlet_annotations.open_stream()
+    inlet_annotations.open_stream(timeout=10)
 
     # compare inlet stream info and annotations
     sinfo = inlet_annotations.get_sinfo()
