@@ -336,7 +336,6 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
     # ----------------------------------------------------------------------------------
     def __del__(self):
         """Delete the player."""
-        logger.debug("Deleting %s", self)
         try:
             self.stop()
         except Exception:
