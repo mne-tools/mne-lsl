@@ -13,7 +13,12 @@ _CH_TYPES_DICT: Incomplete
 _STIM_TYPES: tuple[str, ...]
 _HUMAN_UNITS: dict[int, dict[str, int]]
 
-def create_info(n_channels: int, sfreq: float, stype: str, desc: Optional[Union[_BaseStreamInfo, dict[str, Any]]]) -> Info:
+def create_info(
+    n_channels: int,
+    sfreq: float,
+    stype: str,
+    desc: Optional[Union[_BaseStreamInfo, dict[str, Any]]],
+) -> Info:
     """Create a minimal :class:`mne.Info` object from an LSL stream attributes.
 
     Parameters
@@ -43,7 +48,9 @@ def create_info(n_channels: int, sfreq: float, stype: str, desc: Optional[Union[
     :class:`mne.Info` with the number of channels definbed in ``n_channels`` is created.
     """
 
-def _read_desc_sinfo(n_channels: int, stype: str, desc: _BaseStreamInfo) -> tuple[list[str], list[str], list[int], Optional[str]]:
+def _read_desc_sinfo(
+    n_channels: int, stype: str, desc: _BaseStreamInfo
+) -> tuple[list[str], list[str], list[int], Optional[str]]:
     """Read channel information from a StreamInfo.
 
     If the StreamInfo is retrieved by resolve_streams, the description will be empty.
@@ -51,13 +58,17 @@ def _read_desc_sinfo(n_channels: int, stype: str, desc: _BaseStreamInfo) -> tupl
     channel description.
     """
 
-def _read_desc_dict(n_channels: int, stype: str, desc: dict[str, Any]) -> tuple[list[str], list[str], list[int], Optional[str]]:
+def _read_desc_dict(
+    n_channels: int, stype: str, desc: dict[str, Any]
+) -> tuple[list[str], list[str], list[int], Optional[str]]:
     """Read channel information from a description dictionary.
 
     A dictionary is returned from loading an XDF file.
     """
 
-def _get_ch_types_and_units(channels: list[dict[str, Any]], stype: str) -> tuple[list[str], list[int]]:
+def _get_ch_types_and_units(
+    channels: list[dict[str, Any]], stype: str
+) -> tuple[list[str], list[int]]:
     """Get the channel types and units from a stream description."""
 
 def _safe_get(channel, item, default) -> str:

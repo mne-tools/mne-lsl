@@ -31,15 +31,20 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
     the end-of-file is reached, the player loops back to the beginning which can lead to
     a small discontinuity in the data stream.
     """
+
     _fname: Incomplete
     _chunk_size: Incomplete
     _raw: Incomplete
 
     @abstractmethod
-    def __init__(self, fname: Union[str, Path], chunk_size: int=64):
-        ...
-
-    def anonymize(self, daysback: Optional[int]=None, keep_his: bool=False, *, verbose: Optional[Union[bool, str, int]]=None) -> BasePlayer:
+    def __init__(self, fname: Union[str, Path], chunk_size: int = 64): ...
+    def anonymize(
+        self,
+        daysback: Optional[int] = None,
+        keep_his: bool = False,
+        *,
+        verbose: Optional[Union[bool, str, int]] = None,
+    ) -> BasePlayer:
         """Anonymize the measurement information in-place.
 
         Parameters
@@ -52,7 +57,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         keep_his : bool
             If ``True``, ``his_id`` of ``subject_info`` will **not** be overwritten.
             Defaults to ``False``.
-        
+
             .. warning:: This could mean that ``info`` is not fully
                          anonymized. Use with caution.
         verbose : int | str | bool | None
@@ -71,7 +76,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         -----
         Removes potentially identifying information if it exists in ``info``.
         Specifically for each of the following we use:
-        
+
         - meas_date, file_id, meas_id
                 A default value, or as specified by ``daysback``.
         - subject_info
@@ -87,26 +92,28 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
                 Dates use the ``meas_date`` logic, and experimenter a default string.
         - helium_info, device_info
                 Dates use the ``meas_date`` logic, meta info uses defaults.
-        
+
         If ``info['meas_date']`` is ``None``, it will remain ``None`` during processing
         the above fields.
-        
+
         Operates in place.
         """
 
-    def get_channel_units(self, picks: Incomplete | None=None, only_data_chs: bool=False) -> list[tuple[int, int]]:
+    def get_channel_units(
+        self, picks: Incomplete | None = None, only_data_chs: bool = False
+    ) -> list[tuple[int, int]]:
         """Get a list of channel unit for each channel.
 
         Parameters
         ----------
         picks : str | array-like | slice | None
-            Channels to include. Slices and lists of integers will be interpreted as 
-            channel indices. In lists, channel *type* strings (e.g., ``['meg', 
-            'eeg']``) will pick channels of those types, channel *name* strings (e.g., 
-            ``['MEG0111', 'MEG2623']`` will pick the given channels. Can also be the 
-            string values "all" to pick all channels, or "data" to pick :term:`data 
-            channels`. None (default) will pick all channels. Note that channels in 
-            ``info['bads']`` *will be included* if their names or indices are 
+            Channels to include. Slices and lists of integers will be interpreted as
+            channel indices. In lists, channel *type* strings (e.g., ``['meg',
+            'eeg']``) will pick channels of those types, channel *name* strings (e.g.,
+            ``['MEG0111', 'MEG2623']`` will pick the given channels. Can also be the
+            string values "all" to pick all channels, or "data" to pick :term:`data
+            channels`. None (default) will pick all channels. Note that channels in
+            ``info['bads']`` *will be included* if their names or indices are
             explicitly provided.
         only_data_chs : bool
             Whether to ignore non-data channels. Default is ``False``.
@@ -121,7 +128,13 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         """
 
     @abstractmethod
-    def rename_channels(self, mapping: Union[dict[str, str], Callable], allow_duplicates: bool=False, *, verbose: Optional[Union[bool, str, int]]=None) -> BasePlayer:
+    def rename_channels(
+        self,
+        mapping: Union[dict[str, str], Callable],
+        allow_duplicates: bool = False,
+        *,
+        verbose: Optional[Union[bool, str, int]] = None,
+    ) -> BasePlayer:
         """Rename channels.
 
         Parameters
@@ -151,7 +164,13 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         """Start streaming data."""
 
     @abstractmethod
-    def set_channel_types(self, mapping: dict[str, str], *, on_unit_change: str='warn', verbose: Optional[Union[bool, str, int]]=None) -> BasePlayer:
+    def set_channel_types(
+        self,
+        mapping: dict[str, str],
+        *,
+        on_unit_change: str = "warn",
+        verbose: Optional[Union[bool, str, int]] = None,
+    ) -> BasePlayer:
         """Define the sensor type of channels.
 
         If the new channel type changes the unit type, e.g. from ``T/m`` to ``V``, the
@@ -214,7 +233,9 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         please contact the developers on GitHub to add your units to the known set.
         """
 
-    def set_meas_date(self, meas_date: Optional[Union[datetime, float, tuple[float, float]]]) -> BasePlayer:
+    def set_meas_date(
+        self, meas_date: Optional[Union[datetime, float, tuple[float, float]]]
+    ) -> BasePlayer:
         """Set the measurement start date.
 
         Parameters

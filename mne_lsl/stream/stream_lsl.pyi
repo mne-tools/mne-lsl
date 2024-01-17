@@ -38,13 +38,18 @@ class StreamLSL(BaseStream):
     with :func:`mne_lsl.lsl.resolve_streams` and create an inlet with
     :class:`~mne_lsl.lsl.StreamInlet`.
     """
+
     _name: Incomplete
     _stype: Incomplete
     _source_id: Incomplete
 
-    def __init__(self, bufsize: float, name: Optional[str]=None, stype: Optional[str]=None, source_id: Optional[str]=None) -> None:
-        ...
-
+    def __init__(
+        self,
+        bufsize: float,
+        name: Optional[str] = None,
+        stype: Optional[str] = None,
+        source_id: Optional[str] = None,
+    ) -> None: ...
     def __repr__(self) -> str:
         """Representation of the instance."""
     _inlet: Incomplete
@@ -54,7 +59,12 @@ class StreamLSL(BaseStream):
     _timestamps: Incomplete
     _picks_inlet: Incomplete
 
-    def connect(self, acquisition_delay: float=0.001, processing_flags: Optional[Union[str, Sequence[str]]]=None, timeout: Optional[float]=2) -> StreamLSL:
+    def connect(
+        self,
+        acquisition_delay: float = 0.001,
+        processing_flags: Optional[Union[str, Sequence[str]]] = None,
+        timeout: Optional[float] = 2,
+    ) -> StreamLSL:
         """Connect to the LSL stream and initiate data collection in the buffer.
 
         Parameters

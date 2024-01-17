@@ -5,7 +5,7 @@ from _typeshed import Incomplete
 
 from ._docs import fill_doc as fill_doc
 
-def ensure_int(item: Any, item_name: Optional[str]=None) -> int:
+def ensure_int(item: Any, item_name: Optional[str] = None) -> int:
     """Ensure a variable is an integer.
 
     Parameters
@@ -22,19 +22,16 @@ def ensure_int(item: Any, item_name: Optional[str]=None) -> int:
     """
 
 class _IntLike:
-
     @classmethod
-    def __instancecheck__(cls, other: Any) -> bool:
-        ...
+    def __instancecheck__(cls, other: Any) -> bool: ...
 
 class _Callable:
-
     @classmethod
-    def __instancecheck__(cls, other: Any) -> bool:
-        ...
+    def __instancecheck__(cls, other: Any) -> bool: ...
+
 _types: Incomplete
 
-def check_type(item: Any, types: tuple, item_name: Optional[str]=None) -> None:
+def check_type(item: Any, types: tuple, item_name: Optional[str] = None) -> None:
     """Check that item is an instance of types.
 
     Parameters
@@ -54,7 +51,12 @@ def check_type(item: Any, types: tuple, item_name: Optional[str]=None) -> None:
         When the type of the item is not one of the valid options.
     """
 
-def check_value(item: Any, allowed_values: tuple, item_name: Optional[str]=None, extra: Optional[str]=None) -> None:
+def check_value(
+    item: Any,
+    allowed_values: tuple,
+    item_name: Optional[str] = None,
+    extra: Optional[str] = None,
+) -> None:
     """Check the value of a parameter against a list of valid options.
 
     Parameters
