@@ -23,6 +23,7 @@ else:
 
 from ..utils._checks import check_type, ensure_int, ensure_path
 from ..utils._docs import fill_doc
+from ..utils.logs import logger
 from ..utils.meas_info import _set_channel_units
 
 if TYPE_CHECKING:
@@ -335,8 +336,11 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
     # ----------------------------------------------------------------------------------
     def __del__(self):
         """Delete the player."""
-        if hasattr(self, "_streaming_thread") and self._streaming_thread is not None:
+        logger.debug("Deleting %s", self)
+        try:
             self.stop()
+        except Exception:
+            pass
 
     def __enter__(self):
         """Context manager entry point."""

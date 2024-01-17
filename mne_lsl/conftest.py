@@ -14,7 +14,6 @@ from pytest import fixture
 from mne_lsl import set_log_level
 from mne_lsl.datasets import testing
 from mne_lsl.lsl import StreamInlet, StreamOutlet
-from mne_lsl.player._base import BasePlayer
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -71,7 +70,7 @@ def pytest_sessionfinish(session, exitstatus) -> None:
 
 
 def _closer():
-    """Delete inlet, outlet, and player vars if present.
+    """Delete inlets and outlets if present.
 
     We cannot rely on just "del inlet" / "del outlet" because Python's garbage collector
     can run whenever it feels like it, and AFAIK the garbage collection order is not
@@ -79,26 +78,22 @@ def _closer():
     smart enough to be no-ops if called more than once.
     """
     loc = inspect.currentframe().f_back.f_locals
-    inlets, outlets, players = [], [], []
+    inlets, outlets = [], []
     for var in loc.values():  # go through the frame only once
         if isinstance(var, StreamInlet):
             inlets.append(var)
         elif isinstance(var, StreamOutlet):
             outlets.append(var)
-        elif isinstance(var, BasePlayer):
-            players.append(var)
     # delete inlets before outlets
     for inlet in inlets:
         inlet.__del__()
     for outlet in outlets:
         outlet.__del__()
-    for player in players:
-        player.stop()
 
 
 @fixture(scope="function")
 def close_io():
-    """Return function that will close inlet, outlet, and player vars if present."""
+    """Return function that will close inlets and outlets if present."""
     return _closer
 
 
