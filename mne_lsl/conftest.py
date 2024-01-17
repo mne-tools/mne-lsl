@@ -13,6 +13,8 @@ from pytest import fixture
 
 from mne_lsl import set_log_level
 from mne_lsl.datasets import testing
+from mne_lsl.lsl import StreamInlet, StreamOutlet
+from mne_lsl.player._base import BasePlayer
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -77,11 +79,12 @@ def _closer():
     smart enough to be no-ops if called more than once.
     """
     loc = inspect.currentframe().f_back.f_locals
-    for name in ("inlet", "outlet"):
-        if name in loc:
-            loc[name].__del__()
-    if "player" in loc:
-        loc["player"].stop()
+    for var in loc.values():
+        if isinstance(var, (StreamInlet, StreamOutlet)):
+            var.__del__()
+    for var in loc.values():
+        if isinstance(var, BasePlayer):
+            var.stop()
 
 
 @fixture(scope="function")
