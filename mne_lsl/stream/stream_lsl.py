@@ -210,8 +210,10 @@ class StreamLSL(BaseStream):
         """
         super().disconnect()
         logger.debug("Calling inlet.close_stream() for %s", str(self))
-        if self._inlet is not None:
+        try:
             self._inlet.__del__()
+        except Exception:
+            pass
         self._reset_variables()  # also sets self._inlet = None
         return self
 

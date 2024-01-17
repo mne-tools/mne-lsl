@@ -183,10 +183,14 @@ class PlayerLSL(BasePlayer):
         """
         logger.debug("%s: Stopping", self._name)
         super().stop()
-        if self._outlet is not None:
+        try:
             self._outlet.__del__()
-        if self._outlet_annotations is not None:
+        except Exception:
+            pass
+        try:
             self._outlet_annotations.__del__()
+        except Exception:
+            pass
         self._reset_variables()
         return self
 
@@ -288,10 +292,14 @@ class PlayerLSL(BasePlayer):
     def __del__(self):
         """Delete the player and destroy the :class:`~mne_lsl.lsl.StreamOutlet`."""
         super().__del__()
-        if self._outlet is not None:
+        try:
             self._outlet.__del__()
-        if self._outlet_annotations is not None:
+        except Exception:
+            pass
+        try:
             self._outlet_annotations.__del__()
+        except Exception:
+            pass
 
     def __repr__(self):
         """Representation of the instance."""
