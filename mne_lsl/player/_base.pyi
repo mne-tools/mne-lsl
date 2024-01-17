@@ -44,7 +44,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         keep_his: bool = False,
         *,
         verbose: Optional[Union[bool, str, int]] = None,
-    ) -> None:
+    ) -> BasePlayer:
         """Anonymize the measurement information in-place.
 
         Parameters
@@ -66,6 +66,11 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
             If None is provided, the verbosity is set to ``"WARNING"``.
             If a bool is provided, the verbosity is set to ``"WARNING"`` for False and
             to ``"INFO"`` for True.
+
+        Returns
+        -------
+        player : instance of ``Player``
+            The player instance modified in-place.
 
         Notes
         -----
@@ -129,7 +134,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         allow_duplicates: bool = False,
         *,
         verbose: Optional[Union[bool, str, int]] = None,
-    ) -> None:
+    ) -> BasePlayer:
         """Rename channels.
 
         Parameters
@@ -147,10 +152,15 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
             If None is provided, the verbosity is set to ``"WARNING"``.
             If a bool is provided, the verbosity is set to ``"WARNING"`` for False and
             to ``"INFO"`` for True.
+
+        Returns
+        -------
+        player : instance of ``Player``
+            The player instance modified in-place.
         """
 
     @abstractmethod
-    def start(self) -> None:
+    def start(self) -> BasePlayer:
         """Start streaming data."""
 
     @abstractmethod
@@ -160,7 +170,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         *,
         on_unit_change: str = "warn",
         verbose: Optional[Union[bool, str, int]] = None,
-    ) -> None:
+    ) -> BasePlayer:
         """Define the sensor type of channels.
 
         If the new channel type changes the unit type, e.g. from ``T/m`` to ``V``, the
@@ -184,10 +194,15 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
             If None is provided, the verbosity is set to ``"WARNING"``.
             If a bool is provided, the verbosity is set to ``"WARNING"`` for False and
             to ``"INFO"`` for True.
+
+        Returns
+        -------
+        player : instance of ``Player``
+            The player instance modified in-place.
         """
 
     @abstractmethod
-    def set_channel_units(self, mapping: dict[str, Union[str, int]]) -> None:
+    def set_channel_units(self, mapping: dict[str, Union[str, int]]) -> BasePlayer:
         """Define the channel unit multiplication factor.
 
         By convention, MNE stores data in SI units. But systems often stream in non-SI
@@ -207,6 +222,11 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
             The unit can be given as a human-readable string or as a unit multiplication
             factor, e.g. ``-6`` for microvolts corresponding to ``1e-6``.
 
+        Returns
+        -------
+        player : instance of ``Player``
+            The player instance modified in-place.
+
         Notes
         -----
         If the human-readable unit of your channel is not yet supported by MNE-LSL,
@@ -215,7 +235,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
 
     def set_meas_date(
         self, meas_date: Optional[Union[datetime, float, tuple[float, float]]]
-    ) -> None:
+    ) -> BasePlayer:
         """Set the measurement start date.
 
         Parameters
@@ -228,6 +248,11 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
             object will be automatically created. If None, will remove
             the time reference.
 
+        Returns
+        -------
+        player : instance of ``Player``
+            The player instance modified in-place.
+
         See Also
         --------
         anonymize
@@ -235,7 +260,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
     _interrupt: bool
 
     @abstractmethod
-    def stop(self) -> None:
+    def stop(self) -> BasePlayer:
         """Stop streaming data on the mock real-time stream."""
 
     def _check_not_started(self, name: str):

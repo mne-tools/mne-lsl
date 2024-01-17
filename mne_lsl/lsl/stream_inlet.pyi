@@ -1,4 +1,5 @@
-from typing import Optional, Sequence, Union
+from collections.abc import Sequence as Sequence
+from typing import Optional, Union
 
 import numpy as np
 from _typeshed import Incomplete

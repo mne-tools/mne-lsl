@@ -1,4 +1,5 @@
-from typing import Optional, Sequence, Union
+from collections.abc import Sequence as Sequence
+from typing import Optional, Union
 
 from _typeshed import Incomplete
 
@@ -63,7 +64,7 @@ class StreamLSL(BaseStream):
         acquisition_delay: float = 0.001,
         processing_flags: Optional[Union[str, Sequence[str]]] = None,
         timeout: Optional[float] = 2,
-    ) -> None:
+    ) -> StreamLSL:
         """Connect to the LSL stream and initiate data collection in the buffer.
 
         Parameters
@@ -86,6 +87,11 @@ class StreamLSL(BaseStream):
             Optional timeout (in seconds) of the operation. ``None`` disables the
             timeout. The timeout value is applied once to every operation supporting it.
 
+        Returns
+        -------
+        stream : instance of :class:`~mne_lsl.stream.StreamLSL`
+            The stream instance modified in-place.
+
         Notes
         -----
         If all 3 stream identifiers ``name``, ``stype`` and ``source_id`` are left to
@@ -95,8 +101,14 @@ class StreamLSL(BaseStream):
         matching the identifier is found.
         """
 
-    def disconnect(self) -> None:
-        """Disconnect from the LSL stream and interrupt data collection."""
+    def disconnect(self) -> StreamLSL:
+        """Disconnect from the LSL stream and interrupt data collection.
+
+        Returns
+        -------
+        stream : instance of :class:`~mne_lsl.stream.StreamLSL`
+            The stream instance modified in-place.
+        """
 
     def _acquire(self) -> None:
         """Update function pulling new samples in the buffer at a regular interval."""

@@ -45,7 +45,7 @@ class PlayerLSL(BasePlayer):
         allow_duplicates: bool = False,
         *,
         verbose: Optional[Union[bool, str, int]] = None,
-    ) -> None:
+    ) -> PlayerLSL:
         """Rename channels.
 
         Parameters
@@ -63,14 +63,25 @@ class PlayerLSL(BasePlayer):
             If None is provided, the verbosity is set to ``"WARNING"``.
             If a bool is provided, the verbosity is set to ``"WARNING"`` for False and
             to ``"INFO"`` for True.
+
+        Returns
+        -------
+        player : instance of ``Player``
+            The player instance modified in-place.
         """
     _outlet: Incomplete
     _streaming_delay: Incomplete
     _streaming_thread: Incomplete
     _target_timestamp: Incomplete
 
-    def start(self) -> None:
-        """Start streaming data on the LSL :class:`~mne_lsl.lsl.StreamOutlet`."""
+    def start(self) -> PlayerLSL:
+        """Start streaming data on the LSL :class:`~mne_lsl.lsl.StreamOutlet`.
+
+        Returns
+        -------
+        player : instance of :class:`~mne_lsl.player.PlayerLSL`
+            The player instance modified in-place.
+        """
 
     def set_channel_types(
         self,
@@ -78,7 +89,7 @@ class PlayerLSL(BasePlayer):
         *,
         on_unit_change: str = "warn",
         verbose: Optional[Union[bool, str, int]] = None,
-    ) -> None:
+    ) -> PlayerLSL:
         """Define the sensor type of channels.
 
         If the new channel type changes the unit type, e.g. from ``T/m`` to ``V``, the
@@ -102,9 +113,14 @@ class PlayerLSL(BasePlayer):
             If None is provided, the verbosity is set to ``"WARNING"``.
             If a bool is provided, the verbosity is set to ``"WARNING"`` for False and
             to ``"INFO"`` for True.
+
+        Returns
+        -------
+        player : instance of ``Player``
+            The player instance modified in-place.
         """
 
-    def set_channel_units(self, mapping: dict[str, Union[str, int]]) -> None:
+    def set_channel_units(self, mapping: dict[str, Union[str, int]]) -> PlayerLSL:
         """Define the channel unit multiplication factor.
 
         By convention, MNE stores data in SI units. But systems often stream in non-SI
@@ -124,14 +140,25 @@ class PlayerLSL(BasePlayer):
             The unit can be given as a human-readable string or as a unit multiplication
             factor, e.g. ``-6`` for microvolts corresponding to ``1e-6``.
 
+        Returns
+        -------
+        player : instance of ``Player``
+            The player instance modified in-place.
+
         Notes
         -----
         If the human-readable unit of your channel is not yet supported by MNE-LSL,
         please contact the developers on GitHub to add your units to the known set.
         """
 
-    def stop(self) -> None:
-        """Stop streaming data on the LSL :class:`~mne_lsl.lsl.StreamOutlet`."""
+    def stop(self) -> PlayerLSL:
+        """Stop streaming data on the LSL :class:`~mne_lsl.lsl.StreamOutlet`.
+
+        Returns
+        -------
+        player : instance of :class:`~mne_lsl.player.PlayerLSL`
+            The player instance modified in-place.
+        """
     _start_idx: Incomplete
 
     def _stream(self) -> None:
