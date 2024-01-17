@@ -309,7 +309,7 @@ def test_player_set_meas_date(fname, close_io):
     close_io()
 
 
-def test_player_annotations(raw_annotations):
+def test_player_annotations(raw_annotations, close_io):
     """Test player with annotations."""
     name = "Player-test_player_annotations"
     player = Player(raw_annotations, name=name)
@@ -338,3 +338,4 @@ def test_player_annotations(raw_annotations):
     )
     assert sinfo.get_channel_types() == ["annotations"] * sinfo.n_channels
     assert sinfo.get_channel_units() == ["none"] * sinfo.n_channels
+    close_io()
