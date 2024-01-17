@@ -336,5 +336,5 @@ def test_player_annotations(raw_annotations):
     assert sinfo.get_channel_names() == sorted(
         set(raw_annotations.annotations.description)
     )
-    assert sinfo.get_channel_types() == ["annotation"] * sinfo.n_channels
+    assert sinfo.get_channel_types() == ["annotations"] * sinfo.n_channels
     assert sinfo.get_channel_units() == ["none"] * sinfo.n_channels

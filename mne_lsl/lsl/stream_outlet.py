@@ -3,6 +3,7 @@ from __future__ import annotations  # c.f. PEP 563, PEP 649
 from ctypes import c_char_p, c_double, c_int, c_long, c_void_p
 from threading import Lock
 from typing import TYPE_CHECKING
+from warnings import warn
 
 import numpy as np
 
@@ -216,7 +217,11 @@ class StreamOutlet:
             data_buffer = (self._dtype * n_elements).from_buffer(x)
 
         if n_samples == 1:
-            logger.warning("A single sample is pushed. Consider using push_sample().")
+            warn(
+                "A single sample is pushed. Consider using push_sample().",
+                RuntimeWarning,
+                stacklevel=2,
+            )
 
         # convert timestamps to the corresponding ctype
         if timestamp is None:

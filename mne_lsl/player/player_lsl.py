@@ -2,7 +2,7 @@ from __future__ import annotations  # c.f. PEP 563, PEP 649
 
 from threading import Timer
 from typing import TYPE_CHECKING
-from warnings import warn
+from warnings import warn, catch_warnings, filterwarnings
 
 import numpy as np
 from mne import Annotations
@@ -266,7 +266,13 @@ class PlayerLSL(BasePlayer):
         data = np.zeros((timestamps.size, len(self._annotations_names)))
         data[np.arange(timestamps.size), idx_] = self.annotations.duration[idx]
         # push as a chunk all annotations in the [start:stop] range
-        self._outlet_annotations.push_chunk(data, timestamps)
+        with catch_warnings():
+            filterwarnings(
+                "ignore",
+                message="A single sample is pushed. Consider using push_sample().",
+                category=RuntimeWarning,
+            )
+            self._outlet_annotations.push_chunk(data, timestamps)
 
     def _reset_variables(self) -> None:
         """Reset variables for streaming."""
