@@ -2,7 +2,7 @@ from __future__ import annotations  # c.f. PEP 563, PEP 649
 
 from threading import Timer
 from typing import TYPE_CHECKING
-from warnings import warn, catch_warnings, filterwarnings
+from warnings import catch_warnings, filterwarnings, warn
 
 import numpy as np
 from mne import Annotations
