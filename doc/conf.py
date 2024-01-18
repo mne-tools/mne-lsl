@@ -293,3 +293,7 @@ linkcheck_anchors = False  # saves a bit of time
 linkcheck_timeout = 15  # some can be quite slow
 linkcheck_retries = 3
 linkcheck_ignore = []  # will be compiled to regex
+
+# -- sphinx_copybutton -----------------------------------------------------------------
+copybutton_prompt_text = r">>> |\.\.\. |\$ |In \[\d*\]: | {2,5}\.\.\.: | {5,8}: "
+copybutton_prompt_is_regexp = True
