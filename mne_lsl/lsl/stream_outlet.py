@@ -225,23 +225,25 @@ class StreamOutlet:
 
         # convert timestamps to the corresponding ctype
         if timestamp is None:
-            timestamp = np.zeros(n_samples, dtype=np.float64) if self.sfreq == 0 else 0
-        if isinstance(timestamp, (float, int)):
-            timestamp_c = c_double(timestamp)
-            liblsl_push_chunk_func = self._do_push_chunk
-            if self.sfreq == 0.0 and n_samples != 1:
-                logger.warning(
-                    "The stream is irregularly sampled and timestamp is a float and "
-                    "will be applied to all samples. Consider using an array of "
-                    "timestamps to provide the individual timestamps for each sample."
-                )
-        else:
-            assert isinstance(timestamp, np.ndarray), "'timestamp' must be an array."
+            timestamp = 0
+        if isinstance(timestamp, np.ndarray):
             if timestamp.ndim != 1 or timestamp.size != n_samples:
                 raise ValueError(
                     "The timestamps to push 'timestamp' must contain one element per "
                     "sample. Thus, the shape should be (n_samples,), "
                     f"{timestamp.shape} is invalid."
+                )
+            if np.allclose(timestamp, 0):
+                # takes about 11.9 µs ± 131 ns per loop on arrays of size 100 to 10000
+                # this check is required because:
+                # - if the sampling-rate is irregular: all samples should have the same
+                #   timestamp -> this is not the case and differs from timestamp=0
+                # - if the sampling-rate is regular: all samples should have different
+                #   timestamps
+                raise RuntimeError(
+                    "The argument 'timestamp' was supplied as an array of zeros which "
+                    "is not allowed. Consider using None (or timestamp=0) to use the "
+                    "current time."
                 )
             timestamp = (
                 timestamp
@@ -250,6 +252,22 @@ class StreamOutlet:
             )
             timestamp_c = (c_double * timestamp.size)(*timestamp.astype(np.float64))
             liblsl_push_chunk_func = self._do_push_chunk_n
+        elif isinstance(timestamp, (float, int)):
+            if self.sfreq == 0.0 and n_samples != 1 and timestamp != 0:
+                warn(
+                    "The stream is irregularly sampled and timestamp is a float and "
+                    "will be applied to all samples. Consider using an array of "
+                    "timestamps to provide the individual timestamps for each sample.",
+                    RuntimeWarning,
+                    stacklevel=2,
+                )
+            timestamp_c = c_double(timestamp)
+            liblsl_push_chunk_func = self._do_push_chunk
+        else:
+            raise TypeError(
+                "The argument 'timestamps' must be a float, an array or None to use "
+                "the current time."
+            )
 
         with self._lock:
             handle_error(
