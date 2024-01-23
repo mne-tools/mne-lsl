@@ -74,7 +74,7 @@ class PlayerLSL(BasePlayer):
         player = Player(..., annotations=True)  # file with annotations
         player.start()
         stream = Stream(bufsize=100, stype="annotations")
-        stream.connect(processing_flags="clocksync")
+        stream.connect(processing_flags=["clocksync"])
         data, ts = stream.get_data()
         print(ts - local_clock())  # positive values are annotations in the "future"
 

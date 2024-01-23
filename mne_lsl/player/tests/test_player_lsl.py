@@ -1,3 +1,4 @@
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -13,6 +14,7 @@ else:
 
 from mne_lsl.lsl import StreamInlet, local_clock, resolve_streams
 from mne_lsl.player import PlayerLSL as Player
+from mne_lsl.stream import StreamLSL as Stream
 from mne_lsl.utils._tests import match_stream_and_raw_data
 
 
@@ -322,6 +324,7 @@ def test_player_set_meas_date(fname):
 def test_player_annotations(raw_annotations, close_io):
     """Test player with annotations."""
     name = "Player-test_player_annotations"
+    annotations = sorted(set(raw_annotations.annotations.description))
     player = Player(raw_annotations, name=name)
     assert player.name == name
     assert player.fname == Path(raw_annotations.filenames[0])
@@ -342,11 +345,40 @@ def test_player_annotations(raw_annotations, close_io):
 
     # compare inlet stream info and annotations
     sinfo = inlet_annotations.get_sinfo()
-    assert sinfo.n_channels == len(set(raw_annotations.annotations.description))
-    assert sinfo.get_channel_names() == sorted(
-        set(raw_annotations.annotations.description)
-    )
+    assert sinfo.n_channels == len(annotations)
+    assert sinfo.get_channel_names() == annotations
     assert sinfo.get_channel_types() == ["annotations"] * sinfo.n_channels
     assert sinfo.get_channel_units() == ["none"] * sinfo.n_channels
+
+    # compare content
+    data, ts = inlet_annotations.pull_chunk(timeout=1)
+    assert data.size != 0
+    assert ts.size == data.shape[0]
+    # compare with a Stream object for simplicity
+    stream = Stream(bufsize=40, stype="annotations")
+    stream.connect(processing_flags=["clocksync"])
+    assert stream.info["ch_names"] == annotations
+    assert stream.get_channel_types() == ["misc"] * sinfo.n_channels
+    time.sleep(3)  # acquire some annotations
+    for single, duration in zip(("bad_test", "test2", "test3"), (0.4, 0.1, 0.05)):
+        data, ts = stream.get_data(picks=single)
+        data = data.squeeze()
+        assert ts.size == data.size
+        idx = np.where(data != 0.0)[0]
+        assert_allclose(data[idx], [duration] * idx.size)
+        assert_allclose(np.diff(ts[idx]), 2, atol=1e-2)
+    data, ts = stream.get_data(picks="test1")
+    data = data.squeeze()
+    idx = np.where(data != 0.0)[0]
+    assert_allclose(np.unique(data[idx]), [0.2, 0.55])
+    idx = np.where(data == 0.2)[0]
+    diff = np.diff(ts[idx])
+    expected = np.array([1.6, 0.3, 0.1])
+    start = np.where(1 <= diff)[0][0]
+    end = diff.size if diff.size <= start + 3 else start + 3
+    assert_allclose(diff[start:end], expected[: end - start], atol=1e-2)
+
+    # clean-up
+    stream.disconnect()
     close_io()
     player.stop()
