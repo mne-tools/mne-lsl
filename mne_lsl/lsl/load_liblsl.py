@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 
     from pooch import Pooch
 
-# Minimum liblsl version. The major version is given by version // 100
+# minimum liblsl version. The major version is given by version // 100
 # and the minor version is given by version % 100.
 _VERSION_MIN: int = 115
 # liblsl objects created with the same protocol version are inter-compatible.
@@ -47,6 +47,8 @@ _ERROR_MSG: str = (
     "install a release in the system directories or provide its path in the "
     "environment variable MNE_LSL_LIB or PYLSL_LIB."
 )
+# folder where the library is stored
+_LIB_FOLDER: Path = files("mne_lsl.lsl") / "lib"
 
 
 def load_liblsl() -> CDLL:
@@ -120,7 +122,7 @@ def _find_liblsl() -> Optional[CDLL]:
     return lib
 
 
-def _fetch_liblsl(folder: Path = files("mne_lsl.lsl") / "lib") -> Optional[CDLL]:
+def _fetch_liblsl(folder: Path = _LIB_FOLDER) -> Optional[CDLL]:
     """Fetch liblsl on the release page.
 
     Parameters
