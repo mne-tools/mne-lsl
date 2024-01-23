@@ -333,7 +333,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         self._pick(picks)
         return self
 
-    def filter(self) -> BaseStream:
+    def filter(self) -> BaseStream:  # noqa: A003
         """Filter the stream. Not implemented.
 
         Returns
