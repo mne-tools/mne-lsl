@@ -1,12 +1,13 @@
 from __future__ import annotations  # c.f. PEP 563, PEP 649
 
 from abc import ABC, abstractmethod
+from pathlib import Path
 from typing import TYPE_CHECKING
 from warnings import warn
 
 import numpy as np
 from mne import rename_channels
-from mne.io import read_raw
+from mne.io import BaseRaw, read_raw
 from mne.utils import check_version
 
 if check_version("mne", "1.6"):
@@ -26,7 +27,6 @@ from ..utils.meas_info import _set_channel_units
 
 if TYPE_CHECKING:
     from datetime import datetime
-    from pathlib import Path
     from typing import Any, Callable, Optional, Union
 
     from mne import Info
@@ -37,9 +37,10 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
 
     Parameters
     ----------
-    fname : path-like
+    fname : path-like | Raw
         Path to the file to re-play as a mock real-time stream. MNE-Python must be able
-        to load the file with :func:`mne.io.read_raw`.
+        to load the file with :func:`mne.io.read_raw`. An :class:`~mne.io.Raw` object
+        can be provided directly.
     chunk_size : int ``≥ 1``
         Number of samples pushed at once on the mock real-time stream.
 
@@ -51,8 +52,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
     """
 
     @abstractmethod
-    def __init__(self, fname: Union[str, Path], chunk_size: int = 64) -> None:
-        self._fname = ensure_path(fname, must_exist=True)
+    def __init__(self, fname: Union[str, Path, BaseRaw], chunk_size: int = 64) -> None:
         self._chunk_size = ensure_int(chunk_size, "chunk_size")
         if self._chunk_size <= 0:
             raise ValueError(
@@ -60,7 +60,12 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
                 f"{chunk_size} is invalid."
             )
         # load raw recording
-        self._raw = read_raw(self._fname, preload=True)
+        if isinstance(fname, BaseRaw):
+            self._fname = Path(fname.filenames[0])
+            self._raw = fname
+        else:
+            self._fname = ensure_path(fname, must_exist=True)
+            self._raw = read_raw(self._fname, preload=True)
         # This method should end on a self._reset_variables()
 
     @fill_doc
@@ -91,9 +96,9 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         self._check_not_started("anonymize()")
         warn(
             "Player.anonymize() is partially implemented and does not impact the "
-            "stream information yet.",
+            "stream information yet. It will call Player.set_meas_date() internally.",
             RuntimeWarning,
-            stacklevel=1,
+            stacklevel=2,
         )
         super().anonymize(daysback=daysback, keep_his=keep_his, verbose=verbose)
         return self
@@ -280,7 +285,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
             "Player.set_meas_date() is partially implemented and does not impact the "
             "stream information yet.",
             RuntimeWarning,
-            stacklevel=1,
+            stacklevel=2,
         )
         super().set_meas_date(meas_date)
         return self
@@ -330,8 +335,10 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
     # ----------------------------------------------------------------------------------
     def __del__(self):
         """Delete the player."""
-        if hasattr(self, "_streaming_thread") and self._streaming_thread is not None:
+        try:
             self.stop()
+        except Exception:
+            pass
 
     def __enter__(self):
         """Context manager entry point."""

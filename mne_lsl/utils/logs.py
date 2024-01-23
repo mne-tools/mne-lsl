@@ -102,7 +102,7 @@ class _LoggerFormatter(logging.Formatter):
     def __init__(self):
         super().__init__(fmt="%(levelname): %(message)s")
 
-    def format(self, record: logging.LogRecord):
+    def format(self, record: logging.LogRecord):  # noqa: A003
         """
         Format the received log record.
 

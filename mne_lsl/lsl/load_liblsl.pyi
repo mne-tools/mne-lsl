@@ -15,6 +15,7 @@ _PLATFORM: str
 _PLATFORM_SUFFIXES: dict[str, str]
 _SUPPORTED_DISTRO: dict[str, tuple[str, ...]]
 _ERROR_MSG: str
+_LIB_FOLDER: Path
 
 def load_liblsl() -> CDLL:
     """Load the binary LSL library on the system."""

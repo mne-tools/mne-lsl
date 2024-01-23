@@ -6,6 +6,7 @@ from typing import Any, Callable, Optional, Union
 from _typeshed import Incomplete
 from mne import Info
 from mne.channels.channels import SetChannelsMixin
+from mne.io import BaseRaw
 from mne.io.meas_info import ContainsMixin
 
 from ..utils._checks import check_type as check_type
@@ -19,9 +20,10 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
 
     Parameters
     ----------
-    fname : path-like
+    fname : path-like | Raw
         Path to the file to re-play as a mock real-time stream. MNE-Python must be able
-        to load the file with :func:`mne.io.read_raw`.
+        to load the file with :func:`mne.io.read_raw`. An :class:`~mne.io.Raw` object
+        can be provided directly.
     chunk_size : int ``≥ 1``
         Number of samples pushed at once on the mock real-time stream.
 
@@ -32,12 +34,12 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
     a small discontinuity in the data stream.
     """
 
-    _fname: Incomplete
     _chunk_size: Incomplete
+    _fname: Incomplete
     _raw: Incomplete
 
     @abstractmethod
-    def __init__(self, fname: Union[str, Path], chunk_size: int = 64): ...
+    def __init__(self, fname: Union[str, Path, BaseRaw], chunk_size: int = 64): ...
     def anonymize(
         self,
         daysback: Optional[int] = None,

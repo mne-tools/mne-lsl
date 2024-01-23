@@ -103,10 +103,10 @@ class StreamOutlet:
             required. If numericals are transmitted, a numpy array of shape
             ``(n_samples, n_channels)`` is required.
         timestamp : float | array of shape (n_samples,) | None
-            If a float, the acquisition timestamp of the last sample, in agreement with
-            :func:`mne_lsl.lsl.local_clock`. ``None`` (default) uses the current time.
-            If an array, the acquisition timestamp of each sample, in agreement with
-            :func:`mne_lsl.lsl.local_clock`.
+            Acquisition timestamp in agreement with :func:`mne_lsl.lsl.local_clock`.
+            If a float, the acquisition timestamp of the last sample. ``None`` (default)
+            uses the current time. If an array, the acquisition timestamp of each
+            sample.
         pushThrough : bool
             If True, push the sample through to the receivers instead of buffering it
             with subsequent samples. Note that the ``chunk_size`` defined when creating
