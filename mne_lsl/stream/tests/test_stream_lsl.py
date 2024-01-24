@@ -13,6 +13,8 @@ from mne.io import RawArray
 from mne.utils import check_version
 from numpy.testing import assert_allclose
 
+from mne_lsl.player.player_lsl import PlayerLSL
+
 if check_version("mne", "1.6"):
     from mne._fiff.constants import FIFF
     from mne._fiff.pick import _picks_to_idx
@@ -65,6 +67,16 @@ def _mock_lsl_stream_int(_integer_raw, request):
     from mne_lsl.player import PlayerLSL  # noqa: E402
 
     with PlayerLSL(_integer_raw, name=f"P_{request.node.name}") as player:
+        yield player
+
+
+@pytest.fixture(scope="function")
+def _mock_lsl_stream_annotations(raw_annotations, request):
+    """Create a mock LSL stream streaming the channel number continuously."""
+    # nest the PlayerLSL import to first write the temporary LSL configuration file
+    from mne_lsl.player import PlayerLSL  # noqa: E402
+
+    with PlayerLSL(raw_annotations, name=f"P_{request.node.name}") as player:
         yield player
 
 
@@ -622,3 +634,13 @@ def test_stream_irregularly_sampled(close_io):
         stream._check_connected_and_regular_sampling("test")
     stream.disconnect()
     close_io()
+
+
+def test_stream_annotations_picks(_mock_lsl_stream_annotations):
+    """Test sub-selection of annotations."""
+    stream = Stream(bufsize=5, stype="annotations").connect()  # test chaining as-well
+    stream.pick("test1")  # most-present annotations
+    time.sleep(5)  # acquire data
+    data, ts = stream.get_data()
+    assert np.count_nonzero(data) == data.size
+    stream.disconnect()

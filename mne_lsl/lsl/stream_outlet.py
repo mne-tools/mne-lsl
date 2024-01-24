@@ -233,8 +233,7 @@ class StreamOutlet:
                     "sample. Thus, the shape should be (n_samples,), "
                     f"{timestamp.shape} is invalid."
                 )
-            if np.allclose(timestamp, 0):
-                # takes about 11.9 µs ± 131 ns per loop on arrays of size 100 to 10000
+            if np.count_nonzero(timestamp) == 0:
                 # this check is required because:
                 # - if the sampling-rate is irregular: all samples should have the same
                 #   timestamp -> this is not the case and differs from timestamp=0
