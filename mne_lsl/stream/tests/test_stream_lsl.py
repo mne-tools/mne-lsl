@@ -48,7 +48,7 @@ def acquisition_delay(request):
 
 
 @pytest.fixture(scope="function")
-def _mock_lsl_stream_int(_integer_raw, request):
+def _mock_lsl_stream_int(request):
     """Create a mock LSL stream streaming the channel number continuously."""
     # nest the PlayerLSL import to first write the temporary LSL configuration file
     from mne_lsl.player import PlayerLSL  # noqa: E402
