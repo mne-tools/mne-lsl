@@ -238,6 +238,10 @@ class StreamLSL(BaseStream):
                 n_channels,
             )
             data = data[:, self._picks_inlet]  # subselect channels
+            if self._stype == "annotations" and np.count_nonzero(data) == 0:
+                if not self._interrupt:
+                    self._create_acquisition_thread(self._acquisition_delay)
+                return  # interrupt early
             if len(self._added_channels) != 0:
                 refs = np.zeros(
                     (timestamps.size, len(self._added_channels)), dtype=self.dtype

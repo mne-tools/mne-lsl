@@ -342,11 +342,12 @@ class PlayerLSL(BasePlayer):
 
     def __repr__(self):
         """Representation of the instance."""
-        if getattr(self, "_outlet", None) is None:
-            status = "OFF"
+        status = "OFF" if getattr(self, "_outlet", None) is None else "ON"
+        if self._fname is not None:
+            repr_ = f"<Player: {self.name} | {status} | {self._fname}>"
         else:
-            status = "ON"
-        return f"<Player: {self.name} | {status} | {self._fname}>"
+            repr_ = f"<Player: {self.name} | {status}>"
+        return repr_
 
     # ----------------------------------------------------------------------------------
     @property

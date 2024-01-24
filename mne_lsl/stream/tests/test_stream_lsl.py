@@ -47,24 +47,27 @@ def acquisition_delay(request):
     yield request.param
 
 
-@pytest.fixture(scope="module")
-def _integer_raw(tmp_path_factory):
-    """Create a Raw object with each channel containing its idx continuously."""
-    info = create_info(5, 1000, "eeg")
-    data = np.full((5, 1000), np.arange(5).reshape(-1, 1))
-    raw = RawArray(data, info)
-    fname = tmp_path_factory.mktemp("data") / "int-raw.fif"
-    raw.save(fname)
-    return fname
-
-
 @pytest.fixture(scope="function")
-def _mock_lsl_stream_int(_integer_raw, request):
+def _mock_lsl_stream_int(request):
     """Create a mock LSL stream streaming the channel number continuously."""
     # nest the PlayerLSL import to first write the temporary LSL configuration file
     from mne_lsl.player import PlayerLSL  # noqa: E402
 
-    with PlayerLSL(_integer_raw, name=f"P_{request.node.name}") as player:
+    info = create_info(5, 1000, "eeg")
+    data = np.full((5, 1000), np.arange(5).reshape(-1, 1))
+    raw = RawArray(data, info)
+
+    with PlayerLSL(raw, name=f"P_{request.node.name}") as player:
+        yield player
+
+
+@pytest.fixture(scope="function")
+def _mock_lsl_stream_annotations(raw_annotations, request):
+    """Create a mock LSL stream streaming the channel number continuously."""
+    # nest the PlayerLSL import to first write the temporary LSL configuration file
+    from mne_lsl.player import PlayerLSL  # noqa: E402
+
+    with PlayerLSL(raw_annotations, name=f"P_{request.node.name}") as player:
         yield player
 
 
@@ -622,3 +625,13 @@ def test_stream_irregularly_sampled(close_io):
         stream._check_connected_and_regular_sampling("test")
     stream.disconnect()
     close_io()
+
+
+def test_stream_annotations_picks(_mock_lsl_stream_annotations):
+    """Test sub-selection of annotations."""
+    stream = Stream(bufsize=5, stype="annotations").connect()  # test chaining as-well
+    stream.pick("test1")  # most-present annotations
+    time.sleep(5)  # acquire data
+    data, ts = stream.get_data()
+    assert np.count_nonzero(data) == data.size
+    stream.disconnect()

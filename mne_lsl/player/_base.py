@@ -61,7 +61,10 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
             )
         # load raw recording
         if isinstance(fname, BaseRaw):
-            self._fname = Path(fname.filenames[0])
+            try:
+                self._fname = Path(fname.filenames[0])
+            except Exception:
+                self._fname = None
             self._raw = fname
         else:
             self._fname = ensure_path(fname, must_exist=True)
@@ -375,10 +378,10 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         return self._chunk_size
 
     @property
-    def fname(self) -> Path:
+    def fname(self) -> Optional[Path]:
         """Path to file played.
 
-        :type: :class:`~pathlib.Path`
+        :type: :class:`~pathlib.Path` | None
         """
         return self._fname
 
