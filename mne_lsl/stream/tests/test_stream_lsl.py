@@ -13,8 +13,6 @@ from mne.io import RawArray
 from mne.utils import check_version
 from numpy.testing import assert_allclose
 
-from mne_lsl.player.player_lsl import PlayerLSL
-
 if check_version("mne", "1.6"):
     from mne._fiff.constants import FIFF
     from mne._fiff.pick import _picks_to_idx
@@ -49,24 +47,17 @@ def acquisition_delay(request):
     yield request.param
 
 
-@pytest.fixture(scope="module")
-def _integer_raw(tmp_path_factory):
-    """Create a Raw object with each channel containing its idx continuously."""
-    info = create_info(5, 1000, "eeg")
-    data = np.full((5, 1000), np.arange(5).reshape(-1, 1))
-    raw = RawArray(data, info)
-    fname = tmp_path_factory.mktemp("data") / "int-raw.fif"
-    raw.save(fname)
-    return fname
-
-
 @pytest.fixture(scope="function")
 def _mock_lsl_stream_int(_integer_raw, request):
     """Create a mock LSL stream streaming the channel number continuously."""
     # nest the PlayerLSL import to first write the temporary LSL configuration file
     from mne_lsl.player import PlayerLSL  # noqa: E402
 
-    with PlayerLSL(_integer_raw, name=f"P_{request.node.name}") as player:
+    info = create_info(5, 1000, "eeg")
+    data = np.full((5, 1000), np.arange(5).reshape(-1, 1))
+    raw = RawArray(data, info)
+
+    with PlayerLSL(raw, name=f"P_{request.node.name}") as player:
         yield player
 
 
