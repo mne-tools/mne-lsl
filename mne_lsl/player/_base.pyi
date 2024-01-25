@@ -316,10 +316,10 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         """
 
     @property
-    def fname(self) -> Path:
+    def fname(self) -> Optional[Path]:
         """Path to file played.
 
-        :type: :class:`~pathlib.Path`
+        :type: :class:`~pathlib.Path` | None
         """
 
     @property
