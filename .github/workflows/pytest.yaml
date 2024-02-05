@@ -68,6 +68,7 @@ jobs:
           flags: unittests  # optional
           name: codecov-umbrella  # optional
           fail_ci_if_error: false  # optional (default = false)
+          token: ${{ secrets.CODECOV_TOKEN }}
           verbose: true  # optional (default = false)
 
   pytest-arm64:
@@ -112,6 +113,7 @@ jobs:
           flags: unittests  # optional
           name: codecov-umbrella  # optional
           fail_ci_if_error: false  # optional (default = false)
+          token: ${{ secrets.CODECOV_TOKEN }}
           verbose: true  # optional (default = false)
 
   pytest-pip-pre:
@@ -162,4 +164,5 @@ jobs:
           flags: unittests  # optional
           name: codecov-umbrella  # optional
           fail_ci_if_error: false  # optional (default = false)
+          token: ${{ secrets.CODECOV_TOKEN }}
           verbose: true  # optional (default = false)
