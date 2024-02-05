@@ -62,7 +62,7 @@ jobs:
           max_attempts: 3
           command: pytest mne_lsl --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s
       - name: Upload to codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           files: ./coverage.xml
           flags: unittests  # optional
@@ -112,7 +112,7 @@ jobs:
           max_attempts: 3
           command: pytest mne_lsl --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml
       - name: Upload to codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           files: ./coverage.xml
           flags: unittests  # optional
