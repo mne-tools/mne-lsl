@@ -102,7 +102,7 @@ test = [
   'pyqt5',
   'pytest-cov',
   'pytest-timeout',
-  'pytest>=6.0',
+  'pytest>=8.0',
   'requests',
 ]
 
@@ -171,7 +171,7 @@ match-dir = '^mne_lsl.*'
 [tool.pytest.ini_options]
 addopts = '--durations=20 --junit-xml=junit-results.xml -ra -v --cov-report= --tb=short --color=yes'
 junit_family = 'xunit2'
-minversion = '6.0'
+minversion = '8.0'
 
 [tool.ruff]
 extend-exclude = [
@@ -181,15 +181,17 @@ extend-exclude = [
   'setup.py',
   'tutorials/*',
 ]
-ignore = []
 line-length = 88
-select = ["A", "B", "E", "F", "UP", "W"]
 target-version = 'py39'
 
 [tool.ruff.format]
 docstring-code-format = true
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint]
+ignore = []
+select = ["A", "B", "E", "F", "UP", "W"]
+
+[tool.ruff.lint.per-file-ignores]
 '*' = [
   "B904", # 'Within an except clause, raise exceptions with raise ... from ...'
   "UP007", # 'Use `X | Y` for type annotations', requires python 3.10
