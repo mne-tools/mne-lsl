@@ -104,7 +104,7 @@ jobs:
       - name: Display system information
         run: mne_lsl-sys_info --developer
         env:
-          MNE_LSL_LIB: $PWD/liblsl.1.16.0.dylib
+          MNE_LSL_LIB: ${{ github.workspace }}/liblsl.1.16.0.dylib
       - name: Run pytest
         uses: nick-fields/retry@v3
         with:
@@ -112,7 +112,7 @@ jobs:
           max_attempts: 3
           command: pytest mne_lsl --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s
         env:
-          MNE_LSL_LIB: $PWD/liblsl.1.16.0.dylib
+          MNE_LSL_LIB: ${{ github.workspace }}/liblsl.1.16.0.dylib
       - name: Upload to codecov
         uses: codecov/codecov-action@v4
         with:
