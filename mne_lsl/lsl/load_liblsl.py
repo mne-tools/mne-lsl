@@ -11,6 +11,7 @@ from importlib.resources import files
 from pathlib import Path
 from shutil import move, rmtree
 from typing import TYPE_CHECKING
+from warnings import warn
 
 import pooch
 import requests
@@ -59,8 +60,35 @@ def load_liblsl() -> CDLL:
             "provide the error traceback to the developers."
         )
     lib = _find_liblsl()
-    if lib is None:
-        lib = _fetch_liblsl()
+    if lib is not None:
+        return _set_types(lib)
+    # first look for liblsl in the _LIB_FOLDER folder before we attempt to fetch it
+    for file in _LIB_FOLDER.glob(f"*{_PLATFORM_SUFFIXES[_PLATFORM]}"):
+        libpath, version = _attempt_load_liblsl(file)
+        if version is None:
+            libpath = Path(libpath)
+            warn(
+                "The previously downloaded liblsl {libpath.name} could not be loaded. "
+                "It will be removed.",
+                RuntimeWarning,
+                stacklevel=2,
+            )
+            libpath.unlink(missing_ok=False)
+        if version < _VERSION_MIN:
+            libpath = Path(libpath)
+            warn(
+                f"The previously downloaded liblsl {libpath.name} is outdated. The "
+                f"version is {version // 100}.{version % 100} while the minimum "
+                "version required by MNE-LSL is "
+                f"{_VERSION_MIN // 100}.{_VERSION_MIN % 100}. It will be removed.",
+                RuntimeWarning,
+                stacklevel=2,
+            )
+            libpath.unlink(missing_ok=False)
+        lib = CDLL(libpath)
+        return _set_types(lib)
+    # if nothing was found, we fetch liblsl from github
+    lib = _fetch_liblsl()
     return _set_types(lib)
 
 
@@ -101,7 +129,11 @@ def _find_liblsl() -> Optional[CDLL]:
                 continue
             libpath, version = _attempt_load_liblsl(libpath)
         if version is None:
-            logger.warning("The LIBLSL '%s' can not be loaded.", libpath)
+            warn(
+                f"The LIBLSL '{libpath}' can not be loaded.",
+                RuntimeWarning,
+                stacklevel=2,
+            )
             continue
         if version < _VERSION_MIN:
             logger.warning(
@@ -122,7 +154,7 @@ def _find_liblsl() -> Optional[CDLL]:
     return lib
 
 
-def _fetch_liblsl(folder: Path = _LIB_FOLDER) -> Optional[CDLL]:
+def _fetch_liblsl(folder: Path = _LIB_FOLDER) -> CDLL:
     """Fetch liblsl on the release page.
 
     Parameters
@@ -132,7 +164,7 @@ def _fetch_liblsl(folder: Path = _LIB_FOLDER) -> Optional[CDLL]:
 
     Returns
     -------
-    lib : CDLL | None
+    lib : CDLL
         Loaded binary LSL library. None if not found for this platform.
     """
     try:
@@ -235,16 +267,6 @@ def _fetch_liblsl(folder: Path = _LIB_FOLDER) -> Optional[CDLL]:
         )
     else:
         libpath = (folder / asset["name"]).with_suffix(_PLATFORM_SUFFIXES[_PLATFORM])
-    if libpath.exists():
-        _, version = _attempt_load_liblsl(libpath)
-        if version is None:
-            logger.warning(
-                "Previously downloaded liblsl '%s' could not be loaded. It will be "
-                "removed and downloaded again."
-            )
-            libpath.unlink(missing_ok=False)
-        else:
-            return CDLL(str(libpath))
 
     # liblsl was not already present in mne_lsl/lsl/lib, thus we need to download it
     libpath = pooch.retrieve(
