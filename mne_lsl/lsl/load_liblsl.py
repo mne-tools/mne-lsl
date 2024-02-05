@@ -116,16 +116,20 @@ def _find_liblsl() -> Optional[CDLL]:
         else:
             libpath = Path(libpath)
             if libpath.suffix != _PLATFORM_SUFFIXES[_PLATFORM]:
-                logger.warning(
-                    "The liblsl '%s' ends with '%s' which is different from the "
-                    "expected extension '%s' for this OS.",
-                    libpath,
-                    libpath.suffix,
-                    _PLATFORM_SUFFIXES[_PLATFORM],
+                warn(
+                    f"The liblsl '{libpath}' ends with '{libpath.suffix}' which is "
+                    "different from the expected extension "
+                    f"'{_PLATFORM_SUFFIXES[_PLATFORM]}' for this OS.",
+                    RuntimeWarning,
+                    stacklevel=2,
                 )
                 continue
             if not libpath.exists():
-                logger.warning("The LIBLSL '%s' does not exist.", libpath)
+                warn(
+                    f"The LIBLSL '{libpath}' does not exist.",
+                    RuntimeWarning,
+                    stacklevel=2,
+                )
                 continue
             libpath, version = _attempt_load_liblsl(libpath)
         if version is None:
@@ -136,14 +140,12 @@ def _find_liblsl() -> Optional[CDLL]:
             )
             continue
         if version < _VERSION_MIN:
-            logger.warning(
-                "The LIBLSL '%s' is outdated. The version is %i.%i while the "
-                "minimum version required by MNE-LSL is %i.%i.",
-                libpath,
-                version // 100,
-                version % 100,
-                _VERSION_MIN // 100,
-                _VERSION_MIN % 100,
+            warn(
+                f"The LIBLSL '{libpath}' is outdated. The version is "
+                f"{version // 100}.{version % 100} while the minimum version required "
+                "by MNE-LSL is {_VERSION_MIN // 100}.{_VERSION_MIN % 100}.",
+                RuntimeWarning,
+                stacklevel=2,
             )
             continue
         assert libpath is not None  # sanity-check
@@ -314,9 +316,11 @@ def _pooch_processor_liblsl(fname: str, action: str, pooch: Pooch) -> str:
         os.makedirs(uncompressed, exist_ok=True)
         result = subprocess.run(["ar", "x", str(fname), "--output", str(uncompressed)])
         if result.returncode != 0:
-            logger.warning(
+            warn(
                 "Could not run 'ar x' command to unpack debian package. Do you have "
-                "binutils installed with 'sudo apt install binutils'?"
+                "binutils installed with 'sudo apt install binutils'?",
+                RuntimeWarning,
+                stacklevel=2,
             )
             return str(fname)
 
@@ -335,8 +339,10 @@ def _pooch_processor_liblsl(fname: str, action: str, pooch: Pooch) -> str:
             if line.startswith("Depends:")
         ]
         if len(lines) != 1:
-            logger.warning(
-                "Dependencies from debian liblsl package could not be parsed."
+            warn(
+                "Dependencies from debian liblsl package could not be parsed.",
+                RuntimeWarning,
+                stacklevel=2,
             )
         else:
             logger.info(
