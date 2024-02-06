@@ -143,7 +143,7 @@ def _find_liblsl() -> Optional[CDLL]:
             warn(
                 f"The LIBLSL '{libpath}' is outdated. The version is "
                 f"{version // 100}.{version % 100} while the minimum version required "
-                "by MNE-LSL is {_VERSION_MIN // 100}.{_VERSION_MIN % 100}.",
+                f"by MNE-LSL is {_VERSION_MIN // 100}.{_VERSION_MIN % 100}.",
                 RuntimeWarning,
                 stacklevel=2,
             )
