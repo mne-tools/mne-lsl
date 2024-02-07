@@ -15,8 +15,8 @@ from mne_lsl.lsl.load_liblsl import (
     _SUPPORTED_DISTRO,
     _attempt_load_liblsl,
     _fetch_liblsl,
-    _is_valid_version,
     _is_valid_libpath,
+    _is_valid_version,
     _load_liblsl_mne_lsl,
     _pooch_processor_liblsl,
 )

@@ -150,7 +150,7 @@ def _load_liblsl_mne_lsl(*, folder: Path = _LIB_FOLDER) -> Optional[str]:
     """
     for libpath in folder.glob(f"*{_PLATFORM_SUFFIXES[_PLATFORM]}"):
         # disable the generic warning 'can not be loaded' in favor of a detailed warning
-        # mentionning the file deletion.
+        # mentioning the file deletion.
         libpath, version = _attempt_load_liblsl(libpath, issue_warning=False)
         if version is None:
             libpath = ensure_path(libpath, must_exist=False)
@@ -164,7 +164,7 @@ def _load_liblsl_mne_lsl(*, folder: Path = _LIB_FOLDER) -> Optional[str]:
             continue
         # we do not accept outdated versions from the mne-lsl folder and we will remove
         # outdated versions.
-        # disable the generic version warning in favor of a detailed warning mentionning
+        # disable the generic version warning in favor of a detailed warning mentioning
         # the file deletion.
         if _is_valid_version(libpath, version, issue_warning=False):
             return libpath
