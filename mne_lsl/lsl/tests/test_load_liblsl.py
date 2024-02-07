@@ -86,7 +86,7 @@ def test_distro_support():
 
 
 @pytest.mark.skipif(
-    platform.system() == "Windows",
+    _PLATFORM == "windows",
     reason="PermissionError: [WinError 5] Access is denied (on Path.unlink(...)).",
 )
 @pytest.mark.xfail(raises=KeyError, reason="403 Forbidden Error on GitHub API request.")
@@ -121,8 +121,12 @@ def test_fetch_liblsl(tmp_path):
 
 
 @pytest.mark.skipif(
-    platform.system() == "Windows",
+    _PLATFORM == "windows",
     reason="PermissionError: [WinError 5] Access is denied (on Path.unlink(...)).",
+)
+@pytest.mark.skipif(
+    _PLATFORM == "darwin" and platform.processor() == "arm",
+    reason="automatic bypass with version 1.16.0 for M1/M2 macOS",
 )
 @pytest.mark.xfail(raises=KeyError, reason="403 Forbidden Error on GitHub API request.")
 def test_fetch_liblsl_outdated(tmp_path):
@@ -146,7 +150,7 @@ def test_liblsl_outdated(liblsl_outdated):
 
 
 @pytest.mark.skipif(
-    platform.system() == "Windows",
+    _PLATFORM == "windows",
     reason="PermissionError: [WinError 5] Access is denied (on Path.unlink(...)).",
 )
 def test_liblsl_outdated_mne_folder(liblsl_outdated):
