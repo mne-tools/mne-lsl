@@ -33,7 +33,7 @@ _LIB_FOLDER: Path = files("mne_lsl.lsl") / "lib"
 # and the minor version is given by version % 100.
 _VERSION_MIN: int = 115
 # liblsl objects created with the same protocol version are inter-compatible.
-_VERSION_PROTOCOL: int = 110  # un-used for now
+_VERSION_PROTOCOL: int = 110  # noqa: W0612
 _PLATFORM: str = platform.system().lower().strip()
 _PLATFORM_SUFFIXES: dict[str, str] = {
     "windows": ".dll",
