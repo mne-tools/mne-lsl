@@ -36,7 +36,7 @@ def _download_liblsl_outdated(tmp_path_factory) -> Path:
         asset = dict(
             name="liblsl-1.14.0-Win_amd64.zip",
             browser_download_url="https://github.com/sccn/liblsl/releases/download/v1.14.0/liblsl-1.14.0-Win_amd64.zip",  # noqa: E501
-            known_hash="75ec445e9e9b23b15400322fffa06666098fce42e706afa763e77abdbea87e52x",
+            known_hash="75ec445e9e9b23b15400322fffa06666098fce42e706afa763e77abdbea87e52",
         )
     else:
         pytest.mark.skip(reason="Unsupported platform for this test.")
@@ -145,6 +145,10 @@ def test_liblsl_outdated(liblsl_outdated):
         _is_valid_version(libpath, version, issue_warning=True)
 
 
+@pytest.mark.skipif(
+    platform.system() == "Windows",
+    reason="PermissionError: [WinError 5] Access is denied (on Path.unlink(...)).",
+)
 def test_liblsl_outdated_mne_folder(liblsl_outdated):
     """Test loading an outdated version of liblsl in the MNE folder."""
     assert liblsl_outdated.exists()
@@ -155,13 +159,14 @@ def test_liblsl_outdated_mne_folder(liblsl_outdated):
 
 def test_is_valid_libpath(tmp_path):
     """Test _is_valid_libpath."""
-    with open(tmp_path / "101.txt", "w") as file:
+    fname = str(tmp_path / "101.txt")
+    with open(fname, "w") as file:
         file.write("101")
     with pytest.warns(RuntimeWarning, match="different from the expected extension"):
-        valid = _is_valid_libpath(tmp_path / "101.txt")
+        valid = _is_valid_libpath(fname)
     assert not valid
 
-    fname = tmp_path / f"101.{_PLATFORM_SUFFIXES[_PLATFORM]}"
+    fname = str(tmp_path / f"101.{_PLATFORM_SUFFIXES[_PLATFORM]}")
     with pytest.warns(RuntimeWarning, match="does not exist"):
         valid = _is_valid_libpath(fname)
     assert not valid
