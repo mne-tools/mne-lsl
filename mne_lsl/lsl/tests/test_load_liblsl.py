@@ -1,7 +1,10 @@
 import platform
+from ctypes import c_void_p, sizeof
 from itertools import chain
 from pathlib import Path
+from shutil import copy
 
+import pooch
 import pytest
 import requests
 
@@ -10,17 +13,52 @@ from mne_lsl.lsl.load_liblsl import (
     _PLATFORM,
     _PLATFORM_SUFFIXES,
     _SUPPORTED_DISTRO,
+    _attempt_load_liblsl,
     _fetch_liblsl,
+    _is_valid_version,
+    _is_valid_libpath,
     _load_liblsl_mne_lsl,
+    _pooch_processor_liblsl,
 )
 
 
-def test_os_detection():
-    """Test OS detection for MNE-LSL's supported OS.
+@pytest.fixture(scope="module")
+def _download_liblsl_outdated(tmp_path_factory) -> Path:
+    """Fixture to download an outdated liblsl version."""
+    assert _PLATFORM in _PLATFORM_SUFFIXES  # test OS-detection
+    if _PLATFORM == "darwin" and platform.processor() == "i386":
+        asset = dict(
+            name="liblsl-1.14.0-OSX_amd64.tar.bz2",
+            browser_download_url="https://github.com/sccn/liblsl/releases/download/v1.14.0/liblsl-1.14.0-OSX_amd64.tar.bz2",  # noqa: E501
+            known_hash="c1f9004243db49885b18884b39d793f66c94e45d52a7bde12c51893e74db337d",
+        )
+    elif _PLATFORM == "windows" and sizeof(c_void_p) == 8:
+        asset = dict(
+            name="liblsl-1.14.0-Win_amd64.zip",
+            browser_download_url="https://github.com/sccn/liblsl/releases/download/v1.14.0/liblsl-1.14.0-Win_amd64.zip",  # noqa: E501
+            known_hash="75ec445e9e9b23b15400322fffa06666098fce42e706afa763e77abdbea87e52x",
+        )
+    else:
+        pytest.mark.skip(reason="Unsupported platform for this test.")
 
-    Make sure platform.system() returns a valid entry.
-    """
-    assert _PLATFORM in _PLATFORM_SUFFIXES
+    try:
+        libpath = pooch.retrieve(
+            url=asset["browser_download_url"],
+            fname=asset["name"],
+            path=tmp_path_factory.mktemp("data"),
+            processor=_pooch_processor_liblsl,
+            known_hash=asset["known_hash"],
+        )
+    except ValueError:
+        pytest.mark.skip(reason="Unable to download the outdated liblsl.")
+    return Path(libpath)
+
+
+@pytest.fixture(scope="function")
+def liblsl_outdated(tmp_path, _download_liblsl_outdated) -> Path:
+    """Fixture to provide an outdated liblsl version."""
+    copy(_download_liblsl_outdated, tmp_path / _download_liblsl_outdated.name)
+    return tmp_path / _download_liblsl_outdated.name
 
 
 @pytest.mark.xfail(raises=KeyError, reason="403 Forbidden Error on GitHub API request.")
@@ -94,3 +132,36 @@ def test_fetch_liblsl_outdated(tmp_path):
             folder=tmp_path,
             url="https://api.github.com/repos/sccn/liblsl/releases/tags/v1.14.0",
         )
+
+
+def test_liblsl_outdated(liblsl_outdated):
+    """Test loading an outdated version of liblsl."""
+    libpath, version = _attempt_load_liblsl(liblsl_outdated)
+    assert isinstance(libpath, str)
+    assert isinstance(version, int)
+    assert _is_valid_libpath(libpath)
+    assert not _is_valid_version(libpath, version, issue_warning=False)
+    with pytest.warns(RuntimeWarning, match="is outdated. The version is"):
+        _is_valid_version(libpath, version, issue_warning=True)
+
+
+def test_liblsl_outdated_mne_folder(liblsl_outdated):
+    """Test loading an outdated version of liblsl in the MNE folder."""
+    assert liblsl_outdated.exists()
+    with pytest.warns(RuntimeWarning, match="is outdated. The version is"):
+        _load_liblsl_mne_lsl(folder=liblsl_outdated.parent)
+    assert not liblsl_outdated.exists()
+
+
+def test_is_valid_libpath(tmp_path):
+    """Test _is_valid_libpath."""
+    with open(tmp_path / "101.txt", "w") as file:
+        file.write("101")
+    with pytest.warns(RuntimeWarning, match="different from the expected extension"):
+        valid = _is_valid_libpath(tmp_path / "101.txt")
+    assert not valid
+
+    fname = tmp_path / f"101.{_PLATFORM_SUFFIXES[_PLATFORM]}"
+    with pytest.warns(RuntimeWarning, match="does not exist"):
+        valid = _is_valid_libpath(fname)
+    assert not valid
