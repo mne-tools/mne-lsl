@@ -39,7 +39,7 @@ def _download_liblsl_outdated(tmp_path_factory) -> Path:
             known_hash="75ec445e9e9b23b15400322fffa06666098fce42e706afa763e77abdbea87e52",
         )
     else:
-        pytest.mark.skip(reason="Unsupported platform for this test.")
+        pytest.skip(reason="Unsupported platform for these tests.")
 
     try:
         libpath = pooch.retrieve(
@@ -50,7 +50,7 @@ def _download_liblsl_outdated(tmp_path_factory) -> Path:
             known_hash=asset["known_hash"],
         )
     except ValueError:
-        pytest.mark.skip(reason="Unable to download the outdated liblsl.")
+        pytest.skip(reason="Unable to download the outdated liblsl.")
     return Path(libpath)
 
 
