@@ -443,6 +443,29 @@ def _pooch_processor_liblsl(fname: str, action: str, pooch: Pooch) -> str:
     return str(target)
 
 
+def _is_valid_libpath(libpath: str) -> bool:
+    """Check if the library path is valid."""
+    assert isinstance(libpath, str)  # sanity-check
+    libpath = ensure_path(libpath, must_exist=False)
+    if libpath.suffix != _PLATFORM_SUFFIXES[_PLATFORM]:
+        warn(
+            f"The LIBLSL '{libpath}' ends with '{libpath.suffix}' which is "
+            f"different from the expected extension '{_PLATFORM_SUFFIXES[_PLATFORM]}' "
+            f"for {_PLATFORM} based OS.",
+            RuntimeWarning,
+            stacklevel=2,
+        )
+        return False
+    if not libpath.exists():
+        warn(
+            f"The LIBLSL '{libpath}' does not exist.",
+            RuntimeWarning,
+            stacklevel=2,
+        )
+        return False
+    return True
+
+
 def _attempt_load_liblsl(
     libpath: Union[str, Path], *, issue_warning: bool = True
 ) -> tuple[str, Optional[int]]:
@@ -478,29 +501,6 @@ def _attempt_load_liblsl(
                 stacklevel=2,
             )
     return libpath, version
-
-
-def _is_valid_libpath(libpath: str) -> bool:
-    """Check if the library path is valid."""
-    assert isinstance(libpath, str)  # sanity-check
-    libpath = ensure_path(libpath, must_exist=False)
-    if libpath.suffix != _PLATFORM_SUFFIXES[_PLATFORM]:
-        warn(
-            f"The LIBLSL '{libpath}' ends with '{libpath.suffix}' which is "
-            f"different from the expected extension '{_PLATFORM_SUFFIXES[_PLATFORM]}' "
-            f"for {_PLATFORM} based OS.",
-            RuntimeWarning,
-            stacklevel=2,
-        )
-        return False
-    if not libpath.exists():
-        warn(
-            f"The LIBLSL '{libpath}' does not exist.",
-            RuntimeWarning,
-            stacklevel=2,
-        )
-        return False
-    return True
 
 
 def _is_valid_version(
