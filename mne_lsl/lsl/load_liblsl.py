@@ -151,6 +151,7 @@ def _load_liblsl_mne_lsl(*, folder: Path = _LIB_FOLDER) -> Optional[str]:
     for libpath in folder.glob(f"*{_PLATFORM_SUFFIXES[_PLATFORM]}"):
         # disable the generic warning 'can not be loaded' in favor of a detailed warning
         # mentioning the file deletion.
+        logger.debug("Loading previously downloaded liblsl '%s'.", libpath)
         libpath, version = _attempt_load_liblsl(libpath, issue_warning=False)
         if version is None:
             libpath = ensure_path(libpath, must_exist=False)
@@ -356,7 +357,7 @@ def _pooch_processor_liblsl(fname: str, action: str, pooch: Pooch) -> str:
     """
     fname = Path(fname)
     uncompressed = fname.with_suffix(".archive")
-    logger.debug("Processing %s with pooch.", fname)
+    logger.debug("Processing '%s' with pooch.", fname)
 
     if _PLATFORM == "linux" and fname.suffix == ".deb":
         os.makedirs(uncompressed, exist_ok=True)

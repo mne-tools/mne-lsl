@@ -126,7 +126,7 @@ def test_fetch_liblsl(tmp_path):
 )
 @pytest.mark.skipif(
     _PLATFORM == "darwin" and platform.processor() == "arm",
-    reason="automatic bypass with version 1.16.0 for M1/M2 macOS",
+    reason="Automatic bypass with version 1.16.0 for M1/M2 macOS",
 )
 @pytest.mark.xfail(raises=KeyError, reason="403 Forbidden Error on GitHub API request.")
 def test_fetch_liblsl_outdated(tmp_path):
