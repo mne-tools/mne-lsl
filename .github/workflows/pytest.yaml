@@ -34,7 +34,7 @@ jobs:
         run: |
           curl -L https://github.com/sccn/liblsl/releases/download/v1.16.2/liblsl-1.16.2-jammy_amd64.deb -o liblsl-1.16.2-jammy_amd64.deb
           sudo apt update
-          sudo apt install -y libpugixml-dev qtbase5-dev qt5-qmake
+          sudo apt install -y binutils libpugixml-dev qtbase5-dev qt5-qmake
           sudo apt install -y ./liblsl-1.16.2-jammy_amd64.deb
           rm liblsl-1.16.2-jammy_amd64.deb
       - name: Install liblsl (macOS)
@@ -90,7 +90,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           architecture: 'x64'
-      - name: Install liblsl (macOS)
+      - name: Install liblsl
         run: |
           curl -L https://github.com/sccn/liblsl/releases/download/v1.16.0/liblsl-1.16.0-OSX_arm64.tar.bz2 -o liblsl-1.16.0-OSX_arm64.tar.bz2
           tar -xf liblsl-1.16.0-OSX_arm64.tar.bz2
@@ -142,11 +142,11 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           architecture: 'x64'
-      - name: Install linux dependencies
+      - name: Install liblsl & linux dependencies
         run: |
           curl -L https://github.com/sccn/liblsl/releases/download/v1.16.2/liblsl-1.16.2-jammy_amd64.deb -o liblsl-1.16.2-jammy_amd64.deb
           sudo apt update
-          sudo apt install -y libpugixml-dev qtbase5-dev qt5-qmake
+          sudo apt install -y binutils libpugixml-dev qtbase5-dev qt5-qmake
           sudo apt install -y ./liblsl-1.16.2-jammy_amd64.deb
       - name: Install dependencies
         run: |

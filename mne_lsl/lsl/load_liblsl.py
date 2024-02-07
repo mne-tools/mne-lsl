@@ -57,6 +57,8 @@ _ERROR_MSG: str = (
 def load_liblsl() -> CDLL:
     """Load the binary LSL library on the system.
 
+    The library is loaded in the following order:
+
     1. Search in the environment variables.
     2. Search in the system folder.
     3. Search in _LIB_FOLDER.
@@ -70,11 +72,20 @@ def load_liblsl() -> CDLL:
     libpath = _load_liblsl_environment_variables()
     libpath = _load_liblsl_system() if libpath is None else libpath
     libpath = _load_liblsl_mne_lsl() if libpath is None else libpath
+    libpath = _fetch_liblsl() if libpath is None else libpath
+    assert isinstance(libpath, str)  # sanity-check
     lib = CDLL(libpath)
     return _set_types(lib)
 
 
 def _load_liblsl_environment_variables() -> Optional[str]:
+    """Load the binary LSL library from the environment variables.
+
+    Returns
+    -------
+    libpath : str | None
+        Path to the binary LSL library or None if it could not be found.
+    """
     for variable in ("MNE_LSL_LIB", "PYLSL_LIB"):
         libpath = os.environ.get(variable, None)
         if libpath is None:
@@ -98,6 +109,13 @@ def _load_liblsl_environment_variables() -> Optional[str]:
 
 
 def _load_liblsl_system() -> Optional[str]:
+    """Load the binary LSL library from the system path/folders.
+
+    Returns
+    -------
+    libpath : str | None
+        Path to the binary LSL library or None if it could not be found.
+    """
     libpath = find_library("liblsl")
     if libpath is None:
         logger.debug("The library LIBLSL is not found in the system folder.")
@@ -117,8 +135,20 @@ def _load_liblsl_system() -> Optional[str]:
     return None
 
 
-def _load_liblsl_mne_lsl() -> Optional[str]:
-    for libpath in _LIB_FOLDER.glob(f"*{_PLATFORM_SUFFIXES[_PLATFORM]}"):
+def _load_liblsl_mne_lsl(*, folder: Path = _LIB_FOLDER) -> Optional[str]:
+    """Load the binary LSL library from the system path/folders.
+
+    Parameters
+    ----------
+    folder : Path
+        Path to the folder in which to look for the binary LSL library.
+
+    Returns
+    -------
+    libpath : str | None
+        Path to the binary LSL library or None if it could not be found.
+    """
+    for libpath in folder.glob(f"*{_PLATFORM_SUFFIXES[_PLATFORM]}"):
         # disable the generic warning 'can not be loaded' in favor of a detailed warning
         # mentionning the file deletion.
         libpath, version = _attempt_load_liblsl(libpath, issue_warning=False)
@@ -155,8 +185,26 @@ def _fetch_liblsl(
     *,
     folder: Union[str, Path] = _LIB_FOLDER,
     url: str = "https://api.github.com/repos/sccn/liblsl/releases/latest",
-) -> CDLL:
-    """Fetch liblsl from the GitHub release page."""
+) -> str:
+    """Fetch liblsl on the release page.
+
+    Parameters
+    ----------
+    folder : Path
+        Path to the folder in which to download the binary LSL library.
+    url : str
+        URL from which to fetch the release of liblsl.
+
+    Returns
+    -------
+    libpath : str
+        Path to the binary LSL library.
+
+    Notes
+    -----
+    This function will raise if it was unable to fetch the release of liblsl. Thus, it
+    will never return None.
+    """
     folder = ensure_path(folder, must_exist=False)
     if folder.is_file():
         raise RuntimeError(
@@ -170,8 +218,8 @@ def _fetch_liblsl(
         logger.debug("Response code: %s", response.status_code)
         assets = [elt for elt in response.json()["assets"] if "liblsl" in elt["name"]]
     except Exception as error:
-        logger.exception(error)
-        raise RuntimeError("The latest release of liblsl could not be fetch.")
+        error.add_note("The latest release of liblsl could not be fetch.")
+        raise
     # filter the assets for our platform
     if _PLATFORM == "linux":
         # attempt to identify the linux distribution
@@ -287,7 +335,25 @@ def _fetch_liblsl(
 
 
 def _pooch_processor_liblsl(fname: str, action: str, pooch: Pooch) -> str:
-    """Processor of the pooch-downloaded liblsl."""
+    """Processor of the pooch-downloaded liblsl.
+
+    Parameters
+    ----------
+    fname : str
+        The full path of the file in the local data storage.
+    action : str
+        Either:
+        * "download" (file doesn't exist and will be downloaded)
+        * "update" (file is outdated and will be downloaded)
+        * "fetch" (file exists and is updated so no download is necessary)
+    pooch : Pooch
+        The instance of the Pooch class that is calling this function.
+
+    Returns
+    -------
+    fname : str
+        The full path to the file in the local data storage.
+    """
     fname = Path(fname)
     uncompressed = fname.with_suffix(".archive")
     logger.debug("Processing %s with pooch.", fname)
@@ -380,7 +446,24 @@ def _pooch_processor_liblsl(fname: str, action: str, pooch: Pooch) -> str:
 def _attempt_load_liblsl(
     libpath: Union[str, Path], *, issue_warning: bool = True
 ) -> tuple[str, Optional[int]]:
-    """Try loading a binary LSL library."""
+    """Try loading a binary LSL library.
+
+    Parameters
+    ----------
+    libpath : Path
+        Path to the binary LSL library.
+    issue_warning : bool
+        If True, issue a warning if the library could not be loaded.
+
+    Returns
+    -------
+    libpath : str
+        Path to the binary LSL library, converted to string for the given OS.
+    version : int
+        Version of the binary LSL library.
+        The major version is version // 100.
+        The minor version is version % 100.
+    """
     libpath = str(libpath) if isinstance(libpath, Path) else libpath
     try:
         lib = CDLL(libpath)
@@ -399,7 +482,7 @@ def _attempt_load_liblsl(
 
 def _is_valid_libpath(libpath: str) -> bool:
     """Check if the library path is valid."""
-    assert isinstance(libpath, str)
+    assert isinstance(libpath, str)  # sanity-check
     libpath = ensure_path(libpath, must_exist=False)
     if libpath.suffix != _PLATFORM_SUFFIXES[_PLATFORM]:
         warn(
@@ -423,9 +506,26 @@ def _is_valid_libpath(libpath: str) -> bool:
 def _is_valid_version(
     libpath: str, version: int, *, issue_warning: bool = True
 ) -> bool:
-    """Check if the version of the library is supported by MNE-LSL."""
-    assert isinstance(libpath, str)
-    assert isinstance(version, int)
+    """Check if the version of the library is supported by MNE-LSL.
+
+    Parameters
+    ----------
+    libpath : str
+        Path to the binary LSL library, converted to string for the given OS.
+    version : int
+        Version of the binary LSL library.
+        The major version is version // 100.
+        The minor version is version % 100.
+    issue_warning : bool
+        If True, issue a warning if the version is not supported.
+
+    Returns
+    -------
+    valid : bool
+        True if the version is supported, False otherwise.
+    """
+    assert isinstance(libpath, str)  # sanity-check
+    assert isinstance(version, int)  # sanity-check
     if version < _VERSION_MIN:
         if issue_warning:
             warn(

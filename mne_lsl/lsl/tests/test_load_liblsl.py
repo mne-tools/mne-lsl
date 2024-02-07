@@ -1,4 +1,3 @@
-import os
 import platform
 from itertools import chain
 from pathlib import Path
@@ -12,6 +11,7 @@ from mne_lsl.lsl.load_liblsl import (
     _PLATFORM_SUFFIXES,
     _SUPPORTED_DISTRO,
     _fetch_liblsl,
+    _load_liblsl_mne_lsl,
 )
 
 
@@ -48,28 +48,49 @@ def test_distro_support():
 
 
 @pytest.mark.skipif(
-    platform.system() == "Windows" and os.getenv("GITHUB_ACTIONS", "") == "true",
-    reason="PermissionError: [WinError 5] Access is denied.",
+    platform.system() == "Windows",
+    reason="PermissionError: [WinError 5] Access is denied (on Path.unlink(...)).",
 )
-@pytest.mark.xfail(reason="403 Forbidden Error on GitHub API request.")
+@pytest.mark.xfail(raises=KeyError, reason="403 Forbidden Error on GitHub API request.")
 def test_fetch_liblsl(tmp_path):
     """Test on-the-fly fetch of liblsl."""
-    lib = _fetch_liblsl(tmp_path)
-    assert lib is not None
+    libpath = _fetch_liblsl(folder=tmp_path)
+    assert Path(libpath).exists()
     # don't re-download if it's already present
-    lib = _fetch_liblsl(tmp_path)
-    assert lib is not None
+    libpath2 = _load_liblsl_mne_lsl(folder=tmp_path)
+    assert libpath == libpath2
+    assert Path(libpath).exists()
     # delete the file and try again
-    fname = Path(lib._name)
-    if fname.exists():
-        fname.unlink()
-    lib = _fetch_liblsl(tmp_path)
-    assert lib is not None
-    assert lib._name == str(fname)
-    # replace the file with an invalid one and try again
-    if fname.exists():
-        fname.unlink()
-        with open(fname, "w") as file:
-            file.write("101")
-    lib = _fetch_liblsl(tmp_path)
-    assert lib is not None
+    fname = Path(libpath)
+    fname.unlink(missing_ok=False)
+    libpath2 = _fetch_liblsl(folder=tmp_path)
+    assert libpath == libpath2
+    assert Path(libpath).exists()
+    # replace the file and try to reload it
+    fname.unlink(missing_ok=False)
+    with open(fname, "w") as file:
+        file.write("101")
+    with pytest.warns(RuntimeWarning, match="could not be loaded. It will be removed."):
+        libpath2 = _load_liblsl_mne_lsl(folder=tmp_path)
+    assert libpath2 is None
+    # the last call to _load_liblsl_mne_lsl should have removed the file
+    libpath2 = _fetch_liblsl(folder=tmp_path)
+    assert libpath == libpath2
+    assert Path(libpath).exists()
+    # test invalid fetch folder
+    with pytest.raises(RuntimeError, match="is a file. Please provide a directory"):
+        _fetch_liblsl(folder=fname)
+
+
+@pytest.mark.skipif(
+    platform.system() == "Windows",
+    reason="PermissionError: [WinError 5] Access is denied (on Path.unlink(...)).",
+)
+@pytest.mark.xfail(raises=KeyError, reason="403 Forbidden Error on GitHub API request.")
+def test_fetch_liblsl_outdated(tmp_path):
+    """Test fetching an outdated version of liblsl."""
+    with pytest.raises(RuntimeError, match="is outdated. The version is"):
+        _fetch_liblsl(
+            folder=tmp_path,
+            url="https://api.github.com/repos/sccn/liblsl/releases/tags/v1.14.0",
+        )
