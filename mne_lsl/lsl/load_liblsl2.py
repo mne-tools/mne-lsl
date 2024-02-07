@@ -59,15 +59,13 @@ def _load_liblsl_environment_variables() -> Optional[str]:
             libpath,
             variable,
         )
+        # even if the path is not valid, we still try to load it and issue a second
+        # generic warning 'can not be loaded' if it fails.
         _is_valid_libpath(libpath)
         libpath, version = _attempt_load_liblsl(libpath)
         if version is None:
-            warn(
-                f"The LIBLSL '{libpath}' can not be loaded.",
-                RuntimeWarning,
-                stacklevel=2,
-            )
             continue
+        # we do not accept outdated versions from the environment variables.
         if _is_valid_version(version):
             return libpath
     return None
@@ -78,38 +76,58 @@ def _load_liblsl_system() -> Optional[str]:
     if libpath is None:
         logger.debug("The library liblsl is not found in the system folder.")
         return None
-    if _PLATFORM != "linux":
-        # validate the path only for macOS and windows because find_library does not
-        # return an absolute path on linux systems.
-        _is_valid_libpath(libpath)
+    logger.debug(
+        "Attempting to load libpath '%s' from the system folders.",
+        libpath,
+    )
+    # no need to validate the path as this is returned by the system directly, so we
+    # try to load it and issue a generic warning 'can not be loaded' if it fails.
     libpath, version = _attempt_load_liblsl(libpath)
     if version is None:
         return None
+    # we do not accept outdated versions from the system folders.
     if _is_valid_version(version):
         return libpath
-    else:
-        return None
+    return None
 
 
 def _load_liblsl_mne_lsl() -> Optional[str]:
     for libpath in _LIB_FOLDER.glob(f"*{_PLATFORM_SUFFIXES[_PLATFORM]}"):
-        libpath, version = _attempt_load_liblsl(libpath)
+        # disable the generic warning 'can not be loaded' in favor of a detailed warning
+        # mentionning the file deletion.
+        libpath, version = _attempt_load_liblsl(libpath, issue_warning=False)
         if version is None:
             libpath = Path(libpath)
             warn(
-                "The previously downloaded liblsl {libpath.name} could not be loaded. "
-                "It will be removed.",
+                f"The previously downloaded LIBLSL '{libpath.name}' in "
+                f"'{libpath.parent}' could not be loaded. It will be removed.",
                 RuntimeWarning,
                 stacklevel=2,
             )
             libpath.unlink(missing_ok=False)
             continue
-        _is_valid_version(version)
-        return libpath
+        # we do not accept outdated versions from the mne-lsl folder and we will remove
+        # outdated versions.
+        # disable the generic version warning in favor of a detailed warning mentionning
+        # the file deletion.
+        if _is_valid_version(version, issue_warning=False):
+            return libpath
+        libpath = Path(libpath)
+        warn(
+            f"The previously downloaded LIBLSL '{libpath.name}' in '{libpath.parent}' "
+            f"is outdated. The version is {version // 100}.{version % 100} while the "
+            "minimum version required by MNE-LSL is "
+            f"{_VERSION_MIN // 100}.{_VERSION_MIN % 100}. It will be removed.",
+            RuntimeWarning,
+            stacklevel=2,
+        )
+        libpath.unlink(missing_ok=False)
     return None
 
 
-def _attempt_load_liblsl(libpath: Union[str, Path]) -> tuple[str, Optional[int]]:
+def _attempt_load_liblsl(
+    libpath: Union[str, Path], *, issue_warning: bool = True
+) -> tuple[str, Optional[int]]:
     """Try loading a binary LSL library."""
     libpath = str(libpath) if isinstance(libpath, Path) else libpath
     try:
@@ -118,6 +136,12 @@ def _attempt_load_liblsl(libpath: Union[str, Path]) -> tuple[str, Optional[int]]
         del lib
     except OSError:
         version = None
+        if issue_warning:
+            warn(
+                f"The LIBLSL '{libpath}' can not be loaded.",
+                RuntimeWarning,
+                stacklevel=2,
+            )
     return libpath, version
 
 
@@ -143,15 +167,18 @@ def _is_valid_libpath(libpath: str) -> bool:
     return True
 
 
-def _is_valid_version(libpath: str, version: int) -> bool:
+def _is_valid_version(
+    libpath: str, version: int, *, issue_warning: bool = True
+) -> bool:
     """Check if the version of the library is supported by MNE-LSL."""
     if version < _VERSION_MIN:
-        warn(
-            f"The LIBLSL '{libpath}' is outdated. The version is "
-            f"{version // 100}.{version % 100} while the minimum version required by "
-            f"MNE-LSL is {_VERSION_MIN // 100}.{_VERSION_MIN % 100}.",
-            RuntimeWarning,
-            stacklevel=2,
-        )
+        if issue_warning:
+            warn(
+                f"The LIBLSL '{libpath}' is outdated. The version is "
+                f"{version // 100}.{version % 100} while the minimum version required "
+                f"by MNE-LSL is {_VERSION_MIN // 100}.{_VERSION_MIN % 100}.",
+                RuntimeWarning,
+                stacklevel=2,
+            )
         return False
     return True
