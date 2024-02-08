@@ -116,7 +116,7 @@ def _load_liblsl_system() -> Optional[str]:
     libpath : str | None
         Path to the binary LSL library or None if it could not be found.
     """
-    libpath = find_library("liblsl")
+    libpath = find_library("lsl")
     if libpath is None:
         logger.debug("The library LIBLSL is not found in the system folder.")
         return None
