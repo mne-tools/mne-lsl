@@ -58,7 +58,7 @@ def load_liblsl() -> CDLL:
     3. Search in _LIB_FOLDER.
     4. Fetch on GitHub.
     """
-    if _PLATFORM not in _PLATFORM_SUFFIXES:
+    if _PLATFORM not in _PLATFORM_SUFFIXES:  # pragma: no cover
         raise RuntimeError(
             "The OS could not be determined. Please open an issue on GitHub and "
             "provide the error traceback to the developers."
@@ -212,9 +212,13 @@ def _fetch_liblsl(
         )
         logger.debug("Response code: %s", response.status_code)
         assets = [elt for elt in response.json()["assets"] if "liblsl" in elt["name"]]
-    except Exception as error:
-        error.add_note("The latest release of liblsl could not be fetch.")
-        raise
+    except Exception as error:  # pragma: no cover
+        # TODO: remove once python 3.11 is the minimum supported version
+        if 3110 <= int("".join(platform.python_version_tuple())):
+            error.add_note("The latest release of liblsl could not be fetch.")
+            raise
+        else:
+            raise KeyError("The latest release of liblsl could not be fetch.")
     # filter the assets for our platform
     if _PLATFORM == "linux":
         import distro  # attempt to identify the distribution based on the codename
@@ -235,7 +239,7 @@ def _fetch_liblsl(
                 ]
         elif platform.processor() == "i386":
             assets = [elt for elt in assets if "amd64" in elt["name"]]
-        else:
+        else:  # pragma: no cover
             raise RuntimeError(
                 f"The processor architecture {platform.processor()} could not be "
                 "identified. Please open an issue on GitHub and provide the error "
@@ -247,7 +251,7 @@ def _fetch_liblsl(
             assets = [elt for elt in assets if "i386" in elt["name"]]
         elif sizeof(c_void_p) == 8:  # 64 bits
             assets = [elt for elt in assets if "amd64" in elt["name"]]
-        else:
+        else:  # pragma: no cover
             raise RuntimeError(
                 "The processor architecture could not be determined from 'c_void_p' "
                 f"size {sizeof(c_void_p)}. Please open an issue on GitHub and provide "
@@ -259,7 +263,7 @@ def _fetch_liblsl(
             "MNE-LSL could not find a liblsl on the github release page which match "
             f"your architecture. {_ERROR_MSG}"
         )
-    elif len(assets) != 1:
+    elif len(assets) != 1:  # pragma: no cover
         raise RuntimeError(
             "MNE-LSL found multiple liblsl on the github release page which match "
             f"your architecture. {_ERROR_MSG}"
@@ -268,7 +272,7 @@ def _fetch_liblsl(
     logger.debug("Fetching liblsl into '%s'.", folder)
     try:
         os.makedirs(folder, exist_ok=True)
-    except Exception as error:
+    except Exception as error:  # pragma: no cover
         logger.exception(error)
         raise RuntimeError(
             f"MNE-LSL could not create the directory '{folder}' in which to download "
@@ -282,7 +286,7 @@ def _fetch_liblsl(
         known_hash=None,
     )
     libpath, version = _attempt_load_liblsl(libpath)
-    if version is None:
+    if version is None:  # pragma: no cover
         libpath = ensure_path(libpath, must_exist=False)
         libpath.unlink(missing_ok=True)
         raise RuntimeError(
@@ -330,7 +334,7 @@ def _pooch_processor_liblsl(fname: str, action: str, pooch: Pooch) -> str:
     if _PLATFORM == "linux" and fname.suffix == ".deb":
         os.makedirs(uncompressed, exist_ok=True)
         result = subprocess.run(["ar", "x", str(fname), "--output", str(uncompressed)])
-        if result.returncode != 0:
+        if result.returncode != 0:  # pragma: no cover
             # we did not manage to open the '.deb' package, there is not point in
             # attempting to load the lib with CDLL, thus let's raise after deleting the
             # downloaded file.
@@ -353,7 +357,7 @@ def _pooch_processor_liblsl(fname: str, action: str, pooch: Pooch) -> str:
             for line in lines
             if line.startswith("Depends:")
         ]
-        if len(lines) != 1:
+        if len(lines) != 1:  # pragma: no cover
             warn(
                 "Dependencies from debian liblsl package could not be parsed.",
                 RuntimeWarning,
@@ -373,7 +377,7 @@ def _pooch_processor_liblsl(fname: str, action: str, pooch: Pooch) -> str:
         logger.debug("Moving '%s' to '%s'.", file, target)
         move(file, target)
 
-    elif _PLATFORM == "linux":
+    elif _PLATFORM == "linux":  # pragma: no cover
         return str(fname)  # let's try to load it and hope for the best
 
     elif _PLATFORM == "darwin":
@@ -619,7 +623,7 @@ def _set_types(lib: CDLL) -> CDLL:
         lib.lsl_pull_chunk_c.restype = c_long
         lib.lsl_pull_chunk_str.restype = c_long
         lib.lsl_pull_chunk_buf.restype = c_long
-    except Exception:
+    except Exception:  # pragma: no cover
         logger.info(
             "[LIBLSL] Chunk transfer functions not available in your LIBLSL version."
         )
@@ -627,7 +631,7 @@ def _set_types(lib: CDLL) -> CDLL:
         lib.lsl_create_continuous_resolver.restype = c_void_p
         lib.lsl_create_continuous_resolver_bypred.restype = c_void_p
         lib.lsl_create_continuous_resolver_byprop.restype = c_void_p
-    except Exception:
+    except Exception:  # pragma: no cover
         logger.info(
             "[LIBLSL] Continuous resolver functions not available in your LIBLSL "
             "version."
