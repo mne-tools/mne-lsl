@@ -3,7 +3,6 @@ from ctypes import c_void_p, sizeof
 from pathlib import Path
 from shutil import copy
 
-import distro
 import pooch
 import pytest
 
@@ -101,13 +100,14 @@ def test_fetch_liblsl(tmp_path):
     _PLATFORM == "darwin" and platform.processor() == "arm",
     reason="Automatic bypass with version 1.16.0 for M1/M2 macOS",
 )
-@pytest.mark.skipif(
-    _PLATFORM == "linux" and distro.codename() not in ("bionic", "focal"),
-    reason="Unsupported Ubuntu version.",
-)
 @pytest.mark.xfail(raises=KeyError, reason="403 Forbidden Error on GitHub API request.")
 def test_fetch_liblsl_outdated(tmp_path):
     """Test fetching an outdated version of liblsl."""
+    if _PLATFORM == "linux":
+        import distro
+
+        if distro.codename() not in ("bionic", "focal"):
+            pytest.skip("Unsupported Ubuntu version.")
     with pytest.raises(RuntimeError, match="is outdated. The version is"):
         _fetch_liblsl(
             folder=tmp_path,
