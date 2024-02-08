@@ -103,7 +103,6 @@ test = [
   'pytest-cov',
   'pytest-timeout',
   'pytest>=8.0',
-  'requests',
 ]
 
 [project.scripts]
