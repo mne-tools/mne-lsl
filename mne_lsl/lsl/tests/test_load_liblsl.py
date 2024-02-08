@@ -41,7 +41,7 @@ def _download_liblsl_outdated(tmp_path_factory) -> Path:
         libpath = pooch.retrieve(
             url=asset["browser_download_url"],
             fname=asset["name"],
-            path=tmp_path_factory.mktemp("data"),
+            path=tmp_path_factory.mktemp("liblsl_outdated"),
             processor=_pooch_processor_liblsl,
             known_hash=asset["known_hash"],
         )
