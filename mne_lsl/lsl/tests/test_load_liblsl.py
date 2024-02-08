@@ -26,16 +26,33 @@ def _download_liblsl_outdated(tmp_path_factory) -> Path:
         asset = dict(
             name="liblsl-1.14.0-OSX_amd64.tar.bz2",
             browser_download_url="https://github.com/sccn/liblsl/releases/download/v1.14.0/liblsl-1.14.0-OSX_amd64.tar.bz2",  # noqa: E501
-            known_hash="c1f9004243db49885b18884b39d793f66c94e45d52a7bde12c51893e74db337d",
+            known_hash="c1f9004243db49885b18884b39d793f66c94e45d52a7bde12c51893e74db337d",  # noqa: E501
         )
     elif _PLATFORM == "windows" and sizeof(c_void_p) == 8:
         asset = dict(
             name="liblsl-1.14.0-Win_amd64.zip",
             browser_download_url="https://github.com/sccn/liblsl/releases/download/v1.14.0/liblsl-1.14.0-Win_amd64.zip",  # noqa: E501
-            known_hash="75ec445e9e9b23b15400322fffa06666098fce42e706afa763e77abdbea87e52",
+            known_hash="75ec445e9e9b23b15400322fffa06666098fce42e706afa763e77abdbea87e52",  # noqa: E501
         )
+    elif _PLATFORM == "linux":
+        import distro
+
+        if distro.codename() == "bionic":
+            asset = dict(
+                name="liblsl-1.14.0-bionic_amd64.deb",
+                browser_download_url="https://github.com/sccn/liblsl/releases/download/v1.14.0/liblsl-1.14.0-bionic_amd64.deb",  # noqa: E501
+                known_hash="b2b882414a73acba4e7ab14361a6d541cc1a3774536e08471b346a89b4b557bb",  # noqa: E501
+            )
+        elif distro.codename() == "focal":
+            asset = dict(
+                name="liblsl-1.14.0-focal_amd64.deb",
+                browser_download_url="https://github.com/sccn/liblsl/releases/download/v1.14.0/liblsl-1.14.0-focal_amd64.deb",  # noqa: E501
+                known_hash="b3a0c0e40746f126d77212400e1e23b2f3225bf0458215731b08b1bde631f15b",  # noqa: E501
+            )
+        else:
+            pytest.skip(reason=f"Unsupported linux distribution '{distro.codename()}'.")
     else:
-        pytest.skip(reason="Unsupported platform for this test.")
+        pytest.skip(reason=f"Unsupported platform '{_PLATFORM}'.")
 
     try:
         libpath = pooch.retrieve(
@@ -46,7 +63,7 @@ def _download_liblsl_outdated(tmp_path_factory) -> Path:
             known_hash=asset["known_hash"],
         )
     except ValueError:
-        pytest.skip(reason="Unable to download the outdated liblsl.")
+        pytest.skip(reason="Unable to download the outdated liblsl (invalid hash).")
     return Path(libpath)
 
 
