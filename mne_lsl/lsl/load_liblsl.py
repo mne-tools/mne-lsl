@@ -212,13 +212,8 @@ def _fetch_liblsl(
         )
         logger.debug("Response code: %s", response.status_code)
         assets = [elt for elt in response.json()["assets"] if "liblsl" in elt["name"]]
-    except Exception as error:  # pragma: no cover
-        # TODO: remove once python 3.11 is the minimum supported version
-        if 3110 <= int("".join(platform.python_version_tuple())):
-            error.add_note("The latest release of liblsl could not be fetch.")
-            raise
-        else:
-            raise KeyError("The latest release of liblsl could not be fetch.")
+    except Exception:  # pragma: no cover
+        raise KeyError("The latest release of liblsl could not be fetch.")
     # filter the assets for our platform
     if _PLATFORM == "linux":
         import distro  # attempt to identify the distribution based on the codename
