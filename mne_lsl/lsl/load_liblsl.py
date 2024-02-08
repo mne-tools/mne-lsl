@@ -83,7 +83,7 @@ def _load_liblsl_environment_variables() -> Optional[str]:
     for variable in ("MNE_LSL_LIB", "PYLSL_LIB"):
         libpath = os.environ.get(variable, None)
         if libpath is None:
-            logger.debug("The environment variable %s is not set.", variable)
+            logger.debug("The environment variable '%s' is not set.", variable)
             continue
         logger.debug(
             "Attempting to load libpath '%s' stored in the environment variable '%s'.",
