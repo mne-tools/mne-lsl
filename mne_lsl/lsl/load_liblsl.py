@@ -40,12 +40,6 @@ _PLATFORM_SUFFIXES: dict[str, str] = {
     "darwin": ".dylib",
     "linux": ".so",
 }
-# variables which should be kept in sync with liblsl releases
-_SUPPORTED_DISTRO: dict[str, tuple[str, ...]] = {
-    # TODO: check if liblsl bookworm works as expected with mne-lsl
-    "debian": ("12",),
-    "ubuntu": ("18.04", "20.04", "22.04"),
-}
 # generic error message
 _ERROR_MSG: str = (
     "Please visit LIBLSL library github page (https://github.com/sccn/liblsl) and "
@@ -223,35 +217,9 @@ def _fetch_liblsl(
         raise
     # filter the assets for our platform
     if _PLATFORM == "linux":
-        # attempt to identify the linux distribution
-        import distro
+        import distro  # attempt to identify the distribution based on the codename
 
-        if distro.name().lower() in _SUPPORTED_DISTRO:
-            distro_like = distro.name().lower()
-        else:
-            for elt in distro.like().split(" "):
-                if elt in _SUPPORTED_DISTRO:
-                    distro_like = elt
-                    break
-            else:
-                raise RuntimeError(
-                    "The liblsl library released on GitHub supports "
-                    f"{', '.join(_SUPPORTED_DISTRO)} based distributions. "
-                    f"{distro.name()} is not supported or correctly identified. "
-                    f"{_ERROR_MSG}"
-                )
-        # now that we identified the distribution, we check if the version is supported
-        if distro.version() not in _SUPPORTED_DISTRO[distro_like]:
-            raise RuntimeError(
-                "The liblsl library released on GitHub supports "
-                f"{distro_like} based distributions on versions "
-                f"{', '.join(_SUPPORTED_DISTRO[distro_like])}. Version "
-                f"{distro.version()} is not supported. {_ERROR_MSG}"
-            )
-        # TODO: check that POP_OS! distro.codename() does match Ubuntu codenames, else
-        # we also need a mapping between the version and the ubuntu codename.
         assets = [elt for elt in assets if distro.codename() in elt["name"]]
-
     elif _PLATFORM == "darwin":
         assets = [elt for elt in assets if "OSX" in elt["name"]]
         if platform.processor() == "arm":

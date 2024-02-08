@@ -1,18 +1,15 @@
 import platform
 from ctypes import c_void_p, sizeof
-from itertools import chain
 from pathlib import Path
 from shutil import copy
 
+import distro
 import pooch
 import pytest
-import requests
 
-from mne_lsl import __version__
 from mne_lsl.lsl.load_liblsl import (
     _PLATFORM,
     _PLATFORM_SUFFIXES,
-    _SUPPORTED_DISTRO,
     _attempt_load_liblsl,
     _fetch_liblsl,
     _is_valid_libpath,
@@ -61,30 +58,6 @@ def liblsl_outdated(tmp_path, _download_liblsl_outdated) -> Path:
     return tmp_path / _download_liblsl_outdated.name
 
 
-@pytest.mark.xfail(raises=KeyError, reason="403 Forbidden Error on GitHub API request.")
-def test_distro_support():
-    """Test that the variables are in sync with the latest liblsl release."""
-    response = requests.get(
-        "https://api.github.com/repos/sccn/liblsl/releases/latest",
-        timeout=15,
-        headers={"user-agent": f"mne-lsl/{__version__}"},
-    )
-    assets = [
-        elt["name"]
-        for elt in response.json()["assets"]
-        if "liblsl" in elt["name"] and not any(x in elt["name"] for x in ("OSX", "Win"))
-    ]
-    assets = sorted(assets)
-    assert len(assets) == len(
-        list(chain(*_SUPPORTED_DISTRO.values()))
-    ), f"Supported liblsl are {', '.join(assets)}."
-    for key in ("bookworm", "bionic", "focal", "jammy"):
-        assert any(key in asset for asset in assets)
-    # confirm that it matches _SUPPORTED_DISTRO
-    assert _SUPPORTED_DISTRO["debian"] == ("12",)
-    assert _SUPPORTED_DISTRO["ubuntu"] == ("18.04", "20.04", "22.04")
-
-
 @pytest.mark.skipif(
     _PLATFORM == "windows",
     reason="PermissionError: [WinError 5] Access is denied (on Path.unlink(...)).",
@@ -106,7 +79,7 @@ def test_fetch_liblsl(tmp_path):
     assert Path(libpath).exists()
     # replace the file and try to reload it
     fname.unlink(missing_ok=False)
-    with open(fname, "w") as file:
+    with open(fname.parent / f"test{_PLATFORM_SUFFIXES[_PLATFORM]}", "w") as file:
         file.write("101")
     with pytest.warns(RuntimeWarning, match="could not be loaded. It will be removed."):
         libpath2 = _load_liblsl_mne_lsl(folder=tmp_path)
@@ -127,6 +100,10 @@ def test_fetch_liblsl(tmp_path):
 @pytest.mark.skipif(
     _PLATFORM == "darwin" and platform.processor() == "arm",
     reason="Automatic bypass with version 1.16.0 for M1/M2 macOS",
+)
+@pytest.mark.skipif(
+    _PLATFORM == "linux" and distro.codename() not in ("bionic", "focal"),
+    reason="Unsupported Ubuntu version.",
 )
 @pytest.mark.xfail(raises=KeyError, reason="403 Forbidden Error on GitHub API request.")
 def test_fetch_liblsl_outdated(tmp_path):
