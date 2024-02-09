@@ -15,7 +15,6 @@ _VERSION_MIN: int
 _VERSION_PROTOCOL: int
 _PLATFORM: str
 _PLATFORM_SUFFIXES: dict[str, str]
-_SUPPORTED_DISTRO: dict[str, tuple[str, ...]]
 _ERROR_MSG: str
 
 def load_liblsl() -> CDLL:
