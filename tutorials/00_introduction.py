@@ -93,8 +93,7 @@ set_log_level("WARNING")
 # %%
 
 fname = sample.data_path() / "sample-ant-raw.fif"
-player = Player(fname)
-player.start()
+player = Player(fname).start()
 player.info
 
 # %%
@@ -109,3 +108,33 @@ player.info
 #     transmission and minimizes CPU utilization. Nonetheless, in real-time
 #     applications, there may be advantages to employing smaller chunk sizes for data
 #     publication.
+
+sfreq = player.info["sfreq"]
+chunk_size = player.chunk_size
+interval = chunk_size / sfreq  # in seconds
+print(f"Interval between 2 push operations: {interval} seconds.")
+
+# %%
+# A class:`~mne_lsl.player.PlayerLSL` can also stream annotations attached to the
+# :class:`mne.io.Raw` object. Annotations are streamed on a second irregularly sampled
+# :class:`~mne_lsl.lsl.StreamOutlet`. See
+# :ref:`this separate tutorial <tut-player-annotations>` for additional information.
+#
+# Subscribing to an LSL stream
+# ----------------------------
+#
+# With the mock LSL stream operational in the background, we can proceed to subscribe to
+# this stream and access both its description and the data stored within its buffer. The
+# :class:`~mne_lsl.stream.StreamLSL` object operates both the underlying
+# :class:`~mne_lsl.lsl.StreamInlet` and the ring buffer.
+
+stream = Stream(bufsize=2).connect()
+stream.info
+
+# %%
+# .. note::
+#
+#     A :class:`~mne_lsl.stream.StreamLSL` can connect to a single LSL stream. Thus, if
+#     multiple LSL stream are present on the network, it's crucial to uniquely identify
+#     a specific LSL stream using the ``name``, ``stype``, and ``source_id`` arguments
+#     of the :class:`~mne_lsl.stream.StreamLSL` object.
