@@ -65,8 +65,8 @@ outlet = StreamOutlet(sinfo)
 # ----------------
 #
 # At this point, the :class:`~mne_lsl.lsl.StreamOutlet` is available on the network. The
-# function :func:`~mne_lsl.lsl.resolve_streams` can be used to discover all available
-# streams on the network.
+# function :func:`~mne_lsl.lsl.resolve_streams` discovers all available streams on the
+# network. This operation is commonly named the stream resolution.
 #
 # .. note::
 #
@@ -111,7 +111,9 @@ sinfo.get_channel_units()
 
 # %%
 # An :class:`mne.Info` can be obtained directly with
-# :meth:`~mne_lsl.lsl.StreamInfo.get_channel_info`.
+# :meth:`~mne_lsl.lsl.StreamInfo.get_channel_info`. If the information contained in the
+# XML element tree can not be parsed, default values are used. For instance, the channel
+# names are replaced by the channel numbers similary to :func:`mne.create_info`.
 
 sinfo.get_channel_info()
 
