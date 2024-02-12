@@ -82,6 +82,9 @@ at regular intervals and seamlessly loops back to the starting point once the en
 file is reached.
 """
 
+import time
+
+from matplotlib import pyplot as plt
 from mne import set_log_level
 
 from mne_lsl.datasets import sample
@@ -104,8 +107,8 @@ player.info
 #
 # .. note::
 #
-#     The default setting for chunk_size is 64, which helps prevent overly frequent data
-#     transmission and minimizes CPU utilization. Nonetheless, in real-time
+#     The default setting for chunk_size is ``64``, which helps prevent overly frequent
+#     data transmission and minimizes CPU utilization. Nonetheless, in real-time
 #     applications, there may be advantages to employing smaller chunk sizes for data
 #     publication.
 
@@ -115,7 +118,7 @@ interval = chunk_size / sfreq  # in seconds
 print(f"Interval between 2 push operations: {interval} seconds.")
 
 # %%
-# A class:`~mne_lsl.player.PlayerLSL` can also stream annotations attached to the
+# A :class:`~mne_lsl.player.PlayerLSL` can also stream annotations attached to the
 # :class:`mne.io.Raw` object. Annotations are streamed on a second irregularly sampled
 # :class:`~mne_lsl.lsl.StreamOutlet`. See
 # :ref:`this separate tutorial <tut-player-annotations>` for additional information.
@@ -143,11 +146,9 @@ stream = Stream(bufsize=2).connect()
 stream.info
 
 # %%
-# The stream description is automatically parsed into an :class:`mne.Info` upon
-# connection with the method :meth:`mne_lsl.stream.StreamLSL.connect`. Interaction with
-# a :class:`~mne_lsl.stream.StreamLSL` is similar to the interaction with a
-# :class:`mne.io.Raw`. In this example, the stream is mocked from a 64 channels EEG
-# recording with an ANT Neuro amplifier. It includes 63 EEG, 2 EOG, 1 ECG, 1 EDA, 1
+# Interaction with a :class:`~mne_lsl.stream.StreamLSL` is similar to the interaction
+# with a :class:`mne.io.Raw`. In this example, the stream is mocked from a 64 channels
+# EEG recording with an ANT Neuro amplifier. It includes 63 EEG, 2 EOG, 1 ECG, 1 EDA, 1
 # STIM channel, and uses CPz as reference.
 
 ch_types = stream.get_channel_types(unique=True)
@@ -155,7 +156,6 @@ print(f"Channel types included: {', '.join(ch_types)}")
 assert "CPz" not in stream.ch_names  # reference absent from the data stream
 stream.pick("eeg")
 stream.add_reference_channels("CPz")
-stream.set_montage("standard_1020")
 stream.set_eeg_reference("average")
 stream.info
 
@@ -167,3 +167,48 @@ stream.info
 #     .. code-block:: python
 #
 #         stream.pick("eeg").add_reference_channels("CPz")
+#
+# The ring buffer is accessed with the method :meth:`~mne_lsl.stream.StreamLSL.get_data`
+# which returns both the samples and their associated timestamps. In LSL terminology, a
+# sample is an array of shape (n_channels,).
+
+picks = ("Fz", "Cz", "Oz")  # channel selection
+f, ax = plt.subplots(3, 1, sharex=True, constrained_layout=True)
+for _ in range(3):  # acquire 3 separate window
+    # figure how many new samples are available, in seconds
+    winsize = stream.n_new_samples / stream.info["sfreq"]
+    # retrieve and plot data
+    data, ts = stream.get_data(winsize, picks=picks)
+    for k, data_channel in enumerate(data):
+        ax[k].plot(ts, data_channel)
+    time.sleep(0.5)
+for k, ch in enumerate(picks):
+    ax[k].set_title(f"EEG {ch}")
+ax[-1].set_xlabel("Timestamp (LSL time)")
+plt.show()
+
+# %%
+# .. warning::
+#
+#     Note that the first of the 3 chunks plotted is longer. This is because
+#     execution of the channel selection and re-referencing operations took a finite
+#     amount of time to complete while in the background, the
+#     :class:`~mne_lsl.stream.StreamLSL` was still acquiring new samples. Note also that
+#     :py:attr:`~mne_lsl.stream.StreamLSL.n_new_samples` is reset to 0 after each call
+#     to :meth:`~mne_lsl.stream.StreamLSL.get_data`, but it is not reset if the "tail"
+#     pointer overtakes the "head" pointer, in other words, it is not reset if the
+#     number of new samples since the last :meth:`~mne_lsl.stream.StreamLSL.get_data`
+#     call exceeds the buffer size.
+#
+# Free resources
+# --------------
+#
+# When you are done with a :class:`~mne_lsl.player.PlayerLSL` or
+# :class:`~mne_lsl.stream.StreamLSL`, don't forget to free the resources they both use
+# to continuously mock an LSL stream or receive new data from an LSL stream.
+
+stream.disconnect()
+
+# %%
+
+player.stop()
