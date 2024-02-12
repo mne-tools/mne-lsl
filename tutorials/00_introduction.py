@@ -126,15 +126,44 @@ print(f"Interval between 2 push operations: {interval} seconds.")
 # With the mock LSL stream operational in the background, we can proceed to subscribe to
 # this stream and access both its description and the data stored within its buffer. The
 # :class:`~mne_lsl.stream.StreamLSL` object operates both the underlying
-# :class:`~mne_lsl.lsl.StreamInlet` and the ring buffer.
-
-stream = Stream(bufsize=2).connect()
-stream.info
-
-# %%
+# :class:`~mne_lsl.lsl.StreamInlet` and the ring buffer, which size must be
+# explicitly set upon creation.
+#
 # .. note::
 #
 #     A :class:`~mne_lsl.stream.StreamLSL` can connect to a single LSL stream. Thus, if
 #     multiple LSL stream are present on the network, it's crucial to uniquely identify
 #     a specific LSL stream using the ``name``, ``stype``, and ``source_id`` arguments
 #     of the :class:`~mne_lsl.stream.StreamLSL` object.
+#
+# The stream description is automatically parsed into an :class:`mne.Info` upon
+# connection with the method :meth:`mne_lsl.stream.StreamLSL.connect`.
+
+stream = Stream(bufsize=2).connect()
+stream.info
+
+# %%
+# The stream description is automatically parsed into an :class:`mne.Info` upon
+# connection with the method :meth:`mne_lsl.stream.StreamLSL.connect`. Interaction with
+# a :class:`~mne_lsl.stream.StreamLSL` is similar to the interaction with a
+# :class:`mne.io.Raw`. In this example, the stream is mocked from a 64 channels EEG
+# recording with an ANT Neuro amplifier. It includes 63 EEG, 2 EOG, 1 ECG, 1 EDA, 1
+# STIM channel, and uses CPz as reference.
+
+ch_types = stream.get_channel_types(unique=True)
+print(f"Channel types included: {', '.join(ch_types)}")
+assert "CPz" not in stream.ch_names  # reference absent from the data stream
+stream.pick("eeg")
+stream.add_reference_channels("CPz")
+stream.set_montage("standard_1020")
+stream.set_eeg_reference("average")
+stream.info
+
+# %%
+# .. note::
+#
+#     As for MNE-Python, methods can be chained, e.g.
+#
+#     .. code-block:: python
+#
+#         stream.pick("eeg").add_reference_channels("CPz")

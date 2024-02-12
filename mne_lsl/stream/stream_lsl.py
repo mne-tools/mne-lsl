@@ -219,10 +219,8 @@ class StreamLSL(BaseStream):
 
     def _acquire(self) -> None:
         """Update function pulling new samples in the buffer at a regular interval."""
-        if not getattr(self, "_inlet", None):
-            return  # stream disconnected
-        if getattr(self, "_interrupt", False):
-            return  # stream interrupted (don't continue)
+        if not getattr(self, "_inlet", None) or getattr(self, "_interrupt", False):
+            return  # stream disconnected/interrupted
         try:
             # pull data
             data, timestamps = self._inlet.pull_chunk(timeout=0.0)
