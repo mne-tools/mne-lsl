@@ -153,8 +153,15 @@ stream.info
 
 ch_types = stream.get_channel_types(unique=True)
 print(f"Channel types included: {', '.join(ch_types)}")
+
+# %%
+# Operations such as channel selection, re-referencing, and filtering are performed
+# directly on the ring buffer. For instance, we can select the EEG channels, add the
+# missing reference channel and re-reference using a common average referencing scheme
+# which will reduce the ring buffer to 64 channels.
+
+stream.pick("eeg")  # channel selection
 assert "CPz" not in stream.ch_names  # reference absent from the data stream
-stream.pick("eeg")
 stream.add_reference_channels("CPz")
 stream.set_eeg_reference("average")
 stream.info
