@@ -4,6 +4,8 @@ Introduction to real-time LSL streams
 
 .. include:: ./../../links.inc
 
+.. _SSP projectors: https://mne.tools/dev/documentation/implementation.html#signal-space-projection-ssp
+
 LSL is an open-source networked middleware ecosystem to stream, receive, synchronize,
 and record neural, physiological, and behavioral data streams acquired from diverse
 sensor hardware. It reduces complexity and barriers to entry for researchers, sensor
@@ -14,8 +16,8 @@ Source: `LabStreamingLayer website <lsl_>`_.
 
 In real-time applications, a server emits a data stream, and one or more clients connect
 to the server to receive this data. In LSL terminology, the server is referred to as a
-:class:~mne_lsl.lsl.StreamOutlet, while the client is referred to as a
-:class:~mne_lsl.lsl.StreamInlet. The power of LSL resides in its ability to facilitate
+:class:`~mne_lsl.lsl.StreamOutlet`, while the client is referred to as a
+:class:`~mne_lsl.lsl.StreamInlet`. The power of LSL resides in its ability to facilitate
 interoperability and synchronization among streams. Clients have the capability to
 connect to multiple servers, which may be running on the same or different computers
 (and therefore different platforms/operating systems), and synchronize the streams
@@ -56,7 +58,7 @@ surpass the "tail" pointer; it will always lag at least one sample behind. In al
 it falls upon the user to routinely inspect and fetch samples from the ring buffer,
 thereby advancing the "head" pointer.
 
-Within MNE-LSL, the :class:~mne_lsl.stream.StreamLSL object manages a ring buffer
+Within MNE-LSL, the :class:`~mne_lsl.stream.StreamLSL` object manages a ring buffer
 internally, which is continuously refreshed with new samples. Notably, the two pointers
 are concealed, with the head pointer being automatically adjusted to the latest received
 sample. Given the preference for accessing the most recent information in neural,
@@ -70,4 +72,42 @@ Mocking an LSL stream
 To build real-time applications or showcase their functionalities, such as in this
 tutorial, it's essential to generate simulated LSL streams. This involves creating a
 :class:~mne_lsl.lsl.StreamOutlet and regularly sending data through it.
+
+Within MNE-LSL, the :class:`~mne_lsl.player.PlayerLSL` generates a simulated LSL stream
+utilizing data from a :class:`mne.io.Raw` file or object. This stream inherits its
+description and channel specifications from the associated :class:`~mne.Info`. This
+information encompasses channel properties, channel locations, filters, digitization,
+and `SSP projectors`_. The :class:~mne_lsl.player.PlayerLSL subsequently publishes data
+at regular intervals and seamlessly loops back to the starting point once the end of the
+file is reached.
 """
+
+from mne import set_log_level
+
+from mne_lsl.datasets import sample
+from mne_lsl.player import PlayerLSL as Player
+from mne_lsl.stream import StreamLSL as Stream
+
+set_log_level("WARNING")
+
+# %%
+
+fname = sample.data_path() / "sample-ant-raw.fif"
+player = Player(fname)
+player.start()
+player.info
+
+# %%
+# Once the :meth:`player.start` is called, data is published at regular intervals. The
+# interval duration depends on the sampling rate and on the number of samples pushed at
+# once, defined by the ``chunk_size`` argument of the :class:`~mne_lsl.player.PlayerLSL`
+# object.
+#
+# .. note::
+#
+#     The default setting for chunk_size is 64, which helps prevent overly frequent data
+#     transmission and minimizes CPU utilization. Nonetheless, in real-time
+#     applications, there may be advantages to employing smaller chunk sizes for data
+#     publication.
+
+player
