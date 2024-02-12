@@ -113,7 +113,7 @@ sinfo.get_channel_units()
 # An :class:`mne.Info` can be obtained directly with
 # :meth:`~mne_lsl.lsl.StreamInfo.get_channel_info`. If the information contained in the
 # XML element tree can not be parsed, default values are used. For instance, the channel
-# names are replaced by the channel numbers similary to :func:`mne.create_info`.
+# names are replaced by the channel numbers similarly to :func:`mne.create_info`.
 
 sinfo.get_channel_info()
 
