@@ -21,6 +21,8 @@ necessary. The differences between ``pylsl`` and ``mne_lsl.lsl`` are detailed
 :ref:`here<resources/pylsl:Differences with pylsl>`.
 """
 
+# sphinx_gallery_thumbnail_path = '_static/tutorials/lsl.png'
+
 import time
 import uuid
 
