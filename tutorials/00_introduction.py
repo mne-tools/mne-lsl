@@ -26,13 +26,13 @@ originating from these various servers.
 MNE-LSL enhances the LSL API by offering a high-level interface akin to the
 `MNE-Python <mne stable_>`_ API. While this tutorial concentrates on the high-level API,
 detailed coverage of the low-level LSL API is provided in
-`this separate tutorial <tut-low-level-api_>`_.
+:ref:`this separate tutorial <tut-low-level-api>`.
 
 Concepts
 --------
 
 In essence, a real-time LSL stream can be envisioned as a perpetual recording, akin to
-a :class:mne.io.Raw instance, characterized by an indeterminate length and providing
+a :class:`mne.io.Raw` instance, characterized by an indeterminate length and providing
 access solely to current and preceding samples. In memory, it can be depicted as a ring
 buffer, also known as a circular buffer, a data structure employing a single, unchanging
 buffer size, seemingly interconnected end-to-end.
@@ -98,10 +98,10 @@ player.start()
 player.info
 
 # %%
-# Once the :meth:`player.start` is called, data is published at regular intervals. The
-# interval duration depends on the sampling rate and on the number of samples pushed at
-# once, defined by the ``chunk_size`` argument of the :class:`~mne_lsl.player.PlayerLSL`
-# object.
+# Once the :meth:`~mne_lsl.player.PlayerLSL.start` is called, data is published at
+# regular intervals. The interval duration depends on the sampling rate and on the
+# number of samples pushed at once, defined by the ``chunk_size`` argument of the
+# :class:`~mne_lsl.player.PlayerLSL` object.
 #
 # .. note::
 #
@@ -109,5 +109,3 @@ player.info
 #     transmission and minimizes CPU utilization. Nonetheless, in real-time
 #     applications, there may be advantages to employing smaller chunk sizes for data
 #     publication.
-
-player
