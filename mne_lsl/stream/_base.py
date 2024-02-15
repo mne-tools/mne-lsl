@@ -914,7 +914,11 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
         :type: :class:`~mne.Info`
         """
-        self._check_connected(name="info")
+        if not self.connected:
+            raise RuntimeError(
+                "The stream information is parsed into an mne.Info object "
+                "upon connection. Please connect to the stream to create the mne.Info."
+            )
         return self._info
 
     @property

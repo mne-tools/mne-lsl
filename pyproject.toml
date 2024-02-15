@@ -188,12 +188,12 @@ docstring-code-format = true
 
 [tool.ruff.lint]
 ignore = []
-select = ["A", "B", "E", "F", "UP", "W"]
+select = ['A', 'B', 'E', 'F', 'UP', 'W']
 
 [tool.ruff.lint.per-file-ignores]
 '*' = [
-  "B904", # 'Within an except clause, raise exceptions with raise ... from ...'
-  "UP007", # 'Use `X | Y` for type annotations', requires python 3.10
+  'B904', # 'Within an except clause, raise exceptions with raise ... from ...'
+  'UP007', # 'Use `X | Y` for type annotations', requires python 3.10
 ]
 '*.pyi' = ['E501']
 '__init__.py' = ['F401']
