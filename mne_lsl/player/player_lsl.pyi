@@ -29,7 +29,7 @@ class PlayerLSL(BasePlayer):
     annotations : bool | None
         If ``True``, an :class:`~mne_lsl.lsl.StreamOutlet` is created for the
         :class:`~mne.Annotations` of the :class:`~mne.io.Raw` object. If ``False``,
-        :class:`~mne.Annotations` are ignored and the :clas:`~mne_lsl.lsl.StreamOutlet`
+        :class:`~mne.Annotations` are ignored and the :class:`~mne_lsl.lsl.StreamOutlet`
         is not created. If ``None`` (default), the :class:`~mne_lsl.lsl.StreamOutlet` is
         created only if the :class:`~mne.io.Raw` object has :class:`~mne.Annotations` to
         push. See notes for additional information on the :class:`~mne.Annotations`
