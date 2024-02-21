@@ -1,11 +1,13 @@
 from __future__ import annotations  # c.f. PEP 563, PEP 649
 
 from abc import ABC, abstractmethod
+from pathlib import Path
 from typing import TYPE_CHECKING
+from warnings import warn
 
 import numpy as np
 from mne import rename_channels
-from mne.io import read_raw
+from mne.io import BaseRaw, read_raw
 from mne.utils import check_version
 
 if check_version("mne", "1.6"):
@@ -21,13 +23,11 @@ else:
 
 from ..utils._checks import check_type, ensure_int, ensure_path
 from ..utils._docs import fill_doc
-from ..utils.logs import logger
 from ..utils.meas_info import _set_channel_units
 
 if TYPE_CHECKING:
     from datetime import datetime
-    from pathlib import Path
-    from typing import Callable, Optional, Union
+    from typing import Any, Callable, Optional, Union
 
     from mne import Info
 
@@ -37,9 +37,10 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
 
     Parameters
     ----------
-    fname : path-like
+    fname : path-like | Raw
         Path to the file to re-play as a mock real-time stream. MNE-Python must be able
-        to load the file with :func:`mne.io.read_raw`.
+        to load the file with :func:`mne.io.read_raw`. An :class:`~mne.io.Raw` object
+        can be provided directly.
     chunk_size : int ``≥ 1``
         Number of samples pushed at once on the mock real-time stream.
 
@@ -51,8 +52,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
     """
 
     @abstractmethod
-    def __init__(self, fname: Union[str, Path], chunk_size: int = 64) -> None:
-        self._fname = ensure_path(fname, must_exist=True)
+    def __init__(self, fname: Union[str, Path, BaseRaw], chunk_size: int = 64) -> None:
         self._chunk_size = ensure_int(chunk_size, "chunk_size")
         if self._chunk_size <= 0:
             raise ValueError(
@@ -60,7 +60,15 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
                 f"{chunk_size} is invalid."
             )
         # load raw recording
-        self._raw = read_raw(self._fname, preload=True)
+        if isinstance(fname, BaseRaw):
+            try:
+                self._fname = Path(fname.filenames[0])
+            except Exception:
+                self._fname = None
+            self._raw = fname
+        else:
+            self._fname = ensure_path(fname, must_exist=True)
+            self._raw = read_raw(self._fname, preload=True)
         # This method should end on a self._reset_variables()
 
     @fill_doc
@@ -70,7 +78,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         keep_his: bool = False,
         *,
         verbose: Optional[Union[bool, str, int]] = None,
-    ) -> None:
+    ) -> BasePlayer:
         """Anonymize the measurement information in-place.
 
         Parameters
@@ -79,16 +87,24 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         %(keep_his_anonymize_info)s
         %(verbose)s
 
+        Returns
+        -------
+        player : instance of ``Player``
+            The player instance modified in-place.
+
         Notes
         -----
         %(anonymize_info_notes)s
         """
         self._check_not_started("anonymize()")
-        logger.warning(
+        warn(
             "Player.anonymize() is partially implemented and does not impact the "
-            "stream information yet."
+            "stream information yet. It will call Player.set_meas_date() internally.",
+            RuntimeWarning,
+            stacklevel=2,
         )
         super().anonymize(daysback=daysback, keep_his=keep_his, verbose=verbose)
+        return self
 
     @fill_doc
     def get_channel_units(
@@ -128,7 +144,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         allow_duplicates: bool = False,
         *,
         verbose: Optional[Union[bool, str, int]] = None,
-    ) -> None:
+    ) -> BasePlayer:
         """Rename channels.
 
         Parameters
@@ -141,12 +157,17 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
             If True (default False), allow duplicates, which will automatically be
             renamed with ``-N`` at the end.
         %(verbose)s
+
+        Returns
+        -------
+        player : instance of ``Player``
+            The player instance modified in-place.
         """
         self._check_not_started("rename_channels()")
         rename_channels(self.info, mapping, allow_duplicates)
 
     @abstractmethod
-    def start(self) -> None:  # pragma: no cover
+    def start(self) -> BasePlayer:  # pragma: no cover
         """Start streaming data."""
         pass
 
@@ -158,7 +179,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         *,
         on_unit_change: str = "warn",
         verbose: Optional[Union[bool, str, int]] = None,
-    ) -> None:
+    ) -> BasePlayer:
         """Define the sensor type of channels.
 
         If the new channel type changes the unit type, e.g. from ``T/m`` to ``V``, the
@@ -177,15 +198,21 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
 
             .. versionadded:: MNE 1.4
         %(verbose)s
+
+        Returns
+        -------
+        player : instance of ``Player``
+            The player instance modified in-place.
         """
         self._check_not_started("set_channel_types()")
         super().set_channel_types(
             mapping=mapping, on_unit_change=on_unit_change, verbose=verbose
         )
         self._sinfo.set_channel_types(self.get_channel_types(unique=False))
+        return self
 
     @abstractmethod
-    def set_channel_units(self, mapping: dict[str, Union[str, int]]) -> None:
+    def set_channel_units(self, mapping: dict[str, Union[str, int]]) -> BasePlayer:
         """Define the channel unit multiplication factor.
 
         By convention, MNE stores data in SI units. But systems often stream in non-SI
@@ -204,6 +231,11 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
             A dictionary mapping a channel to a unit, e.g. ``{'EEG061': 'microvolts'}``.
             The unit can be given as a human-readable string or as a unit multiplication
             factor, e.g. ``-6`` for microvolts corresponding to ``1e-6``.
+
+        Returns
+        -------
+        player : instance of ``Player``
+            The player instance modified in-place.
 
         Notes
         -----
@@ -225,10 +257,11 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
             channel_wise=False,
             picks="all",
         )
+        return self
 
     def set_meas_date(
         self, meas_date: Optional[Union[datetime, float, tuple[float, float]]]
-    ) -> None:
+    ) -> BasePlayer:
         """Set the measurement start date.
 
         Parameters
@@ -241,19 +274,27 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
             object will be automatically created. If None, will remove
             the time reference.
 
+        Returns
+        -------
+        player : instance of ``Player``
+            The player instance modified in-place.
+
         See Also
         --------
         anonymize
         """
         self._check_not_started(name=f"{type(self).__name__}.set_meas_date()")
-        logger.warning(
+        warn(
             "Player.set_meas_date() is partially implemented and does not impact the "
-            "stream information yet."
+            "stream information yet.",
+            RuntimeWarning,
+            stacklevel=2,
         )
         super().set_meas_date(meas_date)
+        return self
 
     @abstractmethod
-    def stop(self) -> None:
+    def stop(self) -> BasePlayer:
         """Stop streaming data on the mock real-time stream."""
         if self._streaming_thread is None:
             raise RuntimeError(
@@ -297,15 +338,17 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
     # ----------------------------------------------------------------------------------
     def __del__(self):
         """Delete the player."""
-        if hasattr(self, "_streaming_thread") and self._streaming_thread is not None:
+        try:
             self.stop()
+        except Exception:
+            pass
 
     def __enter__(self):
         """Context manager entry point."""
         self.start()
         return self
 
-    def __exit__(self, exc_type, exc_value, exc_tracebac):
+    def __exit__(self, exc_type: Any, exc_value: Any, exc_traceback: Any):
         """Context manager exit point."""
         if self._streaming_thread is not None:  # might have called stop manually
             self.stop()
@@ -335,10 +378,10 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         return self._chunk_size
 
     @property
-    def fname(self) -> Path:
+    def fname(self) -> Optional[Path]:
         """Path to file played.
 
-        :type: :class:`~pathlib.Path`
+        :type: :class:`~pathlib.Path` | None
         """
         return self._fname
 

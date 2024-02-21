@@ -6,12 +6,19 @@ from tempfile import NamedTemporaryFile
 from typing import TYPE_CHECKING
 
 import numpy as np
+from mne import Annotations
 from mne import set_log_level as set_log_level_mne
 from mne.io import Raw, read_raw_fif
 from pytest import fixture
 
 from mne_lsl import set_log_level
 from mne_lsl.datasets import testing
+from mne_lsl.lsl import StreamInlet, StreamOutlet
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from pytest import Config
 
 # Set debug logging in LSL, e.g.:
 # 2023-10-20 09:38:21.639 (   9.656s) [pytest          ]         udp_server.cpp:88       2| P_test_stream_add_reference_channels[1s]: Started multicast udp server at ff05:113d:6fdd:2c17:a643:ffe2:1bd1:3cd2 port 16571 (addr 0x43f93a0)  # noqa: E501
@@ -24,11 +31,6 @@ if "LSLAPICFG" not in os.environ:
     with lsl_cfg as fid:
         fid.write(f"[log]\nlevel = {level}\n\n[multicast]\nResolveScope = link")
     os.environ["LSLAPICFG"] = lsl_cfg.name
-
-if TYPE_CHECKING:
-    from pathlib import Path
-
-    from pytest import Config
 
 
 def pytest_configure(config: Config) -> None:
@@ -68,7 +70,7 @@ def pytest_sessionfinish(session, exitstatus) -> None:
 
 
 def _closer():
-    """Delete inlet, outlet, and player vars if present.
+    """Delete inlets and outlets if present.
 
     We cannot rely on just "del inlet" / "del outlet" because Python's garbage collector
     can run whenever it feels like it, and AFAIK the garbage collection order is not
@@ -76,16 +78,22 @@ def _closer():
     smart enough to be no-ops if called more than once.
     """
     loc = inspect.currentframe().f_back.f_locals
-    for name in ("inlet", "outlet"):
-        if name in loc:
-            loc[name].__del__()
-    if "player" in loc:
-        loc["player"].stop()
+    inlets, outlets = [], []
+    for var in loc.values():  # go through the frame only once
+        if isinstance(var, StreamInlet):
+            inlets.append(var)
+        elif isinstance(var, StreamOutlet):
+            outlets.append(var)
+    # delete inlets before outlets
+    for inlet in inlets:
+        inlet.__del__()
+    for outlet in outlets:
+        outlet.__del__()
 
 
 @fixture(scope="function")
 def close_io():
-    """Return function that will close inlet, outlet, and player vars if present."""
+    """Return function that will close inlets and outlets if present."""
     return _closer
 
 
@@ -93,7 +101,7 @@ def close_io():
 def fname(tmp_path_factory) -> Path:
     """Yield fname of a file with sample numbers in the first channel."""
     fname = testing.data_path() / "sample-eeg-ant-raw.fif"
-    raw = read_raw_fif(fname, preload=True)
+    raw = read_raw_fif(fname, preload=True)  # 67 channels x 2049 samples -> 2 seconds
     raw._data[0] = np.arange(len(raw.times))
     raw.rename_channels({raw.ch_names[0]: "Samples"})
     raw.set_channel_types({raw.ch_names[0]: "misc"}, on_unit_change="ignore")
@@ -103,13 +111,25 @@ def fname(tmp_path_factory) -> Path:
 
 
 @fixture(scope="function")
-def raw(fname) -> Raw:
+def raw(fname: Path) -> Raw:
     """Return the raw file corresponding to fname."""
     return read_raw_fif(fname, preload=True)
 
 
 @fixture(scope="function")
-def mock_lsl_stream(fname, request):
+def raw_annotations(raw: Raw) -> Raw:
+    """Return a raw file with annotations."""
+    annotations = Annotations(
+        onset=[0.1, 0.4, 0.5, 0.8, 0.95, 1.1, 1.3],
+        duration=[0.2, 0.2, 0.2, 0.1, 0.05, 0.4, 0.55],
+        description=["test1", "test1", "test1", "test2", "test3", "bad_test", "test1"],
+    )
+    raw.set_annotations(annotations)
+    return raw
+
+
+@fixture(scope="function")
+def mock_lsl_stream(fname: Path, request):
     """Create a mock LSL stream for testing."""
     # nest the PlayerLSL import to first write the temporary LSL configuration file
     from mne_lsl.player import PlayerLSL  # noqa: E402

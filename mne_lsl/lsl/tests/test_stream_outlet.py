@@ -170,12 +170,12 @@ def test_push_chunk_timestamps(dtype_str, dtype, close_io):
     outlet = StreamOutlet(sinfo, chunk_size=3)
     _test_properties(outlet, dtype_str, 2, "test", 1.0, "")
     inlet = StreamInlet(sinfo)
-    inlet.open_stream()
+    inlet.open_stream(timeout=5)
     time.sleep(0.1)  # sleep required because of pylsl inlet
     # float
     now = np.ceil(local_clock())
     outlet.push_chunk(x, timestamp=now)
-    data, ts = inlet.pull_chunk(timeout=5)
+    data, ts = inlet.pull_chunk(timeout=2)
     if dtype_str == "string":
         assert x == data
     else:
@@ -185,7 +185,7 @@ def test_push_chunk_timestamps(dtype_str, dtype, close_io):
     now = np.ceil(local_clock())
     timestamps = np.array([now, now + 1.1, now + 2.2])
     outlet.push_chunk(x, timestamp=timestamps)
-    data, ts = inlet.pull_chunk(timeout=5)
+    data, ts = inlet.pull_chunk(timeout=2)
     if dtype_str == "string":
         assert x == data
     else:
@@ -193,8 +193,8 @@ def test_push_chunk_timestamps(dtype_str, dtype, close_io):
     assert_allclose(ts, timestamps)
     # invalid
     with pytest.raises(
-        AssertionError,
-        match="must be an array.",
+        TypeError,
+        match="must be a float, an array or None",
     ):
         outlet.push_chunk(x, timestamp=[1, 2, 3])
     with pytest.raises(
@@ -207,6 +207,50 @@ def test_push_chunk_timestamps(dtype_str, dtype, close_io):
         match="must contain one element per sample",
     ):
         outlet.push_chunk(x, timestamp=np.arange(4))
+    close_io()
+
+
+def test_push_chunk_irregularly_sampled_stream(close_io):
+    """Test pushing a chunk on an irregularly sampled stream."""
+    x = np.array([[1, 4], [2, 5], [3, 6]], dtype=np.float32)
+    # create stream description
+    sinfo = StreamInfo("test", "", 2, 0.0, np.float32, uuid.uuid4().hex[:6])
+    outlet = StreamOutlet(sinfo, chunk_size=3)
+    _test_properties(outlet, "float32", 2, "test", 0.0, "")
+    inlet = StreamInlet(sinfo)
+    inlet.open_stream(timeout=5)
+    time.sleep(0.1)  # sleep required because of pylsl inlet
+    # push with timestamp = None
+    now = local_clock()
+    outlet.push_chunk(x, timestamp=None)
+    data, ts = inlet.pull_chunk(timeout=2)
+    assert_allclose(x, data)
+    assert_allclose(np.diff(ts), np.zeros(ts.size - 1))
+    assert_allclose(ts, now, atol=1e-1)
+    # push with timestamp = 0
+    now = local_clock()
+    outlet.push_chunk(x, timestamp=0)
+    data, ts = inlet.pull_chunk(timeout=2)
+    assert_allclose(x, data)
+    assert_allclose(np.diff(ts), np.zeros(ts.size - 1))
+    assert_allclose(ts, now, atol=1e-1)
+    # push with timestamp = value
+    now = local_clock()
+    with pytest.warns(RuntimeWarning, match="will be applied to all samples"):
+        outlet.push_chunk(x, timestamp=local_clock())
+    data, ts = inlet.pull_chunk(timeout=2)
+    assert_allclose(x, data)
+    assert_allclose(np.diff(ts), np.zeros(ts.size - 1))
+    assert_allclose(ts, now, atol=1e-1)
+    # push with timestamp = np.array(...)
+    timestamp = np.arange(x.shape[0]) + local_clock()
+    outlet.push_chunk(x, timestamp=timestamp)
+    data, ts = inlet.pull_chunk(timeout=2)
+    assert_allclose(x, data)
+    assert_allclose(ts, timestamp)
+    # push with timestamp = np.zeros(...)
+    with pytest.raises(RuntimeError, match="was supplied as an array of zeros"):
+        outlet.push_chunk(x, timestamp=np.zeros(x.shape[0]))
     close_io()
 
 

@@ -1,0 +1,1 @@
+exclude mne_lsl/conftest.py

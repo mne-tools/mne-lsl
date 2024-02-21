@@ -17,7 +17,8 @@ from .load_liblsl import lib
 from .stream_info import _BaseStreamInfo
 
 if TYPE_CHECKING:
-    from typing import Optional, Sequence, Union
+    from collections.abc import Sequence
+    from typing import Optional, Union
 
     from numpy.typing import DTypeLike, NDArray
 

@@ -27,10 +27,3 @@ Initial release of ``MNE-LSL``, based on the existing project `BSL`_.
 - Remove legacy and deprecated objects from ``BSL`` (:pr:`96`, :pr:`97`, :pr:`98`, :pr:`100`, :pr:`101`, :pr:`102`)
 
 .. _BSL: https://fcbg-hnp-meeg.github.io/bsl/stable/index.html
-
-Authors
--------
-
-* `Arnaud Desvachez`_
-* `Kyuhwa Lee`_
-* `Mathieu Scheltienne`_

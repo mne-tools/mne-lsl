@@ -118,7 +118,7 @@ class ControlGUI_EEG(_ControlGUI):
         }
         try:
             self._yRange = float(scope_settings.get("plot", "yRange"))
-            if self._yRange not in self._yRanges.values:
+            if self._yRange not in self._yRanges.values():
                 logger.debug("yRange %s is not in valid ranges.", self._yRange)
                 self._yRange = 25.0
         except Exception:  # Default to 25 uV

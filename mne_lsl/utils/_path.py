@@ -3,8 +3,8 @@ from __future__ import annotations  # c.f. PEP 563 and PEP 649
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from collections.abc import Generator
     from pathlib import Path
-    from typing import Generator
 
 
 def walk(path: Path) -> Generator[Path, None, None]:

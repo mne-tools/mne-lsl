@@ -30,8 +30,13 @@ def run():
         help="name of the stream displayed by LSL.",
         default="MNE-LSL-Player",
     )
+    parser.add_argument(
+        "--annotations",
+        help="enable streaming of annotations",
+        action="store_true",
+    )
     args = parser.parse_args()
-    player = PlayerLSL(args.fname, args.chunk_size, args.name)
+    player = PlayerLSL(args.fname, args.chunk_size, args.name, args.annotations)
     player.start()
     input(">> Press ENTER to stop replaying data \n")
     player.stop()

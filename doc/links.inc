@@ -15,16 +15,21 @@
 
 .. lsl
 
+.. _lsl: https://labstreaminglayer.org
 .. _lsl intro: https://labstreaminglayer.readthedocs.io/info/intro.html
-.. _lsl lib c++: https://github.com/sccn/liblsl
+.. _lsl lib: https://github.com/sccn/liblsl
+.. _lsl lib release: https://github.com/sccn/liblsl/releases
 .. _lsl python: https://github.com/labstreaminglayer/pylsl
 
 
 .. mne
 
 .. _mne stable: https://mne.tools/stable/index.html
+.. _mne installers: https://mne.tools/stable/install/installers.html
 
 
 .. project
 
 .. _project pypi: https://pypi.org/project/mne-lsl/
+.. _project conda: https://anaconda.org/conda-forge/mne-lsl
+.. _project github: https://github.com/mne-tools/mne-lsl

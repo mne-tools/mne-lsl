@@ -3,6 +3,7 @@ from __future__ import annotations  # c.f. PEP 563, PEP 649
 from ctypes import c_char_p, c_double, c_int, c_long, c_void_p
 from threading import Lock
 from typing import TYPE_CHECKING
+from warnings import warn
 
 import numpy as np
 
@@ -175,10 +176,10 @@ class StreamOutlet:
             required. If numericals are transmitted, a numpy array of shape
             ``(n_samples, n_channels)`` is required.
         timestamp : float | array of shape (n_samples,) | None
-            If a float, the acquisition timestamp of the last sample, in agreement with
-            :func:`mne_lsl.lsl.local_clock`. ``None`` (default) uses the current time.
-            If an array, the acquisition timestamp of each sample, in agreement with
-            :func:`mne_lsl.lsl.local_clock`.
+            Acquisition timestamp in agreement with :func:`mne_lsl.lsl.local_clock`.
+            If a float, the acquisition timestamp of the last sample. ``None`` (default)
+            uses the current time. If an array, the acquisition timestamp of each
+            sample.
         pushThrough : bool
             If True, push the sample through to the receivers instead of buffering it
             with subsequent samples. Note that the ``chunk_size`` defined when creating
@@ -216,27 +217,32 @@ class StreamOutlet:
             data_buffer = (self._dtype * n_elements).from_buffer(x)
 
         if n_samples == 1:
-            logger.warning("A single sample is pushed. Consider using push_sample().")
+            warn(
+                "A single sample is pushed. Consider using push_sample().",
+                RuntimeWarning,
+                stacklevel=2,
+            )
 
         # convert timestamps to the corresponding ctype
         if timestamp is None:
-            timestamp = np.zeros(n_samples, dtype=np.float64) if self.sfreq == 0 else 0
-        if isinstance(timestamp, (float, int)):
-            timestamp_c = c_double(timestamp)
-            liblsl_push_chunk_func = self._do_push_chunk
-            if self.sfreq == 0.0 and n_samples != 1:
-                logger.warning(
-                    "The stream is irregularly sampled and timestamp is a float and "
-                    "will be applied to all samples. Consider using an array of "
-                    "timestamps to provide the individual timestamps for each sample."
-                )
-        else:
-            assert isinstance(timestamp, np.ndarray), "'timestamp' must be an array."
+            timestamp = 0
+        if isinstance(timestamp, np.ndarray):
             if timestamp.ndim != 1 or timestamp.size != n_samples:
                 raise ValueError(
                     "The timestamps to push 'timestamp' must contain one element per "
                     "sample. Thus, the shape should be (n_samples,), "
                     f"{timestamp.shape} is invalid."
+                )
+            if np.count_nonzero(timestamp) == 0:
+                # this check is required because:
+                # - if the sampling-rate is irregular: all samples should have the same
+                #   timestamp -> this is not the case and differs from timestamp=0
+                # - if the sampling-rate is regular: all samples should have different
+                #   timestamps
+                raise RuntimeError(
+                    "The argument 'timestamp' was supplied as an array of zeros which "
+                    "is not allowed. Consider using None (or timestamp=0) to use the "
+                    "current time."
                 )
             timestamp = (
                 timestamp
@@ -245,6 +251,22 @@ class StreamOutlet:
             )
             timestamp_c = (c_double * timestamp.size)(*timestamp.astype(np.float64))
             liblsl_push_chunk_func = self._do_push_chunk_n
+        elif isinstance(timestamp, (float, int)):
+            if self.sfreq == 0.0 and n_samples != 1 and timestamp != 0:
+                warn(
+                    "The stream is irregularly sampled and timestamp is a float and "
+                    "will be applied to all samples. Consider using an array of "
+                    "timestamps to provide the individual timestamps for each sample.",
+                    RuntimeWarning,
+                    stacklevel=2,
+                )
+            timestamp_c = c_double(timestamp)
+            liblsl_push_chunk_func = self._do_push_chunk
+        else:
+            raise TypeError(
+                "The argument 'timestamps' must be a float, an array or None to use "
+                "the current time."
+            )
 
         with self._lock:
             handle_error(

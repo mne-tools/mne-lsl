@@ -54,12 +54,13 @@ maintainers = [
 name = 'mne_lsl'
 readme = 'README.md'
 requires-python = '>=3.9'
-version = '1.2.0.dev0'
+version = '1.3.0.dev0'
 
 [project.optional-dependencies]
 all = [
   'mne_lsl[build]',
   'mne_lsl[doc]',
+  'mne_lsl[stubs]',
   'mne_lsl[style]',
   'mne_lsl[test]',
 ]
@@ -83,13 +84,17 @@ doc = [
 full = [
   'mne_lsl[all]',
 ]
+stubs = [
+  'isort',
+  'mypy',
+  'ruff>=0.1.8',
+]
 style = [
   'bibclean',
-  'black',
-  'codespell',
+  'codespell[toml]>=2.2.4',
   'isort',
   'pydocstyle[toml]',
-  'ruff',
+  'ruff>=0.1.8',
   'toml-sort',
   'yamllint',
 ]
@@ -97,8 +102,7 @@ test = [
   'pyqt5',
   'pytest-cov',
   'pytest-timeout',
-  'pytest>=6.0',
-  'requests',
+  'pytest>=8.0',
 ]
 
 [project.scripts]
@@ -112,20 +116,11 @@ homepage = 'https://mne.tools/mne-lsl'
 source = 'https://github.com/mne-tools/mne-lsl'
 tracker = 'https://github.com/mne-tools/mne-lsl/issues'
 
-[tool.black]
-extend-exclude = '''
-(
-      __pycache__
-    | \.github
-    | doc/
-    | pyproject.toml
-    | setup.py
-    | tutorials/
-)
-'''
-include = '\.pyi?$'
-line-length = 88
-target-version = ['py39']
+[tool.codespell]
+check-filenames = true
+check-hidden = true
+ignore-words = '.codespellignore'
+skip = 'build,.git,.mypy_cache,.pytest_cache,doc/_static/logos/*'
 
 [tool.coverage.report]
 exclude_lines = [
@@ -175,7 +170,7 @@ match-dir = '^mne_lsl.*'
 [tool.pytest.ini_options]
 addopts = '--durations=20 --junit-xml=junit-results.xml -ra -v --cov-report= --tb=short --color=yes'
 junit_family = 'xunit2'
-minversion = '6.0'
+minversion = '8.0'
 
 [tool.ruff]
 extend-exclude = [
@@ -186,8 +181,21 @@ extend-exclude = [
   'tutorials/*',
 ]
 line-length = 88
+target-version = 'py39'
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.format]
+docstring-code-format = true
+
+[tool.ruff.lint]
+ignore = []
+select = ['A', 'B', 'E', 'F', 'UP', 'W']
+
+[tool.ruff.lint.per-file-ignores]
+'*' = [
+  'B904', # 'Within an except clause, raise exceptions with raise ... from ...'
+  'UP007', # 'Use `X | Y` for type annotations', requires python 3.10
+]
+'*.pyi' = ['E501']
 '__init__.py' = ['F401']
 
 [tool.setuptools]

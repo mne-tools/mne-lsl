@@ -2,17 +2,15 @@ from __future__ import annotations  # c.f. PEP 563, PEP 649
 
 import hashlib
 import platform
-from importlib import import_module
 from typing import TYPE_CHECKING
 
 import numpy as np
-import pytest
 from mne.utils import assert_object_equal
 from numpy.testing import assert_allclose, assert_array_equal
 
 if TYPE_CHECKING:
     from pathlib import Path
-    from typing import Callable, Union
+    from typing import Union
 
     from mne import Info
     from mne.io import BaseRaw
@@ -103,22 +101,6 @@ def match_stream_and_raw_data(data: NDArray[+ScalarType], raw: BaseRaw) -> None:
         atol=atol,
         err_msg=f"data mismatch, after {n_fetch} fetch(es).",
     )
-
-
-def requires_module(name: str):  # pragma: no cover
-    """Skip a test if package is not available (decorator)."""
-    try:
-        import_module(name)
-        skip = False
-    except ImportError:
-        skip = True
-
-    def decorator(function: Callable):
-        return pytest.mark.skipif(
-            skip, reason=f"Test {function.__name__} skipped, requires {name}."
-        )(function)
-
-    return decorator
 
 
 def compare_infos(info1: Info, info2: Info) -> None:

@@ -22,7 +22,8 @@ from ..utils.logs import logger
 from ._base import BaseStream
 
 if TYPE_CHECKING:
-    from typing import Optional, Sequence, Union
+    from collections.abc import Sequence
+    from typing import Optional, Union
 
     from mne_lsl.lsl.stream_info import _BaseStreamInfo
 
@@ -94,7 +95,7 @@ class StreamLSL(BaseStream):
         acquisition_delay: float = 0.001,
         processing_flags: Optional[Union[str, Sequence[str]]] = None,
         timeout: Optional[float] = 2,
-    ) -> None:
+    ) -> StreamLSL:
         """Connect to the LSL stream and initiate data collection in the buffer.
 
         Parameters
@@ -117,6 +118,11 @@ class StreamLSL(BaseStream):
             Optional timeout (in seconds) of the operation. ``None`` disables the
             timeout. The timeout value is applied once to every operation supporting it.
 
+        Returns
+        -------
+        stream : instance of :class:`~mne_lsl.stream.StreamLSL`
+            The stream instance modified in-place.
+
         Notes
         -----
         If all 3 stream identifiers ``name``, ``stype`` and ``source_id`` are left to
@@ -133,6 +139,7 @@ class StreamLSL(BaseStream):
         if processing_flags is not None and (
             processing_flags == "threadsafe" or "threadsafe" in processing_flags
         ):
+            self._reset_variables()
             raise ValueError(
                 "The 'threadsafe' processing flag should not be provided for an "
                 "MNE-LSL Stream. If you require access to the underlying StreamInlet "
@@ -144,12 +151,14 @@ class StreamLSL(BaseStream):
         # resolve and connect to available streams
         sinfos = resolve_streams(timeout, self._name, self._stype, self._source_id)
         if len(sinfos) != 1:
+            self._reset_variables()
             raise RuntimeError(
                 "The provided arguments 'name', 'stype', and 'source_id' do not "
                 f"uniquely identify an LSL stream. {len(sinfos)} were found: "
                 f"{[(sinfo.name, sinfo.stype, sinfo.source_id) for sinfo in sinfos]}."
             )
         if sinfos[0].dtype == "string":
+            self._reset_variables()
             raise RuntimeError(
                 "The Stream class is designed for numerical types. It does not support "
                 "string LSL streams. Please use a mne_lsl.lsl.StreamInlet directly to "
@@ -189,20 +198,29 @@ class StreamLSL(BaseStream):
         self._picks_inlet = np.arange(0, self._inlet.n_channels)
         # define the acquisition thread
         self._create_acquisition_thread(0)
+        return self
 
-    def disconnect(self) -> None:
-        """Disconnect from the LSL stream and interrupt data collection."""
+    def disconnect(self) -> StreamLSL:
+        """Disconnect from the LSL stream and interrupt data collection.
+
+        Returns
+        -------
+        stream : instance of :class:`~mne_lsl.stream.StreamLSL`
+            The stream instance modified in-place.
+        """
         super().disconnect()
         logger.debug("Calling inlet.close_stream() for %s", str(self))
-        self._inlet = None  # prevent _acquire from being called
+        try:
+            self._inlet.__del__()
+        except Exception:
+            pass
         self._reset_variables()  # also sets self._inlet = None
+        return self
 
     def _acquire(self) -> None:
         """Update function pulling new samples in the buffer at a regular interval."""
-        if not getattr(self, "_inlet", None):
-            return  # stream disconnected
-        if getattr(self, "_interrupt", False):
-            return  # stream interrupted (don't continue)
+        if not getattr(self, "_inlet", None) or getattr(self, "_interrupt", False):
+            return  # stream disconnected/interrupted
         try:
             # pull data
             data, timestamps = self._inlet.pull_chunk(timeout=0.0)
@@ -218,6 +236,10 @@ class StreamLSL(BaseStream):
                 n_channels,
             )
             data = data[:, self._picks_inlet]  # subselect channels
+            if self._stype == "annotations" and np.count_nonzero(data) == 0:
+                if not self._interrupt:
+                    self._create_acquisition_thread(self._acquisition_delay)
+                return  # interrupt early
             if len(self._added_channels) != 0:
                 refs = np.zeros(
                     (timestamps.size, len(self._added_channels)), dtype=self.dtype

@@ -2,8 +2,11 @@ from __future__ import annotations  # c.f. PEP 563, PEP 649
 
 from threading import Timer
 from typing import TYPE_CHECKING
+from warnings import catch_warnings, filterwarnings, warn
 
 import numpy as np
+from mne import Annotations
+from mne.annotations import _handle_meas_date
 
 from ..lsl import StreamInfo, StreamOutlet, local_clock
 from ..utils._checks import check_type
@@ -30,20 +33,85 @@ class PlayerLSL(BasePlayer):
         properly.
     name : str | None
         Name of the mock LSL stream. If ``None``, the name ``MNE-LSL-Player`` is used.
+    annotations : bool | None
+        If ``True``, an :class:`~mne_lsl.lsl.StreamOutlet` is created for the
+        :class:`~mne.Annotations` of the :class:`~mne.io.Raw` object. If ``False``,
+        :class:`~mne.Annotations` are ignored and the :class:`~mne_lsl.lsl.StreamOutlet`
+        is not created. If ``None`` (default), the :class:`~mne_lsl.lsl.StreamOutlet` is
+        created only if the :class:`~mne.io.Raw` object has :class:`~mne.Annotations` to
+        push. See notes for additional information on the :class:`~mne.Annotations`
+        timestamps.
 
     Notes
     -----
     The file re-played is loaded in memory. Thus, large files are not recommended. Once
     the end-of-file is reached, the player loops back to the beginning which can lead to
     a small discontinuity in the data stream.
+
+    Each time a chunk (defined by ``chunk_size``) is pushed on the
+    :class:`~mne_lsl.lsl.StreamOutlet`, the last sample of the chunk is attributed the
+    current time (as returned by the function :func:`~mne_lsl.lsl.local_clock`). Thus,
+    the sample ``chunk[0, :]`` occurred in the  past and the sample ``chunk[-1, :]``
+    occurred "now". If :class:`~mne.Annotations` are streamed, the annotations within
+    the chunk are pushed on the annotation :class:`~mne_lsl.lsl.StreamOutlet`. The
+    :class:`~mne.Annotations` are pushed with a timestamp corrected for the annotation
+    onset in regards to the chunk beginning. However, :class:`~mne.Annotations` push is
+    *not* delayed until the the annotation timestamp or until the end of the chunk.
+    Thus, an :class:`~mne.Annotations` can arrived at the client
+    :class:`~mne_lsl.lsl.StreamInlet` "ahead" of time, i.e. earlier than the current
+    time (as returned by the function :func:`~mne_lsl.lsl.local_clock`). Thus, it is
+    recommended to connect to an annotation stream with the
+    :class:`~mne_lsl.lsl.StreamInlet` or :class:`~mne_lsl.stream.StreamLSL` with the
+    ``clocksync`` processing flag and to always inspect the timestamps returned for
+    every samples.
+
+    .. code-block:: python
+
+        from mne_lsl.lsl import local_clock
+        from mne_lsl.player import PlayerLSL as Player
+        from mne_lsl.stream import StreamLSL as Stream
+
+        player = Player(..., annotations=True)  # file with annotations
+        player.start()
+        stream = Stream(bufsize=100, stype="annotations")
+        stream.connect(processing_flags=["clocksync"])
+        data, ts = stream.get_data()
+        print(ts - local_clock())  # positive values are annotations in the "future"
+
+    If :class:`~mne.Annotations` are streamed, the :class:`~mne_lsl.lsl.StreamOutlet`
+    name is ``{name}-annotations`` where ``name`` is the name of the
+    :class:`~mne_lsl.player.PlayerLSL`. The ``dtype`` is set to ``np.float64`` and each
+    unique :class:`~mne.Annotations` description is encoded as a channel. The value
+    streamed on a channel correspond to the duration of the :class:`~mne.Annotations`.
+    Thus, a sample on this :class:`~mne_lsl.lsl.StreamOutlet` is a one-hot encoded
+    vector of the :class:`~mne.Annotations` description/duration.
     """
 
     def __init__(
-        self, fname: Union[str, Path], chunk_size: int = 64, name: Optional[str] = None
+        self,
+        fname: Union[str, Path],
+        chunk_size: int = 64,
+        name: Optional[str] = None,
+        annotations: Optional[bool] = None,
     ) -> None:
         super().__init__(fname, chunk_size)
         check_type(name, (str, None), "name")
+        check_type(annotations, (bool, None), "annotations")
         self._name = "MNE-LSL-Player" if name is None else name
+        # look for annotations
+        if annotations is None:
+            self._annotations = True if len(self._raw.annotations) != 0 else False
+        else:
+            if annotations and len(self._raw.annotations) == 0:
+                warn(
+                    f"{self._name}: The raw file has no annotations. The annotations "
+                    "will be ignored.",
+                    RuntimeWarning,
+                    stacklevel=2,
+                )
+                self._annotations = False
+            else:
+                self._annotations = annotations
         # create stream info based on raw
         ch_types = self._raw.get_channel_types(unique=True)
         self._sinfo = StreamInfo(
@@ -56,6 +124,28 @@ class PlayerLSL(BasePlayer):
         )
         self._sinfo.set_channel_info(self._raw.info)
         logger.debug("%s: set channel info", self._name)
+        if self._annotations:
+            self._annotations_names = {
+                name: idx
+                for idx, name in enumerate(
+                    sorted(set(self._raw.annotations.description))
+                )
+            }
+            self._sinfo_annotations = StreamInfo(
+                name=f"{self._name}-annotations",
+                stype="annotations",
+                n_channels=len(self._annotations_names),
+                sfreq=0.0,
+                dtype=np.float64,
+                source_id="MNE-LSL",
+            )
+            self._sinfo_annotations.set_channel_names(list(self._annotations_names))
+            self._sinfo_annotations.set_channel_types("annotations")
+            self._sinfo_annotations.set_channel_units("none")
+            self._annotations_idx = self._raw.time_as_index(self._raw.annotations.onset)
+        else:
+            self._sinfo_annotations = None
+            self._annotations_idx = None
         # create additional streaming variables
         self._reset_variables()
 
@@ -65,51 +155,83 @@ class PlayerLSL(BasePlayer):
         mapping: Union[dict[str, str], Callable],
         allow_duplicates: bool = False,
         *,
-        verbose=None,
-    ) -> None:
+        verbose: Optional[Union[bool, str, int]] = None,
+    ) -> PlayerLSL:
         super().rename_channels(mapping, allow_duplicates)
         self._sinfo.set_channel_names(self.info["ch_names"])
+        return self
 
-    def start(self) -> None:
-        """Start streaming data on the LSL :class:`~mne_lsl.lsl.StreamOutlet`."""
+    def start(self) -> PlayerLSL:
+        """Start streaming data on the LSL :class:`~mne_lsl.lsl.StreamOutlet`.
+
+        Returns
+        -------
+        player : instance of :class:`~mne_lsl.player.PlayerLSL`
+            The player instance modified in-place.
+        """
         if self._streaming_thread is not None:
-            logger.warning(
-                "%s: The player is already started. "
+            warn(
+                f"{self._name}: The player is already started. "
                 "Use Player.stop() to stop streaming.",
-                self._name,
+                RuntimeWarning,
+                stacklevel=2,
             )
-            return None
+            return self
         self._outlet = StreamOutlet(self._sinfo, self._chunk_size)
+        self._outlet_annotations = (
+            StreamOutlet(self._sinfo_annotations, 1) if self._annotations else None
+        )
         self._streaming_delay = self.chunk_size / self.info["sfreq"]
         self._streaming_thread = Timer(0, self._stream)
         self._streaming_thread.daemon = True
         self._target_timestamp = local_clock()
         self._streaming_thread.start()
         logger.debug("%s: Started streaming thread", self._name)
+        return self
 
     @copy_doc(BasePlayer.set_channel_types)
     def set_channel_types(
-        self, mapping: dict[str, str], *, on_unit_change: str = "warn", verbose=None
-    ) -> None:
+        self,
+        mapping: dict[str, str],
+        *,
+        on_unit_change: str = "warn",
+        verbose: Optional[Union[bool, str, int]] = None,
+    ) -> PlayerLSL:
         super().set_channel_types(
             mapping, on_unit_change=on_unit_change, verbose=verbose
         )
         self._sinfo.set_channel_types(self.get_channel_types(unique=False))
+        return self
 
     @copy_doc(BasePlayer.set_channel_units)
-    def set_channel_units(self, mapping: dict[str, Union[str, int]]) -> None:
+    def set_channel_units(self, mapping: dict[str, Union[str, int]]) -> PlayerLSL:
         super().set_channel_units(mapping)
         ch_units_after = np.array(
             [ch["unit_mul"] for ch in self.info["chs"]], dtype=np.int8
         )
         self._sinfo.set_channel_units(ch_units_after)
+        return self
 
-    def stop(self) -> None:
-        """Stop streaming data on the LSL :class:`~mne_lsl.lsl.StreamOutlet`."""
+    def stop(self) -> PlayerLSL:
+        """Stop streaming data on the LSL :class:`~mne_lsl.lsl.StreamOutlet`.
+
+        Returns
+        -------
+        player : instance of :class:`~mne_lsl.player.PlayerLSL`
+            The player instance modified in-place.
+        """
         logger.debug("%s: Stopping", self._name)
         super().stop()
-        self._outlet = None
+        try:
+            self._outlet.__del__()
+        except Exception:
+            pass
+        try:
+            self._outlet_annotations.__del__()
+        except Exception:
+            pass
         self._reset_variables()
+        return self
 
     @copy_doc(BasePlayer._stream)
     def _stream(self) -> None:
@@ -130,6 +252,7 @@ class PlayerLSL(BasePlayer):
             # 'timestamp' expects the timestamp of the most 'recent' sample, which in
             # this non-real time replay scenario is the timestamp of the last sample in
             # the chunk.
+            start_timestamp = self._target_timestamp
             self._target_timestamp += self._streaming_delay
             logger.debug(
                 "%s: Pushing chunk %s:%s, timestamp=%s",
@@ -139,47 +262,106 @@ class PlayerLSL(BasePlayer):
                 self._target_timestamp,
             )
             self._outlet.push_chunk(data, timestamp=self._target_timestamp)
+            self._stream_annotations(start, stop, start_timestamp)
         except Exception as exc:
             logger.debug("%s: Stopping due to exception: %s", self._name, exc)
             self._reset_variables()
             return None  # equivalent to an interrupt
         else:
-            # figure out how early or late the thread woke up and compensate the delay
-            # for the next thread to remain in the neighbourhood of _target_timestamp
-            # for the following wake.
-            delta = self._target_timestamp - self._streaming_delay - local_clock()
-            delay = max(self._streaming_delay + delta, 0)
             if self._interrupt:
-                # don't recreate the thread if we are trying to interrupt streaming
-                return None
+                return None  # don't recreate the thread if we are interrupting
             else:
+                # figure out how early or late the thread woke up and compensate the
+                # delay for the next thread to remain in the neighbourhood of
+                # _target_timestamp for the following wake.
+                delta = self._target_timestamp - self._streaming_delay - local_clock()
+                delay = max(self._streaming_delay + delta, 0)
                 # recreate the timer thread as it is one-call only
                 self._streaming_thread = Timer(delay, self._stream)
                 self._streaming_thread.daemon = True
                 self._streaming_thread.start()
+
+    def _stream_annotations(
+        self, start: int, stop: int, start_timestamp: float
+    ) -> None:
+        """Push annotations in a chunk."""
+        if not self._annotations:
+            return None
+        # get the annotations in the chunk
+        if start < stop:
+            mask = (self._annotations_idx >= start) & (self._annotations_idx < stop)
+            idx = np.where(mask)[0]
+        else:  # start > stop, equality is impossible or chunk_size would be equal to 0.
+            mask1 = self._annotations_idx >= start
+            mask2 = self._annotations_idx < stop
+            idx = np.hstack([np.where(mask1)[0], np.where(mask2)[0]])
+        if idx.size == 0:
+            return None
+        # estimate LSL timestamp of each annotation
+        timestamps = (
+            start_timestamp + self.annotations.onset[idx] - self._raw.times[start]
+        )
+        # one-hot encode the description and duration in the channels
+        idx_ = np.array(
+            [
+                self._annotations_names[desc]
+                for desc in self.annotations.description[idx]
+            ]
+        )
+        data = np.zeros((timestamps.size, len(self._annotations_names)))
+        data[np.arange(timestamps.size), idx_] = self.annotations.duration[idx]
+        # push as a chunk all annotations in the [start:stop] range
+        with catch_warnings():
+            filterwarnings(
+                "ignore",
+                message="A single sample is pushed. Consider using push_sample().",
+                category=RuntimeWarning,
+            )
+            self._outlet_annotations.push_chunk(data, timestamps)
 
     def _reset_variables(self) -> None:
         """Reset variables for streaming."""
         logger.debug("Resetting variables %s", self._name)
         super()._reset_variables()
         self._outlet = None
+        self._outlet_annotations = None
         self._target_timestamp = None
 
     # ----------------------------------------------------------------------------------
     def __del__(self):
         """Delete the player and destroy the :class:`~mne_lsl.lsl.StreamOutlet`."""
         super().__del__()
-        self._outlet = None
+        try:
+            self._outlet.__del__()
+        except Exception:
+            pass
+        try:
+            self._outlet_annotations.__del__()
+        except Exception:
+            pass
 
     def __repr__(self):
         """Representation of the instance."""
-        if getattr(self, "_outlet", None) is None:
-            status = "OFF"
+        status = "OFF" if getattr(self, "_outlet", None) is None else "ON"
+        if self._fname is not None:
+            repr_ = f"<Player: {self.name} | {status} | {self._fname}>"
         else:
-            status = "ON"
-        return f"<Player: {self.name} | {status} | {self._fname}>"
+            repr_ = f"<Player: {self.name} | {status}>"
+        return repr_
 
     # ----------------------------------------------------------------------------------
+    @property
+    def annotations(self) -> Annotations:
+        """Annotations attached to the raw object, if streamed.
+
+        :type: :class:`~mne.Annotations`
+        """
+        return (
+            self._raw.annotations
+            if self._annotations
+            else Annotations([], [], [], _handle_meas_date(self.info["meas_date"]))
+        )
+
     @property
     def name(self) -> str:
         """Name of the LSL stream.

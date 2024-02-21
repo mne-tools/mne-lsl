@@ -16,25 +16,7 @@
 
 .. _latest:
 
-Version 1.2
+Version 1.3
 ===========
 
-Enhancements
-------------
-
 - xxx
-
-Bugs
-----
-
-- xxx
-
-API and behavior changes
-------------------------
-
-- xxx
-
-Authors
--------
-
-* `Mathieu Scheltienne`_

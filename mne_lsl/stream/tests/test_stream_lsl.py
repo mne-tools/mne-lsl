@@ -21,6 +21,7 @@ else:
     from mne.io.pick import _picks_to_idx
 
 from mne_lsl import logger
+from mne_lsl.lsl import StreamInfo, StreamOutlet
 from mne_lsl.stream import StreamLSL as Stream
 from mne_lsl.utils._tests import match_stream_and_raw_data
 from mne_lsl.utils.logs import _use_log_level
@@ -46,24 +47,27 @@ def acquisition_delay(request):
     yield request.param
 
 
-@pytest.fixture(scope="module")
-def _integer_raw(tmp_path_factory):
-    """Create a Raw object with each channel containing its idx continuously."""
-    info = create_info(5, 1000, "eeg")
-    data = np.full((5, 1000), np.arange(5).reshape(-1, 1))
-    raw = RawArray(data, info)
-    fname = tmp_path_factory.mktemp("data") / "int-raw.fif"
-    raw.save(fname)
-    return fname
-
-
 @pytest.fixture(scope="function")
-def _mock_lsl_stream_int(_integer_raw, request):
+def _mock_lsl_stream_int(request):
     """Create a mock LSL stream streaming the channel number continuously."""
     # nest the PlayerLSL import to first write the temporary LSL configuration file
     from mne_lsl.player import PlayerLSL  # noqa: E402
 
-    with PlayerLSL(_integer_raw, name=f"P_{request.node.name}") as player:
+    info = create_info(5, 1000, "eeg")
+    data = np.full((5, 1000), np.arange(5).reshape(-1, 1))
+    raw = RawArray(data, info)
+
+    with PlayerLSL(raw, name=f"P_{request.node.name}") as player:
+        yield player
+
+
+@pytest.fixture(scope="function")
+def _mock_lsl_stream_annotations(raw_annotations, request):
+    """Create a mock LSL stream streaming the channel number continuously."""
+    # nest the PlayerLSL import to first write the temporary LSL configuration file
+    from mne_lsl.player import PlayerLSL  # noqa: E402
+
+    with PlayerLSL(raw_annotations, name=f"P_{request.node.name}") as player:
         yield player
 
 
@@ -106,6 +110,8 @@ def test_stream(mock_lsl_stream, acquisition_delay, raw):
     )
     # dtype
     assert stream.dtype == stream.sinfo.dtype
+    # compensation grade
+    assert stream.compensation_grade is None
     # disconnect
     stream.disconnect()
 
@@ -133,6 +139,8 @@ def test_stream_invalid():
         Stream(1, stype=101)
     with pytest.raises(TypeError, match="must be an instance of str"):
         Stream(1, source_id=101)
+    with pytest.raises(ValueError, match="must be a positive number"):
+        Stream(bufsize=2).connect(acquisition_delay=-1)
 
 
 def test_stream_connection_no_args(mock_lsl_stream):
@@ -172,8 +180,6 @@ def test_stream_drop_channels(mock_lsl_stream, acquisition_delay, raw):
     stream = Stream(bufsize=2, name=mock_lsl_stream.name)
     stream.connect(acquisition_delay=acquisition_delay)
     time.sleep(0.1)  # give a bit of time to the stream to acquire the first chunks
-    # Do not drop TRIGGER as it contains our increasing timestamps
-    assert raw.ch_names[-1] == "TRIGGER"
     stream.drop_channels("hEOG")
     raw_ = raw.copy().drop_channels("hEOG")
     assert stream.ch_names == raw_.ch_names
@@ -202,6 +208,13 @@ def test_stream_drop_channels(mock_lsl_stream, acquisition_delay, raw):
         data, _ = stream.get_data(winsize=0.1)
         match_stream_and_raw_data(data, raw_)
         _sleep_until_new_data(acquisition_delay, mock_lsl_stream)
+
+    # test invalid channel names
+    with pytest.raises(ValueError, match="must contain existing channel names."):
+        stream.drop_channels(["101", "F6"])
+    with pytest.raises(ValueError, match="must contain existing channel names."):
+        stream.drop_channels("101")
+
     stream.disconnect()
 
 
@@ -557,3 +570,68 @@ def _sleep_until_new_data(acq_delay, player):
             1.1 * (player.chunk_size / player.info["sfreq"]),
         )
     )
+
+
+def test_stream_str(close_io):
+    """Test a stream on a string source."""
+    sinfo = StreamInfo("test_stream_str", "gaze", 1, 100, "string", "pytest")
+    outlet = StreamOutlet(sinfo)
+    assert outlet.dtype == "string"
+    with pytest.raises(
+        RuntimeError, match="Stream class is designed for numerical types"
+    ):
+        Stream(bufsize=2, name="test_stream_str").connect()
+    close_io()
+
+
+def test_stream_processing_flags(close_io):
+    """Test a stream connection processing flags."""
+    sinfo = StreamInfo("test_stream_processing_flags", "gaze", 1, 100, "int8", "pytest")
+    outlet = StreamOutlet(sinfo)
+    assert outlet.dtype == np.int8
+    stream = Stream(bufsize=2, name="test_stream_processing_flags")
+    assert not stream.connected
+    with pytest.raises(
+        ValueError, match="'threadsafe' processing flag should not be provided"
+    ):
+        stream.connect(processing_flags=("clocksync", "threadsafe"))
+    assert not stream.connected
+    stream.connect(processing_flags="all")
+    assert stream.connected
+    stream.disconnect()
+    assert not stream.connected
+    close_io()
+
+
+def test_stream_irregularly_sampled(close_io):
+    """Test a stream with an irregular sampling rate."""
+    sinfo = StreamInfo(
+        "test_stream_irregularly_sampled", "gaze", 1, 0, "int8", "pytest"
+    )
+    outlet = StreamOutlet(sinfo)
+    stream = Stream(bufsize=10, name="test_stream_irregularly_sampled")
+    stream.connect()
+    time.sleep(0.1)  # give a bit of time to the stream to acquire the first chunks
+    assert stream.connected
+    data, _ = stream.get_data()
+    expected = np.zeros(stream.n_buffer, dtype=stream.dtype)
+    assert_allclose(data.squeeze(), expected)
+    outlet.push_sample(np.array([1]))
+    time.sleep(0.01)
+    data, _ = stream.get_data()
+    expected[-1] = 1
+    assert_allclose(data.squeeze(), expected)
+    with pytest.raises(RuntimeError, match="with an irregular sampling rate."):
+        stream._check_connected_and_regular_sampling("test")
+    stream.disconnect()
+    close_io()
+
+
+def test_stream_annotations_picks(_mock_lsl_stream_annotations):
+    """Test sub-selection of annotations."""
+    stream = Stream(bufsize=5, stype="annotations").connect()  # test chaining as-well
+    stream.pick("test1")  # most-present annotations
+    time.sleep(5)  # acquire data
+    data, ts = stream.get_data()
+    assert np.count_nonzero(data) == data.size
+    stream.disconnect()

@@ -12,24 +12,30 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
       - name: Setup Python 3.9
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.9'
           architecture: 'x64'
       - name: Install linux dependencies
         run: |
+          curl -L https://github.com/sccn/liblsl/releases/download/v1.16.2/liblsl-1.16.2-jammy_amd64.deb -o liblsl-1.16.2-jammy_amd64.deb
           sudo apt update
-          sudo apt install -y libpugixml-dev qtbase5-dev qt5-qmake
+          sudo apt install -y libpugixml-dev qtbase5-dev qt5-qmake optipng
+          sudo apt install -y ./liblsl-1.16.2-jammy_amd64.deb
+          rm liblsl-1.16.2-jammy_amd64.deb
       - name: Install dependencies
         run: |
           python -m pip install --progress-bar off --upgrade pip setuptools wheel
-          python -m pip install --progress-bar off .[build]
+          python -m pip install --progress-bar off -e .[build,stubs]
       - name: Display system information
         run: mne_lsl-sys_info --developer
+      - name: Generate stub files
+        run: python tools/stubgen.py
       - name: Build and publish
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN  }}
         run: |
           python -m build
+          twine check dist/*
           twine upload dist/*
