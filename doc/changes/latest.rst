@@ -19,4 +19,5 @@
 Version 1.3
 ===========
 
-- xxx
+- Improve logging to set MNE's logger level to currently set MNE-LSL level in MNE-LSL functions using MNE's function under the hood (:pr:`219` by `Mathieu Scheltienne`_)
+- Use the currently set logger level as replacement for ``verbose=None`` in MNE-LSL functions (:pr:`219` by `Mathieu Scheltienne`_)

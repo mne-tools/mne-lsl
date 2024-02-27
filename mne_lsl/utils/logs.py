@@ -161,14 +161,16 @@ class _use_log_level:
     ):
         self._logger: Logger = logger_obj if logger_obj is not None else logger
         self._old_level: int = self._logger.level
-        self._level: int = check_verbose(verbose)
+        self._level: Optional[int] = None if verbose is None else check_verbose(verbose)
 
     def __enter__(self):
-        self._logger.setLevel(self._level)
+        if self._level is not None:
+            self._logger.setLevel(self._level)
         return self
 
     def __exit__(self, *args):
-        self._logger.setLevel(self._old_level)
+        if self._level is not None:
+            self._logger.setLevel(self._old_level)
 
 
 logger = _init_logger(verbose="WARNING")  # equivalent to verbose=None

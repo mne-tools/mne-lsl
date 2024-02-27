@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 import numpy as np
 from mne import pick_info, pick_types
 from mne.channels import rename_channels
-from mne.utils import check_version
+from mne.utils import check_version, use_log_level
 
 if check_version("mne", "1.6"):
     from mne._fiff.constants import FIFF, _ch_unit_mul_named
@@ -27,7 +27,7 @@ else:
 
 from ..utils._checks import check_type, check_value
 from ..utils._docs import copy_doc, fill_doc
-from ..utils.logs import logger
+from ..utils.logs import logger, verbose
 from ..utils.meas_info import _HUMAN_UNITS, _set_channel_units
 
 if TYPE_CHECKING:
@@ -214,6 +214,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
         return self
 
+    @verbose
     @fill_doc
     def anonymize(
         self,
@@ -240,7 +241,11 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         %(anonymize_info_notes)s
         """
         self._check_connected(name="anonymize()")
-        super().anonymize(daysback=daysback, keep_his=keep_his, verbose=verbose)
+        super().anonymize(
+            daysback=daysback,
+            keep_his=keep_his,
+            verbose=logger.level if verbose is None else verbose,
+        )
         return self
 
     @abstractmethod
@@ -501,6 +506,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         self._check_connected(name="record()")
         raise NotImplementedError
 
+    @verbose
     @fill_doc
     def rename_channels(
         self,
@@ -532,7 +538,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             self._info,
             mapping=mapping,
             allow_duplicates=allow_duplicates,
-            verbose=verbose,
+            verbose=logger.level if verbose is None else verbose,
         )
         return self
 
@@ -547,6 +553,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         self._check_connected_and_regular_sampling("set_bipolar_reference()")
         raise NotImplementedError
 
+    @verbose
     @fill_doc
     def set_channel_types(
         self,
@@ -581,7 +588,9 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         """
         self._check_connected(name="set_channel_types()")
         super().set_channel_types(
-            mapping=mapping, on_unit_change=on_unit_change, verbose=verbose
+            mapping=mapping,
+            on_unit_change=on_unit_change,
+            verbose=logger.level if verbose is None else verbose,
         )
         return self
 
@@ -714,6 +723,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         super().set_meas_date(meas_date)
         return self
 
+    @verbose
     @fill_doc
     def set_montage(
         self,
@@ -759,7 +769,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             match_case=match_case,
             match_alias=match_alias,
             on_missing=on_missing,
-            verbose=verbose,
+            verbose=logger.level if verbose is None else verbose,
         )
         return self
 
@@ -836,7 +846,8 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             )
 
         with self._interrupt_acquisition():
-            self._info = pick_info(self._info, picks)
+            with use_log_level(logger.level):
+                self._info = pick_info(self._info, picks)
             self._picks_inlet = self._picks_inlet[picks_inlet]
             self._buffer = self._buffer[:, picks]
 
