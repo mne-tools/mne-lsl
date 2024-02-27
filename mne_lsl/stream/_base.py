@@ -395,7 +395,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
                 if key in iir_params:
                     del iir_params[key]
         iir_params["output"] = "sos"
-        # construt an IIR filter
+        # construct an IIR filter
         with use_log_level(logger.level):  # ensure MNE log is set to the same level
             iir_params = construct_iir_filter(
                 iir_params=iir_params,
