@@ -29,7 +29,7 @@ else:
 
 from ..utils._checks import check_type, check_value
 from ..utils._docs import copy_doc, fill_doc
-from ..utils.logs import logger
+from ..utils.logs import logger, verbose
 from ..utils.meas_info import _HUMAN_UNITS, _set_channel_units
 
 if TYPE_CHECKING:
@@ -335,6 +335,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         self._pick(picks)
         return self
 
+    @verbose
     @fill_doc
     def filter(
         self,
@@ -344,6 +345,8 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         iir_params: Optional[dict[str, Any]] = dict(
             order=4, ftype="butter", output="sos"
         ),
+        *,
+        verbose: Optional[Union[bool, str, int]] = None,
     ) -> BaseStream:  # noqa: A003
         """Filter the stream with an IIR causal filter.
 
@@ -372,6 +375,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             .. note::
 
                 The output ``sos`` must be used. The ``ba`` output is not supported.
+        %(verbose)s
 
         Returns
         -------
@@ -396,7 +400,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
                     del iir_params[key]
         iir_params["output"] = "sos"
         # construct an IIR filter
-        with use_log_level(logger.level):  # ensure MNE log is set to the same level
+        with use_log_level(logger.level if verbose is None else verbose):
             iir_params = construct_iir_filter(
                 iir_params=iir_params,
                 f_pass=None,
