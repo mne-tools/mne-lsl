@@ -5,11 +5,13 @@ from contextlib import contextmanager
 from math import ceil
 from threading import Timer
 from typing import TYPE_CHECKING
+from warnings import warn
 
 import numpy as np
 from mne import pick_info, pick_types
 from mne.channels import rename_channels
-from mne.utils import check_version
+from mne.filter import construct_iir_filter
+from mne.utils import check_version, use_log_level
 
 if check_version("mne", "1.6"):
     from mne._fiff.constants import FIFF, _ch_unit_mul_named
@@ -339,7 +341,9 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         l_freq: Optional[float],
         h_freq: Optional[float],
         picks,
-        iir_params: Optional[dict[str, Any]],
+        iir_params: Optional[dict[str, Any]] = dict(
+            order=4, ftype="butter", output="sos"
+        ),
     ) -> BaseStream:  # noqa: A003
         """Filter the stream with an IIR causal filter.
 
@@ -365,13 +369,42 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             Butterworth will be used. For more information, see
             :func:`mne.filter.construct_iir_filter`.
 
+            .. note::
+
+                The output ``sos`` must be used. The ``ba`` output is not supported.
+
         Returns
         -------
         stream : instance of ``Stream``
             The stream instance modified in-place.
         """
         self._check_connected_and_regular_sampling("filter()")
+        # validate the arguments
         picks = _picks_to_idx(self._info, picks, "all", "bads", allow_empty=False)
+        if ("output" in iir_params and iir_params["output"] != "sos") or all(
+            key in iir_params for key in ("a", "b")
+        ):
+            warn(
+                "Only 'sos' output is supported for real-time filtering. The filter "
+                "output will be automatically changed. Please set "
+                "iir_params=dict(output='sos', ...) in your call to filter().",
+                RuntimeWarning,
+                stacklevel=2,
+            )
+            for key in ("a", "b"):
+                if key in iir_params:
+                    del iir_params[key]
+        iir_params["output"] = "sos"
+        # construt an IIR filter
+        with use_log_level(logger.level):  # ensure MNE log is set to the same level
+            iir_params = construct_iir_filter(
+                iir_params=iir_params,
+                f_pass=None,
+                f_stop=None,
+                sfreq=self._info["sfreq"],
+                return_copy=False,
+                phase="forward",
+            )
 
     @copy_doc(ContainsMixin.get_channel_types)
     def get_channel_types(
