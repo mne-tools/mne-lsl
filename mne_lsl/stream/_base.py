@@ -371,7 +371,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             The stream instance modified in-place.
         """
         self._check_connected_and_regular_sampling("filter()")
-        raise NotImplementedError
+        picks = _picks_to_idx(self._info, picks, "all", "bads", allow_empty=False)
 
     @copy_doc(ContainsMixin.get_channel_types)
     def get_channel_types(
@@ -405,7 +405,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         self._check_connected(name="get_channel_units()")
         check_type(only_data_chs, (bool,), "only_data_chs")
         none = "data" if only_data_chs else "all"
-        picks = _picks_to_idx(self._info, picks, none, (), allow_empty=False)
+        picks = _picks_to_idx(self._info, picks, none, "bads", allow_empty=False)
         channel_units = list()
         for idx in picks:
             channel_units.append(
@@ -466,7 +466,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             # 8.68 µs ± 113 ns per loop
             # >>> %timeit _picks_to_idx(raw.info, None)
             # 253 µs ± 1.22 µs per loop
-            picks = _picks_to_idx(self._info, picks, none="all")
+            picks = _picks_to_idx(self._info, picks, none="all", exclude="bads")
             self._n_new_samples = 0  # reset the number of new samples
             return self._buffer[-n_samples:, picks].T, self._timestamps[-n_samples:]
         except Exception:
@@ -499,7 +499,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
         Parameters
         ----------
-        %(picks_all)s
+        %(picks_base)s all channels.
         exclude : str | list of str
             Set of channels to exclude, only used when picking is based on types, e.g.
             ``exclude='bads'`` when ``picks="meg"``.

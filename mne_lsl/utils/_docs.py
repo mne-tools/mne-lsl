@@ -23,6 +23,7 @@ _KEYS_MNE: tuple[str, ...] = (
     "montage_types",
     "on_missing_montage",
     "picks_all",
+    "picks_base",
     "ref_channels",
 )
 
