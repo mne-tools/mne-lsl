@@ -347,9 +347,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         l_freq: Optional[float],
         h_freq: Optional[float],
         picks,
-        iir_params: Optional[dict[str, Any]] = dict(
-            order=4, ftype="butter", output="sos"
-        ),
+        iir_params: Optional[dict[str, Any]] = None,
         *,
         verbose: Optional[Union[bool, str, int]] = None,
     ) -> BaseStream:  # noqa: A003
@@ -390,6 +388,11 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         self._check_connected_and_regular_sampling("filter()")
         # validate the arguments
         picks = _picks_to_idx(self._info, picks, "all", "bads", allow_empty=False)
+        iir_params = (
+            dict(order=4, ftype="butter", output="sos")
+            if iir_params is None
+            else iir_params
+        )
         if ("output" in iir_params and iir_params["output"] != "sos") or all(
             key in iir_params for key in ("a", "b")
         ):
