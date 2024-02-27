@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 import numpy as np
 from mne import pick_info, pick_types
 from mne.channels import rename_channels
-from mne.utils import check_version
+from mne.utils import check_version, use_log_level
 
 if check_version("mne", "1.6"):
     from mne._fiff.constants import FIFF, _ch_unit_mul_named
@@ -846,7 +846,8 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             )
 
         with self._interrupt_acquisition():
-            self._info = pick_info(self._info, picks)
+            with use_log_level(logger.level):
+                self._info = pick_info(self._info, picks)
             self._picks_inlet = self._picks_inlet[picks_inlet]
             self._buffer = self._buffer[:, picks]
 
