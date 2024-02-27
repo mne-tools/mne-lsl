@@ -32,7 +32,7 @@ from ..utils.meas_info import _HUMAN_UNITS, _set_channel_units
 
 if TYPE_CHECKING:
     from datetime import datetime
-    from typing import Callable, Optional, Union
+    from typing import Any, Callable, Optional, Union
 
     from mne import Info
     from mne.channels import DigMontage
@@ -333,8 +333,37 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         self._pick(picks)
         return self
 
-    def filter(self) -> BaseStream:  # noqa: A003
-        """Filter the stream. Not implemented.
+    @fill_doc
+    def filter(
+        self,
+        l_freq: Optional[float],
+        h_freq: Optional[float],
+        picks,
+        iir_params: Optional[dict[str, Any]],
+    ) -> BaseStream:  # noqa: A003
+        """Filter the stream with an IIR causal filter.
+
+        Once a filter is applied, the buffer is updated in real-time with the filtered
+        data. It is not possible to remove an applied filter. It is possible to apply
+        more than one filter.
+
+        .. code-block:: python
+
+            stream = Stream(2.0).connect()
+            stream.filter(1.0, 40.0, picks="eeg")
+            stream.filter(1.0, 15.0, picks="ecg").filter(0.1, 5, picks="EDA")
+
+        Parameters
+        ----------
+        l_freq : float | None
+            The lower cutoff frequency. If None, the buffer is only low-passed.
+        h_freq : float | None
+            The higher cutoff frequency. If None, the buffer is only high-passed.
+        %(picks_all)s
+        iir_params : dict | None
+            Dictionary of parameters to use for IIR filtering. If None, a 4th order
+            Butterworth will be used. For more information, see
+            :func:`mne.filter.construct_iir_filter`.
 
         Returns
         -------
