@@ -23,6 +23,7 @@ else:
 
 from ..utils._checks import check_type, ensure_int, ensure_path
 from ..utils._docs import fill_doc
+from ..utils.logs import logger, verbose
 from ..utils.meas_info import _set_channel_units
 
 if TYPE_CHECKING:
@@ -71,6 +72,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
             self._raw = read_raw(self._fname, preload=True)
         # This method should end on a self._reset_variables()
 
+    @verbose
     @fill_doc
     def anonymize(
         self,
@@ -103,7 +105,11 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
             RuntimeWarning,
             stacklevel=2,
         )
-        super().anonymize(daysback=daysback, keep_his=keep_his, verbose=verbose)
+        super().anonymize(
+            daysback=daysback,
+            keep_his=keep_his,
+            verbose=logger.level if verbose is None else verbose,
+        )
         return self
 
     @fill_doc
@@ -137,6 +143,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         return channel_units
 
     @abstractmethod
+    @verbose
     @fill_doc
     def rename_channels(
         self,
@@ -164,7 +171,12 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
             The player instance modified in-place.
         """
         self._check_not_started("rename_channels()")
-        rename_channels(self.info, mapping, allow_duplicates)
+        rename_channels(
+            self.info,
+            mapping,
+            allow_duplicates,
+            verbose=logger.level if verbose is None else verbose,
+        )
 
     @abstractmethod
     def start(self) -> BasePlayer:  # pragma: no cover
@@ -172,6 +184,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         pass
 
     @abstractmethod
+    @verbose
     @fill_doc
     def set_channel_types(
         self,
@@ -206,7 +219,9 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         """
         self._check_not_started("set_channel_types()")
         super().set_channel_types(
-            mapping=mapping, on_unit_change=on_unit_change, verbose=verbose
+            mapping=mapping,
+            on_unit_change=on_unit_change,
+            verbose=logger.level if verbose is None else verbose,
         )
         self._sinfo.set_channel_types(self.get_channel_types(unique=False))
         return self

@@ -69,7 +69,7 @@ docdict["verbose"] = """
 verbose : int | str | bool | None
     Sets the verbosity level. The verbosity increases gradually between
     ``"CRITICAL"``, ``"ERROR"``, ``"WARNING"``, ``"INFO"`` and ``"DEBUG"``.
-    If None is provided, the verbosity is set to ``"WARNING"``.
+    If None is provided, the verbosity is set to the currently set logger's level.
     If a bool is provided, the verbosity is set to ``"WARNING"`` for False and
     to ``"INFO"`` for True."""
 
