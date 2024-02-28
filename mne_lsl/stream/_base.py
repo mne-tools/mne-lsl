@@ -10,8 +10,9 @@ from warnings import warn
 import numpy as np
 from mne import pick_info, pick_types
 from mne.channels import rename_channels
-from mne.filter import construct_iir_filter
+from mne.filter import create_filter
 from mne.utils import check_version, use_log_level
+from scipy.signal import sosfilt_zi
 
 if check_version("mne", "1.6"):
     from mne._fiff.constants import FIFF, _ch_unit_mul_named
@@ -408,15 +409,22 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
                     del iir_params[key]
         iir_params["output"] = "sos"
         # construct an IIR filter
-        with use_log_level(logger.level if verbose is None else verbose):
-            iir_params = construct_iir_filter(
-                iir_params=iir_params,
-                f_pass=None,
-                f_stop=None,
-                sfreq=self._info["sfreq"],
-                return_copy=False,
-                phase="forward",
-            )
+        filter_ = create_filter(
+            data=None,
+            sfreq=self._info["sfreq"],
+            l_freq=l_freq,
+            h_freq=h_freq,
+            method="iir",
+            iir_params=iir_params,
+            phase="forward",
+            verbose=logger.level if verbose is None else verbose,
+        )
+        filter_["zi"] = None  # add initial conditions
+        filter_["zi_coeff"] = sosfilt_zi(self._sos)
+        filter_["picks"] = picks
+        # add filter to the list of applied filters
+        with self._interrupt_acquisition():
+            self._filters.append(filter_)
 
     @copy_doc(ContainsMixin.get_channel_types)
     def get_channel_types(
@@ -938,6 +946,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         self._added_channels = []
         self._ref_channels = None
         self._ref_from = None
+        self._filters = []
         self._timestamps = None
         # This method needs to reset any stream-system-specific variables, e.g. an inlet
         # or a StreamInfo for LSL streams.
