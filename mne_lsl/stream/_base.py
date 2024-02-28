@@ -420,7 +420,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             verbose=logger.level if verbose is None else verbose,
         )
         filter_["zi"] = None  # add initial conditions
-        filter_["zi_coeff"] = sosfilt_zi(self._sos)
+        filter_["zi_coeff"] = sosfilt_zi(filter_["sos"])[..., np.newaxis]
         filter_["picks"] = picks
         # add filter to the list of applied filters
         with self._interrupt_acquisition():
