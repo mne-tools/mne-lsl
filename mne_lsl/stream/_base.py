@@ -926,11 +926,22 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             self._info = pick_info(self._info, picks, verbose=logger.level)
             self._picks_inlet = self._picks_inlet[picks_inlet]
             self._buffer = self._buffer[:, picks]
-
             # prune added channels which are not part of the inlet
             for ch in self._added_channels[::-1]:
                 if ch not in self.ch_names:
                     self._added_channels.remove(ch)
+            # remove dropped channels from filters
+            filters2remove = []
+            for k, filter_ in enumerate(self._filters):
+                filter_["picks"] = np.intersect1d(
+                    filter_["picks"], picks, assume_unique=True
+                )
+                if filter_["picks"].size == 0:
+                    filters2remove.append(k)
+                    continue
+                filter_["zi"] = None  # reset initial conditions
+            for k in filters2remove[::-1]:
+                del self._filters[k]
 
     @abstractmethod
     def _reset_variables(self) -> None:
