@@ -11,7 +11,7 @@ import numpy as np
 from mne import pick_info, pick_types
 from mne.channels import rename_channels
 from mne.filter import create_filter
-from mne.utils import check_version, use_log_level
+from mne.utils import check_version
 from scipy.signal import sosfilt_zi
 
 if check_version("mne", "1.6"):
@@ -923,8 +923,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             )
 
         with self._interrupt_acquisition():
-            with use_log_level(logger.level):
-                self._info = pick_info(self._info, picks)
+            self._info = pick_info(self._info, picks, verbose=logger.level)
             self._picks_inlet = self._picks_inlet[picks_inlet]
             self._buffer = self._buffer[:, picks]
 
