@@ -229,6 +229,11 @@ class StreamLSL(BaseStream):
                     self._create_acquisition_thread(self._acquisition_delay)
                 return  # interrupt early
 
+            # select the last self._timestamps.size samples from data and timestamps in
+            # case more samples than the buffer can hold were retrieved.
+            data = data[-self._timestamps.size :, :]
+            timestamps = timestamps[-self._timestamps.size :]
+
             # process acquisition window
             n_channels = self._inlet.n_channels
             assert data.ndim == 2 and data.shape[-1] == n_channels, (
@@ -250,6 +255,10 @@ class StreamLSL(BaseStream):
                 data_ref = data[:, self._ref_channels].mean(axis=1, keepdims=True)
                 data[:, self._ref_from] -= data_ref
 
+            # apply filters
+            for filter_ in self._filters:  # noqa
+                pass
+
             # roll and update buffers
             self._buffer = np.roll(self._buffer, -timestamps.size, axis=0)
             self._timestamps = np.roll(self._timestamps, -timestamps.size, axis=0)
@@ -260,16 +269,11 @@ class StreamLSL(BaseStream):
                 n_channels,
                 self._picks_inlet.size,
             )
-            # select the last self._timestamps.size samples from data and timestamps in
-            # case more samples than the buffer can hold were retrieved.
-            self._buffer[-timestamps.size :, :] = data[-self._timestamps.size :, :]
-            self._timestamps[-timestamps.size :] = timestamps[-self._timestamps.size :]
+            self._buffer[-timestamps.size :, :] = data
+            self._timestamps[-timestamps.size :] = timestamps
             # update the number of new samples available
-            self._n_new_samples += min(timestamps.size, self._timestamps.size)
-            if (
-                self._timestamps.size < self._n_new_samples
-                or self._timestamps.size < timestamps.size
-            ):
+            self._n_new_samples += timestamps.size
+            if self._timestamps.size < self._n_new_samples:
                 logger.info(
                     "The number of new samples exceeds the buffer size. Consider using "
                     "a larger buffer by creating a Stream with a larger 'bufsize' "
