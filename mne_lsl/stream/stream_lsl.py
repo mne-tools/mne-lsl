@@ -264,10 +264,10 @@ class StreamLSL(BaseStream):
                     filter_["zi"] = filter_["zi_coeff"] * np.mean(
                         data[:, filter_["picks"]], axis=0
                     )
-                data_, filter_["zi"] = sosfilt(
+                data_filtered, filter_["zi"] = sosfilt(
                     filter_["sos"], data[:, filter_["picks"]], zi=filter_["zi"], axis=0
                 )
-                data[:, filter_["picks"]] = data_
+                data[:, filter_["picks"]] = data_filtered
 
             # roll and update buffers
             self._buffer = np.roll(self._buffer, -timestamps.size, axis=0)
