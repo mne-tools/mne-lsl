@@ -2,6 +2,7 @@ from __future__ import annotations  # c.f. PEP 563, PEP 649
 
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
+from copy import deepcopy
 from math import ceil
 from threading import Timer
 from typing import TYPE_CHECKING
@@ -10,7 +11,7 @@ from warnings import warn
 import numpy as np
 from mne import pick_info, pick_types
 from mne.channels import rename_channels
-from mne.filter import create_filter
+from mne.filter import create_filter, estimate_ringing_samples
 from mne.utils import check_version
 from scipy.signal import sosfilt_zi
 
@@ -399,7 +400,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         re-estimated as a step response steady-state.
         """
         self._check_connected_and_regular_sampling("filter()")
-        # validate the arguments
+        # validate the arguments and ensure 'sos' output
         picks = _picks_to_idx(self._info, picks, "all", "bads", allow_empty=False)
         iir_params = (
             dict(order=4, ftype="butter", output="sos")
@@ -433,10 +434,17 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         )
         filter_["zi"] = None  # add initial conditions
         filter_["zi_coeff"] = sosfilt_zi(filter_["sos"])[..., np.newaxis]
+        # to correctly handle the filter initial conditions even if 2 filters are
+        # applied to the same channels, we need to separate the 'picks' between filter
+        # to avoid any channel-overlap between filters.
+        # if the initial conditions are updated in real-time in the _acquire function,
+        # we need to update the 'zi' for each individual second order filter in the
+        # 'sos' output, which does not seem to be supported by scipy directly.
         filter_["picks"] = picks
+        filters = _sanitize_filters(self._filters, filter_)
         # add filter to the list of applied filters
         with self._interrupt_acquisition():
-            self._filters.append(filter_)
+            self._filters = filters
 
     @copy_doc(ContainsMixin.get_channel_types)
     def get_channel_types(
@@ -1055,3 +1063,46 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         """
         self._check_connected(name="n_new_samples")
         return self._n_new_samples
+
+
+def _sanitize_filters(
+    filters: list[dict[str, Any]], filter_: dict[str, Any]
+) -> list[dict[str, Any]]:
+    """Sanitize the list of filters to ensure non-overlapping channels."""
+    filters = deepcopy(filters)
+    additional_filters = []
+    for filt in filters:
+        intersection = np.intersect1d(
+            filt["picks"], filter_["picks"], assume_unique=True
+        )
+        if intersection.size == 0:
+            continue  # non-overlapping channels
+        # create a combined filter
+        ftype = (
+            filt["ftype"]
+            if filt["ftype"] == filter_["ftype"]
+            else f"{filt['ftype']}+{filter_['ftype']}"
+        )
+        system = np.vstack((filt["sos"], filter_["sos"]))
+        combined_filter = {
+            "order": filter_["sos"].shape[0] + filt["sos"].shape[0],
+            "ftype": ftype,
+            "output": "sos",
+            "padlen": estimate_ringing_samples(system),
+            "sos": system,
+        }
+        combined_filter["zi"] = None
+        combined_filter["zi_coeff"] = sosfilt_zi(combined_filter["sos"])[
+            ..., np.newaxis
+        ]
+        combined_filter["picks"] = intersection
+        additional_filters.append(combined_filter)
+        # reset initial conditions for the overlapping filter
+        filt["zi"] = None
+        # remove overlapping channels from both filters
+        filt["picks"] = np.setdiff1d(filt["picks"], intersection, assume_unique=True)
+        filter_["picks"] = np.setdiff1d(
+            filter_["picks"], intersection, assume_unique=True
+        )
+    additional_filters.append(filter_)
+    return filters + additional_filters
