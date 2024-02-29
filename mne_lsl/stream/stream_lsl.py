@@ -262,11 +262,12 @@ class StreamLSL(BaseStream):
                     # initial conditions are set to a step response steady-state set
                     # on the mean on the acquisition window (e.g. DC offset for EEGs)
                     filter_["zi"] = filter_["zi_coeff"] * np.mean(
-                        data[filter_["picks"]], axis=0
+                        data[:, filter_["picks"]], axis=0
                     )
-                data, filter_["zi"] = sosfilt(
-                    filter_["sos"], data[filter_["picks"]], zi=filter_["zi"], axis=0
+                data_, filter_["zi"] = sosfilt(
+                    filter_["sos"], data[:, filter_["picks"]], zi=filter_["zi"], axis=0
                 )
+                data[:, filter_["picks"]] = data_
 
             # roll and update buffers
             self._buffer = np.roll(self._buffer, -timestamps.size, axis=0)
