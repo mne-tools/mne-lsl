@@ -120,6 +120,18 @@ def test_sanitize_filters_full_overlap(filters):
     filters_clean = _sanitize_filters(filters, filter_)
     assert len(filters) == 3
     assert len(filters_clean) == 3
+    assert filters[1:] == filters_clean[:2]  # order is not preserved
+    assert filters[0]["l_freq"] in filters_clean[-1]["l_freq"]
+    assert filters[0]["h_freq"] in filters_clean[-1]["h_freq"]
+    assert filter_["l_freq"] in filters_clean[-1]["l_freq"]
+    assert filter_["h_freq"] in filters_clean[-1]["h_freq"]
+    assert np.array_equal(filters_clean[-1]["picks"], np.arange(0, 10))
+    assert filters_clean[-1]["zi"] is None
+    assert not np.array_equal(filters_clean[-1]["zi_coeff"], filters[0]["zi_coeff"])
+    assert not np.array_equal(filters_clean[-1]["zi_coeff"], filter_["zi_coeff"])
+    assert np.array_equal(
+        np.vstack((filters[0]["sos"], filter_["sos"])), filters_clean[-1]["sos"]
+    )
 
 
 def test_StreamFilter(filters):

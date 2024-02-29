@@ -1107,8 +1107,15 @@ def _sanitize_filters(
         filter_["picks"] = np.setdiff1d(
             filter_["picks"], intersection, assume_unique=True
         )
-    additional_filters.append(filter_)
-    return filters + additional_filters
+    filters = filters + additional_filters + [filter_]
+    # prune filters without any channels to apply on
+    filters2remove = []
+    for k, filt in enumerate(filters):
+        if filt["picks"].size == 0:
+            filters2remove.append(k)
+    for k in filters2remove[::-1]:
+        del filters[k]
+    return filters
 
 
 class StreamFilter(dict):
