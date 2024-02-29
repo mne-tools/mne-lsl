@@ -1119,9 +1119,7 @@ class StreamFilter(dict):
 
     def __eq__(self, other: Any):
         """Equality operator."""
-        if not isinstance(other, StreamFilter):
-            return False
-        if sorted(self) != sorted(other):
+        if not isinstance(other, StreamFilter) or sorted(self) != sorted(other):
             return False
         for key in self:
             type_ = type(self[key])
@@ -1133,11 +1131,10 @@ class StreamFilter(dict):
                     stacklevel=2,
                 )
                 return False
-            if type_ is np.ndarray and not np.array_equal(
-                self[key], other[key], equal_nan=True
-            ):
-                return False
-            elif type_ is not np.ndarray and self[key] != other[key]:
+            if (
+                type_ is np.ndarray
+                and not np.array_equal(self[key], other[key], equal_nan=True)
+            ) or (type_ is not np.ndarray and self[key] != other[key]):
                 return False
         return True
 
