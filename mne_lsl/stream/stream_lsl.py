@@ -230,18 +230,17 @@ class StreamLSL(BaseStream):
                     self._create_acquisition_thread(self._acquisition_delay)
                 return  # interrupt early
 
-            # select the last self._timestamps.size samples from data and timestamps in
-            # case more samples than the buffer can hold were retrieved.
-            data = data[-self._timestamps.size :, :]
-            timestamps = timestamps[-self._timestamps.size :]
-
             # process acquisition window
             n_channels = self._inlet.n_channels
             assert data.ndim == 2 and data.shape[-1] == n_channels, (
-                data.shape,
-                n_channels,
+                f"Data shape {data.shape} (n_samples, n_channels) for "
+                f"{n_channels} channels."
             )
-            data = data[:, self._picks_inlet]  # subselect channels
+            # select the last self._timestamps.size samples from data and timestamps in
+            # case more samples than the buffer can hold were retrieved.
+            # select channels retained in the buffer.
+            data = data[-self._timestamps.size :, self._picks_inlet]
+            timestamps = timestamps[-self._timestamps.size :]
             if self._stype == "annotations" and np.count_nonzero(data) == 0:
                 if not self._interrupt:
                     self._create_acquisition_thread(self._acquisition_delay)
