@@ -434,6 +434,9 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         )
         filter_["zi"] = None  # add initial conditions
         filter_["zi_coeff"] = sosfilt_zi(filter_["sos"])[..., np.newaxis]
+        # store requested l_freq and h_freq
+        filter_["l_freq"] = l_freq
+        filter_["h_freq"] = h_freq
         # to correctly handle the filter initial conditions even if 2 filters are
         # applied to the same channels, we need to separate the 'picks' between filter
         # to avoid any channel-overlap between filters.
@@ -441,7 +444,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         # we need to update the 'zi' for each individual second order filter in the
         # 'sos' output, which does not seem to be supported by scipy directly.
         filter_["picks"] = picks
-        filters = _sanitize_filters(self._filters, filter_)
+        filters = _sanitize_filters(self._filters, StreamFilter(filter_))
         # add filter to the list of applied filters
         with self._interrupt_acquisition():
             self._filters = filters
@@ -1066,7 +1069,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
 
 def _sanitize_filters(
-    filters: list[dict[str, Any]], filter_: dict[str, Any]
+    filters: list[StreamFilter], filter_: StreamFilter
 ) -> list[dict[str, Any]]:
     """Sanitize the list of filters to ensure non-overlapping channels."""
     filters = deepcopy(filters)
@@ -1084,19 +1087,21 @@ def _sanitize_filters(
             else f"{filt['ftype']}+{filter_['ftype']}"
         )
         system = np.vstack((filt["sos"], filter_["sos"]))
+        assert filter_["order"] == 2 * filter_["sos"].shape[0]  # sanity-check
+        assert filt["order"] == 2 * filt["sos"].shape[0]  # sanity-check
         combined_filter = {
-            "order": filter_["sos"].shape[0] + filt["sos"].shape[0],
+            "order": 2 * system.shape[0],
             "ftype": ftype,
             "output": "sos",
             "padlen": estimate_ringing_samples(system),
             "sos": system,
         }
         combined_filter["zi"] = None
-        combined_filter["zi_coeff"] = sosfilt_zi(combined_filter["sos"])[
-            ..., np.newaxis
-        ]
+        combined_filter["zi_coeff"] = sosfilt_zi(system)[..., np.newaxis]
         combined_filter["picks"] = intersection
-        additional_filters.append(combined_filter)
+        combined_filter["l_freq"] = (filt["l_freq"], filter_["l_freq"])
+        combined_filter["h_freq"] = (filt["h_freq"], filter_["h_freq"])
+        additional_filters.append(StreamFilter(combined_filter))
         # reset initial conditions for the overlapping filter
         filt["zi"] = None
         # remove overlapping channels from both filters
@@ -1106,3 +1111,38 @@ def _sanitize_filters(
         )
     additional_filters.append(filter_)
     return filters + additional_filters
+
+
+class StreamFilter(dict):
+    """Class defining a filter."""
+
+    def __repr__(self):  # noqa: D105
+        return f"<IIR causal filter ({self['l_freq']}, {self['h_freq']}) Hz>"
+
+    def __eq__(self, other: Any):
+        """Equality operator."""
+        if not isinstance(other, StreamFilter):
+            return False
+        if sorted(self) != sorted(other):
+            return False
+        for key in self:
+            type_ = type(self[key])
+            if not isinstance(other[key], type_):  # sanity-check
+                warn(
+                    f"The type of the key '{key}' is different between the 2 filters, "
+                    "which should not be possible. Please contact the developers.",
+                    RuntimeWarning,
+                    stacklevel=2,
+                )
+                return False
+            if type_ is np.ndarray and not np.array_equal(
+                self[key], other[key], equal_nan=True
+            ):
+                return False
+            elif type_ is not np.ndarray and self[key] != other[key]:
+                return False
+        return True
+
+    def __ne__(self, other: Any):  # explicit method required to issue warning
+        """Inequality operator."""
+        return not self.__eq__(other)
