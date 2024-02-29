@@ -1129,6 +1129,12 @@ class StreamFilter(dict):
         if not isinstance(other, StreamFilter) or sorted(self) != sorted(other):
             return False
         for key in self:
+            if key == "zi":  # special case since it's either a np.ndarray or None
+                if (self[key] is None or other[key] is None) or not np.array_equal(
+                    self[key], other[key]
+                ):
+                    return False
+                continue
             type_ = type(self[key])
             if not isinstance(other[key], type_):  # sanity-check
                 warn(

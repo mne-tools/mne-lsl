@@ -33,9 +33,11 @@ def filters() -> list[dict[str, Any]]:
         )
         for lfq, hfq in zip(l_freqs, h_freqs, strict=True)
     ]
-    for filt, l_fq, h_fq, pick in zip(filters, l_freqs, h_freqs, picks, strict=True):
-        filt["zi"] = None
-        filt["zi_coeff"] = sosfilt_zi(filt["sos"])
+    for k, (filt, l_fq, h_fq, pick) in enumerate(
+        zip(filters, l_freqs, h_freqs, picks, strict=True)
+    ):
+        filt["zi_coeff"] = sosfilt_zi(filt["sos"])[..., np.newaxis]
+        filt["zi"] = filt["zi_coeff"] * k
         filt["picks"] = pick
         filt["l_freq"] = l_fq
         filt["h_freq"] = h_fq
@@ -97,6 +99,17 @@ def test_sanitize_filters_partial_overlap(filters):
     filters_clean = _sanitize_filters(filters, filter_)
     assert len(filters) == 3
     assert len(filters_clean) == 5
+    # filter 0 and 1 are overlapping with filter_, thus we should have 2 new filters at
+    # the end of the list, and only filter 2 should be preserved.
+    assert filters[2] == filters_clean[2]
+    assert filters[0] not in filters_clean
+    assert filters[1] not in filters_clean
+    # filter 0 and 1 should be lacking some channels
+    for k, pick in enumerate((np.arange(0, 5), np.arange(15, 20))):
+        assert np.array_equal(filters_clean[k]["picks"], pick)
+        assert np.array_equal(filters_clean[k]["sos"], filters[k]["sos"])
+        assert np.array_equal(filters_clean[k]["zi_coeff"], filters[k]["zi_coeff"])
+        assert filters_clean[k]["zi"] is None
 
 
 def test_sanitize_filters_full_overlap(filters):
@@ -120,7 +133,9 @@ def test_sanitize_filters_full_overlap(filters):
     filters_clean = _sanitize_filters(filters, filter_)
     assert len(filters) == 3
     assert len(filters_clean) == 3
-    assert filters[1:] == filters_clean[:2]  # order is not preserved
+    # filter 0 and filter_ fully overlap, thus filter 0 will be removed and the combined
+    # filter is added to the end of the list -> order is not preserved.
+    assert filters[1:] == filters_clean[:2]
     assert filters[0]["l_freq"] in filters_clean[-1]["l_freq"]
     assert filters[0]["h_freq"] in filters_clean[-1]["h_freq"]
     assert filter_["l_freq"] in filters_clean[-1]["l_freq"]
