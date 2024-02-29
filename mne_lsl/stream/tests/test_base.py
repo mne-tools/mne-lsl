@@ -110,6 +110,30 @@ def test_sanitize_filters_partial_overlap(filters):
         assert np.array_equal(filters_clean[k]["sos"], filters[k]["sos"])
         assert np.array_equal(filters_clean[k]["zi_coeff"], filters[k]["zi_coeff"])
         assert filters_clean[k]["zi"] is None
+    # filter 3 should have the intersection with filter 0 and filter 4 with filter 1
+    assert np.array_equal(filters_clean[3]["picks"], np.arange(5, 10))
+    assert np.array_equal(
+        filters_clean[3]["sos"], np.vstack((filters[0]["sos"], filter_["sos"]))
+    )
+    assert not np.array_equal(filters_clean[3]["zi_coeff"], filters[0]["zi_coeff"])
+    assert not np.array_equal(filters_clean[3]["zi_coeff"], filter_["zi_coeff"])
+    assert filters_clean[3]["zi"] is None
+    assert np.array_equal(filters_clean[4]["picks"], np.arange(10, 15))
+    assert np.array_equal(
+        filters_clean[4]["sos"], np.vstack((filters[1]["sos"], filter_["sos"]))
+    )
+    assert not np.array_equal(filters_clean[4]["zi_coeff"], filters[1]["zi_coeff"])
+    assert not np.array_equal(filters_clean[4]["zi_coeff"], filter_["zi_coeff"])
+    assert filters_clean[4]["zi"] is None
+    # check representation on combined filters
+    assert filters_clean[3]["l_freq"] == (filters[0]["l_freq"], filter_["l_freq"])
+    assert filters_clean[3]["h_freq"] == (filters[0]["h_freq"], filter_["h_freq"])
+    assert f"({filters[0]['l_freq']}, {filter_['l_freq']})" in repr(filters_clean[3])
+    assert f"({filters[0]['h_freq']}, {filter_['h_freq']})" in repr(filters_clean[3])
+    assert filters_clean[4]["l_freq"] == (filters[1]["l_freq"], filter_["l_freq"])
+    assert filters_clean[4]["h_freq"] == (filters[1]["h_freq"], filter_["h_freq"])
+    assert f"({filters[1]['l_freq']}, {filter_['l_freq']})" in repr(filters_clean[4])
+    assert f"({filters[1]['h_freq']}, {filter_['h_freq']})" in repr(filters_clean[4])
 
 
 def test_sanitize_filters_full_overlap(filters):
