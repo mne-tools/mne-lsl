@@ -322,6 +322,12 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         stream : instance of ``Stream``
             The stream instance modified in-place.
 
+        Notes
+        -----
+        Dropping channels which are part of a filter will reset the initial conditions
+        of this filter. The initial conditions will be re-estimated as a step response
+        steady-state.
+
         See Also
         --------
         pick
@@ -385,6 +391,12 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         -------
         stream : instance of ``Stream``
             The stream instance modified in-place.
+
+        Notes
+        -----
+        Adding a filter on channels already filtered will reset the initial conditions
+        of all channels filtered by the first filter. The initial conditions will be
+        re-estimated as a step response steady-state.
         """
         self._check_connected_and_regular_sampling("filter()")
         # validate the arguments
@@ -571,6 +583,10 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         Contrary to MNE-Python, re-ordering channels is not supported in ``MNE-LSL``.
         Thus, if explicit channel names are provided in ``picks``, they are sorted to
         match the order of existing channel names.
+
+        Dropping channels which are part of a filter will reset the initial conditions
+        of this filter. The initial conditions will be re-estimated as a step response
+        steady-state.
         """
         self._check_connected(name="pick()")
         picks = _picks_to_idx(self._info, picks, "all", exclude, allow_empty=False)
