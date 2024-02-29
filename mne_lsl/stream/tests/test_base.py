@@ -76,6 +76,52 @@ def test_sanitize_filters_no_overlap(filters):
     assert filters_clean[-1]["sos"].shape == (2, 6)
 
 
+def test_sanitize_filters_partial_overlap(filters):
+    """Test clean-up of filter list to ensure non-overlap between channels."""
+    filter_ = create_filter(
+        data=None,
+        sfreq=1000,
+        l_freq=None,
+        h_freq=100,
+        method="iir",
+        iir_params=dict(order=4, ftype="butter", output="sos"),
+        phase="forward",
+        verbose="ERROR",
+    )
+    filter_["zi"] = None
+    filter_["zi_coeff"] = sosfilt_zi(filter_["sos"])
+    filter_["picks"] = np.arange(5, 15)
+    filter_["l_freq"] = None
+    filter_["h_freq"] = 100
+    filter_ = StreamFilter(filter_)
+    filters_clean = _sanitize_filters(filters, filter_)
+    assert len(filters) == 3
+    assert len(filters_clean) == 5
+
+
+def test_sanitize_filters_full_overlap(filters):
+    """Test clean-up of filter list to ensure non-overlap between channels."""
+    filter_ = create_filter(
+        data=None,
+        sfreq=1000,
+        l_freq=None,
+        h_freq=100,
+        method="iir",
+        iir_params=dict(order=4, ftype="butter", output="sos"),
+        phase="forward",
+        verbose="ERROR",
+    )
+    filter_["zi"] = None
+    filter_["zi_coeff"] = sosfilt_zi(filter_["sos"])
+    filter_["picks"] = np.arange(0, 10)
+    filter_["l_freq"] = None
+    filter_["h_freq"] = 100
+    filter_ = StreamFilter(filter_)
+    filters_clean = _sanitize_filters(filters, filter_)
+    assert len(filters) == 3
+    assert len(filters_clean) == 3
+
+
 def test_StreamFilter(filters):
     """Test the StreamFilter class."""
     filter2 = deepcopy(filters[0])

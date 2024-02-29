@@ -1087,10 +1087,8 @@ def _sanitize_filters(
             else f"{filt['ftype']}+{filter_['ftype']}"
         )
         system = np.vstack((filt["sos"], filter_["sos"]))
-        assert filter_["order"] == 2 * filter_["sos"].shape[0]  # sanity-check
-        assert filt["order"] == 2 * filt["sos"].shape[0]  # sanity-check
         combined_filter = {
-            "order": 2 * system.shape[0],
+            "order": filt["order"] + filter_["order"],
             "ftype": ftype,
             "output": "sos",
             "padlen": estimate_ringing_samples(system),
