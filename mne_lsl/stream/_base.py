@@ -430,8 +430,8 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         )
         # store filter parameters and initial conditions
         filt.update(
-            zi=None,
             zi_coeff=sosfilt_zi(filt["sos"])[..., np.newaxis],
+            zi=None,
             l_freq=l_freq,
             h_freq=h_freq,
             iir_params=iir_params,

@@ -119,8 +119,8 @@ def _uncombine_filters(filt: StreamFilter) -> list[StreamFilter]:
             verbose="CRITICAL",  # effectively disable logs
         )
         filt.update(
-            zi=None,
             zi_coeff=sosfilt_zi(filt["sos"])[..., np.newaxis],
+            zi=None,
             l_freq=lfq,
             h_freq=hfq,
             iir_params=iir_param,

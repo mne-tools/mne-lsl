@@ -14,8 +14,20 @@ if TYPE_CHECKING:
     from typing import Any
 
 
+@pytest.fixture(scope="module")
+def iir_params() -> dict[str, Any]:
+    """Return a dictionary with valid IIR parameters."""
+    return dict(order=4, ftype="butter", output="sos")
+
+
+@pytest.fixture(scope="module")
+def sfreq() -> int:
+    """Return a valid sampling frequency."""
+    return 1000
+
+
 @pytest.fixture(scope="function")
-def filters() -> list[dict[str, Any]]:
+def filters(iir_params, sfreq) -> list[dict[str, Any]]:
     """Create a list of valid filters."""
     l_freqs = (1, 1, 0.1)
     h_freqs = (40, 15, None)
@@ -23,27 +35,34 @@ def filters() -> list[dict[str, Any]]:
     filters = [
         create_filter(
             data=None,
-            sfreq=1000,
+            sfreq=sfreq,
             l_freq=lfq,
             h_freq=hfq,
             method="iir",
-            iir_params=dict(order=4, ftype="butter", output="sos"),
+            iir_params=iir_params,
             phase="forward",
-            verbose="ERROR",
+            verbose="CRITICAL",  # disable logs
         )
         for lfq, hfq in zip(l_freqs, h_freqs, strict=True)
     ]
-    for k, (filt, l_fq, h_fq, pick) in enumerate(
+    for k, (filt, lfq, hfq, picks_) in enumerate(
         zip(filters, l_freqs, h_freqs, picks, strict=True)
     ):
-        filt["zi_coeff"] = sosfilt_zi(filt["sos"])[..., np.newaxis]
-        filt["zi"] = filt["zi_coeff"] * k
-        filt["picks"] = pick
-        filt["l_freq"] = l_fq
-        filt["h_freq"] = h_fq
+        zi_coeff = sosfilt_zi(filt["sos"])[..., np.newaxis]
+        filt.update(
+            zi_coeff=zi_coeff,
+            zi=zi_coeff * k,
+            l_freq=lfq,
+            h_freq=hfq,
+            iir_params=iir_params,
+            sfreq=sfreq,
+            picks=picks_,
+        )
+        del filt["order"]
+        del filt["ftype"]
     all_picks = np.hstack([filt["picks"] for filt in filters])
     assert np.unique(all_picks).size == all_picks.size  # sanity-check
-    return [StreamFilter(filter_) for filter_ in filters]
+    return [StreamFilter(filt) for filt in filters]
 
 
 def test_sanitize_filters_no_overlap(filters):
