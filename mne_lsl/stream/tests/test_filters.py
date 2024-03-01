@@ -8,7 +8,12 @@ import pytest
 from mne.filter import create_filter
 from scipy.signal import sosfilt_zi
 
-from mne_lsl.stream._filters import StreamFilter, _combine_filters, _uncombine_filters
+from mne_lsl.stream._filters import (
+    StreamFilter,
+    _combine_filters,
+    _sanitize_filters,
+    _uncombine_filters,
+)
 
 if TYPE_CHECKING:
     from typing import Any
