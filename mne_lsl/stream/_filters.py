@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from warnings import warn
 
 import numpy as np
-from mne.filters import estimate_ringing_samples, create_filter
+from mne.filter import estimate_ringing_samples, create_filter
 from scipy.signal import sosfilt_zi
 
 if TYPE_CHECKING:

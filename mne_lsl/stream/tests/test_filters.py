@@ -65,6 +65,31 @@ def filters(iir_params, sfreq) -> list[dict[str, Any]]:
     return [StreamFilter(filt) for filt in filters]
 
 
+def test_StreamFilter(filters):
+    """Test the StreamFilter class."""
+    filter2 = deepcopy(filters[0])
+    assert filter2 == filters[0]
+    assert filters[0] != filters[1]
+    assert filters[0] != filters[2]
+    # test different key types
+    filter2["l_freq"] = str(filter2["l_freq"])  # force different type
+    with pytest.warns(RuntimeWarning, match="type of the key 'l_freq' is different"):
+        assert filter2 != filters[0]
+    # test with nans
+    filter2 = deepcopy(filters[0])
+    filter3 = deepcopy(filters[0])
+    filter2["sos"][0, 0] = np.nan
+    assert filter2 != filter3
+    filter3["sos"][0, 0] = np.nan
+    assert filter2 == filter3
+    # test absent key
+    filter2 = deepcopy(filters[0])
+    del filter2["sos"]
+    assert filter2 != filters[0]
+    # test representation
+    assert f"({filters[0]['l_freq']}, {filters[0]['h_freq']})" in repr(filters[0])
+
+
 def test_sanitize_filters_no_overlap(filters):
     """Test clean-up of filter list to ensure non-overlap between channels."""
     filter_ = create_filter(
@@ -75,7 +100,7 @@ def test_sanitize_filters_no_overlap(filters):
         method="iir",
         iir_params=dict(order=4, ftype="butter", output="sos"),
         phase="forward",
-        verbose="ERROR",
+        verbose="CRITICAL",
     )
     filter_["zi"] = None
     filter_["zi_coeff"] = sosfilt_zi(filter_["sos"])
@@ -107,7 +132,7 @@ def test_sanitize_filters_partial_overlap(filters):
         method="iir",
         iir_params=dict(order=4, ftype="butter", output="sos"),
         phase="forward",
-        verbose="ERROR",
+        verbose="CRITICAL",
     )
     filter_["zi"] = None
     filter_["zi_coeff"] = sosfilt_zi(filter_["sos"])
@@ -165,7 +190,7 @@ def test_sanitize_filters_full_overlap(filters):
         method="iir",
         iir_params=dict(order=4, ftype="butter", output="sos"),
         phase="forward",
-        verbose="ERROR",
+        verbose="CRITICAL",
     )
     filter_["zi"] = None
     filter_["zi_coeff"] = sosfilt_zi(filter_["sos"])
@@ -190,28 +215,3 @@ def test_sanitize_filters_full_overlap(filters):
     assert np.array_equal(
         np.vstack((filters[0]["sos"], filter_["sos"])), filters_clean[-1]["sos"]
     )
-
-
-def test_StreamFilter(filters):
-    """Test the StreamFilter class."""
-    filter2 = deepcopy(filters[0])
-    assert filter2 == filters[0]
-    assert filters[0] != filters[1]
-    assert filters[0] != filters[2]
-    # test different key types
-    filter2["order"] = str(filter2["order"])  # force different type
-    with pytest.warns(RuntimeWarning, match="type of the key 'order' is different"):
-        assert filter2 != filters[0]
-    # test with nans
-    filter2 = deepcopy(filters[0])
-    filter3 = deepcopy(filters[0])
-    filter2["sos"][0, 0] = np.nan
-    assert filter2 != filter3
-    filter3["sos"][0, 0] = np.nan
-    assert filter2 == filter3
-    # test absent key
-    filter2 = deepcopy(filters[0])
-    del filter2["sos"]
-    assert filter2 != filters[0]
-    # test representation
-    assert f"({filters[0]['l_freq']}, {filters[0]['h_freq']})" in repr(filters[0])
