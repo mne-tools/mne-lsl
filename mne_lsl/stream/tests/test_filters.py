@@ -349,4 +349,9 @@ def filter_(request, iir_params: dict[str, Any], sfreq: float) -> StreamFilter:
 
 def test_sanitize_filters(filters: list[StreamFilter], filter_: StreamFilter):
     """Test clean-up of filter list to ensure non-overlap between channels."""
-    filters_ = _sanitize_filters(filters, filter_)
+    # look for overlapping channels
+    overlap = [np.intersect1d(filt["picks"], filter_["picks"]) for filt in filters]
+    # sanitize and validate output
+    if all(ol.size == 0 for ol in overlap):
+        filts = _sanitize_filters(filters, filter_)
+        assert filts == filters + [filter_]
