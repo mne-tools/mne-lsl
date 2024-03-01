@@ -1,6 +1,7 @@
 from __future__ import annotations  # c.f. PEP 563, PEP 649
 
 from copy import deepcopy
+from distutils.filelist import FileList
 from itertools import chain
 from typing import TYPE_CHECKING
 
@@ -356,7 +357,13 @@ def test_sanitize_filters(filters: list[StreamFilter], filter_: StreamFilter):
     filts = _sanitize_filters(filters, filter_)
     if all(ol.size == 0 for ol in overlap):
         assert filts == filters + [filter_]
-    picks = list(chain(*(filt["picks"] for filt in filts)))
-    assert np.unique(picks).size == len(picks)  # ensure no more overlap
-    # find pairs of filters that have been combined
-    idx = [i for i, ol in enumerate(overlap) if ol.size != 0]
+    else:
+        picks = list(chain(*(filt["picks"] for filt in filts)))
+        assert np.unique(picks).size == len(picks)  # ensure no more overlap
+        # find pairs of filters that have been combined
+        idx = [k for k, ol in enumerate(overlap) if ol.size != 0]
+        for k in idx:
+            filt = _combine_filters(filters[k], filter_, overlap[k])
+            assert filt in filts
+            assert filters[k] not in filts
+        assert filter_ not in filts
