@@ -95,16 +95,16 @@ def _combine_filters(
 
 def _uncombine_filters(filter_: StreamFilter) -> list[StreamFilter]:
     """Uncombine a combined filter into its individual components."""
-    val = (
+    val = [
         isinstance(filter_[key], tuple) for key in ("l_freq", "h_freq", "iir_params")
-    )
+    ]
     if not all(val) and any(val):
         raise RuntimeError(
             "The combined filter contains keys 'l_freq', 'h_freq' and 'iir_params' as "
             "both tuple and non-tuple, which should not be possible. Please contact "
             "the developers."
         )
-    elif not all(val):
+    elif all(elt is False for elt in val):
         return [filter_]
     # instead of trying to un-tangled the 'sos' matrix, we simply create a new filter
     # for each individual component.

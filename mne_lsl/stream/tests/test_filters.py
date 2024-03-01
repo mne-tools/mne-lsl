@@ -137,6 +137,11 @@ def test_combine_uncombine_filters(
     picks: NDArray[np.int8],
 ):
     """Test (un)combination of filters."""
+    # uncombine self
+    filt = _uncombine_filters(filter1)
+    assert filter1 == filt[0]
+
+    # combine 2 filters
     filt = _combine_filters(filter1, filter2, picks)
     assert np.array_equal(filt["sos"], np.vstack((filter1["sos"], filter2["sos"])))
     assert filt["sos"].shape[-1] == 6
@@ -216,6 +221,20 @@ def test_combine_uncombine_filters(
     assert filt1 == filter1
     assert filt2 == filter2  # zi already set to None
     assert filt3 == filter3
+
+
+def test_invalid_uncombine_filters(filter1, filter2, picks):
+    """Test error raising in uncombine filters."""
+    filt = _combine_filters(filter1, filter2, picks)
+    filt["l_freq"] = filt["l_freq"][0]
+    with pytest.raises(RuntimeError, match="as both tuple and non-tuple"):
+        _uncombine_filters(filt)
+    filt["h_freq"] = filt["h_freq"][0]
+    with pytest.raises(RuntimeError, match="as both tuple and non-tuple"):
+        _uncombine_filters(filt)
+    filt["iir_params"] = filt["iir_params"][0]
+    filt2 = _uncombine_filters(filt)
+    assert filt == filt2[0]
 
 
 @pytest.fixture(scope="function")
@@ -329,4 +348,4 @@ def filter_(request, iir_params: dict[str, Any], sfreq: float) -> StreamFilter:
 
 def test_sanitize_filters(filters: list[StreamFilter], filter_: StreamFilter):
     """Test clean-up of filter list to ensure non-overlap between channels."""
-    pass
+    filters_ = _sanitize_filters(filters, filter_)
