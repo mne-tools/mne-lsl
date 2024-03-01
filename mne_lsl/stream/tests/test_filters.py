@@ -1,6 +1,7 @@
 from __future__ import annotations  # c.f. PEP 563, PEP 649
 
 from copy import deepcopy
+from itertools import chain
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -352,6 +353,10 @@ def test_sanitize_filters(filters: list[StreamFilter], filter_: StreamFilter):
     # look for overlapping channels
     overlap = [np.intersect1d(filt["picks"], filter_["picks"]) for filt in filters]
     # sanitize and validate output
+    filts = _sanitize_filters(filters, filter_)
     if all(ol.size == 0 for ol in overlap):
-        filts = _sanitize_filters(filters, filter_)
         assert filts == filters + [filter_]
+    picks = list(chain(*(filt["picks"] for filt in filts)))
+    assert np.unique(picks).size == len(picks)  # ensure no more overlap
+    # find pairs of filters that have been combined
+    idx = [i for i, ol in enumerate(overlap) if ol.size != 0]

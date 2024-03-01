@@ -60,14 +60,13 @@ def _combine_filters(
     filter1: StreamFilter,
     filter2: StreamFilter,
     picks: NDArray[+ScalarIntType],
-    *,
-    copy: bool = True,
 ) -> StreamFilter:
     """Combine 2 filters applied on the same set of channels."""
     assert filter1["sfreq"] == filter2["sfreq"]
-    if copy:
-        filter1 = deepcopy(filter1)
-        filter2 = deepcopy(filter2)
+    # copy is required else we might end-up modifying the items of the filters used in
+    # the acquisition thread.
+    filter1 = deepcopy(filter1)
+    filter2 = deepcopy(filter2)
     system = np.vstack((filter1["sos"], filter2["sos"]))
     # for 'l_freq', 'h_freq', 'iir_params' we store the filter(s) settings in ordered
     # tuples to keep track of the original settings of individual filters.
@@ -98,7 +97,7 @@ def _uncombine_filters(filter_: StreamFilter) -> list[StreamFilter]:
     val = [
         isinstance(filter_[key], tuple) for key in ("l_freq", "h_freq", "iir_params")
     ]
-    if not all(val) and any(val):
+    if not all(val) and any(val):  # sanity-check
         raise RuntimeError(
             "The combined filter contains keys 'l_freq', 'h_freq' and 'iir_params' as "
             "both tuple and non-tuple, which should not be possible. Please contact "
@@ -138,10 +137,14 @@ def _uncombine_filters(filter_: StreamFilter) -> list[StreamFilter]:
 
 
 def _sanitize_filters(
-    filters: list[StreamFilter], filter_: StreamFilter, *, copy: bool = True
+    filters: list[StreamFilter],
+    filter_: StreamFilter,
 ) -> list[dict[str, Any]]:
     """Sanitize the list of filters to ensure non-overlapping channels."""
-    filters = deepcopy(filters) if copy else filters
+    # copy is required else we might end-up modifying the 'picks' item of the filter
+    # list used in the acquisition thread.
+    filters = deepcopy(filters)
+    filter_ = deepcopy(filter_)
     additional_filters = []
     for filt in filters:
         intersection = np.intersect1d(
