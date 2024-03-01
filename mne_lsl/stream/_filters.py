@@ -28,7 +28,9 @@ class StreamFilter(dict):
             return False
         for key in self:
             if key == "zi":  # special case since it's either a np.ndarray or None
-                if (self[key] is None or other[key] is None) or not np.array_equal(
+                if self[key] is None and other[key] is None:
+                    continue
+                elif ((self[key] is None) ^ (other[key] is None)) or not np.array_equal(
                     self[key], other[key]
                 ):
                     return False
@@ -91,9 +93,11 @@ def _combine_filters(
     return StreamFilter(combined_filter)
 
 
-def _uncombine_filters(filt: StreamFilter) -> list[StreamFilter]:
+def _uncombine_filters(filter_: StreamFilter) -> list[StreamFilter]:
     """Uncombine a combined filter into its individual components."""
-    val = (isinstance(filt[key], tuple) for key in ("l_freq", "h_freq", "iir_params"))
+    val = (
+        isinstance(filter_[key], tuple) for key in ("l_freq", "h_freq", "iir_params")
+    )
     if not all(val) and any(val):
         raise RuntimeError(
             "The combined filter contains keys 'l_freq', 'h_freq' and 'iir_params' as "
@@ -101,16 +105,16 @@ def _uncombine_filters(filt: StreamFilter) -> list[StreamFilter]:
             "the developers."
         )
     elif not all(val):
-        return [filt]
+        return [filter_]
     # instead of trying to un-tangled the 'sos' matrix, we simply create a new filter
     # for each individual component.
     filters = list()
     for lfq, hfq, iir_param in zip(
-        filt["l_freq"], filt["h_freq"], filt["iir_params"], strict=True
+        filter_["l_freq"], filter_["h_freq"], filter_["iir_params"]
     ):
         filt = create_filter(
             data=None,
-            sfreq=filt["sfreq"],
+            sfreq=filter_["sfreq"],
             l_freq=lfq,
             h_freq=hfq,
             method="iir",
@@ -124,8 +128,8 @@ def _uncombine_filters(filt: StreamFilter) -> list[StreamFilter]:
             l_freq=lfq,
             h_freq=hfq,
             iir_params=iir_param,
-            sfreq=filt["sfreq"],
-            picks=filt["picks"],
+            sfreq=filter_["sfreq"],
+            picks=filter_["picks"],
         )
         del filt["order"]
         del filt["ftype"]
