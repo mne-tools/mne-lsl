@@ -11,7 +11,6 @@ from scipy.signal import sosfilt_zi
 from mne_lsl.stream._filters import (
     StreamFilter,
     _combine_filters,
-    _sanitize_filters,
     _uncombine_filters,
 )
 
@@ -137,7 +136,7 @@ def test_combine_uncombine_filters(
     filter3: StreamFilter,
     picks: NDArray[np.int8],
 ):
-    """Test (un)combinatation of filters."""
+    """Test (un)combination of filters."""
     filt = _combine_filters(filter1, filter2, picks)
     assert np.array_equal(filt["sos"], np.vstack((filter1["sos"], filter2["sos"])))
     assert filt["sos"].shape[-1] == 6

@@ -2,7 +2,6 @@ from __future__ import annotations  # c.f. PEP 563, PEP 649
 
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
-from copy import deepcopy
 from math import ceil
 from threading import Timer
 from typing import TYPE_CHECKING
