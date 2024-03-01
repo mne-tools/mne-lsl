@@ -1,7 +1,6 @@
 from __future__ import annotations  # c.f. PEP 563, PEP 649
 
 from copy import deepcopy
-from distutils.filelist import FileList
 from itertools import chain
 from typing import TYPE_CHECKING
 
