@@ -21,31 +21,6 @@ if TYPE_CHECKING:
     from numpy.typing import NDArray
 
 
-def test_StreamFilter(filters):
-    """Test the StreamFilter class."""
-    filter2 = deepcopy(filters[0])
-    assert filter2 == filters[0]
-    assert filters[0] != filters[1]
-    assert filters[0] != filters[2]
-    # test different key types
-    filter2["l_freq"] = str(filter2["l_freq"])  # force different type
-    with pytest.warns(RuntimeWarning, match="type of the key 'l_freq' is different"):
-        assert filter2 != filters[0]
-    # test with nans
-    filter2 = deepcopy(filters[0])
-    filter3 = deepcopy(filters[0])
-    filter2["sos"][0, 0] = np.nan
-    assert filter2 != filter3
-    filter3["sos"][0, 0] = np.nan
-    assert filter2 == filter3
-    # test absent key
-    filter2 = deepcopy(filters[0])
-    del filter2["sos"]
-    assert filter2 != filters[0]
-    # test representation
-    assert f"({filters[0]['l_freq']}, {filters[0]['h_freq']})" in repr(filters[0])
-
-
 @pytest.fixture(scope="module")
 def iir_params() -> dict[str, Any]:
     """Return a dictionary with valid IIR parameters."""
@@ -59,14 +34,14 @@ def sfreq() -> float:
 
 
 @pytest.fixture(scope="module")
-def picks() -> NDArray[np.int32]:
+def picks() -> NDArray[np.int8]:
     """Return a valid selection of channels."""
-    return np.arange(0, 10, dtype=np.int32)
+    return np.arange(0, 10, dtype=np.int8)
 
 
 @pytest.fixture(scope="function")
 def filter1(
-    iir_params: dict[str, Any], sfreq: float, picks: NDArray[np.int32]
+    iir_params: dict[str, Any], sfreq: float, picks: NDArray[np.int8]
 ) -> StreamFilter:
     """Create a filter."""
     l_freq = 1.0
@@ -97,7 +72,7 @@ def filter1(
 
 @pytest.fixture(scope="function")
 def filter2(
-    iir_params: dict[str, Any], sfreq: float, picks: NDArray[np.int32]
+    iir_params: dict[str, Any], sfreq: float, picks: NDArray[np.int8]
 ) -> StreamFilter:
     """Create a filter."""
     l_freq = 2.0
@@ -127,7 +102,7 @@ def filter2(
 
 
 @pytest.fixture(scope="function")
-def filter3(sfreq: float, picks: NDArray[np.int32]) -> StreamFilter:
+def filter3(sfreq: float, picks: NDArray[np.int8]) -> StreamFilter:
     """Create a filter."""
     l_freq = None
     h_freq = 80.0
@@ -156,7 +131,12 @@ def filter3(sfreq: float, picks: NDArray[np.int32]) -> StreamFilter:
     return StreamFilter(filt)
 
 
-def test_combine_uncombine_filters(filter1, filter2, filter3, picks):
+def test_combine_uncombine_filters(
+    filter1: StreamFilter,
+    filter2: StreamFilter,
+    filter3: StreamFilter,
+    picks: NDArray[np.int8],
+):
     """Test (un)combinatation of filters."""
     filt = _combine_filters(filter1, filter2, picks)
     assert np.array_equal(filt["sos"], np.vstack((filter1["sos"], filter2["sos"])))
@@ -240,7 +220,7 @@ def test_combine_uncombine_filters(filter1, filter2, filter3, picks):
 
 
 @pytest.fixture(scope="function")
-def filters(iir_params, sfreq) -> list[dict[str, Any]]:
+def filters(iir_params: dict[str, Any], sfreq: float) -> list[StreamFilter]:
     """Create a list of valid filters."""
     l_freqs = (1, 1, 0.1)
     h_freqs = (40, 15, None)
@@ -274,6 +254,31 @@ def filters(iir_params, sfreq) -> list[dict[str, Any]]:
     all_picks = np.hstack([filt["picks"] for filt in filters])
     assert np.unique(all_picks).size == all_picks.size  # sanity-check
     return [StreamFilter(filt) for filt in filters]
+
+
+def test_StreamFilter(filters: StreamFilter):
+    """Test the StreamFilter class."""
+    filter2 = deepcopy(filters[0])
+    assert filter2 == filters[0]
+    assert filters[0] != filters[1]
+    assert filters[0] != filters[2]
+    # test different key types
+    filter2["l_freq"] = str(filter2["l_freq"])  # force different type
+    with pytest.warns(RuntimeWarning, match="type of the key 'l_freq' is different"):
+        assert filter2 != filters[0]
+    # test with nans
+    filter2 = deepcopy(filters[0])
+    filter3 = deepcopy(filters[0])
+    filter2["sos"][0, 0] = np.nan
+    assert filter2 != filter3
+    filter3["sos"][0, 0] = np.nan
+    assert filter2 == filter3
+    # test absent key
+    filter2 = deepcopy(filters[0])
+    del filter2["sos"]
+    assert filter2 != filters[0]
+    # test representation
+    assert f"({filters[0]['l_freq']}, {filters[0]['h_freq']})" in repr(filters[0])
 
 
 @pytest.fixture(
@@ -323,6 +328,6 @@ def filter_(request, iir_params: dict[str, Any], sfreq: float) -> StreamFilter:
     return StreamFilter(filt)
 
 
-def test_sanitize_filters(filters, filter_):
+def test_sanitize_filters(filters: list[StreamFilter], filter_: StreamFilter):
     """Test clean-up of filter list to ensure non-overlap between channels."""
     pass
