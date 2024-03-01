@@ -24,7 +24,7 @@ class StreamFilter(dict):
 
     def __eq__(self, other: Any):
         """Equality operator."""
-        if not isinstance(other, StreamFilter) or sorted(self) != sorted(other):
+        if not isinstance(other, StreamFilter) or set(self) != set(other):
             return False
         for key in self:
             if key == "zi":  # special case since it's either a np.ndarray or None
