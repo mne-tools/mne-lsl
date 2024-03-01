@@ -256,17 +256,17 @@ class StreamLSL(BaseStream):
                 data[:, self._ref_from] -= data_ref
 
             # apply filters on (n_times, n_channels) data
-            for filter_ in self._filters:
-                if filter_["zi"] is None:
+            for filt in self._filters:
+                if filt["zi"] is None:
                     # initial conditions are set to a step response steady-state set
                     # on the mean on the acquisition window (e.g. DC offset for EEGs)
-                    filter_["zi"] = filter_["zi_coeff"] * np.mean(
-                        data[:, filter_["picks"]], axis=0
+                    filt["zi"] = filt["zi_coeff"] * np.mean(
+                        data[:, filt["picks"]], axis=0
                     )
-                data_filtered, filter_["zi"] = sosfilt(
-                    filter_["sos"], data[:, filter_["picks"]], zi=filter_["zi"], axis=0
+                data_filtered, filt["zi"] = sosfilt(
+                    filt["sos"], data[:, filt["picks"]], zi=filt["zi"], axis=0
                 )
-                data[:, filter_["picks"]] = data_filtered
+                data[:, filt["picks"]] = data_filtered
 
             # roll and update buffers
             self._buffer = np.roll(self._buffer, -timestamps.size, axis=0)

@@ -11,7 +11,7 @@ from warnings import warn
 import numpy as np
 from mne import pick_info, pick_types
 from mne.channels import rename_channels
-from mne.filter import create_filter, estimate_ringing_samples
+from mne.filter import create_filter
 from mne.utils import check_version
 from scipy.signal import sosfilt_zi
 
@@ -33,6 +33,7 @@ from ..utils._checks import check_type, check_value
 from ..utils._docs import copy_doc, fill_doc
 from ..utils.logs import logger, verbose
 from ..utils.meas_info import _HUMAN_UNITS, _set_channel_units
+from ._filters import StreamFilter, _sanitize_filters
 
 if TYPE_CHECKING:
     from datetime import datetime
@@ -323,12 +324,6 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         stream : instance of ``Stream``
             The stream instance modified in-place.
 
-        Notes
-        -----
-        Dropping channels which are part of a filter will reset the initial conditions
-        of this filter. The initial conditions will be re-estimated as a step response
-        steady-state.
-
         See Also
         --------
         pick
@@ -396,8 +391,8 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         Notes
         -----
         Adding a filter on channels already filtered will reset the initial conditions
-        of all channels filtered by the first filter. The initial conditions will be
-        re-estimated as a step response steady-state.
+        of those channels. The initial conditions will be re-estimated as a step
+        response steady-state to the combination of both filters.
         """
         self._check_connected_and_regular_sampling("filter()")
         # validate the arguments and ensure 'sos' output
@@ -407,6 +402,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             if iir_params is None
             else iir_params
         )
+        check_type(iir_params, (dict,), "iir_params")
         if ("output" in iir_params and iir_params["output"] != "sos") or all(
             key in iir_params for key in ("a", "b")
         ):
@@ -422,7 +418,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
                     del iir_params[key]
         iir_params["output"] = "sos"
         # construct an IIR filter
-        filter_ = create_filter(
+        filt = create_filter(
             data=None,
             sfreq=self._info["sfreq"],
             l_freq=l_freq,
@@ -432,19 +428,26 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             phase="forward",
             verbose=logger.level if verbose is None else verbose,
         )
-        filter_["zi"] = None  # add initial conditions
-        filter_["zi_coeff"] = sosfilt_zi(filter_["sos"])[..., np.newaxis]
-        # store requested l_freq and h_freq
-        filter_["l_freq"] = l_freq
-        filter_["h_freq"] = h_freq
+        # store filter parameters and initial conditions
+        filt.update(
+            zi=None,
+            zi_coeff=sosfilt_zi(filt["sos"])[..., np.newaxis],
+            l_freq=l_freq,
+            h_freq=h_freq,
+            iir_params=iir_params,
+            sfreq=self._info["sfreq"],
+            picks=picks,
+        )
+        # remove duplicate information
+        del filt["order"]
+        del filt["ftype"]
         # to correctly handle the filter initial conditions even if 2 filters are
         # applied to the same channels, we need to separate the 'picks' between filter
         # to avoid any channel-overlap between filters.
         # if the initial conditions are updated in real-time in the _acquire function,
         # we need to update the 'zi' for each individual second order filter in the
         # 'sos' output, which does not seem to be supported by scipy directly.
-        filter_["picks"] = picks
-        filters = _sanitize_filters(self._filters, StreamFilter(filter_))
+        filters = _sanitize_filters(self._filters, StreamFilter(filt))
         # add filter to the list of applied filters
         with self._interrupt_acquisition():
             self._filters = filters
@@ -594,10 +597,6 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         Contrary to MNE-Python, re-ordering channels is not supported in ``MNE-LSL``.
         Thus, if explicit channel names are provided in ``picks``, they are sorted to
         match the order of existing channel names.
-
-        Dropping channels which are part of a filter will reset the initial conditions
-        of this filter. The initial conditions will be re-estimated as a step response
-        steady-state.
         """
         self._check_connected(name="pick()")
         picks = _picks_to_idx(self._info, picks, "all", exclude, allow_empty=False)
@@ -958,17 +957,12 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
                 if ch not in self.ch_names:
                     self._added_channels.remove(ch)
             # remove dropped channels from filters
-            filters2remove = []
-            for k, filter_ in enumerate(self._filters):
-                filter_["picks"] = np.intersect1d(
-                    filter_["picks"], picks, assume_unique=True
-                )
-                if filter_["picks"].size == 0:
-                    filters2remove.append(k)
-                    continue
-                filter_["zi"] = None  # reset initial conditions
-            for k in filters2remove[::-1]:
-                del self._filters[k]
+            for filt in self._filters:
+                # TODO: ensure correct selection of channels.
+                filt["picks"] = np.intersect1d(filt["picks"], picks, assume_unique=True)
+                # TODO: don't reset, select initial conditions.
+                filt["zi"] = None
+            self._filters = [filt for filt in self._filters if filt["picks"].size != 0]
 
     @abstractmethod
     def _reset_variables(self) -> None:
@@ -1066,91 +1060,3 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         """
         self._check_connected(name="n_new_samples")
         return self._n_new_samples
-
-
-def _sanitize_filters(
-    filters: list[StreamFilter], filter_: StreamFilter
-) -> list[dict[str, Any]]:
-    """Sanitize the list of filters to ensure non-overlapping channels."""
-    filters = deepcopy(filters)
-    additional_filters = []
-    for filt in filters:
-        intersection = np.intersect1d(
-            filt["picks"], filter_["picks"], assume_unique=True
-        )
-        if intersection.size == 0:
-            continue  # non-overlapping channels
-        # create a combined filter
-        ftype = (
-            filt["ftype"]
-            if filt["ftype"] == filter_["ftype"]
-            else f"{filt['ftype']}+{filter_['ftype']}"
-        )
-        system = np.vstack((filt["sos"], filter_["sos"]))
-        combined_filter = {
-            "order": filt["order"] + filter_["order"],
-            "ftype": ftype,
-            "output": "sos",
-            "padlen": estimate_ringing_samples(system),
-            "sos": system,
-        }
-        combined_filter["zi"] = None
-        combined_filter["zi_coeff"] = sosfilt_zi(system)[..., np.newaxis]
-        combined_filter["picks"] = intersection
-        combined_filter["l_freq"] = (filt["l_freq"], filter_["l_freq"])
-        combined_filter["h_freq"] = (filt["h_freq"], filter_["h_freq"])
-        additional_filters.append(StreamFilter(combined_filter))
-        # reset initial conditions for the overlapping filter
-        filt["zi"] = None
-        # remove overlapping channels from both filters
-        filt["picks"] = np.setdiff1d(filt["picks"], intersection, assume_unique=True)
-        filter_["picks"] = np.setdiff1d(
-            filter_["picks"], intersection, assume_unique=True
-        )
-    filters = filters + additional_filters + [filter_]
-    # prune filters without any channels to apply on
-    filters2remove = []
-    for k, filt in enumerate(filters):
-        if filt["picks"].size == 0:
-            filters2remove.append(k)
-    for k in filters2remove[::-1]:
-        del filters[k]
-    return filters
-
-
-class StreamFilter(dict):
-    """Class defining a filter."""
-
-    def __repr__(self):  # noqa: D105
-        return f"<IIR causal filter ({self['l_freq']}, {self['h_freq']}) Hz>"
-
-    def __eq__(self, other: Any):
-        """Equality operator."""
-        if not isinstance(other, StreamFilter) or sorted(self) != sorted(other):
-            return False
-        for key in self:
-            if key == "zi":  # special case since it's either a np.ndarray or None
-                if (self[key] is None or other[key] is None) or not np.array_equal(
-                    self[key], other[key]
-                ):
-                    return False
-                continue
-            type_ = type(self[key])
-            if not isinstance(other[key], type_):  # sanity-check
-                warn(
-                    f"The type of the key '{key}' is different between the 2 filters, "
-                    "which should not be possible. Please contact the developers.",
-                    RuntimeWarning,
-                    stacklevel=2,
-                )
-                return False
-            if (
-                type_ is np.ndarray
-                and not np.array_equal(self[key], other[key], equal_nan=True)
-            ) or (type_ is not np.ndarray and self[key] != other[key]):
-                return False
-        return True
-
-    def __ne__(self, other: Any):  # explicit method required to issue warning
-        """Inequality operator."""
-        return not self.__eq__(other)
