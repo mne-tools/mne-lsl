@@ -1,3 +1,4 @@
+import logging
 import os
 import platform
 import re
@@ -637,7 +638,7 @@ def test_stream_annotations_picks(_mock_lsl_stream_annotations):
     stream.disconnect()
 
 
-def test_stream_filter_deletion(mock_lsl_stream):
+def test_stream_filter_deletion(mock_lsl_stream, caplog):
     """Test deletion of filters applied to a Stream."""
     # test no filter
     stream = Stream(bufsize=2.0).connect()
@@ -673,10 +674,6 @@ def test_stream_filter_deletion(mock_lsl_stream):
         stream.del_filter((0, 0))
     assert len(stream.filters) == 0
     # test reset of initial conditions
-    stream.disconnect()
-    time.sleep(0.1)
-    stream.connect(acquisition_delay=1.0)
-    time.sleep(0.1)
     stream.filter(1, 100, picks=["F7", "F3", "Fz"])
     stream.filter(20, None, picks=["F7", "F3", "O1"])
     stream.filter(None, 20, picks=["Fz", "O2"])
@@ -684,8 +681,12 @@ def test_stream_filter_deletion(mock_lsl_stream):
     assert stream.filters[0]["l_freq"] == 1.0
     assert stream.filters[1]["l_freq"] == 20.0
     assert stream.filters[2]["l_freq"] is None
-    time.sleep(1.1)
+    time.sleep(0.5)
     assert all(filt["zi"] is not None for filt in stream.filters)
+    caplog.set_level(logging.INFO)
+    caplog.clear()
     stream.del_filter(2)
-    assert stream.filters[0]["zi"] is None
-    assert stream.filters[1]["zi"] is not None
+    assert (
+        "The initial conditions will be reset on filters:\n" f"{stream.filters[0]}"
+    ) in caplog.text
+    stream.disconnect()

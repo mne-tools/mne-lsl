@@ -11,7 +11,7 @@ from mne import set_log_level as set_log_level_mne
 from mne.io import Raw, read_raw_fif
 from pytest import fixture
 
-from mne_lsl import set_log_level
+from mne_lsl import logger, set_log_level
 from mne_lsl.datasets import testing
 from mne_lsl.lsl import StreamInlet, StreamOutlet
 
@@ -59,6 +59,7 @@ def pytest_configure(config: Config) -> None:
             config.addinivalue_line("filterwarnings", warning_line)
     set_log_level_mne("WARNING")  # MNE logger
     set_log_level("DEBUG")  # MNE-lsl logger
+    logger.propagate = True
 
 
 def pytest_sessionfinish(session, exitstatus) -> None:

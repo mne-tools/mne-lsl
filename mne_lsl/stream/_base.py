@@ -371,7 +371,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         for k, filt in enumerate(self._filters):
             if k in idx:
                 continue  # this filter will be deleted
-            if np.setdiff1d(picks, filt["picks"]).size != 0:
+            if np.intersect1d(filt["picks"], picks).size != 0:
                 filters2reset.append(k)
         if len(filters2reset) != 0:
             logger.info(
