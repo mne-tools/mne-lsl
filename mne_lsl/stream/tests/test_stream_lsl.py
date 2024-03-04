@@ -635,3 +635,8 @@ def test_stream_annotations_picks(_mock_lsl_stream_annotations):
     data, ts = stream.get_data()
     assert np.count_nonzero(data) == data.size
     stream.disconnect()
+
+
+def test_stream_filter_deleetion():
+    """Test deletion of filters applied to a Stream."""
+    pass

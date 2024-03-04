@@ -346,6 +346,15 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
                 "integers not exceeding the number of filters minus 1: "
                 f"{len(self._filters) - 1}."
             )
+        idx_unique = np.unique(idx)
+        if idx_unique.size != idx.size:
+            warn(
+                "The index 'idx' contains duplicates. Only unique indices will be "
+                "used.",
+                RuntimeWarning,
+                stacklevel=2,
+            )
+        idx = np.sort(idx)
         # figure out which filter have overlapping channels and will need their initial
         # conditions to be reset to a step response steady-state.
         picks = np.unique(np.hstack([self._filters[k]["picks"] for k in idx]))
