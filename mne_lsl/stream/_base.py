@@ -27,7 +27,7 @@ else:
     from mne.io.pick import _picks_to_idx
     from mne.channels.channels import SetChannelsMixin
 
-from ..utils._checks import check_type, check_value
+from ..utils._checks import check_type, check_value, ensure_int
 from ..utils._docs import copy_doc, fill_doc
 from ..utils.logs import logger, verbose
 from ..utils.meas_info import _HUMAN_UNITS, _set_channel_units
@@ -308,6 +308,59 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             self._acquisition_thread.cancel()
         # This method needs to close any inlet/network object and need to end with
         # self._reset_variables().
+
+    def del_filter(self, idx: Union[int, list[int], tuple[int], str] = "all") -> None:
+        """Remove a filter from the list of applied filters.
+
+        Parameters
+        ----------
+        idx : ``'all'``| int | list of int | tuple of int
+            If the string ``'all'`` (default), remove all filters. If an integer or a
+            list of integers, remove the filter(s) at the given index(es) from
+            :py:attr:`Stream.filters`.
+
+        Notes
+        -----
+        When removing a filter, the initial conditions of all the filters applied on
+        overlapping channels are reset. The initial conditions will be re-estimated as
+        a step response steady-state.
+        """
+        # validate input
+        check_type(idx, ("int-like", tuple, list, str), "idx")
+        if isinstance(idx, str) and idx != "all":
+            raise ValueError(
+                "If 'idx' is provided as str, it must be 'all', which will remove all "
+                "applied filters. Provided '{idx}' is invalid."
+            )
+        elif idx == "all":
+            idx = np.arange(len(self._filters), dtype=np.uint8)
+        elif isinstance(idx, (tuple, list)):
+            for elt in idx:
+                check_type(elt, ("int-like",), "idx")
+            idx = np.array(idx, dtype=np.uint8)
+        else:
+            idx = np.array([ensure_int(idx, "idx")], dtype=np.uint8)
+        if not all(0 <= k < len(self._filters) for k in idx):
+            raise ValueError(
+                "The index 'idx' must be a positive integer or a list of positive "
+                "integers not exceeding the number of filters minus 1: "
+                f"{len(self._filters) - 1}."
+            )
+        # figure out which filter have overlapping channels and will need their initial
+        # conditions to be reset to a step response steady-state.
+        picks = np.unique(np.hstack([self._filters[k]["picks"] for k in idx]))
+        filters2reset = list()
+        for k, filt in enumerate(self._filters):
+            if k in idx:
+                continue  # this filter will be deleted
+            if np.setdiff1d(picks, filt["picks"]).size != 0:
+                filters2reset.append(k)
+        # interrupt acquisition and apply changes
+        with self._interrupt_acquisition():
+            for k in filters2reset:
+                self._filters[k]["zi"] = None
+            for k in idx[::-1]:
+                del self._filters[k]
 
     def drop_channels(self, ch_names: Union[str, list[str], tuple[str]]) -> BaseStream:
         """Drop channel(s).
@@ -958,7 +1011,6 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         self._check_connected(name="compensation_grade")
         return super().compensation_grade
 
-    # ----------------------------------------------------------------------------------
     @property
     def ch_names(self) -> list[str]:
         """Name of the channels.
@@ -993,6 +1045,11 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
     def dtype(self) -> Optional[DTypeLike]:
         """Channel format of the stream."""
         return getattr(self._buffer, "dtype", None)
+
+    @property
+    def filters(self) -> list[StreamFilter]:
+        """List of filters applied to the real-time Stream."""
+        return self._filters
 
     @property
     def info(self) -> Info:
