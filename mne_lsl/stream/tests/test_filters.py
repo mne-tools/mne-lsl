@@ -92,4 +92,4 @@ def test_StreamFilter_comparison(filters: StreamFilter):
 def test_StreamFilter_repr(filters):
     """Test the representation."""
     assert f"({filters[0]['l_freq']}, {filters[0]['h_freq']})" in repr(filters[0])
-    assert filters[0]["iir_params"]["order"] in repr(filters[0])
+    assert str(filters[0]["iir_params"]["order"]) in repr(filters[0])

@@ -27,7 +27,7 @@ class StreamFilter(dict):
 
     def __repr__(self):  # noqa: D105
         order = self._ORDER_STR.get(
-            self["irr_params"]["order"], f"{self['irr_params']['order']}th"
+            self["iir_params"]["order"], f"{self['iir_params']['order']}th"
         )
         return (
             f"<IIR {order} causal filter ({self['l_freq']}, {self['h_freq']}) Hz "
