@@ -366,19 +366,10 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
         Parameters
         ----------
-        l_freq : float | None
-            The lower cutoff frequency. If None, the buffer is only low-passed.
-        h_freq : float | None
-            The higher cutoff frequency. If None, the buffer is only high-passed.
+        %(l_freq)s
+        %(h_freq)s
         %(picks_all)s
-        iir_params : dict | None
-            Dictionary of parameters to use for IIR filtering. If None, a 4th order
-            Butterworth will be used. For more information, see
-            :func:`mne.filter.construct_iir_filter`.
-
-            .. note::
-
-                The output ``sos`` must be used. The ``ba`` output is not supported.
+        %(iir_params)s
         %(verbose)s
 
         Returns
