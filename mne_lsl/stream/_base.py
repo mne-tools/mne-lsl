@@ -12,7 +12,6 @@ from mne import pick_info, pick_types
 from mne.channels import rename_channels
 from mne.filter import create_filter
 from mne.utils import check_version
-from scipy.signal import sosfilt_zi
 
 if check_version("mne", "1.6"):
     from mne._fiff.constants import FIFF, _ch_unit_mul_named
@@ -418,28 +417,12 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         iir_params["output"] = "sos"
         # construct an IIR filter
         filt = create_filter(
-            data=None,
             sfreq=self._info["sfreq"],
             l_freq=l_freq,
             h_freq=h_freq,
-            method="iir",
             iir_params=iir_params,
-            phase="forward",
-            verbose=logger.level if verbose is None else verbose,
         )
-        # store filter parameters and initial conditions
-        filt.update(
-            zi_coeff=sosfilt_zi(filt["sos"])[..., np.newaxis],
-            zi=None,
-            l_freq=l_freq,
-            h_freq=h_freq,
-            iir_params=iir_params,
-            sfreq=self._info["sfreq"],
-            picks=picks,
-        )
-        # remove duplicate information
-        del filt["order"]
-        del filt["ftype"]
+        filt.update(picks=picks)  # channel selection
         # add filter to the list of applied filters
         with self._interrupt_acquisition():
             self._filters.append(StreamFilter(filt))

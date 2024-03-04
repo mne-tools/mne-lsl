@@ -4,9 +4,13 @@ from typing import TYPE_CHECKING
 from warnings import warn
 
 import numpy as np
+from mne.filter import create_filter as create_filter_mne
+from scipy.signal import sosfilt_zi
+
+from ..utils._logs import logger
 
 if TYPE_CHECKING:
-    from typing import Any
+    from typing import Any, Optional
 
 
 class StreamFilter(dict):
@@ -59,3 +63,46 @@ class StreamFilter(dict):
     def __ne__(self, other: Any):  # explicit method required to issue warning
         """Inequality operator."""
         return not self.__eq__(other)
+
+
+def create_filter(
+    sfreq: float,
+    l_freq: Optional[float],
+    h_freq: Optional[float],
+    iir_params: dict[str, Any],
+) -> dict[str, Any]:
+    """Create an IIR causal filter.
+
+    Parameters
+    ----------
+    sfreq : float
+        The sampling ferquency in Hz.
+    %(l_freq)s
+    %(h_freq)s
+    %(iir_params)s
+
+    Returns
+    -------
+    filt : dict
+        The filter parameters and initial conditions.
+    """
+    filt = create_filter_mne(
+        data=None,
+        sfreq=sfreq,
+        l_freq=l_freq,
+        h_freq=h_freq,
+        method="iir",
+        iir_params=iir_params,
+        phase="forward",
+        verbose=logger.level,
+    )
+    # store filter parameters and initial conditions
+    filt.update(
+        zi_unit=sosfilt_zi(filt["sos"])[..., np.newaxis],
+        zi=None,
+        l_freq=l_freq,
+        h_freq=h_freq,
+        iir_params=iir_params,
+        sfreq=sfreq,
+    )
+    return filt

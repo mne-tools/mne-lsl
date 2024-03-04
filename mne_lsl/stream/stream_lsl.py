@@ -260,7 +260,7 @@ class StreamLSL(BaseStream):
                 if filt["zi"] is None:
                     # initial conditions are set to a step response steady-state set
                     # on the mean on the acquisition window (e.g. DC offset for EEGs)
-                    filt["zi"] = filt["zi_coeff"] * np.mean(
+                    filt["zi"] = filt["zi_unit"] * np.mean(
                         data[:, filt["picks"]], axis=0
                     )
                 data_filtered, filt["zi"] = sosfilt(

@@ -46,10 +46,10 @@ def filters(iir_params: dict[str, Any], sfreq: float) -> list[StreamFilter]:
         for lfq, hfq in zip(l_freqs, h_freqs)
     ]
     for k, (filt, lfq, hfq, picks_) in enumerate(zip(filters, l_freqs, h_freqs, picks)):
-        zi_coeff = sosfilt_zi(filt["sos"])[..., np.newaxis]
+        zi_unit = sosfilt_zi(filt["sos"])[..., np.newaxis]
         filt.update(
-            zi_coeff=zi_coeff,
-            zi=zi_coeff * k,
+            zi_unit=zi_unit,
+            zi=zi_unit * k,
             l_freq=lfq,
             h_freq=hfq,
             iir_params=iir_params,
