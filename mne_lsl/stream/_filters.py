@@ -7,7 +7,7 @@ import numpy as np
 from mne.filter import create_filter as create_filter_mne
 from scipy.signal import sosfilt_zi
 
-from ..utils._logs import logger
+from ..utils.logs import logger
 
 if TYPE_CHECKING:
     from typing import Any, Optional
@@ -29,7 +29,10 @@ class StreamFilter(dict):
         order = self._ORDER_STR.get(
             self["irr_params"]["order"], f"{self['irr_params']['order']}th"
         )
-        return f"<IIR {order} causal filter ({self['l_freq']}, {self['h_freq']}) Hz>"
+        return (
+            f"<IIR {order} causal filter ({self['l_freq']}, {self['h_freq']}) Hz "
+            f"({self['iir_params']['ftype']})>"
+        )
 
     def __eq__(self, other: Any):
         """Equality operator."""
