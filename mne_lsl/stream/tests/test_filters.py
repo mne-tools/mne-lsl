@@ -5,11 +5,13 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 import pytest
+from mne.filter import create_filter as create_filter_mne
+from numpy.testing import assert_allclose
 
 from mne_lsl.stream._filters import StreamFilter, create_filter
 
 if TYPE_CHECKING:
-    from typing import Any
+    from typing import Any, Optional
 
 
 @pytest.fixture(scope="module")
@@ -66,7 +68,7 @@ def test_StreamFilter(iir_params: dict[str, Any], sfreq: float):
     assert filt == filt2
 
 
-def test_StreamFilter_comparison(filters: StreamFilter):
+def test_StreamFilter_comparison(filters: list[StreamFilter]):
     """Test the StreamFilter class."""
     filter2 = deepcopy(filters[0])
     assert filter2 == filters[0]
@@ -89,7 +91,34 @@ def test_StreamFilter_comparison(filters: StreamFilter):
     assert filter2 != filters[0]
 
 
-def test_StreamFilter_repr(filters):
+def test_StreamFilter_repr(filters: list[StreamFilter]):
     """Test the representation."""
     assert f"({filters[0]['l_freq']}, {filters[0]['h_freq']})" in repr(filters[0])
     assert str(filters[0]["iir_params"]["order"]) in repr(filters[0])
+
+
+@pytest.mark.parametrize("l_freq, h_freq", [(1, 40), (None, 15), (0.1, None)])
+def test_create_filter(
+    iir_params: dict[str, Any],
+    sfreq: float,
+    l_freq: Optional[float],
+    h_freq: Optional[float],
+):
+    """Test create_filter conformity with MNE."""
+    filter1 = create_filter(
+        sfreq=sfreq,
+        l_freq=l_freq,
+        h_freq=h_freq,
+        iir_params=iir_params,
+    )
+    filter2 = create_filter_mne(
+        data=None,
+        sfreq=sfreq,
+        l_freq=l_freq,
+        h_freq=h_freq,
+        method="iir",
+        iir_params=iir_params,
+        phase="forward",
+        verbose="CRITICAL",
+    )
+    assert_allclose(filter1["sos"], filter2["sos"])
