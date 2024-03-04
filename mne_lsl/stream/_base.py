@@ -10,7 +10,6 @@ from warnings import warn
 import numpy as np
 from mne import pick_info, pick_types
 from mne.channels import rename_channels
-from mne.filter import create_filter
 from mne.utils import check_version
 
 if check_version("mne", "1.6"):
@@ -31,7 +30,7 @@ from ..utils._checks import check_type, check_value, ensure_int
 from ..utils._docs import copy_doc, fill_doc
 from ..utils.logs import logger, verbose
 from ..utils.meas_info import _HUMAN_UNITS, _set_channel_units
-from ._filters import StreamFilter
+from ._filters import StreamFilter, create_filter
 
 if TYPE_CHECKING:
     from datetime import datetime
@@ -325,6 +324,9 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         overlapping channels are reset. The initial conditions will be re-estimated as
         a step response steady-state.
         """
+        self._check_connected_and_regular_sampling("del_filter()")
+        if len(self._filters) == 0:
+            raise RuntimeError("No filter to remove.")
         # validate input
         check_type(idx, ("int-like", tuple, list, str), "idx")
         if isinstance(idx, str) and idx != "all":
@@ -339,6 +341,8 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
                 check_type(elt, ("int-like",), "idx")
             idx = np.array(idx, dtype=np.uint8)
         else:
+            # ensure_int is run as a sanity-check, it should not be possible to enter
+            # this statement without idx as int-like.
             idx = np.array([ensure_int(idx, "idx")], dtype=np.uint8)
         if not all(0 <= k < len(self._filters) for k in idx):
             raise ValueError(
@@ -354,7 +358,12 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
                 RuntimeWarning,
                 stacklevel=2,
             )
-        idx = np.sort(idx)
+        idx = np.sort(idx_unique)
+        logger.info(
+            "Removing filters at index(es): %s\n%s",
+            ", ".join([str(k) for k in idx]),
+            "\n".join([repr(self._filters[k]) for k in idx]),
+        )
         # figure out which filter have overlapping channels and will need their initial
         # conditions to be reset to a step response steady-state.
         picks = np.unique(np.hstack([self._filters[k]["picks"] for k in idx]))
@@ -364,6 +373,11 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
                 continue  # this filter will be deleted
             if np.setdiff1d(picks, filt["picks"]).size != 0:
                 filters2reset.append(k)
+        if len(filters2reset) != 0:
+            logger.info(
+                "The initial conditions will be reset on filters:\n%s",
+                "\n".join([repr(self._filters[k]) for k in filters2reset]),
+            )
         # interrupt acquisition and apply changes
         with self._interrupt_acquisition():
             for k in filters2reset:

@@ -637,6 +637,55 @@ def test_stream_annotations_picks(_mock_lsl_stream_annotations):
     stream.disconnect()
 
 
-def test_stream_filter_deleetion():
+def test_stream_filter_deletion(mock_lsl_stream):
     """Test deletion of filters applied to a Stream."""
-    pass
+    # test no filter
+    stream = Stream(bufsize=2.0).connect()
+    time.sleep(0.1)
+    with pytest.raises(RuntimeError, match="No filter to remove."):
+        stream.del_filter("all")
+    with pytest.raises(RuntimeError, match="No filter to remove."):
+        stream.del_filter(0)
+    # test valid deletion
+    stream.filter(1, 100, picks=["F7", "F3", "Fz"])
+    time.sleep(0.1)
+    assert len(stream.filters) == 1
+    stream.del_filter("all")
+    assert len(stream.filters) == 0
+    stream.filter(1, 100, picks=["F7", "F3", "Fz"])
+    time.sleep(0.1)
+    # test invalid
+    with pytest.raises(ValueError, match="is provided as str, it must be"):
+        stream.del_filter("0")
+    with pytest.raises(ValueError, match="is provided as str, it must be"):
+        stream.del_filter("0")
+    with pytest.raises(TypeError, match="must be an instance of int-like"):
+        stream.del_filter(["0"])
+    with pytest.raises(TypeError, match="must be an instance of int-like"):
+        stream.del_filter(("0",))
+    with pytest.raises(TypeError, match="must be an instance of"):
+        stream.del_filter((lambda x: 0,))
+    with pytest.raises(TypeError, match="must be an instance of"):
+        stream.del_filter(lambda x: 0)
+    with pytest.raises(ValueError, match="must be a positive integer"):
+        stream.del_filter(1)
+    with pytest.warns(RuntimeWarning, match="contains duplicates"):
+        stream.del_filter((0, 0))
+    assert len(stream.filters) == 0
+    # test reset of initial conditions
+    stream.disconnect()
+    time.sleep(0.1)
+    stream.connect(acquisition_delay=1.0)
+    time.sleep(0.1)
+    stream.filter(1, 100, picks=["F7", "F3", "Fz"])
+    stream.filter(20, None, picks=["F7", "F3", "O1"])
+    stream.filter(None, 20, picks=["Fz", "O2"])
+    assert len(stream.filters) == 3
+    assert stream.filters[0]["l_freq"] == 1.0
+    assert stream.filters[1]["l_freq"] == 20.0
+    assert stream.filters[2]["l_freq"] is None
+    time.sleep(1.1)
+    assert all(filt["zi"] is not None for filt in stream.filters)
+    stream.del_filter(2)
+    assert stream.filters[0]["zi"] is None
+    assert stream.filters[1]["zi"] is not None
