@@ -32,7 +32,7 @@ from ..utils._checks import check_type, check_value
 from ..utils._docs import copy_doc, fill_doc
 from ..utils.logs import logger, verbose
 from ..utils.meas_info import _HUMAN_UNITS, _set_channel_units
-from ._filters import StreamFilter, _sanitize_filters
+from ._filters import StreamFilter
 
 if TYPE_CHECKING:
     from datetime import datetime
@@ -440,16 +440,9 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         # remove duplicate information
         del filt["order"]
         del filt["ftype"]
-        # to correctly handle the filter initial conditions even if 2 filters are
-        # applied to the same channels, we need to separate the 'picks' between filter
-        # to avoid any channel-overlap between filters.
-        # if the initial conditions are updated in real-time in the _acquire function,
-        # we need to update the 'zi' for each individual second order filter in the
-        # 'sos' output, which does not seem to be supported by scipy directly.
-        filters = _sanitize_filters(self._filters, StreamFilter(filt))
         # add filter to the list of applied filters
         with self._interrupt_acquisition():
-            self._filters = filters
+            self._filters.append(StreamFilter(filt))
 
     @copy_doc(ContainsMixin.get_channel_types)
     def get_channel_types(

@@ -1,26 +1,31 @@
 from __future__ import annotations  # c.f. PEP 563, PEP 649
 
-from copy import deepcopy
 from typing import TYPE_CHECKING
 from warnings import warn
 
 import numpy as np
-from mne.filter import create_filter, estimate_ringing_samples
-from scipy.signal import sosfilt_zi
 
 if TYPE_CHECKING:
     from typing import Any
-
-    from numpy.typing import NDArray
-
-    from .._typing import ScalarIntType
 
 
 class StreamFilter(dict):
     """Class defining a filter."""
 
+    _ORDER_STR: dict[int, str] = {1: "1st", 2: "2nd"}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for key in ("ftype", "order"):
+            if key in self:
+                assert key in self["iir_params"]  # sanity-check
+                del self[key]
+
     def __repr__(self):  # noqa: D105
-        return f"<IIR causal filter ({self['l_freq']}, {self['h_freq']}) Hz>"
+        order = self._ORDER_STR.get(
+            self["irr_params"]["order"], f"{self['irr_params']['order']}th"
+        )
+        return f"<IIR {order} causal filter ({self['l_freq']}, {self['h_freq']}) Hz>"
 
     def __eq__(self, other: Any):
         """Equality operator."""
@@ -54,116 +59,3 @@ class StreamFilter(dict):
     def __ne__(self, other: Any):  # explicit method required to issue warning
         """Inequality operator."""
         return not self.__eq__(other)
-
-
-def _combine_filters(
-    filter1: StreamFilter,
-    filter2: StreamFilter,
-    picks: NDArray[+ScalarIntType],
-) -> StreamFilter:
-    """Combine 2 filters applied on the same set of channels."""
-    assert filter1["sfreq"] == filter2["sfreq"]
-    # copy is required else we might end-up modifying the items of the filters used in
-    # the acquisition thread.
-    filter1 = deepcopy(filter1)
-    filter2 = deepcopy(filter2)
-    system = np.vstack((filter1["sos"], filter2["sos"]))
-    # for 'l_freq', 'h_freq', 'iir_params' we store the filter(s) settings in ordered
-    # tuples to keep track of the original settings of individual filters.
-    for key in ("l_freq", "h_freq", "iir_params"):
-        filter1[key] = list(
-            (filter1[key],) if not isinstance(filter1[key], tuple) else filter1[key]
-        )
-        filter2[key] = list(
-            (filter2[key],) if not isinstance(filter2[key], tuple) else filter2[key]
-        )
-    combined_filter = {
-        "output": "sos",
-        "padlen": estimate_ringing_samples(system),
-        "sos": system,
-        "zi": None,  # reset initial conditions on channels combined
-        "zi_coeff": sosfilt_zi(system)[..., np.newaxis],
-        "l_freq": tuple(filter1["l_freq"] + filter2["l_freq"]),
-        "h_freq": tuple(filter1["h_freq"] + filter2["h_freq"]),
-        "iir_params": tuple(filter1["iir_params"] + filter2["iir_params"]),
-        "sfreq": filter1["sfreq"],
-        "picks": picks,
-    }
-    return StreamFilter(combined_filter)
-
-
-def _uncombine_filters(filter_: StreamFilter) -> list[StreamFilter]:
-    """Uncombine a combined filter into its individual components."""
-    val = [
-        isinstance(filter_[key], tuple) for key in ("l_freq", "h_freq", "iir_params")
-    ]
-    if not all(val) and any(val):  # sanity-check
-        raise RuntimeError(
-            "The combined filter contains keys 'l_freq', 'h_freq' and 'iir_params' as "
-            "both tuple and non-tuple, which should not be possible. Please contact "
-            "the developers."
-        )
-    elif all(elt is False for elt in val):
-        return [filter_]
-    # instead of trying to un-tangled the 'sos' matrix, we simply create a new filter
-    # for each individual component.
-    filters = list()
-    for lfq, hfq, iir_param in zip(
-        filter_["l_freq"], filter_["h_freq"], filter_["iir_params"]
-    ):
-        filt = create_filter(
-            data=None,
-            sfreq=filter_["sfreq"],
-            l_freq=lfq,
-            h_freq=hfq,
-            method="iir",
-            iir_params=iir_param,
-            phase="forward",
-            verbose="CRITICAL",  # effectively disable logs
-        )
-        filt.update(
-            zi_coeff=sosfilt_zi(filt["sos"])[..., np.newaxis],
-            zi=None,
-            l_freq=lfq,
-            h_freq=hfq,
-            iir_params=iir_param,
-            sfreq=filter_["sfreq"],
-            picks=filter_["picks"],
-        )
-        del filt["order"]
-        del filt["ftype"]
-        filters.append(StreamFilter(filt))
-    return filters
-
-
-def _sanitize_filters(
-    filters: list[StreamFilter],
-    filter_: StreamFilter,
-) -> list[dict[str, Any]]:
-    """Sanitize the list of filters to ensure non-overlapping channels."""
-    # copy is required else we might end-up modifying the 'picks' item of the filter
-    # list used in the acquisition thread.
-    filters = deepcopy(filters)
-    filter_ = deepcopy(filter_)
-    additional_filters = []
-    for filt in filters:
-        intersection = np.intersect1d(
-            filt["picks"], filter_["picks"], assume_unique=True
-        )
-        if intersection.size == 0:
-            continue  # non-overlapping channels
-        additional_filters.append(_combine_filters(filt, filter_, picks=intersection))
-        # reset initial conditions for the overlapping filter
-        filt["zi"] = None  # TODO: instead of reset, select initial conditions.
-        # remove overlapping channels from both filters
-        filt["picks"] = np.setdiff1d(filt["picks"], intersection, assume_unique=True)
-        filter_["picks"] = np.setdiff1d(
-            filter_["picks"], intersection, assume_unique=True
-        )
-    # prune filters without any channels
-    filters = [
-        filt
-        for filt in filters + additional_filters + [filter_]
-        if filt["picks"].size != 0
-    ]
-    return filters

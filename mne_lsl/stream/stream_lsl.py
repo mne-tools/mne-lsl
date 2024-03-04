@@ -266,7 +266,7 @@ class StreamLSL(BaseStream):
                 data_filtered, filt["zi"] = sosfilt(
                     filt["sos"], data[:, filt["picks"]], zi=filt["zi"], axis=0
                 )
-                data[:, filt["picks"]] = data_filtered
+                data[:, filt["picks"]] = data_filtered  # operate in-place
 
             # roll and update buffers
             self._buffer = np.roll(self._buffer, -timestamps.size, axis=0)
