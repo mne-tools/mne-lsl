@@ -687,6 +687,7 @@ def test_stream_filter_deletion(mock_lsl_stream, caplog):
     caplog.clear()
     stream.del_filter(2)
     assert (
-        "The initial conditions will be reset on filters:\n" f"{stream.filters[0]}"
+        f"The initial conditions will be reset on filters:\n{stream.filters[0]}"
     ) in caplog.text
+    assert repr(stream.filters[1]) not in caplog.text
     stream.disconnect()
