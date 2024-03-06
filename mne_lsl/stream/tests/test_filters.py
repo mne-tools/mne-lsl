@@ -66,6 +66,14 @@ def test_StreamFilter(iir_params: dict[str, Any], sfreq: float):
     # test creation from self
     filt2 = StreamFilter(filt)
     assert filt == filt2
+    # test invalid creation
+    del filt2["iir_params"]
+    with pytest.warns(RuntimeWarning, match=" 'iir_params' key is missing"):
+        StreamFilter(filt2)
+    filt2["iir_params"] = filt["iir_params"]
+    filt2["order"] = 101
+    with pytest.raises(RuntimeError, match="inconsistent"):
+        StreamFilter(filt2)
 
 
 def test_StreamFilter_comparison(filters: list[StreamFilter]):
