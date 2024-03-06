@@ -16,6 +16,8 @@ from mne.channels import DigMontage
 from mne.io import RawArray
 from mne.utils import check_version
 from numpy.testing import assert_allclose
+from scipy.fft import fft, fftfreq
+from scipy.signal import find_peaks
 
 if check_version("mne", "1.6"):
     from mne._fiff.constants import FIFF
@@ -75,9 +77,10 @@ def mock_lsl_stream_annotations(raw_annotations, request):
         yield player
 
 
+@pytest.fixture(scope="function")
 def raw_sinusoids() -> BaseRaw:
     """Create a raw object with sinusoids."""
-    times = np.linspace(0, 10, 10001)  # 1000 Hz
+    times = np.arange(0, 2, 1 / 1000)
     data1 = np.sin(2 * np.pi * 10 * times) + np.sin(2 * np.pi * 30 * times)
     data2 = np.sin(2 * np.pi * 30 * times) + np.sin(2 * np.pi * 50 * times)
     data3 = np.sin(2 * np.pi * 30 * times) + np.sin(2 * np.pi * 100 * times)
@@ -583,7 +586,7 @@ def test_stream_rereference_average(mock_lsl_stream_int):
     data_ref[-2:, :] += 1
     data_ref -= data_ref.mean(axis=0, keepdims=True)
     assert_allclose(data, data_ref)
-    _sleep_until_new_data(stream._acquisition_delay, _mock_lsl_stream_int)
+    _sleep_until_new_data(stream._acquisition_delay, mock_lsl_stream_int)
     data, _ = stream.get_data(picks="eeg")
     assert_allclose(data, data_ref)
     stream.disconnect()
@@ -744,3 +747,26 @@ def test_stream_filter_picks(mock_lsl_stream):
     assert_allclose(stream.filters[0]["picks"], picks_)
     stream.drop_channels(["ECG"])  # -2 channel
     assert_allclose(stream.filters[0]["picks"], picks_[:-1])
+
+
+def test_stream_filter(mock_lsl_stream_sinusoids, raw_sinusoids):
+    """Test stream filters."""
+    freqs = fftfreq(raw_sinusoids.times.size, 1 / raw_sinusoids.info["sfreq"])
+    idx = np.where(0 <= freqs)[0]
+    freqs = freqs[idx]
+    fft_orig = np.abs(fft(raw_sinusoids.get_data(), axis=-1)[:, idx])
+    # extract peaks
+    assert fft_orig.shape[0] == len(raw_sinusoids.ch_names)
+    assert fft_orig.shape[0] == len(mock_lsl_stream_sinusoids.ch_names)
+    heights_orig = dict()
+    for k in range(fft_orig.shape[0]):
+        peaks, _ = find_peaks(fft_orig[k, :], height=100)  # peak height is 1000
+        fqs = [int(elt) for elt in raw_sinusoids.ch_names[k].split("-")]
+        assert_allclose(freqs[peaks], fqs, atol=0.1)
+        heights_orig[k] = dict(idx=peaks, heights=fft_orig[k, peaks])
+    # test unfiltered data
+    stream = Stream(bufsize=2.0, name=mock_lsl_stream_sinusoids.name).connect()
+    time.sleep(2.1)
+    fft_ = np.abs(fft(stream.get_data()[0], axis=-1)[:, idx])
+    for ch, ch_height in heights_orig.items():
+        assert_allclose(fft_[ch, ch_height["idx"]], ch_height["heights"])
