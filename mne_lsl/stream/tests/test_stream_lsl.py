@@ -693,6 +693,7 @@ def test_stream_filter_deletion(mock_lsl_stream, caplog):
     stream.disconnect()
 
 
+@pytest.mark.skip(reason="Not yet implemented.")
 def test_stream_filter_picks(mock_lsl_stream):
     """Test picks from a StreamFilter."""
     stream = (

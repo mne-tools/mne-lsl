@@ -988,7 +988,12 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         if picks_inlet.size == 0:
             raise RuntimeError(
                 "The requested channel selection would not leave any channel from the "
-                "LSL Stream."
+                "Stream."
+            )
+        if len(self._filters) != 0:
+            raise RuntimeError(
+                "The channel selection must be done before adding filters to the "
+                "Stream."
             )
 
         with self._interrupt_acquisition():
@@ -999,13 +1004,13 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             for ch in self._added_channels[::-1]:
                 if ch not in self.ch_names:
                     self._added_channels.remove(ch)
-            # remove dropped channels from filters
-            for filt in self._filters:
-                # TODO: ensure correct selection of channels.
-                filt["picks"] = np.intersect1d(filt["picks"], picks, assume_unique=True)
-                # TODO: don't reset, select initial conditions.
-                filt["zi"] = None
             self._filters = [filt for filt in self._filters if filt["picks"].size != 0]
+
+    def _map_picks_to_buffer(self, picks, picks2map):
+        mask = -np.ones(self._buffer.shape[1], dtype=int)
+        mask[picks2map] = picks2map
+        mask = mask[picks]
+        return mask[np.where(mask != -1)]
 
     @abstractmethod
     def _reset_variables(self) -> None:
