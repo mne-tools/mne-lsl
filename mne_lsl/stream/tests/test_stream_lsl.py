@@ -49,7 +49,7 @@ def acquisition_delay(request):
 
 
 @pytest.fixture(scope="function")
-def _mock_lsl_stream_int(request):
+def mock_lsl_stream_int(request):
     """Create a mock LSL stream streaming the channel number continuously."""
     # nest the PlayerLSL import to first write the temporary LSL configuration file
     from mne_lsl.player import PlayerLSL  # noqa: E402
@@ -63,7 +63,7 @@ def _mock_lsl_stream_int(request):
 
 
 @pytest.fixture(scope="function")
-def _mock_lsl_stream_annotations(raw_annotations, request):
+def mock_lsl_stream_annotations(raw_annotations, request):
     """Create a mock LSL stream streaming the channel number continuously."""
     # nest the PlayerLSL import to first write the temporary LSL configuration file
     from mne_lsl.player import PlayerLSL  # noqa: E402
@@ -476,9 +476,9 @@ def test_stream_invalid_interrupt(mock_lsl_stream):
             pass
 
 
-def test_stream_rereference(_mock_lsl_stream_int, acquisition_delay):
+def test_stream_rereference(mock_lsl_stream_int, acquisition_delay):
     """Test re-referencing an EEG-like stream."""
-    stream = Stream(bufsize=0.4, name=_mock_lsl_stream_int.name)
+    stream = Stream(bufsize=0.4, name=mock_lsl_stream_int.name)
     stream.connect(acquisition_delay=acquisition_delay)
     time.sleep(0.1)  # give a bit of time to slower CIs
     assert stream.n_new_samples > 0
@@ -490,7 +490,7 @@ def test_stream_rereference(_mock_lsl_stream_int, acquisition_delay):
     data_ref = np.full(data.shape, np.arange(data.shape[0]).reshape(-1, 1))
     data_ref -= data_ref[1, :]
     assert_allclose(data, data_ref)
-    _sleep_until_new_data(acquisition_delay, _mock_lsl_stream_int)
+    _sleep_until_new_data(acquisition_delay, mock_lsl_stream_int)
     data, _ = stream.get_data()
     assert_allclose(data, data_ref)
 
@@ -524,15 +524,15 @@ def test_stream_rereference(_mock_lsl_stream_int, acquisition_delay):
     data_ref[-1, :] = np.zeros(data.shape[1])
     data_ref -= data_ref[[1, 2], :].mean(axis=0, keepdims=True)
     assert_allclose(data, data_ref)
-    _sleep_until_new_data(stream._acquisition_delay, _mock_lsl_stream_int)
+    _sleep_until_new_data(stream._acquisition_delay, mock_lsl_stream_int)
     data, _ = stream.get_data()
     assert_allclose(data, data_ref)
     stream.disconnect()
 
 
-def test_stream_rereference_average(_mock_lsl_stream_int):
+def test_stream_rereference_average(mock_lsl_stream_int):
     """Test average re-referencing schema."""
-    stream = Stream(bufsize=0.4, name=_mock_lsl_stream_int.name)
+    stream = Stream(bufsize=0.4, name=mock_lsl_stream_int.name)
     stream.connect()
     time.sleep(0.1)  # give a bit of time to slower CIs
     stream.set_channel_types({"2": "ecg"})  # channels: 0, 1, 2, 3, 4
@@ -543,7 +543,7 @@ def test_stream_rereference_average(_mock_lsl_stream_int):
     )
     data_ref[-2:, :] += 1
     assert_allclose(data, data_ref)
-    _sleep_until_new_data(stream._acquisition_delay, _mock_lsl_stream_int)
+    _sleep_until_new_data(stream._acquisition_delay, mock_lsl_stream_int)
     data, _ = stream.get_data(picks="eeg")
     assert_allclose(data, data_ref)
 
@@ -628,10 +628,9 @@ def test_stream_irregularly_sampled(close_io):
     close_io()
 
 
-def test_stream_annotations_picks(_mock_lsl_stream_annotations):
+def test_stream_annotations_picks(mock_lsl_stream_annotations):
     """Test sub-selection of annotations."""
-    stream = Stream(bufsize=5, stype="annotations").connect()  # test chaining as-well
-    stream.pick("test1")  # most-present annotations
+    stream = Stream(bufsize=5, stype="annotations").connect().pick("test1")
     time.sleep(5)  # acquire data
     data, ts = stream.get_data()
     assert np.count_nonzero(data) == data.size
