@@ -641,7 +641,7 @@ def test_stream_annotations_picks(_mock_lsl_stream_annotations):
 def test_stream_filter_deletion(mock_lsl_stream, caplog):
     """Test deletion of filters applied to a Stream."""
     # test no filter
-    stream = Stream(bufsize=2.0).connect()
+    stream = Stream(bufsize=2.0, name=mock_lsl_stream.name).connect()
     time.sleep(0.1)
     with pytest.raises(RuntimeError, match="No filter to remove."):
         stream.del_filter("all")
@@ -691,3 +691,30 @@ def test_stream_filter_deletion(mock_lsl_stream, caplog):
     ) in caplog.text
     assert repr(stream.filters[1]) not in caplog.text
     stream.disconnect()
+
+
+def test_stream_filter_picks(mock_lsl_stream):
+    """Test picks from a StreamFilter."""
+    stream = (
+        Stream(bufsize=2.0, name=mock_lsl_stream.name)
+        .connect()
+        .filter(l_freq=1.0, h_freq=40.0, picks="eeg")
+    )
+    assert len(stream.filters) == 1
+    assert_allclose(
+        stream.filters[0]["picks"],
+        _picks_to_idx(mock_lsl_stream.info, picks="eeg", exclude=()),
+    )
+    stream.pick(["F7", "F3", "Fz", "F4", "F8"])  # consecutive EEG-only channels
+    assert_allclose(stream.filters[0]["picks"], np.arange(5))
+    stream.pick(["F3", "F4"])  # non-consecutive EEG-only channels
+    assert_allclose(stream.filters[0]["picks"], np.arange(2))
+    stream.disconnect().connect()  # reset
+    stream.filter(l_freq=None, h_freq=100.0, picks=("eeg", "ecg", "eog"))
+    assert len(stream.filters) == 1
+    picks_ = _picks_to_idx(
+        mock_lsl_stream.info, picks=("eeg", "ecg", "eog"), exclude=()
+    )
+    assert_allclose(stream.filters[0]["picks"], picks_)
+    stream.drop_channels(["ECG"])  # -2 channel
+    assert_allclose(stream.filters[0]["picks"], picks_[:-1])

@@ -493,6 +493,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         # add filter to the list of applied filters
         with self._interrupt_acquisition():
             self._filters.append(StreamFilter(filt))
+        return self
 
     @copy_doc(ContainsMixin.get_channel_types)
     def get_channel_types(
