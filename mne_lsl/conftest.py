@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 import numpy as np
 from mne import Annotations
 from mne import set_log_level as set_log_level_mne
-from mne.io import Raw, read_raw_fif
+from mne.io import read_raw_fif
 from pytest import fixture
 
 from mne_lsl import logger, set_log_level
@@ -18,6 +18,7 @@ from mne_lsl.lsl import StreamInlet, StreamOutlet
 if TYPE_CHECKING:
     from pathlib import Path
 
+    from mne.io import BaseRaw
     from pytest import Config
 
 # Set debug logging in LSL, e.g.:
@@ -112,13 +113,13 @@ def fname(tmp_path_factory) -> Path:
 
 
 @fixture(scope="function")
-def raw(fname: Path) -> Raw:
+def raw(fname: Path) -> BaseRaw:
     """Return the raw file corresponding to fname."""
     return read_raw_fif(fname, preload=True)
 
 
 @fixture(scope="function")
-def raw_annotations(raw: Raw) -> Raw:
+def raw_annotations(raw: BaseRaw) -> BaseRaw:
     """Return a raw file with annotations."""
     annotations = Annotations(
         onset=[0.1, 0.4, 0.5, 0.8, 0.95, 1.1, 1.3],
