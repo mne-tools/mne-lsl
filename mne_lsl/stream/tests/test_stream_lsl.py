@@ -1,9 +1,12 @@
+from __future__ import annotations  # c.f. PEP 563, PEP 649
+
 import logging
 import os
 import platform
 import re
 import time
 from datetime import datetime, timezone
+from typing import TYPE_CHECKING
 
 import numpy as np
 import pytest
@@ -21,13 +24,13 @@ else:
     from mne.io.constants import FIFF
     from mne.io.pick import _picks_to_idx
 
-from mne_lsl import logger
 from mne_lsl.lsl import StreamInfo, StreamOutlet
 from mne_lsl.stream import StreamLSL as Stream
 from mne_lsl.utils._tests import match_stream_and_raw_data
 from mne_lsl.utils.logs import _use_log_level
 
-logger.propagate = True
+if TYPE_CHECKING:
+    from mne.io import BaseRaw
 
 
 bad_gh_macos = pytest.mark.skipif(
@@ -69,6 +72,29 @@ def mock_lsl_stream_annotations(raw_annotations, request):
     from mne_lsl.player import PlayerLSL  # noqa: E402
 
     with PlayerLSL(raw_annotations, name=f"P_{request.node.name}") as player:
+        yield player
+
+
+def raw_sinusoids() -> BaseRaw:
+    """Create a raw object with sinusoids."""
+    times = np.linspace(0, 10, 10001)  # 1000 Hz
+    data1 = np.sin(2 * np.pi * 10 * times) + np.sin(2 * np.pi * 30 * times)
+    data2 = np.sin(2 * np.pi * 30 * times) + np.sin(2 * np.pi * 50 * times)
+    data3 = np.sin(2 * np.pi * 30 * times) + np.sin(2 * np.pi * 100 * times)
+    data = np.vstack([data1, data2, data3])
+    info = create_info(
+        ch_names=["10-30", "30-50", "30-100"], sfreq=1000, ch_types="eeg"
+    )
+    return RawArray(data, info)
+
+
+@pytest.fixture(scope="function")
+def mock_lsl_stream_sinusoids(raw_sinusoids, request):
+    """Create a mock LSL stream streaming sinusoids."""
+    # nest the PlayerLSL import to first write the temporary LSL configuration file
+    from mne_lsl.player import PlayerLSL
+
+    with PlayerLSL(raw_sinusoids, name=f"P_{request.node.name}") as player:
         yield player
 
 
