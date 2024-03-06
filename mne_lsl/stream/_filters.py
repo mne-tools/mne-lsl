@@ -20,10 +20,26 @@ class StreamFilter(dict):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        if "iir_params" not in self:
+            warn(
+                "The 'iir_params' key is missing, which is unexpected.",
+                RuntimeWarning,
+                stacklevel=2,
+            )
+            self["iir_params"] = dict()
         for key in ("ftype", "order"):
-            if key in self:
-                assert key in self["iir_params"]  # sanity-check
-                del self[key]
+            if key not in self:
+                continue
+            if key not in self["iir_params"]:
+                self["iir_params"][key] = self[key]
+            else:
+                if self[key] != self["iir_params"][key]:
+                    raise RuntimeError(
+                        f"The value of '{key}' in the filter dictionary and in the "
+                        "filter parameters '{iir_params}' is inconsistent. "
+                        f"{self[key]} != {self['iir_params'][key]}."
+                    )
+            del self[key]
 
     def __repr__(self):  # noqa: D105
         order = self._ORDER_STR.get(
