@@ -1006,12 +1006,6 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
                     self._added_channels.remove(ch)
             self._filters = [filt for filt in self._filters if filt["picks"].size != 0]
 
-    def _map_picks_to_buffer(self, picks, picks2map):
-        mask = -np.ones(self._buffer.shape[1], dtype=int)
-        mask[picks2map] = picks2map
-        mask = mask[picks]
-        return mask[np.where(mask != -1)]
-
     @abstractmethod
     def _reset_variables(self) -> None:
         """Reset variables define after connection."""
