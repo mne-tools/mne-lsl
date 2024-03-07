@@ -1068,7 +1068,9 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
     @property
     def filters(self) -> list[StreamFilter]:
-        """List of filters applied to the real-time Stream."""
+        """List of filters applied to the real-time Stream.
+
+        :type: :class:`list` of ```StreamFilter``"""
         return self._filters
 
     @property
