@@ -159,6 +159,15 @@ print(f"Channel types included: {', '.join(ch_types)}")
 # directly on the ring buffer. For instance, we can select the EEG channels, add the
 # missing reference channel and re-reference using a common average referencing scheme
 # which will reduce the ring buffer to 64 channels.
+#
+# .. note::
+#
+#     By design, once a re-referencing operation is performed or if at least one filter
+#     is applied, it is not possible anymore to select a subset of channels with the
+#     methods :meth:`~mne_lsl.stream.StreamLSL.pick` or
+#     :meth:`~mne_lsl.stream.StreamLSL.drop_channels`. Note that the re-referencing is
+#     not reversible while filters can be removed with the method
+#     :meth:`~mne_lsl.stream.StreamLSL.del_filter`.
 
 stream.pick("eeg")  # channel selection
 assert "CPz" not in stream.ch_names  # reference absent from the data stream

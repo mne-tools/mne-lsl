@@ -23,6 +23,7 @@ _KEYS_MNE: tuple[str, ...] = (
     "montage_types",
     "on_missing_montage",
     "picks_all",
+    "picks_base",
     "ref_channels",
 )
 
@@ -43,10 +44,27 @@ del key
 # -- F ---------------------------------------------------------------------------------
 # -- G ---------------------------------------------------------------------------------
 # -- H ---------------------------------------------------------------------------------
+docdict["h_freq"] = """h_freq : float | None
+    The higher cutoff frequency. If None, the buffer is only high-passed."""
+
 # -- I ---------------------------------------------------------------------------------
+docdict["iir_params"] = """
+iir_params : dict | None
+    Dictionary of parameters to use for IIR filtering. If None, a 4th order
+    Butterworth will be used. For more information, see
+    :func:`mne.filter.construct_iir_filter`.
+
+    .. note::
+
+        The output ``sos`` must be used. The ``ba`` output is not supported."""
+
 # -- J ---------------------------------------------------------------------------------
 # -- K ---------------------------------------------------------------------------------
 # -- L ---------------------------------------------------------------------------------
+docdict["l_freq"] = """
+l_freq : float | None
+    The lower cutoff frequency. If None, the buffer is only low-passed."""
+
 # -- M ---------------------------------------------------------------------------------
 # -- N ---------------------------------------------------------------------------------
 # -- O ---------------------------------------------------------------------------------

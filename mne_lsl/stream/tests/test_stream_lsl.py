@@ -1,8 +1,12 @@
+from __future__ import annotations  # c.f. PEP 563, PEP 649
+
+import logging
 import os
 import platform
 import re
 import time
 from datetime import datetime, timezone
+from typing import TYPE_CHECKING
 
 import numpy as np
 import pytest
@@ -12,6 +16,8 @@ from mne.channels import DigMontage
 from mne.io import RawArray
 from mne.utils import check_version
 from numpy.testing import assert_allclose
+from scipy.fft import fft, fftfreq
+from scipy.signal import find_peaks
 
 if check_version("mne", "1.6"):
     from mne._fiff.constants import FIFF
@@ -20,13 +26,13 @@ else:
     from mne.io.constants import FIFF
     from mne.io.pick import _picks_to_idx
 
-from mne_lsl import logger
 from mne_lsl.lsl import StreamInfo, StreamOutlet
 from mne_lsl.stream import StreamLSL as Stream
 from mne_lsl.utils._tests import match_stream_and_raw_data
 from mne_lsl.utils.logs import _use_log_level
 
-logger.propagate = True
+if TYPE_CHECKING:
+    from mne.io import BaseRaw
 
 
 bad_gh_macos = pytest.mark.skipif(
@@ -48,7 +54,7 @@ def acquisition_delay(request):
 
 
 @pytest.fixture(scope="function")
-def _mock_lsl_stream_int(request):
+def mock_lsl_stream_int(request):
     """Create a mock LSL stream streaming the channel number continuously."""
     # nest the PlayerLSL import to first write the temporary LSL configuration file
     from mne_lsl.player import PlayerLSL  # noqa: E402
@@ -62,12 +68,36 @@ def _mock_lsl_stream_int(request):
 
 
 @pytest.fixture(scope="function")
-def _mock_lsl_stream_annotations(raw_annotations, request):
+def mock_lsl_stream_annotations(raw_annotations, request):
     """Create a mock LSL stream streaming the channel number continuously."""
     # nest the PlayerLSL import to first write the temporary LSL configuration file
     from mne_lsl.player import PlayerLSL  # noqa: E402
 
     with PlayerLSL(raw_annotations, name=f"P_{request.node.name}") as player:
+        yield player
+
+
+@pytest.fixture(scope="function")
+def raw_sinusoids() -> BaseRaw:
+    """Create a raw object with sinusoids."""
+    times = np.arange(0, 2, 1 / 1000)
+    data1 = np.sin(2 * np.pi * 10 * times) + np.sin(2 * np.pi * 30 * times)
+    data2 = np.sin(2 * np.pi * 30 * times) + np.sin(2 * np.pi * 50 * times)
+    data3 = np.sin(2 * np.pi * 30 * times) + np.sin(2 * np.pi * 100 * times)
+    data = np.vstack([data1, data2, data3])
+    info = create_info(
+        ch_names=["10-30", "30-50", "30-100"], sfreq=1000, ch_types="eeg"
+    )
+    return RawArray(data, info)
+
+
+@pytest.fixture(scope="function")
+def mock_lsl_stream_sinusoids(raw_sinusoids, request):
+    """Create a mock LSL stream streaming sinusoids."""
+    # nest the PlayerLSL import to first write the temporary LSL configuration file
+    from mne_lsl.player import PlayerLSL
+
+    with PlayerLSL(raw_sinusoids, name=f"P_{request.node.name}") as player:
         yield player
 
 
@@ -475,9 +505,9 @@ def test_stream_invalid_interrupt(mock_lsl_stream):
             pass
 
 
-def test_stream_rereference(_mock_lsl_stream_int, acquisition_delay):
+def test_stream_rereference(mock_lsl_stream_int, acquisition_delay):
     """Test re-referencing an EEG-like stream."""
-    stream = Stream(bufsize=0.4, name=_mock_lsl_stream_int.name)
+    stream = Stream(bufsize=0.4, name=mock_lsl_stream_int.name)
     stream.connect(acquisition_delay=acquisition_delay)
     time.sleep(0.1)  # give a bit of time to slower CIs
     assert stream.n_new_samples > 0
@@ -489,7 +519,7 @@ def test_stream_rereference(_mock_lsl_stream_int, acquisition_delay):
     data_ref = np.full(data.shape, np.arange(data.shape[0]).reshape(-1, 1))
     data_ref -= data_ref[1, :]
     assert_allclose(data, data_ref)
-    _sleep_until_new_data(acquisition_delay, _mock_lsl_stream_int)
+    _sleep_until_new_data(acquisition_delay, mock_lsl_stream_int)
     data, _ = stream.get_data()
     assert_allclose(data, data_ref)
 
@@ -523,15 +553,15 @@ def test_stream_rereference(_mock_lsl_stream_int, acquisition_delay):
     data_ref[-1, :] = np.zeros(data.shape[1])
     data_ref -= data_ref[[1, 2], :].mean(axis=0, keepdims=True)
     assert_allclose(data, data_ref)
-    _sleep_until_new_data(stream._acquisition_delay, _mock_lsl_stream_int)
+    _sleep_until_new_data(stream._acquisition_delay, mock_lsl_stream_int)
     data, _ = stream.get_data()
     assert_allclose(data, data_ref)
     stream.disconnect()
 
 
-def test_stream_rereference_average(_mock_lsl_stream_int):
+def test_stream_rereference_average(mock_lsl_stream_int):
     """Test average re-referencing schema."""
-    stream = Stream(bufsize=0.4, name=_mock_lsl_stream_int.name)
+    stream = Stream(bufsize=0.4, name=mock_lsl_stream_int.name)
     stream.connect()
     time.sleep(0.1)  # give a bit of time to slower CIs
     stream.set_channel_types({"2": "ecg"})  # channels: 0, 1, 2, 3, 4
@@ -542,7 +572,7 @@ def test_stream_rereference_average(_mock_lsl_stream_int):
     )
     data_ref[-2:, :] += 1
     assert_allclose(data, data_ref)
-    _sleep_until_new_data(stream._acquisition_delay, _mock_lsl_stream_int)
+    _sleep_until_new_data(stream._acquisition_delay, mock_lsl_stream_int)
     data, _ = stream.get_data(picks="eeg")
     assert_allclose(data, data_ref)
 
@@ -556,7 +586,7 @@ def test_stream_rereference_average(_mock_lsl_stream_int):
     data_ref[-2:, :] += 1
     data_ref -= data_ref.mean(axis=0, keepdims=True)
     assert_allclose(data, data_ref)
-    _sleep_until_new_data(stream._acquisition_delay, _mock_lsl_stream_int)
+    _sleep_until_new_data(stream._acquisition_delay, mock_lsl_stream_int)
     data, _ = stream.get_data(picks="eeg")
     assert_allclose(data, data_ref)
     stream.disconnect()
@@ -627,11 +657,158 @@ def test_stream_irregularly_sampled(close_io):
     close_io()
 
 
-def test_stream_annotations_picks(_mock_lsl_stream_annotations):
+def test_stream_annotations_picks(mock_lsl_stream_annotations):
     """Test sub-selection of annotations."""
-    stream = Stream(bufsize=5, stype="annotations").connect()  # test chaining as-well
-    stream.pick("test1")  # most-present annotations
+    stream = Stream(bufsize=5, stype="annotations").connect().pick("test1")
     time.sleep(5)  # acquire data
     data, ts = stream.get_data()
     assert np.count_nonzero(data) == data.size
+    stream.disconnect()
+
+
+def test_stream_filter_deletion(mock_lsl_stream, caplog):
+    """Test deletion of filters applied to a Stream."""
+    # test no filter
+    stream = Stream(bufsize=2.0, name=mock_lsl_stream.name).connect()
+    time.sleep(0.1)
+    with pytest.raises(RuntimeError, match="No filter to remove."):
+        stream.del_filter("all")
+    with pytest.raises(RuntimeError, match="No filter to remove."):
+        stream.del_filter(0)
+    # test valid deletion
+    stream.filter(1, 100, picks=["F7", "F3", "Fz"])
+    time.sleep(0.1)
+    assert len(stream.filters) == 1
+    stream.del_filter("all")
+    assert len(stream.filters) == 0
+    stream.filter(1, 100, picks=["F7", "F3", "Fz"])
+    time.sleep(0.1)
+    # test invalid
+    with pytest.raises(ValueError, match="is provided as str, it must be"):
+        stream.del_filter("0")
+    with pytest.raises(ValueError, match="is provided as str, it must be"):
+        stream.del_filter("0")
+    with pytest.raises(TypeError, match="must be an instance of int-like"):
+        stream.del_filter(["0"])
+    with pytest.raises(TypeError, match="must be an instance of int-like"):
+        stream.del_filter(("0",))
+    with pytest.raises(TypeError, match="must be an instance of"):
+        stream.del_filter((lambda x: 0,))
+    with pytest.raises(TypeError, match="must be an instance of"):
+        stream.del_filter(lambda x: 0)
+    with pytest.raises(ValueError, match="must be a positive integer"):
+        stream.del_filter(1)
+    with pytest.warns(RuntimeWarning, match="contains duplicates"):
+        stream.del_filter((0, 0))
+    assert len(stream.filters) == 0
+    # test reset of initial conditions
+    stream.filter(1, 100, picks=["F7", "F3", "Fz"])
+    stream.filter(20, None, picks=["F7", "F3", "O1"])
+    stream.filter(None, 20, picks=["Fz", "O2"])
+    assert len(stream.filters) == 3
+    assert stream.filters[0]["l_freq"] == 1.0
+    assert stream.filters[1]["l_freq"] == 20.0
+    assert stream.filters[2]["l_freq"] is None
+    time.sleep(0.5)
+    assert all(filt["zi"] is not None for filt in stream.filters)
+    caplog.set_level(logging.INFO)
+    caplog.clear()
+    stream.del_filter(2)
+    assert (
+        f"The initial conditions will be reset on filters:\n{stream.filters[0]}"
+    ) in caplog.text
+    assert repr(stream.filters[1]) not in caplog.text
+    stream.disconnect()
+
+
+def test_stream_filter(mock_lsl_stream_sinusoids, raw_sinusoids):
+    """Test stream filters."""
+    freqs = fftfreq(raw_sinusoids.times.size, 1 / raw_sinusoids.info["sfreq"])
+    idx = np.where(0 <= freqs)[0]
+    freqs = freqs[idx]
+    fft_orig = np.abs(fft(raw_sinusoids.get_data(), axis=-1)[:, idx])
+    # extract peaks
+    assert fft_orig.shape[0] == len(raw_sinusoids.ch_names)
+    assert fft_orig.shape[0] == len(mock_lsl_stream_sinusoids.ch_names)
+    heights_orig = dict()
+    for k in range(fft_orig.shape[0]):
+        peaks, _ = find_peaks(fft_orig[k, :], height=100)  # peak height is 1000
+        fqs = [int(elt) for elt in raw_sinusoids.ch_names[k].split("-")]
+        assert_allclose(freqs[peaks], fqs, atol=0.1)
+        heights_orig[k] = dict(idx=peaks, heights=fft_orig[k, peaks])
+    # test unfiltered data
+    stream = Stream(bufsize=2.0, name=mock_lsl_stream_sinusoids.name).connect()
+    time.sleep(2.1)
+    fft_ = np.abs(fft(stream.get_data()[0], axis=-1)[:, idx])
+    for ch, ch_height in heights_orig.items():
+        assert_allclose(fft_[ch, ch_height["idx"]], ch_height["heights"], rtol=0.05)
+    # test filtering
+    stream.filter(5, 15, picks="10-30")
+    time.sleep(2.1)
+    fft_ = np.abs(fft(stream.get_data()[0], axis=-1)[:, idx])
+    for ch, ch_height in heights_orig.items():
+        if ch == 0:  # 10 Hz retained, 30 Hz removed
+            assert fft_[ch, ch_height["idx"]][1] < 0.1 * ch_height["heights"][1]
+            assert_allclose(
+                fft_[ch, ch_height["idx"]][0], ch_height["heights"][0], rtol=0.05
+            )
+        else:
+            assert_allclose(fft_[ch, ch_height["idx"]], ch_height["heights"], rtol=0.05)
+    # test removing filter
+    stream.del_filter(0)
+    time.sleep(2.1)
+    fft_ = np.abs(fft(stream.get_data()[0], axis=-1)[:, idx])
+    for ch, ch_height in heights_orig.items():
+        assert_allclose(fft_[ch, ch_height["idx"]], ch_height["heights"], rtol=0.05)
+    # test adding multiple filters
+    stream.filter(20, 70, picks="eeg")
+    time.sleep(2.1)
+    fft_ = np.abs(fft(stream.get_data()[0], axis=-1)[:, idx])
+    for ch, ch_height in heights_orig.items():
+        if ch == 0:  # 10 Hz removed, 30 Hz retained
+            assert fft_[ch, ch_height["idx"]][0] < 0.1 * ch_height["heights"][0]
+            assert_allclose(
+                fft_[ch, ch_height["idx"]][1], ch_height["heights"][1], rtol=0.05
+            )
+        elif ch == 1:  # 30 Hz retained, 50 Hz retained
+            assert_allclose(fft_[ch, ch_height["idx"]], ch_height["heights"], rtol=0.05)
+        elif ch == 2:  # 30 Hz retained, 100 Hz removed (but not as much attenuation)
+            assert fft_[ch, ch_height["idx"]][1] < 0.15 * ch_height["heights"][1]
+            assert_allclose(
+                fft_[ch, ch_height["idx"]][0], ch_height["heights"][0], rtol=0.05
+            )
+    stream.filter(40, 60, picks="30-50")  # second filter
+    time.sleep(2.1)
+    fft_ = np.abs(fft(stream.get_data()[0], axis=-1)[:, idx])
+    for ch, ch_height in heights_orig.items():
+        if ch == 0:  # 10 Hz removed, 30 Hz retained
+            assert fft_[ch, ch_height["idx"]][0] < 0.1 * ch_height["heights"][0]
+            assert_allclose(
+                fft_[ch, ch_height["idx"]][1], ch_height["heights"][1], rtol=0.05
+            )
+        elif ch == 1:  # 30 Hz removed, 50 Hz retained
+            assert fft_[ch, ch_height["idx"]][0] < 0.1 * ch_height["heights"][0]
+            assert_allclose(
+                fft_[ch, ch_height["idx"]][1], ch_height["heights"][1], rtol=0.05
+            )
+        elif ch == 2:  # 30 Hz retained, 100 Hz removed
+            assert_allclose(
+                fft_[ch, ch_height["idx"]][0], ch_height["heights"][0], rtol=0.05
+            )
+            assert fft_[ch, ch_height["idx"]][1] < 0.15 * ch_height["heights"][1]
+    stream.filter(40, 60, picks="eeg")  # third filter
+    time.sleep(2.1)
+    fft_ = np.abs(fft(stream.get_data()[0], axis=-1)[:, idx])
+    for ch, ch_height in heights_orig.items():
+        if ch == 0:  # 10 Hz removed, 30 Hz removed
+            assert fft_[ch, ch_height["idx"]][0] < 0.1 * ch_height["heights"][0]
+            assert fft_[ch, ch_height["idx"]][0] < 0.1 * ch_height["heights"][0]
+        elif ch == 1:  # 30 Hz removed, 50 Hz retained
+            assert fft_[ch, ch_height["idx"]][0] < 0.1 * ch_height["heights"][0]
+            assert_allclose(
+                fft_[ch, ch_height["idx"]][1], ch_height["heights"][1], rtol=0.05
+            )
+        elif ch == 2:  # 30 Hz removed, 100 Hz removed
+            assert fft_[ch, ch_height["idx"]][0] < 0.1 * ch_height["heights"][0]
+            assert fft_[ch, ch_height["idx"]][1] < 0.15 * ch_height["heights"][1]
     stream.disconnect()

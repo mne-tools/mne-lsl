@@ -5,11 +5,12 @@ from contextlib import contextmanager
 from math import ceil
 from threading import Timer
 from typing import TYPE_CHECKING
+from warnings import warn
 
 import numpy as np
 from mne import pick_info, pick_types
 from mne.channels import rename_channels
-from mne.utils import check_version, use_log_level
+from mne.utils import check_version
 
 if check_version("mne", "1.6"):
     from mne._fiff.constants import FIFF, _ch_unit_mul_named
@@ -25,14 +26,15 @@ else:
     from mne.io.pick import _picks_to_idx
     from mne.channels.channels import SetChannelsMixin
 
-from ..utils._checks import check_type, check_value
+from ..utils._checks import check_type, check_value, ensure_int
 from ..utils._docs import copy_doc, fill_doc
 from ..utils.logs import logger, verbose
 from ..utils.meas_info import _HUMAN_UNITS, _set_channel_units
+from ._filters import StreamFilter, create_filter
 
 if TYPE_CHECKING:
     from datetime import datetime
-    from typing import Callable, Optional, Union
+    from typing import Any, Callable, Optional, Union
 
     from mne import Info
     from mne.channels import DigMontage
@@ -306,6 +308,83 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         # This method needs to close any inlet/network object and need to end with
         # self._reset_variables().
 
+    def del_filter(self, idx: Union[int, list[int], tuple[int], str] = "all") -> None:
+        """Remove a filter from the list of applied filters.
+
+        Parameters
+        ----------
+        idx : ``'all'``| int | list of int | tuple of int
+            If the string ``'all'`` (default), remove all filters. If an integer or a
+            list of integers, remove the filter(s) at the given index(es) from
+            ``Stream.filters``.
+
+        Notes
+        -----
+        When removing a filter, the initial conditions of all the filters applied on
+        overlapping channels are reset. The initial conditions will be re-estimated as
+        a step response steady-state.
+        """
+        self._check_connected_and_regular_sampling("del_filter()")
+        if len(self._filters) == 0:
+            raise RuntimeError("No filter to remove.")
+        # validate input
+        check_type(idx, ("int-like", tuple, list, str), "idx")
+        if isinstance(idx, str) and idx != "all":
+            raise ValueError(
+                "If 'idx' is provided as str, it must be 'all', which will remove all "
+                "applied filters. Provided '{idx}' is invalid."
+            )
+        elif idx == "all":
+            idx = np.arange(len(self._filters), dtype=np.uint8)
+        elif isinstance(idx, (tuple, list)):
+            for elt in idx:
+                check_type(elt, ("int-like",), "idx")
+            idx = np.array(idx, dtype=np.uint8)
+        else:
+            # ensure_int is run as a sanity-check, it should not be possible to enter
+            # this statement without idx as int-like.
+            idx = np.array([ensure_int(idx, "idx")], dtype=np.uint8)
+        if not all(0 <= k < len(self._filters) for k in idx):
+            raise ValueError(
+                "The index 'idx' must be a positive integer or a list of positive "
+                "integers not exceeding the number of filters minus 1: "
+                f"{len(self._filters) - 1}."
+            )
+        idx_unique = np.unique(idx)
+        if idx_unique.size != idx.size:
+            warn(
+                "The index 'idx' contains duplicates. Only unique indices will be "
+                "used.",
+                RuntimeWarning,
+                stacklevel=2,
+            )
+        idx = np.sort(idx_unique)
+        logger.info(
+            "Removing filters at index(es): %s\n%s",
+            ", ".join([str(k) for k in idx]),
+            "\n".join([repr(self._filters[k]) for k in idx]),
+        )
+        # figure out which filter have overlapping channels and will need their initial
+        # conditions to be reset to a step response steady-state.
+        picks = np.unique(np.hstack([self._filters[k]["picks"] for k in idx]))
+        filters2reset = list()
+        for k, filt in enumerate(self._filters):
+            if k in idx:
+                continue  # this filter will be deleted
+            if np.intersect1d(filt["picks"], picks).size != 0:
+                filters2reset.append(k)
+        if len(filters2reset) != 0:
+            logger.info(
+                "The initial conditions will be reset on filters:\n%s",
+                "\n".join([repr(self._filters[k]) for k in filters2reset]),
+            )
+        # interrupt acquisition and apply changes
+        with self._interrupt_acquisition():
+            for k in filters2reset:
+                self._filters[k]["zi"] = None
+            for k in idx[::-1]:
+                del self._filters[k]
+
     def drop_channels(self, ch_names: Union[str, list[str], tuple[str]]) -> BaseStream:
         """Drop channel(s).
 
@@ -338,8 +417,35 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         self._pick(picks)
         return self
 
-    def filter(self) -> BaseStream:  # noqa: A003
-        """Filter the stream. Not implemented.
+    @verbose
+    @fill_doc
+    def filter(
+        self,
+        l_freq: Optional[float],
+        h_freq: Optional[float],
+        picks,
+        iir_params: Optional[dict[str, Any]] = None,
+        *,
+        verbose: Optional[Union[bool, str, int]] = None,
+    ) -> BaseStream:  # noqa: A003
+        """Filter the stream with an IIR causal filter.
+
+        Once a filter is applied, the buffer is updated in real-time with the filtered
+        data. It is possible to apply more than one filter.
+
+        .. code-block:: python
+
+            stream = Stream(2.0).connect()
+            stream.filter(1.0, 40.0, picks="eeg")
+            stream.filter(1.0, 15.0, picks="ecg").filter(0.1, 5, picks="EDA")
+
+        Parameters
+        ----------
+        %(l_freq)s
+        %(h_freq)s
+        %(picks_all)s
+        %(iir_params)s
+        %(verbose)s
 
         Returns
         -------
@@ -347,7 +453,40 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             The stream instance modified in-place.
         """
         self._check_connected_and_regular_sampling("filter()")
-        raise NotImplementedError
+        # validate the arguments and ensure 'sos' output
+        picks = _picks_to_idx(self._info, picks, "all", "bads", allow_empty=False)
+        iir_params = (
+            dict(order=4, ftype="butter", output="sos")
+            if iir_params is None
+            else iir_params
+        )
+        check_type(iir_params, (dict,), "iir_params")
+        if ("output" in iir_params and iir_params["output"] != "sos") or all(
+            key in iir_params for key in ("a", "b")
+        ):
+            warn(
+                "Only 'sos' output is supported for real-time filtering. The filter "
+                "output will be automatically changed. Please set "
+                "iir_params=dict(output='sos', ...) in your call to filter().",
+                RuntimeWarning,
+                stacklevel=2,
+            )
+            for key in ("a", "b"):
+                if key in iir_params:
+                    del iir_params[key]
+        iir_params["output"] = "sos"
+        # construct an IIR filter
+        filt = create_filter(
+            sfreq=self._info["sfreq"],
+            l_freq=l_freq,
+            h_freq=h_freq,
+            iir_params=iir_params,
+        )
+        filt.update(picks=picks)  # channel selection
+        # add filter to the list of applied filters
+        with self._interrupt_acquisition():
+            self._filters.append(StreamFilter(filt))
+        return self
 
     @copy_doc(ContainsMixin.get_channel_types)
     def get_channel_types(
@@ -381,7 +520,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         self._check_connected(name="get_channel_units()")
         check_type(only_data_chs, (bool,), "only_data_chs")
         none = "data" if only_data_chs else "all"
-        picks = _picks_to_idx(self._info, picks, none, (), allow_empty=False)
+        picks = _picks_to_idx(self._info, picks, none, "bads", allow_empty=False)
         channel_units = list()
         for idx in picks:
             channel_units.append(
@@ -442,7 +581,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             # 8.68 µs ± 113 ns per loop
             # >>> %timeit _picks_to_idx(raw.info, None)
             # 253 µs ± 1.22 µs per loop
-            picks = _picks_to_idx(self._info, picks, none="all")
+            picks = _picks_to_idx(self._info, picks, none="all", exclude="bads")
             self._n_new_samples = 0  # reset the number of new samples
             return self._buffer[-n_samples:, picks].T, self._timestamps[-n_samples:]
         except Exception:
@@ -475,7 +614,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
         Parameters
         ----------
-        %(picks_all)s
+        %(picks_base)s all channels.
         exclude : str | list of str
             Set of channels to exclude, only used when picking is based on types, e.g.
             ``exclude='bads'`` when ``picks="meg"``.
@@ -837,20 +976,21 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
                 "The channel selection must be done before adding a re-refenrecing "
                 "schema with Stream.set_eeg_reference()."
             )
-
         picks_inlet = picks[np.where(picks < self._picks_inlet.size)[0]]
         if picks_inlet.size == 0:
             raise RuntimeError(
                 "The requested channel selection would not leave any channel from the "
-                "LSL Stream."
+                "Stream."
             )
-
+        if len(self._filters) != 0:
+            raise RuntimeError(
+                "The channel selection must be done before adding filters to the "
+                "Stream."
+            )
         with self._interrupt_acquisition():
-            with use_log_level(logger.level):
-                self._info = pick_info(self._info, picks)
+            self._info = pick_info(self._info, picks, verbose=logger.level)
             self._picks_inlet = self._picks_inlet[picks_inlet]
             self._buffer = self._buffer[:, picks]
-
             # prune added channels which are not part of the inlet
             for ch in self._added_channels[::-1]:
                 if ch not in self.ch_names:
@@ -869,6 +1009,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         self._added_channels = []
         self._ref_channels = None
         self._ref_from = None
+        self._filters = []
         self._timestamps = None
         # This method needs to reset any stream-system-specific variables, e.g. an inlet
         # or a StreamInfo for LSL streams.
@@ -883,7 +1024,6 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         self._check_connected(name="compensation_grade")
         return super().compensation_grade
 
-    # ----------------------------------------------------------------------------------
     @property
     def ch_names(self) -> list[str]:
         """Name of the channels.
@@ -918,6 +1058,14 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
     def dtype(self) -> Optional[DTypeLike]:
         """Channel format of the stream."""
         return getattr(self._buffer, "dtype", None)
+
+    @property
+    def filters(self) -> list[StreamFilter]:
+        """List of filters applied to the real-time Stream.
+
+        :type: :class:`list` of ```StreamFilter``
+        """
+        return self._filters
 
     @property
     def info(self) -> Info:

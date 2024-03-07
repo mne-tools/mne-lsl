@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 from mne.utils import check_version
+from scipy.signal import sosfilt
 
 if check_version("mne", "1.5"):
     from mne.io.constants import FIFF
@@ -232,10 +233,14 @@ class StreamLSL(BaseStream):
             # process acquisition window
             n_channels = self._inlet.n_channels
             assert data.ndim == 2 and data.shape[-1] == n_channels, (
-                data.shape,
-                n_channels,
+                f"Data shape {data.shape} (n_samples, n_channels) for "
+                f"{n_channels} channels."
             )
-            data = data[:, self._picks_inlet]  # subselect channels
+            # select the last self._timestamps.size samples from data and timestamps in
+            # case more samples than the buffer can hold were retrieved.
+            # select channels retained in the buffer.
+            data = data[-self._timestamps.size :, self._picks_inlet]
+            timestamps = timestamps[-self._timestamps.size :]
             if self._stype == "annotations" and np.count_nonzero(data) == 0:
                 if not self._interrupt:
                     self._create_acquisition_thread(self._acquisition_delay)
@@ -250,6 +255,19 @@ class StreamLSL(BaseStream):
                 data_ref = data[:, self._ref_channels].mean(axis=1, keepdims=True)
                 data[:, self._ref_from] -= data_ref
 
+            # apply filters on (n_times, n_channels) data
+            for filt in self._filters:
+                if filt["zi"] is None:
+                    # initial conditions are set to a step response steady-state set
+                    # on the mean on the acquisition window (e.g. DC offset for EEGs)
+                    filt["zi"] = filt["zi_unit"] * np.mean(
+                        data[:, filt["picks"]], axis=0
+                    )
+                data_filtered, filt["zi"] = sosfilt(
+                    filt["sos"], data[:, filt["picks"]], zi=filt["zi"], axis=0
+                )
+                data[:, filt["picks"]] = data_filtered  # operate in-place
+
             # roll and update buffers
             self._buffer = np.roll(self._buffer, -timestamps.size, axis=0)
             self._timestamps = np.roll(self._timestamps, -timestamps.size, axis=0)
@@ -260,16 +278,11 @@ class StreamLSL(BaseStream):
                 n_channels,
                 self._picks_inlet.size,
             )
-            # select the last self._timestamps.size samples from data and timestamps in
-            # case more samples than the buffer can hold were retrieved.
-            self._buffer[-timestamps.size :, :] = data[-self._timestamps.size :, :]
-            self._timestamps[-timestamps.size :] = timestamps[-self._timestamps.size :]
+            self._buffer[-timestamps.size :, :] = data
+            self._timestamps[-timestamps.size :] = timestamps
             # update the number of new samples available
-            self._n_new_samples += min(timestamps.size, self._timestamps.size)
-            if (
-                self._timestamps.size < self._n_new_samples
-                or self._timestamps.size < timestamps.size
-            ):
+            self._n_new_samples += timestamps.size
+            if self._timestamps.size < self._n_new_samples:
                 logger.info(
                     "The number of new samples exceeds the buffer size. Consider using "
                     "a larger buffer by creating a Stream with a larger 'bufsize' "
