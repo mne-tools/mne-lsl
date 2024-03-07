@@ -431,8 +431,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         """Filter the stream with an IIR causal filter.
 
         Once a filter is applied, the buffer is updated in real-time with the filtered
-        data. It is not possible to remove an applied filter. It is possible to apply
-        more than one filter.
+        data. It is possible to apply more than one filter.
 
         .. code-block:: python
 
@@ -452,12 +451,6 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         -------
         stream : instance of ``Stream``
             The stream instance modified in-place.
-
-        Notes
-        -----
-        Adding a filter on channels already filtered will reset the initial conditions
-        of those channels. The initial conditions will be re-estimated as a step
-        response steady-state to the combination of both filters.
         """
         self._check_connected_and_regular_sampling("filter()")
         # validate the arguments and ensure 'sos' output
