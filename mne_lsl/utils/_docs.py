@@ -45,7 +45,7 @@ del key
 # -- G ---------------------------------------------------------------------------------
 # -- H ---------------------------------------------------------------------------------
 docdict["h_freq"] = """h_freq : float | None
-            The higher cutoff frequency. If None, the buffer is only high-passed."""
+    The higher cutoff frequency. If None, the buffer is only high-passed."""
 
 # -- I ---------------------------------------------------------------------------------
 docdict["iir_params"] = """
@@ -63,7 +63,7 @@ iir_params : dict | None
 # -- L ---------------------------------------------------------------------------------
 docdict["l_freq"] = """
 l_freq : float | None
-            The lower cutoff frequency. If None, the buffer is only low-passed."""
+    The lower cutoff frequency. If None, the buffer is only low-passed."""
 
 # -- M ---------------------------------------------------------------------------------
 # -- N ---------------------------------------------------------------------------------
