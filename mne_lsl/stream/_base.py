@@ -1004,7 +1004,6 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             for ch in self._added_channels[::-1]:
                 if ch not in self.ch_names:
                     self._added_channels.remove(ch)
-            self._filters = [filt for filt in self._filters if filt["picks"].size != 0]
 
     @abstractmethod
     def _reset_variables(self) -> None:
