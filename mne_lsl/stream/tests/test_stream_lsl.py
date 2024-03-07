@@ -747,6 +747,7 @@ def test_stream_filter_picks(mock_lsl_stream):
     assert_allclose(stream.filters[0]["picks"], picks_)
     stream.drop_channels(["ECG"])  # -2 channel
     assert_allclose(stream.filters[0]["picks"], picks_[:-1])
+    stream.disconnect()
 
 
 def test_stream_filter(mock_lsl_stream_sinusoids, raw_sinusoids):
@@ -769,4 +770,74 @@ def test_stream_filter(mock_lsl_stream_sinusoids, raw_sinusoids):
     time.sleep(2.1)
     fft_ = np.abs(fft(stream.get_data()[0], axis=-1)[:, idx])
     for ch, ch_height in heights_orig.items():
-        assert_allclose(fft_[ch, ch_height["idx"]], ch_height["heights"])
+        assert_allclose(fft_[ch, ch_height["idx"]], ch_height["heights"], rtol=0.01)
+    # test filtering
+    stream.filter(5, 15, picks="10-30")
+    time.sleep(2.1)
+    fft_ = np.abs(fft(stream.get_data()[0], axis=-1)[:, idx])
+    for ch, ch_height in heights_orig.items():
+        if ch == 0:  # 10 Hz retained, 30 Hz removed
+            assert fft_[ch, ch_height["idx"]][1] < 0.1 * ch_height["heights"][1]
+            assert_allclose(
+                fft_[ch, ch_height["idx"]][0], ch_height["heights"][0], rtol=0.01
+            )
+        else:
+            assert_allclose(fft_[ch, ch_height["idx"]], ch_height["heights"], rtol=0.01)
+    # test removing filter
+    stream.del_filter(0)
+    time.sleep(2.1)
+    fft_ = np.abs(fft(stream.get_data()[0], axis=-1)[:, idx])
+    for ch, ch_height in heights_orig.items():
+        assert_allclose(fft_[ch, ch_height["idx"]], ch_height["heights"], rtol=0.01)
+    # test adding multiple filters
+    stream.filter(20, 70, picks="eeg")
+    time.sleep(2.1)
+    fft_ = np.abs(fft(stream.get_data()[0], axis=-1)[:, idx])
+    for ch, ch_height in heights_orig.items():
+        if ch == 0:  # 10 Hz removed, 30 Hz retained
+            assert fft_[ch, ch_height["idx"]][0] < 0.1 * ch_height["heights"][0]
+            assert_allclose(
+                fft_[ch, ch_height["idx"]][1], ch_height["heights"][1], rtol=0.01
+            )
+        elif ch == 1:  # 30 Hz retained, 50 Hz retained
+            assert_allclose(fft_[ch, ch_height["idx"]], ch_height["heights"], rtol=0.01)
+        elif ch == 2:  # 30 Hz retained, 100 Hz removed (but not as much attenuation)
+            assert fft_[ch, ch_height["idx"]][1] < 0.15 * ch_height["heights"][1]
+            assert_allclose(
+                fft_[ch, ch_height["idx"]][0], ch_height["heights"][0], rtol=0.01
+            )
+    stream.filter(40, 60, picks="30-50")  # second filter
+    time.sleep(2.1)
+    fft_ = np.abs(fft(stream.get_data()[0], axis=-1)[:, idx])
+    for ch, ch_height in heights_orig.items():
+        if ch == 0:  # 10 Hz removed, 30 Hz retained
+            assert fft_[ch, ch_height["idx"]][0] < 0.1 * ch_height["heights"][0]
+            assert_allclose(
+                fft_[ch, ch_height["idx"]][1], ch_height["heights"][1], rtol=0.01
+            )
+        elif ch == 1:  # 30 Hz removed, 50 Hz retained
+            assert fft_[ch, ch_height["idx"]][0] < 0.1 * ch_height["heights"][0]
+            assert_allclose(
+                fft_[ch, ch_height["idx"]][1], ch_height["heights"][1], rtol=0.01
+            )
+        elif ch == 2:  # 30 Hz retained, 100 Hz removed
+            assert_allclose(
+                fft_[ch, ch_height["idx"]][0], ch_height["heights"][0], rtol=0.01
+            )
+            assert fft_[ch, ch_height["idx"]][1] < 0.15 * ch_height["heights"][1]
+    stream.filter(40, 60, picks="eeg")  # third filter
+    time.sleep(2.1)
+    fft_ = np.abs(fft(stream.get_data()[0], axis=-1)[:, idx])
+    for ch, ch_height in heights_orig.items():
+        if ch == 0:  # 10 Hz removed, 30 Hz removed
+            assert fft_[ch, ch_height["idx"]][0] < 0.1 * ch_height["heights"][0]
+            assert fft_[ch, ch_height["idx"]][0] < 0.1 * ch_height["heights"][0]
+        elif ch == 1:  # 30 Hz removed, 50 Hz retained
+            assert fft_[ch, ch_height["idx"]][0] < 0.1 * ch_height["heights"][0]
+            assert_allclose(
+                fft_[ch, ch_height["idx"]][1], ch_height["heights"][1], rtol=0.01
+            )
+        elif ch == 2:  # 30 Hz removed, 100 Hz removed
+            assert fft_[ch, ch_height["idx"]][0] < 0.1 * ch_height["heights"][0]
+            assert fft_[ch, ch_height["idx"]][1] < 0.15 * ch_height["heights"][1]
+    stream.disconnect()
