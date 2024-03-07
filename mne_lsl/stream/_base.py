@@ -983,7 +983,6 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
                 "The channel selection must be done before adding a re-refenrecing "
                 "schema with Stream.set_eeg_reference()."
             )
-
         picks_inlet = picks[np.where(picks < self._picks_inlet.size)[0]]
         if picks_inlet.size == 0:
             raise RuntimeError(
@@ -995,7 +994,6 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
                 "The channel selection must be done before adding filters to the "
                 "Stream."
             )
-
         with self._interrupt_acquisition():
             self._info = pick_info(self._info, picks, verbose=logger.level)
             self._picks_inlet = self._picks_inlet[picks_inlet]
