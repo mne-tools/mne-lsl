@@ -721,35 +721,6 @@ def test_stream_filter_deletion(mock_lsl_stream, caplog):
     stream.disconnect()
 
 
-@pytest.mark.skip(reason="Not yet implemented.")
-def test_stream_filter_picks(mock_lsl_stream):
-    """Test picks from a StreamFilter."""
-    stream = (
-        Stream(bufsize=2.0, name=mock_lsl_stream.name)
-        .connect()
-        .filter(l_freq=1.0, h_freq=40.0, picks="eeg")
-    )
-    assert len(stream.filters) == 1
-    assert_allclose(
-        stream.filters[0]["picks"],
-        _picks_to_idx(mock_lsl_stream.info, picks="eeg", exclude=()),
-    )
-    stream.pick(["F7", "F3", "Fz", "F4", "F8"])  # consecutive EEG-only channels
-    assert_allclose(stream.filters[0]["picks"], np.arange(5))
-    stream.pick(["F3", "F4"])  # non-consecutive EEG-only channels
-    assert_allclose(stream.filters[0]["picks"], np.arange(2))
-    stream.disconnect().connect()  # reset
-    stream.filter(l_freq=None, h_freq=100.0, picks=("eeg", "ecg", "eog"))
-    assert len(stream.filters) == 1
-    picks_ = _picks_to_idx(
-        mock_lsl_stream.info, picks=("eeg", "ecg", "eog"), exclude=()
-    )
-    assert_allclose(stream.filters[0]["picks"], picks_)
-    stream.drop_channels(["ECG"])  # -2 channel
-    assert_allclose(stream.filters[0]["picks"], picks_[:-1])
-    stream.disconnect()
-
-
 def test_stream_filter(mock_lsl_stream_sinusoids, raw_sinusoids):
     """Test stream filters."""
     freqs = fftfreq(raw_sinusoids.times.size, 1 / raw_sinusoids.info["sfreq"])
