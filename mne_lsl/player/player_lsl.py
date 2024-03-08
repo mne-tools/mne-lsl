@@ -10,7 +10,7 @@ from mne.annotations import _handle_meas_date
 
 from ..lsl import StreamInfo, StreamOutlet, local_clock
 from ..utils._checks import check_type
-from ..utils._docs import copy_doc
+from ..utils._docs import copy_doc, fill_doc
 from ..utils.logs import logger
 from ._base import BasePlayer
 
@@ -19,18 +19,18 @@ if TYPE_CHECKING:
     from typing import Callable, Optional, Union
 
 
+@fill_doc
 class PlayerLSL(BasePlayer):
     """Class for creating a mock LSL stream.
 
     Parameters
     ----------
-    fname : path-like
-        Path to the file to re-play as a mock LSL stream. MNE-Python must be able to
-        load the file with :func:`mne.io.read_raw`.
+    %(player_fname)s
     chunk_size : int ``≥ 1``
         Number of samples pushed at once on the :class:`~mne_lsl.lsl.StreamOutlet`.
         If these chunks are too small then the thread-based timing might not work
         properly.
+    %(n_repeat)s
     name : str | None
         Name of the mock LSL stream. If ``None``, the name ``MNE-LSL-Player`` is used.
     annotations : bool | None
@@ -91,10 +91,11 @@ class PlayerLSL(BasePlayer):
         self,
         fname: Union[str, Path],
         chunk_size: int = 64,
+        n_repeat: Optional[int] = None,
         name: Optional[str] = None,
         annotations: Optional[bool] = None,
     ) -> None:
-        super().__init__(fname, chunk_size)
+        super().__init__(fname, chunk_size, n_repeat)
         check_type(name, (str, None), "name")
         check_type(annotations, (bool, None), "annotations")
         self._name = "MNE-LSL-Player" if name is None else name
