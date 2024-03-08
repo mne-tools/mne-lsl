@@ -274,20 +274,18 @@ class PlayerLSL(BasePlayer):
         except Exception as exc:
             logger.error("%s: Stopping due to exception: %s", self._name, exc)
             self._reset_variables()
-            return None  # equivalent to an interrupt
         else:
             if self._interrupt:
                 return None  # don't recreate the thread if we are interrupting
-            else:
-                # figure out how early or late the thread woke up and compensate the
-                # delay for the next thread to remain in the neighbourhood of
-                # _target_timestamp for the following wake.
-                delta = self._target_timestamp - self._streaming_delay - local_clock()
-                delay = max(self._streaming_delay + delta, 0)
-                # recreate the timer thread as it is one-call only
-                self._streaming_thread = Timer(delay, self._stream)
-                self._streaming_thread.daemon = True
-                self._streaming_thread.start()
+            # figure out how early or late the thread woke up and compensate the
+            # delay for the next thread to remain in the neighbourhood of
+            # _target_timestamp for the following wake.
+            delta = self._target_timestamp - self._streaming_delay - local_clock()
+            delay = max(self._streaming_delay + delta, 0)
+            # recreate the timer thread as it is one-call only
+            self._streaming_thread = Timer(delay, self._stream)
+            self._streaming_thread.daemon = True
+            self._streaming_thread.start()
 
     def _stream_annotations(
         self, start: int, stop: int, start_timestamp: float
