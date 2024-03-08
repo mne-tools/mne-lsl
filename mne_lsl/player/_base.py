@@ -419,3 +419,11 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         :type: :class:`~mne.Info`
         """
         return self._raw.info
+
+    @property
+    def n_repeat(self) -> Optional[int]:
+        """Number of times the file is repeated.
+
+        :type: :class:`int` | None
+        """
+        return self._n_repeat
