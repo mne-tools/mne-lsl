@@ -401,3 +401,13 @@ def test_player_n_repeat(raw):
     streams = resolve_streams()
     assert len(streams) == 1
     player.stop()
+
+
+def test_player_n_repeat_invalid(raw):
+    """Test invalid argument 'n_repeat'."""
+    with pytest.raises(ValueError, match="strictly positive integer"):
+        Player(raw, n_repeat=0)
+    with pytest.raises(ValueError, match="strictly positive integer"):
+        Player(raw, n_repeat=-1)
+    with pytest.raises(TypeError, match="must be an integer"):
+        Player(raw, n_repeat="1")
