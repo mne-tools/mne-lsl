@@ -239,7 +239,7 @@ class PlayerLSL(BasePlayer):
         try:
             # retrieve data and push to the stream outlet
             start = self._start_idx
-            if start == 0:
+            if start == 0 and self.__n_repeat == 0:
                 logger.debug("First _stream ping %s", self._name)
             stop = start + self._chunk_size
             if stop <= self._raw.times.size:
