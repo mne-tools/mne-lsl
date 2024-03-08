@@ -68,7 +68,7 @@ l_freq : float | None
 # -- M ---------------------------------------------------------------------------------
 # -- N ---------------------------------------------------------------------------------
 docdict["n_repeat"] = """
-n_repeat : int | np.inf
+n_repeat : int | ``np.inf``
     Number of times to repeat the file. If :class:`numpy.inf`, the file is re-played
     indefinitely."""
 
