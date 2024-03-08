@@ -426,6 +426,6 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
     def n_repeat(self) -> Optional[int]:
         """Number of times the file is repeated.
 
-        :type: :class:`int` | :class:`numpy.inf`
+        :type: :class:`int` | ``np.inf``
         """
         return self._n_repeat
