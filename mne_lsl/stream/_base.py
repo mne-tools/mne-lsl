@@ -423,7 +423,9 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         self,
         l_freq: Optional[float],
         h_freq: Optional[float],
-        picks,
+        picks: Optional[
+            Union[str, list[str], int, list[int], NDArray[+ScalarIntType]]
+        ] = None,
         iir_params: Optional[dict[str, Any]] = None,
         *,
         verbose: Optional[Union[bool, str, int]] = None,
@@ -490,7 +492,12 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
     @copy_doc(ContainsMixin.get_channel_types)
     def get_channel_types(
-        self, picks=None, unique=False, only_data_chs=False
+        self,
+        picks: Optional[
+            Union[str, list[str], int, list[int], NDArray[+ScalarIntType]]
+        ] = None,
+        unique=False,
+        only_data_chs=False,
     ) -> list[str]:
         self._check_connected(name="get_channel_types()")
         return super().get_channel_types(
@@ -499,7 +506,11 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
     @fill_doc
     def get_channel_units(
-        self, picks=None, only_data_chs: bool = False
+        self,
+        picks: Optional[
+            Union[str, list[str], int, list[int], NDArray[+ScalarIntType]]
+        ] = None,
+        only_data_chs: bool = False,
     ) -> list[tuple[int, int]]:
         """Get a list of channel unit for each channel.
 
@@ -533,7 +544,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         self,
         winsize: Optional[float] = None,
         picks: Optional[
-            Union[str, list[str], list[int], NDArray[+ScalarIntType]]
+            Union[str, list[str], int, list[int], NDArray[+ScalarIntType]]
         ] = None,
     ) -> tuple[NDArray[+ScalarType], NDArray[np.float64]]:
         """Retrieve the latest data from the buffer.
@@ -609,7 +620,13 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         raise NotImplementedError
 
     @fill_doc
-    def pick(self, picks, exclude=()) -> BaseStream:
+    def pick(
+        self,
+        picks: Optional[
+            Union[str, list[str], int, list[int], NDArray[+ScalarIntType]]
+        ] = None,
+        exclude: Union[str, list[str], int, list[int], NDArray[+ScalarIntType]] = (),
+    ) -> BaseStream:
         """Pick a subset of channels.
 
         Parameters
