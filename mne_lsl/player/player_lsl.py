@@ -223,6 +223,15 @@ class PlayerLSL(BasePlayer):
         """
         logger.debug("%s: Stopping", self._name)
         super().stop()
+        try:
+            self._outlet.__del__()
+        except Exception:
+            pass
+        try:
+            self._outlet_annotations.__del__()
+        except Exception:
+            pass
+        self._reset_variables()
         return self
 
     @copy_doc(BasePlayer._stream)
@@ -230,18 +239,18 @@ class PlayerLSL(BasePlayer):
         try:
             # retrieve data and push to the stream outlet
             start = self._start_idx
-            if start == 0 and self.__n_repeat == 1:
+            if start == 0 and self._n_repeated == 1:
                 logger.debug("First _stream ping %s", self._name)
             stop = start + self._chunk_size
             if stop <= self._raw.times.size:
                 data = self._raw[:, start:stop][0].T
                 self._start_idx += self._chunk_size
-            elif self._raw.times.size < stop and self.__n_repeat < self._n_repeat:
+            elif self._raw.times.size < stop and self._n_repeated < self._n_repeat:
                 logger.debug("End of file reach, looping back to the beginning.")
                 stop = self._chunk_size - (self._raw.times.size - start)
                 data = np.vstack([self._raw[:, start:][0].T, self._raw[:, :stop][0].T])
                 self._start_idx = stop
-                self.__n_repeat += 1
+                self._n_repeated += 1
             else:
                 logger.debug("End of file reach, stopping the player.")
                 stop = self._raw.times.size
@@ -268,7 +277,6 @@ class PlayerLSL(BasePlayer):
             return None  # equivalent to an interrupt
         else:
             if self._interrupt:
-                self._reset_variables()
                 return None  # don't recreate the thread if we are interrupting
             else:
                 # figure out how early or late the thread woke up and compensate the
@@ -323,16 +331,6 @@ class PlayerLSL(BasePlayer):
         """Reset variables for streaming."""
         logger.debug("Resetting variables %s", self._name)
         super()._reset_variables()
-        if hasattr(self, "_outlet"):
-            try:
-                self._outlet.__del__()
-            except Exception:
-                pass
-        if hasattr(self, "_outlet_annotations"):
-            try:
-                self._outlet_annotations.__del__()
-            except Exception:
-                pass
         self._outlet = None
         self._outlet_annotations = None
         self._target_timestamp = None

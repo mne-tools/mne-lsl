@@ -330,6 +330,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         self._interrupt = True
         while self._streaming_thread.is_alive():
             self._streaming_thread.cancel()
+        # This method must end with self._reset_variables()
 
     def _check_not_started(self, name: str):
         """Check that the player is not started before calling the function 'name'."""
@@ -357,7 +358,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
     def _reset_variables(self) -> None:
         """Reset variables for streaming."""
         self._interrupt = False
-        self.__n_repeat = 1  # number of times the file was repeated
+        self._n_repeated = 1  # number of times the file was repeated
         self._start_idx = 0
         self._streaming_delay = None
         self._streaming_thread = None
