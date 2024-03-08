@@ -223,16 +223,22 @@ class PlayerLSL(BasePlayer):
         """
         logger.debug("%s: Stopping", self._name)
         super().stop()
-        try:
-            self._outlet.__del__()
-        except Exception:
-            pass
-        try:
-            self._outlet_annotations.__del__()
-        except Exception:
-            pass
+        self._del_outlets()
         self._reset_variables()
         return self
+
+    def _del_outlets(self) -> None:
+        """Attempt to delete outlets."""
+        if hasattr(self, "_outlet"):
+            try:
+                self._outlet.__del__()
+            except Exception:
+                pass
+        if hasattr(self, "_outlet_annotations"):
+            try:
+                self._outlet_annotations.__del__()
+            except Exception:
+                pass
 
     @copy_doc(BasePlayer._stream)
     def _stream(self) -> None:
@@ -273,9 +279,11 @@ class PlayerLSL(BasePlayer):
             self._stream_annotations(start, stop, start_timestamp)
         except Exception as exc:
             logger.error("%s: Stopping due to exception: %s", self._name, exc)
+            self._del_outlets()
             self._reset_variables()
         else:
             if self._interrupt:
+                self._del_outlets()
                 return None  # don't recreate the thread if we are interrupting
             # figure out how early or late the thread woke up and compensate the
             # delay for the next thread to remain in the neighbourhood of
@@ -337,14 +345,7 @@ class PlayerLSL(BasePlayer):
     def __del__(self):
         """Delete the player and destroy the :class:`~mne_lsl.lsl.StreamOutlet`."""
         super().__del__()
-        try:
-            self._outlet.__del__()
-        except Exception:
-            pass
-        try:
-            self._outlet_annotations.__del__()
-        except Exception:
-            pass
+        self._del_outlets()  # likely redundant, but no-op anyway.
 
     def __repr__(self):
         """Representation of the instance."""
