@@ -223,15 +223,6 @@ class PlayerLSL(BasePlayer):
         """
         logger.debug("%s: Stopping", self._name)
         super().stop()
-        try:
-            self._outlet.__del__()
-        except Exception:
-            pass
-        try:
-            self._outlet_annotations.__del__()
-        except Exception:
-            pass
-        self._reset_variables()
         return self
 
     @copy_doc(BasePlayer._stream)
@@ -251,6 +242,11 @@ class PlayerLSL(BasePlayer):
                 data = np.vstack([self._raw[:, start:][0].T, self._raw[:, :stop][0].T])
                 self._start_idx = stop
                 self.__n_repeat += 1
+            else:
+                logger.debug("End of file reach, stopping the player.")
+                stop = self._raw.times.size
+                data = self._raw[:, start:stop][0].T
+                self._interrupt = True
             # bump the target LSL timestamp before pushing because the argument
             # 'timestamp' expects the timestamp of the most 'recent' sample, which in
             # this non-real time replay scenario is the timestamp of the last sample in
@@ -272,6 +268,7 @@ class PlayerLSL(BasePlayer):
             return None  # equivalent to an interrupt
         else:
             if self._interrupt:
+                self._reset_variables()
                 return None  # don't recreate the thread if we are interrupting
             else:
                 # figure out how early or late the thread woke up and compensate the
@@ -326,6 +323,16 @@ class PlayerLSL(BasePlayer):
         """Reset variables for streaming."""
         logger.debug("Resetting variables %s", self._name)
         super()._reset_variables()
+        if hasattr(self, "_outlet"):
+            try:
+                self._outlet.__del__()
+            except Exception:
+                pass
+        if hasattr(self, "_outlet_annotations"):
+            try:
+                self._outlet_annotations.__del__()
+            except Exception:
+                pass
         self._outlet = None
         self._outlet_annotations = None
         self._target_timestamp = None

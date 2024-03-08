@@ -330,7 +330,6 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         self._interrupt = True
         while self._streaming_thread.is_alive():
             self._streaming_thread.cancel()
-        # This method must end with self._reset_variables()
 
     def _check_not_started(self, name: str):
         """Check that the player is not started before calling the function 'name'."""
