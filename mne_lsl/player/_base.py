@@ -357,6 +357,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
 
     def _reset_variables(self) -> None:
         """Reset variables for streaming."""
+        self._end_streaming = False
         self._interrupt = False
         self._n_repeated = 1  # number of times the file was repeated
         self._start_idx = 0

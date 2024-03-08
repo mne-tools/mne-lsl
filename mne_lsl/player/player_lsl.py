@@ -261,7 +261,7 @@ class PlayerLSL(BasePlayer):
                 logger.debug("End of file reach, stopping the player.")
                 stop = self._raw.times.size
                 data = self._raw[:, start:stop][0].T
-                self._interrupt = True
+                self._end_streaming = True
             # bump the target LSL timestamp before pushing because the argument
             # 'timestamp' expects the timestamp of the most 'recent' sample, which in
             # this non-real time replay scenario is the timestamp of the last sample in
@@ -282,8 +282,10 @@ class PlayerLSL(BasePlayer):
             self._del_outlets()
             self._reset_variables()
         else:
-            if self._interrupt:
+            if self._interrupt or self._end_streaming:
                 self._del_outlets()
+                if self._end_streaming:
+                    self._reset_variables()
                 return None  # don't recreate the thread if we are interrupting
             # figure out how early or late the thread woke up and compensate the
             # delay for the next thread to remain in the neighbourhood of
