@@ -382,3 +382,8 @@ def test_player_annotations(raw_annotations, close_io):
     stream.disconnect()
     close_io()
     player.stop()
+
+
+def test_player_n_repeat():
+    """Test argument 'n_repeat'."""
+    pass
