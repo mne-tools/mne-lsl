@@ -10,7 +10,7 @@ from mne.annotations import _handle_meas_date
 
 from ..lsl import StreamInfo, StreamOutlet, local_clock
 from ..utils._checks import check_type
-from ..utils._docs import copy_doc
+from ..utils._docs import copy_doc, fill_doc
 from ..utils.logs import logger
 from ._base import BasePlayer
 
@@ -19,18 +19,18 @@ if TYPE_CHECKING:
     from typing import Callable, Optional, Union
 
 
+@fill_doc
 class PlayerLSL(BasePlayer):
     """Class for creating a mock LSL stream.
 
     Parameters
     ----------
-    fname : path-like
-        Path to the file to re-play as a mock LSL stream. MNE-Python must be able to
-        load the file with :func:`mne.io.read_raw`.
+    %(player_fname)s
     chunk_size : int ``≥ 1``
         Number of samples pushed at once on the :class:`~mne_lsl.lsl.StreamOutlet`.
         If these chunks are too small then the thread-based timing might not work
         properly.
+    %(n_repeat)s
     name : str | None
         Name of the mock LSL stream. If ``None``, the name ``MNE-LSL-Player`` is used.
     annotations : bool | None
@@ -91,10 +91,11 @@ class PlayerLSL(BasePlayer):
         self,
         fname: Union[str, Path],
         chunk_size: int = 64,
+        n_repeat: Union[int, float] = np.inf,
         name: Optional[str] = None,
         annotations: Optional[bool] = None,
     ) -> None:
-        super().__init__(fname, chunk_size)
+        super().__init__(fname, chunk_size, n_repeat)
         check_type(name, (str, None), "name")
         check_type(annotations, (bool, None), "annotations")
         self._name = "MNE-LSL-Player" if name is None else name
@@ -222,32 +223,45 @@ class PlayerLSL(BasePlayer):
         """
         logger.debug("%s: Stopping", self._name)
         super().stop()
-        try:
-            self._outlet.__del__()
-        except Exception:
-            pass
-        try:
-            self._outlet_annotations.__del__()
-        except Exception:
-            pass
+        self._del_outlets()
         self._reset_variables()
         return self
+
+    def _del_outlets(self) -> None:
+        """Attempt to delete outlets."""
+        if hasattr(self, "_outlet"):
+            try:
+                self._outlet.__del__()
+            except Exception:
+                pass
+        if hasattr(self, "_outlet_annotations"):
+            try:
+                self._outlet_annotations.__del__()
+            except Exception:
+                pass
 
     @copy_doc(BasePlayer._stream)
     def _stream(self) -> None:
         try:
             # retrieve data and push to the stream outlet
             start = self._start_idx
-            if start == 0:
+            if start == 0 and self._n_repeated == 1:
                 logger.debug("First _stream ping %s", self._name)
             stop = start + self._chunk_size
             if stop <= self._raw.times.size:
                 data = self._raw[:, start:stop][0].T
                 self._start_idx += self._chunk_size
-            else:
+            elif self._raw.times.size < stop and self._n_repeated < self._n_repeat:
+                logger.debug("End of file reach, looping back to the beginning.")
                 stop = self._chunk_size - (self._raw.times.size - start)
                 data = np.vstack([self._raw[:, start:][0].T, self._raw[:, :stop][0].T])
                 self._start_idx = stop
+                self._n_repeated += 1
+            else:
+                logger.debug("End of file reach, stopping the player.")
+                stop = self._raw.times.size
+                data = self._raw[:, start:stop][0].T
+                self._end_streaming = True
             # bump the target LSL timestamp before pushing because the argument
             # 'timestamp' expects the timestamp of the most 'recent' sample, which in
             # this non-real time replay scenario is the timestamp of the last sample in
@@ -264,22 +278,24 @@ class PlayerLSL(BasePlayer):
             self._outlet.push_chunk(data, timestamp=self._target_timestamp)
             self._stream_annotations(start, stop, start_timestamp)
         except Exception as exc:
-            logger.debug("%s: Stopping due to exception: %s", self._name, exc)
+            logger.error("%s: Stopping due to exception: %s", self._name, exc)
+            self._del_outlets()
             self._reset_variables()
-            return None  # equivalent to an interrupt
         else:
-            if self._interrupt:
+            if self._interrupt or self._end_streaming:
+                self._del_outlets()
+                if self._end_streaming:
+                    self._reset_variables()
                 return None  # don't recreate the thread if we are interrupting
-            else:
-                # figure out how early or late the thread woke up and compensate the
-                # delay for the next thread to remain in the neighbourhood of
-                # _target_timestamp for the following wake.
-                delta = self._target_timestamp - self._streaming_delay - local_clock()
-                delay = max(self._streaming_delay + delta, 0)
-                # recreate the timer thread as it is one-call only
-                self._streaming_thread = Timer(delay, self._stream)
-                self._streaming_thread.daemon = True
-                self._streaming_thread.start()
+            # figure out how early or late the thread woke up and compensate the
+            # delay for the next thread to remain in the neighbourhood of
+            # _target_timestamp for the following wake.
+            delta = self._target_timestamp - self._streaming_delay - local_clock()
+            delay = max(self._streaming_delay + delta, 0)
+            # recreate the timer thread as it is one-call only
+            self._streaming_thread = Timer(delay, self._stream)
+            self._streaming_thread.daemon = True
+            self._streaming_thread.start()
 
     def _stream_annotations(
         self, start: int, stop: int, start_timestamp: float
@@ -331,14 +347,7 @@ class PlayerLSL(BasePlayer):
     def __del__(self):
         """Delete the player and destroy the :class:`~mne_lsl.lsl.StreamOutlet`."""
         super().__del__()
-        try:
-            self._outlet.__del__()
-        except Exception:
-            pass
-        try:
-            self._outlet_annotations.__del__()
-        except Exception:
-            pass
+        self._del_outlets()  # likely redundant, but no-op anyway.
 
     def __repr__(self):
         """Representation of the instance."""

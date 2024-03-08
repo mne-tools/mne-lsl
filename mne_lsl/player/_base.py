@@ -33,17 +33,16 @@ if TYPE_CHECKING:
     from mne import Info
 
 
+@fill_doc
 class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
     """Class for creating a mock real-time stream.
 
     Parameters
     ----------
-    fname : path-like | Raw
-        Path to the file to re-play as a mock real-time stream. MNE-Python must be able
-        to load the file with :func:`mne.io.read_raw`. An :class:`~mne.io.Raw` object
-        can be provided directly.
+    %(player_fname)s
     chunk_size : int ``≥ 1``
         Number of samples pushed at once on the mock real-time stream.
+    %(n_repeat)s
 
     Notes
     -----
@@ -53,12 +52,25 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
     """
 
     @abstractmethod
-    def __init__(self, fname: Union[str, Path, BaseRaw], chunk_size: int = 64) -> None:
+    def __init__(
+        self,
+        fname: Union[str, Path, BaseRaw],
+        chunk_size: int = 64,
+        n_repeat: Union[int, float] = np.inf,
+    ) -> None:
         self._chunk_size = ensure_int(chunk_size, "chunk_size")
         if self._chunk_size <= 0:
             raise ValueError(
                 "The argument 'chunk_size' must be a strictly positive integer. "
-                f"{chunk_size} is invalid."
+                f"{self._chunk_size} is invalid."
+            )
+        self._n_repeat = (
+            n_repeat if n_repeat is np.inf else ensure_int(n_repeat, "n_repeat")
+        )
+        if self._n_repeat <= 0:
+            raise ValueError(
+                "The argument 'n_repeat' must be a strictly positive integer or "
+                f"'np.inf'. {self._n_repeat} is invalid."
             )
         # load raw recording
         if isinstance(fname, BaseRaw):
@@ -345,10 +357,12 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
 
     def _reset_variables(self) -> None:
         """Reset variables for streaming."""
+        self._end_streaming = False
+        self._interrupt = False
+        self._n_repeated = 1  # number of times the file was repeated
         self._start_idx = 0
         self._streaming_delay = None
         self._streaming_thread = None
-        self._interrupt = False
 
     # ----------------------------------------------------------------------------------
     def __del__(self):
@@ -407,3 +421,11 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         :type: :class:`~mne.Info`
         """
         return self._raw.info
+
+    @property
+    def n_repeat(self) -> Optional[int]:
+        """Number of times the file is repeated.
+
+        :type: :class:`int` | ``np.inf``
+        """
+        return self._n_repeat

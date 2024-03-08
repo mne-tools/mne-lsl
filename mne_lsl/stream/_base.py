@@ -313,7 +313,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
         Parameters
         ----------
-        idx : ``'all'``| int | list of int | tuple of int
+        idx : ``'all'`` | int | list of int | tuple of int
             If the string ``'all'`` (default), remove all filters. If an integer or a
             list of integers, remove the filter(s) at the given index(es) from
             ``Stream.filters``.

@@ -21,3 +21,9 @@ Version 1.3
 
 - Improve logging to set MNE's logger level to currently set MNE-LSL level in MNE-LSL functions using MNE's function under the hood (:pr:`219` by `Mathieu Scheltienne`_)
 - Use the currently set logger level as replacement for ``verbose=None`` in MNE-LSL functions (:pr:`219` by `Mathieu Scheltienne`_)
+- Add IIR filter support to the LSL stream through :meth:`mne_lsl.stream.StreamLSL.filter` (:pr:`218` by `Mathieu Scheltienne`_ and `Eric Larson`_)
+
+API changes (backward incompatible)
+-----------------------------------
+
+- Add ``n_repeat`` argument to :class:`~mne_lsl.player.PlayerLSL` to support looping a file a fix number of times (:pr:`223` by `Mathieu Scheltienne`_)

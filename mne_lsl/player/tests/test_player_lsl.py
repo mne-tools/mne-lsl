@@ -382,3 +382,32 @@ def test_player_annotations(raw_annotations, close_io):
     stream.disconnect()
     close_io()
     player.stop()
+
+
+def test_player_n_repeat(raw):
+    """Test argument 'n_repeat'."""
+    player = Player(raw, n_repeat=1, name="Player-test_player_n_repeat-1")
+    player.start()
+    time.sleep((raw.times.size / raw.info["sfreq"]) * 1.1)
+    assert player._streaming_thread is None
+    streams = resolve_streams()
+    assert len(streams) == 0
+    with pytest.raises(RuntimeError, match="player is not started."):
+        player.stop()
+    player = Player(raw, n_repeat=2, name="Player-test_player_n_repeat-2")
+    player.start()
+    time.sleep((raw.times.size / raw.info["sfreq"]) * 1.1)
+    assert player._streaming_thread is not None
+    streams = resolve_streams()
+    assert len(streams) == 1
+    player.stop()
+
+
+def test_player_n_repeat_invalid(raw):
+    """Test invalid argument 'n_repeat'."""
+    with pytest.raises(ValueError, match="strictly positive integer"):
+        Player(raw, n_repeat=0)
+    with pytest.raises(ValueError, match="strictly positive integer"):
+        Player(raw, n_repeat=-1)
+    with pytest.raises(TypeError, match="must be an integer"):
+        Player(raw, n_repeat="1")
