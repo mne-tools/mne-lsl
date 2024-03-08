@@ -91,7 +91,7 @@ class PlayerLSL(BasePlayer):
         self,
         fname: Union[str, Path],
         chunk_size: int = 64,
-        n_repeat: Optional[int] = None,
+        n_repeat: Union[int, float] = np.inf,
         name: Optional[str] = None,
         annotations: Optional[bool] = None,
     ) -> None:
@@ -239,16 +239,18 @@ class PlayerLSL(BasePlayer):
         try:
             # retrieve data and push to the stream outlet
             start = self._start_idx
-            if start == 0 and self.__n_repeat == 0:
+            if start == 0 and self.__n_repeat == 1:
                 logger.debug("First _stream ping %s", self._name)
             stop = start + self._chunk_size
             if stop <= self._raw.times.size:
                 data = self._raw[:, start:stop][0].T
                 self._start_idx += self._chunk_size
-            else:
+            elif self._raw.times.size < stop and self.__n_repeat < self._n_repeat:
+                logger.debug("End of file reach, looping back to the beginning.")
                 stop = self._chunk_size - (self._raw.times.size - start)
                 data = np.vstack([self._raw[:, start:][0].T, self._raw[:, :stop][0].T])
                 self._start_idx = stop
+                self.__n_repeat += 1
             # bump the target LSL timestamp before pushing because the argument
             # 'timestamp' expects the timestamp of the most 'recent' sample, which in
             # this non-real time replay scenario is the timestamp of the last sample in

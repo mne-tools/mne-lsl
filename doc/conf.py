@@ -159,6 +159,7 @@ numpydoc_xref_aliases = {
     "StreamOutlet": "mne_lsl.lsl.StreamOutlet",
     # Numpy
     "dtype": "numpy.dtype",
+    "np.inf": "numpy.inf",
     # Python
     "bool": ":class:`python:bool`",
     "file-like": ":term:`file-like <python:file object>`",

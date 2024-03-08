@@ -56,7 +56,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         self,
         fname: Union[str, Path, BaseRaw],
         chunk_size: int = 64,
-        n_repeat: Optional[int] = None,
+        n_repeat: Union[int, float] = np.inf,
     ) -> None:
         self._chunk_size = ensure_int(chunk_size, "chunk_size")
         if self._chunk_size <= 0:
@@ -65,12 +65,12 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
                 f"{self._chunk_size} is invalid."
             )
         self._n_repeat = (
-            n_repeat if n_repeat is None else ensure_int(n_repeat, "n_repeat")
+            n_repeat if n_repeat is np.inf else ensure_int(n_repeat, "n_repeat")
         )
         if self._n_repeat <= 0:
             raise ValueError(
-                "The argument 'n_repeat' must be a strictly positive integer or None. "
-                f"{self._n_repeat} is invalid."
+                "The argument 'n_repeat' must be a strictly positive integer or "
+                f"'np.inf'. {self._n_repeat} is invalid."
             )
         # load raw recording
         if isinstance(fname, BaseRaw):
@@ -358,7 +358,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
     def _reset_variables(self) -> None:
         """Reset variables for streaming."""
         self._interrupt = False
-        self.__n_repeat = 0  # number of times the file was repeated
+        self.__n_repeat = 1  # number of times the file was repeated
         self._start_idx = 0
         self._streaming_delay = None
         self._streaming_thread = None
@@ -425,6 +425,6 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
     def n_repeat(self) -> Optional[int]:
         """Number of times the file is repeated.
 
-        :type: :class:`int` | None
+        :type: :class:`int` | :class:`numpy.inf`
         """
         return self._n_repeat
