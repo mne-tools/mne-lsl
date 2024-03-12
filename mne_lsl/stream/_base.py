@@ -622,8 +622,8 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         Parameters
         ----------
         freqs : float
-            Specific frequencies to filter out from data, e.g. `60` Hz in the US or
-            `50` Hz in Europe for line noise.
+            Specific frequencies to filter out from data, e.g. ``60`` Hz in the US or
+            ``50`` Hz in Europe for line noise.
         %(picks_all)s
         notch_widths: float | None
             Width of the stop band in Hz. If ``None``, ``freqs / 200`` is used.
