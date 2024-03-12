@@ -604,6 +604,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             Union[str, list[str], int, list[int], NDArray[+ScalarIntType]]
         ] = None,
         notch_widths: Optional[float] = None,
+        trans_bandwidth=1,
         iir_params: Optional[dict[str, Any]] = None,
         *,
         verbose: Optional[Union[bool, str, int]] = None,
@@ -627,6 +628,8 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         %(picks_all)s
         notch_widths: float | None
             Width of the stop band in Hz. If ``None``, ``freqs / 200`` is used.
+        trans_bandwidth : float
+            Width of the transition band in Hz.
         %(iir_params)s
         %(verbose)s
 
@@ -637,8 +640,43 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         """
         self._check_connected_and_regular_sampling("notch_filter()")
         # validate the arguments and ensure 'sos' output
+        check_type(freqs, ("numeric",), "freqs")
+        if freqs < 0:
+            raise ValueError(
+                "The notch frequency must be a positive number defining the frequency "
+                f"to filter out in Hz. The provided {freqs} is invalid."
+            )
         picks = _picks_to_idx(self._info, picks, "all", "bads", allow_empty=False)
+        if notch_widths is None:
+            notch_widths = freqs / 200.0
+        check_type(notch_widths, ("numeric",), "notch_widths")
+        if notch_widths < 0:
+            raise ValueError(
+                "The notch width must be a positive number defining the width of the "
+                f"stop band in Hz. The provided {notch_widths} is invalid."
+            )
+        check_type(trans_bandwidth, ("numeric",), "trans_bandwidth")
+        if trans_bandwidth < 0:
+            raise ValueError(
+                "The transition bandwidth must be a positive number defining the width "
+                f"of the transition band in Hz. The provided {trans_bandwidth} is "
+                "invalid."
+            )
         iir_params = ensure_sos_iir_params(iir_params)
+        # compute fourier coefficients
+        low = freqs - notch_widths / 2.0 - trans_bandwidth / 2.0
+        high = freqs + notch_widths / 2.0 + trans_bandwidth / 2.0
+        # construct an IIR filter
+        filt = create_filter(
+            sfreq=self._info["sfreq"],
+            l_freq=high,
+            h_freq=low,
+            iir_params=iir_params,
+        )
+        filt.update(picks=picks)  # channel selection
+        # add filter to the list of applied filters
+        with self._interrupt_acquisition():
+            self._filters.append(StreamFilter(filt))
         return self
 
     def plot(self):
