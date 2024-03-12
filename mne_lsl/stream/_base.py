@@ -40,7 +40,7 @@ if TYPE_CHECKING:
     from mne.channels import DigMontage
     from numpy.typing import DTypeLike, NDArray
 
-    from .._typing import ScalarFloatType, ScalarIntType, ScalarType
+    from .._typing import ScalarIntType, ScalarType
 
 
 @fill_doc
@@ -599,13 +599,11 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
     @fill_doc
     def notch_filter(
         self,
-        freqs: Union[float, list[float], tuple[float], NDArray[+ScalarFloatType]],
+        freqs: float,
         picks: Optional[
             Union[str, list[str], int, list[int], NDArray[+ScalarIntType]]
         ] = None,
-        notch_widths: Optional[
-            Union[float, list[float], tuple[float], NDArray[+ScalarFloatType]]
-        ] = None,
+        notch_widths: Optional[float] = None,
         iir_params: Optional[dict[str, Any]] = None,
         *,
         verbose: Optional[Union[bool, str, int]] = None,
@@ -619,17 +617,16 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
             stream = Stream(2.0).connect()
             stream.filter(1.0, 40.0, picks="eeg")
-            stream.notch_filter(np.arange(50, 150, 50), picks="ecg")
+            stream.notch_filter(50, picks="ecg")
 
         Parameters
         ----------
-        freqs : float | array of shape (n_freqs,)
-            Specific frequencies to filter out from data, e.g. `np.arange(60, 241, 60)`
-            in the US or `np.arange(50, 251, 50)` in Europe.
+        freqs : float
+            Specific frequencies to filter out from data, e.g. `60` Hz in the US or
+            `50` Hz in Europe for line noise.
         %(picks_all)s
-        notch_widths: float | array of shape (n_freqs,) | None
-            Width of each stop band (centered at each frequency in ``freqs``), in Hz. If
-            ``None``, ``freqs / 200`` is used.
+        notch_widths: float | None
+            Width of the stop band in Hz. If ``None``, ``freqs / 200`` is used.
         %(iir_params)s
         %(verbose)s
 
