@@ -128,7 +128,7 @@ def create_filter(
     return filt
 
 
-def ensure_sensure_sos_iir_paramsos(
+def ensure_sos_iir_params(
     iir_params: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
     """Ensure that the filter parameters include SOS output."""
