@@ -40,7 +40,7 @@ if TYPE_CHECKING:
     from mne.channels import DigMontage
     from numpy.typing import DTypeLike, NDArray
 
-    from .._typing import ScalarIntType, ScalarFloatType, ScalarType
+    from .._typing import ScalarFloatType, ScalarIntType, ScalarType
 
 
 @fill_doc
