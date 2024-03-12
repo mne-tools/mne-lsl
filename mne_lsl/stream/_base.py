@@ -30,7 +30,7 @@ from ..utils._checks import check_type, check_value, ensure_int
 from ..utils._docs import copy_doc, fill_doc
 from ..utils.logs import logger, verbose
 from ..utils.meas_info import _HUMAN_UNITS, _set_channel_units
-from ._filters import StreamFilter, create_filter
+from ._filters import StreamFilter, create_filter, ensure_sos_iir_params
 
 if TYPE_CHECKING:
     from datetime import datetime
@@ -457,26 +457,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         self._check_connected_and_regular_sampling("filter()")
         # validate the arguments and ensure 'sos' output
         picks = _picks_to_idx(self._info, picks, "all", "bads", allow_empty=False)
-        iir_params = (
-            dict(order=4, ftype="butter", output="sos")
-            if iir_params is None
-            else iir_params
-        )
-        check_type(iir_params, (dict,), "iir_params")
-        if ("output" in iir_params and iir_params["output"] != "sos") or all(
-            key in iir_params for key in ("a", "b")
-        ):
-            warn(
-                "Only 'sos' output is supported for real-time filtering. The filter "
-                "output will be automatically changed. Please set "
-                "iir_params=dict(output='sos', ...) in your call to filter().",
-                RuntimeWarning,
-                stacklevel=2,
-            )
-            for key in ("a", "b"):
-                if key in iir_params:
-                    del iir_params[key]
-        iir_params["output"] = "sos"
+        iir_params = ensure_sos_iir_params(iir_params)
         # construct an IIR filter
         filt = create_filter(
             sfreq=self._info["sfreq"],
@@ -657,6 +638,10 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         stream : instance of ``Stream``
             The stream instance modified in-place.
         """
+        self._check_connected_and_regular_sampling("notch_filter()")
+        # validate the arguments and ensure 'sos' output
+        picks = _picks_to_idx(self._info, picks, "all", "bads", allow_empty=False)
+        iir_params = ensure_sos_iir_params(iir_params)
         return self
 
     def plot(self):
