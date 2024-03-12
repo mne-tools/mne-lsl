@@ -40,7 +40,7 @@ if TYPE_CHECKING:
     from mne.channels import DigMontage
     from numpy.typing import DTypeLike, NDArray
 
-    from .._typing import ScalarIntType, ScalarType
+    from .._typing import ScalarIntType, ScalarFloatType, ScalarType
 
 
 @fill_doc
@@ -613,6 +613,51 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
     def get_montage(self) -> Optional[DigMontage]:
         self._check_connected(name="get_montage()")
         return super().get_montage()
+
+    @verbose
+    @fill_doc
+    def notch_filter(
+        self,
+        freqs: Union[float, list[float], tuple[float], NDArray[+ScalarFloatType]],
+        picks: Optional[
+            Union[str, list[str], int, list[int], NDArray[+ScalarIntType]]
+        ] = None,
+        notch_widths: Optional[
+            Union[float, list[float], tuple[float], NDArray[+ScalarFloatType]]
+        ] = None,
+        iir_params: Optional[dict[str, Any]] = None,
+        *,
+        verbose: Optional[Union[bool, str, int]] = None,
+    ) -> BaseStream:
+        """Filter the stream with an IIR causal notch filter.
+
+        Once a filter is applied, the buffer is updated in real-time with the filtered
+        data. It is possible to apply more than one filter.
+
+        .. code-block:: python
+
+            stream = Stream(2.0).connect()
+            stream.filter(1.0, 40.0, picks="eeg")
+            stream.notch_filter(np.arange(50, 150, 50), picks="ecg")
+
+        Parameters
+        ----------
+        freqs : float | array of shape (n_freqs,)
+            Specific frequencies to filter out from data, e.g. `np.arange(60, 241, 60)`
+            in the US or `np.arange(50, 251, 50)` in Europe.
+        %(picks_all)s
+        notch_widths: float | array of shape (n_freqs,) | None
+            Width of each stop band (centered at each frequency in ``freqs``), in Hz. If
+            ``None``, ``freqs / 200`` is used.
+        %(iir_params)s
+        %(verbose)s
+
+        Returns
+        -------
+        stream : instance of ``Stream``
+            The stream instance modified in-place.
+        """
+        return self
 
     def plot(self):
         """Open a real-time stream viewer. Not implemented."""
