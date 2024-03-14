@@ -46,10 +46,18 @@ class StreamFilter(dict):
         order = self._ORDER_STR.get(
             self["iir_params"]["order"], f"{self['iir_params']['order']}th"
         )
-        return (
-            f"<IIR {order} causal filter ({self['l_freq']}, {self['h_freq']}) Hz "
-            f"({self['iir_params']['ftype']})>"
-        )
+        if self["l_freq"] < self["h_freq"]:
+            representation = (
+                f"<IIR {order} causal filter @ ({self['l_freq']}, {self['h_freq']}) Hz "
+                f"({self['iir_params']['ftype']})>"
+            )
+        else:
+            avg = (self["l_freq"] + self["h_freq"]) / 2
+            representation = (
+                f"<IIR {order} causal notch filter @ {avg} Hz "
+                f"{self['l_freq']}, {self['h_freq']}) ({self['iir_params']['ftype']})>"
+            )
+        return representation
 
     def __eq__(self, other: Any):
         """Equality operator."""
