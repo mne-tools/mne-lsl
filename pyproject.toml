@@ -170,7 +170,7 @@ match = '^(?!setup|__init__|test_).*\.py'
 match-dir = '^mne_lsl.*'
 
 [tool.pytest.ini_options]
-addopts = '--durations=20 --junit-xml=junit-results.xml -ra -v --cov-report= --tb=short --color=yes'
+addopts = '--durations=20 --junit-xml=junit-results.xml -ra -v --cov-report= --tb=short --color=yes -n logical --dist worksteal'
 junit_family = 'xunit2'
 minversion = '8.0'
 

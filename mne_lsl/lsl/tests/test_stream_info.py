@@ -1,3 +1,4 @@
+import uuid
 from time import strftime
 
 import numpy as np
@@ -164,7 +165,7 @@ def test_stream_info_equality():
 
 def test_stream_info_representation():
     """Test the str() representation of an Info."""
-    sinfo = StreamInfo("pytest", "eeg", 3, 101, "float32", strftime("%H%M%S"))
+    sinfo = StreamInfo("pytest", "eeg", 3, 101, "float32", uuid.uuid4().hex[:6])
     repr_ = str(sinfo)
     assert "'pytest'" in repr_
     assert "eeg" in repr_
@@ -175,7 +176,7 @@ def test_stream_info_representation():
 
 def test_stream_info_properties(close_io):
     """Test properties."""
-    sinfo = StreamInfo("pytest", "eeg", 3, 101, "float32", strftime("%H%M%S"))
+    sinfo = StreamInfo("pytest", "eeg", 3, 101, "float32", uuid.uuid4().hex[:6])
     assert isinstance(sinfo.created_at, float)
     assert sinfo.created_at == 0.0
     assert isinstance(sinfo.hostname, str)
@@ -226,7 +227,7 @@ def test_invalid_stream_info():
 def test_stream_info_desc_from_info(close_io):
     """Test filling a description from an Info object."""
     info = create_info(5, 1000, "eeg")
-    sinfo = StreamInfo("test", "eeg", 5, 1000, np.float32, strftime("%H%M%S"))
+    sinfo = StreamInfo("test", "eeg", 5, 1000, np.float32, uuid.uuid4().hex[:6])
     sinfo.set_channel_info(info)
     info_retrieved = sinfo.get_channel_info()
     compare_infos(info, info_retrieved)
@@ -235,7 +236,12 @@ def test_stream_info_desc_from_info(close_io):
     fname = testing.data_path() / "sample_audvis_raw.fif"
     raw = read_raw_fif(fname, preload=False)
     sinfo = StreamInfo(
-        "test", "", len(raw.ch_names), raw.info["sfreq"], np.float32, strftime("%H%M%S")
+        "test",
+        "",
+        len(raw.ch_names),
+        raw.info["sfreq"],
+        np.float32,
+        uuid.uuid4().hex[:6],
     )
     sinfo.set_channel_info(raw.info)
     info_retrieved = sinfo.get_channel_info()

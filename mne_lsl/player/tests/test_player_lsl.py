@@ -21,8 +21,8 @@ from mne_lsl.utils._tests import match_stream_and_raw_data
 def _create_inlet(name: str) -> StreamInlet:
     """Create an inlet to the open-stream."""
     streams = resolve_streams()
+    streams = [stream for stream in streams if stream.name == name]
     assert len(streams) == 1
-    assert streams[0].name == name
     inlet = StreamInlet(streams[0])
     inlet.open_stream(timeout=10)
     return inlet
@@ -355,7 +355,7 @@ def test_player_annotations(raw_annotations, close_io):
     assert data.size != 0
     assert ts.size == data.shape[0]
     # compare with a Stream object for simplicity
-    stream = Stream(bufsize=40, stype="annotations")
+    stream = Stream(bufsize=40, name=f"{name}-annotations", stype="annotations")
     stream.connect(processing_flags=["clocksync"])
     assert stream.info["ch_names"] == annotations
     assert stream.get_channel_types() == ["misc"] * sinfo.n_channels

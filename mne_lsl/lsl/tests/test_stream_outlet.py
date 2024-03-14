@@ -26,8 +26,7 @@ def test_push_numerical_sample(dtype_str, dtype, close_io):
     x = np.array([1, 2], dtype=dtype)
     assert x.shape == (2,) and x.dtype == dtype
     # create stream descriptions
-    source_id = uuid.uuid4().hex[:6]
-    sinfo = StreamInfo("test", "", 2, 0.0, dtype_str, source_id)
+    sinfo = StreamInfo("test", "", 2, 0.0, dtype_str, uuid.uuid4().hex[:6])
     outlet = StreamOutlet(sinfo, chunk_size=1)
     _test_properties(outlet, dtype_str, 2, "test", 0.0, "")
     inlet = StreamInlet(sinfo)
@@ -47,8 +46,7 @@ def test_push_str_sample(close_io):
     """Test push_sample with strings."""
     x = ["1", "2"]
     # create stream descriptions
-    source_id = uuid.uuid4().hex[:6]
-    sinfo = StreamInfo("test", "", 2, 0.0, "string", source_id)
+    sinfo = StreamInfo("test", "", 2, 0.0, "string", uuid.uuid4().hex[:6])
     outlet = StreamOutlet(sinfo, chunk_size=1)
     _test_properties(outlet, "string", 2, "test", 0.0, "")
     inlet = StreamInlet(sinfo)

@@ -175,7 +175,7 @@ def test_stream_invalid():
 
 def test_stream_connection_no_args(mock_lsl_stream):
     """Test connection to the only available stream."""
-    stream = Stream(bufsize=2)
+    stream = Stream(bufsize=2, name=mock_lsl_stream.name)
     assert stream._info is None
     assert not stream.connected
     assert stream.name is None
@@ -659,7 +659,15 @@ def test_stream_irregularly_sampled(close_io):
 
 def test_stream_annotations_picks(mock_lsl_stream_annotations):
     """Test sub-selection of annotations."""
-    stream = Stream(bufsize=5, stype="annotations").connect().pick("test1")
+    stream = (
+        Stream(
+            bufsize=5,
+            name=f"{mock_lsl_stream_annotations.name}-annotations",
+            stype="annotations",
+        )
+        .connect()
+        .pick("test1")
+    )
     time.sleep(5)  # acquire data
     data, ts = stream.get_data()
     assert np.count_nonzero(data) == data.size
