@@ -55,8 +55,10 @@ jobs:
           python -m pip install --progress-bar off .[test]
       - name: Display system information
         run: mne_lsl-sys_info --developer
-      - name: Run pytest
-        run: pytest mne_lsl --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s
+      - name: Run pytest (xdist)
+        run: pytest mne_lsl --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s -n logical --dist worksteal -m "not no_xdist"
+      - name: Run pytest (no xdist)
+        run: pytest mne_lsl --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s -m "no_xdist"
       - name: Upload to codecov
         uses: codecov/codecov-action@v4
         with:
@@ -101,8 +103,12 @@ jobs:
         run: mne_lsl-sys_info --developer
         env:
           MNE_LSL_LIB: ${{ github.workspace }}/liblsl.1.16.0.dylib
-      - name: Run pytest
-        run: pytest mne_lsl --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s
+      - name: Run pytest (xdist)
+        run: pytest mne_lsl --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s -n logical --dist worksteal -m "not no_xdist"
+        env:
+          MNE_LSL_LIB: ${{ github.workspace }}/liblsl.1.16.0.dylib
+      - name: Run pytest (no xdist)
+        run: pytest mne_lsl --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s -m "no_xdist"
         env:
           MNE_LSL_LIB: ${{ github.workspace }}/liblsl.1.16.0.dylib
       - name: Upload to codecov
@@ -150,8 +156,10 @@ jobs:
           python -m pip install --progress-bar off --upgrade --pre --only-binary :all: -i https://pypi.anaconda.org/scientific-python-nightly-wheels/simple --timeout=180 numpy scipy
       - name: Display system information
         run: mne_lsl-sys_info --developer
-      - name: Run pytest
-        run: pytest mne_lsl --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml
+      - name: Run pytest (xdist)
+        run: pytest mne_lsl --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s -n logical --dist worksteal -m "not no_xdist"
+      - name: Run pytest (no xdist)
+        run: pytest mne_lsl --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s -m "no_xdist"
       - name: Upload to codecov
         uses: codecov/codecov-action@v4
         with:
