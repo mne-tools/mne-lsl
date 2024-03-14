@@ -101,7 +101,9 @@ style = [
 test = [
   'pyqt5',
   'pytest-cov',
+  'pytest-rerunfailures',
   'pytest-timeout',
+  'pytest-xdist[psutil]>=2.3.0',
   'pytest>=8.0',
 ]
 
