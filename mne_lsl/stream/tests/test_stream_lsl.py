@@ -887,3 +887,28 @@ def test_stream_notch_filter(mock_lsl_stream_sinusoids, raw_sinusoids):
             assert_allclose(
                 fft_[ch, ch_height["idx"]][1], ch_height["heights"][1], rtol=0.05
             )
+    # test representation
+    for filt in stream.filters:
+        assert "notch filter" in repr(filt)
+    stream.disconnect()
+
+
+def test_stream_notch_filter_invalid(mock_lsl_stream_sinusoids):
+    """Test invalid notch filter."""
+    stream = Stream(bufsize=2.0, name=mock_lsl_stream_sinusoids.name)
+    with pytest.raises(RuntimeError, match="Please connect to the stream"):
+        stream.notch_filter(30, picks="10-30")
+    stream.connect()
+    with pytest.raises(TypeError, match="must be an instance of"):
+        stream.notch_filter("101")
+    with pytest.raises(ValueError, match="frequency must be a positive number"):
+        stream.notch_filter(-101)
+    with pytest.raises(TypeError, match="must be an instance of"):
+        stream.notch_filter(101, notch_widths="101")
+    with pytest.raises(ValueError, match="notch width must be a positive number"):
+        stream.notch_filter(101, notch_widths=-101)
+    with pytest.raises(TypeError, match="must be an instance of"):
+        stream.notch_filter(101, trans_bandwidth="101")
+    with pytest.raises(ValueError, match="ransition bandwidth must be a positive"):
+        stream.notch_filter(101, trans_bandwidth=-101)
+    stream.disconnect()
