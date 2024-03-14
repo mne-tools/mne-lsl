@@ -53,6 +53,8 @@ def pytest_configure(config: Config) -> None:
     ignore:datetime\.datetime\.utcfromtimestamp.*:DeprecationWarning
     # Pooch tar
     ignore:Python 3.14 will, by default.*:DeprecationWarning
+    # pytest-cov
+    ignore:The --rsyncdir command line argument and rsyncdirs.*:DeprecationWarning,
     """
     for warning_line in warning_lines.split("\n"):
         warning_line = warning_line.strip()
