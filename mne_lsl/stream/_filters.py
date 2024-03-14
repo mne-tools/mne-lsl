@@ -47,8 +47,8 @@ class StreamFilter(dict):
             self["iir_params"]["order"], f"{self['iir_params']['order']}th"
         )
         if (
-            not any(elt is None for elt in (self["l_freq"], self["h_freq"]))
-            and self["l_freq"] < self["h_freq"]
+            any(elt is None for elt in (self["l_freq"], self["h_freq"]))
+            or self["l_freq"] < self["h_freq"]
         ):
             representation = (
                 f"<IIR {order} causal filter @ ({self['l_freq']}, {self['h_freq']}) Hz "
@@ -58,7 +58,7 @@ class StreamFilter(dict):
             avg = (self["l_freq"] + self["h_freq"]) / 2
             representation = (
                 f"<IIR {order} causal notch filter @ {avg} Hz "
-                f"{self['l_freq']}, {self['h_freq']}) ({self['iir_params']['ftype']})>"
+                f"({self['l_freq']}, {self['h_freq']}) ({self['iir_params']['ftype']})>"
             )
         return representation
 
