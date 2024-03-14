@@ -46,7 +46,10 @@ class StreamFilter(dict):
         order = self._ORDER_STR.get(
             self["iir_params"]["order"], f"{self['iir_params']['order']}th"
         )
-        if self["l_freq"] < self["h_freq"]:
+        if (
+            not any(elt is None for elt in (self["l_freq"], self["h_freq"]))
+            and self["l_freq"] < self["h_freq"]
+        ):
             representation = (
                 f"<IIR {order} causal filter @ ({self['l_freq']}, {self['h_freq']}) Hz "
                 f"({self['iir_params']['ftype']})>"
