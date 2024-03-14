@@ -7,6 +7,7 @@ import numpy as np
 from mne.filter import create_filter as create_filter_mne
 from scipy.signal import sosfilt_zi
 
+from ..utils._checks import check_type
 from ..utils.logs import logger
 
 if TYPE_CHECKING:
@@ -45,10 +46,21 @@ class StreamFilter(dict):
         order = self._ORDER_STR.get(
             self["iir_params"]["order"], f"{self['iir_params']['order']}th"
         )
-        return (
-            f"<IIR {order} causal filter ({self['l_freq']}, {self['h_freq']}) Hz "
-            f"({self['iir_params']['ftype']})>"
-        )
+        if (
+            any(elt is None for elt in (self["l_freq"], self["h_freq"]))
+            or self["l_freq"] < self["h_freq"]
+        ):
+            representation = (
+                f"<IIR {order} causal filter @ ({self['l_freq']}, {self['h_freq']}) Hz "
+                f"({self['iir_params']['ftype']})>"
+            )
+        else:
+            avg = (self["l_freq"] + self["h_freq"]) / 2
+            representation = (
+                f"<IIR {order} causal notch filter @ {avg} Hz "
+                f"({self['l_freq']}, {self['h_freq']}) ({self['iir_params']['ftype']})>"
+            )
+        return representation
 
     def __eq__(self, other: Any):
         """Equality operator."""
@@ -125,3 +137,27 @@ def create_filter(
         sfreq=sfreq,
     )
     return filt
+
+
+def ensure_sos_iir_params(
+    iir_params: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+    """Ensure that the filter parameters include SOS output."""
+    if iir_params is None:
+        return dict(order=4, ftype="butter", output="sos")
+    check_type(iir_params, (dict,), "iir_params")
+    if ("output" in iir_params and iir_params["output"] != "sos") or all(
+        key in iir_params for key in ("a", "b")
+    ):
+        warn(
+            "Only 'sos' output is supported for real-time filtering. The filter "
+            "output will be automatically changed. Please set "
+            "iir_params=dict(output='sos', ...) in your call to the filtering method.",
+            RuntimeWarning,
+            stacklevel=2,
+        )
+        for key in ("a", "b"):
+            if key in iir_params:
+                del iir_params[key]
+    iir_params["output"] = "sos"
+    return iir_params

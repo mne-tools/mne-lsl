@@ -22,6 +22,7 @@ Version 1.3
 - Improve logging to set MNE's logger level to currently set MNE-LSL level in MNE-LSL functions using MNE's function under the hood (:pr:`219` by `Mathieu Scheltienne`_)
 - Use the currently set logger level as replacement for ``verbose=None`` in MNE-LSL functions (:pr:`219` by `Mathieu Scheltienne`_)
 - Add IIR filter support to the LSL stream through :meth:`mne_lsl.stream.StreamLSL.filter` (:pr:`218` by `Mathieu Scheltienne`_ and `Eric Larson`_)
+- Add IIR notch filter support to the LSL stream through :meth:`mne_lsl.stream.StreamLSL.notch_filter` (:pr:`226` by `Mathieu Scheltienne`_)
 
 API changes (backward incompatible)
 -----------------------------------

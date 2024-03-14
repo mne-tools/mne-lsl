@@ -802,7 +802,7 @@ def test_stream_filter(mock_lsl_stream_sinusoids, raw_sinusoids):
     for ch, ch_height in heights_orig.items():
         if ch == 0:  # 10 Hz removed, 30 Hz removed
             assert fft_[ch, ch_height["idx"]][0] < 0.1 * ch_height["heights"][0]
-            assert fft_[ch, ch_height["idx"]][0] < 0.1 * ch_height["heights"][0]
+            assert fft_[ch, ch_height["idx"]][1] < 0.1 * ch_height["heights"][1]
         elif ch == 1:  # 30 Hz removed, 50 Hz retained
             assert fft_[ch, ch_height["idx"]][0] < 0.1 * ch_height["heights"][0]
             assert_allclose(
@@ -811,4 +811,104 @@ def test_stream_filter(mock_lsl_stream_sinusoids, raw_sinusoids):
         elif ch == 2:  # 30 Hz removed, 100 Hz removed
             assert fft_[ch, ch_height["idx"]][0] < 0.1 * ch_height["heights"][0]
             assert fft_[ch, ch_height["idx"]][1] < 0.15 * ch_height["heights"][1]
+    stream.disconnect()
+
+
+def test_stream_notch_filter(mock_lsl_stream_sinusoids, raw_sinusoids):
+    """Test stream notch filters."""
+    freqs = fftfreq(raw_sinusoids.times.size, 1 / raw_sinusoids.info["sfreq"])
+    idx = np.where(0 <= freqs)[0]
+    freqs = freqs[idx]
+    fft_orig = np.abs(fft(raw_sinusoids.get_data(), axis=-1)[:, idx])
+    # extract peaks
+    assert fft_orig.shape[0] == len(raw_sinusoids.ch_names)
+    assert fft_orig.shape[0] == len(mock_lsl_stream_sinusoids.ch_names)
+    heights_orig = dict()
+    for k in range(fft_orig.shape[0]):
+        peaks, _ = find_peaks(fft_orig[k, :], height=100)  # peak height is 1000
+        fqs = [int(elt) for elt in raw_sinusoids.ch_names[k].split("-")]
+        assert_allclose(freqs[peaks], fqs, atol=0.1)
+        heights_orig[k] = dict(idx=peaks, heights=fft_orig[k, peaks])
+    # test filtering
+    stream = Stream(bufsize=2.0, name=mock_lsl_stream_sinusoids.name).connect()
+    stream.notch_filter(30, picks="10-30")
+    time.sleep(2.1)
+    fft_ = np.abs(fft(stream.get_data()[0], axis=-1)[:, idx])
+    for ch, ch_height in heights_orig.items():
+        if ch == 0:  # 10 Hz retained, 30 Hz removed
+            assert fft_[ch, ch_height["idx"]][1] < 0.1 * ch_height["heights"][1]
+            assert_allclose(
+                fft_[ch, ch_height["idx"]][0], ch_height["heights"][0], rtol=0.05
+            )
+        else:
+            assert_allclose(fft_[ch, ch_height["idx"]], ch_height["heights"], rtol=0.05)
+    # test remove filter
+    stream.del_filter(0)
+    assert len(stream.filters) == 0
+    time.sleep(2.1)
+    fft_ = np.abs(fft(stream.get_data()[0], axis=-1)[:, idx])
+    for ch, ch_height in heights_orig.items():
+        assert_allclose(fft_[ch, ch_height["idx"]], ch_height["heights"], rtol=0.05)
+    # test add filter on all channels
+    stream.notch_filter(30, picks="all")
+    time.sleep(2.1)
+    fft_ = np.abs(fft(stream.get_data()[0], axis=-1)[:, idx])
+    for ch, ch_height in heights_orig.items():
+        if ch == 0:  # 10 Hz retained, 30 Hz removed
+            assert_allclose(
+                fft_[ch, ch_height["idx"]][0], ch_height["heights"][0], rtol=0.05
+            )
+            assert fft_[ch, ch_height["idx"]][1] < 0.1 * ch_height["heights"][1]
+        elif ch == 1:  # 30 Hz removed, 50 Hz retained
+            assert fft_[ch, ch_height["idx"]][0] < 0.1 * ch_height["heights"][0]
+            assert_allclose(
+                fft_[ch, ch_height["idx"]][1], ch_height["heights"][1], rtol=0.05
+            )
+        elif ch == 2:  # 30 Hz removed, 100 Hz retained
+            assert fft_[ch, ch_height["idx"]][0] < 0.1 * ch_height["heights"][0]
+            assert_allclose(
+                fft_[ch, ch_height["idx"]][1], ch_height["heights"][1], rtol=0.05
+            )
+    # test multiple filters
+    stream.notch_filter(10, picks="10-30")
+    time.sleep(2.1)
+    fft_ = np.abs(fft(stream.get_data()[0], axis=-1)[:, idx])
+    for ch, ch_height in heights_orig.items():
+        if ch == 0:  # 10 Hz removed, 30 Hz removed
+            assert fft_[ch, ch_height["idx"]][0] < 0.1 * ch_height["heights"][0]
+            assert fft_[ch, ch_height["idx"]][1] < 0.1 * ch_height["heights"][1]
+        elif ch == 1:  # 30 Hz removed, 50 Hz retained
+            assert fft_[ch, ch_height["idx"]][0] < 0.1 * ch_height["heights"][0]
+            assert_allclose(
+                fft_[ch, ch_height["idx"]][1], ch_height["heights"][1], rtol=0.05
+            )
+        elif ch == 2:  # 30 Hz removed, 100 Hz retained
+            assert fft_[ch, ch_height["idx"]][0] < 0.1 * ch_height["heights"][0]
+            assert_allclose(
+                fft_[ch, ch_height["idx"]][1], ch_height["heights"][1], rtol=0.05
+            )
+    # test representation
+    for filt in stream.filters:
+        assert "notch filter" in repr(filt)
+    stream.disconnect()
+
+
+def test_stream_notch_filter_invalid(mock_lsl_stream_sinusoids):
+    """Test invalid notch filter."""
+    stream = Stream(bufsize=2.0, name=mock_lsl_stream_sinusoids.name)
+    with pytest.raises(RuntimeError, match="Please connect to the stream"):
+        stream.notch_filter(30, picks="10-30")
+    stream.connect()
+    with pytest.raises(TypeError, match="must be an instance of"):
+        stream.notch_filter("101")
+    with pytest.raises(ValueError, match="frequency must be a positive number"):
+        stream.notch_filter(-101)
+    with pytest.raises(TypeError, match="must be an instance of"):
+        stream.notch_filter(101, notch_widths="101")
+    with pytest.raises(ValueError, match="notch width must be a positive number"):
+        stream.notch_filter(101, notch_widths=-101)
+    with pytest.raises(TypeError, match="must be an instance of"):
+        stream.notch_filter(101, trans_bandwidth="101")
+    with pytest.raises(ValueError, match="ransition bandwidth must be a positive"):
+        stream.notch_filter(101, trans_bandwidth=-101)
     stream.disconnect()
