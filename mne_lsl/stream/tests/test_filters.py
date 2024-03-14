@@ -8,7 +8,7 @@ import pytest
 from mne.filter import create_filter as create_filter_mne
 from numpy.testing import assert_allclose
 
-from mne_lsl.stream._filters import StreamFilter, create_filter
+from mne_lsl.stream._filters import StreamFilter, create_filter, ensure_sos_iir_params
 
 if TYPE_CHECKING:
     from typing import Any, Optional
@@ -130,3 +130,23 @@ def test_create_filter(
         verbose="CRITICAL",
     )
     assert_allclose(filter1["sos"], filter2["sos"])
+
+
+def test_ensure_sos_iir_params():
+    """Test validation of IIR params."""
+    assert isinstance(ensure_sos_iir_params(None), dict)
+    with pytest.raises(TypeError, match="must be an instance of"):
+        ensure_sos_iir_params("101")
+    iir_params = dict(order=8, ftype="bessel", output="sos")
+    iir_params2 = ensure_sos_iir_params(iir_params)
+    assert iir_params == iir_params2
+    iir_params3 = ensure_sos_iir_params(dict(order=8, ftype="bessel"))
+    assert iir_params == iir_params3
+    with pytest.warns(RuntimeWarning, match="Only 'sos' output is supported"):
+        iir_params4 = ensure_sos_iir_params(dict(order=8, ftype="bessel", output="ba"))
+    assert iir_params == iir_params4
+    with pytest.warns(RuntimeWarning, match="Only 'sos' output is supported"):
+        iir_params5 = ensure_sos_iir_params(
+            dict(order=8, ftype="bessel", a=[1, 2], b=[1, 2])
+        )
+    assert iir_params == iir_params5

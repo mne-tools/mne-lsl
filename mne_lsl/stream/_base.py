@@ -30,7 +30,7 @@ from ..utils._checks import check_type, check_value, ensure_int
 from ..utils._docs import copy_doc, fill_doc
 from ..utils.logs import logger, verbose
 from ..utils.meas_info import _HUMAN_UNITS, _set_channel_units
-from ._filters import StreamFilter, create_filter
+from ._filters import StreamFilter, create_filter, ensure_sos_iir_params
 
 if TYPE_CHECKING:
     from datetime import datetime
@@ -457,26 +457,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         self._check_connected_and_regular_sampling("filter()")
         # validate the arguments and ensure 'sos' output
         picks = _picks_to_idx(self._info, picks, "all", "bads", allow_empty=False)
-        iir_params = (
-            dict(order=4, ftype="butter", output="sos")
-            if iir_params is None
-            else iir_params
-        )
-        check_type(iir_params, (dict,), "iir_params")
-        if ("output" in iir_params and iir_params["output"] != "sos") or all(
-            key in iir_params for key in ("a", "b")
-        ):
-            warn(
-                "Only 'sos' output is supported for real-time filtering. The filter "
-                "output will be automatically changed. Please set "
-                "iir_params=dict(output='sos', ...) in your call to filter().",
-                RuntimeWarning,
-                stacklevel=2,
-            )
-            for key in ("a", "b"):
-                if key in iir_params:
-                    del iir_params[key]
-        iir_params["output"] = "sos"
+        iir_params = ensure_sos_iir_params(iir_params)
         # construct an IIR filter
         filt = create_filter(
             sfreq=self._info["sfreq"],
@@ -613,6 +594,90 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
     def get_montage(self) -> Optional[DigMontage]:
         self._check_connected(name="get_montage()")
         return super().get_montage()
+
+    @verbose
+    @fill_doc
+    def notch_filter(
+        self,
+        freqs: float,
+        picks: Optional[
+            Union[str, list[str], int, list[int], NDArray[+ScalarIntType]]
+        ] = None,
+        notch_widths: Optional[float] = None,
+        trans_bandwidth=1,
+        iir_params: Optional[dict[str, Any]] = None,
+        *,
+        verbose: Optional[Union[bool, str, int]] = None,
+    ) -> BaseStream:
+        """Filter the stream with an IIR causal notch filter.
+
+        Once a filter is applied, the buffer is updated in real-time with the filtered
+        data. It is possible to apply more than one filter.
+
+        .. code-block:: python
+
+            stream = Stream(2.0).connect()
+            stream.filter(1.0, 40.0, picks="eeg")
+            stream.notch_filter(50, picks="ecg")
+
+        Parameters
+        ----------
+        freqs : float
+            Specific frequencies to filter out from data, e.g. ``60`` Hz in the US or
+            ``50`` Hz in Europe for line noise.
+        %(picks_all)s
+        notch_widths: float | None
+            Width of the stop band in Hz. If ``None``, ``freqs / 200`` is used.
+        trans_bandwidth : float
+            Width of the transition band in Hz.
+        %(iir_params)s
+        %(verbose)s
+
+        Returns
+        -------
+        stream : instance of ``Stream``
+            The stream instance modified in-place.
+        """
+        self._check_connected_and_regular_sampling("notch_filter()")
+        # validate the arguments and ensure 'sos' output
+        check_type(freqs, ("numeric",), "freqs")
+        if freqs < 0:
+            raise ValueError(
+                "The notch frequency must be a positive number defining the frequency "
+                f"to filter out in Hz. The provided {freqs} is invalid."
+            )
+        picks = _picks_to_idx(self._info, picks, "all", "bads", allow_empty=False)
+        if notch_widths is None:
+            notch_widths = freqs / 200.0
+        check_type(notch_widths, ("numeric",), "notch_widths")
+        if notch_widths < 0:
+            raise ValueError(
+                "The notch width must be a positive number defining the width of the "
+                f"stop band in Hz. The provided {notch_widths} is invalid."
+            )
+        check_type(trans_bandwidth, ("numeric",), "trans_bandwidth")
+        if trans_bandwidth < 0:
+            raise ValueError(
+                "The transition bandwidth must be a positive number defining the width "
+                f"of the transition band in Hz. The provided {trans_bandwidth} is "
+                "invalid."
+            )
+        iir_params = ensure_sos_iir_params(iir_params)
+        # compute fourier coefficients
+        low = freqs - notch_widths / 2.0 - trans_bandwidth / 2.0
+        high = freqs + notch_widths / 2.0 + trans_bandwidth / 2.0
+        # construct an IIR filter
+        filt = create_filter(
+            sfreq=self._info["sfreq"],
+            l_freq=high,
+            h_freq=low,
+            iir_params=iir_params,
+        )
+        filt.update(picks=picks)  # channel selection
+        # add filter to the list of applied filters
+        with self._interrupt_acquisition():
+            self._filters.append(StreamFilter(filt))
+        return self
 
     def plot(self):
         """Open a real-time stream viewer. Not implemented."""
