@@ -890,6 +890,11 @@ def test_stream_notch_filter(mock_lsl_stream_sinusoids, raw_sinusoids):
     # test representation
     for filt in stream.filters:
         assert "notch filter" in repr(filt)
+    # test channel selection with filters
+    with pytest.raises(RuntimeError, match="channel selection must be done before"):
+        stream.pick(stream.ch_names[0])
+    with pytest.raises(RuntimeError, match="channel selection must be done before"):
+        stream.drop_channels(stream.ch_names[0])
     stream.disconnect()
 
 
@@ -914,8 +919,10 @@ def test_stream_notch_filter_invalid(mock_lsl_stream_sinusoids):
     stream.disconnect()
 
 
-def test_stream_get_data_invalid():
-    """Test get_data() on unconnected stream."""
+def test_stream_get_data_info_invalid():
+    """Test get_data() and info on unconnected stream."""
     stream = Stream(2.0)
+    with pytest.raises(RuntimeError, match="Please connect to the stream"):
+        _ = stream.info
     with pytest.raises(RuntimeError, match="Please connect to the stream"):
         stream.get_data()

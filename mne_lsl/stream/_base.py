@@ -679,7 +679,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             self._filters.append(StreamFilter(filt))
         return self
 
-    def plot(self):
+    def plot(self):  # pragma: no cover
         """Open a real-time stream viewer. Not implemented."""
         self._check_connected(name="plot()")
         raise NotImplementedError
@@ -722,7 +722,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         self._pick(picks)
         return self
 
-    def record(self):
+    def record(self):  # pragma: no cover
         """Record the stream data to disk. Not implemented."""
         self._check_connected(name="record()")
         raise NotImplementedError
@@ -763,7 +763,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         )
         return self
 
-    def set_bipolar_reference(self) -> BaseStream:
+    def set_bipolar_reference(self) -> BaseStream:  # pragma: no cover
         """Set a bipolar reference. Not implemented.
 
         Returns
