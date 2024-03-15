@@ -74,6 +74,14 @@ def test_StreamFilter(iir_params: dict[str, Any], sfreq: float):
     filt2["order"] = 101
     with pytest.raises(RuntimeError, match="inconsistent"):
         StreamFilter(filt2)
+    # test lack of keys in 'iir_params'
+    filt = dict(filt)  # cast to parent class should work
+    assert "order" not in filt
+    filt["order"] = filt["iir_params"]["order"]
+    del filt["iir_params"]["order"]
+    filt = StreamFilter(filt)
+    assert "order" not in filt
+    assert "order" in filt["iir_params"]
 
 
 def test_StreamFilter_comparison(filters: list[StreamFilter]):
@@ -96,6 +104,11 @@ def test_StreamFilter_comparison(filters: list[StreamFilter]):
     # test absent key
     filter2 = deepcopy(filters[0])
     del filter2["sos"]
+    assert filter2 != filters[0]
+    # test with and without zis
+    filter2 = deepcopy(filters[0])
+    filter2["zi"] = None
+    assert filters[0]["zi"] is not None
     assert filter2 != filters[0]
 
 
