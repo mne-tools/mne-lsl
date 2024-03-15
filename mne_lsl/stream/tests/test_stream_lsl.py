@@ -912,3 +912,10 @@ def test_stream_notch_filter_invalid(mock_lsl_stream_sinusoids):
     with pytest.raises(ValueError, match="ransition bandwidth must be a positive"):
         stream.notch_filter(101, trans_bandwidth=-101)
     stream.disconnect()
+
+
+def test_stream_get_data_invalid():
+    """Test get_data() on unconnected stream."""
+    stream = Stream(2.0)
+    with pytest.raises(RuntimeError, match="Please connect to the stream"):
+        stream.get_data()
