@@ -12,13 +12,18 @@ Compared to `pylsl <lsl python_>`_, ``mne_lsl.lsl`` pulls a chunk of *numerical*
 faster thanks to ``numpy``. In numbers, pulling a 1024 samples chunk with 65 channels in
 double precision (``float64``) to python takes:
 
-* 7.87 ms ± 58 µs with ``pylsl``
-* 4.35 µs ± 134 ns with ``mne_lsl.lsl``
+* 4.33 ms ± 37.5 µs per loop (mean ± std. dev. of 7 runs, 100 loops each) with ``pylsl``
+  default behavior
+* 471 ns ± 1.7 ns per loop (mean ± std. dev. of 7 runs, 1,000,000 loops each) with
+  ``pylsl`` using a :class:`~numpy.ndarray` as ``dest_obj`` to prevent memory
+  re-allocation
+* 268 ns ± 0.357 ns per loop (mean ± std. dev. of 7 runs, 1,000,000 loops each) with
+  ``mne_lsl.lsl`` which uses :func:`numpy.frombuffer` under the hood
 
-More importantly, ``pylsl`` pulls a chunk in linear time ``O(n)``, scalings with the
-number of values; while ``mne_lsl.lsl`` pulls a chunk in constant time ``O(1)``.
-Additional details on the differences with ``pylsl`` and ``mne_lsl`` can be found
-:ref:`here<resources/pylsl:Differences with pylsl>`.
+More importantly, ``pylsl`` dewfault behavior pulls a chunk in linear time ``O(n)``,
+scalings with the number of values; while ``mne_lsl.lsl`` pulls a chunk in constant time
+``O(1)``. Additional details on the differences with ``pylsl`` and ``mne_lsl`` can be
+found :ref:`here<resources/pylsl:Differences with pylsl>`.
 
 .. autosummary::
    :toctree: ../generated/api
