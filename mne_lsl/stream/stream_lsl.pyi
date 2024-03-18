@@ -1,5 +1,4 @@
 from collections.abc import Sequence as Sequence
-from typing import Optional, Union
 
 from _typeshed import Incomplete
 
@@ -46,9 +45,9 @@ class StreamLSL(BaseStream):
     def __init__(
         self,
         bufsize: float,
-        name: Optional[str] = None,
-        stype: Optional[str] = None,
-        source_id: Optional[str] = None,
+        name: str | None = None,
+        stype: str | None = None,
+        source_id: str | None = None,
     ) -> None: ...
     def __repr__(self) -> str:
         """Representation of the instance."""
@@ -62,8 +61,8 @@ class StreamLSL(BaseStream):
     def connect(
         self,
         acquisition_delay: float = 0.001,
-        processing_flags: Optional[Union[str, Sequence[str]]] = None,
-        timeout: Optional[float] = 2,
+        processing_flags: str | Sequence[str] | None = None,
+        timeout: float | None = 2,
     ) -> StreamLSL:
         """Connect to the LSL stream and initiate data collection in the buffer.
 
@@ -117,7 +116,7 @@ class StreamLSL(BaseStream):
         """Reset variables define after connection."""
 
     @property
-    def compensation_grade(self) -> Optional[int]:
+    def compensation_grade(self) -> int | None:
         """The current gradient compensation grade.
 
         :type: :class:`int` | None
@@ -131,28 +130,28 @@ class StreamLSL(BaseStream):
         """
 
     @property
-    def name(self) -> Optional[str]:
+    def name(self) -> str | None:
         """Name of the LSL stream.
 
         :type: :class:`str` | None
         """
 
     @property
-    def sinfo(self) -> Optional[_BaseStreamInfo]:
+    def sinfo(self) -> _BaseStreamInfo | None:
         """StreamInfo of the connected stream.
 
         :type: :class:`~mne_lsl.lsl.StreamInfo` | None
         """
 
     @property
-    def stype(self) -> Optional[str]:
+    def stype(self) -> str | None:
         """Type of the LSL stream.
 
         :type: :class:`str` | None
         """
 
     @property
-    def source_id(self) -> Optional[str]:
+    def source_id(self) -> str | None:
         """ID of the source of the LSL stream.
 
         :type: :class:`str` | None

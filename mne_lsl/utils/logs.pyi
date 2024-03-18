@@ -1,7 +1,7 @@
 import logging
 from logging import Logger
 from pathlib import Path as Path
-from typing import Callable, Optional, Union
+from typing import Callable
 
 from _typeshed import Incomplete
 
@@ -9,7 +9,7 @@ from ._checks import check_verbose as check_verbose
 from ._docs import fill_doc as fill_doc
 from ._fixes import _WrapStdOut as _WrapStdOut
 
-def _init_logger(*, verbose: Optional[Union[bool, str, int]] = None) -> Logger:
+def _init_logger(*, verbose: bool | str | int | None = None) -> Logger:
     """Initialize a logger.
 
     Assigns sys.stdout as the first handler of the logger.
@@ -19,7 +19,7 @@ def _init_logger(*, verbose: Optional[Union[bool, str, int]] = None) -> Logger:
     verbose : int | str | bool | None
         Sets the verbosity level. The verbosity increases gradually between
         ``"CRITICAL"``, ``"ERROR"``, ``"WARNING"``, ``"INFO"`` and ``"DEBUG"``.
-        If None is provided, the verbosity is set to ``"WARNING"``.
+        If None is provided, the verbosity is set to the currently set logger's level.
         If a bool is provided, the verbosity is set to ``"WARNING"`` for False and
         to ``"INFO"`` for True.
 
@@ -30,11 +30,11 @@ def _init_logger(*, verbose: Optional[Union[bool, str, int]] = None) -> Logger:
     """
 
 def add_file_handler(
-    fname: Union[str, Path],
+    fname: str | Path,
     mode: str = "a",
-    encoding: Optional[str] = None,
+    encoding: str | None = None,
     *,
-    verbose: Optional[Union[bool, str, int]] = None,
+    verbose: bool | str | int | None = None,
 ) -> None:
     """Add a file handler to the logger.
 
@@ -49,12 +49,12 @@ def add_file_handler(
     verbose : int | str | bool | None
         Sets the verbosity level. The verbosity increases gradually between
         ``"CRITICAL"``, ``"ERROR"``, ``"WARNING"``, ``"INFO"`` and ``"DEBUG"``.
-        If None is provided, the verbosity is set to ``"WARNING"``.
+        If None is provided, the verbosity is set to the currently set logger's level.
         If a bool is provided, the verbosity is set to ``"WARNING"`` for False and
         to ``"INFO"`` for True.
     """
 
-def set_log_level(verbose: Optional[Union[bool, str, int]]) -> None:
+def set_log_level(verbose: bool | str | int | None) -> None:
     """Set the log level for the logger.
 
     Parameters
@@ -62,7 +62,7 @@ def set_log_level(verbose: Optional[Union[bool, str, int]]) -> None:
     verbose : int | str | bool | None
         Sets the verbosity level. The verbosity increases gradually between
         ``"CRITICAL"``, ``"ERROR"``, ``"WARNING"``, ``"INFO"`` and ``"DEBUG"``.
-        If None is provided, the verbosity is set to ``"WARNING"``.
+        If None is provided, the verbosity is set to the currently set logger's level.
         If a bool is provided, the verbosity is set to ``"WARNING"`` for False and
         to ``"INFO"`` for True.
     """
@@ -104,7 +104,7 @@ class _use_log_level:
     verbose : int | str | bool | None
         Sets the verbosity level. The verbosity increases gradually between
         ``"CRITICAL"``, ``"ERROR"``, ``"WARNING"``, ``"INFO"`` and ``"DEBUG"``.
-        If None is provided, the verbosity is set to ``"WARNING"``.
+        If None is provided, the verbosity is set to the currently set logger's level.
         If a bool is provided, the verbosity is set to ``"WARNING"`` for False and
         to ``"INFO"`` for True.
     """
@@ -114,9 +114,7 @@ class _use_log_level:
     _level: Incomplete
 
     def __init__(
-        self,
-        verbose: Optional[Union[bool, str, int]] = None,
-        logger_obj: Optional[Logger] = None,
+        self, verbose: bool | str | int | None = None, logger_obj: Logger | None = None
     ) -> None: ...
     def __enter__(self): ...
     def __exit__(self, *args) -> None: ...
