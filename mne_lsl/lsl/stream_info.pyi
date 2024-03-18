@@ -1,4 +1,4 @@
-from typing import Any, Optional, Union
+from typing import Any
 
 from _typeshed import Incomplete
 from mne import Info, Projection
@@ -55,7 +55,7 @@ class _BaseStreamInfo:
         """Representation of the Info."""
 
     @property
-    def dtype(self) -> Union[str, DTypeLike]:
+    def dtype(self) -> str | DTypeLike:
         """Channel format of a stream.
 
         All channels in a stream have the same format.
@@ -211,7 +211,7 @@ class _BaseStreamInfo:
             :class:`~mne.Info` containing the measurement information.
         """
 
-    def get_channel_names(self) -> Optional[list[str]]:
+    def get_channel_names(self) -> list[str] | None:
         """Get the channel names in the description.
 
         Returns
@@ -228,7 +228,7 @@ class _BaseStreamInfo:
                 setter.
         """
 
-    def get_channel_types(self) -> Optional[list[str]]:
+    def get_channel_types(self) -> list[str] | None:
         """Get the channel types in the description.
 
         Returns
@@ -245,7 +245,7 @@ class _BaseStreamInfo:
                 setter.
         """
 
-    def get_channel_units(self) -> Optional[list[str]]:
+    def get_channel_units(self) -> list[str] | None:
         """Get the channel units in the description.
 
         Returns
@@ -262,7 +262,7 @@ class _BaseStreamInfo:
                 setter.
         """
 
-    def _get_channel_info(self, name: str) -> Optional[list[str]]:
+    def _get_channel_info(self, name: str) -> list[str] | None:
         """Get the 'channel/name' element in the XML tree."""
 
     def _get_channel_projectors(self) -> list[Projection]:
@@ -280,7 +280,7 @@ class _BaseStreamInfo:
             :class:`~mne.Info` containing the measurement information.
         """
 
-    def set_channel_names(self, ch_names: Union[list[str], tuple[str]]) -> None:
+    def set_channel_names(self, ch_names: list[str] | tuple[str]) -> None:
         """Set the channel names in the description. Existing labels are overwritten.
 
         Parameters
@@ -289,7 +289,7 @@ class _BaseStreamInfo:
             List of channel names, matching the number of total channels.
         """
 
-    def set_channel_types(self, ch_types: Union[str, list[str]]) -> None:
+    def set_channel_types(self, ch_types: str | list[str]) -> None:
         """Set the channel types in the description. Existing types are overwritten.
 
         The types are given as human readable strings, e.g. ``'eeg'``.
@@ -302,7 +302,7 @@ class _BaseStreamInfo:
         """
 
     def set_channel_units(
-        self, ch_units: Union[str, list[str], int, list[int], NDArray[None]]
+        self, ch_units: str | list[str] | int | list[int] | NDArray[None]
     ) -> None:
         """Set the channel units in the description. Existing units are overwritten.
 
@@ -347,8 +347,8 @@ class _BaseStreamInfo:
 
     @staticmethod
     def _get_fiff_int_named(
-        value: Optional[str], name: str, mapping: dict[int, int]
-    ) -> Optional[int]:
+        value: str | None, name: str, mapping: dict[int, int]
+    ) -> int | None:
         """Try to retrieve the FIFF integer code from the str representation."""
 
 class StreamInfo(_BaseStreamInfo):
@@ -400,5 +400,5 @@ class StreamInfo(_BaseStreamInfo):
         source_id: str,
     ) -> None: ...
     @staticmethod
-    def _dtype2idxfmt(dtype: Union[str, int, DTypeLike]) -> int:
+    def _dtype2idxfmt(dtype: str | int | DTypeLike) -> int:
         """Convert a string format to its LSL integer value."""

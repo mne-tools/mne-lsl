@@ -1,11 +1,11 @@
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from _typeshed import Incomplete
 
 from ._docs import fill_doc as fill_doc
 
-def ensure_int(item: Any, item_name: Optional[str] = None) -> int:
+def ensure_int(item: Any, item_name: str | None = None) -> int:
     """Ensure a variable is an integer.
 
     Parameters
@@ -31,7 +31,7 @@ class _Callable:
 
 _types: Incomplete
 
-def check_type(item: Any, types: tuple, item_name: Optional[str] = None) -> None:
+def check_type(item: Any, types: tuple, item_name: str | None = None) -> None:
     """Check that item is an instance of types.
 
     Parameters
@@ -54,8 +54,8 @@ def check_type(item: Any, types: tuple, item_name: Optional[str] = None) -> None
 def check_value(
     item: Any,
     allowed_values: tuple,
-    item_name: Optional[str] = None,
-    extra: Optional[str] = None,
+    item_name: str | None = None,
+    extra: str | None = None,
 ) -> None:
     """Check the value of a parameter against a list of valid options.
 
@@ -84,7 +84,7 @@ def check_verbose(verbose: Any) -> int:
     verbose : int | str | bool | None
         Sets the verbosity level. The verbosity increases gradually between
         ``"CRITICAL"``, ``"ERROR"``, ``"WARNING"``, ``"INFO"`` and ``"DEBUG"``.
-        If None is provided, the verbosity is set to ``"WARNING"``.
+        If None is provided, the verbosity is set to the currently set logger's level.
         If a bool is provided, the verbosity is set to ``"WARNING"`` for False and
         to ``"INFO"`` for True.
 

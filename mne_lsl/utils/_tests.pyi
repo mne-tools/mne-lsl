@@ -1,5 +1,4 @@
 from pathlib import Path as Path
-from typing import Union
 
 from mne import Info
 from mne.io import BaseRaw
@@ -7,7 +6,7 @@ from numpy.typing import NDArray
 
 from .._typing import ScalarType as ScalarType
 
-def sha256sum(fname: Union[str, Path]) -> str:
+def sha256sum(fname: str | Path) -> str:
     """Efficiently hash a file."""
 
 def match_stream_and_raw_data(data: NDArray[None], raw: BaseRaw) -> None:

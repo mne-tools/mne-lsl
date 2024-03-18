@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from datetime import datetime as datetime
 from pathlib import Path
-from typing import Any, Callable, Optional, Union
+from typing import Any, Callable
 
 from _typeshed import Incomplete
 from mne import Info
@@ -13,6 +13,8 @@ from ..utils._checks import check_type as check_type
 from ..utils._checks import ensure_int as ensure_int
 from ..utils._checks import ensure_path as ensure_path
 from ..utils._docs import fill_doc as fill_doc
+from ..utils.logs import logger as logger
+from ..utils.logs import verbose as verbose
 from ..utils.meas_info import _set_channel_units as _set_channel_units
 
 class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
@@ -26,6 +28,9 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         can be provided directly.
     chunk_size : int ``≥ 1``
         Number of samples pushed at once on the mock real-time stream.
+    n_repeat : int | ``np.inf``
+        Number of times to repeat the file. If ``np.inf``, the file is re-played
+        indefinitely.
 
     Notes
     -----
@@ -35,17 +40,23 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
     """
 
     _chunk_size: Incomplete
+    _n_repeat: Incomplete
     _fname: Incomplete
     _raw: Incomplete
 
     @abstractmethod
-    def __init__(self, fname: Union[str, Path, BaseRaw], chunk_size: int = 64): ...
+    def __init__(
+        self,
+        fname: str | Path | BaseRaw,
+        chunk_size: int = 64,
+        n_repeat: int | float = ...,
+    ): ...
     def anonymize(
         self,
-        daysback: Optional[int] = None,
+        daysback: int | None = None,
         keep_his: bool = False,
         *,
-        verbose: Optional[Union[bool, str, int]] = None,
+        verbose: bool | str | int | None = None,
     ) -> BasePlayer:
         """Anonymize the measurement information in-place.
 
@@ -65,7 +76,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         verbose : int | str | bool | None
             Sets the verbosity level. The verbosity increases gradually between
             ``"CRITICAL"``, ``"ERROR"``, ``"WARNING"``, ``"INFO"`` and ``"DEBUG"``.
-            If None is provided, the verbosity is set to ``"WARNING"``.
+            If None is provided, the verbosity is set to the currently set logger's level.
             If a bool is provided, the verbosity is set to ``"WARNING"`` for False and
             to ``"INFO"`` for True.
 
@@ -132,10 +143,10 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
     @abstractmethod
     def rename_channels(
         self,
-        mapping: Union[dict[str, str], Callable],
+        mapping: dict[str, str] | Callable,
         allow_duplicates: bool = False,
         *,
-        verbose: Optional[Union[bool, str, int]] = None,
+        verbose: bool | str | int | None = None,
     ) -> BasePlayer:
         """Rename channels.
 
@@ -151,7 +162,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         verbose : int | str | bool | None
             Sets the verbosity level. The verbosity increases gradually between
             ``"CRITICAL"``, ``"ERROR"``, ``"WARNING"``, ``"INFO"`` and ``"DEBUG"``.
-            If None is provided, the verbosity is set to ``"WARNING"``.
+            If None is provided, the verbosity is set to the currently set logger's level.
             If a bool is provided, the verbosity is set to ``"WARNING"`` for False and
             to ``"INFO"`` for True.
 
@@ -171,7 +182,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         mapping: dict[str, str],
         *,
         on_unit_change: str = "warn",
-        verbose: Optional[Union[bool, str, int]] = None,
+        verbose: bool | str | int | None = None,
     ) -> BasePlayer:
         """Define the sensor type of channels.
 
@@ -193,7 +204,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         verbose : int | str | bool | None
             Sets the verbosity level. The verbosity increases gradually between
             ``"CRITICAL"``, ``"ERROR"``, ``"WARNING"``, ``"INFO"`` and ``"DEBUG"``.
-            If None is provided, the verbosity is set to ``"WARNING"``.
+            If None is provided, the verbosity is set to the currently set logger's level.
             If a bool is provided, the verbosity is set to ``"WARNING"`` for False and
             to ``"INFO"`` for True.
 
@@ -204,7 +215,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         """
 
     @abstractmethod
-    def set_channel_units(self, mapping: dict[str, Union[str, int]]) -> BasePlayer:
+    def set_channel_units(self, mapping: dict[str, str | int]) -> BasePlayer:
         """Define the channel unit multiplication factor.
 
         By convention, MNE stores data in SI units. But systems often stream in non-SI
@@ -236,7 +247,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         """
 
     def set_meas_date(
-        self, meas_date: Optional[Union[datetime, float, tuple[float, float]]]
+        self, meas_date: datetime | float | tuple[float, float] | None
     ) -> BasePlayer:
         """Set the measurement start date.
 
@@ -281,6 +292,8 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         >>> [In] %timeit np.ascontiguousarray(raw[:, 0:16][0].T)
         >>> 23.7 µs ± 183 ns per loop
         """
+    _end_streaming: bool
+    _n_repeated: int
     _start_idx: int
     _streaming_delay: Incomplete
     _streaming_thread: Incomplete
@@ -316,7 +329,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         """
 
     @property
-    def fname(self) -> Optional[Path]:
+    def fname(self) -> Path | None:
         """Path to file played.
 
         :type: :class:`~pathlib.Path` | None
@@ -327,4 +340,11 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         """Info of the real-time stream.
 
         :type: :class:`~mne.Info`
+        """
+
+    @property
+    def n_repeat(self) -> int | None:
+        """Number of times the file is repeated.
+
+        :type: :class:`int` | ``np.inf``
         """
