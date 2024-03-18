@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from collections.abc import Generator
 from datetime import datetime as datetime
-from typing import Callable, Optional, Union
+from typing import Any, Callable
 
 import numpy as np
 from _typeshed import Incomplete
@@ -16,11 +16,16 @@ from .._typing import ScalarIntType as ScalarIntType
 from .._typing import ScalarType as ScalarType
 from ..utils._checks import check_type as check_type
 from ..utils._checks import check_value as check_value
+from ..utils._checks import ensure_int as ensure_int
 from ..utils._docs import copy_doc as copy_doc
 from ..utils._docs import fill_doc as fill_doc
 from ..utils.logs import logger as logger
+from ..utils.logs import verbose as verbose
 from ..utils.meas_info import _HUMAN_UNITS as _HUMAN_UNITS
 from ..utils.meas_info import _set_channel_units as _set_channel_units
+from ._filters import StreamFilter as StreamFilter
+from ._filters import create_filter as create_filter
+from ._filters import ensure_sos_iir_params as ensure_sos_iir_params
 
 class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
     """Stream object representing a single real-time stream.
@@ -74,10 +79,8 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
     def add_reference_channels(
         self,
-        ref_channels: Union[str, list[str], tuple[str]],
-        ref_units: Optional[
-            Union[str, int, list[Union[str, int]], tuple[Union[str, int]]]
-        ] = None,
+        ref_channels: str | list[str] | tuple[str],
+        ref_units: str | int | list[str | int] | tuple[str | int] | None = None,
     ) -> BaseStream:
         """Add EEG reference channels to data that consists of all zeros.
 
@@ -107,10 +110,10 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
     def anonymize(
         self,
-        daysback: Optional[int] = None,
+        daysback: int | None = None,
         keep_his: bool = False,
         *,
-        verbose: Optional[Union[bool, str, int]] = None,
+        verbose: bool | str | int | None = None,
     ) -> BaseStream:
         """Anonymize the measurement information in-place.
 
@@ -130,7 +133,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         verbose : int | str | bool | None
             Sets the verbosity level. The verbosity increases gradually between
             ``"CRITICAL"``, ``"ERROR"``, ``"WARNING"``, ``"INFO"`` and ``"DEBUG"``.
-            If None is provided, the verbosity is set to ``"WARNING"``.
+            If None is provided, the verbosity is set to the currently set logger's level.
             If a bool is provided, the verbosity is set to ``"WARNING"`` for False and
             to ``"INFO"`` for True.
 
@@ -195,7 +198,24 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             The stream instance modified in-place.
         """
 
-    def drop_channels(self, ch_names: Union[str, list[str], tuple[str]]) -> BaseStream:
+    def del_filter(self, idx: int | list[int] | tuple[int] | str = "all") -> None:
+        """Remove a filter from the list of applied filters.
+
+        Parameters
+        ----------
+        idx : ``'all'`` | int | list of int | tuple of int
+            If the string ``'all'`` (default), remove all filters. If an integer or a
+            list of integers, remove the filter(s) at the given index(es) from
+            ``Stream.filters``.
+
+        Notes
+        -----
+        When removing a filter, the initial conditions of all the filters applied on
+        overlapping channels are reset. The initial conditions will be re-estimated as
+        a step response steady-state.
+        """
+
+    def drop_channels(self, ch_names: str | list[str] | tuple[str]) -> BaseStream:
         """Drop channel(s).
 
         Parameters
@@ -213,8 +233,55 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         pick
         """
 
-    def filter(self) -> BaseStream:
-        """Filter the stream. Not implemented.
+    def filter(
+        self,
+        l_freq: float | None,
+        h_freq: float | None,
+        picks: str | list[str] | int | list[int] | NDArray[None] | None = None,
+        iir_params: dict[str, Any] | None = None,
+        *,
+        verbose: bool | str | int | None = None,
+    ) -> BaseStream:
+        """Filter the stream with an IIR causal filter.
+
+        Once a filter is applied, the buffer is updated in real-time with the filtered
+        data. It is possible to apply more than one filter.
+
+        .. code-block:: python
+
+            stream = Stream(2.0).connect()
+            stream.filter(1.0, 40.0, picks="eeg")
+            stream.filter(1.0, 15.0, picks="ecg").filter(0.1, 5, picks="EDA")
+
+        Parameters
+        ----------
+        l_freq : float | None
+            The lower cutoff frequency. If None, the buffer is only low-passed.
+        h_freq : float | None
+            The higher cutoff frequency. If None, the buffer is only high-passed.
+        picks : str | array-like | slice | None
+            Channels to include. Slices and lists of integers will be interpreted as
+            channel indices. In lists, channel *type* strings (e.g., ``['meg',
+            'eeg']``) will pick channels of those types, channel *name* strings (e.g.,
+            ``['MEG0111', 'MEG2623']`` will pick the given channels. Can also be the
+            string values "all" to pick all channels, or "data" to pick :term:`data
+            channels`. None (default) will pick all channels. Note that channels in
+            ``info['bads']`` *will be included* if their names or indices are
+            explicitly provided.
+        iir_params : dict | None
+            Dictionary of parameters to use for IIR filtering. If None, a 4th order
+            Butterworth will be used. For more information, see
+            :func:`mne.filter.construct_iir_filter`.
+
+            .. note::
+
+                The output ``sos`` must be used. The ``ba`` output is not supported.
+        verbose : int | str | bool | None
+            Sets the verbosity level. The verbosity increases gradually between
+            ``"CRITICAL"``, ``"ERROR"``, ``"WARNING"``, ``"INFO"`` and ``"DEBUG"``.
+            If None is provided, the verbosity is set to the currently set logger's level.
+            If a bool is provided, the verbosity is set to ``"WARNING"`` for False and
+            to ``"INFO"`` for True.
 
         Returns
         -------
@@ -224,7 +291,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
     def get_channel_types(
         self,
-        picks: Incomplete | None = None,
+        picks: str | list[str] | int | list[int] | NDArray[None] | None = None,
         unique: bool = False,
         only_data_chs: bool = False,
     ) -> list[str]:
@@ -253,7 +320,9 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         """
 
     def get_channel_units(
-        self, picks: Incomplete | None = None, only_data_chs: bool = False
+        self,
+        picks: str | list[str] | int | list[int] | NDArray[None] | None = None,
+        only_data_chs: bool = False,
     ) -> list[tuple[int, int]]:
         """Get a list of channel unit for each channel.
 
@@ -282,8 +351,8 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
     def get_data(
         self,
-        winsize: Optional[float] = None,
-        picks: Optional[Union[str, list[str], list[int], NDArray[None]]] = None,
+        winsize: float | None = None,
+        picks: str | list[str] | int | list[int] | NDArray[None] | None = None,
     ) -> tuple[NDArray[None], NDArray[np.float64]]:
         """Retrieve the latest data from the buffer.
 
@@ -320,7 +389,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         argument ``picks``.
         """
 
-    def get_montage(self) -> Optional[DigMontage]:
+    def get_montage(self) -> DigMontage | None:
         """Get a DigMontage from instance.
 
         Returns
@@ -337,10 +406,74 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             :class:`~mne.Info`.
         """
 
+    def notch_filter(
+        self,
+        freqs: float,
+        picks: str | list[str] | int | list[int] | NDArray[None] | None = None,
+        notch_widths: float | None = None,
+        trans_bandwidth: int = 1,
+        iir_params: dict[str, Any] | None = None,
+        *,
+        verbose: bool | str | int | None = None,
+    ) -> BaseStream:
+        """Filter the stream with an IIR causal notch filter.
+
+        Once a filter is applied, the buffer is updated in real-time with the filtered
+        data. It is possible to apply more than one filter.
+
+        .. code-block:: python
+
+            stream = Stream(2.0).connect()
+            stream.filter(1.0, 40.0, picks="eeg")
+            stream.notch_filter(50, picks="ecg")
+
+        Parameters
+        ----------
+        freqs : float
+            Specific frequencies to filter out from data, e.g. ``60`` Hz in the US or
+            ``50`` Hz in Europe for line noise.
+        picks : str | array-like | slice | None
+            Channels to include. Slices and lists of integers will be interpreted as
+            channel indices. In lists, channel *type* strings (e.g., ``['meg',
+            'eeg']``) will pick channels of those types, channel *name* strings (e.g.,
+            ``['MEG0111', 'MEG2623']`` will pick the given channels. Can also be the
+            string values "all" to pick all channels, or "data" to pick :term:`data
+            channels`. None (default) will pick all channels. Note that channels in
+            ``info['bads']`` *will be included* if their names or indices are
+            explicitly provided.
+        notch_widths : float | None
+            Width of the stop band in Hz. If ``None``, ``freqs / 200`` is used.
+        trans_bandwidth : float
+            Width of the transition band in Hz.
+        iir_params : dict | None
+            Dictionary of parameters to use for IIR filtering. If None, a 4th order
+            Butterworth will be used. For more information, see
+            :func:`mne.filter.construct_iir_filter`.
+
+            .. note::
+
+                The output ``sos`` must be used. The ``ba`` output is not supported.
+        verbose : int | str | bool | None
+            Sets the verbosity level. The verbosity increases gradually between
+            ``"CRITICAL"``, ``"ERROR"``, ``"WARNING"``, ``"INFO"`` and ``"DEBUG"``.
+            If None is provided, the verbosity is set to the currently set logger's level.
+            If a bool is provided, the verbosity is set to ``"WARNING"`` for False and
+            to ``"INFO"`` for True.
+
+        Returns
+        -------
+        stream : instance of ``Stream``
+            The stream instance modified in-place.
+        """
+
     def plot(self) -> None:
         """Open a real-time stream viewer. Not implemented."""
 
-    def pick(self, picks, exclude=()) -> BaseStream:
+    def pick(
+        self,
+        picks: str | list[str] | int | list[int] | NDArray[None] | None = None,
+        exclude: str | list[str] | int | list[int] | NDArray[None] = (),
+    ) -> BaseStream:
         """Pick a subset of channels.
 
         Parameters
@@ -351,9 +484,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             'eeg']``) will pick channels of those types, channel *name* strings (e.g.,
             ``['MEG0111', 'MEG2623']`` will pick the given channels. Can also be the
             string values "all" to pick all channels, or "data" to pick :term:`data
-            channels`. None (default) will pick all channels. Note that channels in
-            ``info['bads']`` *will be included* if their names or indices are
-            explicitly provided.
+            channels`. None (default) will pick all channels.
         exclude : str | list of str
             Set of channels to exclude, only used when picking is based on types, e.g.
             ``exclude='bads'`` when ``picks="meg"``.
@@ -379,10 +510,10 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
     def rename_channels(
         self,
-        mapping: Union[dict[str, str], Callable],
+        mapping: dict[str, str] | Callable,
         allow_duplicates: bool = False,
         *,
-        verbose: Optional[Union[bool, str, int]] = None,
+        verbose: bool | str | int | None = None,
     ) -> BaseStream:
         """Rename channels.
 
@@ -398,7 +529,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         verbose : int | str | bool | None
             Sets the verbosity level. The verbosity increases gradually between
             ``"CRITICAL"``, ``"ERROR"``, ``"WARNING"``, ``"INFO"`` and ``"DEBUG"``.
-            If None is provided, the verbosity is set to ``"WARNING"``.
+            If None is provided, the verbosity is set to the currently set logger's level.
             If a bool is provided, the verbosity is set to ``"WARNING"`` for False and
             to ``"INFO"`` for True.
 
@@ -422,7 +553,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         mapping: dict[str, str],
         *,
         on_unit_change: str = "warn",
-        verbose: Optional[Union[bool, str, int]] = None,
+        verbose: bool | str | int | None = None,
     ) -> BaseStream:
         """Define the sensor type of channels.
 
@@ -444,7 +575,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         verbose : int | str | bool | None
             Sets the verbosity level. The verbosity increases gradually between
             ``"CRITICAL"``, ``"ERROR"``, ``"WARNING"``, ``"INFO"`` and ``"DEBUG"``.
-            If None is provided, the verbosity is set to ``"WARNING"``.
+            If None is provided, the verbosity is set to the currently set logger's level.
             If a bool is provided, the verbosity is set to ``"WARNING"`` for False and
             to ``"INFO"`` for True.
 
@@ -454,7 +585,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             The stream instance modified in-place.
         """
 
-    def set_channel_units(self, mapping: dict[str, Union[str, int]]) -> BaseStream:
+    def set_channel_units(self, mapping: dict[str, str | int]) -> BaseStream:
         """Define the channel unit multiplication factor.
 
         The unit itself is defined by the sensor type. Use
@@ -483,8 +614,8 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
     def set_eeg_reference(
         self,
-        ref_channels: Union[str, list[str], tuple[str]],
-        ch_type: Union[str, list[str], tuple[str]] = "eeg",
+        ref_channels: str | list[str] | tuple[str],
+        ch_type: str | list[str] | tuple[str] = "eeg",
     ) -> BaseStream:
         """Specify which reference to use for EEG-like data.
 
@@ -509,7 +640,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         """
 
     def set_meas_date(
-        self, meas_date: Optional[Union[datetime, float, tuple[float]]]
+        self, meas_date: datetime | float | tuple[float] | None
     ) -> BaseStream:
         """Set the measurement start date.
 
@@ -535,12 +666,12 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
     def set_montage(
         self,
-        montage: Optional[Union[str, DigMontage]],
+        montage: str | DigMontage | None,
         match_case: bool = True,
-        match_alias: Union[bool, dict[str, str]] = False,
+        match_alias: bool | dict[str, str] = False,
         on_missing: str = "raise",
         *,
-        verbose: Optional[Union[bool, str, int]] = None,
+        verbose: bool | str | int | None = None,
     ) -> BaseStream:
         """Set EEG/sEEG/ECoG/DBS/fNIRS channel positions and digitization points.
 
@@ -575,7 +706,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         verbose : int | str | bool | None
             Sets the verbosity level. The verbosity increases gradually between
             ``"CRITICAL"``, ``"ERROR"``, ``"WARNING"``, ``"INFO"`` and ``"DEBUG"``.
-            If None is provided, the verbosity is set to ``"WARNING"``.
+            If None is provided, the verbosity is set to the currently set logger's level.
             If a bool is provided, the verbosity is set to ``"WARNING"`` for False and
             to ``"INFO"`` for True.
 
@@ -627,6 +758,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
     def _pick(self, picks: NDArray[None]) -> None:
         """Interrupt acquisition and apply the channel selection."""
     _added_channels: Incomplete
+    _filters: Incomplete
     _timestamps: Incomplete
 
     @abstractmethod
@@ -634,7 +766,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         """Reset variables define after connection."""
 
     @property
-    def compensation_grade(self) -> Optional[int]:
+    def compensation_grade(self) -> int | None:
         """The current gradient compensation grade.
 
         :type: :class:`int` | None
@@ -655,8 +787,15 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         """
 
     @property
-    def dtype(self) -> Optional[DTypeLike]:
+    def dtype(self) -> DTypeLike | None:
         """Channel format of the stream."""
+
+    @property
+    def filters(self) -> list[StreamFilter]:
+        """List of filters applied to the real-time Stream.
+
+        :type: :class:`list` of ```StreamFilter``
+        """
 
     @property
     def info(self) -> Info:

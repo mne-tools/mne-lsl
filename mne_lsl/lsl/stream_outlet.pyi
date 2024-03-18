@@ -1,5 +1,3 @@
-from typing import Optional, Union
-
 from _typeshed import Incomplete
 from numpy.typing import DTypeLike as DTypeLike
 from numpy.typing import NDArray as NDArray
@@ -65,7 +63,7 @@ class StreamOutlet:
 
     def push_sample(
         self,
-        x: Union[list[str], NDArray[None]],
+        x: list[str] | NDArray[None],
         timestamp: float = 0.0,
         pushThrough: bool = True,
     ) -> None:
@@ -89,8 +87,8 @@ class StreamOutlet:
 
     def push_chunk(
         self,
-        x: Union[list[list[str]], NDArray[None]],
-        timestamp: Optional[Union[float, NDArray[None]]] = None,
+        x: list[list[str]] | NDArray[None],
+        timestamp: float | NDArray[None] | None = None,
         pushThrough: bool = True,
     ) -> None:
         """Push a chunk of samples into the :class:`~mne_lsl.lsl.StreamOutlet`.
@@ -114,7 +112,7 @@ class StreamOutlet:
             ``pushThrough`` flag.
         """
 
-    def wait_for_consumers(self, timeout: Optional[float]) -> bool:
+    def wait_for_consumers(self, timeout: float | None) -> bool:
         """Wait (block) until at least one :class:`~mne_lsl.lsl.StreamInlet` connects.
 
         Parameters
@@ -134,7 +132,7 @@ class StreamOutlet:
         """
 
     @property
-    def dtype(self) -> Union[str, DTypeLike]:
+    def dtype(self) -> str | DTypeLike:
         """Channel format of a stream.
 
         All channels in a stream have the same format.

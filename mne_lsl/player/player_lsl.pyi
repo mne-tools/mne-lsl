@@ -1,5 +1,5 @@
 from pathlib import Path as Path
-from typing import Callable, Optional, Union
+from typing import Callable
 
 from _typeshed import Incomplete
 from mne import Annotations
@@ -9,6 +9,7 @@ from ..lsl import StreamOutlet as StreamOutlet
 from ..lsl import local_clock as local_clock
 from ..utils._checks import check_type as check_type
 from ..utils._docs import copy_doc as copy_doc
+from ..utils._docs import fill_doc as fill_doc
 from ..utils.logs import logger as logger
 from ._base import BasePlayer as BasePlayer
 
@@ -17,13 +18,17 @@ class PlayerLSL(BasePlayer):
 
     Parameters
     ----------
-    fname : path-like
-        Path to the file to re-play as a mock LSL stream. MNE-Python must be able to
-        load the file with :func:`mne.io.read_raw`.
+    fname : path-like | Raw
+        Path to the file to re-play as a mock real-time stream. MNE-Python must be able
+        to load the file with :func:`mne.io.read_raw`. An :class:`~mne.io.Raw` object
+        can be provided directly.
     chunk_size : int ``≥ 1``
         Number of samples pushed at once on the :class:`~mne_lsl.lsl.StreamOutlet`.
         If these chunks are too small then the thread-based timing might not work
         properly.
+    n_repeat : int | ``np.inf``
+        Number of times to repeat the file. If ``np.inf``, the file is re-played
+        indefinitely.
     name : str | None
         Name of the mock LSL stream. If ``None``, the name ``MNE-LSL-Player`` is used.
     annotations : bool | None
@@ -89,17 +94,18 @@ class PlayerLSL(BasePlayer):
 
     def __init__(
         self,
-        fname: Union[str, Path],
+        fname: str | Path,
         chunk_size: int = 64,
-        name: Optional[str] = None,
-        annotations: Optional[bool] = None,
+        n_repeat: int | float = ...,
+        name: str | None = None,
+        annotations: bool | None = None,
     ) -> None: ...
     def rename_channels(
         self,
-        mapping: Union[dict[str, str], Callable],
+        mapping: dict[str, str] | Callable,
         allow_duplicates: bool = False,
         *,
-        verbose: Optional[Union[bool, str, int]] = None,
+        verbose: bool | str | int | None = None,
     ) -> PlayerLSL:
         """Rename channels.
 
@@ -115,7 +121,7 @@ class PlayerLSL(BasePlayer):
         verbose : int | str | bool | None
             Sets the verbosity level. The verbosity increases gradually between
             ``"CRITICAL"``, ``"ERROR"``, ``"WARNING"``, ``"INFO"`` and ``"DEBUG"``.
-            If None is provided, the verbosity is set to ``"WARNING"``.
+            If None is provided, the verbosity is set to the currently set logger's level.
             If a bool is provided, the verbosity is set to ``"WARNING"`` for False and
             to ``"INFO"`` for True.
 
@@ -144,7 +150,7 @@ class PlayerLSL(BasePlayer):
         mapping: dict[str, str],
         *,
         on_unit_change: str = "warn",
-        verbose: Optional[Union[bool, str, int]] = None,
+        verbose: bool | str | int | None = None,
     ) -> PlayerLSL:
         """Define the sensor type of channels.
 
@@ -166,7 +172,7 @@ class PlayerLSL(BasePlayer):
         verbose : int | str | bool | None
             Sets the verbosity level. The verbosity increases gradually between
             ``"CRITICAL"``, ``"ERROR"``, ``"WARNING"``, ``"INFO"`` and ``"DEBUG"``.
-            If None is provided, the verbosity is set to ``"WARNING"``.
+            If None is provided, the verbosity is set to the currently set logger's level.
             If a bool is provided, the verbosity is set to ``"WARNING"`` for False and
             to ``"INFO"`` for True.
 
@@ -176,7 +182,7 @@ class PlayerLSL(BasePlayer):
             The player instance modified in-place.
         """
 
-    def set_channel_units(self, mapping: dict[str, Union[str, int]]) -> PlayerLSL:
+    def set_channel_units(self, mapping: dict[str, str | int]) -> PlayerLSL:
         """Define the channel unit multiplication factor.
 
         By convention, MNE stores data in SI units. But systems often stream in non-SI
@@ -215,7 +221,11 @@ class PlayerLSL(BasePlayer):
         player : instance of :class:`~mne_lsl.player.PlayerLSL`
             The player instance modified in-place.
         """
+
+    def _del_outlets(self) -> None:
+        """Attempt to delete outlets."""
     _start_idx: Incomplete
+    _end_streaming: bool
 
     def _stream(self) -> None:
         """Push a chunk of data from the raw object to the real-time stream.
