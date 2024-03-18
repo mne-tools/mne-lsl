@@ -78,16 +78,10 @@ channel attributes: names, types, units.
     * :meth:`~mne_lsl.lsl.StreamInfo.set_channel_units`
 
 Those methods eliminate the need to interact with the ``XMLElement`` underlying tree,
-present in the :py:attr:`mne_lsl.lsl.StreamInfo.desc` property.
-
-The description can even be set or retrieved directly from a :class:`~mne.Info` object
-with:
-
-.. hlist::
-    :columns: 2
-
-    * :meth:`~mne_lsl.lsl.StreamInfo.get_channel_info`
-    * :meth:`~mne_lsl.lsl.StreamInfo.set_channel_info`
+present in the :py:attr:`mne_lsl.lsl.StreamInfo.desc` property. The description can even
+be set or retrieved directly from a :class:`~mne.Info` object with
+:meth:`~mne_lsl.lsl.StreamInfo.set_channel_info` and
+:meth:`~mne_lsl.lsl.StreamInfo.get_channel_info`.
 
 Improve arguments
 ~~~~~~~~~~~~~~~~~
