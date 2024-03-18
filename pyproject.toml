@@ -195,7 +195,7 @@ select = ['A', 'B', 'E', 'F', 'UP', 'W']
   'B904', # 'Within an except clause, raise exceptions with raise ... from ...'
   'UP007', # 'Use `X | Y` for type annotations', requires python 3.10
 ]
-'*.pyi' = ['E501']
+'*.pyi' = ['E501', 'F811']
 '__init__.py' = ['F401']
 
 [tool.setuptools]
