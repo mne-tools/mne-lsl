@@ -10,8 +10,8 @@ Faster chunk pull
 
 Arguably the most important difference, pulling a chunk of numerical data with
 :meth:`~mne_lsl.lsl.StreamInlet.pull_chunk` is much faster than with its
-`pylsl <lsl python_>`_ counterpart. `pylsl <lsl python_>`_ loads the retrieved samples
-one by one in a list of list, `here <pylsl pull_chunk_>`_.
+`pylsl <lsl python_>`_ counterpart. By default, `pylsl <lsl python_>`_ loads the
+retrieved samples one by one in a list of list, `here <pylsl pull_chunk_>`_.
 
 .. code-block:: python
 
@@ -39,13 +39,27 @@ the entire buffer at once with :func:`numpy.frombuffer`.
 
 Now, ``samples`` is created in constant time ``O(1)``. The performance gain varies
 depending on the number of values pulled, for instance retrieving 1024 samples with
-65 channels in double precision (``float64``) is ~1800 times slower with
-`pylsl <lsl python_>`_:
+65 channels in double precision (``float64``) takes:
 
-* 7.87 ms ± 58 µs with ``pylsl``
-* 4.35 µs ± 134 ns with ``mne_lsl.lsl``
+* 4.33 ms ± 37.5 µs with ``pylsl`` (default behavior)
+* 268 ns ± 0.357 ns with ``mne_lsl.lsl``
 
-Note that this performance improvement is absent for ``string`` based streams.
+Note that ``pylsl`` pulling function support a ``dest_obj`` argument described as::
+
+    A Python object that supports the buffer interface.
+    If this is provided then the dest_obj will be updated in place and the samples list
+    returned by this method will be empty. It is up to the caller to trim the buffer to
+    the appropriate number of samples. A numpy buffer must be order='C'.
+
+If a :class:`~numpy.ndarray` is used as ``dest_obj``, the memory re-allocation step
+described abvove is skipped, yielding similar performance to ``mne_lsl.lsl``. For the
+same 1024 samples with 65 channels in double precision (``float64``), the pull operation
+takes:
+
+* 471 ns ± 1.7 ns with ``pylsl`` (with ``dest_obj`` argument as :class:`~numpy.ndarray`)
+
+Note that this performance improvement is absent for ``string`` based streams. Follow
+:issue:`225` for more information.
 
 Convenience methods
 ~~~~~~~~~~~~~~~~~~~
@@ -64,7 +78,10 @@ channel attributes: names, types, units.
     * :meth:`~mne_lsl.lsl.StreamInfo.set_channel_units`
 
 Those methods eliminate the need to interact with the ``XMLElement`` underlying tree,
-present in the :py:attr:`mne_lsl.lsl.StreamInfo.desc` property.
+present in the :py:attr:`mne_lsl.lsl.StreamInfo.desc` property. The description can even
+be set or retrieved directly from a :class:`~mne.Info` object with
+:meth:`~mne_lsl.lsl.StreamInfo.set_channel_info` and
+:meth:`~mne_lsl.lsl.StreamInfo.get_channel_info`.
 
 Improve arguments
 ~~~~~~~~~~~~~~~~~

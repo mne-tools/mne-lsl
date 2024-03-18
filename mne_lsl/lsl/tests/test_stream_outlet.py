@@ -26,8 +26,7 @@ def test_push_numerical_sample(dtype_str, dtype, close_io):
     x = np.array([1, 2], dtype=dtype)
     assert x.shape == (2,) and x.dtype == dtype
     # create stream descriptions
-    source_id = uuid.uuid4().hex[:6]
-    sinfo = StreamInfo("test", "", 2, 0.0, dtype_str, source_id)
+    sinfo = StreamInfo("test", "", 2, 0.0, dtype_str, uuid.uuid4().hex)
     outlet = StreamOutlet(sinfo, chunk_size=1)
     _test_properties(outlet, dtype_str, 2, "test", 0.0, "")
     inlet = StreamInlet(sinfo)
@@ -47,8 +46,7 @@ def test_push_str_sample(close_io):
     """Test push_sample with strings."""
     x = ["1", "2"]
     # create stream descriptions
-    source_id = uuid.uuid4().hex[:6]
-    sinfo = StreamInfo("test", "", 2, 0.0, "string", source_id)
+    sinfo = StreamInfo("test", "", 2, 0.0, "string", uuid.uuid4().hex)
     outlet = StreamOutlet(sinfo, chunk_size=1)
     _test_properties(outlet, "string", 2, "test", 0.0, "")
     inlet = StreamInlet(sinfo)
@@ -74,7 +72,7 @@ def test_push_numerical_chunk(dtype_str, dtype):
     """Test the error checking when pushing a numerical chunk."""
     x = np.array([[1, 4], [2, 5], [3, 6]], dtype=dtype)
     # create stream description
-    sinfo = StreamInfo("test", "", 2, 0.0, dtype_str, uuid.uuid4().hex[:6])
+    sinfo = StreamInfo("test", "", 2, 0.0, dtype_str, uuid.uuid4().hex)
     outlet = StreamOutlet(sinfo, chunk_size=3)
     _test_properties(outlet, dtype_str, 2, "test", 0.0, "")
     # valid
@@ -100,7 +98,7 @@ def test_push_numerical_chunk(dtype_str, dtype):
 
 def test_push_str_chunk():
     """Test the error checking when pushing a string chunk."""
-    sinfo = StreamInfo("test", "", 2, 0.0, "string", uuid.uuid4().hex[:6])
+    sinfo = StreamInfo("test", "", 2, 0.0, "string", uuid.uuid4().hex)
     outlet = StreamOutlet(sinfo, chunk_size=3)
     _test_properties(outlet, "string", 2, "test", 0.0, "")
     # valid
@@ -121,7 +119,7 @@ def test_push_str_chunk():
 
 def test_wait_for_consumers(close_io):
     """Test wait for client."""
-    sinfo = StreamInfo("test", "EEG", 2, 100.0, "float32", uuid.uuid4().hex[:6])
+    sinfo = StreamInfo("test", "EEG", 2, 100.0, "float32", uuid.uuid4().hex)
     outlet = StreamOutlet(sinfo, chunk_size=3)
     _test_properties(outlet, "float32", 2, "test", 100.0, "EEG")
     assert not outlet.wait_for_consumers(timeout=0.2)
@@ -137,7 +135,7 @@ def test_wait_for_consumers(close_io):
 
 def test_invalid_outlet():
     """Test creation of an invalid outlet."""
-    sinfo = StreamInfo("test", "EEG", 2, 100.0, "float32", uuid.uuid4().hex[:6])
+    sinfo = StreamInfo("test", "EEG", 2, 100.0, "float32", uuid.uuid4().hex)
     with pytest.raises(
         ValueError, match="'chunk_size' must contain a positive integer"
     ):
@@ -166,7 +164,7 @@ def test_push_chunk_timestamps(dtype_str, dtype, close_io):
     else:
         x = np.array([[1, 4], [2, 5], [3, 6]], dtype=dtype)
     # create stream description
-    sinfo = StreamInfo("test", "", 2, 1.0, dtype_str, uuid.uuid4().hex[:6])
+    sinfo = StreamInfo("test", "", 2, 1.0, dtype_str, uuid.uuid4().hex)
     outlet = StreamOutlet(sinfo, chunk_size=3)
     _test_properties(outlet, dtype_str, 2, "test", 1.0, "")
     inlet = StreamInlet(sinfo)
@@ -214,7 +212,7 @@ def test_push_chunk_irregularly_sampled_stream(close_io):
     """Test pushing a chunk on an irregularly sampled stream."""
     x = np.array([[1, 4], [2, 5], [3, 6]], dtype=np.float32)
     # create stream description
-    sinfo = StreamInfo("test", "", 2, 0.0, np.float32, uuid.uuid4().hex[:6])
+    sinfo = StreamInfo("test", "", 2, 0.0, np.float32, uuid.uuid4().hex)
     outlet = StreamOutlet(sinfo, chunk_size=3)
     _test_properties(outlet, "float32", 2, "test", 0.0, "")
     inlet = StreamInlet(sinfo)

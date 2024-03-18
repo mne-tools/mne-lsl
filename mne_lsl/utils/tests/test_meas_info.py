@@ -1,6 +1,6 @@
 """Test meas_info.py"""
 
-from time import strftime
+import uuid
 
 import pytest
 
@@ -169,7 +169,7 @@ def test_manufacturer():
 
 def test_valid_info_from_sinfo():
     """Test creation of a valid info from a SreamInfo."""
-    sinfo = StreamInfo("pytest", "eeg", 4, 101, "float32", strftime("%H%M%S"))
+    sinfo = StreamInfo("pytest", "eeg", 4, 101, "float32", uuid.uuid4().hex)
     ch_names = ["F7", "Fp2", "STI101", "EOG"]
     ch_types = ["eeg", "eeg", "stim", "eog"]
     sinfo.set_channel_names(ch_names)
@@ -191,7 +191,7 @@ def test_valid_info_from_sinfo():
     assert [ch["unit_mul"] for ch in info["chs"]] == [-6, -6, 0, -6]
 
     # stream info without a main channel type
-    sinfo = StreamInfo("pytest", "", 4, 101, "float32", strftime("%H%M%S"))
+    sinfo = StreamInfo("pytest", "", 4, 101, "float32", uuid.uuid4().hex)
     ch_names = ["F7", "Fp2", "STI101", "EOG"]
     ch_types = ["eeg", "eeg", "stim", "eog"]
     sinfo.set_channel_names(ch_names)
@@ -222,7 +222,7 @@ def test_without_description():
     assert info.get_channel_types() == ["eeg", "eeg"]
     assert [ch["unit_mul"] for ch in info["chs"]] == [0, 0]
 
-    sinfo = StreamInfo("pytest", "eeg", 2, 101, "float32", strftime("%H%M%S"))
+    sinfo = StreamInfo("pytest", "eeg", 2, 101, "float32", uuid.uuid4().hex)
     info = create_info(2, 101, "eeg", sinfo)
     assert info["sfreq"] == 101
     assert len(info.ch_names) == 2

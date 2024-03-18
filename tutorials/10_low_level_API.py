@@ -48,7 +48,7 @@ sinfo = StreamInfo(
     n_channels=3,
     sfreq=1024,
     dtype="float32",
-    source_id=uuid.uuid4().hex[:6],
+    source_id=uuid.uuid4().hex,
 )
 sinfo.set_channel_names(["Fz", "Cz", "Oz"])
 sinfo.set_channel_types("eeg")
