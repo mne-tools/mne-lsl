@@ -1,4 +1,4 @@
-from time import strftime
+import uuid
 
 import numpy as np
 import pytest
@@ -15,7 +15,7 @@ logger.propagate = True
 
 def test_stream_info_desc(caplog):
     """Test setters and getters for StreamInfo."""
-    sinfo = StreamInfo("pytest", "eeg", 3, 101, "float32", strftime("%H%M%S"))
+    sinfo = StreamInfo("pytest", "eeg", 3, 101, "float32", uuid.uuid4().hex)
     assert sinfo.get_channel_names() is None
     assert sinfo.get_channel_types() is None
     assert sinfo.get_channel_units() is None
@@ -69,7 +69,7 @@ def test_stream_info_desc(caplog):
     assert sinfo.get_channel_units() == ["101"] * 3
     assert "elements for 3 channels" not in caplog.text
 
-    sinfo = StreamInfo("pytest", "eeg", 3, 101, "float32", strftime("%H%M%S"))
+    sinfo = StreamInfo("pytest", "eeg", 3, 101, "float32", uuid.uuid4().hex)
     channels = sinfo.desc.append_child("channels")
     ch = channels.append_child("channel")
     ch.append_child_value("label", "tempered-label")
@@ -87,7 +87,7 @@ def test_stream_info_desc(caplog):
 
 def test_stream_info_invalid_desc():
     """Test invalid arguments for the channel description setters."""
-    sinfo = StreamInfo("pytest", "eeg", 3, 101, "float32", strftime("%H%M%S"))
+    sinfo = StreamInfo("pytest", "eeg", 3, 101, "float32", uuid.uuid4().hex)
     assert sinfo.get_channel_names() is None
     assert sinfo.get_channel_types() is None
     assert sinfo.get_channel_units() is None
@@ -128,10 +128,10 @@ def test_stream_info_invalid_desc():
 )
 def test_create_stream_info_with_numpy_dtype(dtype, dtype_str):
     """Test creation of a StreamInfo with a numpy dtype instead of a string."""
-    sinfo = StreamInfo("pytest", "eeg", 3, 101, dtype_str, strftime("%H%M%S"))
+    sinfo = StreamInfo("pytest", "eeg", 3, 101, dtype_str, uuid.uuid4().hex)
     assert sinfo.dtype == dtype
     del sinfo
-    sinfo = StreamInfo("pytest", "eeg", 3, 101, dtype, strftime("%H%M%S"))
+    sinfo = StreamInfo("pytest", "eeg", 3, 101, dtype, uuid.uuid4().hex)
     assert sinfo.dtype == dtype
     del sinfo
 
@@ -139,22 +139,22 @@ def test_create_stream_info_with_numpy_dtype(dtype, dtype_str):
 def test_create_stream_info_with_invalid_numpy_dtype():
     """Test creation of a StreamInfo with an invalid numpy dtype."""
     with pytest.raises(ValueError, match="provided dtype could not be interpreted as"):
-        StreamInfo("pytest", "eeg", 3, 101, np.uint8, strftime("%H%M%S"))
+        StreamInfo("pytest", "eeg", 3, 101, np.uint8, uuid.uuid4().hex)
 
 
 def test_stream_info_equality():
     """Test == method."""
-    sinfo1 = StreamInfo("pytest", "eeg", 3, 101, "float32", strftime("%H%M%S"))
+    sinfo1 = StreamInfo("pytest", "eeg", 3, 101, "float32", uuid.uuid4().hex)
     assert sinfo1 != 101
-    sinfo2 = StreamInfo("pytest-2", "eeg", 3, 101, "float32", strftime("%H%M%S"))
+    sinfo2 = StreamInfo("pytest-2", "eeg", 3, 101, "float32", uuid.uuid4().hex)
     assert sinfo1 != sinfo2
-    sinfo2 = StreamInfo("pytest", "gaze", 3, 101, "float32", strftime("%H%M%S"))
+    sinfo2 = StreamInfo("pytest", "gaze", 3, 101, "float32", uuid.uuid4().hex)
     assert sinfo1 != sinfo2
-    sinfo2 = StreamInfo("pytest", "eeg", 3, 10101, "float32", strftime("%H%M%S"))
+    sinfo2 = StreamInfo("pytest", "eeg", 3, 10101, "float32", uuid.uuid4().hex)
     assert sinfo1 != sinfo2
-    sinfo2 = StreamInfo("pytest", "eeg", 101, 101, "float32", strftime("%H%M%S"))
+    sinfo2 = StreamInfo("pytest", "eeg", 101, 101, "float32", uuid.uuid4().hex)
     assert sinfo1 != sinfo2
-    sinfo2 = StreamInfo("pytest", "eeg", 3, 101, np.float64, strftime("%H%M%S"))
+    sinfo2 = StreamInfo("pytest", "eeg", 3, 101, np.float64, uuid.uuid4().hex)
     assert sinfo1 != sinfo2
     sinfo2 = StreamInfo("pytest", "eeg", 3, 101, np.float32, "pytest")
     assert sinfo1 != sinfo2
@@ -164,7 +164,7 @@ def test_stream_info_equality():
 
 def test_stream_info_representation():
     """Test the str() representation of an Info."""
-    sinfo = StreamInfo("pytest", "eeg", 3, 101, "float32", strftime("%H%M%S"))
+    sinfo = StreamInfo("pytest", "eeg", 3, 101, "float32", uuid.uuid4().hex)
     repr_ = str(sinfo)
     assert "'pytest'" in repr_
     assert "eeg" in repr_
@@ -175,7 +175,7 @@ def test_stream_info_representation():
 
 def test_stream_info_properties(close_io):
     """Test properties."""
-    sinfo = StreamInfo("pytest", "eeg", 3, 101, "float32", strftime("%H%M%S"))
+    sinfo = StreamInfo("pytest", "eeg", 3, 101, "float32", uuid.uuid4().hex)
     assert isinstance(sinfo.created_at, float)
     assert sinfo.created_at == 0.0
     assert isinstance(sinfo.hostname, str)
@@ -218,15 +218,15 @@ def test_stream_info_properties(close_io):
 def test_invalid_stream_info():
     """Test creation of an invalid StreamInfo."""
     with pytest.raises(ValueError, match="'n_channels' must be a strictly positive"):
-        StreamInfo("pytest", "eeg", -101, 101, "float32", strftime("%H%M%S"))
+        StreamInfo("pytest", "eeg", -101, 101, "float32", uuid.uuid4().hex)
     with pytest.raises(ValueError, match="'sfreq' must be a positive"):
-        StreamInfo("pytest", "eeg", 101, -101, "float32", strftime("%H%M%S"))
+        StreamInfo("pytest", "eeg", 101, -101, "float32", uuid.uuid4().hex)
 
 
 def test_stream_info_desc_from_info(close_io):
     """Test filling a description from an Info object."""
     info = create_info(5, 1000, "eeg")
-    sinfo = StreamInfo("test", "eeg", 5, 1000, np.float32, strftime("%H%M%S"))
+    sinfo = StreamInfo("test", "eeg", 5, 1000, np.float32, uuid.uuid4().hex)
     sinfo.set_channel_info(info)
     info_retrieved = sinfo.get_channel_info()
     compare_infos(info, info_retrieved)
@@ -235,7 +235,7 @@ def test_stream_info_desc_from_info(close_io):
     fname = testing.data_path() / "sample_audvis_raw.fif"
     raw = read_raw_fif(fname, preload=False)
     sinfo = StreamInfo(
-        "test", "", len(raw.ch_names), raw.info["sfreq"], np.float32, strftime("%H%M%S")
+        "test", "", len(raw.ch_names), raw.info["sfreq"], np.float32, uuid.uuid4().hex
     )
     sinfo.set_channel_info(raw.info)
     info_retrieved = sinfo.get_channel_info()

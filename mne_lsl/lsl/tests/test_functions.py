@@ -42,7 +42,7 @@ def test_resolve_streams():
     assert len(streams) == 0
 
     # detect all streams
-    sinfo = StreamInfo("test", "", 1, 0.0, "int8", uuid.uuid4().hex[:6])
+    sinfo = StreamInfo("test", "", 1, 0.0, "int8", uuid.uuid4().hex)
     outlet = StreamOutlet(sinfo)
     streams = resolve_streams(timeout=2)
     assert isinstance(streams, list)

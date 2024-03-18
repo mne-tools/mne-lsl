@@ -26,7 +26,7 @@ def test_pull_numerical_sample(dtype_str, dtype, close_io):
     x = np.array([1, 2], dtype=dtype)
     assert x.shape == (2,) and x.dtype == dtype
     # create stream description
-    sinfo = StreamInfo("test", "", 2, 0.0, dtype_str, uuid.uuid4().hex[:6])
+    sinfo = StreamInfo("test", "", 2, 0.0, dtype_str, uuid.uuid4().hex)
     outlet = StreamOutlet(sinfo, chunk_size=1)
     inlet = StreamInlet(sinfo)
     inlet.open_stream(timeout=5)
@@ -48,7 +48,7 @@ def test_pull_str_sample(close_io):
     """Test pull_sample with strings."""
     x = ["1", "2"]
     # create stream description
-    sinfo = StreamInfo("test", "Gaze", 2, 10.0, "string", uuid.uuid4().hex[:6])
+    sinfo = StreamInfo("test", "Gaze", 2, 10.0, "string", uuid.uuid4().hex)
     outlet = StreamOutlet(sinfo, chunk_size=1)
     inlet = StreamInlet(sinfo)
     inlet.open_stream(timeout=5)
@@ -79,7 +79,7 @@ def test_pull_numerical_chunk(dtype_str, dtype, close_io):
     x = np.array([[1, 4], [2, 5], [3, 6]], dtype=dtype)
     assert x.shape == (3, 2) and x.dtype == dtype
     # create stream description
-    sinfo = StreamInfo("test", "", 2, 1.0, dtype_str, uuid.uuid4().hex[:6])
+    sinfo = StreamInfo("test", "", 2, 1.0, dtype_str, uuid.uuid4().hex)
     outlet = StreamOutlet(sinfo, chunk_size=3)
     inlet = StreamInlet(sinfo)
     inlet.open_stream(timeout=5)
@@ -121,7 +121,7 @@ def test_pull_str_chunk(close_io):
     """Test pull_chunk on a string chunk."""
     x = [["1", "4"], ["2", "5"], ["3", "6"]]
     # create stream description
-    sinfo = StreamInfo("test", "", 2, 0.0, "string", uuid.uuid4().hex[:6])
+    sinfo = StreamInfo("test", "", 2, 0.0, "string", uuid.uuid4().hex)
     outlet = StreamOutlet(sinfo, chunk_size=3)
     inlet = StreamInlet(sinfo)
     inlet.open_stream(timeout=5)
@@ -154,7 +154,7 @@ def test_pull_str_chunk(close_io):
 
 def test_get_sinfo(close_io):
     """Test getting a StreamInfo from an Inlet."""
-    sinfo = StreamInfo("test", "", 2, 0.0, "string", uuid.uuid4().hex[:6])
+    sinfo = StreamInfo("test", "", 2, 0.0, "string", uuid.uuid4().hex)
     outlet = StreamOutlet(sinfo)  # noqa: F841
     inlet = StreamInlet(sinfo)
     with pytest.raises(RuntimeError, match=r"StreamInlet\.open_stream"):
@@ -185,7 +185,7 @@ def test_inlet_methods(dtype_str, dtype, close_io):
     x = np.array([[1, 4], [2, 5], [3, 6]], dtype=dtype)
     assert x.shape == (3, 2) and x.dtype == dtype
     # create stream description
-    sinfo = StreamInfo("test", "", 2, 0.0, dtype_str, uuid.uuid4().hex[:6])
+    sinfo = StreamInfo("test", "", 2, 0.0, dtype_str, uuid.uuid4().hex)
     outlet = StreamOutlet(sinfo, chunk_size=3)
     inlet = StreamInlet(sinfo)
     inlet.open_stream(timeout=5)
@@ -223,7 +223,7 @@ def test_processing_flags(dtype_str, flags, close_io):
     """Test that the processing flags are working."""
     x = np.array([[1, 4], [2, 5], [3, 6]])
     # create stream description
-    sinfo = StreamInfo("test", "", 2, 0.0, dtype_str, uuid.uuid4().hex[:6])
+    sinfo = StreamInfo("test", "", 2, 0.0, dtype_str, uuid.uuid4().hex)
     outlet = StreamOutlet(sinfo, chunk_size=3)
     inlet = StreamInlet(sinfo, processing_flags=flags)
     inlet.open_stream(timeout=5)
@@ -238,7 +238,7 @@ def test_processing_flags(dtype_str, flags, close_io):
 
 def test_processing_flags_invalid():
     """Test the use of invalid processing flags combination."""
-    sinfo = StreamInfo("test", "", 2, 0.0, "float32", uuid.uuid4().hex[:6])
+    sinfo = StreamInfo("test", "", 2, 0.0, "float32", uuid.uuid4().hex)
     outlet = StreamOutlet(sinfo, chunk_size=3)  # noqa: F841
     with pytest.raises(ValueError, match="should not be used without"):
         StreamInlet(sinfo, processing_flags=("monotize",))
@@ -248,7 +248,7 @@ def test_processing_flags_invalid():
 
 def test_time_correction(close_io):
     """Test time_correction method."""
-    sinfo = StreamInfo("test", "", 2, 0.0, "int8", uuid.uuid4().hex[:6])
+    sinfo = StreamInfo("test", "", 2, 0.0, "int8", uuid.uuid4().hex)
     outlet = StreamOutlet(sinfo, chunk_size=3)  # noqa: F841
     inlet = StreamInlet(sinfo)
     inlet.open_stream(timeout=5)
