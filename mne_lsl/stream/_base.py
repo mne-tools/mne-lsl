@@ -21,10 +21,10 @@ elif check_version("mne", "1.5"):
     from mne.io.meas_info import ContainsMixin, SetChannelsMixin
     from mne.io.pick import _picks_to_idx
 else:
+    from mne.channels.channels import SetChannelsMixin
     from mne.io.constants import FIFF, _ch_unit_mul_named
     from mne.io.meas_info import ContainsMixin
     from mne.io.pick import _picks_to_idx
-    from mne.channels.channels import SetChannelsMixin
 
 from ..utils._checks import check_type, check_value, ensure_int
 from ..utils._docs import copy_doc, fill_doc
@@ -40,7 +40,7 @@ if TYPE_CHECKING:
     from mne.channels import DigMontage
     from numpy.typing import DTypeLike, NDArray
 
-    from .._typing import ScalarIntType, ScalarType
+    from .._typing import ScalarArray, ScalarIntArray
 
 
 @fill_doc
@@ -423,9 +423,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         self,
         l_freq: Optional[float],
         h_freq: Optional[float],
-        picks: Optional[
-            Union[str, list[str], int, list[int], NDArray[+ScalarIntType]]
-        ] = None,
+        picks: Optional[Union[str, list[str], int, list[int], ScalarIntArray]] = None,
         iir_params: Optional[dict[str, Any]] = None,
         *,
         verbose: Optional[Union[bool, str, int]] = None,
@@ -474,9 +472,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
     @copy_doc(ContainsMixin.get_channel_types)
     def get_channel_types(
         self,
-        picks: Optional[
-            Union[str, list[str], int, list[int], NDArray[+ScalarIntType]]
-        ] = None,
+        picks: Optional[Union[str, list[str], int, list[int], ScalarIntArray]] = None,
         unique=False,
         only_data_chs=False,
     ) -> list[str]:
@@ -488,9 +484,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
     @fill_doc
     def get_channel_units(
         self,
-        picks: Optional[
-            Union[str, list[str], int, list[int], NDArray[+ScalarIntType]]
-        ] = None,
+        picks: Optional[Union[str, list[str], int, list[int], ScalarIntArray]] = None,
         only_data_chs: bool = False,
     ) -> list[tuple[int, int]]:
         """Get a list of channel unit for each channel.
@@ -524,10 +518,8 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
     def get_data(
         self,
         winsize: Optional[float] = None,
-        picks: Optional[
-            Union[str, list[str], int, list[int], NDArray[+ScalarIntType]]
-        ] = None,
-    ) -> tuple[NDArray[+ScalarType], NDArray[np.float64]]:
+        picks: Optional[Union[str, list[str], int, list[int], ScalarIntArray]] = None,
+    ) -> tuple[ScalarArray, NDArray[np.float64]]:
         """Retrieve the latest data from the buffer.
 
         Parameters
@@ -600,9 +592,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
     def notch_filter(
         self,
         freqs: float,
-        picks: Optional[
-            Union[str, list[str], int, list[int], NDArray[+ScalarIntType]]
-        ] = None,
+        picks: Optional[Union[str, list[str], int, list[int], ScalarIntArray]] = None,
         notch_widths: Optional[float] = None,
         trans_bandwidth=1,
         iir_params: Optional[dict[str, Any]] = None,
@@ -687,10 +677,8 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
     @fill_doc
     def pick(
         self,
-        picks: Optional[
-            Union[str, list[str], int, list[int], NDArray[+ScalarIntType]]
-        ] = None,
-        exclude: Union[str, list[str], int, list[int], NDArray[+ScalarIntType]] = (),
+        picks: Optional[Union[str, list[str], int, list[int], ScalarIntArray]] = None,
+        exclude: Union[str, list[str], int, list[int], ScalarIntArray] = (),
     ) -> BaseStream:
         """Pick a subset of channels.
 
@@ -1047,7 +1035,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             self._interrupt = False
             self._create_acquisition_thread(0)
 
-    def _pick(self, picks: NDArray[+ScalarIntType]) -> None:
+    def _pick(self, picks: ScalarIntArray) -> None:
         """Interrupt acquisition and apply the channel selection."""
         # for simplicity, don't allow to select channels after a reference schema has
         # been set, even if we drop channels which are not part of the reference schema,

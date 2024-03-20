@@ -1,5 +1,5 @@
 from pathlib import Path as Path
-from typing import Callable
+from typing import Callable, Optional, Union
 
 from _typeshed import Incomplete
 from mne import Annotations
@@ -94,18 +94,18 @@ class PlayerLSL(BasePlayer):
 
     def __init__(
         self,
-        fname: str | Path,
+        fname: Union[str, Path],
         chunk_size: int = 64,
-        n_repeat: int | float = ...,
-        name: str | None = None,
-        annotations: bool | None = None,
+        n_repeat: Union[int, float] = ...,
+        name: Optional[str] = None,
+        annotations: Optional[bool] = None,
     ) -> None: ...
     def rename_channels(
         self,
-        mapping: dict[str, str] | Callable,
+        mapping: Union[dict[str, str], Callable],
         allow_duplicates: bool = False,
         *,
-        verbose: bool | str | int | None = None,
+        verbose: Optional[Union[bool, str, int]] = None,
     ) -> PlayerLSL:
         """Rename channels.
 
@@ -150,7 +150,7 @@ class PlayerLSL(BasePlayer):
         mapping: dict[str, str],
         *,
         on_unit_change: str = "warn",
-        verbose: bool | str | int | None = None,
+        verbose: Optional[Union[bool, str, int]] = None,
     ) -> PlayerLSL:
         """Define the sensor type of channels.
 
@@ -182,7 +182,7 @@ class PlayerLSL(BasePlayer):
             The player instance modified in-place.
         """
 
-    def set_channel_units(self, mapping: dict[str, str | int]) -> PlayerLSL:
+    def set_channel_units(self, mapping: dict[str, Union[str, int]]) -> PlayerLSL:
         """Define the channel unit multiplication factor.
 
         By convention, MNE stores data in SI units. But systems often stream in non-SI

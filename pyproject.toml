@@ -64,10 +64,7 @@ all = [
   'mne_lsl[style]',
   'mne_lsl[test]',
 ]
-build = [
-  'build',
-  'twine',
-]
+build = ['build', 'twine']
 doc = [
   'furo',
   'matplotlib',
@@ -81,14 +78,8 @@ doc = [
   'sphinx-issues',
   'sphinxcontrib-bibtex',
 ]
-full = [
-  'mne_lsl[all]',
-]
-stubs = [
-  'isort',
-  'mypy',
-  'ruff>=0.1.8',
-]
+full = ['mne_lsl[all]']
+stubs = ['isort', 'mypy', 'ruff>=0.1.8']
 style = [
   'bibclean',
   'codespell[toml]>=2.2.4',
@@ -98,12 +89,7 @@ style = [
   'toml-sort',
   'yamllint',
 ]
-test = [
-  'pyqt5',
-  'pytest-cov',
-  'pytest-timeout',
-  'pytest>=8.0',
-]
+test = ['pyqt5', 'pytest-cov', 'pytest-timeout', 'pytest>=8.0']
 
 [project.scripts]
 mne_lsl-sys_info = 'mne_lsl.commands.sys_info:run'
@@ -128,9 +114,7 @@ exclude_lines = [
   'if TYPE_CHECKING:',
   'pragma: no cover',
 ]
-omit = [
-  '**/mne_lsl/stream_viewer/*',
-]
+omit = ['**/mne_lsl/stream_viewer/*']
 precision = 2
 
 [tool.coverage.run]
@@ -164,7 +148,7 @@ py_version = 39
 add_ignore = 'D100,D104,D107'
 convention = 'numpy'
 ignore-decorators = '(copy_doc|property|.*setter|.*getter|pyqtSlot|Slot)'
-match = '^(?!setup|__init__|test_).*\.py'
+match = '^(?!setup|__init__|test_|_typing).*\.py'
 match-dir = '^mne_lsl.*'
 
 [tool.pytest.ini_options]

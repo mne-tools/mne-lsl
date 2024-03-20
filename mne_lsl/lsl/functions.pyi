@@ -1,3 +1,5 @@
+from typing import Optional
+
 from ..utils._checks import check_type as check_type
 from ..utils._checks import ensure_int as ensure_int
 from .load_liblsl import lib as lib
@@ -41,9 +43,9 @@ def local_clock() -> float:
 
 def resolve_streams(
     timeout: float = 1.0,
-    name: str | None = None,
-    stype: str | None = None,
-    source_id: str | None = None,
+    name: Optional[str] = None,
+    stype: Optional[str] = None,
+    source_id: Optional[str] = None,
     minimum: int = 1,
 ) -> list[_BaseStreamInfo]:
     """Resolve streams on the network.

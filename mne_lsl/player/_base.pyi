@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from datetime import datetime as datetime
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any, Callable, Optional, Union
 
 from _typeshed import Incomplete
 from mne import Info
@@ -47,16 +47,16 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
     @abstractmethod
     def __init__(
         self,
-        fname: str | Path | BaseRaw,
+        fname: Union[str, Path, BaseRaw],
         chunk_size: int = 64,
-        n_repeat: int | float = ...,
+        n_repeat: Union[int, float] = ...,
     ): ...
     def anonymize(
         self,
-        daysback: int | None = None,
+        daysback: Optional[int] = None,
         keep_his: bool = False,
         *,
-        verbose: bool | str | int | None = None,
+        verbose: Optional[Union[bool, str, int]] = None,
     ) -> BasePlayer:
         """Anonymize the measurement information in-place.
 
@@ -143,10 +143,10 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
     @abstractmethod
     def rename_channels(
         self,
-        mapping: dict[str, str] | Callable,
+        mapping: Union[dict[str, str], Callable],
         allow_duplicates: bool = False,
         *,
-        verbose: bool | str | int | None = None,
+        verbose: Optional[Union[bool, str, int]] = None,
     ) -> BasePlayer:
         """Rename channels.
 
@@ -182,7 +182,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         mapping: dict[str, str],
         *,
         on_unit_change: str = "warn",
-        verbose: bool | str | int | None = None,
+        verbose: Optional[Union[bool, str, int]] = None,
     ) -> BasePlayer:
         """Define the sensor type of channels.
 
@@ -215,7 +215,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         """
 
     @abstractmethod
-    def set_channel_units(self, mapping: dict[str, str | int]) -> BasePlayer:
+    def set_channel_units(self, mapping: dict[str, Union[str, int]]) -> BasePlayer:
         """Define the channel unit multiplication factor.
 
         By convention, MNE stores data in SI units. But systems often stream in non-SI
@@ -247,7 +247,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         """
 
     def set_meas_date(
-        self, meas_date: datetime | float | tuple[float, float] | None
+        self, meas_date: Optional[Union[datetime, float, tuple[float, float]]]
     ) -> BasePlayer:
         """Set the measurement start date.
 
@@ -329,7 +329,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         """
 
     @property
-    def fname(self) -> Path | None:
+    def fname(self) -> Optional[Path]:
         """Path to file played.
 
         :type: :class:`~pathlib.Path` | None
@@ -343,7 +343,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         """
 
     @property
-    def n_repeat(self) -> int | None:
+    def n_repeat(self) -> Optional[int]:
         """Number of times the file is repeated.
 
         :type: :class:`int` | ``np.inf``
