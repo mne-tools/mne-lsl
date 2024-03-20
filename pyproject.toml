@@ -4,7 +4,7 @@ requires = ['setuptools >= 64.0.0']
 
 [project]
 authors = [
-  { email = 'mathieu.scheltienne@fcbg.ch', name = 'Mathieu Scheltienne' },
+  {email = 'mathieu.scheltienne@fcbg.ch', name = 'Mathieu Scheltienne'},
 ]
 classifiers = [
   'Intended Audience :: Developers',
@@ -47,9 +47,9 @@ keywords = [
   'python',
   'real-time',
 ]
-license = { file = 'LICENSE' }
+license = {file = 'LICENSE'}
 maintainers = [
-  { email = 'mathieu.scheltienne@fcbg.ch', name = 'Mathieu Scheltienne' },
+  {email = 'mathieu.scheltienne@fcbg.ch', name = 'Mathieu Scheltienne'},
 ]
 name = 'mne_lsl'
 readme = 'README.md'
@@ -177,7 +177,7 @@ select = ['A', 'B', 'E', 'F', 'UP', 'W']
 
 [tool.ruff.lint.per-file-ignores]
 '*' = [
-  'B904',  # 'Within an except clause, raise exceptions with raise ... from ...'
+  'B904', # 'Within an except clause, raise exceptions with raise ... from ...'
   'UP007', # 'Use `X | Y` for type annotations', requires python 3.10
 ]
 '*.pyi' = ['E501', 'F811']
