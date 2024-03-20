@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from collections.abc import Generator
 from datetime import datetime as datetime
-from typing import Any, Callable
+from typing import Any, Callable, Optional, Union
 
 import numpy as np
 from _typeshed import Incomplete
@@ -10,10 +10,10 @@ from mne.channels import DigMontage as DigMontage
 from mne.channels.channels import SetChannelsMixin
 from mne.io.meas_info import ContainsMixin
 from numpy.typing import DTypeLike as DTypeLike
-from numpy.typing import NDArray
+from numpy.typing import NDArray as NDArray
 
-from .._typing import ScalarIntType as ScalarIntType
-from .._typing import ScalarType as ScalarType
+from .._typing import ScalarArray as ScalarArray
+from .._typing import ScalarIntArray as ScalarIntArray
 from ..utils._checks import check_type as check_type
 from ..utils._checks import check_value as check_value
 from ..utils._checks import ensure_int as ensure_int
@@ -79,8 +79,10 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
     def add_reference_channels(
         self,
-        ref_channels: str | list[str] | tuple[str],
-        ref_units: str | int | list[str | int] | tuple[str | int] | None = None,
+        ref_channels: Union[str, list[str], tuple[str]],
+        ref_units: Optional[
+            Union[str, int, list[Union[str, int]], tuple[Union[str, int]]]
+        ] = None,
     ) -> BaseStream:
         """Add EEG reference channels to data that consists of all zeros.
 
@@ -110,10 +112,10 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
     def anonymize(
         self,
-        daysback: int | None = None,
+        daysback: Optional[int] = None,
         keep_his: bool = False,
         *,
-        verbose: bool | str | int | None = None,
+        verbose: Optional[Union[bool, str, int]] = None,
     ) -> BaseStream:
         """Anonymize the measurement information in-place.
 
@@ -198,7 +200,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             The stream instance modified in-place.
         """
 
-    def del_filter(self, idx: int | list[int] | tuple[int] | str = "all") -> None:
+    def del_filter(self, idx: Union[int, list[int], tuple[int], str] = "all") -> None:
         """Remove a filter from the list of applied filters.
 
         Parameters
@@ -215,7 +217,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         a step response steady-state.
         """
 
-    def drop_channels(self, ch_names: str | list[str] | tuple[str]) -> BaseStream:
+    def drop_channels(self, ch_names: Union[str, list[str], tuple[str]]) -> BaseStream:
         """Drop channel(s).
 
         Parameters
@@ -235,12 +237,12 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
     def filter(
         self,
-        l_freq: float | None,
-        h_freq: float | None,
-        picks: str | list[str] | int | list[int] | NDArray[None] | None = None,
-        iir_params: dict[str, Any] | None = None,
+        l_freq: Optional[float],
+        h_freq: Optional[float],
+        picks: Optional[Union[str, list[str], int, list[int], ScalarIntArray]] = None,
+        iir_params: Optional[dict[str, Any]] = None,
         *,
-        verbose: bool | str | int | None = None,
+        verbose: Optional[Union[bool, str, int]] = None,
     ) -> BaseStream:
         """Filter the stream with an IIR causal filter.
 
@@ -291,7 +293,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
     def get_channel_types(
         self,
-        picks: str | list[str] | int | list[int] | NDArray[None] | None = None,
+        picks: Optional[Union[str, list[str], int, list[int], ScalarIntArray]] = None,
         unique: bool = False,
         only_data_chs: bool = False,
     ) -> list[str]:
@@ -321,7 +323,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
     def get_channel_units(
         self,
-        picks: str | list[str] | int | list[int] | NDArray[None] | None = None,
+        picks: Optional[Union[str, list[str], int, list[int], ScalarIntArray]] = None,
         only_data_chs: bool = False,
     ) -> list[tuple[int, int]]:
         """Get a list of channel unit for each channel.
@@ -351,9 +353,9 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
     def get_data(
         self,
-        winsize: float | None = None,
-        picks: str | list[str] | int | list[int] | NDArray[None] | None = None,
-    ) -> tuple[NDArray[None], NDArray[np.float64]]:
+        winsize: Optional[float] = None,
+        picks: Optional[Union[str, list[str], int, list[int], ScalarIntArray]] = None,
+    ) -> tuple[ScalarArray, NDArray[np.float64]]:
         """Retrieve the latest data from the buffer.
 
         Parameters
@@ -389,7 +391,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         argument ``picks``.
         """
 
-    def get_montage(self) -> DigMontage | None:
+    def get_montage(self) -> Optional[DigMontage]:
         """Get a DigMontage from instance.
 
         Returns
@@ -409,12 +411,12 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
     def notch_filter(
         self,
         freqs: float,
-        picks: str | list[str] | int | list[int] | NDArray[None] | None = None,
-        notch_widths: float | None = None,
+        picks: Optional[Union[str, list[str], int, list[int], ScalarIntArray]] = None,
+        notch_widths: Optional[float] = None,
         trans_bandwidth: int = 1,
-        iir_params: dict[str, Any] | None = None,
+        iir_params: Optional[dict[str, Any]] = None,
         *,
-        verbose: bool | str | int | None = None,
+        verbose: Optional[Union[bool, str, int]] = None,
     ) -> BaseStream:
         """Filter the stream with an IIR causal notch filter.
 
@@ -471,8 +473,8 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
     def pick(
         self,
-        picks: str | list[str] | int | list[int] | NDArray[None] | None = None,
-        exclude: str | list[str] | int | list[int] | NDArray[None] = (),
+        picks: Optional[Union[str, list[str], int, list[int], ScalarIntArray]] = None,
+        exclude: Union[str, list[str], int, list[int], ScalarIntArray] = (),
     ) -> BaseStream:
         """Pick a subset of channels.
 
@@ -510,10 +512,10 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
     def rename_channels(
         self,
-        mapping: dict[str, str] | Callable,
+        mapping: Union[dict[str, str], Callable],
         allow_duplicates: bool = False,
         *,
-        verbose: bool | str | int | None = None,
+        verbose: Optional[Union[bool, str, int]] = None,
     ) -> BaseStream:
         """Rename channels.
 
@@ -553,7 +555,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         mapping: dict[str, str],
         *,
         on_unit_change: str = "warn",
-        verbose: bool | str | int | None = None,
+        verbose: Optional[Union[bool, str, int]] = None,
     ) -> BaseStream:
         """Define the sensor type of channels.
 
@@ -585,7 +587,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             The stream instance modified in-place.
         """
 
-    def set_channel_units(self, mapping: dict[str, str | int]) -> BaseStream:
+    def set_channel_units(self, mapping: dict[str, Union[str, int]]) -> BaseStream:
         """Define the channel unit multiplication factor.
 
         The unit itself is defined by the sensor type. Use
@@ -614,8 +616,8 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
     def set_eeg_reference(
         self,
-        ref_channels: str | list[str] | tuple[str],
-        ch_type: str | list[str] | tuple[str] = "eeg",
+        ref_channels: Union[str, list[str], tuple[str]],
+        ch_type: Union[str, list[str], tuple[str]] = "eeg",
     ) -> BaseStream:
         """Specify which reference to use for EEG-like data.
 
@@ -640,7 +642,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         """
 
     def set_meas_date(
-        self, meas_date: datetime | float | tuple[float] | None
+        self, meas_date: Optional[Union[datetime, float, tuple[float]]]
     ) -> BaseStream:
         """Set the measurement start date.
 
@@ -666,12 +668,12 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
     def set_montage(
         self,
-        montage: str | DigMontage | None,
+        montage: Optional[Union[str, DigMontage]],
         match_case: bool = True,
-        match_alias: bool | dict[str, str] = False,
+        match_alias: Union[bool, dict[str, str]] = False,
         on_missing: str = "raise",
         *,
-        verbose: bool | str | int | None = None,
+        verbose: Optional[Union[bool, str, int]] = None,
     ) -> BaseStream:
         """Set EEG/sEEG/ECoG/DBS/fNIRS channel positions and digitization points.
 
@@ -755,7 +757,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
     _info: Incomplete
     _picks_inlet: Incomplete
 
-    def _pick(self, picks: NDArray[None]) -> None:
+    def _pick(self, picks: ScalarIntArray) -> None:
         """Interrupt acquisition and apply the channel selection."""
     _added_channels: Incomplete
     _filters: Incomplete
@@ -766,7 +768,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         """Reset variables define after connection."""
 
     @property
-    def compensation_grade(self) -> int | None:
+    def compensation_grade(self) -> Optional[int]:
         """The current gradient compensation grade.
 
         :type: :class:`int` | None
@@ -787,7 +789,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         """
 
     @property
-    def dtype(self) -> DTypeLike | None:
+    def dtype(self) -> Optional[DTypeLike]:
         """Channel format of the stream."""
 
     @property

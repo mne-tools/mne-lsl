@@ -1,10 +1,11 @@
 from pathlib import Path
+from typing import Union
 
 from ..utils._checks import ensure_path as ensure_path
 from ..utils._path import walk as walk
 from ..utils.logs import logger as logger
 
-def fetch_dataset(path: Path, base_url: str, registry: str | Path) -> Path:
+def fetch_dataset(path: Path, base_url: str, registry: Union[str, Path]) -> Path:
     """Fetch a dataset from the remote.
 
     Parameters

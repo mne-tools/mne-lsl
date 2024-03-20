@@ -1,9 +1,10 @@
+from typing import Optional, Union
+
 from _typeshed import Incomplete
 from numpy.typing import DTypeLike as DTypeLike
-from numpy.typing import NDArray as NDArray
 
-from .._typing import ScalarFloatType as ScalarFloatType
-from .._typing import ScalarType as ScalarType
+from .._typing import ScalarArray as ScalarArray
+from .._typing import ScalarFloatArray as ScalarFloatArray
 from ..utils._checks import check_type as check_type
 from ..utils._checks import ensure_int as ensure_int
 from ..utils._docs import copy_doc as copy_doc
@@ -63,7 +64,7 @@ class StreamOutlet:
 
     def push_sample(
         self,
-        x: list[str] | NDArray[None],
+        x: Union[list[str], ScalarArray],
         timestamp: float = 0.0,
         pushThrough: bool = True,
     ) -> None:
@@ -87,8 +88,8 @@ class StreamOutlet:
 
     def push_chunk(
         self,
-        x: list[list[str]] | NDArray[None],
-        timestamp: float | NDArray[None] | None = None,
+        x: Union[list[list[str]], ScalarArray],
+        timestamp: Optional[Union[float, ScalarFloatArray]] = None,
         pushThrough: bool = True,
     ) -> None:
         """Push a chunk of samples into the :class:`~mne_lsl.lsl.StreamOutlet`.
@@ -112,7 +113,7 @@ class StreamOutlet:
             ``pushThrough`` flag.
         """
 
-    def wait_for_consumers(self, timeout: float | None) -> bool:
+    def wait_for_consumers(self, timeout: Optional[float]) -> bool:
         """Wait (block) until at least one :class:`~mne_lsl.lsl.StreamInlet` connects.
 
         Parameters
@@ -132,7 +133,7 @@ class StreamOutlet:
         """
 
     @property
-    def dtype(self) -> str | DTypeLike:
+    def dtype(self) -> Union[str, DTypeLike]:
         """Channel format of a stream.
 
         All channels in a stream have the same format.
