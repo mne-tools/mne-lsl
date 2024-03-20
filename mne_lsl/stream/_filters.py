@@ -107,7 +107,7 @@ def create_filter(
     Parameters
     ----------
     sfreq : float
-        The sampling ferquency in Hz.
+        The sampling frequency in Hz.
     %(l_freq)s
     %(h_freq)s
     %(iir_params)s
