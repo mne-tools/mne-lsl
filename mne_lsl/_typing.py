@@ -1,12 +1,8 @@
 from __future__ import annotations  # c.f. PEP 563, PEP 649
 
-from typing import TYPE_CHECKING
+from typing import Generic, TypeVar
 
 import numpy as np
-
-if TYPE_CHECKING:
-    from typing import Generic, TypeVar
-
 
 ScalarFloatType = TypeVar("ScalarFloatType", np.float32, np.float64)
 ScalarIntType = TypeVar("ScalarIntType", np.int8, np.int16, np.int32, np.int64)
