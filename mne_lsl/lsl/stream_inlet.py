@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 
     from numpy.typing import DTypeLike, NDArray
 
-    from .._typing import ScalarType
+    from .._typing import ScalarArray
 
 
 class StreamInlet:
@@ -246,7 +246,7 @@ class StreamInlet:
 
     def pull_sample(
         self, timeout: Optional[float] = 0.0
-    ) -> tuple[Union[list[str], NDArray[+ScalarType]], Optional[float]]:
+    ) -> tuple[Union[list[str], ScalarArray], Optional[float]]:
         """Pull a single sample from the inlet.
 
         Parameters
@@ -303,7 +303,7 @@ class StreamInlet:
         self,
         timeout: Optional[float] = 0.0,
         max_samples: int = 1024,
-    ) -> tuple[Union[list[list[str]], NDArray[+ScalarType]], NDArray[np.float64]]:
+    ) -> tuple[Union[list[list[str]], ScalarArray], NDArray[np.float64]]:
         """Pull a chunk of samples from the inlet.
 
         Parameters

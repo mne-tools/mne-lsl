@@ -39,9 +39,9 @@ else:
 if TYPE_CHECKING:
     from typing import Any, Optional, Union
 
-    from numpy.typing import DTypeLike, NDArray
+    from numpy.typing import DTypeLike
 
-    from .._typing import ScalarIntType
+    from .._typing import ScalarIntArray
 
 
 _MAPPING_LSL = {
@@ -669,7 +669,7 @@ class _BaseStreamInfo:
         self._set_channel_info(ch_types, "ch_type")
 
     def set_channel_units(
-        self, ch_units: Union[str, list[str], int, list[int], NDArray[+ScalarIntType]]
+        self, ch_units: Union[str, list[str], int, list[int], ScalarIntArray]
     ) -> None:
         """Set the channel units in the description. Existing units are overwritten.
 

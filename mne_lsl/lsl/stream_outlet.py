@@ -18,9 +18,9 @@ from .stream_info import _BaseStreamInfo
 if TYPE_CHECKING:
     from typing import Optional, Union
 
-    from numpy.typing import DTypeLike, NDArray
+    from numpy.typing import DTypeLike
 
-    from .._typing import ScalarFloatType, ScalarType
+    from .._typing import ScalarArray, ScalarFloatArray
 
 
 class StreamOutlet:
@@ -109,7 +109,7 @@ class StreamOutlet:
 
     def push_sample(
         self,
-        x: Union[list[str], NDArray[+ScalarType]],
+        x: Union[list[str], ScalarArray],
         timestamp: float = 0.0,
         pushThrough: bool = True,
     ) -> None:
@@ -162,8 +162,8 @@ class StreamOutlet:
 
     def push_chunk(
         self,
-        x: Union[list[list[str]], NDArray[+ScalarType]],
-        timestamp: Optional[Union[float, NDArray[+ScalarFloatType]]] = None,
+        x: Union[list[list[str]], ScalarArray],
+        timestamp: Optional[Union[float, ScalarFloatArray]] = None,
         pushThrough: bool = True,
     ) -> None:
         """Push a chunk of samples into the :class:`~mne_lsl.lsl.StreamOutlet`.
