@@ -1,5 +1,3 @@
-from typing import Optional
-
 from _typeshed import Incomplete
 
 from .load_liblsl import lib as lib
@@ -116,7 +114,7 @@ def handle_error(errcode) -> None:
     """
 
 def free_char_p_array_memory(char_p_array) -> None: ...
-def check_timeout(timeout: Optional[float]) -> float:
+def check_timeout(timeout: float | None) -> float:
     """Check that the provided timeout is valid.
 
     Parameters
