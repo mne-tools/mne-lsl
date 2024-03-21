@@ -1,4 +1,4 @@
-from typing import Any, Optional, Union
+from typing import Any
 
 from _typeshed import Incomplete
 from mne import Info
@@ -17,7 +17,7 @@ def create_info(
     n_channels: int,
     sfreq: float,
     stype: str,
-    desc: Optional[Union[_BaseStreamInfo, dict[str, Any]]],
+    desc: _BaseStreamInfo | dict[str, Any] | None,
 ) -> Info:
     """Create a minimal :class:`mne.Info` object from an LSL stream attributes.
 
@@ -50,7 +50,7 @@ def create_info(
 
 def _read_desc_sinfo(
     n_channels: int, stype: str, desc: _BaseStreamInfo
-) -> tuple[list[str], list[str], list[int], Optional[str]]:
+) -> tuple[list[str], list[str], list[int], str | None]:
     """Read channel information from a StreamInfo.
 
     If the StreamInfo is retrieved by resolve_streams, the description will be empty.
@@ -60,7 +60,7 @@ def _read_desc_sinfo(
 
 def _read_desc_dict(
     n_channels: int, stype: str, desc: dict[str, Any]
-) -> tuple[list[str], list[str], list[int], Optional[str]]:
+) -> tuple[list[str], list[str], list[int], str | None]:
     """Read channel information from a description dictionary.
 
     A dictionary is returned from loading an XDF file.
@@ -74,5 +74,5 @@ def _get_ch_types_and_units(
 def _safe_get(channel, item, default) -> str:
     """Retrieve element from a stream description safely."""
 
-def _set_channel_units(info: Info, mapping: dict[str, Union[str, int]]) -> None:
+def _set_channel_units(info: Info, mapping: dict[str, str | int]) -> None:
     """Set the channel unit multiplication factor."""

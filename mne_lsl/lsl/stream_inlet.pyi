@@ -1,5 +1,4 @@
 from collections.abc import Sequence as Sequence
-from typing import Optional, Union
 
 import numpy as np
 from _typeshed import Incomplete
@@ -72,7 +71,7 @@ class StreamInlet:
         chunk_size: int = 0,
         max_buffered: float = 360,
         recover: bool = True,
-        processing_flags: Optional[Union[str, Sequence[str]]] = None,
+        processing_flags: str | Sequence[str] | None = None,
     ) -> None: ...
     @property
     def _obj(self): ...
@@ -86,7 +85,7 @@ class StreamInlet:
         The inlet will automatically disconnect.
         """
 
-    def open_stream(self, timeout: Optional[float] = None) -> None:
+    def open_stream(self, timeout: float | None = None) -> None:
         """Subscribe to a data stream.
 
         All samples pushed in at the other end from this moment onwards will be queued
@@ -125,7 +124,7 @@ class StreamInlet:
             `github issue <https://github.com/sccn/liblsl/issues/180>`_.
         """
 
-    def time_correction(self, timeout: Optional[float] = None) -> float:
+    def time_correction(self, timeout: float | None = None) -> float:
         """Retrieve an estimated time correction offset for the given stream.
 
         The first call to this function takes several milliseconds until a reliable
@@ -148,8 +147,8 @@ class StreamInlet:
         """
 
     def pull_sample(
-        self, timeout: Optional[float] = 0.0
-    ) -> tuple[Union[list[str], ScalarArray], Optional[float]]:
+        self, timeout: float | None = 0.0
+    ) -> tuple[list[str] | ScalarArray, float | None]:
         """Pull a single sample from the inlet.
 
         Parameters
@@ -178,8 +177,8 @@ class StreamInlet:
         """
 
     def pull_chunk(
-        self, timeout: Optional[float] = 0.0, max_samples: int = 1024
-    ) -> tuple[Union[list[list[str]], ScalarArray], NDArray[np.float64]]:
+        self, timeout: float | None = 0.0, max_samples: int = 1024
+    ) -> tuple[list[list[str]] | ScalarArray, NDArray[np.float64]]:
         """Pull a chunk of samples from the inlet.
 
         Parameters
@@ -227,7 +226,7 @@ class StreamInlet:
         """
 
     @property
-    def dtype(self) -> Union[str, DTypeLike]:
+    def dtype(self) -> str | DTypeLike:
         """Channel format of a stream.
 
         All channels in a stream have the same format.
@@ -291,7 +290,7 @@ class StreamInlet:
         :type: :class:`bool`
         """
 
-    def get_sinfo(self, timeout: Optional[float] = None) -> _BaseStreamInfo:
+    def get_sinfo(self, timeout: float | None = None) -> _BaseStreamInfo:
         """:class:`~mne_lsl.lsl.StreamInfo` corresponding to this Inlet.
 
         Parameters
