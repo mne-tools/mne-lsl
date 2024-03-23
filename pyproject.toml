@@ -76,6 +76,7 @@ doc = [
   'sphinx-design',
   'sphinx-gallery',
   'sphinx-issues',
+  'sphinx-remove-toctrees',
   'sphinxcontrib-bibtex',
 ]
 full = ['mne_lsl[all]']
