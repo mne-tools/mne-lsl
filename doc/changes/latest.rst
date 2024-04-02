@@ -19,4 +19,4 @@
 Version 1.4
 ===========
 
-- xxx
+- Fix handling of warnings through the logger (:pr:`243` by `Mathieu Scheltienne`_)
