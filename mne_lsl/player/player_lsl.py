@@ -2,7 +2,7 @@ from __future__ import annotations  # c.f. PEP 563, PEP 649
 
 from threading import Timer
 from typing import TYPE_CHECKING
-from warnings import catch_warnings, filterwarnings, warn
+from warnings import catch_warnings, filterwarnings
 
 import numpy as np
 from mne import Annotations
@@ -11,7 +11,7 @@ from mne.annotations import _handle_meas_date
 from ..lsl import StreamInfo, StreamOutlet, local_clock
 from ..utils._checks import check_type
 from ..utils._docs import copy_doc, fill_doc
-from ..utils.logs import logger
+from ..utils.logs import logger, warn
 from ._base import BasePlayer
 
 if TYPE_CHECKING:
@@ -108,7 +108,6 @@ class PlayerLSL(BasePlayer):
                     f"{self._name}: The raw file has no annotations. The annotations "
                     "will be ignored.",
                     RuntimeWarning,
-                    stacklevel=2,
                 )
                 self._annotations = False
             else:
@@ -175,7 +174,6 @@ class PlayerLSL(BasePlayer):
                 f"{self._name}: The player is already started. "
                 "Use Player.stop() to stop streaming.",
                 RuntimeWarning,
-                stacklevel=2,
             )
             return self
         self._outlet = StreamOutlet(self._sinfo, self._chunk_size)

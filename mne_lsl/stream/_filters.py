@@ -1,14 +1,13 @@
 from __future__ import annotations  # c.f. PEP 563, PEP 649
 
 from typing import TYPE_CHECKING
-from warnings import warn
 
 import numpy as np
 from mne.filter import create_filter as create_filter_mne
 from scipy.signal import sosfilt_zi
 
 from ..utils._checks import check_type
-from ..utils.logs import logger
+from ..utils.logs import logger, warn
 
 if TYPE_CHECKING:
     from typing import Any, Optional
@@ -25,7 +24,6 @@ class StreamFilter(dict):
             warn(
                 "The 'iir_params' key is missing, which is unexpected.",
                 RuntimeWarning,
-                stacklevel=2,
             )
             self["iir_params"] = dict()
         for key in ("ftype", "order"):
@@ -81,7 +79,6 @@ class StreamFilter(dict):
                     f"The type of the key '{key}' is different between the 2 filters, "
                     "which should not be possible. Please contact the developers.",
                     RuntimeWarning,
-                    stacklevel=2,
                 )
                 return False
             if (
@@ -154,7 +151,6 @@ def ensure_sos_iir_params(
             "output will be automatically changed. Please set "
             "iir_params=dict(output='sos', ...) in your call to the filtering method.",
             RuntimeWarning,
-            stacklevel=2,
         )
         for key in ("a", "b"):
             if key in iir_params:

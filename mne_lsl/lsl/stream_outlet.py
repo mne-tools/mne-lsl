@@ -3,13 +3,12 @@ from __future__ import annotations  # c.f. PEP 563, PEP 649
 from ctypes import c_char_p, c_double, c_int, c_long, c_void_p
 from threading import Lock
 from typing import TYPE_CHECKING
-from warnings import warn
 
 import numpy as np
 
 from ..utils._checks import check_type, ensure_int
 from ..utils._docs import copy_doc
-from ..utils.logs import logger
+from ..utils.logs import logger, warn
 from ._utils import check_timeout, handle_error
 from .constants import fmt2numpy, fmt2push_chunk, fmt2push_chunk_n, fmt2push_sample
 from .load_liblsl import lib
@@ -220,7 +219,6 @@ class StreamOutlet:
             warn(
                 "A single sample is pushed. Consider using push_sample().",
                 RuntimeWarning,
-                stacklevel=2,
             )
 
         # convert timestamps to the corresponding ctype
@@ -258,7 +256,6 @@ class StreamOutlet:
                     "will be applied to all samples. Consider using an array of "
                     "timestamps to provide the individual timestamps for each sample.",
                     RuntimeWarning,
-                    stacklevel=2,
                 )
             timestamp_c = c_double(timestamp)
             liblsl_push_chunk_func = self._do_push_chunk

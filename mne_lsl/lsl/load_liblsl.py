@@ -11,7 +11,6 @@ from importlib.resources import files
 from pathlib import Path
 from shutil import move, rmtree
 from typing import TYPE_CHECKING
-from warnings import warn
 
 import pooch
 import requests
@@ -19,7 +18,7 @@ import requests
 from .._version import __version__
 from ..utils._checks import ensure_path
 from ..utils._path import walk
-from ..utils.logs import logger
+from ..utils.logs import logger, warn
 
 if TYPE_CHECKING:
     from typing import Optional, Union
@@ -153,7 +152,6 @@ def _load_liblsl_mne_lsl(*, folder: Path = _LIB_FOLDER) -> Optional[str]:
                 f"The previously downloaded LIBLSL '{libpath.name}' in "
                 f"'{libpath.parent}' could not be loaded. It will be removed.",
                 RuntimeWarning,
-                stacklevel=2,
             )
             libpath.unlink(missing_ok=False)
             continue
@@ -170,7 +168,6 @@ def _load_liblsl_mne_lsl(*, folder: Path = _LIB_FOLDER) -> Optional[str]:
             "minimum version required by MNE-LSL is "
             f"{_VERSION_MIN // 100}.{_VERSION_MIN % 100}. It will be removed.",
             RuntimeWarning,
-            stacklevel=2,
         )
         libpath.unlink(missing_ok=False)
     return None
@@ -356,7 +353,6 @@ def _pooch_processor_liblsl(fname: str, action: str, pooch: Pooch) -> str:
             warn(
                 "Dependencies from debian liblsl package could not be parsed.",
                 RuntimeWarning,
-                stacklevel=2,
             )
         else:
             logger.info(
@@ -421,14 +417,12 @@ def _is_valid_libpath(libpath: str) -> bool:
             f"different from the expected extension '{_PLATFORM_SUFFIXES[_PLATFORM]}' "
             f"for {_PLATFORM} based OS.",
             RuntimeWarning,
-            stacklevel=2,
         )
         return False
     if not libpath.exists():
         warn(
             f"The LIBLSL '{libpath}' does not exist.",
             RuntimeWarning,
-            stacklevel=2,
         )
         return False
     return True
@@ -466,7 +460,6 @@ def _attempt_load_liblsl(
             warn(
                 f"The LIBLSL '{libpath}' can not be loaded.",
                 RuntimeWarning,
-                stacklevel=2,
             )
     return libpath, version
 
@@ -501,7 +494,6 @@ def _is_valid_version(
                 f"{version // 100}.{version % 100} while the minimum version required "
                 f"by MNE-LSL is {_VERSION_MIN // 100}.{_VERSION_MIN % 100}.",
                 RuntimeWarning,
-                stacklevel=2,
             )
         return False
     return True

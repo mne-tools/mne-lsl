@@ -5,7 +5,6 @@ from contextlib import contextmanager
 from math import ceil
 from threading import Timer
 from typing import TYPE_CHECKING
-from warnings import warn
 
 import numpy as np
 from mne import pick_info, pick_types
@@ -28,7 +27,7 @@ else:
 
 from ..utils._checks import check_type, check_value, ensure_int
 from ..utils._docs import copy_doc, fill_doc
-from ..utils.logs import logger, verbose
+from ..utils.logs import logger, verbose, warn
 from ..utils.meas_info import _HUMAN_UNITS, _set_channel_units
 from ._filters import StreamFilter, create_filter, ensure_sos_iir_params
 
@@ -356,7 +355,6 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
                 "The index 'idx' contains duplicates. Only unique indices will be "
                 "used.",
                 RuntimeWarning,
-                stacklevel=2,
             )
         idx = np.sort(idx_unique)
         logger.info(
