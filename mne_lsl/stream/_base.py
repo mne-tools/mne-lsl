@@ -176,9 +176,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             ]
             if len(ref_channels) > 1 or len(ref_dig_loc) != len(ref_channels):
                 ref_dig_array = np.full(12, np.nan)
-                logger.warning(
-                    "The locations of multiple reference channels are ignored."
-                )
+                warn("The locations of multiple reference channels are ignored.")
             else:  # n_ref_channels == 1 and a single ref digitization exists
                 ref_dig_array = np.concatenate(
                     (ref_dig_loc[0]["r"], ref_dig_loc[0]["r"], np.zeros(6))
