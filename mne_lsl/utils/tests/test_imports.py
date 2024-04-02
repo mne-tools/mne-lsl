@@ -1,5 +1,3 @@
-"""Test _imports.py"""
-
 import pytest
 
 from mne_lsl.utils._imports import import_optional_dependency

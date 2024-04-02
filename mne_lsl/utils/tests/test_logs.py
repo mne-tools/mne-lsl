@@ -1,29 +1,20 @@
-"""Test logs.py"""
+from __future__ import annotations  # c.f. PEP 563, PEP 649
 
 import logging
-from typing import Optional, Union
+from typing import TYPE_CHECKING
 
 import pytest
 
-from mne_lsl.utils.logs import (
-    _use_log_level,
-    add_file_handler,
-    logger,
-    set_log_level,
-    verbose,
-)
+from ..logs import add_file_handler, logger, set_log_level, verbose, warn
+
+if TYPE_CHECKING:
+    from pathlib import Path
+    from typing import Optional, Union
 
 logger.propagate = True
 
 
-@pytest.fixture()
-def safe_level():
-    """Safely call set_log_level in tests."""
-    with _use_log_level(None):
-        yield
-
-
-def test_default_log_level(caplog, safe_level):
+def test_default_log_level(caplog: pytest.LogCaptureFixture):
     """Test the default log level."""
     set_log_level("WARNING")  # set to default
 
@@ -49,7 +40,7 @@ def test_default_log_level(caplog, safe_level):
 
 
 @pytest.mark.parametrize("level", ("DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"))
-def test_logger(level, caplog, safe_level):
+def test_logger(level: str, caplog: pytest.LogCaptureFixture):
     """Test basic logger functionalities."""
     level_functions = {
         "DEBUG": logger.debug,
@@ -76,7 +67,7 @@ def test_logger(level, caplog, safe_level):
             assert "101" not in caplog.text
 
 
-def test_verbose(caplog, safe_level):
+def test_verbose(caplog: pytest.LogCaptureFixture):
     """Test verbose decorator."""
 
     # function
@@ -134,23 +125,40 @@ def test_verbose(caplog, safe_level):
     assert "101" in caplog.text
 
 
-def test_file_handler(tmp_path):
+def test_file_handler(tmp_path: Path):
     """Test adding a file handler."""
     fname = tmp_path / "logs.txt"
-    add_file_handler(fname)  # default level: WARNING.
-
+    add_file_handler(fname)
+    set_log_level("WARNING")
     logger.warning("test1")
     logger.info("test2")
-    logger.handlers[-1].setLevel(logging.INFO)
+    set_log_level("INFO")
     logger.info("test3")
-
     logger.handlers[-1].close()
-
     with open(fname) as file:
         lines = file.readlines()
-
     assert len(lines) == 2
     assert "test1" in lines[0]
     assert "test2" not in lines[0]
     assert "test2" not in lines[1]
     assert "test3" in lines[1]
+
+
+def test_warn(tmp_path: Path):
+    """Test warning functions."""
+    set_log_level("ERROR")
+    warn("This is a warning.", RuntimeWarning)
+    set_log_level("WARNING")
+    with pytest.warns(RuntimeWarning, match="This is a warning."):
+        warn("This is a warning.", RuntimeWarning)
+    fname = tmp_path / "logs.txt"
+    add_file_handler(fname)
+    with pytest.warns(RuntimeWarning, match="Grrrrr"):
+        warn("Grrrrr", RuntimeWarning)
+    set_log_level("ERROR")
+    warn("WoooW", RuntimeWarning)
+    logger.handlers[-1].close()
+    with open(fname) as file:
+        lines = file.readlines()
+    assert len(lines) == 1
+    assert "Grrrrr" in lines[0]

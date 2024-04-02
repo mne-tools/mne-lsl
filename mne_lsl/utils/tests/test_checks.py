@@ -1,5 +1,3 @@
-"""Test _checks.py"""
-
 import logging
 from pathlib import Path
 
