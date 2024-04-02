@@ -1,1 +1,1 @@
-from .stream_viewer import StreamViewer  # noqa: F401
+from .stream_viewer import StreamViewer

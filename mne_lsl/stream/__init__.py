@@ -1,1 +1,1 @@
-from .stream_lsl import StreamLSL  # noqa: F401
+from .stream_lsl import StreamLSL
