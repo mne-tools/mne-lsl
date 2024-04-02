@@ -352,9 +352,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         idx_unique = np.unique(idx)
         if idx_unique.size != idx.size:
             warn(
-                "The index 'idx' contains duplicates. Only unique indices will be "
-                "used.",
-                RuntimeWarning,
+                "The index 'idx' contains duplicates. Only unique indices will be used."
             )
         idx = np.sort(idx_unique)
         logger.info(

@@ -106,8 +106,7 @@ class PlayerLSL(BasePlayer):
             if annotations and len(self._raw.annotations) == 0:
                 warn(
                     f"{self._name}: The raw file has no annotations. The annotations "
-                    "will be ignored.",
-                    RuntimeWarning,
+                    "will be ignored."
                 )
                 self._annotations = False
             else:
@@ -172,8 +171,7 @@ class PlayerLSL(BasePlayer):
         if self._streaming_thread is not None:
             warn(
                 f"{self._name}: The player is already started. "
-                "Use Player.stop() to stop streaming.",
-                RuntimeWarning,
+                "Use Player.stop() to stop streaming."
             )
             return self
         self._outlet = StreamOutlet(self._sinfo, self._chunk_size)

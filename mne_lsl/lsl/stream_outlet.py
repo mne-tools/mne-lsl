@@ -216,10 +216,7 @@ class StreamOutlet:
             data_buffer = (self._dtype * n_elements).from_buffer(x)
 
         if n_samples == 1:
-            warn(
-                "A single sample is pushed. Consider using push_sample().",
-                RuntimeWarning,
-            )
+            warn("A single sample is pushed. Consider using push_sample().")
 
         # convert timestamps to the corresponding ctype
         if timestamp is None:
@@ -254,8 +251,7 @@ class StreamOutlet:
                 warn(
                     "The stream is irregularly sampled and timestamp is a float and "
                     "will be applied to all samples. Consider using an array of "
-                    "timestamps to provide the individual timestamps for each sample.",
-                    RuntimeWarning,
+                    "timestamps to provide the individual timestamps for each sample."
                 )
             timestamp_c = c_double(timestamp)
             liblsl_push_chunk_func = self._do_push_chunk

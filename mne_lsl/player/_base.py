@@ -112,8 +112,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         self._check_not_started("anonymize()")
         warn(
             "Player.anonymize() is partially implemented and does not impact the "
-            "stream information yet. It will call Player.set_meas_date() internally.",
-            RuntimeWarning,
+            "stream information yet. It will call Player.set_meas_date() internally."
         )
         super().anonymize(
             daysback=daysback,
@@ -311,8 +310,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         self._check_not_started(name=f"{type(self).__name__}.set_meas_date()")
         warn(
             "Player.set_meas_date() is partially implemented and does not impact the "
-            "stream information yet.",
-            RuntimeWarning,
+            "stream information yet."
         )
         super().set_meas_date(meas_date)
         return self

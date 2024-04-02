@@ -151,7 +151,6 @@ def _load_liblsl_mne_lsl(*, folder: Path = _LIB_FOLDER) -> Optional[str]:
             warn(
                 f"The previously downloaded LIBLSL '{libpath.name}' in "
                 f"'{libpath.parent}' could not be loaded. It will be removed.",
-                RuntimeWarning,
             )
             libpath.unlink(missing_ok=False)
             continue
@@ -167,7 +166,6 @@ def _load_liblsl_mne_lsl(*, folder: Path = _LIB_FOLDER) -> Optional[str]:
             f"is outdated. The version is {version // 100}.{version % 100} while the "
             "minimum version required by MNE-LSL is "
             f"{_VERSION_MIN // 100}.{_VERSION_MIN % 100}. It will be removed.",
-            RuntimeWarning,
         )
         libpath.unlink(missing_ok=False)
     return None
@@ -350,10 +348,7 @@ def _pooch_processor_liblsl(fname: str, action: str, pooch: Pooch) -> str:
             if line.startswith("Depends:")
         ]
         if len(lines) != 1:  # pragma: no cover
-            warn(
-                "Dependencies from debian liblsl package could not be parsed.",
-                RuntimeWarning,
-            )
+            warn("Dependencies from debian liblsl package could not be parsed.")
         else:
             logger.info(
                 "Attempting to retrieve liblsl from the release page. It requires %s.",
@@ -415,15 +410,11 @@ def _is_valid_libpath(libpath: str) -> bool:
         warn(
             f"The LIBLSL '{libpath}' ends with '{libpath.suffix}' which is "
             f"different from the expected extension '{_PLATFORM_SUFFIXES[_PLATFORM]}' "
-            f"for {_PLATFORM} based OS.",
-            RuntimeWarning,
+            f"for {_PLATFORM} based OS."
         )
         return False
     if not libpath.exists():
-        warn(
-            f"The LIBLSL '{libpath}' does not exist.",
-            RuntimeWarning,
-        )
+        warn(f"The LIBLSL '{libpath}' does not exist.")
         return False
     return True
 
@@ -457,10 +448,7 @@ def _attempt_load_liblsl(
     except OSError:
         version = None
         if issue_warning:
-            warn(
-                f"The LIBLSL '{libpath}' can not be loaded.",
-                RuntimeWarning,
-            )
+            warn(f"The LIBLSL '{libpath}' can not be loaded.")
     return libpath, version
 
 
@@ -492,8 +480,7 @@ def _is_valid_version(
             warn(
                 f"The LIBLSL '{libpath}' is outdated. The version is "
                 f"{version // 100}.{version % 100} while the minimum version required "
-                f"by MNE-LSL is {_VERSION_MIN // 100}.{_VERSION_MIN % 100}.",
-                RuntimeWarning,
+                f"by MNE-LSL is {_VERSION_MIN // 100}.{_VERSION_MIN % 100}."
             )
         return False
     return True

@@ -21,10 +21,7 @@ class StreamFilter(dict):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if "iir_params" not in self:
-            warn(
-                "The 'iir_params' key is missing, which is unexpected.",
-                RuntimeWarning,
-            )
+            warn("The 'iir_params' key is missing, which is unexpected.")
             self["iir_params"] = dict()
         for key in ("ftype", "order"):
             if key not in self:
@@ -77,8 +74,7 @@ class StreamFilter(dict):
             if not isinstance(other[key], type_):  # sanity-check
                 warn(
                     f"The type of the key '{key}' is different between the 2 filters, "
-                    "which should not be possible. Please contact the developers.",
-                    RuntimeWarning,
+                    "which should not be possible. Please contact the developers."
                 )
                 return False
             if (
@@ -149,8 +145,7 @@ def ensure_sos_iir_params(
         warn(
             "Only 'sos' output is supported for real-time filtering. The filter "
             "output will be automatically changed. Please set "
-            "iir_params=dict(output='sos', ...) in your call to the filtering method.",
-            RuntimeWarning,
+            "iir_params=dict(output='sos', ...) in your call to the filtering method."
         )
         for key in ("a", "b"):
             if key in iir_params:
