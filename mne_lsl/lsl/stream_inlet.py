@@ -208,7 +208,7 @@ class StreamInlet:
             not arrive at the inlet. c.f. this
             `github issue <https://github.com/sccn/liblsl/issues/180>`_.
         """
-        if not self._stream_is_open:
+        if hasattr(self, "_stream_is_open") and not self._stream_is_open:
             return
         with self._lock:
             lib.lsl_close_stream(self._obj)
