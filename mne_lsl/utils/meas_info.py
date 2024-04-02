@@ -14,7 +14,7 @@ else:
     from mne.io.pick import get_channel_type_constants
 
 from ._checks import check_type, check_value, ensure_int
-from .logs import logger
+from .logs import warn
 
 if TYPE_CHECKING:
     from typing import Any, Optional, Union
@@ -127,7 +127,7 @@ def create_info(
         ):
             info["device_info"]["model"] = manufacturer[0]
     except Exception:
-        logger.warning(
+        warn(
             "Something went wrong while reading the channel description. Defaulting to "
             "channel IDs and MNE-compatible stream type."
         )

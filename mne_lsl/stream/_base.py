@@ -268,7 +268,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             The stream instance modified in-place.
         """
         if self.connected:
-            logger.warning("The stream is already connected. Skipping.")
+            warn("The stream is already connected. Skipping.")
             return self
         check_type(acquisition_delay, ("numeric",), "acquisition_delay")
         if acquisition_delay < 0:
