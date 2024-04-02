@@ -190,17 +190,13 @@ def test_stream_connection_no_args(mock_lsl_stream):
     stream.disconnect()
 
 
-def test_stream_double_connection(mock_lsl_stream, caplog):
+def test_stream_double_connection(mock_lsl_stream):
     """Test connecting twice to a stream."""
-    caplog.set_level(30)  # WARNING
-    caplog.clear()
     stream = Stream(bufsize=2, name=mock_lsl_stream.name)
     stream.connect()
     time.sleep(0.1)  # give a bit of time to the stream to acquire the first chunks
-    assert "stream is already connected" not in caplog.text
-    caplog.clear()
-    stream.connect()
-    assert "stream is already connected" in caplog.text
+    with pytest.warns(RuntimeWarning, match="stream is already connected"):
+        stream.connect()
     stream.disconnect()
 
 

@@ -11,7 +11,7 @@ from mne_lsl.utils.meas_info import create_info
 logger.propagate = True
 
 
-def test_valid_info(caplog):
+def test_valid_info():
     """Test creation of valid info."""
     ch_names = ["F7", "Fp2", "Trigger", "EOG"]
     ch_types = ["eeg", "eeg", "stim", "eog"]
@@ -56,10 +56,11 @@ def test_valid_info(caplog):
     assert info.get_channel_types() == ch_types
     assert [ch["unit_mul"] for ch in info["chs"]] == [-6, -6, 0, -6]
 
-    caplog.set_level(30)  # WARNING level
-    caplog.clear()
-    info = create_info(2, 1024, "eeg", desc)
-    assert "Something went wrong while reading the channel description." in caplog.text
+    with pytest.warns(
+        RuntimeWarning,
+        match="Something went wrong while reading the channel description.",
+    ):
+        info = create_info(2, 1024, "eeg", desc)
     assert info["sfreq"] == 1024
     assert len(info.ch_names) == 2
     assert info.ch_names == ["0", "1"]

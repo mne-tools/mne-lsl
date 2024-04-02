@@ -13,7 +13,7 @@ from mne_lsl.utils._tests import compare_infos
 logger.propagate = True
 
 
-def test_stream_info_desc(caplog):
+def test_stream_info_desc():
     """Test setters and getters for StreamInfo."""
     sinfo = StreamInfo("pytest", "eeg", 3, 101, "float32", uuid.uuid4().hex)
     assert sinfo.get_channel_names() is None
