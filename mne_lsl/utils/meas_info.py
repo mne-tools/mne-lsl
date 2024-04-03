@@ -14,7 +14,7 @@ else:
     from mne.io.pick import get_channel_type_constants
 
 from ._checks import check_type, check_value, ensure_int
-from .logs import warn
+from .logs import logger, warn
 
 if TYPE_CHECKING:
     from typing import Any, Optional, Union
@@ -67,7 +67,7 @@ def create_info(
         If provided, dictionary or :class:`~mne_lsl.lsl.StreamInfo` containing the
         channel information. A `~mne_lsl.lsl.StreamInfo` contains the number of
         channels,csampling frequency and stream type, which will be checked against the
-        providedcarguments ``n_channels``, ``sfreq`` and ``stype``.
+        provided arguments ``n_channels``, ``sfreq`` and ``stype``.
 
     Returns
     -------
@@ -98,6 +98,10 @@ def create_info(
     stype = stype if stype in _CH_TYPES_DICT else "misc"
 
     # attempt to create the info depending on the provided description
+    if desc is None:
+        logger.info("No description provided. Creating a default Info object.")
+        return _create_default_info(n_channels, sfreq, stype)
+
     try:
         if isinstance(desc, dict):
             ch_names, ch_types, ch_units, manufacturer = _read_desc_dict(
@@ -126,18 +130,42 @@ def create_info(
             and isinstance(manufacturer[0], str)
         ):
             info["device_info"]["model"] = manufacturer[0]
+        info._check_consistency()
     except Exception:
         warn(
             "Something went wrong while reading the channel description. Defaulting to "
             "channel IDs and MNE-compatible stream type."
         )
-        info = mne_create_info(n_channels, 1.0, stype)
-        info["device_info"] = dict()
-        with info._unlock():
-            info["sfreq"] = sfreq
-        info["device_info"] = dict()
+        info = _create_default_info(n_channels, sfreq, stype)
+    return info
 
-    info._check_consistency()
+
+def _create_default_info(
+    n_channels: int,
+    sfreq: float,
+    stype: str,
+) -> Info:
+    """Create a default Info object.
+
+    Parameters
+    ----------
+    n_channels : int
+        Number of channels.
+    sfreq : float
+        Sampling frequency in Hz. ``0`` corresponds to an irregular sampling rate.
+    stype : str
+        Type of the stream.
+
+    Returns
+    -------
+    info : Info
+        MNE :class:`~mne.Info` object corresponding.
+    """
+    info = mne_create_info(n_channels, 1.0, stype)
+    info["device_info"] = dict()
+    with info._unlock():
+        info["sfreq"] = sfreq
+    info["device_info"] = dict()
     return info
 
 
