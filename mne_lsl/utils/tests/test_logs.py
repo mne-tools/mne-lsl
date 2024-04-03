@@ -143,8 +143,9 @@ def test_warn(tmp_path: Path):
     """Test warning functions."""
     with _use_log_level("ERROR"):
         warn("This is a warning.", RuntimeWarning)
-    with _use_log_level("WARNING"), pytest.warns(
-        RuntimeWarning, match="This is a warning."
+    with (
+        _use_log_level("WARNING"),
+        pytest.warns(RuntimeWarning, match="This is a warning."),
     ):
         warn("This is a warning.", RuntimeWarning)
     fname = tmp_path / "logs.txt"
