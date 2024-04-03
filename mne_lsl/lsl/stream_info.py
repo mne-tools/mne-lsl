@@ -8,7 +8,7 @@ from mne import Info, Projection
 from mne.utils import check_version
 
 from ..utils._checks import check_type, check_value, ensure_int
-from ..utils.logs import logger
+from ..utils.logs import warn
 from ..utils.meas_info import create_info
 from ._utils import XMLElement
 from .constants import fmt2idx, fmt2numpy, idx2fmt, numpy2fmt, string2fmt
@@ -372,9 +372,9 @@ class _BaseStreamInfo:
                             info["chs"][k]["range"] = 1.0
                             info["chs"][k]["cal"] = float(range_cal)
                         except ValueError:
-                            logger.warning(
-                                "Could not cast 'range_cal' factor %s to float.",
-                                range_cal,
+                            warn(
+                                f"Could not cast 'range_cal' factor {range_cal} to "
+                                "float.",
                             )
             for k, loc in enumerate(locs):
                 info["chs"][k]["loc"] = loc
@@ -390,11 +390,9 @@ class _BaseStreamInfo:
                         try:
                             info[name] = float(value)
                         except ValueError:
-                            logger.warning(
-                                "Could not cast '%s' %s to float.", name, value
-                            )
+                            warn(f"Could not cast '{name}' {value} to float.")
         elif not filters.empty() and self.sfreq == 0:
-            logger.warning(
+            warn(
                 "Node 'filters' found in the description of an irregularly sampled "
                 "stream. This is inconsistent and will be skipped."
             )
@@ -481,10 +479,9 @@ class _BaseStreamInfo:
         if all(ch_info is None for ch_info in ch_infos):
             return None
         if len(ch_infos) != self.n_channels:
-            logger.warning(
-                "The stream description contains %i elements for %i channels.",
-                len(ch_infos),
-                self.n_channels,
+            warn(
+                f"The stream description contains {len(ch_infos)} elements for "
+                f"{self.n_channels} channels."
             )
         return ch_infos
 
@@ -496,16 +493,14 @@ class _BaseStreamInfo:
         while not projector.empty():
             desc = projector.child("desc").first_child().value()
             if len(desc) == 0:
-                logger.warning(
-                    "An SSP projector without description was found. Skipping."
-                )
+                warn("An SSP projector without description was found. Skipping.")
                 projector = projector.next_sibling()
                 continue
             kind = projector.child("kind").first_child().value()
             try:
                 kind = int(kind)
             except ValueError:
-                logger.warning("Could not cast the SSP kind %s to integer.", kind)
+                warn(f"Could not cast the SSP kind {kind} to integer.")
                 projector = projector.next_sibling()
                 continue
 
@@ -516,7 +511,7 @@ class _BaseStreamInfo:
             while not ch.empty():
                 ch_name = ch.child("label").first_child().value()
                 if len(ch_name) == 0:
-                    logger.warning(
+                    warn(
                         "SSP projector has an empty-channel label. The channel will "
                         "be skipped."
                     )
@@ -526,10 +521,9 @@ class _BaseStreamInfo:
                 try:
                     ch_data = float(ch_data)
                 except ValueError:
-                    logger.warning(
-                        "Could not cast the SSP value %s for channel %s to float.",
-                        ch_data,
-                        ch_name,
+                    warn(
+                        f"Could not cast the SSP value {ch_data} for channel {ch_name} "
+                        "to float.",
                     )
                     ch.next_sibling()
                     continue
@@ -573,7 +567,7 @@ class _BaseStreamInfo:
                 try:
                     ident = int(ident)
                 except ValueError:
-                    logger.warning("Could not cast 'ident' %s to integer.", ident)
+                    warn(f"Could not cast 'ident' {ident} to integer.")
                     point = point.next_sibling()
                     continue
             loc = point.child("loc")
@@ -584,7 +578,7 @@ class _BaseStreamInfo:
             try:
                 r = np.array([float(elt) for elt in r], dtype=np.float32)
             except ValueError:
-                logger.warning("Could not cast dig point location %s to float.", r)
+                warn(f"Could not cast dig point location {r} to float.")
                 point = point.next_sibling()
                 continue
             dig_points.append(
@@ -829,13 +823,11 @@ class _BaseStreamInfo:
             value = mapping[idx]
             return value
         except ValueError:
-            logger.warning("Could not cast '%s' %s to integer.", name, value)
+            warn(f"Could not cast '{name}' {value} to integer.")
         except KeyError:
-            logger.warning(
-                "Could not convert '%s' %i to a known FIFF code: %s.",
-                name,
-                int(value),
-                tuple(mapping.keys()),
+            warn(
+                f"Could not convert '{name}' {int(value)} to a known FIFF "
+                "code: {tuple(mapping.keys())}.",
             )
         return None
 

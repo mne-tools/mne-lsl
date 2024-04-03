@@ -5,15 +5,12 @@ import pytest
 from mne import create_info
 from mne.io import read_raw_fif
 
-from mne_lsl import logger
 from mne_lsl.datasets import testing
 from mne_lsl.lsl import StreamInfo, StreamInlet, StreamOutlet
 from mne_lsl.utils._tests import compare_infos
 
-logger.propagate = True
 
-
-def test_stream_info_desc(caplog):
+def test_stream_info_desc():
     """Test setters and getters for StreamInfo."""
     sinfo = StreamInfo("pytest", "eeg", 3, 101, "float32", uuid.uuid4().hex)
     assert sinfo.get_channel_names() is None
@@ -55,34 +52,37 @@ def test_stream_info_desc(caplog):
     ch = channels.append_child("channel")
     ch.append_child_value("label", "tempered-label")
 
-    caplog.set_level(30)  # WARNING level
-    caplog.clear()
-    assert sinfo.get_channel_names() == ch_names + ["tempered-label"]
-    assert "description contains 4 elements for 3 channels" in caplog.text
-    assert sinfo.get_channel_types() == ch_types + [None]
-    assert sinfo.get_channel_units() == ["101"] * 3 + [None]
+    with pytest.warns(
+        RuntimeWarning, match="description contains 4 elements for 3 channels"
+    ):
+        assert sinfo.get_channel_names() == ch_names + ["tempered-label"]
+    with pytest.warns(
+        RuntimeWarning, match="description contains 4 elements for 3 channels"
+    ):
+        assert sinfo.get_channel_types() == ch_types + [None]
+    with pytest.warns(
+        RuntimeWarning, match="description contains 4 elements for 3 channels"
+    ):
+        assert sinfo.get_channel_units() == ["101"] * 3 + [None]
     ch_names = ["101", "201", "301"]
     sinfo.set_channel_names(ch_names)
-    caplog.clear()
     assert sinfo.get_channel_names() == ch_names
     assert sinfo.get_channel_types() == ch_types
     assert sinfo.get_channel_units() == ["101"] * 3
-    assert "elements for 3 channels" not in caplog.text
 
     sinfo = StreamInfo("pytest", "eeg", 3, 101, "float32", uuid.uuid4().hex)
     channels = sinfo.desc.append_child("channels")
     ch = channels.append_child("channel")
     ch.append_child_value("label", "tempered-label")
-    caplog.clear()
-    assert sinfo.get_channel_names() == ["tempered-label"]
-    assert "description contains 1 elements for 3 channels"
+    with pytest.warns(
+        RuntimeWarning, match="description contains 1 elements for 3 channels"
+    ):
+        assert sinfo.get_channel_names() == ["tempered-label"]
     ch_names = ["101", "201", "301"]
     sinfo.set_channel_names(ch_names)
-    caplog.clear()
     assert sinfo.get_channel_names() == ch_names
     assert sinfo.get_channel_types() is None
     assert sinfo.get_channel_units() is None
-    assert "elements for 3 channels" not in caplog.text
 
 
 def test_stream_info_invalid_desc():

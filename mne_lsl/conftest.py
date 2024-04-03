@@ -11,9 +11,10 @@ from mne import set_log_level as set_log_level_mne
 from mne.io import read_raw_fif
 from pytest import fixture
 
-from mne_lsl import logger, set_log_level
+from mne_lsl import set_log_level
 from mne_lsl.datasets import testing
 from mne_lsl.lsl import StreamInlet, StreamOutlet
+from mne_lsl.utils.logs import logger
 
 if TYPE_CHECKING:
     from pathlib import Path

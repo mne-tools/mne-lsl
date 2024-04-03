@@ -3,13 +3,12 @@ from __future__ import annotations  # c.f. PEP 563, PEP 649
 from ctypes import c_char_p, c_double, c_int, c_long, c_void_p
 from threading import Lock
 from typing import TYPE_CHECKING
-from warnings import warn
 
 import numpy as np
 
 from ..utils._checks import check_type, ensure_int
 from ..utils._docs import copy_doc
-from ..utils.logs import logger
+from ..utils.logs import warn
 from ._utils import check_timeout, handle_error
 from .constants import fmt2numpy, fmt2push_chunk, fmt2push_chunk_n, fmt2push_sample
 from .load_liblsl import lib
@@ -105,7 +104,7 @@ class StreamOutlet:
             try:
                 lib.lsl_destroy_outlet(obj)
             except Exception as exc:
-                logger.warning("Error destroying outlet: %s", str(exc))
+                warn("Error destroying outlet: %s", str(exc))
 
     def push_sample(
         self,
@@ -217,11 +216,7 @@ class StreamOutlet:
             data_buffer = (self._dtype * n_elements).from_buffer(x)
 
         if n_samples == 1:
-            warn(
-                "A single sample is pushed. Consider using push_sample().",
-                RuntimeWarning,
-                stacklevel=2,
-            )
+            warn("A single sample is pushed. Consider using push_sample().")
 
         # convert timestamps to the corresponding ctype
         if timestamp is None:
@@ -256,9 +251,7 @@ class StreamOutlet:
                 warn(
                     "The stream is irregularly sampled and timestamp is a float and "
                     "will be applied to all samples. Consider using an array of "
-                    "timestamps to provide the individual timestamps for each sample.",
-                    RuntimeWarning,
-                    stacklevel=2,
+                    "timestamps to provide the individual timestamps for each sample."
                 )
             timestamp_c = c_double(timestamp)
             liblsl_push_chunk_func = self._do_push_chunk

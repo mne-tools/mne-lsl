@@ -190,17 +190,13 @@ def test_stream_connection_no_args(mock_lsl_stream):
     stream.disconnect()
 
 
-def test_stream_double_connection(mock_lsl_stream, caplog):
+def test_stream_double_connection(mock_lsl_stream):
     """Test connecting twice to a stream."""
-    caplog.set_level(30)  # WARNING
-    caplog.clear()
     stream = Stream(bufsize=2, name=mock_lsl_stream.name)
     stream.connect()
     time.sleep(0.1)  # give a bit of time to the stream to acquire the first chunks
-    assert "stream is already connected" not in caplog.text
-    caplog.clear()
-    stream.connect()
-    assert "stream is already connected" in caplog.text
+    with pytest.warns(RuntimeWarning, match="stream is already connected"):
+        stream.connect()
     stream.disconnect()
 
 
@@ -621,12 +617,11 @@ def test_stream_processing_flags(close_io):
     assert outlet.dtype == np.int8
     stream = Stream(bufsize=2, name="test_stream_processing_flags")
     assert not stream.connected
-    with pytest.raises(
-        ValueError, match="'threadsafe' processing flag should not be provided"
-    ):
+    with pytest.raises(ValueError, match="'threadsafe' processing flag should not be"):
         stream.connect(processing_flags=("clocksync", "threadsafe"))
     assert not stream.connected
-    stream.connect(processing_flags="all")
+    with pytest.warns(RuntimeWarning, match="while reading the channel description"):
+        stream.connect(processing_flags="all")
     assert stream.connected
     stream.disconnect()
     assert not stream.connected
@@ -640,7 +635,8 @@ def test_stream_irregularly_sampled(close_io):
     )
     outlet = StreamOutlet(sinfo)
     stream = Stream(bufsize=10, name="test_stream_irregularly_sampled")
-    stream.connect()
+    with pytest.warns(RuntimeWarning, match="while reading the channel description"):
+        stream.connect()
     time.sleep(0.1)  # give a bit of time to the stream to acquire the first chunks
     assert stream.connected
     data, _ = stream.get_data()

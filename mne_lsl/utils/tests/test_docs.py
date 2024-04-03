@@ -1,5 +1,3 @@
-"""Test _docs.py"""
-
 import re
 from pathlib import Path
 
