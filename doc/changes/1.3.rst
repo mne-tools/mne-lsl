@@ -33,8 +33,3 @@ Version 1.3.1
 =============
 
 - Fix handling of warnings through the logger (:pr:`243` by `Mathieu Scheltienne`_)
-
-API changes (backward incompatible)
------------------------------------
-
-- Remove private ``logger`` from base namespace, use ``mne_lsl.utils.logger`` instead (:pr:`243` by `Mathieu Scheltienne`_)
