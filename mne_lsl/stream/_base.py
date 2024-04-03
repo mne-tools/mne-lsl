@@ -5,7 +5,6 @@ from contextlib import contextmanager
 from math import ceil
 from threading import Timer
 from typing import TYPE_CHECKING
-from warnings import warn
 
 import numpy as np
 from mne import pick_info, pick_types
@@ -28,7 +27,7 @@ else:
 
 from ..utils._checks import check_type, check_value, ensure_int
 from ..utils._docs import copy_doc, fill_doc
-from ..utils.logs import logger, verbose
+from ..utils.logs import logger, verbose, warn
 from ..utils.meas_info import _HUMAN_UNITS, _set_channel_units
 from ._filters import StreamFilter, create_filter, ensure_sos_iir_params
 
@@ -177,9 +176,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             ]
             if len(ref_channels) > 1 or len(ref_dig_loc) != len(ref_channels):
                 ref_dig_array = np.full(12, np.nan)
-                logger.warning(
-                    "The locations of multiple reference channels are ignored."
-                )
+                warn("The locations of multiple reference channels are ignored.")
             else:  # n_ref_channels == 1 and a single ref digitization exists
                 ref_dig_array = np.concatenate(
                     (ref_dig_loc[0]["r"], ref_dig_loc[0]["r"], np.zeros(6))
@@ -269,7 +266,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             The stream instance modified in-place.
         """
         if self.connected:
-            logger.warning("The stream is already connected. Skipping.")
+            warn("The stream is already connected. Skipping.")
             return self
         check_type(acquisition_delay, ("numeric",), "acquisition_delay")
         if acquisition_delay < 0:
@@ -353,10 +350,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         idx_unique = np.unique(idx)
         if idx_unique.size != idx.size:
             warn(
-                "The index 'idx' contains duplicates. Only unique indices will be "
-                "used.",
-                RuntimeWarning,
-                stacklevel=2,
+                "The index 'idx' contains duplicates. Only unique indices will be used."
             )
         idx = np.sort(idx_unique)
         logger.info(

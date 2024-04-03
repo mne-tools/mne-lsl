@@ -1,1 +1,1 @@
-from .control_eeg import ControlGUI_EEG  # noqa: F401
+from .control_eeg import ControlGUI_EEG

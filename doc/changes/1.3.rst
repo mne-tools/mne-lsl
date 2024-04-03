@@ -14,8 +14,6 @@
 
 .. include:: ./authors.inc
 
-.. _latest:
-
 Version 1.3
 ===========
 
@@ -28,3 +26,10 @@ API changes (backward incompatible)
 -----------------------------------
 
 - Add ``n_repeat`` argument to :class:`~mne_lsl.player.PlayerLSL` to support looping a file a fix number of times (:pr:`223` by `Mathieu Scheltienne`_)
+
+.. _latest:
+
+Version 1.3.1
+=============
+
+- Fix handling of warnings through the logger (:pr:`243` by `Mathieu Scheltienne`_)

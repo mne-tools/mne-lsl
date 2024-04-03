@@ -1,9 +1,12 @@
 from __future__ import annotations  # c.f. PEP 563, PEP 649
 
+import inspect
 import logging
 from functools import wraps
+from importlib import import_module
 from pathlib import Path
 from typing import TYPE_CHECKING
+from warnings import warn_explicit
 
 from ._checks import check_verbose
 from ._docs import fill_doc
@@ -12,6 +15,9 @@ from ._fixes import _WrapStdOut
 if TYPE_CHECKING:
     from logging import Logger
     from typing import Callable, Optional, Union
+
+
+_PACKAGE: str = __package__.split(".")[0]
 
 
 @fill_doc
@@ -41,7 +47,6 @@ def _init_logger(*, verbose: Optional[Union[bool, str, int]] = None) -> Logger:
     return logger
 
 
-@fill_doc
 def add_file_handler(
     fname: Union[str, Path],
     mode: str = "a",
@@ -59,12 +64,17 @@ def add_file_handler(
         Mode in which the file is opened.
     encoding : str | None
         If not None, encoding used to open the file.
-    %(verbose)s
+    verbose : int | str | bool | None
+        Sets the verbosity level of the file handler. The verbosity increases gradually
+        between ``"CRITICAL"``, ``"ERROR"``, ``"WARNING"``, ``"INFO"`` and ``"DEBUG"``.
+        If a bool is provided, the verbosity is set to ``"WARNING"`` for False and to
+        ``"INFO"`` for True. If None is provided, the verbosity of the logger is used.
     """
-    verbose = check_verbose(verbose)
     handler = logging.FileHandler(fname, mode, encoding)
     handler.setFormatter(_LoggerFormatter())
-    handler.setLevel(verbose)
+    if verbose is not None:
+        verbose = check_verbose(verbose)
+        handler.setLevel(verbose)
     logger.addHandler(handler)
 
 
@@ -173,4 +183,66 @@ class _use_log_level:
             self._logger.setLevel(self._old_level)
 
 
-logger = _init_logger(verbose="WARNING")  # equivalent to verbose=None
+def warn(
+    message: str,
+    category: Warning = RuntimeWarning,
+    module: str = _PACKAGE,
+    ignore_namespaces: Union[tuple[str, ...] | list[str]] = (_PACKAGE,),
+) -> None:
+    """Emit a warning with trace outside the requested namespace.
+
+    This function takes arguments like :func:`warnings.warn`, and sends messages
+    using both :func:`warnings.warn` and :func:`logging.warn`. Warnings can be
+    generated deep within nested function calls. In order to provide a
+    more helpful warning, this function traverses the stack until it
+    reaches a frame outside the ignored namespace that caused the error.
+
+    This function is inspired from the MNE-Python package and behaves as a smart
+    'stacklevel' argument.
+
+    Parameters
+    ----------
+    message : str
+        Warning message.
+    category : instance of Warning
+        The warning class. Defaults to ``RuntimeWarning``.
+    module : str
+        The name of the module emitting the warning.
+    ignore_namespaces : list of str | tuple of str
+        Namespaces to ignore when traversing the stack.
+    """
+    if logging.WARNING < logger.level:
+        return None
+    root_dirs = [
+        Path(import_module(namespace).__file__).parent
+        for namespace in ignore_namespaces
+    ]
+    frame = inspect.currentframe()
+    while frame:  # at some point it will be None and exit the loop
+        fname = Path(frame.f_code.co_filename)
+        if fname.parent.name == "tests":
+            break  # treat tests as outside of the namespace
+        lineno = frame.f_lineno
+        if not (any(str(fname).startswith(str(rd)) for rd in root_dirs)):
+            break
+        frame = frame.f_back
+    del frame
+    # we need to use this instead of warn(message, category, stacklevel) because we
+    # move out of our stack, so warnings won't properly recognize the module name
+    # (and warnings.simplefilter will fail).
+    warn_explicit(
+        message,
+        category,
+        str(fname),
+        lineno,
+        module,
+        globals().get("__warningregistry__", {}),
+    )
+    # now we emit the warning to the logger, except to the default StreamHandler on
+    # stdout registered as the first handler.
+    logger.handlers[0].setLevel(logging.WARNING + 1)
+    logger.warning(message)
+    logger.handlers[0].setLevel(0)
+
+
+logger = _init_logger()

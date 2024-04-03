@@ -10,7 +10,7 @@ import numpy as np
 
 from ..utils._checks import check_type, check_value, ensure_int
 from ..utils._docs import copy_doc
-from ..utils.logs import logger
+from ..utils.logs import warn
 from ._utils import check_timeout, free_char_p_array_memory, handle_error
 from .constants import fmt2numpy, fmt2pull_chunk, fmt2pull_sample, post_processing_flags
 from .load_liblsl import lib
@@ -151,14 +151,14 @@ class StreamInlet:
         try:
             self.close_stream()
         except Exception as exc:
-            logger.warning("Error closing stream: %s", str(exc))
+            warn(f"Error closing stream: {str(exc)}")
         self._stream_is_open = False
         with self._lock:
             obj, self._obj = self._obj, None
             try:
                 lib.lsl_destroy_inlet(obj)
             except Exception as exc:
-                logger.warning("Error destroying inlet: %s", str(exc))
+                warn(f"Error destroying inlet: {str(exc)}")
 
     def open_stream(self, timeout: Optional[float] = None) -> None:
         """Subscribe to a data stream.
@@ -208,7 +208,7 @@ class StreamInlet:
             not arrive at the inlet. c.f. this
             `github issue <https://github.com/sccn/liblsl/issues/180>`_.
         """
-        if not self._stream_is_open:
+        if hasattr(self, "_stream_is_open") and not self._stream_is_open:
             return
         with self._lock:
             lib.lsl_close_stream(self._obj)
