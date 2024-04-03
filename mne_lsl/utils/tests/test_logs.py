@@ -11,8 +11,6 @@ if TYPE_CHECKING:
     from pathlib import Path
     from typing import Optional, Union
 
-logger.propagate = True
-
 
 def test_default_log_level(caplog: pytest.LogCaptureFixture):
     """Test the default log level."""

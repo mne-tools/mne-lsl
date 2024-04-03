@@ -4,11 +4,8 @@ import uuid
 
 import pytest
 
-from mne_lsl import logger
 from mne_lsl.lsl import StreamInfo
 from mne_lsl.utils.meas_info import create_info
-
-logger.propagate = True
 
 
 def test_valid_info():

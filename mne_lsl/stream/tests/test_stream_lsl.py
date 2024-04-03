@@ -617,12 +617,11 @@ def test_stream_processing_flags(close_io):
     assert outlet.dtype == np.int8
     stream = Stream(bufsize=2, name="test_stream_processing_flags")
     assert not stream.connected
-    with pytest.raises(
-        ValueError, match="'threadsafe' processing flag should not be provided"
-    ):
+    with pytest.raises(ValueError, match="'threadsafe' processing flag should not be"):
         stream.connect(processing_flags=("clocksync", "threadsafe"))
     assert not stream.connected
-    stream.connect(processing_flags="all")
+    with pytest.warns(RuntimeWarning, match="while reading the channel description"):
+        stream.connect(processing_flags="all")
     assert stream.connected
     stream.disconnect()
     assert not stream.connected
@@ -636,7 +635,8 @@ def test_stream_irregularly_sampled(close_io):
     )
     outlet = StreamOutlet(sinfo)
     stream = Stream(bufsize=10, name="test_stream_irregularly_sampled")
-    stream.connect()
+    with pytest.warns(RuntimeWarning, match="while reading the channel description"):
+        stream.connect()
     time.sleep(0.1)  # give a bit of time to the stream to acquire the first chunks
     assert stream.connected
     data, _ = stream.get_data()

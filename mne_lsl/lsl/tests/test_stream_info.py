@@ -5,12 +5,9 @@ import pytest
 from mne import create_info
 from mne.io import read_raw_fif
 
-from mne_lsl import logger
 from mne_lsl.datasets import testing
 from mne_lsl.lsl import StreamInfo, StreamInlet, StreamOutlet
 from mne_lsl.utils._tests import compare_infos
-
-logger.propagate = True
 
 
 def test_stream_info_desc():
