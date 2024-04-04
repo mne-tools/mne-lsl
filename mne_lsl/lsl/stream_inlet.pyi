@@ -10,7 +10,7 @@ from ..utils._checks import check_type as check_type
 from ..utils._checks import check_value as check_value
 from ..utils._checks import ensure_int as ensure_int
 from ..utils._docs import copy_doc as copy_doc
-from ..utils.logs import logger as logger
+from ..utils.logs import warn as warn
 from ._utils import check_timeout as check_timeout
 from ._utils import free_char_p_array_memory as free_char_p_array_memory
 from ._utils import handle_error as handle_error

@@ -15,6 +15,7 @@ from ..utils._checks import ensure_path as ensure_path
 from ..utils._docs import fill_doc as fill_doc
 from ..utils.logs import logger as logger
 from ..utils.logs import verbose as verbose
+from ..utils.logs import warn as warn
 from ..utils.meas_info import _set_channel_units as _set_channel_units
 
 class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):

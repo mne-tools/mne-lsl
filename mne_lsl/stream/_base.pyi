@@ -21,6 +21,7 @@ from ..utils._docs import copy_doc as copy_doc
 from ..utils._docs import fill_doc as fill_doc
 from ..utils.logs import logger as logger
 from ..utils.logs import verbose as verbose
+from ..utils.logs import warn as warn
 from ..utils.meas_info import _HUMAN_UNITS as _HUMAN_UNITS
 from ..utils.meas_info import _set_channel_units as _set_channel_units
 from ._filters import StreamFilter as StreamFilter

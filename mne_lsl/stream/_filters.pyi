@@ -2,6 +2,7 @@ from typing import Any
 
 from ..utils._checks import check_type as check_type
 from ..utils.logs import logger as logger
+from ..utils.logs import warn as warn
 
 class StreamFilter(dict):
     """Class defining a filter."""
