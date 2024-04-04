@@ -9,7 +9,7 @@ from .._typing import ScalarIntArray as ScalarIntArray
 from ..utils._checks import check_type as check_type
 from ..utils._checks import check_value as check_value
 from ..utils._checks import ensure_int as ensure_int
-from ..utils.logs import logger as logger
+from ..utils.logs import warn as warn
 from ..utils.meas_info import create_info as create_info
 from ._utils import XMLElement as XMLElement
 from .constants import fmt2idx as fmt2idx

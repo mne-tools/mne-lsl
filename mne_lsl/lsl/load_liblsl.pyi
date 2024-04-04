@@ -8,6 +8,7 @@ from .._version import __version__ as __version__
 from ..utils._checks import ensure_path as ensure_path
 from ..utils._path import walk as walk
 from ..utils.logs import logger as logger
+from ..utils.logs import warn as warn
 
 _LIB_FOLDER: Path
 _VERSION_MIN: int

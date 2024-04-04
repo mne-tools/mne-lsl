@@ -8,6 +8,7 @@ from ._checks import check_type as check_type
 from ._checks import check_value as check_value
 from ._checks import ensure_int as ensure_int
 from .logs import logger as logger
+from .logs import warn as warn
 
 _CH_TYPES_DICT: Incomplete
 _STIM_TYPES: tuple[str, ...]
@@ -35,7 +36,7 @@ def create_info(
         If provided, dictionary or :class:`~mne_lsl.lsl.StreamInfo` containing the
         channel information. A `~mne_lsl.lsl.StreamInfo` contains the number of
         channels,csampling frequency and stream type, which will be checked against the
-        providedcarguments ``n_channels``, ``sfreq`` and ``stype``.
+        provided arguments ``n_channels``, ``sfreq`` and ``stype``.
 
     Returns
     -------
@@ -46,6 +47,24 @@ def create_info(
     -----
     If the argument ``desc`` is not aligned with ``n_channels``, it is ignored and an
     :class:`mne.Info` with the number of channels definbed in ``n_channels`` is created.
+    """
+
+def _create_default_info(n_channels: int, sfreq: float, stype: str) -> Info:
+    """Create a default Info object.
+
+    Parameters
+    ----------
+    n_channels : int
+        Number of channels.
+    sfreq : float
+        Sampling frequency in Hz. ``0`` corresponds to an irregular sampling rate.
+    stype : str
+        Type of the stream.
+
+    Returns
+    -------
+    info : Info
+        MNE :class:`~mne.Info` object corresponding.
     """
 
 def _read_desc_sinfo(

@@ -11,6 +11,7 @@ from ..utils._checks import check_type as check_type
 from ..utils._docs import copy_doc as copy_doc
 from ..utils._docs import fill_doc as fill_doc
 from ..utils.logs import logger as logger
+from ..utils.logs import warn as warn
 from ._base import BasePlayer as BasePlayer
 
 class PlayerLSL(BasePlayer):
