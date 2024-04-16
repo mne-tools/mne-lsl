@@ -20,3 +20,4 @@ Version 1.4
 ===========
 
 - Fix handling of warnings through the logger (:pr:`243` by `Mathieu Scheltienne`_)
+- Fix handling of CLI arguments through :class:`~mne_lsl.player.PlayerLSL` entry-point (:pr:`246` by `Mathieu Scheltienne`_)

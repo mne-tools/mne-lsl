@@ -36,7 +36,12 @@ def run():
         action="store_true",
     )
     args = parser.parse_args()
-    player = PlayerLSL(args.fname, args.chunk_size, args.name, args.annotations)
+    player = PlayerLSL(
+        fname=args.fname,
+        chunk_size=args.chunk_size,
+        name=args.name,
+        annotations=args.annotations,
+    )
     player.start()
     input(">> Press ENTER to stop replaying data \n")
     player.stop()
