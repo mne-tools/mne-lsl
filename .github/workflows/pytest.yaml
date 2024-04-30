@@ -14,10 +14,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu, macos, windows]
+        os: [ubuntu-latest, macos-13, windows-latest]
         python-version: [3.9, "3.10", "3.11", "3.12"]
     name: ${{ matrix.os }} - py${{ matrix.python-version }}
-    runs-on: ${{ matrix.os }}-latest
+    runs-on: ${{ matrix.os }}
     defaults:
       run:
         shell: bash
@@ -28,7 +28,6 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-          architecture: 'x64'
       - name: Install liblsl (linux)
         if: ${{ matrix.os == 'ubuntu' }}
         run: |
@@ -78,7 +77,7 @@ jobs:
       matrix:
         python-version: ["3.11"]
     name: macos-arm64 - py${{ matrix.python-version }}
-    runs-on: macos-14
+    runs-on: macos-latest
     defaults:
       run:
         shell: bash
@@ -89,7 +88,6 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-          architecture: 'x64'
       - name: Install liblsl
         run: |
           curl -L https://github.com/sccn/liblsl/releases/download/v1.16.0/liblsl-1.16.0-OSX_arm64.tar.bz2 -o liblsl-1.16.0-OSX_arm64.tar.bz2
@@ -141,7 +139,6 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-          architecture: 'x64'
       - name: Install liblsl & linux dependencies
         run: |
           curl -L https://github.com/sccn/liblsl/releases/download/v1.16.2/liblsl-1.16.2-jammy_amd64.deb -o liblsl-1.16.2-jammy_amd64.deb
