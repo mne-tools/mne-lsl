@@ -35,7 +35,7 @@ def ensure_int(item: Any, item_name: Optional[str] = None) -> int:
             raise TypeError
         item = int(operator.index(item))
     except TypeError:
-        item_name = "Item" if item_name is None else "'%s'" % item_name
+        item_name = "Item" if item_name is None else f"'{item_name}'"
         raise TypeError(f"{item_name} must be an integer, got {type(item)} instead.")
 
     return item
@@ -114,7 +114,7 @@ def check_type(item: Any, types: tuple, item_name: Optional[str] = None) -> None
         else:
             type_name[-1] = "or " + type_name[-1]
             type_name = ", ".join(type_name)
-        item_name = "Item" if item_name is None else "'%s'" % item_name
+        item_name = "Item" if item_name is None else f"'{item_name}'"
         raise TypeError(
             f"{item_name} must be an instance of {type_name}, got {type(item)} instead."
         )
@@ -145,7 +145,7 @@ def check_value(
         When the value of the item is not one of the valid options.
     """
     if item not in allowed_values:
-        item_name = "" if item_name is None else " '%s'" % item_name
+        item_name = "" if item_name is None else f" '{item_name}'"
         extra = "" if extra is None else " " + extra
         msg = (
             "Invalid value for the{item_name} parameter{extra}. "
@@ -153,7 +153,7 @@ def check_value(
         )
         allowed_values = tuple(allowed_values)  # e.g., if a dict was given
         if len(allowed_values) == 1:
-            options = "The only allowed value is %s" % repr(allowed_values[0])
+            options = f"The only allowed value is {repr(allowed_values[0])}"
         elif len(allowed_values) == 2:
             options = (
                 f"Allowed values are {repr(allowed_values[0])} "
