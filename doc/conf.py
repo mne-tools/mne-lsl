@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Optional
 
 import mne
+from intersphinx_registry import get_intersphinx_mapping
 from sphinx_gallery.sorting import FileNameSortKey
 
 import mne_lsl
@@ -118,14 +119,9 @@ autodoc_warningiserror = True
 autoclass_content = "class"
 
 # -- intersphinx -----------------------------------------------------------------------
-intersphinx_mapping = {
-    "matplotlib": ("https://matplotlib.org/stable", None),
-    "mne": ("https://mne.tools/stable/", None),
-    "numpy": ("https://numpy.org/doc/stable", None),
-    "python": ("https://docs.python.org/3", None),
-    "scipy": ("https://docs.scipy.org/doc/scipy", None),
-    "sklearn": ("https://scikit-learn.org/stable/", None),
-}
+intersphinx_mapping = get_intersphinx_mapping(
+    only={"matplotlib", "mne", "numpy", "python", "scipy", "sklearn"}
+)
 intersphinx_timeout = 5
 
 # -- sphinx-issues ---------------------------------------------------------------------

@@ -66,6 +66,7 @@ all = [
 ]
 build = ['build', 'twine']
 doc = [
+  'intersphinx_registry',
   'furo',
   'matplotlib',
   'memory-profiler',
