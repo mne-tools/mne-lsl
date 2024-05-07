@@ -12,7 +12,7 @@ from mne_lsl.lsl.stream_info import _BaseStreamInfo
 
 
 @pytest.mark.parametrize(
-    "dtype_str, dtype",
+    ("dtype_str", "dtype"),
     [
         ("float32", np.float32),
         ("float64", np.float64),
@@ -24,7 +24,8 @@ from mne_lsl.lsl.stream_info import _BaseStreamInfo
 def test_push_numerical_sample(dtype_str, dtype, close_io):
     """Test push_sample with numerical values."""
     x = np.array([1, 2], dtype=dtype)
-    assert x.shape == (2,) and x.dtype == dtype
+    assert x.shape == (2,)
+    assert x.dtype == dtype
     # create stream descriptions
     sinfo = StreamInfo("test", "", 2, 0.0, dtype_str, uuid.uuid4().hex)
     outlet = StreamOutlet(sinfo, chunk_size=1)
@@ -59,7 +60,7 @@ def test_push_str_sample(close_io):
 
 
 @pytest.mark.parametrize(
-    "dtype_str, dtype",
+    ("dtype_str", "dtype"),
     [
         ("float32", np.float32),
         ("float64", np.float64),
@@ -147,7 +148,7 @@ def test_invalid_outlet():
 
 
 @pytest.mark.parametrize(
-    "dtype_str, dtype",
+    ("dtype_str", "dtype"),
     [
         ("float32", np.float32),
         ("float64", np.float64),

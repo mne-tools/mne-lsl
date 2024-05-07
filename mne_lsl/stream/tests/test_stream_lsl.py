@@ -50,10 +50,10 @@ bad_gh_macos = pytest.mark.skipif(
 )
 def acquisition_delay(request):
     """Yield the acquisition delay of the mock LSL stream."""
-    yield request.param
+    return request.param
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture()
 def mock_lsl_stream_int(request):
     """Create a mock LSL stream streaming the channel number continuously."""
     # nest the PlayerLSL import to first write the temporary LSL configuration file
@@ -67,7 +67,7 @@ def mock_lsl_stream_int(request):
         yield player
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture()
 def mock_lsl_stream_annotations(raw_annotations, request):
     """Create a mock LSL stream streaming the channel number continuously."""
     # nest the PlayerLSL import to first write the temporary LSL configuration file
@@ -77,7 +77,7 @@ def mock_lsl_stream_annotations(raw_annotations, request):
         yield player
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture()
 def raw_sinusoids() -> BaseRaw:
     """Create a raw object with sinusoids."""
     times = np.arange(0, 2, 1 / 1000)
@@ -91,7 +91,7 @@ def raw_sinusoids() -> BaseRaw:
     return RawArray(data, info)
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture()
 def mock_lsl_stream_sinusoids(raw_sinusoids, request):
     """Create a mock LSL stream streaming sinusoids."""
     # nest the PlayerLSL import to first write the temporary LSL configuration file
@@ -148,14 +148,14 @@ def test_stream(mock_lsl_stream, acquisition_delay, raw):
 
 def test_stream_invalid():
     """Test creation and connection to an invalid stream."""
+    stream = Stream(bufsize=2, name="101")
     with pytest.raises(RuntimeError, match="do not uniquely identify an LSL stream"):
-        stream = Stream(bufsize=2, name="101")
         stream.connect()
+    stream = Stream(bufsize=2, stype="EEG")
     with pytest.raises(RuntimeError, match="do not uniquely identify an LSL stream"):
-        stream = Stream(bufsize=2, stype="EEG")
         stream.connect()
+    stream = Stream(bufsize=2, source_id="101")
     with pytest.raises(RuntimeError, match="do not uniquely identify an LSL stream"):
-        stream = Stream(bufsize=2, source_id="101")
         stream.connect()
     with pytest.raises(TypeError, match="must be an instance of numeric"):
         Stream(bufsize="101")

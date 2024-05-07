@@ -6,10 +6,10 @@ from tempfile import NamedTemporaryFile
 from typing import TYPE_CHECKING
 
 import numpy as np
+import pytest
 from mne import Annotations
 from mne import set_log_level as set_log_level_mne
 from mne.io import read_raw_fif
-from pytest import fixture
 
 from mne_lsl import set_log_level
 from mne_lsl.datasets import testing
@@ -20,7 +20,6 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from mne.io import BaseRaw
-    from pytest import Config
 
 # Set debug logging in LSL, e.g.:
 # 2023-10-20 09:38:21.639 (   9.656s) [pytest          ]         udp_server.cpp:88       2| P_test_stream_add_reference_channels[1s]: Started multicast udp server at ff05:113d:6fdd:2c17:a643:ffe2:1bd1:3cd2 port 16571 (addr 0x43f93a0)  # noqa: E501
@@ -35,7 +34,7 @@ if "LSLAPICFG" not in os.environ:
     os.environ["LSLAPICFG"] = lsl_cfg.name
 
 
-def pytest_configure(config: Config) -> None:
+def pytest_configure(config: pytest.Config) -> None:
     """Configure pytest options."""
     for marker in ("slow",):
         config.addinivalue_line("markers", marker)
@@ -94,13 +93,13 @@ def _closer():
         outlet.__del__()
 
 
-@fixture(scope="function")
+@pytest.fixture()
 def close_io():
     """Return function that will close inlets and outlets if present."""
     return _closer
 
 
-@fixture(scope="session")
+@pytest.fixture(scope="session")
 def fname(tmp_path_factory) -> Path:
     """Yield fname of a file with sample numbers in the first channel."""
     fname = testing.data_path() / "sample-eeg-ant-raw.fif"
@@ -113,13 +112,13 @@ def fname(tmp_path_factory) -> Path:
     return fname_mod
 
 
-@fixture(scope="function")
+@pytest.fixture()
 def raw(fname: Path) -> BaseRaw:
     """Return the raw file corresponding to fname."""
     return read_raw_fif(fname, preload=True)
 
 
-@fixture(scope="function")
+@pytest.fixture()
 def raw_annotations(raw: BaseRaw) -> BaseRaw:
     """Return a raw file with annotations."""
     annotations = Annotations(
@@ -131,7 +130,7 @@ def raw_annotations(raw: BaseRaw) -> BaseRaw:
     return raw
 
 
-@fixture(scope="function")
+@pytest.fixture()
 def mock_lsl_stream(fname: Path, request):
     """Create a mock LSL stream for testing."""
     # nest the PlayerLSL import to first write the temporary LSL configuration file

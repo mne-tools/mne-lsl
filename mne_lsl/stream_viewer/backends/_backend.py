@@ -55,7 +55,6 @@ class _Backend(ABC):
         buffer. New events are added to self._trigger_events and displayed
         if needed.
         """
-        pass
 
     def _clean_up_trigger_events(self):
         """Remove events exiting the buffer."""
@@ -67,7 +66,6 @@ class _Backend(ABC):
     @abstractmethod
     def start_timer(self):
         """Start the update loop on a 20 ms timer."""
-        pass
 
     @abstractmethod
     def _update_loop(self, *args, **kwargs):  # noqa
@@ -81,7 +79,6 @@ class _Backend(ABC):
     @abstractmethod
     def close(self):
         """Stop the update loop and close the window."""
-        pass
 
     # --------------------------------------------------------------------
     @property
@@ -105,7 +102,6 @@ class _Backend(ABC):
         Called when the user changes the X-axis range/scale, i.e. the duration
         of the plotting window.
         """
-        pass
 
     @property
     def yRange(self):
@@ -116,7 +112,6 @@ class _Backend(ABC):
     @abstractmethod
     def yRange(self, yRange):
         """Called when the user changes the signal range/scale."""
-        pass
 
     @property
     def selected_channels(self):
@@ -127,7 +122,6 @@ class _Backend(ABC):
     @abstractmethod
     def selected_channels(self, selected_channels):
         """Called when the user changes the selection of channels."""
-        pass
 
     @property
     def show_LPT_trigger_events(self):
@@ -141,7 +135,6 @@ class _Backend(ABC):
         Called when the user ticks or untick the show_LPT_trigger_events
         box.
         """
-        pass
 
 
 @fill_doc

@@ -19,7 +19,7 @@ from mne_lsl.lsl.load_liblsl import (
 
 
 @pytest.fixture(scope="module")
-def _download_liblsl_outdated(tmp_path_factory) -> Path:
+def download_liblsl_outdated(tmp_path_factory) -> Path:
     """Fixture to download an outdated liblsl version."""
     assert _PLATFORM in _PLATFORM_SUFFIXES  # test OS-detection
     if _PLATFORM == "darwin" and platform.processor() == "i386":
@@ -67,11 +67,11 @@ def _download_liblsl_outdated(tmp_path_factory) -> Path:
     return Path(libpath)
 
 
-@pytest.fixture(scope="function")
-def liblsl_outdated(tmp_path, _download_liblsl_outdated) -> Path:
+@pytest.fixture()
+def liblsl_outdated(tmp_path, download_liblsl_outdated) -> Path:
     """Fixture to provide an outdated liblsl version."""
-    copy(_download_liblsl_outdated, tmp_path / _download_liblsl_outdated.name)
-    return tmp_path / _download_liblsl_outdated.name
+    copy(download_liblsl_outdated, tmp_path / download_liblsl_outdated.name)
+    return tmp_path / download_liblsl_outdated.name
 
 
 @pytest.mark.skipif(

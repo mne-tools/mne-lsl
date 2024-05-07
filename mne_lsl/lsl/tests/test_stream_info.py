@@ -117,7 +117,7 @@ def test_stream_info_invalid_desc():
 
 
 @pytest.mark.parametrize(
-    "dtype_str, dtype",
+    ("dtype_str", "dtype"),
     [
         ("float32", np.float32),
         ("float64", np.float64),

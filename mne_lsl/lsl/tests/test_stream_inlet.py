@@ -12,7 +12,7 @@ from mne_lsl.lsl.stream_info import _BaseStreamInfo
 
 
 @pytest.mark.parametrize(
-    "dtype_str, dtype",
+    ("dtype_str", "dtype"),
     [
         ("float32", np.float32),
         ("float64", np.float64),
@@ -24,7 +24,8 @@ from mne_lsl.lsl.stream_info import _BaseStreamInfo
 def test_pull_numerical_sample(dtype_str, dtype, close_io):
     """Test pull_sample with numerical values."""
     x = np.array([1, 2], dtype=dtype)
-    assert x.shape == (2,) and x.dtype == dtype
+    assert x.shape == (2,)
+    assert x.dtype == dtype
     # create stream description
     sinfo = StreamInfo("test", "", 2, 0.0, dtype_str, uuid.uuid4().hex)
     outlet = StreamOutlet(sinfo, chunk_size=1)
@@ -60,12 +61,13 @@ def test_pull_str_sample(close_io):
     assert data == x
     data, ts = inlet.pull_sample(timeout=0)
     assert ts is None
-    assert isinstance(data, list) and len(data) == 0
+    assert isinstance(data, list)
+    assert len(data) == 0
     close_io()
 
 
 @pytest.mark.parametrize(
-    "dtype_str, dtype",
+    ("dtype_str", "dtype"),
     [
         ("float32", np.float32),
         ("float64", np.float64),
@@ -77,7 +79,8 @@ def test_pull_str_sample(close_io):
 def test_pull_numerical_chunk(dtype_str, dtype, close_io):
     """Test pull_chunk on a numerical chunk."""
     x = np.array([[1, 4], [2, 5], [3, 6]], dtype=dtype)
-    assert x.shape == (3, 2) and x.dtype == dtype
+    assert x.shape == (3, 2)
+    assert x.dtype == dtype
     # create stream description
     sinfo = StreamInfo("test", "", 2, 1.0, dtype_str, uuid.uuid4().hex)
     outlet = StreamOutlet(sinfo, chunk_size=3)
@@ -171,7 +174,7 @@ def test_get_sinfo(close_io):
     run=False,
 )
 @pytest.mark.parametrize(
-    "dtype_str, dtype",
+    ("dtype_str", "dtype"),
     [
         ("float32", np.float32),
         ("float64", np.float64),
@@ -183,7 +186,8 @@ def test_get_sinfo(close_io):
 def test_inlet_methods(dtype_str, dtype, close_io):
     """Test the methods from an Inlet."""
     x = np.array([[1, 4], [2, 5], [3, 6]], dtype=dtype)
-    assert x.shape == (3, 2) and x.dtype == dtype
+    assert x.shape == (3, 2)
+    assert x.dtype == dtype
     # create stream description
     sinfo = StreamInfo("test", "", 2, 0.0, dtype_str, uuid.uuid4().hex)
     outlet = StreamOutlet(sinfo, chunk_size=3)
@@ -207,7 +211,7 @@ def test_inlet_methods(dtype_str, dtype, close_io):
 
 
 @pytest.mark.parametrize(
-    "dtype_str, flags",
+    ("dtype_str", "flags"),
     product(
         ("float32", "int16"),
         (
