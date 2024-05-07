@@ -175,7 +175,7 @@ line-ending = "lf"
 
 [tool.ruff.lint]
 ignore = []
-select = ['A', 'B', 'E', 'F', 'UP', 'W']
+select = ['A', 'B', 'E', 'F', 'G', 'LOG', 'NPY', 'PIE', 'PT', 'T20', 'UP', 'W']
 
 [tool.ruff.lint.per-file-ignores]
 '*' = [

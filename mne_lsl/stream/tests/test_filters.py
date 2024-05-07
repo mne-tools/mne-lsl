@@ -118,7 +118,7 @@ def test_StreamFilter_repr(filters: list[StreamFilter]):
     assert str(filters[0]["iir_params"]["order"]) in repr(filters[0])
 
 
-@pytest.mark.parametrize("l_freq, h_freq", [(1, 40), (None, 15), (0.1, None)])
+@pytest.mark.parametrize(("l_freq", "h_freq"), [(1, 40), (None, 15), (0.1, None)])
 def test_create_filter(
     iir_params: dict[str, Any],
     sfreq: float,

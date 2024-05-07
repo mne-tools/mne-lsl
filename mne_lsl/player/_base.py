@@ -190,7 +190,6 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
     @abstractmethod
     def start(self) -> BasePlayer:  # pragma: no cover
         """Start streaming data."""
-        pass
 
     @abstractmethod
     @verbose
@@ -348,7 +347,6 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         >>> [In] %timeit np.ascontiguousarray(raw[:, 0:16][0].T)
         >>> 23.7 µs ± 183 ns per loop
         """
-        pass
 
     def _reset_variables(self) -> None:
         """Reset variables for streaming."""
@@ -382,7 +380,6 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         """Representation of the instance."""
         # This method must define the string representation of the player, e.g.
         # <Player: {self._fname}>
-        pass
 
     # ----------------------------------------------------------------------------------
     @property

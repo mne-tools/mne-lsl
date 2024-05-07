@@ -14,7 +14,7 @@ def test_data_path(dataset):
 
 
 @pytest.mark.parametrize(
-    "dataset, registry", [(sample, _REGISTRY_SAMPLE), (testing, _REGISTRY_TESTING)]
+    ("dataset", "registry"), [(sample, _REGISTRY_SAMPLE), (testing, _REGISTRY_TESTING)]
 )
 def test_make_registry(tmp_path, dataset, registry):
     """Test the registrytmp_path making."""

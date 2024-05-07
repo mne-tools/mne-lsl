@@ -6,13 +6,13 @@ from mne_lsl.datasets import testing
 from mne_lsl.utils._tests import compare_infos, match_stream_and_raw_data
 
 
-@pytest.fixture(scope="function")
-def _raw_without_samples():
+@pytest.fixture()
+def raw_without_samples():
     fname = testing.data_path() / "sample-eeg-ant-raw.fif"
     return read_raw_fif(fname, preload=True)
 
 
-@pytest.mark.parametrize("raw_object", ("raw", "_raw_without_samples"))
+@pytest.mark.parametrize("raw_object", ["raw", "raw_without_samples"])
 def test_match_stream_and_raw_data(raw_object, request):
     """Test that the data match works as intended."""
     raw = request.getfixturevalue(raw_object)

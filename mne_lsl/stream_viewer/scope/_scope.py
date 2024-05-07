@@ -41,7 +41,6 @@ class _Scope(ABC):
         Main update loop acquiring data from the LSL stream and filling the
         scope's buffer.
         """
-        pass
 
     @abstractmethod
     def _read_lsl_stream(self):

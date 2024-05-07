@@ -36,7 +36,7 @@ def test_default_log_level(caplog: pytest.LogCaptureFixture):
         assert "101" in caplog.text
 
 
-@pytest.mark.parametrize("level", ("DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"))
+@pytest.mark.parametrize("level", ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"])
 def test_logger(level: str, caplog: pytest.LogCaptureFixture):
     """Test basic logger functionalities."""
     level_functions = {

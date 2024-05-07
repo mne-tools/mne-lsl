@@ -232,7 +232,7 @@ class StreamLSL(BaseStream):
 
             # process acquisition window
             n_channels = self._inlet.n_channels
-            assert data.ndim == 2 and data.shape[-1] == n_channels, (
+            assert data.ndim == 2 and data.shape[-1] == n_channels, (  # noqa: PT018
                 f"Data shape {data.shape} (n_samples, n_channels) for "
                 f"{n_channels} channels."
             )

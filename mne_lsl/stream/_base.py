@@ -84,7 +84,6 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         # attributes of the Stream. For instance, an LSL stream is defined by 3
         # attributes: name, stype, source_id. Thus a possible representation is:
         # <Stream: ON | {name} - {stype} (source: {source_id})>
-        pass
 
     @fill_doc
     def add_reference_channels(
@@ -979,7 +978,6 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
     @staticmethod
     def _acquire(self) -> None:  # pragma: no cover
         """Update function pulling new samples in the buffer at a regular interval."""
-        pass
 
     def _check_connected(self, name: str):
         """Check that the stream is connected before calling the function 'name'."""

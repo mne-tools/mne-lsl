@@ -26,12 +26,10 @@ class _ControlGUI(QMainWindow, ABC, metaclass=_metaclass_ControlGUI):
     @abstractmethod
     def _load_gui(self):
         """Load the GUI."""
-        pass
 
     @abstractmethod
     def _init_backend(self):
         """Initialize the backend."""
-        pass
 
     def closeEvent(self, event):
         """Event called when closing the GUI."""
@@ -40,7 +38,6 @@ class _ControlGUI(QMainWindow, ABC, metaclass=_metaclass_ControlGUI):
     @abstractmethod
     def _connect_signals_to_slots(self):
         """Event handler. Connect QT signals to slots."""
-        pass
 
     # --------------------------------------------------------------------
     @property
@@ -52,10 +49,8 @@ class _ControlGUI(QMainWindow, ABC, metaclass=_metaclass_ControlGUI):
     @abstractmethod
     def backend(self):
         """Display backend."""
-        pass
 
     @property
     @abstractmethod
     def ui(self):
         """Control UI."""
-        pass
