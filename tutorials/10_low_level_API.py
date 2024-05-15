@@ -29,7 +29,11 @@ import uuid
 import numpy as np
 
 from mne_lsl.lsl import (
-    StreamInfo, StreamInlet, StreamOutlet, local_clock, resolve_streams
+    StreamInfo,
+    StreamInlet,
+    StreamOutlet,
+    local_clock,
+    resolve_streams,
 )
 
 # %%

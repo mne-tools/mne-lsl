@@ -71,7 +71,10 @@ _ = raw_lowpassed.filter(None, 15, method="iir", phase="forward", picks="misc")
 start = int(120 * raw.info["sfreq"])
 stop = int(125 * raw.info["sfreq"])
 fig, ax = plt.subplots(1, 1, figsize=(10, 5), layout="constrained")
-for raw_, label in zip((raw, raw_notched, raw_bandpassed, raw_lowpassed), ("raw", "notched", "bandpassed", "lowpassed")):
+for raw_, label in zip(
+    (raw, raw_notched, raw_bandpassed, raw_lowpassed),
+    ("raw", "notched", "bandpassed", "lowpassed"),
+):
     data, times = raw_[:, start:stop]  # select 5 seconds
     data -= data.mean()  # detrend
     ax.plot(times, data.squeeze(), label=label)
@@ -85,7 +88,10 @@ plt.show()
 start = int(121.2 * raw.info["sfreq"])
 stop = int(121.6 * raw.info["sfreq"])
 fig, ax = plt.subplots(1, 1, figsize=(10, 5), layout="constrained")
-for raw_, label in zip((raw, raw_notched, raw_bandpassed, raw_lowpassed), ("raw", "notched", "bandpassed", "lowpassed")):
+for raw_, label in zip(
+    (raw, raw_notched, raw_bandpassed, raw_lowpassed),
+    ("raw", "notched", "bandpassed", "lowpassed"),
+):
     data, times = raw_[:, start:stop]  # select 5 seconds
     data -= data.mean()  # detrend
     ax.plot(times, data.squeeze(), label=label)
@@ -133,7 +139,7 @@ data, times = raw_notched[:, start:stop]
 peaks = find_peaks(
     data.squeeze(),
     height=np.percentile(data.squeeze(), 98),
-    distance=0.5 * raw_notched.info["sfreq"]
+    distance=0.5 * raw_notched.info["sfreq"],
 )[0]
 fig, ax = plt.subplots(1, 1, layout="constrained")
 ax.plot(times, data.squeeze())
@@ -190,7 +196,7 @@ class Detector:
         # create stream
         self._stream = StreamLSL(bufsize, stream_name).connect(processing_flags="all")
         self._stream.pick(ch_name)
-        self._stream.set_channel_types({ch_name: "misc" }, on_unit_change="ignore")
+        self._stream.set_channel_types({ch_name: "misc"}, on_unit_change="ignore")
         self._stream.notch_filter(50, picks=ch_name)
         self._stream.notch_filter(100, picks=ch_name)
         sleep(bufsize)  # prefill an entire buffer
@@ -211,6 +217,7 @@ class Detector:
             height=np.percentile(data, ECG_HEIGHT),
         )
         return ts[peaks]
+
 
 # %%
 # The object above is a good start, but it will detect all peaks in the buffer and it
@@ -270,7 +277,7 @@ class Detector:
         # create stream
         self._stream = StreamLSL(bufsize, stream_name).connect(processing_flags="all")
         self._stream.pick(ch_name)
-        self._stream.set_channel_types({ch_name: "misc" }, on_unit_change="ignore")
+        self._stream.set_channel_types({ch_name: "misc"}, on_unit_change="ignore")
         self._stream.notch_filter(50, picks=ch_name)
         self._stream.notch_filter(100, picks=ch_name)
         sleep(bufsize)  # prefill an entire buffer
@@ -307,10 +314,7 @@ class Detector:
         ts_peaks = self.detect_peaks()
         if ts_peaks.size == 0:
             return None  # unlikely to happen, but let's exit early if we have nothing
-        if (
-            self._peak_candidates is None
-            and self._peak_candidates_count is None
-        ):
+        if self._peak_candidates is None and self._peak_candidates_count is None:
             self._peak_candidates = list(ts_peaks)
             self._peak_candidates_count = [1] * ts_peaks.size
             return None
@@ -322,20 +326,16 @@ class Detector:
                 peaks2append.append(peak)
         # before going further, let's make sure we don't add too many false positives,
         # which could be indicative of noise in the signal (e.g. movements)
-        if int(self._stream._bufsize * (1 / ECG_DISTANCE)) < len(
-            peaks2append
-        ) + len(self._peak_candidates):
+        if int(self._stream._bufsize * (1 / ECG_DISTANCE)) < len(peaks2append) + len(
+            self._peak_candidates
+        ):
             self._peak_candidates = None
             self._peak_candidates_count = None
             return None
         self._peak_candidates.extend(peaks2append)
         self._peak_candidates_count.extend([1] * len(peaks2append))
         # now, all the detected peaks have been triage, let's see if we have a winner
-        idx = [
-            k
-            for k, count in enumerate(self._peak_candidates_count)
-            if 4 <= count
-        ]
+        idx = [k for k, count in enumerate(self._peak_candidates_count) if 4 <= count]
         if len(idx) == 0:
             return None
         peaks = sorted([self._peak_candidates[k] for k in idx])
@@ -343,10 +343,7 @@ class Detector:
         if self._last_peak is None:  # don't return the first peak detected
             new_peak = None
             self._last_peak = peaks[-1]
-        if (
-            self._last_peak is None
-            or self._last_peak + ECG_DISTANCE <= peaks[-1]
-        ):
+        if self._last_peak is None or self._last_peak + ECG_DISTANCE <= peaks[-1]:
             new_peak = peaks[-1]
             self._last_peak = peaks[-1]
         else:
@@ -355,6 +352,7 @@ class Detector:
         self._peak_candidates = None
         self._peak_candidates_count = None
         return new_peak
+
 
 # %%
 # Performance
