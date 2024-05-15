@@ -1,3 +1,4 @@
+import os
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -411,3 +412,19 @@ def test_player_n_repeat_invalid(raw):
         Player(raw, n_repeat=-1)
     with pytest.raises(TypeError, match="must be an integer"):
         Player(raw, n_repeat="1")
+
+
+@pytest.mark.skipif(
+    os.getenv("GITHUB_ACTIONS", "") == "true", reason="Unreliable on CIs."
+)
+def test_player_push_sample(fname):
+    """Test pushing individual sample with chunk_size=1."""
+    name = "Player-test_player_push_sample"
+    streams = resolve_streams(timeout=0.1)
+    assert len(streams) == 0
+    with Player(fname, name=name, chunk_size=1):
+        streams = resolve_streams()
+        assert len(streams) == 1
+        assert streams[0].name == name
+    streams = resolve_streams(timeout=0.1)
+    assert len(streams) == 0
