@@ -1,12 +1,17 @@
 """
-Real-time cardiac R-peak detection
-==================================
+Real-time peak detection
+========================
 
-With a :class:`~mne_lsl.stream.StreamLSL` connected to an amplifier stream containing an
-EEG bipolar channel, we can detect in real-time the R-peak within the ECG signal. The
-objective of this example is to create a ``Detector`` object able to detect new R-peak
-entering the buffer as fast as possible, with some robustness to external noise sources
-(e.g. movements) and a simple design.
+With a :class:`~mne_lsl.stream.StreamLSL`, we can build a real-time peak detector. The
+structure defined below will be adapted for cardiac R-peak detection, but remains
+valid for other peak detector. Note however that the peak detection performance, i.e.
+how fast it will be able to detect a peak, will depend heavily on the peak shape.
+
+For this example, consider a :class:`~mne_lsl.stream.StreamLSL` connected to an
+amplifier stream containing an ECG bipolar channel. We can detect in real-time the
+R-peak within the ECG signal. The objective of this example is to create a ``Detector``
+object able to detect new R-peak entering the buffer as fast as possible, with some
+robustness to external noise sources (e.g. movements) and a simple design.
 
 .. image:: ../../_static/tutorials/qrs.png
     :align: center
