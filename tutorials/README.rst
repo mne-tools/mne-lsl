@@ -3,4 +3,5 @@
 Tutorials
 =========
 
-This page contains examples using ``MNE-LSL``.
+This page contains detailed tutorials using ``MNE-LSL``, presenting the different
+objects and their features.

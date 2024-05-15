@@ -137,6 +137,7 @@ omit = [
 extend_skip_glob = [
   '.github/*',
   'doc/*',
+  'examples/*',
   'pyproject.toml',
   'setup.py',
   'tutorials/*',
@@ -164,7 +165,6 @@ extend-exclude = [
   'doc/*',
   'pyproject.toml',
   'setup.py',
-  'tutorials/*',
 ]
 line-length = 88
 target-version = 'py39'
@@ -184,6 +184,8 @@ select = ['A', 'B', 'E', 'F', 'G', 'LOG', 'NPY', 'PIE', 'PT', 'T20', 'UP', 'W']
 ]
 '*.pyi' = ['E501', 'F811']
 '__init__.py' = ['F401']
+'examples/*' = ['B018', 'E402', 'F811', 'T201']
+'tutorials/*' = ['B018', 'E402', 'F811', 'T201']
 
 [tool.setuptools]
 include-package-data = false

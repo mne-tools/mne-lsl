@@ -270,10 +270,10 @@ sphinx_gallery_conf = {
     "backreferences_dir": "generated/backreferences",
     "compress_images": compress_images,
     "doc_module": (f"{package}",),
-    "examples_dirs": ["../tutorials"],
+    "examples_dirs": ["../tutorials", "../examples"],
     "exclude_implicit_doc": {},  # set
     "filename_pattern": r"\d{2}_",
-    "gallery_dirs": ["generated/tutorials"],
+    "gallery_dirs": ["generated/tutorials", "generated/examples"],
     "line_numbers": False,
     "plot_gallery": "True",  # str, to enable overwrite from CLI without warning
     "reference_url": {f"{package}": None},
