@@ -378,5 +378,5 @@ while len(delays) <= 30:
 
 f, ax = plt.subplots(1, 1, layout="constrained")
 ax.set_title("Detection delay in ms")
-ax.hist(delays, bins=10)
+ax.hist(delays, bins=15)
 plt.show()
