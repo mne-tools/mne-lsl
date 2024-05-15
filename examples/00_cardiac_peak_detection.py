@@ -16,14 +16,126 @@ First let's have a look to a sample ECG signal and to how we could detect the R-
 reliably with :func:`scipy.signal.find_peaks`.
 """
 
+import numpy as np
+from matplotlib import pyplot as plt
 from mne.io import read_raw_fif
+from mne.viz import set_browser_backend
 from mne_lsl.datasets import sample
+from scipy.signal import find_peaks
 
 raw = read_raw_fif(sample.data_path() / "sample-ecg-raw.fif", preload=True)
 raw
-
 # %%
 # This sample recording contains a single channel with the ECG signal.
+
+set_browser_backend("matplotlib")
+raw.plot(scalings=dict(misc=1300), show_scrollbars=False)
+
+# %%
+# Filters
+# -------
+#
+# This recording is heavily affected by 50 Hz noise. Our detector should filter the
+# signal to distinguish easily the QRS complex and the associated R-peaks. Let's compare
+# the raw signal with filtered signal using the following settings:
+#
+# - notch at 50 and 100 Hz
+# - banddpass filter between 0.1 and 15 Hz
+# - lowpass filter at 15 Hz
+
+raw_notched = raw.copy()
+raw_notched.notch_filter(50, method="iir", phase="forward", picks="misc")
+raw_notched.notch_filter(100, method="iir", phase="forward", picks="misc")
+
+raw_bandpassed = raw.copy()
+raw_bandpassed.filter(0.1, 15, method="iir", phase="forward", picks="misc")
+
+raw_lowpassed = raw.copy()
+raw_lowpassed.filter(None, 15, method="iir", phase="forward", picks="misc")
+
+# %%
+# To compare those signals, it would be best if we could overlay them in a single plot.
+# Let's select a 5 seconds window and plot the detrended signals.
+#
+# .. note::
+#
+#     Contrary to the filter used by a :class:`~mne_lsl.stream.StreamLSL`, the forward
+#     filter in MNE don't use initial filter conditions. Thus, the beginning of the
+#     filter signal should not be used as the filter has not yet converged.
+
+start = int(120 * raw.info["sfreq"])
+stop = int(125 * raw.info["sfreq"])
+fig, ax = plt.subplots(1, 1, figsize=(10, 5), layout="constrained")
+for raw_, label in zip((raw, raw_notched, raw_bandpassed, raw_lowpassed), ("raw", "notched", "bandpassed", "lowpassed")):
+    data, times = raw_[:, start:stop]  # select 5 seconds
+    data -= data.mean()  # detrend
+    ax.plot(times, data.squeeze(), label=label)
+ax.legend()
+
+# %%
+# Our first issue arises, the filter is altering the phase of the signal and thus the
+# shape of the QRS complex, shifting the R-peak to the right.
+
+start = int(121.2 * raw.info["sfreq"])
+stop = int(121.6 * raw.info["sfreq"])
+fig, ax = plt.subplots(1, 1, figsize=(10, 5), layout="constrained")
+for raw_, label in zip((raw, raw_notched, raw_bandpassed, raw_lowpassed), ("raw", "notched", "bandpassed", "lowpassed")):
+    data, times = raw_[:, start:stop]  # select 5 seconds
+    data -= data.mean()  # detrend
+    ax.plot(times, data.squeeze(), label=label)
+ax.legend()
+
+# %%
+# The lowpassed and bandpassed signals are heavily shifted, while the notched signal
+# retains the correct timing of the R-peak. Since our objective is to detect the R-peak
+# as soon as possible, it would be best to use the notched signal which has the highest
+# fidelity with the raw signal shape, while removing a large part of the background
+# noise.
+#
+# Peak detection
+# --------------
+#
+# Next, let's detect the R-peaks on the same 5 seconds window of the notched signal with
+# :func:`scipy.signal.find_peaks`.
+#
+# .. note::
+#
+#     We do not need to detrend to find peaks. Detrending was only useful to overlay the
+#     bandpassed signal with the raw, notched and lowpassed signals.
+
+data, times = raw_notched[:, start:stop]
+peaks = find_peaks(data.squeeze())[0]
+fig, ax = plt.subplots(1, 1, layout="constrained")
+ax.plot(times, data.squeeze())
+for peak in peaks:
+    ax.axvline(times[peak], color="red", linestyle="--")
+
+# %%
+# The detected peaks are represented by the red dashed lines, and for now, the detection
+# is horrible. But we can improve it by setting the following constraints:
+#
+# - height of the peak should be at least 98% of the data range
+# - distance between two peaks should be at least 0.5 seconds
+
+data, times = raw_notched[:, start:stop]
+peaks = find_peaks(
+    data.squeeze(),
+    height=np.percentile(data.squeeze(), 98),
+    distance=0.5 * raw_notched.info["sfreq"]
+)[0]
+fig, ax = plt.subplots(1, 1, layout="constrained")
+ax.plot(times, data.squeeze())
+for peak in peaks:
+    ax.axvline(times[peak], color="red", linestyle="--")
+
+# %%
+# Adjusting the peak detection constraints to your signal is crucial.
+#
+# Detector
+# --------
+#
+# Now that we have a good idea of how to detect the R-peaks, let's create a real-time
+# ``Detector`` object that will detect the R-peaks as soon as they enter the buffer.
 
 from time import sleep
 
@@ -151,3 +263,5 @@ class Detector:
         self._peak_candidates = None
         self._peak_candidates_count = None
         return new_peak
+
+# %%
