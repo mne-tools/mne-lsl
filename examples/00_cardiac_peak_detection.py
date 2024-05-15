@@ -16,6 +16,8 @@ First let's have a look to a sample ECG signal and to how we could detect the R-
 reliably with :func:`scipy.signal.find_peaks`.
 """
 
+# sphinx_gallery_thumbnail_path = '_static/tutorials/qrs.png'
+
 import numpy as np
 from matplotlib import pyplot as plt
 from mne.io import read_raw_fif
@@ -37,23 +39,24 @@ plt.show()
 # Filters
 # -------
 #
-# This recording is heavily affected by 50 Hz noise. Our detector should filter the
-# signal to distinguish easily the QRS complex and the associated R-peaks. Let's compare
-# the raw signal with filtered signal using the following settings:
+# This recording is heavily affected by line noise (50 Hz in Europe). Our detector
+# should filter the signal to distinguish easily the QRS complex and the associated
+# R-peaks. Let's compare the raw signal with filtered signal using the following
+# settings:
 #
 # - notch at 50 and 100 Hz
-# - banddpass filter between 0.1 and 15 Hz
+# - bandpass filter between 0.1 and 15 Hz
 # - lowpass filter at 15 Hz
 
 raw_notched = raw.copy()
-raw_notched.notch_filter(50, method="iir", phase="forward", picks="misc")
-raw_notched.notch_filter(100, method="iir", phase="forward", picks="misc")
+_ = raw_notched.notch_filter(50, method="iir", phase="forward", picks="misc")
+_ = raw_notched.notch_filter(100, method="iir", phase="forward", picks="misc")
 
 raw_bandpassed = raw.copy()
-raw_bandpassed.filter(0.1, 15, method="iir", phase="forward", picks="misc")
+_ = raw_bandpassed.filter(0.1, 15, method="iir", phase="forward", picks="misc")
 
 raw_lowpassed = raw.copy()
-raw_lowpassed.filter(None, 15, method="iir", phase="forward", picks="misc")
+_ = raw_lowpassed.filter(None, 15, method="iir", phase="forward", picks="misc")
 
 # %%
 # To compare those signals, it would be best if we could overlay them in a single plot.
@@ -217,11 +220,11 @@ class Detector:
 # The triage logic will:
 #
 # - detect all peaks in the current buffer
-# - create a list of peak candidates which correspond to detected peak which have not
+# - create a list of peak candidates which correspond to detected peaks which have not
 #   yet been selected as 'latest peak'
 # - count the number of times each peak candidate is detected
 # - if a peak candidate is detected 4 times, the most recent peak candidate becomes the
-#   latest peak and is detected
+#   latest peak and is returned (i.e. detected)
 #
 # The triage logic uses a memory of the last detected peaks to count the number of peak
 # candidates between 2 iteration, and to store the last known detected peak. This is
@@ -365,14 +368,15 @@ from mne_lsl.lsl import local_clock
 
 player = Player(fname=sample.data_path() / "sample-ecg-raw.fif", name="ecg-example")
 player.start()
-detector = Detector(5, player.name, "AUX8")
+detector = Detector(4, player.name, "AUX8")
 
 delays = list()
 while len(delays) <= 30:
     peak = detector.new_peak()
     if peak is not None:
-        delays.append(local_clock() - peak)
+        delays.append((local_clock() - peak) * 1e3)
 
 f, ax = plt.subplots(1, 1, layout="constrained")
+ax.set_title("Detection delay in ms")
 ax.hist(delays, bins=10)
 plt.show()
