@@ -107,6 +107,8 @@ plt.show()
 #     We do not need to detrend to find peaks. Detrending was only useful to overlay the
 #     bandpassed signal with the raw, notched and lowpassed signals.
 
+start = int(120 * raw.info["sfreq"])
+stop = int(125 * raw.info["sfreq"])
 data, times = raw_notched[:, start:stop]
 peaks = find_peaks(data.squeeze())[0]
 fig, ax = plt.subplots(1, 1, layout="constrained")
@@ -122,6 +124,8 @@ plt.show()
 # - height of the peak should be at least 98% of the data range
 # - distance between two peaks should be at least 0.5 seconds
 
+start = int(120 * raw.info["sfreq"])
+stop = int(125 * raw.info["sfreq"])
 data, times = raw_notched[:, start:stop]
 peaks = find_peaks(
     data.squeeze(),
@@ -353,7 +357,8 @@ class Detector:
 # Performance
 # -----------
 #
-# Let's now test this detector and measure the time it takes to detect a new peak.
+# Let's now test this detector and measure the time it takes to detect a new peak
+# entering the buffer.
 
 from mne_lsl.player import PlayerLSL as Player
 from mne_lsl.lsl import local_clock
