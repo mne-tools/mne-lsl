@@ -25,11 +25,13 @@ from scipy.signal import find_peaks
 
 raw = read_raw_fif(sample.data_path() / "sample-ecg-raw.fif", preload=True)
 raw
+
 # %%
 # This sample recording contains a single channel with the ECG signal.
 
 set_browser_backend("matplotlib")
 raw.plot(scalings=dict(misc=1300), show_scrollbars=False)
+plt.show()
 
 # %%
 # Filters
@@ -71,6 +73,7 @@ for raw_, label in zip((raw, raw_notched, raw_bandpassed, raw_lowpassed), ("raw"
     data -= data.mean()  # detrend
     ax.plot(times, data.squeeze(), label=label)
 ax.legend()
+plt.show()
 
 # %%
 # Our first issue arises, the filter is altering the phase of the signal and thus the
@@ -84,6 +87,7 @@ for raw_, label in zip((raw, raw_notched, raw_bandpassed, raw_lowpassed), ("raw"
     data -= data.mean()  # detrend
     ax.plot(times, data.squeeze(), label=label)
 ax.legend()
+plt.show()
 
 # %%
 # The lowpassed and bandpassed signals are heavily shifted, while the notched signal
@@ -109,6 +113,7 @@ fig, ax = plt.subplots(1, 1, layout="constrained")
 ax.plot(times, data.squeeze())
 for peak in peaks:
     ax.axvline(times[peak], color="red", linestyle="--")
+plt.show()
 
 # %%
 # The detected peaks are represented by the red dashed lines, and for now, the detection
@@ -127,6 +132,7 @@ fig, ax = plt.subplots(1, 1, layout="constrained")
 ax.plot(times, data.squeeze())
 for peak in peaks:
     ax.axvline(times[peak], color="red", linestyle="--")
+plt.show()
 
 # %%
 # Adjusting the peak detection constraints to your signal is crucial.
@@ -145,6 +151,10 @@ from numpy.typing import NDArray
 from scipy.signal import find_peaks
 
 
+ECG_HEIGHT: float = 98.0  # percentile height constraint, in %
+ECG_DISTANCE: float = 0.5  # distance constraint, in seconds
+
+
 class Detector:
     """Real-time single channel peak detector.
 
@@ -160,10 +170,6 @@ class Detector:
     ch_name : str
         Name of the ECG channel in the LSL stream. This channel should contain the ECG
         signal recorded with 2 bipolar electrodes.
-    ecg_height : float | None
-        The height of the ECG peaks as a percentage of the data range, between 0 and 1.
-    ecg_distance : float | None
-        The minimum distance between two ECG peaks in seconds.
     """
 
     def __init__(
@@ -174,8 +180,86 @@ class Detector:
         ecg_height: float | None = None,
         ecg_distance: float | None = None,
     ) -> None:
-        self._ecg_height = ecg_height
-        self._ecg_distance = ecg_distance
+        # create stream
+        self._stream = StreamLSL(bufsize, stream_name).connect(processing_flags="all")
+        self._stream.pick(ch_name)
+        self._stream.set_channel_types({ch_name: "misc" }, on_unit_change="ignore")
+        self._stream.notch_filter(50, picks=ch_name)
+        self._stream.notch_filter(100, picks=ch_name)
+        sleep(bufsize)  # prefill an entire buffer
+
+    def detect_peaks(self) -> NDArray[np.float64]:
+        """Detect all peaks in the buffer.
+
+        Returns
+        -------
+        peaks : array of shape (n_peaks,)
+            The timestamps of all detected peaks.
+        """
+        data, ts = self._stream.get_data()  # we have a single channel in the stream
+        data = data.squeeze()
+        peaks, _ = find_peaks(
+            data,
+            distance=ECG_DISTANCE * self._stream.info["sfreq"],
+            height=np.percentile(data, ECG_HEIGHT),
+        )
+        return ts[peaks]
+
+# %%
+# The object above is a good start, but it will detect all peaks in the buffer and it
+# doesn't have any memory of which peak was already detected. We need to add some
+# triage logic on the detected peaks and a memory of the last detected peak(s).
+#
+# The triage logic will:
+#
+# - detect all peaks in the current buffer
+# - create a list of peak candidates which correspond to detected peak which have not
+#   yet been selected as 'latest peak'
+# - count the number of times each peak candidate is detected
+# - if a peak candidate is detected 4 times, the most recent peak candidate becomes the
+#   latest peak and is detected
+#
+# The triage logic uses a memory of the last detected peaks to count the number of peak
+# candidates between 2 iteration, and to store the last known detected peak. This is
+# simplify achieved by storing the LSL time at which the peak was detected.
+
+from time import sleep
+
+import numpy as np
+from mne_lsl.stream import StreamLSL
+from numpy.typing import NDArray
+from scipy.signal import find_peaks
+
+
+ECG_HEIGHT: float = 98.0  # percentile height constraint, in %
+ECG_DISTANCE: float = 0.5  # distance constraint, in seconds
+
+
+class Detector:
+    """Real-time single channel peak detector.
+
+    Parameters
+    ----------
+    bufsize : float
+        Size of the buffer in seconds. The buffer will be filled on instantiation, thus
+        the program will hold during this duration.
+    stream_name : str
+        Name of the LSL stream to use for the respiration or cardiac detection. The
+        stream should contain a respiration channel using a respiration belt or a
+        thermistor and/or an ECG channel.
+    ch_name : str
+        Name of the ECG channel in the LSL stream. This channel should contain the ECG
+        signal recorded with 2 bipolar electrodes.
+    """
+
+    def __init__(
+        self,
+        bufsize: float,
+        stream_name: str,
+        ch_name: str,
+        ecg_height: float | None = None,
+        ecg_distance: float | None = None,
+    ) -> None:
         # create stream
         self._stream = StreamLSL(bufsize, stream_name).connect(processing_flags="all")
         self._stream.pick(ch_name)
@@ -188,7 +272,7 @@ class Detector:
         self._peak_candidates = None
         self._peak_candidates_count = None
 
-    def _detect_peaks(self) -> NDArray[np.float64]:
+    def detect_peaks(self) -> NDArray[np.float64]:
         """Detect all peaks in the buffer.
 
         Returns
@@ -200,8 +284,8 @@ class Detector:
         data = data.squeeze()
         peaks, _ = find_peaks(
             data,
-            distance=self._ecg_distance * self._stream.info["sfreq"],
-            height=np.percentile(data, self._ecg_height * 100),
+            distance=ECG_DISTANCE * self._stream.info["sfreq"],
+            height=np.percentile(data, ECG_HEIGHT),
         )
         return ts[peaks]
 
@@ -213,7 +297,7 @@ class Detector:
         peak : float | None
             The timestamp of the newly detected peak. None if no new peak is detected.
         """
-        ts_peaks = self._detect_peaks()
+        ts_peaks = self.detect_peaks()
         if ts_peaks.size == 0:
             return None  # unlikely to happen, but let's exit early if we have nothing
         if (
@@ -229,8 +313,9 @@ class Detector:
                 self._peak_candidates_count[k] += 1
             else:
                 peaks2append.append(peak)
-        # before going further, let's make sure we don't add too many false positives
-        if int(self._stream._bufsize * (1 / self._ecg_distance)) < len(
+        # before going further, let's make sure we don't add too many false positives,
+        # which could be indicative of noise in the signal (e.g. movements)
+        if int(self._stream._bufsize * (1 / ECG_DISTANCE)) < len(
             peaks2append
         ) + len(self._peak_candidates):
             self._peak_candidates = None
@@ -253,7 +338,7 @@ class Detector:
             self._last_peak = peaks[-1]
         if (
             self._last_peak is None
-            or self._last_peak + self._ecg_distance <= peaks[-1]
+            or self._last_peak + ECG_DISTANCE <= peaks[-1]
         ):
             new_peak = peaks[-1]
             self._last_peak = peaks[-1]
@@ -265,3 +350,24 @@ class Detector:
         return new_peak
 
 # %%
+# Performance
+# -----------
+#
+# Let's now test this detector and measure the time it takes to detect a new peak.
+
+from mne_lsl.player import PlayerLSL as Player
+from mne_lsl.lsl import local_clock
+
+player = Player(fname=sample.data_path() / "sample-ecg-raw.fif", name="ecg-example")
+player.start()
+detector = Detector(5, player.name, "AUX8")
+
+delays = list()
+while len(delays) <= 30:
+    peak = detector.new_peak()
+    if peak is not None:
+        delays.append(local_clock() - peak)
+
+f, ax = plt.subplots(1, 1, layout="constrained")
+ax.hist(delays, bins=10)
+plt.show()
