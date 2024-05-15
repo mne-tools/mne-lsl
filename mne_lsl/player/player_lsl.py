@@ -271,7 +271,10 @@ class PlayerLSL(BasePlayer):
                 stop,
                 self._target_timestamp,
             )
-            self._outlet.push_chunk(data, timestamp=self._target_timestamp)
+            if self._chunk_size == 1:
+                self._outlet.push_sample(data[0, :], timestamp=self._target_timestamp)
+            else:
+                self._outlet.push_chunk(data, timestamp=self._target_timestamp)
             self._stream_annotations(start, stop, start_timestamp)
         except Exception as exc:
             logger.error("%s: Stopping due to exception: %s", self._name, exc)

@@ -21,3 +21,4 @@ Version 1.4
 
 - Fix handling of warnings through the logger (:pr:`243` by `Mathieu Scheltienne`_)
 - Fix handling of CLI arguments through :class:`~mne_lsl.player.PlayerLSL` entry-point (:pr:`246` by `Mathieu Scheltienne`_)
+- Fix push operation by a :class:`~mne_lsl.player.PlayerLSL` with a ``chunk_size`` set to 1 to use :meth:`mne_lsl.lsl.StreamOutlet.push_sample` instead of :meth:`mne_lsl.lsl.StreamOutlet.push_chunk` (:pr:`257` by `Mathieu Scheltienne`_)
