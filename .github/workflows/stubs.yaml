@@ -18,11 +18,10 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Setup Python 3.9
+      - name: Setup Python 3.11
         uses: actions/setup-python@v5
         with:
-          python-version: 3.9
-          architecture: 'x64'
+          python-version: 3.11
       - name: Install linux dependencies
         run: |
           curl -L https://github.com/sccn/liblsl/releases/download/v1.16.2/liblsl-1.16.2-jammy_amd64.deb -o liblsl-1.16.2-jammy_amd64.deb
