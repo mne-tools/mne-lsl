@@ -380,3 +380,19 @@ f, ax = plt.subplots(1, 1, layout="constrained")
 ax.set_title("Detection delay in ms")
 ax.hist(delays, bins=15)
 plt.show()
+
+# %%
+# The detection delay displayed is erroneous due to the nature of the LSL stream, being
+# replayed from a local file with a :class:`~mne_lsl.player.PlayerLSL`. The default
+# behavior used by the :class:`~mne_lsl.stream.StreamLSL` sets ``chunk_size=64``, and
+# thus we are pushing 64 samples chunks at a time, corresponding to 62.5 ms at once.
+#
+# This is obviously not compatible with a real-time detection scenario, but ensures that
+# the test and documentation builds successfully on github runners.
+#
+# In a real application, this detector detects R-peaks within 10 ms of their emission.
+# To approximate this result, you can add the argument ``chunk_size=1`` to the
+# ``Player`` object, which yields the following figure locally:
+#
+# .. image:: ../../_static/tutorials/qrs-detector-performance.png
+#     :align: center
