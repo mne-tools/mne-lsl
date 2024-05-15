@@ -137,6 +137,7 @@ omit = [
 extend_skip_glob = [
   '.github/*',
   'doc/*',
+  'examples/*',
   'pyproject.toml',
   'setup.py',
   'tutorials/*',
@@ -162,6 +163,7 @@ minversion = '8.0'
 extend-exclude = [
   '.github/*',
   'doc/*',
+  'examples/*',
   'pyproject.toml',
   'setup.py',
   'tutorials/*',
