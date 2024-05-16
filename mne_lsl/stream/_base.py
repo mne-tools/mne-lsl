@@ -1262,7 +1262,7 @@ class BaseEpochsStream(ABC):
             warn(
                 "The buffer size of the Stream is longer than the epoch duration, but "
                 "not by at least 20%. It is recommended to have a buffer size at least "
-                "20% longer than the epoch duration to avoid data loss."
+                r"20% longer than the epoch duration to avoid data loss."
             )
         self._bufsize = ensure_int(bufsize, "bufsize")
         self._tmin = tmin
