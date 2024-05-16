@@ -762,6 +762,8 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         stream : instance of ``Stream``
             The stream instance modified in-place.
         """
+        self._check_connected("set_bipolar_reference()")
+        self._check_not_epoched("set_bipolar_reference()")
         raise NotImplementedError
 
     @verbose
@@ -863,11 +865,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             The stream instance modified in-place.
         """
         self._check_connected_and_regular_sampling("set_eeg_reference()")
-        if self._epoched:
-            warn(
-                "The Stream is being epoched by an EpochsStream object. Altering the "
-                "reference will altern the reference in the future epochs."
-            )
+        self._check_not_epoched("set_eeg_reference()")
         # allow only one-call to this function for simplicity, and if one day someone
         # want to apply 2 or more different reference to 2 or more types of channels,
         # then we can remove this limitation.
