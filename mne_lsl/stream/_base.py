@@ -1216,6 +1216,7 @@ class BaseEpochsStream(ABC):
         Number of epochs to keep in the buffer.
     %(epochs_tmin_tmax)s
     %(baseline_epochs)s
+    %(picks_base)s all channels.
     %(reject_epochs)s
     %(flat)s
     %(epochs_reject_tmin_tmax)s
@@ -1230,16 +1231,17 @@ class BaseEpochsStream(ABC):
         self,
         stream: BaseStream,
         event_source: Any,
-        event_id: int | str | dict[str, int | str],
+        event_id: Union[int, str, dict[str, Union[int, str]]],
         bufsize: int,
         tmin: float = -0.2,
         tmax: float = 0.5,
-        baseline: tuple[float | None, float | None] | None = (None, 0),
-        reject: dict[str, float] | None = None,
-        flat: dict[str, float] | None = None,
-        reject_tmin: float | None = None,
-        reject_tmax: float | None = None,
-        detrend: int | str | None = None,
+        baseline: Optional[tuple[Optional[float], Optional[float]]] = (None, 0),
+        picks: Optional[Union[str, list[str], int, list[int], ScalarIntArray]] = None,
+        reject: Optional[dict[str, float]] = None,
+        flat: Optional[dict[str, float]] = None,
+        reject_tmin: Optional[float] = None,
+        reject_tmax: Optional[float] = None,
+        detrend: Optional[Union[int, str]] = None,
     ) -> None:
         check_type(stream, (BaseStream,), "stream")
         if not stream.connected and stream._info["sfreq"] != 0:
@@ -1247,6 +1249,7 @@ class BaseEpochsStream(ABC):
                 "The Stream must be a connected regularly sampled stream before "
                 "creating an EpochsStream."
             )
+        self._stream = stream
         check_type(tmin, ("numeric",), "tmin")
         check_type(tmax, ("numeric",), "tmax")
         # make sure the stream buffer is long enough to store an entire epoch, which is
@@ -1274,8 +1277,8 @@ class BaseEpochsStream(ABC):
         check_type(reject_tmin, (float, None), "reject_tmin")
         check_type(reject_tmax, (float, None), "reject_tmax")
         check_type(detrend, (int, str, None), "detrend")
-        # mark the stream as being epoched, which will prevent further channel selection
-        # and buffer size modifications.
+        # mark the stream as being epoched, which will prevent further channel
+        # modification and buffer size modifications.
         self._stream._epoched = True
 
     @abstractmethod
