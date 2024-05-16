@@ -30,7 +30,6 @@ from ..utils._docs import copy_doc, fill_doc
 from ..utils.logs import logger, verbose, warn
 from ..utils.meas_info import _HUMAN_UNITS, _set_channel_units
 from ._filters import StreamFilter, create_filter, ensure_sos_iir_params
-from ._utils import check_bufsize
 
 if TYPE_CHECKING:
     from datetime import datetime
@@ -57,8 +56,14 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         self,
         bufsize: float,
     ) -> None:
-        check_bufsize(bufsize)
+        check_type(bufsize, ("numeric",), "bufsize")
+        if bufsize <= 0:
+            raise ValueError(
+                "The buffer size 'bufsize' must be a strictly positive number. "
+                f"{bufsize} is invalid."
+            )
         self._bufsize = bufsize
+        self._epoched = False
 
     @copy_doc(ContainsMixin.__contains__)
     def __contains__(self, ch_type: str) -> bool:
@@ -108,7 +113,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             The stream instance modified in-place.
         """
         self._check_connected_and_regular_sampling("add_reference_channels()")
-
+        self._check_not_epoched("add_reference_channels()")
         # don't allow to add reference channels after a custom reference has been set
         # with Stream.set_eeg_reference, for simplicity.
         if self._info["custom_ref_applied"] == FIFF.FIFFV_MNE_CUSTOM_REF_ON:
@@ -118,7 +123,6 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
                 "If you want to add other reference to this Stream, please disconnect "
                 "and reconnect to reset the Stream."
             )
-
         # error checking and conversion of the arguments to valid values
         if isinstance(ref_channels, str):
             ref_channels = [ref_channels]
@@ -151,7 +155,6 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             elif isinstance(unit, int):
                 check_value(unit, _ch_unit_mul_named, "unit")
                 ref_units[k] = _ch_unit_mul_named[unit]
-
         # try to figure out the reference channels location
         if self.get_montage() is None:
             ref_dig_array = np.full(12, np.nan)
@@ -176,7 +179,6 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
                 with self._info._unlock():
                     for idx in pick_types(self._info, meg=False, eeg=True, exclude=[]):
                         self._info["chs"][idx]["loc"][3:6] = ref_dig_loc[0]["r"]
-
         # add the reference channels to the info
         nchan = len(self.ch_names)
         with self._info._unlock(update_redundant=True):
@@ -195,13 +197,11 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
                     "loc": ref_dig_array,
                 }
                 self._info["chs"].append(chan_info)
-
         # create the associated numpy array and edit buffer
         refs = np.zeros((self._timestamps.size, len(ref_channels)), dtype=self.dtype)
         with self._interrupt_acquisition():
             self._added_channels.extend(ref_channels)  # save reference channels
             self._buffer = np.hstack((self._buffer, refs), dtype=self.dtype)
-
         return self
 
     @verbose
@@ -230,7 +230,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         -----
         %(anonymize_info_notes)s
         """
-        self._check_connected(name="anonymize()")
+        self._check_connected("anonymize()")
         super().anonymize(
             daysback=daysback,
             keep_his=keep_his,
@@ -289,7 +289,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         stream : instance of ``Stream``
             The stream instance modified in-place.
         """
-        self._check_connected(name="disconnect()")
+        self._check_connected("disconnect()")
         self._interrupt = True
         while self._acquisition_thread.is_alive():
             self._acquisition_thread.cancel()
@@ -315,6 +315,11 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         self._check_connected_and_regular_sampling("del_filter()")
         if len(self._filters) == 0:
             raise RuntimeError("No filter to remove.")
+        if self._epoched:
+            warn(
+                "The Stream is being epoched by an EpochsStream object. Altering the "
+                "filters will altern the filters in the future epochs."
+            )
         # validate input
         check_type(idx, ("int-like", tuple, list, str), "idx")
         if isinstance(idx, str) and idx != "all":
@@ -387,7 +392,8 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         --------
         pick
         """
-        self._check_connected(name="drop_channels()")
+        self._check_connected("drop_channels()")
+        self._check_not_epoched("drop_channels()")
         if isinstance(ch_names, str):
             ch_names = [ch_names]
         check_type(ch_names, (list, tuple), "ch_names")
@@ -438,6 +444,11 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             The stream instance modified in-place.
         """
         self._check_connected_and_regular_sampling("filter()")
+        if self._epoched:
+            warn(
+                "The Stream is being epoched by an EpochsStream object. Altering the "
+                "filters will altern the filters in the future epochs."
+            )
         # validate the arguments and ensure 'sos' output
         picks = _picks_to_idx(self._info, picks, "all", "bads", allow_empty=False)
         iir_params = ensure_sos_iir_params(iir_params)
@@ -461,7 +472,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         unique=False,
         only_data_chs=False,
     ) -> list[str]:
-        self._check_connected(name="get_channel_types()")
+        self._check_connected("get_channel_types()")
         return super().get_channel_types(
             picks=picks, unique=unique, only_data_chs=only_data_chs
         )
@@ -488,7 +499,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             element contains the unit multiplication factor, e.g. ``-6 (FIFF_UNITM_MU)``
             for micro (corresponds to ``1e-6``).
         """
-        self._check_connected(name="get_channel_units()")
+        self._check_connected("get_channel_units()")
         check_type(only_data_chs, (bool,), "only_data_chs")
         none = "data" if only_data_chs else "all"
         picks = _picks_to_idx(self._info, picks, none, "bads", allow_empty=False)
@@ -569,7 +580,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
     @copy_doc(SetChannelsMixin.get_montage)
     def get_montage(self) -> Optional[DigMontage]:
-        self._check_connected(name="get_montage()")
+        self._check_connected("get_montage()")
         return super().get_montage()
 
     @verbose
@@ -614,6 +625,11 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             The stream instance modified in-place.
         """
         self._check_connected_and_regular_sampling("notch_filter()")
+        if self._epoched:
+            warn(
+                "The Stream is being epoched by an EpochsStream object. Altering the "
+                "filters will altern the filters in the future epochs."
+            )
         # validate the arguments and ensure 'sos' output
         check_type(freqs, ("numeric",), "freqs")
         if freqs < 0:
@@ -656,7 +672,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
     def plot(self):  # pragma: no cover
         """Open a real-time stream viewer. Not implemented."""
-        self._check_connected(name="plot()")
+        self._check_connected("plot()")
         raise NotImplementedError
 
     @fill_doc
@@ -689,7 +705,8 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         Thus, if explicit channel names are provided in ``picks``, they are sorted to
         match the order of existing channel names.
         """
-        self._check_connected(name="pick()")
+        self._check_connected("pick()")
+        self._check_not_epoched("pick()")
         picks = _picks_to_idx(self._info, picks, "all", exclude, allow_empty=False)
         picks = np.sort(picks)
         self._pick(picks)
@@ -697,7 +714,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
     def record(self):  # pragma: no cover
         """Record the stream data to disk. Not implemented."""
-        self._check_connected(name="record()")
+        self._check_connected("record()")
         raise NotImplementedError
 
     @verbose
@@ -727,7 +744,8 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         stream : instance of ``Stream``
             The stream instance modified in-place.
         """
-        self._check_connected(name="rename_channels()")
+        self._check_connected("rename_channels()")
+        self._check_not_epoched("rename_channels()")
         rename_channels(
             self._info,
             mapping=mapping,
@@ -744,7 +762,6 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         stream : instance of ``Stream``
             The stream instance modified in-place.
         """
-        self._check_connected_and_regular_sampling("set_bipolar_reference()")
         raise NotImplementedError
 
     @verbose
@@ -780,7 +797,8 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         stream : instance of ``Stream``
             The stream instance modified in-place.
         """
-        self._check_connected(name="set_channel_types()")
+        self._check_connected("set_channel_types()")
+        self._check_not_epoched("set_channel_types()")
         super().set_channel_types(
             mapping=mapping,
             on_unit_change=on_unit_change,
@@ -812,7 +830,8 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         If the human-readable unit of your channel is not yet supported by MNE-LSL,
         please contact the developers on GitHub to add your units to the known set.
         """
-        self._check_connected(name="set_channel_units()")
+        self._check_connected("set_channel_units()")
+        self._check_not_epoched("set_channel_units()")
         _set_channel_units(self._info, mapping)
         return self
 
@@ -844,7 +863,11 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             The stream instance modified in-place.
         """
         self._check_connected_and_regular_sampling("set_eeg_reference()")
-
+        if self._epoched:
+            warn(
+                "The Stream is being epoched by an EpochsStream object. Altering the "
+                "reference will altern the reference in the future epochs."
+            )
         # allow only one-call to this function for simplicity, and if one day someone
         # want to apply 2 or more different reference to 2 or more types of channels,
         # then we can remove this limitation.
@@ -854,7 +877,6 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
                 "If you want to change the reference of this Stream, please disconnect "
                 "and reconnect to reset the Stream."
             )
-
         if isinstance(ch_type, str):
             ch_type = [ch_type]
         check_type(ch_type, (tuple, list), "ch_type")
@@ -878,7 +900,6 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
                 f"The new reference channel(s) must be of the type(s) {ch_type} "
                 "provided in the argument 'ch_type'."
             )
-
         with self._interrupt_acquisition():
             self._ref_channels = picks_ref
             self._ref_from = picks
@@ -886,7 +907,6 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             self._buffer[:, self._ref_from] -= data_ref
             with self._info._unlock():
                 self._info["custom_ref_applied"] = FIFF.FIFFV_MNE_CUSTOM_REF_ON
-
         return self
 
     def set_meas_date(
@@ -913,7 +933,8 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         --------
         anonymize
         """
-        self._check_connected(name="set_meas_date()")
+        self._check_connected("set_meas_date()")
+        self._check_not_epoched("set_meas_date()")
         super().set_meas_date(meas_date)
         return self
 
@@ -957,7 +978,8 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             montage. Other channel types (e.g., MEG channels) should have their
             positions defined properly using their data reading functions.
         """
-        self._check_connected(name="set_montage()")
+        self._check_connected("set_montage()")
+        self._check_not_epoched("set_montage()")
         super().set_montage(
             montage=montage,
             match_case=match_case,
@@ -971,7 +993,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
     def _acquire(self) -> None:  # pragma: no cover
         """Update function pulling new samples in the buffer at a regular interval."""
 
-    def _check_connected(self, name: str):
+    def _check_connected(self, name: str) -> None:
         """Check that the stream is connected before calling the function 'name'."""
         if not self.connected:
             raise RuntimeError(
@@ -980,13 +1002,21 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
                 "create the Info."
             )
 
-    def _check_connected_and_regular_sampling(self, name: str):
+    def _check_connected_and_regular_sampling(self, name: str) -> None:
         """Check that the stream has a regular sampling rate."""
         self._check_connected(name)
         if self._info["sfreq"] == 0:
             raise RuntimeError(
                 f"The method {type(self).__name__}.{name} can not be used on a stream "
                 "with an irregular sampling rate."
+            )
+
+    def _check_not_epoched(self, name: str) -> None:
+        """Check that the stream is not being epoched."""
+        if self._epoched:
+            raise RuntimeError(
+                f"The method {type(self).__name__}.{name} can not be used on a stream "
+                "being epoched by an EpochsStream."
             )
 
     def _create_acquisition_thread(self, delay: float) -> None:
@@ -1075,7 +1105,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
         :type: :class:`int` | None
         """
-        self._check_connected(name="compensation_grade")
+        self._check_connected("compensation_grade")
         return super().compensation_grade
 
     @property
@@ -1084,7 +1114,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
         :type: :class:`list` of :class:`str`
         """
-        self._check_connected(name="ch_names")
+        self._check_connected("ch_names")
         return self._info.ch_names
 
     @property
@@ -1114,6 +1144,11 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         return getattr(self._buffer, "dtype", None)
 
     @property
+    def epoched(self) -> bool:
+        """Whenether the stream is being epoched by a ``EpochsStream``."""
+        return self._epoched
+
+    @property
     def filters(self) -> list[StreamFilter]:
         """List of filters applied to the real-time Stream.
 
@@ -1140,7 +1175,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
         :type: :class:`int`
         """
-        self._check_connected(name="n_buffer")
+        self._check_connected("n_buffer")
         return self._timestamps.size
 
     @property
@@ -1151,7 +1186,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
         :type: :class:`int`
         """
-        self._check_connected(name="n_new_samples")
+        self._check_connected("n_new_samples")
         return self._n_new_samples
 
 
@@ -1196,7 +1231,7 @@ class BaseEpochsStream(ABC):
         stream: BaseStream,
         event_source: Any,
         event_id: int | str | dict[str, int | str],
-        bufsize: float,
+        bufsize: int,
         tmin: float = -0.2,
         tmax: float = 0.5,
         baseline: tuple[float | None, float | None] | None = (None, 0),
@@ -1207,7 +1242,41 @@ class BaseEpochsStream(ABC):
         detrend: int | str | None = None,
     ) -> None:
         check_type(stream, (BaseStream,), "stream")
-        check_bufsize(bufsize)
+        if not stream.connected and stream._info["sfreq"] != 0:
+            raise RuntimeError(
+                "The Stream must be a connected regularly sampled stream before "
+                "creating an EpochsStream."
+            )
+        check_type(tmin, ("numeric",), "tmin")
+        check_type(tmax, ("numeric",), "tmax")
+        # make sure the stream buffer is long enough to store an entire epoch, which is
+        # simpler than handling the case where the buffer is too short and we need to
+        # concatenate chunks to form a single epoch.
+        if stream._bufsize < tmax - tmin:
+            raise ValueError(
+                "The buffer size of the Stream must be at least as long as the epoch "
+                "duration (tmax - tmin)."
+            )
+        elif stream._bufsize < (tmax - tmin) * 1.2:
+            warn(
+                "The buffer size of the Stream is longer than the epoch duration, but "
+                "not by at least 20%. It is recommended to have a buffer size at least "
+                "20% longer than the epoch duration to avoid data loss."
+            )
+        self._bufsize = ensure_int(bufsize, "bufsize")
+        self._tmin = tmin
+        self._tmax = tmax
+        # TODO: check and store the epochs general settings
+        check_type(event_id, (int, str, dict), "event_id")
+        check_type(baseline, (tuple, None), "baseline")
+        check_type(reject, (dict, None), "reject")
+        check_type(flat, (dict, None), "flat")
+        check_type(reject_tmin, (float, None), "reject_tmin")
+        check_type(reject_tmax, (float, None), "reject_tmax")
+        check_type(detrend, (int, str, None), "detrend")
+        # mark the stream as being epoched, which will prevent further channel selection
+        # and buffer size modifications.
+        self._stream._epoched = True
 
     @abstractmethod
     def __repr__(self) -> str:  # pragma: no cover
