@@ -30,6 +30,7 @@ from ..utils._docs import copy_doc, fill_doc
 from ..utils.logs import logger, verbose, warn
 from ..utils.meas_info import _HUMAN_UNITS, _set_channel_units
 from ._filters import StreamFilter, create_filter, ensure_sos_iir_params
+from ._utils import check_bufsize
 
 if TYPE_CHECKING:
     from datetime import datetime
@@ -56,12 +57,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         self,
         bufsize: float,
     ) -> None:
-        check_type(bufsize, ("numeric",), "bufsize")
-        if bufsize <= 0:
-            raise ValueError(
-                "The buffer size 'bufsize' must be a strictly positive number. "
-                f"{bufsize} is invalid."
-            )
+        check_bufsize(bufsize)
         self._bufsize = bufsize
 
     @copy_doc(ContainsMixin.__contains__)
@@ -80,10 +76,6 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
     @abstractmethod
     def __repr__(self) -> str:  # pragma: no cover
         """Representation of the instance."""
-        # This method needs to define the str representation of the class based on the
-        # attributes of the Stream. For instance, an LSL stream is defined by 3
-        # attributes: name, stype, source_id. Thus a possible representation is:
-        # <Stream: ON | {name} - {stype} (source: {source_id})>
 
     @fill_doc
     def add_reference_channels(
@@ -1161,3 +1153,62 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         """
         self._check_connected(name="n_new_samples")
         return self._n_new_samples
+
+
+@fill_doc
+class BaseEpochsStream(ABC):
+    """Stream object representing a single real-time stream of epochs.
+
+    Note that a stream of epochs is necessarily connected to a regularly sampled stream
+    of continuous data, from which epochs are extracted depending on an internal event
+    channel or to an external event stream.
+
+    Parameters
+    ----------
+    stream : BaseStream
+        Stream object to connect to, from which the epochs are extracted. The stream
+        must ber regularly sampled.
+    event_source : Any
+        Source from which events should be retrieved.
+    event_id : int | str | dict
+        The ID of the events to consider from the event source. The event source can be
+        a channel from the connected Stream, in which case the event should be defined
+        as :class:`int`, or a separate event stream, in which case the event should be
+        defined either as :class:`int` or :class:`str`. If a :class:`dict` is provided,
+        it should map event names to event IDs. For example
+        ``dict(auditory=1, visual=2)``.
+    bufsize : int
+        Number of epochs to keep in the buffer.
+    %(epochs_tmin_tmax)s
+    %(baseline_epochs)s
+    %(reject_epochs)s
+    %(flat)s
+    %(epochs_reject_tmin_tmax)s
+    detrend : int | str | None
+        The type of detrending to use. Can be ``'constant'`` or ``0`` for constant (DC)
+        detrend, ``'linear'`` or ``1`` for linear detrend, or ``None`` for no
+        detrending. Note that detrending is performed before baseline correction.
+    """
+
+    @abstractmethod
+    def __init__(
+        self,
+        stream: BaseStream,
+        event_source: Any,
+        event_id: int | str | dict[str, int | str],
+        bufsize: float,
+        tmin: float = -0.2,
+        tmax: float = 0.5,
+        baseline: tuple[float | None, float | None] | None = (None, 0),
+        reject: dict[str, float] | None = None,
+        flat: dict[str, float] | None = None,
+        reject_tmin: float | None = None,
+        reject_tmax: float | None = None,
+        detrend: int | str | None = None,
+    ) -> None:
+        check_type(stream, (BaseStream,), "stream")
+        check_bufsize(bufsize)
+
+    @abstractmethod
+    def __repr__(self) -> str:  # pragma: no cover
+        """Representation of the instance."""
