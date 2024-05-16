@@ -63,14 +63,14 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
                 f"{bufsize} is invalid."
             )
         self._bufsize = bufsize
-        self._epoched = False
+        self._epoched = 0
 
     @copy_doc(ContainsMixin.__contains__)
     def __contains__(self, ch_type: str) -> bool:
         self._check_connected("the 'in' operator")
         return super().__contains__(ch_type)
 
-    def __del__(self):
+    def __del__(self) -> None:
         """Try to disconnect the stream when deleting the object."""
         logger.debug("Deleting %s", self)
         try:
@@ -1013,7 +1013,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
     def _check_not_epoched(self, name: str) -> None:
         """Check that the stream is not being epoched."""
-        if self._epoched:
+        if self._epoched != 0:
             raise RuntimeError(
                 f"The method {type(self).__name__}.{name} can not be used on a stream "
                 "being epoched by an EpochsStream."
@@ -1279,7 +1279,12 @@ class BaseEpochsStream(ABC):
         check_type(detrend, (int, str, None), "detrend")
         # mark the stream as being epoched, which will prevent further channel
         # modification and buffer size modifications.
-        self._stream._epoched = True
+        self._stream._epoched += 1
+
+    def __del__(self) -> None:
+        """Delete the epoch stream object."""
+        logger.debug("Deleting %s", self)
+        self._stream._epoched -= 1
 
     @abstractmethod
     def __repr__(self) -> str:  # pragma: no cover
