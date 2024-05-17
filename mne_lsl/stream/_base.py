@@ -1340,9 +1340,9 @@ class BaseEpochsStream(ABC):
         self._event_id = _ensure_event_id_dict(event_id)
         _check_baseline(baseline)
         self._baseline = baseline
-        check_type(baseline, (tuple, None), "baseline")
-        check_type(reject, (dict, None), "reject")
-        check_type(flat, (dict, None), "flat")
+        _check_reject_flat(reject, flat, stream.info)
+        self._reject = reject
+        self._flat = flat
         check_type(reject_tmin, (float, None), "reject_tmin")
         check_type(reject_tmax, (float, None), "reject_tmax")
         check_type(detrend, (int, str, None), "detrend")
@@ -1420,3 +1420,42 @@ def _check_baseline(
             "The end of the baseline period must be less than or equal to the end of "
             "the epoch period 'tmax'."
         )
+
+
+def _check_reject_flat(
+    reject: Optional[dict[str, float]], flat: Optional[dict[str, float]], info: Info
+) -> None:
+    """Check that the PTP rejection dictionaries are valid."""
+    check_type(reject, (dict, None), "reject")
+    check_type(flat, (dict, None), "flat")
+    ch_types = info.get_channel_types(unique=True)
+    if reject is not None:
+        for key, value in reject.items():
+            check_type(key, (str,), "reject")
+            check_type(value, ("numeric",), "reject")
+            if key not in ch_types:
+                raise ValueError(
+                    f"The channel type '{key}' in the rejection dictionary is not part "
+                    "of the connected Stream."
+                )
+            check_type(value, (float,), "reject")
+            if value <= 0:
+                raise ValueError(
+                    f"The peak-to-peak rejection value for channel type '{key}' must "
+                    "be a positive number."
+                )
+    if flat is not None:
+        for key, value in flat.items():
+            check_type(key, (str,), "flat")
+            check_type(value, ("numeric",), "flat")
+            if key not in ch_types:
+                raise ValueError(
+                    f"The channel type '{key}' in the flat rejection dictionary is not "
+                    "part of the connected Stream."
+                )
+            check_type(value, (float,), "flat")
+            if value <= 0:
+                raise ValueError(
+                    f"The flat rejection value for channel type '{key}' must be a "
+                    "positive number."
+                )
