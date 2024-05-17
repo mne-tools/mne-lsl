@@ -1307,7 +1307,7 @@ class BaseEpochsStream(ABC):
         self._tmax = tmax
         # check the event source(s)
         check_type(event_stream, (BaseStream, None), "event_stream")
-        if isinstance(event_stream, BaseStream) and not event_stream.connected:
+        if event_stream is not None and not event_stream.connected:
             raise RuntimeError(
                 "If 'event_stream' is provided, it must be connected before creating "
                 "an EpochsStream."
@@ -1322,13 +1322,14 @@ class BaseEpochsStream(ABC):
             if self._event_stream is None and elt not in stream.ch_names:
                 raise ValueError(
                     "The event channel(s) must be part of the connected Stream if an "
-                    "'event_stream' is not provided."
+                    f"'event_stream' is not provided. '{elt}' was not found."
                 )
             elif self._event_stream is not None and elt not in event_stream.ch_names:
                 raise ValueError(
                     "If 'event_stream' is provided, the event channel(s) must be part "
-                    "of 'event_stream'."
+                    f"of 'event_stream'. '{elt}' was not found."
                 )
+        self._event_channels = event_channels
         # TODO: check and store the epochs general settings
         self._bufsize = ensure_int(bufsize, "bufsize")
         if self._bufsize <= 0:
@@ -1336,7 +1337,7 @@ class BaseEpochsStream(ABC):
                 "The buffer size, i.e. the number of epochs in the buffer, must be a "
                 "positive integer."
             )
-        check_type(event_id, (int, str, dict), "event_id")
+        self._event_id = _ensure_event_id_dict(event_id)
         check_type(baseline, (tuple, None), "baseline")
         check_type(reject, (dict, None), "reject")
         check_type(flat, (dict, None), "flat")
@@ -1353,7 +1354,42 @@ class BaseEpochsStream(ABC):
         """Delete the epoch stream object."""
         logger.debug("Deleting %s", self)
         self._stream._epoched -= 1
+        if self._event_stream is not None:
+            self._event_stream._epoched -= 1
 
     @abstractmethod
     def __repr__(self) -> str:  # pragma: no cover
         """Representation of the instance."""
+
+
+def _ensure_event_id_dict(
+    event_id: Union[int, str, dict[str, Union[int, str]]],
+) -> dict[str, Union[str, int]]:
+    """Ensure event_ids is a dictionary."""
+    check_type(event_id, (int, str, dict), "event_id")
+    raise_ = False
+    if isinstance(event_id, str):
+        if len(event_id) == 0:
+            raise_ = True
+        event_id = {event_id: event_id}
+    elif isinstance(event_id, int):
+        if event_id <= 0:
+            raise_ = True
+        event_id = {str(event_id): event_id}
+    else:
+        for key, value in event_id.items():
+            check_type(key, (str,), "event_id")
+            check_type(value, (int, str), "event_id")
+            if len(key) == 0:
+                raise_ = True
+            if (isinstance(value, str) and len(value) == 0) or (
+                isinstance(value, int) and value <= 0
+            ):
+                raise_ = True
+    if raise_:
+        raise ValueError(
+            "The 'event_id' must be a non-empty string, a positive integer or a "
+            "dictionary mapping non-empty strings to positive integers or non-empty "
+            "strings."
+        )
+    return event_id
