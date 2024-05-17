@@ -290,6 +290,12 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             The stream instance modified in-place.
         """
         self._check_connected("disconnect()")
+        # TODO: Add mechanism to keep track of the epoch objects to forcefully stop them
+        if self._epoched != 0:
+            warn(
+                "The stream will be disconnected while an EpochsStream object is "
+                "attached. This will break the EpochsStream and likely raise errors."
+            )
         self._interrupt = True
         while self._acquisition_thread.is_alive():
             self._acquisition_thread.cancel()
@@ -1083,6 +1089,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         """Reset variables define after connection."""
         self._acquisition_thread = None
         self._acquisition_delay = None
+        self._epoched = 0  # TODO: Add mechanism to keep track of the objects
         self._info = None
         self._interrupt = False
         self._buffer = None
@@ -1345,6 +1352,19 @@ class BaseEpochsStream(ABC):
         check_reject_tmin_tmax(reject_tmin, reject_tmax, tmin, tmax)
         self._reject_tmin, self._reject_tmax = reject_tmin, reject_tmax
         self._detrend = ensure_detrend_int(detrend)
+        # initialize the epoch buffer
+        self._picks = _picks_to_idx(
+            self._stream._info, picks, "all", "bads", allow_empty=False
+        )
+        self._info = pick_info(self._stream._info, self._picks)
+        self._buffer = np.zeros(
+            (
+                self._bufsize,
+                ceil((tmax - tmin) * self._info["sfreq"]),
+                self._picks.size,
+            ),
+            dtype=self._stream._buffer.dtype,
+        )
         # mark the stream(s) as being epoched, which will prevent further channel
         # modification and buffer size modifications.
         self._stream._epoched += 1
@@ -1361,6 +1381,14 @@ class BaseEpochsStream(ABC):
     @abstractmethod
     def __repr__(self) -> str:  # pragma: no cover
         """Representation of the instance."""
+
+    @property
+    def info(self) -> Info:
+        """Info of the epoched LSL stream.
+
+        :type: :class:`~mne.Info`
+        """
+        return self._info
 
 
 def ensure_event_id_dict(
