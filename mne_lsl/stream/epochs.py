@@ -1,6 +1,7 @@
 from __future__ import annotations  # c.f. PEP 563, PEP 649
 
 from math import ceil
+from threading import Timer
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -188,14 +189,8 @@ class EpochsStream:
             self._stream._info, picks, "all", "bads", allow_empty=False
         )
         self._info = pick_info(self._stream._info, self._picks)
-        self._buffer = np.zeros(
-            (
-                self._bufsize,
-                ceil((tmax - tmin) * self._info["sfreq"]),
-                self._picks.size,
-            ),
-            dtype=self._stream._buffer.dtype,
-        )
+        # define acquisition variables which need to be reset on disconnect
+        self._reset_variables()
         # mark the stream(s) as being epoched, which will prevent further channel
         # modification and buffer size modifications.
         self._stream._epoched += 1
@@ -205,12 +200,115 @@ class EpochsStream:
     def __del__(self) -> None:
         """Delete the epoch stream object."""
         logger.debug("Deleting %s", self)
+        try:
+            self.disconnect()
+        except Exception:
+            pass
+
+    def __repr__(self) -> str:
+        """Representation of the instance."""
+        try:
+            status = "ON" if self.connected else "OFF"
+        except Exception:
+            status = "OFF"
+        return (
+            f"<EpochsStream {status} (n: {self._bufsize} between ({self._tmin}, "
+            f"{self._tmax}) seconds> connected to\n\t{self._stream}"
+        )
+
+    def connect(self, acquisition_delay: float = 0.01) -> EpochsStream:
+        """Start acquisition of epochs from the connected Stream.
+
+        Parameters
+        ----------
+        acquisition_delay : float
+            Delay in seconds between 2 updates at which the event stream is queried for
+            new events, and thus at which the epochs are updated.
+
+        Returns
+        -------
+        epochs_stream : instance of EpochsStream
+            The :class:`~mne_lsl.stream.EpochsStream` instance modified in-place.
+        """
+        if self.connected:
+            warn("The stream is already connected. Skipping.")
+            return self
+        check_type(acquisition_delay, ("numeric",), "acquisition_delay")
+        if acquisition_delay < 0:
+            raise ValueError(
+                "The acquisition delay must be a positive number "
+                "defining the delay at which the epochs might be updated in seconds. "
+                "For instance, 0.2 corresponds to a query to the event source every "
+                f"200 ms. The provided {acquisition_delay} is invalid."
+            )
+        self._acquisition_delay = acquisition_delay
+        self._n_new_epochs = 0
+        # create the buffer and start acquisition in a separate thread
+        self._buffer = np.zeros(
+            (
+                self._bufsize,
+                ceil((self._tmax - self._tmin) * self._info["sfreq"]),
+                self._picks.size,
+            ),
+            dtype=self._stream._buffer.dtype,
+        )
+        self._create_acquisition_thread(0)
+        return self
+
+    def disconnect(self) -> None:
+        """Stop acquisition of epochs from the connected Stream."""
+        if not self.connected:
+            warn("The stream is already disconnected. Skipping.")
+            return
+        self._interrupt = True
+        while self._acquisition_thread.is_alive():
+            self._acquisition_thread.cancel()
+        self._reset_variables()
         self._stream._epoched -= 1
         if self._event_stream is not None:
             self._event_stream._epoched -= 1
 
-    def __repr__(self) -> str:  # pragma: no cover
-        """Representation of the instance."""
+    def _acquire(self) -> None:
+        """Update function looking for new epochs."""
+
+    def _create_acquisition_thread(self, delay: float) -> None:
+        """Create and start the daemonic acquisition thread.
+
+        Parameters
+        ----------
+        delay : float
+            Delay after which the thread will call the acquire function.
+        """
+        self._acquisition_thread = Timer(delay, self._acquire)
+        self._acquisition_thread.daemon = True
+        self._acquisition_thread.start()
+
+    def _reset_variables(self):
+        """Reset variables defined after connection."""
+        self._acquisition_thread = None
+        self._acquisition_delay = None
+        self._buffer = None
+        self._interrupt = False
+        self._n_new_epochs = 0
+
+    # ----------------------------------------------------------------------------------
+    @property
+    def connected(self) -> bool:
+        """Connection status of the :class:`~mne_lsl.stream.EpochsStream`.
+
+        :type: :class:`bool`
+        """
+        attributes = (
+            "_acquisition_delay",
+            "_acquisition_thread",
+            "_buffer",
+        )
+        if all(getattr(self, attr, None) is None for attr in attributes):
+            return False
+        else:
+            # sanity-check
+            assert not any(getattr(self, attr, None) is None for attr in attributes)
+            return True
 
     @property
     def info(self) -> Info:

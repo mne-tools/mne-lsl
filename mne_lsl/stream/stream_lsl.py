@@ -67,7 +67,7 @@ class StreamLSL(BaseStream):
         self._source_id = source_id
         self._reset_variables()
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Representation of the instance."""
         try:
             conn = self.connected

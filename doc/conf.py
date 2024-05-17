@@ -150,6 +150,7 @@ numpydoc_xref_aliases = {
     "Projection": "mne.Projection",
     "Raw": "mne.io.Raw",
     # MNE-LSL
+    "EpochsStream": "mne_lsl.stream.EpochsStream",
     "StreamInfo": "mne_lsl.lsl.StreamInfo",
     "StreamInlet": "mne_lsl.lsl.StreamInlet",
     "StreamOutlet": "mne_lsl.lsl.StreamOutlet",
