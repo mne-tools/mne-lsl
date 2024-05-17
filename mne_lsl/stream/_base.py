@@ -1330,7 +1330,7 @@ class BaseEpochsStream(ABC):
                     f"of 'event_stream'. '{elt}' was not found."
                 )
         self._event_channels = event_channels
-        # TODO: check and store the epochs general settings
+        # check and store the epochs general settings
         self._bufsize = ensure_int(bufsize, "bufsize")
         if self._bufsize <= 0:
             raise ValueError(
@@ -1341,12 +1341,10 @@ class BaseEpochsStream(ABC):
         check_baseline(baseline)
         self._baseline = baseline
         check_reject_flat(reject, flat, stream.info)
-        self._reject = reject
-        self._flat = flat
+        self._reject, self._flat = reject, flat
         check_reject_tmin_tmax(reject_tmin, reject_tmax, tmin, tmax)
-        self._reject_tmin = reject_tmin
-        self._reject_tmax = reject_tmax
-        check_type(detrend, (int, str, None), "detrend")
+        self._reject_tmin, self._reject_tmax = reject_tmin, reject_tmax
+        self._detrend = ensure_detrend_int(detrend)
         # mark the stream(s) as being epoched, which will prevent further channel
         # modification and buffer size modifications.
         self._stream._epoched += 1
@@ -1487,3 +1485,26 @@ def check_reject_tmin_tmax(
             "The end of the rejection time window must be greater than the beginning "
             "of the rejection time window."
         )
+
+
+def ensure_detrend_int(detrend: Optional[Union[int, str]]) -> Optional[int]:
+    """Ensure detrend is an integer."""
+    if detrend is None:
+        return None
+    if isinstance(detrend, str):
+        if detrend == "constant":
+            return 0
+        elif detrend == "linear":
+            return 1
+        else:
+            raise ValueError(
+                "The detrend argument must be 'constant', 'linear' or their integer "
+                "equivalent 0 and 1."
+            )
+    detrend = ensure_int(detrend, "detrend")
+    if detrend not in (0, 1):
+        raise ValueError(
+            "The detrend argument must be 'constant', 'linear' or their integer "
+            "equivalent 0 and 1."
+        )
+    return detrend

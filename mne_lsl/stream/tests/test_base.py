@@ -5,6 +5,7 @@ from .._base import (
     check_baseline,
     check_reject_flat,
     check_reject_tmin_tmax,
+    ensure_detrend_int,
     ensure_event_id_dict,
 )
 
@@ -116,3 +117,18 @@ def test_check_reject_tmin_tmax():
         check_reject_tmin_tmax("test", None, -0.2, 0.5)
     with pytest.raises(TypeError, match="must be an instance of"):
         check_reject_tmin_tmax(None, "test", -0.2, 0.5)
+
+
+def test_ensure_detrend_int():
+    """Test validation of detrend."""
+    assert ensure_detrend_int(None) is None
+    assert ensure_detrend_int(0) == 0
+    assert ensure_detrend_int(1) == 1
+    assert ensure_detrend_int("constant") == 0
+    assert ensure_detrend_int("linear") == 1
+
+    with pytest.raises(ValueError, match="detrend argument must be"):
+        ensure_detrend_int("test")
+
+    with pytest.raises(TypeError, match="must be an integer"):
+        ensure_detrend_int(5.5)
