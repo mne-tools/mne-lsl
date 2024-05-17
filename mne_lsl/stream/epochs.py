@@ -281,6 +281,14 @@ class EpochsStream:
     def _acquire(self) -> None:
         """Update function looking for new epochs."""
 
+    def _check_connected(self, name: str) -> None:
+        """Check that the epochs stream is connected before calling 'name'."""
+        if not self.connected:
+            raise RuntimeError(
+                "The EpochsStream is not started. Please start the EpochsStream to "
+                f"use {type(self).__name__}.{name}."
+            )
+
     def _create_acquisition_thread(self, delay: float) -> None:
         """Create and start the daemonic acquisition thread.
 
@@ -336,6 +344,7 @@ class EpochsStream:
 
         :type: :class:`int`
         """
+        self._check_connected("n_new_epochs")
         return self._n_new_epochs
 
 
