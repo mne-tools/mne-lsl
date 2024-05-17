@@ -193,9 +193,9 @@ class EpochsStream:
         self._reset_variables()
         # mark the stream(s) as being epoched, which will prevent further channel
         # modification and buffer size modifications.
-        self._stream._epoched += 1
+        self._stream._epochs.append(self)
         if self._event_stream is not None:
-            self._event_stream._epoched += 1
+            self._event_stream._epochs.append(self)
 
     def __del__(self) -> None:
         """Delete the epoch stream object."""

@@ -63,7 +63,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
                 f"{bufsize} is invalid."
             )
         self._bufsize = bufsize
-        self._epoched = 0
+        self._epochs = []
 
     @copy_doc(ContainsMixin.__contains__)
     def __contains__(self, ch_type: str) -> bool:
@@ -290,12 +290,14 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             The stream instance modified in-place.
         """
         self._check_connected("disconnect()")
-        # TODO: Add mechanism to keep track of the epoch objects to forcefully stop them
-        if self._epoched != 0:
+        if len(self._epochs) != 0:
             warn(
-                "The stream will be disconnected while an EpochsStream object is "
-                "attached. This will break the EpochsStream and likely raise errors."
+                "The stream will be disconnected while EpochsStream were still "
+                "attached and acquiring. The EpochsStream will be forcefully "
+                "disconnected."
             )
+            for elt in self._epochs:
+                elt.disconnect()
         self._interrupt = True
         while self._acquisition_thread.is_alive():
             self._acquisition_thread.cancel()
@@ -321,7 +323,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         self._check_connected_and_regular_sampling("del_filter()")
         if len(self._filters) == 0:
             raise RuntimeError("No filter to remove.")
-        if self._epoched:
+        if len(self.epochs) != 0:
             warn(
                 "The Stream is being epoched by an EpochsStream object. Altering the "
                 "filters will altern the filters in the future epochs."
@@ -450,7 +452,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             The stream instance modified in-place.
         """
         self._check_connected_and_regular_sampling("filter()")
-        if self._epoched:
+        if len(self._epochs) != 0:
             warn(
                 "The Stream is being epoched by an EpochsStream object. Altering the "
                 "filters will altern the filters in the future epochs."
@@ -631,7 +633,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             The stream instance modified in-place.
         """
         self._check_connected_and_regular_sampling("notch_filter()")
-        if self._epoched:
+        if len(self._epochs) != 0:
             warn(
                 "The Stream is being epoched by an EpochsStream object. Altering the "
                 "filters will altern the filters in the future epochs."
@@ -1017,7 +1019,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
     def _check_not_epoched(self, name: str) -> None:
         """Check that the stream is not being epoched."""
-        if self._epoched != 0:
+        if len(self._epochs) != 0:
             raise RuntimeError(
                 f"The method {type(self).__name__}.{name} can not be used on a stream "
                 "being epoched by an EpochsStream."
@@ -1089,7 +1091,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         """Reset variables define after connection."""
         self._acquisition_thread = None
         self._acquisition_delay = None
-        self._epoched = 0  # TODO: Add mechanism to keep track of the objects
+        self._epochs = []
         self._info = None
         self._interrupt = False
         self._buffer = None
