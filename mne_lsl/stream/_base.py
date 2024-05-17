@@ -1201,8 +1201,14 @@ class BaseEpochsStream(ABC):
     stream : BaseStream
         Stream object to connect to, from which the epochs are extracted. The stream
         must ber regularly sampled.
-    event_source : Any
-        Source from which events should be retrieved.
+    event_channels : str | list of str
+        Channel(s) to monitor for incoming events. The event channel(s) must be part of
+        the connected Stream of of the ``event_stream`` if provided. See notes for
+        details.
+    event_stream : BaseStream | None
+        Source from which events should be retrieved. If provided, event channels in the
+        connected ``stream`` are ignored in favor of the event channels in this separate
+        ``event_stream``. See notes for details.
     event_id : int | str | dict
         The ID of the events to consider from the event source. The event source can be
         a channel from the connected Stream, in which case the event should be defined
@@ -1222,13 +1228,41 @@ class BaseEpochsStream(ABC):
         The type of detrending to use. Can be ``'constant'`` or ``0`` for constant (DC)
         detrend, ``'linear'`` or ``1`` for linear detrend, or ``None`` for no
         detrending. Note that detrending is performed before baseline correction.
+
+    Notes
+    -----
+    Since events can be provided from multiple source, the arguments ``event_channels``,
+    ``event_source`` and ``event_id`` must work together to select which events should
+    be considered.
+
+    - if ``event_stream`` is ``None``, the events are extracted from channels within the
+      connected ``stream``. This ``stream`` is necesarily regularly sampled, thus the
+      event channels must correspond to MNE ``'stim'`` channels, i.e. channels on which
+      :func:`mne.find_events` can be applied.
+    - if ``event_stream`` is provided and is regularly sampled, the events are extracted
+      from channels in the ``event_stream``. The event channels must correspond to MNE
+      ``'stim'`` channels, i.e. channels on which :func:`mne.find_events` can be
+      applied.
+    - if ``event_stream`` is provided and is irregularly sampled, the events are
+      extracted from channels in the ``event_stream``. If the stream ``dtype`` is
+      :class:`str`, the value within the channels are used as separate events. If the
+      stream ``dtype`` is ``numerical``, the value within the channels are ignored and
+      the appearance of a new value in the stream is considered as a new event named
+      after the channel name. This last case can be useful when working with a
+      ``Player`` replaying annotations from a file as one-hot encoded events.
+
+    .. note::
+
+        In the 2 last cases where ``event_stream`` is provided, all channels in the
+        connected ``stream`` are ignored.
     """
 
     @abstractmethod
     def __init__(
         self,
         stream: BaseStream,
-        event_source: Any,
+        event_channels: Union[str, list[str]],
+        event_stream: Optional[BaseStream],
         event_id: Union[int, str, dict[str, Union[int, str]]],
         bufsize: int,
         tmin: float = -0.2,
@@ -1250,6 +1284,11 @@ class BaseEpochsStream(ABC):
         self._stream = stream
         check_type(tmin, ("numeric",), "tmin")
         check_type(tmax, ("numeric",), "tmax")
+        if tmax <= tmin:
+            raise ValueError(
+                f"Argument 'tmax' (provided: {tmax}) must be greater than 'tmin' "
+                f"(provided: {tmin})."
+            )
         # make sure the stream buffer is long enough to store an entire epoch, which is
         # simpler than handling the case where the buffer is too short and we need to
         # concatenate chunks to form a single epoch.
@@ -1264,10 +1303,39 @@ class BaseEpochsStream(ABC):
                 "not by at least 20%. It is recommended to have a buffer size at least "
                 r"20% longer than the epoch duration to avoid data loss."
             )
-        self._bufsize = ensure_int(bufsize, "bufsize")
         self._tmin = tmin
         self._tmax = tmax
+        # check the event source(s)
+        check_type(event_stream, (BaseStream, None), "event_stream")
+        if isinstance(event_stream, BaseStream) and not event_stream.connected:
+            raise RuntimeError(
+                "If 'event_stream' is provided, it must be connected before creating "
+                "an EpochsStream."
+            )
+        self._event_stream = event_stream
+        event_channels = (
+            [event_channels] if isinstance(event_channels, str) else event_channels
+        )
+        check_type(event_channels, (list,), "event_channels")
+        for elt in event_channels:
+            check_type(elt, (str,), "event_channels")
+            if self._event_stream is None and elt not in stream.ch_names:
+                raise ValueError(
+                    "The event channel(s) must be part of the connected Stream if an "
+                    "'event_stream' is not provided."
+                )
+            elif self._event_stream is not None and elt not in event_stream.ch_names:
+                raise ValueError(
+                    "If 'event_stream' is provided, the event channel(s) must be part "
+                    "of 'event_stream'."
+                )
         # TODO: check and store the epochs general settings
+        self._bufsize = ensure_int(bufsize, "bufsize")
+        if self._bufsize <= 0:
+            raise ValueError(
+                "The buffer size, i.e. the number of epochs in the buffer, must be a "
+                "positive integer."
+            )
         check_type(event_id, (int, str, dict), "event_id")
         check_type(baseline, (tuple, None), "baseline")
         check_type(reject, (dict, None), "reject")
@@ -1275,9 +1343,11 @@ class BaseEpochsStream(ABC):
         check_type(reject_tmin, (float, None), "reject_tmin")
         check_type(reject_tmax, (float, None), "reject_tmax")
         check_type(detrend, (int, str, None), "detrend")
-        # mark the stream as being epoched, which will prevent further channel
+        # mark the stream(s) as being epoched, which will prevent further channel
         # modification and buffer size modifications.
         self._stream._epoched += 1
+        if self._event_stream is not None:
+            self._event_stream._epoched += 1
 
     def __del__(self) -> None:
         """Delete the epoch stream object."""
