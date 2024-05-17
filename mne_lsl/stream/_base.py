@@ -1236,7 +1236,7 @@ class BaseEpochsStream(ABC):
     be considered.
 
     - if ``event_stream`` is ``None``, the events are extracted from channels within the
-      connected ``stream``. This ``stream`` is necesarily regularly sampled, thus the
+      connected ``stream``. This ``stream`` is necessarily regularly sampled, thus the
       event channels must correspond to MNE ``'stim'`` channels, i.e. channels on which
       :func:`mne.find_events` can be applied.
     - if ``event_stream`` is provided and is regularly sampled, the events are extracted
