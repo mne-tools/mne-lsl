@@ -233,6 +233,16 @@ class EpochsStream:
         if self.connected:
             warn("The stream is already connected. Skipping.")
             return self
+        if not self._stream.connected:
+            raise RuntimeError(
+                "The Stream was disconnected between initialization and connection "
+                "of the EpochsStream object."
+            )
+        if self._event_stream is not None and not self._event_stream.connected:
+            raise RuntimeError(
+                "The event stream was disconnected between initialization and "
+                "connection of the EpochsStream object."
+            )
         check_type(acquisition_delay, ("numeric",), "acquisition_delay")
         if acquisition_delay < 0:
             raise ValueError(
@@ -242,7 +252,7 @@ class EpochsStream:
                 f"200 ms. The provided {acquisition_delay} is invalid."
             )
         self._acquisition_delay = acquisition_delay
-        self._n_new_epochs = 0
+        assert self._n_new_epochs == 0  # sanity-check
         # create the buffer and start acquisition in a separate thread
         self._buffer = np.zeros(
             (
