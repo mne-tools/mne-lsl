@@ -1337,14 +1337,15 @@ class BaseEpochsStream(ABC):
                 "The buffer size, i.e. the number of epochs in the buffer, must be a "
                 "positive integer."
             )
-        self._event_id = _ensure_event_id_dict(event_id)
-        _check_baseline(baseline)
+        self._event_id = ensure_event_id_dict(event_id)
+        check_baseline(baseline)
         self._baseline = baseline
-        _check_reject_flat(reject, flat, stream.info)
+        check_reject_flat(reject, flat, stream.info)
         self._reject = reject
         self._flat = flat
-        check_type(reject_tmin, (float, None), "reject_tmin")
-        check_type(reject_tmax, (float, None), "reject_tmax")
+        check_reject_tmin_tmax(reject_tmin, reject_tmax, tmin, tmax)
+        self._reject_tmin = reject_tmin
+        self._reject_tmax = reject_tmax
         check_type(detrend, (int, str, None), "detrend")
         # mark the stream(s) as being epoched, which will prevent further channel
         # modification and buffer size modifications.
@@ -1364,7 +1365,7 @@ class BaseEpochsStream(ABC):
         """Representation of the instance."""
 
 
-def _ensure_event_id_dict(
+def ensure_event_id_dict(
     event_id: Union[int, str, dict[str, Union[int, str]]],
 ) -> dict[str, Union[str, int]]:
     """Ensure event_ids is a dictionary."""
@@ -1397,7 +1398,7 @@ def _ensure_event_id_dict(
     return event_id
 
 
-def _check_baseline(
+def check_baseline(
     baseline: Optional[tuple[Optional[float], Optional[float]]],
     tmin: float,
     tmax: float,
@@ -1422,7 +1423,7 @@ def _check_baseline(
         )
 
 
-def _check_reject_flat(
+def check_reject_flat(
     reject: Optional[dict[str, float]], flat: Optional[dict[str, float]], info: Info
 ) -> None:
     """Check that the PTP rejection dictionaries are valid."""
@@ -1459,3 +1460,30 @@ def _check_reject_flat(
                     f"The flat rejection value for channel type '{key}' must be a "
                     "positive number."
                 )
+
+
+def check_reject_tmin_tmax(
+    reject_tmin: Optional[float], reject_tmax: Optional[float], tmin: float, tmax: float
+) -> None:
+    """Check that the rejection time window is valid."""
+    check_type(reject_tmin, ("numeric", None), "reject_tmin")
+    check_type(reject_tmax, ("numeric", None), "reject_tmax")
+    if reject_tmin is not None and reject_tmin < tmin:
+        raise ValueError(
+            "The beginning of the rejection time window must be greater than or equal "
+            "to the beginning of the epoch period 'tmin'."
+        )
+    if reject_tmax is not None and tmax < reject_tmax:
+        raise ValueError(
+            "The end of the rejection time window must be less than or equal to the "
+            "end of the epoch period 'tmax'."
+        )
+    if (
+        reject_tmin is not None
+        and reject_tmax is not None
+        and reject_tmax <= reject_tmin
+    ):
+        raise ValueError(
+            "The end of the rejection time window must be greater than the beginning "
+            "of the rejection time window."
+        )
