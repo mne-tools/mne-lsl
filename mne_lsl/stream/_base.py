@@ -1338,6 +1338,8 @@ class BaseEpochsStream(ABC):
                 "positive integer."
             )
         self._event_id = _ensure_event_id_dict(event_id)
+        _check_baseline(baseline)
+        self._baseline = baseline
         check_type(baseline, (tuple, None), "baseline")
         check_type(reject, (dict, None), "reject")
         check_type(flat, (dict, None), "flat")
@@ -1393,3 +1395,28 @@ def _ensure_event_id_dict(
             "strings."
         )
     return event_id
+
+
+def _check_baseline(
+    baseline: Optional[tuple[Optional[float], Optional[float]]],
+    tmin: float,
+    tmax: float,
+) -> None:
+    """Check that the baseline is valid."""
+    check_type(baseline, (tuple, None), "baseline")
+    if baseline is None:
+        return
+    if len(baseline) != 2:
+        raise ValueError("The baseline must be a tuple of 2 elements.")
+    check_type(baseline[0], ("numeric", None), "baseline[0]")
+    check_type(baseline[1], ("numeric", None), "baseline[1]")
+    if baseline[0] is not None and baseline[0] < tmin:
+        raise ValueError(
+            "The beginning of the baseline period must be greater than or equal to "
+            "the beginning of the epoch period 'tmin'."
+        )
+    if baseline[1] is not None and tmax < baseline[1]:
+        raise ValueError(
+            "The end of the baseline period must be less than or equal to the end of "
+            "the epoch period 'tmax'."
+        )
