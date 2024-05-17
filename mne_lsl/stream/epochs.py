@@ -274,9 +274,9 @@ class EpochsStream:
         while self._acquisition_thread.is_alive():
             self._acquisition_thread.cancel()
         self._reset_variables()
-        self._stream._epoched -= 1
+        self._stream._epochs.remove(self)
         if self._event_stream is not None:
-            self._event_stream._epoched -= 1
+            self._event_stream._epochs.remove(self)
 
     def _acquire(self) -> None:
         """Update function looking for new epochs."""
