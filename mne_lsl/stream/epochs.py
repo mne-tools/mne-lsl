@@ -328,6 +328,16 @@ class EpochsStream:
         """
         return self._info
 
+    @property
+    def n_new_epochs(self) -> int:
+        """Number of new epochs available in the buffer.
+
+        The number of new epochs is reset at every ``Stream.get_data`` call.
+
+        :type: :class:`int`
+        """
+        return self._n_new_epochs
+
 
 def _ensure_event_id_dict(
     event_id: Union[int, str, dict[str, Union[int, str]]],
