@@ -63,7 +63,6 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
                 f"{bufsize} is invalid."
             )
         self._bufsize = bufsize
-        self._epochs = []
 
     @copy_doc(ContainsMixin.__contains__)
     def __contains__(self, ch_type: str) -> bool:
