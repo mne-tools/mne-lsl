@@ -635,7 +635,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         if len(self._epochs) != 0:
             warn(
                 "The Stream is being epoched by an EpochsStream object. Altering the "
-                "filters will altern the filters in the future epochs."
+                "filters will alter the filters in the future epochs."
             )
         # validate the arguments and ensure 'sos' output
         check_type(freqs, ("numeric",), "freqs")
