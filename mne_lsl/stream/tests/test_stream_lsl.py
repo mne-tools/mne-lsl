@@ -1,6 +1,7 @@
 from __future__ import annotations  # c.f. PEP 563, PEP 649
 
 import logging
+import multiprocessing as mp
 import os
 import platform
 import re
@@ -64,18 +65,6 @@ def mock_lsl_stream_int(request):
     raw = RawArray(data, info)
 
     with PlayerLSL(raw, name=f"P_{request.node.name}", chunk_size=200) as player:
-        yield player
-
-
-@pytest.fixture()
-def mock_lsl_stream_annotations(raw_annotations, request):
-    """Create a mock LSL stream streaming the channel number continuously."""
-    # nest the PlayerLSL import to first write the temporary LSL configuration file
-    from mne_lsl.player import PlayerLSL  # noqa: E402
-
-    with PlayerLSL(
-        raw_annotations, name=f"P_{request.node.name}", chunk_size=200
-    ) as player:
         yield player
 
 
@@ -657,7 +646,32 @@ def test_stream_irregularly_sampled(close_io):
     close_io()
 
 
-def test_stream_annotations_picks(mock_lsl_stream_annotations):
+@pytest.fixture()
+def _mock_lsl_stream_annotations(raw_annotations, request):
+    """Create a mock LSL stream streaming the channel number continuously."""
+
+    def player(raw: BaseRaw, name: str, status: mp.Value) -> None:
+        # nest the PlayerLSL import to first write the temporary LSL configuration file
+        from mne_lsl.player import PlayerLSL
+
+        player = PlayerLSL(raw, name=name, chunk_size=200)
+        player.start()
+        while status.value:
+            time.sleep(0.1)
+        player.stop()
+
+    status = mp.Value("i", 1)
+    process = mp.Process(
+        target=player, args=(raw_annotations, f"P_{request.node.name}", status)
+    )
+    process.start()
+    yield
+    status.value = 0
+    process.join()
+
+
+@pytest.mark.usefixtures("_mock_lsl_stream_annotations")
+def test_stream_annotations_picks():
     """Test sub-selection of annotations."""
     stream = Stream(bufsize=5, stype="annotations").connect().pick("test1")
     time.sleep(5)  # acquire data

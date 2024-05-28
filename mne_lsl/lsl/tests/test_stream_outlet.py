@@ -11,6 +11,17 @@ from mne_lsl.lsl.constants import string2numpy
 from mne_lsl.lsl.stream_info import _BaseStreamInfo
 
 
+def _test_properties(outlet, dtype_str, n_channels, name, sfreq, stype):
+    """Test the properties of an outlet against expected values."""
+    assert outlet.dtype == string2numpy.get(dtype_str, dtype_str)
+    assert outlet.n_channels == n_channels
+    assert outlet.name == name
+    assert outlet.sfreq == sfreq
+    assert outlet.stype == stype
+    sinfo = outlet.get_sinfo()
+    assert isinstance(sinfo, _BaseStreamInfo)
+
+
 @pytest.mark.parametrize(
     ("dtype_str", "dtype"),
     [
@@ -251,14 +262,3 @@ def test_push_chunk_irregularly_sampled_stream(close_io):
     with pytest.raises(RuntimeError, match="was supplied as an array of zeros"):
         outlet.push_chunk(x, timestamp=np.zeros(x.shape[0]))
     close_io()
-
-
-def _test_properties(outlet, dtype_str, n_channels, name, sfreq, stype):
-    """Test the properties of an outlet against expected values."""
-    assert outlet.dtype == string2numpy.get(dtype_str, dtype_str)
-    assert outlet.n_channels == n_channels
-    assert outlet.name == name
-    assert outlet.sfreq == sfreq
-    assert outlet.stype == stype
-    sinfo = outlet.get_sinfo()
-    assert isinstance(sinfo, _BaseStreamInfo)
