@@ -22,6 +22,8 @@ def test_data_path(dataset):
 )
 def test_make_registry(tmp_path, dataset, registry):
     """Test the registrytmp_path making."""
+    if dataset != testing and os.getenv("GITHUB_ACTIONS", "") == "true":
+        pytest.skip("Skip sample dataset download on GitHub Actions.")
     dataset._make_registry(dataset.data_path(), output=tmp_path / "registry.txt")
     assert (tmp_path / "registry.txt").exists()
     assert sha256sum(tmp_path / "registry.txt") == sha256sum(registry)
