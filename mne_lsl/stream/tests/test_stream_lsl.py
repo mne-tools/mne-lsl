@@ -50,34 +50,37 @@ class DummyPlayer:
         self.__dict__.update(kwargs)
 
 
+def _player_mock_lsl_stream(
+    fname: Path,
+    name: str,
+    chunk_size: int,
+    status: mp.managers.ValueProxy,
+    info: mp.managers.DictProxy,
+) -> None:
+    """Player for the 'mock_lsl_stream' fixture."""
+    # nest the PlayerLSL import to first write the temporary LSL configuration file
+    from mne_lsl.player import PlayerLSL  # noqa: E402
+
+    player = PlayerLSL(fname, chunk_size=chunk_size, name=name)
+    player.start()
+    info.update(player.info)
+    status.value = 1
+    while status.value:
+        time.sleep(0.1)
+    player.stop()
+
+
 @pytest.fixture()
 def mock_lsl_stream(fname, request):
     """Create a mock LSL stream for testing."""
-
-    def player(
-        fname: Path,
-        name: str,
-        chunk_size: int,
-        status: mp.managers.ValueProxy,
-        info: mp.managers.DictProxy,
-    ) -> None:
-        # nest the PlayerLSL import to first write the temporary LSL configuration file
-        from mne_lsl.player import PlayerLSL  # noqa: E402
-
-        player = PlayerLSL(fname, chunk_size=chunk_size, name=name)
-        player.start()
-        info.update(player.info)
-        status.value = 1
-        while status.value:
-            time.sleep(0.1)
-        player.stop()
-
     manager = mp.Manager()
     status = manager.Value("i", 0)
     chunk_size = 200
     info = manager.dict()
     name = f"P_{request.node.name}"
-    process = mp.Process(target=player, args=(fname, name, chunk_size, status, info))
+    process = mp.Process(
+        target=_player_mock_lsl_stream, args=(fname, name, chunk_size, status, info)
+    )
     process.start()
     while status.value != 1:
         pass
@@ -497,37 +500,40 @@ def test_stream_invalid_interrupt(mock_lsl_stream):
             pass
 
 
+def _player_mock_lsl_stream_int(
+    name: str,
+    status: mp.managers.ValueProxy,
+    chunk_size: int,
+    info: mp.managers.DictProxy,
+) -> None:
+    """Player for the 'mock_lsl_stream_int' fixture."""
+    # nest the PlayerLSL import to first write the temporary LSL configuration file
+    from mne_lsl.player import PlayerLSL  # noqa: E402
+
+    data = np.full((5, 1000), np.arange(5).reshape(-1, 1))
+    raw = RawArray(data, create_info(5, 1000, "eeg"))
+
+    player = PlayerLSL(raw, chunk_size=chunk_size, name=f"P_{request.node.name}")
+    player.start()
+    info.update(player.info)
+    status.value = 1
+    while status.value:
+        time.sleep(0.1)
+    player.stop()
+    (player.chunk_size / player.info["sfreq"])
+
+
 @pytest.fixture()
 def mock_lsl_stream_int(request):
     """Create a mock LSL stream streaming the channel number continuously."""
-
-    def player(
-        name: str,
-        status: mp.managers.ValueProxy,
-        chunk_size: int,
-        info: mp.managers.DictProxy,
-    ) -> None:
-        # nest the PlayerLSL import to first write the temporary LSL configuration file
-        from mne_lsl.player import PlayerLSL  # noqa: E402
-
-        data = np.full((5, 1000), np.arange(5).reshape(-1, 1))
-        raw = RawArray(data, create_info(5, 1000, "eeg"))
-
-        player = PlayerLSL(raw, chunk_size=chunk_size, name=f"P_{request.node.name}")
-        player.start()
-        info.update(player.info)
-        status.value = 1
-        while status.value:
-            time.sleep(0.1)
-        player.stop()
-        (player.chunk_size / player.info["sfreq"])
-
     manager = mp.Manager()
     status = manager.Value("i", 0)
     chunk_size = 200
     info = manager.dict()
     name = f"P_{request.node.name}"
-    process = mp.Process(target=player, args=(name, status, chunk_size, info))
+    process = mp.Process(
+        target=_player_mock_lsl_stream_int, args=(name, status, chunk_size, info)
+    )
     process.start()
     while status.value != 1:
         pass
@@ -688,25 +694,29 @@ def test_stream_irregularly_sampled(close_io):
     close_io()
 
 
+def _player_mock_lsl_stream_annotations(
+    raw: BaseRaw, name: str, status: mp.managers.ProxyValue
+) -> None:
+    """Player for the '_mock_lsl_stream_annotations' fixture."""
+    # nest the PlayerLSL import to first write the temporary LSL configuration file
+    from mne_lsl.player import PlayerLSL
+
+    player = PlayerLSL(raw, chunk_size=200, name=name)
+    player.start()
+    status.value = 1
+    while status.value:
+        time.sleep(0.1)
+    player.stop()
+
+
 @pytest.fixture()
 def _mock_lsl_stream_annotations(raw_annotations, request):
     """Create a mock LSL stream streaming the channel number continuously."""
-
-    def player(raw: BaseRaw, name: str, status: mp.managers.ProxyValue) -> None:
-        # nest the PlayerLSL import to first write the temporary LSL configuration file
-        from mne_lsl.player import PlayerLSL
-
-        player = PlayerLSL(raw, chunk_size=200, name=name)
-        player.start()
-        status.value = 1
-        while status.value:
-            time.sleep(0.1)
-        player.stop()
-
     manager = mp.Manager()
     status = manager.Value("i", 0)
     process = mp.Process(
-        target=player, args=(raw_annotations, f"P_{request.node.name}", status)
+        target=_player_mock_lsl_stream_annotations,
+        args=(raw_annotations, f"P_{request.node.name}", status),
     )
     process.start()
     yield
@@ -793,32 +803,36 @@ def raw_sinusoids() -> BaseRaw:
     return RawArray(data, info)
 
 
+def _player_mock_lsl_stream_sinusoids(
+    raw: BaseRaw,
+    name: str,
+    status: mp.managers.ValueProxy,
+    ch_names: mp.managers.ListProxy,
+) -> None:
+    """Player for the 'mock_lsl_stream_sinusoids' fixture."""
+    # nest the PlayerLSL import to first write the temporary LSL configuration file
+    from mne_lsl.player import PlayerLSL
+
+    player = PlayerLSL(raw, chunk_size=200, name=name)
+    player.start()
+    ch_names.extend(player.info["ch_names"])
+    status.value = 1
+    while status.value:
+        time.sleep(0.1)
+    player.stop()
+
+
 @pytest.fixture()
 def mock_lsl_stream_sinusoids(raw_sinusoids, request):
     """Create a mock LSL stream streaming sinusoids."""
-
-    def player(
-        raw: BaseRaw,
-        name: str,
-        status: mp.managers.ValueProxy,
-        ch_names: mp.managers.ListProxy,
-    ) -> None:
-        # nest the PlayerLSL import to first write the temporary LSL configuration file
-        from mne_lsl.player import PlayerLSL
-
-        player = PlayerLSL(raw, chunk_size=200, name=name)
-        player.start()
-        ch_names.extend(player.info["ch_names"])
-        status.value = 1
-        while status.value:
-            time.sleep(0.1)
-        player.stop()
-
     manager = mp.Manager()
     ch_names = manager.list()
     status = manager.Value("i", 0)
     name = f"P_{request.node.name}"
-    process = mp.Process(target=player, args=(raw_sinusoids, name, status, ch_names))
+    process = mp.Process(
+        target=_player_mock_lsl_stream_sinusoids,
+        args=(raw_sinusoids, name, status, ch_names),
+    )
     process.start()
     while status.value != 1:
         pass
