@@ -1,9 +1,9 @@
 from __future__ import annotations  # c.f. PEP 563, PEP 649
 
 from abc import ABC, abstractmethod
+from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
 from math import ceil
-from threading import Timer
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -277,6 +277,8 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             )
         self._acquisition_delay = acquisition_delay
         self._n_new_samples = 0
+        self._executor = ThreadPoolExecutor(max_workers=1)
+        logger.debug("%s: ThreadPoolExecutor started.", self)
         # This method needs to connect to a stream, retrieve the stream information and
         # create the ringbuffer. By the end of this method, the following variables
         # must exist:
@@ -299,8 +301,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         """
         self._check_connected(name="disconnect()")
         self._interrupt = True
-        while self._acquisition_thread.is_alive():
-            self._acquisition_thread.cancel()
+        self._executor.shutdown(wait=True, cancel_futures=True)
         # This method needs to close any inlet/network object and need to end with
         # self._reset_variables().
 
@@ -997,18 +998,6 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
                 "with an irregular sampling rate."
             )
 
-    def _create_acquisition_thread(self, delay: float) -> None:
-        """Create and start the daemonic acquisition thread.
-
-        Parameters
-        ----------
-        delay : float
-            Delay after which the thread will call the acquire function.
-        """
-        self._acquisition_thread = Timer(delay, self._acquire)
-        self._acquisition_thread.daemon = True
-        self._acquisition_thread.start()
-
     @contextmanager
     def _interrupt_acquisition(self):
         """Context manager interrupting the acquisition thread."""
@@ -1019,13 +1008,14 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
                 "error traceback to the developers."
             )
         self._interrupt = True
-        while self._acquisition_thread.is_alive():
-            self._acquisition_thread.cancel()
+        # it's simpler to shutdown the executor entirely and create a new one
+        self._executor.shutdown(wait=True, cancel_futures=True)
         try:  # ensure "finally" is reached even when failures occur
             yield
         finally:
             self._interrupt = False
-            self._create_acquisition_thread(0)
+            self._executor = ThreadPoolExecutor(max_workers=1)
+            self._executor.submit(self._acquire)
 
     def _pick(self, picks: ScalarIntArray) -> None:
         """Interrupt acquisition and apply the channel selection."""
@@ -1061,17 +1051,17 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
     @abstractmethod
     def _reset_variables(self) -> None:
         """Reset variables define after connection."""
-        self._acquisition_thread = None
         self._acquisition_delay = None
+        self._added_channels = []
+        self._buffer = None
+        self._executor = None
+        self._filters = []
         self._info = None
         self._interrupt = False
-        self._buffer = None
         self._n_new_samples = None
         self._picks_inlet = None
-        self._added_channels = []
         self._ref_channels = None
         self._ref_from = None
-        self._filters = []
         self._timestamps = None
         # This method needs to reset any stream-system-specific variables, e.g. an inlet
         # or a StreamInfo for LSL streams.
@@ -1104,8 +1094,8 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         attributes = (
             "_info",
             "_acquisition_delay",
-            "_acquisition_thread",
             "_buffer",
+            "_executor",
             "_picks_inlet",
             "_timestamps",
         )

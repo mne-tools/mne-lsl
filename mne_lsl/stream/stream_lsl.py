@@ -2,6 +2,7 @@ from __future__ import annotations  # c.f. PEP 563, PEP 649
 
 import os
 from math import ceil
+from time import sleep
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -197,8 +198,8 @@ class StreamLSL(BaseStream):
                 ceil(self._bufsize * self._inlet.sfreq), dtype=np.float64
             )
         self._picks_inlet = np.arange(0, self._inlet.n_channels)
-        # define the acquisition thread
-        self._create_acquisition_thread(0)
+        # submit the first acqusition job
+        self._executor.submit(self._acquire)
         return self
 
     def disconnect(self) -> StreamLSL:
@@ -227,7 +228,8 @@ class StreamLSL(BaseStream):
             data, timestamps = self._inlet.pull_chunk(timeout=0.0)
             if timestamps.size == 0:
                 if not self._interrupt:
-                    self._create_acquisition_thread(self._acquisition_delay)
+                    sleep(self._acquisition_delay)
+                    self._executor.submit(self._acquire)
                 return  # interrupt early
 
             # process acquisition window
@@ -243,7 +245,8 @@ class StreamLSL(BaseStream):
             timestamps = timestamps[-self._timestamps.size :]
             if self._stype == "annotations" and np.count_nonzero(data) == 0:
                 if not self._interrupt:
-                    self._create_acquisition_thread(self._acquisition_delay)
+                    sleep(self._acquisition_delay)
+                    self._executor.submit(self._acquire)
                 return  # interrupt early
             if len(self._added_channels) != 0:
                 refs = np.zeros(
@@ -296,7 +299,8 @@ class StreamLSL(BaseStream):
                 raise error
         else:
             if not self._interrupt:
-                self._create_acquisition_thread(self._acquisition_delay)
+                sleep(self._acquisition_delay)
+                self._executor.submit(self._acquire)
 
     def _reset_variables(self) -> None:
         """Reset variables define after connection."""
