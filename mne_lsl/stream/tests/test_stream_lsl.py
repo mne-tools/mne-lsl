@@ -100,6 +100,16 @@ def acquisition_delay(request):
     return request.param
 
 
+def _sleep_until_new_data(acq_delay, player):
+    """Sleep until new data is available, majorated by 10%."""
+    time.sleep(
+        max(
+            1.5 * acq_delay,
+            1.5 * (player.chunk_size / player.info["sfreq"]),
+        )
+    )
+
+
 def test_stream(mock_lsl_stream, acquisition_delay, raw):
     """Test a valid Stream."""
     # test connect/disconnect
@@ -120,7 +130,7 @@ def test_stream(mock_lsl_stream, acquisition_delay, raw):
     assert stream.get_channel_types() == raw.get_channel_types()
     assert stream.info["sfreq"] == raw.info["sfreq"]
     # check fs and that the returned data array is in raw a couple of times
-    time.sleep(0.1)  # give a bit of time to the stream to acquire the first chunks
+    time.sleep(2)  # give a bit of time to the stream to acquire the first chunks
     for _ in range(3):
         data, ts = stream.get_data(winsize=0.1)
         assert ts.size == data.shape[1]
@@ -193,7 +203,7 @@ def test_stream_double_connection(mock_lsl_stream):
     """Test connecting twice to a stream."""
     stream = Stream(bufsize=2, name=mock_lsl_stream.name)
     stream.connect()
-    time.sleep(0.1)  # give a bit of time to the stream to acquire the first chunks
+    time.sleep(0.5)  # give a bit of time to the stream to acquire the first chunks
     with pytest.warns(RuntimeWarning, match="stream is already connected"):
         stream.connect()
     stream.disconnect()
@@ -204,11 +214,11 @@ def test_stream_drop_channels(mock_lsl_stream, acquisition_delay, raw):
     """Test dropping channels."""
     stream = Stream(bufsize=2, name=mock_lsl_stream.name)
     stream.connect(acquisition_delay=acquisition_delay)
-    time.sleep(0.1)  # give a bit of time to the stream to acquire the first chunks
+    time.sleep(2)  # give a bit of time to the stream to acquire the first chunks
     stream.drop_channels("hEOG")
     raw_ = raw.copy().drop_channels("hEOG")
     assert stream.ch_names == raw_.ch_names
-    time.sleep(0.2)
+    time.sleep(1)
     for _ in range(3):
         data, _ = stream.get_data(winsize=0.1)
         match_stream_and_raw_data(data, raw_)
@@ -216,7 +226,7 @@ def test_stream_drop_channels(mock_lsl_stream, acquisition_delay, raw):
     stream.drop_channels(["F7", "Fp2"])
     raw_ = raw_.drop_channels(["F7", "Fp2"])
     assert stream.ch_names == raw_.ch_names
-    time.sleep(0.2)
+    time.sleep(1)
     for _ in range(3):
         data, _ = stream.get_data(winsize=0.1)
         match_stream_and_raw_data(data, raw_)
@@ -228,7 +238,7 @@ def test_stream_drop_channels(mock_lsl_stream, acquisition_delay, raw):
     raw_.set_channel_types({"M1": "emg", "M2": "emg"})
     raw_.pick("emg")
     assert stream.ch_names == raw_.ch_names
-    time.sleep(0.2)
+    time.sleep(1)
     for _ in range(3):
         data, _ = stream.get_data(winsize=0.1)
         match_stream_and_raw_data(data, raw_)
@@ -247,14 +257,14 @@ def test_stream_pick(mock_lsl_stream, acquisition_delay, raw):
     """Test channel selection."""
     stream = Stream(bufsize=2, name=mock_lsl_stream.name)
     stream.connect(acquisition_delay=acquisition_delay)
-    time.sleep(0.1)  # give a bit of time to the stream to acquire the first chunks
+    time.sleep(2)  # give a bit of time to the stream to acquire the first chunks
     stream.info["bads"] = ["Fp2"]
     stream.pick("eeg", exclude="bads")
     raw_ = raw.copy()
     raw_.info["bads"] = ["Fp2"]
     raw_.pick("eeg", exclude="bads")
     assert stream.ch_names == raw_.ch_names
-    time.sleep(0.2)
+    time.sleep(1)
     for _ in range(3):
         data, _ = stream.get_data(winsize=0.1)
         match_stream_and_raw_data(data, raw_)
@@ -266,7 +276,7 @@ def test_stream_pick(mock_lsl_stream, acquisition_delay, raw):
     raw_.set_channel_types({"M1": "emg", "M2": "emg"})
     raw_.pick("eeg")
     assert stream.ch_names == raw_.ch_names
-    time.sleep(0.2)
+    time.sleep(1)
     for _ in range(3):
         data, _ = stream.get_data(winsize=0.1)
         match_stream_and_raw_data(data, raw_)
@@ -276,7 +286,7 @@ def test_stream_pick(mock_lsl_stream, acquisition_delay, raw):
     stream.drop_channels(["F1", "F2"])
     raw_.drop_channels(["F1", "F2"])
     assert stream.ch_names == raw_.ch_names
-    time.sleep(0.2)
+    time.sleep(1)
     for _ in range(3):
         data, _ = stream.get_data(winsize=0.1)
         match_stream_and_raw_data(data, raw_)
@@ -288,7 +298,7 @@ def test_stream_pick(mock_lsl_stream, acquisition_delay, raw):
     )
     raw_.pick([raw_.ch_names[1], raw_.ch_names[3], raw_.ch_names[5], raw_.ch_names[8]])
     assert stream.ch_names == raw_.ch_names
-    time.sleep(0.2)
+    time.sleep(1)
     for _ in range(3):
         data, _ = stream.get_data(winsize=0.1)
         match_stream_and_raw_data(data, raw_)
@@ -338,7 +348,6 @@ def test_stream_channel_names(mock_lsl_stream, raw):
     raw_ = raw.copy().rename_channels({"M1": "EMG1", "M2": "EMG2"})
     assert stream.ch_names == raw_.ch_names
     assert stream.info["ch_names"] == raw_.ch_names
-
     # rename after channel selection
     stream.drop_channels("vEOG")
     raw_.drop_channels("vEOG")
@@ -347,9 +356,16 @@ def test_stream_channel_names(mock_lsl_stream, raw):
     assert stream.ch_names == raw_.ch_names
     assert stream.info["ch_names"] == raw_.ch_names
     # acquire a couple of chunks
-    time.sleep(0.2)
+    time.sleep(1)
+    reference_data = None
     for _ in range(3):
         data, _ = stream.get_data(winsize=0.1)
+        if reference_data is not None:
+            with pytest.raises(AssertionError, match="Not equal to tolerance"):
+                assert_allclose(data, reference_data)
+            reference_data = data
+        else:
+            reference_data = data
         match_stream_and_raw_data(data, raw_)
         _sleep_until_new_data(stream._acquisition_delay, mock_lsl_stream)
     stream.disconnect()
@@ -378,9 +394,16 @@ def test_stream_channel_units(mock_lsl_stream, raw):
     assert ch_units[stream.ch_names.index("F7")][1] == -6
     assert ch_units[stream.ch_names.index("vEOG")][1] == 6
     # acquire a couple of chunks
-    time.sleep(0.2)
+    time.sleep(1)
+    reference_data = None
     for _ in range(3):
         data, _ = stream.get_data(winsize=0.1)
+        if reference_data is not None:
+            with pytest.raises(AssertionError, match="Not equal to tolerance"):
+                assert_allclose(data, reference_data)
+            reference_data = data
+        else:
+            reference_data = data
         match_stream_and_raw_data(data, raw_)
         _sleep_until_new_data(stream._acquisition_delay, mock_lsl_stream)
     stream.disconnect()
@@ -395,7 +418,7 @@ def test_stream_add_reference_channels(mock_lsl_stream, acquisition_delay, raw):
     stream.add_reference_channels("CPz")
     raw_ = raw.copy().add_reference_channels("CPz")
     assert stream.ch_names == raw_.ch_names
-    time.sleep(0.2)
+    time.sleep(1)
     # acquire a couple of chunks
     for _ in range(3):
         data, _ = stream.get_data(winsize=0.1)
@@ -405,7 +428,7 @@ def test_stream_add_reference_channels(mock_lsl_stream, acquisition_delay, raw):
     raw_.add_reference_channels(["Ref1", "Ref2"])
     assert stream.ch_names == raw_.ch_names
     # acquire a couple of chunks
-    time.sleep(0.2)
+    time.sleep(1)
     for _ in range(3):
         data, _ = stream.get_data(winsize=0.1)
         match_stream_and_raw_data(data, raw_)
@@ -413,7 +436,7 @@ def test_stream_add_reference_channels(mock_lsl_stream, acquisition_delay, raw):
     # pick channels
     stream.pick("eeg")
     raw_.pick("eeg")
-    time.sleep(0.2)
+    time.sleep(1)
     for _ in range(3):
         data, _ = stream.get_data(winsize=0.1)
         match_stream_and_raw_data(data, raw_)
@@ -423,7 +446,7 @@ def test_stream_add_reference_channels(mock_lsl_stream, acquisition_delay, raw):
     # add reference channel again
     stream.add_reference_channels("Ref3")
     raw_.add_reference_channels("Ref3")
-    time.sleep(0.2)
+    time.sleep(1)
     for _ in range(3):
         data, _ = stream.get_data(winsize=0.1)
         match_stream_and_raw_data(data, raw_)
@@ -456,13 +479,13 @@ def test_stream_get_data_picks(mock_lsl_stream, acquisition_delay, raw):
     raw_ = raw.copy().add_reference_channels("CPz")
     raw_.pick("eeg")
     # acquire a couple of chunks
-    time.sleep(0.2)
+    time.sleep(1)
     for _ in range(3):
         data, _ = stream.get_data(winsize=0.1, picks="eeg")
         match_stream_and_raw_data(data, raw_)
         _sleep_until_new_data(acquisition_delay, mock_lsl_stream)
     raw_.pick(["F7", "F2", "F4"])
-    time.sleep(0.2)
+    time.sleep(1)
     for _ in range(3):
         data, _ = stream.get_data(winsize=0.1, picks=["F7", "F2", "F4"])
         match_stream_and_raw_data(data, raw_)
@@ -475,7 +498,7 @@ def test_stream_n_new_samples(mock_lsl_stream, caplog):
     stream = Stream(bufsize=0.4, name=mock_lsl_stream.name)
     assert stream._n_new_samples is None
     stream.connect()
-    time.sleep(0.1)  # give a bit of time to slower CIs
+    time.sleep(2)  # give a bit of time to slower CIs
     assert stream.n_new_samples > 0
     _, _ = stream.get_data()
     # Between the above call and this one, samples could come in...
@@ -484,7 +507,7 @@ def test_stream_n_new_samples(mock_lsl_stream, caplog):
     with _use_log_level("INFO"):
         caplog.set_level(20)  # INFO
         caplog.clear()
-        time.sleep(0.8)
+        time.sleep(1.6)
         assert "new samples exceeds the buffer size" in caplog.text
     _, _ = stream.get_data(winsize=0.1)
     assert stream.n_new_samples < 100
@@ -546,7 +569,7 @@ def test_stream_rereference(mock_lsl_stream_int, acquisition_delay):
     """Test re-referencing an EEG-like stream."""
     stream = Stream(bufsize=0.4, name=mock_lsl_stream_int.name)
     stream.connect(acquisition_delay=acquisition_delay)
-    time.sleep(0.1)  # give a bit of time to slower CIs
+    time.sleep(2)  # give a bit of time to slower CIs
     assert stream.n_new_samples > 0
     data, _ = stream.get_data()
     assert_allclose(data, np.full(data.shape, np.arange(5).reshape(-1, 1)))
@@ -575,9 +598,9 @@ def test_stream_rereference(mock_lsl_stream_int, acquisition_delay):
     time.sleep(0.05)  # give a bit of time to slower CIs
 
     stream.connect()
-    time.sleep(0.1)
+    time.sleep(1)
     stream.add_reference_channels("5")
-    time.sleep(0.1)
+    time.sleep(1)
     data, _ = stream.get_data()
     data_ref = np.full(data.shape, np.arange(data.shape[0]).reshape(-1, 1))
     data_ref[-1, :] = np.zeros(data.shape[1])
@@ -600,7 +623,7 @@ def test_stream_rereference_average(mock_lsl_stream_int):
     """Test average re-referencing schema."""
     stream = Stream(bufsize=0.4, name=mock_lsl_stream_int.name)
     stream.connect()
-    time.sleep(0.1)  # give a bit of time to slower CIs
+    time.sleep(2)  # give a bit of time to slower CIs
     stream.set_channel_types({"2": "ecg"})  # channels: 0, 1, 2, 3, 4
     data, _ = stream.get_data(picks="eeg")
     picks = pick_types(stream.info, eeg=True)
@@ -627,16 +650,6 @@ def test_stream_rereference_average(mock_lsl_stream_int):
     data, _ = stream.get_data(picks="eeg")
     assert_allclose(data, data_ref)
     stream.disconnect()
-
-
-def _sleep_until_new_data(acq_delay, player):
-    """Sleep until new data is available, majorated by 10%."""
-    time.sleep(
-        max(
-            1.1 * acq_delay,
-            1.1 * (player.chunk_size / player.info["sfreq"]),
-        )
-    )
 
 
 def test_stream_str(close_io):
@@ -678,13 +691,13 @@ def test_stream_irregularly_sampled(close_io):
     stream = Stream(bufsize=10, name="test_stream_irregularly_sampled")
     with pytest.warns(RuntimeWarning, match="while reading the channel description"):
         stream.connect()
-    time.sleep(0.1)  # give a bit of time to the stream to acquire the first chunks
+    time.sleep(2)  # give a bit of time to the stream to acquire the first chunks
     assert stream.connected
     data, _ = stream.get_data()
     expected = np.zeros(stream.n_buffer, dtype=stream.dtype)
     assert_allclose(data.squeeze(), expected)
     outlet.push_sample(np.array([1]))
-    time.sleep(0.01)
+    time.sleep(0.5)
     data, _ = stream.get_data()
     expected[-1] = 1
     assert_allclose(data.squeeze(), expected)
@@ -738,19 +751,19 @@ def test_stream_filter_deletion(mock_lsl_stream, caplog):
     """Test deletion of filters applied to a Stream."""
     # test no filter
     stream = Stream(bufsize=2.0, name=mock_lsl_stream.name).connect()
-    time.sleep(0.1)
+    time.sleep(2)
     with pytest.raises(RuntimeError, match="No filter to remove."):
         stream.del_filter("all")
     with pytest.raises(RuntimeError, match="No filter to remove."):
         stream.del_filter(0)
     # test valid deletion
     stream.filter(1, 100, picks=["F7", "F3", "Fz"])
-    time.sleep(0.1)
+    time.sleep(0.5)
     assert len(stream.filters) == 1
     stream.del_filter("all")
     assert len(stream.filters) == 0
     stream.filter(1, 100, picks=["F7", "F3", "Fz"])
-    time.sleep(0.1)
+    time.sleep(0.5)
     # test invalid
     with pytest.raises(ValueError, match="is provided as str, it must be"):
         stream.del_filter("0")
@@ -858,7 +871,7 @@ def test_stream_filter(mock_lsl_stream_sinusoids, raw_sinusoids):
         heights_orig[k] = dict(idx=peaks, heights=fft_orig[k, peaks])
     # test unfiltered data
     stream = Stream(bufsize=2.0, name=mock_lsl_stream_sinusoids.name).connect()
-    time.sleep(2.1)
+    time.sleep(2.5)
     fft_ = np.abs(fft(stream.get_data()[0], axis=-1)[:, idx])
     for ch, ch_height in heights_orig.items():
         assert_allclose(fft_[ch, ch_height["idx"]], ch_height["heights"], rtol=0.05)
@@ -876,13 +889,13 @@ def test_stream_filter(mock_lsl_stream_sinusoids, raw_sinusoids):
             assert_allclose(fft_[ch, ch_height["idx"]], ch_height["heights"], rtol=0.05)
     # test removing filter
     stream.del_filter(0)
-    time.sleep(2.1)
+    time.sleep(2.5)
     fft_ = np.abs(fft(stream.get_data()[0], axis=-1)[:, idx])
     for ch, ch_height in heights_orig.items():
         assert_allclose(fft_[ch, ch_height["idx"]], ch_height["heights"], rtol=0.05)
     # test adding multiple filters
     stream.filter(20, 70, picks="eeg")
-    time.sleep(2.1)
+    time.sleep(2.5)
     fft_ = np.abs(fft(stream.get_data()[0], axis=-1)[:, idx])
     for ch, ch_height in heights_orig.items():
         if ch == 0:  # 10 Hz removed, 30 Hz retained
@@ -898,7 +911,7 @@ def test_stream_filter(mock_lsl_stream_sinusoids, raw_sinusoids):
                 fft_[ch, ch_height["idx"]][0], ch_height["heights"][0], rtol=0.05
             )
     stream.filter(40, 60, picks="30-50")  # second filter
-    time.sleep(2.1)
+    time.sleep(2.5)
     fft_ = np.abs(fft(stream.get_data()[0], axis=-1)[:, idx])
     for ch, ch_height in heights_orig.items():
         if ch == 0:  # 10 Hz removed, 30 Hz retained
@@ -917,7 +930,7 @@ def test_stream_filter(mock_lsl_stream_sinusoids, raw_sinusoids):
             )
             assert fft_[ch, ch_height["idx"]][1] < 0.15 * ch_height["heights"][1]
     stream.filter(40, 60, picks="eeg")  # third filter
-    time.sleep(2.1)
+    time.sleep(2.5)
     fft_ = np.abs(fft(stream.get_data()[0], axis=-1)[:, idx])
     for ch, ch_height in heights_orig.items():
         if ch == 0:  # 10 Hz removed, 30 Hz removed
@@ -952,7 +965,7 @@ def test_stream_notch_filter(mock_lsl_stream_sinusoids, raw_sinusoids):
     # test filtering
     stream = Stream(bufsize=2.0, name=mock_lsl_stream_sinusoids.name).connect()
     stream.notch_filter(30, picks="10-30")
-    time.sleep(2.1)
+    time.sleep(2.5)
     fft_ = np.abs(fft(stream.get_data()[0], axis=-1)[:, idx])
     for ch, ch_height in heights_orig.items():
         if ch == 0:  # 10 Hz retained, 30 Hz removed
@@ -965,13 +978,13 @@ def test_stream_notch_filter(mock_lsl_stream_sinusoids, raw_sinusoids):
     # test remove filter
     stream.del_filter(0)
     assert len(stream.filters) == 0
-    time.sleep(2.1)
+    time.sleep(2.5)
     fft_ = np.abs(fft(stream.get_data()[0], axis=-1)[:, idx])
     for ch, ch_height in heights_orig.items():
         assert_allclose(fft_[ch, ch_height["idx"]], ch_height["heights"], rtol=0.05)
     # test add filter on all channels
     stream.notch_filter(30, picks="all")
-    time.sleep(2.1)
+    time.sleep(2.5)
     fft_ = np.abs(fft(stream.get_data()[0], axis=-1)[:, idx])
     for ch, ch_height in heights_orig.items():
         if ch == 0:  # 10 Hz retained, 30 Hz removed
@@ -991,7 +1004,7 @@ def test_stream_notch_filter(mock_lsl_stream_sinusoids, raw_sinusoids):
             )
     # test multiple filters
     stream.notch_filter(10, picks="10-30")
-    time.sleep(2.1)
+    time.sleep(2.5)
     fft_ = np.abs(fft(stream.get_data()[0], axis=-1)[:, idx])
     for ch, ch_height in heights_orig.items():
         if ch == 0:  # 10 Hz removed, 30 Hz removed
