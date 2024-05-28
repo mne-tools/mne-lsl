@@ -44,22 +44,8 @@ bad_gh_macos = pytest.mark.skipif(
 
 
 class DummyPlayer:
-    def __init__(self, **kwargs):
+    def __init__(self, /, **kwargs):
         self.__dict__.update(kwargs)
-
-
-@pytest.fixture()
-def mock_lsl_stream_int(request):
-    """Create a mock LSL stream streaming the channel number continuously."""
-    # nest the PlayerLSL import to first write the temporary LSL configuration file
-    from mne_lsl.player import PlayerLSL  # noqa: E402
-
-    info = create_info(5, 1000, "eeg")
-    data = np.full((5, 1000), np.arange(5).reshape(-1, 1))
-    raw = RawArray(data, info)
-
-    with PlayerLSL(raw, name=f"P_{request.node.name}", chunk_size=200) as player:
-        yield player
 
 
 @pytest.fixture(
@@ -473,6 +459,45 @@ def test_stream_invalid_interrupt(mock_lsl_stream):
             pass
 
 
+@pytest.fixture()
+def mock_lsl_stream_int(request):
+    """Create a mock LSL stream streaming the channel number continuously."""
+
+    def player(
+        name: str,
+        status: mp.managers.ValueProxy,
+        chunk_size: int,
+        info: mp.managers.DictProxy,
+    ) -> None:
+        # nest the PlayerLSL import to first write the temporary LSL configuration file
+        from mne_lsl.player import PlayerLSL  # noqa: E402
+
+        data = np.full((5, 1000), np.arange(5).reshape(-1, 1))
+        raw = RawArray(data, create_info(5, 1000, "eeg"))
+
+        player = PlayerLSL(raw, chunk_size=chunk_size, name=f"P_{request.node.name}")
+        player.start()
+        info.update(player.info)
+        status.value = 1
+        while status.value:
+            time.sleep(0.1)
+        player.stop()
+        (player.chunk_size / player.info["sfreq"])
+
+    manager = mp.Manager()
+    status = manager.Value("i", 0)
+    chunk_size = 200
+    info = manager.dict()
+    name = f"P_{request.node.name}"
+    process = mp.Process(target=player, args=(name, status, chunk_size, info))
+    process.start()
+    while status.value != 1:
+        pass
+    yield DummyPlayer(name=name, chunk_size=chunk_size, info=dict(info))
+    status.value = 0
+    process.join()
+
+
 def test_stream_rereference(mock_lsl_stream_int, acquisition_delay):
     """Test re-referencing an EEG-like stream."""
     stream = Stream(bufsize=0.4, name=mock_lsl_stream_int.name)
@@ -629,7 +654,7 @@ def test_stream_irregularly_sampled(close_io):
 def _mock_lsl_stream_annotations(raw_annotations, request):
     """Create a mock LSL stream streaming the channel number continuously."""
 
-    def player(raw: BaseRaw, name: str, status: mp.Value) -> None:
+    def player(raw: BaseRaw, name: str, status: mp.managers.ProxyValue) -> None:
         # nest the PlayerLSL import to first write the temporary LSL configuration file
         from mne_lsl.player import PlayerLSL
 
@@ -640,7 +665,8 @@ def _mock_lsl_stream_annotations(raw_annotations, request):
             time.sleep(0.1)
         player.stop()
 
-    status = mp.Value("i", 0)
+    manager = mp.Manager()
+    status = manager.Value("i", 0)
     process = mp.Process(
         target=player, args=(raw_annotations, f"P_{request.node.name}", status)
     )
