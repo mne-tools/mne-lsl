@@ -30,3 +30,8 @@ API changes
 
 - The :class:`~mne_lsl.player.PlayerLSL` default ``chunk_size`` is now set to 10 instead of 64 samples (:pr:`264` by `Mathieu Scheltienne`_)
 - The ``Player`` and ``Stream`` objects now use a :class:`concurrent.futures.ThreadPoolExecutor` instead of single-use threads (:pr:`264` by `Mathieu Scheltienne`_)
+
+Infrastructure
+--------------
+
+- Improve unit tests by (1) using a ``chunk_size`` of 200 samples in players, (2) running players in a separate process, (3) ensuring concurrent threads are not limited by one thread hogging the limited CI resources (:pr:`264` by `Mathieu Scheltienne`_)
