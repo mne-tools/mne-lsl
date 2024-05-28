@@ -20,7 +20,7 @@ def run():
         type=int,
         metavar="int",
         help="number of samples pushed at once via LSL.",
-        default=16,
+        default=10,
     )
     parser.add_argument(
         "-n",
