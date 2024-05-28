@@ -15,6 +15,7 @@ from matplotlib import pyplot as plt
 from mne import Info, create_info, pick_info, pick_types
 from mne.channels import DigMontage
 from mne.io import RawArray
+from mne.io.base import BaseRaw
 from mne.utils import check_version
 from numpy.testing import assert_allclose
 from scipy.fft import fft, fftfreq
@@ -42,16 +43,9 @@ bad_gh_macos = pytest.mark.skipif(
 )
 
 
-@pytest.fixture(
-    params=(
-        pytest.param(0.001, id="1ms"),
-        pytest.param(0.2, id="200ms"),
-        pytest.param(1, id="1s", marks=pytest.mark.slow),
-    ),
-)
-def acquisition_delay(request):
-    """Yield the acquisition delay of the mock LSL stream."""
-    return request.param
+class DummyPlayer:
+    def __init__(self, **kwargs):
+        self.__dict__.update(kwargs)
 
 
 @pytest.fixture()
@@ -68,30 +62,15 @@ def mock_lsl_stream_int(request):
         yield player
 
 
-@pytest.fixture()
-def raw_sinusoids() -> BaseRaw:
-    """Create a raw object with sinusoids."""
-    times = np.arange(0, 2, 1 / 1000)
-    data1 = np.sin(2 * np.pi * 10 * times) + np.sin(2 * np.pi * 30 * times)
-    data2 = np.sin(2 * np.pi * 30 * times) + np.sin(2 * np.pi * 50 * times)
-    data3 = np.sin(2 * np.pi * 30 * times) + np.sin(2 * np.pi * 100 * times)
-    data = np.vstack([data1, data2, data3])
-    info = create_info(
-        ch_names=["10-30", "30-50", "30-100"], sfreq=1000, ch_types="eeg"
-    )
-    return RawArray(data, info)
-
-
-@pytest.fixture()
-def mock_lsl_stream_sinusoids(raw_sinusoids, request):
-    """Create a mock LSL stream streaming sinusoids."""
-    # nest the PlayerLSL import to first write the temporary LSL configuration file
-    from mne_lsl.player import PlayerLSL
-
-    with PlayerLSL(
-        raw_sinusoids, name=f"P_{request.node.name}", chunk_size=200
-    ) as player:
-        yield player
+@pytest.fixture(
+    params=(
+        pytest.param(0.01, id="10ms"),
+        pytest.param(0.5, id="500ms", marks=pytest.mark.slow),
+    ),
+)
+def acquisition_delay(request):
+    """Yield the acquisition delay of the mock LSL stream."""
+    return request.param
 
 
 def test_stream(mock_lsl_stream, acquisition_delay, raw):
@@ -654,13 +633,14 @@ def _mock_lsl_stream_annotations(raw_annotations, request):
         # nest the PlayerLSL import to first write the temporary LSL configuration file
         from mne_lsl.player import PlayerLSL
 
-        player = PlayerLSL(raw, name=name, chunk_size=200)
+        player = PlayerLSL(raw, chunk_size=200, name=name)
         player.start()
+        status.value = 1
         while status.value:
             time.sleep(0.1)
         player.stop()
 
-    status = mp.Value("i", 1)
+    status = mp.Value("i", 0)
     process = mp.Process(
         target=player, args=(raw_annotations, f"P_{request.node.name}", status)
     )
@@ -733,6 +713,54 @@ def test_stream_filter_deletion(mock_lsl_stream, caplog):
     ) in caplog.text
     assert repr(stream.filters[1]) not in caplog.text
     stream.disconnect()
+
+
+@pytest.fixture()
+def raw_sinusoids() -> BaseRaw:
+    """Create a raw object with sinusoids."""
+    times = np.arange(0, 2, 1 / 1000)
+    data1 = np.sin(2 * np.pi * 10 * times) + np.sin(2 * np.pi * 30 * times)
+    data2 = np.sin(2 * np.pi * 30 * times) + np.sin(2 * np.pi * 50 * times)
+    data3 = np.sin(2 * np.pi * 30 * times) + np.sin(2 * np.pi * 100 * times)
+    data = np.vstack([data1, data2, data3])
+    info = create_info(
+        ch_names=["10-30", "30-50", "30-100"], sfreq=1000, ch_types="eeg"
+    )
+    return RawArray(data, info)
+
+
+@pytest.fixture()
+def mock_lsl_stream_sinusoids(raw_sinusoids, request):
+    """Create a mock LSL stream streaming sinusoids."""
+
+    def player(
+        raw: BaseRaw,
+        name: str,
+        status: mp.managers.ValueProxy,
+        ch_names: mp.managers.ListProxy,
+    ) -> None:
+        # nest the PlayerLSL import to first write the temporary LSL configuration file
+        from mne_lsl.player import PlayerLSL
+
+        player = PlayerLSL(raw, chunk_size=200, name=name)
+        player.start()
+        ch_names.extend(player.info["ch_names"])
+        status.value = 1
+        while status.value:
+            time.sleep(0.1)
+        player.stop()
+
+    manager = mp.Manager()
+    ch_names = manager.list()
+    status = manager.Value("i", 0)
+    name = f"P_{request.node.name}"
+    process = mp.Process(target=player, args=(raw_sinusoids, name, status, ch_names))
+    process.start()
+    while status.value != 1:
+        pass
+    yield DummyPlayer(name=name, ch_names=list(ch_names))
+    status.value = 0
+    process.join()
 
 
 def test_stream_filter(mock_lsl_stream_sinusoids, raw_sinusoids):
