@@ -1,6 +1,7 @@
 from __future__ import annotations  # c.f. PEP 563, PEP 649
 
 from abc import ABC, abstractmethod
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -188,8 +189,16 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         )
 
     @abstractmethod
-    def start(self) -> BasePlayer:  # pragma: no cover
+    def start(self) -> BasePlayer:
         """Start streaming data."""
+        if self._executor is not None:
+            warn(
+                f"{self._name}: The player is already started. "
+                "Use Player.stop() to stop streaming."
+            )
+            return self
+        self._executor = ThreadPoolExecutor(max_workers=1)
+        logger.debug("%s: ThreadPoolExecutor started.", self._name)
 
     @abstractmethod
     @verbose
@@ -317,18 +326,17 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
     @abstractmethod
     def stop(self) -> BasePlayer:
         """Stop streaming data on the mock real-time stream."""
-        if self._streaming_thread is None:
+        if self._executor is None:
             raise RuntimeError(
                 "The player is not started. Use Player.start() to begin streaming."
             )
         self._interrupt = True
-        while self._streaming_thread.is_alive():
-            self._streaming_thread.cancel()
+        self._executor.shutdown(wait=True, cancel_futures=True)
         # This method must end with self._reset_variables()
 
     def _check_not_started(self, name: str):
         """Check that the player is not started before calling the function 'name'."""
-        if self._streaming_thread is not None:
+        if self._executor is not None:
             raise RuntimeError(
                 "The player is already started. Please stop the streaming before using "
                 f"{{type(self).__name__}}.{name}."
@@ -355,7 +363,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         self._n_repeated = 1  # number of times the file was repeated
         self._start_idx = 0
         self._streaming_delay = None
-        self._streaming_thread = None
+        self._executor = None
 
     # ----------------------------------------------------------------------------------
     def __del__(self):
@@ -372,7 +380,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
 
     def __exit__(self, exc_type: Any, exc_value: Any, exc_traceback: Any):
         """Context manager exit point."""
-        if self._streaming_thread is not None:  # might have called stop manually
+        if self._executor is not None:  # might have called stop manually
             self.stop()
 
     @staticmethod
