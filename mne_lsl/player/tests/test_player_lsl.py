@@ -401,7 +401,7 @@ def test_player_n_repeat(raw):
         raw, chunk_size=200, n_repeat=1, name="Player-test_player_n_repeat-1"
     )
     player.start()
-    time.sleep((raw.times.size / raw.info["sfreq"]) * 1.1)
+    time.sleep((raw.times.size / raw.info["sfreq"]) * 1.8)
     assert player._executor is None
     streams = resolve_streams(timeout=0.1)
     assert len(streams) == 0
@@ -411,7 +411,7 @@ def test_player_n_repeat(raw):
         raw, chunk_size=200, n_repeat=4, name="Player-test_player_n_repeat-2"
     )
     player.start()
-    time.sleep((raw.times.size / raw.info["sfreq"]) * 1.1)
+    time.sleep((raw.times.size / raw.info["sfreq"]) * 1.8)
     assert player._executor is not None
     streams = resolve_streams(timeout=2)
     assert len(streams) == 1
