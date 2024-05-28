@@ -513,7 +513,7 @@ def _player_mock_lsl_stream_int(
     data = np.full((5, 1000), np.arange(5).reshape(-1, 1))
     raw = RawArray(data, create_info(5, 1000, "eeg"))
 
-    player = PlayerLSL(raw, chunk_size=chunk_size, name=f"P_{request.node.name}")
+    player = PlayerLSL(raw, chunk_size=chunk_size, name=name)
     player.start()
     info.update(player.info)
     status.value = 1
