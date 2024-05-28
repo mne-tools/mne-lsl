@@ -8,6 +8,7 @@ from mne_lsl.datasets.testing import _REGISTRY as _REGISTRY_TESTING
 from mne_lsl.utils._tests import sha256sum
 
 
+@pytest.mark.xfail(reason="Connection issue to the dataset servers.")
 @pytest.mark.parametrize("dataset", [sample, testing])
 def test_data_path(dataset):
     """Test download if the testing dataset."""
@@ -17,6 +18,7 @@ def test_data_path(dataset):
     assert path.exists()
 
 
+@pytest.mark.xfail(reason="Connection issue to the dataset servers.")
 @pytest.mark.parametrize(
     ("dataset", "registry"), [(sample, _REGISTRY_SAMPLE), (testing, _REGISTRY_TESTING)]
 )
