@@ -10,7 +10,7 @@ on:  # yamllint disable-line rule:truthy
 
 jobs:
   pytest:
-    timeout-minutes: 30
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
@@ -61,7 +61,7 @@ jobs:
       - name: Run pytest
         uses: nick-fields/retry@v3
         with:
-          timeout_minutes: 10
+          timeout_minutes: 20
           max_attempts: 3
           command: pytest mne_lsl --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s
       - name: Upload to codecov
@@ -111,7 +111,7 @@ jobs:
       - name: Run pytest
         uses: nick-fields/retry@v3
         with:
-          timeout_minutes: 10
+          timeout_minutes: 20
           max_attempts: 3
           command: pytest mne_lsl --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml
       - name: Upload to codecov
@@ -161,7 +161,7 @@ jobs:
       - name: Run pytest
         uses: nick-fields/retry@v3
         with:
-          timeout_minutes: 10
+          timeout_minutes: 20
           max_attempts: 3
           command: pytest mne_lsl --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s
       - name: Upload to codecov
