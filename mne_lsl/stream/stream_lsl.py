@@ -198,7 +198,7 @@ class StreamLSL(BaseStream):
                 ceil(self._bufsize * self._inlet.sfreq), dtype=np.float64
             )
         self._picks_inlet = np.arange(0, self._inlet.n_channels)
-        # submit the first acqusition job
+        # submit the first acquisition job
         self._executor.submit(self._acquire)
         return self
 
