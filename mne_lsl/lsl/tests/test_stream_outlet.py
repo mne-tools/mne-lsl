@@ -32,7 +32,7 @@ def test_push_numerical_sample(dtype_str, dtype, close_io):
     _test_properties(outlet, dtype_str, 2, "test", 0.0, "")
     inlet = StreamInlet(sinfo)
     inlet.open_stream(timeout=5)
-    time.sleep(0.1)  # sleep required because of pylsl inlet
+    time.sleep(0.5)  # sleep required because of pylsl inlet
     outlet.push_sample(x)
     data, ts = inlet.pull_sample(timeout=5)
     assert_allclose(data, x)
@@ -52,7 +52,7 @@ def test_push_str_sample(close_io):
     _test_properties(outlet, "string", 2, "test", 0.0, "")
     inlet = StreamInlet(sinfo)
     inlet.open_stream(timeout=5)
-    time.sleep(0.1)  # sleep required because of pylsl inlet
+    time.sleep(0.5)  # sleep required because of pylsl inlet
     outlet.push_sample(x)
     data, ts = inlet.pull_sample(timeout=5)
     assert data == x
@@ -170,7 +170,7 @@ def test_push_chunk_timestamps(dtype_str, dtype, close_io):
     _test_properties(outlet, dtype_str, 2, "test", 1.0, "")
     inlet = StreamInlet(sinfo)
     inlet.open_stream(timeout=5)
-    time.sleep(0.1)  # sleep required because of pylsl inlet
+    time.sleep(0.5)  # sleep required because of pylsl inlet
     # float
     now = np.ceil(local_clock())
     outlet.push_chunk(x, timestamp=now)
@@ -218,7 +218,7 @@ def test_push_chunk_irregularly_sampled_stream(close_io):
     _test_properties(outlet, "float32", 2, "test", 0.0, "")
     inlet = StreamInlet(sinfo)
     inlet.open_stream(timeout=5)
-    time.sleep(0.1)  # sleep required because of pylsl inlet
+    time.sleep(0.5)  # sleep required because of pylsl inlet
     # push with timestamp = None
     now = local_clock()
     outlet.push_chunk(x, timestamp=None)

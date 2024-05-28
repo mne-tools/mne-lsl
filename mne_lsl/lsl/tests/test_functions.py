@@ -37,7 +37,7 @@ def test_local_clock():
 
 def test_resolve_streams():
     """Test detection of streams on the network."""
-    streams = resolve_streams()
+    streams = resolve_streams(timeout=0.1)
     assert isinstance(streams, list)
     assert len(streams) == 0
 
@@ -65,23 +65,23 @@ def test_resolve_streams():
     assert sinfo2 in streams
     assert sinfo3 in streams
 
-    streams = resolve_streams(name="test1", minimum=2)
+    streams = resolve_streams(name="test1", minimum=2, timeout=2)
     assert len(streams) == 2
     assert sinfo1 in streams
     assert sinfo2 in streams
 
-    streams = resolve_streams(name="test1", minimum=1)
+    streams = resolve_streams(name="test1", minimum=1, timeout=2)
     assert len(streams) in (1, 2)
 
     streams = resolve_streams(stype="Markers")
     assert len(streams) == 1
     assert sinfo2 in streams
 
-    streams = resolve_streams(name="test2", minimum=2, timeout=1)
+    streams = resolve_streams(name="test2", minimum=2, timeout=2)
     assert len(streams) == 1
     assert sinfo3 in streams
 
-    streams = resolve_streams(name="test1", stype="Markers")
+    streams = resolve_streams(name="test1", stype="Markers", timeout=2)
     assert len(streams) == 1
     assert sinfo2 in streams
 
