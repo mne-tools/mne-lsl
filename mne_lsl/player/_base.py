@@ -55,7 +55,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
     def __init__(
         self,
         fname: Union[str, Path, BaseRaw],
-        chunk_size: int = 64,
+        chunk_size: int = 10,
         n_repeat: Union[int, float] = np.inf,
     ) -> None:
         self._chunk_size = ensure_int(chunk_size, "chunk_size")

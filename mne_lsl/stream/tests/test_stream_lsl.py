@@ -63,7 +63,7 @@ def mock_lsl_stream_int(request):
     data = np.full((5, 1000), np.arange(5).reshape(-1, 1))
     raw = RawArray(data, info)
 
-    with PlayerLSL(raw, name=f"P_{request.node.name}") as player:
+    with PlayerLSL(raw, name=f"P_{request.node.name}", chunk_size=200) as player:
         yield player
 
 
@@ -73,7 +73,9 @@ def mock_lsl_stream_annotations(raw_annotations, request):
     # nest the PlayerLSL import to first write the temporary LSL configuration file
     from mne_lsl.player import PlayerLSL  # noqa: E402
 
-    with PlayerLSL(raw_annotations, name=f"P_{request.node.name}") as player:
+    with PlayerLSL(
+        raw_annotations, name=f"P_{request.node.name}", chunk_size=200
+    ) as player:
         yield player
 
 
@@ -97,7 +99,9 @@ def mock_lsl_stream_sinusoids(raw_sinusoids, request):
     # nest the PlayerLSL import to first write the temporary LSL configuration file
     from mne_lsl.player import PlayerLSL
 
-    with PlayerLSL(raw_sinusoids, name=f"P_{request.node.name}") as player:
+    with PlayerLSL(
+        raw_sinusoids, name=f"P_{request.node.name}", chunk_size=200
+    ) as player:
         yield player
 
 

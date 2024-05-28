@@ -293,7 +293,7 @@ class StreamLSL(BaseStream):
             logger.exception(error)
             self._reset_variables()  # disconnects from the stream
             if os.getenv("MNE_LSL_RAISE_STREAM_ERRORS", "false").lower() == "true":
-                raise
+                raise error
         else:
             if not self._interrupt:
                 self._create_acquisition_thread(self._acquisition_delay)

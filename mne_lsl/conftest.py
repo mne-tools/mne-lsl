@@ -40,10 +40,9 @@ def pytest_configure(config: pytest.Config) -> None:
         config.addinivalue_line("markers", marker)
     if "MNE_LSL_RAISE_STREAM_ERRORS" not in os.environ:
         os.environ["MNE_LSL_RAISE_STREAM_ERRORS"] = "true"
-    if os.getenv("MNE_IGNORE_WARNINGS_IN_TESTS", "") != "true":
-        first_kind = "error"
-    else:
-        first_kind = "always"
+    first_kind = (
+        "error" if os.getenv("MNE_IGNORE_WARNINGS_IN_TESTS", "") != "true" else "always"
+    )
     warning_lines = f"    {first_kind}::"
     warning_lines += r"""
     # numpy 2.0 <-> SciPy
@@ -59,7 +58,7 @@ def pytest_configure(config: pytest.Config) -> None:
         if warning_line and not warning_line.startswith("#"):
             config.addinivalue_line("filterwarnings", warning_line)
     set_log_level_mne("WARNING")  # MNE logger
-    set_log_level("DEBUG")  # MNE-lsl logger
+    set_log_level(os.getenv("MNE_LSL_LOG_LEVEL", "WARNING"))  # MNE-lsl logger
     logger.propagate = True
 
 
@@ -136,5 +135,5 @@ def mock_lsl_stream(fname: Path, request):
     # nest the PlayerLSL import to first write the temporary LSL configuration file
     from mne_lsl.player import PlayerLSL  # noqa: E402
 
-    with PlayerLSL(fname, name=f"P_{request.node.name}") as player:
+    with PlayerLSL(fname, name=f"P_{request.node.name}", chunk_size=200) as player:
         yield player
