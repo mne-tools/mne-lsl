@@ -1,3 +1,5 @@
+import os
+
 import pytest
 
 from mne_lsl.datasets import sample, testing
@@ -9,6 +11,8 @@ from mne_lsl.utils._tests import sha256sum
 @pytest.mark.parametrize("dataset", [sample, testing])
 def test_data_path(dataset):
     """Test download if the testing dataset."""
+    if dataset != testing and os.getenv("GITHUB_ACTIONS", "") == "true":
+        pytest.skip("Skip sample dataset download on GitHub Actions.")
     path = dataset.data_path()
     assert path.exists()
 
