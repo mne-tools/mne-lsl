@@ -34,6 +34,8 @@ from mne_lsl.utils._tests import match_stream_and_raw_data
 from mne_lsl.utils.logs import _use_log_level
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from mne.io import BaseRaw
 
 
@@ -46,6 +48,42 @@ bad_gh_macos = pytest.mark.skipif(
 class DummyPlayer:
     def __init__(self, /, **kwargs):
         self.__dict__.update(kwargs)
+
+
+@pytest.fixture()
+def mock_lsl_stream(fname, request):
+    """Create a mock LSL stream for testing."""
+
+    def player(
+        fname: Path,
+        name: str,
+        chunk_size: int,
+        status: mp.managers.ValueProxy,
+        info: mp.managers.DictProxy,
+    ) -> None:
+        # nest the PlayerLSL import to first write the temporary LSL configuration file
+        from mne_lsl.player import PlayerLSL  # noqa: E402
+
+        player = PlayerLSL(fname, chunk_size=chunk_size, name=name)
+        player.start()
+        info.update(player.info)
+        status.value = 1
+        while status.value:
+            time.sleep(0.1)
+        player.stop()
+
+    manager = mp.Manager()
+    status = manager.Value("i", 0)
+    chunk_size = 200
+    info = manager.dict()
+    name = f"P_{request.node.name}"
+    process = mp.Process(target=player, args=(fname, name, chunk_size, status, info))
+    process.start()
+    while status.value != 1:
+        pass
+    yield DummyPlayer(name=name, chunk_size=chunk_size, info=dict(info))
+    status.value = 0
+    process.join()
 
 
 @pytest.fixture(

@@ -164,6 +164,16 @@ def _create_inlet(name: str) -> StreamInlet:
     return inlet
 
 
+@pytest.fixture()
+def mock_lsl_stream(fname: Path, request):
+    """Create a mock LSL stream for testing."""
+    # nest the PlayerLSL import to first write the temporary LSL configuration file
+    from mne_lsl.player import PlayerLSL  # noqa: E402
+
+    with PlayerLSL(fname, name=f"P_{request.node.name}", chunk_size=200) as player:
+        yield player
+
+
 def test_player_unit(mock_lsl_stream, raw, close_io):
     """Test getting and setting the player channel units."""
     player = mock_lsl_stream

@@ -127,13 +127,3 @@ def raw_annotations(raw: BaseRaw) -> BaseRaw:
     )
     raw.set_annotations(annotations)
     return raw
-
-
-@pytest.fixture()
-def mock_lsl_stream(fname: Path, request):
-    """Create a mock LSL stream for testing."""
-    # nest the PlayerLSL import to first write the temporary LSL configuration file
-    from mne_lsl.player import PlayerLSL  # noqa: E402
-
-    with PlayerLSL(fname, name=f"P_{request.node.name}", chunk_size=200) as player:
-        yield player
