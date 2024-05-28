@@ -329,7 +329,6 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
             raise RuntimeError(
                 "The player is not started. Use Player.start() to begin streaming."
             )
-        self._interrupt = True
         self._executor.shutdown(wait=True, cancel_futures=True)
         # This method must end with self._reset_variables()
 
@@ -358,7 +357,6 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
     def _reset_variables(self) -> None:
         """Reset variables for streaming."""
         self._end_streaming = False
-        self._interrupt = False
         self._n_repeated = 1  # number of times the file was repeated
         self._start_idx = 0
         self._streaming_delay = None

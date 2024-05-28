@@ -221,15 +221,17 @@ class StreamLSL(BaseStream):
 
     def _acquire(self) -> None:
         """Update function pulling new samples in the buffer at a regular interval."""
-        if not getattr(self, "_inlet", None) or getattr(self, "_interrupt", False):
-            return  # stream disconnected/interrupted
+        if not getattr(self, "_inlet", None):
+            return  # stream disconnected
         try:
             # pull data
             data, timestamps = self._inlet.pull_chunk(timeout=0.0)
             if timestamps.size == 0:
-                if not self._interrupt:
-                    sleep(self._acquisition_delay)
+                sleep(self._acquisition_delay)
+                try:
                     self._executor.submit(self._acquire)
+                except RuntimeError:
+                    assert self._executor._shutdown  # pragma: no cover
                 return  # interrupt early
 
             # process acquisition window
@@ -244,9 +246,11 @@ class StreamLSL(BaseStream):
             data = data[-self._timestamps.size :, self._picks_inlet]
             timestamps = timestamps[-self._timestamps.size :]
             if self._stype == "annotations" and np.count_nonzero(data) == 0:
-                if not self._interrupt:
-                    sleep(self._acquisition_delay)
+                sleep(self._acquisition_delay)
+                try:
                     self._executor.submit(self._acquire)
+                except RuntimeError:
+                    assert self._executor._shutdown  # pragma: no cover
                 return  # interrupt early
             if len(self._added_channels) != 0:
                 refs = np.zeros(
@@ -298,9 +302,11 @@ class StreamLSL(BaseStream):
             if os.getenv("MNE_LSL_RAISE_STREAM_ERRORS", "false").lower() == "true":
                 raise error
         else:
-            if not self._interrupt:
+            try:
                 sleep(self._acquisition_delay)
                 self._executor.submit(self._acquire)
+            except RuntimeError:
+                assert self._executor._shutdown  # pragma: no cover
 
     def _reset_variables(self) -> None:
         """Reset variables define after connection."""

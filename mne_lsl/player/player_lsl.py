@@ -272,10 +272,9 @@ class PlayerLSL(BasePlayer):
             self._del_outlets()
             self._reset_variables()
         else:
-            if self._interrupt or self._end_streaming:
+            if self._end_streaming:
                 self._del_outlets()
-                if self._end_streaming:
-                    self._reset_variables()
+                self._reset_variables()
                 return None  # don't schedule another task if we are ending
             # figure out how early or late the thread woke up and compensate the
             # delay for the next thread to remain in the neighbourhood of
@@ -283,7 +282,10 @@ class PlayerLSL(BasePlayer):
             delta = self._target_timestamp - self._streaming_delay - local_clock()
             delay = max(self._streaming_delay + delta, 0)
             sleep(delay)
-            self._executor.submit(self._stream)
+            try:
+                self._executor.submit(self._stream)
+            except RuntimeError:
+                assert self._executor._shutdown  # pragma: no cover
 
     def _stream_annotations(
         self, start: int, stop: int, start_timestamp: float

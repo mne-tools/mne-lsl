@@ -300,7 +300,6 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             The stream instance modified in-place.
         """
         self._check_connected(name="disconnect()")
-        self._interrupt = True
         self._executor.shutdown(wait=True, cancel_futures=True)
         # This method needs to close any inlet/network object and need to end with
         # self._reset_variables().
@@ -1007,13 +1006,11 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
                 "is not connected. Please open an issue on GitHub and provide the "
                 "error traceback to the developers."
             )
-        self._interrupt = True
         # it's simpler to shutdown the executor entirely and create a new one
         self._executor.shutdown(wait=True, cancel_futures=True)
         try:  # ensure "finally" is reached even when failures occur
             yield
         finally:
-            self._interrupt = False
             self._executor = ThreadPoolExecutor(max_workers=1)
             self._executor.submit(self._acquire)
 
@@ -1057,7 +1054,6 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         self._executor = None
         self._filters = []
         self._info = None
-        self._interrupt = False
         self._n_new_samples = None
         self._picks_inlet = None
         self._ref_channels = None
