@@ -58,7 +58,7 @@ def pytest_configure(config: pytest.Config) -> None:
         if warning_line and not warning_line.startswith("#"):
             config.addinivalue_line("filterwarnings", warning_line)
     set_log_level_mne("WARNING")  # MNE logger
-    set_log_level(os.getenv("MNE_LSL_LOG_LEVEL", "WARNING"))  # MNE-lsl logger
+    set_log_level(os.getenv("MNE_LSL_LOG_LEVEL", "INFO"))  # MNE-lsl logger
     logger.propagate = True
 
 
