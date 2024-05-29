@@ -396,9 +396,9 @@ plt.show()
 # This is obviously not compatible with a real-time detection scenario, but ensures that
 # the test and documentation builds successfully on github runners.
 #
-# In a real application, this detector detects R-peaks within 10 ms of their emission.
-# To approximate this result, you can add the argument ``chunk_size=1`` to the
-# ``Player`` object, which yields the following figure locally:
+# In a real application, this detector detects R-peaks within a couple of ms of their
+# emission. To approximate this result, you can run the ``Player`` object in a separate
+# process with the argument ``chunk_size=1``, which yields the following figure locally:
 #
 # .. image:: ../../_static/tutorials/qrs-detector-performance.png
 #     :align: center

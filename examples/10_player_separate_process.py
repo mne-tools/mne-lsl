@@ -135,7 +135,7 @@ def player_process(raw, status):
     player.start()
     status.value = 1
     while status.value:
-        time.sleep(0.1)
+        pass
     player.stop()
 
 
