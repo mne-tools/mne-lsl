@@ -442,3 +442,24 @@ def test_player_push_sample(fname):
         assert streams[0].name == name
     streams = resolve_streams(timeout=0.1)
     assert len(streams) == 0
+
+
+@pytest.mark.skipif(
+    os.getenv("GITHUB_ACTIONS", "") == "true", reason="Unreliable on CIs."
+)
+def test_player_push_last_sample(fname, caplog):
+    """Test pushing the last sample."""
+    name = "Player-test_player_push_sample-2"
+    player = Player(fname, chunk_size=1, n_repeat=1, name=name)
+    caplog.clear()
+    player.start()
+    streams = resolve_streams(timeout=0.5)
+    assert len(streams) == 1
+    assert streams[0].name == name
+    while player.running:
+        time.sleep(0.1)
+    # 'IndexError: index 0 is out of bounds' would be raised it the last chunk pushed
+    # was empty.
+    assert "index 0 is out of bounds" not in caplog.text
+    streams = resolve_streams(timeout=0.1)
+    assert len(streams) == 0

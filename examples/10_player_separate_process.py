@@ -112,7 +112,6 @@ def player_process(raw):
     player.start()
     while player.running:
         pass
-    player.stop()
 
 
 process = mp.Process(target=player_process, args=(raw,))

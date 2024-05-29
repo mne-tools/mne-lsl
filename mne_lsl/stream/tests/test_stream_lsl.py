@@ -501,16 +501,16 @@ def test_stream_n_new_samples(mock_lsl_stream, caplog):
     time.sleep(2)  # give a bit of time to slower CIs
     assert stream.n_new_samples > 0
     _, _ = stream.get_data()
-    # Between the above call and this one, samples could come in...
-    # but hopefully not many
-    assert stream.n_new_samples < 100
+    # between the above call and this one, samples could come in... but likely not many
+    assert stream.n_new_samples <= mock_lsl_stream.chunk_size
     with _use_log_level("INFO"):
         caplog.set_level(20)  # INFO
         caplog.clear()
         time.sleep(1.6)
         assert "new samples exceeds the buffer size" in caplog.text
     _, _ = stream.get_data(winsize=0.1)
-    assert stream.n_new_samples < 100
+    # between the above call and this one, samples could come in... but likely not many
+    assert stream.n_new_samples <= mock_lsl_stream.chunk_size
     stream.disconnect()
 
 

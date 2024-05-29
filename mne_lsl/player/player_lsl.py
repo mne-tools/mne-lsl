@@ -249,7 +249,7 @@ class PlayerLSL(BasePlayer):
                 stop = self._raw.times.size
                 data = self._raw[:, start:stop][0].T
                 self._end_streaming = True
-                if data.size == 0:
+                if data.size == 0:  # pragma: no cover
                     # rare condition where if chunk_size is equal to 1, the last chunk
                     # will be empty and we should abort at this point.
                     logger.debug("End of file reached with an empty chunk.")
