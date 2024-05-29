@@ -18,6 +18,8 @@ hogging all of the CPU resources, leaving almost nothing for the
 :class:`~mne_lsl.player.PlayerLSL` thread to run and mock the LSL stream.
 """
 
+# sphinx_gallery_thumbnail_path = '_static/tutorials/multiprocessing.png'
+
 import multiprocessing as mp
 import time
 
@@ -53,7 +55,7 @@ player.start()
 while player.running:
     time.sleep(0.5)
 stop = time.time()
-print("Elapsed time (free time): ", stop - start)
+print(f"Elapsed time (free time): {stop - start:.2f} s")
 
 # scenario 2: hog all of the CPU resources
 start = time.time()
@@ -61,7 +63,7 @@ player.start()
 while player.running:
     pass
 stop = time.time()
-print("Elapsed time (hogging): ", stop - start)
+print(f"Elapsed time (hogging): {stop - start:.2f} s")
 
 # clean-up resources
 del player
@@ -71,12 +73,14 @@ del player
 # will observe the following difference in elapsed time:
 #
 # - chunk size of 10 samples:
-#   3.5 seconds for scenario 1 (due to one extra sleep call)
-#   7.4 seconds for scenario 2
+#
+#   - 3.5 seconds for scenario 1 (due to one extra sleep call)
+#   - 7.4 seconds for scenario 2
 #
 # - chunk size of 1 sample:
-#   3.5 seconds for scenario 1 (due to one extra sleep call)
-#   68.8 seconds for scenario 2
+#
+#   - 3.5 seconds for scenario 1 (due to one extra sleep call)
+#   - 68.8 seconds for scenario 2
 #
 # Multi-process execution
 # -----------------------
@@ -91,7 +95,7 @@ del player
 #
 #   .. code-block:: bash
 #
-#       mne_lsl_player sample-ecg-raw.fif --chunk-size 1 --n-repeat 1
+#       $ mne_lsl_player sample-ecg-raw.fif --chunk-size 1 --n-repeat 1
 #
 # - use the python API to run the player in a separate python interpreter
 # - use the python API and the ``multiprocessing`` module to run the player in a
@@ -100,7 +104,7 @@ del player
 # Here, we demonstrate the last option.
 
 
-def player_process(raw) -> None:
+def player_process(raw):
     """Process which runs the player."""
     from mne_lsl.player import PlayerLSL
 
@@ -123,7 +127,7 @@ process.join()
 # be used to interrupt the player process from the main process.
 
 
-def player_process(raw, status: mp.managers.ValueProxy) -> None:
+def player_process(raw, status):
     """Process which runs the process."""
     from mne_lsl.player import PlayerLSL
 
