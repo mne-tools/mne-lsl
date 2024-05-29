@@ -132,7 +132,7 @@ def test_stream(mock_lsl_stream, acquisition_delay, raw):
     # check fs and that the returned data array is in raw a couple of times
     time.sleep(2)  # give a bit of time to the stream to acquire the first chunks
     for _ in range(3):
-        data, ts = stream.get_data(winsize=0.1)
+        data, ts = stream.get_data(winsize=0.05)
         assert ts.size == data.shape[1]
         assert_allclose(1 / np.diff(ts), stream.info["sfreq"])
         match_stream_and_raw_data(data, raw)
@@ -220,7 +220,7 @@ def test_stream_drop_channels(mock_lsl_stream, acquisition_delay, raw):
     assert stream.ch_names == raw_.ch_names
     time.sleep(1)
     for _ in range(3):
-        data, _ = stream.get_data(winsize=0.1)
+        data, _ = stream.get_data(winsize=0.05)
         match_stream_and_raw_data(data, raw_)
         _sleep_until_new_data(acquisition_delay, mock_lsl_stream)
     stream.drop_channels(["F7", "Fp2"])
@@ -228,7 +228,7 @@ def test_stream_drop_channels(mock_lsl_stream, acquisition_delay, raw):
     assert stream.ch_names == raw_.ch_names
     time.sleep(1)
     for _ in range(3):
-        data, _ = stream.get_data(winsize=0.1)
+        data, _ = stream.get_data(winsize=0.05)
         match_stream_and_raw_data(data, raw_)
         _sleep_until_new_data(acquisition_delay, mock_lsl_stream)
 
@@ -240,7 +240,7 @@ def test_stream_drop_channels(mock_lsl_stream, acquisition_delay, raw):
     assert stream.ch_names == raw_.ch_names
     time.sleep(1)
     for _ in range(3):
-        data, _ = stream.get_data(winsize=0.1)
+        data, _ = stream.get_data(winsize=0.05)
         match_stream_and_raw_data(data, raw_)
         _sleep_until_new_data(acquisition_delay, mock_lsl_stream)
 
@@ -266,7 +266,7 @@ def test_stream_pick(mock_lsl_stream, acquisition_delay, raw):
     assert stream.ch_names == raw_.ch_names
     time.sleep(1)
     for _ in range(3):
-        data, _ = stream.get_data(winsize=0.1)
+        data, _ = stream.get_data(winsize=0.05)
         match_stream_and_raw_data(data, raw_)
         _sleep_until_new_data(acquisition_delay, mock_lsl_stream)
 
@@ -278,7 +278,7 @@ def test_stream_pick(mock_lsl_stream, acquisition_delay, raw):
     assert stream.ch_names == raw_.ch_names
     time.sleep(1)
     for _ in range(3):
-        data, _ = stream.get_data(winsize=0.1)
+        data, _ = stream.get_data(winsize=0.05)
         match_stream_and_raw_data(data, raw_)
         _sleep_until_new_data(acquisition_delay, mock_lsl_stream)
 
@@ -288,7 +288,7 @@ def test_stream_pick(mock_lsl_stream, acquisition_delay, raw):
     assert stream.ch_names == raw_.ch_names
     time.sleep(1)
     for _ in range(3):
-        data, _ = stream.get_data(winsize=0.1)
+        data, _ = stream.get_data(winsize=0.05)
         match_stream_and_raw_data(data, raw_)
         _sleep_until_new_data(acquisition_delay, mock_lsl_stream)
 
@@ -300,7 +300,7 @@ def test_stream_pick(mock_lsl_stream, acquisition_delay, raw):
     assert stream.ch_names == raw_.ch_names
     time.sleep(1)
     for _ in range(3):
-        data, _ = stream.get_data(winsize=0.1)
+        data, _ = stream.get_data(winsize=0.05)
         match_stream_and_raw_data(data, raw_)
         _sleep_until_new_data(acquisition_delay, mock_lsl_stream)
     stream.disconnect()
@@ -359,7 +359,7 @@ def test_stream_channel_names(mock_lsl_stream, raw):
     time.sleep(1)
     reference_data = None
     for _ in range(3):
-        data, _ = stream.get_data(winsize=0.1)
+        data, _ = stream.get_data(winsize=0.05)
         if reference_data is not None:
             with pytest.raises(AssertionError, match="Not equal to tolerance"):
                 assert_allclose(data, reference_data)
@@ -397,7 +397,7 @@ def test_stream_channel_units(mock_lsl_stream, raw):
     time.sleep(1)
     reference_data = None
     for _ in range(3):
-        data, _ = stream.get_data(winsize=0.1)
+        data, _ = stream.get_data(winsize=0.05)
         if reference_data is not None:
             with pytest.raises(AssertionError, match="Not equal to tolerance"):
                 assert_allclose(data, reference_data)
@@ -421,7 +421,7 @@ def test_stream_add_reference_channels(mock_lsl_stream, acquisition_delay, raw):
     time.sleep(1)
     # acquire a couple of chunks
     for _ in range(3):
-        data, _ = stream.get_data(winsize=0.1)
+        data, _ = stream.get_data(winsize=0.05)
         match_stream_and_raw_data(data, raw_)
         _sleep_until_new_data(acquisition_delay, mock_lsl_stream)
     stream.add_reference_channels(["Ref1", "Ref2"])
@@ -430,7 +430,7 @@ def test_stream_add_reference_channels(mock_lsl_stream, acquisition_delay, raw):
     # acquire a couple of chunks
     time.sleep(1)
     for _ in range(3):
-        data, _ = stream.get_data(winsize=0.1)
+        data, _ = stream.get_data(winsize=0.05)
         match_stream_and_raw_data(data, raw_)
         _sleep_until_new_data(acquisition_delay, mock_lsl_stream)
     # pick channels
@@ -438,7 +438,7 @@ def test_stream_add_reference_channels(mock_lsl_stream, acquisition_delay, raw):
     raw_.pick("eeg")
     time.sleep(1)
     for _ in range(3):
-        data, _ = stream.get_data(winsize=0.1)
+        data, _ = stream.get_data(winsize=0.05)
         match_stream_and_raw_data(data, raw_)
         _sleep_until_new_data(acquisition_delay, mock_lsl_stream)
     with pytest.raises(RuntimeError, match="selection would not leave any channel"):
@@ -448,7 +448,7 @@ def test_stream_add_reference_channels(mock_lsl_stream, acquisition_delay, raw):
     raw_.add_reference_channels("Ref3")
     time.sleep(1)
     for _ in range(3):
-        data, _ = stream.get_data(winsize=0.1)
+        data, _ = stream.get_data(winsize=0.05)
         match_stream_and_raw_data(data, raw_)
         _sleep_until_new_data(acquisition_delay, mock_lsl_stream)
     stream.disconnect()
@@ -481,13 +481,13 @@ def test_stream_get_data_picks(mock_lsl_stream, acquisition_delay, raw):
     # acquire a couple of chunks
     time.sleep(1)
     for _ in range(3):
-        data, _ = stream.get_data(winsize=0.1, picks="eeg")
+        data, _ = stream.get_data(winsize=0.05, picks="eeg")
         match_stream_and_raw_data(data, raw_)
         _sleep_until_new_data(acquisition_delay, mock_lsl_stream)
     raw_.pick(["F7", "F2", "F4"])
     time.sleep(1)
     for _ in range(3):
-        data, _ = stream.get_data(winsize=0.1, picks=["F7", "F2", "F4"])
+        data, _ = stream.get_data(winsize=0.05, picks=["F7", "F2", "F4"])
         match_stream_and_raw_data(data, raw_)
         _sleep_until_new_data(acquisition_delay, mock_lsl_stream)
     stream.disconnect()
