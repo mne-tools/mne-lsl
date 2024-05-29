@@ -27,8 +27,9 @@ import numpy as np
 from matplotlib import pyplot as plt
 from mne.io import read_raw_fif
 from mne.viz import set_browser_backend
-from mne_lsl.datasets import sample
 from scipy.signal import find_peaks
+
+from mne_lsl.datasets import sample
 
 raw = read_raw_fif(sample.data_path() / "sample-ecg-raw.fif", preload=True)
 raw
