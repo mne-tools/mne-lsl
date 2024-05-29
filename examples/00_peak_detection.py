@@ -375,12 +375,12 @@ player = Player(
 )
 player.start()
 detector = Detector(4, player.name, "AUX8")
-
 delays = list()
 while len(delays) <= 30:
     peak = detector.new_peak()
     if peak is not None:
         delays.append((local_clock() - peak) * 1e3)
+player.stop()
 
 f, ax = plt.subplots(1, 1, layout="constrained")
 ax.set_title("Detection delay in ms")
