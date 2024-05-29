@@ -25,6 +25,7 @@ Version 1.4
 - Add example for a simple real-time QRS R-peak detector (:pr:`256` by `Mathieu Scheltienne`_)
 - Fix push operation by a :class:`~mne_lsl.player.PlayerLSL` with a ``chunk_size`` set to 1 to use :meth:`mne_lsl.lsl.StreamOutlet.push_sample` instead of :meth:`mne_lsl.lsl.StreamOutlet.push_chunk` (:pr:`257` by `Mathieu Scheltienne`_)
 - Add example of :class:`~mne_lsl.player.PlayerLSL` run in a child process (:pr:`267` by `Mathieu Scheltienne`_)
+- Fix error in pushing the last chunk of a non infintrite :class:`~mne_lsl.player.PlayerLSL` stream with ``chunk_size=1`` (:pr:`268` by `Mathieu Scheltienne`_)
 
 API changes
 -----------
