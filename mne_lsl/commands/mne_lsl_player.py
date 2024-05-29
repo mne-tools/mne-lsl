@@ -25,8 +25,7 @@ def run():
         default=10,
     )
     parser.add_argument(
-        "-n_repeat",
-        "--number_repeat",
+        "--n_repeat",
         type=int,
         metavar="int",
         help="number of times to repeat the file. By default, infinity.",
@@ -49,7 +48,7 @@ def run():
     player = PlayerLSL(
         fname=args.fname,
         chunk_size=args.chunk_size,
-        n_repeat=args.number_repeat,
+        n_repeat=args.n_repeat,
         name=args.name,
         annotations=args.annotations,
     )

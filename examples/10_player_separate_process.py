@@ -91,7 +91,7 @@ del player
 #
 #   .. code-block:: bash
 #
-#       mne_lsl_player --file sample-ecg-raw.fif --chunk-size 1 --n-repeat 1
+#       mne_lsl_player sample-ecg-raw.fif --chunk-size 1 --n-repeat 1
 #
 # - use the python API to run the player in a separate python interpreter
 # - use the python API and the ``multiprocessing`` module to run the player in a
