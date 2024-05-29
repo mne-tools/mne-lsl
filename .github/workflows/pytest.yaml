@@ -10,7 +10,7 @@ on:  # yamllint disable-line rule:truthy
 
 jobs:
   pytest:
-    timeout-minutes: 60
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
@@ -59,11 +59,9 @@ jobs:
       - name: Display system information
         run: mne_lsl-sys_info --developer
       - name: Run pytest
-        uses: nick-fields/retry@v3
-        with:
-          timeout_minutes: 20
-          max_attempts: 3
-          command: pytest mne_lsl --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s
+        run: pytest mne_lsl --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s
+        env:
+          MNE_LSL_LOG_LEVEL: DEBUG
       - name: Upload to codecov
         uses: codecov/codecov-action@v4
         with:
@@ -75,7 +73,7 @@ jobs:
           verbose: true  # optional (default = false)
 
   pytest-pip-pre:
-    timeout-minutes: 30
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
@@ -109,11 +107,9 @@ jobs:
       - name: Display system information
         run: mne_lsl-sys_info --developer
       - name: Run pytest
-        uses: nick-fields/retry@v3
-        with:
-          timeout_minutes: 20
-          max_attempts: 3
-          command: pytest mne_lsl --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml
+        run: pytest mne_lsl --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s
+        env:
+          MNE_LSL_LOG_LEVEL: DEBUG
       - name: Upload to codecov
         uses: codecov/codecov-action@v4
         with:
@@ -125,7 +121,7 @@ jobs:
           verbose: true  # optional (default = false)
 
   pytest-compat:
-    timeout-minutes: 30
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
@@ -159,11 +155,9 @@ jobs:
       - name: Display system information
         run: mne_lsl-sys_info --developer
       - name: Run pytest
-        uses: nick-fields/retry@v3
-        with:
-          timeout_minutes: 20
-          max_attempts: 3
-          command: pytest mne_lsl --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s
+        run: pytest mne_lsl --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s
+        env:
+          MNE_LSL_LOG_LEVEL: DEBUG
       - name: Upload to codecov
         uses: codecov/codecov-action@v4
         with:

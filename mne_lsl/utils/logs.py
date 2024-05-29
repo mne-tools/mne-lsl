@@ -2,6 +2,7 @@ from __future__ import annotations  # c.f. PEP 563, PEP 649
 
 import inspect
 import logging
+import os
 from functools import wraps
 from importlib import import_module
 from pathlib import Path
@@ -21,7 +22,12 @@ _PACKAGE: str = __package__.split(".")[0]
 
 
 @fill_doc
-def _init_logger(*, verbose: Optional[Union[bool, str, int]] = None) -> Logger:
+def _init_logger(
+    *,
+    verbose: Optional[Union[bool, str, int]] = os.getenv(
+        "MNE_LSL_LOG_LEVEL", "WARNING"
+    ),
+) -> Logger:
     """Initialize a logger.
 
     Assigns sys.stdout as the first handler of the logger.
