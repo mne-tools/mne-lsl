@@ -426,3 +426,8 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         :type: :class:`int` | ``np.inf``
         """
         return self._n_repeat
+
+    @property
+    def running(self) -> bool:
+        """Status of the player, True if it is running and pushing data."""
+        return self._executor is not None
