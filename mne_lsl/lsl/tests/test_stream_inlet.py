@@ -11,6 +11,32 @@ from mne_lsl.lsl.constants import string2numpy
 from mne_lsl.lsl.stream_info import _BaseStreamInfo
 
 
+def _test_properties(inlet, dtype_str, n_channels, name, sfreq, stype):
+    """Test the properties of an inlet against expected values."""
+    assert inlet.dtype == string2numpy.get(dtype_str, dtype_str)
+    assert inlet.n_channels == n_channels
+    assert inlet.name == name
+    assert inlet.sfreq == sfreq
+    assert inlet.stype == stype
+    sinfo = inlet.get_sinfo(timeout=5)
+    assert isinstance(sinfo, _BaseStreamInfo)
+
+
+def _test_numerical_data(data, expected, dtype, ts, n_samples_expected=None):
+    """Check that the pull data match the expected data."""
+    assert isinstance(data, np.ndarray)
+    assert data.dtype == dtype
+    assert_allclose(data, expected)
+    assert data.ndim in (1, 2)
+    if data.ndim == 1:  # pull_sample
+        assert isinstance(ts, float)
+        assert n_samples_expected is None
+    elif data.ndim == 2:  # pull_chunk
+        assert isinstance(ts, np.ndarray)
+        assert ts.size == data.shape[0]
+        assert ts.size == n_samples_expected
+
+
 @pytest.mark.parametrize(
     ("dtype_str", "dtype"),
     [
@@ -259,29 +285,3 @@ def test_time_correction(close_io):
     tc = inlet.time_correction(timeout=3)
     assert isinstance(tc, float)
     close_io()
-
-
-def _test_properties(inlet, dtype_str, n_channels, name, sfreq, stype):
-    """Test the properties of an inlet against expected values."""
-    assert inlet.dtype == string2numpy.get(dtype_str, dtype_str)
-    assert inlet.n_channels == n_channels
-    assert inlet.name == name
-    assert inlet.sfreq == sfreq
-    assert inlet.stype == stype
-    sinfo = inlet.get_sinfo(timeout=5)
-    assert isinstance(sinfo, _BaseStreamInfo)
-
-
-def _test_numerical_data(data, expected, dtype, ts, n_samples_expected=None):
-    """Check that the pull data match the expected data."""
-    assert isinstance(data, np.ndarray)
-    assert data.dtype == dtype
-    assert_allclose(data, expected)
-    assert data.ndim in (1, 2)
-    if data.ndim == 1:  # pull_sample
-        assert isinstance(ts, float)
-        assert n_samples_expected is None
-    elif data.ndim == 2:  # pull_chunk
-        assert isinstance(ts, np.ndarray)
-        assert ts.size == data.shape[0]
-        assert ts.size == n_samples_expected

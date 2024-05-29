@@ -369,7 +369,9 @@ class Detector:
 from mne_lsl.player import PlayerLSL as Player
 from mne_lsl.lsl import local_clock
 
-player = Player(fname=sample.data_path() / "sample-ecg-raw.fif", name="ecg-example")
+player = Player(
+    fname=sample.data_path() / "sample-ecg-raw.fif", chunk_size=200, name="ecg-example"
+)
 player.start()
 detector = Detector(4, player.name, "AUX8")
 
@@ -386,9 +388,9 @@ plt.show()
 
 # %%
 # The detection delay displayed is erroneous due to the nature of the LSL stream, being
-# replayed from a local file with a :class:`~mne_lsl.player.PlayerLSL`. The default
-# behavior used by the :class:`~mne_lsl.stream.StreamLSL` sets ``chunk_size=64``, and
-# thus we are pushing 64 samples chunks at a time, corresponding to 62.5 ms at once.
+# replayed from a local file with a :class:`~mne_lsl.player.PlayerLSL`. The chunk size
+# of the :class:`~mne_lsl.player.PlayerLSL` was set to ``chunk_size=200``, and
+# thus we are pushing 200 samples chunks at a time, corresponding to 195 ms at once.
 #
 # This is obviously not compatible with a real-time detection scenario, but ensures that
 # the test and documentation builds successfully on github runners.

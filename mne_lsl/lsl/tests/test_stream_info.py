@@ -201,7 +201,7 @@ def test_stream_info_properties(close_io):
     inlet = StreamInlet(sinfo)
     with pytest.raises(RuntimeError, match="StreamInlet is not open"):
         inlet.get_sinfo()
-    inlet.open_stream()
+    inlet.open_stream(timeout=10)
     sinfo_ = inlet.get_sinfo()
     assert isinstance(sinfo_.created_at, float)
     assert 0 < sinfo_.created_at
@@ -246,7 +246,7 @@ def test_stream_info_desc_from_info(close_io):
     info_retrieved = outlet.get_sinfo().get_channel_info()
     compare_infos(raw.info, info_retrieved)
     inlet = StreamInlet(sinfo)
-    inlet.open_stream()
+    inlet.open_stream(timeout=10)
     info_retrieved = inlet.get_sinfo().get_channel_info()
     compare_infos(raw.info, info_retrieved)
 

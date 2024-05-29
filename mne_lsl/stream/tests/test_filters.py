@@ -26,28 +26,6 @@ def sfreq() -> float:
     return 1000.0
 
 
-@pytest.fixture(scope="module")
-def filters(iir_params: dict[str, Any], sfreq: float) -> list[StreamFilter]:
-    """Create a list of valid filters."""
-    l_freqs = (1, 1, 0.1)
-    h_freqs = (40, 15, None)
-    picks = (np.arange(0, 10), np.arange(10, 20), np.arange(20, 30))
-    filters = list()
-    for k, (lfq, hfq, picks_) in enumerate(zip(l_freqs, h_freqs, picks)):
-        filt = create_filter(
-            sfreq=sfreq,
-            l_freq=lfq,
-            h_freq=hfq,
-            iir_params=iir_params,
-        )
-        filt.update(picks=picks_)
-        filt["zi"] = k * filt["zi_unit"]
-        del filt["order"]
-        del filt["ftype"]
-        filters.append(StreamFilter(filt))
-    return filters
-
-
 def test_StreamFilter(iir_params: dict[str, Any], sfreq: float):
     """Test StreamFilter creation."""
     # test deletion of duplicates
@@ -82,6 +60,28 @@ def test_StreamFilter(iir_params: dict[str, Any], sfreq: float):
     filt = StreamFilter(filt)
     assert "order" not in filt
     assert "order" in filt["iir_params"]
+
+
+@pytest.fixture(scope="module")
+def filters(iir_params: dict[str, Any], sfreq: float) -> list[StreamFilter]:
+    """Create a list of valid filters."""
+    l_freqs = (1, 1, 0.1)
+    h_freqs = (40, 15, None)
+    picks = (np.arange(0, 10), np.arange(10, 20), np.arange(20, 30))
+    filters = list()
+    for k, (lfq, hfq, picks_) in enumerate(zip(l_freqs, h_freqs, picks)):
+        filt = create_filter(
+            sfreq=sfreq,
+            l_freq=lfq,
+            h_freq=hfq,
+            iir_params=iir_params,
+        )
+        filt.update(picks=picks_)
+        filt["zi"] = k * filt["zi_unit"]
+        del filt["order"]
+        del filt["ftype"]
+        filters.append(StreamFilter(filt))
+    return filters
 
 
 def test_StreamFilter_comparison(filters: list[StreamFilter]):

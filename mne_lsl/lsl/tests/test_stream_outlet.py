@@ -11,6 +11,17 @@ from mne_lsl.lsl.constants import string2numpy
 from mne_lsl.lsl.stream_info import _BaseStreamInfo
 
 
+def _test_properties(outlet, dtype_str, n_channels, name, sfreq, stype):
+    """Test the properties of an outlet against expected values."""
+    assert outlet.dtype == string2numpy.get(dtype_str, dtype_str)
+    assert outlet.n_channels == n_channels
+    assert outlet.name == name
+    assert outlet.sfreq == sfreq
+    assert outlet.stype == stype
+    sinfo = outlet.get_sinfo()
+    assert isinstance(sinfo, _BaseStreamInfo)
+
+
 @pytest.mark.parametrize(
     ("dtype_str", "dtype"),
     [
@@ -32,7 +43,7 @@ def test_push_numerical_sample(dtype_str, dtype, close_io):
     _test_properties(outlet, dtype_str, 2, "test", 0.0, "")
     inlet = StreamInlet(sinfo)
     inlet.open_stream(timeout=5)
-    time.sleep(0.1)  # sleep required because of pylsl inlet
+    time.sleep(0.5)  # sleep required because of pylsl inlet
     outlet.push_sample(x)
     data, ts = inlet.pull_sample(timeout=5)
     assert_allclose(data, x)
@@ -52,7 +63,7 @@ def test_push_str_sample(close_io):
     _test_properties(outlet, "string", 2, "test", 0.0, "")
     inlet = StreamInlet(sinfo)
     inlet.open_stream(timeout=5)
-    time.sleep(0.1)  # sleep required because of pylsl inlet
+    time.sleep(0.5)  # sleep required because of pylsl inlet
     outlet.push_sample(x)
     data, ts = inlet.pull_sample(timeout=5)
     assert data == x
@@ -170,7 +181,7 @@ def test_push_chunk_timestamps(dtype_str, dtype, close_io):
     _test_properties(outlet, dtype_str, 2, "test", 1.0, "")
     inlet = StreamInlet(sinfo)
     inlet.open_stream(timeout=5)
-    time.sleep(0.1)  # sleep required because of pylsl inlet
+    time.sleep(0.5)  # sleep required because of pylsl inlet
     # float
     now = np.ceil(local_clock())
     outlet.push_chunk(x, timestamp=now)
@@ -218,7 +229,7 @@ def test_push_chunk_irregularly_sampled_stream(close_io):
     _test_properties(outlet, "float32", 2, "test", 0.0, "")
     inlet = StreamInlet(sinfo)
     inlet.open_stream(timeout=5)
-    time.sleep(0.1)  # sleep required because of pylsl inlet
+    time.sleep(0.5)  # sleep required because of pylsl inlet
     # push with timestamp = None
     now = local_clock()
     outlet.push_chunk(x, timestamp=None)
@@ -251,14 +262,3 @@ def test_push_chunk_irregularly_sampled_stream(close_io):
     with pytest.raises(RuntimeError, match="was supplied as an array of zeros"):
         outlet.push_chunk(x, timestamp=np.zeros(x.shape[0]))
     close_io()
-
-
-def _test_properties(outlet, dtype_str, n_channels, name, sfreq, stype):
-    """Test the properties of an outlet against expected values."""
-    assert outlet.dtype == string2numpy.get(dtype_str, dtype_str)
-    assert outlet.n_channels == n_channels
-    assert outlet.name == name
-    assert outlet.sfreq == sfreq
-    assert outlet.stype == stype
-    sinfo = outlet.get_sinfo()
-    assert isinstance(sinfo, _BaseStreamInfo)
