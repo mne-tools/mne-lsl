@@ -239,16 +239,28 @@ class PlayerLSL(BasePlayer):
                 data = self._raw[:, start:stop][0].T
                 self._start_idx += self._chunk_size
             elif self._raw.times.size < stop and self._n_repeated < self._n_repeat:
-                logger.debug("End of file reach, looping back to the beginning.")
+                logger.debug("End of file reached, looping back to the beginning.")
                 stop = self._chunk_size - (self._raw.times.size - start)
                 data = np.vstack([self._raw[:, start:][0].T, self._raw[:, :stop][0].T])
                 self._start_idx = stop
                 self._n_repeated += 1
             else:
-                logger.debug("End of file reach, stopping the player.")
+                logger.debug("End of file reached, stopping the player.")
                 stop = self._raw.times.size
                 data = self._raw[:, start:stop][0].T
                 self._end_streaming = True
+                if data.size == 0:
+                    # rare condition where if chunk_size is equal to 1, the last chunk
+                    # will be empty and we should abort at this point.
+                    logger.debug("End of file reached with an empty chunk.")
+                    if self._chunk_size != 1:  # pragma: no cover
+                        warn(
+                            f"{self._name}: End of file reached with an empty chunk. "
+                            "This should not happen with a chunk_size different from 1."
+                        )
+                    self._del_outlets()
+                    self._reset_variables()
+                    return None
             # bump the target LSL timestamp before pushing because the argument
             # 'timestamp' expects the timestamp of the most 'recent' sample, which in
             # this non-real time replay scenario is the timestamp of the last sample in
