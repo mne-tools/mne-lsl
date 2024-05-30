@@ -288,6 +288,7 @@ class Detector:
         self._stream.notch_filter(100, picks=ch_name)
         sleep(bufsize)  # prefill an entire buffer
         # peak detection settings
+        self._last_acq_time = None
         self._last_peak = None
         self._peak_candidates = None
         self._peak_candidates_count = None
@@ -301,6 +302,10 @@ class Detector:
             The timestamps of all detected peaks.
         """
         data, ts = self._stream.get_data()  # we have a single channel in the stream
+        if self._last_acq_time is None:
+            self._last_acq_time = ts[-1]
+        elif self._last_acq_time == ts[-1]:
+            return np.array([])  # nothing new to do
         data = data.squeeze()
         peaks, _ = find_peaks(
             data,
