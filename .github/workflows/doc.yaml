@@ -32,7 +32,7 @@ jobs:
           python -m pip install --progress-bar off .[doc]
       - name: Display system information
         run: mne_lsl-sys_info --developer
-      - name: Get testing dataset
+      - name: Get dataset
         uses: ./.github/actions/get-testing-dataset
         with:
           sample: "true"
