@@ -171,6 +171,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         """
     _acquisition_delay: Incomplete
     _n_new_samples: int
+    _executor: Incomplete
 
     @abstractmethod
     def connect(self, acquisition_delay: float) -> BaseStream:
@@ -187,7 +188,6 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         stream : instance of ``Stream``
             The stream instance modified in-place.
         """
-    _interrupt: bool
 
     @abstractmethod
     def disconnect(self) -> BaseStream:
@@ -740,16 +740,6 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
     def _check_connected_and_regular_sampling(self, name: str):
         """Check that the stream has a regular sampling rate."""
-    _acquisition_thread: Incomplete
-
-    def _create_acquisition_thread(self, delay: float) -> None:
-        """Create and start the daemonic acquisition thread.
-
-        Parameters
-        ----------
-        delay : float
-            Delay after which the thread will call the acquire function.
-        """
 
     def _interrupt_acquisition(self) -> Generator[None, None, None]:
         """Context manager interrupting the acquisition thread."""

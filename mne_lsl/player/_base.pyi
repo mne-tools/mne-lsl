@@ -49,7 +49,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
     def __init__(
         self,
         fname: str | Path | BaseRaw,
-        chunk_size: int = 64,
+        chunk_size: int = 10,
         n_repeat: int | float = ...,
     ): ...
     def anonymize(
@@ -172,6 +172,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         player : instance of ``Player``
             The player instance modified in-place.
         """
+    _executor: Incomplete
 
     @abstractmethod
     def start(self) -> BasePlayer:
@@ -256,11 +257,10 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         ----------
         meas_date : datetime | float | tuple | None
             The new measurement date.
-            If datetime object, it must be timezone-aware and in UTC.
-            A tuple of (seconds, microseconds) or float (alias for
-            ``(meas_date, 0)``) can also be passed and a datetime
-            object will be automatically created. If None, will remove
-            the time reference.
+            If datetime object, it must be timezone-aware and in UTC. A tuple of
+            (seconds, microseconds) or float (alias for ``(meas_date, 0)``) can also be
+            passed and a datetime object will be automatically created. If None, will
+            remove the time reference.
 
         Returns
         -------
@@ -271,7 +271,6 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         --------
         anonymize
         """
-    _interrupt: bool
 
     @abstractmethod
     def stop(self) -> BasePlayer:
@@ -297,7 +296,6 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
     _n_repeated: int
     _start_idx: int
     _streaming_delay: Incomplete
-    _streaming_thread: Incomplete
 
     def _reset_variables(self) -> None:
         """Reset variables for streaming."""
@@ -349,3 +347,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
 
         :type: :class:`int` | ``np.inf``
         """
+
+    @property
+    def running(self) -> bool:
+        """Status of the player, True if it is running and pushing data."""
