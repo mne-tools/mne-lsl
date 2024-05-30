@@ -101,13 +101,9 @@ def acquisition_delay(request):
 
 
 def _sleep_until_new_data(acq_delay, player):
-    """Sleep until new data is available, majorated by 10%."""
-    time.sleep(
-        max(
-            1.5 * acq_delay,
-            1.5 * (player.chunk_size / player.info["sfreq"]),
-        )
-    )
+    """Sleep until new data is available, majorated by a safety factor."""
+    factor = 2.5 if os.getenv("GITHUB_ACTIONS", "") == "true" else 1.1
+    time.sleep(factor * max(acq_delay, player.chunk_size / player.info["sfreq"]))
 
 
 def test_stream(mock_lsl_stream, acquisition_delay, raw):
