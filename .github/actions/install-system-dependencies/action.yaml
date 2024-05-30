@@ -1,16 +1,20 @@
-name: "Install liblsl"
-description: "A composite action to install liblsl on different operating systems."
+name: "Install system dependencies"
+description: "A composite action to install liblsl and system dependencies on different operating systems."
 
 runs:
   using: "composite"
   steps:
+    - name: Install linux dependencies
+      if: ${{ runner.os == 'Linux' }}
+      shell: bash
+      run: |
+        sudo apt update
+        sudo apt install -y binutils libpugixml-dev qtbase5-dev qt5-qmake
     - name: Install liblsl (linux)
       if: ${{ runner.os == 'Linux' }}
       shell: bash
       run: |
         curl -L https://github.com/sccn/liblsl/releases/download/v1.16.2/liblsl-1.16.2-jammy_amd64.deb -o liblsl-1.16.2-jammy_amd64.deb
-        sudo apt update
-        sudo apt install -y binutils libpugixml-dev qtbase5-dev qt5-qmake
         sudo apt install -y ./liblsl-1.16.2-jammy_amd64.deb
         rm liblsl-1.16.2-jammy_amd64.deb
     - name: Install liblsl (macOS)

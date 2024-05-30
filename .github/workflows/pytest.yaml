@@ -36,6 +36,8 @@ jobs:
           python -m pip install --progress-bar off .[test]
       - name: Display system information
         run: mne_lsl-sys_info --developer
+      - name: Get testing dataset
+        uses: ./.github/actions/get-testing-dataset
       - name: Run pytest
         run: pytest mne_lsl --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s
         env:
@@ -80,6 +82,8 @@ jobs:
           python -m pip install --progress-bar off --upgrade --pre --only-binary :all: -i https://pypi.anaconda.org/scientific-python-nightly-wheels/simple --timeout=180 numpy scipy
       - name: Display system information
         run: mne_lsl-sys_info --developer
+      - name: Get testing dataset
+        uses: ./.github/actions/get-testing-dataset
       - name: Run pytest
         run: pytest mne_lsl --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s
         env:
@@ -123,6 +127,8 @@ jobs:
           python -m pip install --progress-bar off mne==${{ matrix.mne-version }}
       - name: Display system information
         run: mne_lsl-sys_info --developer
+      - name: Get testing dataset
+        uses: ./.github/actions/get-testing-dataset
       - name: Run pytest
         run: pytest mne_lsl --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s
         env:

@@ -1,0 +1,23 @@
+name: "Get MNE-LSL testing dataset"
+description: "A composite action to get MNE-LSL testing dataset from cache or remote."
+
+runs:
+  using: "composite"
+  steps:
+    - name: Get testing dataset version
+      shell: bash
+      run: |
+          curl https://raw.githubusercontent.com/mscheltienne/mne-lsl-datasets/main/version.txt -o mne_lsl_testing_data_version.txt
+    - name: Cache testing dataset
+      id: cache
+      uses: actions/cache@v4
+      with:
+        key: mne-lsl-testing-${{ runner.os }}-${{ hashFiles('mne_testing_data_version.txt') }}
+        path: ~/mne_data/MNE-LSL-data
+    - name: Download testing dataset
+      if: steps.cache.outputs.cache-hit != 'true'
+      shell: bash
+      run: python -c "import mne_lsl; mne_lsl.datasets.testing.data_path()"
+    - name: Remove dataset version file
+      shell: bash
+      run: rm mne_lsl_testing_data_version.txt
