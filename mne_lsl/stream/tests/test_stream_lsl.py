@@ -3,7 +3,6 @@ from __future__ import annotations  # c.f. PEP 563, PEP 649
 import logging
 import multiprocessing as mp
 import os
-import platform
 import re
 import time
 from datetime import datetime, timezone
@@ -37,12 +36,6 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from mne.io import BaseRaw
-
-
-bad_gh_macos = pytest.mark.skipif(
-    platform.system() == "Darwin" and os.getenv("GITHUB_ACTIONS", "") == "true",
-    reason="Unreliable on macOS CIs.",
-)
 
 
 class DummyPlayer:
@@ -101,13 +94,9 @@ def acquisition_delay(request):
 
 
 def _sleep_until_new_data(acq_delay, player):
-    """Sleep until new data is available, majorated by 10%."""
-    time.sleep(
-        max(
-            1.5 * acq_delay,
-            1.5 * (player.chunk_size / player.info["sfreq"]),
-        )
-    )
+    """Sleep until new data is available, majorated by a safety factor."""
+    factor = 2.5 if os.getenv("GITHUB_ACTIONS", "") == "true" else 1.1
+    time.sleep(factor * max(acq_delay, player.chunk_size / player.info["sfreq"]))
 
 
 def test_stream(mock_lsl_stream, acquisition_delay, raw):
@@ -209,7 +198,6 @@ def test_stream_double_connection(mock_lsl_stream):
     stream.disconnect()
 
 
-@bad_gh_macos
 def test_stream_drop_channels(mock_lsl_stream, acquisition_delay, raw):
     """Test dropping channels."""
     stream = Stream(bufsize=2, name=mock_lsl_stream.name)
@@ -336,7 +324,6 @@ def test_stream_channel_types(mock_lsl_stream, raw):
     stream.disconnect()
 
 
-@bad_gh_macos
 def test_stream_channel_names(mock_lsl_stream, raw):
     """Test channel renaming."""
     stream = Stream(bufsize=2, name=mock_lsl_stream.name)
@@ -409,7 +396,6 @@ def test_stream_channel_units(mock_lsl_stream, raw):
     stream.disconnect()
 
 
-@bad_gh_macos
 def test_stream_add_reference_channels(mock_lsl_stream, acquisition_delay, raw):
     """Test add reference channels and channel selection."""
     stream = Stream(bufsize=2, name=mock_lsl_stream.name)
@@ -794,7 +780,8 @@ def test_stream_filter_deletion(mock_lsl_stream, caplog):
     assert all(filt["zi"] is not None for filt in stream.filters)
     caplog.set_level(logging.INFO)
     caplog.clear()
-    stream.del_filter(2)
+    with _use_log_level("INFO"):
+        stream.del_filter(2)
     assert (
         f"The initial conditions will be reset on filters:\n{stream.filters[0]}"
     ) in caplog.text

@@ -61,11 +61,6 @@ def pytest_configure(config: pytest.Config) -> None:
     )
     warning_lines = f"    {first_kind}::"
     warning_lines += r"""
-    # numpy 2.0 <-> SciPy
-    ignore:numpy\.core\._multiarray_umath.*:DeprecationWarning
-    ignore:numpy\.core\.multiarray is deprecated.*:DeprecationWarning
-    ignore:numpy\.core\.numeric is deprecated.*:DeprecationWarning
-    ignore:datetime\.datetime\.utcfromtimestamp.*:DeprecationWarning
     # Pooch tar
     ignore:Python 3.14 will, by default.*:DeprecationWarning
     """
