@@ -24,6 +24,8 @@ jobs:
           python-version: 3.11
       - name: Install system dependencies
         uses: ./.github/actions/install-system-dependencies
+      - name: Install optipng (for sphinx-gallery)
+        run: sudo apt install optipng
       - name: Install package
         run: |
           python -m pip install --progress-bar off --upgrade pip setuptools
