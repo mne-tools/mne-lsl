@@ -780,7 +780,8 @@ def test_stream_filter_deletion(mock_lsl_stream, caplog):
     assert all(filt["zi"] is not None for filt in stream.filters)
     caplog.set_level(logging.INFO)
     caplog.clear()
-    stream.del_filter(2)
+    with _use_log_level("INFO"):
+        stream.del_filter(2)
     assert (
         f"The initial conditions will be reset on filters:\n{stream.filters[0]}"
     ) in caplog.text
