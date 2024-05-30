@@ -25,8 +25,6 @@ class PlayerLSL(BasePlayer):
         can be provided directly.
     chunk_size : int ``≥ 1``
         Number of samples pushed at once on the :class:`~mne_lsl.lsl.StreamOutlet`.
-        If these chunks are too small then the thread-based timing might not work
-        properly.
     n_repeat : int | ``np.inf``
         Number of times to repeat the file. If ``np.inf``, the file is re-played
         indefinitely.
@@ -134,7 +132,6 @@ class PlayerLSL(BasePlayer):
     _outlet: Incomplete
     _outlet_annotations: Incomplete
     _streaming_delay: Incomplete
-    _streaming_thread: Incomplete
     _target_timestamp: Incomplete
 
     def start(self) -> PlayerLSL:
