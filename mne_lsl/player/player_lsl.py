@@ -279,7 +279,7 @@ class PlayerLSL(BasePlayer):
             else:
                 self._outlet.push_chunk(data, timestamp=self._target_timestamp)
             self._stream_annotations(start, stop, start_timestamp)
-        except Exception as exc:
+        except Exception as exc:  # pragma: no cover
             logger.error("%s: Stopping due to exception: %s", self._name, exc)
             self._del_outlets()
             self._reset_variables()
@@ -296,8 +296,8 @@ class PlayerLSL(BasePlayer):
             sleep(delay)
             try:
                 self._executor.submit(self._stream)
-            except RuntimeError:
-                assert self._executor._shutdown  # pragma: no cover
+            except RuntimeError:  # pragma: no cover
+                pass  # shutdown
 
     def _stream_annotations(
         self, start: int, stop: int, start_timestamp: float

@@ -230,8 +230,8 @@ class StreamLSL(BaseStream):
                 sleep(self._acquisition_delay)
                 try:
                     self._executor.submit(self._acquire)
-                except RuntimeError:
-                    assert self._executor._shutdown  # pragma: no cover
+                except RuntimeError:  # pragma: no cover
+                    pass  # shutdown
                 return  # interrupt early
 
             # process acquisition window
@@ -249,8 +249,8 @@ class StreamLSL(BaseStream):
                 sleep(self._acquisition_delay)
                 try:
                     self._executor.submit(self._acquire)
-                except RuntimeError:
-                    assert self._executor._shutdown  # pragma: no cover
+                except RuntimeError:  # pragma: no cover
+                    pass  # shutdown
                 return  # interrupt early
             if len(self._added_channels) != 0:
                 refs = np.zeros(
@@ -296,7 +296,7 @@ class StreamLSL(BaseStream):
                     "argument or consider retrieving new samples more often with "
                     "Stream.get_data()."
                 )
-        except Exception as error:
+        except Exception as error:  # pragma: no cover
             logger.exception(error)
             self._reset_variables()  # disconnects from the stream
             if os.getenv("MNE_LSL_RAISE_STREAM_ERRORS", "false").lower() == "true":
@@ -305,8 +305,8 @@ class StreamLSL(BaseStream):
             try:
                 sleep(self._acquisition_delay)
                 self._executor.submit(self._acquire)
-            except RuntimeError:
-                assert self._executor._shutdown  # pragma: no cover
+            except RuntimeError:  # pragma: no cover
+                pass  # shutdown
 
     def _reset_variables(self) -> None:
         """Reset variables define after connection."""

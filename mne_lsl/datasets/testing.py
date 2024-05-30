@@ -44,7 +44,7 @@ def data_path() -> Path:
     path = (
         Path(get_config("MNE_DATA", Path.home())).expanduser()
         / "mne_data"
-        / "MNE-LSL"
+        / "MNE-LSL-data"
         / "testing"
     )
     base_url = "https://github.com/mscheltienne/mne-lsl-datasets/raw/main/testing"
