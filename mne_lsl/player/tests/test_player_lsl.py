@@ -114,6 +114,7 @@ def test_player_context_manager_raw_annotations(raw_annotations):
     with Player(
         raw_annotations, chunk_size=200, name=name, annotations=False
     ) as player:
+        assert player.running
         streams = resolve_streams(timeout=2)
         assert len(streams) == 1
         assert streams[0].name == name
@@ -122,6 +123,7 @@ def test_player_context_manager_raw_annotations(raw_annotations):
     assert len(streams) == 0
 
     with Player(raw_annotations, chunk_size=200, name=name) as player:
+        assert player.running
         streams = resolve_streams(timeout=2)
         assert len(streams) == 2
         assert any(stream.name == name for stream in streams)
@@ -336,6 +338,7 @@ def test_player_annotations(raw_annotations, close_io):
     name = "Player-test_player_annotations"
     annotations = sorted(set(raw_annotations.annotations.description))
     player = Player(raw_annotations, chunk_size=200, name=name)
+    assert f"Player: {name}" in repr(player)
     assert player.name == name
     assert player.fname == Path(raw_annotations.filenames[0])
     streams = resolve_streams(timeout=0.1)
@@ -410,7 +413,10 @@ def test_player_n_repeat(raw):
     player = Player(
         raw, chunk_size=200, n_repeat=4, name="Player-test_player_n_repeat-2"
     )
+    assert player.n_repeat == 4
     player.start()
+    assert player.n_repeat == 4
+    assert player.running
     time.sleep((raw.times.size / raw.info["sfreq"]) * 1.8)
     assert player._executor is not None
     streams = resolve_streams(timeout=2)

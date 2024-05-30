@@ -567,7 +567,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
                     "The Stream is not connected. Please connect to the stream before "
                     "retrieving data from the buffer."
                 )
-            else:
+            else:  # pragma: no cover
                 logger.error(
                     "Something went wrong while retrieving data from a connected "
                     "stream. Please open an issue on GitHub and provide the error "
