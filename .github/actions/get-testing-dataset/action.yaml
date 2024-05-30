@@ -1,23 +1,44 @@
 name: "Get MNE-LSL testing dataset"
 description: "A composite action to get MNE-LSL testing dataset from cache or remote."
+inputs:
+  sample:
+    description: "If True, retrieve the sample dataset."
+    required: false
+    default: "false"
+  testing:
+    description: "If True, retrieve the testing dataset."
+    required: false
+    default: "true"
 
 runs:
   using: "composite"
   steps:
-    - name: Get testing dataset version
+    - name: Get dataset version file
       shell: bash
       run: |
           curl https://raw.githubusercontent.com/mscheltienne/mne-lsl-datasets/main/version.txt -o mne_lsl_dataset_version.txt
     - name: Cache testing dataset
-      id: cache
+      if: ${{ inputs.testing == 'true' }}
+      id: cache_testing
       uses: actions/cache@v4
       with:
         key: mne-lsl-testing-${{ runner.os }}-${{ hashFiles('mne_lsl_dataset_version.txt') }}
-        path: ~/mne_data/MNE-LSL-data
+        path: ~/mne_data/MNE-LSL-data/testing
     - name: Download testing dataset
-      if: steps.cache.outputs.cache-hit != 'true'
+      if: ${{ inputs.testing == 'true' && steps.cache_testing.outputs.cache-hit != 'true' }}
       shell: bash
       run: python -c "import mne_lsl; mne_lsl.datasets.testing.data_path()"
+    - name: Cache sample dataset
+      if: ${{ inputs.sample == 'true' }}
+      id: cache_sample
+      uses: actions/cache@v4
+      with:
+        key: mne-lsl-sample-${{ runner.os }}-${{ hashFiles('mne_lsl_dataset_version.txt') }}
+        path: ~/mne_data/MNE-LSL-data/sample
+    - name: Download sample dataset
+      if: ${{ inputs.sample == 'true' && steps.cache_sample.outputs.cache-hit != 'true' }}
+      shell: bash
+      run: python -c "import mne_lsl; mne_lsl.datasets.sample.data_path()"
     - name: Remove dataset version file
       shell: bash
       run: rm mne_lsl_dataset_version.txt

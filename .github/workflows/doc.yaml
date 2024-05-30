@@ -30,12 +30,13 @@ jobs:
           python -m pip install --progress-bar off .[doc]
       - name: Display system information
         run: mne_lsl-sys_info --developer
-      - name: Build doc
-        uses: nick-fields/retry@v3
+      - name: Get testing dataset
+        uses: ./.github/actions/get-testing-dataset
         with:
-          timeout_minutes: 10
-          max_attempts: 3
-          command: make -C doc html
+          sample: "true"
+          testing: "false"
+      - name: Build doc
+        run: make -C doc html
       - name: Prune sphinx environment
         run: rm -R ./doc/_build/html/.doctrees
       - name: Upload documentation
