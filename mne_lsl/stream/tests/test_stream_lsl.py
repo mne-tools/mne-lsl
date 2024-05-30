@@ -3,7 +3,6 @@ from __future__ import annotations  # c.f. PEP 563, PEP 649
 import logging
 import multiprocessing as mp
 import os
-import platform
 import re
 import time
 from datetime import datetime, timezone
@@ -37,12 +36,6 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from mne.io import BaseRaw
-
-
-bad_gh_macos = pytest.mark.skipif(
-    platform.system() == "Darwin" and os.getenv("GITHUB_ACTIONS", "") == "true",
-    reason="Unreliable on macOS CIs.",
-)
 
 
 class DummyPlayer:
@@ -205,7 +198,6 @@ def test_stream_double_connection(mock_lsl_stream):
     stream.disconnect()
 
 
-@bad_gh_macos
 def test_stream_drop_channels(mock_lsl_stream, acquisition_delay, raw):
     """Test dropping channels."""
     stream = Stream(bufsize=2, name=mock_lsl_stream.name)
@@ -332,7 +324,6 @@ def test_stream_channel_types(mock_lsl_stream, raw):
     stream.disconnect()
 
 
-@bad_gh_macos
 def test_stream_channel_names(mock_lsl_stream, raw):
     """Test channel renaming."""
     stream = Stream(bufsize=2, name=mock_lsl_stream.name)
@@ -405,7 +396,6 @@ def test_stream_channel_units(mock_lsl_stream, raw):
     stream.disconnect()
 
 
-@bad_gh_macos
 def test_stream_add_reference_channels(mock_lsl_stream, acquisition_delay, raw):
     """Test add reference channels and channel selection."""
     stream = Stream(bufsize=2, name=mock_lsl_stream.name)
