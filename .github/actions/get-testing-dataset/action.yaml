@@ -7,12 +7,12 @@ runs:
     - name: Get testing dataset version
       shell: bash
       run: |
-          curl https://raw.githubusercontent.com/mscheltienne/mne-lsl-datasets/main/version.txt -o mne_lsl_testing_data_version.txt
+          curl https://raw.githubusercontent.com/mscheltienne/mne-lsl-datasets/main/version.txt -o mne_lsl_dataset_version.txt
     - name: Cache testing dataset
       id: cache
       uses: actions/cache@v4
       with:
-        key: mne-lsl-testing-${{ runner.os }}-${{ hashFiles('mne_testing_data_version.txt') }}
+        key: mne-lsl-testing-${{ runner.os }}-${{ hashFiles('mne_lsl_dataset_version.txt') }}
         path: ~/mne_data/MNE-LSL-data
     - name: Download testing dataset
       if: steps.cache.outputs.cache-hit != 'true'
@@ -20,4 +20,4 @@ runs:
       run: python -c "import mne_lsl; mne_lsl.datasets.testing.data_path()"
     - name: Remove dataset version file
       shell: bash
-      run: rm mne_lsl_testing_data_version.txt
+      run: rm mne_lsl_dataset_version.txt
