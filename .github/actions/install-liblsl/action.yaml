@@ -1,0 +1,33 @@
+name: "Install liblsl"
+description: "A composite action to install liblsl on different operating systems."
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install liblsl (linux)
+      if: ${{ runner.os == 'Linux' }}
+      shell: bash
+      run: |
+        curl -L https://github.com/sccn/liblsl/releases/download/v1.16.2/liblsl-1.16.2-jammy_amd64.deb -o liblsl-1.16.2-jammy_amd64.deb
+        sudo apt update
+        sudo apt install -y binutils libpugixml-dev qtbase5-dev qt5-qmake
+        sudo apt install -y ./liblsl-1.16.2-jammy_amd64.deb
+        rm liblsl-1.16.2-jammy_amd64.deb
+    - name: Install liblsl (macOS)
+      if: ${{ runner.os == 'macOS' }}
+      shell: bash
+      run: |
+        curl -L https://github.com/sccn/liblsl/releases/download/v1.16.0/liblsl-1.16.0-OSX_arm64.tar.bz2 -o liblsl-1.16.0-OSX_arm64.tar.bz2
+        tar -xf liblsl-1.16.0-OSX_arm64.tar.bz2
+        mv lib/liblsl.1.16.0.dylib .
+        echo "MNE_LSL_LIB=$PWD/liblsl.1.16.0.dylib" >> $GITHUB_ENV
+        rm -R lib include bin
+        rm liblsl-1.16.0-OSX_arm64.tar.bz2
+    - name: Install liblsl (windows)
+      if: ${{ runner.os == 'Windows' }}
+      shell: bash
+      run: |
+        curl -L https://github.com/sccn/liblsl/releases/download/v1.16.2/liblsl-1.16.2-Win_amd64.zip -o liblsl-1.16.2-Win_amd64.zip
+        7z x -oliblsl liblsl-1.16.2-Win_amd64.zip
+        echo "MNE_LSL_LIB=$PWD/liblsl/bin/lsl.dll" >> $GITHUB_ENV
+        rm liblsl-1.16.2-Win_amd64.zip
