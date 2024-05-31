@@ -80,7 +80,8 @@ def pytest_sessionfinish(session, exitstatus) -> None:
         pass
 
 
-def _closer():
+@pytest.fixture()
+def _close_io():
     """Delete inlets and outlets if present.
 
     We cannot rely on just "del inlet" / "del outlet" because Python's garbage collector
@@ -88,6 +89,7 @@ def _closer():
     guaranteed. So let's explicitly __del__ ourselves, knowing that our __del__s are
     smart enough to be no-ops if called more than once.
     """
+    yield
     loc = inspect.currentframe().f_back.f_locals
     inlets, outlets = [], []
     for var in loc.values():  # go through the frame only once
@@ -100,12 +102,6 @@ def _closer():
         inlet.__del__()
     for outlet in outlets:
         outlet.__del__()
-
-
-@pytest.fixture()
-def close_io():
-    """Return function that will close inlets and outlets if present."""
-    return _closer
 
 
 @pytest.fixture(scope="session")

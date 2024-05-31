@@ -22,6 +22,7 @@ def _test_properties(outlet, dtype_str, n_channels, name, sfreq, stype):
     assert isinstance(sinfo, _BaseStreamInfo)
 
 
+@pytest.mark.usefixtures("_close_io")
 @pytest.mark.parametrize(
     ("dtype_str", "dtype"),
     [
@@ -32,7 +33,7 @@ def _test_properties(outlet, dtype_str, n_channels, name, sfreq, stype):
         ("int32", np.int32),
     ],
 )
-def test_push_numerical_sample(dtype_str, dtype, close_io):
+def test_push_numerical_sample(dtype_str, dtype):
     """Test push_sample with numerical values."""
     x = np.array([1, 2], dtype=dtype)
     assert x.shape == (2,)
@@ -51,10 +52,10 @@ def test_push_numerical_sample(dtype_str, dtype, close_io):
         outlet.push_sample(np.array([1, 2, 3, 4, 5, 6], dtype=dtype).reshape((2, 3)))
     with pytest.raises(ValueError, match="2 elements are expected"):
         outlet.push_sample(np.array([1, 2, 3, 4, 5], dtype=dtype))
-    close_io()
 
 
-def test_push_str_sample(close_io):
+@pytest.mark.usefixtures("_close_io")
+def test_push_str_sample():
     """Test push_sample with strings."""
     x = ["1", "2"]
     # create stream descriptions
@@ -67,7 +68,6 @@ def test_push_str_sample(close_io):
     outlet.push_sample(x)
     data, ts = inlet.pull_sample(timeout=5)
     assert data == x
-    close_io()
 
 
 @pytest.mark.parametrize(
@@ -129,7 +129,8 @@ def test_push_str_chunk():
         outlet.push_chunk([["1", "4"], ["2", "5"], ["3", "6"], ["7"]])
 
 
-def test_wait_for_consumers(close_io):
+@pytest.mark.usefixtures("_close_io")
+def test_wait_for_consumers():
     """Test wait for client."""
     sinfo = StreamInfo("test", "EEG", 2, 100.0, "float32", uuid.uuid4().hex)
     outlet = StreamOutlet(sinfo, chunk_size=3)
@@ -142,7 +143,6 @@ def test_wait_for_consumers(close_io):
     inlet.open_stream(timeout=5)
     assert outlet.wait_for_consumers(timeout=0.2)
     assert outlet.has_consumers
-    close_io()
 
 
 def test_invalid_outlet():
@@ -158,6 +158,7 @@ def test_invalid_outlet():
         StreamOutlet(sinfo, max_buffered=-101)
 
 
+@pytest.mark.usefixtures("_close_io")
 @pytest.mark.parametrize(
     ("dtype_str", "dtype"),
     [
@@ -169,7 +170,7 @@ def test_invalid_outlet():
         ("string", None),
     ],
 )
-def test_push_chunk_timestamps(dtype_str, dtype, close_io):
+def test_push_chunk_timestamps(dtype_str, dtype):
     """Test push_chunk with timestamps."""
     if dtype_str == "string":
         x = [["1", "4"], ["2", "5"], ["3", "6"]]
@@ -217,10 +218,10 @@ def test_push_chunk_timestamps(dtype_str, dtype, close_io):
         match="must contain one element per sample",
     ):
         outlet.push_chunk(x, timestamp=np.arange(4))
-    close_io()
 
 
-def test_push_chunk_irregularly_sampled_stream(close_io):
+@pytest.mark.usefixtures("_close_io")
+def test_push_chunk_irregularly_sampled_stream():
     """Test pushing a chunk on an irregularly sampled stream."""
     x = np.array([[1, 4], [2, 5], [3, 6]], dtype=np.float32)
     # create stream description
@@ -261,4 +262,3 @@ def test_push_chunk_irregularly_sampled_stream(close_io):
     # push with timestamp = np.zeros(...)
     with pytest.raises(RuntimeError, match="was supplied as an array of zeros"):
         outlet.push_chunk(x, timestamp=np.zeros(x.shape[0]))
-    close_io()
