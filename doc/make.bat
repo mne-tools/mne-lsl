@@ -33,7 +33,7 @@ goto :eof
 goto :eof
 
 :clean
-rmdir /s /q _build generated
+rmdir /s /q _build generated sg_execution_times.rst
 goto :eof
 
 :linkcheck

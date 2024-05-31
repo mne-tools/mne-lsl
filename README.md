@@ -33,7 +33,7 @@ Install instruction can be found on the
 
 # Acknowledgment
 
-<img align="right" src="https://raw.githubusercontent.com/mne-tools/mne-lsl/main/doc/_static/partners/fcbg-hnp-meeg.png" width=150>
+<img align="right" src="https://raw.githubusercontent.com/mne-tools/mne-lsl/main/doc/_static/partners/FCBG.svg" width=150>
 
 **MNE-LSL** is based on **BSL** and **NeuroDecode**. The original version developed by
 [**Kyuhwa Lee**](https://github.com/dbdq) was recognised at
@@ -44,7 +44,7 @@ with the First Prize Award (2016).
 [**Arnaud Desvachez**](https://github.com/dnastars) for the
 [Fondation Campus Biotech Geneva (FCBG)](https://github.com/fcbg-hnp-meeg) and
 development is still supported by the
-[Human Neuroscience Platform (FCBG)](https://hnp.fcbg.ch/).
+[Fondation Campus Biotech Geneva (FCBG)](https://hnp.fcbg.ch/).
 
 # Copyright and license
 

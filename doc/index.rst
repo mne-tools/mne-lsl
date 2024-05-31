@@ -52,12 +52,13 @@ fetched from the `liblsl release page <lsl lib release_>`_ if possible.
 Supporting institutions
 -----------------------
 
-The development of ``MNE-LSL`` is supported by the
-`Human Neuroscience Platform, Fondation Campus Biotech Geneva <fcbg hnp_>`_.
-
-.. image:: _static/partners/fcbg-hnp-meeg.png
+.. image:: _static/partners/FCBG.svg
+    :align: right
     :alt: FCBG - HNP - MEEG/BCI Platform
-    :width: 150
+    :width: 100
+
+The development of ``MNE-LSL`` is supported by the
+`Fondation Campus Biotech Geneva <fcbg hnp_>`_.
 
 .. toctree::
     :hidden:
