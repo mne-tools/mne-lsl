@@ -10,7 +10,7 @@ on:  # yamllint disable-line rule:truthy
 
 jobs:
   pytest:
-    timeout-minutes: 20
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
@@ -53,7 +53,7 @@ jobs:
           verbose: true  # optional (default = false)
 
   pytest-pip-pre:
-    timeout-minutes: 20
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
@@ -99,7 +99,7 @@ jobs:
           verbose: true  # optional (default = false)
 
   pytest-compat:
-    timeout-minutes: 20
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
