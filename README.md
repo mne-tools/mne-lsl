@@ -33,7 +33,7 @@ Install instruction can be found on the
 
 # Acknowledgment
 
-<img align="right" src="https://raw.githubusercontent.com/mne-tools/mne-lsl/main/doc/_static/partners/FCBG.svg" width=150>
+<img align="right" src="https://raw.githubusercontent.com/mne-tools/mne-lsl/main/doc/_static/partners/FCBG.svg" width=100>
 
 **MNE-LSL** is based on **BSL** and **NeuroDecode**. The original version developed by
 [**Kyuhwa Lee**](https://github.com/dbdq) was recognised at
