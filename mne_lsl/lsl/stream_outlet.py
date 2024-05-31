@@ -58,12 +58,11 @@ class StreamOutlet:
                 "The argument 'max_buffered' must contain a positive number. "
                 f"{max_buffered} is invalid."
             )
-        self._lock = Lock()
         self._obj = lib.lsl_create_outlet(sinfo._obj, chunk_size, max_buffered)
-        assert self.__obj is not None
         self._obj = c_void_p(self._obj)
         if not self._obj:
             raise RuntimeError("The StreamOutlet could not be created.")
+        self._lock = Lock()
 
         # properties from the StreamInfo
         self._dtype = sinfo._dtype
@@ -88,12 +87,8 @@ class StreamOutlet:
     def _obj(self, obj):
         self.__obj = obj
 
-    def __del__(self):
-        """Destroy a :class:`~mne_lsl.lsl.StreamOutlet`.
-
-        The outlet will no longer be discoverable after destruction and all connected
-        inlets will stop delivering data.
-        """
+    def _del(self):
+        """Destroy a :class:`~mne_lsl.lsl.StreamOutlet` explicitly."""
         logger.debug(f"Destroying {self.__class__.__name__}.")
         try:
             if self.__obj is None:
@@ -106,6 +101,15 @@ class StreamOutlet:
                 lib.lsl_destroy_outlet(obj)
             except Exception as exc:
                 warn(f"Error destroying outlet: {str(exc)}")
+
+    def __del__(self):
+        """Destroy a :class:`~mne_lsl.lsl.StreamOutlet`.
+
+        The outlet will no longer be discoverable after destruction and all connected
+        inlets will stop delivering data.
+        """
+        logger.debug(f"Deleting {self.__class__.__name__}.")
+        self._del()  # no-op if called more than once
 
     def push_sample(
         self,

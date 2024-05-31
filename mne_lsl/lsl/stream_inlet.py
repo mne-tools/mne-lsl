@@ -141,11 +141,8 @@ class StreamInlet:
     def _obj(self, obj):
         self.__obj = obj
 
-    def __del__(self):
-        """Destroy a :class:`~mne_lsl.lsl.StreamInlet`.
-
-        The inlet will automatically disconnect.
-        """
+    def _del(self):
+        """Destroy a :class:`~mne_lsl.lsl.StreamInlet` explicitly."""
         logger.debug(f"Destroying {self.__class__.__name__}.")
         try:
             if self.__obj is None:
@@ -163,6 +160,14 @@ class StreamInlet:
                 lib.lsl_destroy_inlet(obj)
             except Exception as exc:
                 warn(f"Error destroying inlet: {str(exc)}.")
+
+    def __del__(self):
+        """Destroy a :class:`~mne_lsl.lsl.StreamInlet`.
+
+        The inlet will automatically disconnect.
+        """
+        logger.debug(f"Deleting {self.__class__.__name__}.")
+        self._del()  # no-op if called more than once
 
     def open_stream(self, timeout: Optional[float] = None) -> None:
         """Subscribe to a data stream.

@@ -99,10 +99,12 @@ def _close_io():
             outlets.append(var)
     # delete inlets before outlets
     for inlet in inlets:
-        inlet.__del__()
+        inlet._del()
+        del inlet
     inlets.clear()
     for outlet in outlets:
-        outlet.__del__()
+        outlet._del()
+        del outlet
     outlets.clear()
 
 
