@@ -100,8 +100,10 @@ def _close_io():
     # delete inlets before outlets
     for inlet in inlets:
         inlet.__del__()
+    inlets.clear()
     for outlet in outlets:
         outlet.__del__()
+    outlets.clear()
 
 
 @pytest.fixture(scope="session")
