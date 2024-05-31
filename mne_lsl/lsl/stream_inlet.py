@@ -10,7 +10,7 @@ import numpy as np
 
 from ..utils._checks import check_type, check_value, ensure_int
 from ..utils._docs import copy_doc
-from ..utils.logs import warn
+from ..utils.logs import logger, warn
 from ._utils import check_timeout, free_char_p_array_memory, handle_error
 from .constants import fmt2numpy, fmt2pull_chunk, fmt2pull_sample, post_processing_flags
 from .load_liblsl import lib
@@ -146,19 +146,23 @@ class StreamInlet:
 
         The inlet will automatically disconnect.
         """
-        if self.__obj is None:
+        logger.debug(f"Destroying {self.__class__.__name__}.")
+        try:
+            if self.__obj is None:
+                return
+        except AttributeError:  # in the process of deletion, __obj was already None
             return
         try:
             self.close_stream()
         except Exception as exc:
-            warn(f"Error closing stream: {str(exc)}")
+            warn(f"Error closing inlet: {str(exc)}")
         self._stream_is_open = False
         with self._lock:
             obj, self._obj = self._obj, None
             try:
                 lib.lsl_destroy_inlet(obj)
             except Exception as exc:
-                warn(f"Error destroying inlet: {str(exc)}")
+                warn(f"Error destroying inlet: {str(exc)}.")
 
     def open_stream(self, timeout: Optional[float] = None) -> None:
         """Subscribe to a data stream.

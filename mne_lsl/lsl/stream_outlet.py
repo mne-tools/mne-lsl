@@ -8,7 +8,7 @@ import numpy as np
 
 from ..utils._checks import check_type, ensure_int
 from ..utils._docs import copy_doc
-from ..utils.logs import warn
+from ..utils.logs import logger, warn
 from ._utils import check_timeout, handle_error
 from .constants import fmt2numpy, fmt2push_chunk, fmt2push_chunk_n, fmt2push_sample
 from .load_liblsl import lib
@@ -94,6 +94,7 @@ class StreamOutlet:
         The outlet will no longer be discoverable after destruction and all connected
         inlets will stop delivering data.
         """
+        logger.debug(f"Destroying {self.__class__.__name__}.")
         try:
             if self.__obj is None:
                 return
@@ -104,7 +105,7 @@ class StreamOutlet:
             try:
                 lib.lsl_destroy_outlet(obj)
             except Exception as exc:
-                warn("Error destroying outlet: %s", str(exc))
+                warn(f"Error destroying outlet: {str(exc)}")
 
     def push_sample(
         self,
