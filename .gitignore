@@ -1,11 +1,7 @@
-# -------------------------------- DEFAULT -----------------------------------
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
-
-# C extensions
-# *.so
 
 # Distribution / packaging
 .Python
@@ -15,7 +11,7 @@ dist/
 downloads/
 eggs/
 .eggs/
-# lib/
+lib/
 lib64/
 parts/
 sdist/
@@ -57,21 +53,12 @@ junit-results.xml
 *.mo
 *.pot
 
-# Django stuff:
-*.log
-local_settings.py
-db.sqlite3
-db.sqlite3-journal
-
-# Flask stuff:
-instance/
-.webassets-cache
-
-# Scrapy stuff:
-.scrapy
-
 # Sphinx documentation
-docs/_build/
+doc/_build/
+doc/generated_examples/
+doc/generated/
+doc/api/generated/
+doc/sg_execution_times.rst
 
 # PyBuilder
 target/
@@ -85,13 +72,6 @@ ipython_config.py
 
 # pyenv
 .python-version
-
-# pipenv
-#   According to pypa/pipenv#598, it is recommended to include Pipfile.lock in version control.
-#   However, in case of collaboration, if having platform-specific dependencies or dependencies
-#   having no cross-platform support, pipenv may install dependencies that don't work, or not
-#   install all needed dependencies.
-#Pipfile.lock
 
 # PEP 582; used by e.g. github.com/David-OConnor/pyflow
 __pypackages__/
@@ -119,9 +99,6 @@ venv.bak/
 # Rope project settings
 .ropeproject
 
-# mkdocs documentation
-/site
-
 # mypy
 .mypy_cache/
 .dmypy.json
@@ -133,16 +110,12 @@ dmypy.json
 # VSCode
 .vscode
 
-# --------------------------------------------------------------------------------------
+# Other files
 .DS_Store
-__pycache__
-
-# --------------------------------------------------------------------------------------
-doc/_build/
-doc/generated_examples/
-doc/generated/
-doc/api/generated/
 .idea
 
-# --------------------------------------------------------------------------------------
+# Ruff
+.ruff_cache
+
+# MNE-LSL
 mne_lsl/lsl/lib/

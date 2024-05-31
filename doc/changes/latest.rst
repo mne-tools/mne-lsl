@@ -32,6 +32,7 @@ API changes
 
 - The :class:`~mne_lsl.player.PlayerLSL` default ``chunk_size`` is now set to 10 instead of 64 samples (:pr:`264` by `Mathieu Scheltienne`_)
 - The ``Player`` and ``Stream`` objects now use a :class:`concurrent.futures.ThreadPoolExecutor` instead of single-use threads (:pr:`264` by `Mathieu Scheltienne`_)
+- Improve the y-scaling on the legacy ``Viewer`` by (1) adding new ``y_scale`` values in the dropdown list in power of 10s and (2) adding mouse wheel scrolling base zoom in/out on the main plot window (:pr:`264275` by `Mathieu Scheltienne`_)
 
 Infrastructure
 --------------

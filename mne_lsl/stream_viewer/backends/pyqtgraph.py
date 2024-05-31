@@ -8,7 +8,17 @@ from ...utils._docs import copy_doc, fill_doc
 from ...utils.logs import logger
 from ._backend import _Backend, _Event
 
-# pg.setConfigOptions(antialias=True)
+
+class _CustomGraphicsLayoutWidget(pg.GraphicsLayoutWidget):
+    wheelScrolled = QtCore.Signal(int)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def wheelEvent(self, event):
+        delta = event.angleDelta().y() // 120  # one notch is 120
+        self.wheelScrolled.emit(delta)
+        super().wheelEvent(event)
 
 
 @fill_doc
@@ -41,10 +51,11 @@ class _BackendPyQtGraph(_Backend):
         self._init_variables()
 
         # Canvas
-        self._win = pg.GraphicsLayoutWidget(
+        self._win = _CustomGraphicsLayoutWidget(
             size=geometry[2:],
             title=f"Stream Viewer: {self._scope.stream_name}",
         )
+        self._win.wheelScrolled.connect(self._on_wheel_scrolled)
         self._win.show()
         self._plot_handler = self._win.addPlot()  # pyqtgraph.PlotItem
 
@@ -188,6 +199,16 @@ class _BackendPyQtGraph(_Backend):
     def close(self):
         self._timer.stop()
         self._win.close()
+
+    def _on_wheel_scrolled(self, delta):
+        """Handle wheel scrolling events."""
+        if delta == 0:
+            return
+        scale_factor = 1.2
+        if delta < 0:
+            self.yRange *= scale_factor
+        else:
+            self.yRange /= scale_factor
 
     # ------------------------ Update program ----------------------
     @_Backend.xRange.setter
