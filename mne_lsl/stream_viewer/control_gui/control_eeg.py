@@ -107,7 +107,7 @@ class ControlGUI_EEG(_ControlGUI):
             "1e-3": 1e-3,
             "1e-2": 1e-2,
             "1e-1": 1e-1,
-            "1e0": 1,
+            "1e0": 1e0,
             "1e1": 1e1,
             "1e2": 1e2,
             "1e3": 1e3,
@@ -119,10 +119,11 @@ class ControlGUI_EEG(_ControlGUI):
         try:
             self._yRange = float(scope_settings.get("plot", "yRange"))
             if self._yRange not in self._yRanges.values():
-                logger.debug("yRange %s is not in valid ranges.", self._yRange)
-                self._yRange = 25.0
-        except Exception:  # Default to 25 uV
-            self._yRange = 25.0
+                logger.debug("yRange %s is not in expected ranges.", self._yRange)
+                self._yRanges[str(self._yRange)] = self._yRange
+        except Exception:
+            logger.debug("yRange value could not be converted to float.")
+            self._yRange = 1e0
 
         # xRange (time)
         try:
