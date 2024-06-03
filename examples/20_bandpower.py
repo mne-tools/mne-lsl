@@ -7,6 +7,8 @@ rolling window. For this example, we will look at the alpha band power, between 
 13 Hz.
 """
 
+# sphinx_gallery_thumbnail_path = '_static/tutorials/bp-performance.png'
+
 import time
 
 import numpy as np
@@ -39,8 +41,8 @@ raw
 # ------------------------
 #
 # First, we will define the function estimating the bandpower on a time window. The
-# bandpower will be estimated by integrating the estimated power spectral density (PSD)
-# on the frequency band of interest, using the composite Simpson's rule
+# bandpower will be estimated by integrating the power spectral density (PSD) on the
+# frequency band of interest, using the composite Simpson's rule
 # (:func:`scipy.integrate.simpson`).
 
 
@@ -169,6 +171,14 @@ ax.set_xlabel("Delay between 2 samples (ms)")
 plt.show()
 
 # %%
+# .. note::
+#
+#     Due to the low resources available on our CIs to build the documentation, some of
+#     those datapoints might have been computed with 2 acquisition window of delay
+#     instead of 1, yielding a delay between 2 samples of 2 acquisition windows instead
+#     of 1. In practice, with a large chunk size of 200 samples, we should get a delay
+#     between 2 computed time points to 200 samples, i.e. around 195.31 ms.
+#
 # Compare power spectral density estimation methods
 # -------------------------------------------------
 #
