@@ -373,10 +373,10 @@ class Detector:
 # Let's now test this detector and measure the time it takes to detect a new peak
 # entering the buffer.
 
-from mne_lsl.player import PlayerLSL as Player
+from mne_lsl.player import PlayerLSL
 from mne_lsl.lsl import local_clock
 
-player = Player(
+player = PlayerLSL(
     fname=sample.data_path() / "sample-ecg-raw.fif", chunk_size=200, name="ecg-example"
 )
 player.start()
