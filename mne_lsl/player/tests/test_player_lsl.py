@@ -19,7 +19,7 @@ from mne_lsl.stream import StreamLSL as Stream
 from mne_lsl.utils._tests import match_stream_and_raw_data
 
 
-def test_player(fname, raw):
+def test_player(fname, raw, close_io):
     """Test a working and valid player."""
     name = "Player-test_player"
     player = Player(fname, chunk_size=200, name=name)
@@ -68,7 +68,7 @@ def test_player(fname, raw):
 
     # check that the returned data array is in raw
     match_stream_and_raw_data(data.T, raw)
-    inlet.__del__()
+    close_io()
     player.stop()
 
 
@@ -176,7 +176,7 @@ def mock_lsl_stream(fname: Path, request):
         yield player
 
 
-def test_player_unit(mock_lsl_stream, raw):
+def test_player_unit(mock_lsl_stream, raw, close_io):
     """Test getting and setting the player channel units."""
     player = mock_lsl_stream
     name = player.name
@@ -193,7 +193,7 @@ def test_player_unit(mock_lsl_stream, raw):
     inlet = _create_inlet(name)
     data, _ = inlet.pull_chunk()
     match_stream_and_raw_data(data.T, raw)
-    inlet.__del__()
+    close_io()
     player.stop()
 
     # try setting channel units after stopping the player
@@ -203,7 +203,7 @@ def test_player_unit(mock_lsl_stream, raw):
     data, _ = inlet.pull_chunk()
     raw_ = raw.copy().apply_function(lambda x: x * 1e6, picks=["F7", "Fpz", "Fp2"])
     match_stream_and_raw_data(data.T, raw_)
-    inlet.__del__()
+    close_io()
     player.stop()
 
     # try re-setting the channel unit
@@ -215,11 +215,11 @@ def test_player_unit(mock_lsl_stream, raw):
     raw_.apply_function(lambda x: x * 1e3, picks="F7")
     raw_.apply_function(lambda x: x * 1e6, picks=["Fpz", "Fp2"])
     match_stream_and_raw_data(data.T, raw_)
-    inlet.__del__()
+    close_io()
     player.stop()
 
 
-def test_player_rename_channels(mock_lsl_stream, raw):
+def test_player_rename_channels(mock_lsl_stream, raw, close_io):
     """Test channel renaming."""
     player = mock_lsl_stream
     name = player.name
@@ -229,7 +229,7 @@ def test_player_rename_channels(mock_lsl_stream, raw):
     inlet = _create_inlet(name)
     sinfo = inlet.get_sinfo()
     assert sinfo.get_channel_names() == player.info["ch_names"]
-    inlet.__del__()
+    close_io()
     player.stop()
 
     # test changing channel names
@@ -240,7 +240,7 @@ def test_player_rename_channels(mock_lsl_stream, raw):
     sinfo = inlet.get_sinfo()
     assert sinfo.get_channel_names() == player.info["ch_names"]
     assert sinfo.get_channel_names() == raw_.info["ch_names"]
-    inlet.__del__()
+    close_io()
     player.stop()
 
     # test re-changing the channel names
@@ -251,11 +251,11 @@ def test_player_rename_channels(mock_lsl_stream, raw):
     sinfo = inlet.get_sinfo()
     assert sinfo.get_channel_names() == player.info["ch_names"]
     assert sinfo.get_channel_names() == raw_.info["ch_names"]
-    inlet.__del__()
+    close_io()
     player.stop()
 
 
-def test_player_set_channel_types(mock_lsl_stream, raw):
+def test_player_set_channel_types(mock_lsl_stream, raw, close_io):
     """Test channel type setting."""
     player = mock_lsl_stream
     name = player.name
@@ -266,7 +266,7 @@ def test_player_set_channel_types(mock_lsl_stream, raw):
     inlet = _create_inlet(name)
     sinfo = inlet.get_sinfo()
     assert sinfo.get_channel_types() == player.get_channel_types(unique=False)
-    inlet.__del__()
+    close_io()
     player.stop()
 
     # test changing types
@@ -277,7 +277,7 @@ def test_player_set_channel_types(mock_lsl_stream, raw):
     sinfo = inlet.get_sinfo()
     assert sinfo.get_channel_types() == player.get_channel_types(unique=False)
     assert sinfo.get_channel_types() == raw_.get_channel_types(unique=False)
-    inlet.__del__()
+    close_io()
     player.stop()
 
     # test rechanging types
@@ -288,7 +288,7 @@ def test_player_set_channel_types(mock_lsl_stream, raw):
     sinfo = inlet.get_sinfo()
     assert sinfo.get_channel_types() == player.get_channel_types(unique=False)
     assert sinfo.get_channel_types() == raw_.get_channel_types(unique=False)
-    inlet.__del__()
+    close_io()
     player.stop()
 
     # test unique
@@ -333,7 +333,7 @@ def test_player_set_meas_date(fname):
     player.stop()
 
 
-def test_player_annotations(raw_annotations):
+def test_player_annotations(raw_annotations, close_io):
     """Test player with annotations."""
     name = "Player-test_player_annotations"
     annotations = sorted(set(raw_annotations.annotations.description))
@@ -394,8 +394,7 @@ def test_player_annotations(raw_annotations):
 
     # clean-up
     stream.disconnect()
-    inlet.__del__()
-    inlet_annotations.__del__()
+    close_io()
     player.stop()
 
 

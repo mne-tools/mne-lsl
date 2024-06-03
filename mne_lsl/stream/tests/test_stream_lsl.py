@@ -638,8 +638,7 @@ def test_stream_rereference_average(mock_lsl_stream_int):
     stream.disconnect()
 
 
-@pytest.mark.usefixtures("_close_io")
-def test_stream_str():
+def test_stream_str(close_io):
     """Test a stream on a string source."""
     sinfo = StreamInfo("test_stream_str", "gaze", 1, 100, "string", "pytest")
     outlet = StreamOutlet(sinfo)
@@ -648,10 +647,10 @@ def test_stream_str():
         RuntimeError, match="Stream class is designed for numerical types"
     ):
         Stream(bufsize=2, name="test_stream_str").connect()
+    close_io()
 
 
-@pytest.mark.usefixtures("_close_io")
-def test_stream_processing_flags():
+def test_stream_processing_flags(close_io):
     """Test a stream connection processing flags."""
     sinfo = StreamInfo("test_stream_processing_flags", "gaze", 1, 100, "int8", "pytest")
     outlet = StreamOutlet(sinfo)
@@ -666,10 +665,10 @@ def test_stream_processing_flags():
     assert stream.connected
     stream.disconnect()
     assert not stream.connected
+    close_io()
 
 
-@pytest.mark.usefixtures("_close_io")
-def test_stream_irregularly_sampled():
+def test_stream_irregularly_sampled(close_io):
     """Test a stream with an irregular sampling rate."""
     sinfo = StreamInfo(
         "test_stream_irregularly_sampled", "gaze", 1, 0, "int8", "pytest"
@@ -691,6 +690,7 @@ def test_stream_irregularly_sampled():
     with pytest.raises(RuntimeError, match="with an irregular sampling rate."):
         stream._check_connected_and_regular_sampling("test")
     stream.disconnect()
+    close_io()
 
 
 def _player_mock_lsl_stream_annotations(

@@ -173,8 +173,7 @@ def test_stream_info_representation():
     assert "float32" in repr_
 
 
-@pytest.mark.usefixtures("_close_io")
-def test_stream_info_properties():
+def test_stream_info_properties(close_io):
     """Test properties."""
     sinfo = StreamInfo("pytest", "eeg", 3, 101, "float32", uuid.uuid4().hex)
     assert isinstance(sinfo.created_at, float)
@@ -213,6 +212,8 @@ def test_stream_info_properties():
     assert isinstance(sinfo_.uid, str)
     assert len(sinfo_.uid) != 0
 
+    close_io()
+
 
 def test_invalid_stream_info():
     """Test creation of an invalid StreamInfo."""
@@ -222,8 +223,7 @@ def test_invalid_stream_info():
         StreamInfo("pytest", "eeg", 101, -101, "float32", uuid.uuid4().hex)
 
 
-@pytest.mark.usefixtures("_close_io")
-def test_stream_info_desc_from_info():
+def test_stream_info_desc_from_info(close_io):
     """Test filling a description from an Info object."""
     info = create_info(5, 1000, "eeg")
     sinfo = StreamInfo("test", "eeg", 5, 1000, np.float32, uuid.uuid4().hex)
@@ -249,3 +249,5 @@ def test_stream_info_desc_from_info():
     inlet.open_stream(timeout=10)
     info_retrieved = inlet.get_sinfo().get_channel_info()
     compare_infos(raw.info, info_retrieved)
+
+    close_io()
