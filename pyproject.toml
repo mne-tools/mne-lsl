@@ -91,7 +91,7 @@ style = [
   'toml-sort',
   'yamllint',
 ]
-test = ['pyqt5', 'pytest-cov', 'pytest-timeout', 'pytest>=8.0']
+test = ['pyqt5', 'pytest-cov', 'pytest-randomly', 'pytest-timeout', 'pytest>=8.0']
 
 [project.scripts]
 mne_lsl-sys_info = 'mne_lsl.commands.sys_info:run'
