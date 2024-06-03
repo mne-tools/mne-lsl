@@ -89,18 +89,25 @@ class StreamOutlet:
 
     def _del(self):
         """Destroy a :class:`~mne_lsl.lsl.StreamOutlet` explicitly."""
-        logger.debug(f"Destroying {self.__class__.__name__}.")
+        logger.debug(f"Destroying {self.__class__.__name__}..")
         try:
             if self.__obj is None:
                 return
         except AttributeError:  # in the process of deletion, __obj was already None
             return
         with self._lock:
+            logger.debug(
+                f"Destroying {self.__class__.__name__}, __obj not None, lock acquired.."
+            )
             obj, self._obj = self._obj, None
             try:
                 lib.lsl_destroy_outlet(obj)
             except Exception as exc:
                 warn(f"Error destroying outlet: {str(exc)}")
+            logger.debug(
+                f"Destroyed {self.__class__.__name__}.. lib.lsl_destroy_outlet(obj) "
+                "done."
+            )
 
     def __del__(self):
         """Destroy a :class:`~mne_lsl.lsl.StreamOutlet`.
