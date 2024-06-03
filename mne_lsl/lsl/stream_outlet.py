@@ -8,7 +8,7 @@ import numpy as np
 
 from ..utils._checks import check_type, ensure_int
 from ..utils._docs import copy_doc
-from ..utils.logs import warn
+from ..utils.logs import logger, warn
 from ._utils import check_timeout, handle_error
 from .constants import fmt2numpy, fmt2push_chunk, fmt2push_chunk_n, fmt2push_sample
 from .load_liblsl import lib
@@ -58,12 +58,11 @@ class StreamOutlet:
                 "The argument 'max_buffered' must contain a positive number. "
                 f"{max_buffered} is invalid."
             )
-        self._lock = Lock()
         self._obj = lib.lsl_create_outlet(sinfo._obj, chunk_size, max_buffered)
-        assert self.__obj is not None
         self._obj = c_void_p(self._obj)
         if not self._obj:
             raise RuntimeError("The StreamOutlet could not be created.")
+        self._lock = Lock()
 
         # properties from the StreamInfo
         self._dtype = sinfo._dtype
@@ -88,23 +87,36 @@ class StreamOutlet:
     def _obj(self, obj):
         self.__obj = obj
 
-    def __del__(self):
-        """Destroy a :class:`~mne_lsl.lsl.StreamOutlet`.
-
-        The outlet will no longer be discoverable after destruction and all connected
-        inlets will stop delivering data.
-        """
+    def _del(self):
+        """Destroy a :class:`~mne_lsl.lsl.StreamOutlet` explicitly."""
+        logger.debug(f"Destroying {self.__class__.__name__}..")
         try:
             if self.__obj is None:
                 return
         except AttributeError:  # in the process of deletion, __obj was already None
             return
         with self._lock:
+            logger.debug(
+                f"Destroying {self.__class__.__name__}, __obj not None, lock acquired.."
+            )
             obj, self._obj = self._obj, None
             try:
                 lib.lsl_destroy_outlet(obj)
             except Exception as exc:
-                warn("Error destroying outlet: %s", str(exc))
+                warn(f"Error destroying outlet: {str(exc)}")
+            logger.debug(
+                f"Destroyed {self.__class__.__name__}.. lib.lsl_destroy_outlet(obj) "
+                "done."
+            )
+
+    def __del__(self):
+        """Destroy a :class:`~mne_lsl.lsl.StreamOutlet`.
+
+        The outlet will no longer be discoverable after destruction and all connected
+        inlets will stop delivering data.
+        """
+        logger.debug(f"Deleting {self.__class__.__name__}.")
+        self._del()  # no-op if called more than once
 
     def push_sample(
         self,

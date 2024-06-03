@@ -10,7 +10,7 @@ import numpy as np
 
 from ..utils._checks import check_type, check_value, ensure_int
 from ..utils._docs import copy_doc
-from ..utils.logs import warn
+from ..utils.logs import logger, warn
 from ._utils import check_timeout, free_char_p_array_memory, handle_error
 from .constants import fmt2numpy, fmt2pull_chunk, fmt2pull_sample, post_processing_flags
 from .load_liblsl import lib
@@ -141,24 +141,40 @@ class StreamInlet:
     def _obj(self, obj):
         self.__obj = obj
 
+    def _del(self):
+        """Destroy a :class:`~mne_lsl.lsl.StreamInlet` explicitly."""
+        logger.debug(f"Destroying {self.__class__.__name__}..")
+        try:
+            if self.__obj is None:
+                return
+        except AttributeError:  # in the process of deletion, __obj was already None
+            return
+        logger.debug(f"Destroying {self.__class__.__name__}, __obj not None..")
+        try:
+            self.close_stream()
+        except Exception as exc:
+            warn(f"Error closing inlet: {str(exc)}")
+            self._stream_is_open = False
+        logger.debug(f"Destroying {self.__class__.__name__}, stream closed..")
+        with self._lock:
+            logger.debug(f"Destroying {self.__class__.__name__}, lock acquired..")
+            obj, self._obj = self._obj, None
+            try:
+                lib.lsl_destroy_inlet(obj)
+            except Exception as exc:
+                warn(f"Error destroying inlet: {str(exc)}.")
+            logger.debug(
+                f"Destroyed {self.__class__.__name__}.. lib.lsl_destroy_inlet(obj) "
+                "done."
+            )
+
     def __del__(self):
         """Destroy a :class:`~mne_lsl.lsl.StreamInlet`.
 
         The inlet will automatically disconnect.
         """
-        if self.__obj is None:
-            return
-        try:
-            self.close_stream()
-        except Exception as exc:
-            warn(f"Error closing stream: {str(exc)}")
-        self._stream_is_open = False
-        with self._lock:
-            obj, self._obj = self._obj, None
-            try:
-                lib.lsl_destroy_inlet(obj)
-            except Exception as exc:
-                warn(f"Error destroying inlet: {str(exc)}")
+        logger.debug(f"Deleting {self.__class__.__name__}.")
+        self._del()  # no-op if called more than once
 
     def open_stream(self, timeout: Optional[float] = None) -> None:
         """Subscribe to a data stream.
@@ -211,7 +227,9 @@ class StreamInlet:
         if hasattr(self, "_stream_is_open") and not self._stream_is_open:
             return
         with self._lock:
+            logger.debug("Closing stream, lock acquired..")
             lib.lsl_close_stream(self._obj)
+        logger.debug("Closing stream, lib.lsl_close_stream(self._obj) done.")
         self._stream_is_open = False
 
     def time_correction(self, timeout: Optional[float] = None) -> float:
