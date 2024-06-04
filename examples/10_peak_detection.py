@@ -200,7 +200,9 @@ class Detector:
         ecg_distance: float | None = None,
     ) -> None:
         # create stream
-        self._stream = StreamLSL(bufsize, stream_name).connect(processing_flags="all")
+        self._stream = StreamLSL(bufsize, name=stream_name).connect(
+            processing_flags="all"
+        )
         self._stream.pick(ch_name)
         self._stream.set_channel_types({ch_name: "misc"}, on_unit_change="ignore")
         self._stream.notch_filter(50, picks=ch_name)
@@ -281,7 +283,9 @@ class Detector:
         ecg_distance: float | None = None,
     ) -> None:
         # create stream
-        self._stream = StreamLSL(bufsize, stream_name).connect(processing_flags="all")
+        self._stream = StreamLSL(bufsize, name=stream_name).connect(
+            processing_flags="all"
+        )
         self._stream.pick(ch_name)
         self._stream.set_channel_types({ch_name: "misc"}, on_unit_change="ignore")
         self._stream.notch_filter(50, picks=ch_name)
