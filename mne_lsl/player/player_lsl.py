@@ -90,6 +90,7 @@ class PlayerLSL(BasePlayer):
         fname: Union[str, Path],
         chunk_size: int = 64,
         n_repeat: Union[int, float] = np.inf,
+        *,
         name: Optional[str] = None,
         annotations: Optional[bool] = None,
     ) -> None:

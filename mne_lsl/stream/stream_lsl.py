@@ -55,6 +55,7 @@ class StreamLSL(BaseStream):
     def __init__(
         self,
         bufsize: float,
+        *,
         name: Optional[str] = None,
         stype: Optional[str] = None,
         source_id: Optional[str] = None,
@@ -95,6 +96,7 @@ class StreamLSL(BaseStream):
     def connect(
         self,
         acquisition_delay: float = 0.001,
+        *,
         processing_flags: Optional[Union[str, Sequence[str]]] = None,
         timeout: Optional[float] = 2,
     ) -> StreamLSL:
