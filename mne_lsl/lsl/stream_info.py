@@ -73,7 +73,7 @@ class _BaseStreamInfo:
 
     def __init__(self, obj):
         self._obj = c_void_p(obj)
-        if not self._obj:
+        if not self._obj:  # pragma: no cover
             raise RuntimeError(
                 "The StreamInfo could not be created from the description."
             )
