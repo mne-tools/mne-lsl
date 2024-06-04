@@ -19,7 +19,7 @@ else:
 from ..lsl import StreamInlet, resolve_streams
 from ..lsl.constants import fmt2numpy
 from ..utils._checks import check_type
-from ..utils._docs import fill_doc
+from ..utils._docs import copy_doc, fill_doc
 from ..utils.logs import logger
 from ._base import BaseStream
 
@@ -92,6 +92,10 @@ class StreamLSL(BaseStream):
             return f"<Stream: {status}>"
         else:
             return f"<Stream: {status} | {desc}>"
+
+    @copy_doc(BaseStream.acquire)
+    def acquire(self) -> None:
+        super().acquire()
 
     def connect(
         self,

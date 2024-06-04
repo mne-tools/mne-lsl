@@ -85,6 +85,18 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         # attributes: name, stype, source_id. Thus a possible representation is:
         # <Stream: ON | {name} - {stype} (source: {source_id})>
 
+    def acquire(self) -> None:
+        """Pull new samples in the buffer.
+
+        Notes
+        -----
+        This method is not needed if the stream was connected with an acquisition delay
+        different from ``0``. In this case, the acquisition is done automatically in a
+        background thread.
+        """
+        self._check_connected(name="acquire")
+        raise NotImplementedError
+
     @fill_doc
     def add_reference_channels(
         self,
