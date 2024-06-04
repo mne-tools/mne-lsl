@@ -15,7 +15,7 @@ def deprecate_positional_args(f):  # pragma: no cover
     ----------
     f : Callable
         Function to check arguments on.
-    """
+    """  # noqa: D401
     sig = signature(f)
     kwonly_args = []
     all_args = []
