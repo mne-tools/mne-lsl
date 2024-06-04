@@ -257,7 +257,9 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         ----------
         acquisition_delay : float
             Delay in seconds between 2 acquisition during which chunks of data are
-            pulled from the connected device.
+            pulled from the connected device. If ``0``, the automatic acquisition in a
+            background thread is disabled and the user must manually call the acqusition
+            method to pull new samples.
 
         Returns
         -------
@@ -268,13 +270,15 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             warn("The stream is already connected. Skipping.")
             return self
         check_type(acquisition_delay, ("numeric",), "acquisition_delay")
-        if acquisition_delay < 0:
+        if acquisition_delay <= 0:
             raise ValueError(
                 "The acquisition delay must be a positive number "
                 "defining the delay at which new samples are acquired in seconds. For "
                 "instance, 0.2 corresponds to a pull every 200 ms. The provided "
                 f"{acquisition_delay} is invalid."
             )
+        if acquisition_delay == 0:
+            raise NotImplementedError
         self._acquisition_delay = acquisition_delay
         self._n_new_samples = 0
         self._executor = ThreadPoolExecutor(max_workers=1)

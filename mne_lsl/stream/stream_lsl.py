@@ -106,7 +106,9 @@ class StreamLSL(BaseStream):
         ----------
         acquisition_delay : float
             Delay in seconds between 2 acquisition during which chunks of data are
-            pulled from the :class:`~mne_lsl.lsl.StreamInlet`.
+            pulled from the :class:`~mne_lsl.lsl.StreamInlet`. If ``0``, the automatic
+            acquisition in a background thread is disabled and the user must manually
+            call :meth:`~mne_lsl.stream.StreamLSL.acquire` to pull new samples.
         processing_flags : list of str | ``'all'`` | None
             Set the post-processing options. By default, post-processing is disabled.
             Any combination of the processing flags is valid. The available flags are:
