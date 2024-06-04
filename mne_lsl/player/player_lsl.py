@@ -10,6 +10,7 @@ from mne.annotations import _handle_meas_date
 
 from ..lsl import StreamInfo, StreamOutlet, local_clock
 from ..utils._checks import check_type
+from ..utils._deprecation import deprecate_positional_args
 from ..utils._docs import copy_doc, fill_doc
 from ..utils.logs import logger, warn
 from ._base import BasePlayer
@@ -85,6 +86,7 @@ class PlayerLSL(BasePlayer):
     vector of the :class:`~mne.Annotations` description/duration.
     """
 
+    @deprecate_positional_args
     def __init__(
         self,
         fname: Union[str, Path],
