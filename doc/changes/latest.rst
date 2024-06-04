@@ -22,10 +22,11 @@ Version 1.4
 - Fix handling of warnings through the logger (:pr:`243` by `Mathieu Scheltienne`_)
 - Fix handling of CLI arguments through :class:`~mne_lsl.player.PlayerLSL` entry-point (:pr:`246`, :pr:`267` by `Mathieu Scheltienne`_)
 - Change default download directory for the datasets from ``~/mne_data/MNE-LSL`` to ``~/mne_data/MNE-LSL-data`` to match other MNE datasets (:pr:`256` by `Mathieu Scheltienne`_)
-- Add example for a simple real-time QRS R-peak detector (:pr:`256` by `Mathieu Scheltienne`_)
+- Add example for a simple time QRS R-peak detector (:pr:`256` by `Mathieu Scheltienne`_)
+- Add example for real-time rolling windows bandpower estimation (:pr:`279` by `Mathieu Scheltienne`_)
 - Fix push operation by a :class:`~mne_lsl.player.PlayerLSL` with a ``chunk_size`` set to 1 to use :meth:`mne_lsl.lsl.StreamOutlet.push_sample` instead of :meth:`mne_lsl.lsl.StreamOutlet.push_chunk` (:pr:`257` by `Mathieu Scheltienne`_)
 - Add example of :class:`~mne_lsl.player.PlayerLSL` run in a child process (:pr:`267` by `Mathieu Scheltienne`_)
-- Fix error in pushing the last chunk of a non infintrite :class:`~mne_lsl.player.PlayerLSL` stream with ``chunk_size=1`` (:pr:`268` by `Mathieu Scheltienne`_)
+- Fix error in pushing the last chunk of a non infinite :class:`~mne_lsl.player.PlayerLSL` stream with ``chunk_size=1`` (:pr:`268` by `Mathieu Scheltienne`_)
 
 API changes
 -----------
@@ -33,6 +34,7 @@ API changes
 - The :class:`~mne_lsl.player.PlayerLSL` default ``chunk_size`` is now set to 10 instead of 64 samples (:pr:`264` by `Mathieu Scheltienne`_)
 - The ``Player`` and ``Stream`` objects now use a :class:`concurrent.futures.ThreadPoolExecutor` instead of single-use threads (:pr:`264` by `Mathieu Scheltienne`_)
 - Improve the y-scaling on the legacy ``Viewer`` by (1) adding new ``y_scale`` values in the dropdown list in power of 10s and (2) adding mouse wheel scrolling base zoom in/out on the main plot window (:pr:`264275` by `Mathieu Scheltienne`_)
+- In :class:`~mne_lsl.player.PlayerLSL` and :class:`~mne_lsl.stream.StreamLSL`, instantiation now uses keyword-only arguments for arguments specific to LSL (:pr:`282` by `Mathieu Scheltienne`_)
 
 Infrastructure
 --------------
