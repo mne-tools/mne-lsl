@@ -218,13 +218,13 @@ class PlayerLSL(BasePlayer):
         """Attempt to delete outlets."""
         if hasattr(self, "_outlet"):
             try:
-                self._outlet.__del__()
-            except Exception:
+                self._outlet._del()
+            except Exception:  # pragma: no cover
                 pass
         if hasattr(self, "_outlet_annotations"):
             try:
-                self._outlet_annotations.__del__()
-            except Exception:
+                self._outlet_annotations._del()
+            except Exception:  # pragma: no cover
                 pass
 
     @copy_doc(BasePlayer._stream)
@@ -274,7 +274,7 @@ class PlayerLSL(BasePlayer):
                 stop,
                 self._target_timestamp,
             )
-            if self._chunk_size == 1:
+            if self._chunk_size == 1:  # pragma: no cover
                 self._outlet.push_sample(data[0, :], timestamp=self._target_timestamp)
             else:
                 self._outlet.push_chunk(data, timestamp=self._target_timestamp)
@@ -348,8 +348,10 @@ class PlayerLSL(BasePlayer):
     # ----------------------------------------------------------------------------------
     def __del__(self):
         """Delete the player and destroy the :class:`~mne_lsl.lsl.StreamOutlet`."""
-        super().__del__()
-        self._del_outlets()  # likely redundant, but no-op anyway.
+        try:
+            self.stop()
+        except Exception:  # pragma: no cover
+            pass
 
     def __repr__(self):
         """Representation of the instance."""

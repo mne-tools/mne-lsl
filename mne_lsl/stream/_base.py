@@ -573,7 +573,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
                     "stream. Please open an issue on GitHub and provide the error "
                     "traceback to the developers."
                 )
-            raise
+            raise  # pragma: no cover
 
     @copy_doc(SetChannelsMixin.get_montage)
     def get_montage(self) -> Optional[DigMontage]:

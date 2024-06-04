@@ -105,8 +105,8 @@ class StreamOutlet:
         The outlet will no longer be discoverable after destruction and all connected
         inlets will stop delivering data.
         """
-        logger.debug(f"Deleting {self.__class__.__name__}.")
         self._del()  # no-op if called more than once
+        logger.debug(f"Deleting {self.__class__.__name__}.")
 
     def push_sample(
         self,

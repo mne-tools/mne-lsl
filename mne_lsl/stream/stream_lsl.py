@@ -213,15 +213,15 @@ class StreamLSL(BaseStream):
         super().disconnect()
         logger.debug("Calling inlet.close_stream() for %s", str(self))
         try:
-            self._inlet.__del__()
-        except Exception:
+            self._inlet._del()
+        except Exception:  # pragma: no cover
             pass
         self._reset_variables()  # also sets self._inlet = None
         return self
 
     def _acquire(self) -> None:
         """Update function pulling new samples in the buffer at a regular interval."""
-        if not getattr(self, "_inlet", None):
+        if not getattr(self, "_inlet", None):  # pragma: no cover
             return  # stream disconnected
         try:
             # pull data

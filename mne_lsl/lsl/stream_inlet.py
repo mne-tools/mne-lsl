@@ -163,8 +163,8 @@ class StreamInlet:
 
         The inlet will automatically disconnect.
         """
-        logger.debug(f"Deleting {self.__class__.__name__}.")
         self._del()  # no-op if called more than once
+        logger.debug(f"Deleting {self.__class__.__name__}.")
 
     def open_stream(self, timeout: Optional[float] = None) -> None:
         """Subscribe to a data stream.
