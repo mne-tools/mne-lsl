@@ -266,7 +266,7 @@ if sys.platform.startswith("win"):
     ignore_pattern = r"00_player_separate_process"
 else:
     compress_images = ("images", "thumbnails")
-    ignore_pattern = ""
+    ignore_pattern = r"__init__\.py"
 
 sphinx_gallery_conf = {
     "backreferences_dir": "generated/backreferences",
