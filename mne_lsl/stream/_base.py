@@ -1127,7 +1127,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             "_picks_inlet",
             "_timestamps",
         ]
-        if self._acquisition_delay != 0:
+        if hasattr(self, "_acquisition_delay") and self._acquisition_delay != 0:
             attributes.append("_executor")
         if all(getattr(self, attr, None) is None for attr in attributes):
             return False
