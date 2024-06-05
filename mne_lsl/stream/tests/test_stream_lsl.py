@@ -1074,3 +1074,14 @@ def test_manual_acquisition(mock_lsl_stream):
     # use default from assert_allclose
     assert not np.allclose(data2, data3, rtol=1e-7, atol=0)
     stream.disconnect()
+
+
+def test_manual_acquisition_errors(mock_lsl_stream):
+    """Test error message raised by manual acquisition."""
+    stream = Stream(bufsize=2.0, name=mock_lsl_stream.name)
+    with pytest.raises(RuntimeError, match="Please connect to the stream"):
+        stream.acquire()
+    stream.connect(acquisition_delay=0.5)
+    with pytest.raises(RuntimeError, match="Acquisition is done automatically"):
+        stream.acquire()
+    stream.disconnect()
