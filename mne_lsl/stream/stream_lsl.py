@@ -235,6 +235,7 @@ class StreamLSL(BaseStream):
     def _acquire(self) -> None:
         """Update function pulling new samples in the buffer at a regular interval."""
         if not getattr(self, "_inlet", None):  # pragma: no cover
+            logger.debug("Stream disconnected while '_acquire' is called.")
             return  # stream disconnected
         try:
             # pull data
