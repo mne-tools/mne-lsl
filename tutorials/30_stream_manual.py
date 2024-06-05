@@ -73,7 +73,8 @@ print(f"New samples acquired (after stream.acquire()): {stream.n_new_samples}")
 
 # %%
 # However, it is also now up to the user to make sure he acquires new samples regularly
-# and does not miss part of the stream.
+# and does not miss part of the stream. The created :class:`~mne_lsl.lsl.StreamInlet`
+# has its buffer set to the same value as the :class:`~mne_lsl.stream.StreamLSL` object.
 
 stream.acquire()
 data1, ts1 = stream.get_data(picks="Cz")
@@ -82,10 +83,10 @@ stream.acquire()
 data2, ts2 = stream.get_data(picks="Cz")
 
 f, ax = plt.subplots(1, 1, layout="constrained")
-ax.plot(ts1, data1.squeeze(), color="blue", label="acq 1")
-ax.plot(ts2, data2.squeeze(), color="red", label="acq 2")
+ax.plot(ts1 - ts1[0], data1.squeeze(), color="blue", label="acq 1")
+ax.plot(ts2 - ts1[0], data2.squeeze(), color="red", label="acq 2")
 ax.legend()
-ax.set_xlabel("LSL Time (s)")
+ax.set_xlabel("Time (s)")
 ax.set_ylabel("EEG amplitude")
 plt.show()
 

@@ -239,7 +239,9 @@ class StreamLSL(BaseStream):
             return  # stream disconnected
         try:
             # pull data
-            data, timestamps = self._inlet.pull_chunk(timeout=0.0)
+            data, timestamps = self._inlet.pull_chunk(
+                timeout=0.0, max_samples=self.n_buffer
+            )
             if timestamps.size == 0:
                 if self._executor is None:
                     return  # either shutdown or manual acquisition
