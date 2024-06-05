@@ -19,7 +19,6 @@ else:
 from ..lsl import StreamInlet, resolve_streams
 from ..lsl.constants import fmt2numpy
 from ..utils._checks import check_type
-from ..utils._deprecation import deprecate_positional_args
 from ..utils._docs import copy_doc, fill_doc
 from ..utils.logs import logger
 from ._base import BaseStream
@@ -53,7 +52,6 @@ class StreamLSL(BaseStream):
     :class:`~mne_lsl.lsl.StreamInlet`.
     """
 
-    @deprecate_positional_args
     def __init__(
         self,
         bufsize: float,
@@ -100,7 +98,6 @@ class StreamLSL(BaseStream):
         super().acquire()
         self._acquire()
 
-    @deprecate_positional_args
     def connect(
         self,
         acquisition_delay: float = 0.001,
