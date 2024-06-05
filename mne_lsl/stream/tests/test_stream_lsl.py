@@ -1060,4 +1060,17 @@ def test_manual_acquisition(mock_lsl_stream):
     assert n_samples == stream.n_new_samples
     stream.acquire()
     assert n_samples < stream.n_new_samples
+    # test interrupt acquisition
+    data, _ = stream.get_data()
+    stream.add_reference_channels("CPz")
+    data2, _ = stream.get_data()
+    assert data.shape[0] == data2.shape[0] - 1
+    assert stream.n_new_samples == 0
+    _sleep_until_new_data(1e-6, mock_lsl_stream)
+    stream.acquire()
+    assert 0 < stream.n_new_samples
+    data3, _ = stream.get_data()
+    assert data3.shape == data2.shape
+    # use default from assert_allclose
+    assert not np.allclose(data2, data3, rtol=1e-7, atol=0)
     stream.disconnect()

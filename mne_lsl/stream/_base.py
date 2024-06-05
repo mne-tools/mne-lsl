@@ -1044,6 +1044,8 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             finally:
                 self._executor = ThreadPoolExecutor(max_workers=1)
                 self._executor.submit(self._acquire)
+        else:
+            yield
 
     def _pick(self, picks: ScalarIntArray) -> None:
         """Interrupt acquisition and apply the channel selection."""
