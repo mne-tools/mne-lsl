@@ -155,7 +155,7 @@ match = '^(?!setup|__init__|test_|_typing).*\.py'
 match-dir = '^mne_lsl.*'
 
 [tool.pytest.ini_options]
-addopts = '--durations=20 --junit-xml=junit-results.xml -ra -v --cov-report= --tb=short --color=yes'
+addopts = ['--color=yes', '--cov-report=', '--durations=20', '--junit-xml=junit-results.xml', '--strict-config', '--tb=short', '-ra', '-v']
 junit_family = 'xunit2'
 minversion = '8.0'
 
@@ -167,7 +167,6 @@ extend-exclude = [
   'setup.py',
 ]
 line-length = 88
-target-version = 'py39'
 
 [tool.ruff.format]
 docstring-code-format = true

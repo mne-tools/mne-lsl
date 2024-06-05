@@ -1046,3 +1046,42 @@ def test_stream_get_data_info_invalid():
         _ = stream.info
     with pytest.raises(RuntimeError, match="Please connect to the stream"):
         stream.get_data()
+
+
+def test_manual_acquisition(mock_lsl_stream):
+    """Test manual acquisition."""
+    stream = Stream(bufsize=2.0, name=mock_lsl_stream.name).connect(acquisition_delay=0)
+    _sleep_until_new_data(1e-6, mock_lsl_stream)
+    assert stream.n_new_samples == 0
+    stream.acquire()
+    n_samples = stream.n_new_samples
+    assert 0 < n_samples
+    _sleep_until_new_data(1e-6, mock_lsl_stream)
+    assert n_samples == stream.n_new_samples
+    stream.acquire()
+    assert n_samples < stream.n_new_samples
+    # test interrupt acquisition
+    data, _ = stream.get_data()
+    stream.add_reference_channels("CPz")
+    data2, _ = stream.get_data()
+    assert data.shape[0] == data2.shape[0] - 1
+    assert stream.n_new_samples == 0
+    _sleep_until_new_data(1e-6, mock_lsl_stream)
+    stream.acquire()
+    assert 0 < stream.n_new_samples
+    data3, _ = stream.get_data()
+    assert data3.shape == data2.shape
+    # use default from assert_allclose
+    assert not np.allclose(data2, data3, rtol=1e-7, atol=0)
+    stream.disconnect()
+
+
+def test_manual_acquisition_errors(mock_lsl_stream):
+    """Test error message raised by manual acquisition."""
+    stream = Stream(bufsize=2.0, name=mock_lsl_stream.name)
+    with pytest.raises(RuntimeError, match="Please connect to the stream"):
+        stream.acquire()
+    stream.connect(acquisition_delay=0.5)
+    with pytest.raises(RuntimeError, match="Acquisition is done automatically"):
+        stream.acquire()
+    stream.disconnect()

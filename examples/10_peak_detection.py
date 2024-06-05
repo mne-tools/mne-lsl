@@ -200,7 +200,9 @@ class Detector:
         ecg_distance: float | None = None,
     ) -> None:
         # create stream
-        self._stream = StreamLSL(bufsize, stream_name).connect(processing_flags="all")
+        self._stream = StreamLSL(bufsize, name=stream_name).connect(
+            processing_flags="all"
+        )
         self._stream.pick(ch_name)
         self._stream.set_channel_types({ch_name: "misc"}, on_unit_change="ignore")
         self._stream.notch_filter(50, picks=ch_name)
@@ -281,7 +283,9 @@ class Detector:
         ecg_distance: float | None = None,
     ) -> None:
         # create stream
-        self._stream = StreamLSL(bufsize, stream_name).connect(processing_flags="all")
+        self._stream = StreamLSL(bufsize, name=stream_name).connect(
+            processing_flags="all"
+        )
         self._stream.pick(ch_name)
         self._stream.set_channel_types({ch_name: "misc"}, on_unit_change="ignore")
         self._stream.notch_filter(50, picks=ch_name)
@@ -365,6 +369,11 @@ class Detector:
         self._peak_candidates_count = None
         return new_peak
 
+    @property
+    def stream(self):
+        """Stream object."""
+        return self._stream
+
 
 # %%
 # Performance
@@ -386,6 +395,7 @@ while len(delays) <= 30:
     peak = detector.new_peak()
     if peak is not None:
         delays.append((local_clock() - peak) * 1e3)
+detector.stream.disconnect()
 player.stop()
 
 f, ax = plt.subplots(1, 1, layout="constrained")

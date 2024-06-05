@@ -67,7 +67,9 @@ if struct.calcsize("P") != 4 and platform.system() != "Windows":
 else:
 
     def push_sample_int64(*_):  # noqa: D103
-        raise NotImplementedError("int64 is not yet supported on your platform.")
+        raise NotImplementedError(
+            "int64 is not yet supported on your platform."
+        )  # pragma: no cover
 
     pull_sample_int64 = push_sample_int64
     push_chunk_int64 = push_sample_int64

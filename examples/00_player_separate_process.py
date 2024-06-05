@@ -102,6 +102,12 @@ del player
 #   separate process
 #
 # Here, we demonstrate the last option.
+#
+# .. note::
+#
+#     On Windows, the ``process`` creation and execurtion must be protected behind an
+#     ``if __name__ == "__main__":`` block. This is not necessary on Unix systems, on
+#     which this documentation is built.
 
 
 def player_process(raw):

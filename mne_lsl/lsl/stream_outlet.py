@@ -60,7 +60,7 @@ class StreamOutlet:
             )
         self._obj = lib.lsl_create_outlet(sinfo._obj, chunk_size, max_buffered)
         self._obj = c_void_p(self._obj)
-        if not self._obj:
+        if not self._obj:  # pragma: no cover
             raise RuntimeError("The StreamOutlet could not be created.")
         self._lock = Lock()
 
@@ -77,23 +77,13 @@ class StreamOutlet:
         self._do_push_chunk_n = fmt2push_chunk_n[self._dtype]
         self._buffer_sample = self._dtype * self._n_channels
 
-    @property
-    def _obj(self):
-        if self.__obj is None:
-            raise RuntimeError("The StreamOutlet has been destroyed.")
-        return self.__obj
-
-    @_obj.setter
-    def _obj(self, obj):
-        self.__obj = obj
-
     def _del(self):
         """Destroy a :class:`~mne_lsl.lsl.StreamOutlet` explicitly."""
         logger.debug(f"Destroying {self.__class__.__name__}..")
         try:
             if self.__obj is None:
                 return
-        except AttributeError:  # in the process of deletion, __obj was already None
+        except AttributeError:  # pragma: no cover
             return
         with self._lock:
             logger.debug(
@@ -102,7 +92,7 @@ class StreamOutlet:
             obj, self._obj = self._obj, None
             try:
                 lib.lsl_destroy_outlet(obj)
-            except Exception as exc:
+            except Exception as exc:  # pragma: no cover
                 warn(f"Error destroying outlet: {str(exc)}")
             logger.debug(
                 f"Destroyed {self.__class__.__name__}.. lib.lsl_destroy_outlet(obj) "
@@ -115,8 +105,8 @@ class StreamOutlet:
         The outlet will no longer be discoverable after destruction and all connected
         inlets will stop delivering data.
         """
-        logger.debug(f"Deleting {self.__class__.__name__}.")
         self._del()  # no-op if called more than once
+        logger.debug(f"Deleting {self.__class__.__name__}.")
 
     def push_sample(
         self,
@@ -306,7 +296,19 @@ class StreamOutlet:
         with self._lock:
             return bool(lib.lsl_wait_for_consumers(self._obj, c_double(timeout)))
 
-    # -------------------------------------------------------------------------
+    # ----------------------------------------------------------------------------------
+    @property
+    def _obj(self):
+        if self.__obj is None:  # pragma: no cover
+            raise RuntimeError("The StreamOutlet has been destroyed.")
+        return self.__obj
+
+    @_obj.setter
+    def _obj(self, obj):
+        self.__obj = obj
+
+    # ----------------------------------------------------------------------------------
+
     @copy_doc(_BaseStreamInfo.dtype)
     @property
     def dtype(self) -> Union[str, DTypeLike]:
@@ -349,7 +351,7 @@ class StreamOutlet:
         with self._lock:
             return bool(lib.lsl_have_consumers(self._obj))
 
-    # -------------------------------------------------------------------------
+    # ----------------------------------------------------------------------------------
     def get_sinfo(self) -> _BaseStreamInfo:
         """:class:`~mne_lsl.lsl.StreamInfo` corresponding to this Outlet.
 

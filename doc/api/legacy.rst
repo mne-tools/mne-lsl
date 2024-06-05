@@ -7,7 +7,7 @@ Legacy classes and functions will be replaced with backward incompatible equival
 future versions.
 
 .. autosummary::
-   :toctree: ../generated/api
-   :nosignatures:
+    :toctree: ../generated/api
+    :nosignatures:
 
-   StreamViewer
+    StreamViewer

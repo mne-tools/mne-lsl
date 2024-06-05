@@ -363,13 +363,6 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         self._executor = None
 
     # ----------------------------------------------------------------------------------
-    def __del__(self):
-        """Delete the player."""
-        try:
-            self.stop()
-        except Exception:
-            pass
-
     def __enter__(self):
         """Context manager entry point."""
         self.start()

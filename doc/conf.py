@@ -263,8 +263,10 @@ if sys.platform.startswith("win"):
         compress_images = ("images", "thumbnails")
     except Exception:
         compress_images = ()
+    ignore_pattern = r"__init__\.py|00_player_separate_process"
 else:
     compress_images = ("images", "thumbnails")
+    ignore_pattern = r"__init__\.py"
 
 sphinx_gallery_conf = {
     "backreferences_dir": "generated/backreferences",
@@ -274,6 +276,7 @@ sphinx_gallery_conf = {
     "exclude_implicit_doc": {},  # set
     "filename_pattern": r"\d{2}_",
     "gallery_dirs": ["generated/tutorials", "generated/examples"],
+    "ignore_pattern": ignore_pattern,
     "line_numbers": False,
     "plot_gallery": "True",  # str, to enable overwrite from CLI without warning
     "reference_url": {f"{package}": None},

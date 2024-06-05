@@ -82,7 +82,7 @@ class StreamInlet:
 
         self._obj = lib.lsl_create_inlet(sinfo._obj, max_buffered, chunk_size, recover)
         self._obj = c_void_p(self._obj)
-        if not self._obj:
+        if not self._obj:  # pragma: no cover
             raise RuntimeError("The StreamInlet could not be created.")
         self._lock = Lock()
 
@@ -131,28 +131,18 @@ class StreamInlet:
         # variable to define if the stream is open or not  sinfo_ = inlet.get_sinfo()
         self._stream_is_open = False
 
-    @property
-    def _obj(self):
-        if self.__obj is None:
-            raise RuntimeError("The StreamInlet has been destroyed.")
-        return self.__obj
-
-    @_obj.setter
-    def _obj(self, obj):
-        self.__obj = obj
-
     def _del(self):
         """Destroy a :class:`~mne_lsl.lsl.StreamInlet` explicitly."""
         logger.debug(f"Destroying {self.__class__.__name__}..")
         try:
             if self.__obj is None:
                 return
-        except AttributeError:  # in the process of deletion, __obj was already None
+        except AttributeError:  # pragma: no cover
             return
         logger.debug(f"Destroying {self.__class__.__name__}, __obj not None..")
         try:
             self.close_stream()
-        except Exception as exc:
+        except Exception as exc:  # pragma: no cover
             warn(f"Error closing inlet: {str(exc)}")
             self._stream_is_open = False
         logger.debug(f"Destroying {self.__class__.__name__}, stream closed..")
@@ -161,7 +151,7 @@ class StreamInlet:
             obj, self._obj = self._obj, None
             try:
                 lib.lsl_destroy_inlet(obj)
-            except Exception as exc:
+            except Exception as exc:  # pragma: no cover
                 warn(f"Error destroying inlet: {str(exc)}.")
             logger.debug(
                 f"Destroyed {self.__class__.__name__}.. lib.lsl_destroy_inlet(obj) "
@@ -173,8 +163,8 @@ class StreamInlet:
 
         The inlet will automatically disconnect.
         """
-        logger.debug(f"Deleting {self.__class__.__name__}.")
         self._del()  # no-op if called more than once
+        logger.debug(f"Deleting {self.__class__.__name__}.")
 
     def open_stream(self, timeout: Optional[float] = None) -> None:
         """Subscribe to a data stream.
@@ -429,7 +419,18 @@ class StreamInlet:
         with self._lock:
             return lib.lsl_inlet_flush(self._obj)
 
-    # -------------------------------------------------------------------------
+    # ----------------------------------------------------------------------------------
+    @property
+    def _obj(self):
+        if self.__obj is None:  # pragma: no cover
+            raise RuntimeError("The StreamInlet has been destroyed.")
+        return self.__obj
+
+    @_obj.setter
+    def _obj(self, obj):
+        self.__obj = obj
+
+    # ----------------------------------------------------------------------------------
     @copy_doc(_BaseStreamInfo.dtype)
     @property
     def dtype(self) -> Union[str, DTypeLike]:
@@ -473,7 +474,7 @@ class StreamInlet:
         with self._lock:
             return bool(lib.lsl_was_clock_reset(self._obj))
 
-    # -------------------------------------------------------------------------
+    # ----------------------------------------------------------------------------------
     def get_sinfo(self, timeout: Optional[float] = None) -> _BaseStreamInfo:
         """:class:`~mne_lsl.lsl.StreamInfo` corresponding to this Inlet.
 
