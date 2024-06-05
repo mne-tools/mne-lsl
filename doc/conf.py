@@ -263,7 +263,7 @@ if sys.platform.startswith("win"):
         compress_images = ("images", "thumbnails")
     except Exception:
         compress_images = ()
-    ignore_pattern = r"00_player_separate_process"
+    ignore_pattern = r"__init__\.py|00_player_separate_process"
 else:
     compress_images = ("images", "thumbnails")
     ignore_pattern = r"__init__\.py"
