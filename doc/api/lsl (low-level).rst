@@ -24,13 +24,13 @@ scalings with the number of values; while ``mne_lsl.lsl`` pulls a chunk in const
 found :ref:`here<resources/pylsl:Differences with pylsl>`.
 
 .. autosummary::
-   :toctree: ../generated/api
-   :nosignatures:
+    :toctree: ../generated/api
+    :nosignatures:
 
-   StreamInfo
-   StreamInlet
-   StreamOutlet
-   library_version
-   protocol_version
-   local_clock
-   resolve_streams
+    StreamInfo
+    StreamInlet
+    StreamOutlet
+    library_version
+    protocol_version
+    local_clock
+    resolve_streams
