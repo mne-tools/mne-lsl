@@ -1046,3 +1046,18 @@ def test_stream_get_data_info_invalid():
         _ = stream.info
     with pytest.raises(RuntimeError, match="Please connect to the stream"):
         stream.get_data()
+
+
+def test_manual_acquisition(mock_lsl_stream):
+    """Test manual acquisition."""
+    stream = Stream(bufsize=2.0, name=mock_lsl_stream.name).connect(acquisition_delay=0)
+    _sleep_until_new_data(1e-6, mock_lsl_stream)
+    assert stream.n_new_samples == 0
+    stream.acquire()
+    n_samples = stream.n_new_samples
+    assert 0 < n_samples
+    _sleep_until_new_data(1e-6, mock_lsl_stream)
+    assert n_samples == stream.n_new_samples
+    stream.acquire()
+    assert n_samples < stream.n_new_samples
+    stream.disconnect()

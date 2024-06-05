@@ -98,6 +98,7 @@ class StreamLSL(BaseStream):
     @copy_doc(BaseStream.acquire)
     def acquire(self) -> None:
         super().acquire()
+        self._acquire()
 
     @deprecate_positional_args
     def connect(
@@ -210,7 +211,8 @@ class StreamLSL(BaseStream):
             )
         self._picks_inlet = np.arange(0, self._inlet.n_channels)
         # submit the first acquisition job
-        self._executor.submit(self._acquire)
+        if self._executor is not None:
+            self._executor.submit(self._acquire)
         return self
 
     def disconnect(self) -> StreamLSL:
@@ -238,6 +240,8 @@ class StreamLSL(BaseStream):
             # pull data
             data, timestamps = self._inlet.pull_chunk(timeout=0.0)
             if timestamps.size == 0:
+                if self._executor is None:
+                    return  # either shutdown or manual acquisition
                 sleep(self._acquisition_delay)
                 try:
                     self._executor.submit(self._acquire)
@@ -257,6 +261,8 @@ class StreamLSL(BaseStream):
             data = data[-self._timestamps.size :, self._picks_inlet]
             timestamps = timestamps[-self._timestamps.size :]
             if self._stype == "annotations" and np.count_nonzero(data) == 0:
+                if self._executor is None:
+                    return  # either shutdown or manual acquisition
                 sleep(self._acquisition_delay)
                 try:
                     self._executor.submit(self._acquire)
@@ -313,6 +319,8 @@ class StreamLSL(BaseStream):
             if os.getenv("MNE_LSL_RAISE_STREAM_ERRORS", "false").lower() == "true":
                 raise error
         else:
+            if self._executor is None:
+                return  # either shutdown or manual acquisition
             try:
                 sleep(self._acquisition_delay)
                 self._executor.submit(self._acquire)

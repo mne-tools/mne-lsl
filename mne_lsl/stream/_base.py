@@ -85,6 +85,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         # attributes: name, stype, source_id. Thus a possible representation is:
         # <Stream: ON | {name} - {stype} (source: {source_id})>
 
+    @abstractmethod
     def acquire(self) -> None:
         """Pull new samples in the buffer.
 
@@ -95,7 +96,19 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         background thread.
         """
         self._check_connected(name="acquire")
-        raise NotImplementedError
+        if (
+            self._executor is not None and self._acquisition_delay == 0
+        ):  # pragma: no cover
+            raise RuntimeError(
+                "The executor is not None despite the acquisition delay set to "
+                f"{self._acquisition_delay} seconds. This should not happen, please "
+                "contact the developers on GitHub."
+            )
+        elif self._executor is not None and self._acquisition_delay != 0:
+            raise RuntimeError(
+                "Acquisition is done automatically in a background thread. The method "
+                "stream.acquire() should not be called."
+            )
 
     @fill_doc
     def add_reference_channels(
@@ -282,18 +295,18 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             warn("The stream is already connected. Skipping.")
             return self
         check_type(acquisition_delay, ("numeric",), "acquisition_delay")
-        if acquisition_delay <= 0:
+        if acquisition_delay < 0:
             raise ValueError(
                 "The acquisition delay must be a positive number "
                 "defining the delay at which new samples are acquired in seconds. For "
-                "instance, 0.2 corresponds to a pull every 200 ms. The provided "
-                f"{acquisition_delay} is invalid."
+                "instance, 0.2 corresponds to a pull every 200 ms. 0 corresponds to "
+                f"manual acquisition. The provided {acquisition_delay} is invalid."
             )
-        if acquisition_delay == 0:
-            raise NotImplementedError
         self._acquisition_delay = acquisition_delay
         self._n_new_samples = 0
-        self._executor = ThreadPoolExecutor(max_workers=1)
+        self._executor = (
+            ThreadPoolExecutor(max_workers=1) if self._acquisition_delay != 0 else None
+        )
         logger.debug("%s: ThreadPoolExecutor started.", self)
         # This method needs to connect to a stream, retrieve the stream information and
         # create the ringbuffer. By the end of this method, the following variables
@@ -316,7 +329,8 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             The stream instance modified in-place.
         """
         self._check_connected(name="disconnect()")
-        self._executor.shutdown(wait=True, cancel_futures=True)
+        if self._executor is not None:
+            self._executor.shutdown(wait=True, cancel_futures=True)
         # This method needs to close any inlet/network object and need to end with
         # self._reset_variables().
 
@@ -1023,12 +1037,13 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
                 "error traceback to the developers."
             )
         # it's simpler to shutdown the executor entirely and create a new one
-        self._executor.shutdown(wait=True, cancel_futures=True)
-        try:  # ensure "finally" is reached even when failures occur
-            yield
-        finally:
-            self._executor = ThreadPoolExecutor(max_workers=1)
-            self._executor.submit(self._acquire)
+        if self._executor is not None:
+            self._executor.shutdown(wait=True, cancel_futures=True)
+            try:  # ensure "finally" is reached even when failures occur
+                yield
+            finally:
+                self._executor = ThreadPoolExecutor(max_workers=1)
+                self._executor.submit(self._acquire)
 
     def _pick(self, picks: ScalarIntArray) -> None:
         """Interrupt acquisition and apply the channel selection."""
@@ -1103,14 +1118,15 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
         :type: :class:`bool`
         """
-        attributes = (
+        attributes = [
             "_info",
             "_acquisition_delay",
             "_buffer",
-            "_executor",
             "_picks_inlet",
             "_timestamps",
-        )
+        ]
+        if self._acquisition_delay != 0:
+            attributes.append("_executor")
         if all(getattr(self, attr, None) is None for attr in attributes):
             return False
         else:
