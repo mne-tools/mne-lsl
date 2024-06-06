@@ -18,6 +18,8 @@ from sphinx_gallery.sorting import FileNameSortKey
 
 import mne_lsl
 
+# -- path setup ------------------------------------------------------------------------
+sys.path.append(str(Path(__file__).parent / "_sphinxext"))
 
 # -- project information ---------------------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
@@ -58,6 +60,7 @@ extensions = [
     "sphinx_design",
     "sphinx_gallery.gen_gallery",
     "sphinx_issues",
+    # local extensions
     "sphinx_remove_toctrees",
 ]
 
