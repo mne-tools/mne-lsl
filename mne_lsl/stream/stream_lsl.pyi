@@ -8,6 +8,7 @@ from ..lsl import StreamInlet as StreamInlet
 from ..lsl import resolve_streams as resolve_streams
 from ..lsl.constants import fmt2numpy as fmt2numpy
 from ..utils._checks import check_type as check_type
+from ..utils._docs import copy_doc as copy_doc
 from ..utils._docs import fill_doc as fill_doc
 from ..utils.logs import logger as logger
 from ._base import BaseStream as BaseStream
@@ -45,12 +46,23 @@ class StreamLSL(BaseStream):
     def __init__(
         self,
         bufsize: float,
+        *,
         name: str | None = None,
         stype: str | None = None,
         source_id: str | None = None,
     ) -> None: ...
     def __repr__(self) -> str:
         """Representation of the instance."""
+
+    def acquire(self) -> None:
+        """Pull new samples in the buffer.
+
+        Notes
+        -----
+        This method is not needed if the stream was connected with an acquisition delay
+        different from ``0``. In this case, the acquisition is done automatically in a
+        background thread.
+        """
     _inlet: Incomplete
     _sinfo: Incomplete
     _info: Incomplete
@@ -61,6 +73,7 @@ class StreamLSL(BaseStream):
     def connect(
         self,
         acquisition_delay: float = 0.001,
+        *,
         processing_flags: str | Sequence[str] | None = None,
         timeout: float | None = 2,
     ) -> StreamLSL:
@@ -70,7 +83,9 @@ class StreamLSL(BaseStream):
         ----------
         acquisition_delay : float
             Delay in seconds between 2 acquisition during which chunks of data are
-            pulled from the :class:`~mne_lsl.lsl.StreamInlet`.
+            pulled from the :class:`~mne_lsl.lsl.StreamInlet`. If ``0``, the automatic
+            acquisition in a background thread is disabled and the user must manually
+            call :meth:`~mne_lsl.stream.StreamLSL.acquire` to pull new samples.
         processing_flags : list of str | ``'all'`` | None
             Set the post-processing options. By default, post-processing is disabled.
             Any combination of the processing flags is valid. The available flags are:

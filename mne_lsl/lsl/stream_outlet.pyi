@@ -48,12 +48,6 @@ class StreamOutlet:
     def __init__(
         self, sinfo: _BaseStreamInfo, chunk_size: int = 1, max_buffered: float = 360
     ) -> None: ...
-    @property
-    def _obj(self): ...
-    __obj: Incomplete
-
-    @_obj.setter
-    def _obj(self, obj) -> None: ...
     def _del(self) -> None:
         """Destroy a :class:`~mne_lsl.lsl.StreamOutlet` explicitly."""
 
@@ -134,6 +128,12 @@ class StreamOutlet:
         Any application inlet will be recognized.
         """
 
+    @property
+    def _obj(self): ...
+    __obj: Incomplete
+
+    @_obj.setter
+    def _obj(self, obj) -> None: ...
     @property
     def dtype(self) -> str | DTypeLike:
         """Channel format of a stream.

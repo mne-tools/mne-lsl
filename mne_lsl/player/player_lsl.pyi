@@ -96,6 +96,7 @@ class PlayerLSL(BasePlayer):
         fname: str | Path,
         chunk_size: int = 64,
         n_repeat: int | float = ...,
+        *,
         name: str | None = None,
         annotations: bool | None = None,
     ) -> None: ...
