@@ -306,10 +306,9 @@ class Detector:
             The timestamps of all detected peaks.
         """
         data, ts = self._stream.get_data()  # we have a single channel in the stream
-        if self._last_acq_time is None:
+        if self._last_acq_time is None or self._last_acq_time != ts[-1]:
             self._last_acq_time = ts[-1]
         elif self._last_acq_time == ts[-1]:
-            self._last_acq_time = ts[-1]
             return np.array([])  # nothing new to do
         data = data.squeeze()
         peaks, _ = find_peaks(
