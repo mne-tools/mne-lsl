@@ -74,12 +74,6 @@ class StreamInlet:
         recover: bool = True,
         processing_flags: str | Sequence[str] | None = None,
     ) -> None: ...
-    @property
-    def _obj(self): ...
-    __obj: Incomplete
-
-    @_obj.setter
-    def _obj(self, obj) -> None: ...
     def _del(self) -> None:
         """Destroy a :class:`~mne_lsl.lsl.StreamInlet` explicitly."""
 
@@ -229,6 +223,12 @@ class StreamInlet:
             Number of dropped samples.
         """
 
+    @property
+    def _obj(self): ...
+    __obj: Incomplete
+
+    @_obj.setter
+    def _obj(self, obj) -> None: ...
     @property
     def dtype(self) -> str | DTypeLike:
         """Channel format of a stream.

@@ -300,9 +300,6 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
     def _reset_variables(self) -> None:
         """Reset variables for streaming."""
 
-    def __del__(self) -> None:
-        """Delete the player."""
-
     def __enter__(self):
         """Context manager entry point."""
 
