@@ -78,6 +78,7 @@ def sys_info(fid: Optional[IO] = None, developer: bool = False):
             "build",
             "doc",
             "test",
+            "stubs",
             "style",
         )
         for key in keys:
