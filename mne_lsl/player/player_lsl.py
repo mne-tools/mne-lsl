@@ -1,6 +1,6 @@
 from __future__ import annotations  # c.f. PEP 563, PEP 649
 
-from threading import Timer
+from time import sleep
 from typing import TYPE_CHECKING
 from warnings import catch_warnings, filterwarnings
 
@@ -28,8 +28,6 @@ class PlayerLSL(BasePlayer):
     %(player_fname)s
     chunk_size : int ``≥ 1``
         Number of samples pushed at once on the :class:`~mne_lsl.lsl.StreamOutlet`.
-        If these chunks are too small then the thread-based timing might not work
-        properly.
     %(n_repeat)s
     name : str | None
         Name of the mock LSL stream. If ``None``, the name ``MNE-LSL-Player`` is used.
@@ -92,6 +90,7 @@ class PlayerLSL(BasePlayer):
         fname: Union[str, Path],
         chunk_size: int = 64,
         n_repeat: Union[int, float] = np.inf,
+        *,
         name: Optional[str] = None,
         annotations: Optional[bool] = None,
     ) -> None:
@@ -168,22 +167,15 @@ class PlayerLSL(BasePlayer):
         player : instance of :class:`~mne_lsl.player.PlayerLSL`
             The player instance modified in-place.
         """
-        if self._streaming_thread is not None:
-            warn(
-                f"{self._name}: The player is already started. "
-                "Use Player.stop() to stop streaming."
-            )
-            return self
+        super().start()
         self._outlet = StreamOutlet(self._sinfo, self._chunk_size)
         self._outlet_annotations = (
             StreamOutlet(self._sinfo_annotations, 1) if self._annotations else None
         )
         self._streaming_delay = self.chunk_size / self.info["sfreq"]
-        self._streaming_thread = Timer(0, self._stream)
-        self._streaming_thread.daemon = True
         self._target_timestamp = local_clock()
-        self._streaming_thread.start()
-        logger.debug("%s: Started streaming thread", self._name)
+        self._executor.submit(self._stream)
+        logger.debug("%s: Started streaming thread.", self._name)
         return self
 
     @copy_doc(BasePlayer.set_channel_types)
@@ -217,7 +209,7 @@ class PlayerLSL(BasePlayer):
         player : instance of :class:`~mne_lsl.player.PlayerLSL`
             The player instance modified in-place.
         """
-        logger.debug("%s: Stopping", self._name)
+        logger.debug("%s: Stopping.", self._name)
         super().stop()
         self._del_outlets()
         self._reset_variables()
@@ -227,13 +219,13 @@ class PlayerLSL(BasePlayer):
         """Attempt to delete outlets."""
         if hasattr(self, "_outlet"):
             try:
-                self._outlet.__del__()
-            except Exception:
+                self._outlet._del()
+            except Exception:  # pragma: no cover
                 pass
         if hasattr(self, "_outlet_annotations"):
             try:
-                self._outlet_annotations.__del__()
-            except Exception:
+                self._outlet_annotations._del()
+            except Exception:  # pragma: no cover
                 pass
 
     @copy_doc(BasePlayer._stream)
@@ -248,16 +240,28 @@ class PlayerLSL(BasePlayer):
                 data = self._raw[:, start:stop][0].T
                 self._start_idx += self._chunk_size
             elif self._raw.times.size < stop and self._n_repeated < self._n_repeat:
-                logger.debug("End of file reach, looping back to the beginning.")
+                logger.debug("End of file reached, looping back to the beginning.")
                 stop = self._chunk_size - (self._raw.times.size - start)
                 data = np.vstack([self._raw[:, start:][0].T, self._raw[:, :stop][0].T])
                 self._start_idx = stop
                 self._n_repeated += 1
             else:
-                logger.debug("End of file reach, stopping the player.")
+                logger.debug("End of file reached, stopping the player.")
                 stop = self._raw.times.size
                 data = self._raw[:, start:stop][0].T
                 self._end_streaming = True
+                if data.size == 0:  # pragma: no cover
+                    # rare condition where if chunk_size is equal to 1, the last chunk
+                    # will be empty and we should abort at this point.
+                    logger.debug("End of file reached with an empty chunk.")
+                    if self._chunk_size != 1:  # pragma: no cover
+                        warn(
+                            f"{self._name}: End of file reached with an empty chunk. "
+                            "This should not happen with a chunk_size different from 1."
+                        )
+                    self._del_outlets()
+                    self._reset_variables()
+                    return None
             # bump the target LSL timestamp before pushing because the argument
             # 'timestamp' expects the timestamp of the most 'recent' sample, which in
             # this non-real time replay scenario is the timestamp of the last sample in
@@ -271,30 +275,30 @@ class PlayerLSL(BasePlayer):
                 stop,
                 self._target_timestamp,
             )
-            if self._chunk_size == 1:
+            if self._chunk_size == 1:  # pragma: no cover
                 self._outlet.push_sample(data[0, :], timestamp=self._target_timestamp)
             else:
                 self._outlet.push_chunk(data, timestamp=self._target_timestamp)
             self._stream_annotations(start, stop, start_timestamp)
-        except Exception as exc:
+        except Exception as exc:  # pragma: no cover
             logger.error("%s: Stopping due to exception: %s", self._name, exc)
             self._del_outlets()
             self._reset_variables()
         else:
-            if self._interrupt or self._end_streaming:
+            if self._end_streaming:
                 self._del_outlets()
-                if self._end_streaming:
-                    self._reset_variables()
-                return None  # don't recreate the thread if we are interrupting
+                self._reset_variables()
+                return None  # don't schedule another task if we are ending
             # figure out how early or late the thread woke up and compensate the
             # delay for the next thread to remain in the neighbourhood of
             # _target_timestamp for the following wake.
             delta = self._target_timestamp - self._streaming_delay - local_clock()
             delay = max(self._streaming_delay + delta, 0)
-            # recreate the timer thread as it is one-call only
-            self._streaming_thread = Timer(delay, self._stream)
-            self._streaming_thread.daemon = True
-            self._streaming_thread.start()
+            sleep(delay)
+            try:
+                self._executor.submit(self._stream)
+            except RuntimeError:  # pragma: no cover
+                pass  # shutdown
 
     def _stream_annotations(
         self, start: int, stop: int, start_timestamp: float
@@ -345,8 +349,10 @@ class PlayerLSL(BasePlayer):
     # ----------------------------------------------------------------------------------
     def __del__(self):
         """Delete the player and destroy the :class:`~mne_lsl.lsl.StreamOutlet`."""
-        super().__del__()
-        self._del_outlets()  # likely redundant, but no-op anyway.
+        try:
+            self.stop()
+        except Exception:  # pragma: no cover
+            pass
 
     def __repr__(self):
         """Representation of the instance."""

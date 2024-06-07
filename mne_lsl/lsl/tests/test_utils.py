@@ -20,7 +20,6 @@ def test_check_timeout():
     assert 10000 <= check_timeout(None)
     assert check_timeout(2) == 2
     assert check_timeout(2.2) == 2.2
-
     with pytest.raises(
         TypeError, match="The argument 'timeout' must be a strictly positive"
     ):

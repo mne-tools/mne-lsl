@@ -22,25 +22,23 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: 3.11
-      - name: Install linux dependencies
-        run: |
-          curl -L https://github.com/sccn/liblsl/releases/download/v1.16.2/liblsl-1.16.2-jammy_amd64.deb -o liblsl-1.16.2-jammy_amd64.deb
-          sudo apt update
-          sudo apt install -y libpugixml-dev qtbase5-dev qt5-qmake optipng
-          sudo apt install -y ./liblsl-1.16.2-jammy_amd64.deb
-          rm liblsl-1.16.2-jammy_amd64.deb
+      - name: Install system dependencies
+        uses: ./.github/actions/install-system-dependencies
+      - name: Install optipng (for sphinx-gallery)
+        run: sudo apt install optipng
       - name: Install package
         run: |
           python -m pip install --progress-bar off --upgrade pip setuptools
           python -m pip install --progress-bar off .[doc]
       - name: Display system information
         run: mne_lsl-sys_info --developer
-      - name: Build doc
-        uses: nick-fields/retry@v3
+      - name: Get dataset
+        uses: ./.github/actions/get-testing-dataset
         with:
-          timeout_minutes: 10
-          max_attempts: 3
-          command: make -C doc html
+          sample: "true"
+          testing: "false"
+      - name: Build doc
+        run: make -C doc html
       - name: Prune sphinx environment
         run: rm -R ./doc/_build/html/.doctrees
       - name: Upload documentation

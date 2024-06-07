@@ -6,18 +6,18 @@ repos:
             files: mne_lsl
 
     - repo: https://github.com/astral-sh/ruff-pre-commit
-      rev: v0.4.4
+      rev: v0.4.7
       hooks:
           - id: ruff
             name: ruff linter
-            args: [--fix]
+            args: [--fix, --show-fixes]
             files: mne_lsl
           - id: ruff-format
             name: ruff formatter
             files: mne_lsl
 
     - repo: https://github.com/codespell-project/codespell
-      rev: v2.2.6
+      rev: v2.3.0
       hooks:
           - id: codespell
             args: [--write-changes]

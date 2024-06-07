@@ -1,6 +1,7 @@
 from __future__ import annotations  # c.f. PEP 563, PEP 649
 
 import inspect
+import logging
 import os
 from tempfile import NamedTemporaryFile
 from typing import TYPE_CHECKING
@@ -11,9 +12,9 @@ from mne import Annotations
 from mne import set_log_level as set_log_level_mne
 from mne.io import read_raw_fif
 
-from mne_lsl import set_log_level
 from mne_lsl.datasets import testing
 from mne_lsl.lsl import StreamInlet, StreamOutlet
+from mne_lsl.utils._checks import check_verbose
 from mne_lsl.utils.logs import logger
 
 if TYPE_CHECKING:
@@ -28,7 +29,22 @@ if TYPE_CHECKING:
 # 2023-10-20 09:38:21.648 (   9.665s) [IO_P_test_stre  ]         udp_server.cpp:136      3| 0x43e9310 query matches, replying to port 16574  # noqa: E501
 lsl_cfg = NamedTemporaryFile("w", prefix="lsl", suffix=".cfg", delete=False)
 if "LSLAPICFG" not in os.environ:
-    level = int(os.getenv("MNE_LSL_LOG_LEVEL", "2"))
+    verbose = os.getenv("MNE_LSL_LOG_LEVEL", 2)
+    try:
+        verbose = int(verbose)
+    except ValueError:
+        pass
+    verbose = check_verbose(verbose)
+    # LSL logs use '-2- for errors, -1 for warnings, 0  for information and then
+    # 1-9 for increasingly less important details.
+    if logging.ERROR <= verbose:
+        level = -2
+    elif logging.WARNING <= verbose:
+        level = -1
+    elif logging.INFO <= verbose:
+        level = 0
+    else:
+        level = 2
     with lsl_cfg as fid:
         fid.write(f"[log]\nlevel = {level}\n\n[multicast]\nResolveScope = link")
     os.environ["LSLAPICFG"] = lsl_cfg.name
@@ -40,17 +56,11 @@ def pytest_configure(config: pytest.Config) -> None:
         config.addinivalue_line("markers", marker)
     if "MNE_LSL_RAISE_STREAM_ERRORS" not in os.environ:
         os.environ["MNE_LSL_RAISE_STREAM_ERRORS"] = "true"
-    if os.getenv("MNE_IGNORE_WARNINGS_IN_TESTS", "") != "true":
-        first_kind = "error"
-    else:
-        first_kind = "always"
+    first_kind = (
+        "error" if os.getenv("MNE_IGNORE_WARNINGS_IN_TESTS", "") != "true" else "always"
+    )
     warning_lines = f"    {first_kind}::"
     warning_lines += r"""
-    # numpy 2.0 <-> SciPy
-    ignore:numpy\.core\._multiarray_umath.*:DeprecationWarning
-    ignore:numpy\.core\.multiarray is deprecated.*:DeprecationWarning
-    ignore:numpy\.core\.numeric is deprecated.*:DeprecationWarning
-    ignore:datetime\.datetime\.utcfromtimestamp.*:DeprecationWarning
     # Pooch tar
     ignore:Python 3.14 will, by default.*:DeprecationWarning
     """
@@ -59,7 +69,6 @@ def pytest_configure(config: pytest.Config) -> None:
         if warning_line and not warning_line.startswith("#"):
             config.addinivalue_line("filterwarnings", warning_line)
     set_log_level_mne("WARNING")  # MNE logger
-    set_log_level("DEBUG")  # MNE-lsl logger
     logger.propagate = True
 
 
@@ -81,16 +90,20 @@ def _closer():
     """
     loc = inspect.currentframe().f_back.f_locals
     inlets, outlets = [], []
-    for var in loc.values():  # go through the frame only once
+    for var in loc.values():  # go through the frame
         if isinstance(var, StreamInlet):
             inlets.append(var)
         elif isinstance(var, StreamOutlet):
             outlets.append(var)
     # delete inlets before outlets
     for inlet in inlets:
-        inlet.__del__()
+        inlet._del()
+        del inlet
+    inlets.clear()
     for outlet in outlets:
-        outlet.__del__()
+        outlet._del()
+        del outlet
+    outlets.clear()
 
 
 @pytest.fixture()
@@ -128,13 +141,3 @@ def raw_annotations(raw: BaseRaw) -> BaseRaw:
     )
     raw.set_annotations(annotations)
     return raw
-
-
-@pytest.fixture()
-def mock_lsl_stream(fname: Path, request):
-    """Create a mock LSL stream for testing."""
-    # nest the PlayerLSL import to first write the temporary LSL configuration file
-    from mne_lsl.player import PlayerLSL  # noqa: E402
-
-    with PlayerLSL(fname, name=f"P_{request.node.name}") as player:
-        yield player

@@ -96,7 +96,7 @@ set_log_level("WARNING")
 # %%
 
 fname = sample.data_path() / "sample-ant-raw.fif"
-player = Player(fname).start()
+player = Player(fname, chunk_size=200).start()
 player.info
 
 # %%
@@ -107,10 +107,10 @@ player.info
 #
 # .. note::
 #
-#     The default setting for chunk_size is ``64``, which helps prevent overly frequent
-#     data transmission and minimizes CPU utilization. Nonetheless, in real-time
-#     applications, there may be advantages to employing smaller chunk sizes for data
-#     publication.
+#     The default setting for chunk_size is ``10``. In real-time applications, there may
+#     be advantages to employing smaller chunk sizes for data publication, but to build
+#     the documentation website or to run test successfully on CIs, a larger chunk size
+#     is used to reduce the number of push operations and improve stability.
 
 sfreq = player.info["sfreq"]
 chunk_size = player.chunk_size

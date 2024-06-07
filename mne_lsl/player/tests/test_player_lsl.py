@@ -19,26 +19,16 @@ from mne_lsl.stream import StreamLSL as Stream
 from mne_lsl.utils._tests import match_stream_and_raw_data
 
 
-def _create_inlet(name: str) -> StreamInlet:
-    """Create an inlet to the open-stream."""
-    streams = resolve_streams()
-    streams = [stream for stream in streams if stream.name == name]
-    assert len(streams) == 1
-    inlet = StreamInlet(streams[0])
-    inlet.open_stream(timeout=10)
-    return inlet
-
-
 def test_player(fname, raw, close_io):
     """Test a working and valid player."""
     name = "Player-test_player"
-    player = Player(fname, name=name)
+    player = Player(fname, chunk_size=200, name=name)
     assert "OFF" in player.__repr__()
     streams = resolve_streams(timeout=0.1)
     assert len(streams) == 0
     player.start()
     assert "ON" in player.__repr__()
-    streams = resolve_streams()
+    streams = resolve_streams(timeout=2)
     assert len(streams) == 1
     assert streams[0].name == name
 
@@ -51,7 +41,8 @@ def test_player(fname, raw, close_io):
     inlet.open_stream(timeout=10)
     data, ts = inlet.pull_chunk()
     now = local_clock()
-    assert_allclose(now, ts[-1], rtol=0, atol=0.1)  # 100 ms of freedom for slower CIs
+    # between the chunk size and the slow CIs, we can't expect precise timings
+    assert_allclose(now, ts[-1], rtol=1e-3, atol=1)
     assert data.shape[1] == len(player.info["ch_names"])
 
     # check sampling rate
@@ -86,8 +77,8 @@ def test_player_context_manager(fname):
     name = "Player-test_player_context_manager"
     streams = resolve_streams(timeout=0.1)
     assert len(streams) == 0
-    with Player(fname, name=name):
-        streams = resolve_streams()
+    with Player(fname, chunk_size=200, name=name):
+        streams = resolve_streams(timeout=2)
         assert len(streams) == 1
         assert streams[0].name == name
     streams = resolve_streams(timeout=0.1)
@@ -99,8 +90,8 @@ def test_player_context_manager_raw(raw):
     name = "Player-test_player_context_manager_raw"
     streams = resolve_streams(timeout=0.1)
     assert len(streams) == 0
-    with Player(raw, name=name) as player:
-        streams = resolve_streams()
+    with Player(raw, chunk_size=200, name=name) as player:
+        streams = resolve_streams(timeout=2)
         assert len(streams) == 1
         assert streams[0].name == name
         assert player.info["ch_names"] == raw.info["ch_names"]
@@ -108,7 +99,7 @@ def test_player_context_manager_raw(raw):
     assert len(streams) == 0
 
     with pytest.warns(RuntimeWarning, match="raw file has no annotations"):
-        with Player(raw, name=name, annotations=True) as player:
+        with Player(raw, chunk_size=200, name=name, annotations=True) as player:
             streams = resolve_streams()
             assert len(streams) == 1
             assert streams[0].name == name
@@ -120,16 +111,20 @@ def test_player_context_manager_raw_annotations(raw_annotations):
     name = "Player-test_player_context_manager_raw"
     streams = resolve_streams(timeout=0.1)
     assert len(streams) == 0
-    with Player(raw_annotations, name=name, annotations=False) as player:
-        streams = resolve_streams()
+    with Player(
+        raw_annotations, chunk_size=200, name=name, annotations=False
+    ) as player:
+        assert player.running
+        streams = resolve_streams(timeout=2)
         assert len(streams) == 1
         assert streams[0].name == name
         assert player.info["ch_names"] == raw_annotations.info["ch_names"]
     streams = resolve_streams(timeout=0.1)
     assert len(streams) == 0
 
-    with Player(raw_annotations, name=name) as player:
-        streams = resolve_streams()
+    with Player(raw_annotations, chunk_size=200, name=name) as player:
+        assert player.running
+        streams = resolve_streams(timeout=2)
         assert len(streams) == 2
         assert any(stream.name == name for stream in streams)
         assert any(stream.name == f"{name}-annotations" for stream in streams)
@@ -154,11 +149,31 @@ def test_player_invalid_arguments(fname):
 
 def test_player_stop_invalid(fname):
     """Test stopping a player that is not started."""
-    player = Player(fname, name="Player-test_stop_player_invalid")
+    player = Player(fname, chunk_size=200, name="Player-test_stop_player_invalid")
     with pytest.raises(RuntimeError, match="The player is not started"):
         player.stop()
     player.start()
     player.stop()
+
+
+def _create_inlet(name: str) -> StreamInlet:
+    """Create an inlet to the open-stream."""
+    streams = resolve_streams(timeout=2)
+    streams = [stream for stream in streams if stream.name == name]
+    assert len(streams) == 1
+    inlet = StreamInlet(streams[0])
+    inlet.open_stream(timeout=10)
+    return inlet
+
+
+@pytest.fixture()
+def mock_lsl_stream(fname: Path, request):
+    """Create a mock LSL stream for testing."""
+    # nest the PlayerLSL import to first write the temporary LSL configuration file
+    from mne_lsl.player import PlayerLSL  # noqa: E402
+
+    with PlayerLSL(fname, name=f"P_{request.node.name}", chunk_size=200) as player:
+        yield player
 
 
 def test_player_unit(mock_lsl_stream, raw, close_io):
@@ -285,14 +300,10 @@ def test_player_set_channel_types(mock_lsl_stream, raw, close_io):
 def test_player_anonymize(fname):
     """Test anonymization."""
     name = "Player-test_player_anonymize"
-    player = Player(fname, name=name)
+    player = Player(fname, chunk_size=200, name=name)
     assert player.name == name
     assert player.fname == fname
-    player.info["subject_info"] = dict(
-        id=101,
-        first_name="Mathieu",
-        sex=1,
-    )
+    player.info["subject_info"] = dict(id=101, first_name="Mathieu", sex=1)
     with pytest.warns(RuntimeWarning, match="partially implemented"):
         player.anonymize()
     assert player.info["subject_info"] == dict(id=0, first_name="mne_anonymize", sex=0)
@@ -306,7 +317,7 @@ def test_player_anonymize(fname):
 def test_player_set_meas_date(fname):
     """Test player measurement date."""
     name = "Player-test_player_set_meas_date"
-    player = Player(fname, name=name)
+    player = Player(fname, chunk_size=200, name=name)
     assert player.name == name
     assert player.fname == fname
     assert player.info["meas_date"] is None
@@ -326,13 +337,14 @@ def test_player_annotations(raw_annotations, close_io):
     """Test player with annotations."""
     name = "Player-test_player_annotations"
     annotations = sorted(set(raw_annotations.annotations.description))
-    player = Player(raw_annotations, name=name)
+    player = Player(raw_annotations, chunk_size=200, name=name)
+    assert f"Player: {name}" in repr(player)
     assert player.name == name
     assert player.fname == Path(raw_annotations.filenames[0])
     streams = resolve_streams(timeout=0.1)
     assert len(streams) == 0
     player.start()
-    streams = resolve_streams()
+    streams = resolve_streams(timeout=2)
     assert len(streams) == 2
     assert any(stream.name == name for stream in streams)
     assert any(stream.name == f"{name}-annotations" for stream in streams)
@@ -368,6 +380,7 @@ def test_player_annotations(raw_annotations, close_io):
         idx = np.where(data != 0.0)[0]
         assert_allclose(data[idx], [duration] * idx.size)
         assert_allclose(np.diff(ts[idx]), 2, atol=1e-2)
+    time.sleep(3)
     data, ts = stream.get_data(picks="test1")
     data = data.squeeze()
     idx = np.where(data != 0.0)[0]
@@ -387,19 +400,26 @@ def test_player_annotations(raw_annotations, close_io):
 
 def test_player_n_repeat(raw):
     """Test argument 'n_repeat'."""
-    player = Player(raw, n_repeat=1, name="Player-test_player_n_repeat-1")
+    player = Player(
+        raw, chunk_size=200, n_repeat=1, name="Player-test_player_n_repeat-1"
+    )
     player.start()
-    time.sleep((raw.times.size / raw.info["sfreq"]) * 1.1)
-    assert player._streaming_thread is None
-    streams = resolve_streams()
+    time.sleep((raw.times.size / raw.info["sfreq"]) * 1.8)
+    assert player._executor is None
+    streams = resolve_streams(timeout=0.1)
     assert len(streams) == 0
     with pytest.raises(RuntimeError, match="player is not started."):
         player.stop()
-    player = Player(raw, n_repeat=2, name="Player-test_player_n_repeat-2")
+    player = Player(
+        raw, chunk_size=200, n_repeat=4, name="Player-test_player_n_repeat-2"
+    )
+    assert player.n_repeat == 4
     player.start()
-    time.sleep((raw.times.size / raw.info["sfreq"]) * 1.1)
-    assert player._streaming_thread is not None
-    streams = resolve_streams()
+    assert player.n_repeat == 4
+    assert player.running
+    time.sleep((raw.times.size / raw.info["sfreq"]) * 1.8)
+    assert player._executor is not None
+    streams = resolve_streams(timeout=2)
     assert len(streams) == 1
     player.stop()
 
@@ -422,9 +442,30 @@ def test_player_push_sample(fname):
     name = "Player-test_player_push_sample"
     streams = resolve_streams(timeout=0.1)
     assert len(streams) == 0
-    with Player(fname, name=name, chunk_size=1):
-        streams = resolve_streams()
+    with Player(fname, chunk_size=1, name=name):
+        streams = resolve_streams(timeout=0.5)
         assert len(streams) == 1
         assert streams[0].name == name
+    streams = resolve_streams(timeout=0.1)
+    assert len(streams) == 0
+
+
+@pytest.mark.skipif(
+    os.getenv("GITHUB_ACTIONS", "") == "true", reason="Unreliable on CIs."
+)
+def test_player_push_last_sample(fname, caplog):
+    """Test pushing the last sample."""
+    name = "Player-test_player_push_sample-2"
+    player = Player(fname, chunk_size=1, n_repeat=1, name=name)
+    caplog.clear()
+    player.start()
+    streams = resolve_streams(timeout=0.5)
+    assert len(streams) == 1
+    assert streams[0].name == name
+    while player.running:
+        time.sleep(0.1)
+    # 'IndexError: index 0 is out of bounds' would be raised it the last chunk pushed
+    # was empty.
+    assert "index 0 is out of bounds" not in caplog.text
     streams = resolve_streams(timeout=0.1)
     assert len(streams) == 0

@@ -34,9 +34,16 @@ class UI_MainWindow(object):  # noqa
         self.comboBox_signal_yRange.setObjectName("comboBox_signal_yRange")
 
         self.label_signal_yRange = QLabel(self.MainWidget)
-        self.label_signal_yRange.setGeometry(QRect(10, 60, 67, 17))
+        self.label_signal_yRange.setGeometry(QRect(10, 0, 67, 17))
         self.label_signal_yRange.setObjectName("label_signal_yRange")
-        self.label_signal_yRange.setText("Time (s)")
+        self.label_signal_yRange.setText("Scale")
+
+        self.label_signal_yRange_tip = QLabel(self.MainWidget)
+        self.label_signal_yRange_tip.setGeometry(QRect(350, 70, 151, 40))
+        self.label_signal_yRange_tip.setObjectName("label_signal_yRange_tip")
+        self.label_signal_yRange_tip.setText(
+            "Scroll on the main plot window\nto change the Y-scale!"
+        )
 
         # X-Scale of the signal
         self.spinBox_signal_xRange = QSpinBox(self.MainWidget)  # Integers
@@ -47,9 +54,9 @@ class UI_MainWindow(object):  # noqa
         self.spinBox_signal_xRange.setObjectName("spinBox_signal_xRange")
 
         self.label_signal_xRange = QLabel(self.MainWidget)
-        self.label_signal_xRange.setGeometry(QRect(10, 0, 67, 17))
+        self.label_signal_xRange.setGeometry(QRect(10, 60, 67, 17))
         self.label_signal_xRange.setObjectName("label_signal_xRange")
-        self.label_signal_xRange.setText("Scale")
+        self.label_signal_xRange.setText("Time (s)")
 
         # BP Filter
         self.checkBox_bandpass = QCheckBox(self.MainWidget)

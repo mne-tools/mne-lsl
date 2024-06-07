@@ -14,8 +14,8 @@ numerical stream.
 .. currentmodule:: mne_lsl.stream
 
 .. autosummary::
-   :toctree: ../generated/api
-   :nosignatures:
+    :toctree: ../generated/api
+    :nosignatures:
 
     StreamLSL
 
@@ -40,7 +40,7 @@ A ``Player`` can mock a real-time stream from any `MNE <mne stable_>`_ readable 
 .. currentmodule:: mne_lsl.player
 
 .. autosummary::
-   :toctree: ../generated/api
-   :nosignatures:
+    :toctree: ../generated/api
+    :nosignatures:
 
     PlayerLSL

@@ -18,7 +18,7 @@ _REGISTRY: Path = files("mne_lsl.datasets") / "sample-registry.txt"
 
 def _make_registry(
     folder: Union[str, Path], output: Optional[Union[str, Path]] = None
-) -> None:
+) -> None:  # pragma: no cover
     """Create the registry file for the sample dataset.
 
     Parameters
@@ -40,7 +40,7 @@ def data_path() -> Path:
     -------
     path : Path
         Path to the sample dataset, by default in ``"~/mne_data/MNE-LSL"``.
-    """
+    """  # pragma: no cover
     path = (
         Path(get_config("MNE_DATA", Path.home())).expanduser()
         / "mne_data"

@@ -2,6 +2,7 @@ from __future__ import annotations  # c.f. PEP 563, PEP 649
 
 import os
 from math import ceil
+from time import sleep
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -18,7 +19,7 @@ else:
 from ..lsl import StreamInlet, resolve_streams
 from ..lsl.constants import fmt2numpy
 from ..utils._checks import check_type
-from ..utils._docs import fill_doc
+from ..utils._docs import copy_doc, fill_doc
 from ..utils.logs import logger
 from ._base import BaseStream
 
@@ -54,6 +55,7 @@ class StreamLSL(BaseStream):
     def __init__(
         self,
         bufsize: float,
+        *,
         name: Optional[str] = None,
         stype: Optional[str] = None,
         source_id: Optional[str] = None,
@@ -91,9 +93,15 @@ class StreamLSL(BaseStream):
         else:
             return f"<Stream: {status} | {desc}>"
 
+    @copy_doc(BaseStream.acquire)
+    def acquire(self) -> None:
+        super().acquire()
+        self._acquire()
+
     def connect(
         self,
         acquisition_delay: float = 0.001,
+        *,
         processing_flags: Optional[Union[str, Sequence[str]]] = None,
         timeout: Optional[float] = 2,
     ) -> StreamLSL:
@@ -103,7 +111,9 @@ class StreamLSL(BaseStream):
         ----------
         acquisition_delay : float
             Delay in seconds between 2 acquisition during which chunks of data are
-            pulled from the :class:`~mne_lsl.lsl.StreamInlet`.
+            pulled from the :class:`~mne_lsl.lsl.StreamInlet`. If ``0``, the automatic
+            acquisition in a background thread is disabled and the user must manually
+            call :meth:`~mne_lsl.stream.StreamLSL.acquire` to pull new samples.
         processing_flags : list of str | ``'all'`` | None
             Set the post-processing options. By default, post-processing is disabled.
             Any combination of the processing flags is valid. The available flags are:
@@ -197,8 +207,9 @@ class StreamLSL(BaseStream):
                 ceil(self._bufsize * self._inlet.sfreq), dtype=np.float64
             )
         self._picks_inlet = np.arange(0, self._inlet.n_channels)
-        # define the acquisition thread
-        self._create_acquisition_thread(0)
+        # submit the first acquisition job
+        if self._executor is not None:
+            self._executor.submit(self._acquire)
         return self
 
     def disconnect(self) -> StreamLSL:
@@ -212,22 +223,30 @@ class StreamLSL(BaseStream):
         super().disconnect()
         logger.debug("Calling inlet.close_stream() for %s", str(self))
         try:
-            self._inlet.__del__()
-        except Exception:
+            self._inlet._del()
+        except Exception:  # pragma: no cover
             pass
         self._reset_variables()  # also sets self._inlet = None
         return self
 
     def _acquire(self) -> None:
         """Update function pulling new samples in the buffer at a regular interval."""
-        if not getattr(self, "_inlet", None) or getattr(self, "_interrupt", False):
-            return  # stream disconnected/interrupted
+        if not getattr(self, "_inlet", None):  # pragma: no cover
+            logger.debug("Stream disconnected while '_acquire' is called.")
+            return  # stream disconnected
         try:
             # pull data
-            data, timestamps = self._inlet.pull_chunk(timeout=0.0)
+            data, timestamps = self._inlet.pull_chunk(
+                timeout=0.0, max_samples=self.n_buffer
+            )
             if timestamps.size == 0:
-                if not self._interrupt:
-                    self._create_acquisition_thread(self._acquisition_delay)
+                if self._executor is None:
+                    return  # either shutdown or manual acquisition
+                sleep(self._acquisition_delay)
+                try:
+                    self._executor.submit(self._acquire)
+                except RuntimeError:  # pragma: no cover
+                    pass  # shutdown
                 return  # interrupt early
 
             # process acquisition window
@@ -242,8 +261,13 @@ class StreamLSL(BaseStream):
             data = data[-self._timestamps.size :, self._picks_inlet]
             timestamps = timestamps[-self._timestamps.size :]
             if self._stype == "annotations" and np.count_nonzero(data) == 0:
-                if not self._interrupt:
-                    self._create_acquisition_thread(self._acquisition_delay)
+                if self._executor is None:
+                    return  # either shutdown or manual acquisition
+                sleep(self._acquisition_delay)
+                try:
+                    self._executor.submit(self._acquire)
+                except RuntimeError:  # pragma: no cover
+                    pass  # shutdown
                 return  # interrupt early
             if len(self._added_channels) != 0:
                 refs = np.zeros(
@@ -289,14 +313,19 @@ class StreamLSL(BaseStream):
                     "argument or consider retrieving new samples more often with "
                     "Stream.get_data()."
                 )
-        except Exception as error:
+        except Exception as error:  # pragma: no cover
             logger.exception(error)
             self._reset_variables()  # disconnects from the stream
             if os.getenv("MNE_LSL_RAISE_STREAM_ERRORS", "false").lower() == "true":
-                raise
+                raise error
         else:
-            if not self._interrupt:
-                self._create_acquisition_thread(self._acquisition_delay)
+            if self._executor is None:
+                return  # either shutdown or manual acquisition
+            try:
+                sleep(self._acquisition_delay)
+                self._executor.submit(self._acquire)
+            except RuntimeError:  # pragma: no cover
+                pass  # shutdown
 
     def _reset_variables(self) -> None:
         """Reset variables define after connection."""

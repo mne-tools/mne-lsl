@@ -18,6 +18,8 @@ from sphinx_gallery.sorting import FileNameSortKey
 
 import mne_lsl
 
+# -- path setup ------------------------------------------------------------------------
+sys.path.append(str(Path(__file__).parent / "_sphinxext"))
 
 # -- project information ---------------------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
@@ -58,6 +60,7 @@ extensions = [
     "sphinx_design",
     "sphinx_gallery.gen_gallery",
     "sphinx_issues",
+    # local extensions
     "sphinx_remove_toctrees",
 ]
 
@@ -120,7 +123,7 @@ autoclass_content = "class"
 
 # -- intersphinx -----------------------------------------------------------------------
 intersphinx_mapping = get_intersphinx_mapping(
-    only={"matplotlib", "mne", "numpy", "python", "scipy", "sklearn"}
+    packages={"matplotlib", "mne", "numpy", "python", "scipy", "sklearn"}
 )
 intersphinx_timeout = 5
 
@@ -264,8 +267,10 @@ if sys.platform.startswith("win"):
         compress_images = ("images", "thumbnails")
     except Exception:
         compress_images = ()
+    ignore_pattern = r"__init__\.py|00_player_separate_process"
 else:
     compress_images = ("images", "thumbnails")
+    ignore_pattern = r"__init__\.py"
 
 sphinx_gallery_conf = {
     "backreferences_dir": "generated/backreferences",
@@ -275,6 +280,7 @@ sphinx_gallery_conf = {
     "exclude_implicit_doc": {},  # set
     "filename_pattern": r"\d{2}_",
     "gallery_dirs": ["generated/tutorials", "generated/examples"],
+    "ignore_pattern": ignore_pattern,
     "line_numbers": False,
     "plot_gallery": "True",  # str, to enable overwrite from CLI without warning
     "reference_url": {f"{package}": None},

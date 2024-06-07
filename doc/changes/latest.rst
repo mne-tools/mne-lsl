@@ -16,11 +16,7 @@
 
 .. _latest:
 
-Version 1.4
+Version 1.5
 ===========
 
-- Fix handling of warnings through the logger (:pr:`243` by `Mathieu Scheltienne`_)
-- Fix handling of CLI arguments through :class:`~mne_lsl.player.PlayerLSL` entry-point (:pr:`246` by `Mathieu Scheltienne`_)AD
-- Change default download directory for the datasets from ``~/mne_data/MNE-LSL`` to ``~/mne_data/MNE-LSL-data`` to match other MNE datasets (:pr:`256` by `Mathieu Scheltienne`_)
-- Add example for a simple real-time QRS R-peak detector (:pr:`256` by `Mathieu Scheltienne`_)
-- Fix push operation by a :class:`~mne_lsl.player.PlayerLSL` with a ``chunk_size`` set to 1 to use :meth:`mne_lsl.lsl.StreamOutlet.push_sample` instead of :meth:`mne_lsl.lsl.StreamOutlet.push_chunk` (:pr:`257` by `Mathieu Scheltienne`_)
+- xxx

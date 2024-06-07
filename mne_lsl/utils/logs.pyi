@@ -11,7 +11,7 @@ from ._fixes import _WrapStdOut as _WrapStdOut
 
 _PACKAGE: str
 
-def _init_logger(*, verbose: bool | str | int | None = None) -> Logger:
+def _init_logger(*, verbose: bool | str | int | None = ...) -> Logger:
     """Initialize a logger.
 
     Assigns sys.stdout as the first handler of the logger.

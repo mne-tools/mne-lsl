@@ -27,8 +27,9 @@ import numpy as np
 from matplotlib import pyplot as plt
 from mne.io import read_raw_fif
 from mne.viz import set_browser_backend
-from mne_lsl.datasets import sample
 from scipy.signal import find_peaks
+
+from mne_lsl.datasets import sample
 
 raw = read_raw_fif(sample.data_path() / "sample-ecg-raw.fif", preload=True)
 raw
@@ -199,7 +200,9 @@ class Detector:
         ecg_distance: float | None = None,
     ) -> None:
         # create stream
-        self._stream = StreamLSL(bufsize, stream_name).connect(processing_flags="all")
+        self._stream = StreamLSL(bufsize, name=stream_name).connect(
+            processing_flags="all"
+        )
         self._stream.pick(ch_name)
         self._stream.set_channel_types({ch_name: "misc"}, on_unit_change="ignore")
         self._stream.notch_filter(50, picks=ch_name)
@@ -280,13 +283,16 @@ class Detector:
         ecg_distance: float | None = None,
     ) -> None:
         # create stream
-        self._stream = StreamLSL(bufsize, stream_name).connect(processing_flags="all")
+        self._stream = StreamLSL(bufsize, name=stream_name).connect(
+            processing_flags="all"
+        )
         self._stream.pick(ch_name)
         self._stream.set_channel_types({ch_name: "misc"}, on_unit_change="ignore")
         self._stream.notch_filter(50, picks=ch_name)
         self._stream.notch_filter(100, picks=ch_name)
         sleep(bufsize)  # prefill an entire buffer
         # peak detection settings
+        self._last_acq_time = None
         self._last_peak = None
         self._peak_candidates = None
         self._peak_candidates_count = None
@@ -300,6 +306,10 @@ class Detector:
             The timestamps of all detected peaks.
         """
         data, ts = self._stream.get_data()  # we have a single channel in the stream
+        if self._last_acq_time is None or self._last_acq_time != ts[-1]:
+            self._last_acq_time = ts[-1]
+        elif self._last_acq_time == ts[-1]:
+            return np.array([])  # nothing new to do
         data = data.squeeze()
         peaks, _ = find_peaks(
             data,
@@ -358,6 +368,11 @@ class Detector:
         self._peak_candidates_count = None
         return new_peak
 
+    @property
+    def stream(self):
+        """Stream object."""
+        return self._stream
+
 
 # %%
 # Performance
@@ -366,18 +381,21 @@ class Detector:
 # Let's now test this detector and measure the time it takes to detect a new peak
 # entering the buffer.
 
-from mne_lsl.player import PlayerLSL as Player
+from mne_lsl.player import PlayerLSL
 from mne_lsl.lsl import local_clock
 
-player = Player(fname=sample.data_path() / "sample-ecg-raw.fif", name="ecg-example")
+player = PlayerLSL(
+    fname=sample.data_path() / "sample-ecg-raw.fif", chunk_size=200, name="ecg-example"
+)
 player.start()
 detector = Detector(4, player.name, "AUX8")
-
 delays = list()
 while len(delays) <= 30:
     peak = detector.new_peak()
     if peak is not None:
         delays.append((local_clock() - peak) * 1e3)
+detector.stream.disconnect()
+player.stop()
 
 f, ax = plt.subplots(1, 1, layout="constrained")
 ax.set_title("Detection delay in ms")
@@ -386,16 +404,16 @@ plt.show()
 
 # %%
 # The detection delay displayed is erroneous due to the nature of the LSL stream, being
-# replayed from a local file with a :class:`~mne_lsl.player.PlayerLSL`. The default
-# behavior used by the :class:`~mne_lsl.stream.StreamLSL` sets ``chunk_size=64``, and
-# thus we are pushing 64 samples chunks at a time, corresponding to 62.5 ms at once.
+# replayed from a local file with a :class:`~mne_lsl.player.PlayerLSL`. The chunk size
+# of the :class:`~mne_lsl.player.PlayerLSL` was set to ``chunk_size=200``, and
+# thus we are pushing 200 samples chunks at a time, corresponding to 195 ms at once.
 #
 # This is obviously not compatible with a real-time detection scenario, but ensures that
 # the test and documentation builds successfully on github runners.
 #
-# In a real application, this detector detects R-peaks within 10 ms of their emission.
-# To approximate this result, you can add the argument ``chunk_size=1`` to the
-# ``Player`` object, which yields the following figure locally:
+# In a real application, this detector detects R-peaks within a couple of ms of their
+# emission. To approximate this result, you can run the ``Player`` object in a separate
+# process with the argument ``chunk_size=1``, which yields the following figure locally:
 #
 # .. image:: ../../_static/tutorials/qrs-detector-performance.png
 #     :align: center

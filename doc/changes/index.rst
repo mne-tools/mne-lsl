@@ -5,6 +5,7 @@ Changelog
     :titlesonly:
 
     latest.rst
+    1.4.rst
     1.3.rst
     1.2.rst
     1.1.rst

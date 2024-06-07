@@ -76,6 +76,17 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
     @abstractmethod
     def __repr__(self) -> str:
         """Representation of the instance."""
+
+    @abstractmethod
+    def acquire(self) -> None:
+        """Pull new samples in the buffer.
+
+        Notes
+        -----
+        This method is not needed if the stream was connected with an acquisition delay
+        different from ``0``. In this case, the acquisition is done automatically in a
+        background thread.
+        """
     _buffer: Incomplete
 
     def add_reference_channels(
@@ -171,6 +182,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         """
     _acquisition_delay: Incomplete
     _n_new_samples: int
+    _executor: Incomplete
 
     @abstractmethod
     def connect(self, acquisition_delay: float) -> BaseStream:
@@ -180,14 +192,15 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         ----------
         acquisition_delay : float
             Delay in seconds between 2 acquisition during which chunks of data are
-            pulled from the connected device.
+            pulled from the connected device. If ``0``, the automatic acquisition in a
+            background thread is disabled and the user must manually call the
+            acquisition method to pull new samples.
 
         Returns
         -------
         stream : instance of ``Stream``
             The stream instance modified in-place.
         """
-    _interrupt: bool
 
     @abstractmethod
     def disconnect(self) -> BaseStream:
@@ -740,16 +753,6 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
     def _check_connected_and_regular_sampling(self, name: str):
         """Check that the stream has a regular sampling rate."""
-    _acquisition_thread: Incomplete
-
-    def _create_acquisition_thread(self, delay: float) -> None:
-        """Create and start the daemonic acquisition thread.
-
-        Parameters
-        ----------
-        delay : float
-            Delay after which the thread will call the acquire function.
-        """
 
     def _interrupt_acquisition(self) -> Generator[None, None, None]:
         """Context manager interrupting the acquisition thread."""

@@ -1,5 +1,7 @@
 import argparse
 
+import numpy as np
+
 from mne_lsl.player import PlayerLSL
 
 
@@ -20,7 +22,14 @@ def run():
         type=int,
         metavar="int",
         help="number of samples pushed at once via LSL.",
-        default=16,
+        default=10,
+    )
+    parser.add_argument(
+        "--n_repeat",
+        type=int,
+        metavar="int",
+        help="number of times to repeat the file. By default, infinity.",
+        default=np.inf,
     )
     parser.add_argument(
         "-n",
@@ -39,6 +48,7 @@ def run():
     player = PlayerLSL(
         fname=args.fname,
         chunk_size=args.chunk_size,
+        n_repeat=args.n_repeat,
         name=args.name,
         annotations=args.annotations,
     )
