@@ -40,10 +40,10 @@ class EpochsStream:
     ----------
     stream : ``Stream``
         Stream object to connect to, from which the epochs are extracted. The stream
-        must ber regularly sampled.
+        must be regularly sampled.
     event_channels : str | list of str
         Channel(s) to monitor for incoming events. The event channel(s) must be part of
-        the connected Stream of of the ``event_stream`` if provided. See notes for
+        the connected Stream or of the ``event_stream`` if provided. See notes for
         details.
     event_stream : ``Stream`` | None
         Source from which events should be retrieved. If provided, event channels in the
@@ -57,7 +57,9 @@ class EpochsStream:
         it should map event names to event IDs. For example
         ``dict(auditory=1, visual=2)``.
     bufsize : int
-        Number of epochs to keep in the buffer.
+        Number of epochs to keep in the buffer. The buffer size is defined by this
+        number of epochs and by the duration of individual epochs, defined by the
+        argument ``tmin`` and ``tmax``.
     %(epochs_tmin_tmax)s
     %(baseline_epochs)s
     %(picks_base)s all channels.
@@ -93,8 +95,8 @@ class EpochsStream:
 
     .. note::
 
-        In the 2 last cases where ``event_stream`` is provided, all channels in the
-        connected ``stream`` are ignored.
+        In the 2 last cases where ``event_stream`` is provided, all ``'stim'`` channels
+        in the connected ``stream`` are ignored.
     """
 
     def __init__(
