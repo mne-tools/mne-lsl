@@ -1032,9 +1032,8 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         """Check that the stream is connected before calling the function 'name'."""
         if not self.connected:
             raise RuntimeError(
-                "The Stream attribute 'info' is None. An Info instance is required to "
-                f"use {type(self).__name__}.{name}. Please connect to the stream to "
-                "create the Info."
+                "The Stream is not connected. Please connected the Stream with the "
+                f"method stream.connect(...) to use {type(self).__name__}.{name}."
             )
 
     def _check_connected_and_regular_sampling(self, name: str) -> None:

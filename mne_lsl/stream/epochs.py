@@ -2,7 +2,6 @@ from __future__ import annotations  # c.f. PEP 563, PEP 649
 
 from concurrent.futures import ThreadPoolExecutor
 from math import ceil
-from threading import Timer
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -11,8 +10,10 @@ from mne.utils import check_version
 
 if check_version("mne", "1.6"):
     from mne._fiff.pick import _picks_to_idx
+
 elif check_version("mne", "1.5"):
     from mne.io.pick import _picks_to_idx
+
 else:
     from mne.io.pick import _picks_to_idx
 
@@ -130,6 +131,9 @@ class EpochsStream:
                 "creating an EpochsStream."
             )
         self._stream = stream
+        # mark the stream(s) as being epoched, which will prevent further channel
+        # modification and buffer size modifications.
+        self._stream._epochs.append(self)
         check_type(tmin, ("numeric",), "tmin")
         check_type(tmax, ("numeric",), "tmax")
         if tmax <= tmin:
@@ -161,6 +165,8 @@ class EpochsStream:
                 "an EpochsStream."
             )
         self._event_stream = event_stream
+        if self._event_stream is not None:
+            self._event_stream._epochs.append(self)
         event_channels = (
             [event_channels] if isinstance(event_channels, str) else event_channels
         )
@@ -193,18 +199,10 @@ class EpochsStream:
         _check_reject_tmin_tmax(reject_tmin, reject_tmax, tmin, tmax)
         self._reject_tmin, self._reject_tmax = reject_tmin, reject_tmax
         self._detrend = _ensure_detrend_int(detrend)
-        # mark the stream(s) as being epoched, which will prevent further channel
-        # modification and buffer size modifications.
-        self._stream._epochs.append(self)
-        if self._event_stream is not None:
-            self._event_stream._epochs.append(self)
+        # store picks which are then initialized in the connect method
+        self._picks_init = picks
         # define acquisition variables which need to be reset on disconnect
         self._reset_variables()
-        # initialize the epoch buffer
-        self._picks = _picks_to_idx(
-            self._stream._info, picks, "all", "bads", allow_empty=False
-        )
-        self._info = pick_info(self._stream._info, self._picks)
 
     def __del__(self) -> None:
         """Delete the epoch stream object."""
@@ -270,6 +268,10 @@ class EpochsStream:
         self._acquisition_delay = acquisition_delay
         assert self._n_new_epochs == 0  # sanity-check
         # create the buffer and start acquisition in a separate thread
+        self._picks = _picks_to_idx(
+            self._stream._info, self._picks_init, "all", "bads", allow_empty=False
+        )
+        self._info = pick_info(self._stream._info, self._picks)
         self._buffer = np.zeros(
             (
                 self._bufsize,
@@ -290,12 +292,18 @@ class EpochsStream:
         """Stop acquisition of epochs from the connected Stream."""
         if not self.connected:
             warn("The EpochsStream is already disconnected. Skipping.")
+            # just in case, let's look through the stream objects attached..
+            if self in self._stream._epochs:
+                self._stream._epochs.remove(self)
+            if self._event_stream is not None and self in self._event_stream._epochs:
+                self._event_stream._epochs.remove(self)
             return
         if self._executor is not None:
             self._executor.shutdown(wait=True, cancel_futures=True)
         self._reset_variables()
-        self._stream._epochs.remove(self)
-        if self._event_stream is not None:
+        if self in self._stream._epochs:
+            self._stream._epochs.remove(self)
+        if self._event_stream is not None and self in self._event_stream._epochs:
             self._event_stream._epochs.remove(self)
 
     def _acquire(self) -> None:
@@ -305,28 +313,19 @@ class EpochsStream:
         """Check that the epochs stream is connected before calling 'name'."""
         if not self.connected:
             raise RuntimeError(
-                "The EpochsStream is not started. Please start the EpochsStream to "
-                f"use {type(self).__name__}.{name}."
+                "The EpochsStream is not connected. Please connected the EpochsStream "
+                "with the method epochs.connect(...) to use "
+                f"{type(self).__name__}.{name}."
             )
-
-    def _create_acquisition_thread(self, delay: float) -> None:
-        """Create and start the daemonic acquisition thread.
-
-        Parameters
-        ----------
-        delay : float
-            Delay after which the thread will call the acquire function.
-        """
-        self._acquisition_thread = Timer(delay, self._acquire)
-        self._acquisition_thread.daemon = True
-        self._acquisition_thread.start()
 
     def _reset_variables(self):
         """Reset variables defined after connection."""
         self._acquisition_delay = None
         self._buffer = None
         self._executor = None
+        self._info = None
         self._n_new_epochs = 0
+        self._picks = None
 
     # ----------------------------------------------------------------------------------
     @property
@@ -338,6 +337,8 @@ class EpochsStream:
         attributes = (
             "_acquisition_delay",
             "_buffer",
+            "_info",
+            "_picks",
         )
         if all(getattr(self, attr, None) is None for attr in attributes):
             return False
@@ -352,6 +353,12 @@ class EpochsStream:
 
         :type: :class:`~mne.Info`
         """
+        if not self.connected:
+            raise RuntimeError(
+                "The EpochsStream information is parsed into an mne.Info object "
+                "upon connection. Please connect the EpochsStream to create the "
+                "mne.Info."
+            )
         return self._info
 
     @property
