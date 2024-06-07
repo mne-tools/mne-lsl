@@ -293,17 +293,25 @@ class EpochsStream:
         if not self.connected:
             warn("The EpochsStream is already disconnected. Skipping.")
             # just in case, let's look through the stream objects attached..
-            if self in self._stream._epochs:
+            if hasattr(self._stream, "_epochs") and self in self._stream._epochs:
                 self._stream._epochs.remove(self)
-            if self._event_stream is not None and self in self._event_stream._epochs:
+            if (
+                self._event_stream is not None
+                and hasattr(self._event_stream, "_epochs")
+                and self in self._event_stream._epochs
+            ):
                 self._event_stream._epochs.remove(self)
             return
-        if self._executor is not None:
+        if hasattr(self, "_executor") and self._executor is not None:
             self._executor.shutdown(wait=True, cancel_futures=True)
         self._reset_variables()
-        if self in self._stream._epochs:
+        if hasattr(self._stream, "_epochs") and self in self._stream._epochs:
             self._stream._epochs.remove(self)
-        if self._event_stream is not None and self in self._event_stream._epochs:
+        if (
+            self._event_stream is not None
+            and hasattr(self._event_stream, "_epochs")
+            and self in self._event_stream._epochs
+        ):
             self._event_stream._epochs.remove(self)
 
     def _acquire(self) -> None:

@@ -320,7 +320,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             The stream instance modified in-place.
         """
         self._check_connected(name="disconnect()")
-        if len(self._epochs) != 0:
+        if hasattr(self, "_epochs") and len(self._epochs) != 0:
             warn(
                 "The stream will be disconnected while EpochsStream were still "
                 "attached and acquiring. The EpochsStream will be forcefully "
@@ -328,7 +328,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             )
             for elt in self._epochs:
                 elt.disconnect()
-        if self._executor is not None:
+        if hasattr(self, "_executor") and self._executor is not None:
             self._executor.shutdown(wait=True, cancel_futures=True)
         # This method needs to close any inlet/network object and need to end with
         # self._reset_variables().
@@ -352,7 +352,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         self._check_connected_and_regular_sampling("del_filter()")
         if len(self._filters) == 0:
             raise RuntimeError("No filter to remove.")
-        if len(self.epochs) != 0:
+        if len(self._epochs) != 0:
             warn(
                 "The Stream is being epoched by an EpochsStream object. Altering the "
                 "filters will altern the filters in the future epochs."
