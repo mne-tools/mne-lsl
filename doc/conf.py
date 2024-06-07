@@ -169,6 +169,7 @@ numpydoc_xref_aliases = {
 numpydoc_xref_ignore = {
     "hex",
     "instance",
+    "length",
     "n_ch_groups",
     "n_channels",
     "n_picks",
