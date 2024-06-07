@@ -1,5 +1,6 @@
 from __future__ import annotations  # c.f. PEP 563, PEP 649
 
+from concurrent.futures import ThreadPoolExecutor
 from math import ceil
 from threading import Timer
 from typing import TYPE_CHECKING
@@ -60,6 +61,12 @@ class EpochsStream:
         Number of epochs to keep in the buffer. The buffer size is defined by this
         number of epochs and by the duration of individual epochs, defined by the
         argument ``tmin`` and ``tmax``.
+
+        .. note::
+
+            For a new epoch to be added to the buffer, the epoch must be fully
+            acquired, i.e. the last sample of the epoch must be received. Thus, an
+            epoch is acquired ``tmax`` seconds after the event onset.
     %(epochs_tmin_tmax)s
     %(baseline_epochs)s
     %(picks_base)s all channels.
@@ -186,18 +193,18 @@ class EpochsStream:
         _check_reject_tmin_tmax(reject_tmin, reject_tmax, tmin, tmax)
         self._reject_tmin, self._reject_tmax = reject_tmin, reject_tmax
         self._detrend = _ensure_detrend_int(detrend)
-        # initialize the epoch buffer
-        self._picks = _picks_to_idx(
-            self._stream._info, picks, "all", "bads", allow_empty=False
-        )
-        self._info = pick_info(self._stream._info, self._picks)
-        # define acquisition variables which need to be reset on disconnect
-        self._reset_variables()
         # mark the stream(s) as being epoched, which will prevent further channel
         # modification and buffer size modifications.
         self._stream._epochs.append(self)
         if self._event_stream is not None:
             self._event_stream._epochs.append(self)
+        # define acquisition variables which need to be reset on disconnect
+        self._reset_variables()
+        # initialize the epoch buffer
+        self._picks = _picks_to_idx(
+            self._stream._info, picks, "all", "bads", allow_empty=False
+        )
+        self._info = pick_info(self._stream._info, self._picks)
 
     def __del__(self) -> None:
         """Delete the epoch stream object."""
@@ -215,10 +222,10 @@ class EpochsStream:
             status = "OFF"
         return (
             f"<EpochsStream {status} (n: {self._bufsize} between ({self._tmin}, "
-            f"{self._tmax}) seconds> connected to\n\t{self._stream}"
+            f"{self._tmax}) seconds> connected to:\n\t{self._stream}"
         )
 
-    def connect(self, acquisition_delay: float = 0.01) -> EpochsStream:
+    def connect(self, acquisition_delay: float = 0.001) -> EpochsStream:
         """Start acquisition of epochs from the connected Stream.
 
         Parameters
@@ -227,13 +234,19 @@ class EpochsStream:
             Delay in seconds between 2 updates at which the event stream is queried for
             new events, and thus at which the epochs are updated.
 
+            .. note::
+
+                For a new epoch to be added to the buffer, the epoch must be fully
+                acquired, i.e. the last sample of the epoch must be received. Thus, an
+                epoch is acquired ``tmax`` seconds after the event onset.
+
         Returns
         -------
         epochs_stream : instance of EpochsStream
             The :class:`~mne_lsl.stream.EpochsStream` instance modified in-place.
         """
         if self.connected:
-            warn("The stream is already connected. Skipping.")
+            warn("The EpochsStream is already connected. Skipping.")
             return self
         if not self._stream.connected:
             raise RuntimeError(
@@ -251,7 +264,8 @@ class EpochsStream:
                 "The acquisition delay must be a positive number "
                 "defining the delay at which the epochs might be updated in seconds. "
                 "For instance, 0.2 corresponds to a query to the event source every "
-                f"200 ms. The provided {acquisition_delay} is invalid."
+                "200 ms. 0 corresponds to manual acquisition. The provided "
+                f"{acquisition_delay} is invalid."
             )
         self._acquisition_delay = acquisition_delay
         assert self._n_new_epochs == 0  # sanity-check
@@ -264,17 +278,21 @@ class EpochsStream:
             ),
             dtype=self._stream._buffer.dtype,
         )
-        self._create_acquisition_thread(0)
+        self._executor = (
+            ThreadPoolExecutor(max_workers=1) if self._acquisition_delay != 0 else None
+        )
+        # submit the first acquisition job
+        if self._executor is not None:
+            self._executor.submit(self._acquire)
         return self
 
     def disconnect(self) -> None:
         """Stop acquisition of epochs from the connected Stream."""
         if not self.connected:
-            warn("The stream is already disconnected. Skipping.")
+            warn("The EpochsStream is already disconnected. Skipping.")
             return
-        self._interrupt = True
-        while self._acquisition_thread.is_alive():
-            self._acquisition_thread.cancel()
+        if self._executor is not None:
+            self._executor.shutdown(wait=True, cancel_futures=True)
         self._reset_variables()
         self._stream._epochs.remove(self)
         if self._event_stream is not None:
@@ -305,10 +323,9 @@ class EpochsStream:
 
     def _reset_variables(self):
         """Reset variables defined after connection."""
-        self._acquisition_thread = None
         self._acquisition_delay = None
         self._buffer = None
-        self._interrupt = False
+        self._executor = None
         self._n_new_epochs = 0
 
     # ----------------------------------------------------------------------------------
@@ -320,7 +337,6 @@ class EpochsStream:
         """
         attributes = (
             "_acquisition_delay",
-            "_acquisition_thread",
             "_buffer",
         )
         if all(getattr(self, attr, None) is None for attr in attributes):
