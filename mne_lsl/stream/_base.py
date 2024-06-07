@@ -1170,11 +1170,6 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         return getattr(self._buffer, "dtype", None)
 
     @property
-    def epoched(self) -> bool:
-        """Whenether the stream is being epoched by a ``EpochsStream``."""
-        return self._epoched
-
-    @property
     def filters(self) -> list[StreamFilter]:
         """List of filters applied to the real-time Stream.
 
