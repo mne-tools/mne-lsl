@@ -91,7 +91,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         different from ``0``. In this case, the acquisition is done automatically in a
         background thread.
         """
-        self._check_connected(name="acquire")
+        self._check_connected("acquire")
         if (
             self._executor is not None and self._acquisition_delay == 0
         ):  # pragma: no cover
@@ -319,7 +319,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         stream : instance of ``Stream``
             The stream instance modified in-place.
         """
-        self._check_connected(name="disconnect()")
+        self._check_connected("disconnect()")
         if hasattr(self, "_epochs") and len(self._epochs) != 0:
             warn(
                 "The stream will be disconnected while EpochsStream were still "

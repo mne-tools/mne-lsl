@@ -314,7 +314,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         --------
         anonymize
         """
-        self._check_not_started(name=f"{type(self).__name__}.set_meas_date()")
+        self._check_not_started(f"{type(self).__name__}.set_meas_date()")
         warn(
             "Player.set_meas_date() is partially implemented and does not impact the "
             "stream information yet."

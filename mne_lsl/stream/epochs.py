@@ -223,6 +223,35 @@ class EpochsStream:
             f"{self._tmax}) seconds> connected to:\n\t{self._stream}"
         )
 
+    def acquire(self) -> None:
+        """Pull new epochs in the buffer.
+
+        This method is used to manually acquire new epochs in the buffer. If used, it is
+        up to the user to call this method at the desired frequency, else it might miss
+        some of the events and associated epochs.
+
+        Notes
+        -----
+        This method is not needed if the :class:`mne_lsl.stream.EpochsStream` was
+        connected with an acquisition delay different from ``0``. In this case, the
+        acquisition is done automatically in a background thread.
+        """
+        self._check_connected("acquire")
+        if (
+            self._executor is not None and self._acquisition_delay == 0
+        ):  # pragma: no cover
+            raise RuntimeError(
+                "The executor is not None despite the acquisition delay set to "
+                f"{self._acquisition_delay} seconds. This should not happen, please "
+                "contact the developers on GitHub."
+            )
+        elif self._executor is not None and self._acquisition_delay != 0:
+            raise RuntimeError(
+                "Acquisition is done automatically in a background thread. The method "
+                "epochs.acquire() should not be called."
+            )
+        self._acquire()
+
     def connect(self, acquisition_delay: float = 0.001) -> EpochsStream:
         """Start acquisition of epochs from the connected Stream.
 
