@@ -127,7 +127,11 @@ class StreamLSL(BaseStream):
               This option should not be enable if ``'dejitter'`` is not enabled.
         timeout : float | None
             Optional timeout (in seconds) of the operation. ``None`` disables the
-            timeout. The timeout value is applied once to every operation supporting it.
+            timeout. The timeout value is applied once to every operation supporting it,
+            in this case the resolution of the LSL streams with
+            :func:`~mne_lsl.lsl.resolve_streams`, the opening of the inlet with
+            :meth:`~mne_lsl.lsl.StreamInlet.open_stream` and the estimation of the
+            time correction with :meth:`~mne_lsl.lsl.StreamInlet.time_correction`.
 
         Returns
         -------
