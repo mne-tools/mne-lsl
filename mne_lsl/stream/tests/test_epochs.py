@@ -99,7 +99,7 @@ def test_check_reject_flat(info):
 
 
 def test_check_reject_tmin_tmax():
-    """Test validatin of rejection time windows."""
+    """Test validation of rejection time windows."""
     _check_reject_tmin_tmax(None, None, -0.2, 0.5)
     _check_reject_tmin_tmax(-0.2, 0.5, -0.2, 0.5)
     _check_reject_tmin_tmax(None, 0.5, -0.2, 0.5)
