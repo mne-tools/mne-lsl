@@ -51,6 +51,14 @@ class EpochsStream:
         Source from which events should be retrieved. If provided, event channels in the
         connected ``stream`` are ignored in favor of the event channels in this separate
         ``event_stream``. See notes for details.
+
+        .. note::
+
+            If a separate event stream is provided, time synchronization between the
+            connected stream and the event stream is very important. For
+            :class:`~mne_lsl.stream.StreamLSL` objects, provide
+            ``processing_flags='all'`` as argument during connection with
+            :meth:`~mne_lsl.stream.StreamLSL.connect`.
     event_id : int | str | dict
         The ID of the events to consider from the event source. The event source can be
         a channel from the connected Stream, in which case the event should be defined
