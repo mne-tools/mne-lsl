@@ -144,12 +144,12 @@ class EpochsStream:
         # make sure the stream buffer is long enough to store an entire epoch, which is
         # simpler than handling the case where the buffer is too short and we need to
         # concatenate chunks to form a single epoch.
-        if stream._bufsize < tmax - tmin:
+        if self._stream._bufsize < tmax - tmin:
             raise ValueError(
                 "The buffer size of the Stream must be at least as long as the epoch "
                 "duration (tmax - tmin)."
             )
-        elif stream._bufsize < (tmax - tmin) * 1.2:
+        elif self._stream._bufsize < (tmax - tmin) * 1.2:
             warn(
                 "The buffer size of the Stream is longer than the epoch duration, but "
                 "not by at least 20%. It is recommended to have a buffer size at least "
@@ -171,18 +171,7 @@ class EpochsStream:
             [event_channels] if isinstance(event_channels, str) else event_channels
         )
         check_type(event_channels, (list,), "event_channels")
-        for elt in event_channels:
-            check_type(elt, (str,), "event_channels")
-            if self._event_stream is None and elt not in stream.ch_names:
-                raise ValueError(
-                    "The event channel(s) must be part of the connected Stream if an "
-                    f"'event_stream' is not provided. '{elt}' was not found."
-                )
-            elif self._event_stream is not None and elt not in event_stream.ch_names:
-                raise ValueError(
-                    "If 'event_stream' is provided, the event channel(s) must be part "
-                    f"of 'event_stream'. '{elt}' was not found."
-                )
+        _check_event_channels(event_channels, stream, event_stream)
         self._event_channels = event_channels
         # check and store the epochs general settings
         self._bufsize = ensure_int(bufsize, "bufsize")
@@ -194,7 +183,7 @@ class EpochsStream:
         self._event_id = _ensure_event_id_dict(event_id)
         _check_baseline(baseline)
         self._baseline = baseline
-        _check_reject_flat(reject, flat, stream.info)
+        _check_reject_flat(reject, flat, self._stream.info)
         self._reject, self._flat = reject, flat
         _check_reject_tmin_tmax(reject_tmin, reject_tmax, tmin, tmax)
         self._reject_tmin, self._reject_tmax = reject_tmin, reject_tmax
@@ -345,6 +334,13 @@ class EpochsStream:
 
     def _acquire(self) -> None:
         """Update function looking for new epochs."""
+        # get data from the stream, pick by event_channels.
+        # the event channels should be in the stream since we check for inclusion and
+        # stream buffer modification are prohibited while epoched.
+        if self._event_stream is None:
+            data, ts = self._stream.get_data(picks=self._event_channels)
+        else:
+            data, ts = self._event_stream.get_data(picks=self._event_channels)
 
     def _check_connected(self, name: str) -> None:
         """Check that the epochs stream is connected before calling 'name'."""
@@ -408,6 +404,38 @@ class EpochsStream:
         """
         self._check_connected("n_new_epochs")
         return self._n_new_epochs
+
+
+def _check_event_channels(
+    event_channels: Union[str, list[str]],
+    stream: BaseStream,
+    event_stream: Optional[BaseStream],
+) -> None:
+    """Check that the event channels are valid."""
+    for elt in event_channels:
+        check_type(elt, (str,), "event_channels")
+        if event_stream is None:
+            if elt not in stream.ch_names:
+                raise ValueError(
+                    "The event channel(s) must be part of the connected Stream if "
+                    f"an 'event_stream' is not provided. '{elt}' was not found."
+                )
+            if stream.get_channel_types(picks=elt) != "stim":
+                raise ValueError("The event channel '{elt}' should be of type 'stim'.")
+        elif event_stream is not None:
+            if elt not in event_stream.ch_names:
+                raise ValueError(
+                    "If 'event_stream' is provided, the event channel(s) must be "
+                    f"part of 'event_stream'. '{elt}' was not found."
+                )
+            if (
+                event_stream.info["sfreq"] != 0
+                and event_stream.get_channel_types(picks=elt) != "stim"
+            ):
+                raise ValueError(
+                    "The event channel '{elt}' in the event stream should be of type "
+                    "'stim'."
+                )
 
 
 def _ensure_event_id_dict(
