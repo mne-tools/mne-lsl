@@ -341,6 +341,10 @@ class EpochsStream:
             data, ts = self._stream.get_data(picks=self._event_channels)
         else:
             data, ts = self._event_stream.get_data(picks=self._event_channels)
+        # check if we actually have new data
+        if self._last_ts is not None and ts[-1] == self._last_ts:
+            return
+        self._last_ts = ts[-1]
 
     def _check_connected(self, name: str) -> None:
         """Check that the epochs stream is connected before calling 'name'."""
@@ -357,6 +361,7 @@ class EpochsStream:
         self._buffer = None
         self._executor = None
         self._info = None
+        self._last_ts = None
         self._n_new_epochs = 0
         self._picks = None
 
@@ -367,6 +372,7 @@ class EpochsStream:
 
         :type: :class:`bool`
         """
+        # does not include '_last_ts' as it could be None on the first acquisition call
         attributes = (
             "_acquisition_delay",
             "_buffer",
