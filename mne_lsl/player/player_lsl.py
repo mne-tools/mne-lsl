@@ -88,7 +88,7 @@ class PlayerLSL(BasePlayer):
     def __init__(
         self,
         fname: Union[str, Path],
-        chunk_size: int = 64,
+        chunk_size: int = 10,
         n_repeat: Union[int, float] = np.inf,
         *,
         name: Optional[str] = None,
