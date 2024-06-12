@@ -94,7 +94,7 @@ class PlayerLSL(BasePlayer):
     def __init__(
         self,
         fname: str | Path,
-        chunk_size: int = 64,
+        chunk_size: int = 10,
         n_repeat: int | float = ...,
         *,
         name: str | None = None,
