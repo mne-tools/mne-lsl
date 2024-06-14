@@ -325,7 +325,7 @@ class Detector:
         """
         ts_peaks = self.detect_peaks()
         if ts_peaks.size == 0:
-            return None  # unlikely to happen, but let's exit early if we have nothing
+            return None
         if self._peak_candidates is None and self._peak_candidates_count is None:
             self._peak_candidates = list(ts_peaks)
             self._peak_candidates_count = [1] * ts_peaks.size
