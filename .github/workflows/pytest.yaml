@@ -124,7 +124,7 @@ jobs:
           python -m pip install --progress-bar off --upgrade pip setuptools
           python -m pip install --progress-bar off .[test]
           python -m pip uninstall numpy mne -y
-          python -m pip install --progress-bar off numpy<2
+          python -m pip install --progress-bar off "numpy<2"
           python -m pip install --progress-bar off mne==${{ matrix.mne-version }}
       - name: Display system information
         run: mne_lsl-sys_info --developer
