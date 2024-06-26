@@ -23,6 +23,7 @@ classifiers = [
   'Topic :: Software Development',
 ]
 dependencies = [
+  'click>=8.1',
   'distro; sys_platform == "linux"',
   'mne>=1.4.2',
   'numpy>=1.21,<3',
@@ -93,7 +94,7 @@ style = [
 test = ['pyqt5', 'pytest-cov', 'pytest-randomly', 'pytest-timeout', 'pytest>=8.0']
 
 [project.scripts]
-mne_lsl-sys_info = 'mne_lsl.commands.sys_info:run'
+mne-lsl = 'mne_lsl.commands.main:run'
 mne_lsl_player = 'mne_lsl.commands.mne_lsl_player:run'
 mne_lsl_stream_viewer = 'mne_lsl.commands.mne_lsl_stream_viewer:run'
 
@@ -125,7 +126,6 @@ omit = [
   '**/__init__.py',
   '**/mne_lsl/_typing.py',
   '**/mne_lsl/_version.py',
-  '**/mne_lsl/commands/*',
   '**/mne_lsl/conftest.py',
   '**/mne_lsl/utils/_fixes.py',
   '**/mne_lsl/utils/_tests.py',

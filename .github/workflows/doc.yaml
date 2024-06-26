@@ -31,7 +31,7 @@ jobs:
           python -m pip install --quiet uv
           uv pip install --quiet --system .[doc]
       - name: Display system information
-        run: mne_lsl-sys_info --developer
+        run: mne-lsl sys-info --developer
       - name: Get dataset
         uses: ./.github/actions/get-testing-dataset
         with:
