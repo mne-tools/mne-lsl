@@ -64,11 +64,10 @@ def _player_mock_lsl_stream(
 
 
 @pytest.fixture()
-def mock_lsl_stream(fname, request):
+def mock_lsl_stream(fname, request, chunk_size):
     """Create a mock LSL stream for testing."""
     manager = mp.Manager()
     status = manager.Value("i", 0)
-    chunk_size = 200
     info = manager.dict()
     name = f"P_{request.node.name}"
     process = mp.Process(
@@ -533,11 +532,10 @@ def _player_mock_lsl_stream_int(
 
 
 @pytest.fixture()
-def mock_lsl_stream_int(request):
+def mock_lsl_stream_int(request, chunk_size):
     """Create a mock LSL stream streaming the channel number continuously."""
     manager = mp.Manager()
     status = manager.Value("i", 0)
-    chunk_size = 200
     info = manager.dict()
     name = f"P_{request.node.name}"
     process = mp.Process(
@@ -694,13 +692,13 @@ def test_stream_irregularly_sampled(close_io):
 
 
 def _player_mock_lsl_stream_annotations(
-    raw: BaseRaw, name: str, status: mp.managers.ProxyValue
+    raw: BaseRaw, name: str, chunk_size: int, status: mp.managers.ProxyValue
 ) -> None:
     """Player for the '_mock_lsl_stream_annotations' fixture."""
     # nest the PlayerLSL import to first write the temporary LSL configuration file
     from mne_lsl.player import PlayerLSL
 
-    player = PlayerLSL(raw, chunk_size=200, name=name)
+    player = PlayerLSL(raw, chunk_size=chunk_size, name=name)
     player.start()
     status.value = 1
     while status.value:
@@ -709,13 +707,13 @@ def _player_mock_lsl_stream_annotations(
 
 
 @pytest.fixture()
-def _mock_lsl_stream_annotations(raw_annotations, request):
+def _mock_lsl_stream_annotations(raw_annotations, request, chunk_size):
     """Create a mock LSL stream streaming the channel number continuously."""
     manager = mp.Manager()
     status = manager.Value("i", 0)
     process = mp.Process(
         target=_player_mock_lsl_stream_annotations,
-        args=(raw_annotations, f"P_{request.node.name}", status),
+        args=(raw_annotations, f"P_{request.node.name}", chunk_size, status),
     )
     process.start()
     yield
@@ -806,6 +804,7 @@ def raw_sinusoids() -> BaseRaw:
 def _player_mock_lsl_stream_sinusoids(
     raw: BaseRaw,
     name: str,
+    chunk_size: int,
     status: mp.managers.ValueProxy,
     ch_names: mp.managers.ListProxy,
 ) -> None:
@@ -813,7 +812,7 @@ def _player_mock_lsl_stream_sinusoids(
     # nest the PlayerLSL import to first write the temporary LSL configuration file
     from mne_lsl.player import PlayerLSL
 
-    player = PlayerLSL(raw, chunk_size=200, name=name)
+    player = PlayerLSL(raw, chunk_size=chunk_size, name=name)
     player.start()
     ch_names.extend(player.info["ch_names"])
     status.value = 1
@@ -823,7 +822,7 @@ def _player_mock_lsl_stream_sinusoids(
 
 
 @pytest.fixture()
-def mock_lsl_stream_sinusoids(raw_sinusoids, request):
+def mock_lsl_stream_sinusoids(raw_sinusoids, request, chunk_size):
     """Create a mock LSL stream streaming sinusoids."""
     manager = mp.Manager()
     ch_names = manager.list()
@@ -831,7 +830,7 @@ def mock_lsl_stream_sinusoids(raw_sinusoids, request):
     name = f"P_{request.node.name}"
     process = mp.Process(
         target=_player_mock_lsl_stream_sinusoids,
-        args=(raw_sinusoids, name, status, ch_names),
+        args=(raw_sinusoids, name, chunk_size, status, ch_names),
     )
     process.start()
     while status.value != 1:
