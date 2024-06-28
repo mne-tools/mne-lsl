@@ -4,7 +4,7 @@ from ..stream_viewer import StreamViewer
 from ..utils.logs import warn
 
 
-def run():
+def run() -> None:  # pragma: no cover
     """Entrypoint for mne_lsl_stream_viewer usage."""
     parser = argparse.ArgumentParser(
         prog="MNE-LSL StreamViewer",

@@ -48,7 +48,7 @@ def run(
     name: str,
     annotations: bool,
     verbose: str,
-) -> None:
+) -> None:  # pragma: no cover
     """Run a Player."""
     set_log_level(verbose)
     if n_repeat is None:

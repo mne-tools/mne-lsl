@@ -6,7 +6,7 @@ from ..player import PlayerLSL
 from ..utils.logs import warn
 
 
-def run():
+def run() -> None:  # pragma: no cover
     """Entrypoint for mne_lsl_player usage."""
     parser = argparse.ArgumentParser(
         prog="MNE-LSL Player",

@@ -20,7 +20,7 @@ from .. import set_log_level
     default="INFO",
     show_default=True,
 )
-def run(stream: str, verbose: str) -> None:
+def run(stream: str, verbose: str) -> None:  # pragma: no cover
     """Run the StreamViewer."""
     from ..stream_viewer import StreamViewer
 
