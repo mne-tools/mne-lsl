@@ -27,7 +27,6 @@ from ..player import PlayerLSL
 @click.option(
     "-n",
     "--name",
-    prompt="LSL stream name",
     help="Name of the stream to emit.",
     type=str,
     default="MNE-LSL-Player",

@@ -9,7 +9,6 @@ from .. import set_log_level
 @click.option(
     "-s",
     "--stream",
-    prompt="LSL stream name",
     help="Name of the stream to plot.",
     type=str,
 )
