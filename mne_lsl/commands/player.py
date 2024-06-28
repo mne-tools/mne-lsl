@@ -13,16 +13,11 @@ from ..player import PlayerLSL
 @click.argument("fname", type=click.Path(exists=True, dir_okay=False, path_type=Path))
 @click.option(
     "-c",
-    "--chunk_size",
+    "--chunk-size",
     help="Number of samples pushed at once via LSL.",
     type=int,
     default=10,
     show_default=True,
-)
-@click.option(
-    "--n_repeat",
-    help="Number of times to repeat the file.",
-    type=int,
 )
 @click.option(
     "-n",
@@ -43,19 +38,16 @@ from ..player import PlayerLSL
 def run(
     fname: Path,
     chunk_size: int,
-    n_repeat: int,
     name: str,
     annotations: bool,
     verbose: str,
 ) -> None:  # pragma: no cover
     """Run a Player to mock a real-time stream."""
     set_log_level(verbose)
-    if n_repeat is None:
-        n_repeat = np.inf
     player = PlayerLSL(
         fname=fname,
         chunk_size=chunk_size,
-        n_repeat=n_repeat,
+        n_repeat=np.inf,
         name=name,
         annotations=annotations,
     )
