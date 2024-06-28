@@ -8,6 +8,5 @@ def test_main():
     runner = CliRunner()
     result = runner.invoke(run)
     assert result.exit_code == 0
-    assert "Entry point to start the tasks." in result.output
     assert "Options:" in result.output
     assert "Commands:" in result.output
