@@ -141,3 +141,9 @@ def raw_annotations(raw: BaseRaw) -> BaseRaw:
     )
     raw.set_annotations(annotations)
     return raw
+
+
+@pytest.fixture(scope="session")
+def chunk_size() -> int:
+    """Return the chunk size for testing."""
+    return 200

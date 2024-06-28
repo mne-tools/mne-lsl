@@ -19,10 +19,10 @@ from mne_lsl.stream import StreamLSL as Stream
 from mne_lsl.utils._tests import match_stream_and_raw_data
 
 
-def test_player(fname, raw, close_io):
+def test_player(fname, raw, close_io, chunk_size):
     """Test a working and valid player."""
     name = "Player-test_player"
-    player = Player(fname, chunk_size=200, name=name)
+    player = Player(fname, chunk_size=chunk_size, name=name)
     assert "OFF" in player.__repr__()
     streams = resolve_streams(timeout=0.1)
     assert len(streams) == 0
@@ -72,12 +72,12 @@ def test_player(fname, raw, close_io):
     player.stop()
 
 
-def test_player_context_manager(fname):
+def test_player_context_manager(fname, chunk_size):
     """Test a working and valid player as context manager."""
     name = "Player-test_player_context_manager"
     streams = resolve_streams(timeout=0.1)
     assert len(streams) == 0
-    with Player(fname, chunk_size=200, name=name):
+    with Player(fname, chunk_size=chunk_size, name=name):
         streams = resolve_streams(timeout=2)
         assert len(streams) == 1
         assert streams[0].name == name
@@ -85,12 +85,12 @@ def test_player_context_manager(fname):
     assert len(streams) == 0
 
 
-def test_player_context_manager_raw(raw):
+def test_player_context_manager_raw(raw, chunk_size):
     """Test a working and valid player as context manager from a raw object."""
     name = "Player-test_player_context_manager_raw"
     streams = resolve_streams(timeout=0.1)
     assert len(streams) == 0
-    with Player(raw, chunk_size=200, name=name) as player:
+    with Player(raw, chunk_size=chunk_size, name=name) as player:
         streams = resolve_streams(timeout=2)
         assert len(streams) == 1
         assert streams[0].name == name
@@ -99,20 +99,20 @@ def test_player_context_manager_raw(raw):
     assert len(streams) == 0
 
     with pytest.warns(RuntimeWarning, match="raw file has no annotations"):
-        with Player(raw, chunk_size=200, name=name, annotations=True) as player:
+        with Player(raw, chunk_size=chunk_size, name=name, annotations=True) as player:
             streams = resolve_streams()
             assert len(streams) == 1
             assert streams[0].name == name
             assert player.info["ch_names"] == raw.info["ch_names"]
 
 
-def test_player_context_manager_raw_annotations(raw_annotations):
+def test_player_context_manager_raw_annotations(raw_annotations, chunk_size):
     """Test a working player as context manager from a raw object with annotations."""
     name = "Player-test_player_context_manager_raw"
     streams = resolve_streams(timeout=0.1)
     assert len(streams) == 0
     with Player(
-        raw_annotations, chunk_size=200, name=name, annotations=False
+        raw_annotations, chunk_size=chunk_size, name=name, annotations=False
     ) as player:
         assert player.running
         streams = resolve_streams(timeout=2)
@@ -122,7 +122,7 @@ def test_player_context_manager_raw_annotations(raw_annotations):
     streams = resolve_streams(timeout=0.1)
     assert len(streams) == 0
 
-    with Player(raw_annotations, chunk_size=200, name=name) as player:
+    with Player(raw_annotations, chunk_size=chunk_size, name=name) as player:
         assert player.running
         streams = resolve_streams(timeout=2)
         assert len(streams) == 2
@@ -147,9 +147,11 @@ def test_player_invalid_arguments(fname):
         Player(fname, name="101", chunk_size=-101)
 
 
-def test_player_stop_invalid(fname):
+def test_player_stop_invalid(fname, chunk_size):
     """Test stopping a player that is not started."""
-    player = Player(fname, chunk_size=200, name="Player-test_stop_player_invalid")
+    player = Player(
+        fname, chunk_size=chunk_size, name="Player-test_stop_player_invalid"
+    )
     with pytest.raises(RuntimeError, match="The player is not started"):
         player.stop()
     player.start()
@@ -167,12 +169,14 @@ def _create_inlet(name: str) -> StreamInlet:
 
 
 @pytest.fixture()
-def mock_lsl_stream(fname: Path, request):
+def mock_lsl_stream(fname: Path, request, chunk_size):
     """Create a mock LSL stream for testing."""
     # nest the PlayerLSL import to first write the temporary LSL configuration file
     from mne_lsl.player import PlayerLSL  # noqa: E402
 
-    with PlayerLSL(fname, name=f"P_{request.node.name}", chunk_size=200) as player:
+    with PlayerLSL(
+        fname, name=f"P_{request.node.name}", chunk_size=chunk_size
+    ) as player:
         yield player
 
 
@@ -297,10 +301,10 @@ def test_player_set_channel_types(mock_lsl_stream, raw, close_io):
     )
 
 
-def test_player_anonymize(fname):
+def test_player_anonymize(fname, chunk_size):
     """Test anonymization."""
     name = "Player-test_player_anonymize"
-    player = Player(fname, chunk_size=200, name=name)
+    player = Player(fname, chunk_size=chunk_size, name=name)
     assert player.name == name
     assert player.fname == fname
     player.info["subject_info"] = dict(id=101, first_name="Mathieu", sex=1)
@@ -314,10 +318,10 @@ def test_player_anonymize(fname):
     player.stop()
 
 
-def test_player_set_meas_date(fname):
+def test_player_set_meas_date(fname, chunk_size):
     """Test player measurement date."""
     name = "Player-test_player_set_meas_date"
-    player = Player(fname, chunk_size=200, name=name)
+    player = Player(fname, chunk_size=chunk_size, name=name)
     assert player.name == name
     assert player.fname == fname
     assert player.info["meas_date"] is None
@@ -333,11 +337,11 @@ def test_player_set_meas_date(fname):
     player.stop()
 
 
-def test_player_annotations(raw_annotations, close_io):
+def test_player_annotations(raw_annotations, close_io, chunk_size):
     """Test player with annotations."""
     name = "Player-test_player_annotations"
     annotations = sorted(set(raw_annotations.annotations.description))
-    player = Player(raw_annotations, chunk_size=200, name=name)
+    player = Player(raw_annotations, chunk_size=chunk_size, name=name)
     assert f"Player: {name}" in repr(player)
     assert player.name == name
     assert player.fname == Path(raw_annotations.filenames[0])
@@ -398,10 +402,10 @@ def test_player_annotations(raw_annotations, close_io):
     player.stop()
 
 
-def test_player_n_repeat(raw):
+def test_player_n_repeat(raw, chunk_size):
     """Test argument 'n_repeat'."""
     player = Player(
-        raw, chunk_size=200, n_repeat=1, name="Player-test_player_n_repeat-1"
+        raw, chunk_size=chunk_size, n_repeat=1, name="Player-test_player_n_repeat-1"
     )
     player.start()
     time.sleep((raw.times.size / raw.info["sfreq"]) * 1.8)
@@ -411,7 +415,7 @@ def test_player_n_repeat(raw):
     with pytest.raises(RuntimeError, match="player is not started."):
         player.stop()
     player = Player(
-        raw, chunk_size=200, n_repeat=4, name="Player-test_player_n_repeat-2"
+        raw, chunk_size=chunk_size, n_repeat=4, name="Player-test_player_n_repeat-2"
     )
     assert player.n_repeat == 4
     player.start()

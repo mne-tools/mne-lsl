@@ -35,7 +35,7 @@ jobs:
           python -m pip install --quiet uv
           uv pip install --quiet --system .[test]
       - name: Display system information
-        run: mne_lsl-sys_info --developer
+        run: mne-lsl sys-info --developer
       - name: Get testing dataset
         uses: ./.github/actions/get-testing-dataset
       - name: Run pytest
@@ -81,7 +81,7 @@ jobs:
           uv pip install --quiet --system --upgrade --prerelease allow --only-binary :all: -i https://pypi.anaconda.org/scientific-python-nightly-wheels/simple --no-deps matplotlib
           uv pip install --quiet --system --upgrade --prerelease allow --only-binary :all: -i https://pypi.anaconda.org/scientific-python-nightly-wheels/simple numpy scipy
       - name: Display system information
-        run: mne_lsl-sys_info --developer
+        run: mne-lsl sys-info --developer
       - name: Get testing dataset
         uses: ./.github/actions/get-testing-dataset
       - name: Run pytest
@@ -127,7 +127,7 @@ jobs:
           uv pip install --quiet --system "numpy<2"
           uv pip install --quiet --system mne==${{ matrix.mne-version }}
       - name: Display system information
-        run: mne_lsl-sys_info --developer
+        run: mne-lsl sys-info --developer
       - name: Get testing dataset
         uses: ./.github/actions/get-testing-dataset
       - name: Run pytest

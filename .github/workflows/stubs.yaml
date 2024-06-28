@@ -29,7 +29,7 @@ jobs:
           python -m pip install --quiet uv
           uv pip install --quiet --system -e .[stubs]
       - name: Display system information
-        run: mne_lsl-sys_info --developer
+        run: mne-lsl sys-info --developer
       - name: Generate stub files
         run: python tools/stubgen.py
       - name: Push stub files
