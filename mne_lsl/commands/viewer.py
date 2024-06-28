@@ -21,7 +21,7 @@ from .. import set_log_level
     show_default=True,
 )
 def run(stream: str, verbose: str) -> None:  # pragma: no cover
-    """Run the StreamViewer."""
+    """Run the legacy StreamViewer to inspect an LSL stream."""
     from ..stream_viewer import StreamViewer
 
     set_log_level(verbose)

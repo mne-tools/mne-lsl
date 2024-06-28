@@ -12,5 +12,5 @@ from .. import sys_info
     is_flag=True,
 )
 def run(developer: bool) -> None:
-    """Run sys_info() command."""
+    """Get the system information."""
     sys_info(developer=developer)

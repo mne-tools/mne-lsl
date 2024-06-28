@@ -9,7 +9,7 @@ from .. import set_log_level
 from ..player import PlayerLSL
 
 
-@click.command(name="viewer")
+@click.command(name="player")
 @click.argument("fname", type=click.Path(exists=True, dir_okay=False, path_type=Path))
 @click.option(
     "-c",
@@ -49,7 +49,7 @@ def run(
     annotations: bool,
     verbose: str,
 ) -> None:  # pragma: no cover
-    """Run a Player."""
+    """Run a Player to mock a real-time stream."""
     set_log_level(verbose)
     if n_repeat is None:
         n_repeat = np.inf
