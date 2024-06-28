@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import time
 from pathlib import Path
 
 import click
@@ -20,6 +21,11 @@ from ..player import PlayerLSL
     show_default=True,
 )
 @click.option(
+    "--n-repeat",
+    help="Number of times to repeat the file.",
+    type=int,
+)
+@click.option(
     "-n",
     "--name",
     help="Name of the stream to emit.",
@@ -38,19 +44,26 @@ from ..player import PlayerLSL
 def run(
     fname: Path,
     chunk_size: int,
+    n_repeat: int | None,
     name: str,
     annotations: bool,
     verbose: str,
 ) -> None:  # pragma: no cover
     """Run a Player to mock a real-time stream."""
     set_log_level(verbose)
+    if n_repeat is None:
+        n_repeat = np.inf
     player = PlayerLSL(
         fname=fname,
         chunk_size=chunk_size,
-        n_repeat=np.inf,
+        n_repeat=n_repeat,
         name=name,
         annotations=annotations,
     )
     player.start()
-    input(">> Press ENTER to stop replaying data \n")
-    player.stop()
+    if n_repeat == np.inf:
+        input(">> Press ENTER to stop replaying data \n")
+        player.stop()
+    else:
+        while player.running:
+            time.sleep(1)
