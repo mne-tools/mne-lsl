@@ -3,7 +3,6 @@ from __future__ import annotations
 import click
 
 from .. import set_log_level
-from ..stream_viewer import StreamViewer
 
 
 @click.command(name="viewer")
@@ -23,6 +22,8 @@ from ..stream_viewer import StreamViewer
 )
 def run(stream: str, verbose: str) -> None:
     """Run the StreamViewer."""
+    from ..stream_viewer import StreamViewer
+
     set_log_level(verbose)
     stream_viewer = StreamViewer(stream)
     stream_viewer.start()
