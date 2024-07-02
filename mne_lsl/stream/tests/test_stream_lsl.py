@@ -1047,6 +1047,31 @@ def test_stream_get_data_info_invalid():
         stream.get_data()
 
 
+def test_stream_lsl_epoched(mock_lsl_stream_sinusoids):
+    """Test that an epoched Stream will not let you modify the buffer of channels."""
+    stream = Stream(bufsize=2.0, name=mock_lsl_stream_sinusoids.name)
+    assert len(stream._epochs) == 0
+    stream.connect()
+    assert len(stream._epochs) == 0
+    stream._epochs.append("MockStreamEpochs")
+    assert len(stream._epochs) == 1
+    with pytest.raises(RuntimeError, match="can not be used on a stream being epoched"):
+        stream.pick(0)
+    with pytest.raises(RuntimeError, match="can not be used on a stream being epoched"):
+        stream.drop_channels(stream.ch_names[0])
+    with pytest.raises(RuntimeError, match="can not be used on a stream being epoched"):
+        stream.rename_channels({stream.ch_names[0]: stream.ch_names[0] + "101"})
+    with pytest.raises(RuntimeError, match="can not be used on a stream being epoched"):
+        stream.set_channel_types({stream.ch_names[0]: "misc"})
+    with pytest.raises(RuntimeError, match="can not be used on a stream being epoched"):
+        stream.set_channel_units({stream.ch_names[0]: "mV"})
+    with pytest.raises(RuntimeError, match="can not be used on a stream being epoched"):
+        stream.add_reference_channels("CPz")
+    with pytest.raises(RuntimeError, match="can not be used on a stream being epoched"):
+        stream.set_eeg_reference("average")
+    stream._epochs = []
+
+
 def test_manual_acquisition(mock_lsl_stream):
     """Test manual acquisition."""
     stream = Stream(bufsize=2.0, name=mock_lsl_stream.name).connect(acquisition_delay=0)

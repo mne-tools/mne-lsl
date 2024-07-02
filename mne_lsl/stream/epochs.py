@@ -1,0 +1,599 @@
+from __future__ import annotations  # c.f. PEP 563, PEP 649
+
+from concurrent.futures import ThreadPoolExecutor
+from math import ceil
+from typing import TYPE_CHECKING
+
+import numpy as np
+from mne import pick_info
+from mne.utils import check_version
+
+if check_version("mne", "1.6"):
+    from mne._fiff.pick import _picks_to_idx
+
+elif check_version("mne", "1.5"):
+    from mne.io.pick import _picks_to_idx
+
+else:
+    from mne.io.pick import _picks_to_idx
+
+from ..utils._checks import check_type, ensure_int
+from ..utils._docs import fill_doc
+from ..utils.logs import logger, warn
+from ._base import BaseStream
+
+if TYPE_CHECKING:
+    from typing import Optional, Union
+
+    from mne import Info
+
+    from .._typing import ScalarIntArray
+
+
+@fill_doc
+class EpochsStream:
+    """Stream object representing a single real-time stream of epochs.
+
+    Note that a stream of epochs is necessarily connected to a regularly sampled stream
+    of continuous data, from which epochs are extracted depending on an internal event
+    channel or to an external event stream.
+
+    Parameters
+    ----------
+    stream : ``Stream``
+        Stream object to connect to, from which the epochs are extracted. The stream
+        must be regularly sampled.
+    event_channels : str | list of str
+        Channel(s) to monitor for incoming events. The event channel(s) must be part of
+        the connected Stream or of the ``event_stream`` if provided. See notes for
+        details.
+    event_stream : ``Stream`` | None
+        Source from which events should be retrieved. If provided, event channels in the
+        connected ``stream`` are ignored in favor of the event channels in this separate
+        ``event_stream``. See notes for details.
+
+        .. note::
+
+            If a separate event stream is provided, time synchronization between the
+            connected stream and the event stream is very important. For
+            :class:`~mne_lsl.stream.StreamLSL` objects, provide
+            ``processing_flags='all'`` as argument during connection with
+            :meth:`~mne_lsl.stream.StreamLSL.connect`.
+    event_id : int | str | dict
+        The ID of the events to consider from the event source. The event source can be
+        a channel from the connected Stream, in which case the event should be defined
+        as :class:`int`, or a separate event stream, in which case the event should be
+        defined either as :class:`int` or :class:`str`. If a :class:`dict` is provided,
+        it should map event names to event IDs. For example
+        ``dict(auditory=1, visual=2)``.
+    bufsize : int
+        Number of epochs to keep in the buffer. The buffer size is defined by this
+        number of epochs and by the duration of individual epochs, defined by the
+        argument ``tmin`` and ``tmax``.
+
+        .. note::
+
+            For a new epoch to be added to the buffer, the epoch must be fully
+            acquired, i.e. the last sample of the epoch must be received. Thus, an
+            epoch is acquired ``tmax`` seconds after the event onset.
+    %(epochs_tmin_tmax)s
+    %(baseline_epochs)s
+    %(picks_base)s all channels.
+    %(reject_epochs)s
+    %(flat)s
+    %(epochs_reject_tmin_tmax)s
+    detrend : int | str | None
+        The type of detrending to use. Can be ``'constant'`` or ``0`` for constant (DC)
+        detrend, ``'linear'`` or ``1`` for linear detrend, or ``None`` for no
+        detrending. Note that detrending is performed before baseline correction.
+
+    Notes
+    -----
+    Since events can be provided from multiple source, the arguments ``event_channels``,
+    ``event_source`` and ``event_id`` must work together to select which events should
+    be considered.
+
+    - if ``event_stream`` is ``None``, the events are extracted from channels within the
+      connected ``stream``. This ``stream`` is necessarily regularly sampled, thus the
+      event channels must correspond to MNE ``'stim'`` channels, i.e. channels on which
+      :func:`mne.find_events` can be applied.
+    - if ``event_stream`` is provided and is regularly sampled, the events are extracted
+      from channels in the ``event_stream``. The event channels must correspond to MNE
+      ``'stim'`` channels, i.e. channels on which :func:`mne.find_events` can be
+      applied.
+    - if ``event_stream`` is provided and is irregularly sampled, the events are
+      extracted from channels in the ``event_stream``. If the stream ``dtype`` is
+      :class:`str`, the value within the channels are used as separate events. If the
+      stream ``dtype`` is ``numerical``, the value within the channels are ignored and
+      the appearance of a new value in the stream is considered as a new event named
+      after the channel name. This last case can be useful when working with a
+      ``Player`` replaying annotations from a file as one-hot encoded events.
+
+    .. note::
+
+        In the 2 last cases where ``event_stream`` is provided, all ``'stim'`` channels
+        in the connected ``stream`` are ignored.
+    """
+
+    def __init__(
+        self,
+        stream: BaseStream,
+        event_channels: Union[str, list[str]],
+        event_stream: Optional[BaseStream],
+        event_id: Union[int, str, dict[str, Union[int, str]]],
+        bufsize: int,
+        tmin: float = -0.2,
+        tmax: float = 0.5,
+        baseline: Optional[tuple[Optional[float], Optional[float]]] = (None, 0),
+        picks: Optional[Union[str, list[str], int, list[int], ScalarIntArray]] = None,
+        reject: Optional[dict[str, float]] = None,
+        flat: Optional[dict[str, float]] = None,
+        reject_tmin: Optional[float] = None,
+        reject_tmax: Optional[float] = None,
+        detrend: Optional[Union[int, str]] = None,
+    ) -> None:
+        check_type(stream, (BaseStream,), "stream")
+        if not stream.connected and stream._info["sfreq"] != 0:
+            raise RuntimeError(
+                "The Stream must be a connected regularly sampled stream before "
+                "creating an EpochsStream."
+            )
+        self._stream = stream
+        # mark the stream(s) as being epoched, which will prevent further channel
+        # modification and buffer size modifications.
+        self._stream._epochs.append(self)
+        check_type(tmin, ("numeric",), "tmin")
+        check_type(tmax, ("numeric",), "tmax")
+        if tmax <= tmin:
+            raise ValueError(
+                f"Argument 'tmax' (provided: {tmax}) must be greater than 'tmin' "
+                f"(provided: {tmin})."
+            )
+        # make sure the stream buffer is long enough to store an entire epoch, which is
+        # simpler than handling the case where the buffer is too short and we need to
+        # concatenate chunks to form a single epoch.
+        if self._stream._bufsize < tmax - tmin:
+            raise ValueError(
+                "The buffer size of the Stream must be at least as long as the epoch "
+                "duration (tmax - tmin)."
+            )
+        elif self._stream._bufsize < (tmax - tmin) * 1.2:
+            warn(
+                "The buffer size of the Stream is longer than the epoch duration, but "
+                "not by at least 20%. It is recommended to have a buffer size at least "
+                r"20% longer than the epoch duration to avoid data loss."
+            )
+        self._tmin = tmin
+        self._tmax = tmax
+        # check the event source(s)
+        check_type(event_stream, (BaseStream, None), "event_stream")
+        if event_stream is not None and not event_stream.connected:
+            raise RuntimeError(
+                "If 'event_stream' is provided, it must be connected before creating "
+                "an EpochsStream."
+            )
+        self._event_stream = event_stream
+        if self._event_stream is not None:
+            self._event_stream._epochs.append(self)
+        event_channels = (
+            [event_channels] if isinstance(event_channels, str) else event_channels
+        )
+        check_type(event_channels, (list,), "event_channels")
+        _check_event_channels(event_channels, stream, event_stream)
+        self._event_channels = event_channels
+        # check and store the epochs general settings
+        self._bufsize = ensure_int(bufsize, "bufsize")
+        if self._bufsize <= 0:
+            raise ValueError(
+                "The buffer size, i.e. the number of epochs in the buffer, must be a "
+                "positive integer."
+            )
+        self._event_id = _ensure_event_id_dict(event_id)
+        _check_baseline(baseline)
+        self._baseline = baseline
+        _check_reject_flat(reject, flat, self._stream.info)
+        self._reject, self._flat = reject, flat
+        _check_reject_tmin_tmax(reject_tmin, reject_tmax, tmin, tmax)
+        self._reject_tmin, self._reject_tmax = reject_tmin, reject_tmax
+        self._detrend = _ensure_detrend_int(detrend)
+        # store picks which are then initialized in the connect method
+        self._picks_init = picks
+        # define acquisition variables which need to be reset on disconnect
+        self._reset_variables()
+
+    def __del__(self) -> None:
+        """Delete the epoch stream object."""
+        logger.debug("Deleting %s", self)
+        try:
+            self.disconnect()
+        except Exception:
+            pass
+
+    def __repr__(self) -> str:
+        """Representation of the instance."""
+        try:
+            status = "ON" if self.connected else "OFF"
+        except Exception:
+            status = "OFF"
+        return (
+            f"<EpochsStream {status} (n: {self._bufsize} between ({self._tmin}, "
+            f"{self._tmax}) seconds> connected to:\n\t{self._stream}"
+        )
+
+    def acquire(self) -> None:
+        """Pull new epochs in the buffer.
+
+        This method is used to manually acquire new epochs in the buffer. If used, it is
+        up to the user to call this method at the desired frequency, else it might miss
+        some of the events and associated epochs.
+
+        Notes
+        -----
+        This method is not needed if the :class:`mne_lsl.stream.EpochsStream` was
+        connected with an acquisition delay different from ``0``. In this case, the
+        acquisition is done automatically in a background thread.
+        """
+        self._check_connected("acquire")
+        if (
+            self._executor is not None and self._acquisition_delay == 0
+        ):  # pragma: no cover
+            raise RuntimeError(
+                "The executor is not None despite the acquisition delay set to "
+                f"{self._acquisition_delay} seconds. This should not happen, please "
+                "contact the developers on GitHub."
+            )
+        elif self._executor is not None and self._acquisition_delay != 0:
+            raise RuntimeError(
+                "Acquisition is done automatically in a background thread. The method "
+                "epochs.acquire() should not be called."
+            )
+        self._acquire()
+
+    def connect(self, acquisition_delay: float = 0.001) -> EpochsStream:
+        """Start acquisition of epochs from the connected Stream.
+
+        Parameters
+        ----------
+        acquisition_delay : float
+            Delay in seconds between 2 updates at which the event stream is queried for
+            new events, and thus at which the epochs are updated.
+
+            .. note::
+
+                For a new epoch to be added to the buffer, the epoch must be fully
+                acquired, i.e. the last sample of the epoch must be received. Thus, an
+                epoch is acquired ``tmax`` seconds after the event onset.
+
+        Returns
+        -------
+        epochs_stream : instance of EpochsStream
+            The :class:`~mne_lsl.stream.EpochsStream` instance modified in-place.
+        """
+        if self.connected:
+            warn("The EpochsStream is already connected. Skipping.")
+            return self
+        if not self._stream.connected:
+            raise RuntimeError(
+                "The Stream was disconnected between initialization and connection "
+                "of the EpochsStream object."
+            )
+        if self._event_stream is not None and not self._event_stream.connected:
+            raise RuntimeError(
+                "The event stream was disconnected between initialization and "
+                "connection of the EpochsStream object."
+            )
+        check_type(acquisition_delay, ("numeric",), "acquisition_delay")
+        if acquisition_delay < 0:
+            raise ValueError(
+                "The acquisition delay must be a positive number "
+                "defining the delay at which the epochs might be updated in seconds. "
+                "For instance, 0.2 corresponds to a query to the event source every "
+                "200 ms. 0 corresponds to manual acquisition. The provided "
+                f"{acquisition_delay} is invalid."
+            )
+        self._acquisition_delay = acquisition_delay
+        assert self._n_new_epochs == 0  # sanity-check
+        # create the buffer and start acquisition in a separate thread
+        self._picks = _picks_to_idx(
+            self._stream._info, self._picks_init, "all", "bads", allow_empty=False
+        )
+        self._info = pick_info(self._stream._info, self._picks)
+        self._buffer = np.zeros(
+            (
+                self._bufsize,
+                ceil((self._tmax - self._tmin) * self._info["sfreq"]),
+                self._picks.size,
+            ),
+            dtype=self._stream._buffer.dtype,
+        )
+        self._executor = (
+            ThreadPoolExecutor(max_workers=1) if self._acquisition_delay != 0 else None
+        )
+        # submit the first acquisition job
+        if self._executor is not None:
+            self._executor.submit(self._acquire)
+        return self
+
+    def disconnect(self) -> None:
+        """Stop acquisition of epochs from the connected Stream."""
+        if not self.connected:
+            warn("The EpochsStream is already disconnected. Skipping.")
+            # just in case, let's look through the stream objects attached..
+            if hasattr(self._stream, "_epochs") and self in self._stream._epochs:
+                self._stream._epochs.remove(self)
+            if (
+                self._event_stream is not None
+                and hasattr(self._event_stream, "_epochs")
+                and self in self._event_stream._epochs
+            ):
+                self._event_stream._epochs.remove(self)
+            return
+        if hasattr(self, "_executor") and self._executor is not None:
+            self._executor.shutdown(wait=True, cancel_futures=True)
+        self._reset_variables()
+        if hasattr(self._stream, "_epochs") and self in self._stream._epochs:
+            self._stream._epochs.remove(self)
+        if (
+            self._event_stream is not None
+            and hasattr(self._event_stream, "_epochs")
+            and self in self._event_stream._epochs
+        ):
+            self._event_stream._epochs.remove(self)
+
+    def _acquire(self) -> None:
+        """Update function looking for new epochs."""
+        # get data from the stream, pick by event_channels.
+        # the event channels should be in the stream since we check for inclusion and
+        # stream buffer modification are prohibited while epoched.
+        if self._event_stream is None:
+            data, ts = self._stream.get_data(picks=self._event_channels)
+        else:
+            data, ts = self._event_stream.get_data(picks=self._event_channels)
+        # check if we actually have new data
+        if self._last_ts is not None and ts[-1] == self._last_ts:
+            return
+        self._last_ts = ts[-1]
+
+    def _check_connected(self, name: str) -> None:
+        """Check that the epochs stream is connected before calling 'name'."""
+        if not self.connected:
+            raise RuntimeError(
+                "The EpochsStream is not connected. Please connected the EpochsStream "
+                "with the method epochs.connect(...) to use "
+                f"{type(self).__name__}.{name}."
+            )
+
+    def _reset_variables(self):
+        """Reset variables defined after connection."""
+        self._acquisition_delay = None
+        self._buffer = None
+        self._executor = None
+        self._info = None
+        self._last_ts = None
+        self._n_new_epochs = 0
+        self._picks = None
+
+    # ----------------------------------------------------------------------------------
+    @property
+    def connected(self) -> bool:
+        """Connection status of the :class:`~mne_lsl.stream.EpochsStream`.
+
+        :type: :class:`bool`
+        """
+        # does not include '_last_ts' as it could be None on the first acquisition call
+        attributes = (
+            "_acquisition_delay",
+            "_buffer",
+            "_info",
+            "_picks",
+        )
+        if all(getattr(self, attr, None) is None for attr in attributes):
+            return False
+        else:
+            # sanity-check
+            assert not any(getattr(self, attr, None) is None for attr in attributes)
+            return True
+
+    @property
+    def info(self) -> Info:
+        """Info of the epoched LSL stream.
+
+        :type: :class:`~mne.Info`
+        """
+        if not self.connected:
+            raise RuntimeError(
+                "The EpochsStream information is parsed into an mne.Info object "
+                "upon connection. Please connect the EpochsStream to create the "
+                "mne.Info."
+            )
+        return self._info
+
+    @property
+    def n_new_epochs(self) -> int:
+        """Number of new epochs available in the buffer.
+
+        The number of new epochs is reset at every ``Stream.get_data`` call.
+
+        :type: :class:`int`
+        """
+        self._check_connected("n_new_epochs")
+        return self._n_new_epochs
+
+
+def _check_event_channels(
+    event_channels: Union[str, list[str]],
+    stream: BaseStream,
+    event_stream: Optional[BaseStream],
+) -> None:
+    """Check that the event channels are valid."""
+    for elt in event_channels:
+        check_type(elt, (str,), "event_channels")
+        if event_stream is None:
+            if elt not in stream.ch_names:
+                raise ValueError(
+                    "The event channel(s) must be part of the connected Stream if "
+                    f"an 'event_stream' is not provided. '{elt}' was not found."
+                )
+            if stream.get_channel_types(picks=elt) != "stim":
+                raise ValueError("The event channel '{elt}' should be of type 'stim'.")
+        elif event_stream is not None:
+            if elt not in event_stream.ch_names:
+                raise ValueError(
+                    "If 'event_stream' is provided, the event channel(s) must be "
+                    f"part of 'event_stream'. '{elt}' was not found."
+                )
+            if (
+                event_stream.info["sfreq"] != 0
+                and event_stream.get_channel_types(picks=elt) != "stim"
+            ):
+                raise ValueError(
+                    "The event channel '{elt}' in the event stream should be of type "
+                    "'stim'."
+                )
+
+
+def _ensure_event_id_dict(
+    event_id: Union[int, str, dict[str, Union[int, str]]],
+) -> dict[str, Union[str, int]]:
+    """Ensure event_ids is a dictionary."""
+    check_type(event_id, (int, str, dict), "event_id")
+    raise_ = False
+    if isinstance(event_id, str):
+        if len(event_id) == 0:
+            raise_ = True
+        event_id = {event_id: event_id}
+    elif isinstance(event_id, int):
+        if event_id <= 0:
+            raise_ = True
+        event_id = {str(event_id): event_id}
+    else:
+        for key, value in event_id.items():
+            check_type(key, (str,), "event_id")
+            check_type(value, (int, str), "event_id")
+            if len(key) == 0:
+                raise_ = True
+            if (isinstance(value, str) and len(value) == 0) or (
+                isinstance(value, int) and value <= 0
+            ):
+                raise_ = True
+    if raise_:
+        raise ValueError(
+            "The 'event_id' must be a non-empty string, a positive integer or a "
+            "dictionary mapping non-empty strings to positive integers or non-empty "
+            "strings."
+        )
+    return event_id
+
+
+def _check_baseline(
+    baseline: Optional[tuple[Optional[float], Optional[float]]],
+    tmin: float,
+    tmax: float,
+) -> None:
+    """Check that the baseline is valid."""
+    check_type(baseline, (tuple, None), "baseline")
+    if baseline is None:
+        return
+    if len(baseline) != 2:
+        raise ValueError("The baseline must be a tuple of 2 elements.")
+    check_type(baseline[0], ("numeric", None), "baseline[0]")
+    check_type(baseline[1], ("numeric", None), "baseline[1]")
+    if baseline[0] is not None and baseline[0] < tmin:
+        raise ValueError(
+            "The beginning of the baseline period must be greater than or equal to "
+            "the beginning of the epoch period 'tmin'."
+        )
+    if baseline[1] is not None and tmax < baseline[1]:
+        raise ValueError(
+            "The end of the baseline period must be less than or equal to the end of "
+            "the epoch period 'tmax'."
+        )
+
+
+def _check_reject_flat(
+    reject: Optional[dict[str, float]], flat: Optional[dict[str, float]], info: Info
+) -> None:
+    """Check that the PTP rejection dictionaries are valid."""
+    check_type(reject, (dict, None), "reject")
+    check_type(flat, (dict, None), "flat")
+    ch_types = info.get_channel_types(unique=True)
+    if reject is not None:
+        for key, value in reject.items():
+            check_type(key, (str,), "reject")
+            check_type(value, ("numeric",), "reject")
+            if key not in ch_types:
+                raise ValueError(
+                    f"The channel type '{key}' in the rejection dictionary is not part "
+                    "of the connected Stream."
+                )
+            check_type(value, (float,), "reject")
+            if value <= 0:
+                raise ValueError(
+                    f"The peak-to-peak rejection value for channel type '{key}' must "
+                    "be a positive number."
+                )
+    if flat is not None:
+        for key, value in flat.items():
+            check_type(key, (str,), "flat")
+            check_type(value, ("numeric",), "flat")
+            if key not in ch_types:
+                raise ValueError(
+                    f"The channel type '{key}' in the flat rejection dictionary is not "
+                    "part of the connected Stream."
+                )
+            check_type(value, (float,), "flat")
+            if value <= 0:
+                raise ValueError(
+                    f"The flat rejection value for channel type '{key}' must be a "
+                    "positive number."
+                )
+
+
+def _check_reject_tmin_tmax(
+    reject_tmin: Optional[float], reject_tmax: Optional[float], tmin: float, tmax: float
+) -> None:
+    """Check that the rejection time window is valid."""
+    check_type(reject_tmin, ("numeric", None), "reject_tmin")
+    check_type(reject_tmax, ("numeric", None), "reject_tmax")
+    if reject_tmin is not None and reject_tmin < tmin:
+        raise ValueError(
+            "The beginning of the rejection time window must be greater than or equal "
+            "to the beginning of the epoch period 'tmin'."
+        )
+    if reject_tmax is not None and tmax < reject_tmax:
+        raise ValueError(
+            "The end of the rejection time window must be less than or equal to the "
+            "end of the epoch period 'tmax'."
+        )
+    if (
+        reject_tmin is not None
+        and reject_tmax is not None
+        and reject_tmax <= reject_tmin
+    ):
+        raise ValueError(
+            "The end of the rejection time window must be greater than the beginning "
+            "of the rejection time window."
+        )
+
+
+def _ensure_detrend_int(detrend: Optional[Union[int, str]]) -> Optional[int]:
+    """Ensure detrend is an integer."""
+    if detrend is None:
+        return None
+    if isinstance(detrend, str):
+        if detrend == "constant":
+            return 0
+        elif detrend == "linear":
+            return 1
+        else:
+            raise ValueError(
+                "The detrend argument must be 'constant', 'linear' or their integer "
+                "equivalent 0 and 1."
+            )
+    detrend = ensure_int(detrend, "detrend")
+    if detrend not in (0, 1):
+        raise ValueError(
+            "The detrend argument must be 'constant', 'linear' or their integer "
+            "equivalent 0 and 1."
+        )
+    return detrend

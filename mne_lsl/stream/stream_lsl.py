@@ -69,7 +69,7 @@ class StreamLSL(BaseStream):
         self._source_id = source_id
         self._reset_variables()
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Representation of the instance."""
         try:
             conn = self.connected
@@ -127,7 +127,11 @@ class StreamLSL(BaseStream):
               This option should not be enable if ``'dejitter'`` is not enabled.
         timeout : float | None
             Optional timeout (in seconds) of the operation. ``None`` disables the
-            timeout. The timeout value is applied once to every operation supporting it.
+            timeout. The timeout value is applied once to every operation supporting it,
+            in this case the resolution of the LSL streams with
+            :func:`~mne_lsl.lsl.resolve_streams`, the opening of the inlet with
+            :meth:`~mne_lsl.lsl.StreamInlet.open_stream` and the estimation of the
+            time correction with :meth:`~mne_lsl.lsl.StreamInlet.time_correction`.
 
         Returns
         -------
@@ -340,7 +344,7 @@ class StreamLSL(BaseStream):
 
         :type: :class:`int` | None
         """
-        self._check_connected(name="compensation_grade")
+        self._check_connected("compensation_grade")
         return super().compensation_grade
 
     # ----------------------------------------------------------------------------------
