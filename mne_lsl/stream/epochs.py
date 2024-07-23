@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 from mne import pick_info
+from mne.event import _find_events, _find_unique_events
 from mne.utils import check_version
 
 if check_version("mne", "1.6"):
@@ -26,8 +27,9 @@ if TYPE_CHECKING:
     from typing import Optional, Union
 
     from mne import Info
+    from numpy.typing import NDArray
 
-    from .._typing import ScalarIntArray
+    from .._typing import ScalarArray, ScalarIntArray
 
 
 @fill_doc
@@ -191,7 +193,7 @@ class EpochsStream:
         self._event_id = _ensure_event_id_dict(event_id)
         _check_baseline(baseline)
         self._baseline = baseline
-        _check_reject_flat(reject, flat, self._stream.info)
+        _check_reject_flat(reject, flat, self._stream._info)
         self._reject, self._flat = reject, flat
         _check_reject_tmin_tmax(reject_tmin, reject_tmax, tmin, tmax)
         self._reject_tmin, self._reject_tmax = reject_tmin, reject_tmax
@@ -347,7 +349,7 @@ class EpochsStream:
             self._event_stream is not None and self._event_stream._n_new_samples == 0
         ):
             return
-        # get data and split event channels and data channels
+        # get data and split event and data channels
         data, ts = self._stream.get_data()
         if self._event_stream is None:
             picks = _picks_to_idx(
@@ -356,12 +358,16 @@ class EpochsStream:
                 exclude=(),
             )
             data_events = data[picks, :]
-            ts_events = ts
+            ts_events = ts  # TODO: let's see if we can drop it in this case
         else:
             data_events, ts_events = self._event_stream.get_data(
                 picks=self._event_channels
             )
         data = data[self._picks, :]  # select data channels
+        # find events
+        events = _find_events_in_stim_channels(
+            data_events, self._event_channels, self._stream._info["sfreq"]
+        )
 
     def _check_connected(self, name: str) -> None:
         """Check that the epochs stream is connected before calling 'name'."""
@@ -436,21 +442,31 @@ def _check_event_channels(
     for elt in event_channels:
         check_type(elt, (str,), "event_channels")
         if event_stream is None:
-            if elt not in stream.ch_names:
+            if elt not in stream._info.ch_names:
                 raise ValueError(
                     "The event channel(s) must be part of the connected Stream if "
                     f"an 'event_stream' is not provided. '{elt}' was not found."
                 )
+            if elt in stream._info["bads"]:
+                raise ValueError(
+                    f"The event channel '{elt}' should not be marked as bad in the "
+                    "connected Stream."
+                )
             if stream.get_channel_types(picks=elt) != "stim":
                 raise ValueError("The event channel '{elt}' should be of type 'stim'.")
         elif event_stream is not None:
-            if elt not in event_stream.ch_names:
+            if elt not in event_stream._info.ch_names:
                 raise ValueError(
                     "If 'event_stream' is provided, the event channel(s) must be "
                     f"part of 'event_stream'. '{elt}' was not found."
                 )
+            if elt in event_stream._info["bads"]:
+                raise ValueError(
+                    f"The event channel '{elt}' in the event stream should not be "
+                    "marked as bad."
+                )
             if (
-                event_stream.info["sfreq"] != 0
+                event_stream._info["sfreq"] != 0
                 and event_stream.get_channel_types(picks=elt) != "stim"
             ):
                 raise ValueError(
@@ -604,3 +620,50 @@ def _ensure_detrend_int(detrend: Optional[Union[int, str]]) -> Optional[int]:
             "equivalent 0 and 1."
         )
     return detrend
+
+
+def _find_events_in_stim_channels(
+    data: ScalarArray,
+    event_channels: list[str],
+    sfreq: float,
+    *,
+    output: str = "onset",
+    consecutive: Union[bool, str] = "increasing",
+    min_duration: float = 0,
+    shortest_event: int = 2,
+    mask: Optional[int],
+    uint_cast: bool = False,
+    mask_type: str = "and",
+    initial_event: bool = False,
+) -> NDArray[np.int64]:
+    """Find events in stim channels."""
+    min_samples = min_duration * sfreq
+    events_list = []
+    for d, ch_name in zip(data, event_channels):
+        events = _find_events(
+            d[np.newaxis, :],
+            first_samp=0,
+            verbose="CRITICAL",  # disable MNE's logging
+            output=output,
+            consecutive=consecutive,
+            min_samples=min_samples,
+            mask=mask,
+            uint_cast=uint_cast,
+            mask_type=mask_type,
+            initial_event=initial_event,
+            ch_name=ch_name,
+        )
+        # add safety check for spurious events (for ex. from neuromag syst.) by
+        # checking the number of low sample events
+        n_short_events = np.sum(np.diff(events[:, 0]) < shortest_event)
+        if n_short_events > 0:
+            warn(
+                f"You have {n_short_events} events shorter than the shortest_event. "
+                "These are very unusual and you may want to set min_duration to a "
+                "larger value e.g. x / raw.info['sfreq']. Where x = 1 sample shorter "
+                "than the shortest event length."
+            )
+        events_list.append(events)
+    events = np.concatenate(events_list, axis=0)
+    events = _find_unique_events(events)
+    return events[np.argsort(events[:, 0])]
