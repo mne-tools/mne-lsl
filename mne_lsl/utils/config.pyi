@@ -25,3 +25,6 @@ def _list_dependencies_info(
     unicode: bool,
 ) -> None:
     """List dependencies names and versions."""
+
+def _get_gpu_info() -> tuple[str | None, str | None]:
+    """Get the GPU information."""
