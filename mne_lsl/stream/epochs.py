@@ -1,4 +1,4 @@
-from __future__ import annotations  # c.f. PEP 563, PEP 649
+from __future__ import annotations
 
 from concurrent.futures import ThreadPoolExecutor
 from math import ceil
@@ -285,11 +285,11 @@ class EpochsStream:
         check_type(acquisition_delay, ("numeric",), "acquisition_delay")
         if acquisition_delay < 0:
             raise ValueError(
-                "The acquisition delay must be a positive number "
-                "defining the delay at which the epochs might be updated in seconds. "
-                "For instance, 0.2 corresponds to a query to the event source every "
-                "200 ms. 0 corresponds to manual acquisition. The provided "
-                f"{acquisition_delay} is invalid."
+                "The acquisition delay must be a positive number defining the delay at "
+                "which the epochs might be updated in seconds. For instance, 0.2 "
+                "corresponds to a query to the event source every 200 ms. 0 "
+                f"corresponds to manual acquisition. The provided {acquisition_delay} "
+                "is invalid."
             )
         self._acquisition_delay = acquisition_delay
         assert self._n_new_epochs == 0  # sanity-check
@@ -309,6 +309,7 @@ class EpochsStream:
         self._executor = (
             ThreadPoolExecutor(max_workers=1) if self._acquisition_delay != 0 else None
         )
+        logger.debug("%s: ThreadPoolExecutor started.", self)
         # submit the first acquisition job
         if self._executor is not None:
             self._executor.submit(self._acquire)
@@ -342,17 +343,25 @@ class EpochsStream:
 
     def _acquire(self) -> None:
         """Update function looking for new epochs."""
-        # get data from the stream, pick by event_channels.
-        # the event channels should be in the stream since we check for inclusion and
-        # stream buffer modification are prohibited while epoched.
-        if self._event_stream is None:
-            data, ts = self._stream.get_data(picks=self._event_channels)
-        else:
-            data, ts = self._event_stream.get_data(picks=self._event_channels)
-        # check if we actually have new data
-        if self._last_ts is not None and ts[-1] == self._last_ts:
+        if self._stream._n_new_samples == 0 or (
+            self._event_stream is not None and self._event_stream._n_new_samples == 0
+        ):
             return
-        self._last_ts = ts[-1]
+        # get data and split event channels and data channels
+        data, ts = self._stream.get_data()
+        if self._event_stream is None:
+            picks = _picks_to_idx(
+                self._info,
+                self._event_channels,
+                exclude=(),
+            )
+            data_events = data[picks, :]
+            ts_events = ts
+        else:
+            data_events, ts_events = self._event_stream.get_data(
+                picks=self._event_channels
+            )
+        data = data[self._picks, :]  # select data channels
 
     def _check_connected(self, name: str) -> None:
         """Check that the epochs stream is connected before calling 'name'."""
@@ -369,7 +378,6 @@ class EpochsStream:
         self._buffer = None
         self._executor = None
         self._info = None
-        self._last_ts = None
         self._n_new_epochs = 0
         self._picks = None
 
@@ -380,7 +388,6 @@ class EpochsStream:
 
         :type: :class:`bool`
         """
-        # does not include '_last_ts' as it could be None on the first acquisition call
         attributes = (
             "_acquisition_delay",
             "_buffer",
@@ -421,7 +428,7 @@ class EpochsStream:
 
 
 def _check_event_channels(
-    event_channels: Union[str, list[str]],
+    event_channels: list[str],
     stream: BaseStream,
     event_stream: Optional[BaseStream],
 ) -> None:
