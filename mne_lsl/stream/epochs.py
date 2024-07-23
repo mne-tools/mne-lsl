@@ -111,6 +111,8 @@ class EpochsStream:
       ignored. This last case can be useful when working with a ``Player`` replaying
       annotations from a file as one-hot encoded events.
 
+    Event streams irregularly sampled and a ``str`` datatype are not yet supported.
+
     .. note::
 
         In the 2 last cases where ``event_stream`` is provided, all ``'stim'`` channels
