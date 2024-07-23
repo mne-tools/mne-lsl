@@ -61,13 +61,14 @@ class EpochsStream:
             :class:`~mne_lsl.stream.StreamLSL` objects, provide
             ``processing_flags='all'`` as argument during connection with
             :meth:`~mne_lsl.stream.StreamLSL.connect`.
-    event_id : int | str | dict
+    event_id : int | dict
         The ID of the events to consider from the event source. The event source can be
-        a channel from the connected Stream, in which case the event should be defined
-        as :class:`int`, or a separate event stream, in which case the event should be
-        defined either as :class:`int` or :class:`str`. If a :class:`dict` is provided,
+        a channel from the connected Stream or a separate event stream. In both case the
+        event should be defined either as :class:`int`. If a :class:`dict` is provided,
         it should map event names to event IDs. For example
-        ``dict(auditory=1, visual=2)``.
+        ``dict(auditory=1, visual=2)``. If the event source is an irregularly sampled
+        stream, the numerical values within the channels are ignored and this argument
+        is ignored.
     bufsize : int
         Number of epochs to keep in the buffer. The buffer size is defined by this
         number of epochs and by the duration of individual epochs, defined by the
@@ -106,9 +107,9 @@ class EpochsStream:
     - if ``event_stream`` is provided and is irregularly sampled, the events are
       extracted from channels in the ``event_stream``. The numerical value within the
       channels are ignored and the appearance of a new value in the stream is considered
-      as a new event named after the channel name. This last case can be useful when
-      working with a ``Player`` replaying annotations from a file as one-hot encoded
-      events.
+      as a new event named after the channel name. Thus, the argument ``event_id`` is
+      ignored. This last case can be useful when working with a ``Player`` replaying
+      annotations from a file as one-hot encoded events.
 
     .. note::
 
@@ -121,7 +122,7 @@ class EpochsStream:
         stream: BaseStream,
         event_channels: Union[str, list[str]],
         event_stream: Optional[BaseStream],
-        event_id: Union[int, str, dict[str, Union[int, str]]],
+        event_id: Union[int, dict[str, int]],
         bufsize: int,
         tmin: float = -0.2,
         tmax: float = 0.5,
@@ -487,33 +488,25 @@ def _check_event_channels(
             ):
                 raise ValueError(
                     "The event channel '{elt}' in the event stream should be of type "
-                    "'stim'."
+                    "'stim' if the event stream is regularly sampled."
                 )
 
 
-def _ensure_event_id_dict(
-    event_id: Union[int, str, dict[str, Union[int, str]]],
-) -> dict[str, Union[str, int]]:
+def _ensure_event_id_dict(event_id: Union[int, dict[str, int]]) -> dict[str, int]:
     """Ensure event_ids is a dictionary."""
-    check_type(event_id, (int, str, dict), "event_id")
+    check_type(event_id, (int, dict), "event_id")
     raise_ = False
-    if isinstance(event_id, str):
-        if len(event_id) == 0:
-            raise_ = True
-        event_id = {event_id: event_id}
-    elif isinstance(event_id, int):
+    if isinstance(event_id, int):
         if event_id <= 0:
             raise_ = True
         event_id = {str(event_id): event_id}
     else:
         for key, value in event_id.items():
             check_type(key, (str,), "event_id")
-            check_type(value, (int, str), "event_id")
+            check_type(value, ("int-like",), "event_id")
             if len(key) == 0:
                 raise_ = True
-            if (isinstance(value, str) and len(value) == 0) or (
-                isinstance(value, int) and value <= 0
-            ):
+            if isinstance(value, int) and value <= 0:
                 raise_ = True
     if raise_:
         raise ValueError(
