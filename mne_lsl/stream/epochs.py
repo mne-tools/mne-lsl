@@ -371,7 +371,7 @@ class EpochsStream:
             events = events[sel]
             if events.size == 0:
                 return
-            # TODO: remove events which have already been acquired based on LSL times
+            # TODO: remove events which have already been acquired based on LSL times48e99594604d32849fb234653d3fd0447d20b14
             # select data, for loop is faster than the fancy indexing ideas tried and
             # will anyway operate on a small number of events most of the time.
             data_selection = np.empty(
