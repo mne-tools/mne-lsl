@@ -104,12 +104,11 @@ class EpochsStream:
       ``'stim'`` channels, i.e. channels on which :func:`mne.find_events` can be
       applied.
     - if ``event_stream`` is provided and is irregularly sampled, the events are
-      extracted from channels in the ``event_stream``. If the stream ``dtype`` is
-      :class:`str`, the value within the channels are used as separate events. If the
-      stream ``dtype`` is ``numerical``, the value within the channels are ignored and
-      the appearance of a new value in the stream is considered as a new event named
-      after the channel name. This last case can be useful when working with a
-      ``Player`` replaying annotations from a file as one-hot encoded events.
+      extracted from channels in the ``event_stream``. The numerical value within the
+      channels are ignored and the appearance of a new value in the stream is considered
+      as a new event named after the channel name. This last case can be useful when
+      working with a ``Player`` replaying annotations from a file as one-hot encoded
+      events.
 
     .. note::
 
@@ -350,30 +349,37 @@ class EpochsStream:
         ):
             return
         # get data and split event and data channels
-        data, ts = self._stream.get_data()
         if self._event_stream is None:
-            picks = _picks_to_idx(
+            data, ts = self._stream.get_data()
+            picks_events = _picks_to_idx(
                 self._info,
                 self._event_channels,
                 exclude=(),
             )
-            data_events = data[picks, :]
-            ts_events = ts  # TODO: let's see if we can drop it in this case
-        else:
-            data_events, ts_events = self._event_stream.get_data(
-                picks=self._event_channels
+            events = _find_events_in_stim_channels(
+                data[picks_events, :], self._event_channels, self._info["sfreq"]
             )
-        data = data[self._picks, :]  # select data channels
-        # find events
-        events = _find_events_in_stim_channels(
-            data_events, self._event_channels, self._stream._info["sfreq"]
-        )
+            if events.size == 0:
+                return
+            # select events which are in the event_id values
+            sel = np.isin(events[:, 2], list(self._event_id.values()))
+            events = events[sel]
+            if events.size == 0:
+                return
+            # select events which can fit an entire epoch
+            sel = np.where(events[:, 0] + self._buffer.shape[1] <= ts.size)[0]
+            events = events[sel]
+            if events.size == 0:
+                return
+            data = data[self._picks, :]  # select data channels
+        else:
+            raise NotImplementedError
 
     def _check_connected(self, name: str) -> None:
         """Check that the epochs stream is connected before calling 'name'."""
         if not self.connected:
             raise RuntimeError(
-                "The EpochsStream is not connected. Please connected the EpochsStream "
+                "The EpochsStream is not connected. Please connect to the EpochsStream "
                 "with the method epochs.connect(...) to use "
                 f"{type(self).__name__}.{name}."
             )

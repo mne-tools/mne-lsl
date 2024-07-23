@@ -1032,7 +1032,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         """Check that the stream is connected before calling the function 'name'."""
         if not self.connected:
             raise RuntimeError(
-                "The Stream is not connected. Please connected the Stream with the "
+                "The Stream is not connected. Please connect to the Stream with the "
                 f"method stream.connect(...) to use {type(self).__name__}.{name}."
             )
 
