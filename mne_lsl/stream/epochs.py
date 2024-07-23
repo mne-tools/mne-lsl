@@ -352,32 +352,41 @@ class EpochsStream:
         ):
             return
         # get data and split event and data channels
+        data, ts = self._stream.get_data()
         if self._event_stream is None:
-            data, ts = self._stream.get_data()
-            picks_events = _picks_to_idx(
-                self._info,
-                self._event_channels,
-                exclude=(),
+            picks_events = _picks_to_idx(self._info, self._event_channels, exclude=())
+            data_events = data[picks_events, :]
+            ts_events = ts
+        else:
+            data_events, ts_events = self._event_stream.get_data(
+                picks=self._event_channels
             )
+        if self._event_stream._info["sfreq"] != 0:
             events = _find_events_in_stim_channels(
-                data[picks_events, :], self._event_channels, self._info["sfreq"]
+                data_events, self._event_channels, self._info["sfreq"]
             )
-            events = _prune_events(events, self._event_id, self._buffer.shape[1], ts)
+            # remove events outside of the event_id dictionary
+            sel = np.isin(events[:, 2], list(self._event_id.values()))
+            events = events[sel]
+            # remove events which can't fit an entire epoch
+            sel = np.where(events[:, 0] + self._buffer.shape[1] <= ts.size)[0]
+            events = events[sel]
+            # remove events which have already been moved to the buffer
+            # TODO: define self._last_ts
+            sel = np.where(ts_events[events[:, 0]] > self._last_ts)[0]
+            events = events[sel]
             if events.size == 0:
                 return
-            # TODO: remove events which have already been acquired based on LSL times
-            # select data, for loop is faster than the fancy indexing ideas tried and
-            # will anyway operate on a small number of events most of the time.
-            data_selection = np.empty(
-                (events.shape[0], self._picks.size, self._buffer.shape[1]),
-                dtype=data.dtype,
-            )
-            for k, start in enumerate(events):
-                data_selection[k] = data[
-                    self._picks, start : start + self._buffer.shape[1]
-                ]
         else:
             raise NotImplementedError
+        # select data, for loop is faster than the fancy indexing ideas tried and
+        # will anyway operate on a small number of events most of the time.
+        data_selection = np.empty(
+            (events.shape[0], self._picks.size, self._buffer.shape[1]),
+            dtype=data.dtype,
+        )
+        for k, start in enumerate(events):
+            data_selection[k] = data[self._picks, start : start + self._buffer.shape[1]]
 
     def _check_connected(self, name: str) -> None:
         """Check that the epochs stream is connected before calling 'name'."""
@@ -669,19 +678,3 @@ def _find_events_in_stim_channels(
     events = np.concatenate(events_list, axis=0)
     events = _find_unique_events(events)
     return events[np.argsort(events[:, 0])]
-
-
-def _prune_events(
-    events: NDArray[np.int64],
-    event_id: dict[str, int],
-    buffer_size: int,
-    ts: NDArray[np.float64],
-) -> NDArray[np.int64]:
-    """Prune events."""
-    # remove events outside of the event_id dictionary
-    sel = np.isin(events[:, 2], list(event_id.values()))
-    events = events[sel]
-    # remove events which can't fit an entire epoch
-    sel = np.where(events[:, 0] + buffer_size <= ts.size)[0]
-    events = events[sel]
-    return events
