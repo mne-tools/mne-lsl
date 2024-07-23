@@ -362,16 +362,7 @@ class EpochsStream:
             events = _find_events_in_stim_channels(
                 data[picks_events, :], self._event_channels, self._info["sfreq"]
             )
-            if events.size == 0:
-                return
-            # select events which are in the event_id values
-            sel = np.isin(events[:, 2], list(self._event_id.values()))
-            events = events[sel]
-            if events.size == 0:
-                return
-            # select events which can fit an entire epoch
-            sel = np.where(events[:, 0] + self._buffer.shape[1] <= ts.size)[0]
-            events = events[sel]
+            events = _prune_events(events, self._event_id, self._buffer.shape[1], ts)
             if events.size == 0:
                 return
             # TODO: remove events which have already been acquired based on LSL times
@@ -678,3 +669,19 @@ def _find_events_in_stim_channels(
     events = np.concatenate(events_list, axis=0)
     events = _find_unique_events(events)
     return events[np.argsort(events[:, 0])]
+
+
+def _prune_events(
+    events: NDArray[np.int64],
+    event_id: dict[str, int],
+    buffer_size: int,
+    ts: NDArray[np.float64],
+) -> NDArray[np.int64]:
+    """Prune events."""
+    # remove events outside of the event_id dictionary
+    sel = np.isin(events[:, 2], list(event_id.values()))
+    events = events[sel]
+    # remove events which can't fit an entire epoch
+    sel = np.where(events[:, 0] + buffer_size <= ts.size)[0]
+    events = events[sel]
+    return events
