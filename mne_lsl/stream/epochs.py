@@ -371,7 +371,16 @@ class EpochsStream:
             events = events[sel]
             if events.size == 0:
                 return
-            data = data[self._picks, :]  # select data channels
+            # select data, for loop is faster than the fancy indexing ideas tried and
+            # will anyway operate on a small number of events most of the time.
+            data_selection = np.empty(
+                (events.shape[0], self._picks.size, self._buffer.shape[1]),
+                dtype=data.dtype,
+            )
+            for k, start in enumerate(events):
+                data_selection[k] = data[
+                    self._picks, start : start + self._buffer.shape[1]
+                ]
         else:
             raise NotImplementedError
 
