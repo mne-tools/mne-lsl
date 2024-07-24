@@ -540,9 +540,8 @@ def _ensure_event_id_dict(event_id: Union[int, dict[str, int]]) -> dict[str, int
                 raise_ = True
     if raise_:
         raise ValueError(
-            "The 'event_id' must be a non-empty string, a positive integer or a "
-            "dictionary mapping non-empty strings to positive integers or non-empty "
-            "strings."
+            "The 'event_id' must be a positive integer or a dictionary mapping "
+            "non-empty strings to positive integers."
         )
     return event_id
 
