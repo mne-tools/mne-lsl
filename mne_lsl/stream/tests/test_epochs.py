@@ -123,3 +123,11 @@ def test_ensure_detrend_int():
 
     with pytest.raises(TypeError, match="must be an integer"):
         _ensure_detrend_int(5.5)
+
+
+def test_find_events_in_stim_channels():
+    """Test finding events in stimulation channels."""
+
+
+def test_prune_events():
+    """Test pruning events."""
