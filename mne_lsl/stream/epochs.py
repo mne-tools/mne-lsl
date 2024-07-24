@@ -351,42 +351,104 @@ class EpochsStream:
             self._event_stream is not None and self._event_stream._n_new_samples == 0
         ):
             return
-        # get data and split event and data channels
-        data, ts = self._stream.get_data()
+        # split the different acquisition scenarios to retrieve new epochs to add to the
+        # buffer.
         if self._event_stream is None:
-            picks_events = _picks_to_idx(self._info, self._event_channels, exclude=())
-            data_events = data[picks_events, :]
-            ts_events = ts
-        else:
-            data_events, ts_events = self._event_stream.get_data(
-                picks=self._event_channels
+            data = self._acquire_without_event_stream()
+        elif self._event_stream is not None and self._event_stream._info["sfreq"] != 0:
+            data = self._acquire_with_regularly_sampled_event_stream()
+        elif self._event_stream is not None and self._event_stream._info["sfreq"] == 0:
+            data = self._acquire_with_irregularly_sampled_event_stream()
+        else:  # pragma: no cover
+            raise RuntimeError(
+                "This acquisition scenario should not happen. Please contact the "
+                "developers."
             )
-        if self._event_stream._info["sfreq"] != 0:
-            events = _find_events_in_stim_channels(
-                data_events, self._event_channels, self._info["sfreq"]
-            )
-            # remove events outside of the event_id dictionary
-            sel = np.isin(events[:, 2], list(self._event_id.values()))
-            events = events[sel]
-            # remove events which can't fit an entire epoch
-            sel = np.where(events[:, 0] + self._buffer.shape[1] <= ts.size)[0]
-            events = events[sel]
-            # remove events which have already been moved to the buffer
-            # TODO: define self._last_ts
-            sel = np.where(ts_events[events[:, 0]] > self._last_ts)[0]
-            events = events[sel]
-            if events.size == 0:
-                return
-        else:
-            raise NotImplementedError
+        if data.shape[0] == 0:  # abort in case we don't have new epochs
+            return
+
+    def _acquire_without_event_stream(self):
+        data, ts = self._stream.get_data()
+        picks_events = _picks_to_idx(self._info, self._event_channels, exclude=())
+        events = _find_events_in_stim_channels(
+            data[picks_events, :], self._event_channels, self._info["sfreq"]
+        )
+        # remove events outside of the event_id dictionary
+        sel = np.isin(events[:, 2], list(self._event_id.values()))
+        events = events[sel]
+        # remove events which can't fit an entire epoch
+        sel = np.where(events[:, 0] + self._buffer.shape[1] <= ts.size)[0]
+        events = events[sel]
+        # remove events which have already been moved to the buffer
+        # TODO: define self._last_ts
+        sel = np.where(ts[events[:, 0]] > self._last_ts)[0]
+        events = events[sel]
         # select data, for loop is faster than the fancy indexing ideas tried and
         # will anyway operate on a small number of events most of the time.
         data_selection = np.empty(
             (events.shape[0], self._picks.size, self._buffer.shape[1]),
             dtype=data.dtype,
         )
-        for k, start in enumerate(events):
+        for k, start in enumerate(events[:, 0]):
             data_selection[k] = data[self._picks, start : start + self._buffer.shape[1]]
+        return data_selection, events
+
+    def _acquire_with_regularly_sampled_event_stream(self):
+        data, ts = self._stream.get_data()
+        data_events, ts_events = self._event_stream.get_data(picks=self._event_channels)
+        events = _find_events_in_stim_channels(
+            data_events, self._event_channels, self._info["sfreq"]
+        )
+        # remove events outside of the event_id dictionary
+        sel = np.isin(events[:, 2], list(self._event_id.values()))
+        events = events[sel]
+        # get the timestamps of each events and find their position in the stream times
+        events[:, 0] = np.searchsorted(ts, ts_events[events[:, 0]], side="left")
+        # remove events which can't fit an entire epoch
+        sel = np.where(events[:, 0] + self._buffer.shape[1] <= ts.size)[0]
+        events = events[sel]
+        # remove events which have already been moved to the buffer
+        # TODO: define self._last_ts
+        sel = np.where(ts[events[:, 0]] > self._last_ts)[0]
+        events = events[sel]
+        # select data, for loop is faster than the fancy indexing ideas tried and
+        # will anyway operate on a small number of events most of the time.
+        data_selection = np.empty(
+            (events.shape[0], self._picks.size, self._buffer.shape[1]),
+            dtype=data.dtype,
+        )
+        for k, start in enumerate(events[:, 0]):
+            data_selection[k] = data[self._picks, start : start + self._buffer.shape[1]]
+        return data_selection, events
+
+    def _acquire_with_irregularly_sampled_event_stream(self):
+        data, ts = self._stream.get_data()
+        data_events, ts_events = self._event_stream.get_data(picks=self._event_channels)
+        # self._event_channels contains the event names to consider, thus we already
+        # selected only the events to keep from the event stream.
+        # first, let's ge the timestamp of each events and find their position in the
+        # stream times.
+        idx = np.searchsorted(ts, ts_events, side="left")
+        # remove events which can't fit an entire epoch
+        sel = np.where(idx + self._buffer.shape[1] <= ts.size)[0]
+        idx = idx[sel]
+        # remove events which have already been moved to the buffer
+        # TODO: define self._last_ts
+        sel = np.where(ts[idx] > self._last_ts)[0]
+        idx = idx[sel]
+        # select data, for loop is faster than the fancy indexing ideas tried and
+        # will anyway operate on a small number of events most of the time.
+        data_selection = np.empty(
+            (idx.size, self._picks.size, self._buffer.shape[1]), dtype=data.dtype
+        )
+        for k, start in enumerate(idx):
+            data_selection[k] = data[self._picks, start : start + self._buffer.shape[1]]
+        # reconstruct the events array
+        events = np.vstack(
+            [idx, np.zeros(idx.size, dtype=np.int64), np.argmax(data, axis=1)],
+            dtype=np.int64,
+        )
+        return data_selection, events
 
     def _check_connected(self, name: str) -> None:
         """Check that the epochs stream is connected before calling 'name'."""
