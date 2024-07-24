@@ -78,7 +78,7 @@ class EpochsStream:
 
             For a new epoch to be added to the buffer, the epoch must be fully
             acquired, i.e. the last sample of the epoch must be received. Thus, an
-            epoch is acquired ``tmax`` seconds after the event onset.
+            epoch is acquired at least ``tmax`` seconds after the event onset.
     %(epochs_tmin_tmax)s
     %(baseline_epochs)s
     %(picks_base)s all channels.
@@ -397,7 +397,7 @@ class EpochsStream:
                 "This acquisition scenario should not happen. Please contact the "
                 "developers."
             )
-        if events.shape[0] == 0:  # abort in case we don't have new epochs
+        if events.shape[0] == 0:  # abort in case we don't have new events to add
             return
         # select data, for loop is faster than the fancy indexing ideas tried and
         # will anyway operate on a small number of events most of the time.
@@ -407,6 +407,13 @@ class EpochsStream:
         )
         for k, start in enumerate(events[:, 0]):
             data_selection[k] = data[self._picks, start : start + self._buffer.shape[1]]
+        # apply processing
+        data_selection = _process_data(data_selection)
+        # roll buffer and add new epochs
+        self._buffer = np.roll(self._buffer, -events.shape[0], axis=0)
+        self._buffer[-events.shape[0] :, :, :] = data_selection
+        # update the last ts
+        self._last = ts[events[-1, 0]]
 
     def _check_connected(self, name: str) -> None:
         """Check that the epochs stream is connected before calling 'name'."""
@@ -725,3 +732,8 @@ def _prune_events(
         sel = np.where(ts[events[:, 0]] > last_ts)[0]
         events = events[sel]
     return events
+
+
+def _process_data(data: ScalarArray) -> ScalarArray:
+    """Apply the requested processing to the new epochs."""
+    return data
