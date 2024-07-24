@@ -408,30 +408,25 @@ class EpochsStream:
     def _acquire_with_irregularly_sampled_event_stream(self):
         data, ts = self._stream.get_data()
         data_events, ts_events = self._event_stream.get_data(picks=self._event_channels)
-        # self._event_channels contains the event names to consider, thus we already
-        # selected only the events to keep from the event stream.
-        # first, let's ge the timestamp of each events and find their position in the
-        # stream times.
-        idx = np.searchsorted(ts, ts_events, side="left")
-        # remove events which can't fit an entire epoch
-        sel = np.where(idx + self._buffer.shape[1] <= ts.size)[0]
-        idx = idx[sel]
-        # remove events which have already been moved to the buffer
-        if self._last_ts is not None:
-            sel = np.where(ts[idx] > self._last_ts)[0]
-            idx = idx[sel]
+        # create an event array
+        events = np.vstack(
+            [
+                np.arange(ts_events.size, dtype=np.int64),
+                np.zeros(ts_events.size, dtype=np.int64),
+                np.argmax(data, axis=1),
+            ],
+            dtype=np.int64,
+        )
+        events = _prune_events(
+            events, None, self._buffer.shape[1], ts, self._last_ts, ts_events
+        )
         # select data, for loop is faster than the fancy indexing ideas tried and
         # will anyway operate on a small number of events most of the time.
         data_selection = np.empty(
-            (idx.size, self._picks.size, self._buffer.shape[1]), dtype=data.dtype
+            (events.size, self._picks.size, self._buffer.shape[1]), dtype=data.dtype
         )
-        for k, start in enumerate(idx):
+        for k, start in enumerate(events[:, 0]):
             data_selection[k] = data[self._picks, start : start + self._buffer.shape[1]]
-        # reconstruct the events array
-        events = np.vstack(
-            [idx, np.zeros(idx.size, dtype=np.int64), np.argmax(data, axis=1)],
-            dtype=np.int64,
-        )
         return data_selection, events
 
     def _check_connected(self, name: str) -> None:
@@ -729,7 +724,7 @@ def _find_events_in_stim_channels(
 
 def _prune_events(
     events: NDArray[np.int64],
-    event_id: dict[str, int],
+    event_id: Optional[dict[str, int]],
     buffer_size: int,
     ts: NDArray[np.float64],
     last_ts: Optional[float],
@@ -737,8 +732,9 @@ def _prune_events(
 ) -> NDArray[np.int64]:
     """Prune events based on criteria and buffer size."""
     # remove events outside of the event_id dictionary
-    sel = np.isin(events[:, 2], list(event_id.values()))
-    events = events[sel]
+    if event_id is not None:
+        sel = np.isin(events[:, 2], list(event_id.values()))
+        events = events[sel]
     # get the events position in the stream times
     if ts_events is not None:
         events[:, 0] = np.searchsorted(ts, ts_events[events[:, 0]], side="left")
