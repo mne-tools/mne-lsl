@@ -373,16 +373,9 @@ class EpochsStream:
         events = _find_events_in_stim_channels(
             data[picks_events, :], self._event_channels, self._info["sfreq"]
         )
-        # remove events outside of the event_id dictionary
-        sel = np.isin(events[:, 2], list(self._event_id.values()))
-        events = events[sel]
-        # remove events which can't fit an entire epoch
-        sel = np.where(events[:, 0] + self._buffer.shape[1] <= ts.size)[0]
-        events = events[sel]
-        # remove events which have already been moved to the buffer
-        if self._last_ts is not None:
-            sel = np.where(ts[events[:, 0]] > self._last_ts)[0]
-            events = events[sel]
+        events = _prune_events(
+            events, self._event_id, self._buffer.shape[1], ts, self._last_ts, None
+        )
         # select data, for loop is faster than the fancy indexing ideas tried and
         # will anyway operate on a small number of events most of the time.
         data_selection = np.empty(
@@ -399,18 +392,9 @@ class EpochsStream:
         events = _find_events_in_stim_channels(
             data_events, self._event_channels, self._info["sfreq"]
         )
-        # remove events outside of the event_id dictionary
-        sel = np.isin(events[:, 2], list(self._event_id.values()))
-        events = events[sel]
-        # get the timestamps of each events and find their position in the stream times
-        events[:, 0] = np.searchsorted(ts, ts_events[events[:, 0]], side="left")
-        # remove events which can't fit an entire epoch
-        sel = np.where(events[:, 0] + self._buffer.shape[1] <= ts.size)[0]
-        events = events[sel]
-        # remove events which have already been moved to the buffer
-        if self._last_ts is not None:
-            sel = np.where(ts[events[:, 0]] > self._last_ts)[0]
-            events = events[sel]
+        events = _prune_events(
+            events, self._event_id, self._buffer.shape[1], ts, self._last_ts, ts_events
+        )
         # select data, for loop is faster than the fancy indexing ideas tried and
         # will anyway operate on a small number of events most of the time.
         data_selection = np.empty(
@@ -741,3 +725,28 @@ def _find_events_in_stim_channels(
     events = np.concatenate(events_list, axis=0)
     events = _find_unique_events(events)
     return events[np.argsort(events[:, 0])]
+
+
+def _prune_events(
+    events: NDArray[np.int64],
+    event_id: dict[str, int],
+    buffer_size: int,
+    ts: NDArray[np.float64],
+    last_ts: Optional[float],
+    ts_events: Optional[NDArray[np.float64]],
+) -> NDArray[np.int64]:
+    """Prune events based on criteria and buffer size."""
+    # remove events outside of the event_id dictionary
+    sel = np.isin(events[:, 2], list(event_id.values()))
+    events = events[sel]
+    # get the events position in the stream times
+    if ts_events is not None:
+        events[:, 0] = np.searchsorted(ts, ts_events[events[:, 0]], side="left")
+    # remove events which can't fit an entire epoch
+    sel = np.where(events[:, 0] + buffer_size <= ts.size)[0]
+    events = events[sel]
+    # remove events which have already been moved to the buffer
+    if last_ts is not None:
+        sel = np.where(ts[events[:, 0]] > last_ts)[0]
+        events = events[sel]
+    return events
