@@ -354,11 +354,11 @@ class EpochsStream:
         # split the different acquisition scenarios to retrieve new epochs to add to the
         # buffer.
         if self._event_stream is None:
-            data = self._acquire_without_event_stream()
+            data, events = self._acquire_without_event_stream()
         elif self._event_stream is not None and self._event_stream._info["sfreq"] != 0:
-            data = self._acquire_with_regularly_sampled_event_stream()
+            data, events = self._acquire_with_regularly_sampled_event_stream()
         elif self._event_stream is not None and self._event_stream._info["sfreq"] == 0:
-            data = self._acquire_with_irregularly_sampled_event_stream()
+            data, events = self._acquire_with_irregularly_sampled_event_stream()
         else:  # pragma: no cover
             raise RuntimeError(
                 "This acquisition scenario should not happen. Please contact the "
@@ -380,9 +380,9 @@ class EpochsStream:
         sel = np.where(events[:, 0] + self._buffer.shape[1] <= ts.size)[0]
         events = events[sel]
         # remove events which have already been moved to the buffer
-        # TODO: define self._last_ts
-        sel = np.where(ts[events[:, 0]] > self._last_ts)[0]
-        events = events[sel]
+        if self._last_ts is not None:
+            sel = np.where(ts[events[:, 0]] > self._last_ts)[0]
+            events = events[sel]
         # select data, for loop is faster than the fancy indexing ideas tried and
         # will anyway operate on a small number of events most of the time.
         data_selection = np.empty(
@@ -408,9 +408,9 @@ class EpochsStream:
         sel = np.where(events[:, 0] + self._buffer.shape[1] <= ts.size)[0]
         events = events[sel]
         # remove events which have already been moved to the buffer
-        # TODO: define self._last_ts
-        sel = np.where(ts[events[:, 0]] > self._last_ts)[0]
-        events = events[sel]
+        if self._last_ts is not None:
+            sel = np.where(ts[events[:, 0]] > self._last_ts)[0]
+            events = events[sel]
         # select data, for loop is faster than the fancy indexing ideas tried and
         # will anyway operate on a small number of events most of the time.
         data_selection = np.empty(
@@ -433,9 +433,9 @@ class EpochsStream:
         sel = np.where(idx + self._buffer.shape[1] <= ts.size)[0]
         idx = idx[sel]
         # remove events which have already been moved to the buffer
-        # TODO: define self._last_ts
-        sel = np.where(ts[idx] > self._last_ts)[0]
-        idx = idx[sel]
+        if self._last_ts is not None:
+            sel = np.where(ts[idx] > self._last_ts)[0]
+            idx = idx[sel]
         # select data, for loop is faster than the fancy indexing ideas tried and
         # will anyway operate on a small number of events most of the time.
         data_selection = np.empty(
@@ -465,6 +465,7 @@ class EpochsStream:
         self._buffer = None
         self._executor = None
         self._info = None
+        self._last_ts = None
         self._n_new_epochs = 0
         self._picks = None
 
