@@ -193,7 +193,7 @@ class EpochsStream:
                 "positive integer."
             )
         self._event_id = _ensure_event_id_dict(event_id)
-        _check_baseline(baseline)
+        _check_baseline(baseline, self._tmin, self._tmax)
         self._baseline = baseline
         _check_reject_flat(reject, flat, self._stream._info)
         self._reject, self._flat = reject, flat
@@ -500,7 +500,7 @@ def _check_event_channels(
                     f"The event channel '{elt}' should not be marked as bad in the "
                     "connected Stream."
                 )
-            if stream.get_channel_types(picks=elt) != "stim":
+            if stream.get_channel_types(picks=elt)[0] != "stim":
                 raise ValueError(f"The event channel '{elt}' should be of type 'stim'.")
         elif event_stream is not None:
             if elt not in event_stream._info.ch_names:
@@ -515,7 +515,7 @@ def _check_event_channels(
                 )
             if (
                 event_stream._info["sfreq"] != 0
-                and event_stream.get_channel_types(picks=elt) != "stim"
+                and event_stream.get_channel_types(picks=elt)[0] != "stim"
             ):
                 raise ValueError(
                     f"The event channel '{elt}' in the event stream should be of type "
