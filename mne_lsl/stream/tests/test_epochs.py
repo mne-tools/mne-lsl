@@ -140,17 +140,12 @@ def test_find_events_in_stim_channels():
 
 
 @pytest.fixture()
-def n_events() -> int:
-    """Return the number of events."""
-    return 10
-
-
-@pytest.fixture()
-def events(n_events: int) -> NDArray[np.int64]:
+def events() -> NDArray[np.int64]:
     """Return a simple event array.
 
     An event is present every 10 samples, cycling between the values (1, 2, 3).
     """
+    n_events = 10
     events = np.zeros((n_events, 3), dtype=np.int64)
     for k in range(events.shape[0]):
         events[k, :] = [10 * (k + 1), 0, k % 3 + 1]
