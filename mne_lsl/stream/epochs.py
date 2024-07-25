@@ -669,7 +669,7 @@ def _find_events_in_stim_channels(
     consecutive: Union[bool, str] = "increasing",
     min_duration: float = 0,
     shortest_event: int = 2,
-    mask: Optional[int],
+    mask: Optional[int] = None,
     uint_cast: bool = False,
     mask_type: str = "and",
     initial_event: bool = False,

@@ -13,6 +13,7 @@ from ..epochs import (
     _check_reject_tmin_tmax,
     _ensure_detrend_int,
     _ensure_event_id_dict,
+    _find_events_in_stim_channels,
     _prune_events,
 )
 
@@ -135,8 +136,48 @@ def test_ensure_detrend_int():
         _ensure_detrend_int(5.5)
 
 
-def test_find_events_in_stim_channels():
+@pytest.fixture()
+def stim_channels_events() -> NDArray[np.int64]:
+    """An event array that will be added to a set of stimulation channels."""
+    return np.array(
+        [
+            [5, 0, 3],
+            [10, 0, 1],
+            [25, 0, 1],
+            [30, 0, 2],
+            [50, 0, 1],
+            [70, 0, 1],
+            [85, 0, 2],
+        ],
+        dtype=np.int64,
+    )
+
+
+@pytest.fixture()
+def stim_channels(stim_channels_events: NDArray[np.int64]) -> NDArray[np.float64]:
+    """A set of stimulation channels of shape (n_channels, n_samples)."""
+    channels = np.zeros((2, 100))
+    for k, ev in enumerate(stim_channels_events):
+        idx = 0 if k not in (0, 2) else 1
+        channels[idx, ev[0] : ev[0] + 10] = ev[2]
+    return channels
+
+
+def test_find_events_in_stim_channels(
+    stim_channels_events: NDArray[np.int64],
+    stim_channels: NDArray[np.float64],
+):
     """Test finding events in stimulation channels."""
+    events = _find_events_in_stim_channels(stim_channels, ["a", "b"], 100)
+    assert_allclose(events, stim_channels_events)
+    events = _find_events_in_stim_channels(
+        stim_channels, ["a", "b"], 100, min_duration=0.2
+    )
+    assert events.size == 0
+    with pytest.warns(RuntimeWarning, match="You have .* events shorter"):
+        events = _find_events_in_stim_channels(
+            stim_channels, ["a", "b"], 100, shortest_event=25
+        )
 
 
 @pytest.fixture()
