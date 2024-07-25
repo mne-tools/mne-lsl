@@ -1,5 +1,11 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+import numpy as np
 import pytest
 from mne import create_info
+from numpy.testing import assert_allclose
 
 from ..epochs import (
     _check_baseline,
@@ -7,7 +13,11 @@ from ..epochs import (
     _check_reject_tmin_tmax,
     _ensure_detrend_int,
     _ensure_event_id_dict,
+    _prune_events,
 )
+
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
 
 
 def test_ensure_event_id_dict():
@@ -129,5 +139,50 @@ def test_find_events_in_stim_channels():
     """Test finding events in stimulation channels."""
 
 
-def test_prune_events():
+@pytest.fixture()
+def n_events() -> int:
+    """Return the number of events."""
+    return 10
+
+
+@pytest.fixture()
+def events(n_events: int) -> NDArray[np.int64]:
+    """Return a simple event array.
+
+    An event is present every 10 samples, cycling between the values (1, 2, 3).
+    """
+    events = np.zeros((n_events, 3), dtype=np.int64)
+    for k in range(events.shape[0]):
+        events[k, :] = [10 * (k + 1), 0, k % 3 + 1]
+    return events
+
+
+def test_prune_events(events: NDArray[np.int64]):
     """Test pruning events."""
+    ts = np.arange(10000, 11000, 1.8)
+    events_ = _prune_events(events, dict(a=1, b=2, c=3), 10, ts, None, None)
+    assert_allclose(events_, events)
+    # test pruning events outside of the event_id dictionary
+    events_ = _prune_events(events, dict(a=1, c=3), 10, ts, None, None)
+    assert sorted(np.unique(events_[:, 2])) == [1, 3]
+    # test pruning events that can't fit in the buffer
+    ts = np.arange(5)
+    events_ = _prune_events(events, dict(a=1, b=2, c=3), 10, ts, None, None)
+    assert events_.size == 0
+    ts = np.arange(10000, 11000, 1.8)  # ts.size == 556
+    events_ = _prune_events(events, dict(a=1, b=2, c=3), 500, ts, None, None)
+    assert events_[-1, 0] + 500 <= ts.size
+    assert events_[-1, 0] == 50  # events @ 60, 70, 80, ... should be dropped
+    # test pruning events that have already been moved to the buffer
+    ts = np.arange(10000, 11000, 1.8)  # ts.size == 556
+    events_ = _prune_events(events, dict(a=1, b=2, c=3), 10, ts, ts[events[3, 0]], None)
+    assert_allclose(events_, events[4:, :])
+    # test pruning events from an event stream, which converts the index to index in ts
+    ts = np.arange(1000)
+    ts_events = np.arange(500) * 2 + 0.5  # mock a different sampling frequency
+    events_ = _prune_events(events, dict(a=1, b=2, c=3), 10, ts, None, ts_events)
+    assert_allclose(events_[:, 2], events[:, 2])
+    # with the half sampling rate + 0.5 set above, we should be selecting:
+    # from: 10, 20, 30, 40, ... corresponding to 20.5, 40.5, 60.5, ...
+    # to: 21, 41, 61, ... corresponding to 20, 40, 60, ...
+    assert_allclose(events_[:, 0], np.arange(20, 20 * (events_[:, 0].size + 1), 20) + 1)
