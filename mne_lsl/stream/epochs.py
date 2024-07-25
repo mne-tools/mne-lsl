@@ -45,6 +45,24 @@ class EpochsStream:
     stream : ``Stream``
         Stream object to connect to, from which the epochs are extracted. The stream
         must be regularly sampled.
+    bufsize : int
+        Number of epochs to keep in the buffer. The buffer size is defined by this
+        number of epochs and by the duration of individual epochs, defined by the
+        argument ``tmin`` and ``tmax``.
+
+        .. note::
+
+            For a new epoch to be added to the buffer, the epoch must be fully
+            acquired, i.e. the last sample of the epoch must be received. Thus, an
+            epoch is acquired at least ``tmax`` seconds after the event onset.
+    event_id : int | dict
+        The ID of the events to consider from the event source. The event source can be
+        a channel from the connected Stream or a separate event stream. In both case the
+        event should be defined either as :class:`int`. If a :class:`dict` is provided,
+        it should map event names to event IDs. For example
+        ``dict(auditory=1, visual=2)``. If the event source is an irregularly sampled
+        stream, the numerical values within the channels are ignored and this argument
+        is ignored.
     event_channels : str | list of str
         Channel(s) to monitor for incoming events. The event channel(s) must be part of
         the connected Stream or of the ``event_stream`` if provided. See notes for
@@ -61,24 +79,6 @@ class EpochsStream:
             :class:`~mne_lsl.stream.StreamLSL` objects, provide
             ``processing_flags='all'`` as argument during connection with
             :meth:`~mne_lsl.stream.StreamLSL.connect`.
-    event_id : int | dict
-        The ID of the events to consider from the event source. The event source can be
-        a channel from the connected Stream or a separate event stream. In both case the
-        event should be defined either as :class:`int`. If a :class:`dict` is provided,
-        it should map event names to event IDs. For example
-        ``dict(auditory=1, visual=2)``. If the event source is an irregularly sampled
-        stream, the numerical values within the channels are ignored and this argument
-        is ignored.
-    bufsize : int
-        Number of epochs to keep in the buffer. The buffer size is defined by this
-        number of epochs and by the duration of individual epochs, defined by the
-        argument ``tmin`` and ``tmax``.
-
-        .. note::
-
-            For a new epoch to be added to the buffer, the epoch must be fully
-            acquired, i.e. the last sample of the epoch must be received. Thus, an
-            epoch is acquired at least ``tmax`` seconds after the event onset.
     %(epochs_tmin_tmax)s
     %(baseline_epochs)s
     %(picks_base)s all channels.
@@ -122,10 +122,10 @@ class EpochsStream:
     def __init__(
         self,
         stream: BaseStream,
-        event_channels: Union[str, list[str]],
-        event_stream: Optional[BaseStream],
-        event_id: Union[int, dict[str, int]],
         bufsize: int,
+        event_id: Union[int, dict[str, int]],
+        event_channels: Union[str, list[str]],
+        event_stream: Optional[BaseStream] = None,
         tmin: float = -0.2,
         tmax: float = 0.5,
         baseline: Optional[tuple[Optional[float], Optional[float]]] = (None, 0),
@@ -405,6 +405,7 @@ class EpochsStream:
             (events.shape[0], self._picks.size, self._buffer.shape[1]),
             dtype=data.dtype,
         )
+        # TODO: take into account tmin/tmax
         for k, start in enumerate(events[:, 0]):
             data_selection[k] = data[self._picks, start : start + self._buffer.shape[1]]
         # apply processing
@@ -500,7 +501,7 @@ def _check_event_channels(
                     "connected Stream."
                 )
             if stream.get_channel_types(picks=elt) != "stim":
-                raise ValueError("The event channel '{elt}' should be of type 'stim'.")
+                raise ValueError(f"The event channel '{elt}' should be of type 'stim'.")
         elif event_stream is not None:
             if elt not in event_stream._info.ch_names:
                 raise ValueError(
@@ -517,7 +518,7 @@ def _check_event_channels(
                 and event_stream.get_channel_types(picks=elt) != "stim"
             ):
                 raise ValueError(
-                    "The event channel '{elt}' in the event stream should be of type "
+                    f"The event channel '{elt}' in the event stream should be of type "
                     "'stim' if the event stream is regularly sampled."
                 )
 

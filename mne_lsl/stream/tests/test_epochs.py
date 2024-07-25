@@ -1,12 +1,17 @@
 from __future__ import annotations
 
+import multiprocessing as mp
+import time
 from typing import TYPE_CHECKING
 
 import numpy as np
 import pytest
 from mne import create_info
+from mne.io import RawArray
+from mne.io.base import BaseRaw
 from numpy.testing import assert_allclose
 
+from .. import EpochsStream, StreamLSL
 from ..epochs import (
     _check_baseline,
     _check_reject_flat,
@@ -18,6 +23,7 @@ from ..epochs import (
 )
 
 if TYPE_CHECKING:
+    from mne.io import BaseRaw
     from numpy.typing import NDArray
 
 
@@ -222,3 +228,64 @@ def test_prune_events(events: NDArray[np.int64]):
     # from: 10, 20, 30, 40, ... corresponding to 20.5, 40.5, 60.5, ...
     # to: 21, 41, 61, ... corresponding to 20, 40, 60, ...
     assert_allclose(events_[:, 0], np.arange(20, 20 * (events_[:, 0].size + 1), 20) + 1)
+
+
+@pytest.fixture()
+def raw_with_stim_channel() -> BaseRaw:
+    """Create a raw object with a stimulation channel."""
+    n_samples = 1000
+    data = np.zeros((4, n_samples), dtype=np.float32)
+    data[0, :] = np.arange(n_samples)  # index of the sample within the raw object
+    for pos in (100, 500, 700):
+        data[1:-1, pos : pos + 100] = 101
+        data[-1, pos : pos + 10] = 1  # trigger channel at the end
+    info = create_info(["ch1", "ch2", "ch3", "trg"], 1000, ["eeg"] * 3 + ["stim"])
+    return RawArray(data, info)
+
+
+def _player_mock_lsl_stream(
+    raw: BaseRaw,
+    name: str,
+    chunk_size: int,
+    status: mp.managers.ValueProxy,
+) -> None:
+    """Player for the 'mock_lsl_stream_sinusoids' fixture."""
+    # nest the PlayerLSL import to first write the temporary LSL configuration file
+    from mne_lsl.player import PlayerLSL
+
+    player = PlayerLSL(raw, chunk_size=chunk_size, name=name)
+    player.start()
+    status.value = 1
+    while status.value:
+        time.sleep(0.1)
+    player.stop()
+
+
+@pytest.fixture()
+def _mock_lsl_stream(raw_with_stim_channel, request, chunk_size):
+    """Create a mock LSL stream streaming sinusoids."""
+    manager = mp.Manager()
+    status = manager.Value("i", 0)
+    name = f"P_{request.node.name}"
+    process = mp.Process(
+        target=_player_mock_lsl_stream,
+        args=(raw_with_stim_channel, name, chunk_size, status),
+    )
+    process.start()
+    while status.value != 1:
+        pass
+    yield
+    status.value = 0
+    process.join()
+
+
+@pytest.mark.usefixtures("_mock_lsl_stream")
+def test_epochs_without_event_stream():
+    """Test creating epochs from the main stream."""
+    stream = StreamLSL(0.5).connect()
+    epochs = EpochsStream(
+        stream, 10, event_channels="trg", event_id=dict(a=1), tmin=-0.05, tmax=0.15
+    ).connect()
+    time.sleep(3)
+    epochs.disconnect()
+    stream.disconnect()

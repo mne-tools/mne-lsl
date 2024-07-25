@@ -716,6 +716,8 @@ def _mock_lsl_stream_annotations(raw_annotations, request, chunk_size):
         args=(raw_annotations, f"P_{request.node.name}", chunk_size, status),
     )
     process.start()
+    while status.value != 1:
+        pass
     yield
     status.value = 0
     process.join()
