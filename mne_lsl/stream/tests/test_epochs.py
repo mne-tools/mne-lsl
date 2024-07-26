@@ -290,13 +290,14 @@ def _mock_lsl_stream(raw_with_stim_channel, request, chunk_size):
 @pytest.mark.usefixtures("_mock_lsl_stream")
 def test_epochs_without_event_stream():
     """Test creating epochs from the main stream."""
-    stream = StreamLSL(0.5).connect()
+    stream = StreamLSL(0.5).connect(acquisition_delay=0.1)
     epochs = EpochsStream(
         stream, 10, event_channels="trg", event_id=dict(a=1), tmin=-0.05, tmax=0.15
-    ).connect()
+    ).connect(acquisition_delay=0.1)
     while epochs.n_new_epochs == 0:
         time.sleep(0.1)
+    n = epochs.n_new_epochs
     data = epochs.get_data()
-    assert_allclose(data[:-1, :, :], np.zeros((9, data.shape[1], data.shape[2])))
+    assert_allclose(data[:-n, :, :], np.zeros((10 - n, data.shape[1], data.shape[2])))
     epochs.disconnect()
     stream.disconnect()
