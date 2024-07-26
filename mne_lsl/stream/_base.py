@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
 from math import ceil
+from time import sleep
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -1121,6 +1122,16 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         self._timestamps = None
         # This method needs to reset any stream-system-specific variables, e.g. an inlet
         # or a StreamInfo for LSL streams.
+
+    def _submit_acquisition_job(self) -> None:
+        """Submit a new acquisition job, if applicable."""
+        if self._executor is None:
+            return  # either shutdown or manual acquisition
+        sleep(self._acquisition_delay)
+        try:
+            self._executor.submit(self._acquire)
+        except RuntimeError:  # pragma: no cover
+            pass  # shutdown
 
     # ----------------------------------------------------------------------------------
     @property

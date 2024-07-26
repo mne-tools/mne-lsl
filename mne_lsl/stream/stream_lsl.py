@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import os
 from math import ceil
-from time import sleep
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -244,15 +243,8 @@ class StreamLSL(BaseStream):
                 timeout=0.0, max_samples=self.n_buffer
             )
             if timestamps.size == 0:
-                if self._executor is None:
-                    return  # either shutdown or manual acquisition
-                sleep(self._acquisition_delay)
-                try:
-                    self._executor.submit(self._acquire)
-                except RuntimeError:  # pragma: no cover
-                    pass  # shutdown
+                self._submit_acquisition_job()
                 return  # interrupt early
-
             # process acquisition window
             n_channels = self._inlet.n_channels
             assert data.ndim == 2 and data.shape[-1] == n_channels, (  # noqa: PT018
@@ -265,13 +257,7 @@ class StreamLSL(BaseStream):
             data = data[-self._timestamps.size :, self._picks_inlet]
             timestamps = timestamps[-self._timestamps.size :]
             if self._stype == "annotations" and np.count_nonzero(data) == 0:
-                if self._executor is None:
-                    return  # either shutdown or manual acquisition
-                sleep(self._acquisition_delay)
-                try:
-                    self._executor.submit(self._acquire)
-                except RuntimeError:  # pragma: no cover
-                    pass  # shutdown
+                self._submit_acquisition_job()
                 return  # interrupt early
             if len(self._added_channels) != 0:
                 refs = np.zeros(
@@ -323,13 +309,7 @@ class StreamLSL(BaseStream):
             if os.getenv("MNE_LSL_RAISE_STREAM_ERRORS", "false").lower() == "true":
                 raise error
         else:
-            if self._executor is None:
-                return  # either shutdown or manual acquisition
-            sleep(self._acquisition_delay)
-            try:
-                self._executor.submit(self._acquire)
-            except RuntimeError:  # pragma: no cover
-                pass  # shutdown
+            self._submit_acquisition_job()
 
     def _reset_variables(self) -> None:
         """Reset variables define after connection."""
