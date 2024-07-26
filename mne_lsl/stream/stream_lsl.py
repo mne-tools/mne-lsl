@@ -325,8 +325,8 @@ class StreamLSL(BaseStream):
         else:
             if self._executor is None:
                 return  # either shutdown or manual acquisition
+            sleep(self._acquisition_delay)
             try:
-                sleep(self._acquisition_delay)
                 self._executor.submit(self._acquire)
             except RuntimeError:  # pragma: no cover
                 pass  # shutdown
