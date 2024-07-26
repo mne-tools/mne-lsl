@@ -284,7 +284,8 @@ def _mock_lsl_stream(raw_with_stim_channel, request, chunk_size):
         pass
     yield
     status.value = 0
-    process.join()
+    process.join(timeout=2)
+    process.kill()
 
 
 @pytest.mark.usefixtures("_mock_lsl_stream")

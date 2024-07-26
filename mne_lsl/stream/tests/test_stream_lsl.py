@@ -78,7 +78,8 @@ def mock_lsl_stream(fname, request, chunk_size):
         pass
     yield DummyPlayer(name=name, chunk_size=chunk_size, info=dict(info))
     status.value = 0
-    process.join()
+    process.join(timeout=2)
+    process.kill()
 
 
 @pytest.fixture(
@@ -546,7 +547,8 @@ def mock_lsl_stream_int(request, chunk_size):
         pass
     yield DummyPlayer(name=name, chunk_size=chunk_size, info=dict(info))
     status.value = 0
-    process.join()
+    process.join(timeout=2)
+    process.kill()
 
 
 def test_stream_rereference(mock_lsl_stream_int, acquisition_delay):
@@ -720,7 +722,8 @@ def _mock_lsl_stream_annotations(raw_annotations, request, chunk_size):
         pass
     yield
     status.value = 0
-    process.join()
+    process.join(timeout=2)
+    process.kill()
 
 
 @pytest.mark.usefixtures("_mock_lsl_stream_annotations")
@@ -839,7 +842,8 @@ def mock_lsl_stream_sinusoids(raw_sinusoids, request, chunk_size):
         pass
     yield DummyPlayer(name=name, ch_names=list(ch_names))
     status.value = 0
-    process.join()
+    process.join(timeout=2)
+    process.kill()
 
 
 def test_stream_filter(mock_lsl_stream_sinusoids, raw_sinusoids):
