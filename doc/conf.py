@@ -172,6 +172,7 @@ numpydoc_xref_ignore = {
     "length",
     "n_ch_groups",
     "n_channels",
+    "n_epochs",
     "n_picks",
     "n_samples",
     "of",
