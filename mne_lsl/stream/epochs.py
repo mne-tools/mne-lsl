@@ -380,13 +380,7 @@ class EpochsStream:
                 self._event_stream is not None
                 and self._event_stream._n_new_samples == 0
             ):
-                if self._executor is None:
-                    return  # either shutdown or manual acquisition
-                sleep(self._acquisition_delay)
-                try:
-                    self._executor.submit(self._acquire)
-                except RuntimeError:  # pragma: no cover
-                    pass  # shutdown
+                self._submit_acquisition_job()
                 return
             # split the different acquisition scenarios to retrieve new events to add to
             # the buffer.
@@ -448,13 +442,7 @@ class EpochsStream:
                     "developers."
                 )
             if events.shape[0] == 0:  # abort in case we don't have new events to add
-                if self._executor is None:
-                    return  # either shutdown or manual acquisition
-                sleep(self._acquisition_delay)
-                try:
-                    self._executor.submit(self._acquire)
-                except RuntimeError:  # pragma: no cover
-                    pass  # shutdown
+                self._submit_acquisition_job()
                 return
             # select data, for loop is faster than the fancy indexing ideas tried and
             # will anyway operate on a small number of events most of the time.
@@ -481,13 +469,7 @@ class EpochsStream:
             if os.getenv("MNE_LSL_RAISE_STREAM_ERRORS", "false").lower() == "true":
                 raise error
         else:
-            if self._executor is None:
-                return  # either shutdown or manual acquisition
-            sleep(self._acquisition_delay)
-            try:
-                self._executor.submit(self._acquire)
-            except RuntimeError:  # pragma: no cover
-                pass  # shutdown
+            self._submit_acquisition_job()
 
     def _check_connected(self, name: str) -> None:
         """Check that the epochs stream is connected before calling 'name'."""
@@ -507,6 +489,16 @@ class EpochsStream:
         self._last_ts = None
         self._n_new_epochs = 0
         self._picks = None
+
+    def _submit_acquisition_job(self) -> None:
+        """Submit a new acquisition job, if applicable."""
+        if self._executor is None:
+            return  # either shutdown or manual acquisition
+        sleep(self._acquisition_delay)
+        try:
+            self._executor.submit(self._acquire)
+        except RuntimeError:  # pragma: no cover
+            pass  # shutdown
 
     # ----------------------------------------------------------------------------------
     @property
