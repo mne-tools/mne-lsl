@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import os
 from concurrent.futures import ThreadPoolExecutor
 from math import ceil
+from time import sleep
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -345,76 +347,133 @@ class EpochsStream:
         ):
             self._event_stream._epochs.remove(self)
 
+    @fill_doc
+    def get_data(
+        self,
+        picks: Optional[Union[str, list[str], int, list[int], ScalarIntArray]] = None,
+    ) -> ScalarArray:
+        """Retrieve the latest epochs from the buffer.
+
+        Parameters
+        ----------
+        %(picks_all)s
+
+        Returns
+        -------
+        data : array of shape (n_epochs, n_channels, n_samples)
+            Data in the buffer.
+
+        Notes
+        -----
+        The number of newly available epochs stored in the property ``n_new_epochs``
+        is reset at every function call, even if all channels were not selected with the
+        argument ``picks``.
+        """
+        picks = _picks_to_idx(self._info, picks, none="all", exclude="bads")
+        self._new_new_epochs = 0  # reset the number of new epochs
+        return np.transpose(self._buffer[:, :, picks], axes=(0, 2, 1))
+
     def _acquire(self) -> None:
         """Update function looking for new epochs."""
-        if self._stream._n_new_samples == 0 or (
-            self._event_stream is not None and self._event_stream._n_new_samples == 0
-        ):
-            return
-        # split the different acquisition scenarios to retrieve new events to add to the
-        # buffer.
-        data, ts = self._stream.get_data()
-        if self._event_stream is None:
-            picks_events = _picks_to_idx(self._info, self._event_channels, exclude=())
-            events = _find_events_in_stim_channels(
-                data[picks_events, :], self._event_channels, self._info["sfreq"]
+        try:
+            if self._stream._n_new_samples == 0 or (
+                self._event_stream is not None
+                and self._event_stream._n_new_samples == 0
+            ):
+                return
+            # split the different acquisition scenarios to retrieve new events to add to
+            # the buffer.
+            data, ts = self._stream.get_data()
+            if self._event_stream is None:
+                picks_events = _picks_to_idx(
+                    self._info, self._event_channels, exclude=()
+                )
+                events = _find_events_in_stim_channels(
+                    data[picks_events, :], self._event_channels, self._info["sfreq"]
+                )
+                events = _prune_events(
+                    events,
+                    self._event_id,
+                    self._buffer.shape[1],
+                    ts,
+                    self._last_ts,
+                    None,
+                )
+            elif (
+                self._event_stream is not None
+                and self._event_stream._info["sfreq"] != 0
+            ):
+                data_events, ts_events = self._event_stream.get_data(
+                    picks=self._event_channels
+                )
+                events = _find_events_in_stim_channels(
+                    data_events, self._event_channels, self._info["sfreq"]
+                )
+                events = _prune_events(
+                    events,
+                    self._event_id,
+                    self._buffer.shape[1],
+                    ts,
+                    self._last_ts,
+                    ts_events,
+                )
+            elif (
+                self._event_stream is not None
+                and self._event_stream._info["sfreq"] == 0
+            ):
+                data_events, ts_events = self._event_stream.get_data(
+                    picks=self._event_channels
+                )
+                events = np.vstack(
+                    [
+                        np.arange(ts_events.size, dtype=np.int64),
+                        np.zeros(ts_events.size, dtype=np.int64),
+                        np.argmax(data, axis=1),
+                    ],
+                    dtype=np.int64,
+                )
+                events = _prune_events(
+                    events, None, self._buffer.shape[1], ts, self._last_ts, ts_events
+                )
+            else:  # pragma: no cover
+                raise RuntimeError(
+                    "This acquisition scenario should not happen. Please contact the "
+                    "developers."
+                )
+            if events.shape[0] == 0:  # abort in case we don't have new events to add
+                return
+            # select data, for loop is faster than the fancy indexing ideas tried and
+            # will anyway operate on a small number of events most of the time.
+            data_selection = np.empty(
+                (events.shape[0], self._buffer.shape[1], self._picks.size),
+                dtype=data.dtype,
             )
-            events = _prune_events(
-                events, self._event_id, self._buffer.shape[1], ts, self._last_ts, None
-            )
-        elif self._event_stream is not None and self._event_stream._info["sfreq"] != 0:
-            data_events, ts_events = self._event_stream.get_data(
-                picks=self._event_channels
-            )
-            events = _find_events_in_stim_channels(
-                data_events, self._event_channels, self._info["sfreq"]
-            )
-            events = _prune_events(
-                events,
-                self._event_id,
-                self._buffer.shape[1],
-                ts,
-                self._last_ts,
-                ts_events,
-            )
-        elif self._event_stream is not None and self._event_stream._info["sfreq"] == 0:
-            data_events, ts_events = self._event_stream.get_data(
-                picks=self._event_channels
-            )
-            events = np.vstack(
-                [
-                    np.arange(ts_events.size, dtype=np.int64),
-                    np.zeros(ts_events.size, dtype=np.int64),
-                    np.argmax(data, axis=1),
-                ],
-                dtype=np.int64,
-            )
-            events = _prune_events(
-                events, None, self._buffer.shape[1], ts, self._last_ts, ts_events
-            )
-        else:  # pragma: no cover
-            raise RuntimeError(
-                "This acquisition scenario should not happen. Please contact the "
-                "developers."
-            )
-        if events.shape[0] == 0:  # abort in case we don't have new events to add
-            return
-        # select data, for loop is faster than the fancy indexing ideas tried and
-        # will anyway operate on a small number of events most of the time.
-        data_selection = np.empty(
-            (events.shape[0], self._picks.size, self._buffer.shape[1]),
-            dtype=data.dtype,
-        )
-        # TODO: take into account tmin/tmax
-        for k, start in enumerate(events[:, 0]):
-            data_selection[k] = data[self._picks, start : start + self._buffer.shape[1]]
-        # apply processing
-        data_selection = _process_data(data_selection)
-        # roll buffer and add new epochs
-        self._buffer = np.roll(self._buffer, -events.shape[0], axis=0)
-        self._buffer[-events.shape[0] :, :, :] = data_selection
-        # update the last ts
-        self._last = ts[events[-1, 0]]
+            # TODO: take into account tmin/tmax
+            for k, start in enumerate(events[:, 0]):
+                data_selection[k] = data[
+                    self._picks, start : start + self._buffer.shape[1]
+                ].T
+            # apply processing
+            data_selection = _process_data(data_selection)
+            # roll buffer and add new epochs
+            self._buffer = np.roll(self._buffer, -events.shape[0], axis=0)
+            self._buffer[-events.shape[0] :, :, :] = data_selection
+            # update the last ts and the number of new epochs
+            self._last = ts[events[-1, 0]]
+            self._n_new_epochs += events.shape[0]
+        except Exception as error:  # pragma: no cover
+            logger.exception(error)
+            self._reset_variables()
+            if os.getenv("MNE_LSL_RAISE_STREAM_ERRORS", "false").lower() == "true":
+                raise error
+        else:
+            if self._executor is None:
+                return  # either shutdown or manual acquisition
+            try:
+                sleep(self._acquisition_delay)
+                self._executor.submit(self._acquire)
+            except RuntimeError:  # pragma: no cover
+                pass  # shutdown
 
     def _check_connected(self, name: str) -> None:
         """Check that the epochs stream is connected before calling 'name'."""

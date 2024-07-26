@@ -232,7 +232,15 @@ def test_prune_events(events: NDArray[np.int64]):
 
 @pytest.fixture()
 def raw_with_stim_channel() -> BaseRaw:
-    """Create a raw object with a stimulation channel."""
+    """Create a raw object with a stimulation channel.
+
+    The raw object contains 1000 samples @ 1 kHz -> 1 second of data:
+    - channel 0: index of the sample within the raw object
+    - channel 1 and 2: 0, except when there is an event, then 101 during 100 samples
+    - channel 3: 0, except when there is an event, then 1 during 10 samples (stim)
+
+    There are 3 events @ 100, 500, 700 samples.
+    """
     n_samples = 1000
     data = np.zeros((4, n_samples), dtype=np.float32)
     data[0, :] = np.arange(n_samples)  # index of the sample within the raw object
@@ -286,6 +294,9 @@ def test_epochs_without_event_stream():
     epochs = EpochsStream(
         stream, 10, event_channels="trg", event_id=dict(a=1), tmin=-0.05, tmax=0.15
     ).connect()
-    time.sleep(3)
+    while epochs.n_new_epochs == 0:
+        time.sleep(0.1)
+    data = epochs.get_data()
+    assert_allclose(data[:-1, :, :], np.zeros((9, data.shape[1], data.shape[2])))
     epochs.disconnect()
     stream.disconnect()
