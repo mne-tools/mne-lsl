@@ -304,3 +304,32 @@ def test_epochs_without_event_stream():
     assert_allclose(data_channels, np.ones(data_channels.shape) * 101)
     epochs.disconnect()
     stream.disconnect()
+
+
+@pytest.mark.usefixtures("_mock_lsl_stream")
+def test_epochs_without_event_stream_tmin_tmax():
+    """Test creating epochs from the main stream."""
+    stream = StreamLSL(0.5).connect(acquisition_delay=0.1)
+    epochs = EpochsStream(
+        stream, 10, event_channels="trg", event_id=dict(a=1), tmin=-0.05, tmax=0.15
+    ).connect(acquisition_delay=0.1)
+    while epochs.n_new_epochs == 0:
+        time.sleep(0.1)
+    n = epochs.n_new_epochs
+    data = epochs.get_data()
+    assert_allclose(data[:-n, :, :], np.zeros((10 - n, data.shape[1], data.shape[2])))
+    data_channels = data[-n:, 1:-1, :]
+    assert_allclose(
+        data_channels[:, :, :50],
+        np.zeros((data_channels.shape[0], data_channels.shape[1], 50)),
+    )
+    assert_allclose(
+        data_channels[:, :, 50:150],
+        np.ones((data_channels.shape[0], data_channels.shape[1], 100)) * 101,
+    )
+    assert_allclose(
+        data_channels[:, :, 150:],
+        np.zeros((data_channels.shape[0], data_channels.shape[1], 50)),
+    )
+    epochs.disconnect()
+    stream.disconnect()
