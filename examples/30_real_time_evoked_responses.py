@@ -30,7 +30,8 @@ raw = read_raw_fif(fname, preload=False).pick(("meg", "stim")).crop(3, 212).load
 with PlayerLSL(raw, chunk_size=200, name="real-time-evoked-example"):
     stream = StreamLSL(bufsize=4, name="real-time-evoked-example")
     stream.connect(acquisition_delay=0.1, processing_flags="all")
-    stream.info["bads"] = ["MEG 2443"]
+    # TODO: Fix handling of bad channels which is dropped both from Stream and Epochs
+    # stream.info["bads"] = ["MEG 2443"]
     epochs = EpochsStream(
         stream,
         bufsize=20,
