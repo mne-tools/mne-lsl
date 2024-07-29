@@ -351,12 +351,15 @@ class EpochsStream:
     def get_data(
         self,
         picks: Optional[Union[str, list[str], int, list[int], ScalarIntArray]] = None,
+        only_new: bool = False,
     ) -> ScalarArray:
         """Retrieve the latest epochs from the buffer.
 
         Parameters
         ----------
         %(picks_all)s
+        only_new : bool
+            If True, only new epochs are returned. If False, all epochs are returned.
 
         Returns
         -------
@@ -370,8 +373,13 @@ class EpochsStream:
         argument ``picks``.
         """
         picks = _picks_to_idx(self._info, picks, none="all", exclude="bads")
+        data = (
+            self._buffer[-self._new_new_epochs :, :, picks]
+            if only_new
+            else self._buffer[:, :, picks]
+        )
         self._new_new_epochs = 0  # reset the number of new epochs
-        return np.transpose(self._buffer[:, :, picks], axes=(0, 2, 1))
+        return np.transpose(data, axes=(0, 2, 1))
 
     def _acquire(self) -> None:
         """Update function looking for new epochs."""
