@@ -450,8 +450,9 @@ class EpochsStream:
                 (events.shape[0], self._buffer.shape[1], self._picks.size),
                 dtype=data.dtype,
             )
-            # TODO: take into account tmin/tmax
+            shift = round(self._tmin * self._info["sfreq"])  # 28.7 ns ± 0.369 ns
             for k, start in enumerate(events[:, 0]):
+                start += shift
                 data_selection[k] = data[
                     self._picks, start : start + self._buffer.shape[1]
                 ].T
