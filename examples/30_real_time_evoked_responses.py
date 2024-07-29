@@ -14,11 +14,12 @@ from mne.io import read_raw_fif
 
 from mne_lsl.player import PlayerLSL
 from mne_lsl.stream import EpochsStream, StreamLSL
+from mne_lsl.utils.logs import logger
 
 # dataset used in the example
 data_path = sample.data_path()
 fname = data_path / "MEG" / "sample" / "sample_audvis_filt-0-40_raw.fif"
-raw = read_raw_fif(fname, preload=False).pick(("meg", "stim")).load_data()
+raw = read_raw_fif(fname, preload=False).pick(("meg", "stim")).crop(3, 212).load_data()
 
 # %%
 # First, we create a mock stream with :class:`mne_lsl.player.PlayerLSL` from the sample
@@ -29,6 +30,7 @@ raw = read_raw_fif(fname, preload=False).pick(("meg", "stim")).load_data()
 with PlayerLSL(raw, chunk_size=200, name="real-time-evoked-example"):
     stream = StreamLSL(bufsize=4, name="real-time-evoked-example")
     stream.connect(acquisition_delay=0.1, processing_flags="all")
+    stream.info["bads"] = ["MEG 2443"]
     epochs = EpochsStream(
         stream,
         bufsize=20,
@@ -47,6 +49,8 @@ with PlayerLSL(raw, chunk_size=200, name="real-time-evoked-example"):
     while n <= 20:
         if epochs.n_new_epochs == 0:
             continue  # nothing new to do
+        logger.info("Got %s / %s new epochs.", epochs.n_new_epochs, n)
+        n += epochs.n_new_epochs
         # get data and create evoked array
         data = epochs.get_data(n_epochs=epochs.n_new_epochs)
         new_evoked = EvokedArray(

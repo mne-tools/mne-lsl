@@ -37,6 +37,7 @@ jobs:
         with:
           sample: "true"
           testing: "false"
+          mne-sample: "true"
       - name: Build doc
         run: make -C doc html
       - name: Prune sphinx environment

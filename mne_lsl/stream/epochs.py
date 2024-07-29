@@ -387,7 +387,7 @@ class EpochsStream:
                     f"buffer size {self._buffer.shape[0]}. Selecting the entire buffer."
                 )
                 n_epochs = self._buffer.shape[0]
-            self._new_new_epochs = 0  # reset the number of new epochs
+            self._n_new_epochs = 0  # reset the number of new epochs
             return np.transpose(self._buffer[-n_epochs:, :, picks], axes=(0, 2, 1))
         except Exception:
             if not self.connected:
@@ -417,7 +417,7 @@ class EpochsStream:
             data, ts = self._stream.get_data()
             if self._event_stream is None:
                 picks_events = _picks_to_idx(
-                    self._info, self._event_channels, exclude=()
+                    self._stream._info, self._event_channels, exclude=()
                 )
                 events = _find_events_in_stim_channels(
                     data[picks_events, :], self._event_channels, self._info["sfreq"]
