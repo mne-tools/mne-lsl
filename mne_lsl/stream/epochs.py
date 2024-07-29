@@ -350,16 +350,17 @@ class EpochsStream:
     @fill_doc
     def get_data(
         self,
+        n_epochs: Optional[int] = None,
         picks: Optional[Union[str, list[str], int, list[int], ScalarIntArray]] = None,
-        only_new: bool = False,
     ) -> ScalarArray:
         """Retrieve the latest epochs from the buffer.
 
         Parameters
         ----------
+        n_epochs : int | None
+            Number of epochs to retrieve from the buffer. If None, all epochs are
+            returned.
         %(picks_all)s
-        only_new : bool
-            If True, only new epochs are returned. If False, all epochs are returned.
 
         Returns
         -------
@@ -372,14 +373,35 @@ class EpochsStream:
         is reset at every function call, even if all channels were not selected with the
         argument ``picks``.
         """
-        picks = _picks_to_idx(self._info, picks, none="all", exclude="bads")
-        data = (
-            self._buffer[-self._new_new_epochs :, :, picks]
-            if only_new
-            else self._buffer[:, :, picks]
-        )
-        self._new_new_epochs = 0  # reset the number of new epochs
-        return np.transpose(data, axes=(0, 2, 1))
+        try:
+            picks = _picks_to_idx(self._info, picks, none="all", exclude="bads")
+            n_epochs = self._buffer.shape[0] if n_epochs is None else n_epochs
+            if n_epochs <= 0:
+                raise ValueError(
+                    "The number of epochs to retrieve must be a positive integer. "
+                    f"{n_epochs} is invalid."
+                )
+            if self._buffer.shape[0] < n_epochs:
+                warn(
+                    f"The number of epochs requested {n_epochs} is greater than the "
+                    f"buffer size {self._buffer.shape[0]}. Selecting the entire buffer."
+                )
+                n_epochs = self._buffer.shape[0]
+            self._new_new_epochs = 0  # reset the number of new epochs
+            return np.transpose(self._buffer[-n_epochs:, :, picks], axes=(0, 2, 1))
+        except Exception:
+            if not self.connected:
+                raise RuntimeError(
+                    "The EpochsStream is not connected. Please connect it before "
+                    "retrieving data from the buffer."
+                )
+            else:  # pragma: no cover
+                logger.error(
+                    "Something went wrong while retrieving data from a connected "
+                    "EpochsStream. Please open an issue on GitHub and provide the "
+                    "error traceback to the developers."
+                )
+            raise  # pragma: no cover
 
     def _acquire(self) -> None:
         """Update function looking for new epochs."""

@@ -48,7 +48,7 @@ with PlayerLSL(raw, chunk_size=200, name="real-time-evoked-example"):
         if epochs.n_new_epochs == 0:
             continue  # nothing new to do
         # get data and create evoked array
-        data = epochs.get_data(only_new=True)
+        data = epochs.get_data(n_epochs=epochs.n_new_epochs)
         new_evoked = EvokedArray(
             np.average(data, axis=0), epochs.info, nave=data.shape[0]
         )
