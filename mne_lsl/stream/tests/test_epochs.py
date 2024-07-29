@@ -302,6 +302,14 @@ def test_epochs_without_event_stream():
     assert_allclose(data[:-n, :, :], np.zeros((10 - n, data.shape[1], data.shape[2])))
     data_channels = data[-n:, 1:-1, :]
     assert_allclose(data_channels, np.ones(data_channels.shape) * 101)
+    # acquire more epochs
+    while epochs.n_new_epochs < 3:
+        time.sleep(0.1)
+    n = epochs.n_new_epochs
+    data = epochs.get_data()
+    assert_allclose(data[:-n, :, :], np.zeros((10 - n, data.shape[1], data.shape[2])))
+    data_channels = data[-n:, 1:-1, :]
+    assert_allclose(data_channels, np.ones(data_channels.shape) * 101)
     epochs.disconnect()
     stream.disconnect()
 

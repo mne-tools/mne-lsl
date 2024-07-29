@@ -180,6 +180,7 @@ def mock_lsl_stream(fname: Path, request, chunk_size):
         yield player
 
 
+@pytest.mark.slow()
 def test_player_unit(mock_lsl_stream, raw, close_io):
     """Test getting and setting the player channel units."""
     player = mock_lsl_stream
@@ -223,6 +224,7 @@ def test_player_unit(mock_lsl_stream, raw, close_io):
     player.stop()
 
 
+@pytest.mark.slow()
 def test_player_rename_channels(mock_lsl_stream, raw, close_io):
     """Test channel renaming."""
     player = mock_lsl_stream
@@ -259,6 +261,7 @@ def test_player_rename_channels(mock_lsl_stream, raw, close_io):
     player.stop()
 
 
+@pytest.mark.slow()
 def test_player_set_channel_types(mock_lsl_stream, raw, close_io):
     """Test channel type setting."""
     player = mock_lsl_stream
@@ -337,6 +340,7 @@ def test_player_set_meas_date(fname, chunk_size):
     player.stop()
 
 
+@pytest.mark.slow()
 def test_player_annotations(raw_annotations, close_io, chunk_size):
     """Test player with annotations."""
     name = "Player-test_player_annotations"
@@ -402,6 +406,7 @@ def test_player_annotations(raw_annotations, close_io, chunk_size):
     player.stop()
 
 
+@pytest.mark.slow()
 def test_player_n_repeat(raw, chunk_size):
     """Test argument 'n_repeat'."""
     player = Player(

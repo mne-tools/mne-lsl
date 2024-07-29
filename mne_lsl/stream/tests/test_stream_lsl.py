@@ -83,10 +83,7 @@ def mock_lsl_stream(fname, request, chunk_size):
 
 
 @pytest.fixture(
-    params=(
-        pytest.param(0.01, id="10ms"),
-        pytest.param(0.5, id="500ms", marks=pytest.mark.slow),
-    ),
+    params=(pytest.param(0.01, id="10ms"), pytest.param(0.5, id="500ms")),
 )
 def acquisition_delay(request):
     """Yield the acquisition delay of the mock LSL stream."""
@@ -99,6 +96,7 @@ def _sleep_until_new_data(acq_delay, player):
     time.sleep(factor * max(acq_delay, player.chunk_size / player.info["sfreq"]))
 
 
+@pytest.mark.slow()
 def test_stream(mock_lsl_stream, acquisition_delay, raw):
     """Test a valid Stream."""
     # test connect/disconnect
@@ -144,6 +142,7 @@ def test_stream(mock_lsl_stream, acquisition_delay, raw):
     stream.disconnect()
 
 
+@pytest.mark.slow()
 def test_stream_invalid():
     """Test creation and connection to an invalid stream."""
     stream = Stream(bufsize=2, name="101")
@@ -198,6 +197,7 @@ def test_stream_double_connection(mock_lsl_stream):
     stream.disconnect()
 
 
+@pytest.mark.slow()
 def test_stream_drop_channels(mock_lsl_stream, acquisition_delay, raw):
     """Test dropping channels."""
     stream = Stream(bufsize=2, name=mock_lsl_stream.name)
@@ -241,6 +241,7 @@ def test_stream_drop_channels(mock_lsl_stream, acquisition_delay, raw):
     stream.disconnect()
 
 
+@pytest.mark.slow()
 def test_stream_pick(mock_lsl_stream, acquisition_delay, raw):
     """Test channel selection."""
     stream = Stream(bufsize=2, name=mock_lsl_stream.name)
@@ -396,6 +397,7 @@ def test_stream_channel_units(mock_lsl_stream, raw):
     stream.disconnect()
 
 
+@pytest.mark.slow()
 def test_stream_add_reference_channels(mock_lsl_stream, acquisition_delay, raw):
     """Test add reference channels and channel selection."""
     stream = Stream(bufsize=2, name=mock_lsl_stream.name)
@@ -456,6 +458,7 @@ def test_stream_repr(mock_lsl_stream):
     assert stream.__repr__() == "<Stream: OFF | (source: MNE-LSL>"
 
 
+@pytest.mark.slow()
 def test_stream_get_data_picks(mock_lsl_stream, acquisition_delay, raw):
     """Test channel sub-selection when getting data."""
     stream = Stream(bufsize=2, name=mock_lsl_stream.name)
@@ -479,6 +482,7 @@ def test_stream_get_data_picks(mock_lsl_stream, acquisition_delay, raw):
     stream.disconnect()
 
 
+@pytest.mark.slow()
 def test_stream_n_new_samples(mock_lsl_stream, caplog):
     """Test the number of new samples available."""
     stream = Stream(bufsize=0.4, name=mock_lsl_stream.name)
@@ -551,6 +555,7 @@ def mock_lsl_stream_int(request, chunk_size):
     process.kill()
 
 
+@pytest.mark.slow()
 def test_stream_rereference(mock_lsl_stream_int, acquisition_delay):
     """Test re-referencing an EEG-like stream."""
     stream = Stream(bufsize=0.4, name=mock_lsl_stream_int.name)
@@ -726,6 +731,7 @@ def _mock_lsl_stream_annotations(raw_annotations, request, chunk_size):
     process.kill()
 
 
+@pytest.mark.slow()
 @pytest.mark.usefixtures("_mock_lsl_stream_annotations")
 def test_stream_annotations_picks():
     """Test sub-selection of annotations."""
@@ -736,6 +742,7 @@ def test_stream_annotations_picks():
     stream.disconnect()
 
 
+@pytest.mark.slow()
 def test_stream_filter_deletion(mock_lsl_stream, caplog):
     """Test deletion of filters applied to a Stream."""
     # test no filter
@@ -846,6 +853,7 @@ def mock_lsl_stream_sinusoids(raw_sinusoids, request, chunk_size):
     process.kill()
 
 
+@pytest.mark.slow()
 def test_stream_filter(mock_lsl_stream_sinusoids, raw_sinusoids):
     """Test stream filters."""
     freqs = fftfreq(raw_sinusoids.times.size, 1 / raw_sinusoids.info["sfreq"])
@@ -939,6 +947,7 @@ def test_stream_filter(mock_lsl_stream_sinusoids, raw_sinusoids):
     stream.disconnect()
 
 
+@pytest.mark.slow()
 def test_stream_notch_filter(mock_lsl_stream_sinusoids, raw_sinusoids):
     """Test stream notch filters."""
     freqs = fftfreq(raw_sinusoids.times.size, 1 / raw_sinusoids.info["sfreq"])
