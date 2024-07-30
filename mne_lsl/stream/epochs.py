@@ -494,7 +494,7 @@ class EpochsStream:
             self._buffer = np.roll(self._buffer, -events.shape[0], axis=0)
             self._buffer[-events.shape[0] :, :, :] = data_selection
             # update the last ts and the number of new epochs
-            self._last = ts[events[-1, 0]]
+            self._last_ts = ts[events[-1, 0]]
             self._n_new_epochs += events.shape[0]
         except Exception as error:  # pragma: no cover
             logger.exception(error)
