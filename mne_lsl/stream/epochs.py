@@ -502,6 +502,7 @@ class EpochsStream:
                 self._reject_tmin,
                 self._reject_tmax,
                 self._detrend,
+                self._times,
             )
             # roll buffer and add new epochs
             self._buffer = np.roll(self._buffer, -events.shape[0], axis=0)
