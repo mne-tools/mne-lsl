@@ -204,6 +204,11 @@ class EpochsStream:
         self._detrend = _ensure_detrend_int(detrend)
         # store picks which are then initialized in the connect method
         self._picks_init = picks
+        # define the times array based on tmin, tmax and the sampling frequency
+        n_samples = ceil((self._tmax - self._tmin) * self._stream._info["sfreq"])
+        self._times = np.linspace(
+            self._tmin, self._tmax, n_samples, endpoint=False, dtype=np.float64
+        )
         # define acquisition variables which need to be reset on disconnect
         self._reset_variables()
 
@@ -307,7 +312,7 @@ class EpochsStream:
         self._buffer = np.zeros(
             (
                 self._bufsize,
-                ceil((self._tmax - self._tmin) * self._info["sfreq"]),
+                self._times.size,
                 self._picks.size,
             ),
             dtype=self._stream._buffer.dtype,
@@ -489,7 +494,15 @@ class EpochsStream:
                     self._picks, start : start + self._buffer.shape[1]
                 ].T
             # apply processing
-            data_selection = _process_data(data_selection)
+            data_selection = _process_data(
+                data_selection,
+                self._baseline,
+                self._reject,
+                self._flat,
+                self._reject_tmin,
+                self._reject_tmax,
+                self._detrend,
+            )
             # roll buffer and add new epochs
             self._buffer = np.roll(self._buffer, -events.shape[0], axis=0)
             self._buffer[-events.shape[0] :, :, :] = data_selection
@@ -559,12 +572,7 @@ class EpochsStream:
 
         :type: :class:`~mne.Info`
         """
-        if not self.connected:
-            raise RuntimeError(
-                "The EpochsStream information is parsed into an mne.Info object "
-                "upon connection. Please connect the EpochsStream to create the "
-                "mne.Info."
-            )
+        self._check_connected("info")
         return self._info
 
     @property
@@ -577,6 +585,14 @@ class EpochsStream:
         """
         self._check_connected("n_new_epochs")
         return self._n_new_epochs
+
+    @property
+    def times(self) -> NDArray[np.float64]:
+        """The time of each sample in the epochs.
+
+        :type: :class:`numpy.ndarray`
+        """
+        return self._times
 
 
 def _check_event_channels(
@@ -832,6 +848,27 @@ def _prune_events(
     return events
 
 
-def _process_data(data: ScalarArray) -> ScalarArray:
+def _process_data(
+    data: ScalarArray,
+    baseline: Optional[tuple[Optional[float], Optional[float]]],
+    reject: Optional[dict[str, float]],
+    flat: Optional[dict[str, float]],
+    reject_tmin: Optional[float],
+    reject_tmax: Optional[float],
+    detrend: Optional[int],
+    times: NDArray[np.float64],
+) -> ScalarArray:
     """Apply the requested processing to the new epochs."""
+    # start by PTP rejection to limit the number of epochs to baseline and detrend
+    if reject_tmin is None:
+        reject_imin = None
+    else:
+        idx = np.nonzero(times >= reject_tmin)[0]
+        reject_imin = idx[0]
+    if reject_tmax is None:
+        reject_imax = None
+    else:
+        idx = np.nonzero(times <= reject_tmax)[0]
+        reject_imax = idx[-1]
+    reject_time = slice(reject_imin, reject_imax)  # noqa: F841
     return data
