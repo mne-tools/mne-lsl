@@ -43,6 +43,12 @@ with PlayerLSL(raw, chunk_size=200, name="real-time-evoked-example"):
     )
     epochs.connect(acquisition_delay=0.1)
 
+    # create figure
+    if not plt.isinteractive():
+        plt.ion()
+    fig, ax = plt.subplots()
+    plt.show()
+
     # start looking for epochs
     n = 0  # number of epochs
     evoked = None
@@ -61,6 +67,7 @@ with PlayerLSL(raw, chunk_size=200, name="real-time-evoked-example"):
             if evoked is None
             else combine_evoked([evoked, new_evoked], weights="nave")
         )
-        plt.clf()  # clear canvas
-        evoked.plot(axes=plt.gca(), time_unit="s")  # plot on current figure
-        plt.pause(0.05)
+        ax.clear()
+        evoked.plot(axes=ax, time_unit="s")  # plot on current figure
+        fig.canvas.draw()
+        fig.canvas.flush_events()
