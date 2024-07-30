@@ -553,6 +553,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         self,
         winsize: Optional[float] = None,
         picks: Optional[Union[str, list[str], int, list[int], ScalarIntArray]] = None,
+        exclude: Union[str, list[str], tuple[str]] = "bads",
     ) -> tuple[ScalarArray, NDArray[np.float64]]:
         """Retrieve the latest data from the buffer.
 
@@ -566,6 +567,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             The window will view the last ``winsize`` samples. If ``None``, the entire
             buffer is returned.
         %(picks_all)s
+        %(exclude)s
 
         Returns
         -------
@@ -599,7 +601,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             # 8.68 µs ± 113 ns per loop
             # >>> %timeit _picks_to_idx(raw.info, None)
             # 253 µs ± 1.22 µs per loop
-            picks = _picks_to_idx(self._info, picks, none="all", exclude="bads")
+            picks = _picks_to_idx(self._info, picks, none="all", exclude=exclude)
             self._n_new_samples = 0  # reset the number of new samples
             return self._buffer[-n_samples:, picks].T, self._timestamps[-n_samples:]
         except Exception:

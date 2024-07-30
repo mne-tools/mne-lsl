@@ -19,4 +19,10 @@
 Version 1.5
 ===========
 
-- xxx
+- Add ``exclude='bads'`` argument to :meth:`~mne_lsl.stream.StreamLSL.get_data` to control exclusion from ``picks`` (:pr:`258` by `Mathieu Scheltienne`_)
+- Add :class:`~mne_lsl.stream.EpochsStream` to epoch a Stream object object on the fly (:pr:`258` by `Mathieu Scheltienne`_)
+
+Infrastructure
+--------------
+
+- Improve unit tests by setting a marker ``slow`` on tests which take more than 5 seconds to complete (:pr:`258` by `Mathieu Scheltienne`_)

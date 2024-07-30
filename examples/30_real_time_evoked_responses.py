@@ -3,7 +3,7 @@ Real-time evoked responses
 ==========================
 
 With a :class:`~mne_lsl.stream.EpochsStream`, we can build a real-time evoked response
-vizualization. This is useful to monitor the brain activity in real-time.
+visualization. This is useful to monitor the brain activity in real-time.
 """
 
 import numpy as np
@@ -30,8 +30,7 @@ raw = read_raw_fif(fname, preload=False).pick(("meg", "stim")).crop(3, 212).load
 with PlayerLSL(raw, chunk_size=200, name="real-time-evoked-example"):
     stream = StreamLSL(bufsize=4, name="real-time-evoked-example")
     stream.connect(acquisition_delay=0.1, processing_flags="all")
-    # TODO: Fix handling of bad channels which is dropped both from Stream and Epochs
-    # stream.info["bads"] = ["MEG 2443"]
+    stream.info["bads"] = ["MEG 2443"]
     epochs = EpochsStream(
         stream,
         bufsize=20,

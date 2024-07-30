@@ -352,6 +352,7 @@ class EpochsStream:
         self,
         n_epochs: Optional[int] = None,
         picks: Optional[Union[str, list[str], int, list[int], ScalarIntArray]] = None,
+        exclude: Union[str, list[str], tuple[str]] = "bads",
     ) -> ScalarArray:
         """Retrieve the latest epochs from the buffer.
 
@@ -361,6 +362,7 @@ class EpochsStream:
             Number of epochs to retrieve from the buffer. If None, all epochs are
             returned.
         %(picks_all)s
+        %(exclude)s
 
         Returns
         -------
@@ -374,7 +376,7 @@ class EpochsStream:
         argument ``picks``.
         """
         try:
-            picks = _picks_to_idx(self._info, picks, none="all", exclude="bads")
+            picks = _picks_to_idx(self._info, picks, none="all", exclude=exclude)
             n_epochs = self._buffer.shape[0] if n_epochs is None else n_epochs
             if n_epochs <= 0:
                 raise ValueError(
@@ -414,10 +416,10 @@ class EpochsStream:
                 return
             # split the different acquisition scenarios to retrieve new events to add to
             # the buffer.
-            data, ts = self._stream.get_data()
+            data, ts = self._stream.get_data(exclude=())
             if self._event_stream is None:
                 picks_events = _picks_to_idx(
-                    self._stream._info, self._event_channels, exclude=()
+                    self._stream._info, self._event_channels, exclude="bads"
                 )
                 events = _find_events_in_stim_channels(
                     data[picks_events, :], self._event_channels, self._info["sfreq"]
@@ -435,7 +437,7 @@ class EpochsStream:
                 and self._event_stream._info["sfreq"] != 0
             ):
                 data_events, ts_events = self._event_stream.get_data(
-                    picks=self._event_channels
+                    picks=self._event_channels, exclude=()
                 )
                 events = _find_events_in_stim_channels(
                     data_events, self._event_channels, self._info["sfreq"]
@@ -453,7 +455,7 @@ class EpochsStream:
                 and self._event_stream._info["sfreq"] == 0
             ):
                 data_events, ts_events = self._event_stream.get_data(
-                    picks=self._event_channels
+                    picks=self._event_channels, exclude=()
                 )
                 events = np.vstack(
                     [
