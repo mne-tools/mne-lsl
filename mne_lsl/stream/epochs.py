@@ -865,6 +865,7 @@ def _process_data(
     """Apply the requested processing to the new epochs."""
     # start by PTP rejection to limit the number of epochs to baseline and detrend
     if reject is not None or flat is not None:
+        # figure out the slice of indices to use for rejection
         if reject_tmin is None:
             reject_imin = None
         else:
@@ -876,25 +877,32 @@ def _process_data(
             idx = np.nonzero(times <= reject_tmax)[0]
             reject_imax = idx[-1]
         reject_time = slice(reject_imin, reject_imax)
-        ptp = np.max(data[:, reject_time, :], axis=1) - np.min(
-            data[:, reject_time, :], axis=1
-        )  # shape (n_epochs, n_channels)
-        if reject is not None:
-            for ch_type, threshold in reject.items():
-                idx = ch_idx_by_type[ch_type]
-                ptp_ch = ptp[:, idx]
-                sel_reject = np.where(np.all(ptp_ch < threshold, axis=1))[0]
+        data_ptp = data[:, reject_time, :]
+        if data_ptp.shape[1] != 0:  # check that the slice is not empty
+            ptp = np.max(data[:, reject_time, :], axis=1) - np.min(
+                data[:, reject_time, :], axis=1
+            )  # shape (n_epochs, n_channels)
+            if reject is not None:
+                for ch_type, threshold in reject.items():
+                    idx = ch_idx_by_type[ch_type]
+                    ptp_ch = ptp[:, idx]
+                    sel_reject = np.where(np.all(ptp_ch < threshold, axis=1))[0]
+            else:
+                sel_reject = np.arange(data.shape[0])
+            if flat is not None:
+                for ch_type, threshold in flat.items():
+                    idx = ch_idx_by_type[ch_type]
+                    ptp_ch = ptp[:, idx]
+                    sel_flat = np.where(np.all(threshold < ptp_ch, axis=1))[0]
+            else:
+                sel_flat = np.arange(data.shape[0])
+            sel = np.intersect1d(sel_reject, sel_flat)
+            data = data[sel, :, :]
         else:
-            sel_reject = np.arange(data.shape[0])
-        if flat is not None:
-            for ch_type, threshold in flat.items():
-                idx = ch_idx_by_type[ch_type]
-                ptp_ch = ptp[:, idx]
-                sel_flat = np.where(np.all(threshold < ptp_ch, axis=1))[0]
-        else:
-            sel_flat = np.arange(data.shape[0])
-        sel = np.intersect1d(sel_reject, sel_flat)
-        data = data[sel, :, :]
+            warn(
+                "The rejection time window defined with 'reject_tmin' and "
+                "'reject_tmax' yields an empty segment. Skipping rejection."
+            )
     if data.shape[0] == 0:
         return data
     # next apply baseline correction
@@ -910,7 +918,14 @@ def _process_data(
             idx = np.nonzero(times <= baseline[1])[0]
             baseline_imax = idx[-1]
         baseline_time = slice(baseline_imin, baseline_imax)
-        data -= np.mean(data[:, baseline_time, :], axis=1)[:, np.newaxis, :]
+        data_baseline = data[:, baseline_time, :]
+        if data_baseline.shape[1] != 0:
+            data -= np.mean(data[:, baseline_time, :], axis=1)[:, np.newaxis, :]
+        else:
+            warn(
+                "The baseline time window defined with 'baseline', 'tmin' and 'tmax' "
+                "yields an empty segment. Skipping baseline correction."
+            )
     # finally detrend the data
     if detrend_type is not None:
         data = detrend(data, axis=1, type=detrend_type, overwrite_data=True)

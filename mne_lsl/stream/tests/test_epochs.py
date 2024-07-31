@@ -293,7 +293,13 @@ def test_epochs_without_event_stream():
     """Test creating epochs from the main stream."""
     stream = StreamLSL(0.5).connect(acquisition_delay=0.1)
     epochs = EpochsStream(
-        stream, 10, event_channels="trg", event_id=dict(a=1), tmin=0, tmax=0.1
+        stream,
+        10,
+        event_channels="trg",
+        event_id=dict(a=1),
+        tmin=0,
+        tmax=0.1,
+        baseline=None,
     ).connect(acquisition_delay=0.1)
     while epochs.n_new_epochs == 0:
         time.sleep(0.1)
