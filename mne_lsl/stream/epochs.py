@@ -482,6 +482,7 @@ class EpochsStream:
             if events.shape[0] == 0:  # abort in case we don't have new events to add
                 self._submit_acquisition_job()
                 return
+            self._last_ts = ts[events[-1, 0]]
             # select data, for loop is faster than the fancy indexing ideas tried and
             # will anyway operate on a small number of events most of the time.
             data_selection = np.empty(
@@ -506,11 +507,13 @@ class EpochsStream:
                 self._times,
                 self._ch_idx_by_type,
             )
+            if data_selection.shape[0] == 0:
+                self._submit_acquisition_job()
+                return
             # roll buffer and add new epochs
             self._buffer = np.roll(self._buffer, -events.shape[0], axis=0)
             self._buffer[-events.shape[0] :, :, :] = data_selection
             # update the last ts and the number of new epochs
-            self._last_ts = ts[events[-1, 0]]
             self._n_new_epochs += events.shape[0]
         except Exception as error:  # pragma: no cover
             logger.exception(error)
@@ -897,6 +900,8 @@ def _process_data(
             sel_flat = np.arange(data.shape[0])
         sel = np.intersect1d(sel_reject, sel_flat)
         data = data[sel, :, :]
+    if data.shape[0] == 0:
+        return data
     # next apply baseline correction
     if baseline is not None:
         if baseline[0] is None:
