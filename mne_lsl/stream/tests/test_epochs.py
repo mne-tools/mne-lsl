@@ -16,7 +16,7 @@ from ..epochs import (
     _check_baseline,
     _check_reject_flat,
     _check_reject_tmin_tmax,
-    _ensure_detrend_int,
+    _ensure_detrend_str,
     _ensure_event_id_dict,
     _find_events_in_stim_channels,
     _prune_events,
@@ -127,19 +127,19 @@ def test_check_reject_tmin_tmax():
         _check_reject_tmin_tmax(None, "test", -0.2, 0.5)
 
 
-def test_ensure_detrend_int():
+def test_ensure_detrend_str():
     """Test validation of detrend."""
-    assert _ensure_detrend_int(None) is None
-    assert _ensure_detrend_int(0) == 0
-    assert _ensure_detrend_int(1) == 1
-    assert _ensure_detrend_int("constant") == 0
-    assert _ensure_detrend_int("linear") == 1
+    assert _ensure_detrend_str(None) is None
+    assert _ensure_detrend_str(0) == "constant"
+    assert _ensure_detrend_str(1) == "linear"
+    assert _ensure_detrend_str("constant") == "constant"
+    assert _ensure_detrend_str("linear") == "linear"
 
-    with pytest.raises(ValueError, match="detrend argument must be"):
-        _ensure_detrend_int("test")
+    with pytest.raises(ValueError, match="Invalid value for the 'detrend' parameter"):
+        _ensure_detrend_str("test")
 
     with pytest.raises(TypeError, match="must be an integer"):
-        _ensure_detrend_int(5.5)
+        _ensure_detrend_str(5.5)
 
 
 @pytest.fixture()

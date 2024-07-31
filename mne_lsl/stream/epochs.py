@@ -10,6 +10,7 @@ import numpy as np
 from mne import pick_info
 from mne.event import _find_events, _find_unique_events
 from mne.utils import check_version
+from scipy.signal import detrend
 
 if check_version("mne", "1.6"):
     from mne._fiff.pick import _picks_to_idx, channel_indices_by_type
@@ -20,7 +21,7 @@ elif check_version("mne", "1.5"):
 else:
     from mne.io.pick import _picks_to_idx, channel_indices_by_type
 
-from ..utils._checks import check_type, ensure_int
+from ..utils._checks import check_type, check_value, ensure_int
 from ..utils._docs import fill_doc
 from ..utils.logs import logger, warn
 from ._base import BaseStream
@@ -201,7 +202,7 @@ class EpochsStream:
         self._reject, self._flat = reject, flat
         _check_reject_tmin_tmax(reject_tmin, reject_tmax, tmin, tmax)
         self._reject_tmin, self._reject_tmax = reject_tmin, reject_tmax
-        self._detrend = _ensure_detrend_int(detrend)
+        self._detrend_type = _ensure_detrend_str(detrend)
         # store picks which are then initialized in the connect method
         self._picks_init = picks
         # define the times array based on tmin, tmax and the sampling frequency
@@ -503,7 +504,7 @@ class EpochsStream:
                 self._flat,
                 self._reject_tmin,
                 self._reject_tmax,
-                self._detrend,
+                self._detrend_type,
                 self._times,
                 self._ch_idx_by_type,
             )
@@ -760,27 +761,21 @@ def _check_reject_tmin_tmax(
         )
 
 
-def _ensure_detrend_int(detrend: Optional[Union[int, str]]) -> Optional[int]:
+def _ensure_detrend_str(detrend: Optional[Union[int, str]]) -> Optional[str]:
     """Ensure detrend is an integer."""
     if detrend is None:
         return None
     if isinstance(detrend, str):
-        if detrend == "constant":
-            return 0
-        elif detrend == "linear":
-            return 1
-        else:
-            raise ValueError(
-                "The detrend argument must be 'constant', 'linear' or their integer "
-                "equivalent 0 and 1."
-            )
+        check_value(detrend, ("constant", "linear"), "detrend")
+        return detrend
     detrend = ensure_int(detrend, "detrend")
     if detrend not in (0, 1):
         raise ValueError(
             "The detrend argument must be 'constant', 'linear' or their integer "
             "equivalent 0 and 1."
         )
-    return detrend
+    mapping = {0: "constant", 1: "linear"}
+    return mapping[detrend]
 
 
 def _find_events_in_stim_channels(
@@ -863,7 +858,7 @@ def _process_data(
     flat: Optional[dict[str, float]],
     reject_tmin: Optional[float],
     reject_tmax: Optional[float],
-    detrend: Optional[int],
+    detrend_type: Optional[str],
     times: NDArray[np.float64],
     ch_idx_by_type: dict[str, list[int]],
 ) -> ScalarArray:
@@ -917,4 +912,6 @@ def _process_data(
         baseline_time = slice(baseline_imin, baseline_imax)
         data -= np.mean(data[:, baseline_time, :], axis=1)[:, np.newaxis, :]
     # finally detrend the data
+    if detrend_type is not None:
+        data = detrend(data, axis=1, type=detrend_type, overwrite_data=True)
     return data
