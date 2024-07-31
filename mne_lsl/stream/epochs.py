@@ -12,13 +12,13 @@ from mne.event import _find_events, _find_unique_events
 from mne.utils import check_version
 
 if check_version("mne", "1.6"):
-    from mne._fiff.pick import _picks_to_idx
+    from mne._fiff.pick import _picks_to_idx, channel_indices_by_type
 
 elif check_version("mne", "1.5"):
-    from mne.io.pick import _picks_to_idx
+    from mne.io.pick import _picks_to_idx, channel_indices_by_type
 
 else:
-    from mne.io.pick import _picks_to_idx
+    from mne.io.pick import _picks_to_idx, channel_indices_by_type
 
 from ..utils._checks import check_type, ensure_int
 from ..utils._docs import fill_doc
@@ -309,6 +309,7 @@ class EpochsStream:
             self._stream._info, self._picks_init, "all", "bads", allow_empty=False
         )
         self._info = pick_info(self._stream._info, self._picks)
+        self._ch_idx_by_type = channel_indices_by_type(self._info)
         self._buffer = np.zeros(
             (
                 self._bufsize,
@@ -503,6 +504,7 @@ class EpochsStream:
                 self._reject_tmax,
                 self._detrend,
                 self._times,
+                self._ch_idx_by_type,
             )
             # roll buffer and add new epochs
             self._buffer = np.roll(self._buffer, -events.shape[0], axis=0)
@@ -850,7 +852,7 @@ def _prune_events(
 
 
 def _process_data(
-    data: ScalarArray,
+    data: ScalarArray,  # array of shape (n_epochs, n_samples, n_channels)
     baseline: Optional[tuple[Optional[float], Optional[float]]],
     reject: Optional[dict[str, float]],
     flat: Optional[dict[str, float]],
@@ -858,18 +860,55 @@ def _process_data(
     reject_tmax: Optional[float],
     detrend: Optional[int],
     times: NDArray[np.float64],
+    ch_idx_by_type: dict[str, list[int]],
 ) -> ScalarArray:
     """Apply the requested processing to the new epochs."""
     # start by PTP rejection to limit the number of epochs to baseline and detrend
-    if reject_tmin is None:
-        reject_imin = None
-    else:
-        idx = np.nonzero(times >= reject_tmin)[0]
-        reject_imin = idx[0]
-    if reject_tmax is None:
-        reject_imax = None
-    else:
-        idx = np.nonzero(times <= reject_tmax)[0]
-        reject_imax = idx[-1]
-    reject_time = slice(reject_imin, reject_imax)  # noqa: F841
+    if reject is not None or flat is not None:
+        if reject_tmin is None:
+            reject_imin = None
+        else:
+            idx = np.nonzero(reject_tmin <= times)[0]
+            reject_imin = idx[0]
+        if reject_tmax is None:
+            reject_imax = None
+        else:
+            idx = np.nonzero(times <= reject_tmax)[0]
+            reject_imax = idx[-1]
+        reject_time = slice(reject_imin, reject_imax)
+        ptp = np.max(data[:, reject_time, :], axis=1) - np.min(
+            data[:, reject_time, :], axis=1
+        )  # shape (n_epochs, n_channels)
+        if reject is not None:
+            for ch_type, threshold in reject.items():
+                idx = ch_idx_by_type[ch_type]
+                ptp_ch = ptp[:, idx]
+                sel_reject = np.where(np.all(ptp_ch < threshold, axis=1))[0]
+        else:
+            sel_reject = np.arange(data.shape[0])
+        if flat is not None:
+            for ch_type, threshold in flat.items():
+                idx = ch_idx_by_type[ch_type]
+                ptp_ch = ptp[:, idx]
+                sel_flat = np.where(np.all(threshold < ptp_ch, axis=1))[0]
+        else:
+            sel_flat = np.arange(data.shape[0])
+        sel = np.intersect1d(sel_reject, sel_flat)
+        data = data[sel, :, :]
+    # next apply baseline correction
+    if baseline is not None:
+        if baseline[0] is None:
+            baseline_imin = None
+        else:
+            idx = np.nonzero(baseline[0] <= times)[0]
+            baseline_imin = idx[0]
+        if baseline[1] is None:
+            baseline_imax = None
+        else:
+            idx = np.nonzero(times <= baseline[1])[0]
+            baseline_imax = idx[-1]
+        baseline_time = slice(baseline_imin, baseline_imax)
+        data -= np.mean(data[:, baseline_time, :], axis=1)[:, np.newaxis, :]
+    # finally detrend the data
+
     return data
