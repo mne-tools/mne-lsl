@@ -533,6 +533,7 @@ class EpochsStream:
         """Reset variables defined after connection."""
         self._acquisition_delay = None
         self._buffer = None
+        self._ch_idx_by_type = None
         self._executor = None
         self._info = None
         self._last_ts = None
@@ -559,6 +560,7 @@ class EpochsStream:
         attributes = (
             "_acquisition_delay",
             "_buffer",
+            "_ch_idx_by_type",
             "_info",
             "_picks",
         )
@@ -910,5 +912,4 @@ def _process_data(
         baseline_time = slice(baseline_imin, baseline_imax)
         data -= np.mean(data[:, baseline_time, :], axis=1)[:, np.newaxis, :]
     # finally detrend the data
-
     return data
