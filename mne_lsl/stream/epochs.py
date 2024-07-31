@@ -920,7 +920,7 @@ def _process_data(
         baseline_time = slice(baseline_imin, baseline_imax)
         data_baseline = data[:, baseline_time, :]
         if data_baseline.shape[1] != 0:
-            data -= np.mean(data[:, baseline_time, :], axis=1)[:, np.newaxis, :]
+            data -= np.mean(data[:, baseline_time, :], axis=1, keepdims=True)
         else:
             warn(
                 "The baseline time window defined with 'baseline', 'tmin' and 'tmax' "
