@@ -19,6 +19,7 @@ from ..epochs import (
     _ensure_detrend_str,
     _ensure_event_id_dict,
     _find_events_in_stim_channels,
+    _process_data,
     _prune_events,
 )
 
@@ -388,3 +389,88 @@ def test_epochs_without_event_stream_manual_acquisition():
     )
     epochs.disconnect()
     stream.disconnect()
+
+
+@pytest.fixture()
+def data_baseline() -> tuple[NDArray[np.float64], NDArray[np.float64]]:
+    """Data array used for baseline correction test."""
+    data = np.ones((2, 100, 5), dtype=np.float64)
+    times = np.arange(100, dtype=np.float64)
+    return data, times
+
+
+def test_process_data_no_baseline(
+    data_baseline: tuple[NDArray[np.float64], NDArray[np.float64]],
+):
+    """Test processing data without baseline correction."""
+    data = _process_data(
+        data_baseline[0],
+        baseline=None,
+        reject=None,
+        flat=None,
+        reject_tmin=None,
+        reject_tmax=None,
+        detrend_type=None,
+        times=data_baseline[1],
+        ch_idx_by_type=dict(),
+    )
+    assert_allclose(data, data_baseline[0])
+
+
+def test_process_data_baseline_all_segment(
+    data_baseline: tuple[NDArray[np.float64], NDArray[np.float64]],
+):
+    """Test processing data with baseline correction on the entire segment."""
+    data = _process_data(
+        data_baseline[0].copy(),
+        baseline=(None, None),
+        reject=None,
+        flat=None,
+        reject_tmin=None,
+        reject_tmax=None,
+        detrend_type=None,
+        times=data_baseline[1],
+        ch_idx_by_type=dict(),
+    )
+    assert_allclose(data, np.zeros(data.shape))
+
+
+def test_process_data_baseline_start_segment(
+    data_baseline: tuple[NDArray[np.float64], NDArray[np.float64]],
+):
+    """Test processing data with baseline correction on the start segment."""
+    data_baseline[0][:, 10:, :] = 101
+    data = _process_data(
+        data_baseline[0].copy(),
+        baseline=(None, 10),
+        reject=None,
+        flat=None,
+        reject_tmin=None,
+        reject_tmax=None,
+        detrend_type=None,
+        times=data_baseline[1],
+        ch_idx_by_type=dict(),
+    )
+    assert_allclose(data[:, :10, :], np.zeros((2, 10, 5)))
+    assert_allclose(data[:, 10:, :], np.ones((2, 90, 5)) * 100)
+
+
+def test_process_data_baseline_end_segment(
+    data_baseline: tuple[NDArray[np.float64], NDArray[np.float64]],
+):
+    """Test processing data with baseline correction on the end segment."""
+    data_baseline[0][:, 10:, :] = 1
+    data_baseline[0][:, :90, :] = 101
+    data = _process_data(
+        data_baseline[0].copy(),
+        baseline=(90, None),
+        reject=None,
+        flat=None,
+        reject_tmin=None,
+        reject_tmax=None,
+        detrend_type=None,
+        times=data_baseline[1],
+        ch_idx_by_type=dict(),
+    )
+    assert_allclose(data[:, 90:, :], np.zeros((2, 10, 5)))
+    assert_allclose(data[:, :90, :], np.ones((2, 90, 5)) * 100)
