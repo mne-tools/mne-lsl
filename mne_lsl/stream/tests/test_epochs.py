@@ -579,7 +579,7 @@ def data_reject():
 def test_process_data_reject(
     data_reject: tuple[NDArray[np.float64], NDArray[np.float64]],
 ):
-    """Test rejection of epochs due to flatness."""
+    """Test rejection of epochs due to PTP."""
     assert data_reject[0].shape[0] == 2
     data = _process_data(
         data_reject[0].copy(),
@@ -619,3 +619,46 @@ def test_process_data_reject(
         ch_idx_by_type=dict(eeg=[0, 1]),
     )
     assert data.shape[0] == 0
+
+
+@pytest.fixture()
+def data_reject_tmin_tmax():
+    """Data array used for rejection based on segment test."""
+    data = np.ones((2, 100, 5), dtype=np.float64)
+    data[0, 10::2, :] = 2
+    data[1, 10::2, :] = 101
+    times = np.arange(100, dtype=np.float64)
+    return data, times
+
+
+def test_process_data_reject_tmin_tmax(
+    data_reject_tmin_tmax: tuple[NDArray[np.float64], NDArray[np.float64]],
+):
+    """Test rejection of epochs due to PTP during segment."""
+    assert data_reject_tmin_tmax[0].shape[0] == 2
+    data = _process_data(
+        data_reject_tmin_tmax[0].copy(),
+        baseline=None,
+        reject=dict(eeg=50),
+        flat=None,
+        reject_tmin=0,
+        reject_tmax=10,
+        detrend_type=None,
+        times=data_reject_tmin_tmax[1],
+        ch_idx_by_type=dict(eeg=[0, 1]),
+    )
+    assert data.shape[0] == 2
+
+    assert data_reject_tmin_tmax[0].shape[0] == 2
+    data = _process_data(
+        data_reject_tmin_tmax[0].copy(),
+        baseline=None,
+        reject=dict(eeg=50),
+        flat=None,
+        reject_tmin=10,
+        reject_tmax=25,
+        detrend_type=None,
+        times=data_reject_tmin_tmax[1],
+        ch_idx_by_type=dict(eeg=[0, 1]),
+    )
+    assert data.shape[0] == 1
