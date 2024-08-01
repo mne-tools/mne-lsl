@@ -474,3 +474,86 @@ def test_process_data_baseline_end_segment(
     )
     assert_allclose(data[:, 90:, :], np.zeros((2, 10, 5)))
     assert_allclose(data[:, :90, :], np.ones((2, 90, 5)) * 100)
+
+
+@pytest.fixture()
+def data_detrend_constant() -> tuple[NDArray[np.float64], NDArray[np.float64]]:
+    """Data array used for detrending test."""
+    data = np.ones((2, 100, 5), dtype=np.float64) * 101
+    times = np.arange(100, dtype=np.float64)
+    return data, times
+
+
+def test_process_data_detrend_constant(
+    data_detrend_constant: tuple[NDArray[np.float64], NDArray[np.float64]],
+):
+    """Test constant (DC) detrending."""
+    data = _process_data(
+        data_detrend_constant[0],
+        baseline=None,
+        reject=None,
+        flat=None,
+        reject_tmin=None,
+        reject_tmax=None,
+        detrend_type=None,
+        times=data_detrend_constant[1],
+        ch_idx_by_type=dict(),
+    )
+    assert_allclose(data, data_detrend_constant[0])
+
+    data = _process_data(
+        data_detrend_constant[0],
+        baseline=None,
+        reject=None,
+        flat=None,
+        reject_tmin=None,
+        reject_tmax=None,
+        detrend_type="constant",
+        times=data_detrend_constant[1],
+        ch_idx_by_type=dict(),
+    )
+    assert_allclose(data, np.zeros(data.shape))
+
+
+@pytest.fixture()
+def data_detrend_linear() -> tuple[NDArray[np.float64], NDArray[np.float64]]:
+    """Data array used for detrending test."""
+    data = [
+        np.arange(100 * k, 100 * (k + 1), dtype=np.float64).reshape(1, 100, 1)
+        for k in range(3)
+    ]
+    data = np.concatenate(data, axis=-1)
+    data = np.concatenate([data, data * 2], axis=0)
+    times = np.arange(100, dtype=np.float64)
+    return data, times
+
+
+def test_process_data_detrend_linear(
+    data_detrend_linear: tuple[NDArray[np.float64], NDArray[np.float64]],
+):
+    """Test linear detrending."""
+    data = _process_data(
+        data_detrend_linear[0],
+        baseline=None,
+        reject=None,
+        flat=None,
+        reject_tmin=None,
+        reject_tmax=None,
+        detrend_type=None,
+        times=data_detrend_linear[1],
+        ch_idx_by_type=dict(),
+    )
+    assert_allclose(data, data_detrend_linear[0])
+
+    data = _process_data(
+        data_detrend_linear[0],
+        baseline=None,
+        reject=None,
+        flat=None,
+        reject_tmin=None,
+        reject_tmax=None,
+        detrend_type="linear",
+        times=data_detrend_linear[1],
+        ch_idx_by_type=dict(),
+    )
+    assert_allclose(data, np.zeros(data.shape), atol=1e-6)
