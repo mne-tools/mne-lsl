@@ -18,7 +18,7 @@ from mne_lsl.utils.logs import logger
 
 # dataset used in the example
 data_path = sample.data_path()
-fname = data_path / "MEG" / "sample" / "sample_audvis_filt-0-40_raw.fif"
+fname = data_path / "MEG" / "sample" / "sample_audvis_raw.fif"
 raw = read_raw_fif(fname, preload=False).pick(("meg", "stim")).crop(3, 212).load_data()
 
 # %%
@@ -31,6 +31,7 @@ with PlayerLSL(raw, chunk_size=200, name="real-time-evoked-example"):
     stream = StreamLSL(bufsize=4, name="real-time-evoked-example")
     stream.connect(acquisition_delay=0.1, processing_flags="all")
     stream.info["bads"] = ["MEG 2443"]
+    stream.filter(None, 40, picks="grad")
     epochs = EpochsStream(
         stream,
         bufsize=20,
