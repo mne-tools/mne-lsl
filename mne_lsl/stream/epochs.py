@@ -886,17 +886,19 @@ def _process_data(
                 for ch_type, threshold in reject.items():
                     idx = ch_idx_by_type[ch_type]
                     ptp_ch = ptp[:, idx]
-                    sel_reject = np.where(np.all(ptp_ch < threshold, axis=1))[0]
+                    # select the epochs to **keep**
+                    sel1 = np.where(np.all(ptp_ch < threshold, axis=1))[0]
             else:
-                sel_reject = np.arange(data.shape[0])
+                sel1 = np.arange(data.shape[0])
             if flat is not None:
                 for ch_type, threshold in flat.items():
                     idx = ch_idx_by_type[ch_type]
                     ptp_ch = ptp[:, idx]
-                    sel_flat = np.where(np.all(threshold < ptp_ch, axis=1))[0]
+                    # select the epochs to **keep**
+                    sel2 = np.where(np.all(threshold < ptp_ch, axis=1))[0]
             else:
-                sel_flat = np.arange(data.shape[0])
-            sel = np.intersect1d(sel_reject, sel_flat)
+                sel2 = np.arange(data.shape[0])
+            sel = np.intersect1d(sel1, sel2)  # select the epochs to **keep**
             data = data[sel, :, :]
         else:
             warn(

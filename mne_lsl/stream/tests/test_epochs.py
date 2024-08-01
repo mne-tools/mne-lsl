@@ -392,7 +392,7 @@ def test_epochs_without_event_stream_manual_acquisition():
 
 
 @pytest.fixture()
-def data_baseline() -> tuple[NDArray[np.float64], NDArray[np.float64]]:
+def data_ones() -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     """Data array used for baseline correction test."""
     data = np.ones((2, 100, 5), dtype=np.float64)
     times = np.arange(100, dtype=np.float64)
@@ -400,55 +400,55 @@ def data_baseline() -> tuple[NDArray[np.float64], NDArray[np.float64]]:
 
 
 def test_process_data_no_baseline(
-    data_baseline: tuple[NDArray[np.float64], NDArray[np.float64]],
+    data_ones: tuple[NDArray[np.float64], NDArray[np.float64]],
 ):
     """Test processing data without baseline correction."""
     data = _process_data(
-        data_baseline[0],
+        data_ones[0],
         baseline=None,
         reject=None,
         flat=None,
         reject_tmin=None,
         reject_tmax=None,
         detrend_type=None,
-        times=data_baseline[1],
+        times=data_ones[1],
         ch_idx_by_type=dict(),
     )
-    assert_allclose(data, data_baseline[0])
+    assert_allclose(data, data_ones[0])
 
 
 def test_process_data_baseline_all_segment(
-    data_baseline: tuple[NDArray[np.float64], NDArray[np.float64]],
+    data_ones: tuple[NDArray[np.float64], NDArray[np.float64]],
 ):
     """Test processing data with baseline correction on the entire segment."""
     data = _process_data(
-        data_baseline[0].copy(),
+        data_ones[0].copy(),
         baseline=(None, None),
         reject=None,
         flat=None,
         reject_tmin=None,
         reject_tmax=None,
         detrend_type=None,
-        times=data_baseline[1],
+        times=data_ones[1],
         ch_idx_by_type=dict(),
     )
     assert_allclose(data, np.zeros(data.shape))
 
 
 def test_process_data_baseline_start_segment(
-    data_baseline: tuple[NDArray[np.float64], NDArray[np.float64]],
+    data_ones: tuple[NDArray[np.float64], NDArray[np.float64]],
 ):
     """Test processing data with baseline correction on the start segment."""
-    data_baseline[0][:, 10:, :] = 101
+    data_ones[0][:, 10:, :] = 101
     data = _process_data(
-        data_baseline[0].copy(),
+        data_ones[0].copy(),
         baseline=(None, 10),
         reject=None,
         flat=None,
         reject_tmin=None,
         reject_tmax=None,
         detrend_type=None,
-        times=data_baseline[1],
+        times=data_ones[1],
         ch_idx_by_type=dict(),
     )
     assert_allclose(data[:, :10, :], np.zeros((2, 10, 5)))
@@ -456,60 +456,51 @@ def test_process_data_baseline_start_segment(
 
 
 def test_process_data_baseline_end_segment(
-    data_baseline: tuple[NDArray[np.float64], NDArray[np.float64]],
+    data_ones: tuple[NDArray[np.float64], NDArray[np.float64]],
 ):
     """Test processing data with baseline correction on the end segment."""
-    data_baseline[0][:, 10:, :] = 1
-    data_baseline[0][:, :90, :] = 101
+    data_ones[0][:, :90, :] = 101
     data = _process_data(
-        data_baseline[0].copy(),
+        data_ones[0].copy(),
         baseline=(90, None),
         reject=None,
         flat=None,
         reject_tmin=None,
         reject_tmax=None,
         detrend_type=None,
-        times=data_baseline[1],
+        times=data_ones[1],
         ch_idx_by_type=dict(),
     )
     assert_allclose(data[:, 90:, :], np.zeros((2, 10, 5)))
     assert_allclose(data[:, :90, :], np.ones((2, 90, 5)) * 100)
 
 
-@pytest.fixture()
-def data_detrend_constant() -> tuple[NDArray[np.float64], NDArray[np.float64]]:
-    """Data array used for detrending test."""
-    data = np.ones((2, 100, 5), dtype=np.float64) * 101
-    times = np.arange(100, dtype=np.float64)
-    return data, times
-
-
 def test_process_data_detrend_constant(
-    data_detrend_constant: tuple[NDArray[np.float64], NDArray[np.float64]],
+    data_ones: tuple[NDArray[np.float64], NDArray[np.float64]],
 ):
     """Test constant (DC) detrending."""
     data = _process_data(
-        data_detrend_constant[0],
+        data_ones[0],
         baseline=None,
         reject=None,
         flat=None,
         reject_tmin=None,
         reject_tmax=None,
         detrend_type=None,
-        times=data_detrend_constant[1],
+        times=data_ones[1],
         ch_idx_by_type=dict(),
     )
-    assert_allclose(data, data_detrend_constant[0])
+    assert_allclose(data, data_ones[0])
 
     data = _process_data(
-        data_detrend_constant[0],
+        data_ones[0],
         baseline=None,
         reject=None,
         flat=None,
         reject_tmin=None,
         reject_tmax=None,
         detrend_type="constant",
-        times=data_detrend_constant[1],
+        times=data_ones[1],
         ch_idx_by_type=dict(),
     )
     assert_allclose(data, np.zeros(data.shape))
@@ -557,3 +548,74 @@ def test_process_data_detrend_linear(
         ch_idx_by_type=dict(),
     )
     assert_allclose(data, np.zeros(data.shape), atol=1e-6)
+
+
+def test_process_data_flat(data_ones: tuple[NDArray[np.float64], NDArray[np.float64]]):
+    """Test rejection of epochs due to flatness."""
+    data = _process_data(
+        data_ones[0],
+        baseline=None,
+        reject=None,
+        flat=dict(eeg=1),
+        reject_tmin=None,
+        reject_tmax=None,
+        detrend_type=None,
+        times=data_ones[1],
+        ch_idx_by_type=dict(eeg=[0, 1]),
+    )
+    assert data.shape[0] == 0
+
+
+@pytest.fixture()
+def data_reject():
+    """Data array used for rejection test."""
+    data = np.ones((2, 100, 5), dtype=np.float64)
+    data[0, ::2, :] = 2
+    data[1, ::2, :] = 101
+    times = np.arange(100, dtype=np.float64)
+    return data, times
+
+
+def test_process_data_reject(
+    data_reject: tuple[NDArray[np.float64], NDArray[np.float64]],
+):
+    """Test rejection of epochs due to flatness."""
+    assert data_reject[0].shape[0] == 2
+    data = _process_data(
+        data_reject[0].copy(),
+        baseline=None,
+        reject=dict(eeg=50),
+        flat=None,
+        reject_tmin=None,
+        reject_tmax=None,
+        detrend_type=None,
+        times=data_reject[1],
+        ch_idx_by_type=dict(eeg=[0, 1]),
+    )
+    assert data.shape[0] == 1
+
+    data = _process_data(
+        data_reject[0].copy(),
+        baseline=None,
+        reject=dict(eeg=500),
+        flat=None,
+        reject_tmin=None,
+        reject_tmax=None,
+        detrend_type=None,
+        times=data_reject[1],
+        ch_idx_by_type=dict(eeg=[0, 1]),
+    )
+    assert data.shape[0] == 2
+
+    data = _process_data(
+        data_reject[0].copy(),
+        baseline=None,
+        reject=dict(eeg=1e-3),
+        flat=None,
+        reject_tmin=None,
+        reject_tmax=None,
+        detrend_type=None,
+        times=data_reject[1],
+        ch_idx_by_type=dict(eeg=[0, 1]),
+    )
+    assert data.shape[0] == 0
