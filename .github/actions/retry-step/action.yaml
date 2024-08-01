@@ -1,0 +1,48 @@
+name: "Retry a command upon segmentation fault or python fatal error"
+description: "A composite action to retry a command or step upon a segmentation fault or a python fatal error."
+inputs:
+  command:
+    description: 'The command to run.'
+    required: true
+  max_attempts:
+    description: 'Maximum number of attempts.'
+    required: false
+    default: '3'
+  retry_error_codes:
+    description: 'The error code on which to trigger a retry.'
+    required: false
+    default;: "134,139"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Run command with retries
+      id: retry
+      shell: bash
+      run: |
+        command="${{ inputs.command }}"
+        max_attempts=${{ inputs.max_attempts }}
+        retry_error_codes=${{ inputs.retry_error_code }}
+        attempt=1
+
+        IFS=',' read -r -a retry_codes <<< "$retry_error_codes"
+
+        until [ $attempt -gt $max_attempts ]
+        do
+          eval $command
+          exit_code=$?
+
+          if [ $exit_code -ne $retry_error_code ]; then
+            exit $exit_code
+          else
+            echo "Command failed with error code $exit_code on attempt $attempt. Retrying..."
+          fi
+
+          attempt=$((attempt + 1))
+          sleep 1
+        done
+
+        if [ $attempt -gt $max_attempts ]; then
+          echo "Command failed after $max_attempts attempts."
+          exit 1
+        fi
