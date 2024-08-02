@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 import pytest
-from mne import create_info
+from mne import annotations_from_events, create_info, find_events
 from mne.io import RawArray
 from mne.io.base import BaseRaw
 from numpy.testing import assert_allclose
@@ -17,7 +17,7 @@ from ..epochs import (
     _check_reject_flat,
     _check_reject_tmin_tmax,
     _ensure_detrend_str,
-    _ensure_event_id_dict,
+    _ensure_event_id,
     _find_events_in_stim_channels,
     _process_data,
     _prune_events,
@@ -28,26 +28,24 @@ if TYPE_CHECKING:
     from numpy.typing import NDArray
 
 
-def test_ensure_event_id_dict():
+def test_ensure_event_id():
     """Test validation of event dictionary."""
-    assert _ensure_event_id_dict(5) == {"5": 5}
-    assert _ensure_event_id_dict({"5": 5}) == {"5": 5}
+    assert _ensure_event_id(5, None) == {"5": 5}
+    assert _ensure_event_id({"5": 5}, None) == {"5": 5}
 
     with pytest.raises(ValueError, match="must be a positive integer or a dictionary"):
-        _ensure_event_id_dict(0)
+        _ensure_event_id(0, None)
     with pytest.raises(ValueError, match="must be a positive integer or a dictionary"):
-        _ensure_event_id_dict(-101)
+        _ensure_event_id(-101, None)
     with pytest.raises(ValueError, match="must be a positive integer or a dictionary"):
-        _ensure_event_id_dict({"5": 0})
+        _ensure_event_id({"5": 0}, None)
 
     with pytest.raises(TypeError, match="must be an instance of"):
-        _ensure_event_id_dict(5.5)
+        _ensure_event_id(5.5, None)
     with pytest.raises(TypeError, match="must be an instance of"):
-        _ensure_event_id_dict(None)
+        _ensure_event_id({"5": 5.5}, None)
     with pytest.raises(TypeError, match="must be an instance of"):
-        _ensure_event_id_dict({"5": 5.5})
-    with pytest.raises(TypeError, match="must be an instance of"):
-        _ensure_event_id_dict({"101": None})
+        _ensure_event_id({"101": None}, None)
 
 
 def test_check_baseline():
@@ -248,7 +246,7 @@ def raw_with_stim_channel() -> BaseRaw:
     for pos in (100, 500, 700):
         data[1:-1, pos : pos + 100] = 101
         data[-1, pos : pos + 10] = 1  # trigger channel at the end
-    info = create_info(["ch1", "ch2", "ch3", "trg"], 1000, ["eeg"] * 3 + ["stim"])
+    info = create_info(["ch0", "ch1", "ch2", "trg"], 1000, ["eeg"] * 3 + ["stim"])
     return RawArray(data, info)
 
 
@@ -258,7 +256,7 @@ def _player_mock_lsl_stream(
     chunk_size: int,
     status: mp.managers.ValueProxy,
 ) -> None:
-    """Player for the 'mock_lsl_stream_sinusoids' fixture."""
+    """Player for the 'mock_lsl_stream' fixture(s)."""
     # nest the PlayerLSL import to first write the temporary LSL configuration file
     from mne_lsl.player import PlayerLSL
 
@@ -272,7 +270,7 @@ def _player_mock_lsl_stream(
 
 @pytest.fixture()
 def _mock_lsl_stream(raw_with_stim_channel, request, chunk_size):
-    """Create a mock LSL stream streaming sinusoids."""
+    """Create a mock LSL stream streaming events on a stim channel."""
     manager = mp.Manager()
     status = manager.Value("i", 0)
     name = f"P_{request.node.name}"
@@ -662,3 +660,83 @@ def test_process_data_reject_tmin_tmax(
         ch_idx_by_type=dict(eeg=[0, 1]),
     )
     assert data.shape[0] == 1
+
+
+@pytest.fixture()
+def raw_with_annotations(raw_with_stim_channel: BaseRaw) -> BaseRaw:
+    """Create a raw object with annotations instead of a stim channel.
+
+    The raw object contains 1000 samples @ 1 kHz -> 1 second of data:
+    - channel 0: index of the sample within the raw object
+    - channel 1 and 2: 0, except when there is an event, then 101 during 100 samples
+    - channel 3: 0, except when there is an event, then 1 during 10 samples (stim)
+
+    Channel 3 is dropped after annotations are created from events.
+    There are 3 events @ 100, 500, 700 samples.
+    """
+    events = find_events(raw_with_stim_channel, "trg")
+    annotations = annotations_from_events(
+        events,
+        raw_with_stim_channel.info["sfreq"],
+        event_desc={1: "event"},
+        first_samp=raw_with_stim_channel.first_samp,
+    )
+    return raw_with_stim_channel.drop_channels("trg").set_annotations(annotations)
+
+
+@pytest.fixture()
+def _mock_lsl_stream_with_annotations(raw_with_annotations, request, chunk_size):
+    """Create a mock LSL stream streaming events with annotations."""
+    manager = mp.Manager()
+    status = manager.Value("i", 0)
+    name = f"P_{request.node.name}"
+    process = mp.Process(
+        target=_player_mock_lsl_stream,
+        args=(raw_with_annotations, name, chunk_size, status),
+    )
+    process.start()
+    while status.value != 1:
+        pass
+    yield
+    status.value = 0
+    process.join(timeout=2)
+    process.kill()
+
+
+@pytest.mark.usefixtures("_mock_lsl_stream_with_annotations")
+def test_epochs_with_irregular_numerical_event_stream():
+    """Test creating epochs from an irregularly sampled numerical event stream."""
+    event_stream = StreamLSL(10, stype="annotations").connect(acquisition_delay=0.1)
+    name = event_stream.name.removesuffix("-annotations")
+    stream = StreamLSL(0.5, name=name).connect(acquisition_delay=0.1)
+    epochs = EpochsStream(
+        stream,
+        10,
+        event_channels="event",
+        event_stream=event_stream,
+        event_id=None,
+        tmin=0,
+        tmax=0.1,
+    ).connect(acquisition_delay=0.1)
+    while epochs.n_new_epochs == 0:
+        time.sleep(0.1)
+    n = epochs.n_new_epochs
+    data = epochs.get_data()
+    assert_allclose(data[:-n, :, :], np.zeros((10 - n, data.shape[1], data.shape[2])))
+    data_channels = data[-n:, 1:-1, :]
+    assert_allclose(data_channels, np.ones(data_channels.shape) * 101)
+    epochs.disconnect()
+    stream.disconnect()
+    event_stream.disconnect()
+
+
+@pytest.mark.usefixtures("_mock_lsl_stream_with_annotations")
+def test_ensure_event_id_with_event_stream():
+    """Test validation of event dictionary when an event_stream is present."""
+    with pytest.raises(ValueError, match="must be provided if no irregularly sampled"):
+        _ensure_event_id(None, None)
+    event_stream = StreamLSL(10, stype="annotations").connect(acquisition_delay=0.1)
+    assert _ensure_event_id(None, event_stream) is None
+    with pytest.warns(RuntimeWarning, match="should be set to None"):
+        _ensure_event_id(dict(event=1), event_stream)
+    event_stream.disconnect()

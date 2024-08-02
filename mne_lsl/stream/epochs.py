@@ -59,14 +59,14 @@ class EpochsStream:
             For a new epoch to be added to the buffer, the epoch must be fully
             acquired, i.e. the last sample of the epoch must be received. Thus, an
             epoch is acquired at least ``tmax`` seconds after the event onset.
-    event_id : int | dict
+    event_id : int | dict | None
         The ID of the events to consider from the event source. The event source can be
         a channel from the connected Stream or a separate event stream. In both case the
         event should be defined either as :class:`int`. If a :class:`dict` is provided,
         it should map event names to event IDs. For example
         ``dict(auditory=1, visual=2)``. If the event source is an irregularly sampled
         stream, the numerical values within the channels are ignored and this argument
-        is ignored.
+        is ignored in which case it should be set to ``None``.
     event_channels : str | list of str
         Channel(s) to monitor for incoming events. The event channel(s) must be part of
         the connected Stream or of the ``event_stream`` if provided. See notes for
@@ -127,7 +127,7 @@ class EpochsStream:
         self,
         stream: BaseStream,
         bufsize: int,
-        event_id: Union[int, dict[str, int]],
+        event_id: Optional[Union[int, dict[str, int]]],
         event_channels: Union[str, list[str]],
         event_stream: Optional[BaseStream] = None,
         tmin: float = -0.2,
@@ -196,7 +196,7 @@ class EpochsStream:
                 "The buffer size, i.e. the number of epochs in the buffer, must be a "
                 "positive integer."
             )
-        self._event_id = _ensure_event_id_dict(event_id)
+        self._event_id = _ensure_event_id(event_id, event_stream)
         _check_baseline(baseline, self._tmin, self._tmax)
         self._baseline = baseline
         _check_reject_flat(reject, flat, self._stream._info)
@@ -638,9 +638,28 @@ def _check_event_channels(
                 )
 
 
-def _ensure_event_id_dict(event_id: Union[int, dict[str, int]]) -> dict[str, int]:
-    """Ensure event_ids is a dictionary."""
-    check_type(event_id, (int, dict), "event_id")
+def _ensure_event_id(
+    event_id: Optional[Union[int, dict[str, int]]], event_stream: Optional[BaseStream]
+) -> Optional[dict[str, int]]:
+    """Ensure event_ids is a dictionary or None."""
+    check_type(event_id, (None, int, dict), "event_id")
+    if event_id is None:
+        if event_stream is None or event_stream.info["sfreq"] != 0:
+            raise ValueError(
+                "The 'event_id' must be provided if no irregularly sampled "
+                "'event_stream' is provided."
+            )
+        return None
+    if (
+        event_id is not None
+        and event_stream is not None
+        and event_stream.info["sfreq"] == 0
+    ):
+        warn(
+            "The argument 'event_id' should be set to None when events are selected "
+            "from an irregularly sampled event stream."
+        )
+        return None
     raise_ = False
     if isinstance(event_id, int):
         if event_id <= 0:
