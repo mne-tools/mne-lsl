@@ -37,7 +37,7 @@ runs:
           exit_code=$?
 
           if [ $exit_code -ne $retry_codes ]; then
-          echo "Command completed with exit code $exit_code."
+            echo "Command completed with exit code $exit_code."
             exit $exit_code
           else
             echo "Command failed with error code $exit_code on attempt $attempt. Retrying..."
