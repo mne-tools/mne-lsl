@@ -42,6 +42,7 @@ jobs:
         uses: ./.github/actions/retry-step
         with:
           command: "make -C doc html"
+          retry_error_codes: "2"
           command_between_retries: "make -C doc clean"
       - name: Prune sphinx environment
         run: rm -R ./doc/_build/html/.doctrees
