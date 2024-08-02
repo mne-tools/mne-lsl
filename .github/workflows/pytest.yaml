@@ -39,7 +39,9 @@ jobs:
       - name: Get testing dataset
         uses: ./.github/actions/get-testing-dataset
       - name: Run pytest
-        run: pytest mne_lsl --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s
+        uses: ./.github/actions/retry-step
+        with:
+          command: pytest mne_lsl --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s
         env:
           MNE_LSL_LOG_LEVEL: DEBUG
       - name: Upload to codecov
@@ -85,7 +87,9 @@ jobs:
       - name: Get testing dataset
         uses: ./.github/actions/get-testing-dataset
       - name: Run pytest
-        run: pytest mne_lsl --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s
+        uses: ./.github/actions/retry-step
+        with:
+          command: pytest mne_lsl --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s
         env:
           MNE_LSL_LOG_LEVEL: DEBUG
       - name: Upload to codecov
@@ -131,7 +135,9 @@ jobs:
       - name: Get testing dataset
         uses: ./.github/actions/get-testing-dataset
       - name: Run pytest
-        run: pytest mne_lsl --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s
+        uses: ./.github/actions/retry-step
+        with:
+          command: pytest mne_lsl --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s
         env:
           MNE_LSL_LOG_LEVEL: DEBUG
       - name: Upload to codecov
