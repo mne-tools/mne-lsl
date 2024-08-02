@@ -36,7 +36,7 @@ runs:
           eval $command
           exit_code=$?
 
-          if [ $exit_code -ne $retry_error_codes ]; then
+          if [ $exit_code -ne $retry_codes ]; then
           echo "Command completed with exit code $exit_code."
             exit $exit_code
           else
