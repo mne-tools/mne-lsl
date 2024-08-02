@@ -36,15 +36,21 @@ runs:
           eval $command
           exit_code=$?
 
-          if [ $exit_code -ne $retry_codes ]; then
-            echo "Command completed with exit code $exit_code."
+          retry=false
+          for code in "${retry_codes[@]}"; do
+            if [ $exit_code -eq $code ]; then
+              retry=true
+              break
+            fi
+          done
+
+          if [ "$retry" == false ]; then
+            echo "Command exited with code $exit_code after $max_attempts attempts."
             exit $exit_code
-          else
-            echo "Command failed with error code $exit_code on attempt $attempt. Retrying..."
           fi
 
           if [ -n "$command_between_retries" ]; then
-            echo "Running command between retries: $command_between_retries"
+            echo "Running command '$command_between_retries' between retries."
             eval $command_between_retries
           fi
 

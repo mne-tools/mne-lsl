@@ -330,21 +330,6 @@ class EpochsStream:
 
     def disconnect(self) -> None:
         """Stop acquisition of epochs from the connected Stream."""
-        if not self.connected:
-            warn("The EpochsStream is already disconnected. Skipping.")
-            # just in case, let's look through the stream objects attached..
-            if hasattr(self._stream, "_epochs") and self in self._stream._epochs:
-                self._stream._epochs.remove(self)
-            if (
-                self._event_stream is not None
-                and hasattr(self._event_stream, "_epochs")
-                and self in self._event_stream._epochs
-            ):
-                self._event_stream._epochs.remove(self)
-            return
-        if hasattr(self, "_executor") and self._executor is not None:
-            self._executor.shutdown(wait=True, cancel_futures=True)
-        self._reset_variables()
         if hasattr(self._stream, "_epochs") and self in self._stream._epochs:
             self._stream._epochs.remove(self)
         if (
@@ -353,6 +338,12 @@ class EpochsStream:
             and self in self._event_stream._epochs
         ):
             self._event_stream._epochs.remove(self)
+        if not self.connected:
+            warn("The EpochsStream is already disconnected. Skipping.")
+            return
+        if hasattr(self, "_executor") and self._executor is not None:
+            self._executor.shutdown(wait=True, cancel_futures=True)
+        self._reset_variables()
 
     @fill_doc
     def get_data(
