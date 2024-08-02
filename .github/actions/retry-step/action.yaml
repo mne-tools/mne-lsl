@@ -25,7 +25,7 @@ runs:
       run: |
         command="${{ inputs.command }}"
         max_attempts=${{ inputs.max_attempts }}
-        retry_error_codes=${{ inputs.retry_error_code }}
+        retry_error_codes=${{ inputs.retry_error_codes }}
         command_between_retries="${{ inputs.command_between_retries }}"
         attempt=1
 
