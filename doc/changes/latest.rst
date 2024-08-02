@@ -26,3 +26,4 @@ Infrastructure
 --------------
 
 - Improve unit tests by setting a marker ``slow`` on tests which take more than 5 seconds to complete (:pr:`258` by `Mathieu Scheltienne`_)
+- Improve documentation build and unit test by adding a github action to retry a step when needed (:pr:`258` by `Mathieu Scheltienne`_)
