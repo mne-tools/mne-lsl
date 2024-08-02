@@ -1,10 +1,15 @@
+from __future__ import annotations
+
 import os
 import time
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import numpy as np
 import pytest
+from mne import annotations_from_events, create_info, find_events
+from mne.io import RawArray
 from mne.utils import check_version
 from numpy.testing import assert_allclose
 
@@ -18,10 +23,13 @@ from mne_lsl.player import PlayerLSL as Player
 from mne_lsl.stream import StreamLSL as Stream
 from mne_lsl.utils._tests import match_stream_and_raw_data
 
+if TYPE_CHECKING:
+    from mne.io import BaseRaw
 
-def test_player(fname, raw, close_io, chunk_size):
+
+def test_player(fname, raw, close_io, chunk_size, request):
     """Test a working and valid player."""
-    name = "Player-test_player"
+    name = f"P_{request.node.name}"
     player = Player(fname, chunk_size=chunk_size, name=name)
     assert "OFF" in player.__repr__()
     streams = resolve_streams(timeout=0.1)
@@ -72,9 +80,9 @@ def test_player(fname, raw, close_io, chunk_size):
     player.stop()
 
 
-def test_player_context_manager(fname, chunk_size):
+def test_player_context_manager(fname, chunk_size, request):
     """Test a working and valid player as context manager."""
-    name = "Player-test_player_context_manager"
+    name = f"P_{request.node.name}"
     streams = resolve_streams(timeout=0.1)
     assert len(streams) == 0
     with Player(fname, chunk_size=chunk_size, name=name):
@@ -85,9 +93,9 @@ def test_player_context_manager(fname, chunk_size):
     assert len(streams) == 0
 
 
-def test_player_context_manager_raw(raw, chunk_size):
+def test_player_context_manager_raw(raw, chunk_size, request):
     """Test a working and valid player as context manager from a raw object."""
-    name = "Player-test_player_context_manager_raw"
+    name = f"P_{request.node.name}"
     streams = resolve_streams(timeout=0.1)
     assert len(streams) == 0
     with Player(raw, chunk_size=chunk_size, name=name) as player:
@@ -106,9 +114,9 @@ def test_player_context_manager_raw(raw, chunk_size):
             assert player.info["ch_names"] == raw.info["ch_names"]
 
 
-def test_player_context_manager_raw_annotations(raw_annotations, chunk_size):
+def test_player_context_manager_raw_annotations(raw_annotations, chunk_size, request):
     """Test a working player as context manager from a raw object with annotations."""
-    name = "Player-test_player_context_manager_raw"
+    name = f"P_{request.node.name}"
     streams = resolve_streams(timeout=0.1)
     assert len(streams) == 0
     with Player(
@@ -147,11 +155,9 @@ def test_player_invalid_arguments(fname):
         Player(fname, name="101", chunk_size=-101)
 
 
-def test_player_stop_invalid(fname, chunk_size):
+def test_player_stop_invalid(fname, chunk_size, request):
     """Test stopping a player that is not started."""
-    player = Player(
-        fname, chunk_size=chunk_size, name="Player-test_stop_player_invalid"
-    )
+    player = Player(fname, chunk_size=chunk_size, name=f"P_{request.node.name}")
     with pytest.raises(RuntimeError, match="The player is not started"):
         player.stop()
     player.start()
@@ -169,7 +175,7 @@ def _create_inlet(name: str) -> StreamInlet:
 
 
 @pytest.fixture()
-def mock_lsl_stream(fname: Path, request, chunk_size):
+def mock_lsl_stream(fname: Path, chunk_size, request):
     """Create a mock LSL stream for testing."""
     # nest the PlayerLSL import to first write the temporary LSL configuration file
     from mne_lsl.player import PlayerLSL  # noqa: E402
@@ -304,9 +310,9 @@ def test_player_set_channel_types(mock_lsl_stream, raw, close_io):
     )
 
 
-def test_player_anonymize(fname, chunk_size):
+def test_player_anonymize(fname, chunk_size, request):
     """Test anonymization."""
-    name = "Player-test_player_anonymize"
+    name = f"P_{request.node.name}"
     player = Player(fname, chunk_size=chunk_size, name=name)
     assert player.name == name
     assert player.fname == fname
@@ -321,9 +327,9 @@ def test_player_anonymize(fname, chunk_size):
     player.stop()
 
 
-def test_player_set_meas_date(fname, chunk_size):
+def test_player_set_meas_date(fname, chunk_size, request):
     """Test player measurement date."""
-    name = "Player-test_player_set_meas_date"
+    name = f"P_{request.node.name}"
     player = Player(fname, chunk_size=chunk_size, name=name)
     assert player.name == name
     assert player.fname == fname
@@ -341,9 +347,9 @@ def test_player_set_meas_date(fname, chunk_size):
 
 
 @pytest.mark.slow()
-def test_player_annotations(raw_annotations, close_io, chunk_size):
+def test_player_annotations(raw_annotations, close_io, chunk_size, request):
     """Test player with annotations."""
-    name = "Player-test_player_annotations"
+    name = f"P_{request.node.name}"
     annotations = sorted(set(raw_annotations.annotations.description))
     player = Player(raw_annotations, chunk_size=chunk_size, name=name)
     assert f"Player: {name}" in repr(player)
@@ -406,11 +412,46 @@ def test_player_annotations(raw_annotations, close_io, chunk_size):
     player.stop()
 
 
+@pytest.fixture()
+def raw_annotations_1000_samples() -> BaseRaw:
+    """Return a 1000 sample raw object with annotations."""
+    n_samples = 1000
+    data = np.zeros((2, n_samples), dtype=np.float32)
+    data[0, :] = np.arange(n_samples)  # index of the sample within the raw object
+    for pos in (100, 500, 700):
+        data[-1, pos : pos + 10] = 1  # trigger channel at the end
+    info = create_info(["ch0", "trg"], 1000, ["eeg", "stim"])
+    raw = RawArray(data, info)
+    events = find_events(raw, "trg")
+    annotations = annotations_from_events(
+        events, raw.info["sfreq"], event_desc={1: "event"}, first_samp=raw.first_samp
+    )
+    return raw.drop_channels("trg").set_annotations(annotations)
+
+
 @pytest.mark.slow()
-def test_player_n_repeat(raw, chunk_size):
+def test_player_annotations_multiple_of_chunk_size(
+    raw_annotations_1000_samples, chunk_size, request
+):
+    """Test player with annotations, chunk-size is a multiple of the raw size."""
+    raw = raw_annotations_1000_samples
+    assert raw.times.size % chunk_size == 0
+    player = Player(raw, chunk_size=chunk_size, name=f"P_{request.node.name}")
+    player.start()
+    time.sleep((raw.times.size / raw.info["sfreq"]) * 1.8)
+    streams = resolve_streams(timeout=2)
+    assert len(streams) == 2
+    time.sleep((raw.times.size / raw.info["sfreq"]) * 1.8)
+    streams = resolve_streams(timeout=2)
+    assert len(streams) == 2
+    player.stop()
+
+
+@pytest.mark.slow()
+def test_player_n_repeat(raw, chunk_size, request):
     """Test argument 'n_repeat'."""
     player = Player(
-        raw, chunk_size=chunk_size, n_repeat=1, name="Player-test_player_n_repeat-1"
+        raw, chunk_size=chunk_size, n_repeat=1, name=f"P_{request.node.name}-1"
     )
     player.start()
     time.sleep((raw.times.size / raw.info["sfreq"]) * 1.8)
@@ -420,7 +461,7 @@ def test_player_n_repeat(raw, chunk_size):
     with pytest.raises(RuntimeError, match="player is not started."):
         player.stop()
     player = Player(
-        raw, chunk_size=chunk_size, n_repeat=4, name="Player-test_player_n_repeat-2"
+        raw, chunk_size=chunk_size, n_repeat=4, name=f"P_{request.node.name}-2"
     )
     assert player.n_repeat == 4
     player.start()
@@ -446,9 +487,9 @@ def test_player_n_repeat_invalid(raw):
 @pytest.mark.skipif(
     os.getenv("GITHUB_ACTIONS", "") == "true", reason="Unreliable on CIs."
 )
-def test_player_push_sample(fname):
+def test_player_push_sample(fname, request):
     """Test pushing individual sample with chunk_size=1."""
-    name = "Player-test_player_push_sample"
+    name = f"P_{request.node.name}"
     streams = resolve_streams(timeout=0.1)
     assert len(streams) == 0
     with Player(fname, chunk_size=1, name=name):
@@ -462,9 +503,9 @@ def test_player_push_sample(fname):
 @pytest.mark.skipif(
     os.getenv("GITHUB_ACTIONS", "") == "true", reason="Unreliable on CIs."
 )
-def test_player_push_last_sample(fname, caplog):
+def test_player_push_last_sample(fname, caplog, request):
     """Test pushing the last sample."""
-    name = "Player-test_player_push_sample-2"
+    name = f"P_{request.node.name}"
     player = Player(fname, chunk_size=1, n_repeat=1, name=name)
     caplog.clear()
     player.start()
