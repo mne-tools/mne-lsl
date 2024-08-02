@@ -72,3 +72,7 @@ with PlayerLSL(raw, chunk_size=200, name="real-time-evoked-example"):
         evoked.plot(axes=ax, time_unit="s")  # plot on current figure
         fig.canvas.draw()
         fig.canvas.flush_events()
+
+    # clean-up
+    epochs.disconnect()
+    stream.disconnect()
