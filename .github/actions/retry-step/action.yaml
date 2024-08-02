@@ -45,7 +45,7 @@ runs:
           done
 
           if [ "$retry" == false ]; then
-            echo "Command exited with code $exit_code after $max_attempts attempts."
+            echo "Command exited with code $exit_code after $attempt attempts."
             exit $exit_code
           fi
 
