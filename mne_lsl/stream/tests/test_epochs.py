@@ -725,7 +725,7 @@ def test_epochs_with_irregular_numerical_event_stream():
     n = epochs.n_new_epochs
     data = epochs.get_data()
     assert_allclose(data[:-n, :, :], np.zeros((10 - n, data.shape[1], data.shape[2])))
-    data_channels = data[-n:, 1:-1, :]
+    data_channels = data[-n:, 1:-1, 2:-2]  # give 2 sample of jitter
     assert_allclose(data_channels, np.ones(data_channels.shape) * 101)
     epochs.disconnect()
     stream.disconnect()
