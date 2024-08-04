@@ -323,9 +323,9 @@ class EpochsStream:
         self._executor = (
             ThreadPoolExecutor(max_workers=1) if self._acquisition_delay != 0 else None
         )
-        logger.debug("%s: ThreadPoolExecutor started.", self)
         # submit the first acquisition job
         if self._executor is not None:
+            logger.debug("%s: ThreadPoolExecutor started.", self)
             self._executor.submit(self._acquire)
         return self
 
@@ -851,8 +851,10 @@ def _prune_events(
     if event_id is not None:
         sel = np.isin(events[:, 2], list(event_id.values()))
         events = events[sel]
-    # get the events position in the stream times
+    # get the events position in the stream times after removing events outside of ts
     if ts_events is not None:
+        sel = np.where((ts[0] <= ts_events) & (ts_events <= ts[-1]))[0]
+        events = events[sel]
         events[:, 0] = np.searchsorted(ts, ts_events[events[:, 0]], side="left")
     # remove events which can't fit an entire epoch
     sel = np.where(events[:, 0] + buffer_size <= ts.size)[0]

@@ -299,7 +299,8 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         self._executor = (
             ThreadPoolExecutor(max_workers=1) if self._acquisition_delay != 0 else None
         )
-        logger.debug("%s: ThreadPoolExecutor started.", self)
+        if self._acquisition_delay != 0:
+            logger.debug("%s: ThreadPoolExecutor started.", self)
         # This method needs to connect to a stream, retrieve the stream information and
         # create the ringbuffer. By the end of this method, the following variables
         # must exist:
