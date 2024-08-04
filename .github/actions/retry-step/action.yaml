@@ -33,7 +33,7 @@ runs:
 
         until [ $attempt -gt $max_attempts ]
         do
-          eval $command
+          (eval $command)
           exit_code=$?
 
           retry=false
@@ -44,7 +44,7 @@ runs:
             fi
           done
 
-          if [ "$retry" == false ]; then
+          if [ "$retry" = false ]; then
             echo "Command exited with code $exit_code after $attempt attempts."
             exit $exit_code
           fi
