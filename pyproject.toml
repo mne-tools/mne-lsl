@@ -69,7 +69,7 @@ build = ['build', 'twine']
 doc = [
   'furo',
   'intersphinx_registry',
-  'matplotlib',
+  'matplotlib!=3.9.1',
   'memory-profiler',
   'numpydoc',
   'pyqt5',
