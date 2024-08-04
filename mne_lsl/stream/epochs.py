@@ -853,7 +853,9 @@ def _prune_events(
         events = events[sel]
     # get the events position in the stream times after removing events outside of ts
     if ts_events is not None:
-        sel = np.where((ts[0] <= ts_events) & (ts_events <= ts[-1]))[0]
+        sel = np.where(
+            (ts[0] <= ts_events[events[:, 0]]) & (ts_events[events[:, 0]] <= ts[-1])
+        )[0]
         events = events[sel]
         events[:, 0] = np.searchsorted(ts, ts_events[events[:, 0]], side="left")
     # remove events which can't fit an entire epoch
