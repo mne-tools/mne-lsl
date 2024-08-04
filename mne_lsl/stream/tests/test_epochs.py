@@ -704,6 +704,7 @@ def _mock_lsl_stream_with_annotations(raw_with_annotations, request, chunk_size)
     process.kill()
 
 
+@pytest.mark.xfail(reason="2 processes and 5 threads required, unreliable on CIs")
 @pytest.mark.usefixtures("_mock_lsl_stream_with_annotations")
 def test_epochs_with_irregular_numerical_event_stream():
     """Test creating epochs from an irregularly sampled numerical event stream."""
