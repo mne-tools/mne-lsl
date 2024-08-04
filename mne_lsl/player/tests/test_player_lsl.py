@@ -426,6 +426,7 @@ def raw_annotations_1000_samples() -> BaseRaw:
     annotations = annotations_from_events(
         events, raw.info["sfreq"], event_desc={1: "event"}, first_samp=raw.first_samp
     )
+    annotations.duration += 0.01
     return raw.drop_channels("trg").set_annotations(annotations)
 
 

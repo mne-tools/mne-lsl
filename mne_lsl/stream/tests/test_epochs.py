@@ -681,6 +681,7 @@ def raw_with_annotations(raw_with_stim_channel: BaseRaw) -> BaseRaw:
         event_desc={1: "event"},
         first_samp=raw_with_stim_channel.first_samp,
     )
+    annotations.duration += 0.1
     return raw_with_stim_channel.drop_channels("trg").set_annotations(annotations)
 
 
@@ -717,6 +718,7 @@ def test_epochs_with_irregular_numerical_event_stream():
         event_id=None,
         tmin=0,
         tmax=0.1,
+        baseline=None,
     ).connect(acquisition_delay=0.1)
     while epochs.n_new_epochs == 0:
         time.sleep(0.1)

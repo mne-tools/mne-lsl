@@ -454,16 +454,18 @@ class EpochsStream:
                 and self._event_stream._info["sfreq"] == 0
             ):
                 data_events, ts_events = self._event_stream.get_data(
-                    picks=self._event_channels, exclude=()
+                    winsize=self._event_stream._n_new_samples,
+                    picks=self._event_channels,
+                    exclude=(),
                 )
                 events = np.vstack(
                     [
                         np.arange(ts_events.size, dtype=np.int64),
                         np.zeros(ts_events.size, dtype=np.int64),
-                        np.argmax(data, axis=1),
+                        np.argmax(data_events, axis=0),
                     ],
                     dtype=np.int64,
-                )
+                ).T
                 events = _prune_events(
                     events, None, self._buffer.shape[1], ts, self._last_ts, ts_events
                 )
