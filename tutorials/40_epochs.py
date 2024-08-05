@@ -60,7 +60,7 @@ from mne_lsl.player import PlayerLSL
 from mne_lsl.stream import EpochsStream, StreamLSL
 
 fname = sample.data_path() / "mne-sample" / "sample_audvis_raw.fif"
-raw = read_raw_fif(fname, preload=False).pick(("meg", "stim")).crop(3, 212).load_data()
+raw = read_raw_fif(fname, preload=False).pick(("meg", "stim")).load_data()
 player = PlayerLSL(
     raw, chunk_size=200, name="tutorial-epochs-1", annotations=False
 ).start()

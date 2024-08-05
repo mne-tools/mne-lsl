@@ -18,7 +18,7 @@ from mne_lsl.utils.logs import logger
 
 # dataset used in the example
 fname = sample.data_path() / "mne-sample" / "sample_audvis_raw.fif"
-raw = read_raw_fif(fname, preload=False).pick(("meg", "stim")).crop(3, 212).load_data()
+raw = read_raw_fif(fname, preload=False).pick(("meg", "stim")).load_data()
 
 # %%
 # First, we create a mock stream with :class:`mne_lsl.player.PlayerLSL` from the sample
