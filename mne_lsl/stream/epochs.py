@@ -330,7 +330,7 @@ class EpochsStream:
             self._executor.submit(self._acquire)
         return self
 
-    def disconnect(self) -> None:
+    def disconnect(self) -> EpochsStream:
         """Stop acquisition of epochs from the connected Stream."""
         if hasattr(self._stream, "_epochs") and self in self._stream._epochs:
             self._stream._epochs.remove(self)
@@ -346,6 +346,7 @@ class EpochsStream:
         if hasattr(self, "_executor") and self._executor is not None:
             self._executor.shutdown(wait=True, cancel_futures=True)
         self._reset_variables()
+        return self
 
     @fill_doc
     def get_data(
