@@ -7,7 +7,7 @@ from _typeshed import Incomplete
 
 from ._checks import check_verbose as check_verbose
 from ._docs import fill_doc as fill_doc
-from ._fixes import _WrapStdOut as _WrapStdOut
+from ._fixes import WrapStdOut as WrapStdOut
 
 _PACKAGE: str
 
