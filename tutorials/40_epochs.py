@@ -117,7 +117,7 @@ while epochs.n_new_epochs < 10:
     time.sleep(0.5)
 
 data = epochs.get_data(n_epochs=epochs.n_new_epochs)
-epochs_mne = EpochsArray(data, epochs.info)
+epochs_mne = EpochsArray(data, epochs.info, verbose="WARNING")
 epochs_mne.average().plot()
 plt.show()
 
@@ -227,7 +227,7 @@ while epochs.n_new_epochs < 10:
     time.sleep(0.5)
 
 data = epochs.get_data(n_epochs=epochs.n_new_epochs)
-epochs_mne = EpochsArray(data, epochs.info)
+epochs_mne = EpochsArray(data, epochs.info, verbose="WARNING")
 epochs_mne.compute_psd(fmax=40, tmin=0).plot()
 plt.show()
 
