@@ -25,7 +25,7 @@ from ..utils._checks import check_type, check_value, ensure_int
 from ..utils._docs import fill_doc
 from ..utils._fixes import find_events
 from ..utils.logs import logger, warn
-from ._base import BaseStream
+from .base import BaseStream
 
 if TYPE_CHECKING:
     from typing import Optional, Union

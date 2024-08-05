@@ -19,4 +19,6 @@ This is the reference for classes (``CamelCase`` names) and functions
 
 .. include:: utilities.rst
 
+.. include:: abstract.rst
+
 .. include:: legacy.rst

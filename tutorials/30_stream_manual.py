@@ -5,7 +5,7 @@ Automatic vs Manual acquisition
 .. include:: ./../../links.inc
 
 The :class:`~mne_lsl.stream.StreamLSL` object offers 2 mode of acquisition: automatic or
-manual. In automatic mode, the stream objecdt acquires new chunks of samples at a
+manual. In automatic mode, the stream object acquires new chunks of samples at a
 regular interval. In manual mode, the user has to call the
 :meth:`~mne_lsl.stream.StreamLSL.acquire` to acquire new chunks of samples from the
 network. The automatic or manual acquisition is selected via the ``acquisition_delay``
