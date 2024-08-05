@@ -237,7 +237,7 @@ plt.show()
 #
 # When you are done with a :class:`~mne_lsl.player.PlayerLSL`, a
 # :class:`~mne_lsl.stream.StreamLSL` or a :class:`~mne_lsl.stream.EpochsStream` don't
-# forget to free the resources they both use to continuously mock an LSL stream or
+# forget to free the resources they use to continuously mock an LSL stream or
 # receive new data from an LSL stream.
 
 epochs.disconnect()
