@@ -36,8 +36,8 @@ runs:
         do
           set +e
           $command
-          set -e
           exit_code=$?
+          set -e
 
           retry=false
           for code in "${retry_codes[@]}"; do
