@@ -782,7 +782,7 @@ def raw_with_annotations_and_first_samp() -> BaseRaw:
 
 
 @pytest.fixture()
-def _mock_lsl_stream_with_annotations_and_first_Samp(
+def _mock_lsl_stream_with_annotations_and_first_samp(
     raw_with_annotations, request, chunk_size
 ):
     """Create a mock LSL stream streaming events with annotations and first_samp."""
@@ -804,7 +804,7 @@ def _mock_lsl_stream_with_annotations_and_first_Samp(
 
 @pytest.mark.slow()
 @pytest.mark.timeout(30)
-@pytest.mark.usefixtures("_mock_lsl_stream_with_annotations")
+@pytest.mark.usefixtures("_mock_lsl_stream_with_annotations_and_first_samp")
 def test_epochs_with_irregular_numerical_event_stream_and_first_samp():
     """Test creating epochs from an event stream from raw with first_samp."""
     event_stream = StreamLSL(10, stype="annotations").connect(acquisition_delay=0.1)
