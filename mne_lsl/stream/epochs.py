@@ -416,11 +416,7 @@ class EpochsStream:
             # split the different acquisition scenarios to retrieve new events to add to
             # the buffer.
             data, ts = self._stream.get_data(exclude=())
-            # in case the epochs were created on a newly created stream object, we need
-            # to remove the 'empty buffer' samples.
-            n_samples = np.count_nonzero(ts)
-            data = data[:, -n_samples:]
-            ts = ts[-n_samples:]
+            data, ts = _remove_empty_elements(data, ts)
             if self._event_stream is None:
                 picks_events = _picks_to_idx(
                     self._stream._info, self._event_channels, exclude="bads"
@@ -443,6 +439,7 @@ class EpochsStream:
                 data_events, ts_events = self._event_stream.get_data(
                     picks=self._event_channels, exclude=()
                 )
+                data_events, ts_events = _remove_empty_elements(data_events, ts_events)
                 events = _find_events_in_stim_channels(
                     data_events, self._event_channels, self._info["sfreq"]
                 )
@@ -464,9 +461,7 @@ class EpochsStream:
                 data_events, ts_events = self._event_stream.get_data(
                     picks=self._event_channels, exclude=()
                 )
-                n_events = np.count_nonzero(ts_events)
-                ts_events = ts_events[-n_events:]
-                data_events = data_events[:, -n_events:]
+                data_events, ts_events = _remove_empty_elements(data_events, ts_events)
                 events = np.vstack(
                     [
                         np.arange(ts_events.size, dtype=np.int64),
@@ -958,3 +953,13 @@ def _process_data(
     if detrend_type is not None:
         data = detrend(data, axis=1, type=detrend_type, overwrite_data=True)
     return data
+
+
+def _remove_empty_elements(
+    data: ScalarArray, ts: NDArray[np.float64]
+) -> tuple[ScalarArray, NDArray[np.float64]]:
+    """Remove empty elements from the data and ts array."""
+    n_samples = np.count_nonzero(ts)
+    data = data[:, -n_samples:]
+    ts = ts[-n_samples:]
+    return data, ts
