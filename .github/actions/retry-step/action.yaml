@@ -23,7 +23,7 @@ runs:
       id: retry
       shell: bash
       run: |
-        set -o
+        set -eo pipefail
         command="${{ inputs.command }}"
         max_attempts=${{ inputs.max_attempts }}
         retry_error_codes=${{ inputs.retry_error_codes }}
@@ -34,7 +34,9 @@ runs:
 
         until [ $attempt -gt $max_attempts ]
         do
+          set +e
           (eval $command)
+          set -e
           exit_code=$?
 
           retry=false

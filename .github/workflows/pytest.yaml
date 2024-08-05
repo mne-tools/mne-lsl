@@ -24,6 +24,10 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+      - name: Debug
+        uses: ./.github/actions/retry-step
+        with:
+          command: "[ '1' -eq '2' ]"
       - name: Setup Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
@@ -41,8 +45,7 @@ jobs:
       - name: Run pytest
         uses: ./.github/actions/retry-step
         with:
-          # command: pytest mne_lsl --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s
-          command: "[ '1' -eq '2' ]"
+          command: pytest mne_lsl --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s
         env:
           MNE_LSL_LOG_LEVEL: DEBUG
       - name: Upload to codecov
