@@ -41,7 +41,8 @@ jobs:
       - name: Run pytest
         uses: ./.github/actions/retry-step
         with:
-          command: pytest mne_lsl --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s
+          # command: pytest mne_lsl --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s
+          command: "[ '1' -eq '2' ]"
         env:
           MNE_LSL_LOG_LEVEL: DEBUG
       - name: Upload to codecov

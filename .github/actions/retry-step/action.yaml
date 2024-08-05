@@ -23,6 +23,7 @@ runs:
       id: retry
       shell: bash
       run: |
+        set -o
         command="${{ inputs.command }}"
         max_attempts=${{ inputs.max_attempts }}
         retry_error_codes=${{ inputs.retry_error_codes }}
