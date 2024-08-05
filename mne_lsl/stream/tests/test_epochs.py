@@ -220,6 +220,12 @@ def test_prune_events(events: NDArray[np.int64]):
     ts = np.arange(15)
     events_ = _prune_events(events, dict(a=1, b=2, c=3), 10, ts, None, None, -7)
     assert events_.shape[0] == 1
+    assert events_[0, 0] == 10  # event @ 10 should be kept
+    events_ = _prune_events(events, dict(a=1, b=2, c=3), 10, ts, None, None, -12)
+    assert events_.shape[0] == 0
+    events_ = _prune_events(events, dict(a=1, b=2, c=3), 10, ts, None, None, -16)
+    assert events_.shape[0] == 1
+    assert events_[0, 0] == 20  # event @ 20 should be kept
     # test pruning events that have already been moved to the buffer
     ts = np.arange(10000, 11000, 1.8)  # ts.size == 556
     events_ = _prune_events(

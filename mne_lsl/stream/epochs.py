@@ -872,8 +872,12 @@ def _prune_events(
         )[0]
         events = events[sel]
         events[:, 0] = np.searchsorted(ts, ts_events[events[:, 0]], side="left")
-    # remove events which can't fit an entire epoch
-    sel = np.where(events[:, 0] + tmin_shift + buffer_size <= ts.size)[0]
+    sel = np.where(0 <= events[:, 0] + tmin_shift)[0]
+    # remove events which can't fit an entire epoch and/or are outside of the buffer
+    sel = np.where(
+        (0 <= events[:, 0] + tmin_shift)
+        & (events[:, 0] + tmin_shift + buffer_size <= ts.size)
+    )[0]
     events = events[sel]
     # remove events which have already been moved to the buffer
     if last_ts is not None:
