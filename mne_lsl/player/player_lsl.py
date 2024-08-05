@@ -141,6 +141,7 @@ class PlayerLSL(BasePlayer):
             self._sinfo_annotations.set_channel_types("annotations")
             self._sinfo_annotations.set_channel_units("none")
             self._annotations_idx = self._raw.time_as_index(self._raw.annotations.onset)
+            self._annotations_idx -= self._raw.first_samp
         else:
             self._sinfo_annotations = None
             self._annotations_idx = None
@@ -319,7 +320,12 @@ class PlayerLSL(BasePlayer):
             return None
         # estimate LSL timestamp of each annotation
         timestamps = (
-            start_timestamp + self.annotations.onset[idx] - self._raw.times[start]
+            start_timestamp
+            + (
+                self.annotations.onset[idx]
+                - self._raw.first_samp / self._raw.info["sfreq"]
+            )
+            - self._raw.times[start]
         )
         # one-hot encode the description and duration in the channels
         idx_ = np.array(

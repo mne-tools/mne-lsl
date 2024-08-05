@@ -416,6 +416,11 @@ class EpochsStream:
             # split the different acquisition scenarios to retrieve new events to add to
             # the buffer.
             data, ts = self._stream.get_data(exclude=())
+            # in case the epochs were created on a newly created stream object, we need
+            # to remove the 'empty buffer' samples.
+            n_samples = np.count_nonzero(ts)
+            data = data[:, -n_samples:]
+            ts = ts[-n_samples:]
             if self._event_stream is None:
                 picks_events = _picks_to_idx(
                     self._stream._info, self._event_channels, exclude="bads"
@@ -453,16 +458,18 @@ class EpochsStream:
                 self._event_stream is not None
                 and self._event_stream._info["sfreq"] == 0
             ):
+                # don't select only the new events as they might all fall outside of
+                # the attached stream ts buffer, instead always look through all
+                # available events.
                 data_events, ts_events = self._event_stream.get_data(
-                    winsize=self._event_stream._n_new_samples,
-                    picks=self._event_channels,
-                    exclude=(),
+                    picks=self._event_channels, exclude=()
                 )
+                n_events = np.count_nonzero(ts_events)
                 events = np.vstack(
                     [
-                        np.arange(ts_events.size, dtype=np.int64),
-                        np.zeros(ts_events.size, dtype=np.int64),
-                        np.argmax(data_events, axis=0),
+                        np.arange(n_events, dtype=np.int64),
+                        np.zeros(n_events, dtype=np.int64),
+                        np.argmax(data_events[:, -n_events:], axis=0),
                     ],
                     dtype=np.int64,
                 ).T

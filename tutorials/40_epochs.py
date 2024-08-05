@@ -175,7 +175,7 @@ stream.info
 
 # %%
 
-stream_events = StreamLSL(bufsize=4, name="tutorial-epochs-2-annotations")
+stream_events = StreamLSL(bufsize=20, name="tutorial-epochs-2-annotations")
 stream_events.connect(acquisition_delay=0.1, processing_flags="all")
 stream_events.info
 
