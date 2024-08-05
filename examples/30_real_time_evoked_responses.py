@@ -26,6 +26,12 @@ raw = read_raw_fif(fname, preload=False).pick(("meg", "stim")).crop(3, 212).load
 # dataset and connect a :class:`~mne_lsl.stream.StreamLSL` to it. Then, we attach a
 # :class:`~mne_lsl.stream.EpochsStream` object to create epochs from the LSL stream.
 # The epochs will be created around the event ID ``1`` from the ``'STI 014'`` channel.
+#
+# .. note::
+#
+#     A ``chunk_size`` of 200 samples is used here to ensure stability and reliability
+#     while building the documentation on the CI. In practice, a ``chunk_size`` of 200
+#     samples is too large to represent a real-time application.
 
 with PlayerLSL(raw, chunk_size=200, name="real-time-evoked-example"):
     stream = StreamLSL(bufsize=4, name="real-time-evoked-example")

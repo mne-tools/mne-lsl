@@ -23,6 +23,7 @@ Version 1.5
 - Add :class:`~mne_lsl.stream.EpochsStream` to epoch a Stream object object on the fly (:pr:`258` by `Mathieu Scheltienne`_)
 - Add tutorial about :class:`~mne_lsl.stream.EpochsStream` (:pr:`302` by `Mathieu Scheltienne`_)
 - Expose the abstract :class:`~mne_lsl.stream.BaseStream` object to create custom stream objects relying on different communication protocols (:pr:`302` by `Mathieu Scheltienne`_)
+
 Infrastructure
 --------------
 
