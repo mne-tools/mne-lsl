@@ -783,7 +783,7 @@ def raw_with_annotations_and_first_samp() -> BaseRaw:
 
 @pytest.fixture()
 def _mock_lsl_stream_with_annotations_and_first_samp(
-    raw_with_annotations, request, chunk_size
+    raw_with_annotations_and_first_samp, request, chunk_size
 ):
     """Create a mock LSL stream streaming events with annotations and first_samp."""
     manager = mp.Manager()
@@ -791,7 +791,7 @@ def _mock_lsl_stream_with_annotations_and_first_samp(
     name = f"P_{request.node.name}"
     process = mp.Process(
         target=_player_mock_lsl_stream,
-        args=(raw_with_annotations, name, chunk_size, status),
+        args=(raw_with_annotations_and_first_samp, name, chunk_size, status),
     )
     process.start()
     while status.value != 1:
@@ -803,13 +803,13 @@ def _mock_lsl_stream_with_annotations_and_first_samp(
 
 
 @pytest.mark.slow()
-@pytest.mark.timeout(30)
+@pytest.mark.timeout(30)  # takes under 9s locally
 @pytest.mark.usefixtures("_mock_lsl_stream_with_annotations_and_first_samp")
 def test_epochs_with_irregular_numerical_event_stream_and_first_samp():
     """Test creating epochs from an event stream from raw with first_samp."""
     event_stream = StreamLSL(10, stype="annotations").connect(acquisition_delay=0.1)
     name = event_stream.name.removesuffix("-annotations")
-    stream = StreamLSL(0.5, name=name).connect(acquisition_delay=0.1)
+    stream = StreamLSL(2, name=name).connect(acquisition_delay=0.1)
     stream.info["bads"] = ["MEG 2443"]  # remove bad channel
     epochs = EpochsStream(
         stream,
@@ -823,14 +823,14 @@ def test_epochs_with_irregular_numerical_event_stream_and_first_samp():
         picks="grad",
     ).connect(acquisition_delay=0.1)
     while epochs.n_new_epochs == 0:
-        time.sleep(0.1)
+        time.sleep(0.2)
     n = epochs.n_new_epochs
     while epochs.n_new_epochs == n:
-        time.sleep(0.1)
+        time.sleep(0.2)
     n2 = epochs.n_new_epochs
     assert n < n2
-    while epochs.n_new_epochs == n:
-        time.sleep(0.1)
+    while epochs.n_new_epochs == n2:
+        time.sleep(0.2)
     n3 = epochs.n_new_epochs
     assert n2 < n3
     epochs.get_data()
