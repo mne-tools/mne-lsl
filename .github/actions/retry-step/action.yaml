@@ -54,6 +54,7 @@ runs:
             eval $command_between_retries
           fi
 
+          echo "Retrying command after $exit_code error in attempt $attempt."
           attempt=$((attempt + 1))
           sleep 1
         done
