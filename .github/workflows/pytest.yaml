@@ -28,6 +28,8 @@ jobs:
         uses: ./.github/actions/retry-step
         with:
           command: "pytest nonexistent"
+          retry_error_codes: 127
+          command_between_retries: "echo 'Retrying...'"
       - name: Setup Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
