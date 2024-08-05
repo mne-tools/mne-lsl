@@ -41,7 +41,6 @@ jobs:
       - name: Run pytest
         uses: ./.github/actions/retry-step
         with:
-          retry_error_codes: "1,134,139"
           command: pytest mne_lsl --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s
         env:
           MNE_LSL_LOG_LEVEL: DEBUG
