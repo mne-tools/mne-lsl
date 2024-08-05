@@ -311,6 +311,7 @@ class EpochsStream:
             self._stream._info, self._picks_init, "all", "bads", allow_empty=False
         )
         self._info = pick_info(self._stream._info, self._picks)
+        self._tmin_shift = round(self._tmin * self._info["sfreq"])
         self._ch_idx_by_type = channel_indices_by_type(self._info)
         self._buffer = np.zeros(
             (
@@ -431,6 +432,7 @@ class EpochsStream:
                     ts,
                     self._last_ts,
                     None,
+                    self._tmin_shift,
                 )
             elif (
                 self._event_stream is not None
@@ -450,6 +452,7 @@ class EpochsStream:
                     ts,
                     self._last_ts,
                     ts_events,
+                    self._tmin_shift,
                 )
             elif (
                 self._event_stream is not None
@@ -471,7 +474,13 @@ class EpochsStream:
                     dtype=np.int64,
                 ).T
                 events = _prune_events(
-                    events, None, self._buffer.shape[1], ts, self._last_ts, ts_events
+                    events,
+                    None,
+                    self._buffer.shape[1],
+                    ts,
+                    self._last_ts,
+                    ts_events,
+                    self._tmin_shift,
                 )
             else:  # pragma: no cover
                 raise RuntimeError(
@@ -488,9 +497,8 @@ class EpochsStream:
                 (events.shape[0], self._buffer.shape[1], self._picks.size),
                 dtype=data.dtype,
             )
-            shift = round(self._tmin * self._info["sfreq"])  # 28.7 ns ± 0.369 ns
             for k, start in enumerate(events[:, 0]):
-                start += shift
+                start += self._tmin_shift
                 data_selection[k] = data[
                     self._picks, start : start + self._buffer.shape[1]
                 ].T
@@ -541,6 +549,7 @@ class EpochsStream:
         self._last_ts = None
         self._n_new_epochs = 0
         self._picks = None
+        self._tmin_shift = None
 
     def _submit_acquisition_job(self) -> None:
         """Submit a new acquisition job, if applicable."""
@@ -849,6 +858,7 @@ def _prune_events(
     ts: NDArray[np.float64],
     last_ts: Optional[float],
     ts_events: Optional[NDArray[np.float64]],
+    tmin_shift: float,
 ) -> NDArray[np.int64]:
     """Prune events based on criteria and buffer size."""
     # remove events outside of the event_id dictionary
@@ -863,7 +873,7 @@ def _prune_events(
         events = events[sel]
         events[:, 0] = np.searchsorted(ts, ts_events[events[:, 0]], side="left")
     # remove events which can't fit an entire epoch
-    sel = np.where(events[:, 0] + buffer_size <= ts.size)[0]
+    sel = np.where(events[:, 0] + tmin_shift + buffer_size <= ts.size)[0]
     events = events[sel]
     # remove events which have already been moved to the buffer
     if last_ts is not None:
