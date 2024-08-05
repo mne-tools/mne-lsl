@@ -1,4 +1,4 @@
-from __future__ import annotations  # c.f. PEP 563, PEP 649
+from __future__ import annotations
 
 import inspect
 import logging
@@ -11,7 +11,7 @@ from warnings import warn_explicit
 
 from ._checks import check_verbose
 from ._docs import fill_doc
-from ._fixes import _WrapStdOut
+from ._fixes import WrapStdOut
 
 if TYPE_CHECKING:
     from logging import Logger
@@ -47,7 +47,7 @@ def _init_logger(
     logger.propagate = False
     logger.setLevel(verbose)
     # add the main handler
-    handler = logging.StreamHandler(_WrapStdOut())
+    handler = logging.StreamHandler(WrapStdOut())
     handler.setFormatter(_LoggerFormatter())
     logger.addHandler(handler)
     return logger

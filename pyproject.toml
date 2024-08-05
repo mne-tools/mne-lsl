@@ -200,3 +200,6 @@ include = ['mne_lsl*']
 all = true
 ignore_case = true
 trailing_comma_inline_array = true
+
+[tool.uv.pip]
+only-binary = ['matplotlib', 'numpy', 'scipy']

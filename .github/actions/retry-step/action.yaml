@@ -1,0 +1,64 @@
+name: "Retry a command upon segmentation fault or python fatal error"
+description: "A composite action to retry a command or step upon a segmentation fault or a python fatal error."
+inputs:
+  command:
+    description: "The command to run."
+    required: true
+  max_attempts:
+    description: "Maximum number of attempts."
+    required: false
+    default: "3"
+  retry_error_codes:
+    description: "The error code on which to trigger a retry."
+    required: false
+    default: "134,139"
+  command_between_retries:
+    description: "A command to run between retries."
+    required: false
+
+runs:
+  using: "composite"
+  steps:
+    - name: Run command with retries
+      id: retry
+      shell: bash
+      run: |
+        command="${{ inputs.command }}"
+        max_attempts=${{ inputs.max_attempts }}
+        retry_error_codes=${{ inputs.retry_error_codes }}
+        command_between_retries="${{ inputs.command_between_retries }}"
+        attempt=1
+
+        IFS=',' read -r -a retry_codes <<< "$retry_error_codes"
+
+        until [ $attempt -gt $max_attempts ]
+        do
+          (eval $command)
+          exit_code=$?
+
+          retry=false
+          for code in "${retry_codes[@]}"; do
+            if [ $exit_code -eq $code ]; then
+              retry=true
+              break
+            fi
+          done
+
+          if [ "$retry" = false ]; then
+            echo "Command exited with code $exit_code after $attempt attempts."
+            exit $exit_code
+          fi
+
+          if [ -n "$command_between_retries" ]; then
+            echo "Running command '$command_between_retries' between retries."
+            eval $command_between_retries
+          fi
+
+          attempt=$((attempt + 1))
+          sleep 1
+        done
+
+        if [ $attempt -gt $max_attempts ]; then
+          echo "Command failed after $max_attempts attempts."
+          exit 1
+        fi

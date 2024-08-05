@@ -1,4 +1,4 @@
-from __future__ import annotations  # c.f. PEP 563, PEP 649
+from __future__ import annotations
 
 import inspect
 import logging
@@ -63,6 +63,8 @@ def pytest_configure(config: pytest.Config) -> None:
     warning_lines += r"""
     # Pooch tar
     ignore:Python 3.14 will, by default.*:DeprecationWarning
+    # Matplotlib deprecation issued in VSCode test debugger
+    ignore:.*interactive_bk.*:matplotlib._api.deprecation.MatplotlibDeprecationWarning
     """
     for warning_line in warning_lines.split("\n"):
         warning_line = warning_line.strip()

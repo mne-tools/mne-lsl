@@ -9,6 +9,10 @@ inputs:
     description: "If True, retrieve the testing dataset."
     required: false
     default: "true"
+  mne-sample:
+    description: "If True, retrieve the MNE sample dataset."
+    required: false
+    default: "false"
 
 runs:
   using: "composite"
@@ -42,3 +46,14 @@ runs:
     - name: Remove dataset version file
       shell: bash
       run: rm mne_lsl_dataset_version.txt
+
+    - name: Cache MNE sample dataset
+      id: cache_mne_sample
+      uses: actions/cache@v4
+      with:
+        key: mne-python-sample-${{ runner.os }}
+        path: ~/mne_data/MNE-sample-data
+    - name: Download MNE sample dataset
+      if: ${{ inputs.mne-sample == 'true' && steps.cache_mne_sample.outputs.cache-hit != 'true' }}
+      shell: bash
+      run: python -c "import mne; mne.datasets.sample.data_path()"

@@ -1,4 +1,4 @@
-from __future__ import annotations  # c.f. PEP 563, PEP 649
+from __future__ import annotations
 
 from ctypes import byref, c_char_p, c_double, c_void_p
 from typing import TYPE_CHECKING

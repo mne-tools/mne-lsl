@@ -15,7 +15,11 @@ docdict: dict[str, str] = dict()
 # -- Documentation to inc. from MNE ----------------------------------------------------
 _KEYS_MNE: tuple[str, ...] = (
     "anonymize_info_notes",
+    "baseline_epochs",
     "daysback_anonymize_info",
+    "epochs_reject_tmin_tmax",
+    "epochs_tmin_tmax",
+    "flat",
     "keep_his_anonymize_info",
     "match_alias",
     "match_case",
@@ -25,6 +29,7 @@ _KEYS_MNE: tuple[str, ...] = (
     "picks_all",
     "picks_base",
     "ref_channels",
+    "reject_epochs",
 )
 
 for key in _KEYS_MNE:
@@ -41,10 +46,16 @@ del key
 # -- C ---------------------------------------------------------------------------------
 # -- D ---------------------------------------------------------------------------------
 # -- E ---------------------------------------------------------------------------------
+docdict["exclude"] = """
+exclude : str | list of str | tuple of str
+    Set of channels to exclude, only used when picking based on types (e.g.,
+    ``exclude="bads"`` when ``picks="meg"``) or when picking is set to ``None``."""
+
 # -- F ---------------------------------------------------------------------------------
 # -- G ---------------------------------------------------------------------------------
 # -- H ---------------------------------------------------------------------------------
-docdict["h_freq"] = """h_freq : float | None
+docdict["h_freq"] = """
+h_freq : float | None
     The higher cutoff frequency. If None, the buffer is only high-passed."""
 
 # -- I ---------------------------------------------------------------------------------

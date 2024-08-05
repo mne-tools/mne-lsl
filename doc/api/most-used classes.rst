@@ -19,6 +19,19 @@ numerical stream.
 
     StreamLSL
 
+EpochsStream
+~~~~~~~~~~~~
+
+An ``EpochsStream`` can be used to create epochs from a stream.
+
+.. currentmodule:: mne_lsl.stream
+
+.. autosummary::
+   :toctree: ../generated/api
+   :nosignatures:
+
+    EpochsStream
+
 Player
 ~~~~~~
 
