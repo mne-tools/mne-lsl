@@ -331,7 +331,13 @@ class EpochsStream:
         return self
 
     def disconnect(self) -> EpochsStream:
-        """Stop acquisition of epochs from the connected Stream."""
+        """Stop acquisition of epochs from the connected Stream.
+
+        Returns
+        -------
+        epochs : instance of :class:`~mne_lsl.stream.EpochsStream`
+            The epochs instance modified in-place.
+        """
         if hasattr(self._stream, "_epochs") and self in self._stream._epochs:
             self._stream._epochs.remove(self)
         if (
