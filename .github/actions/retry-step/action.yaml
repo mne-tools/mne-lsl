@@ -35,7 +35,7 @@ runs:
         until [ $attempt -gt $max_attempts ]
         do
           set +e
-          $command
+          eval $command
           exit_code=$?
           set -e
 
