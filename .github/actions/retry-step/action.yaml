@@ -62,7 +62,7 @@ runs:
           sleep 1
         done
 
-        if [ $attempt -ge $max_attempts ]; then
+        if [ $attempt -gt $max_attempts ]; then
           echo "Command failed after $max_attempts attempts."
           exit 1
         fi

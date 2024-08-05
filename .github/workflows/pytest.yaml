@@ -27,8 +27,7 @@ jobs:
       - name: Debug
         uses: ./.github/actions/retry-step
         with:
-          command: "[ '1' -eq '2' ]"
-          max_attempts: 3
+          command: "pytest nonexistent"
       - name: Setup Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
