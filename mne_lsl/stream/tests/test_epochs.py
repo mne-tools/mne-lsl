@@ -21,6 +21,7 @@ from ..epochs import (
     _find_events_in_stim_channels,
     _process_data,
     _prune_events,
+    _remove_empty_elements,
 )
 
 if TYPE_CHECKING:
@@ -742,3 +743,20 @@ def test_ensure_event_id_with_event_stream():
     with pytest.warns(RuntimeWarning, match="should be set to None"):
         _ensure_event_id(dict(event=1), event_stream)
     event_stream.disconnect()
+
+
+def test_remove_empty_elements():
+    """Test _remove_empty_elements."""
+    data = np.ones(10).reshape(1, -1)
+    ts = np.zeros(10)
+    ts[5:] = np.arange(5)
+    data, ts = _remove_empty_elements(data, ts)
+    assert data.size == ts.size
+    assert ts.size == 4
+
+    data = np.ones(20).reshape(2, -1)
+    ts = np.zeros(10)
+    ts[5:] = np.arange(5)
+    data, ts = _remove_empty_elements(data, ts)
+    assert data.shape[1] == ts.size
+    assert ts.size == 4
