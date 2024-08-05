@@ -465,11 +465,13 @@ class EpochsStream:
                     picks=self._event_channels, exclude=()
                 )
                 n_events = np.count_nonzero(ts_events)
+                ts_events = ts_events[-n_events:]
+                data_events = data_events[:, -n_events:]
                 events = np.vstack(
                     [
-                        np.arange(n_events, dtype=np.int64),
-                        np.zeros(n_events, dtype=np.int64),
-                        np.argmax(data_events[:, -n_events:], axis=0),
+                        np.arange(ts_events.size, dtype=np.int64),
+                        np.zeros(ts_events.size, dtype=np.int64),
+                        np.argmax(data_events, axis=0),
                     ],
                     dtype=np.int64,
                 ).T
