@@ -203,27 +203,33 @@ def events() -> NDArray[np.int64]:
 def test_prune_events(events: NDArray[np.int64]):
     """Test pruning events."""
     ts = np.arange(10000, 11000, 1.8)
-    events_ = _prune_events(events, dict(a=1, b=2, c=3), 10, ts, None, None)
+    events_ = _prune_events(events, dict(a=1, b=2, c=3), 10, ts, None, None, 0)
     assert_allclose(events_, events)
     # test pruning events outside of the event_id dictionary
-    events_ = _prune_events(events, dict(a=1, c=3), 10, ts, None, None)
+    events_ = _prune_events(events, dict(a=1, c=3), 10, ts, None, None, 0)
     assert sorted(np.unique(events_[:, 2])) == [1, 3]
     # test pruning events that can't fit in the buffer
     ts = np.arange(5)
-    events_ = _prune_events(events, dict(a=1, b=2, c=3), 10, ts, None, None)
+    events_ = _prune_events(events, dict(a=1, b=2, c=3), 10, ts, None, None, 0)
     assert events_.size == 0
     ts = np.arange(10000, 11000, 1.8)  # ts.size == 556
-    events_ = _prune_events(events, dict(a=1, b=2, c=3), 500, ts, None, None)
+    events_ = _prune_events(events, dict(a=1, b=2, c=3), 500, ts, None, None, 0)
     assert events_[-1, 0] + 500 <= ts.size
     assert events_[-1, 0] == 50  # events @ 60, 70, 80, ... should be dropped
+    # test fitting in the buffer with tmin
+    ts = np.arange(15)
+    events_ = _prune_events(events, dict(a=1, b=2, c=3), 10, ts, None, None, -7)
+    assert events_.shape[0] == 1
     # test pruning events that have already been moved to the buffer
     ts = np.arange(10000, 11000, 1.8)  # ts.size == 556
-    events_ = _prune_events(events, dict(a=1, b=2, c=3), 10, ts, ts[events[3, 0]], None)
+    events_ = _prune_events(
+        events, dict(a=1, b=2, c=3), 10, ts, ts[events[3, 0]], None, 0
+    )
     assert_allclose(events_, events[4:, :])
     # test pruning events from an event stream, which converts the index to index in ts
     ts = np.arange(1000)
     ts_events = np.arange(500) * 2 + 0.5  # mock a different sampling frequency
-    events_ = _prune_events(events, dict(a=1, b=2, c=3), 10, ts, None, ts_events)
+    events_ = _prune_events(events, dict(a=1, b=2, c=3), 10, ts, None, ts_events, 0)
     assert_allclose(events_[:, 2], events[:, 2])
     # with the half sampling rate + 0.5 set above, we should be selecting:
     # from: 10, 20, 30, 40, ... corresponding to 20.5, 40.5, 60.5, ...
