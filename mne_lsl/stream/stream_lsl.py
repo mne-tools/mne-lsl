@@ -20,7 +20,7 @@ from ..lsl.constants import fmt2numpy
 from ..utils._checks import check_type
 from ..utils._docs import copy_doc, fill_doc
 from ..utils.logs import logger
-from ._base import BaseStream
+from .base import BaseStream
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -316,16 +316,6 @@ class StreamLSL(BaseStream):
         super()._reset_variables()
         self._sinfo = None
         self._inlet = None
-
-    # ----------------------------------------------------------------------------------
-    @property
-    def compensation_grade(self) -> Optional[int]:
-        """The current gradient compensation grade.
-
-        :type: :class:`int` | None
-        """
-        self._check_connected("compensation_grade")
-        return super().compensation_grade
 
     # ----------------------------------------------------------------------------------
     @property

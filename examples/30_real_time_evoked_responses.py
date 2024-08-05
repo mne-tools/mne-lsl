@@ -9,23 +9,28 @@ visualization. This is useful to monitor the brain activity in real-time.
 import numpy as np
 from matplotlib import pyplot as plt
 from mne import EvokedArray, combine_evoked
-from mne.datasets import sample
 from mne.io import read_raw_fif
 
+from mne_lsl.datasets import sample
 from mne_lsl.player import PlayerLSL
 from mne_lsl.stream import EpochsStream, StreamLSL
 from mne_lsl.utils.logs import logger
 
 # dataset used in the example
-data_path = sample.data_path()
-fname = data_path / "MEG" / "sample" / "sample_audvis_raw.fif"
-raw = read_raw_fif(fname, preload=False).pick(("meg", "stim")).crop(3, 212).load_data()
+fname = sample.data_path() / "mne-sample" / "sample_audvis_raw.fif"
+raw = read_raw_fif(fname, preload=False).pick(("meg", "stim")).load_data()
 
 # %%
 # First, we create a mock stream with :class:`mne_lsl.player.PlayerLSL` from the sample
 # dataset and connect a :class:`~mne_lsl.stream.StreamLSL` to it. Then, we attach a
 # :class:`~mne_lsl.stream.EpochsStream` object to create epochs from the LSL stream.
 # The epochs will be created around the event ID ``1`` from the ``'STI 014'`` channel.
+#
+# .. note::
+#
+#     A ``chunk_size`` of 200 samples is used here to ensure stability and reliability
+#     while building the documentation on the CI. In practice, a ``chunk_size`` of 200
+#     samples is too large to represent a real-time application.
 
 with PlayerLSL(raw, chunk_size=200, name="real-time-evoked-example"):
     stream = StreamLSL(bufsize=4, name="real-time-evoked-example")

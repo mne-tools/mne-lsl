@@ -232,7 +232,7 @@ def test_stream_info_desc_from_info(close_io):
     compare_infos(info, info_retrieved)
 
     # test with FIFF file from the MNE sample dataset
-    fname = testing.data_path() / "sample_audvis_raw.fif"
+    fname = testing.data_path() / "mne-sample" / "sample_audvis_raw.fif"
     raw = read_raw_fif(fname, preload=False)
     sinfo = StreamInfo(
         "test", "", len(raw.ch_names), raw.info["sfreq"], np.float32, uuid.uuid4().hex

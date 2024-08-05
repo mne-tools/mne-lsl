@@ -17,6 +17,8 @@ This is the reference for classes (``CamelCase`` names) and functions
 
 .. include:: lsl (low-level).rst
 
+.. include:: abstract.rst
+
 .. include:: utilities.rst
 
 .. include:: legacy.rst

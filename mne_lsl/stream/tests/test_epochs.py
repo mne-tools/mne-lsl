@@ -7,12 +7,13 @@ from typing import TYPE_CHECKING
 import numpy as np
 import pytest
 from mne import annotations_from_events, create_info, find_events
-from mne.io import RawArray
+from mne.io import RawArray, read_raw_fif
 from mne.io.base import BaseRaw
 from numpy.testing import assert_allclose
 
-from .. import EpochsStream, StreamLSL
-from ..epochs import (
+from mne_lsl.datasets import testing
+from mne_lsl.stream import EpochsStream, StreamLSL
+from mne_lsl.stream.epochs import (
     _check_baseline,
     _check_reject_flat,
     _check_reject_tmin_tmax,
@@ -21,6 +22,7 @@ from ..epochs import (
     _find_events_in_stim_channels,
     _process_data,
     _prune_events,
+    _remove_empty_elements,
 )
 
 if TYPE_CHECKING:
@@ -201,27 +203,39 @@ def events() -> NDArray[np.int64]:
 def test_prune_events(events: NDArray[np.int64]):
     """Test pruning events."""
     ts = np.arange(10000, 11000, 1.8)
-    events_ = _prune_events(events, dict(a=1, b=2, c=3), 10, ts, None, None)
+    events_ = _prune_events(events, dict(a=1, b=2, c=3), 10, ts, None, None, 0)
     assert_allclose(events_, events)
     # test pruning events outside of the event_id dictionary
-    events_ = _prune_events(events, dict(a=1, c=3), 10, ts, None, None)
+    events_ = _prune_events(events, dict(a=1, c=3), 10, ts, None, None, 0)
     assert sorted(np.unique(events_[:, 2])) == [1, 3]
     # test pruning events that can't fit in the buffer
     ts = np.arange(5)
-    events_ = _prune_events(events, dict(a=1, b=2, c=3), 10, ts, None, None)
+    events_ = _prune_events(events, dict(a=1, b=2, c=3), 10, ts, None, None, 0)
     assert events_.size == 0
     ts = np.arange(10000, 11000, 1.8)  # ts.size == 556
-    events_ = _prune_events(events, dict(a=1, b=2, c=3), 500, ts, None, None)
+    events_ = _prune_events(events, dict(a=1, b=2, c=3), 500, ts, None, None, 0)
     assert events_[-1, 0] + 500 <= ts.size
     assert events_[-1, 0] == 50  # events @ 60, 70, 80, ... should be dropped
+    # test fitting in the buffer with tmin
+    ts = np.arange(15)
+    events_ = _prune_events(events, dict(a=1, b=2, c=3), 10, ts, None, None, -7)
+    assert events_.shape[0] == 1
+    assert events_[0, 0] == 10  # event @ 10 should be kept
+    events_ = _prune_events(events, dict(a=1, b=2, c=3), 10, ts, None, None, -12)
+    assert events_.shape[0] == 0
+    events_ = _prune_events(events, dict(a=1, b=2, c=3), 10, ts, None, None, -16)
+    assert events_.shape[0] == 1
+    assert events_[0, 0] == 20  # event @ 20 should be kept
     # test pruning events that have already been moved to the buffer
     ts = np.arange(10000, 11000, 1.8)  # ts.size == 556
-    events_ = _prune_events(events, dict(a=1, b=2, c=3), 10, ts, ts[events[3, 0]], None)
+    events_ = _prune_events(
+        events, dict(a=1, b=2, c=3), 10, ts, ts[events[3, 0]], None, 0
+    )
     assert_allclose(events_, events[4:, :])
     # test pruning events from an event stream, which converts the index to index in ts
     ts = np.arange(1000)
     ts_events = np.arange(500) * 2 + 0.5  # mock a different sampling frequency
-    events_ = _prune_events(events, dict(a=1, b=2, c=3), 10, ts, None, ts_events)
+    events_ = _prune_events(events, dict(a=1, b=2, c=3), 10, ts, None, ts_events, 0)
     assert_allclose(events_[:, 2], events[:, 2])
     # with the half sampling rate + 0.5 set above, we should be selecting:
     # from: 10, 20, 30, 40, ... corresponding to 20.5, 40.5, 60.5, ...
@@ -741,4 +755,98 @@ def test_ensure_event_id_with_event_stream():
     assert _ensure_event_id(None, event_stream) is None
     with pytest.warns(RuntimeWarning, match="should be set to None"):
         _ensure_event_id(dict(event=1), event_stream)
+    event_stream.disconnect()
+
+
+def test_remove_empty_elements():
+    """Test _remove_empty_elements."""
+    data = np.ones(10).reshape(1, -1)
+    ts = np.zeros(10)
+    ts[5:] = np.arange(5)
+    data, ts = _remove_empty_elements(data, ts)
+    assert data.size == ts.size
+    assert ts.size == 4
+
+    data = np.ones(20).reshape(2, -1)
+    ts = np.zeros(10)
+    ts[5:] = np.arange(5)
+    data, ts = _remove_empty_elements(data, ts)
+    assert data.shape[1] == ts.size
+    assert ts.size == 4
+
+
+@pytest.fixture()
+def raw_with_annotations_and_first_samp() -> BaseRaw:
+    """Raw with annotations and first_samp set."""
+    fname = testing.data_path() / "mne-sample" / "sample_audvis_raw.fif"
+    raw = read_raw_fif(fname, preload=True)
+    events = find_events(raw, stim_channel="STI 014")
+    events = events[np.isin(events[:, 2], (1, 2))]  # keep only events with ID 1 and 2
+    annotations = annotations_from_events(
+        events,
+        raw.info["sfreq"],
+        event_desc={1: "ignore", 2: "event"},
+        first_samp=raw.first_samp,
+    )
+    annotations.duration += 0.1  # set duration, annotations_from_events sets it to 0
+    raw.set_annotations(annotations)
+    return raw
+
+
+@pytest.fixture()
+def _mock_lsl_stream_with_annotations_and_first_samp(
+    raw_with_annotations_and_first_samp, request, chunk_size
+):
+    """Create a mock LSL stream streaming events with annotations and first_samp."""
+    manager = mp.Manager()
+    status = manager.Value("i", 0)
+    name = f"P_{request.node.name}"
+    process = mp.Process(
+        target=_player_mock_lsl_stream,
+        args=(raw_with_annotations_and_first_samp, name, chunk_size, status),
+    )
+    process.start()
+    while status.value != 1:
+        pass
+    yield
+    status.value = 0
+    process.join(timeout=2)
+    process.kill()
+
+
+@pytest.mark.slow()
+@pytest.mark.timeout(30)  # takes under 9s locally
+@pytest.mark.usefixtures("_mock_lsl_stream_with_annotations_and_first_samp")
+def test_epochs_with_irregular_numerical_event_stream_and_first_samp():
+    """Test creating epochs from an event stream from raw with first_samp."""
+    event_stream = StreamLSL(10, stype="annotations").connect(acquisition_delay=0.1)
+    name = event_stream.name.removesuffix("-annotations")
+    stream = StreamLSL(2, name=name).connect(acquisition_delay=0.1)
+    stream.info["bads"] = ["MEG 2443"]  # remove bad channel
+    epochs = EpochsStream(
+        stream,
+        bufsize=20,  # number of epoch held in the buffer
+        event_id=None,
+        event_channels="event",  # this argument now selects the events of interest
+        event_stream=event_stream,
+        tmin=-0.2,
+        tmax=0.5,
+        baseline=(None, 0),
+        picks="grad",
+    ).connect(acquisition_delay=0.1)
+    while epochs.n_new_epochs == 0:
+        time.sleep(0.2)
+    n = epochs.n_new_epochs
+    while epochs.n_new_epochs == n:
+        time.sleep(0.2)
+    n2 = epochs.n_new_epochs
+    assert n < n2
+    while epochs.n_new_epochs == n2:
+        time.sleep(0.2)
+    n3 = epochs.n_new_epochs
+    assert n2 < n3
+    epochs.get_data()
+    assert epochs.n_new_epochs == 0
+    epochs.disconnect()
+    stream.disconnect()
     event_stream.disconnect()

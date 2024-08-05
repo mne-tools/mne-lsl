@@ -9,7 +9,8 @@ Stream
 ~~~~~~
 
 A ``Stream`` uses an `MNE <mne stable_>`_-like API to efficiently interacts with a
-numerical stream.
+numerical stream. ``Stream`` objects inherit from the abstract object
+:class:`~mne_lsl.stream.BaseStream`.
 
 .. currentmodule:: mne_lsl.stream
 
@@ -22,7 +23,7 @@ numerical stream.
 EpochsStream
 ~~~~~~~~~~~~
 
-An ``EpochsStream`` can be used to create epochs from a stream.
+An ``EpochsStream`` can be used to create epochs from a ``Stream``.
 
 .. currentmodule:: mne_lsl.stream
 

@@ -25,7 +25,7 @@ from ..utils._checks import check_type, check_value, ensure_int
 from ..utils._docs import fill_doc
 from ..utils._fixes import find_events
 from ..utils.logs import logger, warn
-from ._base import BaseStream
+from .base import BaseStream
 
 if TYPE_CHECKING:
     from typing import Optional, Union
@@ -311,6 +311,7 @@ class EpochsStream:
             self._stream._info, self._picks_init, "all", "bads", allow_empty=False
         )
         self._info = pick_info(self._stream._info, self._picks)
+        self._tmin_shift = round(self._tmin * self._info["sfreq"])
         self._ch_idx_by_type = channel_indices_by_type(self._info)
         self._buffer = np.zeros(
             (
@@ -329,8 +330,14 @@ class EpochsStream:
             self._executor.submit(self._acquire)
         return self
 
-    def disconnect(self) -> None:
-        """Stop acquisition of epochs from the connected Stream."""
+    def disconnect(self) -> EpochsStream:
+        """Stop acquisition of epochs from the connected Stream.
+
+        Returns
+        -------
+        epochs : instance of :class:`~mne_lsl.stream.EpochsStream`
+            The epochs instance modified in-place.
+        """
         if hasattr(self._stream, "_epochs") and self in self._stream._epochs:
             self._stream._epochs.remove(self)
         if (
@@ -345,6 +352,7 @@ class EpochsStream:
         if hasattr(self, "_executor") and self._executor is not None:
             self._executor.shutdown(wait=True, cancel_futures=True)
         self._reset_variables()
+        return self
 
     @fill_doc
     def get_data(
@@ -416,6 +424,7 @@ class EpochsStream:
             # split the different acquisition scenarios to retrieve new events to add to
             # the buffer.
             data, ts = self._stream.get_data(exclude=())
+            data, ts = _remove_empty_elements(data, ts)
             if self._event_stream is None:
                 picks_events = _picks_to_idx(
                     self._stream._info, self._event_channels, exclude="bads"
@@ -430,6 +439,7 @@ class EpochsStream:
                     ts,
                     self._last_ts,
                     None,
+                    self._tmin_shift,
                 )
             elif (
                 self._event_stream is not None
@@ -438,6 +448,7 @@ class EpochsStream:
                 data_events, ts_events = self._event_stream.get_data(
                     picks=self._event_channels, exclude=()
                 )
+                data_events, ts_events = _remove_empty_elements(data_events, ts_events)
                 events = _find_events_in_stim_channels(
                     data_events, self._event_channels, self._info["sfreq"]
                 )
@@ -448,16 +459,19 @@ class EpochsStream:
                     ts,
                     self._last_ts,
                     ts_events,
+                    self._tmin_shift,
                 )
             elif (
                 self._event_stream is not None
                 and self._event_stream._info["sfreq"] == 0
             ):
+                # don't select only the new events as they might all fall outside of
+                # the attached stream ts buffer, instead always look through all
+                # available events.
                 data_events, ts_events = self._event_stream.get_data(
-                    winsize=self._event_stream._n_new_samples,
-                    picks=self._event_channels,
-                    exclude=(),
+                    picks=self._event_channels, exclude=()
                 )
+                data_events, ts_events = _remove_empty_elements(data_events, ts_events)
                 events = np.vstack(
                     [
                         np.arange(ts_events.size, dtype=np.int64),
@@ -467,7 +481,13 @@ class EpochsStream:
                     dtype=np.int64,
                 ).T
                 events = _prune_events(
-                    events, None, self._buffer.shape[1], ts, self._last_ts, ts_events
+                    events,
+                    None,
+                    self._buffer.shape[1],
+                    ts,
+                    self._last_ts,
+                    ts_events,
+                    self._tmin_shift,
                 )
             else:  # pragma: no cover
                 raise RuntimeError(
@@ -484,9 +504,8 @@ class EpochsStream:
                 (events.shape[0], self._buffer.shape[1], self._picks.size),
                 dtype=data.dtype,
             )
-            shift = round(self._tmin * self._info["sfreq"])  # 28.7 ns ± 0.369 ns
             for k, start in enumerate(events[:, 0]):
-                start += shift
+                start += self._tmin_shift
                 data_selection[k] = data[
                     self._picks, start : start + self._buffer.shape[1]
                 ].T
@@ -537,6 +556,7 @@ class EpochsStream:
         self._last_ts = None
         self._n_new_epochs = 0
         self._picks = None
+        self._tmin_shift = None
 
     def _submit_acquisition_job(self) -> None:
         """Submit a new acquisition job, if applicable."""
@@ -845,6 +865,7 @@ def _prune_events(
     ts: NDArray[np.float64],
     last_ts: Optional[float],
     ts_events: Optional[NDArray[np.float64]],
+    tmin_shift: float,
 ) -> NDArray[np.int64]:
     """Prune events based on criteria and buffer size."""
     # remove events outside of the event_id dictionary
@@ -858,8 +879,12 @@ def _prune_events(
         )[0]
         events = events[sel]
         events[:, 0] = np.searchsorted(ts, ts_events[events[:, 0]], side="left")
-    # remove events which can't fit an entire epoch
-    sel = np.where(events[:, 0] + buffer_size <= ts.size)[0]
+    sel = np.where(0 <= events[:, 0] + tmin_shift)[0]
+    # remove events which can't fit an entire epoch and/or are outside of the buffer
+    sel = np.where(
+        (0 <= events[:, 0] + tmin_shift)
+        & (events[:, 0] + tmin_shift + buffer_size <= ts.size)
+    )[0]
     events = events[sel]
     # remove events which have already been moved to the buffer
     if last_ts is not None:
@@ -949,3 +974,13 @@ def _process_data(
     if detrend_type is not None:
         data = detrend(data, axis=1, type=detrend_type, overwrite_data=True)
     return data
+
+
+def _remove_empty_elements(
+    data: ScalarArray, ts: NDArray[np.float64]
+) -> tuple[ScalarArray, NDArray[np.float64]]:
+    """Remove empty elements from the data and ts array."""
+    n_samples = np.count_nonzero(ts)
+    data = data[:, -n_samples:]
+    ts = ts[-n_samples:]
+    return data, ts

@@ -48,6 +48,7 @@ runs:
       run: rm mne_lsl_dataset_version.txt
 
     - name: Cache MNE sample dataset
+      if: ${{ inputs.mne-sample == 'true' }}
       id: cache_mne_sample
       uses: actions/cache@v4
       with:

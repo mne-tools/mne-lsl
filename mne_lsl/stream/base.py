@@ -1028,7 +1028,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         )
         return self
 
-    @staticmethod
+    @abstractmethod
     def _acquire(self) -> None:  # pragma: no cover
         """Update function pulling new samples in the buffer at a regular interval."""
 

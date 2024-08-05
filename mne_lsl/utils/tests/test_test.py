@@ -51,7 +51,7 @@ def test_match_stream_and_raw_data(raw_object, request):
 
 def test_compare_infos(raw):
     """Test that the partial info comparison works as intended."""
-    info = read_info(testing.data_path() / "sample_audvis_raw.fif")
+    info = read_info(testing.data_path() / "mne-sample" / "sample_audvis_raw.fif")
 
     with pytest.raises(AssertionError):
         compare_infos(info, raw.info)
