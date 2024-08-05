@@ -37,7 +37,6 @@ jobs:
         with:
           sample: "true"
           testing: "false"
-          mne-sample: "true"
       - name: Build doc
         uses: ./.github/actions/retry-step
         with:

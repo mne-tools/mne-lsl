@@ -7,12 +7,13 @@ from typing import TYPE_CHECKING
 import numpy as np
 import pytest
 from mne import annotations_from_events, create_info, find_events
-from mne.io import RawArray
+from mne.io import RawArray, read_raw_fif
 from mne.io.base import BaseRaw
 from numpy.testing import assert_allclose
 
-from .. import EpochsStream, StreamLSL
-from ..epochs import (
+from mne_lsl.datasets import testing
+from mne_lsl.stream import EpochsStream, StreamLSL
+from mne_lsl.stream.epochs import (
     _check_baseline,
     _check_reject_flat,
     _check_reject_tmin_tmax,
@@ -760,3 +761,80 @@ def test_remove_empty_elements():
     data, ts = _remove_empty_elements(data, ts)
     assert data.shape[1] == ts.size
     assert ts.size == 4
+
+
+@pytest.fixture()
+def raw_with_annotations_and_first_samp() -> BaseRaw:
+    """Raw with annotations and first_samp set."""
+    fname = testing.data_path() / "mne-sample" / "sample_audvis_raw.fif"
+    raw = read_raw_fif(fname, preload=True)
+    events = find_events(raw, stim_channel="STI 014")
+    events = events[np.isin(events[:, 2], (1, 2))]  # keep only events with ID 1 and 2
+    annotations = annotations_from_events(
+        events,
+        raw.info["sfreq"],
+        event_desc={1: "ignore", 2: "event"},
+        first_samp=raw.first_samp,
+    )
+    annotations.duration += 0.1  # set duration, annotations_from_events sets it to 0
+    raw.set_annotations(annotations)
+    return raw
+
+
+@pytest.fixture()
+def _mock_lsl_stream_with_annotations_and_first_Samp(
+    raw_with_annotations, request, chunk_size
+):
+    """Create a mock LSL stream streaming events with annotations and first_samp."""
+    manager = mp.Manager()
+    status = manager.Value("i", 0)
+    name = f"P_{request.node.name}"
+    process = mp.Process(
+        target=_player_mock_lsl_stream,
+        args=(raw_with_annotations, name, chunk_size, status),
+    )
+    process.start()
+    while status.value != 1:
+        pass
+    yield
+    status.value = 0
+    process.join(timeout=2)
+    process.kill()
+
+
+@pytest.mark.slow()
+@pytest.mark.timeout(30)
+@pytest.mark.usefixtures("_mock_lsl_stream_with_annotations")
+def test_epochs_with_irregular_numerical_event_stream_and_first_samp():
+    """Test creating epochs from an event stream from raw with first_samp."""
+    event_stream = StreamLSL(10, stype="annotations").connect(acquisition_delay=0.1)
+    name = event_stream.name.removesuffix("-annotations")
+    stream = StreamLSL(0.5, name=name).connect(acquisition_delay=0.1)
+    stream.info["bads"] = ["MEG 2443"]  # remove bad channel
+    epochs = EpochsStream(
+        stream,
+        bufsize=20,  # number of epoch held in the buffer
+        event_id=None,
+        event_channels="event",  # this argument now selects the events of interest
+        event_stream=event_stream,
+        tmin=-0.2,
+        tmax=0.5,
+        baseline=(None, 0),
+        picks="grad",
+    ).connect(acquisition_delay=0.1)
+    while epochs.n_new_epochs == 0:
+        time.sleep(0.1)
+    n = epochs.n_new_epochs
+    while epochs.n_new_epochs == n:
+        time.sleep(0.1)
+    n2 = epochs.n_new_epochs
+    assert n < n2
+    while epochs.n_new_epochs == n:
+        time.sleep(0.1)
+    n3 = epochs.n_new_epochs
+    assert n2 < n3
+    epochs.get_data()
+    assert epochs.n_new_epochs == 0
+    epochs.disconnect()
+    stream.disconnect()
+    event_stream.disconnect()

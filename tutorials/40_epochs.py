@@ -52,15 +52,14 @@ import time
 import numpy as np
 from matplotlib import pyplot as plt
 from mne import EpochsArray, annotations_from_events, find_events
-from mne.datasets import sample
 from mne.io import read_raw_fif
 
+from mne_lsl.datasets import sample
 from mne_lsl.lsl import resolve_streams
 from mne_lsl.player import PlayerLSL
 from mne_lsl.stream import EpochsStream, StreamLSL
 
-data_path = sample.data_path()
-fname = data_path / "MEG" / "sample" / "sample_audvis_raw.fif"
+fname = sample.data_path() / "mne-sample" / "sample_audvis_raw.fif"
 raw = read_raw_fif(fname, preload=False).pick(("meg", "stim")).crop(3, 212).load_data()
 player = PlayerLSL(
     raw, chunk_size=200, name="tutorial-epochs-1", annotations=False

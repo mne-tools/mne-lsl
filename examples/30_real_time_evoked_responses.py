@@ -9,16 +9,15 @@ visualization. This is useful to monitor the brain activity in real-time.
 import numpy as np
 from matplotlib import pyplot as plt
 from mne import EvokedArray, combine_evoked
-from mne.datasets import sample
 from mne.io import read_raw_fif
 
+from mne_lsl.datasets import sample
 from mne_lsl.player import PlayerLSL
 from mne_lsl.stream import EpochsStream, StreamLSL
 from mne_lsl.utils.logs import logger
 
 # dataset used in the example
-data_path = sample.data_path()
-fname = data_path / "MEG" / "sample" / "sample_audvis_raw.fif"
+fname = sample.data_path() / "mne-sample" / "sample_audvis_raw.fif"
 raw = read_raw_fif(fname, preload=False).pick(("meg", "stim")).crop(3, 212).load_data()
 
 # %%
