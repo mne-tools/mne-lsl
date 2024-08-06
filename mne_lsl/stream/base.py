@@ -136,6 +136,11 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         -------
         stream : instance of ``Stream``
             The stream instance modified in-place.
+
+        Notes
+        -----
+        Read about the :ref:`processing applied to the underlying
+        buffer <resources/implementations:StreamLSL>`.
         """
         self._check_connected_and_regular_sampling("add_reference_channels()")
         self._check_not_epoched("add_reference_channels()")
@@ -481,6 +486,11 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         -------
         stream : instance of ``Stream``
             The stream instance modified in-place.
+
+        Notes
+        -----
+        Read about the :ref:`processing applied to the underlying
+        buffer <resources/implementations:StreamLSL>`.
         """
         self._check_connected_and_regular_sampling("filter()")
         if len(self._epochs) != 0:
@@ -664,6 +674,11 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         -------
         stream : instance of ``Stream``
             The stream instance modified in-place.
+
+        Notes
+        -----
+        Read about the :ref:`processing applied to the underlying
+        buffer <resources/implementations:StreamLSL>`.
         """
         self._check_connected_and_regular_sampling("notch_filter()")
         if len(self._epochs) != 0:
@@ -904,6 +919,11 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         -------
         stream : instance of ``Stream``
             The stream instance modified in-place.
+
+        Notes
+        -----
+        Read about the :ref:`processing applied to the underlying
+        buffer <resources/implementations:StreamLSL>`.
         """
         self._check_connected_and_regular_sampling("set_eeg_reference()")
         self._check_not_epoched("set_eeg_reference()")

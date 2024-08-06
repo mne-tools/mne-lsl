@@ -6,7 +6,7 @@ Differences with pylsl
 ======================
 
 Faster chunk pull
-~~~~~~~~~~~~~~~~~
+-----------------
 
 Arguably the most important difference, pulling a chunk of numerical data with
 :meth:`~mne_lsl.lsl.StreamInlet.pull_chunk` is much faster than with its
@@ -62,7 +62,7 @@ Note that this performance improvement is absent for ``string`` based streams. F
 :issue:`225` for more information.
 
 Convenience methods
-~~~~~~~~~~~~~~~~~~~
+-------------------
 
 A :class:`~mne_lsl.lsl.StreamInfo` has several convenience methods to retrieve and set
 channel attributes: names, types, units.
@@ -84,7 +84,7 @@ be set or retrieved directly from a :class:`~mne.Info` object with
 :meth:`~mne_lsl.lsl.StreamInfo.get_channel_info`.
 
 Improve arguments
-~~~~~~~~~~~~~~~~~
+-----------------
 
 The arguments of a :class:`~mne_lsl.lsl.StreamInfo`, :class:`~mne_lsl.lsl.StreamInlet`,
 :class:`~mne_lsl.lsl.StreamOutlet` support a wider variety of types. For instance:
@@ -98,7 +98,7 @@ Overall, the arguments are checked in ``mne_lsl.lsl``. Any type or value mistake
 raise an helpful error message.
 
 Unique resolve function
-~~~~~~~~~~~~~~~~~~~~~~~
+-----------------------
 
 `pylsl <lsl python_>`_ has several stream resolving functions:
 

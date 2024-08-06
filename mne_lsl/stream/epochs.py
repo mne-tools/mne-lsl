@@ -121,6 +121,9 @@ class EpochsStream:
 
         In the 2 last cases where ``event_stream`` is provided, all ``'stim'`` channels
         in the connected ``stream`` are ignored.
+
+    Read about the :ref:`processing applied to the underlying
+    buffer <resources/implementations:EpochsStream>`.
     """
 
     def __init__(
