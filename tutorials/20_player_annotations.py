@@ -33,6 +33,7 @@ from mne.io import RawArray
 from mne.viz import set_browser_backend
 
 from mne_lsl.player import PlayerLSL
+from mne_lsl.stream import StreamLSL
 
 
 annotations = Annotations(
@@ -89,10 +90,32 @@ source_id = uuid.uuid4().hex
 player = PlayerLSL(
     raw,
     chunk_size=200,
-    name="tutorial-annotations",
+    name="tutorial-annots",
     source_id=source_id,
     annotations=True,
 ).start()
+
+# %%
+# We can now acquire both streams with 2 :class:`~mne_lsl.stream.StreamLSL` objects.
+
+stream = StreamLSL(2, name="tutorial-annots", source_id=source_id)
+stream.connect(acquisition_delay=0.1, processing_flags="all")
+stream.info
+
+# %%
+
+stream_annotations = StreamLSL(2, stype="annotations", source_id=source_id)
+stream_annotations.connect(acquisition_delay=0.1, processing_flags="all")
+stream_annotations.info
+
+# %%
+# We can now acquire new samples from both streams and create a matplotlib figure to
+# plot the signal and the annotations in real-time.
+
+if not plt.isinteractive():
+    plt.ion()
+fig, ax = plt.subplots()
+plt.show()
 
 # %%
 # Free resources
@@ -102,5 +125,13 @@ player = PlayerLSL(
 # :class:`~mne_lsl.stream.StreamLSL` or a :class:`~mne_lsl.stream.EpochsStream` don't
 # forget to free the resources they use to continuously mock an LSL stream or
 # receive new data from an LSL stream.
+
+stream.disconnect()
+
+# %%
+
+stream_annotations.disconnect()
+
+# %%
 
 player.stop()
