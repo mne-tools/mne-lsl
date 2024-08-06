@@ -128,7 +128,7 @@ while n <= 10:
 
     if stream_annotations.n_new_samples != 0:
         data_annotations, ts_annotations = stream_annotations.get_data()
-        # remove samples wth ts=0 which correspond to the empty buffer at the beginning
+        # remove samples with ts=0 which correspond to the empty buffer at the beginning
         n_samples = np.count_nonzero(ts_annotations)
         data_annotations = data_annotations[:, -n_samples:]
         ts_annotations = ts_annotations[-n_samples:]
