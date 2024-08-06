@@ -105,6 +105,7 @@ class PlayerLSL(BasePlayer):
         check_type(source_id, (str,), "source_id")
         check_type(annotations, (bool, None), "annotations")
         self._name = "MNE-LSL-Player" if name is None else name
+        self._source_id = source_id
         # look for annotations
         if annotations is None:
             self._annotations = True if len(self._raw.annotations) != 0 else False
@@ -125,7 +126,7 @@ class PlayerLSL(BasePlayer):
             n_channels=len(self._raw.info["ch_names"]),
             sfreq=self._raw.info["sfreq"],
             dtype=np.float64,
-            source_id=source_id,
+            source_id=self._source_id,
         )
         self._sinfo.set_channel_info(self._raw.info)
         logger.debug("%s: set channel info", self._name)
@@ -142,7 +143,7 @@ class PlayerLSL(BasePlayer):
                 n_channels=len(self._annotations_names),
                 sfreq=0.0,
                 dtype=np.float64,
-                source_id="MNE-LSL",
+                source_id=self._source_id,
             )
             self._sinfo_annotations.set_channel_names(list(self._annotations_names))
             self._sinfo_annotations.set_channel_types("annotations")
@@ -397,3 +398,11 @@ class PlayerLSL(BasePlayer):
         :type: :class:`str`
         """
         return self._name
+
+    @property
+    def source_id(self) -> str:
+        """Source ID of the LSL stream.
+
+        :type: :class:`str`
+        """
+        return self._source_id
