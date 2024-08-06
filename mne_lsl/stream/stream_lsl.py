@@ -84,7 +84,7 @@ class StreamLSL(BaseStream):
             if _name is not None:
                 desc = f"{_name} (source: {_source_id or 'unknown'})"
             elif _source_id:
-                desc = f"(source: {self._source_id}"
+                desc = f"(source: {self._source_id})"
             else:
                 desc = None
         if desc is None:
