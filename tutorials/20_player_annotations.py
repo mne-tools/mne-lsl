@@ -117,6 +117,41 @@ if not plt.isinteractive():
 fig, ax = plt.subplots()
 plt.show()
 
+n = 0  # number of annotations
+colors = ["lightcoral", "lightgreen"]
+while n <= 10:
+    if stream.n_new_samples == 0:
+        continue
+
+    data, ts = stream.get_data(winsize=stream.n_new_samples)
+    ax.plot(ts, data[0, :], color="teal")
+
+    if stream_annotations.n_new_samples != 0:
+        data_annotations, ts_annotations = stream_annotations.get_data()
+        # remove samples wth ts=0 which correspond to the empty buffer at the beginning
+        n_samples = np.count_nonzero(ts_annotations)
+        data_annotations = data_annotations[:, -n_samples:]
+        ts_annotations = ts_annotations[-n_samples:]
+        # remove annotations outside of the signal range
+        sel = np.where((ts[0] <= ts_annotations) & (ts_annotations <= ts[-1]))[0]
+        data_annotations = data_annotations[:, sel]
+        ts_annotations = ts_annotations[sel]
+        # find the position of the annotations in regards to the signal
+        idx = np.searchsorted(ts, ts_annotations)
+        for sample, time in zip(data_annotations.T, ts[idx]):
+            k = np.where(sample != 0)[0][0]  # find the annotation
+            ax.axvspan(
+                time,
+                time + sample[k],
+                label=stream_annotations.ch_names[k],
+                color=colors[k],
+                alpha=0.5,
+            )
+        n += 1
+
+    fig.canvas.draw()
+    fig.canvas.flush_events()
+
 # %%
 # Free resources
 # --------------

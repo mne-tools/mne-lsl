@@ -31,4 +31,4 @@ Infrastructure
 
 - Improve unit tests by setting a marker ``slow`` on tests which take more than 5 seconds to complete (:pr:`258` by `Mathieu Scheltienne`_)
 - Make unit tests using :func:`~mne_lsl.lsl.resolve_streams` robust to the presence of other LSL streams on the network (:pr:`305` by `Mathieu Scheltienne`_)
-- Improve documentation build and unit test by adding a github action to retry a step when needed (:pr:`258` and :pr:`306` by `Eirc Larson`_ and `Mathieu Scheltienne`_)
+- Improve documentation build and unit test by adding a github action to retry a step when needed (:pr:`258` and :pr:`306` by `Eric Larson`_ and `Mathieu Scheltienne`_)
