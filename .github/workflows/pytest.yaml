@@ -42,6 +42,7 @@ jobs:
         uses: ./.github/actions/retry-step
         with:
           command: pytest mne_lsl --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s
+          retry_error_codes: "3,134,139"
         env:
           MNE_LSL_LOG_LEVEL: DEBUG
       - name: Upload to codecov
@@ -90,6 +91,7 @@ jobs:
         uses: ./.github/actions/retry-step
         with:
           command: pytest mne_lsl --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s
+          retry_error_codes: "3,134,139"
         env:
           MNE_LSL_LOG_LEVEL: DEBUG
       - name: Upload to codecov
@@ -138,6 +140,7 @@ jobs:
         uses: ./.github/actions/retry-step
         with:
           command: pytest mne_lsl --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s
+          retry_error_codes: "3,134,139"
         env:
           MNE_LSL_LOG_LEVEL: DEBUG
       - name: Upload to codecov

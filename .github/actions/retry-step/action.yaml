@@ -10,8 +10,7 @@ inputs:
     default: "3"
   retry_error_codes:
     description: "The error code on which to trigger a retry."
-    required: false
-    default: "134,139"
+    required: true
   command_between_retries:
     description: "A command to run between retries."
     required: false
