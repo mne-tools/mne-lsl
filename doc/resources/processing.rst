@@ -28,6 +28,11 @@ The processing is defined in the private ``_acquire`` method of the class
    :meth:`mne_lsl.stream.StreamLSL.notch_filter`. The filters are applied one at a time,
    in the order they were added.
 
+.. image:: ../_static/resources/stream-processing.svg
+    :align: right
+    :alt: Stream processing flowchart
+    :width: 100%
+
 EpochsStream
 ------------
 
@@ -61,3 +66,8 @@ thread (automatic acquisition) or by the method
    b. Apply baseline correction defined by the arguments ``baseline``, ``tmin`` and
       ``tmax``.
    c. Apply detrending defined by the argument ``detrend``.
+
+.. image:: ../_static/resources/epochs-processing.svg
+    :align: right
+    :alt: Stream processing flowchart
+    :width: 100%
