@@ -35,6 +35,7 @@ def test_local_clock():
     assert local_clock() >= ts
 
 
+@pytest.mark.xfail(reason="Fails if LSL streams are present in the background.")
 @pytest.mark.slow()
 def test_resolve_streams():
     """Test detection of streams on the network."""

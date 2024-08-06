@@ -33,11 +33,11 @@ def test_player(fname, raw, close_io, chunk_size, request):
     player = Player(fname, chunk_size=chunk_size, name=name)
     assert "OFF" in player.__repr__()
     streams = resolve_streams(timeout=0.1)
-    assert len(streams) == 0
+    assert name not in [stream.name for stream in streams]
     player.start()
     assert "ON" in player.__repr__()
     streams = resolve_streams(timeout=2)
-    assert len(streams) == 1
+    assert name in [stream.name for stream in streams]
     assert streams[0].name == name
 
     # try double start
@@ -84,33 +84,30 @@ def test_player_context_manager(fname, chunk_size, request):
     """Test a working and valid player as context manager."""
     name = f"P_{request.node.name}"
     streams = resolve_streams(timeout=0.1)
-    assert len(streams) == 0
+    assert name not in [stream.name for stream in streams]
     with Player(fname, chunk_size=chunk_size, name=name):
         streams = resolve_streams(timeout=2)
-        assert len(streams) == 1
-        assert streams[0].name == name
+        assert name in [stream.name for stream in streams]
     streams = resolve_streams(timeout=0.1)
-    assert len(streams) == 0
+    assert name not in [stream.name for stream in streams]
 
 
 def test_player_context_manager_raw(raw, chunk_size, request):
     """Test a working and valid player as context manager from a raw object."""
     name = f"P_{request.node.name}"
     streams = resolve_streams(timeout=0.1)
-    assert len(streams) == 0
+    assert name not in [stream.name for stream in streams]
     with Player(raw, chunk_size=chunk_size, name=name) as player:
         streams = resolve_streams(timeout=2)
-        assert len(streams) == 1
-        assert streams[0].name == name
+        assert name in [stream.name for stream in streams]
         assert player.info["ch_names"] == raw.info["ch_names"]
     streams = resolve_streams(timeout=0.1)
-    assert len(streams) == 0
+    assert name not in [stream.name for stream in streams]
 
     with pytest.warns(RuntimeWarning, match="raw file has no annotations"):
         with Player(raw, chunk_size=chunk_size, name=name, annotations=True) as player:
             streams = resolve_streams()
-            assert len(streams) == 1
-            assert streams[0].name == name
+            assert name in [stream.name for stream in streams]
             assert player.info["ch_names"] == raw.info["ch_names"]
 
 
@@ -118,27 +115,25 @@ def test_player_context_manager_raw_annotations(raw_annotations, chunk_size, req
     """Test a working player as context manager from a raw object with annotations."""
     name = f"P_{request.node.name}"
     streams = resolve_streams(timeout=0.1)
-    assert len(streams) == 0
+    assert name not in [stream.name for stream in streams]
     with Player(
         raw_annotations, chunk_size=chunk_size, name=name, annotations=False
     ) as player:
         assert player.running
         streams = resolve_streams(timeout=2)
-        assert len(streams) == 1
-        assert streams[0].name == name
+        assert name in [stream.name for stream in streams]
         assert player.info["ch_names"] == raw_annotations.info["ch_names"]
     streams = resolve_streams(timeout=0.1)
-    assert len(streams) == 0
+    assert name not in [stream.name for stream in streams]
 
     with Player(raw_annotations, chunk_size=chunk_size, name=name) as player:
         assert player.running
         streams = resolve_streams(timeout=2)
-        assert len(streams) == 2
-        assert any(stream.name == name for stream in streams)
-        assert any(stream.name == f"{name}-annotations" for stream in streams)
+        assert name in [stream.name for stream in streams]
+        assert f"{name}-annotations" in [stream.name for stream in streams]
         assert player.info["ch_names"] == raw_annotations.info["ch_names"]
     streams = resolve_streams(timeout=0.1)
-    assert len(streams) == 0
+    assert name not in [stream.name for stream in streams]
 
 
 def test_player_invalid_arguments(fname):
@@ -356,12 +351,11 @@ def test_player_annotations(raw_annotations, close_io, chunk_size, request):
     assert player.name == name
     assert player.fname == Path(raw_annotations.filenames[0])
     streams = resolve_streams(timeout=0.1)
-    assert len(streams) == 0
+    assert name not in [stream.name for stream in streams]
     player.start()
     streams = resolve_streams(timeout=2)
-    assert len(streams) == 2
-    assert any(stream.name == name for stream in streams)
-    assert any(stream.name == f"{name}-annotations" for stream in streams)
+    assert name in [stream.name for stream in streams]
+    assert f"{name}-annotations" in [stream.name for stream in streams]
 
     # find annotation stream and open an inlet
     streams = sorted(streams, key=lambda stream: stream.name)
@@ -435,35 +429,36 @@ def test_player_annotations_multiple_of_chunk_size(
     raw_annotations_1000_samples, chunk_size, request
 ):
     """Test player with annotations, chunk-size is a multiple of the raw size."""
+    name = f"P_{request.node.name}"
     raw = raw_annotations_1000_samples
     assert raw.times.size % chunk_size == 0
-    player = Player(raw, chunk_size=chunk_size, name=f"P_{request.node.name}")
+    player = Player(raw, chunk_size=chunk_size, name=name)
     player.start()
     time.sleep((raw.times.size / raw.info["sfreq"]) * 1.8)
     streams = resolve_streams(timeout=2)
-    assert len(streams) == 2
+    assert name in [stream.name for stream in streams]
+    assert f"{name}-annotations" in [stream.name for stream in streams]
     time.sleep((raw.times.size / raw.info["sfreq"]) * 1.8)
     streams = resolve_streams(timeout=2)
-    assert len(streams) == 2
+    assert name in [stream.name for stream in streams]
+    assert f"{name}-annotations" in [stream.name for stream in streams]
     player.stop()
 
 
 @pytest.mark.slow()
 def test_player_n_repeat(raw, chunk_size, request):
     """Test argument 'n_repeat'."""
-    player = Player(
-        raw, chunk_size=chunk_size, n_repeat=1, name=f"P_{request.node.name}-1"
-    )
+    name = f"P_{request.node.name}-1"
+    player = Player(raw, chunk_size=chunk_size, n_repeat=1, name=name)
     player.start()
     time.sleep((raw.times.size / raw.info["sfreq"]) * 1.8)
     assert player._executor is None
     streams = resolve_streams(timeout=0.1)
-    assert len(streams) == 0
+    assert name not in [stream.name for stream in streams]
     with pytest.raises(RuntimeError, match="player is not started."):
         player.stop()
-    player = Player(
-        raw, chunk_size=chunk_size, n_repeat=4, name=f"P_{request.node.name}-2"
-    )
+    name = f"P_{request.node.name}-2"
+    player = Player(raw, chunk_size=chunk_size, n_repeat=4, name=name)
     assert player.n_repeat == 4
     player.start()
     assert player.n_repeat == 4
@@ -471,7 +466,7 @@ def test_player_n_repeat(raw, chunk_size, request):
     time.sleep((raw.times.size / raw.info["sfreq"]) * 1.8)
     assert player._executor is not None
     streams = resolve_streams(timeout=2)
-    assert len(streams) == 1
+    assert name in [stream.name for stream in streams]
     player.stop()
 
 
@@ -492,13 +487,12 @@ def test_player_push_sample(fname, request):
     """Test pushing individual sample with chunk_size=1."""
     name = f"P_{request.node.name}"
     streams = resolve_streams(timeout=0.1)
-    assert len(streams) == 0
+    assert name not in [stream.name for stream in streams]
     with Player(fname, chunk_size=1, name=name):
         streams = resolve_streams(timeout=0.5)
-        assert len(streams) == 1
-        assert streams[0].name == name
+        assert name in [stream.name for stream in streams]
     streams = resolve_streams(timeout=0.1)
-    assert len(streams) == 0
+    assert name not in [stream.name for stream in streams]
 
 
 @pytest.mark.skipif(
@@ -511,12 +505,11 @@ def test_player_push_last_sample(fname, caplog, request):
     caplog.clear()
     player.start()
     streams = resolve_streams(timeout=0.5)
-    assert len(streams) == 1
-    assert streams[0].name == name
+    assert name in [stream.name for stream in streams]
     while player.running:
         time.sleep(0.1)
     # 'IndexError: index 0 is out of bounds' would be raised it the last chunk pushed
     # was empty.
     assert "index 0 is out of bounds" not in caplog.text
     streams = resolve_streams(timeout=0.1)
-    assert len(streams) == 0
+    assert name not in [stream.name for stream in streams]
