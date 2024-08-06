@@ -98,7 +98,7 @@ set_log_level("WARNING")
 # .. note::
 #
 #     The argument ``source_id`` can be omitted most of the time. But for reliability in
-#     our docuentation build on CIs, we assign a random unique identifier to each
+#     our documentation build on CIs, we assign a random unique identifier to each
 #     mock stream created.
 
 source_id = uuid.uuid4().hex
