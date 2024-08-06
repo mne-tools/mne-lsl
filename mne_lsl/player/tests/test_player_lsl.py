@@ -48,8 +48,7 @@ def test_player(fname, raw, close_io, chunk_size, request):
         player.start()
 
     # connect an inlet to the player
-    inlet = StreamInlet(streams[0])
-    inlet.open_stream(timeout=10)
+    inlet = _create_inlet(name, source_id)
     data, ts = inlet.pull_chunk()
     now = local_clock()
     # between the chunk size and the slow CIs, we can't expect precise timings
