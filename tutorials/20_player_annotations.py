@@ -26,6 +26,7 @@ remain to zero.
 
 import uuid
 
+import matplotlib.patches as mpatches
 import numpy as np
 from matplotlib import pyplot as plt
 from mne import Annotations, create_info
@@ -85,11 +86,16 @@ plt.show()
 #     Note that forcing ``annotations=True`` is not necessary since the
 #     :class:`~mne_lsl.player.PlayerLSL` will automatically stream annotations if they
 #     are present in the :class:`~mne.io.Raw` object.
+#
+# .. note::
+#
+#     A ``chunk_size`` of 1 is needed here or the timestamps ``ts`` from the signal and
+#     annotations streams are not reliable enough.
 
 source_id = uuid.uuid4().hex
 player = PlayerLSL(
     raw,
-    chunk_size=10,
+    chunk_size=1,
     name="tutorial-annots",
     source_id=source_id,
     annotations=True,
@@ -115,21 +121,24 @@ stream_annotations.info
 if not plt.isinteractive():
     plt.ion()
 fig, ax = plt.subplots()
+# add legend
+colors = ["lightcoral", "lightgreen"]
+patches = [
+    mpatches.Patch(color=colors[k], label=ch, alpha=0.5)
+    for k, ch in enumerate(stream_annotations.ch_names)
+]
+ax.legend(handles=patches, loc="upper left")
 plt.show()
 
 n = 0  # number of annotations
-start = 0  # initial idx
-colors = ["lightcoral", "lightgreen"]
 while n <= 10:
     if stream.n_new_samples == 0:
         continue
 
-    data, ts = stream.get_data(winsize=stream.n_new_samples)
-    ax.plot(np.arange(start, start + ts.size), data[0, :], color="teal")
-    start += ts.size
-    n += 1
+    data, ts = stream.get_data(winsize=stream.n_new_samples / stream.info["sfreq"])
+    ax.plot(ts, data.squeeze(), color="teal")
 
-    if False and stream_annotations.n_new_samples != 0:
+    if stream_annotations.n_new_samples != 0:
         data_annotations, ts_annotations = stream_annotations.get_data(
             winsize=stream_annotations.n_new_samples
         )
