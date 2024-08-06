@@ -89,7 +89,7 @@ plt.show()
 source_id = uuid.uuid4().hex
 player = PlayerLSL(
     raw,
-    chunk_size=200,
+    chunk_size=10,
     name="tutorial-annots",
     source_id=source_id,
     annotations=True,
@@ -118,27 +118,22 @@ fig, ax = plt.subplots()
 plt.show()
 
 n = 0  # number of annotations
+start = 0  # initial idx
 colors = ["lightcoral", "lightgreen"]
 while n <= 10:
     if stream.n_new_samples == 0:
         continue
 
     data, ts = stream.get_data(winsize=stream.n_new_samples)
-    ax.plot(ts, data[0, :], color="teal")
+    ax.plot(np.arange(start, start + ts.size), data[0, :], color="teal")
+    start += ts.size
+    n += 1
 
-    if stream_annotations.n_new_samples != 0:
-        data_annotations, ts_annotations = stream_annotations.get_data()
-        # remove samples with ts=0 which correspond to the empty buffer at the beginning
-        n_samples = np.count_nonzero(ts_annotations)
-        data_annotations = data_annotations[:, -n_samples:]
-        ts_annotations = ts_annotations[-n_samples:]
-        # remove annotations outside of the signal range
-        sel = np.where((ts[0] <= ts_annotations) & (ts_annotations <= ts[-1]))[0]
-        data_annotations = data_annotations[:, sel]
-        ts_annotations = ts_annotations[sel]
-        # find the position of the annotations in regards to the signal
-        idx = np.searchsorted(ts, ts_annotations)
-        for sample, time in zip(data_annotations.T, ts[idx]):
+    if False and stream_annotations.n_new_samples != 0:
+        data_annotations, ts_annotations = stream_annotations.get_data(
+            winsize=stream_annotations.n_new_samples
+        )
+        for sample, time in zip(data_annotations.T, ts_annotations):
             k = np.where(sample != 0)[0][0]  # find the annotation
             ax.axvspan(
                 time,

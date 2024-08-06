@@ -52,7 +52,7 @@ import uuid
 
 import numpy as np
 from matplotlib import pyplot as plt
-from mne import EpochsArray, annotations_from_events, find_events
+from mne import Epochs, EpochsArray, annotations_from_events, find_events
 from mne.io import read_raw_fif
 
 from mne_lsl.datasets import sample
@@ -228,15 +228,36 @@ epochs.info
 
 # %%
 # Let's wait for a couple of epochs to enter in the buffer, and then let's convert the
-# array to an MNE-Python :class:`~mne.Epochs` object and plot the power spectral
-# density.
+# array to an MNE-Python :class:`~mne.Epochs` object and plot the time-frequency
+# representation of the evoked response.
 
 while epochs.n_new_epochs < 10:
     time.sleep(0.5)
 
 data = epochs.get_data(n_epochs=epochs.n_new_epochs)
-epochs_mne = EpochsArray(data, epochs.info, verbose="WARNING")
-epochs_mne.compute_psd(fmax=40, tmin=0).plot()
+epochs_mne = EpochsArray(data, epochs.info, tmin=-0.2, verbose="WARNING")
+freqs = np.arange(1, 10)
+tfr = epochs_mne.average().compute_tfr(
+    method="multitaper", freqs=freqs, n_cycles=freqs / 2
+)
+tfr.plot(baseline=(None, 0), combine="mean")
+plt.show()
+
+# %%
+# Let's compare this to a :class:`~mne.Epochs` object created from the same events.
+#
+# .. note::
+#
+#     The same epochs were not selected between the offline and online processing.
+
+epochs_offline = Epochs(
+    raw, events, event_id=dict(event=2), baseline=(None, 0), picks="grad", preload=True
+)
+epochs_offline.filter(None, 40)
+tfr = epochs_offline.average().compute_tfr(
+    method="multitaper", freqs=freqs, n_cycles=freqs / 2
+)
+tfr.plot(baseline=(None, 0), combine="mean")
 plt.show()
 
 # %%
