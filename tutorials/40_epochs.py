@@ -244,7 +244,8 @@ tfr.plot(baseline=(None, 0), combine="mean")
 plt.show()
 
 # %%
-# Let's compare this to a :class:`~mne.Epochs` object created from the same events.
+# Let's compare this to a :class:`~mne.Epochs` object created from the same number of
+# events offline.
 #
 # .. note::
 #
