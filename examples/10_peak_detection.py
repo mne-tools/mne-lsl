@@ -206,7 +206,7 @@ class Detector:
         # create stream
         self._stream = StreamLSL(
             bufsize, name=stream_name, source_id=stream_source_id
-        ).connect(processing_flags="all")
+        ).connect(acquisition_delay=0, processing_flags="all")
         self._stream.pick(ch_name)
         self._stream.set_channel_types({ch_name: "misc"}, on_unit_change="ignore")
         self._stream.notch_filter(50, picks=ch_name)
@@ -221,6 +221,7 @@ class Detector:
         peaks : array of shape (n_peaks,)
             The timestamps of all detected peaks.
         """
+        self._stream.acquire()
         data, ts = self._stream.get_data()  # we have a single channel in the stream
         data = data.squeeze()
         peaks, _ = find_peaks(
@@ -292,7 +293,7 @@ class Detector:
         # create stream
         self._stream = StreamLSL(
             bufsize, name=stream_name, source_id=stream_source_id
-        ).connect(processing_flags="all")
+        ).connect(acquisition_delay=0, processing_flags="all")
         self._stream.pick(ch_name)
         self._stream.set_channel_types({ch_name: "misc"}, on_unit_change="ignore")
         self._stream.notch_filter(50, picks=ch_name)
@@ -311,6 +312,7 @@ class Detector:
         peaks : array of shape (n_peaks,)
             The timestamps of all detected peaks.
         """
+        self._stream.acquire()
         if self._stream.n_new_samples == 0:
             return np.array([])  # nothing new to do
         data, ts = self._stream.get_data()  # we have a single channel in the stream
@@ -383,29 +385,50 @@ class Detector:
 # -----------
 #
 # Let's now test this detector and measure the time it takes to detect a new peak
-# entering the buffer.
+# entering the buffer. To properly do so, the player should be started in a separate
+# process to avoid hogging the CPU time in the main thread leaving no time for the
+# player to stream new data.
 
+import multiprocessing as mp
 import uuid
 
-from mne_lsl.player import PlayerLSL
+
+def player_process(fname, name, source_id, status):
+    """Process which runs the process."""
+    from mne_lsl.player import PlayerLSL
+
+    player = PlayerLSL(fname, chunk_size=1, name=name, source_id=source_id)
+    player.start()
+    status.value = 1
+    while status.value:
+        pass
+    player.stop()
+
+
+fname = sample.data_path() / "sample-ecg-raw.fif"
+name = "ecg-example"
+source_id = uuid.uuid4().hex
+manager = mp.Manager()
+status = manager.Value("i", 0)
+process = mp.Process(target=player_process, args=(fname, name, source_id, status))
+process.start()
+while status.value != 1:
+    pass  # wait for the player to actually start
+
+# %%
+# Now that a :class:`~mne_lsl.player.PlayerLSL` is running in a separate process, we can
+# start the detector and measure the time it takes to detect a new peak.
+
 from mne_lsl.lsl import local_clock
 
-source_id = uuid.uuid4().hex
-player = PlayerLSL(
-    fname=sample.data_path() / "sample-ecg-raw.fif",
-    chunk_size=1,
-    name="ecg-example",
-    source_id=source_id,
-)
-player.start()
-detector = Detector(4, player.name, source_id, "AUX8")
+detector = Detector(4, name, source_id, "AUX8")
 delays = list()
 while len(delays) <= 30:
     peak = detector.new_peak()
     if peak is not None:
         delays.append((local_clock() - peak) * 1e3)
 detector.stream.disconnect()
-player.stop()
+status.value = 0  # stops the player
 
 f, ax = plt.subplots(1, 1, layout="constrained")
 ax.set_title("Detection delay in ms")
@@ -413,17 +436,7 @@ ax.hist(delays, bins=15)
 plt.show()
 
 # %%
-# The detection delay displayed is erroneous due to the nature of the LSL stream, being
-# replayed from a local file with a :class:`~mne_lsl.player.PlayerLSL`. The chunk size
-# of the :class:`~mne_lsl.player.PlayerLSL` was set to ``chunk_size=200``, and
-# thus we are pushing 200 samples chunks at a time, corresponding to 195 ms at once.
-#
-# This is obviously not compatible with a real-time detection scenario, but ensures that
-# the test and documentation builds successfully on github runners.
-#
-# In a real application, this detector detects R-peaks within a couple of ms of their
-# emission. To approximate this result, you can run the ``Player`` object in a separate
-# process with the argument ``chunk_size=1``, which yields the following figure locally:
-#
-# .. image:: ../../_static/tutorials/qrs-detector-performance.png
-#     :align: center
+# The detection delay displayed can be as low as 1 or 2 ms depending on the computer, on
+# the process configuration and on the performance of the streaming source. A
+# :class:`~mne_lsl.player.PlayerLSL` is not reproducing exactly the performance of a
+# real-time application.
