@@ -24,6 +24,8 @@ streamed, it's duration is encoded as the value on its channel while the other c
 remain to zero.
 """
 
+# sphinx_gallery_thumbnail_number = 2
+
 import uuid
 
 import matplotlib.patches as mpatches
