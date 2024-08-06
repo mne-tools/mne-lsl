@@ -31,6 +31,7 @@ network.
     able to do so if the CPU is busy.
 """
 
+import uuid
 from time import sleep
 
 from matplotlib import pyplot as plt
@@ -41,7 +42,8 @@ from mne_lsl.stream import StreamLSL
 
 # create a mock LSL stream for this tutorial
 fname = sample.data_path() / "sample-ant-raw.fif"
-player = PlayerLSL(fname, chunk_size=200).start()
+source_id = uuid.uuid4().hex
+player = PlayerLSL(fname, chunk_size=200, source_id=source_id).start()
 player.info
 
 # %%
@@ -51,7 +53,7 @@ player.info
 #     while building the documentation on the CI. In practice, a ``chunk_size`` of 200
 #     samples is too large to represent a real-time application.
 
-stream = StreamLSL(bufsize=2).connect(acquisition_delay=0.1)
+stream = StreamLSL(bufsize=2, source_id=source_id).connect(acquisition_delay=0.1)
 sleep(2)  # wait for new samples
 print(f"New samples acquired: {stream.n_new_samples}")
 stream.disconnect()
@@ -65,7 +67,7 @@ stream.disconnect()
 # mode, all operation happens in the main thread and the user has full control over when
 # to acquire new samples.
 
-stream = StreamLSL(bufsize=2).connect(acquisition_delay=0)
+stream = StreamLSL(bufsize=2, source_id=source_id).connect(acquisition_delay=0)
 sleep(2)  # wait for new samples
 print(f"New samples acquired (before stream.acquire()): {stream.n_new_samples}")
 stream.acquire()

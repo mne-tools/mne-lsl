@@ -3,7 +3,6 @@ from __future__ import annotations
 import os
 from concurrent.futures import ThreadPoolExecutor
 from math import ceil
-from time import sleep
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -24,6 +23,7 @@ else:
 from ..utils._checks import check_type, check_value, ensure_int
 from ..utils._docs import fill_doc
 from ..utils._fixes import find_events
+from ..utils._time import high_precision_sleep
 from ..utils.logs import logger, warn
 from .base import BaseStream
 
@@ -562,7 +562,7 @@ class EpochsStream:
         """Submit a new acquisition job, if applicable."""
         if self._executor is None:
             return  # either shutdown or manual acquisition
-        sleep(self._acquisition_delay)
+        high_precision_sleep(self._acquisition_delay)
         try:
             self._executor.submit(self._acquire)
         except RuntimeError:  # pragma: no cover

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import multiprocessing as mp
 import time
+import uuid
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -264,17 +265,23 @@ def raw_with_stim_channel() -> BaseRaw:
     return RawArray(data, info)
 
 
+class DummyPlayer:
+    def __init__(self, /, **kwargs):
+        self.__dict__.update(kwargs)
+
+
 def _player_mock_lsl_stream(
     raw: BaseRaw,
-    name: str,
     chunk_size: int,
+    name: str,
+    source_id: str,
     status: mp.managers.ValueProxy,
 ) -> None:
     """Player for the 'mock_lsl_stream' fixture(s)."""
     # nest the PlayerLSL import to first write the temporary LSL configuration file
     from mne_lsl.player import PlayerLSL
 
-    player = PlayerLSL(raw, chunk_size=chunk_size, name=name)
+    player = PlayerLSL(raw, chunk_size=chunk_size, name=name, source_id=source_id)
     player.start()
     status.value = 1
     while status.value:
@@ -283,28 +290,30 @@ def _player_mock_lsl_stream(
 
 
 @pytest.fixture()
-def _mock_lsl_stream(raw_with_stim_channel, request, chunk_size):
+def mock_lsl_stream(raw_with_stim_channel, request, chunk_size):
     """Create a mock LSL stream streaming events on a stim channel."""
     manager = mp.Manager()
     status = manager.Value("i", 0)
     name = f"P_{request.node.name}"
+    source_id = uuid.uuid4().hex
     process = mp.Process(
         target=_player_mock_lsl_stream,
-        args=(raw_with_stim_channel, name, chunk_size, status),
+        args=(raw_with_stim_channel, chunk_size, name, source_id, status),
     )
     process.start()
     while status.value != 1:
         pass
-    yield
+    yield DummyPlayer(chunk_size=chunk_size, name=name, source_id=source_id)
     status.value = 0
     process.join(timeout=2)
     process.kill()
 
 
-@pytest.mark.usefixtures("_mock_lsl_stream")
-def test_epochs_without_event_stream():
+def test_epochs_without_event_stream(mock_lsl_stream):
     """Test creating epochs from the main stream."""
-    stream = StreamLSL(0.5).connect(acquisition_delay=0.1)
+    stream = StreamLSL(
+        0.5, name=mock_lsl_stream.name, source_id=mock_lsl_stream.source_id
+    ).connect(acquisition_delay=0.1)
     epochs = EpochsStream(
         stream,
         10,
@@ -333,10 +342,11 @@ def test_epochs_without_event_stream():
     stream.disconnect()
 
 
-@pytest.mark.usefixtures("_mock_lsl_stream")
-def test_epochs_without_event_stream_tmin_tmax():
+def test_epochs_without_event_stream_tmin_tmax(mock_lsl_stream):
     """Test creating epochs from the main stream."""
-    stream = StreamLSL(0.5).connect(acquisition_delay=0.1)
+    stream = StreamLSL(
+        0.5, name=mock_lsl_stream.name, source_id=mock_lsl_stream.source_id
+    ).connect(acquisition_delay=0.1)
     epochs = EpochsStream(
         stream, 10, event_channels="trg", event_id=dict(a=1), tmin=-0.05, tmax=0.15
     ).connect(acquisition_delay=0.1)
@@ -362,10 +372,11 @@ def test_epochs_without_event_stream_tmin_tmax():
     stream.disconnect()
 
 
-@pytest.mark.usefixtures("_mock_lsl_stream")
-def test_epochs_without_event_stream_manual_acquisition():
+def test_epochs_without_event_stream_manual_acquisition(mock_lsl_stream):
     """Test creating epochs from the main stream."""
-    stream = StreamLSL(0.5).connect(acquisition_delay=0.1)
+    stream = StreamLSL(
+        0.5, name=mock_lsl_stream.name, source_id=mock_lsl_stream.source_id
+    ).connect(acquisition_delay=0.1)
     epochs = EpochsStream(
         stream,
         10,
@@ -700,30 +711,36 @@ def raw_with_annotations(raw_with_stim_channel: BaseRaw) -> BaseRaw:
 
 
 @pytest.fixture()
-def _mock_lsl_stream_with_annotations(raw_with_annotations, request, chunk_size):
+def mock_lsl_stream_with_annotations(raw_with_annotations, request, chunk_size):
     """Create a mock LSL stream streaming events with annotations."""
     manager = mp.Manager()
     status = manager.Value("i", 0)
     name = f"P_{request.node.name}"
+    source_id = uuid.uuid4().hex
     process = mp.Process(
         target=_player_mock_lsl_stream,
-        args=(raw_with_annotations, name, chunk_size, status),
+        args=(raw_with_annotations, chunk_size, name, source_id, status),
     )
     process.start()
     while status.value != 1:
         pass
-    yield
+    yield DummyPlayer(name=name, source_id=source_id)
     status.value = 0
     process.join(timeout=2)
     process.kill()
 
 
-@pytest.mark.usefixtures("_mock_lsl_stream_with_annotations")
-def test_epochs_with_irregular_numerical_event_stream():
+def test_epochs_with_irregular_numerical_event_stream(mock_lsl_stream_with_annotations):
     """Test creating epochs from an irregularly sampled numerical event stream."""
-    event_stream = StreamLSL(10, stype="annotations").connect(acquisition_delay=0.1)
-    name = event_stream.name.removesuffix("-annotations")
-    stream = StreamLSL(0.5, name=name).connect(acquisition_delay=0.1)
+    name = mock_lsl_stream_with_annotations.name
+    source_id = mock_lsl_stream_with_annotations.source_id
+    event_stream = StreamLSL(10, stype="annotations", source_id=source_id).connect(
+        acquisition_delay=0.1
+    )
+    assert event_stream.name.removesuffix("-annotations") == name
+    stream = StreamLSL(0.5, name=name, source_id=source_id).connect(
+        acquisition_delay=0.1
+    )
     epochs = EpochsStream(
         stream,
         10,
@@ -746,12 +763,13 @@ def test_epochs_with_irregular_numerical_event_stream():
     event_stream.disconnect()
 
 
-@pytest.mark.usefixtures("_mock_lsl_stream_with_annotations")
-def test_ensure_event_id_with_event_stream():
+def test_ensure_event_id_with_event_stream(mock_lsl_stream_with_annotations):
     """Test validation of event dictionary when an event_stream is present."""
     with pytest.raises(ValueError, match="must be provided if no irregularly sampled"):
         _ensure_event_id(None, None)
-    event_stream = StreamLSL(10, stype="annotations").connect(acquisition_delay=0.1)
+    event_stream = StreamLSL(
+        10, stype="annotations", source_id=mock_lsl_stream_with_annotations.source_id
+    ).connect(acquisition_delay=0.1)
     assert _ensure_event_id(None, event_stream) is None
     with pytest.warns(RuntimeWarning, match="should be set to None"):
         _ensure_event_id(dict(event=1), event_stream)
@@ -794,21 +812,22 @@ def raw_with_annotations_and_first_samp() -> BaseRaw:
 
 
 @pytest.fixture()
-def _mock_lsl_stream_with_annotations_and_first_samp(
+def mock_lsl_stream_with_annotations_and_first_samp(
     raw_with_annotations_and_first_samp, request, chunk_size
 ):
     """Create a mock LSL stream streaming events with annotations and first_samp."""
     manager = mp.Manager()
     status = manager.Value("i", 0)
     name = f"P_{request.node.name}"
+    source_id = uuid.uuid4().hex
     process = mp.Process(
         target=_player_mock_lsl_stream,
-        args=(raw_with_annotations_and_first_samp, name, chunk_size, status),
+        args=(raw_with_annotations_and_first_samp, chunk_size, name, source_id, status),
     )
     process.start()
     while status.value != 1:
         pass
-    yield
+    yield DummyPlayer(name=name, source_id=source_id)
     status.value = 0
     process.join(timeout=2)
     process.kill()
@@ -816,12 +835,17 @@ def _mock_lsl_stream_with_annotations_and_first_samp(
 
 @pytest.mark.slow()
 @pytest.mark.timeout(30)  # takes under 9s locally
-@pytest.mark.usefixtures("_mock_lsl_stream_with_annotations_and_first_samp")
-def test_epochs_with_irregular_numerical_event_stream_and_first_samp():
+def test_epochs_with_irregular_numerical_event_stream_and_first_samp(
+    mock_lsl_stream_with_annotations_and_first_samp,
+):
     """Test creating epochs from an event stream from raw with first_samp."""
-    event_stream = StreamLSL(10, stype="annotations").connect(acquisition_delay=0.1)
-    name = event_stream.name.removesuffix("-annotations")
-    stream = StreamLSL(2, name=name).connect(acquisition_delay=0.1)
+    name = mock_lsl_stream_with_annotations_and_first_samp.name
+    source_id = mock_lsl_stream_with_annotations_and_first_samp.source_id
+    event_stream = StreamLSL(10, stype="annotations", source_id=source_id).connect(
+        acquisition_delay=0.1
+    )
+    assert event_stream.name.removesuffix("-annotations") == name
+    stream = StreamLSL(2, name=name, source_id=source_id).connect(acquisition_delay=0.1)
     stream.info["bads"] = ["MEG 2443"]  # remove bad channel
     epochs = EpochsStream(
         stream,

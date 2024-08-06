@@ -6,6 +6,8 @@ With a :class:`~mne_lsl.stream.EpochsStream`, we can build a real-time evoked re
 visualization. This is useful to monitor the brain activity in real-time.
 """
 
+import uuid
+
 import numpy as np
 from matplotlib import pyplot as plt
 from mne import EvokedArray, combine_evoked
@@ -32,8 +34,11 @@ raw = read_raw_fif(fname, preload=False).pick(("meg", "stim")).load_data()
 #     while building the documentation on the CI. In practice, a ``chunk_size`` of 200
 #     samples is too large to represent a real-time application.
 
-with PlayerLSL(raw, chunk_size=200, name="real-time-evoked-example"):
-    stream = StreamLSL(bufsize=4, name="real-time-evoked-example")
+source_id = uuid.uuid4().hex
+with PlayerLSL(
+    raw, chunk_size=200, name="real-time-evoked-example", source_id=source_id
+):
+    stream = StreamLSL(bufsize=4, name="real-time-evoked-example", source_id=source_id)
     stream.connect(acquisition_delay=0.1, processing_flags="all")
     stream.info["bads"] = ["MEG 2443"]
     stream.filter(None, 40, picks="grad")

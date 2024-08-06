@@ -186,23 +186,27 @@ class Detector:
         Name of the LSL stream to use for the respiration or cardiac detection. The
         stream should contain a respiration channel using a respiration belt or a
         thermistor and/or an ECG channel.
+    stream_source_id : str | None
+        A unique identifier of the device or source of the data. If not empty, this
+        information improves the system robustness since it allows recipients to recover
+        from failure by finding a stream with the same source_id on the network.
     ch_name : str
         Name of the ECG channel in the LSL stream. This channel should contain the ECG
         signal recorded with 2 bipolar electrodes.
+
     """
 
     def __init__(
         self,
         bufsize: float,
         stream_name: str,
+        stream_source_id: str | None,
         ch_name: str,
-        ecg_height: float | None = None,
-        ecg_distance: float | None = None,
     ) -> None:
         # create stream
-        self._stream = StreamLSL(bufsize, name=stream_name).connect(
-            processing_flags="all"
-        )
+        self._stream = StreamLSL(
+            bufsize, name=stream_name, source_id=stream_source_id
+        ).connect(processing_flags="all")
         self._stream.pick(ch_name)
         self._stream.set_channel_types({ch_name: "misc"}, on_unit_change="ignore")
         self._stream.notch_filter(50, picks=ch_name)
@@ -269,6 +273,10 @@ class Detector:
         Name of the LSL stream to use for the respiration or cardiac detection. The
         stream should contain a respiration channel using a respiration belt or a
         thermistor and/or an ECG channel.
+    stream_source_id : str | None
+        A unique identifier of the device or source of the data. If not empty, this
+        information improves the system robustness since it allows recipients to recover
+        from failure by finding a stream with the same source_id on the network.
     ch_name : str
         Name of the ECG channel in the LSL stream. This channel should contain the ECG
         signal recorded with 2 bipolar electrodes.
@@ -278,14 +286,13 @@ class Detector:
         self,
         bufsize: float,
         stream_name: str,
+        stream_source_id: str | None,
         ch_name: str,
-        ecg_height: float | None = None,
-        ecg_distance: float | None = None,
     ) -> None:
         # create stream
-        self._stream = StreamLSL(bufsize, name=stream_name).connect(
-            processing_flags="all"
-        )
+        self._stream = StreamLSL(
+            bufsize, name=stream_name, source_id=stream_source_id
+        ).connect(processing_flags="all")
         self._stream.pick(ch_name)
         self._stream.set_channel_types({ch_name: "misc"}, on_unit_change="ignore")
         self._stream.notch_filter(50, picks=ch_name)
@@ -378,14 +385,20 @@ class Detector:
 # Let's now test this detector and measure the time it takes to detect a new peak
 # entering the buffer.
 
+import uuid
+
 from mne_lsl.player import PlayerLSL
 from mne_lsl.lsl import local_clock
 
+source_id = uuid.uuid4().hex
 player = PlayerLSL(
-    fname=sample.data_path() / "sample-ecg-raw.fif", chunk_size=200, name="ecg-example"
+    fname=sample.data_path() / "sample-ecg-raw.fif",
+    chunk_size=200,
+    name="ecg-example",
+    source_id=source_id,
 )
 player.start()
-detector = Detector(4, player.name, "AUX8")
+detector = Detector(4, player.name, source_id, "AUX8")
 delays = list()
 while len(delays) <= 30:
     peak = detector.new_peak()

@@ -48,10 +48,11 @@ channel of MNE's sample dataset.
 """
 
 import time
+import uuid
 
 import numpy as np
 from matplotlib import pyplot as plt
-from mne import EpochsArray, annotations_from_events, find_events
+from mne import Epochs, EpochsArray, annotations_from_events, find_events
 from mne.io import read_raw_fif
 
 from mne_lsl.datasets import sample
@@ -61,8 +62,13 @@ from mne_lsl.stream import EpochsStream, StreamLSL
 
 fname = sample.data_path() / "mne-sample" / "sample_audvis_raw.fif"
 raw = read_raw_fif(fname, preload=False).pick(("meg", "stim")).load_data()
+source_id = uuid.uuid4().hex
 player = PlayerLSL(
-    raw, chunk_size=200, name="tutorial-epochs-1", annotations=False
+    raw,
+    chunk_size=200,
+    name="tutorial-epochs-1",
+    source_id=source_id,
+    annotations=False,
 ).start()
 player.info
 
@@ -79,7 +85,7 @@ player.info
 # channel ``"MEG 2443"`` is marked as bad and the signal is filtered with a low-pass
 # filter.
 
-stream = StreamLSL(bufsize=4, name="tutorial-epochs-1")
+stream = StreamLSL(bufsize=4, name="tutorial-epochs-1", source_id=source_id)
 stream.connect(acquisition_delay=0.1, processing_flags="all")
 stream.info["bads"] = ["MEG 2443"]  # remove bad channel
 stream.filter(None, 40, picks="grad")  # filter signal
@@ -152,7 +158,7 @@ annotations
 
 raw.set_annotations(annotations)
 player = PlayerLSL(
-    raw, chunk_size=200, name="tutorial-epochs-2", annotations=True
+    raw, chunk_size=200, name="tutorial-epochs-2", source_id=source_id, annotations=True
 ).start()
 player.info
 
@@ -166,7 +172,7 @@ resolve_streams()
 # We can now create a :class:`~mne_lsl.stream.StreamLSL` object for each available
 # stream on the network.
 
-stream = StreamLSL(bufsize=4, name="tutorial-epochs-2")
+stream = StreamLSL(bufsize=4, name="tutorial-epochs-2", source_id=source_id)
 stream.connect(acquisition_delay=0.1, processing_flags="all")
 stream.info["bads"] = ["MEG 2443"]  # remove bad channel
 stream.filter(None, 40, picks="grad")  # filter signal
@@ -174,7 +180,9 @@ stream.info
 
 # %%
 
-stream_events = StreamLSL(bufsize=20, name="tutorial-epochs-2-annotations")
+stream_events = StreamLSL(
+    bufsize=20, name="tutorial-epochs-2-annotations", source_id=source_id
+)
 stream_events.connect(acquisition_delay=0.1, processing_flags="all")
 stream_events.info
 
@@ -220,15 +228,37 @@ epochs.info
 
 # %%
 # Let's wait for a couple of epochs to enter in the buffer, and then let's convert the
-# array to an MNE-Python :class:`~mne.Epochs` object and plot the power spectral
-# density.
+# array to an MNE-Python :class:`~mne.Epochs` object and plot the time-frequency
+# representation of the evoked response.
 
 while epochs.n_new_epochs < 10:
     time.sleep(0.5)
 
 data = epochs.get_data(n_epochs=epochs.n_new_epochs)
-epochs_mne = EpochsArray(data, epochs.info, verbose="WARNING")
-epochs_mne.compute_psd(fmax=40, tmin=0).plot()
+epochs_mne = EpochsArray(data, epochs.info, tmin=-0.2, verbose="WARNING")
+freqs = np.arange(1, 10)
+tfr = epochs_mne.average().compute_tfr(
+    method="multitaper", freqs=freqs, n_cycles=freqs / 2
+)
+tfr.plot(baseline=(None, 0), combine="mean")
+plt.show()
+
+# %%
+# Let's compare this to a :class:`~mne.Epochs` object created from the same number of
+# events offline.
+#
+# .. note::
+#
+#     The same epochs were not selected between the offline and online processing.
+
+epochs_offline = Epochs(
+    raw, events, event_id=dict(event=2), baseline=(None, 0), picks="grad", preload=True
+)
+epochs_offline.filter(None, 40)
+tfr = epochs_offline.average().compute_tfr(
+    method="multitaper", freqs=freqs, n_cycles=freqs / 2
+)
+tfr.plot(baseline=(None, 0), combine="mean")
 plt.show()
 
 # %%
@@ -237,7 +267,7 @@ plt.show()
 #
 # When you are done with a :class:`~mne_lsl.player.PlayerLSL`, a
 # :class:`~mne_lsl.stream.StreamLSL` or a :class:`~mne_lsl.stream.EpochsStream` don't
-# forget to free the resources they both use to continuously mock an LSL stream or
+# forget to free the resources they use to continuously mock an LSL stream or
 # receive new data from an LSL stream.
 
 epochs.disconnect()

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from time import sleep
 from typing import TYPE_CHECKING
 from warnings import catch_warnings, filterwarnings
 
@@ -11,6 +10,7 @@ from mne.annotations import _handle_meas_date
 from ..lsl import StreamInfo, StreamOutlet, local_clock
 from ..utils._checks import check_type
 from ..utils._docs import copy_doc, fill_doc
+from ..utils._time import high_precision_sleep
 from ..utils.logs import logger, warn
 from ._base import BasePlayer
 
@@ -31,6 +31,11 @@ class PlayerLSL(BasePlayer):
     %(n_repeat)s
     name : str | None
         Name of the mock LSL stream. If ``None``, the name ``MNE-LSL-Player`` is used.
+    source_id : str
+        A unique identifier of the device or source of the data. This information
+        improves the system robustness since it allows recipients to recover
+        from failure by finding a stream with the same ``source_id`` on the network.
+        By default, the source_id is set to ``"MNE-LSL"``.
     annotations : bool | None
         If ``True``, an :class:`~mne_lsl.lsl.StreamOutlet` is created for the
         :class:`~mne.Annotations` of the :class:`~mne.io.Raw` object. If ``False``,
@@ -92,12 +97,15 @@ class PlayerLSL(BasePlayer):
         n_repeat: Union[int, float] = np.inf,
         *,
         name: Optional[str] = None,
+        source_id: str = "MNE-LSL",
         annotations: Optional[bool] = None,
     ) -> None:
         super().__init__(fname, chunk_size, n_repeat)
         check_type(name, (str, None), "name")
+        check_type(source_id, (str,), "source_id")
         check_type(annotations, (bool, None), "annotations")
         self._name = "MNE-LSL-Player" if name is None else name
+        self._source_id = source_id
         # look for annotations
         if annotations is None:
             self._annotations = True if len(self._raw.annotations) != 0 else False
@@ -118,7 +126,7 @@ class PlayerLSL(BasePlayer):
             n_channels=len(self._raw.info["ch_names"]),
             sfreq=self._raw.info["sfreq"],
             dtype=np.float64,
-            source_id="MNE-LSL",
+            source_id=self._source_id,
         )
         self._sinfo.set_channel_info(self._raw.info)
         logger.debug("%s: set channel info", self._name)
@@ -135,7 +143,7 @@ class PlayerLSL(BasePlayer):
                 n_channels=len(self._annotations_names),
                 sfreq=0.0,
                 dtype=np.float64,
-                source_id="MNE-LSL",
+                source_id=self._source_id,
             )
             self._sinfo_annotations.set_channel_names(list(self._annotations_names))
             self._sinfo_annotations.set_channel_types("annotations")
@@ -296,7 +304,7 @@ class PlayerLSL(BasePlayer):
             # _target_timestamp for the following wake.
             delta = self._target_timestamp - self._streaming_delay - local_clock()
             delay = max(self._streaming_delay + delta, 0)
-            sleep(delay)
+            high_precision_sleep(delay)
             try:
                 self._executor.submit(self._stream)
             except RuntimeError:  # pragma: no cover
@@ -390,3 +398,11 @@ class PlayerLSL(BasePlayer):
         :type: :class:`str`
         """
         return self._name
+
+    @property
+    def source_id(self) -> str:
+        """Source ID of the LSL stream.
+
+        :type: :class:`str`
+        """
+        return self._source_id

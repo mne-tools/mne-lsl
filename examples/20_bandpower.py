@@ -10,6 +10,7 @@ rolling window. For this example, we will look at the alpha band power, between 
 # sphinx_gallery_thumbnail_path = '_static/tutorials/bp-performance.png'
 
 import time
+import uuid
 
 import numpy as np
 from matplotlib import colormaps
@@ -125,8 +126,9 @@ def bandpower(
 #     the acquisition delay of the connected stream is also increased to reduce the
 #     load on the CPU.
 
-with PlayerLSL(raw, chunk_size=200, name="bandpower-example"):
-    stream = StreamLSL(bufsize=4, name="bandpower-example")
+source_id = uuid.uuid4().hex
+with PlayerLSL(raw, chunk_size=200, name="bandpower-example", source_id=source_id):
+    stream = StreamLSL(bufsize=4, name="bandpower-example", source_id=source_id)
     stream.connect(acquisition_delay=0.1, processing_flags="all")
     stream.pick("eeg").filter(1, 30)
     stream.get_data()  # reset the number of new samples after the filter is applied
@@ -186,8 +188,8 @@ plt.show()
 # methods to estimate the power spectral density.
 
 methods = ("periodogram", "welch", "multitaper")
-with PlayerLSL(raw, chunk_size=200, name="bandpower-example"):
-    stream = StreamLSL(bufsize=4, name="bandpower-example")
+with PlayerLSL(raw, chunk_size=200, name="bandpower-example", source_id=source_id):
+    stream = StreamLSL(bufsize=4, name="bandpower-example", source_id=source_id)
     stream.connect(acquisition_delay=0.1, processing_flags="all")
     stream.pick("eeg").filter(1, 30)
     stream.get_data()  # reset the number of new samples after the filter is applied
@@ -223,8 +225,8 @@ plt.show()
 # method on a separate loop.
 
 methods = ("periodogram", "welch", "multitaper")
-with PlayerLSL(raw, chunk_size=200, name="bandpower-example"):
-    stream = StreamLSL(bufsize=4, name="bandpower-example")
+with PlayerLSL(raw, chunk_size=200, name="bandpower-example", source_id=source_id):
+    stream = StreamLSL(bufsize=4, name="bandpower-example", source_id=source_id)
     stream.connect(acquisition_delay=0.1, processing_flags="all")
     stream.pick("eeg").filter(1, 30)
     stream.get_data()  # reset the number of new samples after the filter is applied

@@ -22,10 +22,13 @@ Version 1.5
 - Add ``exclude='bads'`` argument to :meth:`~mne_lsl.stream.StreamLSL.get_data` to control exclusion from ``picks`` (:pr:`258` by `Mathieu Scheltienne`_)
 - Add :class:`~mne_lsl.stream.EpochsStream` to epoch a Stream object object on the fly (:pr:`258` by `Mathieu Scheltienne`_)
 - Add tutorial about :class:`~mne_lsl.stream.EpochsStream` (:pr:`302` by `Mathieu Scheltienne`_)
+- Add tutorial about :class:`~mne.Annotations` replayed on a :class:`~mne_lsl.player.PlayerLSL` (:pr:`305` by `Mathieu Scheltienne`_)
 - Expose the abstract :class:`~mne_lsl.stream.BaseStream` object to create custom stream objects relying on different communication protocols (:pr:`302` by `Mathieu Scheltienne`_)
+- Add argument ``source_id`` to :class:`~mne_lsl.player.PlayerLSL` to specify the source_id of the stream (:pr:`305` by `Mathieu Scheltienne`_)
 
 Infrastructure
 --------------
 
 - Improve unit tests by setting a marker ``slow`` on tests which take more than 5 seconds to complete (:pr:`258` by `Mathieu Scheltienne`_)
-- Improve documentation build and unit test by adding a github action to retry a step when needed (:pr:`258` by `Mathieu Scheltienne`_)
+- Make unit tests using :func:`~mne_lsl.lsl.resolve_streams` robust to the presence of other LSL streams on the network (:pr:`305` by `Mathieu Scheltienne`_)
+- Improve documentation build and unit test by adding a github action to retry a step when needed (:pr:`258` and :pr:`306` by `Eric Larson`_ and `Mathieu Scheltienne`_)

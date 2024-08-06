@@ -5,6 +5,7 @@ import multiprocessing as mp
 import os
 import re
 import time
+import uuid
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING
 
@@ -45,8 +46,9 @@ class DummyPlayer:
 
 def _player_mock_lsl_stream(
     fname: Path,
-    name: str,
     chunk_size: int,
+    name: str,
+    source_id: str,
     status: mp.managers.ValueProxy,
     info: mp.managers.DictProxy,
 ) -> None:
@@ -54,7 +56,7 @@ def _player_mock_lsl_stream(
     # nest the PlayerLSL import to first write the temporary LSL configuration file
     from mne_lsl.player import PlayerLSL  # noqa: E402
 
-    player = PlayerLSL(fname, chunk_size=chunk_size, name=name)
+    player = PlayerLSL(fname, chunk_size=chunk_size, name=name, source_id=source_id)
     player.start()
     info.update(player.info)
     status.value = 1
@@ -70,13 +72,17 @@ def mock_lsl_stream(fname, request, chunk_size):
     status = manager.Value("i", 0)
     info = manager.dict()
     name = f"P_{request.node.name}"
+    source_id = uuid.uuid4().hex
     process = mp.Process(
-        target=_player_mock_lsl_stream, args=(fname, name, chunk_size, status, info)
+        target=_player_mock_lsl_stream,
+        args=(fname, chunk_size, name, source_id, status, info),
     )
     process.start()
     while status.value != 1:
         pass
-    yield DummyPlayer(name=name, chunk_size=chunk_size, info=dict(info))
+    yield DummyPlayer(
+        chunk_size=chunk_size, name=name, source_id=source_id, info=dict(info)
+    )
     status.value = 0
     process.join(timeout=2)
     process.kill()
@@ -100,7 +106,9 @@ def _sleep_until_new_data(acq_delay, player):
 def test_stream(mock_lsl_stream, acquisition_delay, raw):
     """Test a valid Stream."""
     # test connect/disconnect
-    stream = Stream(bufsize=2, name=mock_lsl_stream.name)
+    stream = Stream(
+        bufsize=2, name=mock_lsl_stream.name, source_id=mock_lsl_stream.source_id
+    )
     assert stream._info is None
     assert not stream.connected
     stream.connect(acquisition_delay=acquisition_delay)
@@ -170,6 +178,7 @@ def test_stream_invalid():
         Stream(bufsize=2).connect(acquisition_delay=-1)
 
 
+@pytest.mark.xfail(reason="Fails if streams are present in the background.")
 def test_stream_connection_no_args(mock_lsl_stream):
     """Test connection to the only available stream."""
     stream = Stream(bufsize=2)
@@ -183,13 +192,15 @@ def test_stream_connection_no_args(mock_lsl_stream):
     assert stream.connected
     assert stream.name == mock_lsl_stream.name
     assert stream.stype == ""
-    assert stream.source_id == "MNE-LSL"
+    assert stream.source_id == mock_lsl_stream.source_id
     stream.disconnect()
 
 
 def test_stream_double_connection(mock_lsl_stream):
     """Test connecting twice to a stream."""
-    stream = Stream(bufsize=2, name=mock_lsl_stream.name)
+    stream = Stream(
+        bufsize=2, name=mock_lsl_stream.name, source_id=mock_lsl_stream.source_id
+    )
     stream.connect()
     time.sleep(0.5)  # give a bit of time to the stream to acquire the first chunks
     with pytest.warns(RuntimeWarning, match="stream is already connected"):
@@ -200,7 +211,9 @@ def test_stream_double_connection(mock_lsl_stream):
 @pytest.mark.slow()
 def test_stream_drop_channels(mock_lsl_stream, acquisition_delay, raw):
     """Test dropping channels."""
-    stream = Stream(bufsize=2, name=mock_lsl_stream.name)
+    stream = Stream(
+        bufsize=2, name=mock_lsl_stream.name, source_id=mock_lsl_stream.source_id
+    )
     stream.connect(acquisition_delay=acquisition_delay)
     time.sleep(2)  # give a bit of time to the stream to acquire the first chunks
     stream.drop_channels("hEOG")
@@ -244,7 +257,9 @@ def test_stream_drop_channels(mock_lsl_stream, acquisition_delay, raw):
 @pytest.mark.slow()
 def test_stream_pick(mock_lsl_stream, acquisition_delay, raw):
     """Test channel selection."""
-    stream = Stream(bufsize=2, name=mock_lsl_stream.name)
+    stream = Stream(
+        bufsize=2, name=mock_lsl_stream.name, source_id=mock_lsl_stream.source_id
+    )
     stream.connect(acquisition_delay=acquisition_delay)
     time.sleep(2)  # give a bit of time to the stream to acquire the first chunks
     stream.info["bads"] = ["Fp2"]
@@ -297,7 +312,9 @@ def test_stream_pick(mock_lsl_stream, acquisition_delay, raw):
 
 def test_stream_meas_date_and_anonymize(mock_lsl_stream):
     """Test stream measurement date."""
-    stream = Stream(bufsize=2, name=mock_lsl_stream.name)
+    stream = Stream(
+        bufsize=2, name=mock_lsl_stream.name, source_id=mock_lsl_stream.source_id
+    )
     stream.connect()
     assert stream.info["meas_date"] is None
     meas_date = datetime(2023, 1, 25, tzinfo=timezone.utc)
@@ -312,7 +329,9 @@ def test_stream_meas_date_and_anonymize(mock_lsl_stream):
 
 def test_stream_channel_types(mock_lsl_stream, raw):
     """Test channel type getters and setters."""
-    stream = Stream(bufsize=2, name=mock_lsl_stream.name)
+    stream = Stream(
+        bufsize=2, name=mock_lsl_stream.name, source_id=mock_lsl_stream.source_id
+    )
     stream.connect()
     assert stream.get_channel_types(unique=True) == raw.get_channel_types(unique=True)
     assert stream.get_channel_types(unique=False) == raw.get_channel_types(unique=False)
@@ -327,7 +346,9 @@ def test_stream_channel_types(mock_lsl_stream, raw):
 
 def test_stream_channel_names(mock_lsl_stream, raw):
     """Test channel renaming."""
-    stream = Stream(bufsize=2, name=mock_lsl_stream.name)
+    stream = Stream(
+        bufsize=2, name=mock_lsl_stream.name, source_id=mock_lsl_stream.source_id
+    )
     stream.connect()
     time.sleep(0.1)
     assert stream.ch_names == raw.ch_names
@@ -361,7 +382,9 @@ def test_stream_channel_names(mock_lsl_stream, raw):
 
 def test_stream_channel_units(mock_lsl_stream, raw):
     """Test channel unit getters and setters."""
-    stream = Stream(bufsize=2, name=mock_lsl_stream.name)
+    stream = Stream(
+        bufsize=2, name=mock_lsl_stream.name, source_id=mock_lsl_stream.source_id
+    )
     stream.connect()
     time.sleep(0.1)
     ch_units = stream.get_channel_units()
@@ -400,7 +423,9 @@ def test_stream_channel_units(mock_lsl_stream, raw):
 @pytest.mark.slow()
 def test_stream_add_reference_channels(mock_lsl_stream, acquisition_delay, raw):
     """Test add reference channels and channel selection."""
-    stream = Stream(bufsize=2, name=mock_lsl_stream.name)
+    stream = Stream(
+        bufsize=2, name=mock_lsl_stream.name, source_id=mock_lsl_stream.source_id
+    )
     stream.connect(acquisition_delay=acquisition_delay)
     time.sleep(0.1)  # give a bit of time to slower CIs
     stream.add_reference_channels("CPz")
@@ -442,26 +467,32 @@ def test_stream_add_reference_channels(mock_lsl_stream, acquisition_delay, raw):
     stream.disconnect()
 
 
+@pytest.mark.xfail(reason="Fails if streams are present in the background.")
 def test_stream_repr(mock_lsl_stream):
     """Test the stream representation."""
-    stream = Stream(bufsize=2)
-    assert stream.__repr__() == "<Stream: OFF>"
     name = mock_lsl_stream.name
-    stream = Stream(bufsize=2, name=name)
+    source_id = mock_lsl_stream.source_id
+    stream = Stream(bufsize=2)  # no arguments
+    assert stream.__repr__() == "<Stream: OFF>"
+    stream = Stream(bufsize=2, name=name, source_id=source_id)
+    assert stream.__repr__() == f"<Stream: OFF | {name} (source: {source_id})>"
+    stream = Stream(bufsize=2, name=name)  # no source id
     assert stream.__repr__() == f"<Stream: OFF | {name} (source: unknown)>"
     stream.connect()
-    assert stream.__repr__() == f"<Stream: ON | {name} (source: MNE-LSL)>"
+    assert stream.__repr__() == f"<Stream: ON | {name} (source: {source_id})>"
     stream.disconnect()
-    stream = Stream(bufsize=2, name=name, source_id="MNE-LSL")
-    assert stream.__repr__() == f"<Stream: OFF | {name} (source: MNE-LSL)>"
-    stream = Stream(bufsize=2, source_id="MNE-LSL")
-    assert stream.__repr__() == "<Stream: OFF | (source: MNE-LSL>"
+    stream = Stream(bufsize=2, name=name, source_id="test")
+    assert stream.__repr__() == f"<Stream: OFF | {name} (source: test)>"
+    stream = Stream(bufsize=2, source_id="test")
+    assert stream.__repr__() == "<Stream: OFF | (source: test)>"
 
 
 @pytest.mark.slow()
 def test_stream_get_data_picks(mock_lsl_stream, acquisition_delay, raw):
     """Test channel sub-selection when getting data."""
-    stream = Stream(bufsize=2, name=mock_lsl_stream.name)
+    stream = Stream(
+        bufsize=2, name=mock_lsl_stream.name, source_id=mock_lsl_stream.source_id
+    )
     stream.connect(acquisition_delay=acquisition_delay)
     time.sleep(0.1)  # give a bit of time to slower CIs
     stream.add_reference_channels("CPz")
@@ -485,7 +516,9 @@ def test_stream_get_data_picks(mock_lsl_stream, acquisition_delay, raw):
 @pytest.mark.slow()
 def test_stream_n_new_samples(mock_lsl_stream, caplog):
     """Test the number of new samples available."""
-    stream = Stream(bufsize=0.4, name=mock_lsl_stream.name)
+    stream = Stream(
+        bufsize=0.4, name=mock_lsl_stream.name, source_id=mock_lsl_stream.source_id
+    )
     assert stream._n_new_samples is None
     stream.connect()
     time.sleep(2)  # give a bit of time to slower CIs
@@ -506,7 +539,9 @@ def test_stream_n_new_samples(mock_lsl_stream, caplog):
 
 def test_stream_invalid_interrupt(mock_lsl_stream):
     """Test invalid acquisition interruption."""
-    stream = Stream(bufsize=0.4, name=mock_lsl_stream.name)
+    stream = Stream(
+        bufsize=0.4, name=mock_lsl_stream.name, source_id=mock_lsl_stream.source_id
+    )
     assert not stream.connected
     with pytest.raises(RuntimeError, match="requested but the stream is not connected"):
         with stream._interrupt_acquisition():
@@ -514,9 +549,10 @@ def test_stream_invalid_interrupt(mock_lsl_stream):
 
 
 def _player_mock_lsl_stream_int(
-    name: str,
-    status: mp.managers.ValueProxy,
     chunk_size: int,
+    name: str,
+    source_id: str,
+    status: mp.managers.ValueProxy,
     info: mp.managers.DictProxy,
 ) -> None:
     """Player for the 'mock_lsl_stream_int' fixture."""
@@ -526,7 +562,7 @@ def _player_mock_lsl_stream_int(
     data = np.full((5, 1000), np.arange(5).reshape(-1, 1))
     raw = RawArray(data, create_info(5, 1000, "eeg"))
 
-    player = PlayerLSL(raw, chunk_size=chunk_size, name=name)
+    player = PlayerLSL(raw, chunk_size=chunk_size, name=name, source_id=source_id)
     player.start()
     info.update(player.info)
     status.value = 1
@@ -543,13 +579,17 @@ def mock_lsl_stream_int(request, chunk_size):
     status = manager.Value("i", 0)
     info = manager.dict()
     name = f"P_{request.node.name}"
+    source_id = uuid.uuid4().hex
     process = mp.Process(
-        target=_player_mock_lsl_stream_int, args=(name, status, chunk_size, info)
+        target=_player_mock_lsl_stream_int,
+        args=(chunk_size, name, source_id, status, info),
     )
     process.start()
     while status.value != 1:
         pass
-    yield DummyPlayer(name=name, chunk_size=chunk_size, info=dict(info))
+    yield DummyPlayer(
+        chunk_size=chunk_size, name=name, source_id=source_id, info=dict(info)
+    )
     status.value = 0
     process.join(timeout=2)
     process.kill()
@@ -558,7 +598,11 @@ def mock_lsl_stream_int(request, chunk_size):
 @pytest.mark.slow()
 def test_stream_rereference(mock_lsl_stream_int, acquisition_delay):
     """Test re-referencing an EEG-like stream."""
-    stream = Stream(bufsize=0.4, name=mock_lsl_stream_int.name)
+    stream = Stream(
+        bufsize=0.4,
+        name=mock_lsl_stream_int.name,
+        source_id=mock_lsl_stream_int.source_id,
+    )
     stream.connect(acquisition_delay=acquisition_delay)
     time.sleep(2)  # give a bit of time to slower CIs
     assert stream.n_new_samples > 0
@@ -612,7 +656,11 @@ def test_stream_rereference(mock_lsl_stream_int, acquisition_delay):
 
 def test_stream_rereference_average(mock_lsl_stream_int):
     """Test average re-referencing schema."""
-    stream = Stream(bufsize=0.4, name=mock_lsl_stream_int.name)
+    stream = Stream(
+        bufsize=0.4,
+        name=mock_lsl_stream_int.name,
+        source_id=mock_lsl_stream_int.source_id,
+    )
     stream.connect()
     time.sleep(2)  # give a bit of time to slower CIs
     stream.set_channel_types({"2": "ecg"})  # channels: 0, 1, 2, 3, 4
@@ -645,22 +693,25 @@ def test_stream_rereference_average(mock_lsl_stream_int):
 
 def test_stream_str(close_io):
     """Test a stream on a string source."""
-    sinfo = StreamInfo("test_stream_str", "gaze", 1, 100, "string", "pytest")
+    source_id = f"pytest-{uuid.uuid4().hex}"
+    sinfo = StreamInfo("test_stream_str", "gaze", 1, 100, "string", source_id)
     outlet = StreamOutlet(sinfo)
     assert outlet.dtype == "string"
     with pytest.raises(
         RuntimeError, match="Stream class is designed for numerical types"
     ):
-        Stream(bufsize=2, name="test_stream_str").connect()
+        Stream(bufsize=2, name="test_stream_str", source_id=source_id).connect()
     close_io()
 
 
 def test_stream_processing_flags(close_io):
     """Test a stream connection processing flags."""
-    sinfo = StreamInfo("test_stream_processing_flags", "gaze", 1, 100, "int8", "pytest")
+    name = "test_stream_processing_flags"
+    source_id = f"pytest-{uuid.uuid4().hex}"
+    sinfo = StreamInfo(name, "gaze", 1, 100, "int8", source_id)
     outlet = StreamOutlet(sinfo)
     assert outlet.dtype == np.int8
-    stream = Stream(bufsize=2, name="test_stream_processing_flags")
+    stream = Stream(bufsize=2, name=name, source_id=source_id)
     assert not stream.connected
     with pytest.raises(ValueError, match="'threadsafe' processing flag should not be"):
         stream.connect(processing_flags=("clocksync", "threadsafe"))
@@ -675,11 +726,11 @@ def test_stream_processing_flags(close_io):
 
 def test_stream_irregularly_sampled(close_io):
     """Test a stream with an irregular sampling rate."""
-    sinfo = StreamInfo(
-        "test_stream_irregularly_sampled", "gaze", 1, 0, "int8", "pytest"
-    )
+    name = "test_stream_irregularly_sampled"
+    source_id = f"pytest-{uuid.uuid4().hex}"
+    sinfo = StreamInfo(name, "gaze", 1, 0, "int8", source_id)
     outlet = StreamOutlet(sinfo)
-    stream = Stream(bufsize=10, name="test_stream_irregularly_sampled")
+    stream = Stream(bufsize=10, name=name, source_id=source_id)
     with pytest.warns(RuntimeWarning, match="while reading the channel description"):
         stream.connect()
     time.sleep(2)  # give a bit of time to the stream to acquire the first chunks
@@ -699,13 +750,17 @@ def test_stream_irregularly_sampled(close_io):
 
 
 def _player_mock_lsl_stream_annotations(
-    raw: BaseRaw, name: str, chunk_size: int, status: mp.managers.ProxyValue
+    raw: BaseRaw,
+    chunk_size: int,
+    name: str,
+    source_id: str,
+    status: mp.managers.ProxyValue,
 ) -> None:
     """Player for the '_mock_lsl_stream_annotations' fixture."""
     # nest the PlayerLSL import to first write the temporary LSL configuration file
     from mne_lsl.player import PlayerLSL
 
-    player = PlayerLSL(raw, chunk_size=chunk_size, name=name)
+    player = PlayerLSL(raw, chunk_size=chunk_size, name=name, source_id=source_id)
     player.start()
     status.value = 1
     while status.value:
@@ -714,28 +769,37 @@ def _player_mock_lsl_stream_annotations(
 
 
 @pytest.fixture()
-def _mock_lsl_stream_annotations(raw_annotations, request, chunk_size):
+def mock_lsl_stream_annotations(raw_annotations, request, chunk_size):
     """Create a mock LSL stream streaming the channel number continuously."""
     manager = mp.Manager()
     status = manager.Value("i", 0)
+    name = f"P_{request.node.name}"
+    source_id = uuid.uuid4().hex
     process = mp.Process(
         target=_player_mock_lsl_stream_annotations,
-        args=(raw_annotations, f"P_{request.node.name}", chunk_size, status),
+        args=(raw_annotations, chunk_size, name, source_id, status),
     )
     process.start()
     while status.value != 1:
         pass
-    yield
+    yield DummyPlayer(name=name, source_id=source_id)
     status.value = 0
     process.join(timeout=2)
     process.kill()
 
 
 @pytest.mark.slow()
-@pytest.mark.usefixtures("_mock_lsl_stream_annotations")
-def test_stream_annotations_picks():
+def test_stream_annotations_picks(mock_lsl_stream_annotations):
     """Test sub-selection of annotations."""
-    stream = Stream(bufsize=5, stype="annotations").connect().pick("test1")
+    stream = (
+        Stream(
+            bufsize=5,
+            stype="annotations",
+            source_id=mock_lsl_stream_annotations.source_id,
+        )
+        .connect()
+        .pick("test1")
+    )
     time.sleep(5)  # acquire data
     data, ts = stream.get_data()
     assert np.count_nonzero(data) == data.size
@@ -746,7 +810,9 @@ def test_stream_annotations_picks():
 def test_stream_filter_deletion(mock_lsl_stream, caplog):
     """Test deletion of filters applied to a Stream."""
     # test no filter
-    stream = Stream(bufsize=2.0, name=mock_lsl_stream.name).connect()
+    stream = Stream(
+        bufsize=2.0, name=mock_lsl_stream.name, source_id=mock_lsl_stream.source_id
+    ).connect()
     time.sleep(2)
     with pytest.raises(RuntimeError, match="No filter to remove."):
         stream.del_filter("all")
@@ -815,8 +881,9 @@ def raw_sinusoids() -> BaseRaw:
 
 def _player_mock_lsl_stream_sinusoids(
     raw: BaseRaw,
-    name: str,
     chunk_size: int,
+    name: str,
+    source_id: str,
     status: mp.managers.ValueProxy,
     ch_names: mp.managers.ListProxy,
 ) -> None:
@@ -824,7 +891,7 @@ def _player_mock_lsl_stream_sinusoids(
     # nest the PlayerLSL import to first write the temporary LSL configuration file
     from mne_lsl.player import PlayerLSL
 
-    player = PlayerLSL(raw, chunk_size=chunk_size, name=name)
+    player = PlayerLSL(raw, chunk_size=chunk_size, name=name, source_id=source_id)
     player.start()
     ch_names.extend(player.info["ch_names"])
     status.value = 1
@@ -840,14 +907,15 @@ def mock_lsl_stream_sinusoids(raw_sinusoids, request, chunk_size):
     ch_names = manager.list()
     status = manager.Value("i", 0)
     name = f"P_{request.node.name}"
+    source_id = uuid.uuid4().hex
     process = mp.Process(
         target=_player_mock_lsl_stream_sinusoids,
-        args=(raw_sinusoids, name, chunk_size, status, ch_names),
+        args=(raw_sinusoids, chunk_size, name, source_id, status, ch_names),
     )
     process.start()
     while status.value != 1:
         pass
-    yield DummyPlayer(name=name, ch_names=list(ch_names))
+    yield DummyPlayer(name=name, source_id=source_id, ch_names=list(ch_names))
     status.value = 0
     process.join(timeout=2)
     process.kill()
@@ -870,7 +938,11 @@ def test_stream_filter(mock_lsl_stream_sinusoids, raw_sinusoids):
         assert_allclose(freqs[peaks], fqs, atol=0.1)
         heights_orig[k] = dict(idx=peaks, heights=fft_orig[k, peaks])
     # test unfiltered data
-    stream = Stream(bufsize=2.0, name=mock_lsl_stream_sinusoids.name).connect()
+    stream = Stream(
+        bufsize=2.0,
+        name=mock_lsl_stream_sinusoids.name,
+        source_id=mock_lsl_stream_sinusoids.source_id,
+    ).connect()
     time.sleep(2.5)
     fft_ = np.abs(fft(stream.get_data()[0], axis=-1)[:, idx])
     for ch, ch_height in heights_orig.items():
@@ -964,7 +1036,11 @@ def test_stream_notch_filter(mock_lsl_stream_sinusoids, raw_sinusoids):
         assert_allclose(freqs[peaks], fqs, atol=0.1)
         heights_orig[k] = dict(idx=peaks, heights=fft_orig[k, peaks])
     # test filtering
-    stream = Stream(bufsize=2.0, name=mock_lsl_stream_sinusoids.name).connect()
+    stream = Stream(
+        bufsize=2.0,
+        name=mock_lsl_stream_sinusoids.name,
+        source_id=mock_lsl_stream_sinusoids.source_id,
+    ).connect()
     stream.notch_filter(30, picks="10-30")
     time.sleep(2.5)
     fft_ = np.abs(fft(stream.get_data()[0], axis=-1)[:, idx])
@@ -1034,7 +1110,11 @@ def test_stream_notch_filter(mock_lsl_stream_sinusoids, raw_sinusoids):
 
 def test_stream_notch_filter_invalid(mock_lsl_stream_sinusoids):
     """Test invalid notch filter."""
-    stream = Stream(bufsize=2.0, name=mock_lsl_stream_sinusoids.name)
+    stream = Stream(
+        bufsize=2.0,
+        name=mock_lsl_stream_sinusoids.name,
+        source_id=mock_lsl_stream_sinusoids.source_id,
+    )
     with pytest.raises(RuntimeError, match="Please connect to the stream"):
         stream.notch_filter(30, picks="10-30")
     stream.connect()
@@ -1064,7 +1144,11 @@ def test_stream_get_data_info_invalid():
 
 def test_stream_lsl_epoched(mock_lsl_stream_sinusoids):
     """Test that an epoched Stream will not let you modify the buffer of channels."""
-    stream = Stream(bufsize=2.0, name=mock_lsl_stream_sinusoids.name)
+    stream = Stream(
+        bufsize=2.0,
+        name=mock_lsl_stream_sinusoids.name,
+        source_id=mock_lsl_stream_sinusoids.source_id,
+    )
     assert len(stream._epochs) == 0
     stream.connect()
     assert len(stream._epochs) == 0
@@ -1089,7 +1173,9 @@ def test_stream_lsl_epoched(mock_lsl_stream_sinusoids):
 
 def test_manual_acquisition(mock_lsl_stream):
     """Test manual acquisition."""
-    stream = Stream(bufsize=2.0, name=mock_lsl_stream.name).connect(acquisition_delay=0)
+    stream = Stream(
+        bufsize=2.0, name=mock_lsl_stream.name, source_id=mock_lsl_stream.source_id
+    ).connect(acquisition_delay=0)
     _sleep_until_new_data(1e-6, mock_lsl_stream)
     assert stream.n_new_samples == 0
     stream.acquire()
@@ -1117,7 +1203,9 @@ def test_manual_acquisition(mock_lsl_stream):
 
 def test_manual_acquisition_errors(mock_lsl_stream):
     """Test error message raised by manual acquisition."""
-    stream = Stream(bufsize=2.0, name=mock_lsl_stream.name)
+    stream = Stream(
+        bufsize=2.0, name=mock_lsl_stream.name, source_id=mock_lsl_stream.source_id
+    )
     with pytest.raises(RuntimeError, match="Please connect to the stream"):
         stream.acquire()
     stream.connect(acquisition_delay=0.5)
