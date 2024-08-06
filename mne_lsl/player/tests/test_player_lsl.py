@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import time
+import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -29,7 +30,7 @@ if TYPE_CHECKING:
 
 def test_player(fname, raw, close_io, chunk_size, request):
     """Test a working and valid player."""
-    name = f"P_{request.node.name}"
+    name = f"P_{request.node.name}_{uuid.uuid4().hex}"
     player = Player(fname, chunk_size=chunk_size, name=name)
     assert "OFF" in player.__repr__()
     streams = resolve_streams(timeout=0.1)
@@ -82,7 +83,7 @@ def test_player(fname, raw, close_io, chunk_size, request):
 
 def test_player_context_manager(fname, chunk_size, request):
     """Test a working and valid player as context manager."""
-    name = f"P_{request.node.name}"
+    name = f"P_{request.node.name}_{uuid.uuid4().hex}"
     streams = resolve_streams(timeout=0.1)
     assert name not in [stream.name for stream in streams]
     with Player(fname, chunk_size=chunk_size, name=name):
@@ -94,7 +95,7 @@ def test_player_context_manager(fname, chunk_size, request):
 
 def test_player_context_manager_raw(raw, chunk_size, request):
     """Test a working and valid player as context manager from a raw object."""
-    name = f"P_{request.node.name}"
+    name = f"P_{request.node.name}_{uuid.uuid4().hex}"
     streams = resolve_streams(timeout=0.1)
     assert name not in [stream.name for stream in streams]
     with Player(raw, chunk_size=chunk_size, name=name) as player:
@@ -113,7 +114,7 @@ def test_player_context_manager_raw(raw, chunk_size, request):
 
 def test_player_context_manager_raw_annotations(raw_annotations, chunk_size, request):
     """Test a working player as context manager from a raw object with annotations."""
-    name = f"P_{request.node.name}"
+    name = f"P_{request.node.name}_{uuid.uuid4().hex}"
     streams = resolve_streams(timeout=0.1)
     assert name not in [stream.name for stream in streams]
     with Player(
@@ -152,7 +153,9 @@ def test_player_invalid_arguments(fname):
 
 def test_player_stop_invalid(fname, chunk_size, request):
     """Test stopping a player that is not started."""
-    player = Player(fname, chunk_size=chunk_size, name=f"P_{request.node.name}")
+    player = Player(
+        fname, chunk_size=chunk_size, name=f"P_{request.node.name}_{uuid.uuid4().hex}"
+    )
     with pytest.raises(RuntimeError, match="The player is not started"):
         player.stop()
     player.start()
@@ -176,7 +179,7 @@ def mock_lsl_stream(fname: Path, chunk_size, request):
     from mne_lsl.player import PlayerLSL  # noqa: E402
 
     with PlayerLSL(
-        fname, name=f"P_{request.node.name}", chunk_size=chunk_size
+        fname, name=f"P_{request.node.name}_{uuid.uuid4().hex}", chunk_size=chunk_size
     ) as player:
         yield player
 
@@ -307,7 +310,7 @@ def test_player_set_channel_types(mock_lsl_stream, raw, close_io):
 
 def test_player_anonymize(fname, chunk_size, request):
     """Test anonymization."""
-    name = f"P_{request.node.name}"
+    name = f"P_{request.node.name}_{uuid.uuid4().hex}"
     player = Player(fname, chunk_size=chunk_size, name=name)
     assert player.name == name
     assert player.fname == fname
@@ -324,7 +327,7 @@ def test_player_anonymize(fname, chunk_size, request):
 
 def test_player_set_meas_date(fname, chunk_size, request):
     """Test player measurement date."""
-    name = f"P_{request.node.name}"
+    name = f"P_{request.node.name}_{uuid.uuid4().hex}"
     player = Player(fname, chunk_size=chunk_size, name=name)
     assert player.name == name
     assert player.fname == fname
@@ -344,7 +347,7 @@ def test_player_set_meas_date(fname, chunk_size, request):
 @pytest.mark.slow()
 def test_player_annotations(raw_annotations, close_io, chunk_size, request):
     """Test player with annotations."""
-    name = f"P_{request.node.name}"
+    name = f"P_{request.node.name}_{uuid.uuid4().hex}"
     annotations = sorted(set(raw_annotations.annotations.description))
     player = Player(raw_annotations, chunk_size=chunk_size, name=name)
     assert f"Player: {name}" in repr(player)
@@ -429,7 +432,7 @@ def test_player_annotations_multiple_of_chunk_size(
     raw_annotations_1000_samples, chunk_size, request
 ):
     """Test player with annotations, chunk-size is a multiple of the raw size."""
-    name = f"P_{request.node.name}"
+    name = f"P_{request.node.name}_{uuid.uuid4().hex}"
     raw = raw_annotations_1000_samples
     assert raw.times.size % chunk_size == 0
     player = Player(raw, chunk_size=chunk_size, name=name)
@@ -448,7 +451,7 @@ def test_player_annotations_multiple_of_chunk_size(
 @pytest.mark.slow()
 def test_player_n_repeat(raw, chunk_size, request):
     """Test argument 'n_repeat'."""
-    name = f"P_{request.node.name}-1"
+    name = f"P_{request.node.name}-1_{uuid.uuid4().hex}"
     player = Player(raw, chunk_size=chunk_size, n_repeat=1, name=name)
     player.start()
     time.sleep((raw.times.size / raw.info["sfreq"]) * 1.8)
@@ -457,7 +460,7 @@ def test_player_n_repeat(raw, chunk_size, request):
     assert name not in [stream.name for stream in streams]
     with pytest.raises(RuntimeError, match="player is not started."):
         player.stop()
-    name = f"P_{request.node.name}-2"
+    name = f"P_{request.node.name}-2_{uuid.uuid4().hex}"
     player = Player(raw, chunk_size=chunk_size, n_repeat=4, name=name)
     assert player.n_repeat == 4
     player.start()
@@ -485,7 +488,7 @@ def test_player_n_repeat_invalid(raw):
 )
 def test_player_push_sample(fname, request):
     """Test pushing individual sample with chunk_size=1."""
-    name = f"P_{request.node.name}"
+    name = f"P_{request.node.name}_{uuid.uuid4().hex}"
     streams = resolve_streams(timeout=0.1)
     assert name not in [stream.name for stream in streams]
     with Player(fname, chunk_size=1, name=name):
@@ -500,7 +503,7 @@ def test_player_push_sample(fname, request):
 )
 def test_player_push_last_sample(fname, caplog, request):
     """Test pushing the last sample."""
-    name = f"P_{request.node.name}"
+    name = f"P_{request.node.name}_{uuid.uuid4().hex}"
     player = Player(fname, chunk_size=1, n_repeat=1, name=name)
     caplog.clear()
     player.start()

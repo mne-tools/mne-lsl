@@ -5,6 +5,7 @@ import multiprocessing as mp
 import os
 import re
 import time
+import uuid
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING
 
@@ -69,7 +70,7 @@ def mock_lsl_stream(fname, request, chunk_size):
     manager = mp.Manager()
     status = manager.Value("i", 0)
     info = manager.dict()
-    name = f"P_{request.node.name}"
+    name = f"P_{request.node.name}_{uuid.uuid4().hex}"
     process = mp.Process(
         target=_player_mock_lsl_stream, args=(fname, name, chunk_size, status, info)
     )
@@ -542,7 +543,7 @@ def mock_lsl_stream_int(request, chunk_size):
     manager = mp.Manager()
     status = manager.Value("i", 0)
     info = manager.dict()
-    name = f"P_{request.node.name}"
+    name = f"P_{request.node.name}_{uuid.uuid4().hex}"
     process = mp.Process(
         target=_player_mock_lsl_stream_int, args=(name, status, chunk_size, info)
     )
@@ -657,10 +658,12 @@ def test_stream_str(close_io):
 
 def test_stream_processing_flags(close_io):
     """Test a stream connection processing flags."""
-    sinfo = StreamInfo("test_stream_processing_flags", "gaze", 1, 100, "int8", "pytest")
+    name = "test_stream_processing_flags"
+    source_id = f"pytest-{uuid.uuid4().hex}"
+    sinfo = StreamInfo(name, "gaze", 1, 100, "int8", source_id)
     outlet = StreamOutlet(sinfo)
     assert outlet.dtype == np.int8
-    stream = Stream(bufsize=2, name="test_stream_processing_flags")
+    stream = Stream(bufsize=2, name=name, source_id=source_id)
     assert not stream.connected
     with pytest.raises(ValueError, match="'threadsafe' processing flag should not be"):
         stream.connect(processing_flags=("clocksync", "threadsafe"))
@@ -675,11 +678,11 @@ def test_stream_processing_flags(close_io):
 
 def test_stream_irregularly_sampled(close_io):
     """Test a stream with an irregular sampling rate."""
-    sinfo = StreamInfo(
-        "test_stream_irregularly_sampled", "gaze", 1, 0, "int8", "pytest"
-    )
+    name = "test_stream_irregularly_sampled"
+    source_id = f"pytest-{uuid.uuid4().hex}"
+    sinfo = StreamInfo(name, "gaze", 1, 0, "int8", source_id)
     outlet = StreamOutlet(sinfo)
-    stream = Stream(bufsize=10, name="test_stream_irregularly_sampled")
+    stream = Stream(bufsize=10, name=name, source_id=source_id)
     with pytest.warns(RuntimeWarning, match="while reading the channel description"):
         stream.connect()
     time.sleep(2)  # give a bit of time to the stream to acquire the first chunks
@@ -720,7 +723,12 @@ def _mock_lsl_stream_annotations(raw_annotations, request, chunk_size):
     status = manager.Value("i", 0)
     process = mp.Process(
         target=_player_mock_lsl_stream_annotations,
-        args=(raw_annotations, f"P_{request.node.name}", chunk_size, status),
+        args=(
+            raw_annotations,
+            f"P_{request.node.name}_{uuid.uuid4().hex}",
+            chunk_size,
+            status,
+        ),
     )
     process.start()
     while status.value != 1:
@@ -839,7 +847,7 @@ def mock_lsl_stream_sinusoids(raw_sinusoids, request, chunk_size):
     manager = mp.Manager()
     ch_names = manager.list()
     status = manager.Value("i", 0)
-    name = f"P_{request.node.name}"
+    name = f"P_{request.node.name}_{uuid.uuid4().hex}"
     process = mp.Process(
         target=_player_mock_lsl_stream_sinusoids,
         args=(raw_sinusoids, name, chunk_size, status, ch_names),

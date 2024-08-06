@@ -31,6 +31,11 @@ class PlayerLSL(BasePlayer):
     %(n_repeat)s
     name : str | None
         Name of the mock LSL stream. If ``None``, the name ``MNE-LSL-Player`` is used.
+    source_id : str
+        A unique identifier of the device or source of the data. This information
+        improves the system robustness since it allows recipients to recover
+        from failure by finding a stream with the same ``source_id`` on the network.
+        By default, the source_id is set to ``"MNE-LSL"``.
     annotations : bool | None
         If ``True``, an :class:`~mne_lsl.lsl.StreamOutlet` is created for the
         :class:`~mne.Annotations` of the :class:`~mne.io.Raw` object. If ``False``,
@@ -92,10 +97,12 @@ class PlayerLSL(BasePlayer):
         n_repeat: Union[int, float] = np.inf,
         *,
         name: Optional[str] = None,
+        source_id: str = "MNE-LSL",
         annotations: Optional[bool] = None,
     ) -> None:
         super().__init__(fname, chunk_size, n_repeat)
         check_type(name, (str, None), "name")
+        check_type(source_id, (str,), "source_id")
         check_type(annotations, (bool, None), "annotations")
         self._name = "MNE-LSL-Player" if name is None else name
         # look for annotations
@@ -118,7 +125,7 @@ class PlayerLSL(BasePlayer):
             n_channels=len(self._raw.info["ch_names"]),
             sfreq=self._raw.info["sfreq"],
             dtype=np.float64,
-            source_id="MNE-LSL",
+            source_id=source_id,
         )
         self._sinfo.set_channel_info(self._raw.info)
         logger.debug("%s: set channel info", self._name)

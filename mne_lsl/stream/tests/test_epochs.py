@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import multiprocessing as mp
 import time
+import uuid
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -287,7 +288,7 @@ def _mock_lsl_stream(raw_with_stim_channel, request, chunk_size):
     """Create a mock LSL stream streaming events on a stim channel."""
     manager = mp.Manager()
     status = manager.Value("i", 0)
-    name = f"P_{request.node.name}"
+    name = f"P_{request.node.name}_{uuid.uuid4().hex}"
     process = mp.Process(
         target=_player_mock_lsl_stream,
         args=(raw_with_stim_channel, name, chunk_size, status),
