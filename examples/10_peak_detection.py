@@ -393,7 +393,7 @@ from mne_lsl.lsl import local_clock
 source_id = uuid.uuid4().hex
 player = PlayerLSL(
     fname=sample.data_path() / "sample-ecg-raw.fif",
-    chunk_size=200,
+    chunk_size=1,
     name="ecg-example",
     source_id=source_id,
 )
