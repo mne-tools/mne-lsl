@@ -199,7 +199,7 @@ def test_stream_connection_no_args(mock_lsl_stream):
 def test_stream_double_connection(mock_lsl_stream):
     """Test connecting twice to a stream."""
     stream = Stream(
-        bufsize=2, name=mock_lsl_stream.name, source_id=mock_lsl_stream.souce_id
+        bufsize=2, name=mock_lsl_stream.name, source_id=mock_lsl_stream.source_id
     )
     stream.connect()
     time.sleep(0.5)  # give a bit of time to the stream to acquire the first chunks
