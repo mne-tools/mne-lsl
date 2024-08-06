@@ -16,7 +16,7 @@ downloaded from the release page on compatible platforms.
 
     .. tab-item:: MNE installers
 
-        As of MNE-Python 1.6, ``mne-lsl`` is distributed in the
+        As of `MNE-Python <mne stable_>`_ 1.6, ``mne-lsl`` is distributed in the
         `MNE standalone installers <mne installers_>`_.
 
         The installers create a conda environment with the entire MNE-ecosystem

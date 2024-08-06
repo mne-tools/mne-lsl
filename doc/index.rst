@@ -19,7 +19,7 @@ fetched from the `liblsl release page <lsl lib release_>`_ if possible.
 
     .. tab-item:: MNE installers
 
-        As of MNE-Python 1.6, ``mne-lsl`` is distributed in the
+        As of `MNE-Python <mne stable_>`_ 1.6, ``mne-lsl`` is distributed in the
         `MNE standalone installers <mne installers_>`_.
 
         The installers create a conda environment with the entire MNE-ecosystem
@@ -66,6 +66,7 @@ The development of ``MNE-LSL`` is supported by the
     resources/install.rst
     api/index.rst
     resources/command_line.rst
+    resources/processing.rst
     generated/tutorials/index.rst
     generated/examples/index.rst
     changes/index.rst

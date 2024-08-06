@@ -25,6 +25,7 @@ Version 1.5
 - Add tutorial about :class:`~mne.Annotations` replayed on a :class:`~mne_lsl.player.PlayerLSL` (:pr:`305` by `Mathieu Scheltienne`_)
 - Expose the abstract :class:`~mne_lsl.stream.BaseStream` object to create custom stream objects relying on different communication protocols (:pr:`302` by `Mathieu Scheltienne`_)
 - Add argument ``source_id`` to :class:`~mne_lsl.player.PlayerLSL` to specify the source_id of the stream (:pr:`305` by `Mathieu Scheltienne`_)
+- Add documentation about the processing applied to a :class:`~mne_lsl.stream.StreamLSL` and :class:`~mne_lsl.stream.EpochsStream` object (:pr:`309` by `Mathieu Scheltienne`_)
 
 Infrastructure
 --------------
