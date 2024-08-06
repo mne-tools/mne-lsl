@@ -48,6 +48,7 @@ channel of MNE's sample dataset.
 """
 
 import time
+import uuid
 
 import numpy as np
 from matplotlib import pyplot as plt
@@ -61,8 +62,13 @@ from mne_lsl.stream import EpochsStream, StreamLSL
 
 fname = sample.data_path() / "mne-sample" / "sample_audvis_raw.fif"
 raw = read_raw_fif(fname, preload=False).pick(("meg", "stim")).load_data()
+source_id = uuid.uuid4().hex
 player = PlayerLSL(
-    raw, chunk_size=200, name="tutorial-epochs-1", annotations=False
+    raw,
+    chunk_size=200,
+    name="tutorial-epochs-1",
+    source_id=source_id,
+    annotations=False,
 ).start()
 player.info
 
@@ -79,7 +85,7 @@ player.info
 # channel ``"MEG 2443"`` is marked as bad and the signal is filtered with a low-pass
 # filter.
 
-stream = StreamLSL(bufsize=4, name="tutorial-epochs-1")
+stream = StreamLSL(bufsize=4, name="tutorial-epochs-1", source_id=source_id)
 stream.connect(acquisition_delay=0.1, processing_flags="all")
 stream.info["bads"] = ["MEG 2443"]  # remove bad channel
 stream.filter(None, 40, picks="grad")  # filter signal
@@ -152,7 +158,7 @@ annotations
 
 raw.set_annotations(annotations)
 player = PlayerLSL(
-    raw, chunk_size=200, name="tutorial-epochs-2", annotations=True
+    raw, chunk_size=200, name="tutorial-epochs-2", source_id=source_id, annotations=True
 ).start()
 player.info
 
@@ -166,7 +172,7 @@ resolve_streams()
 # We can now create a :class:`~mne_lsl.stream.StreamLSL` object for each available
 # stream on the network.
 
-stream = StreamLSL(bufsize=4, name="tutorial-epochs-2")
+stream = StreamLSL(bufsize=4, name="tutorial-epochs-2", source_id=source_id)
 stream.connect(acquisition_delay=0.1, processing_flags="all")
 stream.info["bads"] = ["MEG 2443"]  # remove bad channel
 stream.filter(None, 40, picks="grad")  # filter signal
@@ -174,7 +180,9 @@ stream.info
 
 # %%
 
-stream_events = StreamLSL(bufsize=20, name="tutorial-epochs-2-annotations")
+stream_events = StreamLSL(
+    bufsize=20, name="tutorial-epochs-2-annotations", source_id=source_id
+)
 stream_events.connect(acquisition_delay=0.1, processing_flags="all")
 stream_events.info
 

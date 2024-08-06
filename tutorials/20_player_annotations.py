@@ -24,6 +24,8 @@ streamed, it's duration is encoded as the value on its channel while the other c
 remain to zero.
 """
 
+import uuid
+
 import numpy as np
 from matplotlib import pyplot as plt
 from mne import Annotations, create_info
@@ -83,8 +85,13 @@ plt.show()
 #     :class:`~mne_lsl.player.PlayerLSL` will automatically stream annotations if they
 #     are present in the :class:`~mne.io.Raw` object.
 
+source_id = uuid.uuid4().hex
 player = PlayerLSL(
-    raw, chunk_size=200, name="tutorial-annotations", annotations=True
+    raw,
+    chunk_size=200,
+    name="tutorial-annotations",
+    source_id=source_id,
+    annotations=True,
 ).start()
 
 # %%

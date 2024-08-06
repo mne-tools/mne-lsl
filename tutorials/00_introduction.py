@@ -83,6 +83,7 @@ file is reached.
 """
 
 import time
+import uuid
 
 from matplotlib import pyplot as plt
 from mne import set_log_level
@@ -94,9 +95,15 @@ from mne_lsl.stream import StreamLSL as Stream
 set_log_level("WARNING")
 
 # %%
+# .. note::
+#
+#     The argument ``source_id`` can be omitted most of the time. But for reliability in
+#     our docuentation build on CIs, we assign a random unique identifier to each
+#     mock stream created.
 
+source_id = uuid.uuid4().hex
 fname = sample.data_path() / "sample-ant-raw.fif"
-player = Player(fname, chunk_size=200).start()
+player = Player(fname, chunk_size=200, source_id=source_id).start()
 player.info
 
 # %%
@@ -142,7 +149,7 @@ print(f"Interval between 2 push operations: {interval} seconds.")
 # The stream description is automatically parsed into an :class:`mne.Info` upon
 # connection with the method :meth:`mne_lsl.stream.StreamLSL.connect`.
 
-stream = Stream(bufsize=2).connect()
+stream = Stream(bufsize=2, source_id=source_id).connect()
 stream.info
 
 # %%
