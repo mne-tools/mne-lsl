@@ -10,8 +10,7 @@ inputs:
     default: "3"
   retry_error_codes:
     description: "The error code on which to trigger a retry."
-    required: false
-    default: "134,139"
+    required: true
   command_between_retries:
     description: "A command to run between retries."
     required: false
@@ -23,6 +22,7 @@ runs:
       id: retry
       shell: bash
       run: |
+        set -eo pipefail
         command="${{ inputs.command }}"
         max_attempts=${{ inputs.max_attempts }}
         retry_error_codes=${{ inputs.retry_error_codes }}
@@ -33,8 +33,10 @@ runs:
 
         until [ $attempt -gt $max_attempts ]
         do
-          (eval $command)
+          set +e
+          eval $command
           exit_code=$?
+          set -e
 
           retry=false
           for code in "${retry_codes[@]}"; do
