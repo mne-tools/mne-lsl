@@ -4,7 +4,6 @@ from abc import ABC, abstractmethod
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
 from math import ceil
-from time import sleep
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -28,6 +27,7 @@ else:
 
 from ..utils._checks import check_type, check_value, ensure_int
 from ..utils._docs import copy_doc, fill_doc
+from ..utils._time import high_precision_sleep
 from ..utils.logs import logger, verbose, warn
 from ..utils.meas_info import _HUMAN_UNITS, _set_channel_units
 from ._filters import StreamFilter, create_filter, ensure_sos_iir_params
@@ -1130,7 +1130,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         """Submit a new acquisition job, if applicable."""
         if self._executor is None:
             return  # either shutdown or manual acquisition
-        sleep(self._acquisition_delay)
+        high_precision_sleep(self._acquisition_delay)
         try:
             self._executor.submit(self._acquire)
         except RuntimeError:  # pragma: no cover

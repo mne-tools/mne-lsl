@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from time import sleep
 from typing import TYPE_CHECKING
 from warnings import catch_warnings, filterwarnings
 
@@ -11,6 +10,7 @@ from mne.annotations import _handle_meas_date
 from ..lsl import StreamInfo, StreamOutlet, local_clock
 from ..utils._checks import check_type
 from ..utils._docs import copy_doc, fill_doc
+from ..utils._time import high_precision_sleep
 from ..utils.logs import logger, warn
 from ._base import BasePlayer
 
@@ -304,7 +304,7 @@ class PlayerLSL(BasePlayer):
             # _target_timestamp for the following wake.
             delta = self._target_timestamp - self._streaming_delay - local_clock()
             delay = max(self._streaming_delay + delta, 0)
-            sleep(delay)
+            high_precision_sleep(delay)
             try:
                 self._executor.submit(self._stream)
             except RuntimeError:  # pragma: no cover
