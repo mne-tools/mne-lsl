@@ -1,7 +1,10 @@
 .. include:: ../links.inc
 
+Implementation details
+======================
+
 Processing
-==========
+----------
 
 The :class:`~mne_lsl.stream.StreamLSL` and :class:`~mne_lsl.stream.EpochsStream` object
 support processing in real-time of their internal buffers. The processing is done
@@ -9,7 +12,7 @@ sequentially and this page presents the available processing and their applicati
 order.
 
 StreamLSL
----------
+~~~~~~~~~
 
 Processing is applied to new samples available in the
 :class:`~mne_lsl.lsl.StreamInlet` before rolling the buffer of the
@@ -34,7 +37,7 @@ The processing is defined in the private ``_acquire`` method of the class
     :width: 100%
 
 EpochsStream
-------------
+~~~~~~~~~~~~
 
 Processing is applied to new events and samples available to a
 :class:`~mne_lsl.stream.EpochsStream` before rolling the buffer of the

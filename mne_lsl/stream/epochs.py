@@ -123,7 +123,7 @@ class EpochsStream:
         in the connected ``stream`` are ignored.
 
     Read about the :ref:`processing applied to the underlying
-    buffer <resources/processing:StreamLSL>`.
+    buffer <resources/implementations:EpochsStream>`.
     """
 
     def __init__(

@@ -66,7 +66,7 @@ The development of ``MNE-LSL`` is supported by the
     resources/install.rst
     api/index.rst
     resources/command_line.rst
-    resources/processing.rst
+    resources/implementations.rst
     generated/tutorials/index.rst
     generated/examples/index.rst
     changes/index.rst
