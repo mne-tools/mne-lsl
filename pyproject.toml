@@ -96,8 +96,6 @@ test = ['pyqt5', 'pytest-cov', 'pytest-randomly', 'pytest-timeout', 'pytest>=8.0
 
 [project.scripts]
 mne-lsl = 'mne_lsl.commands.main:run'
-mne_lsl_player = 'mne_lsl.commands.mne_lsl_player:run'
-mne_lsl_stream_viewer = 'mne_lsl.commands.mne_lsl_stream_viewer:run'
 
 [project.urls]
 documentation = 'https://mne.tools/mne-lsl'
