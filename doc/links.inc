@@ -29,7 +29,7 @@
 .. _mne installers: https://mne.tools/stable/install/installers.html
 
 
-.. softwares
+.. software
 
 .. _sklearn stable: https://scikit-learn.org/stable/
 
