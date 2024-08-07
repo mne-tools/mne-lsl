@@ -324,6 +324,7 @@ class EpochsStream:
             ),
             dtype=self._stream._buffer.dtype,
         )
+        self._buffer_events = np.zeros(self._bufsize, dtype=np.int16)
         self._executor = (
             ThreadPoolExecutor(max_workers=1) if self._acquisition_delay != 0 else None
         )
@@ -530,6 +531,8 @@ class EpochsStream:
             # roll buffer and add new epochs
             self._buffer = np.roll(self._buffer, -events.shape[0], axis=0)
             self._buffer[-events.shape[0] :, :, :] = data_selection
+            self._buffer_events = np.roll(self._buffer_event, -events.shape[0])
+            self._buffer_events[-events.shape[0] :] = events[:, 2]
             # update the last ts and the number of new epochs
             self._n_new_epochs += events.shape[0]
         except Exception as error:  # pragma: no cover
@@ -553,6 +556,7 @@ class EpochsStream:
         """Reset variables defined after connection."""
         self._acquisition_delay = None
         self._buffer = None
+        self._buffer_events = None
         self._ch_idx_by_type = None
         self._executor = None
         self._info = None
