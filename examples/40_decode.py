@@ -153,7 +153,7 @@ while True:
 # --------------
 #
 # When you are done with a :class:`~mne_lsl.player.PlayerLSL`,
-# :class:`~mne_lsl.stream.StreamLSL` ir :class:`~mne_lsl.stream.EpochsStream`, don't
+# :class:`~mne_lsl.stream.StreamLSL` or :class:`~mne_lsl.stream.EpochsStream`, don't
 # forget to free the resources they use to continuously mock an LSL stream or receive
 # new data from an LSL stream.
 

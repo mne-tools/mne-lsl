@@ -55,7 +55,7 @@ maintainers = [
 name = 'mne_lsl'
 readme = 'README.md'
 requires-python = '>=3.9'
-version = '1.5.0.dev0'
+version = '1.5.0'
 
 [project.optional-dependencies]
 all = [
