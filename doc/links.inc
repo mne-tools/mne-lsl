@@ -17,6 +17,7 @@
 
 .. _lsl: https://labstreaminglayer.org
 .. _lsl intro: https://labstreaminglayer.readthedocs.io/info/intro.html
+.. _lsl language bindings: https://github.com/sccn/labstreaminglayer/tree/master/LSL
 .. _lsl lib: https://github.com/sccn/liblsl
 .. _lsl lib release: https://github.com/sccn/liblsl/releases
 .. _lsl python: https://github.com/labstreaminglayer/pylsl
@@ -26,6 +27,11 @@
 
 .. _mne stable: https://mne.tools/stable/index.html
 .. _mne installers: https://mne.tools/stable/install/installers.html
+
+
+.. softwares
+
+.. _sklearn stable: https://scikit-learn.org/stable/
 
 
 .. project

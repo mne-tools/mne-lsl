@@ -6,8 +6,6 @@ Low-level LSL API
 
 .. include:: ./../../links.inc
 
-.. _lsl language bindings: https://github.com/sccn/labstreaminglayer/tree/master/LSL
-
 LSL is a library designed for streaming time series data across different platforms and
 programming languages. The `core library <lsl lib_>`_ is primarily written in C++, and
 bindings are accessible for Python, C#, Java, MATLAB, and Unity, among others. You can
