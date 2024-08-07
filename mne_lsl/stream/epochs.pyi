@@ -10,6 +10,7 @@ from ..utils._checks import check_value as check_value
 from ..utils._checks import ensure_int as ensure_int
 from ..utils._docs import fill_doc as fill_doc
 from ..utils._fixes import find_events as find_events
+from ..utils._time import high_precision_sleep as high_precision_sleep
 from ..utils.logs import logger as logger
 from ..utils.logs import warn as warn
 from .base import BaseStream as BaseStream
@@ -166,6 +167,9 @@ class EpochsStream:
 
         In the 2 last cases where ``event_stream`` is provided, all ``'stim'`` channels
         in the connected ``stream`` are ignored.
+
+    Read about the :ref:`processing applied to the underlying
+    buffer <resources/implementations:EpochsStream>`.
     """
 
     _stream: Incomplete

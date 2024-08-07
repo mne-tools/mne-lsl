@@ -19,6 +19,7 @@ from ..utils._checks import check_value as check_value
 from ..utils._checks import ensure_int as ensure_int
 from ..utils._docs import copy_doc as copy_doc
 from ..utils._docs import fill_doc as fill_doc
+from ..utils._time import high_precision_sleep as high_precision_sleep
 from ..utils.logs import logger as logger
 from ..utils.logs import verbose as verbose
 from ..utils.logs import warn as warn
@@ -118,6 +119,11 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         -------
         stream : instance of ``Stream``
             The stream instance modified in-place.
+
+        Notes
+        -----
+        Read about the :ref:`processing applied to the underlying
+        buffer <resources/implementations:StreamLSL>`.
         """
 
     def anonymize(
@@ -301,6 +307,11 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         -------
         stream : instance of ``Stream``
             The stream instance modified in-place.
+
+        Notes
+        -----
+        Read about the :ref:`processing applied to the underlying
+        buffer <resources/implementations:StreamLSL>`.
         """
 
     def get_channel_types(
@@ -482,6 +493,11 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         -------
         stream : instance of ``Stream``
             The stream instance modified in-place.
+
+        Notes
+        -----
+        Read about the :ref:`processing applied to the underlying
+        buffer <resources/implementations:StreamLSL>`.
         """
 
     def plot(self) -> None:
@@ -655,6 +671,11 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         -------
         stream : instance of ``Stream``
             The stream instance modified in-place.
+
+        Notes
+        -----
+        Read about the :ref:`processing applied to the underlying
+        buffer <resources/implementations:StreamLSL>`.
         """
 
     def set_meas_date(
