@@ -752,7 +752,7 @@ def test_epochs_with_irregular_numerical_event_stream(mock_lsl_stream_with_annot
         baseline=None,
     ).connect(acquisition_delay=0.1)
     while epochs.n_new_epochs == 0:
-        time.sleep(0.1)
+        time.sleep(0.5)
     n = epochs.n_new_epochs
     data = epochs.get_data()
     assert_allclose(data[:-n, :, :], np.zeros((10 - n, data.shape[1], data.shape[2])))
