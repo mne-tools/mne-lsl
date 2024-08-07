@@ -262,6 +262,20 @@ tfr.plot(baseline=(None, 0), combine="mean")
 plt.show()
 
 # %%
+# Finally, in this case a single event was kept in the
+# :class:`~mne_lsl.stream.EpochsStream`, but if more events are retained, it is
+# important to know which one is which. This information is stored in the property
+# :attr:`~mne_lsl.stream.EpochsStream.events` of the
+# :class:`~mne_lsl.stream.EpochsStream`, which is an internal buffer of the event codes.
+
+epochs.events
+
+# %%
+# .. note::
+#
+#     In the case of an irregularly sampled event stream, the event code represents the
+#     channel idx within the event stream.
+#
 # Free resources
 # --------------
 #

@@ -324,6 +324,7 @@ class EpochsStream:
             ),
             dtype=self._stream._buffer.dtype,
         )
+        self._buffer_events = np.zeros(self._bufsize, dtype=np.int16)
         self._executor = (
             ThreadPoolExecutor(max_workers=1) if self._acquisition_delay != 0 else None
         )
@@ -504,12 +505,16 @@ class EpochsStream:
             # select data, for loop is faster than the fancy indexing ideas tried and
             # will anyway operate on a small number of events most of the time.
             data_selection = np.empty(
-                (events.shape[0], self._buffer.shape[1], self._picks.size),
+                (
+                    min(events.shape[0], self._bufsize),
+                    self._buffer.shape[1],
+                    self._picks.size,
+                ),
                 dtype=data.dtype,
             )
-            for k, start in enumerate(events[:, 0]):
+            for k, start in enumerate(events[:, 0][::-1]):
                 start += self._tmin_shift
-                data_selection[k] = data[
+                data_selection[-(k + 1)] = data[
                     self._picks, start : start + self._buffer.shape[1]
                 ].T
             # apply processing
@@ -530,6 +535,8 @@ class EpochsStream:
             # roll buffer and add new epochs
             self._buffer = np.roll(self._buffer, -events.shape[0], axis=0)
             self._buffer[-events.shape[0] :, :, :] = data_selection
+            self._buffer_events = np.roll(self._buffer_events, -events.shape[0])
+            self._buffer_events[-events.shape[0] :] = events[:, 2]
             # update the last ts and the number of new epochs
             self._n_new_epochs += events.shape[0]
         except Exception as error:  # pragma: no cover
@@ -553,6 +560,7 @@ class EpochsStream:
         """Reset variables defined after connection."""
         self._acquisition_delay = None
         self._buffer = None
+        self._buffer_events = None
         self._ch_idx_by_type = None
         self._executor = None
         self._info = None
@@ -591,6 +599,18 @@ class EpochsStream:
             # sanity-check
             assert not any(getattr(self, attr, None) is None for attr in attributes)
             return True
+
+    @property
+    def events(self) -> NDArray[np.int16]:
+        """Events of the epoched LSL stream.
+
+        Contrary to the events stored in ``mne.Epochs.events``, only the integer code
+        of the event is stored in a :class:`~mne_lsl.stream.EpochsStream` object.
+
+        :type: :class:`numpy.ndarray`
+        """
+        self._check_connected("events")
+        return self._buffer_events
 
     @property
     def info(self) -> Info:
