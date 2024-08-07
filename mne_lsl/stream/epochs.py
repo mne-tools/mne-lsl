@@ -531,7 +531,7 @@ class EpochsStream:
             # roll buffer and add new epochs
             self._buffer = np.roll(self._buffer, -events.shape[0], axis=0)
             self._buffer[-events.shape[0] :, :, :] = data_selection
-            self._buffer_events = np.roll(self._buffer_event, -events.shape[0])
+            self._buffer_events = np.roll(self._buffer_events, -events.shape[0])
             self._buffer_events[-events.shape[0] :] = events[:, 2]
             # update the last ts and the number of new epochs
             self._n_new_epochs += events.shape[0]
