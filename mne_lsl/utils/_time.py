@@ -16,4 +16,4 @@ def high_precision_sleep(duration: float) -> None:
         if remaining_time <= 0:
             break
         if remaining_time >= 0.0002:
-            time.sleep(remaining_time / 2)
+            time.sleep(0.8 * remaining_time)
