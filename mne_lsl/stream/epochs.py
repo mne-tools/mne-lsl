@@ -505,12 +505,16 @@ class EpochsStream:
             # select data, for loop is faster than the fancy indexing ideas tried and
             # will anyway operate on a small number of events most of the time.
             data_selection = np.empty(
-                (events.shape[0], self._buffer.shape[1], self._picks.size),
+                (
+                    max(events.shape[0], self._bufsize),
+                    self._buffer.shape[1],
+                    self._picks.size,
+                ),
                 dtype=data.dtype,
             )
-            for k, start in enumerate(events[:, 0]):
+            for k, start in enumerate(events[:, 0][::-1]):
                 start += self._tmin_shift
-                data_selection[k] = data[
+                data_selection[-(k + 1)] = data[
                     self._picks, start : start + self._buffer.shape[1]
                 ].T
             # apply processing
