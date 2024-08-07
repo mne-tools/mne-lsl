@@ -597,6 +597,18 @@ class EpochsStream:
             return True
 
     @property
+    def events(self) -> NDArray[np.int16]:
+        """Events of the epoched LSL stream.
+
+        Contrary to the events stored in ``mne.Epochs.events``, only the integer code
+        of the event is stored in a :class:`~mne_lsl.stream.EpochsStream` object.
+
+        :type: :class:`numpy.ndarray`
+        """
+        self._check_connected("events")
+        return self._buffer_events
+
+    @property
     def info(self) -> Info:
         """Info of the epoched LSL stream.
 
