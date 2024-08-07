@@ -506,7 +506,7 @@ class EpochsStream:
             # will anyway operate on a small number of events most of the time.
             data_selection = np.empty(
                 (
-                    max(events.shape[0], self._bufsize),
+                    min(events.shape[0], self._bufsize),
                     self._buffer.shape[1],
                     self._picks.size,
                 ),
