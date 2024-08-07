@@ -18,7 +18,7 @@ double precision (``float64``) to python takes:
 * 268 ns ± 0.357 ns with ``mne_lsl.lsl`` which uses :func:`numpy.frombuffer` under the
   hood
 
-More importantly, ``pylsl`` dewfault behavior pulls a chunk in linear time ``O(n)``,
+More importantly, ``pylsl`` default behavior pulls a chunk in linear time ``O(n)``,
 scalings with the number of values; while ``mne_lsl.lsl`` pulls a chunk in constant time
 ``O(1)``. Additional details on the differences with ``pylsl`` and ``mne_lsl`` can be
 found :ref:`here<resources/pylsl:Differences with pylsl>`.
