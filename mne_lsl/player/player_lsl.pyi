@@ -10,6 +10,7 @@ from ..lsl import local_clock as local_clock
 from ..utils._checks import check_type as check_type
 from ..utils._docs import copy_doc as copy_doc
 from ..utils._docs import fill_doc as fill_doc
+from ..utils._time import high_precision_sleep as high_precision_sleep
 from ..utils.logs import logger as logger
 from ..utils.logs import warn as warn
 from ._base import BasePlayer as BasePlayer
@@ -30,6 +31,11 @@ class PlayerLSL(BasePlayer):
         indefinitely.
     name : str | None
         Name of the mock LSL stream. If ``None``, the name ``MNE-LSL-Player`` is used.
+    source_id : str
+        A unique identifier of the device or source of the data. This information
+        improves the system robustness since it allows recipients to recover
+        from failure by finding a stream with the same ``source_id`` on the network.
+        By default, the source_id is set to ``"MNE-LSL"``.
     annotations : bool | None
         If ``True``, an :class:`~mne_lsl.lsl.StreamOutlet` is created for the
         :class:`~mne.Annotations` of the :class:`~mne.io.Raw` object. If ``False``,
@@ -85,6 +91,7 @@ class PlayerLSL(BasePlayer):
     """
 
     _name: Incomplete
+    _source_id: Incomplete
     _annotations: Incomplete
     _sinfo: Incomplete
     _annotations_names: Incomplete
@@ -98,6 +105,7 @@ class PlayerLSL(BasePlayer):
         n_repeat: int | float = ...,
         *,
         name: str | None = None,
+        source_id: str = "MNE-LSL",
         annotations: bool | None = None,
     ) -> None: ...
     def rename_channels(
@@ -263,6 +271,13 @@ class PlayerLSL(BasePlayer):
     @property
     def name(self) -> str:
         """Name of the LSL stream.
+
+        :type: :class:`str`
+        """
+
+    @property
+    def source_id(self) -> str:
+        """Source ID of the LSL stream.
 
         :type: :class:`str`
         """
