@@ -72,18 +72,18 @@ Neuromore [@neuromore] is another platform that provides a user-friendly graphic
 visualization. However, this GUI-based approach inherently restricts the customization
 and flexibility that more advanced users might require.
 
-In contrast to these more hardware-specific or restrictive platforms, the Lab Streaming Layer (LSL) has gained wide adoption in the EEG and broader neurophysiological research communities due to its device-agnostic framework. The widespread use of LSL in the EEG world stems from its ability to abstract away the complexities associated with different device APIs, providing a unified protocol for data streaming. Additionally, LSL streams are accessible in a variety of programming languages, including MATLAB, Python, C#,
+In contrast to these more hardware-specific or restrictive platforms, Lab Streaming
+Layer (LSL) has gained wide adoption in the EEG and broader neurophysiological research communities due to its device-agnostic framework. The widespread use of LSL in the EEG world stems from its ability to abstract away the complexities associated with different device APIs, providing a unified protocol for data streaming. Additionally, LSL streams are accessible in a variety of programming languages, including MATLAB, Python, C#,
 Unity, and C++, among others. This cross-language compatibility further enhances its flexibility, enabling researchers to develop custom tools and applications in their preferred programming environment.
 
 Accessing real-time LSL streams in Python is facilitated by several tools, each offering different levels of abstraction and ease of use. The most direct method is through
 pylsl, a low-level API that provides fine-grained control over LSL streams. While pylsl
-is powerful, its low-level nature can make it challenging for non-developers to work
-with.
+is fully functional, its low-level nature can make it challenging for non-developers to work with.
 
-To address the need for a more user-friendly interface, mne-realtime was developed as an extension of MNE-Python. Originally, mne-realtime was designed to interface with the FieldTrip buffer and the RtClient for Neuromag systems, allowing for real-time data processing within the MNE-Python framework. Although support for LSL streams was eventually incorporated, the integration was not as intuitive as it could have been, leading to limited adoption within the broader MNE-Python community.
+To address the need for a more user-friendly interface, MNE-realtime was developed as an extension of MNE-Python. Originally, MNE-realtime was designed to interface with the FieldTrip buffer and the RtClient for Neuromag systems, allowing for real-time data processing within the MNE-Python framework. Although support for LSL streams was eventually incorporated, the integration was not as intuitive as it could have been, leading to limited adoption within the broader MNE-Python community.
 
-With the increasing popularity and wide adoption of LSL in the neurophysiological community, the maintenance and development focus shifted away from mne-realtime in favor of mne-lsl. MNE-LSL integrates more seamlessly with MNE-Python, offering a more
-intuitive and accessible interface for researchers working with real-time LSL streams. Additionally, mne-lsl re-implements the low-level pylsl library more efficiently using NumPy [@harris2020array] and automatically fetches the correct liblsl library for the platform it is run on. These enhancements ensure that mne-lsl provides a robust and user-friendly solution for real-time data processing within the MNE-Python ecosystem.
+With the increasing popularity and wide adoption of LSL in the neurophysiological community, the maintenance and development focus shifted away from MNE-realtime in favor of MNE-LSL. MNE-LSL integrates more seamlessly with MNE-Python, offering a more
+intuitive and accessible interface for researchers working with real-time LSL streams. Additionally, MNE-LSL re-implements the low-level pylsl library more efficiently using NumPy [@harris2020array] and automatically fetches the correct liblsl library for the platform it is run on. These enhancements ensure that MNE-LSL provides a robust and user-friendly solution for real-time data processing within the MNE-Python ecosystem.
 
 # Acknowledgements
 
