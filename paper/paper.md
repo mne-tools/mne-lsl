@@ -35,60 +35,87 @@ bibliography: paper.bib
 
 # Summary
 
-Neural, physiological, and behavioral data are crucial in understanding the complexities
-of the human brain and body. This data encompasses a wide range of measurements
-including electrical activity of the brain (EEG), heart rate, muscle activity,
-eye movements, and various other physiological signals. These measurements provide
-insights into cognitive processes, emotional states, physical health, and behavioral
-responses.
+Neural, physiological, and behavioral data plays a key-role in understanding the human
+brain and body. This data encompasses a wide range of measurements including electrical
+activity of the brain (EEG), heart rate, muscle activity, eye movements. These
+measurements provide insights into cognitive processes, emotional states, physical
+health, and behavioral responses.
 
-Real-time applications of this data, such as brain-computer interfaces, neurofeedback,
-and real-time health monitoring, present significant challenges. These applications
-require the continuous collection, synchronization, and processing of data from multiple
-sources with minimal latency. Additionally, real-time applications must address the
-complexities of instantaneous data handling, including noise reduction and artifact
-management.
+With the growing popularity of brain-computer interfaces (BCIs) and neurofeedback
+applications, the demand for real-time processing of neurophysiological data has surged.
+Real-time applications present unique challenges, requiring the continuous collection,
+synchronization, and processing of data from multiple sources with minimal latency. This
+requires the implementation of advanced methods for handling data in real-time,
+including the reduction of noise and management of artifacts.
 
-The Lab Streaming Layer (LSL) [@labstreaminglayer] is an open-source framework designed
-to facilitate the collection, synchronization, and transmission of time-series data from multiple devices in real-time. LSL provides a common protocol for streaming data,
-allowing researchers to focus on data analysis without needing to manage the specific
-APIs of various devices. By using LSL, data from different sources can be streamed, synchronized, and accessed through a unified interface. This streamlines the research process, enhances interoperability, and reduces the complexity associated with
-integrating diverse data streams.
+A critical challenge in real-time applications is the need for direct access to data
+streams from measurement devices, which often rely on device-specific APIs. Adapting a
+real-time application from one device to another can be labor-intensive, as it requires
+modifications to the entire communication protocol. To address this issue, the Lab
+Streaming Layer (LSL) [@labstreaminglayer] offers a standardized protocol for streaming
+time-series data from multiple devices in real-time. LSL has gained significant
+popularity, particularly among EEG manufacturers, many of whom now provide LSL streaming
+capabilities out-of-the-box with their devices. By abstracting the complexities of
+device-specific APIs, LSL allows researchers to concentrate on data analysis rather than
+the intricacies of device communication.
 
-MNE-LSL significantly improves the integration of LSL with MNE-Python [@GramfortEtAl2013a], a comprehensive tool for processing and analyzing
-electrophysiological data.
+Beyond data acquisition, the real-time analysis of signals also presents significant
+challenges. MNE-Python [@GramfortEtAl2013a] is a comprehensive toolset for processing
+and analyzing electrophysiological data in Python, a widely-used programming language in
+the scientific community. MNE-LSL enhances the integration of LSL with MNE-Python,
+providing robust objects for handling and processing both continuous and epoch-based
+data from real-time sources, thereby streamlining the development of real-time
+neurophysiological applications.
 
 # Statement of need
 
-In recent years, the demand for real-time acquisition and processing of neural, physiological, and behavioral data has surged, driven by the increasing popularity of brain-computer interfaces (BCIs) and neurofeedback applications. As BCIs and
-neurofeedback become more accessible and sophisticated, researchers and developers are seeking robust, flexible tools to efficiently handle the complex, real-time data streams required for these applications.
+The rise of brain-computer interfaces (BCIs) and neurofeedback applications has led to
+an increased demand for tools capable of real-time acquisition and processing of neural,
+physiological, and behavioral data. As these applications become more sophisticated and
+widespread, researchers and developers require flexible, robust solutions to handle the
+complexities of real-time data streams, which often involve multiple devices and
+modalities.
 
-OpenBCI [@openbci] and BrainFlow [@brainflow] are popular platforms designed primarily
-for real-time data acquisition and processing. These tools are closely integrated with
-the OpenBCI hardware ecosystem, offering a seamless experience for users working with OpenBCI boards. While this tight integration simplifies the setup for users of OpenBCI hardware, it also
-limits the flexibility for researchers who wish to integrate and synchronize data from multiple hardware sources beyond the OpenBCI ecosystem.
+Existing platforms like OpenBCI [@openbci] and BrainFlow [@brainflow] are tailored for
+specific hardware ecosystems, offering streamlined workflows for users within those
+systems. However, their tight integration with proprietary hardware can limit
+flexibility and adaptability, particularly for researchers seeking to work with a
+diverse array of measurement devices. Similarly, GUI-based platforms like Neuromore
+[@neuromore] prioritize user-friendliness, often at the expense of customization and
+advanced functionality, which can be a limitation for experienced users requiring more
+control over data processing pipelines.
 
-Neuromore [@neuromore] is another platform that provides a user-friendly graphical interface for real-time data processing. It is designed to cater to users with minimal programming expertise, offering pre-built modules for data acquisition, processing, and
+Neuromore [@neuromore], another platform that provides a user-friendly graphical
+interface for real-time data processing, is designed to cater to users with minimal
+programming expertise, offering pre-built modules for data acquisition, processing, and
 visualization. However, this GUI-based approach inherently restricts the customization
 and flexibility that more advanced users might require.
 
-In contrast to these more hardware-specific or restrictive platforms, Lab Streaming
-Layer (LSL) has gained wide adoption in the EEG and broader neurophysiological research communities due to its device-agnostic framework. The widespread use of LSL in the EEG world stems from its ability to abstract away the complexities associated with different device APIs, providing a unified protocol for data streaming. Additionally, LSL streams are accessible in a variety of programming languages, including MATLAB, Python, C#,
-Unity, and C++, among others. This cross-language compatibility further enhances its flexibility, enabling researchers to develop custom tools and applications in their preferred programming environment.
+In contrast, the Lab Streaming Layer (LSL) has emerged as a widely adopted,
+device-agnostic protocol within the neurophysiological research community, especially
+for EEG data. LSL's ability to unify data streaming from various devices under a common
+framework has made it an invaluable tool for researchers who need to integrate multiple
+data sources seamlessly. However, while LSL provides a solid foundation for real-time
+data acquisition, its integration with Python, particularly for processing and analysis,
+has been less intuitive and less accessible.
 
-Accessing real-time LSL streams in Python is facilitated by several tools, each offering different levels of abstraction and ease of use. The most direct method is through
-pylsl, a low-level API that provides fine-grained control over LSL streams. While pylsl
-is fully functional, its low-level nature can make it challenging for non-developers to work with.
+To bridge this gap, MNE-LSL was developed as a solution that not only facilitates the acquisition of real-time LSL streams but also integrates seamlessly with MNE-Python, a
+leading toolset for electrophysiological data analysis. Unlike its predecessor,
+MNE-realtime [@mne-realtime], which had limitations in LSL support and user interface design, MNE-LSL offers an intuitive, MNE-Python-like API, allowing for real-time processing of continuous and epoch-based data streams.
 
-To address the need for a more user-friendly interface, MNE-realtime was developed as an extension of MNE-Python. Originally, MNE-realtime was designed to interface with the FieldTrip buffer and the RtClient for Neuromag systems, allowing for real-time data processing within the MNE-Python framework. Although support for LSL streams was eventually incorporated, the integration was not as intuitive as it could have been, leading to limited adoption within the broader MNE-Python community.
-
-With the increasing popularity and wide adoption of LSL in the neurophysiological community, the maintenance and development focus shifted away from MNE-realtime in favor of MNE-LSL. MNE-LSL integrates more seamlessly with MNE-Python, offering a more
-intuitive and accessible interface for researchers working with real-time LSL streams. Additionally, MNE-LSL re-implements the low-level pylsl library more efficiently using NumPy [@harris2020array] and automatically fetches the correct liblsl library for the platform it is run on. These enhancements ensure that MNE-LSL provides a robust and user-friendly solution for real-time data processing within the MNE-Python ecosystem.
+MNE-LSL further enhances the real-time data processing workflow by re-implementing the
+low-level pylsl library with more efficient NumPy [@harris2020array] operations and
+ensuring compatibility across platforms through automatic handling of the liblsl
+library. These improvements provide researchers with a powerful, user-friendly tool for
+real-time data analysis within the Python ecosystem, meeting the growing needs of the
+neurophysiological research community.
 
 # Acknowledgements
 
-We would like to acknowledge the the LSL developers, with special thanks to Tristan Stenner and Chadwick Boulay.
+We would like to acknowledge the the LSL developers, with special thanks to Tristan
+Stenner and Chadwick Boulay.
 
-MNE-LSL development is supported by the Fondation Campus Biotech Geneva, Geneva, Switzerland.
+MNE-LSL development is supported by the Fondation Campus Biotech Geneva, Geneva,
+Switzerland.
 
 # References
