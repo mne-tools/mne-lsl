@@ -1,5 +1,5 @@
 ---
-title: 'Pycrostates: a Python library to study EEG microstates'
+title: 'MNE-LSL: Real-time framework integrated with MNE-Python for online neuroscience research through LSL-compatible devices.'
 tags:
   - Python
   - neuroscience
