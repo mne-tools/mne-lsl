@@ -34,7 +34,31 @@ bibliography: paper.bib
 
 # Summary
 
+Neural, physiological, and behavioral data are crucial in understanding the complexities
+of the human brain and body. This data encompasses a wide range of measurements
+including electrical activity of the brain (EEG), heart rate, muscle activity,
+eye movements, and various other physiological signals. These measurements provide
+insights into cognitive processes, emotional states, physical health, and behavioral
+responses.
 
+Real-time applications of this data, such as brain-computer interfaces, neurofeedback,
+and real-time health monitoring, present significant challenges. These applications
+require the continuous collection, synchronization, and processing of data from multiple
+sources with minimal latency. Additionally, real-time applications must address the
+complexities of instantaneous data handling, including noise reduction and artifact
+management.
+
+The Lab Streaming Layer (LSL) is an open-source framework designed to facilitate the
+collection, synchronization, and transmission of time-series data from multiple devices
+in real-time. LSL provides a common protocol for streaming data, allowing researchers to
+focus on data analysis without needing to manage the specific APIs of various devices.
+By using LSL, data from different sources can be streamed, synchronized, and accessed
+through a unified interface. This streamlines the research process, enhances
+interoperability, and reduces the complexity associated with integrating diverse data
+streams.
+
+MNE-LSL significantly improves the integration of LSL with MNE-Python [from v1.4.2; @mne-python_2013], a comprehensive tool for processing and analyzing
+electrophysiological data.
 
 # Statement of need
 
