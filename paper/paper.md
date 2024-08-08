@@ -85,12 +85,6 @@ diverse array of measurement devices. Similarly, GUI-based platforms like Neurom
 advanced functionality, which can be a limitation for experienced users requiring more
 control over data processing pipelines.
 
-Neuromore [@neuromore], another platform that provides a user-friendly graphical
-interface for real-time data processing, is designed to cater to users with minimal
-programming expertise, offering pre-built modules for data acquisition, processing, and
-visualization. However, this GUI-based approach inherently restricts the customization
-and flexibility that more advanced users might require.
-
 In contrast, the Lab Streaming Layer (LSL) has emerged as a widely adopted,
 device-agnostic protocol within the neurophysiological research community, especially
 for EEG data. LSL's ability to unify data streaming from various devices under a common
@@ -99,9 +93,12 @@ data sources seamlessly. However, while LSL provides a solid foundation for real
 data acquisition, its integration with Python, particularly for processing and analysis,
 has been less intuitive and less accessible.
 
-To bridge this gap, MNE-LSL was developed as a solution that not only facilitates the acquisition of real-time LSL streams but also integrates seamlessly with MNE-Python, a
+To bridge this gap, MNE-LSL was developed as a solution that not only facilitates the
+acquisition of real-time LSL streams but also integrates seamlessly with MNE-Python, a
 leading toolset for electrophysiological data analysis. Unlike its predecessor,
-MNE-realtime [@mne-realtime], which had limitations in LSL support and user interface design, MNE-LSL offers an intuitive, MNE-Python-like API, allowing for real-time processing of continuous and epoch-based data streams.
+MNE-realtime [@mne-realtime], which had limitations in LSL support and user interface
+design, MNE-LSL offers an intuitive, MNE-Python-like API, allowing for real-time
+processing of continuous and epoch-based data streams.
 
 MNE-LSL further enhances the real-time data processing workflow by re-implementing the
 low-level pylsl library with more efficient NumPy [@harris2020array] operations and
