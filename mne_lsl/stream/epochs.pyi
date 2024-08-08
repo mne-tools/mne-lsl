@@ -226,6 +226,7 @@ class EpochsStream:
     _tmin_shift: Incomplete
     _ch_idx_by_type: Incomplete
     _buffer: Incomplete
+    _buffer_events: Incomplete
     _executor: Incomplete
 
     def connect(self, acquisition_delay: float = 0.001) -> EpochsStream:
@@ -315,6 +316,16 @@ class EpochsStream:
         """Connection status of the :class:`~mne_lsl.stream.EpochsStream`.
 
         :type: :class:`bool`
+        """
+
+    @property
+    def events(self) -> NDArray[np.int16]:
+        """Events of the epoched LSL stream.
+
+        Contrary to the events stored in ``mne.Epochs.events``, only the integer code
+        of the event is stored in a :class:`~mne_lsl.stream.EpochsStream` object.
+
+        :type: :class:`numpy.ndarray`
         """
 
     @property
