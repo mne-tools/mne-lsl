@@ -57,7 +57,7 @@ through a unified interface. This streamlines the research process, enhances
 interoperability, and reduces the complexity associated with integrating diverse data
 streams.
 
-MNE-LSL significantly improves the integration of LSL with MNE-Python [from v1.4.2; @GramfortEtAl2013a], a comprehensive tool for processing and analyzing
+MNE-LSL significantly improves the integration of LSL with MNE-Python [@GramfortEtAl2013a], a comprehensive tool for processing and analyzing
 electrophysiological data.
 
 # Statement of need
@@ -65,10 +65,12 @@ electrophysiological data.
 In recent years, the demand for real-time acquisition and processing of neural, physiological, and behavioral data has surged, driven by the increasing popularity of brain-computer interfaces (BCIs) and neurofeedback applications. As BCIs and
 neurofeedback become more accessible and sophisticated, researchers and developers are seeking robust, flexible tools to efficiently handle the complex, real-time data streams required for these applications.
 
-OpenBCI and BrainFlow are popular platforms designed primarily for real-time data acquisition and processing. These tools are closely integrated with the OpenBCI hardware ecosystem, offering a seamless experience for users working with OpenBCI boards. While this tight integration simplifies the setup for users of OpenBCI hardware, it also
+OpenBCI [@openbci] and BrainFlow [@brainflow] are popular platforms designed primarily
+for real-time data acquisition and processing. These tools are closely integrated with
+the OpenBCI hardware ecosystem, offering a seamless experience for users working with OpenBCI boards. While this tight integration simplifies the setup for users of OpenBCI hardware, it also
 limits the flexibility for researchers who wish to integrate and synchronize data from multiple hardware sources beyond the OpenBCI ecosystem.
 
-Neuromore is another platform that provides a user-friendly graphical interface for real-time data processing. It is designed to cater to users with minimal programming expertise, offering pre-built modules for data acquisition, processing, and
+Neuromore [@neuromore] is another platform that provides a user-friendly graphical interface for real-time data processing. It is designed to cater to users with minimal programming expertise, offering pre-built modules for data acquisition, processing, and
 visualization. However, this GUI-based approach inherently restricts the customization
 and flexibility that more advanced users might require.
 
