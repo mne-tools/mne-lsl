@@ -9,6 +9,7 @@ tags:
   - EEG
   - MEG
   - brain
+  - electrophysiology
 authors:
   - name: Mathieu Scheltienne
     orcid: 0000-0001-8316-7436
