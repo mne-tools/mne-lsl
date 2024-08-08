@@ -1,4 +1,4 @@
-name: Draft PDF
+name: joss
 on:  # yamllint disable-line rule:truthy
   pull_request:
   push:
@@ -11,7 +11,7 @@ on:  # yamllint disable-line rule:truthy
 jobs:
   paper:
     runs-on: ubuntu-latest
-    name: Paper Draft
+    name: draft PDF
     steps:
       - name: Checkout
         uses: actions/checkout@v4
