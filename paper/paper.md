@@ -22,7 +22,7 @@ authors:
     orcid: 0000-0002-3854-4690
     affiliation: 3
 affiliations:
- - name: Human Neuroscience Platform, Fondation Campus Biotech Geneva, Geneva, Switzerland
+ - name: Fondation Campus Biotech Geneva, Geneva, Switzerland
    index: 1
  - name: Institute for Learning & Brain Sciences, University of Washington, Seattle, WA, USA
    index: 2
@@ -86,6 +86,9 @@ intuitive and accessible interface for researchers working with real-time LSL st
 
 # Acknowledgements
 
+We would like to acknowledge the contributions of the LSL developers, with special
+thanks to Tristan Stenner and Chadwick Boulay.
 
+MNE-LSL development is supported by the Fondation Campus Biotech Geneva, Geneva, Switzerland.
 
 # References
