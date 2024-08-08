@@ -48,14 +48,11 @@ sources with minimal latency. Additionally, real-time applications must address 
 complexities of instantaneous data handling, including noise reduction and artifact
 management.
 
-The Lab Streaming Layer (LSL) is an open-source framework designed to facilitate the
-collection, synchronization, and transmission of time-series data from multiple devices
-in real-time. LSL provides a common protocol for streaming data, allowing researchers to
-focus on data analysis without needing to manage the specific APIs of various devices.
-By using LSL, data from different sources can be streamed, synchronized, and accessed
-through a unified interface. This streamlines the research process, enhances
-interoperability, and reduces the complexity associated with integrating diverse data
-streams.
+The Lab Streaming Layer (LSL) [@labstreaminglayer] is an open-source framework designed
+to facilitate the collection, synchronization, and transmission of time-series data from multiple devices in real-time. LSL provides a common protocol for streaming data,
+allowing researchers to focus on data analysis without needing to manage the specific
+APIs of various devices. By using LSL, data from different sources can be streamed, synchronized, and accessed through a unified interface. This streamlines the research process, enhances interoperability, and reduces the complexity associated with
+integrating diverse data streams.
 
 MNE-LSL significantly improves the integration of LSL with MNE-Python [@GramfortEtAl2013a], a comprehensive tool for processing and analyzing
 electrophysiological data.
