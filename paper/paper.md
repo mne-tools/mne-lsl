@@ -57,12 +57,33 @@ through a unified interface. This streamlines the research process, enhances
 interoperability, and reduces the complexity associated with integrating diverse data
 streams.
 
-MNE-LSL significantly improves the integration of LSL with MNE-Python [from v1.4.2; @mne-python_2013], a comprehensive tool for processing and analyzing
+MNE-LSL significantly improves the integration of LSL with MNE-Python [from v1.4.2; @GramfortEtAl2013a], a comprehensive tool for processing and analyzing
 electrophysiological data.
 
 # Statement of need
 
+In recent years, the demand for real-time acquisition and processing of neural, physiological, and behavioral data has surged, driven by the increasing popularity of brain-computer interfaces (BCIs) and neurofeedback applications. As BCIs and
+neurofeedback become more accessible and sophisticated, researchers and developers are seeking robust, flexible tools to efficiently handle the complex, real-time data streams required for these applications.
 
+OpenBCI and BrainFlow are popular platforms designed primarily for real-time data acquisition and processing. These tools are closely integrated with the OpenBCI hardware ecosystem, offering a seamless experience for users working with OpenBCI boards. While this tight integration simplifies the setup for users of OpenBCI hardware, it also
+limits the flexibility for researchers who wish to integrate and synchronize data from multiple hardware sources beyond the OpenBCI ecosystem.
+
+Neuromore is another platform that provides a user-friendly graphical interface for real-time data processing. It is designed to cater to users with minimal programming expertise, offering pre-built modules for data acquisition, processing, and
+visualization. However, this GUI-based approach inherently restricts the customization
+and flexibility that more advanced users might require.
+
+In contrast to these more hardware-specific or restrictive platforms, the Lab Streaming Layer (LSL) has gained wide adoption in the EEG and broader neurophysiological research communities due to its device-agnostic framework. The widespread use of LSL in the EEG world stems from its ability to abstract away the complexities associated with different device APIs, providing a unified protocol for data streaming. Additionally, LSL streams are accessible in a variety of programming languages, including MATLAB, Python, C#,
+Unity, and C++, among others. This cross-language compatibility further enhances its flexibility, enabling researchers to develop custom tools and applications in their preferred programming environment.
+
+Accessing real-time LSL streams in Python is facilitated by several tools, each offering different levels of abstraction and ease of use. The most direct method is through
+pylsl, a low-level API that provides fine-grained control over LSL streams. While pylsl
+is powerful, its low-level nature can make it challenging for non-developers to work
+with.
+
+To address the need for a more user-friendly interface, mne-realtime was developed as an extension of MNE-Python. Originally, mne-realtime was designed to interface with the FieldTrip buffer and the RtClient for Neuromag systems, allowing for real-time data processing within the MNE-Python framework. Although support for LSL streams was eventually incorporated, the integration was not as intuitive as it could have been, leading to limited adoption within the broader MNE-Python community.
+
+With the increasing popularity and wide adoption of LSL in the neurophysiological community, the maintenance and development focus shifted away from mne-realtime in favor of mne-lsl. MNE-LSL integrates more seamlessly with MNE-Python, offering a more
+intuitive and accessible interface for researchers working with real-time LSL streams. Additionally, mne-lsl re-implements the low-level pylsl library more efficiently using NumPy [@harris2020array] and automatically fetches the correct liblsl library for the platform it is run on. These enhancements ensure that mne-lsl provides a robust and user-friendly solution for real-time data processing within the MNE-Python ecosystem.
 
 # Acknowledgements
 
