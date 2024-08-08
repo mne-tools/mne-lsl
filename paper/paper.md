@@ -87,8 +87,7 @@ intuitive and accessible interface for researchers working with real-time LSL st
 
 # Acknowledgements
 
-We would like to acknowledge the contributions of the LSL developers, with special
-thanks to Tristan Stenner and Chadwick Boulay.
+We would like to acknowledge the the LSL developers, with special thanks to Tristan Stenner and Chadwick Boulay.
 
 MNE-LSL development is supported by the Fondation Campus Biotech Geneva, Geneva, Switzerland.
 
