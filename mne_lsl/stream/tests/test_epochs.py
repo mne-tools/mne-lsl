@@ -950,3 +950,26 @@ def test_epochs_invalid(mock_lsl_stream):
         )
 
     stream.disconnect()
+
+
+def test_epochs_invalid_get_data(mock_lsl_stream):
+    """Test invalid get_data() calls."""
+    stream = StreamLSL(
+        0.5, name=mock_lsl_stream.name, source_id=mock_lsl_stream.source_id
+    ).connect(acquisition_delay=0.1)
+    epochs = EpochsStream(
+        stream,
+        10,
+        event_channels="trg",
+        event_id=dict(a=1),
+        tmin=0,
+        tmax=0.1,
+        baseline=None,
+    ).connect(acquisition_delay=0.1)
+    with pytest.raises(ValueError, match="The number of epochs to retrieve must"):
+        epochs.get_data(n_epochs=-1)
+    with pytest.warns(RuntimeWarning, match="is greater than the buffer size"):
+        data = epochs.get_data(n_epochs=101)
+    assert data.shape[0] == epochs._bufsize
+    epochs.disconnect()
+    stream.disconnect()
