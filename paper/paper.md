@@ -85,7 +85,7 @@ diverse array of measurement devices. Similarly, GUI-based platforms like Neurom
 advanced functionality, which can be a limitation for experienced users requiring more
 control over data processing pipelines.
 
-In contrast, the Lab Streaming Layer (LSL) has emerged as a widely adopted,
+In contrast, Lab Streaming Layer (LSL) has emerged as a widely adopted,
 device-agnostic protocol within the neurophysiological research community, especially
 for EEG data. LSL's ability to unify data streaming from various devices under a common
 framework has made it an invaluable tool for researchers who need to integrate multiple
@@ -97,12 +97,12 @@ To bridge this gap, MNE-LSL was developed as a solution that not only facilitate
 acquisition of real-time LSL streams but also integrates seamlessly with MNE-Python, a
 leading toolset for electrophysiological data analysis. Unlike its predecessor,
 MNE-realtime [@mne-realtime], which had limitations in LSL support and user interface
-design, MNE-LSL offers an intuitive, MNE-Python-like API, allowing for real-time
-processing of continuous and epoch-based data streams.
+design, MNE-LSL offers an intuitive MNE-Python-like API allowing for real-time
+processing of continuous and epoch-based data streams in a familiar environment.
 
-MNE-LSL further enhances the real-time data processing workflow by re-implementing the
-low-level pylsl library with more efficient NumPy [@harris2020array] operations and
-ensuring compatibility across platforms through automatic handling of the liblsl
+MNE-LSL further enhances the real-time data acquisition workflow by re-implementing the
+low-level pylsl [@pylsl] library with more efficient NumPy [@harris2020array] operations
+and ensuring compatibility across platforms through automatic handling of the liblsl
 library. These improvements provide researchers with a powerful, user-friendly tool for
 real-time data analysis within the Python ecosystem, meeting the growing needs of the
 neurophysiological research community.
