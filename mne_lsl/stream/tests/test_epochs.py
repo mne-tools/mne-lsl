@@ -978,7 +978,7 @@ def test_epochs_invalid_get_data(mock_lsl_stream):
 def test_epochs_events(mock_lsl_stream):
     """Test events array."""
     stream = StreamLSL(
-        0.5, name=mock_lsl_stream.name, source_id=mock_lsl_stream.source_id
+        6, name=mock_lsl_stream.name, source_id=mock_lsl_stream.source_id
     ).connect(acquisition_delay=0.1)
     epochs = EpochsStream(
         stream,
@@ -986,7 +986,7 @@ def test_epochs_events(mock_lsl_stream):
         event_channels="trg",
         event_id=dict(a=1),
         tmin=0,
-        tmax=0.1,
+        tmax=4,
         baseline=None,
     )
     with pytest.raises(RuntimeError, match="The EpochsStream is not connected"):
