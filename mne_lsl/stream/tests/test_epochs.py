@@ -874,3 +874,79 @@ def test_epochs_with_irregular_numerical_event_stream_and_first_samp(
     epochs.disconnect()
     stream.disconnect()
     event_stream.disconnect()
+
+
+@pytest.mark.filterwarnings(
+    "ignore:The stream will be disconnected while EpochsStream.*:RuntimeWarning"
+)
+def test_epochs_invalid(mock_lsl_stream):
+    """Test creating invalid epochs."""
+    stream = StreamLSL(
+        0.5, name=mock_lsl_stream.name, source_id=mock_lsl_stream.source_id
+    )
+    with pytest.raises(RuntimeError, match="The Stream must be a connected regularly"):
+        EpochsStream(
+            stream,
+            10,
+            event_channels="trg",
+            event_id=dict(a=1),
+            tmin=0,
+            tmax=0.1,
+            baseline=None,
+        )
+
+    stream.connect(acquisition_delay=0)
+    with pytest.raises(ValueError, match="must be greater than 'tmin'"):
+        EpochsStream(
+            stream,
+            10,
+            event_channels="trg",
+            event_id=dict(a=1),
+            tmin=0.2,
+            tmax=0.1,
+            baseline=None,
+        )
+    with pytest.raises(ValueError, match="must be greater than 'tmin'"):
+        EpochsStream(
+            stream,
+            10,
+            event_channels="trg",
+            event_id=dict(a=1),
+            tmin=0.1,
+            tmax=0.1,
+            baseline=None,
+        )
+
+    with pytest.raises(ValueError, match="buffer size of the Stream must be at least"):
+        EpochsStream(
+            stream,
+            10,
+            event_channels="trg",
+            event_id=dict(a=1),
+            tmin=0.1,
+            tmax=0.8,
+            baseline=None,
+        )
+    with pytest.warns(RuntimeWarning, match="buffer size of the Stream is longer"):
+        EpochsStream(
+            stream,
+            10,
+            event_channels="trg",
+            event_id=dict(a=1),
+            tmin=0.1,
+            tmax=0.55,
+            baseline=None,
+        )
+
+    with pytest.raises(ValueError, match="number of epochs in the buffer, must be"):
+        EpochsStream(
+            stream,
+            -101,
+            event_channels="trg",
+            event_id=dict(a=1),
+            tmin=0.1,
+            tmax=0.2,
+            baseline=None,
+        )
+
+    stream.disconnect()
