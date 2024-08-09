@@ -18,3 +18,7 @@
 
 Version 1.6
 ===========
+
+- Add JOSS draft and workflow to generate the PDF (:pr:`316` by `Mathieu Scheltienne`_)
+- Improve disconnection of :class:`~mne_lsl.stream.EpochsStream` especially when an exception is raised during initialization (:pr:`317` by `Mathieu Scheltienne`_)
+- Improve total code coverage (:pr:`317` by `Mathieu Scheltienne`_)

@@ -144,7 +144,7 @@ class EpochsStream:
         detrend: Optional[Union[int, str]] = None,
     ) -> None:
         check_type(stream, (BaseStream,), "stream")
-        if not stream.connected and stream._info["sfreq"] != 0:
+        if not stream.connected or stream._info["sfreq"] == 0:
             raise RuntimeError(
                 "The Stream must be a connected regularly sampled stream before "
                 "creating an EpochsStream."
@@ -231,10 +231,19 @@ class EpochsStream:
             status = "ON" if self.connected else "OFF"
         except Exception:
             status = "OFF"
-        return (
-            f"<EpochsStream {status} (n: {self._bufsize} between ({self._tmin}, "
-            f"{self._tmax}) seconds> connected to:\n\t{self._stream}"
-        )
+        repr_ = f"<EpochsStream {status}"
+        if (
+            hasattr(self, "_bufsize")
+            and hasattr(self, "_tmin")
+            and hasattr(self, "_tmax")
+        ):
+            repr_ += (
+                f" (n: {self._bufsize} between ({self._tmin}, {self._tmax} seconds)"
+            )
+        repr_ += ">"
+        if hasattr(self, "_stream"):
+            repr_ += f" connected to:\n\t{self._stream}"
+        return repr_
 
     def acquire(self) -> None:
         """Pull new epochs in the buffer.
@@ -342,16 +351,21 @@ class EpochsStream:
         epochs : instance of :class:`~mne_lsl.stream.EpochsStream`
             The epochs instance modified in-place.
         """
-        if hasattr(self._stream, "_epochs") and self in self._stream._epochs:
+        if (
+            hasattr(self, "_stream")
+            and hasattr(self._stream, "_epochs")
+            and self in self._stream._epochs
+        ):
             self._stream._epochs.remove(self)
         if (
-            self._event_stream is not None
+            hasattr(self, "_event_stream")
+            and self._event_stream is not None
             and hasattr(self._event_stream, "_epochs")
             and self in self._event_stream._epochs
         ):
             self._event_stream._epochs.remove(self)
         if not self.connected:
-            warn("The EpochsStream is already disconnected. Skipping.")
+            logger.info("The EpochsStream %s is already disconnected. Skipping.", self)
             return
         if hasattr(self, "_executor") and self._executor is not None:
             self._executor.shutdown(wait=True, cancel_futures=True)
