@@ -973,3 +973,31 @@ def test_epochs_invalid_get_data(mock_lsl_stream):
     assert data.shape[0] == epochs._bufsize
     epochs.disconnect()
     stream.disconnect()
+
+
+def test_epochs_events(mock_lsl_stream):
+    """Test events array."""
+    stream = StreamLSL(
+        0.5, name=mock_lsl_stream.name, source_id=mock_lsl_stream.source_id
+    ).connect(acquisition_delay=0.1)
+    epochs = EpochsStream(
+        stream,
+        10,
+        event_channels="trg",
+        event_id=dict(a=1),
+        tmin=0,
+        tmax=0.1,
+        baseline=None,
+    )
+    with pytest.raises(RuntimeError, match="The EpochsStream is not connected"):
+        epochs.events  # noqa: B018
+    with pytest.raises(RuntimeError, match="The EpochsStream is not connected"):
+        epochs.info  # noqa: B018
+    epochs.connect(acquisition_delay=0.1)
+    assert_allclose(epochs.events, np.zeros(epochs._bufsize, dtype=np.int16))
+    while epochs.n_new_epochs == 0:
+        time.sleep(0.1)
+    n = epochs.n_new_epochs
+    assert np.nonzero(epochs.events)[0].size == n
+    epochs.disconnect()
+    stream.disconnect()
