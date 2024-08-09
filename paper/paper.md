@@ -52,7 +52,7 @@ A critical challenge in real-time applications is the need for direct access to 
 streams from measurement devices, which often rely on device-specific APIs. Adapting a
 real-time application from one device to another can be labor-intensive, as it requires
 modifications to the entire communication protocol. To address this issue, the Lab
-Streaming Layer (LSL) [@LSL] offers a standardized protocol for streaming time-series
+Streaming Layer [@LSL] offers a standardized protocol for streaming time-series
 data from multiple devices in real-time. LSL has gained significant popularity,
 particularly among EEG manufacturers, many of whom now provide LSL streaming
 capabilities out-of-the-box with their devices. By abstracting the complexities of
