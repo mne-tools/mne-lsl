@@ -231,10 +231,19 @@ class EpochsStream:
             status = "ON" if self.connected else "OFF"
         except Exception:
             status = "OFF"
-        return (
-            f"<EpochsStream {status} (n: {self._bufsize} between ({self._tmin}, "
-            f"{self._tmax}) seconds> connected to:\n\t{self._stream}"
-        )
+        repr_ = f"<EpochsStream {status}"
+        if (
+            hasattr(self, "_bufsize")
+            and hasattr(self, "_tmin")
+            and hasattr(self, "_tmax")
+        ):
+            repr_ += (
+                f" (n: {self._bufsize} between ({self._tmin}, {self._tmax} seconds)"
+            )
+        repr_ += ">"
+        if hasattr(self, "_stream"):
+            repr_ += f" connected to:\n\t{self._stream}"
+        return repr_
 
     def acquire(self) -> None:
         """Pull new epochs in the buffer.
