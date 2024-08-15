@@ -39,14 +39,12 @@ def data_path() -> Path:
     Returns
     -------
     path : Path
-        Path to the testing dataset, by default in ``"~/mne_data/mne_lsl"``.
+        Path to the testing dataset, by default in ``"~/mne_data/MNE-LSL-data"``.
     """
     path = (
-        Path(get_config("MNE_DATA", Path.home())).expanduser()
-        / "mne_data"
+        Path(get_config("MNE_DATA", Path.home() / "mne_data")).expanduser()
         / "MNE-LSL-data"
         / "testing"
     )
     base_url = "https://github.com/mscheltienne/mne-lsl-datasets/raw/main/testing"
-    registry = files("mne_lsl.datasets") / "testing-registry.txt"
-    return fetch_dataset(path, base_url, registry)
+    return fetch_dataset(path, base_url, _REGISTRY)
