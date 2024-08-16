@@ -72,8 +72,8 @@ class XMLElement:
         """
 
     def set_child_value(self, name, value):
-        """Set the text value of the (nameless) plain-text child of a named
-        child node.
+        """Set the text value of the (nameless) plain-text child of a named child
+        node.
         """
 
     def set_name(self, name):

@@ -26,7 +26,7 @@ sys.path.append(str(Path(__file__).parent / "_sphinxext"))
 
 project = "MNE-LSL"
 author = "M. Scheltienne, A. Desvachez, K. Lee"
-copyright = f"{date.today().year}, {author}"
+copyright = f"{date.today().year}, {author}"  # noqa: A001
 release = mne_lsl.__version__
 package = mne_lsl.__name__
 gh_url = "https://github.com/mne-tools/mne-lsl"

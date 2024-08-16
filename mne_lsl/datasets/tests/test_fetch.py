@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from typing import Optional
 
 
-@pytest.fixture()
+@pytest.fixture
 def license_file() -> Optional[Path]:
     """Find the license file if present."""
     fname = Path(__file__).parent.parent.parent.parent / "LICENSE"
@@ -22,7 +22,7 @@ def license_file() -> Optional[Path]:
         pytest.skip("License file not found.")
 
 
-@pytest.fixture()
+@pytest.fixture
 def license_url() -> str:
     """Return the URL for the license file."""
     return "https://raw.githubusercontent.com/mne-tools/mne-lsl/main/"

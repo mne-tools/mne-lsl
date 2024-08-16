@@ -28,7 +28,6 @@ from mne.io import read_raw_fif
 from mne_lsl.datasets import sample
 from mne_lsl.player import PlayerLSL as Player
 
-
 raw = read_raw_fif(sample.data_path() / "sample-ecg-raw.fif", preload=False)
 raw.crop(0, 3).load_data()
 player = Player(raw, chunk_size=200, n_repeat=1, name="example-process")

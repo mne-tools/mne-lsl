@@ -17,9 +17,9 @@ elif check_version("mne", "1.5"):
     from mne.io.meas_info import ContainsMixin, SetChannelsMixin
     from mne.io.pick import _picks_to_idx
 else:
+    from mne.channels.channels import SetChannelsMixin
     from mne.io.meas_info import ContainsMixin
     from mne.io.pick import _picks_to_idx
-    from mne.channels.channels import SetChannelsMixin
 
 from ..utils._checks import check_type, ensure_int, ensure_path
 from ..utils._docs import fill_doc

@@ -144,7 +144,7 @@ def test_ensure_detrend_str():
         _ensure_detrend_str(5.5)
 
 
-@pytest.fixture()
+@pytest.fixture
 def stim_channels_events() -> NDArray[np.int64]:
     """An event array that will be added to a set of stimulation channels."""
     return np.array(
@@ -161,7 +161,7 @@ def stim_channels_events() -> NDArray[np.int64]:
     )
 
 
-@pytest.fixture()
+@pytest.fixture
 def stim_channels(stim_channels_events: NDArray[np.int64]) -> NDArray[np.float64]:
     """A set of stimulation channels of shape (n_channels, n_samples)."""
     channels = np.zeros((2, 100))
@@ -188,7 +188,7 @@ def test_find_events_in_stim_channels(
         )
 
 
-@pytest.fixture()
+@pytest.fixture
 def events() -> NDArray[np.int64]:
     """Return a simple event array.
 
@@ -244,7 +244,7 @@ def test_prune_events(events: NDArray[np.int64]):
     assert_allclose(events_[:, 0], np.arange(20, 20 * (events_[:, 0].size + 1), 20) + 1)
 
 
-@pytest.fixture()
+@pytest.fixture
 def raw_with_stim_channel() -> BaseRaw:
     """Create a raw object with a stimulation channel.
 
@@ -266,6 +266,8 @@ def raw_with_stim_channel() -> BaseRaw:
 
 
 class DummyPlayer:
+    """Dummy player object containing the player attributes."""
+
     def __init__(self, /, **kwargs):
         self.__dict__.update(kwargs)
 
@@ -289,7 +291,7 @@ def _player_mock_lsl_stream(
     player.stop()
 
 
-@pytest.fixture()
+@pytest.fixture
 def mock_lsl_stream(raw_with_stim_channel, request, chunk_size):
     """Create a mock LSL stream streaming events on a stim channel."""
     manager = mp.Manager()
@@ -414,7 +416,7 @@ def test_epochs_without_event_stream_manual_acquisition(mock_lsl_stream):
     stream.disconnect()
 
 
-@pytest.fixture()
+@pytest.fixture
 def data_ones() -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     """Data array used for baseline correction test."""
     data = np.ones((2, 100, 5), dtype=np.float64)
@@ -529,7 +531,7 @@ def test_process_data_detrend_constant(
     assert_allclose(data, np.zeros(data.shape))
 
 
-@pytest.fixture()
+@pytest.fixture
 def data_detrend_linear() -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     """Data array used for detrending test."""
     data = [
@@ -589,7 +591,7 @@ def test_process_data_flat(data_ones: tuple[NDArray[np.float64], NDArray[np.floa
     assert data.shape[0] == 0
 
 
-@pytest.fixture()
+@pytest.fixture
 def data_reject():
     """Data array used for rejection test."""
     data = np.ones((2, 100, 5), dtype=np.float64)
@@ -644,7 +646,7 @@ def test_process_data_reject(
     assert data.shape[0] == 0
 
 
-@pytest.fixture()
+@pytest.fixture
 def data_reject_tmin_tmax():
     """Data array used for rejection based on segment test."""
     data = np.ones((2, 100, 5), dtype=np.float64)
@@ -687,7 +689,7 @@ def test_process_data_reject_tmin_tmax(
     assert data.shape[0] == 1
 
 
-@pytest.fixture()
+@pytest.fixture
 def raw_with_annotations(raw_with_stim_channel: BaseRaw) -> BaseRaw:
     """Create a raw object with annotations instead of a stim channel.
 
@@ -710,7 +712,7 @@ def raw_with_annotations(raw_with_stim_channel: BaseRaw) -> BaseRaw:
     return raw_with_stim_channel.drop_channels("trg").set_annotations(annotations)
 
 
-@pytest.fixture()
+@pytest.fixture
 def mock_lsl_stream_with_annotations(raw_with_annotations, request, chunk_size):
     """Create a mock LSL stream streaming events with annotations."""
     manager = mp.Manager()
@@ -793,7 +795,7 @@ def test_remove_empty_elements():
     assert ts.size == 4
 
 
-@pytest.fixture()
+@pytest.fixture
 def raw_with_annotations_and_first_samp() -> BaseRaw:
     """Raw with annotations and first_samp set."""
     fname = testing.data_path() / "mne-sample" / "sample_audvis_raw.fif"
@@ -811,7 +813,7 @@ def raw_with_annotations_and_first_samp() -> BaseRaw:
     return raw
 
 
-@pytest.fixture()
+@pytest.fixture
 def mock_lsl_stream_with_annotations_and_first_samp(
     raw_with_annotations_and_first_samp, request, chunk_size
 ):
@@ -833,7 +835,7 @@ def mock_lsl_stream_with_annotations_and_first_samp(
     process.kill()
 
 
-@pytest.mark.slow()
+@pytest.mark.slow
 @pytest.mark.timeout(30)  # takes under 9s locally
 def test_epochs_with_irregular_numerical_event_stream_and_first_samp(
     mock_lsl_stream_with_annotations_and_first_samp,

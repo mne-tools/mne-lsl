@@ -50,10 +50,7 @@ class StreamViewer:
     # --------------------------------------------------------------------
     @staticmethod
     def _check_stream_name(stream_name):  # noqa
-        """
-        Check that the stream_name is valid or search for a valid stream on
-        the network.
-        """
+        """Check that the name is valid or search for a valid stream on the network."""
         check_type(stream_name, (None, str), item_name="stream_name")
         streams = resolve_streams(name=stream_name)
         if len(streams) == 0:
