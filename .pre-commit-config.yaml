@@ -23,13 +23,6 @@ repos:
             args: [--write-changes]
             additional_dependencies: [tomli]
 
-    - repo: https://github.com/pycqa/pydocstyle
-      rev: 6.3.0
-      hooks:
-          - id: pydocstyle
-            files: mne_lsl
-            additional_dependencies: [tomli]
-
     - repo: https://github.com/mscheltienne/bibclean
       rev: 0.8.0
       hooks:

@@ -132,10 +132,7 @@ class ScopeEEG(_Scope):
             self._data_acquired -= car_ch.reshape((-1, 1))
 
     def _filter_trigger(self, tol=0.05):  # noqa
-        """
-        Cleans up the trigger signal by removing successive duplicates of a
-        trigger value.
-        """
+        """Remove successive duplicates of a trigger value."""
         self._trigger_acquired[
             np.abs(np.diff(self._trigger_acquired, prepend=[0])) <= tol
         ] = 0
@@ -143,16 +140,16 @@ class ScopeEEG(_Scope):
     # --------------------------------------------------------------------
     @property
     def channels_labels(self):
-        """
-        List of the channel labels present in the connected stream.
+        """List of the channel labels present in the connected stream.
+
         The TRIGGER channel is removed.
         """
         return self._channels_labels
 
     @property
     def nb_channels(self):
-        """
-        Number of channels present in the connected stream.
+        """Number of channels present in the connected stream.
+
         The TRIGGER channel is removed.
         """
         return self._nb_channels

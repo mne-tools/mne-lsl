@@ -36,9 +36,7 @@ class _Backend(ABC):
         self._selected_channels = copy.deepcopy(self._scope.selected_channels)
 
     def _init_variables(self):  # noqa
-        """
-        Initialize variables depending on xRange, yRange and selected_channels.
-        """
+        """Initialize variables depending on xRange, yRange and selected_channels."""
         logger.debug("Initialization of variables..")
 
         # xRange
@@ -50,10 +48,9 @@ class _Backend(ABC):
     # ------------------------ Trigger Events ----------------------
     @abstractmethod
     def _update_LPT_trigger_events(self, trigger_arr):  # noqa
-        """
-        Check if new LPT events (on the trigger channel) have entered the
-        buffer. New events are added to self._trigger_events and displayed
-        if needed.
+        """Check if new LPT events (on the trigger channel) have entered the buffer.
+
+        New events are added to self._trigger_events and displayed if needed.
         """
 
     def _clean_up_trigger_events(self):
@@ -69,10 +66,7 @@ class _Backend(ABC):
 
     @abstractmethod
     def _update_loop(self, *args, **kwargs):  # noqa
-        """
-        Main update loop retrieving data from the scope's buffer and updating
-        the Canvas.
-        """
+        """Update loop retrieving data from the buffer and updating the Canvas."""
         self._scope.update_loop()
 
     # --------------------------- Events ---------------------------
@@ -83,10 +77,9 @@ class _Backend(ABC):
     # --------------------------------------------------------------------
     @property
     def scope(self):
-        """
-        Scope connected to an Inlet acquiring the data and applying
-        filtering. The scope has a buffer of BUFFER_DURATION seconds
-        (default: 30s).
+        """Scope connected to an Inlet acquiring the data and applying filtering.
+
+        The scope has a buffer of BUFFER_DURATION seconds (default: 30s).
         """
         return self._scope
 
@@ -98,10 +91,7 @@ class _Backend(ABC):
     @xRange.setter
     @abstractmethod
     def xRange(self, xRange):
-        """
-        Called when the user changes the X-axis range/scale, i.e. the duration
-        of the plotting window.
-        """
+        """Called when the user changes the X-axis range/scale."""
 
     @property
     def yRange(self):
@@ -131,10 +121,7 @@ class _Backend(ABC):
     @show_LPT_trigger_events.setter
     @abstractmethod
     def show_LPT_trigger_events(self, show_LPT_trigger_events):
-        """
-        Called when the user ticks or untick the show_LPT_trigger_events
-        box.
-        """
+        """Called when the user ticks or untick the show_LPT_trigger_events box."""
 
 
 @fill_doc

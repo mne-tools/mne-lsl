@@ -37,10 +37,7 @@ class _Scope(ABC):
     # -------------------------- Main Loop -------------------------
     @abstractmethod
     def update_loop(self):  # noqa
-        """
-        Main update loop acquiring data from the LSL stream and filling the
-        scope's buffer.
-        """
+        """Update loop acquiring data from the stream and filling the scope's buffer."""
 
     @abstractmethod
     def _read_lsl_stream(self):

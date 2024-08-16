@@ -82,13 +82,13 @@ doc = [
   'sphinxcontrib-bibtex',
 ]
 full = ['mne_lsl[all]']
-stubs = ['isort', 'mypy', 'ruff>=0.1.8']
+stubs = ['isort', 'mypy', 'ruff>=0.5.4']
 style = [
   'bibclean',
   'codespell[toml]>=2.2.4',
   'isort',
-  'pydocstyle[toml]',
-  'ruff>=0.1.8',
+  'pre-commit',
+  'ruff>=0.5.4',
   'toml-sort',
   'yamllint',
 ]
@@ -145,13 +145,6 @@ multi_line_output = 3
 profile = 'black'
 py_version = 39
 
-[tool.pydocstyle]
-add_ignore = 'D100,D104,D107'
-convention = 'numpy'
-ignore-decorators = '(copy_doc|property|.*setter|.*getter|pyqtSlot|Slot)'
-match = '^(?!setup|__init__|test_|_typing).*\.py'
-match-dir = '^mne_lsl.*'
-
 [tool.pytest.ini_options]
 addopts = ['--color=yes', '--cov-report=', '--durations=20', '--junit-xml=junit-results.xml', '--strict-config', '--tb=short', '-ra', '-v']
 junit_family = 'xunit2'
@@ -172,17 +165,25 @@ line-ending = "lf"
 
 [tool.ruff.lint]
 ignore = []
-select = ['A', 'B', 'E', 'F', 'G', 'LOG', 'NPY', 'PIE', 'PT', 'T20', 'UP', 'W']
+select = ['A', 'B', 'D', 'E', 'F', 'G', 'LOG', 'NPY', 'PIE', 'PT', 'T20', 'UP', 'W']
 
 [tool.ruff.lint.per-file-ignores]
 '*' = [
   'B904', # 'Within an except clause, raise exceptions with raise ... from ...'
+  'D100', # undocumented public module
+  'D104', # undocumented public package
+  'D107', # undocumented public init
   'UP007', # 'Use `X | Y` for type annotations', requires python 3.10
 ]
 '*.pyi' = ['E501', 'F811']
 '__init__.py' = ['F401']
+'*/stream_viewer/backends/*' = ['D401']
 'examples/*' = ['B018', 'E402', 'F811', 'T201']
 'tutorials/*' = ['B018', 'E402', 'F811', 'T201']
+
+[tool.ruff.lint.pydocstyle]
+convention = 'numpy'
+ignore-decorators = ["mne_lsl.utils._docs.copy_doc", "qtpy.QtCore.Slot"]
 
 [tool.setuptools]
 include-package-data = false
