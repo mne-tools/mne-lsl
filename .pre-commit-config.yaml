@@ -14,7 +14,6 @@ repos:
             files: mne_lsl
           - id: ruff-format
             name: ruff formatter
-            files: mne_lsl
 
     - repo: https://github.com/codespell-project/codespell
       rev: v2.3.0

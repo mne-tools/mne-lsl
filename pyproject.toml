@@ -175,12 +175,12 @@ select = ['A', 'B', 'D', 'E', 'F', 'G', 'LOG', 'NPY', 'PIE', 'PT', 'T20', 'UP', 
   'D107', # undocumented public init
   'UP007', # 'Use `X | Y` for type annotations', requires python 3.10
 ]
-'*.pyi' = ['E501', 'F811']
+'*.pyi' = ['D', 'E501', 'F811']
 '__init__.py' = ['F401']
 '*/stream_viewer/backends/*' = ['D401']
 '*/tests/*' = ['D401']
-'examples/*' = ['B018', 'E402', 'F811', 'T201']
-'tutorials/*' = ['B018', 'E402', 'F811', 'T201']
+'examples/*' = ['B018', 'D205', 'D400', 'E402', 'F811', 'T201']
+'tutorials/*' = ['B018', 'D205', 'D400', 'E402', 'F811', 'T201']
 
 [tool.ruff.lint.pydocstyle]
 convention = 'numpy'
