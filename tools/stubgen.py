@@ -62,7 +62,7 @@ for stub in stubs:
 
 # run ruff to improve stub style
 execution = subprocess.run(
-    ["ruff", "check", str(directory), "--fix", "--config", config]
+    ["ruff", "check", str(directory), "--fix", "--unsafe-fixes", "--config", config]
 )
 if execution.returncode:
     sys.exit(execution.returncode)
