@@ -136,12 +136,7 @@ junit_family = 'xunit2'
 minversion = '8.0'
 
 [tool.ruff]
-extend-exclude = [
-  '.github/*',
-  'doc/*',
-  'pyproject.toml',
-  'setup.py',
-]
+extend-exclude = []
 line-length = 88
 
 [tool.ruff.format]
