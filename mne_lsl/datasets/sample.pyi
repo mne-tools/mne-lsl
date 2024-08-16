@@ -22,5 +22,5 @@ def data_path() -> Path:
     Returns
     -------
     path : Path
-        Path to the sample dataset, by default in ``"~/mne_data/MNE-LSL"``.
+        Path to the sample dataset, by default in ``"~/mne_data/MNE-LSL-data"``.
     """
