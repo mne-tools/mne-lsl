@@ -1,10 +1,4 @@
 repos:
-    - repo: https://github.com/pycqa/isort
-      rev: 5.13.2
-      hooks:
-          - id: isort
-            files: mne_lsl
-
     - repo: https://github.com/astral-sh/ruff-pre-commit
       rev: v0.6.0
       hooks:

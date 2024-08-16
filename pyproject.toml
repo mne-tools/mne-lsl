@@ -82,11 +82,10 @@ doc = [
   'sphinxcontrib-bibtex',
 ]
 full = ['mne_lsl[all]']
-stubs = ['isort', 'mypy', 'ruff>=0.6.0']
+stubs = ['mypy', 'ruff>=0.6.0']
 style = [
   'bibclean',
   'codespell[toml]>=2.2.4',
-  'isort',
   'pre-commit',
   'ruff>=0.6.0',
   'toml-sort',
@@ -131,20 +130,6 @@ omit = [
   '**/tests/**',
 ]
 
-[tool.isort]
-extend_skip_glob = [
-  '.github/*',
-  'doc/*',
-  'examples/*',
-  'pyproject.toml',
-  'setup.py',
-  'tutorials/*',
-]
-line_length = 88
-multi_line_output = 3
-profile = 'black'
-py_version = 39
-
 [tool.pytest.ini_options]
 addopts = ['--color=yes', '--cov-report=', '--durations=20', '--junit-xml=junit-results.xml', '--strict-config', '--tb=short', '-ra', '-v']
 junit_family = 'xunit2'
@@ -165,7 +150,7 @@ line-ending = "lf"
 
 [tool.ruff.lint]
 ignore = []
-select = ['A', 'B', 'D', 'E', 'F', 'G', 'LOG', 'NPY', 'PIE', 'PT', 'T20', 'UP', 'W']
+select = ['A', 'B', 'D', 'E', 'F', 'G', 'I', 'LOG', 'NPY', 'PIE', 'PT', 'T20', 'UP', 'W']
 
 [tool.ruff.lint.per-file-ignores]
 '*' = [
