@@ -165,10 +165,10 @@ plt.show()
 from time import sleep
 
 import numpy as np
-from mne_lsl.stream import StreamLSL
 from numpy.typing import NDArray
 from scipy.signal import find_peaks
 
+from mne_lsl.stream import StreamLSL
 
 ECG_HEIGHT: float = 98.0  # percentile height constraint, in %
 ECG_DISTANCE: float = 0.5  # distance constraint, in seconds
@@ -253,10 +253,10 @@ class Detector:
 from time import sleep
 
 import numpy as np
-from mne_lsl.stream import StreamLSL
 from numpy.typing import NDArray
 from scipy.signal import find_peaks
 
+from mne_lsl.stream import StreamLSL
 
 ECG_HEIGHT: float = 98.0  # percentile height constraint, in %
 ECG_DISTANCE: float = 0.5  # distance constraint, in seconds
