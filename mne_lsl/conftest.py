@@ -108,7 +108,7 @@ def _closer():
     outlets.clear()
 
 
-@pytest.fixture()
+@pytest.fixture
 def close_io():
     """Return function that will close inlets and outlets if present."""
     return _closer
@@ -127,13 +127,13 @@ def fname(tmp_path_factory) -> Path:
     return fname_mod
 
 
-@pytest.fixture()
+@pytest.fixture
 def raw(fname: Path) -> BaseRaw:
     """Return the raw file corresponding to fname."""
     return read_raw_fif(fname, preload=True)
 
 
-@pytest.fixture()
+@pytest.fixture
 def raw_annotations(raw: BaseRaw) -> BaseRaw:
     """Return a raw file with annotations."""
     annotations = Annotations(
