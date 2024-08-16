@@ -82,13 +82,13 @@ doc = [
   'sphinxcontrib-bibtex',
 ]
 full = ['mne_lsl[all]']
-stubs = ['isort', 'mypy', 'ruff>=0.5.4']
+stubs = ['isort', 'mypy', 'ruff>=0.6.0']
 style = [
   'bibclean',
   'codespell[toml]>=2.2.4',
   'isort',
   'pre-commit',
-  'ruff>=0.5.4',
+  'ruff>=0.6.0',
   'toml-sort',
   'yamllint',
 ]
@@ -176,9 +176,9 @@ select = ['A', 'B', 'D', 'E', 'F', 'G', 'LOG', 'NPY', 'PIE', 'PT', 'T20', 'UP', 
   'UP007', # 'Use `X | Y` for type annotations', requires python 3.10
 ]
 '*.pyi' = ['D', 'E501', 'F811']
-'__init__.py' = ['F401']
 '*/stream_viewer/backends/*' = ['D401']
 '*/tests/*' = ['D401']
+'__init__.py' = ['F401']
 'examples/*' = ['B018', 'D205', 'D400', 'E402', 'F811', 'T201']
 'tutorials/*' = ['B018', 'D205', 'D400', 'E402', 'F811', 'T201']
 
