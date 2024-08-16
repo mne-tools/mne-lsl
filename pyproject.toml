@@ -178,6 +178,7 @@ select = ['A', 'B', 'D', 'E', 'F', 'G', 'LOG', 'NPY', 'PIE', 'PT', 'T20', 'UP', 
 '*.pyi' = ['E501', 'F811']
 '__init__.py' = ['F401']
 '*/stream_viewer/backends/*' = ['D401']
+'*/tests/*' = ['D401']
 'examples/*' = ['B018', 'E402', 'F811', 'T201']
 'tutorials/*' = ['B018', 'E402', 'F811', 'T201']
 

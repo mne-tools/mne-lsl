@@ -55,15 +55,15 @@ class XMLElement:
         return XMLElement(lib.lsl_parent(self.e))
 
     # -- Content Queries ------------------------------------------------------
-    def empty(self):  # noqa: D401
-        """True if this node is empty."""
+    def empty(self):
+        """True if this node is empty."""  # noqa: D401
         return bool(lib.lsl_empty(self.e))
 
-    def is_text(self):  # noqa: D401
+    def is_text(self):
         """True if this node is a text body (instead of an XML element).
 
         True both for plain char data and CData.
-        """
+        """  # noqa: D401
         return bool(lib.lsl_is_text(self.e))
 
     def name(self):
@@ -87,26 +87,26 @@ class XMLElement:
         return res.decode("utf-8")
 
     # -- Modification ---------------------------------------------------------
-    def append_child_value(self, name, value):  # noqa: D205, D400
+    def append_child_value(self, name, value):
         """Append a child node with a given name, which has a (nameless) plain-text
         child with the given text value.
-        """
+        """  # noqa: D205, D400
         return XMLElement(
             lib.lsl_append_child_value(self.e, str.encode(name), str.encode(value))
         )
 
-    def prepend_child_value(self, name, value):  # noqa: D205, D400
+    def prepend_child_value(self, name, value):
         """Prepend a child node with a given name, which has a (nameless) plain-text
         child with the given text value.
-        """
+        """  # noqa: D205, D400
         return XMLElement(
             lib.lsl_prepend_child_value(self.e, str.encode(name), str.encode(value))
         )
 
-    def set_child_value(self, name, value):  # noqa: D205, D400
-        """Set the text value of the (nameless) plain-text child of a named
-        child node.
-        """
+    def set_child_value(self, name, value):
+        """Set the text value of the (nameless) plain-text child of a named child
+        node.
+        """  # noqa: D205, D400
         return XMLElement(
             lib.lsl_set_child_value(self.e, str.encode(name), str.encode(value))
         )
