@@ -125,10 +125,10 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
             channel indices. In lists, channel *type* strings (e.g., ``['meg',
             'eeg']``) will pick channels of those types, channel *name* strings (e.g.,
             ``['MEG0111', 'MEG2623']`` will pick the given channels. Can also be the
-            string values "all" to pick all channels, or "data" to pick :term:`data
-            channels`. None (default) will pick all channels. Note that channels in
-            ``info['bads']`` *will be included* if their names or indices are
-            explicitly provided.
+            string values ``'all'`` to pick all channels, or ``'data'`` to pick
+            :term:`data channels`. None (default) will pick all channels. Note that
+            channels in ``info['bads']`` *will be included* if their names or indices
+            are explicitly provided.
         only_data_chs : bool
             Whether to ignore non-data channels. Default is ``False``.
 
