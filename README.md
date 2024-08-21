@@ -44,7 +44,7 @@ with the First Prize Award (2016).
 [**Arnaud Desvachez**](https://github.com/dnastars) for the
 [Fondation Campus Biotech Geneva (FCBG)](https://github.com/fcbg-hnp-meeg) and
 development is still supported by the
-[Fondation Campus Biotech Geneva (FCBG)](https://hnp.fcbg.ch/).
+[Fondation Campus Biotech Geneva (FCBG)](https://fcbg.ch/).
 
 # Copyright and license
 
