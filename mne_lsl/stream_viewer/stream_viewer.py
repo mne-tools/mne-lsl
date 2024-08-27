@@ -9,14 +9,12 @@ from ..utils.logs import _use_log_level, logger
 class StreamViewer:
     """Class for visualizing the signals coming from an LSL stream.
 
-    The stream viewer will connect to only one LSL stream. If ``stream_name``
-    is set to ``None``, an automatic search is performed followed by a prompt
-    if multiple non-markers streams are found.
+    The stream viewer will connect to only one LSL stream.
 
     Parameters
     ----------
     stream_name : str | None
-        Servers' name to connect to. ``None`` will prompt the user.
+        Servers' name to connect to.
     """
 
     def __init__(self, stream_name=None):
@@ -24,9 +22,6 @@ class StreamViewer:
 
     def start(self, bufsize=0.2):
         """Connect to the selected amplifier and plot the streamed data.
-
-        If ``stream_name`` is not provided, look for available streams on the
-        network.
 
         Parameters
         ----------
