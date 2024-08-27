@@ -1,13 +1,9 @@
 import sys
 import time
 
-from qtpy.QtWidgets import QApplication
-
 from ..lsl import StreamInlet, resolve_streams
 from ..utils._checks import check_type
 from ..utils.logs import _use_log_level, logger
-from .control_gui.control_eeg import ControlGUI_EEG
-from .scope.scope_eeg import ScopeEEG
 
 
 class StreamViewer:
@@ -39,6 +35,11 @@ class StreamViewer:
             The default ``0.2`` should work in most cases since data is fetched
             every 20 ms.
         """
+        from qtpy.QtWidgets import QApplication
+
+        from .control_gui.control_eeg import ControlGUI_EEG
+        from .scope.scope_eeg import ScopeEEG
+
         self._inlet = StreamInlet(self._sinfo)
         self._inlet.open_stream()
         time.sleep(bufsize)  # Delay to fill the LSL buffer.
