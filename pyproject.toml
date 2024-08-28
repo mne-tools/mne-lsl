@@ -72,7 +72,6 @@ doc = [
   'matplotlib',
   'memory-profiler',
   'numpydoc',
-  'pyqt5',
   'scikit-learn',
   'sphinx!=7.2.*',
   'sphinx-copybutton',
@@ -91,7 +90,7 @@ style = [
   'toml-sort',
   'yamllint',
 ]
-test = ['pyqt5', 'pytest-cov', 'pytest-randomly', 'pytest-timeout', 'pytest>=8.0']
+test = ['pytest-cov', 'pytest-randomly', 'pytest-timeout', 'pytest>=8.0']
 
 [project.scripts]
 mne-lsl = 'mne_lsl.commands.main:run'
