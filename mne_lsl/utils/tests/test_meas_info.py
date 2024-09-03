@@ -1,5 +1,3 @@
-"""Test meas_info.py"""
-
 import uuid
 
 import pytest

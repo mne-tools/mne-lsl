@@ -33,20 +33,18 @@ def _make_registry(
     pooch.make_registry(folder, output=output, recursive=True)
 
 
-def data_path() -> Path:
+def data_path() -> Path:  # pragma: no cover
     """Return the path to the sample dataset, downloaded if needed.
 
     Returns
     -------
     path : Path
-        Path to the sample dataset, by default in ``"~/mne_data/MNE-LSL"``.
-    """  # pragma: no cover
+        Path to the sample dataset, by default in ``"~/mne_data/MNE-LSL-data"``.
+    """
     path = (
-        Path(get_config("MNE_DATA", Path.home())).expanduser()
-        / "mne_data"
+        Path(get_config("MNE_DATA", Path.home() / "mne_data")).expanduser()
         / "MNE-LSL-data"
         / "sample"
     )
     base_url = "https://github.com/mscheltienne/mne-lsl-datasets/raw/main/sample"
-    registry = files("mne_lsl.datasets") / "sample-registry.txt"
-    return fetch_dataset(path, base_url, registry)
+    return fetch_dataset(path, base_url, _REGISTRY)

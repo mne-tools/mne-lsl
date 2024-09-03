@@ -284,10 +284,10 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             channel indices. In lists, channel *type* strings (e.g., ``['meg',
             'eeg']``) will pick channels of those types, channel *name* strings (e.g.,
             ``['MEG0111', 'MEG2623']`` will pick the given channels. Can also be the
-            string values "all" to pick all channels, or "data" to pick :term:`data
-            channels`. None (default) will pick all channels. Note that channels in
-            ``info['bads']`` *will be included* if their names or indices are
-            explicitly provided.
+            string values ``'all'`` to pick all channels, or ``'data'`` to pick
+            :term:`data channels`. None (default) will pick all channels. Note that
+            channels in ``info['bads']`` *will be included* if their names or indices
+            are explicitly provided.
         iir_params : dict | None
             Dictionary of parameters to use for IIR filtering. If None, a 4th order
             Butterworth will be used. For more information, see
@@ -329,10 +329,10 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             channel indices. In lists, channel *type* strings (e.g., ``['meg',
             'eeg']``) will pick channels of those types, channel *name* strings (e.g.,
             ``['MEG0111', 'MEG2623']`` will pick the given channels. Can also be the
-            string values "all" to pick all channels, or "data" to pick :term:`data
-            channels`. None (default) will pick all channels. Note that channels in
-            ``info['bads']`` *will be included* if their names or indices are
-            explicitly provided.
+            string values ``'all'`` to pick all channels, or ``'data'`` to pick
+            :term:`data channels`. None (default) will pick all channels. Note that
+            channels in ``info['bads']`` *will be included* if their names or indices
+            are explicitly provided.
         unique : bool
             Whether to return only unique channel types. Default is ``False``.
         only_data_chs : bool
@@ -358,10 +358,10 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             channel indices. In lists, channel *type* strings (e.g., ``['meg',
             'eeg']``) will pick channels of those types, channel *name* strings (e.g.,
             ``['MEG0111', 'MEG2623']`` will pick the given channels. Can also be the
-            string values "all" to pick all channels, or "data" to pick :term:`data
-            channels`. None (default) will pick all channels. Note that channels in
-            ``info['bads']`` *will be included* if their names or indices are
-            explicitly provided.
+            string values ``'all'`` to pick all channels, or ``'data'`` to pick
+            :term:`data channels`. None (default) will pick all channels. Note that
+            channels in ``info['bads']`` *will be included* if their names or indices
+            are explicitly provided.
         only_data_chs : bool
             Whether to ignore non-data channels. Default is ``False``.
 
@@ -396,10 +396,10 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             channel indices. In lists, channel *type* strings (e.g., ``['meg',
             'eeg']``) will pick channels of those types, channel *name* strings (e.g.,
             ``['MEG0111', 'MEG2623']`` will pick the given channels. Can also be the
-            string values "all" to pick all channels, or "data" to pick :term:`data
-            channels`. None (default) will pick all channels. Note that channels in
-            ``info['bads']`` *will be included* if their names or indices are
-            explicitly provided.
+            string values ``'all'`` to pick all channels, or ``'data'`` to pick
+            :term:`data channels`. None (default) will pick all channels. Note that
+            channels in ``info['bads']`` *will be included* if their names or indices
+            are explicitly provided.
         exclude : str | list of str | tuple of str
             Set of channels to exclude, only used when picking based on types (e.g.,
             ``exclude="bads"`` when ``picks="meg"``) or when picking is set to ``None``.
@@ -466,10 +466,10 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             channel indices. In lists, channel *type* strings (e.g., ``['meg',
             'eeg']``) will pick channels of those types, channel *name* strings (e.g.,
             ``['MEG0111', 'MEG2623']`` will pick the given channels. Can also be the
-            string values "all" to pick all channels, or "data" to pick :term:`data
-            channels`. None (default) will pick all channels. Note that channels in
-            ``info['bads']`` *will be included* if their names or indices are
-            explicitly provided.
+            string values ``'all'`` to pick all channels, or ``'data'`` to pick
+            :term:`data channels`. None (default) will pick all channels. Note that
+            channels in ``info['bads']`` *will be included* if their names or indices
+            are explicitly provided.
         notch_widths : float | None
             Width of the stop band in Hz. If ``None``, ``freqs / 200`` is used.
         trans_bandwidth : float
@@ -517,8 +517,8 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             channel indices. In lists, channel *type* strings (e.g., ``['meg',
             'eeg']``) will pick channels of those types, channel *name* strings (e.g.,
             ``['MEG0111', 'MEG2623']`` will pick the given channels. Can also be the
-            string values "all" to pick all channels, or "data" to pick :term:`data
-            channels`. None (default) will pick all channels.
+            string values ``'all'`` to pick all channels, or ``'data'`` to pick
+            :term:`data channels`. None (default) will pick all channels.
         exclude : str | list of str
             Set of channels to exclude, only used when picking is based on types, e.g.
             ``exclude='bads'`` when ``picks="meg"``.

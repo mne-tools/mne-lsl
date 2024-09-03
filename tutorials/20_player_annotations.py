@@ -38,7 +38,6 @@ from mne.viz import set_browser_backend
 from mne_lsl.player import PlayerLSL
 from mne_lsl.stream import StreamLSL
 
-
 annotations = Annotations(
     onset=[1, 2, 3],
     duration=[0.1, 0.2, 0.3],

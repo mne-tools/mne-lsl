@@ -72,7 +72,6 @@ doc = [
   'matplotlib',
   'memory-profiler',
   'numpydoc',
-  'pyqt5',
   'scikit-learn',
   'sphinx!=7.2.*',
   'sphinx-copybutton',
@@ -82,17 +81,16 @@ doc = [
   'sphinxcontrib-bibtex',
 ]
 full = ['mne_lsl[all]']
-stubs = ['isort', 'mypy', 'ruff>=0.1.8']
+stubs = ['mypy', 'ruff>=0.6.0']
 style = [
   'bibclean',
   'codespell[toml]>=2.2.4',
-  'isort',
-  'pydocstyle[toml]',
-  'ruff>=0.1.8',
+  'pre-commit',
+  'ruff>=0.6.0',
   'toml-sort',
   'yamllint',
 ]
-test = ['pyqt5', 'pytest-cov', 'pytest-randomly', 'pytest-timeout', 'pytest>=8.0']
+test = ['pytest-cov', 'pytest-randomly', 'pytest-timeout', 'pytest>=8.0']
 
 [project.scripts]
 mne-lsl = 'mne_lsl.commands.main:run'
@@ -131,39 +129,13 @@ omit = [
   '**/tests/**',
 ]
 
-[tool.isort]
-extend_skip_glob = [
-  '.github/*',
-  'doc/*',
-  'examples/*',
-  'pyproject.toml',
-  'setup.py',
-  'tutorials/*',
-]
-line_length = 88
-multi_line_output = 3
-profile = 'black'
-py_version = 39
-
-[tool.pydocstyle]
-add_ignore = 'D100,D104,D107'
-convention = 'numpy'
-ignore-decorators = '(copy_doc|property|.*setter|.*getter|pyqtSlot|Slot)'
-match = '^(?!setup|__init__|test_|_typing).*\.py'
-match-dir = '^mne_lsl.*'
-
 [tool.pytest.ini_options]
 addopts = ['--color=yes', '--cov-report=', '--durations=20', '--junit-xml=junit-results.xml', '--strict-config', '--tb=short', '-ra', '-v']
 junit_family = 'xunit2'
 minversion = '8.0'
 
 [tool.ruff]
-extend-exclude = [
-  '.github/*',
-  'doc/*',
-  'pyproject.toml',
-  'setup.py',
-]
+extend-exclude = []
 line-length = 88
 
 [tool.ruff.format]
@@ -172,17 +144,26 @@ line-ending = "lf"
 
 [tool.ruff.lint]
 ignore = []
-select = ['A', 'B', 'E', 'F', 'G', 'LOG', 'NPY', 'PIE', 'PT', 'T20', 'UP', 'W']
+select = ['A', 'B', 'D', 'E', 'F', 'G', 'I', 'LOG', 'NPY', 'PIE', 'PT', 'T20', 'UP', 'W']
 
 [tool.ruff.lint.per-file-ignores]
 '*' = [
   'B904', # 'Within an except clause, raise exceptions with raise ... from ...'
+  'D100', # 'Missing docstring in public module'
+  'D104', # 'Missing docstring in public package'
+  'D107', # 'Missing docstring in __init__'
   'UP007', # 'Use `X | Y` for type annotations', requires python 3.10
 ]
-'*.pyi' = ['E501', 'F811']
+'*.pyi' = ['D', 'E501', 'F811']
+'*/stream_viewer/backends/*' = ['D401']
+'*/tests/*' = ['D401']
 '__init__.py' = ['F401']
-'examples/*' = ['B018', 'E402', 'F811', 'T201']
-'tutorials/*' = ['B018', 'E402', 'F811', 'T201']
+'examples/*' = ['B018', 'D205', 'D400', 'E402', 'F811', 'T201']
+'tutorials/*' = ['B018', 'D205', 'D400', 'E402', 'F811', 'T201']
+
+[tool.ruff.lint.pydocstyle]
+convention = 'numpy'
+ignore-decorators = ["mne_lsl.utils._docs.copy_doc", "qtpy.QtCore.Slot"]
 
 [tool.setuptools]
 include-package-data = false

@@ -144,7 +144,7 @@ def test_ensure_detrend_str():
         _ensure_detrend_str(5.5)
 
 
-@pytest.fixture()
+@pytest.fixture
 def stim_channels_events() -> NDArray[np.int64]:
     """An event array that will be added to a set of stimulation channels."""
     return np.array(
@@ -161,7 +161,7 @@ def stim_channels_events() -> NDArray[np.int64]:
     )
 
 
-@pytest.fixture()
+@pytest.fixture
 def stim_channels(stim_channels_events: NDArray[np.int64]) -> NDArray[np.float64]:
     """A set of stimulation channels of shape (n_channels, n_samples)."""
     channels = np.zeros((2, 100))
@@ -188,7 +188,7 @@ def test_find_events_in_stim_channels(
         )
 
 
-@pytest.fixture()
+@pytest.fixture
 def events() -> NDArray[np.int64]:
     """Return a simple event array.
 
@@ -244,7 +244,7 @@ def test_prune_events(events: NDArray[np.int64]):
     assert_allclose(events_[:, 0], np.arange(20, 20 * (events_[:, 0].size + 1), 20) + 1)
 
 
-@pytest.fixture()
+@pytest.fixture
 def raw_with_stim_channel() -> BaseRaw:
     """Create a raw object with a stimulation channel.
 
@@ -266,6 +266,8 @@ def raw_with_stim_channel() -> BaseRaw:
 
 
 class DummyPlayer:
+    """Dummy player object containing the player attributes."""
+
     def __init__(self, /, **kwargs):
         self.__dict__.update(kwargs)
 
@@ -289,7 +291,7 @@ def _player_mock_lsl_stream(
     player.stop()
 
 
-@pytest.fixture()
+@pytest.fixture
 def mock_lsl_stream(raw_with_stim_channel, request, chunk_size):
     """Create a mock LSL stream streaming events on a stim channel."""
     manager = mp.Manager()
@@ -414,7 +416,7 @@ def test_epochs_without_event_stream_manual_acquisition(mock_lsl_stream):
     stream.disconnect()
 
 
-@pytest.fixture()
+@pytest.fixture
 def data_ones() -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     """Data array used for baseline correction test."""
     data = np.ones((2, 100, 5), dtype=np.float64)
@@ -529,7 +531,7 @@ def test_process_data_detrend_constant(
     assert_allclose(data, np.zeros(data.shape))
 
 
-@pytest.fixture()
+@pytest.fixture
 def data_detrend_linear() -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     """Data array used for detrending test."""
     data = [
@@ -589,7 +591,7 @@ def test_process_data_flat(data_ones: tuple[NDArray[np.float64], NDArray[np.floa
     assert data.shape[0] == 0
 
 
-@pytest.fixture()
+@pytest.fixture
 def data_reject():
     """Data array used for rejection test."""
     data = np.ones((2, 100, 5), dtype=np.float64)
@@ -644,7 +646,7 @@ def test_process_data_reject(
     assert data.shape[0] == 0
 
 
-@pytest.fixture()
+@pytest.fixture
 def data_reject_tmin_tmax():
     """Data array used for rejection based on segment test."""
     data = np.ones((2, 100, 5), dtype=np.float64)
@@ -687,7 +689,7 @@ def test_process_data_reject_tmin_tmax(
     assert data.shape[0] == 1
 
 
-@pytest.fixture()
+@pytest.fixture
 def raw_with_annotations(raw_with_stim_channel: BaseRaw) -> BaseRaw:
     """Create a raw object with annotations instead of a stim channel.
 
@@ -710,7 +712,7 @@ def raw_with_annotations(raw_with_stim_channel: BaseRaw) -> BaseRaw:
     return raw_with_stim_channel.drop_channels("trg").set_annotations(annotations)
 
 
-@pytest.fixture()
+@pytest.fixture
 def mock_lsl_stream_with_annotations(raw_with_annotations, request, chunk_size):
     """Create a mock LSL stream streaming events with annotations."""
     manager = mp.Manager()
@@ -793,7 +795,7 @@ def test_remove_empty_elements():
     assert ts.size == 4
 
 
-@pytest.fixture()
+@pytest.fixture
 def raw_with_annotations_and_first_samp() -> BaseRaw:
     """Raw with annotations and first_samp set."""
     fname = testing.data_path() / "mne-sample" / "sample_audvis_raw.fif"
@@ -811,7 +813,7 @@ def raw_with_annotations_and_first_samp() -> BaseRaw:
     return raw
 
 
-@pytest.fixture()
+@pytest.fixture
 def mock_lsl_stream_with_annotations_and_first_samp(
     raw_with_annotations_and_first_samp, request, chunk_size
 ):
@@ -833,7 +835,7 @@ def mock_lsl_stream_with_annotations_and_first_samp(
     process.kill()
 
 
-@pytest.mark.slow()
+@pytest.mark.slow
 @pytest.mark.timeout(30)  # takes under 9s locally
 def test_epochs_with_irregular_numerical_event_stream_and_first_samp(
     mock_lsl_stream_with_annotations_and_first_samp,
@@ -874,3 +876,130 @@ def test_epochs_with_irregular_numerical_event_stream_and_first_samp(
     epochs.disconnect()
     stream.disconnect()
     event_stream.disconnect()
+
+
+@pytest.mark.filterwarnings(
+    "ignore:The stream will be disconnected while EpochsStream.*:RuntimeWarning"
+)
+def test_epochs_invalid(mock_lsl_stream):
+    """Test creating invalid epochs."""
+    stream = StreamLSL(
+        0.5, name=mock_lsl_stream.name, source_id=mock_lsl_stream.source_id
+    )
+    with pytest.raises(RuntimeError, match="The Stream must be a connected regularly"):
+        EpochsStream(
+            stream,
+            10,
+            event_channels="trg",
+            event_id=dict(a=1),
+            tmin=0,
+            tmax=0.1,
+            baseline=None,
+        )
+
+    stream.connect(acquisition_delay=0)
+    with pytest.raises(ValueError, match="must be greater than 'tmin'"):
+        EpochsStream(
+            stream,
+            10,
+            event_channels="trg",
+            event_id=dict(a=1),
+            tmin=0.2,
+            tmax=0.1,
+            baseline=None,
+        )
+    with pytest.raises(ValueError, match="must be greater than 'tmin'"):
+        EpochsStream(
+            stream,
+            10,
+            event_channels="trg",
+            event_id=dict(a=1),
+            tmin=0.1,
+            tmax=0.1,
+            baseline=None,
+        )
+
+    with pytest.raises(ValueError, match="buffer size of the Stream must be at least"):
+        EpochsStream(
+            stream,
+            10,
+            event_channels="trg",
+            event_id=dict(a=1),
+            tmin=0.1,
+            tmax=0.8,
+            baseline=None,
+        )
+    with pytest.warns(RuntimeWarning, match="buffer size of the Stream is longer"):
+        EpochsStream(
+            stream,
+            10,
+            event_channels="trg",
+            event_id=dict(a=1),
+            tmin=0.1,
+            tmax=0.55,
+            baseline=None,
+        )
+
+    with pytest.raises(ValueError, match="number of epochs in the buffer, must be"):
+        EpochsStream(
+            stream,
+            -101,
+            event_channels="trg",
+            event_id=dict(a=1),
+            tmin=0.1,
+            tmax=0.2,
+            baseline=None,
+        )
+
+    stream.disconnect()
+
+
+def test_epochs_invalid_get_data(mock_lsl_stream):
+    """Test invalid get_data() calls."""
+    stream = StreamLSL(
+        0.5, name=mock_lsl_stream.name, source_id=mock_lsl_stream.source_id
+    ).connect(acquisition_delay=0.1)
+    epochs = EpochsStream(
+        stream,
+        10,
+        event_channels="trg",
+        event_id=dict(a=1),
+        tmin=0,
+        tmax=0.1,
+        baseline=None,
+    ).connect(acquisition_delay=0.1)
+    with pytest.raises(ValueError, match="The number of epochs to retrieve must"):
+        epochs.get_data(n_epochs=-1)
+    with pytest.warns(RuntimeWarning, match="is greater than the buffer size"):
+        data = epochs.get_data(n_epochs=101)
+    assert data.shape[0] == epochs._bufsize
+    epochs.disconnect()
+    stream.disconnect()
+
+
+def test_epochs_events(mock_lsl_stream):
+    """Test events array."""
+    stream = StreamLSL(
+        6, name=mock_lsl_stream.name, source_id=mock_lsl_stream.source_id
+    ).connect(acquisition_delay=0.1)
+    epochs = EpochsStream(
+        stream,
+        10,
+        event_channels="trg",
+        event_id=dict(a=1),
+        tmin=0,
+        tmax=4,
+        baseline=None,
+    )
+    with pytest.raises(RuntimeError, match="The EpochsStream is not connected"):
+        epochs.events  # noqa: B018
+    with pytest.raises(RuntimeError, match="The EpochsStream is not connected"):
+        epochs.info  # noqa: B018
+    epochs.connect(acquisition_delay=0.1)
+    assert_allclose(epochs.events, np.zeros(epochs._bufsize, dtype=np.int16))
+    while epochs.n_new_epochs == 0:
+        time.sleep(0.1)
+    n = epochs.n_new_epochs
+    assert np.nonzero(epochs.events)[0].size == n
+    epochs.disconnect()
+    stream.disconnect()

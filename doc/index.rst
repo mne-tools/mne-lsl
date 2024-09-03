@@ -58,7 +58,7 @@ Supporting institutions
     :width: 100
 
 The development of ``MNE-LSL`` is supported by the
-`Fondation Campus Biotech Geneva <fcbg hnp_>`_.
+`Fondation Campus Biotech Geneva <fcbg_>`_.
 
 .. toctree::
     :hidden:

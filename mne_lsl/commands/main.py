@@ -8,8 +8,8 @@ from .viewer import run as viewer
 
 
 @click.group()
-def run() -> None:  # noqa: D401
-    """Main package entry-point."""
+def run() -> None:
+    """Main package entry-point."""  # noqa: D401
 
 
 run.add_command(player)

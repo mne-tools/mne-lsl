@@ -19,8 +19,8 @@ from matplotlib import pyplot as plt
 from mne.decoding import Vectorizer
 from mne.io import read_raw_fif
 from sklearn.linear_model import LogisticRegression
-from sklearn.pipeline import Pipeline
 from sklearn.model_selection import ShuffleSplit, cross_val_score
+from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
 from mne_lsl.datasets import sample
