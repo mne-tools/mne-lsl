@@ -569,6 +569,7 @@ def test_player_n_repeat_mmapped(fname, close_io, chunk_size, request):
 
                 if check_next_sample:
                     assert data[0, 0] == 0
+                    check_next_sample = False
 
                 if time.time() - start_time > timeout:
                     raise RuntimeError("Timeout reached")
