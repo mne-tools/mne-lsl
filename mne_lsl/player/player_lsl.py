@@ -250,8 +250,7 @@ class PlayerLSL(BasePlayer):
                 self._start_idx += self._chunk_size
             elif self._raw.times.size < stop and self._n_repeated < self._n_repeat:
                 logger.debug("End of file reached, looping back to the beginning.")
-                stop = self._chunk_size - (self._raw.times.size - start)
-                start %= self._raw.times.size  # variable needed in annotations
+                stop %= self._raw.times.size
                 data = np.vstack([self._raw[:, start:][0].T, self._raw[:, :stop][0].T])
                 self._start_idx = stop
                 self._n_repeated += 1
