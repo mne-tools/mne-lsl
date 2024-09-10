@@ -554,6 +554,8 @@ def test_player_n_repeat_mmapped(fname, close_io, chunk_size, request):
         start_idx = player._start_idx
         repeats = 1  # PlayerLSL internal repeat counter starts at 1
 
+        timeout = 2
+        now = time.time()
         # Check up to 2 repeats
         while player._n_repeated <= 2:
             data, ts = inlet.pull_chunk()
@@ -565,6 +567,11 @@ def test_player_n_repeat_mmapped(fname, close_io, chunk_size, request):
 
             # Make sure the repeat counter is incrementing correctly
             assert player._n_repeated == repeats
+
+            if time.time() - now > timeout:
+                raise RuntimeError("Timeout reached")
+
+        assert player._n_repeated == 3
 
         close_io()
 
