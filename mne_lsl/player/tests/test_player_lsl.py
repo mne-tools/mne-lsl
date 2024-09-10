@@ -541,9 +541,7 @@ def test_player_n_repeat_mmapped(fname, close_io, chunk_size, request):
     name = f"P_{request.node.name}"
     source_id = uuid.uuid4().hex
 
-    with Player(
-        raw, chunk_size=100, n_repeat=10, name=name, source_id=source_id
-    ) as player:
+    with Player(raw, chunk_size, n_repeat=10, name=name, source_id=source_id) as player:
         streams = resolve_streams(timeout=2)
         assert (name, source_id) in [
             (stream.name, stream.source_id) for stream in streams
