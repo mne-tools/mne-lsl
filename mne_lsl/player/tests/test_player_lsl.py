@@ -562,7 +562,7 @@ def test_player_n_repeat_mmapped(fname, close_io, chunk_size, request):
                 if last_sample_idx != data.shape[0] - 1:
                     assert data[last_sample_idx + 1, 0] == 0
                 else:
-                    # if last timepoint is at end of chunk, check the next chunk for first timepoint
+                    # if last sample at end of chunk, check next chunk for index 0
                     check_next_sample = True
             elif check_next_sample:
                 assert data[0, 0] == 0
