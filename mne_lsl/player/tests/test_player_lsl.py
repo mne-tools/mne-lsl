@@ -554,6 +554,7 @@ def test_player_n_repeat_mmapped(fname, close_io, chunk_size, request):
 
         timeout = 2
         now = time.time()
+        
         # Check up to 2 repeats
         while player._n_repeated <= 2:
             data, ts = inlet.pull_chunk()
