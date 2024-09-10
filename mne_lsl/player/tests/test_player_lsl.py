@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING
 import numpy as np
 import pytest
 from mne import annotations_from_events, create_info, find_events
-from mne.io import RawArray
+from mne.io import RawArray, read_raw_fif
 from mne.utils import check_version
 from numpy.testing import assert_allclose
 
@@ -532,6 +532,41 @@ def test_player_n_repeat(raw, chunk_size, request):
     streams = resolve_streams(timeout=2)
     assert (name, source_id2) in [(stream.name, stream.source_id) for stream in streams]
     player.stop()
+
+
+@pytest.mark.slow
+def test_player_n_repeat_mmapped(fname, close_io, chunk_size, request):
+    """Test argument 'n_repeat' with non-preloaded raw."""
+    raw = read_raw_fif("raw.fif", preload=False)
+    name = f"P_{request.node.name}"
+    source_id = uuid.uuid4().hex
+
+    with Player(
+        raw, chunk_size=100, n_repeat=10, name=name, source_id=source_id
+    ) as player:
+        streams = resolve_streams(timeout=2)
+        assert (name, source_id) in [
+            (stream.name, stream.source_id) for stream in streams
+        ]
+
+        inlet = _create_inlet(name, source_id)
+
+        start_idx = player._start_idx
+        repeats = 1  # PlayerLSL internal repeat counter starts at 1
+
+        # Check up to 2 repeats
+        while player._n_repeated <= 2:
+            data, ts = inlet.pull_chunk()
+
+            # Increase counter if internal start index loops back to the beginning
+            if player._start_idx < start_idx:
+                repeats += 1
+            start_idx = player._start_idx
+
+            # Make sure the repeat counter is incrementing correctly
+            assert player._n_repeated == repeats
+
+        close_io()
 
 
 def test_player_n_repeat_invalid(raw):
