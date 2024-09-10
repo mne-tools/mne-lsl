@@ -540,37 +540,42 @@ def test_player_n_repeat_mmapped(fname, close_io, chunk_size, request):
     raw = read_raw_fif("raw.fif", preload=False)
     name = f"P_{request.node.name}"
     source_id = uuid.uuid4().hex
-
+    n_samples = raw.times.size
+    n_repeats = 5
+    timeout = (raw.times.size / raw.info["sfreq"]) * (n_repeats + 1)
     with Player(raw, chunk_size, n_repeat=10, name=name, source_id=source_id) as player:
         streams = resolve_streams(timeout=2)
         assert (name, source_id) in [
             (stream.name, stream.source_id) for stream in streams
         ]
-
         inlet = _create_inlet(name, source_id)
-
         start_idx = player._start_idx
-        repeats = 1  # PlayerLSL internal repeat counter starts at 1
-
-        timeout = 2
-        now = time.time()
-        
-        # Check up to 2 repeats
-        while player._n_repeated <= 2:
-            data, ts = inlet.pull_chunk()
-
-            # Increase counter if internal start index loops back to the beginning
-            if player._start_idx < start_idx:
+        start_repeat = player._n_repeated
+        repeats = 0
+        timeout = 10
+        start_time = time.time()
+        while player._n_repeated <= n_repeats:
+            data, _ = inlet.pull_chunk()
+            if player._start_idx < start_idx:  # are we looping?
                 repeats += 1
+                last_sample_idx = np.where(data[:, 0] == n_samples - 1)[0]
+                assert last_sample_idx.size == 1  # Sanity check
+
+                if last_sample_idx != data.shape[0] - 1:
+                    assert data[last_sample_idx + 1, 0] == 0
+                else:
+                    # if last timepoint is at end of chunk, check the next chunk for first timepoint
+                    check_next_sample = True
+
+                if check_next_sample:
+                    assert data[0, 0] == 0
+
+                if time.time() - start_time > timeout:
+                    raise RuntimeError("Timeout reached")
+
             start_idx = player._start_idx
-
-            # Make sure the repeat counter is incrementing correctly
-            assert player._n_repeated == repeats
-
-            if time.time() - now > timeout:
-                raise RuntimeError("Timeout reached")
-
-        assert player._n_repeated == 3
+            assert player._n_repeated == repeats + start_repeat
+            time.sleep(0.1)
 
         close_io()
 
