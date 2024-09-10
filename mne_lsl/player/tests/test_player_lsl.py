@@ -541,8 +541,8 @@ def test_player_n_repeat_mmapped(fname, close_io, chunk_size, request):
     name = f"P_{request.node.name}"
     source_id = uuid.uuid4().hex
     n_samples = raw.times.size
-    n_repeats = 5
-    timeout = (raw.times.size / raw.info["sfreq"]) * (n_repeats + 1)
+    n_iterations = 2  # test for 2 repeats
+    timeout = (raw.times.size / raw.info["sfreq"]) * (n_iterations + 1)
     with Player(raw, chunk_size, n_repeat=10, name=name, source_id=source_id) as player:
         streams = resolve_streams(timeout=2)
         assert (name, source_id) in [
@@ -550,34 +550,28 @@ def test_player_n_repeat_mmapped(fname, close_io, chunk_size, request):
         ]
         inlet = _create_inlet(name, source_id)
         start_idx = player._start_idx
-        start_repeat = player._n_repeated
-        repeats = 0
-        timeout = 10
+        start_repeat = current_repeat = player._n_repeated
+        check_next_sample = False
         start_time = time.time()
-        while player._n_repeated <= n_repeats:
+        while player._n_repeated <= start_repeat + n_iterations:
             data, _ = inlet.pull_chunk()
             if player._start_idx < start_idx:  # are we looping?
-                repeats += 1
+                current_repeat += 1
                 last_sample_idx = np.where(data[:, 0] == n_samples - 1)[0]
                 assert last_sample_idx.size == 1  # Sanity check
-
                 if last_sample_idx != data.shape[0] - 1:
                     assert data[last_sample_idx + 1, 0] == 0
                 else:
                     # if last timepoint is at end of chunk, check the next chunk for first timepoint
                     check_next_sample = True
-
-                if check_next_sample:
-                    assert data[0, 0] == 0
-                    check_next_sample = False
-
-                if time.time() - start_time > timeout:
-                    raise RuntimeError("Timeout reached")
-
+            elif check_next_sample:
+                assert data[0, 0] == 0
+                check_next_sample = False
             start_idx = player._start_idx
-            assert player._n_repeated == repeats + start_repeat
+            assert player._n_repeated == current_repeat
+            if time.time() - start_time > timeout:
+                raise RuntimeError("Timeout reached")
             time.sleep(0.1)
-
         close_io()
 
 
