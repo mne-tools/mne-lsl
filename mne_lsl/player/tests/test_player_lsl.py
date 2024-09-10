@@ -537,7 +537,7 @@ def test_player_n_repeat(raw, chunk_size, request):
 @pytest.mark.slow
 def test_player_n_repeat_mmapped(fname, close_io, chunk_size, request):
     """Test argument 'n_repeat' with non-preloaded raw."""
-    raw = read_raw_fif("raw.fif", preload=False)
+    raw = read_raw_fif(fname, preload=False)
     name = f"P_{request.node.name}"
     source_id = uuid.uuid4().hex
     n_samples = raw.times.size
