@@ -25,6 +25,7 @@
 
 .. mne
 
+.. _code of conduct: https://github.com/mne-tools/.github/blob/main/CODE_OF_CONDUCT.md
 .. _mne stable: https://mne.tools/stable/index.html
 .. _mne installers: https://mne.tools/stable/install/installers.html
 

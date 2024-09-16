@@ -69,4 +69,10 @@ The development of ``MNE-LSL`` is supported by the
     resources/implementations.rst
     generated/tutorials/index.rst
     generated/examples/index.rst
-    changes/index.rst
+
+.. toctree::
+    :hidden:
+    :caption: Development
+
+    development/contributing.rst
+    development/changes/index.rst
