@@ -537,40 +537,45 @@ def test_player_n_repeat(raw, chunk_size, request):
 @pytest.mark.slow
 def test_player_n_repeat_mmapped(fname, close_io, chunk_size, request):
     """Test argument 'n_repeat' with non-preloaded raw."""
-    raw = read_raw_fif(fname, preload=False)
+    raw = read_raw_fif(fname, preload=False).crop(0, 1)  # crop from 2s to 1s
+    index = raw.get_data(picks=0).squeeze().astype(int)
     name = f"P_{request.node.name}"
     source_id = uuid.uuid4().hex
-    n_samples = raw.times.size
     n_iterations = 2  # test for 2 repeats
     timeout = (raw.times.size / raw.info["sfreq"]) * (n_iterations + 1)
-    with Player(raw, chunk_size, n_repeat=10, name=name, source_id=source_id) as player:
+    # set an arbitrary 'n_repeat' large value to test the argument on a short file.
+    with Player(raw, chunk_size, n_repeat=20, name=name, source_id=source_id) as player:
         streams = resolve_streams(timeout=2)
         assert (name, source_id) in [
             (stream.name, stream.source_id) for stream in streams
         ]
         inlet = _create_inlet(name, source_id)
         start_idx = player._start_idx
-        start_repeat = current_repeat = player._n_repeated
-        check_next_sample = False
+        # the variable '_n_repeated' should start at 1, except if inlet creation was too
+        # slow which could happen when playing short files.
+        start_repeat = player._n_repeated
+        current_repeat = start_repeat
         start_time = time.time()
-        while player._n_repeated <= start_repeat + n_iterations:
+        # we want to play the file 2 times, i.e. '_n_repeated' will be set to 1 and 2,
+        # thus the loop exit when '_n_repeated' equals 3 (if start_repeat == 1).
+        while player._n_repeated < start_repeat + n_iterations:
             data, _ = inlet.pull_chunk()
             if player._start_idx < start_idx:  # are we looping?
                 current_repeat += 1
-                last_sample_idx = np.where(data[:, 0] == n_samples - 1)[0]
-                assert last_sample_idx.size == 1  # Sanity check
-                if last_sample_idx != data.shape[0] - 1:
-                    assert data[last_sample_idx + 1, 0] == 0
-                else:
-                    # if last sample at end of chunk, check next chunk for index 0
-                    check_next_sample = True
-            elif check_next_sample:
-                assert data[0, 0] == 0
-                check_next_sample = False
+                last_sample_idx = np.where(data[:, 0] == index[-1])[0]
+                assert last_sample_idx.size == 1  # sanity-check
+                # check indexes before repeat
+                index_data = data[: last_sample_idx[0] + 1, 0]
+                assert_allclose(
+                    index_data, np.arange(index[-1] - index_data.size, index[-1]) + 1
+                )
+                # check indexes after repeat
+                index_data = data[last_sample_idx[0] + 1 :, 0]
+                assert_allclose(index_data, np.arange(index_data.size))
             start_idx = player._start_idx
-            assert player._n_repeated == current_repeat
+            assert player._n_repeated == current_repeat  # test incrementation
             if time.time() - start_time > timeout:
-                raise RuntimeError("Timeout reached")
+                raise RuntimeError("Timeout reached.")
             time.sleep(0.1)
         close_io()
 
