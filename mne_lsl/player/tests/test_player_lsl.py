@@ -574,7 +574,7 @@ def test_player_n_repeat_mmapped(fname, close_io, chunk_size, request):
                 assert_allclose(index_data, np.arange(index_data.size))
             start_idx = player._start_idx
             assert player._n_repeated == current_repeat  # test incrementation
-            if time.time() - start_time > timeout:
+            if timeout < time.time() - start_time:
                 raise RuntimeError("Timeout reached.")
             time.sleep(0.1)
         close_io()
