@@ -42,7 +42,7 @@ with the First Prize Award (2016).
 **MNE-LSL** is based on the refactor version, **BSL** by
 [**Mathieu Scheltienne**](https://github.com/mscheltienne) and
 [**Arnaud Desvachez**](https://github.com/dnastars) for the
-[Fondation Campus Biotech Geneva (FCBG)](https://github.com/fcbg-hnp-meeg) and
+[Fondation Campus Biotech Geneva (FCBG)](https://github.com/fcbg-platforms) and
 development is still supported by the
 [Fondation Campus Biotech Geneva (FCBG)](https://fcbg.ch/).
 
