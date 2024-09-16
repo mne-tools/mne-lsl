@@ -25,7 +25,7 @@ authors:
 affiliations:
  - name: Fondation Campus Biotech Geneva, Geneva, Switzerland
    index: 1
- - name: Institute for Learning & Brain Sciences, University of Washington, Seattle, WA, USA
+ - name: Institute for Learning & Brain Sciences, University of Washington, Seattle, WA, United States of America
    index: 2
  - name: Wyss Center for Bio and Neuroengineering, Geneva, Switzerland
    index: 3
