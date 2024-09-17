@@ -119,7 +119,7 @@ Here are a couple of tips to help you write reliable tests:
     A :class:`~mne_lsl.stream.StreamLSL` or :class:`~mne_lsl.player.PlayerLSL` have
     underlying LSL inlets and outlets. Don't forget to call
     :meth:`mne_lsl.stream.StreamLSL.disconnect` followed by
-    :class:`mne_lsl.player.PlayerLSL.stop` at the end of your test.
+    :meth:`mne_lsl.player.PlayerLSL.stop` at the end of your test.
 
 - If you need to create :class:`~mne_lsl.lsl.StreamInlet` or
   :class:`~mne_lsl.lsl.StreamOutlet`
