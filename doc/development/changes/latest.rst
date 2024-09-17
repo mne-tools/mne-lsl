@@ -14,11 +14,7 @@
 
 .. include:: ./authors.inc
 
-Version 1.6
-===========
+.. _latest:
 
-- Add JOSS draft and workflow to generate the PDF (:pr:`316` by `Mathieu Scheltienne`_)
-- Improve disconnection of :class:`~mne_lsl.stream.EpochsStream` especially when an exception is raised during initialization (:pr:`317` by `Mathieu Scheltienne`_)
-- Improve total code coverage (:pr:`317` by `Mathieu Scheltienne`_)
-- Add mailmap to the repository (:pr:`327` by `Daniel McCloy`_)
-- Fix indexing when replaying datasets from non-preloaded :class:`~mne.io.Raw` (:pr:`330` by `Toni M. Brotons`_)
+Version 1.7
+===========
