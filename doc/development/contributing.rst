@@ -124,7 +124,7 @@ Here are a couple of tips to help you write reliable tests:
 - If you need to create :class:`~mne_lsl.lsl.StreamInlet` or
   :class:`~mne_lsl.lsl.StreamOutlet`
   directly, use the ``close_io`` fixture which returns a function to call at the end of
-  your test to remove the inlets outlets.
+  your test to remove the inlets and outlets.
 - If the objects in your test use separate threads for acquisition or processing, don't
   forget to include sleep periods to ensure that the threads have time to work.
 
