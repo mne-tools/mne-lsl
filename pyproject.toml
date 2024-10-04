@@ -148,11 +148,11 @@ select = ['A', 'B', 'D', 'E', 'F', 'G', 'I', 'LOG', 'NPY', 'PIE', 'PT', 'T20', '
 
 [tool.ruff.lint.per-file-ignores]
 '*' = [
-  'B904', # 'Within an except clause, raise exceptions with raise ... from ...'
-  'D100', # 'Missing docstring in public module'
-  'D104', # 'Missing docstring in public package'
-  'D107', # 'Missing docstring in __init__'
-  'UP007', # 'Use `X | Y` for type annotations', requires python 3.10
+  'B904',  # 'Within an except clause, raise exceptions with raise ... from ...'
+  'D100',  # 'Missing docstring in public module'
+  'D104',  # 'Missing docstring in public package'
+  'D107',  # 'Missing docstring in __init__'
+  'UP007',  # 'Use `X | Y` for type annotations', requires python 3.10
 ]
 '*.pyi' = ['D', 'E501', 'F811']
 '*/stream_viewer/backends/*' = ['D401']
