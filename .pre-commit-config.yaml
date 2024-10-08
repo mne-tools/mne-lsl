@@ -1,6 +1,6 @@
 repos:
     - repo: https://github.com/astral-sh/ruff-pre-commit
-      rev: v0.6.8
+      rev: v0.6.9
       hooks:
           - id: ruff
             name: ruff linter
@@ -36,7 +36,7 @@ repos:
             files: (.github/|.codecov.yaml|.pre-commit-config.yaml|.yamllint.yaml)
 
     - repo: https://github.com/pre-commit/pre-commit-hooks
-      rev: v4.6.0
+      rev: v5.0.0
       hooks:
           - id: file-contents-sorter
             files: ^.mailmap
