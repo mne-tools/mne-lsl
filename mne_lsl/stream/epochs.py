@@ -375,7 +375,7 @@ class EpochsStream:
         self,
         n_epochs: int | None = None,
         picks: str | list[str] | int | list[int] | ScalarIntArray | None = None,
-        exclude: str | list[str] | tuple[str] = "bads",
+        exclude: str | list[str] | tuple[str, ...] = "bads",
     ) -> ScalarArray:
         """Retrieve the latest epochs from the buffer.
 

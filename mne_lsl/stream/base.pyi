@@ -218,7 +218,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             The stream instance modified in-place.
         """
 
-    def del_filter(self, idx: int | list[int] | tuple[int] | str = "all") -> None:
+    def del_filter(self, idx: int | list[int] | tuple[int, ...] | str = "all") -> None:
         """Remove a filter from the list of applied filters.
 
         Parameters

@@ -111,7 +111,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
     @fill_doc
     def add_reference_channels(
         self,
-        ref_channels: str | list[str] | tuple[str],
+        ref_channels: str | list[str] | tuple[str, ...],
         ref_units: str | int | list[str | int] | tuple[str | int, ...] | None = None,
     ) -> BaseStream:
         """Add EEG reference channels to data that consists of all zeros.
@@ -339,7 +339,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         # This method needs to close any inlet/network object and need to end with
         # self._reset_variables().
 
-    def del_filter(self, idx: int | list[int] | tuple[int] | str = "all") -> None:
+    def del_filter(self, idx: int | list[int] | tuple[int, ...] | str = "all") -> None:
         """Remove a filter from the list of applied filters.
 
         Parameters
@@ -563,7 +563,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         self,
         winsize: float | None = None,
         picks: str | list[str] | int | list[int] | ScalarIntArray | None = None,
-        exclude: str | list[str] | tuple[str] = "bads",
+        exclude: str | list[str] | tuple[str, ...] = "bads",
     ) -> tuple[ScalarArray, NDArray[np.float64]]:
         """Retrieve the latest data from the buffer.
 
@@ -895,8 +895,8 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
     @fill_doc
     def set_eeg_reference(
         self,
-        ref_channels: str | list[str] | tuple[str],
-        ch_type: str | list[str] | tuple[str] = "eeg",
+        ref_channels: str | list[str] | tuple[str, ...],
+        ch_type: str | list[str] | tuple[str, ...] = "eeg",
     ) -> BaseStream:
         """Specify which reference to use for EEG-like data.
 
@@ -968,7 +968,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         return self
 
     def set_meas_date(
-        self, meas_date: datetime | float | tuple[float] | None
+        self, meas_date: datetime | float | tuple[float, float] | None
     ) -> BaseStream:
         """Set the measurement start date.
 

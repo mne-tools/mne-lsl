@@ -642,7 +642,7 @@ class _BaseStreamInfo:
         if info["dig"] is not None:
             self._set_digitization(info["dig"])
 
-    def set_channel_names(self, ch_names: list[str] | tuple[str]) -> None:
+    def set_channel_names(self, ch_names: list[str] | tuple[str, ...]) -> None:
         """Set the channel names in the description. Existing labels are overwritten.
 
         Parameters
@@ -652,7 +652,7 @@ class _BaseStreamInfo:
         """
         self._set_channel_info(ch_names, "ch_name")
 
-    def set_channel_types(self, ch_types: str | list[str]) -> None:
+    def set_channel_types(self, ch_types: str | list[str] | tuple[str, ...]) -> None:
         """Set the channel types in the description. Existing types are overwritten.
 
         The types are given as human readable strings, e.g. ``'eeg'``.
@@ -669,7 +669,14 @@ class _BaseStreamInfo:
         self._set_channel_info(ch_types, "ch_type")
 
     def set_channel_units(
-        self, ch_units: str | list[str] | int | list[int] | ScalarIntArray
+        self,
+        ch_units: str
+        | list[str]
+        | int
+        | list[int]
+        | ScalarIntArray
+        | tuple[str, ...]
+        | tuple[int, ...],
     ) -> None:
         """Set the channel units in the description. Existing units are overwritten.
 
@@ -710,7 +717,9 @@ class _BaseStreamInfo:
             ]
         self._set_channel_info(ch_units, "ch_unit")
 
-    def _set_channel_info(self, ch_infos: list[str], name: str) -> None:
+    def _set_channel_info(
+        self, ch_infos: list[str] | tuple[str, ...], name: str
+    ) -> None:
         """Set the 'channel/name' element in the XML tree."""
         check_type(ch_infos, (list, tuple), name)
         for ch_info in ch_infos:
