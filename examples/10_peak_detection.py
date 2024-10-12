@@ -80,7 +80,7 @@ fig, ax = plt.subplots(1, 1, figsize=(10, 5), layout="constrained")
 for raw_, label in zip(
     (raw, raw_notched, raw_bandpassed, raw_lowpassed),
     ("raw", "notched", "bandpassed", "lowpassed"),
-    strict=False,
+    strict=True,
 ):
     data, times = raw_[:, start:stop]  # select 5 seconds
     data -= data.mean()  # detrend
@@ -98,7 +98,7 @@ fig, ax = plt.subplots(1, 1, figsize=(10, 5), layout="constrained")
 for raw_, label in zip(
     (raw, raw_notched, raw_bandpassed, raw_lowpassed),
     ("raw", "notched", "bandpassed", "lowpassed"),
-    strict=False,
+    strict=True,
 ):
     data, times = raw_[:, start:stop]  # select 5 seconds
     data -= data.mean()  # detrend
