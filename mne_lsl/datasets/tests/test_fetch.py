@@ -1,15 +1,11 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 import pooch
 import pytest
 
 from mne_lsl.datasets._fetch import fetch_dataset
-
-if TYPE_CHECKING:
-    pass
 
 
 @pytest.fixture

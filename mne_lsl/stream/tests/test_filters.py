@@ -69,7 +69,7 @@ def filters(iir_params: dict[str, Any], sfreq: float) -> list[StreamFilter]:
     h_freqs = (40, 15, None)
     picks = (np.arange(0, 10), np.arange(10, 20), np.arange(20, 30))
     filters = list()
-    for k, (lfq, hfq, picks_) in enumerate(zip(l_freqs, h_freqs, picks, strict=False)):
+    for k, (lfq, hfq, picks_) in enumerate(zip(l_freqs, h_freqs, picks, strict=True)):
         filt = create_filter(
             sfreq=sfreq,
             l_freq=lfq,

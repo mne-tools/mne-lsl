@@ -433,7 +433,7 @@ def test_player_annotations(raw_annotations, close_io, chunk_size, request):
     assert stream.get_channel_types() == ["misc"] * sinfo.n_channels
     time.sleep(3)  # acquire some annotations
     for single, duration in zip(
-        ("bad_test", "test2", "test3"), (0.4, 0.1, 0.05), strict=False
+        ("bad_test", "test2", "test3"), (0.4, 0.1, 0.05), strict=True
     ):
         data, ts = stream.get_data(picks=single)
         data = data.squeeze()

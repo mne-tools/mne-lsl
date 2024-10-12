@@ -111,7 +111,7 @@ def compare_infos(info1: Info, info2: Info) -> None:
     assert len(info1["projs"]) == len(info2["projs"])
     projs1 = sorted(info1["projs"], key=lambda x: x["desc"])
     projs2 = sorted(info2["projs"], key=lambda x: x["desc"])
-    for proj1, proj2 in zip(projs1, projs2, strict=False):
+    for proj1, proj2 in zip(projs1, projs2, strict=True):
         assert proj1["desc"] == proj2["desc"]
         assert proj1["kind"] == proj2["kind"]
         assert proj1["data"]["nrow"] == proj2["data"]["nrow"]
@@ -124,7 +124,7 @@ def compare_infos(info1: Info, info2: Info) -> None:
         assert len(info1["dig"]) == len(info2["dig"])
         digs1 = sorted(info1["dig"], key=lambda x: (x["kind"], x["ident"]))
         digs2 = sorted(info2["dig"], key=lambda x: (x["kind"], x["ident"]))
-        for dig1, dig2 in zip(digs1, digs2, strict=False):
+        for dig1, dig2 in zip(digs1, digs2, strict=True):
             assert dig1["kind"] == dig2["kind"]
             assert dig1["ident"] == dig2["ident"]
             assert dig1["coord_frame"] == dig2["coord_frame"]

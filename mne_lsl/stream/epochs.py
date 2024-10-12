@@ -863,7 +863,7 @@ def _find_events_in_stim_channels(
     """Find events in stim channels."""
     min_samples = min_duration * sfreq
     events_list = []
-    for d, ch_name in zip(data, event_channels, strict=False):
+    for d, ch_name in zip(data, event_channels, strict=True):
         events = find_events(
             d[np.newaxis, :],
             first_samp=0,

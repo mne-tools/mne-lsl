@@ -386,7 +386,7 @@ class _BaseStreamInfo:
             lowpass = filters.child("lowpass").first_child().value()
             with info._unlock():
                 for name, value in zip(
-                    ("highpass", "lowpass"), (highpass, lowpass), strict=False
+                    ("highpass", "lowpass"), (highpass, lowpass), strict=True
                 ):
                     if len(value) != 0:
                         try:
@@ -624,7 +624,7 @@ class _BaseStreamInfo:
                 loc,
                 {
                     key: value
-                    for key, value in zip(_LOC_NAMES, ch_info["loc"], strict=False)
+                    for key, value in zip(_LOC_NAMES, ch_info["loc"], strict=True)
                 },
             )
             ch = ch.next_sibling()
@@ -751,9 +751,7 @@ class _BaseStreamInfo:
             data = projector.append_child("data") if data.empty() else data
             ch = data.child("channel")
             for ch_name, ch_data in zip(
-                proj["data"]["col_names"],
-                np.squeeze(proj["data"]["data"]),
-                strict=False,
+                proj["data"]["col_names"], np.squeeze(proj["data"]["data"]), strict=True
             ):
                 ch = data.append_child("channel") if ch.empty() else ch
                 _BaseStreamInfo._set_description_node(
@@ -784,7 +782,7 @@ class _BaseStreamInfo:
                 loc,
                 {
                     key: value
-                    for key, value in zip(("X", "Y", "Z"), dig_point["r"], strict=False)
+                    for key, value in zip(("X", "Y", "Z"), dig_point["r"], strict=True)
                 },
             )
             point = point.next_sibling()

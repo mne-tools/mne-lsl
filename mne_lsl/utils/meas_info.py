@@ -118,7 +118,7 @@ def create_info(
                 info["sfreq"] = sfreq
                 info["lowpass"] = 0.0
                 info["highpass"] = 0.0
-            for ch, ch_unit in zip(info["chs"], ch_units, strict=False):
+            for ch, ch_unit in zip(info["chs"], ch_units, strict=True):
                 ch["unit_mul"] = ch_unit
         # add manufacturer information if available
         info["device_info"] = dict()
@@ -203,7 +203,7 @@ def _read_desc_sinfo(
 
     try:
         ch_units = list()
-        for ch_type, ch_unit in zip(ch_types, desc.get_channel_units(), strict=False):
+        for ch_type, ch_unit in zip(ch_types, desc.get_channel_units(), strict=True):
             ch_unit = ch_unit.lower().strip()
             fiff_unit = _CH_TYPES_DICT[ch_type]["unit"]
             if fiff_unit in _HUMAN_UNITS:

@@ -74,7 +74,7 @@ def test_compare_infos(raw):
     for param, value in zip(
         ("kind", "coil_type", "loc", "unit", "unit_mul", "ch_name", "coord_frame"),
         (202, 1, np.ones(12), 107, -6, "101", 0),
-        strict=False,
+        strict=True,
     ):
         info2 = info.copy()
         compare_infos(info, info2)

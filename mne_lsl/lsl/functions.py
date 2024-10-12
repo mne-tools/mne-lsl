@@ -1,14 +1,10 @@
 from __future__ import annotations
 
 from ctypes import byref, c_char_p, c_double, c_void_p
-from typing import TYPE_CHECKING
 
 from ..utils._checks import check_type, ensure_int
 from .load_liblsl import lib
 from .stream_info import _BaseStreamInfo
-
-if TYPE_CHECKING:
-    pass
 
 
 def library_version() -> int:
@@ -116,7 +112,7 @@ def resolve_streams(
     properties = [
         # filter out the properties set to None
         (prop, name)
-        for prop, name in zip(properties, ("name", "stype", "source_id"), strict=False)
+        for prop, name in zip(properties, ("name", "stype", "source_id"), strict=True)
         if prop is not None
     ]
     timeout /= len(properties)
