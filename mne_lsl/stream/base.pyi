@@ -235,7 +235,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         a step response steady-state.
         """
 
-    def drop_channels(self, ch_names: str | list[str] | tuple[str]) -> BaseStream:
+    def drop_channels(self, ch_names: str | list[str] | tuple[str, ...]) -> BaseStream:
         """Drop channel(s).
 
         Parameters

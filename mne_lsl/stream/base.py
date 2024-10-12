@@ -418,7 +418,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             for k in idx[::-1]:
                 del self._filters[k]
 
-    def drop_channels(self, ch_names: str | list[str] | tuple[str]) -> BaseStream:
+    def drop_channels(self, ch_names: str | list[str] | tuple[str, ...]) -> BaseStream:
         """Drop channel(s).
 
         Parameters
