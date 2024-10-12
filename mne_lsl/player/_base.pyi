@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
+from collections.abc import Callable
 from datetime import datetime as datetime
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 from _typeshed import Incomplete
 from mne import Info

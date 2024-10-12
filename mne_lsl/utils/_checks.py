@@ -4,14 +4,14 @@ import logging
 import operator
 import os
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import numpy as np
 
 from ._docs import fill_doc
 
 
-def ensure_int(item: Any, item_name: Optional[str] = None) -> int:
+def ensure_int(item: Any, item_name: str | None = None) -> int:
     """Ensure a variable is an integer.
 
     Parameters
@@ -67,7 +67,7 @@ _types = {
 }
 
 
-def check_type(item: Any, types: tuple, item_name: Optional[str] = None) -> None:
+def check_type(item: Any, types: tuple, item_name: str | None = None) -> None:
     """Check that item is an instance of types.
 
     Parameters
@@ -123,8 +123,8 @@ def check_type(item: Any, types: tuple, item_name: Optional[str] = None) -> None
 def check_value(
     item: Any,
     allowed_values: tuple,
-    item_name: Optional[str] = None,
-    extra: Optional[str] = None,
+    item_name: str | None = None,
+    extra: str | None = None,
 ) -> None:
     """Check the value of a parameter against a list of valid options.
 

@@ -36,7 +36,7 @@ def test_local_clock():
 
 
 @pytest.mark.xfail(reason="Fails if streams are present in the background.")
-@pytest.mark.slow
+@pytest.mark.slow()
 def test_resolve_streams():
     """Test detection of streams on the network."""
     streams = resolve_streams(timeout=0.1)

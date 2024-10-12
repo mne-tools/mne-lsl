@@ -10,10 +10,9 @@ from ..utils.logs import logger
 
 if TYPE_CHECKING:
     from pathlib import Path
-    from typing import Union
 
 
-def fetch_dataset(path: Path, base_url: str, registry: Union[str, Path]) -> Path:
+def fetch_dataset(path: Path, base_url: str, registry: str | Path) -> Path:
     """Fetch a dataset from the remote.
 
     Parameters

@@ -10,7 +10,7 @@ from ..utils._checks import check_type
 from ..utils.logs import logger, warn
 
 if TYPE_CHECKING:
-    from typing import Any, Optional
+    from typing import Any
 
 
 class StreamFilter(dict):
@@ -91,8 +91,8 @@ class StreamFilter(dict):
 
 def create_filter(
     sfreq: float,
-    l_freq: Optional[float],
-    h_freq: Optional[float],
+    l_freq: float | None,
+    h_freq: float | None,
     iir_params: dict[str, Any],
 ) -> dict[str, Any]:
     """Create an IIR causal filter.
@@ -133,7 +133,7 @@ def create_filter(
 
 
 def ensure_sos_iir_params(
-    iir_params: Optional[dict[str, Any]] = None,
+    iir_params: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Ensure that the filter parameters include SOS output."""
     if iir_params is None:

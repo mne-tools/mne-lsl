@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
-from collections.abc import Generator
+from collections.abc import Callable, Generator
 from datetime import datetime as datetime
-from typing import Any, Callable
+from typing import Any
 
 import numpy as np
 from _typeshed import Incomplete

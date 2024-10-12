@@ -17,7 +17,7 @@ from ._checks import check_type, check_value, ensure_int
 from .logs import logger, warn
 
 if TYPE_CHECKING:
-    from typing import Any, Optional, Union
+    from typing import Any
 
     from mne import Info
 
@@ -49,7 +49,7 @@ def create_info(
     n_channels: int,
     sfreq: float,
     stype: str,
-    desc: Optional[Union[_BaseStreamInfo, dict[str, Any]]],
+    desc: _BaseStreamInfo | dict[str, Any] | None,
 ) -> Info:
     """Create a minimal :class:`mne.Info` object from an LSL stream attributes.
 
@@ -118,7 +118,7 @@ def create_info(
                 info["sfreq"] = sfreq
                 info["lowpass"] = 0.0
                 info["highpass"] = 0.0
-            for ch, ch_unit in zip(info["chs"], ch_units):
+            for ch, ch_unit in zip(info["chs"], ch_units, strict=False):
                 ch["unit_mul"] = ch_unit
         # add manufacturer information if available
         info["device_info"] = dict()
@@ -172,7 +172,7 @@ def _create_default_info(
 # --------------------- Functions to read from a description sinfo ---------------------
 def _read_desc_sinfo(
     n_channels: int, stype: str, desc: _BaseStreamInfo
-) -> tuple[list[str], list[str], list[int], Optional[str]]:
+) -> tuple[list[str], list[str], list[int], str | None]:
     """Read channel information from a StreamInfo.
 
     If the StreamInfo is retrieved by resolve_streams, the description will be empty.
@@ -203,7 +203,7 @@ def _read_desc_sinfo(
 
     try:
         ch_units = list()
-        for ch_type, ch_unit in zip(ch_types, desc.get_channel_units()):
+        for ch_type, ch_unit in zip(ch_types, desc.get_channel_units(), strict=False):
             ch_unit = ch_unit.lower().strip()
             fiff_unit = _CH_TYPES_DICT[ch_type]["unit"]
             if fiff_unit in _HUMAN_UNITS:
@@ -231,7 +231,7 @@ def _read_desc_sinfo(
 # --------------------- Functions to read from a description dict ----------------------
 def _read_desc_dict(
     n_channels: int, stype: str, desc: dict[str, Any]
-) -> tuple[list[str], list[str], list[int], Optional[str]]:
+) -> tuple[list[str], list[str], list[int], str | None]:
     """Read channel information from a description dictionary.
 
     A dictionary is returned from loading an XDF file.
@@ -301,7 +301,7 @@ def _safe_get(channel, item, default) -> str:
 
 
 # ----------------------------- Functions to edit an Info ------------------------------
-def _set_channel_units(info: Info, mapping: dict[str, Union[str, int]]) -> None:
+def _set_channel_units(info: Info, mapping: dict[str, str | int]) -> None:
     """Set the channel unit multiplication factor."""
     check_type(mapping, (dict,), "mapping")
     mapping_idx = dict()  # to avoid overwriting the input dictionary

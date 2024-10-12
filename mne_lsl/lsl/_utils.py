@@ -1,5 +1,4 @@
 from ctypes import POINTER, c_int, c_void_p, cast
-from typing import Optional
 
 from .load_liblsl import lib
 
@@ -193,7 +192,7 @@ def free_char_p_array_memory(char_p_array):  # noqa: D103
 
 
 # -- Static checker -----------------------------------------------------------
-def check_timeout(timeout: Optional[float]) -> float:
+def check_timeout(timeout: float | None) -> float:
     """Check that the provided timeout is valid.
 
     Parameters

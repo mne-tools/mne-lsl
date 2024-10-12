@@ -8,7 +8,7 @@ from .load_liblsl import lib
 from .stream_info import _BaseStreamInfo
 
 if TYPE_CHECKING:
-    from typing import Optional
+    pass
 
 
 def library_version() -> int:
@@ -55,9 +55,9 @@ def local_clock() -> float:
 
 def resolve_streams(
     timeout: float = 1.0,
-    name: Optional[str] = None,
-    stype: Optional[str] = None,
-    source_id: Optional[str] = None,
+    name: str | None = None,
+    stype: str | None = None,
+    source_id: str | None = None,
     minimum: int = 1,
 ) -> list[_BaseStreamInfo]:
     """Resolve streams on the network.
@@ -116,7 +116,7 @@ def resolve_streams(
     properties = [
         # filter out the properties set to None
         (prop, name)
-        for prop, name in zip(properties, ("name", "stype", "source_id"))
+        for prop, name in zip(properties, ("name", "stype", "source_id"), strict=False)
         if prop is not None
     ]
     timeout /= len(properties)

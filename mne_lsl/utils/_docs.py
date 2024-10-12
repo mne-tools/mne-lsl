@@ -5,7 +5,7 @@ Inspired from mne.utils.docs.py by Eric Larson <larson.eric.d@gmail.com>
 """
 
 import sys
-from typing import Callable
+from collections.abc import Callable
 
 from mne.utils.docs import docdict as docdict_mne
 

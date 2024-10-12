@@ -11,13 +11,13 @@ from ..utils._checks import ensure_path
 from ._fetch import fetch_dataset
 
 if TYPE_CHECKING:
-    from typing import Optional, Union
+    pass
 
 _REGISTRY: Path = files("mne_lsl.datasets") / "sample-registry.txt"
 
 
 def _make_registry(
-    folder: Union[str, Path], output: Optional[Union[str, Path]] = None
+    folder: str | Path, output: str | Path | None = None
 ) -> None:  # pragma: no cover
     """Create the registry file for the sample dataset.
 

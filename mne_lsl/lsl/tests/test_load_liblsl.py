@@ -67,7 +67,7 @@ def download_liblsl_outdated(tmp_path_factory) -> Path:
     return Path(libpath)
 
 
-@pytest.fixture
+@pytest.fixture()
 def liblsl_outdated(tmp_path, download_liblsl_outdated) -> Path:
     """Fixture to provide an outdated liblsl version."""
     copy(download_liblsl_outdated, tmp_path / download_liblsl_outdated.name)

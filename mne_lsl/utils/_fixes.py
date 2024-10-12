@@ -9,8 +9,6 @@ from mne.event import _find_events
 from mne.utils import check_version
 
 if TYPE_CHECKING:
-    from typing import Optional, Union
-
     from .._typing import ScalarArray
 
 
@@ -34,11 +32,11 @@ class WrapStdOut:
 def find_events(
     data: ScalarArray,
     first_samp: int,
-    verbose: Optional[Union[bool, str, int]] = None,
+    verbose: bool | str | int | None = None,
     output: str = None,
-    consecutive: Union[bool, str] = None,
+    consecutive: bool | str = None,
     min_samples: float = None,
-    mask: Optional[int] = None,
+    mask: int | None = None,
     uint_cast: bool = None,
     mask_type: str = None,
     initial_event: bool = None,

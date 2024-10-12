@@ -9,11 +9,11 @@ import pytest
 from mne_lsl.datasets._fetch import fetch_dataset
 
 if TYPE_CHECKING:
-    from typing import Optional
+    pass
 
 
-@pytest.fixture
-def license_file() -> Optional[Path]:
+@pytest.fixture()
+def license_file() -> Path | None:
     """Find the license file if present."""
     fname = Path(__file__).parent.parent.parent.parent / "LICENSE"
     if fname.exists():
@@ -22,7 +22,7 @@ def license_file() -> Optional[Path]:
         pytest.skip("License file not found.")
 
 
-@pytest.fixture
+@pytest.fixture()
 def license_url() -> str:
     """Return the URL for the license file."""
     return "https://raw.githubusercontent.com/mne-tools/mne-lsl/main/"
