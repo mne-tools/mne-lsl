@@ -10,7 +10,6 @@ import sys
 from datetime import date
 from importlib import import_module
 from pathlib import Path
-from typing import Optional
 
 import mne
 from intersphinx_registry import get_intersphinx_mapping
@@ -210,7 +209,7 @@ bibtex_bibfiles = ["./references.bib"]
 # https://www.sphinx-doc.org/en/master/usage/extensions/linkcode.html
 
 
-def linkcode_resolve(domain: str, info: dict[str, str]) -> Optional[str]:
+def linkcode_resolve(domain: str, info: dict[str, str]) -> str | None:
     """Determine the URL corresponding to a Python object.
 
     Parameters
