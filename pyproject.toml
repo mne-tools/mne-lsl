@@ -18,7 +18,7 @@ classifiers = [
   'Programming Language :: Python :: 3.10',
   'Programming Language :: Python :: 3.11',
   'Programming Language :: Python :: 3.12',
-  'Programming Language :: Python :: 3.9',
+  'Programming Language :: Python :: 3.13',
   'Topic :: Scientific/Engineering',
   'Topic :: Software Development',
 ]
@@ -54,7 +54,7 @@ maintainers = [
 ]
 name = 'mne_lsl'
 readme = 'README.md'
-requires-python = '>=3.9'
+requires-python = '>=3.10'
 version = '1.7.0.dev0'
 
 [project.optional-dependencies]
@@ -152,7 +152,6 @@ select = ['A', 'B', 'D', 'E', 'F', 'G', 'I', 'LOG', 'NPY', 'PIE', 'PT', 'T20', '
   'D100',  # 'Missing docstring in public module'
   'D104',  # 'Missing docstring in public package'
   'D107',  # 'Missing docstring in __init__'
-  'UP007',  # 'Use `X | Y` for type annotations', requires python 3.10
 ]
 '*.pyi' = ['D', 'E501', 'F811']
 '*/stream_viewer/backends/*' = ['D401']
