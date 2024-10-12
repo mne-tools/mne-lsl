@@ -43,7 +43,7 @@ for stub in stubs:
     objects = [
         node
         for node in module_ast.body
-        if isinstance(node, (ast.ClassDef, ast.FunctionDef))
+        if isinstance(node, (ast.ClassDef | ast.FunctionDef))
     ]
     for node in objects:
         docstring = getattr(module, node.name).__doc__
