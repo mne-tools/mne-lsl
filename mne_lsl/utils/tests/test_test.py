@@ -6,7 +6,7 @@ from mne_lsl.datasets import testing
 from mne_lsl.utils._tests import compare_infos, match_stream_and_raw_data
 
 
-@pytest.fixture()
+@pytest.fixture
 def raw_without_samples():
     """Raw EEG data."""
     fname = testing.data_path() / "sample-eeg-ant-raw.fif"

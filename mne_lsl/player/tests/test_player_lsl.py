@@ -212,7 +212,7 @@ def _create_inlet(name: str, source_id: str) -> StreamInlet:
     return inlet
 
 
-@pytest.fixture()
+@pytest.fixture
 def mock_lsl_stream(fname: Path, chunk_size, request):
     """Create a mock LSL stream for testing."""
     # nest the PlayerLSL import to first write the temporary LSL configuration file
@@ -227,7 +227,7 @@ def mock_lsl_stream(fname: Path, chunk_size, request):
         yield player
 
 
-@pytest.mark.slow()
+@pytest.mark.slow
 def test_player_unit(mock_lsl_stream, raw, close_io):
     """Test getting and setting the player channel units."""
     player = mock_lsl_stream
@@ -270,7 +270,7 @@ def test_player_unit(mock_lsl_stream, raw, close_io):
     player.stop()
 
 
-@pytest.mark.slow()
+@pytest.mark.slow
 def test_player_rename_channels(mock_lsl_stream, raw, close_io):
     """Test channel renaming."""
     player = mock_lsl_stream
@@ -306,7 +306,7 @@ def test_player_rename_channels(mock_lsl_stream, raw, close_io):
     player.stop()
 
 
-@pytest.mark.slow()
+@pytest.mark.slow
 def test_player_set_channel_types(mock_lsl_stream, raw, close_io):
     """Test channel type setting."""
     player = mock_lsl_stream
@@ -388,7 +388,7 @@ def test_player_set_meas_date(fname, chunk_size, request):
     player.stop()
 
 
-@pytest.mark.slow()
+@pytest.mark.slow
 def test_player_annotations(raw_annotations, close_io, chunk_size, request):
     """Test player with annotations."""
     name = f"P_{request.node.name}"
@@ -459,7 +459,7 @@ def test_player_annotations(raw_annotations, close_io, chunk_size, request):
     player.stop()
 
 
-@pytest.fixture()
+@pytest.fixture
 def raw_annotations_1000_samples() -> BaseRaw:
     """Return a 1000 sample raw object with annotations."""
     n_samples = 1000
@@ -477,7 +477,7 @@ def raw_annotations_1000_samples() -> BaseRaw:
     return raw.drop_channels("trg").set_annotations(annotations)
 
 
-@pytest.mark.slow()
+@pytest.mark.slow
 def test_player_annotations_multiple_of_chunk_size(
     raw_annotations_1000_samples, chunk_size, request
 ):
@@ -503,7 +503,7 @@ def test_player_annotations_multiple_of_chunk_size(
     player.stop()
 
 
-@pytest.mark.slow()
+@pytest.mark.slow
 def test_player_n_repeat(raw, chunk_size, request):
     """Test argument 'n_repeat'."""
     name = f"P_{request.node.name}"
@@ -536,7 +536,7 @@ def test_player_n_repeat(raw, chunk_size, request):
     player.stop()
 
 
-@pytest.mark.slow()
+@pytest.mark.slow
 def test_player_n_repeat_mmapped(fname, close_io, chunk_size, request):
     """Test argument 'n_repeat' with non-preloaded raw."""
     raw = read_raw_fif(fname, preload=False).crop(0, 1)  # crop from 2s to 1s

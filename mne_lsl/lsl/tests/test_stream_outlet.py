@@ -158,7 +158,7 @@ def test_invalid_outlet():
         StreamOutlet(sinfo, max_buffered=-101)
 
 
-@pytest.mark.slow()
+@pytest.mark.slow
 @pytest.mark.parametrize(
     ("dtype_str", "dtype"),
     [
@@ -221,7 +221,7 @@ def test_push_chunk_timestamps(dtype_str, dtype, close_io):
     close_io()
 
 
-@pytest.mark.slow()
+@pytest.mark.slow
 def test_push_chunk_irregularly_sampled_stream(close_io):
     """Test pushing a chunk on an irregularly sampled stream."""
     x = np.array([[1, 4], [2, 5], [3, 6]], dtype=np.float32)
