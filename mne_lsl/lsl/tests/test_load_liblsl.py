@@ -67,13 +67,17 @@ def download_liblsl_outdated(tmp_path_factory) -> Path:
     return Path(libpath)
 
 
-@pytest.fixture
+@pytest.fixture()
 def liblsl_outdated(tmp_path, download_liblsl_outdated) -> Path:
     """Fixture to provide an outdated liblsl version."""
     copy(download_liblsl_outdated, tmp_path / download_liblsl_outdated.name)
     return tmp_path / download_liblsl_outdated.name
 
 
+@pytest.mark.skipif(
+    _PLATFORM == "linux",
+    reason="Runner ubuntu-latest runs on 24.04 and LSL did not release yet for it.",
+)
 @pytest.mark.skipif(
     _PLATFORM == "windows",
     reason="PermissionError: [WinError 5] Access is denied (on Path.unlink(...)).",
