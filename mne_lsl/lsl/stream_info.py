@@ -37,7 +37,7 @@ else:
 
 
 if TYPE_CHECKING:
-    from typing import Any, Optional, Union
+    from typing import Any
 
     from numpy.typing import DTypeLike
 
@@ -153,7 +153,7 @@ class _BaseStreamInfo:
 
     # -- Core information, assigned at construction ------------------------------------
     @property
-    def dtype(self) -> Union[str, DTypeLike]:
+    def dtype(self) -> str | DTypeLike:
         """Channel format of a stream.
 
         All channels in a stream have the same format.
@@ -385,7 +385,9 @@ class _BaseStreamInfo:
             highpass = filters.child("highpass").first_child().value()
             lowpass = filters.child("lowpass").first_child().value()
             with info._unlock():
-                for name, value in zip(("highpass", "lowpass"), (highpass, lowpass)):
+                for name, value in zip(
+                    ("highpass", "lowpass"), (highpass, lowpass), strict=True
+                ):
                     if len(value) != 0:
                         try:
                             info[name] = float(value)
@@ -405,7 +407,7 @@ class _BaseStreamInfo:
                 info["dig"] = dig
         return info
 
-    def get_channel_names(self) -> Optional[list[str]]:
+    def get_channel_names(self) -> list[str] | None:
         """Get the channel names in the description.
 
         Returns
@@ -423,7 +425,7 @@ class _BaseStreamInfo:
         """
         return self._get_channel_info("ch_name")
 
-    def get_channel_types(self) -> Optional[list[str]]:
+    def get_channel_types(self) -> list[str] | None:
         """Get the channel types in the description.
 
         Returns
@@ -441,7 +443,7 @@ class _BaseStreamInfo:
         """
         return self._get_channel_info("ch_type")
 
-    def get_channel_units(self) -> Optional[list[str]]:
+    def get_channel_units(self) -> list[str] | None:
         """Get the channel units in the description.
 
         Returns
@@ -459,7 +461,7 @@ class _BaseStreamInfo:
         """
         return self._get_channel_info("ch_unit")
 
-    def _get_channel_info(self, name: str) -> Optional[list[str]]:
+    def _get_channel_info(self, name: str) -> list[str] | None:
         """Get the 'channel/name' element in the XML tree."""
         if self.desc.child("channels").empty():
             return None
@@ -619,7 +621,11 @@ class _BaseStreamInfo:
             loc = ch.child("loc")
             loc = ch.append_child("loc") if loc.empty() else loc
             _BaseStreamInfo._set_description_node(
-                loc, {key: value for key, value in zip(_LOC_NAMES, ch_info["loc"])}
+                loc,
+                {
+                    key: value
+                    for key, value in zip(_LOC_NAMES, ch_info["loc"], strict=True)
+                },
             )
             ch = ch.next_sibling()
         assert ch.empty()  # sanity-check
@@ -636,7 +642,7 @@ class _BaseStreamInfo:
         if info["dig"] is not None:
             self._set_digitization(info["dig"])
 
-    def set_channel_names(self, ch_names: Union[list[str], tuple[str]]) -> None:
+    def set_channel_names(self, ch_names: list[str] | tuple[str, ...]) -> None:
         """Set the channel names in the description. Existing labels are overwritten.
 
         Parameters
@@ -646,7 +652,7 @@ class _BaseStreamInfo:
         """
         self._set_channel_info(ch_names, "ch_name")
 
-    def set_channel_types(self, ch_types: Union[str, list[str]]) -> None:
+    def set_channel_types(self, ch_types: str | list[str] | tuple[str, ...]) -> None:
         """Set the channel types in the description. Existing types are overwritten.
 
         The types are given as human readable strings, e.g. ``'eeg'``.
@@ -663,7 +669,14 @@ class _BaseStreamInfo:
         self._set_channel_info(ch_types, "ch_type")
 
     def set_channel_units(
-        self, ch_units: Union[str, list[str], int, list[int], ScalarIntArray]
+        self,
+        ch_units: str
+        | list[str]
+        | int
+        | list[int]
+        | ScalarIntArray
+        | tuple[str, ...]
+        | tuple[int, ...],
     ) -> None:
         """Set the channel units in the description. Existing units are overwritten.
 
@@ -704,7 +717,9 @@ class _BaseStreamInfo:
             ]
         self._set_channel_info(ch_units, "ch_unit")
 
-    def _set_channel_info(self, ch_infos: list[str], name: str) -> None:
+    def _set_channel_info(
+        self, ch_infos: list[str] | tuple[str, ...], name: str
+    ) -> None:
         """Set the 'channel/name' element in the XML tree."""
         check_type(ch_infos, (list, tuple), name)
         for ch_info in ch_infos:
@@ -745,7 +760,7 @@ class _BaseStreamInfo:
             data = projector.append_child("data") if data.empty() else data
             ch = data.child("channel")
             for ch_name, ch_data in zip(
-                proj["data"]["col_names"], np.squeeze(proj["data"]["data"])
+                proj["data"]["col_names"], np.squeeze(proj["data"]["data"]), strict=True
             ):
                 ch = data.append_child("channel") if ch.empty() else ch
                 _BaseStreamInfo._set_description_node(
@@ -773,7 +788,11 @@ class _BaseStreamInfo:
             if loc.empty():
                 loc = point.append_child("loc")
             _BaseStreamInfo._set_description_node(
-                loc, {key: value for key, value in zip(("X", "Y", "Z"), dig_point["r"])}
+                loc,
+                {
+                    key: value
+                    for key, value in zip(("X", "Y", "Z"), dig_point["r"], strict=True)
+                },
             )
             point = point.next_sibling()
         _BaseStreamInfo._prune_description_node(point, dig)
@@ -811,10 +830,10 @@ class _BaseStreamInfo:
     # -- Helper methods to retrieve FIFF elements in the XMLElement tree ---------------
     @staticmethod
     def _get_fiff_int_named(
-        value: Optional[str],
+        value: str | None,
         name: str,
         mapping: dict[int, int],
-    ) -> Optional[int]:
+    ) -> int | None:
         """Try to retrieve the FIFF integer code from the str representation."""
         if value is None:
             return None
@@ -908,7 +927,7 @@ class StreamInfo(_BaseStreamInfo):
 
     # ----------------------------------------------------------------------------------
     @staticmethod
-    def _dtype2idxfmt(dtype: Union[str, int, DTypeLike]) -> int:
+    def _dtype2idxfmt(dtype: str | int | DTypeLike) -> int:
         """Convert a string format to its LSL integer value."""
         if dtype in fmt2idx:
             return fmt2idx[dtype]

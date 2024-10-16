@@ -15,7 +15,7 @@ def test_valid_info():
     # nested
     desc = dict(channels=list())
     desc["channels"].append(dict(channel=list()))
-    for ch_name, ch_type, ch_unit in zip(ch_names, ch_types, ch_units):
+    for ch_name, ch_type, ch_unit in zip(ch_names, ch_types, ch_units, strict=True):
         desc["channels"][0]["channel"].append(
             dict(label=[ch_name], unit=[ch_unit], type=[ch_type])
         )
@@ -31,7 +31,7 @@ def test_valid_info():
     # non-nested
     desc = dict(channels=list())
     desc["channels"].append(dict(channel=list()))
-    for ch_name, ch_type, ch_unit in zip(ch_names, ch_types, ch_units):
+    for ch_name, ch_type, ch_unit in zip(ch_names, ch_types, ch_units, strict=True):
         desc["channels"][0]["channel"].append(
             dict(label=ch_name, unit=ch_unit, type=ch_type)
         )
@@ -70,7 +70,7 @@ def test_valid_info():
     # nested
     desc = dict(channels=list())
     desc["channels"].append(dict(channel=list()))
-    for ch_name, ch_type, ch_unit in zip(ch_names, ch_types, ch_units):
+    for ch_name, ch_type, ch_unit in zip(ch_names, ch_types, ch_units, strict=True):
         desc["channels"][0]["channel"].append(
             dict(label=[ch_name], unit=[ch_unit], type=[ch_type])
         )
@@ -91,7 +91,7 @@ def test_invalid_info():
 
     desc = dict(channels=list())
     desc["channels"].append(dict(channel=list()))
-    for ch_name, ch_type, ch_unit in zip(ch_names, ch_types, ch_units):
+    for ch_name, ch_type, ch_unit in zip(ch_names, ch_types, ch_units, strict=True):
         desc["channels"][0]["channel"].append(
             dict(label=[ch_name], unit=[ch_unit], type=[ch_type])
         )
@@ -111,7 +111,7 @@ def test_invalid_info():
     # nested
     desc = dict(channels=list())
     desc["channels"].append(dict(channel=list()))
-    for ch_name, ch_type, ch_unit in zip(ch_names, ch_types, ch_units):
+    for ch_name, ch_type, ch_unit in zip(ch_names, ch_types, ch_units, strict=True):
         desc["channels"][0]["channel"].append(
             dict(label=[ch_name], unit=[ch_unit], type=[ch_type])
         )
@@ -147,7 +147,7 @@ def test_manufacturer():
     # nested
     desc = dict(channels=list(), manufacturer=list())
     desc["channels"].append(dict(channel=list()))
-    for ch_name, ch_type in zip(ch_names, ch_types):
+    for ch_name, ch_type in zip(ch_names, ch_types, strict=True):
         desc["channels"][0]["channel"].append(
             dict(label=[ch_name], unit=["uv"], type=[ch_type])
         )
@@ -159,7 +159,7 @@ def test_manufacturer():
     # not nested
     desc = dict(channels=list(), manufacturer="101")
     desc["channels"].append(dict(channel=list()))
-    for ch_name, ch_type in zip(ch_names, ch_types):
+    for ch_name, ch_type in zip(ch_names, ch_types, strict=True):
         desc["channels"][0]["channel"].append(
             dict(label=[ch_name], unit=["uv"], type=[ch_type])
         )

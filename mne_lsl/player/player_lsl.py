@@ -15,8 +15,8 @@ from ..utils.logs import logger, warn
 from ._base import BasePlayer
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from pathlib import Path
-    from typing import Callable, Optional, Union
 
 
 @fill_doc
@@ -92,13 +92,13 @@ class PlayerLSL(BasePlayer):
 
     def __init__(
         self,
-        fname: Union[str, Path],
+        fname: str | Path,
         chunk_size: int = 10,
-        n_repeat: Union[int, float] = np.inf,
+        n_repeat: int | float = np.inf,
         *,
-        name: Optional[str] = None,
+        name: str | None = None,
         source_id: str = "MNE-LSL",
-        annotations: Optional[bool] = None,
+        annotations: bool | None = None,
     ) -> None:
         super().__init__(fname, chunk_size, n_repeat)
         check_type(name, (str, None), "name")
@@ -159,10 +159,10 @@ class PlayerLSL(BasePlayer):
     @copy_doc(BasePlayer.rename_channels)
     def rename_channels(
         self,
-        mapping: Union[dict[str, str], Callable],
+        mapping: dict[str, str] | Callable,
         allow_duplicates: bool = False,
         *,
-        verbose: Optional[Union[bool, str, int]] = None,
+        verbose: bool | str | int | None = None,
     ) -> PlayerLSL:
         super().rename_channels(mapping, allow_duplicates)
         self._sinfo.set_channel_names(self.info["ch_names"])
@@ -193,7 +193,7 @@ class PlayerLSL(BasePlayer):
         mapping: dict[str, str],
         *,
         on_unit_change: str = "warn",
-        verbose: Optional[Union[bool, str, int]] = None,
+        verbose: bool | str | int | None = None,
     ) -> PlayerLSL:
         super().set_channel_types(
             mapping, on_unit_change=on_unit_change, verbose=verbose
@@ -202,7 +202,7 @@ class PlayerLSL(BasePlayer):
         return self
 
     @copy_doc(BasePlayer.set_channel_units)
-    def set_channel_units(self, mapping: dict[str, Union[str, int]]) -> PlayerLSL:
+    def set_channel_units(self, mapping: dict[str, str | int]) -> PlayerLSL:
         super().set_channel_units(mapping)
         ch_units_after = np.array(
             [ch["unit_mul"] for ch in self.info["chs"]], dtype=np.int8

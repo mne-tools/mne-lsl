@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from importlib.resources import files
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 import pooch
 from mne.utils import get_config
@@ -10,15 +9,10 @@ from mne.utils import get_config
 from ..utils._checks import ensure_path
 from ._fetch import fetch_dataset
 
-if TYPE_CHECKING:
-    from typing import Optional, Union
-
 _REGISTRY: Path = files("mne_lsl.datasets") / "testing-registry.txt"
 
 
-def _make_registry(
-    folder: Union[str, Path], output: Optional[Union[str, Path]] = None
-) -> None:
+def _make_registry(folder: str | Path, output: str | Path | None = None) -> None:
     """Create the registry file for the testing dataset.
 
     Parameters

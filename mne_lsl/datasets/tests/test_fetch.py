@@ -1,19 +1,15 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 import pooch
 import pytest
 
 from mne_lsl.datasets._fetch import fetch_dataset
 
-if TYPE_CHECKING:
-    from typing import Optional
-
 
 @pytest.fixture
-def license_file() -> Optional[Path]:
+def license_file() -> Path | None:
     """Find the license file if present."""
     fname = Path(__file__).parent.parent.parent.parent / "LICENSE"
     if fname.exists():

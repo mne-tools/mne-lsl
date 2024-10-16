@@ -24,7 +24,6 @@ from .base import BaseStream
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
-    from typing import Optional, Union
 
     from mne_lsl.lsl.stream_info import _BaseStreamInfo
 
@@ -55,9 +54,9 @@ class StreamLSL(BaseStream):
         self,
         bufsize: float,
         *,
-        name: Optional[str] = None,
-        stype: Optional[str] = None,
-        source_id: Optional[str] = None,
+        name: str | None = None,
+        stype: str | None = None,
+        source_id: str | None = None,
     ):
         super().__init__(bufsize)
         check_type(name, (str, None), "name")
@@ -101,8 +100,8 @@ class StreamLSL(BaseStream):
         self,
         acquisition_delay: float = 0.001,
         *,
-        processing_flags: Optional[Union[str, Sequence[str]]] = None,
-        timeout: Optional[float] = 2,
+        processing_flags: str | Sequence[str] | None = None,
+        timeout: float | None = 2,
     ) -> StreamLSL:
         """Connect to the LSL stream and initiate data collection in the buffer.
 
@@ -338,7 +337,7 @@ class StreamLSL(BaseStream):
             return False
 
     @property
-    def name(self) -> Optional[str]:
+    def name(self) -> str | None:
         """Name of the LSL stream.
 
         :type: :class:`str` | None
@@ -346,7 +345,7 @@ class StreamLSL(BaseStream):
         return self._name
 
     @property
-    def sinfo(self) -> Optional[_BaseStreamInfo]:
+    def sinfo(self) -> _BaseStreamInfo | None:
         """StreamInfo of the connected stream.
 
         :type: :class:`~mne_lsl.lsl.StreamInfo` | None
@@ -354,7 +353,7 @@ class StreamLSL(BaseStream):
         return self._sinfo
 
     @property
-    def stype(self) -> Optional[str]:
+    def stype(self) -> str | None:
         """Type of the LSL stream.
 
         :type: :class:`str` | None
@@ -362,7 +361,7 @@ class StreamLSL(BaseStream):
         return self._stype
 
     @property
-    def source_id(self) -> Optional[str]:
+    def source_id(self) -> str | None:
         """ID of the source of the LSL stream.
 
         :type: :class:`str` | None

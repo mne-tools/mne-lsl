@@ -11,7 +11,7 @@ from numpy.testing import assert_allclose
 from mne_lsl.stream._filters import StreamFilter, create_filter, ensure_sos_iir_params
 
 if TYPE_CHECKING:
-    from typing import Any, Optional
+    from typing import Any
 
 
 @pytest.fixture(scope="module")
@@ -69,7 +69,7 @@ def filters(iir_params: dict[str, Any], sfreq: float) -> list[StreamFilter]:
     h_freqs = (40, 15, None)
     picks = (np.arange(0, 10), np.arange(10, 20), np.arange(20, 30))
     filters = list()
-    for k, (lfq, hfq, picks_) in enumerate(zip(l_freqs, h_freqs, picks)):
+    for k, (lfq, hfq, picks_) in enumerate(zip(l_freqs, h_freqs, picks, strict=True)):
         filt = create_filter(
             sfreq=sfreq,
             l_freq=lfq,
@@ -122,8 +122,8 @@ def test_StreamFilter_repr(filters: list[StreamFilter]):
 def test_create_filter(
     iir_params: dict[str, Any],
     sfreq: float,
-    l_freq: Optional[float],
-    h_freq: Optional[float],
+    l_freq: float | None,
+    h_freq: float | None,
 ):
     """Test create_filter conformity with MNE."""
     filter1 = create_filter(

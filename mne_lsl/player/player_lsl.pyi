@@ -1,5 +1,5 @@
+from collections.abc import Callable
 from pathlib import Path as Path
-from typing import Callable
 
 from _typeshed import Incomplete
 from mne import Annotations

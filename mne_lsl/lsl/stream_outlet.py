@@ -15,8 +15,6 @@ from .load_liblsl import lib
 from .stream_info import _BaseStreamInfo
 
 if TYPE_CHECKING:
-    from typing import Optional, Union
-
     from numpy.typing import DTypeLike
 
     from .._typing import ScalarArray, ScalarFloatArray
@@ -110,7 +108,7 @@ class StreamOutlet:
 
     def push_sample(
         self,
-        x: Union[list[str], ScalarArray],
+        x: list[str] | ScalarArray,
         timestamp: float = 0.0,
         pushThrough: bool = True,
     ) -> None:
@@ -163,8 +161,8 @@ class StreamOutlet:
 
     def push_chunk(
         self,
-        x: Union[list[list[str]], ScalarArray],
-        timestamp: Optional[Union[float, ScalarFloatArray]] = None,
+        x: list[list[str]] | ScalarArray,
+        timestamp: float | ScalarFloatArray | None = None,
         pushThrough: bool = True,
     ) -> None:
         """Push a chunk of samples into the :class:`~mne_lsl.lsl.StreamOutlet`.
@@ -248,7 +246,7 @@ class StreamOutlet:
             )
             timestamp_c = (c_double * timestamp.size)(*timestamp.astype(np.float64))
             liblsl_push_chunk_func = self._do_push_chunk_n
-        elif isinstance(timestamp, (float, int)):
+        elif isinstance(timestamp, (float | int)):
             if self.sfreq == 0.0 and n_samples != 1 and timestamp != 0:
                 warn(
                     "The stream is irregularly sampled and timestamp is a float and "
@@ -274,7 +272,7 @@ class StreamOutlet:
                 )
             )
 
-    def wait_for_consumers(self, timeout: Optional[float]) -> bool:
+    def wait_for_consumers(self, timeout: float | None) -> bool:
         """Wait (block) until at least one :class:`~mne_lsl.lsl.StreamInlet` connects.
 
         Parameters
@@ -311,7 +309,7 @@ class StreamOutlet:
 
     @copy_doc(_BaseStreamInfo.dtype)
     @property
-    def dtype(self) -> Union[str, DTypeLike]:
+    def dtype(self) -> str | DTypeLike:
         return fmt2numpy.get(self._dtype, "string")
 
     @copy_doc(_BaseStreamInfo.n_channels)

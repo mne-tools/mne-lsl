@@ -143,7 +143,7 @@ while n <= 10:
         data_annotations, ts_annotations = stream_annotations.get_data(
             winsize=stream_annotations.n_new_samples
         )
-        for sample, time in zip(data_annotations.T, ts_annotations):
+        for sample, time in zip(data_annotations.T, ts_annotations, strict=True):
             k = np.where(sample != 0)[0][0]  # find the annotation
             ax.axvspan(
                 time,

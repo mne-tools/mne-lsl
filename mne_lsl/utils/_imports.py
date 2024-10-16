@@ -5,12 +5,12 @@ Inspired from pandas: https://pandas.pydata.org/
 
 from __future__ import annotations
 
-import importlib
+from importlib import import_module
+from importlib.util import find_spec
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from types import ModuleType
-    from typing import Optional
 
 # A mapping from import name to package name (on PyPI) when the package name
 # is different.
@@ -29,7 +29,7 @@ def import_optional_dependency(
     name: str,
     extra: str = "",
     raise_error: bool = True,
-) -> Optional[ModuleType]:
+) -> ModuleType | None:
     """Import an optional dependency.
 
     By default, if a dependency is missing an ImportError with a nice message will be
@@ -48,22 +48,18 @@ def import_optional_dependency(
 
     Returns
     -------
-    module : Optional[ModuleType]
+    module : Module | None
         The imported module when found.
         None is returned when the package is not found and raise_error is False.
     """
     package_name = _INSTALL_MAPPING.get(name)
     install_name = package_name if package_name is not None else name
-
-    try:
-        module = importlib.import_module(name)
-    except ImportError:
+    if find_spec(name) is None:
         if raise_error:
             raise ImportError(
-                f"Missing optional dependency '{install_name}'. {extra} "
-                f"Use pip or conda to install {install_name}."
+                f"Missing optional dependency '{install_name}'. {extra} Use pip or "
+                f"conda to install {install_name}."
             )
         else:
             return None
-
-    return module
+    return import_module(name)

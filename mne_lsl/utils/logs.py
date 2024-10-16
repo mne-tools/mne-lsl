@@ -14,8 +14,8 @@ from ._docs import fill_doc
 from ._fixes import WrapStdOut
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from logging import Logger
-    from typing import Callable, Optional, Union
 
 
 _PACKAGE: str = __package__.split(".")[0]
@@ -24,9 +24,7 @@ _PACKAGE: str = __package__.split(".")[0]
 @fill_doc
 def _init_logger(
     *,
-    verbose: Optional[Union[bool, str, int]] = os.getenv(
-        "MNE_LSL_LOG_LEVEL", "WARNING"
-    ),
+    verbose: bool | str | int | None = os.getenv("MNE_LSL_LOG_LEVEL", "WARNING"),
 ) -> Logger:
     """Initialize a logger.
 
@@ -54,11 +52,11 @@ def _init_logger(
 
 
 def add_file_handler(
-    fname: Union[str, Path],
+    fname: str | Path,
     mode: str = "a",
-    encoding: Optional[str] = None,
+    encoding: str | None = None,
     *,
-    verbose: Optional[Union[bool, str, int]] = None,
+    verbose: bool | str | int | None = None,
 ) -> None:
     """Add a file handler to the logger.
 
@@ -85,7 +83,7 @@ def add_file_handler(
 
 
 @fill_doc
-def set_log_level(verbose: Optional[Union[bool, str, int]]) -> None:
+def set_log_level(verbose: bool | str | int | None) -> None:
     """Set the log level for the logger.
 
     Parameters
@@ -172,12 +170,12 @@ class _use_log_level:
 
     def __init__(
         self,
-        verbose: Optional[Union[bool, str, int]] = None,
-        logger_obj: Optional[Logger] = None,
+        verbose: bool | str | int | None = None,
+        logger_obj: Logger | None = None,
     ):
         self._logger: Logger = logger_obj if logger_obj is not None else logger
         self._old_level: int = self._logger.level
-        self._level: Optional[int] = None if verbose is None else check_verbose(verbose)
+        self._level: int | None = None if verbose is None else check_verbose(verbose)
 
     def __enter__(self):
         if self._level is not None:
@@ -193,7 +191,7 @@ def warn(
     message: str,
     category: Warning = RuntimeWarning,
     module: str = _PACKAGE,
-    ignore_namespaces: Union[tuple[str, ...] | list[str]] = (_PACKAGE,),
+    ignore_namespaces: tuple[str, ...] | list[str] = (_PACKAGE,),
 ) -> None:
     """Emit a warning with trace outside the requested namespace.
 

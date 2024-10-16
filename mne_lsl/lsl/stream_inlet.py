@@ -18,7 +18,6 @@ from .stream_info import _BaseStreamInfo
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
-    from typing import Optional, Union
 
     from numpy.typing import DTypeLike, NDArray
 
@@ -63,7 +62,7 @@ class StreamInlet:
         chunk_size: int = 0,
         max_buffered: float = 360,
         recover: bool = True,
-        processing_flags: Optional[Union[str, Sequence[str]]] = None,
+        processing_flags: str | Sequence[str] | None = None,
     ):
         check_type(sinfo, (_BaseStreamInfo,), "sinfo")
         chunk_size = ensure_int(chunk_size, "chunk_size")
@@ -166,7 +165,7 @@ class StreamInlet:
         self._del()  # no-op if called more than once
         logger.debug(f"Deleting {self.__class__.__name__}.")
 
-    def open_stream(self, timeout: Optional[float] = None) -> None:
+    def open_stream(self, timeout: float | None = None) -> None:
         """Subscribe to a data stream.
 
         All samples pushed in at the other end from this moment onwards will be queued
@@ -222,7 +221,7 @@ class StreamInlet:
         logger.debug("Closing stream, lib.lsl_close_stream(self._obj) done.")
         self._stream_is_open = False
 
-    def time_correction(self, timeout: Optional[float] = None) -> float:
+    def time_correction(self, timeout: float | None = None) -> float:
         """Retrieve an estimated time correction offset for the given stream.
 
         The first call to this function takes several milliseconds until a reliable
@@ -253,8 +252,8 @@ class StreamInlet:
         return result
 
     def pull_sample(
-        self, timeout: Optional[float] = 0.0
-    ) -> tuple[Union[list[str], ScalarArray], Optional[float]]:
+        self, timeout: float | None = 0.0
+    ) -> tuple[list[str] | ScalarArray, float | None]:
         """Pull a single sample from the inlet.
 
         Parameters
@@ -309,9 +308,9 @@ class StreamInlet:
 
     def pull_chunk(
         self,
-        timeout: Optional[float] = 0.0,
+        timeout: float | None = 0.0,
         max_samples: int = 1024,
-    ) -> tuple[Union[list[list[str]], ScalarArray], NDArray[np.float64]]:
+    ) -> tuple[list[list[str]] | ScalarArray, NDArray[np.float64]]:
         """Pull a chunk of samples from the inlet.
 
         Parameters
@@ -433,7 +432,7 @@ class StreamInlet:
     # ----------------------------------------------------------------------------------
     @copy_doc(_BaseStreamInfo.dtype)
     @property
-    def dtype(self) -> Union[str, DTypeLike]:
+    def dtype(self) -> str | DTypeLike:
         return fmt2numpy.get(self._dtype, "string")
 
     @copy_doc(_BaseStreamInfo.n_channels)
@@ -475,7 +474,7 @@ class StreamInlet:
             return bool(lib.lsl_was_clock_reset(self._obj))
 
     # ----------------------------------------------------------------------------------
-    def get_sinfo(self, timeout: Optional[float] = None) -> _BaseStreamInfo:
+    def get_sinfo(self, timeout: float | None = None) -> _BaseStreamInfo:
         """:class:`~mne_lsl.lsl.StreamInfo` corresponding to this Inlet.
 
         Parameters

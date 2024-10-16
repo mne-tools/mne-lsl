@@ -28,8 +28,6 @@ from ..utils.logs import logger, warn
 from .base import BaseStream
 
 if TYPE_CHECKING:
-    from typing import Optional, Union
-
     from mne import Info
     from numpy.typing import NDArray
 
@@ -130,18 +128,18 @@ class EpochsStream:
         self,
         stream: BaseStream,
         bufsize: int,
-        event_id: Optional[Union[int, dict[str, int]]],
-        event_channels: Union[str, list[str]],
-        event_stream: Optional[BaseStream] = None,
+        event_id: int | dict[str, int] | None,
+        event_channels: str | list[str],
+        event_stream: BaseStream | None = None,
         tmin: float = -0.2,
         tmax: float = 0.5,
-        baseline: Optional[tuple[Optional[float], Optional[float]]] = (None, 0),
-        picks: Optional[Union[str, list[str], int, list[int], ScalarIntArray]] = None,
-        reject: Optional[dict[str, float]] = None,
-        flat: Optional[dict[str, float]] = None,
-        reject_tmin: Optional[float] = None,
-        reject_tmax: Optional[float] = None,
-        detrend: Optional[Union[int, str]] = None,
+        baseline: tuple[float | None, float | None] | None = (None, 0),
+        picks: str | list[str] | int | list[int] | ScalarIntArray | None = None,
+        reject: dict[str, float] | None = None,
+        flat: dict[str, float] | None = None,
+        reject_tmin: float | None = None,
+        reject_tmax: float | None = None,
+        detrend: int | str | None = None,
     ) -> None:
         check_type(stream, (BaseStream,), "stream")
         if not stream.connected or stream._info["sfreq"] == 0:
@@ -375,9 +373,9 @@ class EpochsStream:
     @fill_doc
     def get_data(
         self,
-        n_epochs: Optional[int] = None,
-        picks: Optional[Union[str, list[str], int, list[int], ScalarIntArray]] = None,
-        exclude: Union[str, list[str], tuple[str]] = "bads",
+        n_epochs: int | None = None,
+        picks: str | list[str] | int | list[int] | ScalarIntArray | None = None,
+        exclude: str | list[str] | tuple[str, ...] = "bads",
     ) -> ScalarArray:
         """Retrieve the latest epochs from the buffer.
 
@@ -658,7 +656,7 @@ class EpochsStream:
 def _check_event_channels(
     event_channels: list[str],
     stream: BaseStream,
-    event_stream: Optional[BaseStream],
+    event_stream: BaseStream | None,
 ) -> None:
     """Check that the event channels are valid."""
     for elt in event_channels:
@@ -698,8 +696,8 @@ def _check_event_channels(
 
 
 def _ensure_event_id(
-    event_id: Optional[Union[int, dict[str, int]]], event_stream: Optional[BaseStream]
-) -> Optional[dict[str, int]]:
+    event_id: int | dict[str, int] | None, event_stream: BaseStream | None
+) -> dict[str, int] | None:
     """Ensure event_ids is a dictionary or None."""
     check_type(event_id, (None, int, dict), "event_id")
     if event_id is None:
@@ -741,7 +739,7 @@ def _ensure_event_id(
 
 
 def _check_baseline(
-    baseline: Optional[tuple[Optional[float], Optional[float]]],
+    baseline: tuple[float | None, float | None] | None,
     tmin: float,
     tmax: float,
 ) -> None:
@@ -766,7 +764,7 @@ def _check_baseline(
 
 
 def _check_reject_flat(
-    reject: Optional[dict[str, float]], flat: Optional[dict[str, float]], info: Info
+    reject: dict[str, float] | None, flat: dict[str, float] | None, info: Info
 ) -> None:
     """Check that the PTP rejection dictionaries are valid."""
     check_type(reject, (dict, None), "reject")
@@ -805,7 +803,7 @@ def _check_reject_flat(
 
 
 def _check_reject_tmin_tmax(
-    reject_tmin: Optional[float], reject_tmax: Optional[float], tmin: float, tmax: float
+    reject_tmin: float | None, reject_tmax: float | None, tmin: float, tmax: float
 ) -> None:
     """Check that the rejection time window is valid."""
     check_type(reject_tmin, ("numeric", None), "reject_tmin")
@@ -831,7 +829,7 @@ def _check_reject_tmin_tmax(
         )
 
 
-def _ensure_detrend_str(detrend: Optional[Union[int, str]]) -> Optional[str]:
+def _ensure_detrend_str(detrend: int | str | None) -> str | None:
     """Ensure detrend is an integer."""
     if detrend is None:
         return None
@@ -854,10 +852,10 @@ def _find_events_in_stim_channels(
     sfreq: float,
     *,
     output: str = "onset",
-    consecutive: Union[bool, str] = "increasing",
+    consecutive: bool | str = "increasing",
     min_duration: float = 0,
     shortest_event: int = 2,
-    mask: Optional[int] = None,
+    mask: int | None = None,
     uint_cast: bool = False,
     mask_type: str = "and",
     initial_event: bool = False,
@@ -865,7 +863,7 @@ def _find_events_in_stim_channels(
     """Find events in stim channels."""
     min_samples = min_duration * sfreq
     events_list = []
-    for d, ch_name in zip(data, event_channels):
+    for d, ch_name in zip(data, event_channels, strict=True):
         events = find_events(
             d[np.newaxis, :],
             first_samp=0,
@@ -897,11 +895,11 @@ def _find_events_in_stim_channels(
 
 def _prune_events(
     events: NDArray[np.int64],
-    event_id: Optional[dict[str, int]],
+    event_id: dict[str, int] | None,
     buffer_size: int,
     ts: NDArray[np.float64],
-    last_ts: Optional[float],
-    ts_events: Optional[NDArray[np.float64]],
+    last_ts: float | None,
+    ts_events: NDArray[np.float64] | None,
     tmin_shift: float,
 ) -> NDArray[np.int64]:
     """Prune events based on criteria and buffer size."""
@@ -932,12 +930,12 @@ def _prune_events(
 
 def _process_data(
     data: ScalarArray,  # array of shape (n_epochs, n_samples, n_channels)
-    baseline: Optional[tuple[Optional[float], Optional[float]]],
-    reject: Optional[dict[str, float]],
-    flat: Optional[dict[str, float]],
-    reject_tmin: Optional[float],
-    reject_tmax: Optional[float],
-    detrend_type: Optional[str],
+    baseline: tuple[float | None, float | None] | None,
+    reject: dict[str, float] | None,
+    flat: dict[str, float] | None,
+    reject_tmin: float | None,
+    reject_tmax: float | None,
+    detrend_type: str | None,
     times: NDArray[np.float64],
     ch_idx_by_type: dict[str, list[int]],
 ) -> ScalarArray:

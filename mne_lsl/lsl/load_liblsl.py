@@ -21,8 +21,6 @@ from ..utils._path import walk
 from ..utils.logs import logger, warn
 
 if TYPE_CHECKING:
-    from typing import Optional, Union
-
     from pooch import Pooch
 
 
@@ -71,7 +69,7 @@ def load_liblsl() -> CDLL:
     return _set_types(lib)
 
 
-def _load_liblsl_environment_variables() -> Optional[str]:
+def _load_liblsl_environment_variables() -> str | None:
     """Load the binary LSL library from the environment variables.
 
     Returns
@@ -101,7 +99,7 @@ def _load_liblsl_environment_variables() -> Optional[str]:
     return None
 
 
-def _load_liblsl_system() -> Optional[str]:
+def _load_liblsl_system() -> str | None:
     """Load the binary LSL library from the system path/folders.
 
     Returns
@@ -128,7 +126,7 @@ def _load_liblsl_system() -> Optional[str]:
     return None
 
 
-def _load_liblsl_mne_lsl(*, folder: Path = _LIB_FOLDER) -> Optional[str]:
+def _load_liblsl_mne_lsl(*, folder: Path = _LIB_FOLDER) -> str | None:
     """Load the binary LSL library from the system path/folders.
 
     Parameters
@@ -173,7 +171,7 @@ def _load_liblsl_mne_lsl(*, folder: Path = _LIB_FOLDER) -> Optional[str]:
 
 def _fetch_liblsl(
     *,
-    folder: Union[str, Path] = _LIB_FOLDER,
+    folder: str | Path = _LIB_FOLDER,
     url: str = "https://api.github.com/repos/sccn/liblsl/releases/latest",
 ) -> str:
     """Fetch liblsl on the release page.
@@ -420,8 +418,8 @@ def _is_valid_libpath(libpath: str) -> bool:
 
 
 def _attempt_load_liblsl(
-    libpath: Union[str, Path], *, issue_warning: bool = True
-) -> tuple[str, Optional[int]]:
+    libpath: str | Path, *, issue_warning: bool = True
+) -> tuple[str, int | None]:
     """Try loading a binary LSL library.
 
     Parameters

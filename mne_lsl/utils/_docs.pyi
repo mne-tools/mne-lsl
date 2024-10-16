@@ -1,4 +1,4 @@
-from typing import Callable
+from collections.abc import Callable
 
 docdict: dict[str, str]
 _KEYS_MNE: tuple[str, ...]

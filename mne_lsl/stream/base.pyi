@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
-from collections.abc import Generator
+from collections.abc import Callable, Generator
 from datetime import datetime as datetime
-from typing import Any, Callable
+from typing import Any
 
 import numpy as np
 from _typeshed import Incomplete
@@ -93,7 +93,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
     def add_reference_channels(
         self,
         ref_channels: str | list[str] | tuple[str],
-        ref_units: str | int | list[str | int] | tuple[str | int] | None = None,
+        ref_units: str | int | list[str | int] | tuple[str | int, ...] | None = None,
     ) -> BaseStream:
         """Add EEG reference channels to data that consists of all zeros.
 
@@ -218,7 +218,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             The stream instance modified in-place.
         """
 
-    def del_filter(self, idx: int | list[int] | tuple[int] | str = "all") -> None:
+    def del_filter(self, idx: int | list[int] | tuple[int, ...] | str = "all") -> None:
         """Remove a filter from the list of applied filters.
 
         Parameters
@@ -235,7 +235,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         a step response steady-state.
         """
 
-    def drop_channels(self, ch_names: str | list[str] | tuple[str]) -> BaseStream:
+    def drop_channels(self, ch_names: str | list[str] | tuple[str, ...]) -> BaseStream:
         """Drop channel(s).
 
         Parameters

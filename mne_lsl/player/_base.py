@@ -27,8 +27,9 @@ from ..utils.logs import logger, verbose, warn
 from ..utils.meas_info import _set_channel_units
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from datetime import datetime
-    from typing import Any, Callable, Optional, Union
+    from typing import Any
 
     from mne import Info
 
@@ -54,9 +55,9 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
     @abstractmethod
     def __init__(
         self,
-        fname: Union[str, Path, BaseRaw],
+        fname: str | Path | BaseRaw,
         chunk_size: int = 10,
-        n_repeat: Union[int, float] = np.inf,
+        n_repeat: int | float = np.inf,
     ) -> None:
         self._chunk_size = ensure_int(chunk_size, "chunk_size")
         if self._chunk_size <= 0:
@@ -88,10 +89,10 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
     @fill_doc
     def anonymize(
         self,
-        daysback: Optional[int] = None,
+        daysback: int | None = None,
         keep_his: bool = False,
         *,
-        verbose: Optional[Union[bool, str, int]] = None,
+        verbose: bool | str | int | None = None,
     ) -> BasePlayer:
         """Anonymize the measurement information in-place.
 
@@ -157,10 +158,10 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
     @fill_doc
     def rename_channels(
         self,
-        mapping: Union[dict[str, str], Callable],
+        mapping: dict[str, str] | Callable,
         allow_duplicates: bool = False,
         *,
-        verbose: Optional[Union[bool, str, int]] = None,
+        verbose: bool | str | int | None = None,
     ) -> BasePlayer:
         """Rename channels.
 
@@ -208,7 +209,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         mapping: dict[str, str],
         *,
         on_unit_change: str = "warn",
-        verbose: Optional[Union[bool, str, int]] = None,
+        verbose: bool | str | int | None = None,
     ) -> BasePlayer:
         """Define the sensor type of channels.
 
@@ -244,7 +245,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         return self
 
     @abstractmethod
-    def set_channel_units(self, mapping: dict[str, Union[str, int]]) -> BasePlayer:
+    def set_channel_units(self, mapping: dict[str, str | int]) -> BasePlayer:
         """Define the channel unit multiplication factor.
 
         By convention, MNE stores data in SI units. But systems often stream in non-SI
@@ -292,7 +293,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         return self
 
     def set_meas_date(
-        self, meas_date: Optional[Union[datetime, float, tuple[float, float]]]
+        self, meas_date: datetime | float | tuple[float, float] | None
     ) -> BasePlayer:
         """Set the measurement start date.
 
@@ -397,7 +398,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         return self._chunk_size
 
     @property
-    def fname(self) -> Optional[Path]:
+    def fname(self) -> Path | None:
         """Path to file played.
 
         :type: :class:`~pathlib.Path` | None
@@ -413,7 +414,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         return self._raw.info
 
     @property
-    def n_repeat(self) -> Optional[int]:
+    def n_repeat(self) -> int | None:
         """Number of times the file is repeated.
 
         :type: :class:`int` | ``np.inf``

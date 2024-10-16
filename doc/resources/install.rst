@@ -6,7 +6,7 @@ Install
 Default install
 ---------------
 
-``MNE-LSL`` requires Python version ``3.9`` or higher and is available on
+``MNE-LSL`` requires Python version ``3.10`` or higher and is available on
 `PyPI <project pypi_>`_ and `conda-forge <project conda_>`_. It requires
 `liblsl <lsl lib_>`_ which will be either fetch from the path in the environment
 variable ``MNE_LSL_LIB`` (or ``PYLSL_LIB``), or from the system directories, or
