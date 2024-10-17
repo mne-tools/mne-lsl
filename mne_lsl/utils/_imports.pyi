@@ -1,4 +1,4 @@
-from types import ModuleType as ModuleType
+from types import ModuleType
 
 _INSTALL_MAPPING: dict[str, str]
 
@@ -23,7 +23,7 @@ def import_optional_dependency(
 
     Returns
     -------
-    module : Optional[ModuleType]
+    module : Module | None
         The imported module when found.
         None is returned when the package is not found and raise_error is False.
     """

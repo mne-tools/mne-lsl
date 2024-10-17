@@ -1,8 +1,8 @@
-from collections.abc import Sequence as Sequence
+from collections.abc import Sequence
 
 import numpy as np
 from _typeshed import Incomplete
-from numpy.typing import DTypeLike as DTypeLike
+from numpy.typing import DTypeLike
 from numpy.typing import NDArray as NDArray
 
 from .._typing import ScalarArray as ScalarArray

@@ -1,15 +1,15 @@
 from abc import ABC, abstractmethod
 from collections.abc import Callable, Generator
-from datetime import datetime as datetime
+from datetime import datetime
 from typing import Any
 
 import numpy as np
 from _typeshed import Incomplete
 from mne import Info
-from mne.channels import DigMontage as DigMontage
+from mne.channels import DigMontage
 from mne.channels.channels import SetChannelsMixin
 from mne.io.meas_info import ContainsMixin
-from numpy.typing import DTypeLike as DTypeLike
+from numpy.typing import DTypeLike
 from numpy.typing import NDArray as NDArray
 
 from .._typing import ScalarArray as ScalarArray
@@ -92,7 +92,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
     def add_reference_channels(
         self,
-        ref_channels: str | list[str] | tuple[str],
+        ref_channels: str | list[str] | tuple[str, ...],
         ref_units: str | int | list[str | int] | tuple[str | int, ...] | None = None,
     ) -> BaseStream:
         """Add EEG reference channels to data that consists of all zeros.
@@ -378,7 +378,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         self,
         winsize: float | None = None,
         picks: str | list[str] | int | list[int] | ScalarIntArray | None = None,
-        exclude: str | list[str] | tuple[str] = "bads",
+        exclude: str | list[str] | tuple[str, ...] = "bads",
     ) -> tuple[ScalarArray, NDArray[np.float64]]:
         """Retrieve the latest data from the buffer.
 
@@ -648,8 +648,8 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
     def set_eeg_reference(
         self,
-        ref_channels: str | list[str] | tuple[str],
-        ch_type: str | list[str] | tuple[str] = "eeg",
+        ref_channels: str | list[str] | tuple[str, ...],
+        ch_type: str | list[str] | tuple[str, ...] = "eeg",
     ) -> BaseStream:
         """Specify which reference to use for EEG-like data.
 
@@ -679,7 +679,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         """
 
     def set_meas_date(
-        self, meas_date: datetime | float | tuple[float] | None
+        self, meas_date: datetime | float | tuple[float, float] | None
     ) -> BaseStream:
         """Set the measurement start date.
 

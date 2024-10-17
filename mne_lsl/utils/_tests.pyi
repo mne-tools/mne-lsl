@@ -1,4 +1,4 @@
-from pathlib import Path as Path
+from pathlib import Path
 
 from mne import Info
 from mne.io import BaseRaw
