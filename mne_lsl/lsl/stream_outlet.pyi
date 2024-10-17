@@ -1,5 +1,5 @@
 from _typeshed import Incomplete
-from numpy.typing import DTypeLike as DTypeLike
+from numpy.typing import DTypeLike
 
 from .._typing import ScalarArray as ScalarArray
 from .._typing import ScalarFloatArray as ScalarFloatArray

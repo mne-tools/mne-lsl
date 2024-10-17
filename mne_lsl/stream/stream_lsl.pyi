@@ -1,4 +1,4 @@
-from collections.abc import Sequence as Sequence
+from collections.abc import Sequence
 
 from _typeshed import Incomplete
 

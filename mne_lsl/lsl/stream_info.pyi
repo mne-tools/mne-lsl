@@ -3,7 +3,7 @@ from typing import Any
 from _typeshed import Incomplete
 from mne import Info, Projection
 from mne.io._digitization import DigPoint
-from numpy.typing import DTypeLike as DTypeLike
+from numpy.typing import DTypeLike
 
 from .._typing import ScalarIntArray as ScalarIntArray
 from ..utils._checks import check_type as check_type
@@ -279,7 +279,7 @@ class _BaseStreamInfo:
             :class:`~mne.Info` containing the measurement information.
         """
 
-    def set_channel_names(self, ch_names: list[str] | tuple[str]) -> None:
+    def set_channel_names(self, ch_names: list[str] | tuple[str, ...]) -> None:
         """Set the channel names in the description. Existing labels are overwritten.
 
         Parameters
@@ -288,7 +288,7 @@ class _BaseStreamInfo:
             List of channel names, matching the number of total channels.
         """
 
-    def set_channel_types(self, ch_types: str | list[str]) -> None:
+    def set_channel_types(self, ch_types: str | list[str] | tuple[str, ...]) -> None:
         """Set the channel types in the description. Existing types are overwritten.
 
         The types are given as human readable strings, e.g. ``'eeg'``.
@@ -301,7 +301,14 @@ class _BaseStreamInfo:
         """
 
     def set_channel_units(
-        self, ch_units: str | list[str] | int | list[int] | ScalarIntArray
+        self,
+        ch_units: str
+        | list[str]
+        | int
+        | list[int]
+        | ScalarIntArray
+        | tuple[str, ...]
+        | tuple[int, ...],
     ) -> None:
         """Set the channel units in the description. Existing units are overwritten.
 
@@ -323,7 +330,9 @@ class _BaseStreamInfo:
         ``FIFF_UNITM_NONE`` in MNE-Python.
         """
 
-    def _set_channel_info(self, ch_infos: list[str], name: str) -> None:
+    def _set_channel_info(
+        self, ch_infos: list[str] | tuple[str, ...], name: str
+    ) -> None:
         """Set the 'channel/name' element in the XML tree."""
 
     def _set_channel_projectors(self, projs: list[Projection]) -> None:

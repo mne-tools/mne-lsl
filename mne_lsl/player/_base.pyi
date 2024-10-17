@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from collections.abc import Callable
-from datetime import datetime as datetime
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
