@@ -22,7 +22,8 @@ class ScopeEEG(_Scope):
     def __init__(self, inlet):
         super().__init__(inlet)
 
-        self._channels_labels = self._inlet.get_sinfo().get_channel_names()
+        self._info = self._inlet.get_sinfo().get_channel_info()
+        self._channels_labels = self._info.ch_names
         self._picks = list(range(len(self._channels_labels)))
         # patch for CB classic trigger channel on ANT devices:
         if "TRIGGER" in self._channels_labels:
@@ -61,13 +62,11 @@ class ScopeEEG(_Scope):
             Frequency at which the signal is low-passed.
         """
         logger.debug("Bandpass initialization for [%s, %s] Hz..", low, high)
-
         bp_low = low / (0.5 * self._sample_rate)
         bp_high = high / (0.5 * self._sample_rate)
         self._sos = butter(BP_ORDER, [bp_low, bp_high], btype="band", output="sos")
         self._zi_coeff = sosfilt_zi(self._sos).reshape((self._sos.shape[0], 2, 1))
         self._zi = None
-
         logger.debug("Bandpass initialization complete.")
 
     # -------------------------- Main Loop -------------------------
