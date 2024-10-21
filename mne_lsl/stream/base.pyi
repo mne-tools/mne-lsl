@@ -782,7 +782,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
     def _check_not_epoched(self, name: str) -> None:
         """Check that the stream is not being epoched."""
 
-    def _interrupt_acquisition(self) -> Generator[None, None, None]:
+    def _interrupt_acquisition(self) -> Generator[None]:
         """Context manager interrupting the acquisition thread."""
     _info: Incomplete
     _picks_inlet: Incomplete
