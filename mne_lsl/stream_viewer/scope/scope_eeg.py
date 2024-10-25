@@ -26,11 +26,19 @@ class ScopeEEG(_Scope):
         self._channels_labels = self._info.ch_names
         self._picks = list(range(len(self._channels_labels)))
         # patch for CB classic trigger channel on ANT devices:
-        if "TRIGGER" in self._channels_labels:
-            self._tch = self._channels_labels.index("TRIGGER")
-            self._channels_labels.pop(self._tch)
-            self._picks.pop(self._tch)
+        if inlet.name.startswith("eegoSports"):
+            if inlet.name == "eegoSports 0000" and "176" in self._channels_labels:
+                self._tch_label = "176"
+                self._tch = self._channels_labels.index(self._tch_label)
+                self._channels_labels.pop(self._tch)
+                self._picks.pop(self._tch)
+            elif "TRIGGER" in self._channels_labels:  # 64 channels TRG
+                self._tch_label = "TRIGGER"
+                self._tch = self._channels_labels.index(self._tch_label)
+                self._channels_labels.pop(self._tch)
+                self._picks.pop(self._tch)
         else:
+            self._tch_label = None
             self._tch = None
         self._picks = np.array(self._picks)
         self._nb_channels = len(self._channels_labels)
@@ -132,6 +140,11 @@ class ScopeEEG(_Scope):
 
     def _filter_trigger(self, tol=0.05):  # noqa
         """Remove successive duplicates of a trigger value."""
+        if self._tch_label == "176":
+            mask = np.ones(self._trigger_acquired.size, dtype=bool)
+            idx = np.where(self._trigger_acquired == 128)[0]
+            mask[idx] = False
+            self._trigger_acquired = self._trigger_acquired * mask
         self._trigger_acquired[
             np.abs(np.diff(self._trigger_acquired, prepend=[0])) <= tol
         ] = 0
