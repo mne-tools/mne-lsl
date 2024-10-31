@@ -113,11 +113,12 @@ environment = {RUNNER_OS = "Linux"}
 
 [[tool.cibuildwheel.overrides]]
 repair-wheel-command = ["pipx run abi3audit --strict --report {wheel}"]
-select = "*"
+select = "cp*"  # abi3 not used for PyPi / pp*
 inherit.repair-wheel-command = "append"
 
 [tool.cibuildwheel.windows]
-repair-wheel-command = ["delvewheel repair --no-mangle=\"liblsl.dll\" -w {dest_dir} {wheel}"]
+environment = {INCLUDE = "C:\\Program Files\\liblsl\\include"}
+repair-wheel-command = ["delvewheel repair -w {dest_dir} {wheel}"]
 
 [tool.codespell]
 check-filenames = true

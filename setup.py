@@ -1,7 +1,7 @@
 # Minimal setup.py to create a CFFI extension module in abi3 mode
 
 from setuptools import setup
-from wheel.bdist_wheel import bdist_wheel
+from setuptools.command.bdist_wheel import bdist_wheel
 
 
 class bdist_wheel_abi3(bdist_wheel):  # noqa: D101
