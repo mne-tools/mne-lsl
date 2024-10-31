@@ -137,10 +137,6 @@ inherit.repair-wheel-command = "append"
 [tool.cibuildwheel.windows]
 repair-wheel-command = "delvewheel repair -w {dest_dir} {wheel}"
 
-[tool.cibuildwheel.windows.environment]
-INCLUDE = "C:\\Program Files\\liblsl\\include"
-LIB = "C:\\Program Files\\liblsl\\bin"
-
 [tool.codespell]
 check-filenames = true
 check-hidden = true
