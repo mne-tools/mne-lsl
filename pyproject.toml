@@ -135,7 +135,7 @@ select = "cp*"  # abi3 not used for PyPi / pp*
 inherit.repair-wheel-command = "append"
 
 [tool.cibuildwheel.windows]
-repair-wheel-command = "delvewheel repair -w {dest_dir} {wheel}"
+repair-wheel-command = "delvewheel repair --add-path=\"$ADD_PATH\" -w {dest_dir} {wheel}"
 
 [tool.codespell]
 check-filenames = true

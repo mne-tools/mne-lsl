@@ -23,8 +23,9 @@ jobs:
         shell: bash
         run: |
           set -exo pipefail
-          echo "INCLUDE=$GITHUB_WORKSPACE\\liblsl\\include" >> $GITHUB_ENV
-          echo "LIB=$GITHUB_WORKSPACE\\liblsl\\build\\Release" >> $GITHUB_ENV
+          echo "INCLUDE=$GITHUB_WORKSPACE\\liblsl\\include" | tee $GITHUB_ENV
+          echo "LIB=$GITHUB_WORKSPACE\\liblsl\\build\\Release" | tee $GITHUB_ENV
+          echo "ADD_PATH=$GITHUB_WORKSPACE\\liblsl\\build\\Release" | tee $GITHUB_ENV
         if: runner.os == 'Windows'
       - uses: pypa/cibuildwheel@v2.21.3
       - uses: actions/upload-artifact@v4
