@@ -46,12 +46,12 @@ _ERROR_MSG: str = (
 def load_liblsl() -> CDLL:
     """Load the binary LSL library on the system.
 
-        The library is loaded in the following order:
-    MNE_LSL_LIB
-        1. Search in the environment variables.
-        2. Search in the system folder.
-        3. Search in the defined library folder.
-        4. Fetch on GitHub.
+    The library is loaded in the following order:
+
+    1. Search in the environment variables.
+    2. Search in the system folder.
+    3. Search in the defined library folder.
+    4. Fetch on GitHub.
     """
     if _PLATFORM not in _PLATFORM_SUFFIXES:  # pragma: no cover
         raise RuntimeError(
