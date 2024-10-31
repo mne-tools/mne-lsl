@@ -62,10 +62,9 @@ def test_logger(level: str, caplog: pytest.LogCaptureFixture):
                 assert "101" not in caplog.text
 
 
-def test_verbose(caplog: pytest.LogCaptureFixture):
-    """Test verbose decorator."""
+def test_verbose_on_function(caplog: pytest.LogCaptureFixture):
+    """Test verbose decorator on functions."""
 
-    # function
     @verbose
     def foo(verbose: bool | str | int | None = None):
         """Foo function."""
@@ -87,7 +86,10 @@ def test_verbose(caplog: pytest.LogCaptureFixture):
     foo(verbose="DEBUG")
     assert "101" in caplog.text
 
-    # method
+
+def test_verbose_on_method(caplog: pytest.LogCaptureFixture):
+    """Test verbose decorator on methods."""
+
     class Foo:
         def __init__(self):
             pass
