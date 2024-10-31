@@ -18,3 +18,6 @@
 
 Version 1.7
 ===========
+
+- Add the MNE configuration variable ``MNE_LSL_LIB_FOLDER`` to set the liblsl fetcher download directory (:pr:`350` by `Mathieu Scheltienne`_)
+- Change default liblsl fetcher download directory to ``MNE_DATA / MNE-LSL-data / liblsl`` (:pr:`350` by `Mathieu Scheltienne`_)

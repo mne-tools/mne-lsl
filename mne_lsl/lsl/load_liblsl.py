@@ -7,13 +7,13 @@ import tarfile
 import zipfile
 from ctypes import CDLL, c_char_p, c_double, c_long, c_void_p, sizeof
 from ctypes.util import find_library
-from importlib.resources import files
 from pathlib import Path
 from shutil import move, rmtree
 from typing import TYPE_CHECKING
 
 import pooch
 import requests
+from mne import get_config, set_config
 
 from .._version import __version__
 from ..utils._checks import ensure_path
@@ -24,8 +24,6 @@ if TYPE_CHECKING:
     from pooch import Pooch
 
 
-# folder where the library is fetched
-_LIB_FOLDER: Path = files("mne_lsl.lsl") / "lib"
 # minimum liblsl version. The major version is given by version // 100
 # and the minor version is given by version % 100.
 _VERSION_MIN: int = 115
@@ -52,7 +50,7 @@ def load_liblsl() -> CDLL:
 
     1. Search in the environment variables.
     2. Search in the system folder.
-    3. Search in _LIB_FOLDER.
+    3. Search in the defined library folder.
     4. Fetch on GitHub.
     """
     if _PLATFORM not in _PLATFORM_SUFFIXES:  # pragma: no cover
@@ -126,12 +124,34 @@ def _load_liblsl_system() -> str | None:
     return None
 
 
-def _load_liblsl_mne_lsl(*, folder: Path = _LIB_FOLDER) -> str | None:
+def _get_lib_folder() -> Path:
+    """Get the download folder for the binary LSL library."""
+    folder = get_config("MNE_LSL_LIB_FOLDER")
+    if folder is not None:
+        folder = ensure_path(folder, must_exist=False)
+        if folder.is_file():
+            warn(
+                f"The folder '{folder}' provided in the MNE configuration variable "
+                "'MNE_LSL_LIB_FOLDER' is a file. Please provide a directory path. "
+                "Defaulting to the MNE_DATA folder and deleting the configuration "
+                "variable."
+            )
+            set_config("MNE_LSL_LIB_FOLDER", None)
+        return folder.expanduser()
+    # default to the MNE_DATA folder
+    return (
+        Path(get_config("MNE_DATA", Path.home() / "mne_data")).expanduser()
+        / "MNE-LSL-data"
+        / "liblsl"
+    )
+
+
+def _load_liblsl_mne_lsl(*, folder: str | Path | None = None) -> str | None:
     """Load the binary LSL library from the system path/folders.
 
     Parameters
     ----------
-    folder : Path
+    folder : path-like | None
         Path to the folder in which to look for the binary LSL library.
 
     Returns
@@ -139,6 +159,14 @@ def _load_liblsl_mne_lsl(*, folder: Path = _LIB_FOLDER) -> str | None:
     libpath : str | None
         Path to the binary LSL library or None if it could not be found.
     """
+    if folder is None:
+        folder = _get_lib_folder()
+    else:
+        folder = ensure_path(folder, must_exist=False)
+        if folder.is_file():
+            raise RuntimeError(
+                f"The path '{folder}' is a file. Please provide a directory path."
+            )
     for libpath in folder.glob(f"*{_PLATFORM_SUFFIXES[_PLATFORM]}"):
         # disable the generic warning 'can not be loaded' in favor of a detailed warning
         # mentioning the file deletion.
@@ -171,14 +199,14 @@ def _load_liblsl_mne_lsl(*, folder: Path = _LIB_FOLDER) -> str | None:
 
 def _fetch_liblsl(
     *,
-    folder: str | Path = _LIB_FOLDER,
+    folder: str | Path | None = None,
     url: str = "https://api.github.com/repos/sccn/liblsl/releases/latest",
 ) -> str:
     """Fetch liblsl on the release page.
 
     Parameters
     ----------
-    folder : Path
+    folder : path-like | None
         Path to the folder in which to download the binary LSL library.
     url : str
         URL from which to fetch the release of liblsl.
@@ -193,11 +221,14 @@ def _fetch_liblsl(
     This function will raise if it was unable to fetch the release of liblsl. Thus, it
     will never return None.
     """
-    folder = ensure_path(folder, must_exist=False)
-    if folder.is_file():
-        raise RuntimeError(
-            f"The path '{folder}' is a file. Please provide a directory path."
-        )
+    if folder is None:
+        folder = _get_lib_folder()
+    else:
+        folder = ensure_path(folder, must_exist=False)
+        if folder.is_file():
+            raise RuntimeError(
+                f"The path '{folder}' is a file. Please provide a directory path."
+            )
     # the requests.get() call is likely to fail on CIs with a 403 Forbidden error.
     try:
         response = requests.get(

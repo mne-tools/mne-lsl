@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 import pytest
-from mne import Annotations
+from mne import Annotations, get_config
 from mne import set_log_level as set_log_level_mne
 from mne.io import read_raw_fif
 
@@ -29,7 +29,7 @@ if TYPE_CHECKING:
 # 2023-10-20 09:38:21.648 (   9.665s) [IO_P_test_stre  ]         udp_server.cpp:136      3| 0x43e9310 query matches, replying to port 16574  # noqa: E501
 lsl_cfg = NamedTemporaryFile("w", prefix="lsl", suffix=".cfg", delete=False)
 if "LSLAPICFG" not in os.environ:
-    verbose = os.getenv("MNE_LSL_LOG_LEVEL", 2)
+    verbose = get_config("MNE_LSL_LOG_LEVEL", default=2)
     try:
         verbose = int(verbose)
     except ValueError:
