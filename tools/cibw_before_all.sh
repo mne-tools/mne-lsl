@@ -12,9 +12,6 @@ if [[ "$RUNNER_OS" == 'Linux' ]]; then
 elif [[ "$RUNNER_OS" == 'macOS' ]]; then
     echo "Compiling on macOS"
     # On arm64, we need to set the install path to /opt/local/lib
-    if [[ "$(uname -m)" == "arm64" ]]; then
-        export CMAKE_INSTALL_PREFIX=/opt/local
-    fi
 elif [[ "$RUNNER_OS" == 'Windows' ]]; then
     echo "Compiling on Windows"
     export CMAKE_INSTALL_PREFIX="C:/Program Files/liblsl"

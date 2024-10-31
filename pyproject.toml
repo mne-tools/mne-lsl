@@ -105,11 +105,18 @@ tracker = 'https://github.com/mne-tools/mne-lsl/issues'
 [tool.cibuildwheel]
 archs = "native"
 before-all = "bash {project}/tools/cibw_before_all.sh"
-skip = ["*-musllinux*", "pp*-manylinux_aarch64"]
+skip = ["*-musllinux*", "pp*"]  # no PyPy support for pp310 for SciPy
 test-command = "python {project}/tools/cibw_test_command.py"
 
 [tool.cibuildwheel.linux]
 environment = {RUNNER_OS = "Linux"}
+
+[tool.cibuildwheel.macos]
+environment = {CPATH = "/usr/local/include", DYLD_LIBRARY_PATH = "/usr/local/lib", LDFLAGS = "-L/usr/local/lib"}
+repair-wheel-command = """\
+DYLD_LIBRARY_PATH=/usr/local/lib delocate-wheel \
+--require-archs {delocate_archs} -w {dest_dir} -v {wheel} \
+"""
 
 [[tool.cibuildwheel.overrides]]
 repair-wheel-command = ["pipx run abi3audit --strict --report {wheel}"]
@@ -117,7 +124,7 @@ select = "cp*"  # abi3 not used for PyPi / pp*
 inherit.repair-wheel-command = "append"
 
 [tool.cibuildwheel.windows]
-environment = {INCLUDE = "C:\\Program Files\\liblsl\\include"}
+environment = {INCLUDE = "C:\\Program Files\\liblsl\\lsl\\include"}
 repair-wheel-command = ["delvewheel repair -w {dest_dir} {wheel}"]
 
 [tool.codespell]
