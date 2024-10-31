@@ -1,6 +1,6 @@
 [build-system]
 build-backend = 'setuptools.build_meta'
-requires = ['setuptools >= 64.0.0']
+requires = ['cffi >= 1.0.0', 'setuptools >= 64.0.0']
 
 [project]
 authors = [
@@ -23,6 +23,7 @@ classifiers = [
   'Topic :: Software Development',
 ]
 dependencies = [
+  'cffi>=1.0.0',
   'click>=8.1',
   'distro; sys_platform == "linux"',
   'mne>=1.4.2',
@@ -100,6 +101,23 @@ documentation = 'https://mne.tools/mne-lsl'
 homepage = 'https://mne.tools/mne-lsl'
 source = 'https://github.com/mne-tools/mne-lsl'
 tracker = 'https://github.com/mne-tools/mne-lsl/issues'
+
+[tool.cibuildwheel]
+archs = "native"
+before-all = "bash {project}/tools/cibw_before_all.sh"
+skip = ["*-musllinux*", "pp*-manylinux_aarch64"]
+test-command = "python {project}/tools/cibw_test_command.py"
+
+[tool.cibuildwheel.linux]
+environment = {RUNNER_OS = "Linux"}
+
+[[tool.cibuildwheel.overrides]]
+repair-wheel-command = ["pipx run abi3audit --strict --report {wheel}"]
+select = "*"
+inherit.repair-wheel-command = "append"
+
+[tool.cibuildwheel.windows]
+repair-wheel-command = ["delvewheel repair --no-mangle=\"liblsl.dll\" -w {dest_dir} {wheel}"]
 
 [tool.codespell]
 check-filenames = true

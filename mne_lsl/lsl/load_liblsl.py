@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import glob
 import os
 import platform
 import subprocess
@@ -59,12 +60,39 @@ def load_liblsl() -> CDLL:
             "provide the error traceback to the developers."
         )
     libpath = _load_liblsl_environment_variables()
+    libpath = _load_liblsl_wheel_path() if libpath is None else libpath
     libpath = _load_liblsl_system() if libpath is None else libpath
     libpath = _load_liblsl_mne_lsl() if libpath is None else libpath
     libpath = _fetch_liblsl() if libpath is None else libpath
     assert isinstance(libpath, str)  # sanity-check
     lib = CDLL(libpath)
-    return _set_types(lib)
+    _set_types(lib)
+    return lib
+
+
+def _load_liblsl_wheel_path() -> str | None:
+    """Load the binary LSL library from the wheel path."""
+    loc: str | None = None
+    if platform.system() == "Linux":
+        # auditwheel will relocate and mangle, e.g.:
+        # mne_lsl/../mne_lsl.libs/liblsl-65106c22.so.1.16.2
+        libs = Path(__file__).parents[2] / "mne_lsl.libs"
+        if libs.is_dir():
+            loc = glob.glob(str(libs / "liblsl*.so*"))[0]
+    elif platform.system() == "Windows":
+        # delvewheel has similar behavior to auditwheel
+        libs = Path(__file__).parents[2] / "mne_lsl.libs"
+        if libs.is_dir():
+            loc = glob.glob(str(libs / "liblsl*.dll"))[0]
+    elif platform.system() == "Darwin":
+        libs = Path(__file__).parents[1] / ".dylibs"
+        if libs.is_dir():
+            loc = glob.glob(str(libs / "liblsl*.dylib"))[0]
+    if loc is not None:
+        logger.debug(f"Found wheel path {loc}")
+    else:
+        logger.debug(f"Could not find wheel library dir {libs}")
+    return loc
 
 
 def _load_liblsl_environment_variables() -> str | None:
@@ -515,7 +543,7 @@ def _is_valid_version(
     return True
 
 
-def _set_types(lib: CDLL) -> CDLL:
+def _set_types(lib: CDLL) -> None:
     """Set the argument and return types for the different liblsl functions.
 
     Parameters
@@ -639,8 +667,6 @@ def _set_types(lib: CDLL) -> CDLL:
             "[LIBLSL] Continuous resolver functions not available in your LIBLSL "
             "version."
         )
-
-    return lib
 
 
 # load library
