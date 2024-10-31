@@ -14,6 +14,7 @@ elif [[ "$RUNNER_OS" == 'macOS' ]]; then
 elif [[ "$RUNNER_OS" == 'Windows' ]]; then
     echo "Compiling on Windows"
     export CMAKE_INSTALL_PREFIX="C:/Program Files/liblsl"
+    TARGET_OPTION="--target install"
 else
     echo "Unknown RUNNER_OS: ${RUNNER_OS}"
     exit 1
@@ -23,8 +24,11 @@ cd liblsl
 # https://labstreaminglayer.readthedocs.io/dev/lib_dev.html#configuring-the-liblsl-project
 set -x
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-cmake --build build --config release
+cmake --build build --config release $TARGET_OPTION
 echo "Done building liblsl:"
 ls -alt build
 set +x
+if [[ "$RUNNER_OS" == 'Windows' ]]; then
+    ls -alR C:/Program\ Files/liblsl
+fi
 cd ..

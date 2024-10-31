@@ -138,7 +138,8 @@ inherit.repair-wheel-command = "append"
 repair-wheel-command = "delvewheel repair -w {dest_dir} {wheel}"
 
 [tool.cibuildwheel.windows.environment]
-CL = "-I%GITHUB_WORKSPACE%\\liblsl\\include -L%GITHUB_WORKSPACE%\\liblsl\\Release"
+INCLUDE = "C:\\Program Files\\liblsl\\lsl\\include"
+LIB = "C:\\Program Files\\liblsl\\lsl\\bin"
 
 [tool.codespell]
 check-filenames = true
