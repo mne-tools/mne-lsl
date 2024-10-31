@@ -106,26 +106,40 @@ tracker = 'https://github.com/mne-tools/mne-lsl/issues'
 archs = "native"
 before-all = "bash {project}/tools/cibw_before_all.sh"
 skip = ["*-musllinux*", "pp*"]  # no PyPy support for pp310 for SciPy
-test-command = "python {project}/tools/cibw_test_command.py"
+test-command = "python -u {project}/tools/cibw_test_command.py"
 
 [tool.cibuildwheel.linux]
-environment = {RUNNER_OS = "Linux"}
-
-[tool.cibuildwheel.macos]
-environment = {CPATH = "/usr/local/include", DYLD_LIBRARY_PATH = "/usr/local/lib", LDFLAGS = "-L/usr/local/lib"}
 repair-wheel-command = """\
-DYLD_LIBRARY_PATH=/usr/local/lib delocate-wheel \
---require-archs {delocate_archs} -w {dest_dir} -v {wheel} \
+LD_LIBRARY_PATH=/project/liblsl/build \
+auditwheel repair -w {dest_dir} {wheel} \
 """
 
+[tool.cibuildwheel.linux.environment]
+C_INCLUDE_PATH = "/project/liblsl/include"
+LIBRARY_PATH = "/project/liblsl/build"
+RUNNER_OS = "Linux"  # could use environment-pass but this facilitates local testing
+
+[tool.cibuildwheel.macos]
+repair-wheel-command = """\
+DYLD_LIBRARY_PATH=$GITHUB_WORKSPACE/liblsl/build \
+delocate-wheel --require-archs {delocate_archs} -w {dest_dir} -v {wheel} \
+"""
+
+[tool.cibuildwheel.macos.environment]
+CPATH = "$GITHUB_WORKSPACE/liblsl/include"
+LIBRARY_PATH = "$GITHUB_WORKSPACE/liblsl/build"
+
 [[tool.cibuildwheel.overrides]]
-repair-wheel-command = ["pipx run abi3audit --strict --report {wheel}"]
+repair-wheel-command = "pipx run abi3audit --strict --report {wheel}"
 select = "cp*"  # abi3 not used for PyPi / pp*
 inherit.repair-wheel-command = "append"
 
 [tool.cibuildwheel.windows]
-environment = {INCLUDE = "C:\\Program Files\\liblsl\\lsl\\include"}
-repair-wheel-command = ["delvewheel repair -w {dest_dir} {wheel}"]
+repair-wheel-command = "delvewheel repair -w {dest_dir} {wheel}"
+
+[tool.cibuildwheel.windows.environment]
+INCLUDE = "%GITHUB_WORKSPACE%\\liblsl\\include"
+LIB = "%GITHUB_WORKSPACE%\\liblsl\\build"
 
 [tool.codespell]
 check-filenames = true

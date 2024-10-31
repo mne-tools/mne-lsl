@@ -23,7 +23,8 @@ cd liblsl
 # https://labstreaminglayer.readthedocs.io/dev/lib_dev.html#configuring-the-liblsl-project
 set -x
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-cmake --build build --target install --target package --config release
+cmake --build build --config release
+echo "Done building liblsl:"
+ls -alt build
 set +x
-echo "Done building liblsl!"
 cd ..
