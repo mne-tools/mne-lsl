@@ -117,6 +117,7 @@ auditwheel repair -w {dest_dir} {wheel} \
 [tool.cibuildwheel.linux.environment]
 C_INCLUDE_PATH = "/project/liblsl/include"
 LIBRARY_PATH = "/project/liblsl/build"
+MNE_LSL_BUILD_FFI = "1"
 RUNNER_OS = "Linux"  # could use environment-pass but this facilitates local testing
 
 [tool.cibuildwheel.macos]
@@ -128,6 +129,7 @@ delocate-wheel -w {dest_dir} -v {wheel} --require-archs {delocate_archs} \
 [tool.cibuildwheel.macos.environment]
 CPATH = "$GITHUB_WORKSPACE/liblsl/include"
 LIBRARY_PATH = "$GITHUB_WORKSPACE/liblsl/build"
+MNE_LSL_BUILD_FFI = "1"
 
 [[tool.cibuildwheel.overrides]]
 repair-wheel-command = "pipx run abi3audit --strict --report {wheel}"
@@ -137,6 +139,9 @@ inherit.repair-wheel-command = "append"
 [tool.cibuildwheel.windows]
 before-build = "pip install delvewheel"
 repair-wheel-command = "delvewheel repair --add-path=\"%ADD_PATH%\" -w {dest_dir} {wheel}"
+
+[tool.cibuildwheel.windows.environment]
+MNE_LSL_BUILD_FFI = "1"
 
 [tool.codespell]
 check-filenames = true

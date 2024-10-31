@@ -83,7 +83,7 @@ def _load_liblsl_wheel_path() -> str | None:
         # delvewheel has similar behavior to auditwheel
         libs = Path(__file__).parents[2] / "mne_lsl.libs"
         if libs.is_dir():
-            loc = glob.glob(str(libs / "liblsl*.dll"))[0]
+            loc = glob.glob(str(libs / "lsl*.dll"))[0]
     elif platform.system() == "Darwin":
         libs = Path(__file__).parents[1] / ".dylibs"
         if libs.is_dir():
