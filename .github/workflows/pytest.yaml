@@ -131,7 +131,7 @@ jobs:
       - name: Install package
         run: |
           uv pip install --quiet --system .[test]
-          uv pip uninstall numpy mne
+          uv pip uninstall --quiet --system numpy mne
           uv pip install --quiet --system "numpy<2"
           uv pip install --quiet --system mne==${{ matrix.mne-version }}
       - name: Display system information
