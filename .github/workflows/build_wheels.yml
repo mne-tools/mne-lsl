@@ -19,8 +19,9 @@ jobs:
         with:
           submodules: recursive
       - run: |
-          sudo mkdir -p /usr/local/lib /usr/local/include
-          sudo chmod a+rwx /usr/local/lib /usr/local/include
+          sudo mkdir -p /usr/local
+          sudo chown $USER /usr/local
+          mkdir -p /usr/local/lib /usr/local/include
         if: matrix.os == 'macos-14'
       - uses: pypa/cibuildwheel@v2.21.3
       - uses: actions/upload-artifact@v4
