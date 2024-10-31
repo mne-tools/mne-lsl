@@ -23,7 +23,7 @@ jobs:
         shell: bash
         run: |
           set -exo pipefail
-          echo "INCLUDE=$GITHUB_WORKSPACE\\liblsl\\include" >> tee -a $GITHUB_ENV
+          echo "INCLUDE=$GITHUB_WORKSPACE\\liblsl\\include" | tee -a $GITHUB_ENV
           echo "LIB=$GITHUB_WORKSPACE\\liblsl\\build\\Release" | tee -a $GITHUB_ENV
           echo "ADD_PATH=$GITHUB_WORKSPACE\\liblsl\\build\\Release" | tee -a $GITHUB_ENV
         if: runner.os == 'Windows'
