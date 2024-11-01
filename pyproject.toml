@@ -23,7 +23,6 @@ classifiers = [
   'Topic :: Software Development',
 ]
 dependencies = [
-  'cffi>=1.0.0',
   'click>=8.1',
   'distro; sys_platform == "linux"',
   'mne>=1.4.2',
@@ -107,6 +106,7 @@ archs = "native"
 before-all = "bash {project}/tools/cibw_before_all.sh"
 skip = ["*-musllinux*", "pp*"]  # no PyPy support for pp310 for SciPy
 test-command = "python -u {project}/tools/cibw_test_command.py"
+test-requires = ["cffi"]  # we check that the token CFFI binding works
 
 [tool.cibuildwheel.linux]
 repair-wheel-command = """\

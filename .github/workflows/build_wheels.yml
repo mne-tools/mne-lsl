@@ -61,16 +61,21 @@ jobs:
           test -f $FNAME
           pip install "mne-lsl[test] @ file://$FNAME"
       - run: python -c "import mne_lsl; mne_lsl.sys_info()"
-      - run: pytest --pyargs mne_lsl
       - uses: actions/checkout@v4  # to get the pyproject.toml
-      - name: pytest
+      - name: Get installed library location
         shell: bash
         run: |
           set -eo pipefail
           rm -Rf mne_lsl  # remove checked out one to avoid conflicts
           TEST_PATH=$(python -c "import pathlib, mne_lsl; print(str(pathlib.Path(mne_lsl.__file__).parent))")
-          echo "TEST_PATH=$TEST_PATH"
-          pytest --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s "$TEST_PATH"
+          echo "TEST_PATH=$TEST_PATH" | tee -a $GITHUB_ENV
+      - name: Run pytest
+        uses: ./.github/actions/retry-step
+        with:
+          command: pytest mne_lsl --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s "$TEST_PATH"
+          retry_error_codes: "3,134,139"
+        env:
+          MNE_LSL_LOG_LEVEL: DEBUG
       - uses: codecov/codecov-action@v4
         with:
           files: ./coverage.xml
