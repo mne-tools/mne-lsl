@@ -73,14 +73,11 @@ jobs:
         run: |
           set -eo pipefail
           MODULE_PATH=$(python -c "import pathlib, mne_lsl; print(pathlib.Path(mne_lsl.__file__).parent)")
+          MODULE_PATH=$(echo "$MODULE_PATH" | sed 's/\\/\\\\/g')
           echo "MODULE_PATH=$MODULE_PATH" | tee -a $GITHUB_ENV
-      - uses: actions/checkout@v4  # get pyproject.toml and tests
-      - name: copy tests not installed with the module
+      - uses: actions/checkout@v4  # get pyproject.toml
+      - run: rm -Rf mne_lsl
         shell: bash
-        run: |
-          set -exo pipefail
-          cp -a mne_lsl/tests $MODULE_PATH/
-          rm -Rf mne_lsl  # remove checked out one to avoid conflicts
       - name: Run pytest
         uses: ./.github/actions/retry-step
         with:
