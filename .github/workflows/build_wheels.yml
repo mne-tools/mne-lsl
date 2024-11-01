@@ -59,8 +59,8 @@ jobs:
           set -eo pipefail
           ls -alR wheelhouse
           FNAME=($PWD/wheelhouse/*.whl)
+          FNAME=$(cygpath -w "$FNAME")
           echo "FNAME=$FNAME"
-          test -f $FNAME
           pip install "mne-lsl[test] @ file://$FNAME"
       - run: python -c "import mne_lsl; mne_lsl.sys_info()"
       - uses: actions/checkout@v4  # to get the pyproject.toml
