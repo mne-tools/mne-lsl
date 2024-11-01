@@ -40,6 +40,8 @@ jobs:
     name: Test wheels on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     needs: build_wheels
+    env:
+      MNE_LSL_LOG_LEVEL: DEBUG
     strategy:
       fail-fast: false
       matrix:
@@ -60,23 +62,21 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           ls -alR wheelhouse
           FNAME=($PWD/wheelhouse/*.whl)
-          if type cygpath; then
-            FNAME=$(cygpath -w "$FNAME")
-          fi
           echo "FNAME=$FNAME"
           pip install "mne-lsl[test] @ file://$FNAME"
       - run: python -c "import mne_lsl; mne_lsl.sys_info()"
-      - uses: actions/checkout@v4  # to get the pyproject.toml
       - name: Get installed library location
         shell: bash
         run: |
           set -eo pipefail
           MODULE_PATH=$(python -c "import pathlib, mne_lsl; print(pathlib.Path(mne_lsl.__file__).parent)")
           echo "MODULE_PATH=$MODULE_PATH" | tee -a $GITHUB_ENV
-          # Need to rsync the tests because they are not installed with the module
-          echo "::group::rsync"
+      - uses: actions/checkout@v4  # get pyproject.toml and tests
+      - name: rsync tests not installed with the module
+        shell: bash
+        run: |
+          set -exo pipefail
           rsync -a --partial --progress mne_lsl/tests $MODULE_PATH/
-          echo "::endgroup::"
           rm -Rf mne_lsl  # remove checked out one to avoid conflicts
       - name: Run pytest
         uses: ./.github/actions/retry-step
