@@ -40,8 +40,6 @@ jobs:
     name: Test wheels on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     needs: build_wheels
-    env:
-      MNE_LSL_LOG_LEVEL: DEBUG
     strategy:
       fail-fast: false
       matrix:
@@ -62,9 +60,14 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           ls -alR wheelhouse
           FNAME=($PWD/wheelhouse/*.whl)
+          if type cygpath; then
+            FNAME=$(cygpath -w "$FNAME")
+          fi
           echo "FNAME=$FNAME"
           pip install "mne-lsl[test] @ file://$FNAME"
       - run: python -c "import mne_lsl; mne_lsl.sys_info()"
+        env:
+          MNE_LSL_LOG_LEVEL: DEBUG
       - name: Get installed library location
         shell: bash
         run: |
