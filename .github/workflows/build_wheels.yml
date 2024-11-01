@@ -65,6 +65,15 @@ jobs:
           fi
           echo "FNAME=$FNAME"
           pip install "mne-lsl[test] @ file://$FNAME"
+        if: runner.os != 'Windows'
+      # Need to do separately until resolved: https://github.com/pypa/pip/issues/13062
+      - name: Install wheel (windows)
+        shell: bash
+        run: |
+          set -eo pipefail
+          python -m pip install --upgrade pip setuptools wheel
+          pip install --dry-run --find-links wheelhouse --pre "mne_lsl[test]"
+        if: runner.os == 'Windows'
       - run: python -c "import mne_lsl; mne_lsl.sys_info()"
         env:
           MNE_LSL_LOG_LEVEL: DEBUG
