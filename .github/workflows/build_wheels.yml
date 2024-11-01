@@ -75,11 +75,11 @@ jobs:
           MODULE_PATH=$(python -c "import pathlib, mne_lsl; print(pathlib.Path(mne_lsl.__file__).parent)")
           echo "MODULE_PATH=$MODULE_PATH" | tee -a $GITHUB_ENV
       - uses: actions/checkout@v4  # get pyproject.toml and tests
-      - name: rsync tests not installed with the module
+      - name: copy tests not installed with the module
         shell: bash
         run: |
           set -exo pipefail
-          rsync -a --partial --progress mne_lsl/tests $MODULE_PATH/
+          cp -a mne_lsl/tests $MODULE_PATH/
           rm -Rf mne_lsl  # remove checked out one to avoid conflicts
       - name: Run pytest
         uses: ./.github/actions/retry-step
