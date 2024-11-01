@@ -10,7 +10,6 @@ from ..utils._path import walk as walk
 from ..utils.logs import logger as logger
 from ..utils.logs import warn as warn
 
-_LIB_FOLDER: Path
 _VERSION_MIN: int
 _VERSION_PROTOCOL: int
 _PLATFORM: str
@@ -24,7 +23,7 @@ def load_liblsl() -> CDLL:
 
     1. Search in the environment variables.
     2. Search in the system folder.
-    3. Search in _LIB_FOLDER.
+    3. Search in the defined library folder.
     4. Fetch on GitHub.
     """
 
@@ -46,12 +45,15 @@ def _load_liblsl_system() -> str | None:
         Path to the binary LSL library or None if it could not be found.
     """
 
-def _load_liblsl_mne_lsl(*, folder: Path = ...) -> str | None:
+def _get_lib_folder() -> Path:
+    """Get the download folder for the binary LSL library."""
+
+def _load_liblsl_mne_lsl(*, folder: str | Path | None = None) -> str | None:
     """Load the binary LSL library from the system path/folders.
 
     Parameters
     ----------
-    folder : Path
+    folder : path-like | None
         Path to the folder in which to look for the binary LSL library.
 
     Returns
@@ -62,14 +64,14 @@ def _load_liblsl_mne_lsl(*, folder: Path = ...) -> str | None:
 
 def _fetch_liblsl(
     *,
-    folder: str | Path = ...,
+    folder: str | Path | None = None,
     url: str = "https://api.github.com/repos/sccn/liblsl/releases/latest",
 ) -> str:
     """Fetch liblsl on the release page.
 
     Parameters
     ----------
-    folder : Path
+    folder : path-like | None
         Path to the folder in which to download the binary LSL library.
     url : str
         URL from which to fetch the release of liblsl.
