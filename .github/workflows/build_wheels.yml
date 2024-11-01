@@ -57,9 +57,12 @@ jobs:
         shell: bash
         run: |
           set -eo pipefail
+          pip install --upgrade pip setuptools wheel
           ls -alR wheelhouse
           FNAME=($PWD/wheelhouse/*.whl)
-          FNAME=$(cygpath -w "$FNAME")
+          if command cygpath; then
+            FNAME=$(cygpath -w "$FNAME")
+          fi
           echo "FNAME=$FNAME"
           pip install "mne-lsl[test] @ file://$FNAME"
       - run: python -c "import mne_lsl; mne_lsl.sys_info()"
