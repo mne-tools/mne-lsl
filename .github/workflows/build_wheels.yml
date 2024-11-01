@@ -57,10 +57,10 @@ jobs:
         shell: bash
         run: |
           set -eo pipefail
-          pip install --upgrade pip setuptools wheel
+          python -m pip install --upgrade pip setuptools wheel
           ls -alR wheelhouse
           FNAME=($PWD/wheelhouse/*.whl)
-          if command cygpath; then
+          if type cygpath; then
             FNAME=$(cygpath -w "$FNAME")
           fi
           echo "FNAME=$FNAME"
@@ -71,13 +71,17 @@ jobs:
         shell: bash
         run: |
           set -eo pipefail
+          MODULE_PATH=$(python -c "import pathlib, mne_lsl; print(pathlib.Path(mne_lsl.__file__).parent)")
+          echo "MODULE_PATH=$MODULE_PATH" | tee -a $GITHUB_ENV
+          # Need to rsync the tests because they are not installed with the module
+          echo "::group::rsync"
+          rsync -a --partial --progress mne_lsl/tests $MODULE_PATH/
+          echo "::endgroup::"
           rm -Rf mne_lsl  # remove checked out one to avoid conflicts
-          TEST_PATH=$(python -c "import pathlib, mne_lsl; print(str(pathlib.Path(mne_lsl.__file__).parent))")
-          echo "TEST_PATH=$TEST_PATH" | tee -a $GITHUB_ENV
       - name: Run pytest
         uses: ./.github/actions/retry-step
         with:
-          command: pytest "$TEST_PATH" --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s
+          command: pytest "$MODULE_PATH" --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s
           retry_error_codes: "3,134,139"
         env:
           MNE_LSL_LOG_LEVEL: DEBUG
