@@ -35,3 +35,47 @@ jobs:
         with:
           name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
           path: ./wheelhouse/*.whl
+
+  test_wheels:
+    name: Test wheels on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    needs: build_wheels
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-13, macos-14]
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: cibw-wheels-${{ matrix.os }}-*
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+      - name: Install wheel
+        shell: bash
+        run: |
+          set -eo pipefail
+          FNAME=$PWD/wheelhouse/*.whl
+          echo "FNAME=$FNAME"
+          test -f $FNAME
+          pip install "mne-lsl[test] @ file://$FNAME"
+      - run: python -c "import mne_lsl; mne_lsl.sys_info()"
+      - run: pytest --pyargs mne_lsl
+      - uses: actions/checkout@v4  # to get the pyproject.toml
+      - name: pytest
+        shell: bash
+        run: |
+          set -eo pipefail
+          rm -Rf mne_lsl  # remove checked out one to avoid conflicts
+          TEST_PATH=$(python -c "import pathlib, mne_lsl; print(str(pathlib.Path(mne_lsl.__file__).parent))")
+          echo "TEST_PATH=$TEST_PATH"
+          pytest --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s "$TEST_PATH"
+      - uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage.xml
+          flags: unittests  # optional
+          name: codecov-umbrella  # optional
+          fail_ci_if_error: false  # optional (default = false)
+          token: ${{ secrets.CODECOV_TOKEN }}
+          verbose: true  # optional (default = false)
+        if: success() || failure()

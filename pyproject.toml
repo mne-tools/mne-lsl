@@ -1,6 +1,6 @@
 [build-system]
 build-backend = 'setuptools.build_meta'
-requires = ['cffi >= 1.0.0', 'setuptools >= 64.0.0']
+requires = ['cffi >= 1.0.0', 'setuptools >= 75.0.0']
 
 [project]
 authors = [
