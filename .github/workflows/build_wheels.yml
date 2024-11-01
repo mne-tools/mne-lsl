@@ -58,7 +58,7 @@ jobs:
         run: |
           set -eo pipefail
           ls -alR wheelhouse
-          FNAME=$PWD/wheelhouse/*.whl
+          FNAME=($PWD/wheelhouse/*.whl)
           echo "FNAME=$FNAME"
           test -f $FNAME
           pip install "mne-lsl[test] @ file://$FNAME"
