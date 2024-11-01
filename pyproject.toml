@@ -104,6 +104,7 @@ tracker = 'https://github.com/mne-tools/mne-lsl/issues'
 [tool.cibuildwheel]
 archs = "native"
 before-all = "bash {project}/tools/cibw_before_all.sh"
+build = ["cp310-*"]  # abi3 wheel, can build for a single Python version
 skip = ["*-musllinux*", "pp*"]  # no PyPy support for pp310 for SciPy
 test-command = "python -u {project}/tools/cibw_test_command.py"
 test-requires = ["cffi"]  # we check that the token CFFI binding works
