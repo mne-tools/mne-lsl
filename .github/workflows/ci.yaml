@@ -36,37 +36,28 @@ jobs:
           path: ./wheelhouse/*.whl
 
   test:
-    name: Test wheels on ${{ matrix.os }}
+    name: test wheels on ${{ matrix.os }} - py${{ matrix.python }}
     runs-on: ${{ matrix.os }}
     needs: build
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-13, macos-latest]
+        python: ["3.10", "3.13"]
     steps:
+      - run: sudo apt update && sudo apt install -y binutils libpugixml-dev qtbase5-dev qt5-qmake
+        if: runner.os == 'Linux'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
       - uses: actions/download-artifact@v4
         with:
           pattern: cibw-wheels-${{ matrix.os }}-*
           merge-multiple: true
-          path: wheelhouse
-      - uses: actions/setup-python@v5
-        with:
-          python-version: 3.12
-      - name: Install wheel
-        shell: bash
-        run: |
-          set -eo pipefail
-          python -m pip install --upgrade pip setuptools wheel
-          ls -alR wheelhouse
-          FNAME=($PWD/wheelhouse/*.whl)
-          if type cygpath; then
-            FNAME=$(cygpath -w "$FNAME")
-          fi
-          echo "FNAME=$FNAME"
-          pip install "$FNAME"[test]
-      - run: python -c "import mne_lsl; mne_lsl.sys_info()"
-        env:
-          MNE_LSL_LOG_LEVEL: DEBUG
+          path: dist
+      - run: ls -alt . && ls -alt dist/
+      - run: pip install --only-binary antio antio[test] --find-links dist --pre
+      - run: mne-lsl sys-info --developer
       - name: Get installed library location
         shell: bash
         run: |
@@ -74,9 +65,10 @@ jobs:
           MODULE_PATH=$(python -c "import pathlib, mne_lsl; print(pathlib.Path(mne_lsl.__file__).parent)")
           MODULE_PATH=$(echo "$MODULE_PATH" | sed 's/\\/\\\\/g')
           echo "MODULE_PATH=$MODULE_PATH" | tee -a $GITHUB_ENV
-      - uses: actions/checkout@v4  # get pyproject.toml
+      - uses: actions/checkout@v4
       - run: rm -Rf mne_lsl
         shell: bash
+      - uses: ./.github/actions/get-testing-dataset
       - name: Run pytest
         uses: ./.github/actions/retry-step
         with:
@@ -86,10 +78,4 @@ jobs:
           MNE_LSL_LOG_LEVEL: DEBUG
       - uses: codecov/codecov-action@v4
         with:
-          files: ./coverage.xml
-          flags: unittests  # optional
-          name: codecov-umbrella  # optional
-          fail_ci_if_error: false  # optional (default = false)
           token: ${{ secrets.CODECOV_TOKEN }}
-          verbose: true  # optional (default = false)
-        if: success() || failure()
