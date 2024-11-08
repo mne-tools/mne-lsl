@@ -1,8 +1,7 @@
-name: Wheels
+name: wheels
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.number }}-${{ github.event.ref }}
   cancel-in-progress: true
-
 on:  # yamllint disable-line rule:truthy
   pull_request:
   push:
@@ -10,13 +9,13 @@ on:  # yamllint disable-line rule:truthy
   workflow_dispatch:
 
 jobs:
-  build_wheels:
-    name: Build wheels on ${{ matrix.os }}
+  build:
+    name: build wheels on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-13, macos-14]
+        os: [ubuntu-latest, windows-latest, macos-13, macos-latest]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -36,14 +35,14 @@ jobs:
           name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
           path: ./wheelhouse/*.whl
 
-  test_wheels:
+  test:
     name: Test wheels on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
-    needs: build_wheels
+    needs: build
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-13, macos-14]
+        os: [ubuntu-latest, windows-latest, macos-13, macos-latest]
     steps:
       - uses: actions/download-artifact@v4
         with:
