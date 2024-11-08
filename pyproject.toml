@@ -116,8 +116,8 @@ auditwheel repair -w {dest_dir} {wheel} \
 """
 
 [tool.cibuildwheel.linux.environment]
-C_INCLUDE_PATH = "/project/liblsl/include"
-LIBRARY_PATH = "/project/liblsl/build"
+C_INCLUDE_PATH = "/project/liblsl/include"  # GCC variable
+LIBRARY_PATH = "/project/liblsl/build"  # GCC variable required for CFFI build
 MNE_LSL_BUILD_FFI = "1"
 RUNNER_OS = "Linux"  # could use environment-pass but this facilitates local testing
 
@@ -128,9 +128,10 @@ delocate-wheel -w {dest_dir} -v {wheel} --require-archs {delocate_archs} \
 """
 
 [tool.cibuildwheel.macos.environment]
-CPATH = "$GITHUB_WORKSPACE/liblsl/include"
-LIBRARY_PATH = "$GITHUB_WORKSPACE/liblsl/build"
+CPATH = "$GITHUB_WORKSPACE/liblsl/include"  # Clang variable
+LIBRARY_PATH = "$GITHUB_WORKSPACE/liblsl/build"  # Clang variable required for CFFI build
 MNE_LSL_BUILD_FFI = "1"
+RUNNER_OS = "macOS"
 
 [[tool.cibuildwheel.overrides]]
 repair-wheel-command = "pipx run abi3audit --strict --report {wheel}"
@@ -143,6 +144,7 @@ repair-wheel-command = "delvewheel repair --add-path=\"%ADD_PATH%\" -w {dest_dir
 
 [tool.cibuildwheel.windows.environment]
 MNE_LSL_BUILD_FFI = "1"
+RUNNER_OS = "Windows"
 
 [tool.codespell]
 check-filenames = true
