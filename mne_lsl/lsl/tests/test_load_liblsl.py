@@ -22,7 +22,7 @@ def test_load_liblsl_environment_variables(monkeypatch, libpath):
     assert _load_liblsl_environment_variables() is None
     monkeypatch.setenv("MNE_LSL_LIB", libpath)
     assert _load_liblsl_environment_variables() == libpath
-    with pytest.warns(RuntimeWarning, match="outdated, use at your own dicretion"):
+    with pytest.warns(RuntimeWarning, match="outdated, use at your own discretion"):
         assert _load_liblsl_environment_variables(version_min=10101) == libpath
     monkeypatch.setenv("MNE_LSL_LIB", "non-existent")
     assert _load_liblsl_environment_variables() is None
