@@ -6,7 +6,7 @@ from mne_lsl.lsl.load_liblsl import (
 )
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def libpath():
     """Return the liblsl path bundled with mne-lsl."""
     try:
