@@ -8,6 +8,12 @@ from importlib.resources import files
 from ..utils._checks import ensure_path
 from ..utils.logs import logger, warn
 
+# minimum recommended liblsl version. The major version is given by version // 100
+# and the minor version is given by version % 100.
+_VERSION_MIN: int = 115
+# liblsl objects created with the same protocol version are inter-compatible.
+_VERSION_PROTOCOL: int = 110  # noqa: W0612
+
 
 def load_liblsl() -> CDLL:
     """Load the binary LSL library on the system.
@@ -27,7 +33,9 @@ def load_liblsl() -> CDLL:
     return lib
 
 
-def _load_liblsl_environment_variables(*, version_min: int = 115) -> str | None:
+def _load_liblsl_environment_variables(
+    *, version_min: int = _VERSION_MIN
+) -> str | None:
     """Load the binary LSL library from the environment variables.
 
     Parameters
