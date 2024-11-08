@@ -1,47 +1,12 @@
 from __future__ import annotations
 
-import glob
 import os
 import platform
-import subprocess
-import tarfile
-import zipfile
-from ctypes import CDLL, c_char_p, c_double, c_long, c_void_p, sizeof
-from ctypes.util import find_library
-from pathlib import Path
-from shutil import move, rmtree
-from typing import TYPE_CHECKING
+from ctypes import CDLL, c_char_p, c_double, c_long, c_void_p
+from importlib.resources import files
 
-import pooch
-import requests
-from mne import get_config, set_config
-
-from .._version import __version__
 from ..utils._checks import ensure_path
-from ..utils._path import walk
 from ..utils.logs import logger, warn
-
-if TYPE_CHECKING:
-    from pooch import Pooch
-
-
-# minimum liblsl version. The major version is given by version // 100
-# and the minor version is given by version % 100.
-_VERSION_MIN: int = 115
-# liblsl objects created with the same protocol version are inter-compatible.
-_VERSION_PROTOCOL: int = 110  # noqa: W0612
-_PLATFORM: str = platform.system().lower().strip()
-_PLATFORM_SUFFIXES: dict[str, str] = {
-    "windows": ".dll",
-    "darwin": ".dylib",
-    "linux": ".so",
-}
-# generic error message
-_ERROR_MSG: str = (
-    "Please visit LIBLSL library github page (https://github.com/sccn/liblsl) and "
-    "install a release in the system directories or provide its path in the "
-    "environment variable MNE_LSL_LIB or PYLSL_LIB."
-)
 
 
 def load_liblsl() -> CDLL:
@@ -54,49 +19,21 @@ def load_liblsl() -> CDLL:
     3. Search in the defined library folder.
     4. Fetch on GitHub.
     """
-    if _PLATFORM not in _PLATFORM_SUFFIXES:  # pragma: no cover
-        raise RuntimeError(
-            "The OS could not be determined. Please open an issue on GitHub and "
-            "provide the error traceback to the developers."
-        )
     libpath = _load_liblsl_environment_variables()
-    libpath = _load_liblsl_wheel_path() if libpath is None else libpath
-    libpath = _load_liblsl_system() if libpath is None else libpath
-    libpath = _load_liblsl_mne_lsl() if libpath is None else libpath
-    libpath = _fetch_liblsl() if libpath is None else libpath
+    libpath = _load_liblsl_wheel_path()
     assert isinstance(libpath, str)  # sanity-check
     lib = CDLL(libpath)
     _set_types(lib)
     return lib
 
 
-def _load_liblsl_wheel_path() -> str | None:
-    """Load the binary LSL library from the wheel path."""
-    loc: str | None = None
-    if platform.system() == "Linux":
-        # auditwheel will relocate and mangle, e.g.:
-        # mne_lsl/../mne_lsl.libs/liblsl-65106c22.so.1.16.2
-        libs = Path(__file__).parents[2] / "mne_lsl.libs"
-        if libs.is_dir():
-            loc = glob.glob(str(libs / "liblsl*.so*"))[0]
-    elif platform.system() == "Windows":
-        # delvewheel has similar behavior to auditwheel
-        libs = Path(__file__).parents[2] / "mne_lsl.libs"
-        if libs.is_dir():
-            loc = glob.glob(str(libs / "lsl*.dll"))[0]
-    elif platform.system() == "Darwin":
-        libs = Path(__file__).parents[1] / ".dylibs"
-        if libs.is_dir():
-            loc = glob.glob(str(libs / "liblsl*.dylib"))[0]
-    if loc is not None:
-        logger.debug(f"Found wheel path {loc}")
-    else:
-        logger.debug(f"Could not find wheel library dir {libs}")
-    return loc
-
-
-def _load_liblsl_environment_variables() -> str | None:
+def _load_liblsl_environment_variables(*, version_min: int = 115) -> str | None:
     """Load the binary LSL library from the environment variables.
+
+    Parameters
+    ----------
+    version_min : int
+        Minimum version of the LSL library.
 
     Returns
     -------
@@ -113,434 +50,60 @@ def _load_liblsl_environment_variables() -> str | None:
             libpath,
             variable,
         )
-        # even if the path is not valid, we still try to load it and issue a second
-        # generic warning 'can not be loaded' if it fails.
-        _is_valid_libpath(libpath)
-        libpath, version = _attempt_load_liblsl(libpath)
-        if version is None:
+        libpath = ensure_path(libpath, must_exist=False)
+        try:
+            lib = CDLL(libpath)
+            version = lib.lsl_library_version()
+        except OSError:
             continue
-        # we do not accept outdated versions from the environment variables.
-        if _is_valid_version(libpath, version):
-            return libpath
-    return None
-
-
-def _load_liblsl_system() -> str | None:
-    """Load the binary LSL library from the system path/folders.
-
-    Returns
-    -------
-    libpath : str | None
-        Path to the binary LSL library or None if it could not be found.
-    """
-    libpath = find_library("lsl")
-    if libpath is None:
-        logger.debug("The library LIBLSL is not found in the system folder.")
-        return None
-    logger.debug(
-        "Attempting to load libpath '%s' from the system folders.",
-        libpath,
-    )
-    # no need to validate the path as this is returned by the system directly, so we
-    # try to load it and issue a generic warning 'can not be loaded' if it fails.
-    libpath, version = _attempt_load_liblsl(libpath)
-    if version is None:
-        return None
-    # we do not accept outdated versions from the system folders.
-    if _is_valid_version(libpath, version):
+        # we warn for outdated versions
+        if version < version_min:
+            warn(
+                f"The LIBLSL '{libpath}' (version {version // 100}.{version % 100}) is "
+                "outdated, use at your own discretion. MNE-LSL recommends to use "
+                f"version {version_min // 100}.{version_min % 100} and above."
+            )
         return libpath
     return None
 
 
-def _get_lib_folder() -> Path:
-    """Get the download folder for the binary LSL library."""
-    folder = get_config("MNE_LSL_LIB_FOLDER")
-    if folder is not None:
-        folder = ensure_path(folder, must_exist=False)
-        if folder.is_file():
-            warn(
-                f"The folder '{folder}' provided in the MNE configuration variable "
-                "'MNE_LSL_LIB_FOLDER' is a file. Please provide a directory path. "
-                "Defaulting to the MNE_DATA folder and deleting the configuration "
-                "variable."
-            )
-            set_config("MNE_LSL_LIB_FOLDER", None)
-        return folder.expanduser()
-    # default to the MNE_DATA folder
-    return (
-        Path(get_config("MNE_DATA", Path.home() / "mne_data")).expanduser()
-        / "MNE-LSL-data"
-        / "liblsl"
-    )
-
-
-def _load_liblsl_mne_lsl(*, folder: str | Path | None = None) -> str | None:
-    """Load the binary LSL library from the system path/folders.
-
-    Parameters
-    ----------
-    folder : path-like | None
-        Path to the folder in which to look for the binary LSL library.
+def _load_liblsl_wheel_path() -> str:
+    """Load the binary LSL library from the wheel path.
 
     Returns
     -------
-    libpath : str | None
-        Path to the binary LSL library or None if it could not be found.
+    libpath : str
+        Path to the binary LSL library bundled with mne-lsl.
     """
-    if folder is None:
-        folder = _get_lib_folder()
+    libpath: str | None = None
+    if platform.system() == "Linux":
+        # auditwheel will relocate and mangle, e.g.:
+        # mne_lsl/../mne_lsl.libs/liblsl-65106c22.so.1.16.2
+        libs = files("mne_lsl").parent / "libs"
+        lib_files = list(libs.glob("liblsl*.so*"))
+        if len(lib_files) != 1:
+            raise RuntimeError("Could not find the LIBLSL library bundle with mne-lsl.")
+        libpath = lib_files[0]
+    elif platform.system() == "Windows":
+        # delvewheel has similar behavior to auditwheel
+        libs = files("mne_lsl").parent / "libs"
+        lib_files = list(libs.glob("lsl*.dll"))
+        if len(lib_files) != 1:
+            raise RuntimeError("Could not find the LIBLSL library bundle with mne-lsl.")
+        libpath = lib_files[0]
+    elif platform.system() == "Darwin":
+        libs = files("mne_lsl") / ".dylibs"
+        lib_files = list(libs.glob("liblsl*.dylib"))
+        if len(lib_files) != 1:
+            raise RuntimeError("Could not find the LIBLSL library bundle with mne-lsl.")
+        libpath = lib_files[0]
     else:
-        folder = ensure_path(folder, must_exist=False)
-        if folder.is_file():
-            raise RuntimeError(
-                f"The path '{folder}' is a file. Please provide a directory path."
-            )
-    for libpath in folder.glob(f"*{_PLATFORM_SUFFIXES[_PLATFORM]}"):
-        # disable the generic warning 'can not be loaded' in favor of a detailed warning
-        # mentioning the file deletion.
-        logger.debug("Loading previously downloaded liblsl '%s'.", libpath)
-        libpath, version = _attempt_load_liblsl(libpath, issue_warning=False)
-        if version is None:
-            libpath = ensure_path(libpath, must_exist=False)
-            warn(
-                f"The previously downloaded LIBLSL '{libpath.name}' in "
-                f"'{libpath.parent}' could not be loaded. It will be removed.",
-            )
-            libpath.unlink(missing_ok=False)
-            continue
-        # we do not accept outdated versions from the mne-lsl folder and we will remove
-        # outdated versions.
-        # disable the generic version warning in favor of a detailed warning mentioning
-        # the file deletion.
-        if _is_valid_version(libpath, version, issue_warning=False):
-            return libpath
-        libpath = ensure_path(libpath, must_exist=False)
-        warn(
-            f"The previously downloaded LIBLSL '{libpath.name}' in '{libpath.parent}' "
-            f"is outdated. The version is {version // 100}.{version % 100} while the "
-            "minimum version required by MNE-LSL is "
-            f"{_VERSION_MIN // 100}.{_VERSION_MIN % 100}. It will be removed.",
-        )
-        libpath.unlink(missing_ok=False)
-    return None
-
-
-def _fetch_liblsl(
-    *,
-    folder: str | Path | None = None,
-    url: str = "https://api.github.com/repos/sccn/liblsl/releases/latest",
-) -> str:
-    """Fetch liblsl on the release page.
-
-    Parameters
-    ----------
-    folder : path-like | None
-        Path to the folder in which to download the binary LSL library.
-    url : str
-        URL from which to fetch the release of liblsl.
-
-    Returns
-    -------
-    libpath : str
-        Path to the binary LSL library.
-
-    Notes
-    -----
-    This function will raise if it was unable to fetch the release of liblsl. Thus, it
-    will never return None.
-    """
-    if folder is None:
-        folder = _get_lib_folder()
-    else:
-        folder = ensure_path(folder, must_exist=False)
-        if folder.is_file():
-            raise RuntimeError(
-                f"The path '{folder}' is a file. Please provide a directory path."
-            )
-    # the requests.get() call is likely to fail on CIs with a 403 Forbidden error.
-    try:
-        response = requests.get(
-            url, timeout=15, headers={"user-agent": f"mne-lsl/{__version__}"}
-        )
-        logger.debug("Response code: %s", response.status_code)
-        assets = [elt for elt in response.json()["assets"] if "liblsl" in elt["name"]]
-    except Exception:  # pragma: no cover
-        raise KeyError("The latest release of liblsl could not be fetch.")
-    # filter the assets for our platform
-    if _PLATFORM == "linux":
-        import distro  # attempt to identify the distribution based on the codename
-
-        assets = [elt for elt in assets if distro.codename() in elt["name"]]
-    elif _PLATFORM == "darwin":
-        assets = [elt for elt in assets if "OSX" in elt["name"]]
-        if platform.processor() == "arm":
-            assets = [elt for elt in assets if "arm" in elt["name"]]
-            # download v1.16.0 for M1-M2 since liblsl doesn't consistently release a
-            # version for arm64 architecture with every bugfix release.
-            if len(assets) == 0:
-                assets = [
-                    dict(
-                        name="liblsl-1.16.0-OSX_arm64.tar.bz2",
-                        browser_download_url="https://github.com/sccn/liblsl/releases/download/v1.16.0/liblsl-1.16.0-OSX_arm64.tar.bz2",  # noqa: E501
-                    )
-                ]
-        elif platform.processor() == "i386":
-            assets = [elt for elt in assets if "amd64" in elt["name"]]
-        else:  # pragma: no cover
-            raise RuntimeError(
-                f"The processor architecture {platform.processor()} could not be "
-                "identified. Please open an issue on GitHub and provide the error "
-                "traceback to the developers."
-            )
-    elif _PLATFORM == "windows":
-        assets = [elt for elt in assets if "Win" in elt["name"]]
-        if sizeof(c_void_p) == 4:  # 32 bits
-            assets = [elt for elt in assets if "i386" in elt["name"]]
-        elif sizeof(c_void_p) == 8:  # 64 bits
-            assets = [elt for elt in assets if "amd64" in elt["name"]]
-        else:  # pragma: no cover
-            raise RuntimeError(
-                "The processor architecture could not be determined from 'c_void_p' "
-                f"size {sizeof(c_void_p)}. Please open an issue on GitHub and provide "
-                "the error traceback to the developers."
-            )
-    # at this point, we should have identified a unique asset to download.
-    if len(assets) == 0:
         raise RuntimeError(
-            "MNE-LSL could not find a liblsl on the github release page which match "
-            f"your architecture. {_ERROR_MSG}"
+            f"Unsupported platform {platform.system()}. Please use the environment "
+            "variable MNE_LSL_LIB or PYLSL_LIB to provide the path to LIBLSL."
         )
-    elif len(assets) != 1:  # pragma: no cover
-        raise RuntimeError(
-            "MNE-LSL found multiple liblsl on the github release page which match "
-            f"your architecture. {_ERROR_MSG}"
-        )
-    asset = assets[0]
-    logger.debug("Fetching liblsl into '%s'.", folder)
-    try:
-        os.makedirs(folder, exist_ok=True)
-    except Exception as error:  # pragma: no cover
-        logger.exception(error)
-        raise RuntimeError(
-            f"MNE-LSL could not create the directory '{folder}' in which to download "
-            f"LIBLSL for your platform. {_ERROR_MSG}"
-        )
-    libpath = pooch.retrieve(
-        url=asset["browser_download_url"],
-        fname=asset["name"],
-        path=folder,
-        processor=_pooch_processor_liblsl,
-        known_hash=None,
-    )
-    libpath, version = _attempt_load_liblsl(libpath)
-    if version is None:  # pragma: no cover
-        libpath = ensure_path(libpath, must_exist=False)
-        libpath.unlink(missing_ok=True)
-        raise RuntimeError(
-            f"The downloaded LIBLSL '{libpath.name}' in '{libpath.parent}' could not "
-            f"be loaded. It will be removed. {_ERROR_MSG}"
-        )
-    # we do not accept outdated versions from GitHub, which should not be possible
-    # anyway since we fetch the latest release.
-    if _is_valid_version(libpath, version, issue_warning=False):
-        return libpath
-    libpath = ensure_path(libpath, must_exist=False)
-    libpath.unlink(missing_ok=True)
-    raise RuntimeError(
-        f"The downloaded LIBLSL '{libpath.name}' in '{libpath.parent}' "
-        f"is outdated. The version is {version // 100}.{version % 100} while the "
-        "minimum version required by MNE-LSL is "
-        f"{_VERSION_MIN // 100}.{_VERSION_MIN % 100}. It will be removed. {_ERROR_MSG}",
-    )
-
-
-def _pooch_processor_liblsl(fname: str, action: str, pooch: Pooch) -> str:
-    """Processor of the pooch-downloaded liblsl.
-
-    Parameters
-    ----------
-    fname : str
-        The full path of the file in the local data storage.
-    action : str
-        Either:
-        * "download" (file doesn't exist and will be downloaded)
-        * "update" (file is outdated and will be downloaded)
-        * "fetch" (file exists and is updated so no download is necessary)
-    pooch : Pooch
-        The instance of the Pooch class that is calling this function.
-
-    Returns
-    -------
-    fname : str
-        The full path to the file in the local data storage.
-    """
-    fname = Path(fname)
-    uncompressed = fname.with_suffix(".archive")
-    logger.debug("Processing '%s' with pooch.", fname)
-
-    if _PLATFORM == "linux" and fname.suffix == ".deb":
-        os.makedirs(uncompressed, exist_ok=True)
-        result = subprocess.run(["ar", "x", str(fname), "--output", str(uncompressed)])
-        if result.returncode != 0:  # pragma: no cover
-            # we did not manage to open the '.deb' package, there is not point in
-            # attempting to load the lib with CDLL, thus let's raise after deleting the
-            # downloaded file.
-            fname.unlink(missing_ok=False)
-            raise RuntimeError(
-                "Could not run 'ar x' command to unpack debian package. Do you have "
-                "binutils installed with 'sudo apt install binutils'? Alternatively, "
-                "p{_ERROR_MSG[1:]} The downloaded file will be removed.",
-            )
-        # untar control and data
-        with tarfile.open(uncompressed / "control.tar.gz") as archive:
-            archive.extractall(uncompressed / "control")
-        with tarfile.open(uncompressed / "data.tar.gz") as archive:
-            archive.extractall(uncompressed / "data")
-        # parse dependencies for logging
-        with open(uncompressed / "control" / "control") as file:
-            lines = file.readlines()
-        lines = [
-            line.split("Depends:")[1].strip()
-            for line in lines
-            if line.startswith("Depends:")
-        ]
-        if len(lines) != 1:  # pragma: no cover
-            warn("Dependencies from debian liblsl package could not be parsed.")
-        else:
-            logger.info(
-                "Attempting to retrieve liblsl from the release page. It requires %s.",
-                lines[0],
-            )
-        # find and move the library
-        for file in walk(uncompressed / "data"):
-            if file.is_symlink() or file.parent.name != "lib":
-                continue
-            break
-        target = fname.with_suffix(_PLATFORM_SUFFIXES["linux"])
-        logger.debug("Moving '%s' to '%s'.", file, target)
-        move(file, target)
-
-    elif _PLATFORM == "linux":  # pragma: no cover
-        return str(fname)  # let's try to load it and hope for the best
-
-    elif _PLATFORM == "darwin":
-        with tarfile.open(fname, "r:bz2") as archive:
-            archive.extractall(uncompressed)
-        # find and move the library
-        for file in walk(uncompressed):
-            if file.is_symlink() or file.parent.name != "lib":
-                continue
-            break
-        target = (
-            fname.parent
-            / f"{fname.name.split('.tar.bz2')[0]}{_PLATFORM_SUFFIXES['darwin']}"
-        )
-        logger.debug("Moving '%s' to '%s'.", file, target)
-        move(file, target)
-
-    elif _PLATFORM == "windows":
-        with zipfile.ZipFile(fname, "r") as archive:
-            archive.extractall(uncompressed)
-        # find and move the library
-        for file in walk(uncompressed):
-            if (
-                file.suffix != _PLATFORM_SUFFIXES["windows"]
-                or file.parent.name != "bin"
-            ):
-                continue
-            break
-        target = fname.with_suffix(_PLATFORM_SUFFIXES["windows"])
-        logger.debug("Moving '%s' to '%s'.", file, target)
-        move(file, target)
-
-    # clean-up
-    fname.unlink()
-    rmtree(uncompressed)
-    return str(target)
-
-
-def _is_valid_libpath(libpath: str) -> bool:
-    """Check if the library path is valid."""
-    assert isinstance(libpath, str)  # sanity-check
-    libpath = ensure_path(libpath, must_exist=False)
-    if libpath.suffix != _PLATFORM_SUFFIXES[_PLATFORM]:
-        warn(
-            f"The LIBLSL '{libpath}' ends with '{libpath.suffix}' which is "
-            f"different from the expected extension '{_PLATFORM_SUFFIXES[_PLATFORM]}' "
-            f"for {_PLATFORM} based OS."
-        )
-        return False
-    if not libpath.exists():
-        warn(f"The LIBLSL '{libpath}' does not exist.")
-        return False
-    return True
-
-
-def _attempt_load_liblsl(
-    libpath: str | Path, *, issue_warning: bool = True
-) -> tuple[str, int | None]:
-    """Try loading a binary LSL library.
-
-    Parameters
-    ----------
-    libpath : Path
-        Path to the binary LSL library.
-    issue_warning : bool
-        If True, issue a warning if the library could not be loaded.
-
-    Returns
-    -------
-    libpath : str
-        Path to the binary LSL library, converted to string for the given OS.
-    version : int
-        Version of the binary LSL library.
-        The major version is version // 100.
-        The minor version is version % 100.
-    """
-    libpath = str(libpath) if isinstance(libpath, Path) else libpath
-    try:
-        lib = CDLL(libpath)
-        version = lib.lsl_library_version()
-        del lib
-    except OSError:
-        version = None
-        if issue_warning:
-            warn(f"The LIBLSL '{libpath}' can not be loaded.")
-    return libpath, version
-
-
-def _is_valid_version(
-    libpath: str, version: int, *, issue_warning: bool = True
-) -> bool:
-    """Check if the version of the library is supported by MNE-LSL.
-
-    Parameters
-    ----------
-    libpath : str
-        Path to the binary LSL library, converted to string for the given OS.
-    version : int
-        Version of the binary LSL library.
-        The major version is version // 100.
-        The minor version is version % 100.
-    issue_warning : bool
-        If True, issue a warning if the version is not supported.
-
-    Returns
-    -------
-    valid : bool
-        True if the version is supported, False otherwise.
-    """
-    assert isinstance(libpath, str)  # sanity-check
-    assert isinstance(version, int)  # sanity-check
-    if version < _VERSION_MIN:
-        if issue_warning:
-            warn(
-                f"The LIBLSL '{libpath}' is outdated. The version is "
-                f"{version // 100}.{version % 100} while the minimum version required "
-                f"by MNE-LSL is {_VERSION_MIN // 100}.{_VERSION_MIN % 100}."
-            )
-        return False
-    return True
+    logger.debug("Found wheel path '%s'.", libpath)
+    return str(libpath)
 
 
 def _set_types(lib: CDLL) -> None:
