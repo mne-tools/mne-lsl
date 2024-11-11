@@ -46,15 +46,13 @@ class build_ext(_build_ext):  # noqa: D101
                 build_dir = Path(build_dir) / "Release"
             else:
                 build_dir = Path(build_dir)
-            print([elt for elt in build_dir.iterdir() if not elt.is_symlink()])  # noqa: T201  # TODO: remove debug
             lib_files = [
                 elt
                 for elt in build_dir.glob(_PATTERN[platform.system()])
                 if not elt.is_symlink()
             ]
-            print(lib_files)  # noqa: T201  # TODO: remove debug
             assert len(lib_files) == 1  # sanity-check
-            dst = Path(self.build_lib) / "mne_lsl" / "lsl" / "lib" / lib_files[0]
+            dst = Path(self.build_lib) / "mne_lsl" / "lsl" / "lib" / lib_files[0].name
             dst.parent.mkdir(parents=True, exist_ok=True)
             print(f"Moving {lib_files[0]} to {dst}")  # noqa: T201
             shutil.move(lib_files[0], dst)
