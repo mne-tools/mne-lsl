@@ -202,6 +202,7 @@ include-package-data = false
 
 [tool.setuptools.package-data]
 'mne_lsl.datasets' = ['*registry.txt']
+"mne_lsl.lsl.lib" = ["*"]
 'mne_lsl.stream_viewer.control_gui.settings' = ['*.ini']
 
 [tool.tomlsort]
