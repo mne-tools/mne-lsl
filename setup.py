@@ -46,7 +46,9 @@ class build_ext(_build_ext):  # noqa: D101
                 build_dir = Path(build_dir) / "Release"
             else:
                 build_dir = Path(build_dir)
+            print(list(build_dir.iterdir()))  # noqa: T201  # TODO: remove debug
             lib_files = list(build_dir.glob(_PATTERN[platform.system()]))
+            print(lib_files)  # noqa: T201  # TODO: remove debug
             assert len(lib_files) == 1  # sanity-check
             dst = Path(self.build_lib) / "mne_lsl" / "lsl" / "lib" / lib_files[0]
             dst.parent.mkdir(parents=True, exist_ok=True)
