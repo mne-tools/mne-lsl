@@ -20,22 +20,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
         with:
-          submodules: false  # Avoid default submodule update
-
-      - name: Clean Old Submodule Cache
-        run: |
-          # Force remove any lingering references to 'liblsl' in submodule cache
-          git submodule deinit -f -- liblsl || true
-          rm -rf .git/modules/liblsl || true
-          rm -rf liblsl || true
-
-          # Remove any existing 'liblsl' entry in .git/config if it exists
-          sed -i '/submodule "liblsl"/,+2d' .git/config || true
-      - name: Sync and Initialize Submodules
-        run: |
-          git submodule sync --recursive
-          git submodule update --init --recursive --depth=1
-
+          submodules: true
       # For some reason doing this in pyproject.toml does not seem to work :(
       - name: Set Windows compilation env vars
         shell: bash
