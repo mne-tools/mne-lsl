@@ -1,9 +1,58 @@
-# Minimal setup.py to create a CFFI extension module in abi3 mode if requested
-
-import os
+import platform
+import shutil
+import subprocess
+from pathlib import Path
+from tempfile import TemporaryDirectory
 
 from setuptools import setup
 from setuptools.command.bdist_wheel import bdist_wheel
+from setuptools.command.build_ext import build_ext as _build_ext
+from setuptools.dist import Distribution
+
+_PATTERN: dict[str, str] = {
+    "Linux": "liblsl*.so*",
+    "Darwin": "liblsl*.dylib",
+    "Windows": "lsl*.dll",
+}
+
+
+class BinaryDistribution(Distribution):  # noqa: D101
+    def has_ext_modules(self):  # noqa: D102
+        return True
+
+
+class build_ext(_build_ext):  # noqa: D101
+    def run(self):
+        """Build 'liblsl' with cmake as part of the extension build process."""
+        src = Path(__file__).parent / "src" / "liblsl"
+        assert src.exists()  # sanity-check
+        with TemporaryDirectory() as build_dir:
+            args = [
+                "cmake",
+                "-S",
+                str(src),
+                "-B",
+                build_dir,
+                "-DCMAKE_BUILD_TYPE=Release",
+            ]
+            if platform.system() == "Darwin":
+                args.append("-DCMAKE_OSX_DEPLOYMENT_TARGET=11")
+            subprocess.run(args, check=True)
+            subprocess.run(
+                ["cmake", "--build", build_dir, "--config", "Release"], check=True
+            )
+            # locate the build files and move them to mne_lsl.lsl.lib
+            if platform.system() == "Windows":
+                build_dir = Path(build_dir) / "Release"
+            else:
+                build_dir = Path(build_dir)
+            lib_files = build_dir.glob(_PATTERN[platform.system()])
+            assert len(lib_files) == 1  # sanity-check
+            dst = Path(self.build_lib) / "mne_lsl" / "lsl" / "lib" / lib_files[0]
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            print(f"Moving {lib_files[0]} to {dst}")  # noqa: T201
+            shutil.move(lib_files[0], dst)
+        super().run()
 
 
 class bdist_wheel_abi3(bdist_wheel):  # noqa: D101
@@ -16,12 +65,10 @@ class bdist_wheel_abi3(bdist_wheel):  # noqa: D101
         return python, abi, plat
 
 
-kwargs = dict()
-if os.getenv("MNE_LSL_BUILD_FFI", "0").lower() in ("1", "true"):
-    kwargs.update(
-        cffi_modules=["tools/ffi_build.py:ffibuilder"],
-        cmdclass={"bdist_wheel": bdist_wheel_abi3},
-    )
-
-if __name__ == "__main__":
-    setup(**kwargs)
+setup(
+    cmdclass={
+        "build_ext": build_ext,
+        "bdist_wheel": bdist_wheel_abi3,
+    },
+    distclass=BinaryDistribution,
+)
