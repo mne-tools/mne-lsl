@@ -1,6 +1,6 @@
 from click.testing import CliRunner
 
-from ..main import run
+from mne_lsl.commands.main import run
 
 
 def test_main():

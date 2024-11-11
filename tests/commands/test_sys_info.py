@@ -1,7 +1,7 @@
 import pytest
 from click.testing import CliRunner
 
-from ..sys_info import run
+from mne_lsl.commands.sys_info import run
 
 
 @pytest.mark.parametrize("developer", [False, True])
