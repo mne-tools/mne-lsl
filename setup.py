@@ -57,7 +57,7 @@ class build_ext(_build_ext):  # noqa: D101
             dst = Path(self.build_lib) / "mne_lsl" / "lsl" / "lib" / lib_files[0]
             dst.parent.mkdir(parents=True, exist_ok=True)
             print(f"Moving {lib_files[0]} to {dst}")  # noqa: T201
-            shutil.move(lib_files[0], dst)
+            shutil.copyfile(lib_files[0], dst)
         super().run()
 
 
