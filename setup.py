@@ -9,7 +9,7 @@ from setuptools.command.bdist_wheel import bdist_wheel
 from setuptools.command.build_ext import build_ext as _build_ext
 from setuptools.dist import Distribution
 
-_PATTERN: dict[str, str] = {
+_PATTERNS: dict[str, str] = {
     "Linux": "liblsl*.so*",
     "Darwin": "liblsl*.dylib",
     "Windows": "lsl*.dll",
@@ -48,7 +48,7 @@ class build_ext(_build_ext):  # noqa: D101
                 build_dir = Path(build_dir)
             lib_files = [
                 elt
-                for elt in build_dir.glob(_PATTERN[platform.system()])
+                for elt in build_dir.glob(_PATTERNS[platform.system()])
                 if not elt.is_symlink()
             ]
             assert len(lib_files) == 1  # sanity-check

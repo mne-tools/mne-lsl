@@ -81,40 +81,24 @@ def _load_liblsl_wheel_path() -> str:
     libpath : str
         Path to the binary LSL library bundled with mne-lsl.
     """
-    libpath: str | None = None
-    if platform.system() == "Linux":
-        # auditwheel will relocate and mangle, e.g.:
-        # mne_lsl/../mne_lsl.libs/liblsl-65106c22.so.1.16.2
-        libs = files("mne_lsl").parent / "mne_lsl.libs"
-        lib_files = list(libs.glob("liblsl*.so*"))
-        if len(lib_files) != 1:
-            raise RuntimeError(
-                f"Could not find the LIBLSL library bundle with mne-lsl in '{libs}'."
-            )
-        libpath = lib_files[0]
-    elif platform.system() == "Windows":
-        # delvewheel has similar behavior to auditwheel
-        libs = files("mne_lsl").parent / "mne_lsl.libs"
-        lib_files = list(libs.glob("lsl*.dll"))
-        if len(lib_files) != 1:
-            raise RuntimeError(
-                f"Could not find the LIBLSL library bundle with mne-lsl in '{libs}'."
-            )
-        libpath = lib_files[0]
-    elif platform.system() == "Darwin":
-        libs = files("mne_lsl") / ".dylibs"
-        lib_files = list(libs.glob("liblsl*.dylib"))
-        if len(lib_files) != 1:
-            raise RuntimeError(
-                f"Could not find the LIBLSL library bundle with mne-lsl in '{libs}'."
-            )
-        libpath = lib_files[0]
-    else:
+    patterns: dict[str, str] = {
+        "Linux": "liblsl*.so*",
+        "Darwin": "liblsl*.dylib",
+        "Windows": "lsl*.dll",
+    }
+    pattern = patterns.get(platform.system(), None)
+    if pattern is None:  # pragma: no cover
         raise RuntimeError(
             f"Unsupported platform {platform.system()}. Please use the environment "
             "variable MNE_LSL_LIB or PYLSL_LIB to provide the path to LIBLSL."
         )
-    logger.debug("Found wheel path '%s'.", libpath)
+    folder = files("mne_lsl.lsl") / "lib"
+    libs = list(folder.glob(pattern))
+    if len(libs) != 1:
+        raise RuntimeError(
+            f"Could not find the LIBLSL library bundle with mne-lsl in '{libs}'."
+        )
+    libpath = libs[0]
     return str(libpath)
 
 
