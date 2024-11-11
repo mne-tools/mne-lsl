@@ -5,7 +5,6 @@ import platform
 from ctypes import CDLL, c_char_p, c_double, c_long, c_void_p
 from importlib.resources import files
 
-from ..utils._checks import ensure_path
 from ..utils.logs import logger, warn
 
 # minimum recommended liblsl version. The major version is given by version // 100
@@ -58,7 +57,6 @@ def _load_liblsl_environment_variables(
             libpath,
             variable,
         )
-        libpath = ensure_path(libpath, must_exist=False)
         try:
             lib = CDLL(libpath)
             version = lib.lsl_library_version()
@@ -71,7 +69,7 @@ def _load_liblsl_environment_variables(
                 "outdated, use at your own discretion. MNE-LSL recommends to use "
                 f"version {version_min // 100}.{version_min % 100} and above."
             )
-        return str(libpath)
+        return libpath
     return None
 
 
