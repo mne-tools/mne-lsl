@@ -71,7 +71,7 @@ def _load_liblsl_environment_variables(
                 "outdated, use at your own discretion. MNE-LSL recommends to use "
                 f"version {version_min // 100}.{version_min % 100} and above."
             )
-        return libpath
+        return str(libpath)
     return None
 
 
