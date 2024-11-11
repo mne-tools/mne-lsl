@@ -111,13 +111,13 @@ test-requires = ["cffi"]  # we check that the token CFFI binding works
 
 [tool.cibuildwheel.linux]
 repair-wheel-command = """\
-LD_LIBRARY_PATH=/project/src/liblsl/build \
+LD_LIBRARY_PATH=/{project}/src/liblsl/build \
 auditwheel repair -w {dest_dir} {wheel} \
 """
 
 [tool.cibuildwheel.linux.environment]
-C_INCLUDE_PATH = "/project/src/liblsl/include"  # GCC variable
-LIBRARY_PATH = "/project/src/liblsl/build"  # GCC variable required for CFFI build
+C_INCLUDE_PATH = "/{project}/src/liblsl/include"  # GCC variable
+LIBRARY_PATH = "/{project}/src/liblsl/build"  # GCC variable required for CFFI build
 MNE_LSL_BUILD_FFI = "1"
 RUNNER_OS = "Linux"  # could use environment-pass but this facilitates local testing
 
