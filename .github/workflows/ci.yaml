@@ -17,9 +17,21 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-13, macos-latest]
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v3
         with:
-          submodules: recursive
+          submodules: false  # Avoid default submodule update
+
+      - name: Clean Old Submodule Cache
+        run: |
+          git submodule deinit -f -- liblsl || true
+          rm -rf .git/modules/liblsl || true
+          rm -rf liblsl || true
+
+      - name: Sync and Initialize Submodules
+        run: |
+          git submodule sync --recursive
+          git submodule update --init --recursive --depth=1
       # For some reason doing this in pyproject.toml does not seem to work :(
       - name: Set Windows compilation env vars
         shell: bash
