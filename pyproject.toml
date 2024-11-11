@@ -130,7 +130,7 @@ delocate-wheel -w {dest_dir} -v {wheel} --require-archs {delocate_archs} \
 [tool.cibuildwheel.macos.environment]
 CPATH = "$GITHUB_WORKSPACE/src/liblsl/include"  # Clang variable
 LIBRARY_PATH = "$GITHUB_WORKSPACE/src/liblsl/build"  # Clang variable required for CFFI build
-MACOSX_DEPLOYMENT_TARGET = "10.12"
+MACOSX_DEPLOYMENT_TARGET = "11"
 MNE_LSL_BUILD_FFI = "1"
 RUNNER_OS = "macOS"
 

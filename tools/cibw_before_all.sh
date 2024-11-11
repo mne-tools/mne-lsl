@@ -24,7 +24,7 @@ set -x
 if [[ "$RUNNER_OS" == 'macOS' ]]; then
     cmake -S . -B build \
         -DCMAKE_BUILD_TYPE=Release \
-        -DCMAKE_OSX_DEPLOYMENT_TARGET=10.12
+        -DCMAKE_OSX_DEPLOYMENT_TARGET=11
 else
     cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 fi
