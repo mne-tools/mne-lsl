@@ -21,7 +21,13 @@ fi
 cd src/liblsl
 # https://labstreaminglayer.readthedocs.io/dev/lib_dev.html#configuring-the-liblsl-project
 set -x
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+if [[ "$RUNNER_OS" == 'macOS' ]]; then
+    cmake -S . -B build \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_OSX_DEPLOYMENT_TARGET=10.12 \
+else
+    cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+fi
 cmake --build build --config release
 echo "Done building liblsl:"
 ls -alt build
