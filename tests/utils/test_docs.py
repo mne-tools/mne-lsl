@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 
+import mne_lsl
 from mne_lsl.utils._docs import _KEYS_MNE, copy_doc, docdict, fill_doc
 from mne_lsl.utils.logs import verbose
 
@@ -206,7 +207,7 @@ def test_docdict_order():
     docdict_ = docdict.copy()
     for key in _KEYS_MNE:
         del docdict_[key]
-    docs_path = Path(__file__).parents[1] / "_docs.py"
+    docs_path = Path(mne_lsl.__file__).parent / "utils" / "_docs.py"
     assert docs_path.is_file()
     with open(docs_path, encoding="UTF-8") as fid:
         docs = fid.read()
