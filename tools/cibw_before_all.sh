@@ -18,7 +18,7 @@ else
     exit 1
 fi
 
-cd liblsl
+cd src/liblsl
 # https://labstreaminglayer.readthedocs.io/dev/lib_dev.html#configuring-the-liblsl-project
 set -x
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
@@ -29,4 +29,4 @@ if [[ "$RUNNER_OS" == 'Windows' ]]; then
     ls -alR build/Release
 fi
 set +x
-cd ..
+cd ../..

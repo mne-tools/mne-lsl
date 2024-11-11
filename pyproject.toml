@@ -111,25 +111,25 @@ test-requires = ["cffi"]  # we check that the token CFFI binding works
 
 [tool.cibuildwheel.linux]
 repair-wheel-command = """\
-LD_LIBRARY_PATH=/project/liblsl/build \
+LD_LIBRARY_PATH=/project/src/liblsl/build \
 auditwheel repair -w {dest_dir} {wheel} \
 """
 
 [tool.cibuildwheel.linux.environment]
-C_INCLUDE_PATH = "/project/liblsl/include"  # GCC variable
-LIBRARY_PATH = "/project/liblsl/build"  # GCC variable required for CFFI build
+C_INCLUDE_PATH = "/project/src/liblsl/include"  # GCC variable
+LIBRARY_PATH = "/project/src/liblsl/build"  # GCC variable required for CFFI build
 MNE_LSL_BUILD_FFI = "1"
 RUNNER_OS = "Linux"  # could use environment-pass but this facilitates local testing
 
 [tool.cibuildwheel.macos]
 repair-wheel-command = """\
-DYLD_LIBRARY_PATH=$GITHUB_WORKSPACE/liblsl/build \
+DYLD_LIBRARY_PATH=$GITHUB_WORKSPACE/src/liblsl/build \
 delocate-wheel -w {dest_dir} -v {wheel} --require-archs {delocate_archs} \
 """
 
 [tool.cibuildwheel.macos.environment]
-CPATH = "$GITHUB_WORKSPACE/liblsl/include"  # Clang variable
-LIBRARY_PATH = "$GITHUB_WORKSPACE/liblsl/build"  # Clang variable required for CFFI build
+CPATH = "$GITHUB_WORKSPACE/src/liblsl/include"  # Clang variable
+LIBRARY_PATH = "$GITHUB_WORKSPACE/src/liblsl/build"  # Clang variable required for CFFI build
 MNE_LSL_BUILD_FFI = "1"
 RUNNER_OS = "macOS"
 
@@ -168,10 +168,8 @@ omit = [
   '**/__init__.py',
   '**/mne_lsl/_typing.py',
   '**/mne_lsl/_version.py',
-  '**/mne_lsl/conftest.py',
   '**/mne_lsl/utils/_fixes.py',
   '**/mne_lsl/utils/_tests.py',
-  '**/tests/**',
 ]
 
 [tool.pytest.ini_options]
@@ -200,9 +198,9 @@ select = ['A', 'B', 'D', 'E', 'F', 'G', 'I', 'LOG', 'NPY', 'PIE', 'PT', 'T20', '
 ]
 '*.pyi' = ['D', 'E501', 'F811']
 '*/stream_viewer/backends/*' = ['D401']
-'*/tests/*' = ['D401']
 '__init__.py' = ['F401']
 'examples/*' = ['B018', 'D205', 'D400', 'E402', 'F811', 'T201']
+'tests/*' = ['D401']
 'tutorials/*' = ['B018', 'D205', 'D400', 'E402', 'F811', 'T201']
 
 [tool.ruff.lint.pydocstyle]
@@ -215,9 +213,6 @@ include-package-data = false
 [tool.setuptools.package-data]
 'mne_lsl.datasets' = ['*registry.txt']
 'mne_lsl.stream_viewer.control_gui.settings' = ['*.ini']
-
-[tool.setuptools.packages.find]
-include = ['mne_lsl*']
 
 [tool.tomlsort]
 all = true
