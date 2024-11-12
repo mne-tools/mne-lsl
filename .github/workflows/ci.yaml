@@ -168,7 +168,7 @@ jobs:
         with:
           python-version: '3.13'
       - uses: astral-sh/setup-uv@v3
-      - run: uv pip install -ve .[test] --quiet --system
+      - run: uv pip install -e .[test] --verbose --system
       - run: mne-lsl sys-info --developer
       - name: Run pytest
         uses: ./.github/actions/retry-step
