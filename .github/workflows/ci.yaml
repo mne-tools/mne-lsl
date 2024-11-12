@@ -12,18 +12,28 @@ on:  # yamllint disable-line rule:truthy
 
 jobs:
   cibuildwheel:
-    name: build wheels on ${{ matrix.os }}
+    name: build wheels on ${{ matrix.os }} ${{ matrix.arch }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-13, macos-latest]
+        arch: [native]
+        include:
+          - os: ubuntu-latest
+            arch: aarch64
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: true
+      - uses: docker/setup-qemu-action@v3
+        with:
+          platforms: aarch64
+        if: runner.os == 'Linux' && matrix.arch == 'aarch64'
       - uses: pypa/cibuildwheel@v2.21.3
+        env:
+          CIBW_ARCHS: ${{ matrix.arch }}
       - uses: actions/upload-artifact@v4
         with:
           name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
