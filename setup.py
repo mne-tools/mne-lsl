@@ -7,6 +7,7 @@ from tempfile import TemporaryDirectory
 from setuptools import setup
 from setuptools.command.bdist_wheel import bdist_wheel
 from setuptools.command.build_ext import build_ext as _build_ext
+from setuptools.command.develop import develop as _develop
 from setuptools.dist import Distribution
 
 _PATTERNS: dict[str, str] = {
@@ -52,20 +53,28 @@ class build_ext(_build_ext):  # noqa: D101
                 if not elt.is_symlink()
             ]
             assert len(lib_files) == 1  # sanity-check
-            dst = Path(self.build_lib) / "mne_lsl" / "lsl" / "lib" / lib_files[0].name
-            dst.parent.mkdir(parents=True, exist_ok=True)
-            print(f"Moving {lib_files[0]} to {dst}")  # noqa: T201
-            shutil.move(lib_files[0], dst)
+            dst = (
+                Path(__file__).parent / "src" / "mne_lsl" / "lsl" / "lib"
+                if self.inplace
+                else Path(self.build_lib) / "mne_lsl" / "lsl" / "lib"
+            )
+            dst.mkdir(parents=True, exist_ok=True)
+            print(f"Moving {lib_files[0]} to {dst / lib_files[0].name}")  # noqa: T201
+            shutil.move(lib_files[0], dst / lib_files[0].name)
+        super().run()
+
+
+class develop(_develop):  # noqa: D101
+    def run(self):  # noqa: D102
+        self.run_command("build_ext")
         super().run()
 
 
 class bdist_wheel_abi3(bdist_wheel):  # noqa: D101
     def get_tag(self):  # noqa: D102
         python, abi, plat = super().get_tag()
-
         if python.startswith("cp"):
             return "cp310", "abi3", plat
-
         return python, abi, plat
 
 
@@ -73,6 +82,7 @@ setup(
     cmdclass={
         "build_ext": build_ext,
         "bdist_wheel": bdist_wheel_abi3,
+        "develop": develop,
     },
     distclass=BinaryDistribution,
 )
