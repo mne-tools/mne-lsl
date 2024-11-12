@@ -75,7 +75,7 @@ jobs:
 
   test-mne-compat:
     needs: cibuildwheel
-    name: mne compat ${{ matrix.mne-version }} - py${{ matrix.python }}
+    name: test mne compat ${{ matrix.mne-version }} - py${{ matrix.python }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -118,7 +118,7 @@ jobs:
 
   test-pip-pre:
     needs: cibuildwheel
-    name: pip pre-release - py${{ matrix.python-version }}
+    name: test pip pre-release - py${{ matrix.python }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -224,6 +224,7 @@ jobs:
 
   doc-build:
     needs: cibuildwheel
+    name: build documentation
     runs-on: ubuntu-latest
     defaults:
       run:
