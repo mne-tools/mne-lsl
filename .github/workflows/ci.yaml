@@ -43,6 +43,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          fetch-depth: 0  # get the non-merge commit for PRs
           submodules: true
       - name: Triage aarch64 support
         run: bash ./tools/triage_build.sh "${{ matrix.arch }}" "${{ github.event.pull_request.head.sha || github.sha }}"
