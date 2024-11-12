@@ -46,7 +46,7 @@ jobs:
       run:
         shell: bash
     steps:
-      - run: sudo apt update && sudo apt install -y binutils libpugixml-dev qtbase5-dev qt5-qmake
+      - run: sudo apt update && sudo apt install -y binutils libpugixml-dev
         if: runner.os == 'Linux'
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -86,7 +86,7 @@ jobs:
       run:
         shell: bash
     steps:
-      - run: sudo apt update && sudo apt install -y binutils libpugixml-dev qtbase5-dev qt5-qmake
+      - run: sudo apt update && sudo apt install -y binutils libpugixml-dev
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
@@ -128,7 +128,7 @@ jobs:
       run:
         shell: bash
     steps:
-      - run: sudo apt update && sudo apt install -y binutils libpugixml-dev qtbase5-dev qt5-qmake
+      - run: sudo apt update && sudo apt install -y binutils libpugixml-dev
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
@@ -229,7 +229,7 @@ jobs:
       run:
         shell: bash
     steps:
-      - run: sudo apt update && sudo apt install -y binutils libpugixml-dev qtbase5-dev qt5-qmake optipng
+      - run: sudo apt update && sudo apt install -y binutils libpugixml-dev optipng
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:

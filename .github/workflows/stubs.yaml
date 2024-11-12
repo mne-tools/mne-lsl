@@ -16,14 +16,15 @@ jobs:
       run:
         shell: bash
     steps:
+      - run: sudo apt update && sudo apt install -y binutils libpugixml-dev
       - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Setup Python 3.11
+        with:
+          submodules: true
+      - name: Setup Python 3.13
         uses: actions/setup-python@v5
         with:
-          python-version: 3.11
-      - name: Install system dependencies
-        uses: ./.github/actions/install-system-dependencies
+          python-version: 3.13
       - name: Install uv
         uses: astral-sh/setup-uv@v3
       - name: Install package
