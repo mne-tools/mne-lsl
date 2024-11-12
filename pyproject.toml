@@ -111,18 +111,12 @@ repair-wheel-command = [
   "auditwheel repair -w {dest_dir} {wheel}",
 ]
 
-[tool.cibuildwheel.linux.environment]
-C_INCLUDE_PATH = "/project/src/liblsl/include"  # GCC variable
-LIBRARY_PATH = "/project/src/liblsl/build"  # GCC variable required for CFFI build
-
 [tool.cibuildwheel.macos]
 repair-wheel-command = [
   "delocate-wheel --require-archs {delocate_archs} -w {dest_dir} -v {wheel}",
 ]
 
 [tool.cibuildwheel.macos.environment]
-CPATH = "$GITHUB_WORKSPACE/src/liblsl/include"  # Clang variable
-LIBRARY_PATH = "$GITHUB_WORKSPACE/src/liblsl/build"  # Clang variable required for CFFI build
 MACOSX_DEPLOYMENT_TARGET = "11"
 
 [[tool.cibuildwheel.overrides]]
