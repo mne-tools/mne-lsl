@@ -2,7 +2,7 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Imports: isort](https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336)](https://pycqa.github.io/isort/)
 [![codecov](https://codecov.io/gh/mne-tools/mne-lsl/graph/badge.svg?token=Xoeh6T13qi)](https://codecov.io/gh/mne-tools/mne-lsl)
-[![tests](https://github.com/mne-tools/mne-lsl/actions/workflows/pytest.yaml/badge.svg?branch=main)](https://github.com/mne-tools/mne-lsl/actions/workflows/pytest.yaml)
+[![ci](https://github.com/mne-tools/mne-lsl/actions/workflows/ci.yaml/badge.svg?branch=main)](https://github.com/mne-tools/mne-lsl/actions/workflows/ci.yaml)
 [![doc](https://github.com/mne-tools/mne-lsl/actions/workflows/doc.yaml/badge.svg?branch=main)](https://github.com/mne-tools/mne-lsl/actions/workflows/doc.yaml)
 [![PyPI version](https://badge.fury.io/py/mne-lsl.svg)](https://badge.fury.io/py/mne-lsl)
 [![Downloads](https://static.pepy.tech/badge/mne-lsl)](https://pepy.tech/project/mne-lsl)
