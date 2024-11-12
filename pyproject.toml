@@ -192,7 +192,11 @@ convention = 'numpy'
 ignore-decorators = ["mne_lsl.utils._docs.copy_doc", "qtpy.QtCore.Slot"]
 
 [tool.setuptools]
-include-package-data = false
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["mne_lsl*"]
 
 [tool.setuptools.package-data]
 'mne_lsl.datasets' = ['*registry.txt']
