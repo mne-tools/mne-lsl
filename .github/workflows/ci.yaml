@@ -123,8 +123,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        matrix:
-          python: ["3.13"]
+        python: ["3.13"]
     defaults:
       run:
         shell: bash
