@@ -20,8 +20,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-13, macos-latest]
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: true
       - uses: pypa/cibuildwheel@v2.21.3
