@@ -74,6 +74,7 @@ jobs:
       - uses: pypa/cibuildwheel@v2.21.3
         env:
           CIBW_ARCHS: ${{ matrix.arch }}
+          MNE_LSL_LIBLSL_BUILD_UNITTESTS: 0
       - uses: actions/upload-artifact@v4
         with:
           name: cibw-wheels-${{ matrix.os }}-${{ matrix.arch }}-${{ strategy.job-index }}
@@ -340,6 +341,7 @@ jobs:
     timeout-minutes: 10
     permissions:
       id-token: write
+      contents: write
     environment:
       name: pypi
       url: https://pypi.org/p/mne-lsl
@@ -350,3 +352,7 @@ jobs:
           merge-multiple: true
           path: dist
       - uses: pypa/gh-action-pypi-publish@release/v1
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          tag_name: ${{ github.event.release.tag_name }}
