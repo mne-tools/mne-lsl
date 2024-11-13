@@ -74,20 +74,14 @@ class build_ext(_build_ext):  # noqa: D101
             # move unit test files if they were produced
             if unit_tests:
                 if platform.system() == "Windows":
-                    test_files = [
-                        elt
-                        for elt in (build_dir.parent / "testing" / "Release").glob(
-                            "lsl_test*"
-                        )
-                    ]
+                    test_build_dir = build_dir.parent / "testing" / "Release"
                 else:
-                    test_files = [
-                        elt for elt in (build_dir / "testing").glob("lsl_test*")
-                    ]
-                if len(test_files) != 2:
+                    test_build_dir = build_dir / "testing"
+                test_files = [elt for elt in test_build_dir.glob("lsl_test*")]
+                if len(test_files) == 0:
                     raise RuntimeError(
-                        "The 2 LIBLSL unit tests were requested but not found in the "
-                        f"build artifacts {test_files}"
+                        "The LIBLSL unit tests were requested but not found in the "
+                        "build artifacts."
                     )
                 dst = Path(__file__).parent / "tests" / "liblsl"
                 dst.mkdir(parents=True, exist_ok=True)

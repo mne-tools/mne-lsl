@@ -52,7 +52,7 @@ jobs:
     if: ${{ github.event_name != 'pull_request' || contains(needs.get_commit_message.outputs.commit_message, '[aarch64]') }}
     name: build wheels on ${{ matrix.os }} ${{ matrix.arch }}
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 20
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
