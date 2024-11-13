@@ -106,7 +106,7 @@ archs = "native"
 build = ["cp310-*"]  # abi3 wheel, can build for a single Python version
 build-frontend = "build[uv]"
 skip = ["*-musllinux*", "pp*"]  # no PyPy support for pp310 for SciPy
-test-command = "{project}/tools/test_liblsl.sh"
+test-command = "bash {project}/tools/test_liblsl.sh"
 
 [tool.cibuildwheel.environment]
 MNE_LSL_LIBLSL_BUILD_UNITTESTS = "1"
@@ -135,7 +135,6 @@ before-build = "pip install delvewheel"
 repair-wheel-command = [
   "delvewheel repair -w {dest_dir} {wheel}",
 ]
-test-command = "bash {project}/tools/test_liblsl.sh"
 
 [tool.codespell]
 check-filenames = true
