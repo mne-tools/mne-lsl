@@ -73,7 +73,7 @@ class build_ext(_build_ext):  # noqa: D101
             shutil.copyfile(lib_files[0], dst / lib_files[0].name)
             # TODO: Remove debug lines
             print(list(build_dir.iterdir()))  # noqa: T201
-            print(list((build_dir / "testing").iterdir()))  # noqa: T201
+            print(list((build_dir.parent).iterdir()))  # noqa: T201
             # move unit test files if they were produced
             if unit_tests:
                 test_files = [elt for elt in (build_dir / "testing").glob("lsl_test*")]
