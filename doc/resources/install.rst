@@ -8,9 +8,8 @@ Default install
 
 ``MNE-LSL`` requires Python version ``3.10`` or higher and is available on
 `PyPI <project pypi_>`_ and `conda-forge <project conda_>`_. It requires
-`liblsl <lsl lib_>`_ which will be either fetch from the path in the environment
-variable ``MNE_LSL_LIB`` (or ``PYLSL_LIB``), or from the system directories, or
-downloaded from the release page on compatible platforms.
+`liblsl <lsl lib_>`_ which will be either fetched from the ``mne-lsl`` install or from
+the path in the environment variable ``MNE_LSL_LIB`` (or ``PYLSL_LIB``).
 
 .. tab-set::
 
@@ -40,24 +39,38 @@ downloaded from the release page on compatible platforms.
 
     .. tab-item:: Source
 
-        ``mne-lsl`` can be installed from `GitHub <project github_>`_:
+        ``mne-lsl`` can be installed from `GitHub <project github_>`_ or from the Source
+        distribution. In this case, the installation will build `liblsl <lsl lib_>`_.
 
         .. code-block:: console
 
             $ pip install git+https://github.com/mne-tools/mne-lsl
 
+        If you wish to skip building `liblsl <lsl lib_>`_, you can set the environment
+        variable ``MNE_LSL_SKIP_LIBLSL_BUILD`` to ``1`` before running the installation,
+        and use the environment variable ``MNE_LSL_LIB`` or ``PYLSL_LIB`` to specify the
+        path to the `liblsl <lsl lib_>`_ library on your system.
+
+        .. code-block:: console
+
+            $ MNE_LSL_SKIP_LIBLSL_BUILD=1 pip install git+https://github.com/mne-tools/mne-lsl
+
+
 Different liblsl version
 ------------------------
 
-If you prefer to use a different version of `liblsl <lsl lib_>`_ than the
-automatically downloaded one, or if your platform is not supported, you can build
-`liblsl <lsl lib_>`_ from source and provide the path to the library in an
-environment variable ``MNE_LSL_LIB`` (or ``PYLSL_LIB``).
+If you prefer to use a different version of `liblsl <lsl lib_>`_ than the bundled one,
+or if your platform is not supported, you can build `liblsl <lsl lib_>`_ from source and
+provide the path to the library in an environment variable ``MNE_LSL_LIB`` (or
+``PYLSL_LIB``).
+
+In this case, you can skip the build of `liblsl <lsl lib_>`_ during the installation of
+``mne-lsl`` by setting the environment variable ``MNE_LSL_SKIP_LIBLSL_BUILD`` to ``1``.
 
 liblsl and LabRecorder dependencies
 -----------------------------------
 
-On Linux, ``liblsl`` requires ``libpugixml-dev`` and ``LabRecorder`` requires
+On Linux, ``liblsl`` might requires ``libpugixml-dev`` and ``LabRecorder`` requires
 ``qt6-base-dev`` and ``freeglut3-dev``.
 
 .. code-block:: console

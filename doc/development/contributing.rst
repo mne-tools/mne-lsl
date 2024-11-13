@@ -32,6 +32,13 @@ time. To install MNE-LSL in editable mode, run:
     The ``[all]`` extra installs all optional dependencies, including those required for
     testing and documentation.
 
+.. note::
+
+    This command will build ``liblsl`` and will thus require:
+
+    - (1) A clone of the ``mne-lsl`` repository including the submodules
+    - (2) Compilers and build tools installed on your system
+
 Code style
 ----------
 

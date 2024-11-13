@@ -12,8 +12,6 @@ Install
 -------
 
 ``MNE-LSL`` is available on `PyPI <project pypi_>`_ and `conda-forge <project conda_>`_.
-It requires a compatible version of `liblsl <lsl lib_>`_ which will be automatically
-fetched from the `liblsl release page <lsl lib release_>`_ if possible.
 
 .. tab-set::
 
@@ -43,11 +41,21 @@ fetched from the `liblsl release page <lsl lib release_>`_ if possible.
 
     .. tab-item:: Source
 
-        ``mne-lsl`` can be installed from `GitHub <project github_>`_:
+        ``mne-lsl`` can be installed from `GitHub <project github_>`_ or from the Source
+        distribution. In this case, the installation will build `liblsl <lsl lib_>`_.
 
         .. code-block:: console
 
             $ pip install git+https://github.com/mne-tools/mne-lsl
+
+        If you wish to skip building `liblsl <lsl lib_>`_, you can set the environment
+        variable ``MNE_LSL_SKIP_LIBLSL_BUILD`` to ``1`` before running the installation,
+        and use the environment variable ``MNE_LSL_LIB`` or ``PYLSL_LIB`` to specify the
+        path to the `liblsl <lsl lib_>`_ library on your system.
+
+        .. code-block:: console
+
+            $ MNE_LSL_SKIP_LIBLSL_BUILD=1 pip install git+https://github.com/mne-tools/mne-lsl
 
 Supporting institutions
 -----------------------
