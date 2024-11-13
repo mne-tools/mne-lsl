@@ -11,6 +11,19 @@ on:  # yamllint disable-line rule:truthy
     types: [published]
 
 jobs:
+  get_commit_message:
+    runs-on: ubuntu-latest
+    outputs:
+      commit_message: ${{ steps.get_message.outputs.commit_message }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # ensure the correct commit is checked out for PRs or pushes
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 1
+      - run: echo "commit_message=$(git log -1 --pretty=%B)" >> $GITHUB_OUTPUT
+        id: get_message
+
   cibuildwheel:
     name: build wheels on ${{ matrix.os }} ${{ matrix.arch }}
     runs-on: ${{ matrix.os }}
@@ -29,19 +42,6 @@ jobs:
         with:
           name: cibw-wheels-${{ matrix.os }}-${{ matrix.arch }}-${{ strategy.job-index }}
           path: ./wheelhouse/*.whl
-
-  get_commit_message:
-    runs-on: ubuntu-latest
-    outputs:
-      commit_message: ${{ steps.get_message.outputs.commit_message }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          # ensure the correct commit is checked out for PRs or pushes
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
-          fetch-depth: 1
-      - run: echo "commit_message=$(git log -1 --pretty=%B)" >> $GITHUB_OUTPUT
-        id: get_message
 
   cibuildwheel_emulated:
     needs: get_commit_message
@@ -86,8 +86,6 @@ jobs:
       run:
         shell: bash
     steps:
-      - run: sudo apt update && sudo apt install -y binutils libpugixml-dev
-        if: runner.os == 'Linux'
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
@@ -126,7 +124,6 @@ jobs:
       run:
         shell: bash
     steps:
-      - run: sudo apt update && sudo apt install -y binutils libpugixml-dev
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
@@ -168,7 +165,6 @@ jobs:
       run:
         shell: bash
     steps:
-      - run: sudo apt update && sudo apt install -y binutils libpugixml-dev
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
@@ -272,7 +268,7 @@ jobs:
       run:
         shell: bash
     steps:
-      - run: sudo apt update && sudo apt install -y binutils libpugixml-dev optipng
+      - run: sudo apt update && sudo apt install -y optipng
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
