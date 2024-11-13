@@ -134,7 +134,7 @@ before-build = "pip install delvewheel"
 repair-wheel-command = [
   "delvewheel repair -w {dest_dir} {wheel}",
 ]
-test-command = "{project}\tools\test_liblsl.sh"
+test-command = "{project}\\tools\\test_liblsl.sh"
 
 [tool.codespell]
 check-filenames = true
