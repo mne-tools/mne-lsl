@@ -71,12 +71,19 @@ class build_ext(_build_ext):  # noqa: D101
             dst.mkdir(parents=True, exist_ok=True)
             print(f"Copying {lib_files[0]} to {dst / lib_files[0].name}")  # noqa: T201
             shutil.copyfile(lib_files[0], dst / lib_files[0].name)
-            # TODO: Remove debug lines
-            print(list(build_dir.iterdir()))  # noqa: T201
-            print(list((build_dir.parent).iterdir()))  # noqa: T201
             # move unit test files if they were produced
             if unit_tests:
-                test_files = [elt for elt in (build_dir / "testing").glob("lsl_test*")]
+                if platform.system() == "Windows":
+                    test_files = [
+                        elt
+                        for elt in (build_dir.parent / "testing" / "Release").glob(
+                            "lsl_test*"
+                        )
+                    ]
+                else:
+                    test_files = [
+                        elt for elt in (build_dir / "testing").glob("lsl_test*")
+                    ]
                 if len(test_files) != 2:
                     raise RuntimeError(
                         "The 2 LIBLSL unit tests were requested but not found in the "
