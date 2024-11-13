@@ -108,9 +108,6 @@ build-frontend = "build[uv]"
 skip = ["*-musllinux*", "pp*"]  # no PyPy support for pp310 for SciPy
 test-command = "bash {project}/tools/test_liblsl.sh"
 
-[tool.cibuildwheel.environment]
-MNE_LSL_LIBLSL_BUILD_UNITTESTS = "1"
-
 [tool.cibuildwheel.linux]
 repair-wheel-command = [
   "auditwheel repair -w {dest_dir} {wheel}",
@@ -123,7 +120,6 @@ repair-wheel-command = [
 
 [tool.cibuildwheel.macos.environment]
 MACOSX_DEPLOYMENT_TARGET = "11"
-MNE_LSL_LIBLSL_BUILD_UNITTESTS = "1"
 
 [[tool.cibuildwheel.overrides]]
 repair-wheel-command = "pipx run abi3audit --strict --report {wheel}"
