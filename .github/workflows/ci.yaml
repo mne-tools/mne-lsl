@@ -104,7 +104,7 @@ jobs:
         uses: ./.github/actions/retry-step
         with:
           command: pytest tests/ --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s
-          retry_error_codes: "3,134,139"
+          retry_error_codes: "3,127,134,139"
         env:
           MNE_LSL_LOG_LEVEL: DEBUG
       - uses: codecov/codecov-action@v4
