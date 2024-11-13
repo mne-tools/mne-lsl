@@ -1,3 +1,4 @@
+import os
 import platform
 import shutil
 import subprocess
@@ -25,6 +26,10 @@ class BinaryDistribution(Distribution):  # noqa: D101
 class build_ext(_build_ext):  # noqa: D101
     def run(self):
         """Build 'liblsl' with cmake as part of the extension build process."""
+        skip = os.environ.get("MNE_LSL_SKIP_LIBLSL_BUILD", False)
+        if skip:
+            print("Skipping build of liblsl.")  # noqa: T201
+            return
         src = Path(__file__).parent / "src" / "liblsl"
         assert src.exists()  # sanity-check
         with TemporaryDirectory() as build_dir:
