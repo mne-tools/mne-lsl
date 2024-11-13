@@ -105,6 +105,10 @@ tracker = 'https://github.com/mne-tools/mne-lsl/issues'
 archs = "native"
 build = ["cp310-*"]  # abi3 wheel, can build for a single Python version
 skip = ["*-musllinux*", "pp*"]  # no PyPy support for pp310 for SciPy
+test-command = "{project}/tools/test_liblsl.sh"
+
+[tool.cibuildwheel.environment]
+MNE_LSL_LIBLSL_BUILD_UNITTESTS = "1"
 
 [tool.cibuildwheel.linux]
 repair-wheel-command = [

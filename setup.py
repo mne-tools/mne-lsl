@@ -44,6 +44,10 @@ class build_ext(_build_ext):  # noqa: D101
             ]
             if platform.system() == "Darwin":
                 args.append("-DCMAKE_OSX_DEPLOYMENT_TARGET=11")
+            unit_tests = os.environ.get("MNE_LSL_LIBLSL_BUILD_UNITTESTS")
+            unit_tests = eval(unit_tests) if unit_tests is not None else False
+            if unit_tests:
+                args.append("-DLSL_UNITTESTS=ON")
             subprocess.run(args, check=True)
             subprocess.run(
                 ["cmake", "--build", build_dir, "--config", "Release"], check=True
@@ -65,8 +69,27 @@ class build_ext(_build_ext):  # noqa: D101
                 else Path(self.build_lib) / "mne_lsl" / "lsl" / "lib"
             )
             dst.mkdir(parents=True, exist_ok=True)
-            print(f"Moving {lib_files[0]} to {dst / lib_files[0].name}")  # noqa: T201
-            shutil.move(lib_files[0], dst / lib_files[0].name)
+            print(f"Copying {lib_files[0]} to {dst / lib_files[0].name}")  # noqa: T201
+            shutil.copyfile(lib_files[0], dst / lib_files[0].name)
+            # move unit test files if they were produced
+            if unit_tests:
+                test_files = [elt for elt in (build_dir / "testing").glob("lsl_test*")]
+                if len(test_files) != 2:
+                    raise RuntimeError(
+                        "The 2 LIBLSL unit tests were requested but not found in the "
+                        f"build artifacts {test_files}"
+                    )
+                dst = Path(__file__).parent / "tests" / "liblsl"
+                dst.mkdir(parents=True, exist_ok=True)
+                for test_file in test_files:
+                    print(f"Moving {test_file} to {dst / test_file.name}")  # noqa: T201
+                    shutil.move(test_file, dst / test_file.name)
+                # also copy the liblsl files in the test directory
+                for lib_file in build_dir.glob(_PATTERNS[platform.system()]):
+                    print(f"Copying {lib_file} to {dst / lib_file.name}")  # noqa: T201
+                    shutil.copyfile(
+                        lib_file, dst / lib_file.name, follow_symlinks=False
+                    )
         super().run()
 
 
