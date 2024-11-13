@@ -122,6 +122,7 @@ repair-wheel-command = [
 
 [tool.cibuildwheel.macos.environment]
 MACOSX_DEPLOYMENT_TARGET = "11"
+MNE_LSL_LIBLSL_BUILD_UNITTESTS = "1"
 
 [[tool.cibuildwheel.overrides]]
 repair-wheel-command = "pipx run abi3audit --strict --report {wheel}"

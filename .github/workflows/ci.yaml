@@ -12,6 +12,7 @@ on:  # yamllint disable-line rule:truthy
 
 jobs:
   get_commit_message:
+    name: get commit message
     runs-on: ubuntu-latest
     outputs:
       commit_message: ${{ steps.get_message.outputs.commit_message }}
