@@ -45,7 +45,7 @@ jobs:
       - uses: astral-sh/setup-uv@v3
       - uses: pypa/cibuildwheel@v2.21.3
         env:
-          MNE_LSL_LIBLSL_BUILD_UNITTESTS: ${{ contains(needs.get_commit_message.outputs.commit_message, '[test-liblsl]') && '1' || '0' }}
+          MNE_LSL_LIBLSL_BUILD_UNITTESTS: ${{ (github.event_name != 'pull_request' || contains(needs.get_commit_message.outputs.commit_message, '[liblsl]')) && '1' || '0' }}
       - uses: actions/upload-artifact@v4
         with:
           name: cibw-wheels-${{ matrix.os }}-${{ matrix.arch }}-${{ strategy.job-index }}
