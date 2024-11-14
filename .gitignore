@@ -2,6 +2,8 @@
 __pycache__/
 *.py[cod]
 *$py.class
+*.abi3.so
+*.abi3.pyd
 
 # Distribution / packaging
 .Python
@@ -19,6 +21,7 @@ var/
 wheels/
 pip-wheel-metadata/
 share/python-wheels/
+wheelhouse/
 *.egg-info/
 .installed.cfg
 *.egg

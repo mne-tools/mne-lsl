@@ -16,22 +16,17 @@ jobs:
       run:
         shell: bash
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      - name: Setup Python 3.11
-        uses: actions/setup-python@v5
+      - run: sudo apt update && sudo apt install -y binutils libpugixml-dev
+      - uses: actions/checkout@v4
         with:
-          python-version: 3.11
-      - name: Install system dependencies
-        uses: ./.github/actions/install-system-dependencies
-      - name: Install uv
-        uses: astral-sh/setup-uv@v3
-      - name: Install package
-        run: uv pip install --quiet --system -e .[stubs]
-      - name: Display system information
-        run: mne-lsl sys-info --developer
-      - name: Generate stub files
-        run: python tools/stubgen.py
+          submodules: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.13
+      - uses: astral-sh/setup-uv@v3
+      - run: uv pip install -e .[stubs] --quiet --system
+      - run: mne-lsl sys-info --developer
+      - run: python tools/stubgen.py
       - name: Push stub files
         if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
         env:

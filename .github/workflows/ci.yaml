@@ -1,0 +1,361 @@
+name: ci
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.number }}-${{ github.event.ref }}
+  cancel-in-progress: true
+on:  # yamllint disable-line rule:truthy
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  release:
+    types: [published]
+
+jobs:
+  get_commit_message:
+    name: get commit message
+    runs-on: ubuntu-latest
+    outputs:
+      commit_message: ${{ steps.get_message.outputs.commit_message }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # ensure the correct commit is checked out for PRs or pushes
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 1
+      - run: echo "commit_message=$(git log -1 --pretty=%B)" >> $GITHUB_OUTPUT
+        id: get_message
+
+  cibuildwheel:
+    needs: get_commit_message
+    name: build wheels on ${{ matrix.os }} ${{ matrix.arch }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-13, macos-latest]
+        arch: [native]
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - uses: astral-sh/setup-uv@v3
+      - uses: pypa/cibuildwheel@v2.21.3
+        env:
+          MNE_LSL_LIBLSL_BUILD_UNITTESTS: ${{ (github.event_name != 'pull_request' || contains(needs.get_commit_message.outputs.commit_message, '[liblsl]')) && '1' || '0' }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cibw-wheels-${{ matrix.os }}-${{ matrix.arch }}-${{ strategy.job-index }}
+          path: ./wheelhouse/*.whl
+
+  cibuildwheel_emulated:
+    needs: get_commit_message
+    if: ${{ github.event_name != 'pull_request' || contains(needs.get_commit_message.outputs.commit_message, '[aarch64]') }}
+    name: build wheels on ${{ matrix.os }} ${{ matrix.arch }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            arch: aarch64
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - uses: docker/setup-qemu-action@v3
+        with:
+          platforms: ${{ matrix.arch }}
+      - uses: astral-sh/setup-uv@v3
+      - uses: pypa/cibuildwheel@v2.21.3
+        env:
+          CIBW_ARCHS: ${{ matrix.arch }}
+          MNE_LSL_LIBLSL_BUILD_UNITTESTS: 0
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cibw-wheels-${{ matrix.os }}-${{ matrix.arch }}-${{ strategy.job-index }}
+          path: ./wheelhouse/*.whl
+
+  test:
+    needs: cibuildwheel
+    name: test wheels on ${{ matrix.os }} - py${{ matrix.python }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-13, macos-latest]
+        python: ["3.10", "3.13"]
+        exclude:
+          - os: macos-13
+            python: "3.13"
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - uses: astral-sh/setup-uv@v3
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: cibw-wheels-${{ matrix.os }}-native-*
+          merge-multiple: true
+          path: dist
+      - run: ls -alt . && ls -alt dist/
+      - run: uv pip install mne-lsl[test] --only-binary mne-lsl --find-links dist --pre --quiet --system
+      - run: mne-lsl sys-info --developer
+      - uses: ./.github/actions/get-testing-dataset
+      - name: Run pytest
+        uses: ./.github/actions/retry-step
+        with:
+          command: pytest tests/ --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s
+          retry_error_codes: "3,127,134,139"
+        env:
+          MNE_LSL_LOG_LEVEL: DEBUG
+      - uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+  test-mne-compat:
+    needs: cibuildwheel
+    name: test mne compat ${{ matrix.mne-version }} - py${{ matrix.python }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        mne-version: ["1.4.2", "1.5.0"]
+        python: ["3.10"]
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - uses: astral-sh/setup-uv@v3
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: cibw-wheels-ubuntu-latest-native-*
+          merge-multiple: true
+          path: dist
+      - run: ls -alt . && ls -alt dist/
+      - run: |
+          uv pip install mne-lsl[test] --only-binary mne-lsl --find-links dist --pre --quiet --system
+          uv pip uninstall numpy mne --quiet --system
+          uv pip install "numpy<2" --quiet --system
+          uv pip install mne==${{ matrix.mne-version }} --quiet --system
+      - run: mne-lsl sys-info --developer
+      - uses: ./.github/actions/get-testing-dataset
+      - name: Run pytest
+        uses: ./.github/actions/retry-step
+        with:
+          command: pytest tests/ --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s
+          retry_error_codes: "3,134,139"
+        env:
+          MNE_LSL_LOG_LEVEL: DEBUG
+      - uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+  test-pip-pre:
+    needs: cibuildwheel
+    name: test pip pre-release - py${{ matrix.python }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.13"]
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - uses: astral-sh/setup-uv@v3
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: cibw-wheels-ubuntu-latest-native-*
+          merge-multiple: true
+          path: dist
+      - run: ls -alt . && ls -alt dist/
+      - run: |
+          uv pip install mne-lsl[test] --only-binary mne-lsl --find-links dist --pre --quiet --system
+          uv pip install git+https://github.com/mne-tools/mne-python --upgrade --quiet --system
+          uv pip install matplotlib --quiet --system
+          uv pip install matplotlib --upgrade --quiet --system --prerelease allow --only-binary :all: -i https://pypi.anaconda.org/scientific-python-nightly-wheels/simple --no-deps
+          uv pip install numpy scipy --upgrade --quiet --system --prerelease allow --only-binary :all: -i https://pypi.anaconda.org/scientific-python-nightly-wheels/simple
+      - run: mne-lsl sys-info --developer
+      - uses: ./.github/actions/get-testing-dataset
+      - name: Run pytest
+        uses: ./.github/actions/retry-step
+        with:
+          command: pytest tests/ --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s
+          retry_error_codes: "3,134,139"
+        env:
+          MNE_LSL_LOG_LEVEL: DEBUG
+      - uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+  test-editable:
+    name: test editable install
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - uses: astral-sh/setup-uv@v3
+      - run: uv pip install -e .[test] --verbose --system
+      - run: mne-lsl sys-info --developer
+      - name: Run pytest
+        uses: ./.github/actions/retry-step
+        with:
+          command: pytest tests/ --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s
+          retry_error_codes: "3,134,139"
+        env:
+          MNE_LSL_LOG_LEVEL: DEBUG
+      - uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+  sdist:
+    name: create sdist
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - uses: astral-sh/setup-uv@v3
+      - run: uv pip install build --upgrade --quiet --system
+      - run: python -m build --sdist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cibw-wheels-sdist
+          path: ./dist/*.tar.gz
+
+  check:
+    # run even if 'cibuildwheel_emulated' is skipped
+    if: ${{ always() }}
+    needs: [cibuildwheel, cibuildwheel_emulated, sdist]
+    name: run twine check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: cibw-wheels-*
+          merge-multiple: true
+          path: dist
+      - run: ls -alt . && ls -alt dist/
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - uses: astral-sh/setup-uv@v3
+      - run: uv pip install twine --upgrade --quiet --system
+      - run: twine check --strict dist/*
+
+  doc-build:
+    needs: cibuildwheel
+    name: build documentation
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - run: sudo apt update && sudo apt install -y optipng
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - uses: astral-sh/setup-uv@v3
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: cibw-wheels-ubuntu-latest-native-*
+          merge-multiple: true
+          path: dist
+      - run: ls -alt . && ls -alt dist/
+      - run: uv pip install mne-lsl[doc] --only-binary mne-lsl --find-links dist --pre --quiet --system
+      - run: mne-lsl sys-info --developer
+      - uses: ./.github/actions/get-testing-dataset
+        with:
+          sample: "true"
+          testing: "false"
+      - uses: ./.github/actions/retry-step
+        with:
+          command: "make -C doc html"
+          retry_error_codes: "2"
+          command_between_retries: "make -C doc clean"
+      - run: rm -R ./doc/_build/html/.doctrees
+      - uses: actions/upload-artifact@v4
+        with:
+          name: doc-dev
+          path: ./doc/_build/html
+
+  doc-deploy:
+    if: github.event_name == 'push'
+    needs: doc-build
+    name: deploy documentation
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: doc-dev
+          path: ./doc-dev
+      - uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: ./doc-dev
+          target-folder: ./dev
+          git-config-name: 'github-actions[bot]'
+          git-config-email: 'github-actions[bot]@users.noreply.github.com'
+          single-commit: true
+          force: true
+
+  publish:
+    if: github.event_name == 'release'
+    needs: [check, test, test-mne-compat, test-pip-pre, test-editable, doc-build]
+    name: publish to PyPI
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      id-token: write
+      contents: write
+    environment:
+      name: pypi
+      url: https://pypi.org/p/mne-lsl
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: cibw-wheels-*
+          merge-multiple: true
+          path: dist
+      - uses: pypa/gh-action-pypi-publish@release/v1
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          tag_name: ${{ github.event.release.tag_name }}
