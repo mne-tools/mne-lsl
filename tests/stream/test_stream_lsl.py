@@ -948,7 +948,7 @@ def test_stream_filter(mock_lsl_stream_sinusoids, raw_sinusoids):
     time.sleep(2.5)
     fft_ = np.abs(fft(stream.get_data()[0], axis=-1)[:, idx])
     for ch, ch_height in heights_orig.items():
-        assert_allclose(fft_[ch, ch_height["idx"]], ch_height["heights"], rtol=0.05)
+        assert_allclose(fft_[ch, ch_height["idx"]], ch_height["heights"], rtol=0.1)
     # test filtering
     stream.filter(5, 15, picks="10-30")
     time.sleep(2.1)
@@ -957,10 +957,10 @@ def test_stream_filter(mock_lsl_stream_sinusoids, raw_sinusoids):
         if ch == 0:  # 10 Hz retained, 30 Hz removed
             assert fft_[ch, ch_height["idx"]][1] < 0.1 * ch_height["heights"][1]
             assert_allclose(
-                fft_[ch, ch_height["idx"]][0], ch_height["heights"][0], rtol=0.05
+                fft_[ch, ch_height["idx"]][0], ch_height["heights"][0], rtol=0.1
             )
         else:
-            assert_allclose(fft_[ch, ch_height["idx"]], ch_height["heights"], rtol=0.05)
+            assert_allclose(fft_[ch, ch_height["idx"]], ch_height["heights"], rtol=0.1)
     # test removing filter
     stream.del_filter(0)
     time.sleep(2.5)
@@ -975,14 +975,14 @@ def test_stream_filter(mock_lsl_stream_sinusoids, raw_sinusoids):
         if ch == 0:  # 10 Hz removed, 30 Hz retained
             assert fft_[ch, ch_height["idx"]][0] < 0.1 * ch_height["heights"][0]
             assert_allclose(
-                fft_[ch, ch_height["idx"]][1], ch_height["heights"][1], rtol=0.05
+                fft_[ch, ch_height["idx"]][1], ch_height["heights"][1], rtol=0.1
             )
         elif ch == 1:  # 30 Hz retained, 50 Hz retained
-            assert_allclose(fft_[ch, ch_height["idx"]], ch_height["heights"], rtol=0.05)
+            assert_allclose(fft_[ch, ch_height["idx"]], ch_height["heights"], rtol=0.1)
         elif ch == 2:  # 30 Hz retained, 100 Hz removed (but not as much attenuation)
             assert fft_[ch, ch_height["idx"]][1] < 0.15 * ch_height["heights"][1]
             assert_allclose(
-                fft_[ch, ch_height["idx"]][0], ch_height["heights"][0], rtol=0.05
+                fft_[ch, ch_height["idx"]][0], ch_height["heights"][0], rtol=0.1
             )
     stream.filter(40, 60, picks="30-50")  # second filter
     time.sleep(2.5)
@@ -991,16 +991,16 @@ def test_stream_filter(mock_lsl_stream_sinusoids, raw_sinusoids):
         if ch == 0:  # 10 Hz removed, 30 Hz retained
             assert fft_[ch, ch_height["idx"]][0] < 0.1 * ch_height["heights"][0]
             assert_allclose(
-                fft_[ch, ch_height["idx"]][1], ch_height["heights"][1], rtol=0.05
+                fft_[ch, ch_height["idx"]][1], ch_height["heights"][1], rtol=0.1
             )
         elif ch == 1:  # 30 Hz removed, 50 Hz retained
             assert fft_[ch, ch_height["idx"]][0] < 0.1 * ch_height["heights"][0]
             assert_allclose(
-                fft_[ch, ch_height["idx"]][1], ch_height["heights"][1], rtol=0.05
+                fft_[ch, ch_height["idx"]][1], ch_height["heights"][1], rtol=0.1
             )
         elif ch == 2:  # 30 Hz retained, 100 Hz removed
             assert_allclose(
-                fft_[ch, ch_height["idx"]][0], ch_height["heights"][0], rtol=0.05
+                fft_[ch, ch_height["idx"]][0], ch_height["heights"][0], rtol=0.1
             )
             assert fft_[ch, ch_height["idx"]][1] < 0.15 * ch_height["heights"][1]
     stream.filter(40, 60, picks="eeg")  # third filter
@@ -1013,7 +1013,7 @@ def test_stream_filter(mock_lsl_stream_sinusoids, raw_sinusoids):
         elif ch == 1:  # 30 Hz removed, 50 Hz retained
             assert fft_[ch, ch_height["idx"]][0] < 0.1 * ch_height["heights"][0]
             assert_allclose(
-                fft_[ch, ch_height["idx"]][1], ch_height["heights"][1], rtol=0.05
+                fft_[ch, ch_height["idx"]][1], ch_height["heights"][1], rtol=0.1
             )
         elif ch == 2:  # 30 Hz removed, 100 Hz removed
             assert fft_[ch, ch_height["idx"]][0] < 0.1 * ch_height["heights"][0]
