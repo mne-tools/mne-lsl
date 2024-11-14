@@ -22,7 +22,7 @@ jobs:
           # ensure the correct commit is checked out for PRs or pushes
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 1
-      - run: echo "commit_message=$(git log -1 --pretty=%B)" >> $GITHUB_OUTPUT
+      - run: echo "commit_message=$(git log -1 --pretty=%s)" >> $GITHUB_OUTPUT
         id: get_message
 
   cibuildwheel:
