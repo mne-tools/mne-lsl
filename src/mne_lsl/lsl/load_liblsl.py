@@ -203,7 +203,7 @@ def _set_types(lib: CDLL) -> None:
     lib.lsl_remove_child.argtypes = [c_void_p, c_void_p]
     lib.lsl_destroy_string.argtypes = [c_void_p]
 
-    # TODO: Check if the minimum version for MNE-LSL requires those try/except.
+    # might be required if someone passes an old liblsl in the environment variable(s).
     try:
         lib.lsl_pull_chunk_f.restype = c_long
         lib.lsl_pull_chunk_d.restype = c_long
