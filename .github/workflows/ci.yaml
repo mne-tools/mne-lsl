@@ -337,7 +337,17 @@ jobs:
         with:
           name: doc-dev
           path: ./doc-dev
+      - name: Move doc to release folder
+        if: github.event.release.target_commitish != 'main'
+        run:
+          RELEASE_TAG=${{ github.event.release.tag_name }}
+          if [ -d "$RELEASE_TAG" ]; then
+            echo "Folder $RELEASE_TAG already exists. Exiting."
+            exit 1
+          fi
+          mv doc-dev "$RELEASE_TAG"
       - name: Move stable to release tag
+        if: github.event.release.target_commitish == 'main'
         run: |
           RELEASE_TAG=${{ github.event.release.tag_name }}
           if [ -d "stable" ]; then
@@ -351,6 +361,7 @@ jobs:
             exit 1
           fi
       - name: Copy built docs to stable and dev
+        if: github.event.release.target_commitish == 'main'
         run: |
           rm -rf dev
           mv doc-dev stable
