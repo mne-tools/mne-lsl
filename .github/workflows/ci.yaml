@@ -301,7 +301,7 @@ jobs:
   doc-deploy:
     if: github.event_name == 'push'
     needs: doc-build
-    name: deploy documentation
+    name: deploy development documentation
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
