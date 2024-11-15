@@ -24,7 +24,6 @@ classifiers = [
 ]
 dependencies = [
   'click>=8.1',
-  'distro; sys_platform == "linux"',
   'mne>=1.4.2',
   'numpy>=1.21,<3',
   'packaging',
@@ -32,7 +31,6 @@ dependencies = [
   'psutil',
   'pyqtgraph',
   'qtpy',
-  'requests',
   'scipy',
 ]
 description = 'Real-time framework integrated with MNE-Python for online neuroscience research through LSL-compatible devices.'
