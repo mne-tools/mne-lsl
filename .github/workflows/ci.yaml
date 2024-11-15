@@ -328,6 +328,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    environment:
+      RELEASE_TAG=${{ github.event.release.tag_name }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -339,8 +341,7 @@ jobs:
           path: ./doc-dev
       - name: Move doc to release folder
         if: github.event.release.target_commitish != 'main'
-        run:
-          RELEASE_TAG=${{ github.event.release.tag_name }}
+        run: |
           if [ -d "$RELEASE_TAG" ]; then
             echo "Folder $RELEASE_TAG already exists. Exiting."
             exit 1
@@ -349,7 +350,6 @@ jobs:
       - name: Move stable to release tag
         if: github.event.release.target_commitish == 'main'
         run: |
-          RELEASE_TAG=${{ github.event.release.tag_name }}
           if [ -d "stable" ]; then
             if [ -d "$RELEASE_TAG" ]; then
               echo "Folder $RELEASE_TAG already exists. Exiting."
@@ -376,7 +376,7 @@ jobs:
 
   publish:
     if: github.event_name == 'release'
-    needs: [check, test, test-mne-compat, test-pip-pre, test-editable, doc-build]
+    needs: [check, test, test-mne-compat, test-pip-pre, test-editable, doc-deploy-release]
     name: publish to PyPI
     runs-on: ubuntu-latest
     timeout-minutes: 10
