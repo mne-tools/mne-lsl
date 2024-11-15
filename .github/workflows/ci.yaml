@@ -63,9 +63,6 @@ jobs:
         include:
           - os: ubuntu-latest
             arch: aarch64
-    defaults:
-      run:
-        shell: bash
     steps:
       - uses: actions/checkout@v4
         with:
@@ -133,9 +130,6 @@ jobs:
       matrix:
         mne-version: ["1.4.2", "1.5.0"]
         python: ["3.10"]
-    defaults:
-      run:
-        shell: bash
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -174,9 +168,6 @@ jobs:
       fail-fast: false
       matrix:
         python: ["3.13"]
-    defaults:
-      run:
-        shell: bash
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -277,9 +268,6 @@ jobs:
     needs: cibuildwheel
     name: build documentation
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        shell: bash
     steps:
       - run: sudo apt update && sudo apt install -y optipng
       - uses: actions/checkout@v4
@@ -318,9 +306,6 @@ jobs:
     timeout-minutes: 10
     permissions:
       contents: write
-    defaults:
-      run:
-        shell: bash
     steps:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
@@ -335,6 +320,48 @@ jobs:
           git-config-email: 'github-actions[bot]@users.noreply.github.com'
           single-commit: true
           force: true
+
+  doc-deploy-release:
+    if: github.event_name == 'release'
+    needs: doc-build
+    name: deploy stable documentation
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          fetch-depth: 0
+      - uses: actions/download-artifact@v4
+        with:
+          name: doc-dev
+          path: ./doc-dev
+      - name: Move stable to release tag
+        run: |
+          RELEASE_TAG=${{ github.event.release.tag_name }}
+          if [ -d "stable" ]; then
+            if [ -d "$RELEASE_TAG" ]; then
+              echo "Folder $RELEASE_TAG already exists. Exiting."
+              exit 1
+            fi
+            git mv stable "$RELEASE_TAG"
+          else
+            echo "No stable folder found."
+            exit 1
+          fi
+      - name: Copy built docs to stable and dev
+        run: |
+          rm -rf dev
+          mv doc-dev stable
+          cp -r stable dev
+      - name: Commit and push changes
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add .
+          git commit -m "update documentation for release ${{ github.event.release.tag_name }}"
+          git push origin gh-pages
 
   publish:
     if: github.event_name == 'release'
