@@ -63,7 +63,7 @@ with PlayerLSL(
     # start looking for epochs
     n = 0  # number of epochs
     evoked = None
-    while n <= 20:
+    while n < 20:
         if epochs.n_new_epochs == 0:
             continue  # nothing new to do
         logger.info("Got %s / %s new epochs.", epochs.n_new_epochs, n)
@@ -78,6 +78,7 @@ with PlayerLSL(
             if evoked is None
             else combine_evoked([evoked, new_evoked], weights="nave")
         )
+        evoked.nave = n  # overwrite to avoid numerical approximation error
         ax.clear()
         evoked.plot(axes=ax, time_unit="s")  # plot on current figure
         fig.canvas.draw()
