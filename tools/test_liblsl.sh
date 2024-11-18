@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -eo pipefail
+
 if [ "${MNE_LSL_LIBLSL_BUILD_UNITTESTS}" != "1" ]; then
     echo "Skipping liblsl unit tests."
     exit 0
