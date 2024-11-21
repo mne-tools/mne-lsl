@@ -878,7 +878,7 @@ class StreamInfo(_BaseStreamInfo):
         Also called ``nominal_srate``, represents the sampling rate (in Hz) as
         advertised by the data source. If the sampling rate is irregular (e.g. for a
         trigger stream), the sampling rate is set to ``0``.
-    dtype : str | dtype
+    dtype : str | int | dtype
         Format of each channel. If your channels have different formats, consider
         supplying multiple streams or use the largest type that can hold them all.
         One of ``('string', 'float32', 'float64', 'int8', 'int16', 'int32')``.
@@ -896,9 +896,9 @@ class StreamInfo(_BaseStreamInfo):
         stype: str,
         n_channels: int,
         sfreq: float,
-        dtype: str,
+        dtype: str | int | DTypeLike,
         source_id: str,
-    ):
+    ) -> None:
         check_type(name, (str,), "name")
         check_type(stype, (str,), "stype")
         n_channels = ensure_int(n_channels, "n_channels")
