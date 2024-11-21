@@ -63,7 +63,7 @@ class StreamInlet:
         max_buffered: float = 360,
         recover: bool = True,
         processing_flags: str | Sequence[str] | None = None,
-    ):
+    ) -> None:
         check_type(sinfo, (_BaseStreamInfo,), "sinfo")
         chunk_size = ensure_int(chunk_size, "chunk_size")
         if chunk_size < 0:
@@ -130,7 +130,7 @@ class StreamInlet:
         # variable to define if the stream is open or not  sinfo_ = inlet.get_sinfo()
         self._stream_is_open = False
 
-    def _del(self):
+    def _del(self) -> None:
         """Destroy a :class:`~mne_lsl.lsl.StreamInlet` explicitly."""
         logger.debug(f"Destroying {self.__class__.__name__}..")
         try:
@@ -157,7 +157,7 @@ class StreamInlet:
                 "done."
             )
 
-    def __del__(self):
+    def __del__(self) -> None:
         """Destroy a :class:`~mne_lsl.lsl.StreamInlet`.
 
         The inlet will automatically disconnect.
