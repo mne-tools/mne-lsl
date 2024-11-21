@@ -298,7 +298,7 @@ jobs:
           name: doc-dev
           path: ./doc/_build/html
 
-  doc-deploy:
+  doc-deploy-dev:
     if: github.event_name == 'push'
     needs: doc-build
     name: deploy development documentation
@@ -347,15 +347,25 @@ jobs:
             exit 1
           fi
           mv doc-dev "$RELEASE_TAG"
-      - name: Move stable to release tag
+      - name: Get previous release tag
+        if: github.event.release.target_commitish == 'main'
+        run: |
+          PREVIOUS_RELEASE_TAG=$(git tag --sort=-creatordate | sed "/^$RELEASE_TAG$/d" | sed -n 1p)
+          if [ -z "$PREVIOUS_RELEASE_TAG" ]; then
+            echo "No previous release tag found."
+            exit 1
+          fi
+          echo "Previous release tag: $PREVIOUS_RELEASE_TAG"
+          echo "PREVIOUS_RELEASE_TAG=$PREVIOUS_RELEASE_TAG" >> $GITHUB_ENV
+      - name: Move stable to previous release tag
         if: github.event.release.target_commitish == 'main'
         run: |
           if [ -d "stable" ]; then
-            if [ -d "$RELEASE_TAG" ]; then
-              echo "Folder $RELEASE_TAG already exists. Exiting."
+            if [ -d "$PREVIOUS_RELEASE_TAG" ]; then
+              echo "Folder $PREVIOUS_RELEASE_TAG already exists. Exiting."
               exit 1
             fi
-            git mv stable "$RELEASE_TAG"
+            git mv stable "$PREVIOUS_RELEASE_TAG"
           else
             echo "No stable folder found."
             exit 1
