@@ -42,7 +42,7 @@ class StreamOutlet:
         sinfo: _BaseStreamInfo,
         chunk_size: int = 1,
         max_buffered: float = 360,
-    ):
+    ) -> None:
         check_type(sinfo, (_BaseStreamInfo,), "sinfo")
         chunk_size = ensure_int(chunk_size, "chunk_size")
         if chunk_size < 1:
@@ -75,7 +75,7 @@ class StreamOutlet:
         self._do_push_chunk_n = fmt2push_chunk_n[self._dtype]
         self._buffer_sample = self._dtype * self._n_channels
 
-    def _del(self):
+    def _del(self) -> None:
         """Destroy a :class:`~mne_lsl.lsl.StreamOutlet` explicitly."""
         logger.debug(f"Destroying {self.__class__.__name__}..")
         try:
@@ -97,7 +97,7 @@ class StreamOutlet:
                 "done."
             )
 
-    def __del__(self):
+    def __del__(self) -> None:
         """Destroy a :class:`~mne_lsl.lsl.StreamOutlet`.
 
         The outlet will no longer be discoverable after destruction and all connected
@@ -277,7 +277,7 @@ class StreamOutlet:
 
         Parameters
         ----------
-        timeout : float
+        timeout : float | None
             Timeout duration in seconds.
 
         Returns

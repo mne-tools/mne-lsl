@@ -328,8 +328,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    environment:
-      RELEASE_TAG=${{ github.event.release.tag_name }}
+    env:
+      RELEASE_TAG: ${{ github.event.release.tag_name }}
     steps:
       - uses: actions/checkout@v4
         with:
