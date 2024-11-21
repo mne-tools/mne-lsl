@@ -14,7 +14,9 @@
 
 .. include:: ./authors.inc
 
-Version 1.7
+.. _latest:
+
+Version 1.8
 ===========
 
-- Package ``liblsl`` with ``mne-lsl`` in wheels (:pr:`351` by `Eric Larson`_ and `Mathieu Scheltienne`_)
+- xxx
