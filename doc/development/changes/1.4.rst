@@ -14,8 +14,8 @@
 
 .. include:: ./authors.inc
 
-Version 1.4
-===========
+Version 1.4.0
+=============
 
 - Fix handling of warnings through the logger (:pr:`243` by `Mathieu Scheltienne`_)
 - Fix handling of CLI arguments through :class:`~mne_lsl.player.PlayerLSL` entry-point (:pr:`246`, :pr:`267` by `Mathieu Scheltienne`_)
