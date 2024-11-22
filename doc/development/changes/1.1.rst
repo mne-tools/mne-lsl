@@ -14,8 +14,8 @@
 
 .. include:: ./authors.inc
 
-Version 1.1
-===========
+Version 1.1.0
+=============
 
 - Fix flaky tests on CIs (:pr:`168` by `Eric Larson`_ and `Mathieu Scheltienne`_)
 - Fix setting channel unit on a :class:`~mne_lsl.lsl.StreamInfo` with integers (:pr:`168` by `Eric Larson`_ and `Mathieu Scheltienne`_)
@@ -25,3 +25,9 @@ Version 1.1
 - Fix re-download of existing ``liblsl`` on macOS and test ``liblsl`` fetching (:pr:`176` by `Mathieu Scheltienne`_)
 - Make LSL utilities module private (:pr:`177` by `Mathieu Scheltienne`_)
 - Match argument order between ``BasePlayer`` and :class:`~mne_lsl.player.PlayerLSL` (:pr:`178` by `Mathieu Scheltienne`_)
+
+Version 1.1.1
+=============
+
+- Fix parsing of incomplete :class:`~mne_lsl.lsl.StreamInfo` (:pr:`179` by `Mathieu Scheltienne`_)
+- Remove unnecessary testing utilities from distribution (:pr:`180` by `Mathieu Scheltienne`_)

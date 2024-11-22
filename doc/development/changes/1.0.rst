@@ -14,8 +14,8 @@
 
 .. include:: ./authors.inc
 
-Version 1.0
-===========
+Version 1.0.0
+=============
 
 Initial release of ``MNE-LSL``, based on the existing project `BSL`_.
 
