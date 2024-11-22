@@ -25,7 +25,7 @@ def load_liblsl() -> CDLL:
     4. Fetch on GitHub.
     """
     libpath = _load_liblsl_environment_variables()
-    libpath = _load_liblsl_wheel_path()
+    libpath = _load_liblsl_wheel_path() if libpath is None else libpath
     assert isinstance(libpath, str)  # sanity-check
     lib = CDLL(libpath)
     _set_types(lib)
