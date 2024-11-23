@@ -114,7 +114,7 @@ class StreamOutlet:
 
         Parameters
         ----------
-        timeout : float
+        timeout : float | None
             Timeout duration in seconds.
 
         Returns
