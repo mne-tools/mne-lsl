@@ -14,6 +14,12 @@
 
 .. include:: ./authors.inc
 
+Version 1.1.1
+=============
+
+- Fix parsing of incomplete :class:`~mne_lsl.lsl.StreamInfo` (:pr:`179` by `Mathieu Scheltienne`_)
+- Remove unnecessary testing utilities from distribution (:pr:`180` by `Mathieu Scheltienne`_)
+
 Version 1.1.0
 =============
 
@@ -25,9 +31,3 @@ Version 1.1.0
 - Fix re-download of existing ``liblsl`` on macOS and test ``liblsl`` fetching (:pr:`176` by `Mathieu Scheltienne`_)
 - Make LSL utilities module private (:pr:`177` by `Mathieu Scheltienne`_)
 - Match argument order between ``BasePlayer`` and :class:`~mne_lsl.player.PlayerLSL` (:pr:`178` by `Mathieu Scheltienne`_)
-
-Version 1.1.1
-=============
-
-- Fix parsing of incomplete :class:`~mne_lsl.lsl.StreamInfo` (:pr:`179` by `Mathieu Scheltienne`_)
-- Remove unnecessary testing utilities from distribution (:pr:`180` by `Mathieu Scheltienne`_)
