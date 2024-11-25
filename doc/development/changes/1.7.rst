@@ -14,12 +14,12 @@
 
 .. include:: ./authors.inc
 
-Version 1.7.0
-=============
-
-- Package ``liblsl`` with ``mne-lsl`` in wheels (:pr:`351` by `Eric Larson`_ and `Mathieu Scheltienne`_)
-
 Version 1.7.1
 =============
 
 - Fix detection of ``liblsl`` within the environment variable ``PYLSL_LIB`` or ``MNE_LSL_LIB`` (:pr:`363` by `Mathieu Scheltienne`_)
+
+Version 1.7.0
+=============
+
+- Package ``liblsl`` with ``mne-lsl`` in wheels (:pr:`351` by `Eric Larson`_ and `Mathieu Scheltienne`_)
