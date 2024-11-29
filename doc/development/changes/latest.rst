@@ -14,8 +14,9 @@
 
 .. include:: ./authors.inc
 
-Version 1.8
+.. _latest:
+
+Version 1.9
 ===========
 
-- Fix epoching with :class:`~mne_lsl.stream.EpochsStream` which was erroneously resetting the property ``n_new_samples`` from the attached :class:`~mne_lsl.stream.StreamLSL` objects (:pr:`371` by `Mathieu Scheltienne`_)
-- Deprecate ``acquisition_delay=0`` in favor of ``acquisition_delay=None`` in the connection methods :meth:`~mne_lsl.stream.StreamLSL.connect` and :meth:`~mne_lsl.stream.EpochsStream.connect` (:pr:`372` by `Mathieu Scheltienne`_)
+- xxx

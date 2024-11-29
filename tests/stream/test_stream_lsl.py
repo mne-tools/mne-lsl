@@ -176,7 +176,7 @@ def test_stream_invalid():
         Stream(1, stype=101)
     with pytest.raises(TypeError, match="must be an instance of str"):
         Stream(1, source_id=101)
-    with pytest.raises(ValueError, match="must be a positive number"):
+    with pytest.raises(ValueError, match="must be a strictly positive number"):
         Stream(bufsize=2).connect(acquisition_delay=-1)
 
 
@@ -1214,12 +1214,3 @@ def test_manual_acquisition_errors(mock_lsl_stream):
     with pytest.raises(RuntimeError, match="Acquisition is done automatically"):
         stream.acquire()
     stream.disconnect()
-
-
-def test_manual_acquisition_deprecation(mock_lsl_stream):
-    """Test deprecation of acquisition_delay=0."""
-    stream = Stream(
-        bufsize=2.0, name=mock_lsl_stream.name, source_id=mock_lsl_stream.source_id
-    )
-    with pytest.warns(DeprecationWarning, match="acquisition_delay"):
-        stream.connect(acquisition_delay=0)
