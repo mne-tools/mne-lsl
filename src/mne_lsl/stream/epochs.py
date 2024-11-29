@@ -440,7 +440,7 @@ class EpochsStream:
             # split the different acquisition scenarios to retrieve new events to add to
             # the buffer.
             data, ts = _remove_empty_elements(
-                self._stream._buffer[:, :].T, self._stream._timestamps[:]
+                self._stream._buffer.T, self._stream._timestamps
             )
             if self._event_stream is None:
                 picks_events = _picks_to_idx(
@@ -470,7 +470,7 @@ class EpochsStream:
                 )
                 data_events, ts_events = _remove_empty_elements(
                     self._event_stream._buffer[:, picks].T,
-                    self._event_stream._timestamps[:],
+                    self._event_stream._timestamps,
                 )
                 events = _find_events_in_stim_channels(
                     data_events, self._event_channels, self._info["sfreq"]
@@ -499,7 +499,7 @@ class EpochsStream:
                 )
                 data_events, ts_events = _remove_empty_elements(
                     self._event_stream._buffer[:, picks].T,
-                    self._event_stream._timestamps[:],
+                    self._event_stream._timestamps,
                 )
                 events = np.vstack(
                     [
