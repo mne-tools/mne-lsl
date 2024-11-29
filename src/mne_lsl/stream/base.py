@@ -98,7 +98,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             self._executor is not None and self._acquisition_delay is None
         ):  # pragma: no cover
             raise RuntimeError(
-                "The executor is not None despite the acquisition delay set to None."
+                "The executor is not None despite the acquisition delay set to None. "
                 "This should not happen, please contact the developers on GitHub."
             )
         elif self._executor is not None and self._acquisition_delay is not None:
