@@ -279,7 +279,10 @@ class EpochsStream:
         ----------
         acquisition_delay : float
             Delay in seconds between 2 updates at which the event stream is queried for
-            new events, and thus at which the epochs are updated.
+            new events, and thus at which the epochs are updated. If ``0``, the
+            automatic acquisition in a background thread is disabled and the user must
+            manually call the acquisition method
+            :meth:~`mne_lsl.stream.EpochsStream.acquire` to pull new samples.
 
             .. note::
 
@@ -439,8 +442,9 @@ class EpochsStream:
                 return
             # split the different acquisition scenarios to retrieve new events to add to
             # the buffer.
-            data, ts = self._stream.get_data(exclude=())
-            data, ts = _remove_empty_elements(data, ts)
+            data, ts = _remove_empty_elements(
+                self._stream._buffer.T, self._stream._timestamps
+            )
             if self._event_stream is None:
                 picks_events = _picks_to_idx(
                     self._stream._info, self._event_channels, exclude="bads"
@@ -461,10 +465,16 @@ class EpochsStream:
                 self._event_stream is not None
                 and self._event_stream._info["sfreq"] != 0
             ):
-                data_events, ts_events = self._event_stream.get_data(
-                    picks=self._event_channels, exclude=()
+                picks = _picks_to_idx(
+                    self._event_stream._info,
+                    self._event_channels,
+                    none="all",
+                    exclude=(),
                 )
-                data_events, ts_events = _remove_empty_elements(data_events, ts_events)
+                data_events, ts_events = _remove_empty_elements(
+                    self._event_stream._buffer[:, picks].T,
+                    self._event_stream._timestamps,
+                )
                 events = _find_events_in_stim_channels(
                     data_events, self._event_channels, self._info["sfreq"]
                 )
@@ -484,10 +494,16 @@ class EpochsStream:
                 # don't select only the new events as they might all fall outside of
                 # the attached stream ts buffer, instead always look through all
                 # available events.
-                data_events, ts_events = self._event_stream.get_data(
-                    picks=self._event_channels, exclude=()
+                picks = _picks_to_idx(
+                    self._event_stream._info,
+                    self._event_channels,
+                    none="all",
+                    exclude=(),
                 )
-                data_events, ts_events = _remove_empty_elements(data_events, ts_events)
+                data_events, ts_events = _remove_empty_elements(
+                    self._event_stream._buffer[:, picks].T,
+                    self._event_stream._timestamps,
+                )
                 events = np.vstack(
                     [
                         np.arange(ts_events.size, dtype=np.int64),

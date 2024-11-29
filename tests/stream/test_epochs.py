@@ -13,6 +13,7 @@ from mne.io.base import BaseRaw
 from numpy.testing import assert_allclose
 
 from mne_lsl.datasets import testing
+from mne_lsl.lsl import StreamInfo, StreamOutlet
 from mne_lsl.stream import EpochsStream, StreamLSL
 from mne_lsl.stream.epochs import (
     _check_baseline,
@@ -27,6 +28,8 @@ from mne_lsl.stream.epochs import (
 )
 
 if TYPE_CHECKING:
+    from collections.abc import Generator
+
     from mne.io import BaseRaw
     from numpy.typing import NDArray
 
@@ -1003,3 +1006,69 @@ def test_epochs_events(mock_lsl_stream):
     assert np.nonzero(epochs.events)[0].size == n
     epochs.disconnect()
     stream.disconnect()
+
+
+@pytest.fixture
+def sinfo_marker() -> StreamInfo:
+    """Stream info for a marker stream."""
+    sinfo = StreamInfo(
+        name="events",
+        stype="marker",
+        n_channels=1,
+        sfreq=0,
+        dtype=np.int8,
+        source_id=uuid.uuid4().hex,
+    )
+    sinfo.set_channel_names(["marker"])
+    return sinfo
+
+
+@pytest.fixture
+def outlet_marker(sinfo_marker: StreamInfo) -> Generator[StreamOutlet, None, None]:
+    """Stream outlet for a marker stream."""
+    outlet = StreamOutlet(sinfo_marker)
+    yield outlet
+    outlet._del()
+    del outlet
+
+
+def test_epochs_single_event(mock_lsl_stream, outlet_marker: StreamOutlet):
+    """Test epochs with a single event."""
+    stream = StreamLSL(
+        3, name=mock_lsl_stream.name, source_id=mock_lsl_stream.source_id
+    ).connect(acquisition_delay=0.1)
+    sinfo = outlet_marker.get_sinfo()
+    event_stream = StreamLSL(2, name=sinfo.name, source_id=sinfo.source_id).connect(
+        acquisition_delay=0.1
+    )
+    epochs = EpochsStream(
+        stream,
+        bufsize=5,
+        event_id=None,
+        event_channels="marker",
+        event_stream=event_stream,
+        tmin=0,
+        tmax=1.5,  # large tmax to ensure that the event can't be consumed right away
+        baseline=None,
+        picks="eeg",
+    ).connect(acquisition_delay=0)
+    assert epochs.n_new_epochs == 0
+    epochs.acquire()
+    time.sleep(0.5)
+    epochs.acquire()
+    assert epochs.n_new_epochs == 0
+    # push a single event, and then acquire it multiple times
+    outlet_marker.push_sample(np.array([1], dtype=sinfo.dtype))
+    time.sleep(0.2)
+    epochs.acquire()
+    assert epochs.n_new_epochs == 0
+    time.sleep(0.2)
+    epochs.acquire()
+    assert epochs.n_new_epochs == 0
+    # loop until we get it or timeout
+    start = time.monotonic()
+    while epochs.n_new_epochs == 0 and time.monotonic() - start < 2.6:
+        epochs.acquire()
+        time.sleep(0.2)
+    assert epochs.n_new_epochs == 1
+    assert event_stream.n_new_samples == 1

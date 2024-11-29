@@ -19,4 +19,4 @@
 Version 1.8
 ===========
 
-- xxx
+- Fix epoching with :class:`~mne_lsl.stream.EpochsStream` which was erroneously resetting the property ``n_new_samples`` from the attached :class:`~mne_lsl.stream.StreamLSL` objects (:pr:`371` by `Mathieu Scheltienne`_)
