@@ -309,21 +309,14 @@ class EpochsStream:
             )
         if acquisition_delay is not None:
             check_type(acquisition_delay, ("numeric",), "acquisition_delay")
-            if acquisition_delay < 0:
+            if acquisition_delay <= 0:
                 raise ValueError(
-                    "The acquisition delay must be a positive number defining the "
-                    "delay at which the epochs might be updated in seconds. For "
+                    "The acquisition delay must be a strictly positive number defining "
+                    "the delay at which the epochs might be updated in seconds. For "
                     "instance, 0.2 corresponds to a query to the event source every "
                     "200 ms. None corresponds to manual acquisition. The provided "
                     f"{acquisition_delay} is invalid."
                 )
-            if acquisition_delay == 0:
-                warn(
-                    "Argument acquisition_delay=0 is deprecated in favor of "
-                    "acquisition_delay=None.",
-                    DeprecationWarning,
-                )
-                acquisition_delay = None
         self._acquisition_delay = acquisition_delay
         assert self._n_new_epochs == 0  # sanity-check
         # create the buffer and start acquisition in a separate thread
