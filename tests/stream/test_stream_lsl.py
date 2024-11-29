@@ -176,7 +176,7 @@ def test_stream_invalid():
         Stream(1, stype=101)
     with pytest.raises(TypeError, match="must be an instance of str"):
         Stream(1, source_id=101)
-    with pytest.raises(ValueError, match="must be a positive number"):
+    with pytest.raises(ValueError, match="must be a strictly positive number"):
         Stream(bufsize=2).connect(acquisition_delay=-1)
 
 
