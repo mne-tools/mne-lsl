@@ -280,7 +280,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             Delay in seconds between 2 acquisition during which chunks of data are
             pulled from the connected device. If ``0``, the automatic acquisition in a
             background thread is disabled and the user must manually call the
-            acquisition method to pull new samples.
+            acquisition method ``Stream.acquire()`` to pull new samples.
 
         Returns
         -------

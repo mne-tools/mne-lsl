@@ -279,7 +279,10 @@ class EpochsStream:
         ----------
         acquisition_delay : float
             Delay in seconds between 2 updates at which the event stream is queried for
-            new events, and thus at which the epochs are updated.
+            new events, and thus at which the epochs are updated. If ``0``, the
+            automatic acquisition in a background thread is disabled and the user must
+            manually call the acquisition method
+            :meth:~`mne_lsl.stream.EpochsStream.acquire` to pull new samples.
 
             .. note::
 
