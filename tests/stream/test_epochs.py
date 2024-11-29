@@ -390,7 +390,7 @@ def test_epochs_without_event_stream_manual_acquisition(mock_lsl_stream):
         tmin=-0.05,
         tmax=0.15,
         baseline=(None, 0),
-    ).connect(acquisition_delay=0)
+    ).connect(acquisition_delay=None)
     assert epochs.n_new_epochs == 0
     time.sleep(0.5)
     assert epochs.n_new_epochs == 0
@@ -900,7 +900,7 @@ def test_epochs_invalid(mock_lsl_stream):
             baseline=None,
         )
 
-    stream.connect(acquisition_delay=0)
+    stream.connect(acquisition_delay=None)
     with pytest.raises(ValueError, match="must be greater than 'tmin'"):
         EpochsStream(
             stream,
@@ -1051,7 +1051,7 @@ def test_epochs_single_event(mock_lsl_stream, outlet_marker: StreamOutlet):
         tmax=1.5,  # large tmax to ensure that the event can't be consumed right away
         baseline=None,
         picks="eeg",
-    ).connect(acquisition_delay=0)
+    ).connect(acquisition_delay=None)
     assert epochs.n_new_epochs == 0
     epochs.acquire()
     time.sleep(0.5)
@@ -1072,3 +1072,21 @@ def test_epochs_single_event(mock_lsl_stream, outlet_marker: StreamOutlet):
         time.sleep(0.2)
     assert epochs.n_new_epochs == 1
     assert event_stream.n_new_samples == 1
+
+
+def test_manual_acquisition_deprecation(mock_lsl_stream):
+    """Test deprecation of acquisition_delay=0."""
+    stream = StreamLSL(
+        0.5, name=mock_lsl_stream.name, source_id=mock_lsl_stream.source_id
+    ).connect(acquisition_delay=0.1)
+    epochs = EpochsStream(
+        stream,
+        10,
+        event_channels="trg",
+        event_id=dict(a=1),
+        tmin=-0.05,
+        tmax=0.15,
+        baseline=(None, 0),
+    )
+    with pytest.warns(DeprecationWarning, match="acquisition_delay"):
+        epochs.connect(acquisition_delay=0)

@@ -258,28 +258,27 @@ class EpochsStream:
         """
         self._check_connected("acquire")
         if (
-            self._executor is not None and self._acquisition_delay == 0
+            self._executor is not None and self._acquisition_delay is None
         ):  # pragma: no cover
             raise RuntimeError(
-                "The executor is not None despite the acquisition delay set to "
-                f"{self._acquisition_delay} seconds. This should not happen, please "
-                "contact the developers on GitHub."
+                "The executor is not None despite the acquisition delay set to None. "
+                "This should not happen, please contact the developers on GitHub."
             )
-        elif self._executor is not None and self._acquisition_delay != 0:
+        elif self._executor is not None and self._acquisition_delay is not None:
             raise RuntimeError(
                 "Acquisition is done automatically in a background thread. The method "
                 "epochs.acquire() should not be called."
             )
         self._acquire()
 
-    def connect(self, acquisition_delay: float = 0.001) -> EpochsStream:
+    def connect(self, acquisition_delay: float | None = 0.001) -> EpochsStream:
         """Start acquisition of epochs from the connected Stream.
 
         Parameters
         ----------
-        acquisition_delay : float
+        acquisition_delay : float | None
             Delay in seconds between 2 updates at which the event stream is queried for
-            new events, and thus at which the epochs are updated. If ``0``, the
+            new events, and thus at which the epochs are updated. If ``None``, the
             automatic acquisition in a background thread is disabled and the user must
             manually call the acquisition method
             :meth:~`mne_lsl.stream.EpochsStream.acquire` to pull new samples.
@@ -308,15 +307,23 @@ class EpochsStream:
                 "The event stream was disconnected between initialization and "
                 "connection of the EpochsStream object."
             )
-        check_type(acquisition_delay, ("numeric",), "acquisition_delay")
-        if acquisition_delay < 0:
-            raise ValueError(
-                "The acquisition delay must be a positive number defining the delay at "
-                "which the epochs might be updated in seconds. For instance, 0.2 "
-                "corresponds to a query to the event source every 200 ms. 0 "
-                f"corresponds to manual acquisition. The provided {acquisition_delay} "
-                "is invalid."
-            )
+        if acquisition_delay is not None:
+            check_type(acquisition_delay, ("numeric",), "acquisition_delay")
+            if acquisition_delay < 0:
+                raise ValueError(
+                    "The acquisition delay must be a positive number defining the "
+                    "delay at which the epochs might be updated in seconds. For "
+                    "instance, 0.2 corresponds to a query to the event source every "
+                    "200 ms. None corresponds to manual acquisition. The provided "
+                    f"{acquisition_delay} is invalid."
+                )
+            if acquisition_delay == 0:
+                warn(
+                    "Argument acquisition_delay=0 is deprecated in favor of "
+                    "acquisition_delay=None.",
+                    DeprecationWarning,
+                )
+                acquisition_delay = None
         self._acquisition_delay = acquisition_delay
         assert self._n_new_epochs == 0  # sanity-check
         # create the buffer and start acquisition in a separate thread
@@ -336,7 +343,9 @@ class EpochsStream:
         )
         self._buffer_events = np.zeros(self._bufsize, dtype=np.int16)
         self._executor = (
-            ThreadPoolExecutor(max_workers=1) if self._acquisition_delay != 0 else None
+            None
+            if self._acquisition_delay is None
+            else ThreadPoolExecutor(max_workers=1)
         )
         # submit the first acquisition job
         if self._executor is not None:
@@ -615,7 +624,6 @@ class EpochsStream:
         :type: :class:`bool`
         """
         attributes = (
-            "_acquisition_delay",
             "_buffer",
             "_ch_idx_by_type",
             "_info",

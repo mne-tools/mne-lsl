@@ -95,14 +95,13 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         """
         self._check_connected("acquire")
         if (
-            self._executor is not None and self._acquisition_delay == 0
+            self._executor is not None and self._acquisition_delay is None
         ):  # pragma: no cover
             raise RuntimeError(
-                "The executor is not None despite the acquisition delay set to "
-                f"{self._acquisition_delay} seconds. This should not happen, please "
-                "contact the developers on GitHub."
+                "The executor is not None despite the acquisition delay set to None. "
+                "This should not happen, please contact the developers on GitHub."
             )
-        elif self._executor is not None and self._acquisition_delay != 0:
+        elif self._executor is not None and self._acquisition_delay is not None:
             raise RuntimeError(
                 "Acquisition is done automatically in a background thread. The method "
                 "stream.acquire() should not be called."
@@ -270,16 +269,16 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
     @abstractmethod
     def connect(
         self,
-        acquisition_delay: float,
+        acquisition_delay: float | None,
     ) -> BaseStream:
         """Connect to the stream and initiate data collection in the buffer.
 
         Parameters
         ----------
-        acquisition_delay : float
+        acquisition_delay : float | None
             Delay in seconds between 2 acquisition during which chunks of data are
-            pulled from the connected device. If ``0``, the automatic acquisition in a
-            background thread is disabled and the user must manually call the
+            pulled from the connected device. If ``None``, the automatic acquisition in
+            a background thread is disabled and the user must manually call the
             acquisition method ``Stream.acquire()`` to pull new samples.
 
         Returns
@@ -290,20 +289,30 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         if self.connected:
             warn("The stream is already connected. Skipping.")
             return self
-        check_type(acquisition_delay, ("numeric",), "acquisition_delay")
-        if acquisition_delay < 0:
-            raise ValueError(
-                "The acquisition delay must be a positive number "
-                "defining the delay at which new samples are acquired in seconds. For "
-                "instance, 0.2 corresponds to a pull every 200 ms. 0 corresponds to "
-                f"manual acquisition. The provided {acquisition_delay} is invalid."
-            )
+        if acquisition_delay is not None:
+            check_type(acquisition_delay, ("numeric",), "acquisition_delay")
+            if acquisition_delay < 0:
+                raise ValueError(
+                    "The acquisition delay must be a positive number defining the "
+                    "delay at which new samples are acquired in seconds. For instance, "
+                    "0.2 corresponds to a pull every 200 ms. None corresponds to "
+                    f"manual acquisition. The provided {acquisition_delay} is invalid."
+                )
+            if acquisition_delay == 0:
+                warn(
+                    "Argument acquisition_delay=0 is deprecated in favor of "
+                    "acquisition_delay=None.",
+                    DeprecationWarning,
+                )
+                acquisition_delay = None
         self._acquisition_delay = acquisition_delay
         self._n_new_samples = 0
         self._executor = (
-            ThreadPoolExecutor(max_workers=1) if self._acquisition_delay != 0 else None
+            None
+            if self._acquisition_delay is None
+            else ThreadPoolExecutor(max_workers=1)
         )
-        if self._acquisition_delay != 0:
+        if self._executor is not None:
             logger.debug("%s: ThreadPoolExecutor started.", self)
         # This method needs to connect to a stream, retrieve the stream information and
         # create the ringbuffer. By the end of this method, the following variables
@@ -1182,13 +1191,10 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         """
         attributes = [
             "_info",
-            "_acquisition_delay",
             "_buffer",
             "_picks_inlet",
             "_timestamps",
         ]
-        if hasattr(self, "_acquisition_delay") and self._acquisition_delay != 0:
-            attributes.append("_executor")
         if all(getattr(self, attr, None) is None for attr in attributes):
             return False
         else:

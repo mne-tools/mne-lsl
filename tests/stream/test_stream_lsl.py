@@ -1177,7 +1177,7 @@ def test_manual_acquisition(mock_lsl_stream):
     """Test manual acquisition."""
     stream = Stream(
         bufsize=2.0, name=mock_lsl_stream.name, source_id=mock_lsl_stream.source_id
-    ).connect(acquisition_delay=0)
+    ).connect(acquisition_delay=None)
     _sleep_until_new_data(1e-6, mock_lsl_stream)
     assert stream.n_new_samples == 0
     stream.acquire()
@@ -1214,3 +1214,12 @@ def test_manual_acquisition_errors(mock_lsl_stream):
     with pytest.raises(RuntimeError, match="Acquisition is done automatically"):
         stream.acquire()
     stream.disconnect()
+
+
+def test_manual_acquisition_deprecation(mock_lsl_stream):
+    """Test deprecation of acquisition_delay=0."""
+    stream = Stream(
+        bufsize=2.0, name=mock_lsl_stream.name, source_id=mock_lsl_stream.source_id
+    )
+    with pytest.warns(DeprecationWarning, match="acquisition_delay"):
+        stream.connect(acquisition_delay=0)
