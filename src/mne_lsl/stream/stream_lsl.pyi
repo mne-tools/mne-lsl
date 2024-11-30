@@ -72,7 +72,7 @@ class StreamLSL(BaseStream):
 
     def connect(
         self,
-        acquisition_delay: float = 0.001,
+        acquisition_delay: float | None = 0.001,
         *,
         processing_flags: str | Sequence[str] | None = None,
         timeout: float | None = 2,
@@ -81,11 +81,11 @@ class StreamLSL(BaseStream):
 
         Parameters
         ----------
-        acquisition_delay : float
+        acquisition_delay : float | None
             Delay in seconds between 2 acquisition during which chunks of data are
-            pulled from the :class:`~mne_lsl.lsl.StreamInlet`. If ``0``, the automatic
-            acquisition in a background thread is disabled and the user must manually
-            call :meth:`~mne_lsl.stream.StreamLSL.acquire` to pull new samples.
+            pulled from the :class:`~mne_lsl.lsl.StreamInlet`. If ``None``, the
+            automatic acquisition in a background thread is disabled and the user must
+            manually call :meth:`~mne_lsl.stream.StreamLSL.acquire` to pull new samples.
         processing_flags : list of str | ``'all'`` | None
             Set the post-processing options. By default, post-processing is disabled.
             Any combination of the processing flags is valid. The available flags are:

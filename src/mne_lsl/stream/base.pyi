@@ -191,16 +191,16 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
     _executor: Incomplete
 
     @abstractmethod
-    def connect(self, acquisition_delay: float) -> BaseStream:
+    def connect(self, acquisition_delay: float | None) -> BaseStream:
         """Connect to the stream and initiate data collection in the buffer.
 
         Parameters
         ----------
-        acquisition_delay : float
+        acquisition_delay : float | None
             Delay in seconds between 2 acquisition during which chunks of data are
-            pulled from the connected device. If ``0``, the automatic acquisition in a
-            background thread is disabled and the user must manually call the
-            acquisition method to pull new samples.
+            pulled from the connected device. If ``None``, the automatic acquisition in
+            a background thread is disabled and the user must manually call the
+            acquisition method ``Stream.acquire()`` to pull new samples.
 
         Returns
         -------
