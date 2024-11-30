@@ -25,6 +25,20 @@ jobs:
       - run: echo "commit_message=$(git log -1 --pretty=%s)" >> $GITHUB_OUTPUT
         id: get_message
 
+  stubs:
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      with:
+        python-version: 3.13
+    - uses: astral-sh/setup-uv@v4
+    - run: uv pip install -e .[stubs] --quiet --system
+    - run: python tools/stubgen.py
+    - uses: autofix-ci/action@v1.3.1
+
   cibuildwheel:
     needs: get_commit_message
     name: build wheels on ${{ matrix.os }} ${{ matrix.arch }}
