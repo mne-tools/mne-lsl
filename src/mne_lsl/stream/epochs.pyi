@@ -229,14 +229,17 @@ class EpochsStream:
     _buffer_events: Incomplete
     _executor: Incomplete
 
-    def connect(self, acquisition_delay: float = 0.001) -> EpochsStream:
+    def connect(self, acquisition_delay: float | None = 0.001) -> EpochsStream:
         """Start acquisition of epochs from the connected Stream.
 
         Parameters
         ----------
-        acquisition_delay : float
+        acquisition_delay : float | None
             Delay in seconds between 2 updates at which the event stream is queried for
-            new events, and thus at which the epochs are updated.
+            new events, and thus at which the epochs are updated. If ``None``, the
+            automatic acquisition in a background thread is disabled and the user must
+            manually call the acquisition method
+            :meth:~`mne_lsl.stream.EpochsStream.acquire` to pull new samples.
 
             .. note::
 
