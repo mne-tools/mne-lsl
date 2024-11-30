@@ -1,4 +1,4 @@
-name: stubs
+name: autofix.ci
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.number }}-${{ github.event.ref }}
   cancel-in-progress: true
@@ -9,7 +9,7 @@ on:  # yamllint disable-line rule:truthy
   workflow_dispatch:
 
 jobs:
-  generate:
+  stubs:
     timeout-minutes: 10
     runs-on: ubuntu-latest
     steps:
