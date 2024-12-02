@@ -1,4 +1,4 @@
-name: stubs
+name: autofix.ci
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.number }}-${{ github.event.ref }}
   cancel-in-progress: true
@@ -9,14 +9,10 @@ on:  # yamllint disable-line rule:truthy
   workflow_dispatch:
 
 jobs:
-  generate:
+  stubs:
     timeout-minutes: 10
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        shell: bash
     steps:
-      - run: sudo apt update && sudo apt install -y binutils libpugixml-dev
       - uses: actions/checkout@v4
         with:
           submodules: true
@@ -27,8 +23,10 @@ jobs:
       - run: uv pip install -e .[stubs] --quiet --system
       - run: mne-lsl sys-info --developer
       - run: python tools/stubgen.py
+      - uses: autofix-ci/action@v1.3.1
+        if: ${{ github.event_name == 'pull_request' }}
       - name: Push stub files
-        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |

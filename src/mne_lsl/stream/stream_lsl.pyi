@@ -55,7 +55,7 @@ class StreamLSL(BaseStream):
         """Representation of the instance."""
 
     def acquire(self) -> None:
-        """Pull new samples in the buffer.
+        """Pull new samples in the internal circular buffer.
 
         Notes
         -----

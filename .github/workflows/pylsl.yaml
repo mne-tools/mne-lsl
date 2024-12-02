@@ -21,7 +21,7 @@ jobs:
       - name: Compare checksum
         run: echo "$SHA256_PYLSL pylsl/pylsl.py" | sha256sum -c
       - name: Create GitHub issue
-        if: failure()
+        if: ${{ failure() }}
         uses: dacbd/create-issue-action@main
         with:
           token: ${{ github.token }}
