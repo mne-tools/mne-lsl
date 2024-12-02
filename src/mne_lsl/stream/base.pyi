@@ -72,7 +72,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         """
 
     def __del__(self) -> None:
-        """Try to disconnect the stream when deleting the object."""
+        """Attempt to disconnect the stream when deleting the object."""
 
     @abstractmethod
     def __repr__(self) -> str:
@@ -80,7 +80,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
     @abstractmethod
     def acquire(self) -> None:
-        """Pull new samples in the buffer.
+        """Pull new samples in the internal circular buffer.
 
         Notes
         -----
