@@ -423,16 +423,8 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
         Returns
         -------
-
-        montage : None | str | DigMontage
-            A montage containing channel positions. If a string or
-            :class:`~mne.channels.DigMontage` is
-            specified, the existing channel information will be updated with the
-            channel positions from the montage. Valid strings are the names of the
-            built-in montages that ship with MNE-Python; you can list those via
-            :func:`mne.channels.get_builtin_montages`.
-            If ``None`` (default), the channel positions will be removed from the
-            :class:`~mne.Info`.
+        montage : None | DigMontage
+            A copy of the channel positions, if available, otherwise ``None``.
         """
 
     def notch_filter(
