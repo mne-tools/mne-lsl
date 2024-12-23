@@ -42,7 +42,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: true
-      - uses: astral-sh/setup-uv@v4
+      - uses: astral-sh/setup-uv@v5
       - uses: pypa/cibuildwheel@v2.22.0
         env:
           MNE_LSL_LIBLSL_BUILD_UNITTESTS: ${{ (github.event_name != 'pull_request' || contains(needs.get_commit_message.outputs.commit_message, '[liblsl]')) && '1' || '0' }}
@@ -70,7 +70,7 @@ jobs:
       - uses: docker/setup-qemu-action@v3
         with:
           platforms: ${{ matrix.arch }}
-      - uses: astral-sh/setup-uv@v4
+      - uses: astral-sh/setup-uv@v5
       - uses: pypa/cibuildwheel@v2.22.0
         env:
           CIBW_ARCHS: ${{ matrix.arch }}
@@ -100,7 +100,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
-      - uses: astral-sh/setup-uv@v4
+      - uses: astral-sh/setup-uv@v5
       - uses: actions/download-artifact@v4
         with:
           pattern: cibw-wheels-${{ matrix.os }}-native-*
@@ -135,7 +135,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
-      - uses: astral-sh/setup-uv@v4
+      - uses: astral-sh/setup-uv@v5
       - uses: actions/download-artifact@v4
         with:
           pattern: cibw-wheels-ubuntu-latest-native-*
@@ -173,7 +173,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
-      - uses: astral-sh/setup-uv@v4
+      - uses: astral-sh/setup-uv@v5
       - uses: actions/download-artifact@v4
         with:
           pattern: cibw-wheels-ubuntu-latest-native-*
@@ -209,7 +209,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
-      - uses: astral-sh/setup-uv@v4
+      - uses: astral-sh/setup-uv@v5
       - run: uv pip install -e .[test] --verbose --system
       - run: mne-lsl sys-info --developer
       - name: Run pytest
@@ -234,7 +234,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
-      - uses: astral-sh/setup-uv@v4
+      - uses: astral-sh/setup-uv@v5
       - run: uv pip install build --upgrade --quiet --system
       - run: python -m build --sdist
       - uses: actions/upload-artifact@v4
@@ -260,7 +260,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
-      - uses: astral-sh/setup-uv@v4
+      - uses: astral-sh/setup-uv@v5
       - run: uv pip install twine --upgrade --quiet --system
       - run: twine check --strict dist/*
 
@@ -274,7 +274,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
-      - uses: astral-sh/setup-uv@v4
+      - uses: astral-sh/setup-uv@v5
       - uses: actions/download-artifact@v4
         with:
           pattern: cibw-wheels-ubuntu-latest-native-*
