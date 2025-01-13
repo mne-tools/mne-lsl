@@ -87,9 +87,9 @@ def bandpower(
         The bandpower of each channel.
     """
     # compute the power spectral density
-    assert (
-        data.ndim == 2
-    ), "The provided data must be a 2D array of shape (n_channels, n_samples)."
+    assert data.ndim == 2, (
+        "The provided data must be a 2D array of shape (n_channels, n_samples)."
+    )
     if method == "periodogram":
         freqs, psd = periodogram(data, fs, **kwargs)
     elif method == "welch":
@@ -100,9 +100,9 @@ def bandpower(
         raise RuntimeError(f"The provided method '{method}' is not supported.")
     # compute the bandpower
     assert len(band) == 2, "The 'band' argument must be a 2-length tuple."
-    assert (
-        band[0] <= band[1]
-    ), "The 'band' argument must be defined as (low, high) (in Hz)."
+    assert band[0] <= band[1], (
+        "The 'band' argument must be defined as (low, high) (in Hz)."
+    )
     freq_res = freqs[1] - freqs[0]
     idx_band = np.logical_and(freqs >= band[0], freqs <= band[1])
     bandpower = simpson(psd[:, idx_band], dx=freq_res)

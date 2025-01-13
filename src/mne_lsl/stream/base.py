@@ -599,9 +599,9 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             if winsize is None:
                 n_samples = self._buffer.shape[0]
             else:
-                assert (
-                    0 <= winsize
-                ), "The window size must be a strictly positive number."
+                assert 0 <= winsize, (
+                    "The window size must be a strictly positive number."
+                )
                 n_samples = (
                     winsize
                     if self._info["sfreq"] == 0
