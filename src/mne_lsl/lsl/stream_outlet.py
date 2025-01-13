@@ -133,9 +133,9 @@ class StreamOutlet:
             assert isinstance(x, list), "'x' must be a list if strings are pushed."
             x = [v.encode("utf-8") for v in x]
         else:
-            assert isinstance(
-                x, np.ndarray
-            ), "'x' must be an array if numericals are pushed."
+            assert isinstance(x, np.ndarray), (
+                "'x' must be an array if numericals are pushed."
+            )
             if x.ndim != 1:
                 raise ValueError(
                     "The sample to push 'x' must contain one element per channel. "
@@ -199,9 +199,9 @@ class StreamOutlet:
             x = [v.encode("utf-8") for v in x]
             data_buffer = (self._dtype * n_elements)(*x)
         else:
-            assert isinstance(
-                x, np.ndarray
-            ), "'x' must be an array if numericals are pushed."
+            assert isinstance(x, np.ndarray), (
+                "'x' must be an array if numericals are pushed."
+            )
             if x.ndim != 2 or x.shape[1] != self._n_channels:
                 raise ValueError(
                     "The samples to push 'x' must contain one element per channel at "
