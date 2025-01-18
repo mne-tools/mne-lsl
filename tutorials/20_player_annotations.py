@@ -60,6 +60,7 @@ annotations
 # same time, then the chunk push is ``array([[0., 0.2., 0.], [0., 0., 0.3]])``, of shape
 # (2, 3).
 #
+
 # %%
 # Example on mock signal
 # ----------------------
