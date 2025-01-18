@@ -19,4 +19,4 @@
 Version 1.9
 ===========
 
-- xxx
+- Fix sphinx formatting in tutorials (:pr:`388` and :pr:`389` by `Thomas Binns`_)
