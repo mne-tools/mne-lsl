@@ -88,7 +88,7 @@ n_repeat : int | ``np.inf``
 docdict["player_fname"] = """
 fname : path-like | Raw
     Path to the file to re-play as a mock real-time stream. MNE-Python must be able
-    to load the file with :func:`mne.io.read_raw`. An :class:`~mne.io.Raw` object
+    to load the file with :func:`mne.io.read_raw`. A :class:`~mne.io.Raw` object
     can be provided directly."""
 
 # -- Q ---------------------------------------------------------------------------------

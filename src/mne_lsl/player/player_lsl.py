@@ -18,6 +18,8 @@ if TYPE_CHECKING:
     from collections.abc import Callable
     from pathlib import Path
 
+    from mne.io import BaseRaw
+
 
 @fill_doc
 class PlayerLSL(BasePlayer):
@@ -92,7 +94,7 @@ class PlayerLSL(BasePlayer):
 
     def __init__(
         self,
-        fname: str | Path,
+        fname: str | Path | BaseRaw,
         chunk_size: int = 10,
         n_repeat: int | float = np.inf,
         *,
