@@ -3,6 +3,7 @@ from pathlib import Path
 
 from _typeshed import Incomplete
 from mne import Annotations
+from mne.io import BaseRaw
 
 from ..lsl import StreamInfo as StreamInfo
 from ..lsl import StreamOutlet as StreamOutlet
@@ -22,7 +23,7 @@ class PlayerLSL(BasePlayer):
     ----------
     fname : path-like | Raw
         Path to the file to re-play as a mock real-time stream. MNE-Python must be able
-        to load the file with :func:`mne.io.read_raw`. An :class:`~mne.io.Raw` object
+        to load the file with :func:`mne.io.read_raw`. A :class:`~mne.io.Raw` object
         can be provided directly.
     chunk_size : int ``≥ 1``
         Number of samples pushed at once on the :class:`~mne_lsl.lsl.StreamOutlet`.
@@ -100,7 +101,7 @@ class PlayerLSL(BasePlayer):
 
     def __init__(
         self,
-        fname: str | Path,
+        fname: str | Path | BaseRaw,
         chunk_size: int = 10,
         n_repeat: int | float = ...,
         *,
