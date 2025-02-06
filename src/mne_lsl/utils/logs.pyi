@@ -110,9 +110,9 @@ class _use_log_level:
         to ``"INFO"`` for True.
     """
 
-    _logger: Incomplete
-    _old_level: Incomplete
-    _level: Incomplete
+    _logger: Logger
+    _old_level: int
+    _level: int | None
 
     def __init__(
         self, verbose: bool | str | int | None = None, logger_obj: Logger | None = None
