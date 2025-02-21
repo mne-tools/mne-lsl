@@ -61,7 +61,7 @@ class PlayerLSL(BasePlayer):
     the chunk are pushed on the annotation :class:`~mne_lsl.lsl.StreamOutlet`. The
     :class:`~mne.Annotations` are pushed with a timestamp corrected for the annotation
     onset in regards to the chunk beginning. However, :class:`~mne.Annotations` push is
-    *not* delayed until the the annotation timestamp or until the end of the chunk.
+    *not* delayed until the annotation timestamp or until the end of the chunk.
     Thus, an :class:`~mne.Annotations` can arrived at the client
     :class:`~mne_lsl.lsl.StreamInlet` "ahead" of time, i.e. earlier than the current
     time (as returned by the function :func:`~mne_lsl.lsl.local_clock`). Thus, it is
@@ -90,6 +90,12 @@ class PlayerLSL(BasePlayer):
     streamed on a channel correspond to the duration of the :class:`~mne.Annotations`.
     Thus, a sample on this :class:`~mne_lsl.lsl.StreamOutlet` is a one-hot encoded
     vector of the :class:`~mne.Annotations` description/duration.
+
+    .. note::
+
+        If the duration of an annotatation is ``0``, then the one-hot encoded vector
+        becomes a null vector. In this special case, the value ``-1`` is encoded and
+        denotes an annotation with a duration of ``0``.
     """
 
     def __init__(
@@ -345,7 +351,9 @@ class PlayerLSL(BasePlayer):
             ]
         )
         data = np.zeros((timestamps.size, len(self._annotations_names)))
-        data[np.arange(timestamps.size), idx_] = self.annotations.duration[idx]
+        durations = self.annotations.duration[idx]
+        durations[durations == 0] = -1
+        data[np.arange(timestamps.size), idx_] = durations
         # push as a chunk all annotations in the [start:stop] range
         with catch_warnings():
             filterwarnings(
