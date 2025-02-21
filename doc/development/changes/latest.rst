@@ -20,3 +20,5 @@ Version 1.9
 ===========
 
 - Fix sphinx formatting in tutorials (:pr:`388` and :pr:`389` by `Thomas Binns`_)
+- Fix source links in the documentation (:pr:`398` by `Tom Ma`_)
+- Fix stream of annotations by a :class:`~mne_lsl.player.PlayerLSL` when the annotation duration is 0 (:pr:`399` by `Mathieu Scheltienne`_)
