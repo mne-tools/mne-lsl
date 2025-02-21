@@ -459,6 +459,47 @@ def test_player_annotations(raw_annotations, close_io, chunk_size, request):
     player.stop()
 
 
+@pytest.mark.slow
+def test_player_annotations_no_duration(raw_annotations, close_io, chunk_size, request):
+    """Test player with annotations."""
+    name = f"P_{request.node.name}"
+    source_id = uuid.uuid4().hex
+    annotations = sorted(set(raw_annotations.annotations.description))
+    raw_annotations.annotations.duration.fill(0)  # overwrite durations
+    player = Player(
+        raw_annotations, chunk_size=chunk_size, name=name, source_id=source_id
+    )
+    assert f"Player: {name}" in repr(player)
+    assert player.name == name
+    assert player.source_id == source_id
+    assert player.fname == Path(raw_annotations.filenames[0])
+    streams = resolve_streams(timeout=0.1)
+    assert (name, source_id) not in [
+        (stream.name, stream.source_id) for stream in streams
+    ]
+    player.start()
+    streams = resolve_streams(timeout=2)
+    assert (name, source_id) in [(stream.name, stream.source_id) for stream in streams]
+    assert (f"{name}-annotations", source_id) in [
+        (stream.name, stream.source_id) for stream in streams
+    ]
+    # compare with a Stream object for simplicity
+    stream = Stream(bufsize=40, stype="annotations", source_id=source_id)
+    stream.connect(processing_flags=["clocksync"])
+    assert stream.info["ch_names"] == annotations
+    time.sleep(3)  # acquire some annotations
+    for picks in ("bad_test", "test2", "test3"):
+        data, ts = stream.get_data(picks=picks)
+        data = data.squeeze()
+        assert ts.size == data.size
+        idx = np.where(data != 0.0)[0]
+        assert_allclose(data[idx], [-1] * idx.size)
+    # clean-up
+    stream.disconnect()
+    close_io()
+    player.stop()
+
+
 @pytest.fixture
 def raw_annotations_1000_samples() -> BaseRaw:
     """Return a 1000 sample raw object with annotations."""
