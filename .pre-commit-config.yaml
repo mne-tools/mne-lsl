@@ -1,6 +1,6 @@
 repos:
     - repo: https://github.com/astral-sh/ruff-pre-commit
-      rev: v0.7.0
+      rev: v0.11.2
       hooks:
           - id: ruff
             name: ruff linter
@@ -9,10 +9,9 @@ repos:
             name: ruff formatter
 
     - repo: https://github.com/codespell-project/codespell
-      rev: v2.3.0
+      rev: v2.4.1
       hooks:
           - id: codespell
-            args: [--write-changes]
             additional_dependencies: [tomli]
 
     - repo: https://github.com/mscheltienne/bibclean
@@ -23,13 +22,13 @@ repos:
             args: [--exit-non-zero-on-fix]
 
     - repo: https://github.com/pappasam/toml-sort
-      rev: v0.23.1
+      rev: v0.24.2
       hooks:
           - id: toml-sort-fix
             files: pyproject.toml
 
     - repo: https://github.com/adrienverge/yamllint
-      rev: v1.35.1
+      rev: v1.37.0
       hooks:
           - id: yamllint
             args: [--strict, -c, .yamllint.yaml]

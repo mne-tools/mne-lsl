@@ -67,7 +67,7 @@ stream.disconnect()
 # mode, all operation happens in the main thread and the user has full control over when
 # to acquire new samples.
 
-stream = StreamLSL(bufsize=2, source_id=source_id).connect(acquisition_delay=0)
+stream = StreamLSL(bufsize=2, source_id=source_id).connect(acquisition_delay=None)
 sleep(2)  # wait for new samples
 print(f"New samples acquired (before stream.acquire()): {stream.n_new_samples}")
 stream.acquire()

@@ -16,10 +16,10 @@ for file in directory.rglob("*.pyi"):
 files = [
     str(file.as_posix())
     for file in directory.rglob("*.py")
-    if file.parent.name not in ("commands", "tests")
+    if file.parent.name not in ("commands",)
     and "stream_viewer" not in str(file.parent)
     and not (file.name == "constants.py" and file.parent.name == "lsl")
-    and file.name not in ("conftest.py", "_version.py")
+    and file.name not in ("_version.py",)
 ]
 stubgen.main(
     [
@@ -33,7 +33,7 @@ stubgen.main(
     ]
 )
 stubs = list(directory.rglob("*.pyi"))
-config = str(directory.parent / "pyproject.toml")
+config = str(directory.parents[1] / "pyproject.toml")
 
 # expand docstrings and inject into stub files
 for stub in stubs:

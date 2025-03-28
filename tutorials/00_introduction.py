@@ -71,15 +71,15 @@ Mocking an LSL stream
 
 To build real-time applications or showcase their functionalities, such as in this
 tutorial, it's essential to generate simulated LSL streams. This involves creating a
-:class:~mne_lsl.lsl.StreamOutlet and regularly sending data through it.
+:class:`~mne_lsl.lsl.StreamOutlet` and regularly sending data through it.
 
 Within MNE-LSL, the :class:`~mne_lsl.player.PlayerLSL` generates a simulated LSL stream
 utilizing data from a :class:`mne.io.Raw` file or object. This stream inherits its
 description and channel specifications from the associated :class:`~mne.Info`. This
 information encompasses channel properties, channel locations, filters, digitization,
-and `SSP projectors`_. The :class:~mne_lsl.player.PlayerLSL subsequently publishes data
-at regular intervals and seamlessly loops back to the starting point once the end of the
-file is reached.
+and `SSP projectors`_. The :class:`~mne_lsl.player.PlayerLSL` subsequently publishes
+data at regular intervals and seamlessly loops back to the starting point once the end
+of the file is reached.
 """
 
 import time

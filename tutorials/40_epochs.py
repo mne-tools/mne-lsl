@@ -292,4 +292,8 @@ stream.disconnect()
 
 # %%
 
+stream_events.disconnect()
+
+# %%
+
 player.stop()

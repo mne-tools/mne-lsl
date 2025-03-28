@@ -22,6 +22,11 @@ description: ``'event1'``, ``'event2'``, and ``'event3'``. The event stream will
 channels, each corresponding to one of the 3 descriptions. When an annotation is
 streamed, it's duration is encoded as the value on its channel while the other channels
 remain to zero.
+
+.. note::
+
+    Annotation with a duration equal to zero are special cased and yield an encoded
+    value of ``-1``.
 """
 
 # sphinx_gallery_thumbnail_number = 2
@@ -60,6 +65,7 @@ annotations
 # same time, then the chunk push is ``array([[0., 0.2., 0.], [0., 0., 0.3]])``, of shape
 # (2, 3).
 #
+
 # %%
 # Example on mock signal
 # ----------------------

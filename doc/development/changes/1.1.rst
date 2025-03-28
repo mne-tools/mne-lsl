@@ -14,8 +14,14 @@
 
 .. include:: ./authors.inc
 
-Version 1.1
-===========
+Version 1.1.1
+=============
+
+- Fix parsing of incomplete :class:`~mne_lsl.lsl.StreamInfo` (:pr:`179` by `Mathieu Scheltienne`_)
+- Remove unnecessary testing utilities from distribution (:pr:`180` by `Mathieu Scheltienne`_)
+
+Version 1.1.0
+=============
 
 - Fix flaky tests on CIs (:pr:`168` by `Eric Larson`_ and `Mathieu Scheltienne`_)
 - Fix setting channel unit on a :class:`~mne_lsl.lsl.StreamInfo` with integers (:pr:`168` by `Eric Larson`_ and `Mathieu Scheltienne`_)

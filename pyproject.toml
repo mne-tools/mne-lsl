@@ -24,7 +24,6 @@ classifiers = [
 ]
 dependencies = [
   'click>=8.1',
-  'distro; sys_platform == "linux"',
   'mne>=1.4.2',
   'numpy>=1.21,<3',
   'packaging',
@@ -32,7 +31,6 @@ dependencies = [
   'psutil',
   'pyqtgraph',
   'qtpy',
-  'requests',
   'scipy',
 ]
 description = 'Real-time framework integrated with MNE-Python for online neuroscience research through LSL-compatible devices.'
@@ -55,7 +53,7 @@ maintainers = [
 name = 'mne_lsl'
 readme = 'README.md'
 requires-python = '>=3.10'
-version = '1.7.0.dev0'
+version = '1.10.0.dev0'
 
 [project.optional-dependencies]
 all = [
@@ -101,6 +99,37 @@ homepage = 'https://mne.tools/mne-lsl'
 source = 'https://github.com/mne-tools/mne-lsl'
 tracker = 'https://github.com/mne-tools/mne-lsl/issues'
 
+[tool.cibuildwheel]
+archs = "native"
+build = ["cp310-*"]  # abi3 wheel, can build for a single Python version
+build-frontend = "build[uv]"
+skip = ["*-musllinux*", "pp*"]  # no PyPy support for pp310 for SciPy
+test-command = "bash {project}/tools/test_liblsl.sh"
+
+[tool.cibuildwheel.linux]
+repair-wheel-command = [
+  "auditwheel repair -w {dest_dir} {wheel}",
+]
+
+[tool.cibuildwheel.macos]
+repair-wheel-command = [
+  "delocate-wheel --require-archs {delocate_archs} -w {dest_dir} -v {wheel}",
+]
+
+[tool.cibuildwheel.macos.environment]
+MACOSX_DEPLOYMENT_TARGET = "11"
+
+[[tool.cibuildwheel.overrides]]
+repair-wheel-command = "pipx run abi3audit --strict --report {wheel}"
+select = "cp*"  # abi3 not used for PyPi / pp*
+inherit.repair-wheel-command = "append"
+
+[tool.cibuildwheel.windows]
+before-build = "pip install delvewheel"
+repair-wheel-command = [
+  "delvewheel repair -w {dest_dir} {wheel}",
+]
+
 [tool.codespell]
 check-filenames = true
 check-hidden = true
@@ -123,10 +152,8 @@ omit = [
   '**/__init__.py',
   '**/mne_lsl/_typing.py',
   '**/mne_lsl/_version.py',
-  '**/mne_lsl/conftest.py',
   '**/mne_lsl/utils/_fixes.py',
   '**/mne_lsl/utils/_tests.py',
-  '**/tests/**',
 ]
 
 [tool.pytest.ini_options]
@@ -155,9 +182,9 @@ select = ['A', 'B', 'D', 'E', 'F', 'G', 'I', 'LOG', 'NPY', 'PIE', 'PT', 'T20', '
 ]
 '*.pyi' = ['D', 'E501', 'F811']
 '*/stream_viewer/backends/*' = ['D401']
-'*/tests/*' = ['D401']
 '__init__.py' = ['F401']
 'examples/*' = ['B018', 'D205', 'D400', 'E402', 'F811', 'T201']
+'tests/*' = ['D401']
 'tutorials/*' = ['B018', 'D205', 'D400', 'E402', 'F811', 'T201']
 
 [tool.ruff.lint.pydocstyle]
@@ -165,15 +192,16 @@ convention = 'numpy'
 ignore-decorators = ["mne_lsl.utils._docs.copy_doc", "qtpy.QtCore.Slot"]
 
 [tool.setuptools]
-include-package-data = false
+include-package-data = true
 
 [tool.setuptools.package-data]
 'mne_lsl.datasets' = ['*registry.txt']
+"mne_lsl.lsl.lib" = ["*"]
 'mne_lsl.stream_viewer.control_gui.settings' = ['*.ini']
 
 [tool.setuptools.packages.find]
-exclude = ['mne_lsl*tests']
-include = ['mne_lsl*']
+include = ["mne_lsl*"]
+where = ["src"]
 
 [tool.tomlsort]
 all = true

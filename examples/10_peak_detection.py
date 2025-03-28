@@ -208,7 +208,7 @@ class Detector:
         # create stream
         self._stream = StreamLSL(
             bufsize, name=stream_name, source_id=stream_source_id
-        ).connect(acquisition_delay=0, processing_flags="all")
+        ).connect(acquisition_delay=None, processing_flags="all")
         self._stream.pick(ch_name)
         self._stream.set_channel_types({ch_name: "misc"}, on_unit_change="ignore")
         self._stream.notch_filter(50, picks=ch_name)
@@ -295,7 +295,7 @@ class Detector:
         # create stream
         self._stream = StreamLSL(
             bufsize, name=stream_name, source_id=stream_source_id
-        ).connect(acquisition_delay=0, processing_flags="all")
+        ).connect(acquisition_delay=None, processing_flags="all")
         self._stream.pick(ch_name)
         self._stream.set_channel_types({ch_name: "misc"}, on_unit_change="ignore")
         self._stream.notch_filter(50, picks=ch_name)
