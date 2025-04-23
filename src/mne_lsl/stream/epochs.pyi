@@ -40,8 +40,8 @@ class EpochsStream:
     event_id : int | dict | None
         The ID of the events to consider from the event source. The event source can be
         a channel from the connected Stream or a separate event stream. In both case the
-        event should be defined either as :class:`int`. If a :class:`dict` is provided,
-        it should map event names to event IDs. For example
+        event should be defined either as :class:`int` or :class:`dict`. If a
+        :class:`dict` is provided, it should map event names to event IDs. For example
         ``dict(auditory=1, visual=2)``. If the event source is an irregularly sampled
         stream, the numerical values within the channels are ignored and this argument
         is ignored in which case it should be set to ``None``.
@@ -161,7 +161,8 @@ class EpochsStream:
       ignored. This last case can be useful when working with a ``Player`` replaying
       annotations from a file as one-hot encoded events.
 
-    Event streams irregularly sampled and a ``str`` datatype are not yet supported.
+    Event streams irregularly sampled and using a ``str`` datatype are not yet
+    supported.
 
     .. note::
 
