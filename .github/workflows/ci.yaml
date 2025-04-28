@@ -73,7 +73,7 @@ jobs:
       - uses: astral-sh/setup-uv@v5
       - uses: actions/download-artifact@v4
         with:
-          pattern: cibw-wheels-${{ matrix.os }}-native-*
+          pattern: cibw-wheels-${{ matrix.os }}-*
           merge-multiple: true
           path: dist
       - run: ls -alt . && ls -alt dist/
@@ -108,7 +108,7 @@ jobs:
       - uses: astral-sh/setup-uv@v5
       - uses: actions/download-artifact@v4
         with:
-          pattern: cibw-wheels-ubuntu-latest-native-*
+          pattern: cibw-wheels-ubuntu-latest-*
           merge-multiple: true
           path: dist
       - run: ls -alt . && ls -alt dist/
@@ -146,7 +146,7 @@ jobs:
       - uses: astral-sh/setup-uv@v5
       - uses: actions/download-artifact@v4
         with:
-          pattern: cibw-wheels-ubuntu-latest-native-*
+          pattern: cibw-wheels-ubuntu-latest-*
           merge-multiple: true
           path: dist
       - run: ls -alt . && ls -alt dist/
@@ -245,7 +245,7 @@ jobs:
       - uses: astral-sh/setup-uv@v5
       - uses: actions/download-artifact@v4
         with:
-          pattern: cibw-wheels-ubuntu-latest-native-*
+          pattern: cibw-wheels-ubuntu-latest-*
           merge-multiple: true
           path: dist
       - run: ls -alt . && ls -alt dist/
