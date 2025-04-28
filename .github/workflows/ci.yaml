@@ -27,14 +27,13 @@ jobs:
 
   cibuildwheel:
     needs: get_commit_message
-    name: build wheels on ${{ matrix.os }} ${{ matrix.arch }}
+    name: build wheels on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-13, macos-latest]
-        arch: [native]
+        os: [ubuntu-latest, ubuntu-24.04-arm, windows-latest, macos-13, macos-latest]
     defaults:
       run:
         shell: bash
@@ -48,36 +47,7 @@ jobs:
           MNE_LSL_LIBLSL_BUILD_UNITTESTS: ${{ (github.event_name != 'pull_request' || contains(needs.get_commit_message.outputs.commit_message, '[liblsl]')) && '1' || '0' }}
       - uses: actions/upload-artifact@v4
         with:
-          name: cibw-wheels-${{ matrix.os }}-${{ matrix.arch }}-${{ strategy.job-index }}
-          path: ./wheelhouse/*.whl
-
-  cibuildwheel_emulated:
-    needs: get_commit_message
-    if: ${{ github.event_name != 'pull_request' || contains(needs.get_commit_message.outputs.commit_message, '[aarch64]') }}
-    name: build wheels on ${{ matrix.os }} ${{ matrix.arch }}
-    runs-on: ${{ matrix.os }}
-    timeout-minutes: 30
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: ubuntu-latest
-            arch: aarch64
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: true
-      - uses: docker/setup-qemu-action@v3
-        with:
-          platforms: ${{ matrix.arch }}
-      - uses: astral-sh/setup-uv@v5
-      - uses: pypa/cibuildwheel@v2.23.2
-        env:
-          CIBW_ARCHS: ${{ matrix.arch }}
-          MNE_LSL_LIBLSL_BUILD_UNITTESTS: 0
-      - uses: actions/upload-artifact@v4
-        with:
-          name: cibw-wheels-${{ matrix.os }}-${{ matrix.arch }}-${{ strategy.job-index }}
+          name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
           path: ./wheelhouse/*.whl
 
   test:
@@ -87,7 +57,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-13, macos-latest]
+        os: [ubuntu-latest, ubuntu-24.04-arm, windows-latest, macos-13, macos-latest]
         python: ["3.10", "3.13"]
         exclude:
           - os: macos-13
@@ -103,7 +73,7 @@ jobs:
       - uses: astral-sh/setup-uv@v5
       - uses: actions/download-artifact@v4
         with:
-          pattern: cibw-wheels-${{ matrix.os }}-native-*
+          pattern: cibw-wheels-${{ matrix.os }}-*
           merge-multiple: true
           path: dist
       - run: ls -alt . && ls -alt dist/
@@ -138,7 +108,7 @@ jobs:
       - uses: astral-sh/setup-uv@v5
       - uses: actions/download-artifact@v4
         with:
-          pattern: cibw-wheels-ubuntu-latest-native-*
+          pattern: cibw-wheels-ubuntu-latest-*
           merge-multiple: true
           path: dist
       - run: ls -alt . && ls -alt dist/
@@ -176,7 +146,7 @@ jobs:
       - uses: astral-sh/setup-uv@v5
       - uses: actions/download-artifact@v4
         with:
-          pattern: cibw-wheels-ubuntu-latest-native-*
+          pattern: cibw-wheels-ubuntu-latest-*
           merge-multiple: true
           path: dist
       - run: ls -alt . && ls -alt dist/
@@ -243,9 +213,7 @@ jobs:
           path: ./dist/*.tar.gz
 
   check:
-    # run even if 'cibuildwheel_emulated' is skipped
-    if: ${{ always() }}
-    needs: [cibuildwheel, cibuildwheel_emulated, sdist]
+    needs: [cibuildwheel, sdist]
     name: run twine check
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -277,7 +245,7 @@ jobs:
       - uses: astral-sh/setup-uv@v5
       - uses: actions/download-artifact@v4
         with:
-          pattern: cibw-wheels-ubuntu-latest-native-*
+          pattern: cibw-wheels-ubuntu-latest-*
           merge-multiple: true
           path: dist
       - run: ls -alt . && ls -alt dist/
