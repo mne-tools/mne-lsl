@@ -281,16 +281,13 @@ class StreamLSL(BaseStream):
                 )
                 data[:, filt["picks"]] = data_filtered  # operate in-place
 
+            # apply callbacks
+            for callback in self._callbacks:
+                data, timestamps = callback(data, timestamps)
+
             # roll and update buffers
             self._buffer = np.roll(self._buffer, -timestamps.size, axis=0)
             self._timestamps = np.roll(self._timestamps, -timestamps.size, axis=0)
-            assert self._buffer.ndim == 2
-            assert self._buffer.shape[1] == data.shape[1], (
-                self._buffer.shape,
-                data.shape,
-                n_channels,
-                self._picks_inlet.size,
-            )
             self._buffer[-timestamps.size :, :] = data
             self._timestamps[-timestamps.size :] = timestamps
             # update the number of new samples available
