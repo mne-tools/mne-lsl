@@ -63,7 +63,7 @@ all = [
   'mne_lsl[style]',
   'mne_lsl[test]',
 ]
-build = ['build', 'twine']
+build = ['build', 'setuptools', 'twine']
 doc = [
   'furo',
   'intersphinx_registry',
@@ -71,6 +71,7 @@ doc = [
   'memory-profiler',
   'numpydoc',
   'scikit-learn',
+  'setuptools',
   'sphinx!=7.2.*',
   'sphinx-copybutton',
   'sphinx-design',
