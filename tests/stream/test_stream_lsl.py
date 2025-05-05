@@ -37,6 +37,7 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from mne.io import BaseRaw
+    from numpy.typing import NDArray
 
 
 class DummyPlayer:
@@ -693,8 +694,34 @@ def test_stream_rereference_average(mock_lsl_stream_int):
     stream.disconnect()
 
 
-def test_stream_callback(mock_lsl_stream_int) -> None:
-    """Test adding a callback function a stream."""
+@pytest.mark.slow
+def test_stream_callback(mock_lsl_stream_int: DummyPlayer) -> None:
+    """Test adding a callback function to a stream."""
+    stream = Stream(
+        bufsize=0.4,
+        name=mock_lsl_stream_int.name,
+        source_id=mock_lsl_stream_int.source_id,
+    )
+    stream.connect()
+    time.sleep(2)  # give a bit of time to slower CIs
+
+    def callback(data: NDArray, timestamps: NDArray[np.float64]) -> None:
+        """Callback function adding 101 to the data."""
+        data += 101
+        return data, timestamps
+
+    stream.add_callback(callback)
+    time.sleep(2)  # give a bit of time to slower CIs
+
+    picks = pick_types(stream.info, eeg=True)
+    data, _ = stream.get_data(picks="eeg")
+    data_ref = np.full(
+        (picks.size, data.shape[1]),
+        np.arange(picks.size).reshape(-1, 1),
+        dtype=stream.dtype,
+    )
+    data_ref += 101
+    assert_allclose(data, data_ref)
 
 
 def test_stream_str(close_io):
