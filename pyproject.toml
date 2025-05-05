@@ -9,7 +9,6 @@ authors = [
 classifiers = [
   'Intended Audience :: Developers',
   'Intended Audience :: Science/Research',
-  'License :: OSI Approved :: BSD License',
   'Natural Language :: English',
   'Operating System :: MacOS',
   'Operating System :: Microsoft :: Windows',
@@ -46,7 +45,8 @@ keywords = [
   'python',
   'real-time',
 ]
-license = {file = 'LICENSE'}
+license = 'BSD-3-Clause'
+license-files = ['LICENSE']
 maintainers = [
   {email = 'mathieu.scheltienne@fcbg.ch', name = 'Mathieu Scheltienne'},
 ]
