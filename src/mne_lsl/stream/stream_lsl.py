@@ -283,7 +283,7 @@ class StreamLSL(BaseStream):
 
             # apply callbacks
             for callback in self._callbacks:
-                data, timestamps = callback(data, timestamps)
+                data, timestamps = callback(data, timestamps, self._info)
 
             # roll and update buffers
             self._buffer = np.roll(self._buffer, -timestamps.size, axis=0)

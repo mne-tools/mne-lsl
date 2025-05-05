@@ -30,6 +30,8 @@ The processing is defined in the private ``_acquire`` method of the class
 3. Apply filters added with :meth:`mne_lsl.stream.StreamLSL.filter` and
    :meth:`mne_lsl.stream.StreamLSL.notch_filter`. The filters are applied one at a time,
    in the order they were added.
+4. Run any custom callback function added with
+   :meth:`mne_lsl.stream.StreamLSL.add_callback`.
 
 .. image:: ../_static/resources/stream-processing.svg
     :align: right

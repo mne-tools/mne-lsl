@@ -128,7 +128,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             .. code-block:: python
 
                 def callback(
-                    data: NDArray[...], timestamps: NDArray[np.float64]
+                    data: NDArray[...], timestamps: NDArray[np.float64], info: mne.Info
                 ) -> tuple[NDArray[...], NDArray[np.float64]]:
                     """A callback function.
 
@@ -147,9 +147,10 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
                         The modified timestamp array of shape (n_times,).
                     """
 
-            With ``data`` being the data array of shape ``(n_times, n_channels)`` and of
-            ``dtype`` defined in the stream; ``timestamps`` being the timestamp array of
-            shape ``(n_times,)`` and ``dtype`` of ``np.float64``.
+            With ``data`` is the data array of shape ``(n_times, n_channels)`` and of
+            ``dtype`` defined in the stream; ``timestamps`` is the timestamp array of
+            shape ``(n_times,)`` and ``dtype`` of ``np.float64``, and ``info`` is the
+            stream information.
 
             .. note::
 

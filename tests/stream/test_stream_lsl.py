@@ -705,7 +705,7 @@ def test_stream_callback(mock_lsl_stream_int: DummyPlayer) -> None:
     stream.connect()
     time.sleep(2)  # give a bit of time to slower CIs
 
-    def callback(data: NDArray, timestamps: NDArray[np.float64]) -> None:
+    def callback(data: NDArray, timestamps: NDArray[np.float64], info: Info) -> None:
         """Callback function adding 101 to the data."""
         data += 101
         return data, timestamps
