@@ -31,7 +31,6 @@ if TYPE_CHECKING:
     from collections.abc import Generator
 
     from mne import Info
-    from mne.io import BaseRaw
     from numpy.typing import NDArray
 
 
@@ -178,7 +177,7 @@ def stim_channels(stim_channels_events: NDArray[np.int64]) -> NDArray[np.float64
 def test_find_events_in_stim_channels(
     stim_channels_events: NDArray[np.int64],
     stim_channels: NDArray[np.float64],
-):
+) -> None:
     """Test finding events in stimulation channels."""
     events = _find_events_in_stim_channels(stim_channels, ["a", "b"], 100)
     assert_allclose(events, stim_channels_events)

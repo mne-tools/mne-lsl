@@ -45,7 +45,9 @@ def _test_properties(
         ("int32", np.int32),
     ],
 )
-def test_push_numerical_sample(dtype_str: str, dtype, close_io: Callable) -> None:
+def test_push_numerical_sample(
+    dtype_str: str, dtype: np.dtype, close_io: Callable
+) -> None:
     """Test push_sample with numerical values."""
     x = np.array([1, 2], dtype=dtype)
     assert x.shape == (2,)
@@ -183,7 +185,9 @@ def test_invalid_outlet() -> None:
         ("string", None),
     ],
 )
-def test_push_chunk_timestamps(dtype_str: str, dtype, close_io: Callable) -> None:
+def test_push_chunk_timestamps(
+    dtype_str: str, dtype: np.dtype, close_io: Callable
+) -> None:
     """Test push_chunk with timestamps."""
     if dtype_str == "string":
         x = [["1", "4"], ["2", "5"], ["3", "6"]]
