@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 import uuid
+from typing import TYPE_CHECKING
 
 import numpy as np
 import pytest
@@ -9,8 +12,11 @@ from mne_lsl.datasets import testing
 from mne_lsl.lsl import StreamInfo, StreamInlet, StreamOutlet
 from mne_lsl.utils._tests import compare_infos
 
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
-def test_stream_info_desc():
+
+def test_stream_info_desc() -> None:
     """Test setters and getters for StreamInfo."""
     sinfo = StreamInfo("pytest", "eeg", 3, 101, "float32", uuid.uuid4().hex)
     assert sinfo.get_channel_names() is None
@@ -85,7 +91,7 @@ def test_stream_info_desc():
     assert sinfo.get_channel_units() is None
 
 
-def test_stream_info_invalid_desc():
+def test_stream_info_invalid_desc() -> None:
     """Test invalid arguments for the channel description setters."""
     sinfo = StreamInfo("pytest", "eeg", 3, 101, "float32", uuid.uuid4().hex)
     assert sinfo.get_channel_names() is None
@@ -126,7 +132,7 @@ def test_stream_info_invalid_desc():
         ("int32", np.int32),
     ],
 )
-def test_create_stream_info_with_numpy_dtype(dtype, dtype_str):
+def test_create_stream_info_with_numpy_dtype(dtype, dtype_str: str) -> None:
     """Test creation of a StreamInfo with a numpy dtype instead of a string."""
     sinfo = StreamInfo("pytest", "eeg", 3, 101, dtype_str, uuid.uuid4().hex)
     assert sinfo.dtype == dtype
@@ -136,13 +142,13 @@ def test_create_stream_info_with_numpy_dtype(dtype, dtype_str):
     del sinfo
 
 
-def test_create_stream_info_with_invalid_numpy_dtype():
+def test_create_stream_info_with_invalid_numpy_dtype() -> None:
     """Test creation of a StreamInfo with an invalid numpy dtype."""
     with pytest.raises(ValueError, match="provided dtype could not be interpreted as"):
         StreamInfo("pytest", "eeg", 3, 101, np.uint8, uuid.uuid4().hex)
 
 
-def test_stream_info_equality():
+def test_stream_info_equality() -> None:
     """Test == method."""
     sinfo1 = StreamInfo("pytest", "eeg", 3, 101, "float32", uuid.uuid4().hex)
     assert sinfo1 != 101
@@ -162,7 +168,7 @@ def test_stream_info_equality():
     assert sinfo1 == sinfo2
 
 
-def test_stream_info_representation():
+def test_stream_info_representation() -> None:
     """Test the str() representation of an Info."""
     sinfo = StreamInfo("pytest", "eeg", 3, 101, "float32", uuid.uuid4().hex)
     repr_ = str(sinfo)
@@ -173,7 +179,7 @@ def test_stream_info_representation():
     assert "float32" in repr_
 
 
-def test_stream_info_properties(close_io):
+def test_stream_info_properties(close_io: Callable) -> None:
     """Test properties."""
     sinfo = StreamInfo("pytest", "eeg", 3, 101, "float32", uuid.uuid4().hex)
     assert isinstance(sinfo.created_at, float)
@@ -215,7 +221,7 @@ def test_stream_info_properties(close_io):
     close_io()
 
 
-def test_invalid_stream_info():
+def test_invalid_stream_info() -> None:
     """Test creation of an invalid StreamInfo."""
     with pytest.raises(ValueError, match="'n_channels' must be a strictly positive"):
         StreamInfo("pytest", "eeg", -101, 101, "float32", uuid.uuid4().hex)
@@ -223,7 +229,7 @@ def test_invalid_stream_info():
         StreamInfo("pytest", "eeg", 101, -101, "float32", uuid.uuid4().hex)
 
 
-def test_stream_info_desc_from_info(close_io):
+def test_stream_info_desc_from_info(close_io: Callable) -> None:
     """Test filling a description from an Info object."""
     info = create_info(5, 1000, "eeg")
     sinfo = StreamInfo("test", "eeg", 5, 1000, np.float32, uuid.uuid4().hex)

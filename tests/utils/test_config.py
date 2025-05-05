@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from io import StringIO
 
 import pytest
@@ -5,7 +7,7 @@ import pytest
 from mne_lsl.utils.config import _get_gpu_info, sys_info
 
 
-def test_sys_info():
+def test_sys_info() -> None:
     """Test info-showing utility."""
     out = StringIO()
     sys_info(fid=out)
@@ -35,7 +37,7 @@ def test_sys_info():
     assert "test" in value
 
 
-def test_gpu_info():
+def test_gpu_info() -> None:
     """Test getting GPU info."""
     pytest.importorskip("pyvista")
     version, renderer = _get_gpu_info()

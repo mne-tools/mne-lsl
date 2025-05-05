@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import re
 from pathlib import Path
 
@@ -8,12 +10,12 @@ from mne_lsl.utils._docs import _KEYS_MNE, copy_doc, docdict, fill_doc
 from mne_lsl.utils.logs import verbose
 
 
-def test_fill_doc_function():
+def test_fill_doc_function() -> None:
     """Test decorator to fill docstring on functions."""
 
     # test filling docstring
     @fill_doc
-    def foo(verbose):
+    def foo(verbose) -> None:
         """My doc.
 
         Parameters
@@ -25,7 +27,7 @@ def test_fill_doc_function():
 
     # test filling empty-docstring
     @fill_doc
-    def foo():
+    def foo() -> None:
         pass
 
     assert foo.__doc__ is None
@@ -34,7 +36,7 @@ def test_fill_doc_function():
     with pytest.raises(RuntimeError, match="Error documenting"):
 
         @fill_doc
-        def foo(verbose):
+        def foo(verbose) -> None:
             """My doc.
 
             Parameters
@@ -45,7 +47,7 @@ def test_fill_doc_function():
     # test filling docstring of decorated function
     @fill_doc
     @verbose
-    def foo(verbose=None):
+    def foo(verbose=None) -> None:
         """My doc.
 
         Parameters
@@ -56,7 +58,7 @@ def test_fill_doc_function():
     assert "verbose : int | str | bool | None" in foo.__doc__
 
 
-def test_fill_doc_class():
+def test_fill_doc_class() -> None:
     """Test decorator to fill docstring on classes."""
 
     @fill_doc
@@ -68,7 +70,7 @@ def test_fill_doc_class():
         %(verbose)s
         """
 
-        def __init__(self, verbose=None):
+        def __init__(self, verbose=None) -> None:
             pass
 
         @fill_doc
@@ -82,7 +84,7 @@ def test_fill_doc_class():
 
         @fill_doc
         @verbose
-        def method_decorated(self, verbose=None):
+        def method_decorated(self, verbose=None) -> None:
             """My method doc.
 
             Parameters
@@ -93,7 +95,7 @@ def test_fill_doc_class():
         @staticmethod
         @fill_doc
         @verbose
-        def method_decorated_static(verbose=None):
+        def method_decorated_static(verbose=None) -> None:
             """My method doc.
 
             Parameters
@@ -111,67 +113,67 @@ def test_fill_doc_class():
     assert "verbose : int | str | bool | None" in foo.method_decorated.__doc__
 
 
-def test_copy_doc_function():
+def test_copy_doc_function() -> None:
     """Test decorator to copy docstring on functions."""
 
     # test copy of docstring
-    def foo(x, y):
+    def foo(x, y) -> None:
         """My doc."""
 
     @copy_doc(foo)
-    def foo2(x, y):
+    def foo2(x, y) -> None:
         pass
 
     @copy_doc(foo)
-    def foo3(x, y):
+    def foo3(x, y) -> None:
         """Doc of foo3."""
 
     assert foo.__doc__ == foo2.__doc__
     assert foo.__doc__ + "Doc of foo3." == foo3.__doc__
 
     # test copy of docstring from a function without docstring
-    def foo(x, y):
+    def foo(x, y) -> None:
         pass
 
     with pytest.raises(RuntimeError, match="The docstring from foo could not"):
 
         @copy_doc(foo)
-        def foo2(x, y):
+        def foo2(x, y) -> None:
             pass
 
     # test copy docstring of decorated function
     @verbose
-    def foo(verbose=None):
+    def foo(verbose=None) -> None:
         """My doc."""
 
     @copy_doc(foo)
-    def foo2(verbose=None):
+    def foo2(verbose=None) -> None:
         pass
 
     @copy_doc(foo)
     @verbose
-    def foo3(verbose=None):
+    def foo3(verbose=None) -> None:
         pass
 
     assert foo.__doc__ == foo2.__doc__
     assert foo.__doc__ == foo3.__doc__
 
 
-def test_copy_doc_class():
+def test_copy_doc_class() -> None:
     """Test decorator to copy docstring on classes."""
 
     class Foo:
         """My doc."""
 
-        def __init__(self):
+        def __init__(self) -> None:
             pass
 
-        def method1(self):
+        def method1(self) -> None:
             """Super 101 doc."""
 
     @copy_doc(Foo)
     class Foo2:
-        def __init__(self):
+        def __init__(self) -> None:
             pass
 
         @copy_doc(Foo.method1)
@@ -180,13 +182,13 @@ def test_copy_doc_class():
 
         @copy_doc(Foo.method1)
         @verbose
-        def method3(self, verbose=None):
+        def method3(self, verbose=None) -> None:
             pass
 
         @staticmethod
         @copy_doc(Foo.method1)
         @verbose
-        def method4(verbose=None):
+        def method4(verbose=None) -> None:
             pass
 
     assert Foo.__doc__ == Foo2.__doc__
@@ -201,7 +203,7 @@ def test_copy_doc_class():
     assert foo.method1.__doc__ == foo2.method4.__doc__
 
 
-def test_docdict_order():
+def test_docdict_order() -> None:
     """Test that docdict is alphabetical."""
     # read the file as text, and get entries via regex
     docdict_ = docdict.copy()

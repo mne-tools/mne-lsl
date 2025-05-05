@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import uuid
 
 import pytest
@@ -13,21 +15,21 @@ from mne_lsl.lsl import (
 from mne_lsl.lsl.load_liblsl import _VERSION_MIN, _VERSION_PROTOCOL
 
 
-def test_library_version():
+def test_library_version() -> None:
     """Test retrieval of library version."""
     version = library_version()
     assert isinstance(version, int)
     assert _VERSION_MIN <= version
 
 
-def test_protocol_version():
+def test_protocol_version() -> None:
     """Test retrieval of protocol version."""
     version = protocol_version()
     assert isinstance(version, int)
     assert version == _VERSION_PROTOCOL
 
 
-def test_local_clock():
+def test_local_clock() -> None:
     """Test retrieval of local (client) LSL clock."""
     ts = local_clock()
     assert isinstance(ts, float)
@@ -37,7 +39,7 @@ def test_local_clock():
 
 @pytest.mark.xfail(reason="Fails if streams are present in the background.")
 @pytest.mark.slow
-def test_resolve_streams():
+def test_resolve_streams() -> None:
     """Test detection of streams on the network."""
     streams = resolve_streams(timeout=0.1)
     assert isinstance(streams, list)

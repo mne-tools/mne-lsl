@@ -9,7 +9,7 @@ from mne_lsl.datasets._fetch import fetch_dataset
 
 
 @pytest.fixture
-def license_file() -> Path | None:
+def license_file() -> Path:
     """Find the license file if present."""
     fname = Path(__file__).parent.parent.parent.parent / "LICENSE"
     if fname.exists():
@@ -25,7 +25,7 @@ def license_url() -> str:
 
 
 @pytest.mark.xfail(reason="Connection issue.")
-def test_fetch_dataset(tmp_path, license_file, license_url):
+def test_fetch_dataset(tmp_path: Path, license_file: Path, license_url: str) -> None:
     """Test dataset fetching."""
     license_hash = pooch.file_hash(license_file)
     with open(tmp_path / "registry.txt", "w") as fid:

@@ -1,9 +1,11 @@
+from __future__ import annotations
+
 from click.testing import CliRunner
 
 from mne_lsl.commands.main import run
 
 
-def test_main():
+def test_main() -> None:
     """Test the main package entry-point."""
     runner = CliRunner()
     result = runner.invoke(run)

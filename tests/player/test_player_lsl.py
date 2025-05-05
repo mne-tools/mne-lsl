@@ -25,10 +25,20 @@ from mne_lsl.stream import StreamLSL as Stream
 from mne_lsl.utils._tests import match_stream_and_raw_data
 
 if TYPE_CHECKING:
+    from collections.abc import Callable, Generator
+
     from mne.io import BaseRaw
 
+    from mne_lsl.player import PlayerLSL
 
-def test_player(fname, raw, close_io, chunk_size, request):
+
+def test_player(
+    fname: Path,
+    raw: BaseRaw,
+    close_io: Callable,
+    chunk_size: int,
+    request: pytest.FixtureRequest,
+) -> None:
     """Test a working and valid player."""
     name = f"P_{request.node.name}"
     source_id = uuid.uuid4().hex
@@ -82,7 +92,9 @@ def test_player(fname, raw, close_io, chunk_size, request):
     player.stop()
 
 
-def test_player_context_manager(fname, chunk_size, request):
+def test_player_context_manager(
+    fname: Path, chunk_size: int, request: pytest.FixtureRequest
+) -> None:
     """Test a working and valid player as context manager."""
     name = f"P_{request.node.name}"
     source_id = uuid.uuid4().hex
@@ -101,7 +113,9 @@ def test_player_context_manager(fname, chunk_size, request):
     ]
 
 
-def test_player_context_manager_raw(raw, chunk_size, request):
+def test_player_context_manager_raw(
+    raw: BaseRaw, chunk_size: int, request: pytest.FixtureRequest
+) -> None:
     """Test a working and valid player as context manager from a raw object."""
     name = f"P_{request.node.name}"
     source_id = uuid.uuid4().hex
@@ -131,7 +145,9 @@ def test_player_context_manager_raw(raw, chunk_size, request):
             assert player.info["ch_names"] == raw.info["ch_names"]
 
 
-def test_player_context_manager_raw_annotations(raw_annotations, chunk_size, request):
+def test_player_context_manager_raw_annotations(
+    raw_annotations: BaseRaw, chunk_size: int, request: pytest.FixtureRequest
+) -> None:
     """Test a working player as context manager from a raw object with annotations."""
     name = f"P_{request.node.name}"
     source_id = uuid.uuid4().hex
@@ -173,7 +189,7 @@ def test_player_context_manager_raw_annotations(raw_annotations, chunk_size, req
     assert name not in [stream.name for stream in streams]
 
 
-def test_player_invalid_arguments(fname):
+def test_player_invalid_arguments(fname: Path) -> None:
     """Test creation of a player with invalid arguments."""
     with pytest.raises(FileNotFoundError, match="does not exist"):
         Player("invalid-fname.something")
@@ -187,7 +203,9 @@ def test_player_invalid_arguments(fname):
         Player(fname, name="101", chunk_size=-101)
 
 
-def test_player_stop_invalid(fname, chunk_size, request):
+def test_player_stop_invalid(
+    fname: Path, chunk_size: int, request: pytest.FixtureRequest
+) -> None:
     """Test stopping a player that is not started."""
     player = Player(
         fname, chunk_size=chunk_size, name=f"P_{request.node.name}_{uuid.uuid4().hex}"
@@ -213,7 +231,9 @@ def _create_inlet(name: str, source_id: str) -> StreamInlet:
 
 
 @pytest.fixture
-def mock_lsl_stream(fname: Path, chunk_size, request):
+def mock_lsl_stream(
+    fname: Path, chunk_size: int, request: pytest.FixtureRequest
+) -> Generator[PlayerLSL, None, None]:
     """Create a mock LSL stream for testing."""
     # nest the PlayerLSL import to first write the temporary LSL configuration file
     from mne_lsl.player import PlayerLSL  # noqa: E402
@@ -228,7 +248,9 @@ def mock_lsl_stream(fname: Path, chunk_size, request):
 
 
 @pytest.mark.slow
-def test_player_unit(mock_lsl_stream, raw, close_io):
+def test_player_unit(
+    mock_lsl_stream: PlayerLSL, raw: BaseRaw, close_io: Callable
+) -> None:
     """Test getting and setting the player channel units."""
     player = mock_lsl_stream
     assert player.get_channel_types() == raw.get_channel_types()
@@ -271,7 +293,9 @@ def test_player_unit(mock_lsl_stream, raw, close_io):
 
 
 @pytest.mark.slow
-def test_player_rename_channels(mock_lsl_stream, raw, close_io):
+def test_player_rename_channels(
+    mock_lsl_stream: PlayerLSL, raw: BaseRaw, close_io: Callable
+) -> None:
     """Test channel renaming."""
     player = mock_lsl_stream
     assert player._sinfo.get_channel_names() == player.info["ch_names"]
@@ -307,7 +331,9 @@ def test_player_rename_channels(mock_lsl_stream, raw, close_io):
 
 
 @pytest.mark.slow
-def test_player_set_channel_types(mock_lsl_stream, raw, close_io):
+def test_player_set_channel_types(
+    mock_lsl_stream: PlayerLSL, raw: BaseRaw, close_io: Callable
+) -> None:
     """Test channel type setting."""
     player = mock_lsl_stream
     assert player._sinfo.get_channel_types() == player.get_channel_types(unique=False)
@@ -348,7 +374,9 @@ def test_player_set_channel_types(mock_lsl_stream, raw, close_io):
     )
 
 
-def test_player_anonymize(fname, chunk_size, request):
+def test_player_anonymize(
+    fname: Path, chunk_size: int, request: pytest.FixtureRequest
+) -> None:
     """Test anonymization."""
     name = f"P_{request.node.name}"
     source_id = uuid.uuid4().hex
@@ -367,7 +395,9 @@ def test_player_anonymize(fname, chunk_size, request):
     player.stop()
 
 
-def test_player_set_meas_date(fname, chunk_size, request):
+def test_player_set_meas_date(
+    fname: Path, chunk_size: int, request: pytest.FixtureRequest
+) -> None:
     """Test player measurement date."""
     name = f"P_{request.node.name}"
     source_id = uuid.uuid4().hex
@@ -389,7 +419,12 @@ def test_player_set_meas_date(fname, chunk_size, request):
 
 
 @pytest.mark.slow
-def test_player_annotations(raw_annotations, close_io, chunk_size, request):
+def test_player_annotations(
+    raw_annotations: BaseRaw,
+    close_io: Callable,
+    chunk_size: int,
+    request: pytest.FixtureRequest,
+) -> None:
     """Test player with annotations."""
     name = f"P_{request.node.name}"
     source_id = uuid.uuid4().hex
@@ -460,7 +495,12 @@ def test_player_annotations(raw_annotations, close_io, chunk_size, request):
 
 
 @pytest.mark.slow
-def test_player_annotations_no_duration(raw_annotations, close_io, chunk_size, request):
+def test_player_annotations_no_duration(
+    raw_annotations: BaseRaw,
+    close_io: Callable,
+    chunk_size: int,
+    request: pytest.FixtureRequest,
+) -> None:
     """Test player with annotations."""
     name = f"P_{request.node.name}"
     source_id = uuid.uuid4().hex
@@ -520,8 +560,10 @@ def raw_annotations_1000_samples() -> BaseRaw:
 
 @pytest.mark.slow
 def test_player_annotations_multiple_of_chunk_size(
-    raw_annotations_1000_samples, chunk_size, request
-):
+    raw_annotations_1000_samples: BaseRaw,
+    chunk_size: int,
+    request: pytest.FixtureRequest,
+) -> None:
     """Test player with annotations, chunk-size is a multiple of the raw size."""
     name = f"P_{request.node.name}"
     source_id = uuid.uuid4().hex
@@ -545,7 +587,9 @@ def test_player_annotations_multiple_of_chunk_size(
 
 
 @pytest.mark.slow
-def test_player_n_repeat(raw, chunk_size, request):
+def test_player_n_repeat(
+    raw: BaseRaw, chunk_size: int, request: pytest.FixtureRequest
+) -> None:
     """Test argument 'n_repeat'."""
     name = f"P_{request.node.name}"
     source_id = uuid.uuid4().hex
@@ -578,7 +622,9 @@ def test_player_n_repeat(raw, chunk_size, request):
 
 
 @pytest.mark.slow
-def test_player_n_repeat_mmapped(fname, close_io, chunk_size, request):
+def test_player_n_repeat_mmapped(
+    fname: Path, close_io: Callable, chunk_size: int, request: pytest.FixtureRequest
+) -> None:
     """Test argument 'n_repeat' with non-preloaded raw."""
     raw = read_raw_fif(fname, preload=False).crop(0, 1)  # crop from 2s to 1s
     index = raw.get_data(picks=0).squeeze().astype(int)
@@ -623,7 +669,7 @@ def test_player_n_repeat_mmapped(fname, close_io, chunk_size, request):
         close_io()
 
 
-def test_player_n_repeat_invalid(raw):
+def test_player_n_repeat_invalid(raw: BaseRaw) -> None:
     """Test invalid argument 'n_repeat'."""
     with pytest.raises(ValueError, match="strictly positive integer"):
         Player(raw, n_repeat=0)
@@ -636,7 +682,7 @@ def test_player_n_repeat_invalid(raw):
 @pytest.mark.skipif(
     os.getenv("GITHUB_ACTIONS", "") == "true", reason="Unreliable on CIs."
 )
-def test_player_push_sample(fname, request):
+def test_player_push_sample(fname: Path, request: pytest.FixtureRequest) -> None:
     """Test pushing individual sample with chunk_size=1."""
     name = f"P_{request.node.name}"
     source_id = uuid.uuid4().hex
@@ -652,7 +698,9 @@ def test_player_push_sample(fname, request):
 @pytest.mark.skipif(
     os.getenv("GITHUB_ACTIONS", "") == "true", reason="Unreliable on CIs."
 )
-def test_player_push_last_sample(fname, caplog, request):
+def test_player_push_last_sample(
+    fname: Path, caplog: pytest.LogCaptureFixture, request: pytest.FixtureRequest
+) -> None:
     """Test pushing the last sample."""
     name = f"P_{request.node.name}"
     source_id = uuid.uuid4().hex

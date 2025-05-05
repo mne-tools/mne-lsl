@@ -1,9 +1,11 @@
+from __future__ import annotations
+
 import pytest
 
 from mne_lsl.utils._imports import import_optional_dependency
 
 
-def test_import_optional_dependency():
+def test_import_optional_dependency() -> None:
     """Test the import of optional dependencies."""
     # Test import of present package
     numpy = import_optional_dependency("numpy")
