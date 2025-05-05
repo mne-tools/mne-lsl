@@ -69,7 +69,7 @@ def _test_numerical_data(
     ],
 )
 def test_pull_numerical_sample(
-    dtype_str: str, dtype: np.dtype, close_io: Callable
+    dtype_str: str, dtype: np.dtype, close_io: Callable[[], None]
 ) -> None:
     """Test pull_sample with numerical values."""
     x = np.array([1, 2], dtype=dtype)
@@ -94,7 +94,7 @@ def test_pull_numerical_sample(
     close_io()
 
 
-def test_pull_str_sample(close_io: Callable) -> None:
+def test_pull_str_sample(close_io: Callable[[], None]) -> None:
     """Test pull_sample with strings."""
     x = ["1", "2"]
     # create stream description
@@ -126,7 +126,7 @@ def test_pull_str_sample(close_io: Callable) -> None:
     ],
 )
 def test_pull_numerical_chunk(
-    dtype_str: str, dtype: np.dtype, close_io: Callable
+    dtype_str: str, dtype: np.dtype, close_io: Callable[[], None]
 ) -> None:
     """Test pull_chunk on a numerical chunk."""
     x = np.array([[1, 4], [2, 5], [3, 6]], dtype=dtype)
@@ -171,7 +171,7 @@ def test_pull_numerical_chunk(
     close_io()
 
 
-def test_pull_str_chunk(close_io: Callable) -> None:
+def test_pull_str_chunk(close_io: Callable[[], None]) -> None:
     """Test pull_chunk on a string chunk."""
     x = [["1", "4"], ["2", "5"], ["3", "6"]]
     # create stream description
@@ -206,7 +206,7 @@ def test_pull_str_chunk(close_io: Callable) -> None:
     close_io()
 
 
-def test_get_sinfo(close_io: Callable) -> None:
+def test_get_sinfo(close_io: Callable[[], None]) -> None:
     """Test getting a StreamInfo from an Inlet."""
     sinfo = StreamInfo("test", "", 2, 0.0, "string", uuid.uuid4().hex)
     outlet = StreamOutlet(sinfo)  # noqa: F841
@@ -234,7 +234,9 @@ def test_get_sinfo(close_io: Callable) -> None:
         ("int32", np.int32),
     ],
 )
-def test_inlet_methods(dtype_str: str, dtype: np.dtype, close_io: Callable) -> None:
+def test_inlet_methods(
+    dtype_str: str, dtype: np.dtype, close_io: Callable[[], None]
+) -> None:
     """Test the methods from an Inlet."""
     x = np.array([[1, 4], [2, 5], [3, 6]], dtype=dtype)
     assert x.shape == (3, 2)
@@ -274,7 +276,7 @@ def test_inlet_methods(dtype_str: str, dtype: np.dtype, close_io: Callable) -> N
         ),
     ),
 )
-def test_processing_flags(dtype_str: str, flags, close_io: Callable) -> None:
+def test_processing_flags(dtype_str: str, flags, close_io: Callable[[], None]) -> None:
     """Test that the processing flags are working."""
     x = np.array([[1, 4], [2, 5], [3, 6]])
     # create stream description
@@ -301,7 +303,7 @@ def test_processing_flags_invalid() -> None:
         StreamInlet(sinfo, processing_flags=("monotize", "clocksync"))
 
 
-def test_time_correction(close_io: Callable) -> None:
+def test_time_correction(close_io: Callable[[], None]) -> None:
     """Test time_correction method."""
     sinfo = StreamInfo("test", "", 2, 0.0, "int8", uuid.uuid4().hex)
     outlet = StreamOutlet(sinfo, chunk_size=3)  # noqa: F841

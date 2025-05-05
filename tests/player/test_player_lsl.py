@@ -35,7 +35,7 @@ if TYPE_CHECKING:
 def test_player(
     fname: Path,
     raw: BaseRaw,
-    close_io: Callable,
+    close_io: Callable[[], None],
     chunk_size: int,
     request: pytest.FixtureRequest,
 ) -> None:
@@ -249,7 +249,7 @@ def mock_lsl_stream(
 
 @pytest.mark.slow
 def test_player_unit(
-    mock_lsl_stream: PlayerLSL, raw: BaseRaw, close_io: Callable
+    mock_lsl_stream: PlayerLSL, raw: BaseRaw, close_io: Callable[[], None]
 ) -> None:
     """Test getting and setting the player channel units."""
     player = mock_lsl_stream
@@ -294,7 +294,7 @@ def test_player_unit(
 
 @pytest.mark.slow
 def test_player_rename_channels(
-    mock_lsl_stream: PlayerLSL, raw: BaseRaw, close_io: Callable
+    mock_lsl_stream: PlayerLSL, raw: BaseRaw, close_io: Callable[[], None]
 ) -> None:
     """Test channel renaming."""
     player = mock_lsl_stream
@@ -332,7 +332,7 @@ def test_player_rename_channels(
 
 @pytest.mark.slow
 def test_player_set_channel_types(
-    mock_lsl_stream: PlayerLSL, raw: BaseRaw, close_io: Callable
+    mock_lsl_stream: PlayerLSL, raw: BaseRaw, close_io: Callable[[], None]
 ) -> None:
     """Test channel type setting."""
     player = mock_lsl_stream
@@ -421,7 +421,7 @@ def test_player_set_meas_date(
 @pytest.mark.slow
 def test_player_annotations(
     raw_annotations: BaseRaw,
-    close_io: Callable,
+    close_io: Callable[[], None],
     chunk_size: int,
     request: pytest.FixtureRequest,
 ) -> None:
@@ -497,7 +497,7 @@ def test_player_annotations(
 @pytest.mark.slow
 def test_player_annotations_no_duration(
     raw_annotations: BaseRaw,
-    close_io: Callable,
+    close_io: Callable[[], None],
     chunk_size: int,
     request: pytest.FixtureRequest,
 ) -> None:
@@ -623,7 +623,10 @@ def test_player_n_repeat(
 
 @pytest.mark.slow
 def test_player_n_repeat_mmapped(
-    fname: Path, close_io: Callable, chunk_size: int, request: pytest.FixtureRequest
+    fname: Path,
+    close_io: Callable[[], None],
+    chunk_size: int,
+    request: pytest.FixtureRequest,
 ) -> None:
     """Test argument 'n_repeat' with non-preloaded raw."""
     raw = read_raw_fif(fname, preload=False).crop(0, 1)  # crop from 2s to 1s

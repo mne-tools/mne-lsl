@@ -743,7 +743,7 @@ def test_stream_callback(mock_lsl_stream_int: DummyPlayer) -> None:
     assert_allclose(data, data_ref)
 
 
-def test_stream_str(close_io: Callable) -> None:
+def test_stream_str(close_io: Callable[[], None]) -> None:
     """Test a stream on a string source."""
     source_id = f"pytest-{uuid.uuid4().hex}"
     sinfo = StreamInfo("test_stream_str", "gaze", 1, 100, "string", source_id)
@@ -756,7 +756,7 @@ def test_stream_str(close_io: Callable) -> None:
     close_io()
 
 
-def test_stream_processing_flags(close_io: Callable) -> None:
+def test_stream_processing_flags(close_io: Callable[[], None]) -> None:
     """Test a stream connection processing flags."""
     name = "test_stream_processing_flags"
     source_id = f"pytest-{uuid.uuid4().hex}"
@@ -776,7 +776,7 @@ def test_stream_processing_flags(close_io: Callable) -> None:
     close_io()
 
 
-def test_stream_irregularly_sampled(close_io: Callable) -> None:
+def test_stream_irregularly_sampled(close_io: Callable[[], None]) -> None:
     """Test a stream with an irregular sampling rate."""
     name = "test_stream_irregularly_sampled"
     source_id = f"pytest-{uuid.uuid4().hex}"
