@@ -77,7 +77,7 @@ def pytest_configure(config: pytest.Config) -> None:
     logger.propagate = True
 
 
-def pytest_sessionfinish(session, exitstatus) -> None:
+def pytest_sessionfinish(session: pytest.Session, exitstatus: int) -> None:
     """Clean up the pytest session."""
     try:
         os.unlink(lsl_cfg.name)
@@ -94,7 +94,8 @@ def _closer() -> None:
     smart enough to be no-ops if called more than once.
     """
     loc = inspect.currentframe().f_back.f_locals
-    inlets, outlets = [], []
+    inlets: list[StreamInlet] = []
+    outlets: list[StreamOutlet] = []
     for var in loc.values():  # go through the frame
         if isinstance(var, StreamInlet):
             inlets.append(var)
@@ -118,7 +119,7 @@ def close_io() -> Callable:
 
 
 @pytest.fixture(scope="session")
-def fname(tmp_path_factory) -> Path:
+def fname(tmp_path_factory: pytest.TempPathFactory) -> Path:
     """Yield fname of a file with sample numbers in the first channel."""
     fname = testing.data_path() / "sample-eeg-ant-raw.fif"
     raw = read_raw_fif(fname, preload=True)  # 67 channels x 2049 samples -> 2 seconds
