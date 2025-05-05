@@ -693,6 +693,10 @@ def test_stream_rereference_average(mock_lsl_stream_int):
     stream.disconnect()
 
 
+def test_stream_callback(mock_lsl_stream_int) -> None:
+    """Test adding a callback function a stream."""
+
+
 def test_stream_str(close_io):
     """Test a stream on a string source."""
     source_id = f"pytest-{uuid.uuid4().hex}"
