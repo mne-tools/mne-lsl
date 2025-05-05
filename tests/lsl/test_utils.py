@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from ctypes import c_int
 
 import numpy as np
@@ -14,7 +16,7 @@ from mne_lsl.lsl._utils import (
 )
 
 
-def test_check_timeout():
+def test_check_timeout() -> None:
     """Test timeout static checker."""
     assert check_timeout(0) == 0
     assert 10000 <= check_timeout(None)
@@ -30,7 +32,7 @@ def test_check_timeout():
         check_timeout(-2.2)
 
 
-def test_handle_error():
+def test_handle_error() -> None:
     """Test error-code handler."""
     handle_error(0)
     handle_error(c_int(0))
@@ -48,7 +50,7 @@ def test_handle_error():
         handle_error(-101)
 
 
-def test_xml_element():
+def test_xml_element() -> None:
     """Test XMLElement."""
     sinfo = StreamInfo("test", "eeg", 3, 1000, np.float64, "test")
     sinfo.set_channel_names(("F1", "F2", "F3"))

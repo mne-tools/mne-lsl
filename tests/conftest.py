@@ -18,6 +18,7 @@ from mne_lsl.utils._checks import check_verbose
 from mne_lsl.utils.logs import logger
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from pathlib import Path
 
     from mne.io import BaseRaw
@@ -76,7 +77,7 @@ def pytest_configure(config: pytest.Config) -> None:
     logger.propagate = True
 
 
-def pytest_sessionfinish(session, exitstatus) -> None:
+def pytest_sessionfinish(session: pytest.Session, exitstatus: int) -> None:
     """Clean up the pytest session."""
     try:
         os.unlink(lsl_cfg.name)
@@ -84,7 +85,7 @@ def pytest_sessionfinish(session, exitstatus) -> None:
         pass
 
 
-def _closer():
+def _closer() -> None:
     """Delete inlets and outlets if present.
 
     We cannot rely on just "del inlet" / "del outlet" because Python's garbage collector
@@ -93,7 +94,8 @@ def _closer():
     smart enough to be no-ops if called more than once.
     """
     loc = inspect.currentframe().f_back.f_locals
-    inlets, outlets = [], []
+    inlets: list[StreamInlet] = []
+    outlets: list[StreamOutlet] = []
     for var in loc.values():  # go through the frame
         if isinstance(var, StreamInlet):
             inlets.append(var)
@@ -111,13 +113,13 @@ def _closer():
 
 
 @pytest.fixture
-def close_io():
+def close_io() -> Callable:
     """Return function that will close inlets and outlets if present."""
     return _closer
 
 
 @pytest.fixture(scope="session")
-def fname(tmp_path_factory) -> Path:
+def fname(tmp_path_factory: pytest.TempPathFactory) -> Path:
     """Yield fname of a file with sample numbers in the first channel."""
     fname = testing.data_path() / "sample-eeg-ant-raw.fif"
     raw = read_raw_fif(fname, preload=True)  # 67 channels x 2049 samples -> 2 seconds

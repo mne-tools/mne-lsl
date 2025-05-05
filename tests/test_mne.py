@@ -1,9 +1,11 @@
+from __future__ import annotations
+
 import pytest
 from mne.utils import check_version
 
 
 @pytest.mark.skipif(not check_version("mne", "1.6"), reason="requires MNE 1.6 or above")
-def test_mne():
+def test_mne() -> None:
     """Test the evolution of the MNE-mixins."""
     from mne._fiff.meas_info import ContainsMixin, SetChannelsMixin
 

@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     from pathlib import Path
 
 
-def test_default_log_level(caplog: pytest.LogCaptureFixture):
+def test_default_log_level(caplog: pytest.LogCaptureFixture) -> None:
     """Test the default log level."""
     with _use_log_level("WARNING"):  # set to default
         caplog.clear()
@@ -36,7 +36,7 @@ def test_default_log_level(caplog: pytest.LogCaptureFixture):
 
 
 @pytest.mark.parametrize("level", ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"])
-def test_logger(level: str, caplog: pytest.LogCaptureFixture):
+def test_logger(level: str, caplog: pytest.LogCaptureFixture) -> None:
     """Test basic logger functionalities."""
     level_functions = {
         "DEBUG": logger.debug,
@@ -62,11 +62,11 @@ def test_logger(level: str, caplog: pytest.LogCaptureFixture):
                 assert "101" not in caplog.text
 
 
-def test_verbose_on_function(caplog: pytest.LogCaptureFixture):
+def test_verbose_on_function(caplog: pytest.LogCaptureFixture) -> None:
     """Test verbose decorator on functions."""
 
     @verbose
-    def foo(verbose: bool | str | int | None = None):
+    def foo(verbose: bool | str | int | None = None) -> None:
         """Foo function."""
         logger.debug("101")
 
@@ -87,20 +87,20 @@ def test_verbose_on_function(caplog: pytest.LogCaptureFixture):
     assert "101" in caplog.text
 
 
-def test_verbose_on_method(caplog: pytest.LogCaptureFixture):
+def test_verbose_on_method(caplog: pytest.LogCaptureFixture) -> None:
     """Test verbose decorator on methods."""
 
     class Foo:
-        def __init__(self):
+        def __init__(self) -> None:
             pass
 
         @verbose
-        def foo(self, verbose: bool | str | int | None = None):
+        def foo(self, verbose: bool | str | int | None = None) -> None:
             logger.debug("101")
 
         @staticmethod
         @verbose
-        def foo2(verbose: bool | str | int | None = None):
+        def foo2(verbose: bool | str | int | None = None) -> None:
             logger.debug("101")
 
     foo = Foo()
@@ -121,7 +121,7 @@ def test_verbose_on_method(caplog: pytest.LogCaptureFixture):
         assert "101" in caplog.text
 
 
-def test_file_handler(tmp_path: Path):
+def test_file_handler(tmp_path: Path) -> None:
     """Test adding a file handler."""
     fname = tmp_path / "logs.txt"
     add_file_handler(fname)
@@ -140,7 +140,7 @@ def test_file_handler(tmp_path: Path):
     assert "test3" in lines[1]
 
 
-def test_warn(tmp_path: Path):
+def test_warn(tmp_path: Path) -> None:
     """Test warning functions."""
     with _use_log_level("ERROR"):
         warn("This is a warning.", RuntimeWarning)

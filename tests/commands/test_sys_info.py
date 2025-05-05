@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import pytest
 from click.testing import CliRunner
 
@@ -5,7 +7,7 @@ from mne_lsl.commands.sys_info import run
 
 
 @pytest.mark.parametrize("developer", [False, True])
-def test_sys_info(developer: bool):
+def test_sys_info(developer: bool) -> None:
     """Test the system information entry-point."""
     runner = CliRunner()
     result = runner.invoke(run, ["--developer"] if developer else [])
