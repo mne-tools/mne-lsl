@@ -18,6 +18,7 @@ from mne_lsl.utils._checks import check_verbose
 from mne_lsl.utils.logs import logger
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from pathlib import Path
 
     from mne.io import BaseRaw
@@ -84,7 +85,7 @@ def pytest_sessionfinish(session, exitstatus) -> None:
         pass
 
 
-def _closer():
+def _closer() -> None:
     """Delete inlets and outlets if present.
 
     We cannot rely on just "del inlet" / "del outlet" because Python's garbage collector
@@ -111,7 +112,7 @@ def _closer():
 
 
 @pytest.fixture
-def close_io():
+def close_io() -> Callable:
     """Return function that will close inlets and outlets if present."""
     return _closer
 

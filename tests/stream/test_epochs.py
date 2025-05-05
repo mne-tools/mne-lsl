@@ -30,11 +30,12 @@ from mne_lsl.stream.epochs import (
 if TYPE_CHECKING:
     from collections.abc import Generator
 
+    from mne import Info
     from mne.io import BaseRaw
     from numpy.typing import NDArray
 
 
-def test_ensure_event_id():
+def test_ensure_event_id() -> None:
     """Test validation of event dictionary."""
     assert _ensure_event_id(5, None) == {"5": 5}
     assert _ensure_event_id({"5": 5}, None) == {"5": 5}
@@ -54,7 +55,7 @@ def test_ensure_event_id():
         _ensure_event_id({"101": None}, None)
 
 
-def test_check_baseline():
+def test_check_baseline() -> None:
     """Test validation of the baseline."""
     _check_baseline(None, -0.2, 0.5)
     _check_baseline((None, None), -0.2, 0.5)
@@ -78,14 +79,14 @@ def test_check_baseline():
 
 
 @pytest.fixture(scope="session")
-def info():
+def info() -> Info:
     """A simple info object with 10 EEG channels."""
     return create_info(
         ch_names=[f"ch{i}" for i in range(10)], sfreq=100, ch_types="eeg"
     )
 
 
-def test_check_reject_flat(info):
+def test_check_reject_flat(info: Info) -> None:
     """Test validation of the rejection dictionaries."""
     _check_reject_flat(None, None, info)
     _check_reject_flat(None, {"eeg": 1e-6}, info)
@@ -111,7 +112,7 @@ def test_check_reject_flat(info):
         _check_reject_flat(None, {"eeg": "test"}, info)
 
 
-def test_check_reject_tmin_tmax():
+def test_check_reject_tmin_tmax() -> None:
     """Test validation of rejection time windows."""
     _check_reject_tmin_tmax(None, None, -0.2, 0.5)
     _check_reject_tmin_tmax(-0.2, 0.5, -0.2, 0.5)
@@ -132,7 +133,7 @@ def test_check_reject_tmin_tmax():
         _check_reject_tmin_tmax(None, "test", -0.2, 0.5)
 
 
-def test_ensure_detrend_str():
+def test_ensure_detrend_str() -> None:
     """Test validation of detrend."""
     assert _ensure_detrend_str(None) is None
     assert _ensure_detrend_str(0) == "constant"
@@ -204,7 +205,7 @@ def events() -> NDArray[np.int64]:
     return events
 
 
-def test_prune_events(events: NDArray[np.int64]):
+def test_prune_events(events: NDArray[np.int64]) -> None:
     """Test pruning events."""
     ts = np.arange(10000, 11000, 1.8)
     events_ = _prune_events(events, dict(a=1, b=2, c=3), 10, ts, None, None, 0)
@@ -271,7 +272,7 @@ def raw_with_stim_channel() -> BaseRaw:
 class DummyPlayer:
     """Dummy player object containing the player attributes."""
 
-    def __init__(self, /, **kwargs):
+    def __init__(self, /, **kwargs) -> None:
         self.__dict__.update(kwargs)
 
 
@@ -295,7 +296,9 @@ def _player_mock_lsl_stream(
 
 
 @pytest.fixture
-def mock_lsl_stream(raw_with_stim_channel, request, chunk_size):
+def mock_lsl_stream(
+    raw_with_stim_channel: BaseRaw, request: pytest.FixtureRequest, chunk_size: int
+) -> Generator[DummyPlayer, None, None]:
     """Create a mock LSL stream streaming events on a stim channel."""
     manager = mp.Manager()
     status = manager.Value("i", 0)
@@ -314,7 +317,7 @@ def mock_lsl_stream(raw_with_stim_channel, request, chunk_size):
     process.kill()
 
 
-def test_epochs_without_event_stream(mock_lsl_stream):
+def test_epochs_without_event_stream(mock_lsl_stream: DummyPlayer) -> None:
     """Test creating epochs from the main stream."""
     stream = StreamLSL(
         0.5, name=mock_lsl_stream.name, source_id=mock_lsl_stream.source_id
@@ -347,7 +350,7 @@ def test_epochs_without_event_stream(mock_lsl_stream):
     stream.disconnect()
 
 
-def test_epochs_without_event_stream_tmin_tmax(mock_lsl_stream):
+def test_epochs_without_event_stream_tmin_tmax(mock_lsl_stream: DummyPlayer) -> None:
     """Test creating epochs from the main stream."""
     stream = StreamLSL(
         0.5, name=mock_lsl_stream.name, source_id=mock_lsl_stream.source_id
@@ -377,7 +380,9 @@ def test_epochs_without_event_stream_tmin_tmax(mock_lsl_stream):
     stream.disconnect()
 
 
-def test_epochs_without_event_stream_manual_acquisition(mock_lsl_stream):
+def test_epochs_without_event_stream_manual_acquisition(
+    mock_lsl_stream: DummyPlayer,
+) -> None:
     """Test creating epochs from the main stream."""
     stream = StreamLSL(
         0.5, name=mock_lsl_stream.name, source_id=mock_lsl_stream.source_id
@@ -429,7 +434,7 @@ def data_ones() -> tuple[NDArray[np.float64], NDArray[np.float64]]:
 
 def test_process_data_no_baseline(
     data_ones: tuple[NDArray[np.float64], NDArray[np.float64]],
-):
+) -> None:
     """Test processing data without baseline correction."""
     data = _process_data(
         data_ones[0],
@@ -447,7 +452,7 @@ def test_process_data_no_baseline(
 
 def test_process_data_baseline_all_segment(
     data_ones: tuple[NDArray[np.float64], NDArray[np.float64]],
-):
+) -> None:
     """Test processing data with baseline correction on the entire segment."""
     data = _process_data(
         data_ones[0].copy(),
@@ -465,7 +470,7 @@ def test_process_data_baseline_all_segment(
 
 def test_process_data_baseline_start_segment(
     data_ones: tuple[NDArray[np.float64], NDArray[np.float64]],
-):
+) -> None:
     """Test processing data with baseline correction on the start segment."""
     data_ones[0][:, 10:, :] = 101
     data = _process_data(
@@ -485,7 +490,7 @@ def test_process_data_baseline_start_segment(
 
 def test_process_data_baseline_end_segment(
     data_ones: tuple[NDArray[np.float64], NDArray[np.float64]],
-):
+) -> None:
     """Test processing data with baseline correction on the end segment."""
     data_ones[0][:, :90, :] = 101
     data = _process_data(
@@ -505,7 +510,7 @@ def test_process_data_baseline_end_segment(
 
 def test_process_data_detrend_constant(
     data_ones: tuple[NDArray[np.float64], NDArray[np.float64]],
-):
+) -> None:
     """Test constant (DC) detrending."""
     data = _process_data(
         data_ones[0],
@@ -549,7 +554,7 @@ def data_detrend_linear() -> tuple[NDArray[np.float64], NDArray[np.float64]]:
 
 def test_process_data_detrend_linear(
     data_detrend_linear: tuple[NDArray[np.float64], NDArray[np.float64]],
-):
+) -> None:
     """Test linear detrending."""
     data = _process_data(
         data_detrend_linear[0],
@@ -578,7 +583,9 @@ def test_process_data_detrend_linear(
     assert_allclose(data, np.zeros(data.shape), atol=1e-6)
 
 
-def test_process_data_flat(data_ones: tuple[NDArray[np.float64], NDArray[np.float64]]):
+def test_process_data_flat(
+    data_ones: tuple[NDArray[np.float64], NDArray[np.float64]],
+) -> None:
     """Test rejection of epochs due to flatness."""
     data = _process_data(
         data_ones[0],
@@ -595,7 +602,7 @@ def test_process_data_flat(data_ones: tuple[NDArray[np.float64], NDArray[np.floa
 
 
 @pytest.fixture
-def data_reject():
+def data_reject() -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     """Data array used for rejection test."""
     data = np.ones((2, 100, 5), dtype=np.float64)
     data[0, ::2, :] = 2
@@ -606,7 +613,7 @@ def data_reject():
 
 def test_process_data_reject(
     data_reject: tuple[NDArray[np.float64], NDArray[np.float64]],
-):
+) -> None:
     """Test rejection of epochs due to PTP."""
     assert data_reject[0].shape[0] == 2
     data = _process_data(
@@ -650,7 +657,7 @@ def test_process_data_reject(
 
 
 @pytest.fixture
-def data_reject_tmin_tmax():
+def data_reject_tmin_tmax() -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     """Data array used for rejection based on segment test."""
     data = np.ones((2, 100, 5), dtype=np.float64)
     data[0, 10::2, :] = 2
@@ -661,7 +668,7 @@ def data_reject_tmin_tmax():
 
 def test_process_data_reject_tmin_tmax(
     data_reject_tmin_tmax: tuple[NDArray[np.float64], NDArray[np.float64]],
-):
+) -> None:
     """Test rejection of epochs due to PTP during segment."""
     assert data_reject_tmin_tmax[0].shape[0] == 2
     data = _process_data(
@@ -716,7 +723,9 @@ def raw_with_annotations(raw_with_stim_channel: BaseRaw) -> BaseRaw:
 
 
 @pytest.fixture
-def mock_lsl_stream_with_annotations(raw_with_annotations, request, chunk_size):
+def mock_lsl_stream_with_annotations(
+    raw_with_annotations: BaseRaw, request: pytest.FixtureRequest, chunk_size: int
+) -> Generator[DummyPlayer, None, None]:
     """Create a mock LSL stream streaming events with annotations."""
     manager = mp.Manager()
     status = manager.Value("i", 0)
@@ -735,7 +744,9 @@ def mock_lsl_stream_with_annotations(raw_with_annotations, request, chunk_size):
     process.kill()
 
 
-def test_epochs_with_irregular_numerical_event_stream(mock_lsl_stream_with_annotations):
+def test_epochs_with_irregular_numerical_event_stream(
+    mock_lsl_stream_with_annotations: DummyPlayer,
+) -> None:
     """Test creating epochs from an irregularly sampled numerical event stream."""
     name = mock_lsl_stream_with_annotations.name
     source_id = mock_lsl_stream_with_annotations.source_id
@@ -768,7 +779,9 @@ def test_epochs_with_irregular_numerical_event_stream(mock_lsl_stream_with_annot
     event_stream.disconnect()
 
 
-def test_ensure_event_id_with_event_stream(mock_lsl_stream_with_annotations):
+def test_ensure_event_id_with_event_stream(
+    mock_lsl_stream_with_annotations: DummyPlayer,
+) -> None:
     """Test validation of event dictionary when an event_stream is present."""
     with pytest.raises(ValueError, match="must be provided if no irregularly sampled"):
         _ensure_event_id(None, None)
@@ -781,7 +794,7 @@ def test_ensure_event_id_with_event_stream(mock_lsl_stream_with_annotations):
     event_stream.disconnect()
 
 
-def test_remove_empty_elements():
+def test_remove_empty_elements() -> None:
     """Test _remove_empty_elements."""
     data = np.ones(10).reshape(1, -1)
     ts = np.zeros(10)
@@ -818,8 +831,10 @@ def raw_with_annotations_and_first_samp() -> BaseRaw:
 
 @pytest.fixture
 def mock_lsl_stream_with_annotations_and_first_samp(
-    raw_with_annotations_and_first_samp, request, chunk_size
-):
+    raw_with_annotations_and_first_samp: BaseRaw,
+    request: pytest.FixtureRequest,
+    chunk_size: int,
+) -> Generator[DummyPlayer, None, None]:
     """Create a mock LSL stream streaming events with annotations and first_samp."""
     manager = mp.Manager()
     status = manager.Value("i", 0)
@@ -841,8 +856,8 @@ def mock_lsl_stream_with_annotations_and_first_samp(
 @pytest.mark.slow
 @pytest.mark.timeout(30)  # takes under 9s locally
 def test_epochs_with_irregular_numerical_event_stream_and_first_samp(
-    mock_lsl_stream_with_annotations_and_first_samp,
-):
+    mock_lsl_stream_with_annotations_and_first_samp: DummyPlayer,
+) -> None:
     """Test creating epochs from an event stream from raw with first_samp."""
     name = mock_lsl_stream_with_annotations_and_first_samp.name
     source_id = mock_lsl_stream_with_annotations_and_first_samp.source_id
@@ -884,7 +899,7 @@ def test_epochs_with_irregular_numerical_event_stream_and_first_samp(
 @pytest.mark.filterwarnings(
     "ignore:The stream will be disconnected while EpochsStream.*:RuntimeWarning"
 )
-def test_epochs_invalid(mock_lsl_stream):
+def test_epochs_invalid(mock_lsl_stream: DummyPlayer) -> None:
     """Test creating invalid epochs."""
     stream = StreamLSL(
         0.5, name=mock_lsl_stream.name, source_id=mock_lsl_stream.source_id
@@ -957,7 +972,7 @@ def test_epochs_invalid(mock_lsl_stream):
     stream.disconnect()
 
 
-def test_epochs_invalid_get_data(mock_lsl_stream):
+def test_epochs_invalid_get_data(mock_lsl_stream: DummyPlayer) -> None:
     """Test invalid get_data() calls."""
     stream = StreamLSL(
         0.5, name=mock_lsl_stream.name, source_id=mock_lsl_stream.source_id
@@ -980,7 +995,7 @@ def test_epochs_invalid_get_data(mock_lsl_stream):
     stream.disconnect()
 
 
-def test_epochs_events(mock_lsl_stream):
+def test_epochs_events(mock_lsl_stream: DummyPlayer) -> None:
     """Test events array."""
     stream = StreamLSL(
         6, name=mock_lsl_stream.name, source_id=mock_lsl_stream.source_id
@@ -1032,7 +1047,9 @@ def outlet_marker(sinfo_marker: StreamInfo) -> Generator[StreamOutlet, None, Non
     del outlet
 
 
-def test_epochs_single_event(mock_lsl_stream, outlet_marker: StreamOutlet):
+def test_epochs_single_event(
+    mock_lsl_stream: DummyPlayer, outlet_marker: StreamOutlet
+) -> None:
     """Test epochs with a single event."""
     stream = StreamLSL(
         3, name=mock_lsl_stream.name, source_id=mock_lsl_stream.source_id

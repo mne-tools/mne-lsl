@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 import numpy as np
 import pytest
 from mne.io import read_info, read_raw_fif
@@ -5,16 +9,21 @@ from mne.io import read_info, read_raw_fif
 from mne_lsl.datasets import testing
 from mne_lsl.utils._tests import compare_infos, match_stream_and_raw_data
 
+if TYPE_CHECKING:
+    from mne.io import BaseRaw
+
 
 @pytest.fixture
-def raw_without_samples():
+def raw_without_samples() -> BaseRaw:
     """Raw EEG data."""
     fname = testing.data_path() / "sample-eeg-ant-raw.fif"
     return read_raw_fif(fname, preload=True)
 
 
 @pytest.mark.parametrize("raw_object", ["raw", "raw_without_samples"])
-def test_match_stream_and_raw_data(raw_object, request):
+def test_match_stream_and_raw_data(
+    raw_object: BaseRaw, request: pytest.FixtureRequest
+) -> None:
     """Test that the data match works as intended."""
     raw = request.getfixturevalue(raw_object)
     # test default working match
@@ -50,7 +59,7 @@ def test_match_stream_and_raw_data(raw_object, request):
         match_stream_and_raw_data(data[:10, 10:100], raw)
 
 
-def test_compare_infos(raw):
+def test_compare_infos(raw: BaseRaw) -> None:
     """Test that the partial info comparison works as intended."""
     info = read_info(testing.data_path() / "mne-sample" / "sample_audvis_raw.fif")
 

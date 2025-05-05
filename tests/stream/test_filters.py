@@ -26,7 +26,7 @@ def sfreq() -> float:
     return 1000.0
 
 
-def test_StreamFilter(iir_params: dict[str, Any], sfreq: float):
+def test_StreamFilter(iir_params: dict[str, Any], sfreq: float) -> None:
     """Test StreamFilter creation."""
     # test deletion of duplicates
     filt = create_filter(
@@ -84,7 +84,7 @@ def filters(iir_params: dict[str, Any], sfreq: float) -> list[StreamFilter]:
     return filters
 
 
-def test_StreamFilter_comparison(filters: list[StreamFilter]):
+def test_StreamFilter_comparison(filters: list[StreamFilter]) -> None:
     """Test the StreamFilter class."""
     filter2 = deepcopy(filters[0])
     assert filter2 == filters[0]
@@ -112,7 +112,7 @@ def test_StreamFilter_comparison(filters: list[StreamFilter]):
     assert filter2 != filters[0]
 
 
-def test_StreamFilter_repr(filters: list[StreamFilter]):
+def test_StreamFilter_repr(filters: list[StreamFilter]) -> None:
     """Test the representation."""
     assert f"({filters[0]['l_freq']}, {filters[0]['h_freq']})" in repr(filters[0])
     assert str(filters[0]["iir_params"]["order"]) in repr(filters[0])
@@ -145,7 +145,7 @@ def test_create_filter(
     assert_allclose(filter1["sos"], filter2["sos"])
 
 
-def test_ensure_sos_iir_params():
+def test_ensure_sos_iir_params() -> None:
     """Test validation of IIR params."""
     assert isinstance(ensure_sos_iir_params(None), dict)
     with pytest.raises(TypeError, match="must be an instance of"):

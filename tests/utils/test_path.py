@@ -1,11 +1,17 @@
+from __future__ import annotations
+
 from os import makedirs
+from typing import TYPE_CHECKING
 
 import pytest
 
 from mne_lsl.utils._path import walk
 
+if TYPE_CHECKING:
+    from pathlib import Path
 
-def test_walk(tmp_path):
+
+def test_walk(tmp_path: Path) -> None:
     """Test walk generator."""
     fname1 = tmp_path / "file1"
     with open(fname1, "w"):

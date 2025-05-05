@@ -1,6 +1,9 @@
+from __future__ import annotations
+
 import re
 import time
 import uuid
+from typing import TYPE_CHECKING
 
 import numpy as np
 import pytest
@@ -10,8 +13,18 @@ from mne_lsl.lsl import StreamInfo, StreamInlet, StreamOutlet, local_clock
 from mne_lsl.lsl.constants import string2numpy
 from mne_lsl.lsl.stream_info import _BaseStreamInfo
 
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
-def _test_properties(outlet, dtype_str, n_channels, name, sfreq, stype):
+
+def _test_properties(
+    outlet: StreamOutlet,
+    dtype_str: str,
+    n_channels: int,
+    name: str,
+    sfreq: float,
+    stype: str,
+) -> None:
     """Test the properties of an outlet against expected values."""
     assert outlet.dtype == string2numpy.get(dtype_str, dtype_str)
     assert outlet.n_channels == n_channels
@@ -32,7 +45,7 @@ def _test_properties(outlet, dtype_str, n_channels, name, sfreq, stype):
         ("int32", np.int32),
     ],
 )
-def test_push_numerical_sample(dtype_str, dtype, close_io):
+def test_push_numerical_sample(dtype_str: str, dtype, close_io: Callable) -> None:
     """Test push_sample with numerical values."""
     x = np.array([1, 2], dtype=dtype)
     assert x.shape == (2,)
@@ -54,7 +67,7 @@ def test_push_numerical_sample(dtype_str, dtype, close_io):
     close_io()
 
 
-def test_push_str_sample(close_io):
+def test_push_str_sample(close_io: Callable) -> None:
     """Test push_sample with strings."""
     x = ["1", "2"]
     # create stream descriptions
@@ -80,7 +93,7 @@ def test_push_str_sample(close_io):
         ("int32", np.int32),
     ],
 )
-def test_push_numerical_chunk(dtype_str, dtype):
+def test_push_numerical_chunk(dtype_str: str, dtype) -> None:
     """Test the error checking when pushing a numerical chunk."""
     x = np.array([[1, 4], [2, 5], [3, 6]], dtype=dtype)
     # create stream description
@@ -108,7 +121,7 @@ def test_push_numerical_chunk(dtype_str, dtype):
         outlet.push_chunk(np.array(x, dtype=dtype).flatten())
 
 
-def test_push_str_chunk():
+def test_push_str_chunk() -> None:
     """Test the error checking when pushing a string chunk."""
     sinfo = StreamInfo("test", "", 2, 0.0, "string", uuid.uuid4().hex)
     outlet = StreamOutlet(sinfo, chunk_size=3)
@@ -129,7 +142,7 @@ def test_push_str_chunk():
         outlet.push_chunk([["1", "4"], ["2", "5"], ["3", "6"], ["7"]])
 
 
-def test_wait_for_consumers(close_io):
+def test_wait_for_consumers(close_io: Callable) -> None:
     """Test wait for client."""
     sinfo = StreamInfo("test", "EEG", 2, 100.0, "float32", uuid.uuid4().hex)
     outlet = StreamOutlet(sinfo, chunk_size=3)
@@ -145,7 +158,7 @@ def test_wait_for_consumers(close_io):
     close_io()
 
 
-def test_invalid_outlet():
+def test_invalid_outlet() -> None:
     """Test creation of an invalid outlet."""
     sinfo = StreamInfo("test", "EEG", 2, 100.0, "float32", uuid.uuid4().hex)
     with pytest.raises(
@@ -170,7 +183,7 @@ def test_invalid_outlet():
         ("string", None),
     ],
 )
-def test_push_chunk_timestamps(dtype_str, dtype, close_io):
+def test_push_chunk_timestamps(dtype_str: str, dtype, close_io: Callable) -> None:
     """Test push_chunk with timestamps."""
     if dtype_str == "string":
         x = [["1", "4"], ["2", "5"], ["3", "6"]]
@@ -222,7 +235,7 @@ def test_push_chunk_timestamps(dtype_str, dtype, close_io):
 
 
 @pytest.mark.slow
-def test_push_chunk_irregularly_sampled_stream(close_io):
+def test_push_chunk_irregularly_sampled_stream(close_io: Callable) -> None:
     """Test pushing a chunk on an irregularly sampled stream."""
     x = np.array([[1, 4], [2, 5], [3, 6]], dtype=np.float32)
     # create stream description

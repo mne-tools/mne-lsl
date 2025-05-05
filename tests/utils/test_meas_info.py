@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import uuid
 
 import pytest
@@ -7,7 +9,7 @@ from mne_lsl.utils.logs import _use_log_level
 from mne_lsl.utils.meas_info import create_info
 
 
-def test_valid_info():
+def test_valid_info() -> None:
     """Test creation of valid info."""
     ch_names = ["F7", "Fp2", "Trigger", "EOG"]
     ch_types = ["eeg", "eeg", "stim", "eog"]
@@ -83,7 +85,7 @@ def test_valid_info():
     assert [ch["unit_mul"] for ch in info["chs"]] == [-6, -6, 0, -6]
 
 
-def test_invalid_info():
+def test_invalid_info() -> None:
     """Test creation of invalid info."""
     ch_names = ["F7", "Fp2", "Trigger", "EOG"]
     ch_types = ["wrong_type", "eeg", "stim", "eog"]
@@ -140,7 +142,7 @@ def test_invalid_info():
         create_info(5, 101, "eeg", [101])
 
 
-def test_manufacturer():
+def test_manufacturer() -> None:
     """Test creation of a valid info with a manufacturer entry."""
     ch_names = ["F7", "Fp2", "STI101", "EOG"]
     ch_types = ["eeg", "eeg", "stim", "eog"]
@@ -168,7 +170,7 @@ def test_manufacturer():
     assert info["device_info"]["model"] == "101"
 
 
-def test_valid_info_from_sinfo():
+def test_valid_info_from_sinfo() -> None:
     """Test creation of a valid info from a SreamInfo."""
     sinfo = StreamInfo("pytest", "eeg", 4, 101, "float32", uuid.uuid4().hex)
     ch_names = ["F7", "Fp2", "STI101", "EOG"]
@@ -214,7 +216,7 @@ def test_valid_info_from_sinfo():
     assert [ch["unit_mul"] for ch in info["chs"]] == [-6, -6, 0, 0]
 
 
-def test_without_description(caplog: pytest.LogCaptureFixture):
+def test_without_description(caplog: pytest.LogCaptureFixture) -> None:
     """Test creation of a valid info without description."""
     with _use_log_level("INFO"):
         caplog.clear()

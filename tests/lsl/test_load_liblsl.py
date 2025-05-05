@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import pytest
 
 from mne_lsl.lsl.load_liblsl import (
@@ -7,7 +9,7 @@ from mne_lsl.lsl.load_liblsl import (
 
 
 @pytest.fixture(scope="session")
-def libpath():
+def libpath() -> str:
     """Return the liblsl path bundled with mne-lsl."""
     try:
         return _load_liblsl_wheel_path()
@@ -17,7 +19,9 @@ def libpath():
         )
 
 
-def test_load_liblsl_environment_variables(monkeypatch, libpath):
+def test_load_liblsl_environment_variables(
+    monkeypatch: pytest.MonkeyPatch, libpath: str
+) -> None:
     """Test loading liblsl from an environment variable."""
     assert _load_liblsl_environment_variables() is None
     monkeypatch.setenv("MNE_LSL_LIB", libpath)
