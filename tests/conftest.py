@@ -36,7 +36,7 @@ if "LSLAPICFG" not in os.environ:
     except ValueError:
         pass
     verbose = check_verbose(verbose)
-    # LSL logs use '-2- for errors, -1 for warnings, 0  for information and then
+    # LSL logs use '-2- for errors, -1 for warnings, 0 for information and then
     # 1-9 for increasingly less important details.
     if logging.ERROR <= verbose:
         level = -2
