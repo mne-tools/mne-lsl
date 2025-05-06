@@ -109,11 +109,11 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             )
 
     def add_callback(self, callback: Callable) -> BaseStream:
-        '''Add a callback to the stream.
+        """Add a callback to the stream.
 
         Parameters
         ----------
-        callback : callable
+        callback : Callable
             A callable function called on each new acquire window. The callback operates
             on a data array of shape ``(n_times, n_channels)`` (and its timestamps) and
             is called after:
@@ -125,27 +125,8 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
             Thus, the callback signature should be:
 
-            .. code-block:: python
-
-                def callback(
-                    data: NDArray[...], timestamps: NDArray[np.float64], info: mne.Info
-                ) -> tuple[NDArray[...], NDArray[np.float64]]:
-                    """A callback function.
-
-                    Parameters
-                    ----------
-                    data : NDArray[...]
-                        Data array of shape (n_times, n_channels).
-                    timestamps : NDArray[np.float64]
-                        Timestamp array of shape (n_times,).
-
-                    Returns
-                    -------
-                    data : NDArray[...]
-                        The modified data array of shape (n_times, n_channels).
-                    timestamps : NDArray[np.float64]
-                        The modified timestamp array of shape (n_times,).
-                    """
+            .. literalinclude:: /_examples/callback.py
+                :language: python
 
             With ``data`` is the data array of shape ``(n_times, n_channels)`` and of
             ``dtype`` defined in the stream; ``timestamps`` is the timestamp array of
@@ -171,7 +152,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         whenever new data is available in the buffer.
 
         Callback(s) are removed when the stream is disconnected.
-        '''  # noqa: D214, D215, E501
+        """  # noqa: D214, D215, E501
         self._check_connected("add_callback()")
         check_type(callback, ("callable",), "callback")
         self._callbacks.append(callback)
@@ -1234,7 +1215,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
     def callbacks(self) -> list[Callable]:
         """List of callbacks to be called when new data is available.
 
-        :type: :class:`list` of :class:`callable`
+        :type: :class:`list` of :class:`~collections.abc.Callable`
         """
         self._check_connected("callbacks")
         return self._callbacks
