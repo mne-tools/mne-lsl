@@ -63,7 +63,7 @@ all = [
   'mne_lsl[style]',
   'mne_lsl[test]',
 ]
-build = ['build', 'twine']
+build = ['build', 'setuptools', 'twine']
 doc = [
   'furo',
   'intersphinx_registry',
@@ -71,6 +71,7 @@ doc = [
   'memory-profiler',
   'numpydoc',
   'scikit-learn',
+  'setuptools',
   'sphinx!=7.2.*',
   'sphinx-copybutton',
   'sphinx-design',
@@ -162,7 +163,7 @@ junit_family = 'xunit2'
 minversion = '8.0'
 
 [tool.ruff]
-extend-exclude = []
+extend-exclude = ["doc/_examples/*.py"]
 line-length = 88
 
 [tool.ruff.format]

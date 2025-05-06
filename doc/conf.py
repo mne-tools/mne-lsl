@@ -64,7 +64,13 @@ extensions = [
 ]
 
 templates_path = ["_templates"]
-exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", "**.ipynb_checkpoints"]
+exclude_patterns = [
+    "_build",
+    "_examples",
+    "Thumbs.db",
+    ".DS_Store",
+    "**.ipynb_checkpoints",
+]
 
 # Sphinx will warn about all references where the target cannot be found.
 nitpicky = True
@@ -160,6 +166,7 @@ numpydoc_xref_aliases = {
     "dtype": "numpy.dtype",
     # Python
     "bool": ":class:`python:bool`",
+    "Callable": "collections.abc.Callable",
     "file-like": ":term:`file-like <python:file object>`",
     "path-like": ":term:`path-like`",
     "Path": "pathlib.Path",

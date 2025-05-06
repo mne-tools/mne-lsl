@@ -43,6 +43,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
     """
 
     _bufsize: Incomplete
+    _callbacks: Incomplete
 
     @abstractmethod
     def __init__(self, bufsize: float): ...
@@ -87,6 +88,52 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         This method is not needed if the stream was connected with an acquisition delay
         different from ``0``. In this case, the acquisition is done automatically in a
         background thread.
+        """
+
+    def add_callback(self, callback: Callable) -> BaseStream:
+        """Add a callback to the stream.
+
+        Parameters
+        ----------
+        callback : Callable
+            A callable function called on each new acquire window. The callback operates
+            on a data array of shape ``(n_times, n_channels)`` (and its timestamps) and
+            is called after:
+
+            - applying channel selection defined through ``pick`` and ``drop_channels``.
+            - adding channels defined through ``add_reference_channels``.
+            - applying EEG reference defined through ``set_eeg_reference``.
+            - applying filters defined through ``filter`` and ``notch_filter``.
+
+            Thus, the callback signature should be:
+
+            .. literalinclude:: /_examples/callback.py
+                :language: python
+
+            With ``data`` is the data array of shape ``(n_times, n_channels)`` and of
+            ``dtype`` defined in the stream; ``timestamps`` is the timestamp array of
+            shape ``(n_times,)`` and ``dtype`` of ``np.float64``, and ``info`` is the
+            stream information.
+
+            .. note::
+
+                Ideally, the callback should modify the data in place.
+
+        Returns
+        -------
+        stream : instance of ``Stream``
+            The stream instance modified in-place.
+
+        Notes
+        -----
+        Callback(s) are called in the same thread as the acquisition. Thus, they should
+        be fast and non-blocking. If the callback takes too long, the acquisition will
+        be delayed.
+
+        Callback(s) are called in the order they were added. The callback is called
+        whenever new data is available in the buffer.
+
+        Callback(s) are removed when the stream is disconnected.
         """
     _buffer: Incomplete
 
@@ -792,6 +839,13 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
 
     def _submit_acquisition_job(self) -> None:
         """Submit a new acquisition job, if applicable."""
+
+    @property
+    def callbacks(self) -> list[Callable]:
+        """List of callbacks to be called when new data is available.
+
+        :type: :class:`list` of :class:`~collections.abc.Callable`
+        """
 
     @property
     def compensation_grade(self) -> int | None:

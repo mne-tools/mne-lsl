@@ -179,7 +179,7 @@ def test_stream_info_representation() -> None:
     assert "float32" in repr_
 
 
-def test_stream_info_properties(close_io: Callable) -> None:
+def test_stream_info_properties(close_io: Callable[[], None]) -> None:
     """Test properties."""
     sinfo = StreamInfo("pytest", "eeg", 3, 101, "float32", uuid.uuid4().hex)
     assert isinstance(sinfo.created_at, float)
@@ -229,7 +229,7 @@ def test_invalid_stream_info() -> None:
         StreamInfo("pytest", "eeg", 101, -101, "float32", uuid.uuid4().hex)
 
 
-def test_stream_info_desc_from_info(close_io: Callable) -> None:
+def test_stream_info_desc_from_info(close_io: Callable[[], None]) -> None:
     """Test filling a description from an Info object."""
     info = create_info(5, 1000, "eeg")
     sinfo = StreamInfo("test", "eeg", 5, 1000, np.float32, uuid.uuid4().hex)

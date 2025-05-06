@@ -38,6 +38,7 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from mne.io import BaseRaw
+    from numpy.typing import NDArray
 
 
 class DummyPlayer:
@@ -712,7 +713,37 @@ def test_stream_rereference_average(mock_lsl_stream_int: DummyPlayer) -> None:
     stream.disconnect()
 
 
-def test_stream_str(close_io: Callable) -> None:
+@pytest.mark.slow
+def test_stream_callback(mock_lsl_stream_int: DummyPlayer) -> None:
+    """Test adding a callback function to a stream."""
+    stream = Stream(
+        bufsize=0.4,
+        name=mock_lsl_stream_int.name,
+        source_id=mock_lsl_stream_int.source_id,
+    )
+    stream.connect()
+    time.sleep(2)  # give a bit of time to slower CIs
+
+    def callback(data: NDArray, timestamps: NDArray[np.float64], info: Info) -> None:
+        """Callback function adding 101 to the data."""
+        data += 101
+        return data, timestamps
+
+    stream.add_callback(callback)
+    time.sleep(2)  # give a bit of time to slower CIs
+
+    picks = pick_types(stream.info, eeg=True)
+    data, _ = stream.get_data(picks="eeg")
+    data_ref = np.full(
+        (picks.size, data.shape[1]),
+        np.arange(picks.size).reshape(-1, 1),
+        dtype=stream.dtype,
+    )
+    data_ref += 101
+    assert_allclose(data, data_ref)
+
+
+def test_stream_str(close_io: Callable[[], None]) -> None:
     """Test a stream on a string source."""
     source_id = f"pytest-{uuid.uuid4().hex}"
     sinfo = StreamInfo("test_stream_str", "gaze", 1, 100, "string", source_id)
@@ -725,7 +756,7 @@ def test_stream_str(close_io: Callable) -> None:
     close_io()
 
 
-def test_stream_processing_flags(close_io: Callable) -> None:
+def test_stream_processing_flags(close_io: Callable[[], None]) -> None:
     """Test a stream connection processing flags."""
     name = "test_stream_processing_flags"
     source_id = f"pytest-{uuid.uuid4().hex}"
@@ -745,7 +776,7 @@ def test_stream_processing_flags(close_io: Callable) -> None:
     close_io()
 
 
-def test_stream_irregularly_sampled(close_io: Callable) -> None:
+def test_stream_irregularly_sampled(close_io: Callable[[], None]) -> None:
     """Test a stream with an irregular sampling rate."""
     name = "test_stream_irregularly_sampled"
     source_id = f"pytest-{uuid.uuid4().hex}"

@@ -46,7 +46,7 @@ def _test_properties(
     ],
 )
 def test_push_numerical_sample(
-    dtype_str: str, dtype: np.dtype, close_io: Callable
+    dtype_str: str, dtype: np.dtype, close_io: Callable[[], None]
 ) -> None:
     """Test push_sample with numerical values."""
     x = np.array([1, 2], dtype=dtype)
@@ -69,7 +69,7 @@ def test_push_numerical_sample(
     close_io()
 
 
-def test_push_str_sample(close_io: Callable) -> None:
+def test_push_str_sample(close_io: Callable[[], None]) -> None:
     """Test push_sample with strings."""
     x = ["1", "2"]
     # create stream descriptions
@@ -144,7 +144,7 @@ def test_push_str_chunk() -> None:
         outlet.push_chunk([["1", "4"], ["2", "5"], ["3", "6"], ["7"]])
 
 
-def test_wait_for_consumers(close_io: Callable) -> None:
+def test_wait_for_consumers(close_io: Callable[[], None]) -> None:
     """Test wait for client."""
     sinfo = StreamInfo("test", "EEG", 2, 100.0, "float32", uuid.uuid4().hex)
     outlet = StreamOutlet(sinfo, chunk_size=3)
@@ -186,7 +186,7 @@ def test_invalid_outlet() -> None:
     ],
 )
 def test_push_chunk_timestamps(
-    dtype_str: str, dtype: np.dtype, close_io: Callable
+    dtype_str: str, dtype: np.dtype, close_io: Callable[[], None]
 ) -> None:
     """Test push_chunk with timestamps."""
     if dtype_str == "string":
@@ -239,7 +239,7 @@ def test_push_chunk_timestamps(
 
 
 @pytest.mark.slow
-def test_push_chunk_irregularly_sampled_stream(close_io: Callable) -> None:
+def test_push_chunk_irregularly_sampled_stream(close_io: Callable[[], None]) -> None:
     """Test pushing a chunk on an irregularly sampled stream."""
     x = np.array([[1, 4], [2, 5], [3, 6]], dtype=np.float32)
     # create stream description

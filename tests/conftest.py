@@ -113,7 +113,7 @@ def _closer() -> None:
 
 
 @pytest.fixture
-def close_io() -> Callable:
+def close_io() -> Callable[[], None]:
     """Return function that will close inlets and outlets if present."""
     return _closer
 
