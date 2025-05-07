@@ -154,6 +154,11 @@ def test_stream(
     assert stream.dtype == stream.sinfo.dtype
     # compensation grade
     assert stream.compensation_grade is None
+    # test hashing and usage as dictionary key
+    assert isinstance(hash(stream), int)
+    dict_container = {}
+    dict_container[stream] = 1
+    assert stream in dict_container
     # disconnect
     stream.disconnect()
 

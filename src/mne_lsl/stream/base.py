@@ -85,6 +85,10 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         """Representation of the instance."""
 
     @abstractmethod
+    def __hash__(self) -> int:  # pragma: no cover
+        """Hash the instance from stream unique identifiers."""
+
+    @abstractmethod
     def acquire(self) -> None:
         """Pull new samples in the internal circular buffer.
 

@@ -54,6 +54,9 @@ class StreamLSL(BaseStream):
     def __repr__(self) -> str:
         """Representation of the instance."""
 
+    def __hash__(self) -> int:
+        """Hash the instance from stream unique identifiers."""
+
     def acquire(self) -> None:
         """Pull new samples in the internal circular buffer.
 
