@@ -57,7 +57,7 @@ class StreamLSL(BaseStream):
         name: str | None = None,
         stype: str | None = None,
         source_id: str | None = None,
-    ):
+    ) -> None:
         super().__init__(bufsize)
         check_type(name, (str, None), "name")
         check_type(stype, (str, None), "stype")
@@ -67,8 +67,8 @@ class StreamLSL(BaseStream):
         self._source_id = source_id
         self._reset_variables()
 
+    @copy_doc(BaseStream.__repr__)
     def __repr__(self) -> str:
-        """Representation of the instance."""
         try:
             conn = self.connected
         except AssertionError:  # can raise on `assert`, e.g., in mid-disconnect or del
@@ -90,6 +90,10 @@ class StreamLSL(BaseStream):
             return f"<Stream: {status}>"
         else:
             return f"<Stream: {status} | {desc}>"
+
+    @copy_doc(BaseStream.__hash__)
+    def __hash__(self) -> int:
+        return hash((self._name, self._stype, self._source_id))
 
     @copy_doc(BaseStream.acquire)
     def acquire(self) -> None:
