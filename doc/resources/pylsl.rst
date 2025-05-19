@@ -97,7 +97,7 @@ Increasing the number of channels to 650, simulating an higher sample count yiel
             worst = max(times)
             avg = sum(times) / len(times)
 
-            # format with the corret unit
+            # format with the correct unit
             if best < 1e-6:
                 unit, factor = "ns", 1e9
             elif best < 1e-3:
