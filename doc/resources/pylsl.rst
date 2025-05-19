@@ -5,8 +5,8 @@
 Differences with pylsl
 ======================
 
-Faster chunk pull
------------------
+Safer chunk pull default
+------------------------
 
 Arguably the most important difference, pulling a chunk of numerical data with
 :meth:`~mne_lsl.lsl.StreamInlet.pull_chunk` is faster than with its
@@ -53,7 +53,7 @@ Increasing the number of channels to 650, simulating an higher sample count yiel
 .. dropdown:: Timeit python code
     :animate: fade-in-slide-down
 
-    .. coode-block:: python
+    .. code-block:: python
 
         import ctypes
         import timeit
@@ -119,7 +119,7 @@ Note that ``pylsl`` pulling function support a ``dest_obj`` argument described a
     the appropriate number of samples. A numpy buffer must be order='C'.
 
 If a :class:`~numpy.ndarray` is used as ``dest_obj``, the memory re-allocation step
-described above is skipped, yielding better performance than ``mne_lsl.lsl`` at the constant
+described above is skipped, yielding better performance than ``mne_lsl.lsl`` at the cost
 of code complexity as the user is now responsible for the memory management.
 
 .. note::
@@ -176,4 +176,4 @@ Unique resolve function
 :func:`mne_lsl.lsl.resolve_streams` simplifies stream resolution with a unique function
 with similar functionalities.
 
-.. _pylsl pull_chunk: https://github.com/labstreaminglayer/pylsl/blob/16a4198087936386e866d7239bfde32d1fef6d6b/pylsl/pylsl.py#L862-L870
+.. _pylsl pull_chunk: https://github.com/labstreaminglayer/pylsl/blob/5e88eac4a4f82a809e0560fd4623e1735b3f57bf/src/pylsl/inlet.py#L265-L275
