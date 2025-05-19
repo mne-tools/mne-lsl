@@ -5,13 +5,14 @@
 Differences with pylsl
 ======================
 
-Faster chunk pull
------------------
+Safer chunk pull default
+------------------------
 
 Arguably the most important difference, pulling a chunk of numerical data with
-:meth:`~mne_lsl.lsl.StreamInlet.pull_chunk` is much faster than with its
-`pylsl <lsl python_>`_ counterpart. By default, `pylsl <lsl python_>`_ loads the
-retrieved samples one by one in a list of list, `here <pylsl pull_chunk_>`_.
+:meth:`~mne_lsl.lsl.StreamInlet.pull_chunk` is faster than with its
+`pylsl <lsl python_>`_ counterpart, except if using the argument ``dest_obj``.
+By default, `pylsl <lsl python_>`_ loads the retrieved samples one by one in a list of
+list, `here <pylsl pull_chunk_>`_.
 
 .. code-block:: python
 
@@ -41,8 +42,74 @@ Now, ``samples`` is created in constant time ``O(1)``. The performance gain vari
 depending on the number of values pulled, for instance retrieving 1024 samples with
 65 channels in double precision (``float64``) takes:
 
-* 4.33 ms ± 37.5 µs with ``pylsl`` (default behavior)
-* 268 ns ± 0.357 ns with ``mne_lsl.lsl``
+* 3.91 ± 0.12 ms with ``pylsl`` (default behavior: list comprehension)
+* 419.08 ± 38.10 ns with ``mne_lsl.lsl`` (:func:`numpy.frombuffer`)
+
+Increasing the number of channels to 650, simulating an higher sample count yields:
+
+* 46.56 ± 1.06 ms per loop with ``pylsl`` (default behavior: list comprehension)
+* 424.29 ± 36.41 ns with ``mne_lsl.lsl`` (:func:`numpy.frombuffer`)
+
+.. dropdown:: Timeit python code
+    :animate: fade-in-slide-down
+
+    .. code-block:: python
+
+        import ctypes
+        import timeit
+
+        import numpy as np
+
+        n_samples = 1024
+        n_channels = 650
+        max_values = n_samples * n_channels
+
+        # create a data buffer, 'retrieved from liblsl'
+        data_buffer = (ctypes.c_double * max_values)()
+        for i in range(max_values):
+            data_buffer[i] = float(i)
+
+
+        def method_list_comprehension():
+            """List comprehension, default method for pylsl."""
+            samples = [
+                [data_buffer[s * n_channels + c] for c in range(n_channels)]
+                for s in range(n_samples)
+            ]
+            return samples
+
+
+        def method_frombuffer():
+            """Numpy frombuffer, default method for mne-lsl."""
+            samples = np.frombuffer(data_buffer, dtype=np.float64)[:max_values].reshape(
+                n_samples, n_channels
+            )
+            return samples
+
+
+        repeat = 5
+        number = 100
+        for func in (method_list_comprehension, method_frombuffer):
+            timer = timeit.Timer(func)
+            results = timer.repeat(repeat, number=number)
+            times = [t / number for t in results]
+            best = min(times)
+            worst = max(times)
+            avg = sum(times) / len(times)
+
+            # format with the correct unit
+            if best < 1e-6:
+                unit, factor = "ns", 1e9
+            elif best < 1e-3:
+                unit, factor = "µs", 1e6
+            elif best < 1:
+                unit, factor = "ms", 1e3
+            else:
+                unit, factor = "s", 1
+
+            formatted_time = f"{best * factor:.2f} ± {(avg - best) * factor:.2f} {unit}"
+            plural = "s" if number != 1 else ""
+            print(f"{number} loop{plural}, best of {repeat}: {formatted_time} per loop")
 
 Note that ``pylsl`` pulling function support a ``dest_obj`` argument described as::
 
@@ -52,14 +119,13 @@ Note that ``pylsl`` pulling function support a ``dest_obj`` argument described a
     the appropriate number of samples. A numpy buffer must be order='C'.
 
 If a :class:`~numpy.ndarray` is used as ``dest_obj``, the memory re-allocation step
-described abvove is skipped, yielding similar performance to ``mne_lsl.lsl``. For the
-same 1024 samples with 65 channels in double precision (``float64``), the pull operation
-takes:
+described above is skipped, yielding better performance than ``mne_lsl.lsl`` at the cost
+of code complexity as the user is now responsible for the memory management.
 
-* 471 ns ± 1.7 ns with ``pylsl`` (with ``dest_obj`` argument as :class:`~numpy.ndarray`)
+.. note::
 
-Note that this performance improvement is absent for ``string`` based streams. Follow
-:issue:`225` for more information.
+    This performance improvement is absent for ``string`` based streams. Follow
+    :issue:`225` for more information.
 
 Convenience methods
 -------------------
@@ -110,4 +176,4 @@ Unique resolve function
 :func:`mne_lsl.lsl.resolve_streams` simplifies stream resolution with a unique function
 with similar functionalities.
 
-.. _pylsl pull_chunk: https://github.com/labstreaminglayer/pylsl/blob/16a4198087936386e866d7239bfde32d1fef6d6b/pylsl/pylsl.py#L862-L870
+.. _pylsl pull_chunk: https://github.com/labstreaminglayer/pylsl/blob/5e88eac4a4f82a809e0560fd4623e1735b3f57bf/src/pylsl/inlet.py#L265-L275
