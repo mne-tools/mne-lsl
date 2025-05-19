@@ -52,14 +52,16 @@ Note that ``pylsl`` pulling function support a ``dest_obj`` argument described a
     the appropriate number of samples. A numpy buffer must be order='C'.
 
 If a :class:`~numpy.ndarray` is used as ``dest_obj``, the memory re-allocation step
-described abvove is skipped, yielding similar performance to ``mne_lsl.lsl``. For the
+described above is skipped, yielding similar performance to ``mne_lsl.lsl``. For the
 same 1024 samples with 65 channels in double precision (``float64``), the pull operation
 takes:
 
 * 471 ns ± 1.7 ns with ``pylsl`` (with ``dest_obj`` argument as :class:`~numpy.ndarray`)
 
-Note that this performance improvement is absent for ``string`` based streams. Follow
-:issue:`225` for more information.
+.. note::
+
+    This performance improvement is absent for ``string`` based streams. Follow
+    :issue:`225` for more information.
 
 Convenience methods
 -------------------
