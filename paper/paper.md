@@ -81,14 +81,15 @@ widespread, researchers and developers require flexible, robust solutions to han
 complexities of real-time data streams, which often involve multiple devices and
 modalities.
 
-Existing platforms like OpenBCI [@openbci] and BrainFlow [@brainflow] are tailored for
-specific hardware ecosystems, offering streamlined workflows for users within those
-systems. However, their tight integration with proprietary hardware can limit
-flexibility and adaptability, particularly for researchers seeking to work with a
-diverse array of measurement devices. Similarly, GUI-based platforms like Neuromore
-[@neuromore] prioritize user-friendliness, often at the expense of customization and
-advanced functionality, which can be a limitation for experienced users requiring more
-control over data processing pipelines.
+Existing platforms offer different approaches to neurophysiological data acquisition and
+processing. OpenBCI [@openbci] represents a specific hardware ecosystem with its own
+software tools, limiting researchers to devices within that ecosystem. BrainFlow
+[@brainflow], while providing a unified API to interact with biosensor data from various
+manufacturers, still has limitations in supporting the full range of devices used in
+neurophysiological research. Similarly, GUI-based platforms like Neuromore [@neuromore]
+prioritize user-friendliness, often at the expense of customization and advanced
+functionality, which can be a limitation for experienced users requiring more control
+over data processing pipelines.
 
 In contrast, Lab Streaming Layer (LSL) has emerged as a widely adopted,
 device-agnostic protocol within the neurophysiological research community, especially
