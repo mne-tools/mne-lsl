@@ -9,6 +9,7 @@ tags:
   - EEG
   - MEG
   - brain
+  - neurophysiology
   - electrophysiology
 authors:
   - name: Mathieu Scheltienne
@@ -35,11 +36,15 @@ bibliography: paper.bib
 
 # Summary
 
-Neural, physiological, and behavioral data plays a key-role in understanding the human
-brain and body. This data encompasses a wide range of measurements including electrical
-activity of the brain (EEG), heart rate, muscle activity, eye movements. These
-measurements provide insights into cognitive processes, emotional states, physical
-health, and behavioral responses.
+Neural, physiological, and behavioral data plays a key role in understanding the human
+brain and body. Neurophysiology, as an umbrella term, encompasses various modalities for
+measuring brain and nervous system activity. These include electrophysiology (EEG, EMG),
+magnetophysiology (MEG), electrocorticography (ECoG), functional near-infrared
+spectroscopy (fNIRS), and other techniques that capture different aspects of neural
+function. Through these complementary approaches, researchers can measure electrical
+brain activity, heart rate, muscle contractions, eye movements, and other physiological
+signals. These diverse measurements provide crucial insights into cognitive processes,
+emotional states, physical health, and behavioral responses.
 
 With the growing popularity of brain-computer interfaces (BCIs) and neurofeedback
 applications, the demand for real-time processing of neurophysiological data has surged.
@@ -61,7 +66,7 @@ the intricacies of device communication.
 
 Beyond data acquisition, the real-time analysis of signals also presents significant
 challenges. MNE-Python [@GramfortEtAl2013a] is a comprehensive toolset for processing
-and analyzing electrophysiological data in Python, a widely-used programming language in
+and analyzing neurophysiological data in Python, a widely-used programming language in
 the scientific community. MNE-LSL enhances the integration of LSL with MNE-Python,
 providing robust objects for handling and processing both continuous and epoch-based
 data from real-time sources, thereby streamlining the development of real-time
@@ -95,7 +100,7 @@ has been less intuitive and less accessible.
 
 To bridge this gap, MNE-LSL was developed as a solution that not only facilitates the
 acquisition of real-time LSL streams but also integrates seamlessly with MNE-Python, a
-leading toolset for electrophysiological data analysis. Unlike its predecessor,
+leading toolset for neurophysiological data analysis. Unlike its predecessor,
 MNE-realtime [@mne-realtime], which had limitations in LSL support and user interface
 design, MNE-LSL offers an intuitive MNE-Python-like API allowing for real-time
 processing of continuous and epoch-based data streams in a familiar environment.
