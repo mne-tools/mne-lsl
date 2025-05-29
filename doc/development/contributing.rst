@@ -25,7 +25,7 @@ time. To install MNE-LSL in editable mode, run:
 
 .. code-block:: console
 
-    $ pip install -e .[all]
+    $ pip install -e ".[all]"
 
 .. note::
 
