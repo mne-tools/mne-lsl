@@ -76,6 +76,7 @@ def check_value(
         When the value of the item is not one of the valid options.
     """
 
+@fill_doc
 def check_verbose(verbose: Any) -> int:
     """Check that the value of verbose is valid.
 

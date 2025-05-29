@@ -11,6 +11,7 @@ from ._fixes import WrapStdOut as WrapStdOut
 
 _PACKAGE: str
 
+@fill_doc
 def _init_logger(*, verbose: bool | str | int | None = ...) -> Logger:
     """Initialize a logger.
 
@@ -55,6 +56,7 @@ def add_file_handler(
         ``"INFO"`` for True. If None is provided, the verbosity of the logger is used.
     """
 
+@fill_doc
 def set_log_level(verbose: bool | str | int | None) -> None:
     """Set the log level for the logger.
 
