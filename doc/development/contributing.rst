@@ -11,7 +11,18 @@ You can propose a change; a bugfix, a docstring improvement or a new feature; by
 following those steps:
 
 - `Fork the MNE-LSL repository`_ on GitHub
-- Clone your fork locally
+- Clone your fork locally with submodules:
+
+  .. code-block:: console
+
+      $ git clone --recurse-submodules https://github.com/yourusername/mne-lsl.git
+
+  Or if you already cloned without submodules, initialize them:
+
+  .. code-block:: console
+
+      $ git submodule update --init --recursive
+
 - (optional, recommended) Create a new branch for your changes
 - Make your changes locally and push them to your fork
 - `Open a pull request`_ with a clear title and description
