@@ -41,12 +41,12 @@ keywords = [
   'labstreaminglayer',
   'LSL',
   'neuroimaging',
+  'neurophysiology',
   'neuroscience',
   'python',
   'real-time',
 ]
-license = 'BSD-3-Clause'
-license-files = ['LICENSE']
+license = {file = 'LICENSE'}
 maintainers = [
   {email = 'mathieu.scheltienne@fcbg.ch', name = 'Mathieu Scheltienne'},
 ]
