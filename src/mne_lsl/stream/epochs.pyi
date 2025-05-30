@@ -264,6 +264,7 @@ class EpochsStream:
         """
     _n_new_epochs: int
 
+    @fill_doc
     def get_data(
         self,
         n_epochs: int | None = None,

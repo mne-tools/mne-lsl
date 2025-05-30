@@ -53,6 +53,8 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         chunk_size: int = 10,
         n_repeat: int | float = ...,
     ): ...
+    @verbose
+    @fill_doc
     def anonymize(
         self,
         daysback: int | None = None,
@@ -114,6 +116,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         Operates in place.
         """
 
+    @fill_doc
     def get_channel_units(
         self, picks: Incomplete | None = None, only_data_chs: bool = False
     ) -> list[tuple[int, int]]:
@@ -143,6 +146,8 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         """
 
     @abstractmethod
+    @verbose
+    @fill_doc
     def rename_channels(
         self,
         mapping: dict[str, str] | Callable,
@@ -180,6 +185,8 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
         """Start streaming data."""
 
     @abstractmethod
+    @verbose
+    @fill_doc
     def set_channel_types(
         self,
         mapping: dict[str, str],
