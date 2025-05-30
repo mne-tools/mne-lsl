@@ -32,7 +32,22 @@ Install in editable mode
 
 To modify MNE-LSL, it is recommended to install it in a separate environment in editable
 mode. This way, you can test your changes without having to reinstall the package each
-time. To install MNE-LSL in editable mode, run:
+time.
+
+.. note::
+
+    Installing MNE-LSL in editable mode will build ``liblsl`` using CMake, which
+    requires:
+
+    - A clone of the ``mne-lsl`` repository including the submodules
+    - CMake (version 3.16 or later)
+    - A C++ compiler and build tools:
+
+      - **Linux**: ``build-essential`` package (``gcc``, ``g++``, ``make``)
+      - **macOS**: Xcode Command Line Tools (``xcode-select --install``)
+      - **Windows**: Visual Studio with C++ support or Build Tools for Visual Studio
+
+To install MNE-LSL in editable mode, run:
 
 .. code-block:: console
 
@@ -42,13 +57,6 @@ time. To install MNE-LSL in editable mode, run:
 
     The ``[all]`` extra installs all optional dependencies, including those required for
     testing and documentation.
-
-.. note::
-
-    This command will build ``liblsl`` and will thus require:
-
-    - (1) A clone of the ``mne-lsl`` repository including the submodules
-    - (2) Compilers and build tools installed on your system
 
 Code style
 ----------
