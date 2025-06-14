@@ -35,7 +35,7 @@ def create_info(
     desc : StreamInfo | dict | None
         If provided, dictionary or :class:`~mne_lsl.lsl.StreamInfo` containing the
         channel information. A `~mne_lsl.lsl.StreamInfo` contains the number of
-        channels,csampling frequency and stream type, which will be checked against the
+        channels, sampling frequency and stream type, which will be checked against the
         provided arguments ``n_channels``, ``sfreq`` and ``stype``.
 
     Returns
