@@ -44,6 +44,8 @@ class build_ext(_build_ext):  # noqa: D101
             ]
             if platform.system() == "Darwin":
                 args.append("-DCMAKE_OSX_DEPLOYMENT_TARGET=11")
+            elif platform.system() == "Windows":
+                args.extend(["-T", "v142,host=x64"])  # use VS2019 toolset
             unit_tests = os.environ.get("MNE_LSL_LIBLSL_BUILD_UNITTESTS")
             unit_tests = eval(unit_tests) if unit_tests is not None else False
             if unit_tests:
