@@ -76,8 +76,8 @@ liblsl and LabRecorder dependencies
 
     .. tab-item:: Linux
 
-        On Linux, ``liblsl`` might requires ``libpugixml-dev`` and ``LabRecorder``
-        requires ``qt6-base-dev`` and ``freeglut3-dev``.
+        On Linux, `liblsl <lsl lib_>`_ might requires ``libpugixml-dev`` and
+        `LabRecorder <labrecorder_>`_ requires ``qt6-base-dev`` and ``freeglut3-dev``.
 
         .. code-block:: console
 
@@ -85,7 +85,7 @@ liblsl and LabRecorder dependencies
 
     .. tab-item:: Windows
 
-        On Windows, ``liblsl`` requires the
+        On Windows, `liblsl <lsl lib_>`_ requires the
         `Microsoft Visual C++ Redistributable <msvc_>`_,
         ``v142`` which corresponds to Visual Studio 2019.
 

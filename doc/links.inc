@@ -15,6 +15,7 @@
 
 .. lsl
 
+.. _labrecorder: https://github.com/labstreaminglayer/App-LabRecorder
 .. _lsl: https://labstreaminglayer.org
 .. _lsl intro: https://labstreaminglayer.readthedocs.io/info/intro.html
 .. _lsl language bindings: https://github.com/sccn/labstreaminglayer/tree/master/LSL
