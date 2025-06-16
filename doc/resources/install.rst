@@ -10,6 +10,8 @@ Default install
 `PyPI <project pypi_>`_ and `conda-forge <project conda_>`_. It requires
 `liblsl <lsl lib_>`_ which will be either fetched from the ``mne-lsl`` install or from
 the path in the environment variable ``MNE_LSL_LIB`` (or ``PYLSL_LIB``).
+`liblsl <lsl lib_>`_ requires system dependencies which are platform dependent, see
+the section below for more details.
 
 .. tab-set::
 
@@ -70,12 +72,28 @@ In this case, you can skip the build of `liblsl <lsl lib_>`_ during the installa
 liblsl and LabRecorder dependencies
 -----------------------------------
 
-On Linux, ``liblsl`` might requires ``libpugixml-dev`` and ``LabRecorder`` requires
-``qt6-base-dev`` and ``freeglut3-dev``.
+.. tab-set::
 
-.. code-block:: console
+    .. tab-item:: Linux
 
-    $ sudo apt install -y libpugixml-dev qt6-base-dev freeglut3-dev
+        On Linux, `liblsl <lsl lib_>`_ might requires ``libpugixml-dev`` and
+        `LabRecorder <labrecorder_>`_ requires ``qt6-base-dev`` and ``freeglut3-dev``.
+
+        .. code-block:: console
+
+            $ sudo apt install -y libpugixml-dev qt6-base-dev freeglut3-dev
+
+    .. tab-item:: Windows
+
+        On Windows, `liblsl <lsl lib_>`_ requires the
+        `Microsoft Visual C++ Redistributable <msvc_>`_,
+        ``v142`` which corresponds to Visual Studio 2019.
+
+        .. note::
+
+            The `MSVC++ Redistributable <msvc_>`_ are backward compatible, we would
+            always recommend to install the latest version available (currently
+            2015-2022).
 
 Qt
 --
