@@ -107,9 +107,10 @@ design, MNE-LSL offers an intuitive MNE-Python-like API allowing for real-time
 processing of continuous and epoch-based data streams in a familiar environment.
 
 MNE-LSL further enhances the real-time data acquisition workflow by re-implementing the
-low-level pylsl [@pylsl] library with more efficient NumPy [@harris2020array] operations
-and ensuring compatibility across platforms through automatic handling of the liblsl
-library. These improvements provide researchers with a powerful, user-friendly tool for
+low-level pylsl [@pylsl] library with improved structure and documentation. The
+implementation defaults to efficient NumPy [@harris2020array] operations and ensures
+cross-platform compatibility by packaging the liblsl library directly within Python
+wheels. These improvements provide researchers with a powerful, user-friendly tool for
 real-time data analysis within the Python ecosystem, meeting the growing needs of the
 neurophysiological research community.
 
