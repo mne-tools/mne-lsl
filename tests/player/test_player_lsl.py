@@ -134,7 +134,7 @@ def test_player_context_manager_raw(
         (stream.name, stream.source_id) for stream in streams
     ]
 
-    with pytest.warns(RuntimeWarning, match="raw file has no annotations"):
+    with pytest.warns(RuntimeWarning, match="raw file has no annotations"):  # noqa: PT031, E501
         with Player(
             raw, chunk_size=chunk_size, name=name, source_id=source_id, annotations=True
         ) as player:
@@ -406,8 +406,8 @@ def test_player_set_meas_date(
     assert player.source_id == source_id
     assert player.fname == fname
     assert player.info["meas_date"] is None
+    meas_date = datetime(2023, 1, 25, tzinfo=timezone.utc)
     with pytest.warns(RuntimeWarning, match="partially implemented"):
-        meas_date = datetime(2023, 1, 25, tzinfo=timezone.utc)
         player.set_meas_date(meas_date)
     assert player.info["meas_date"] == meas_date
     player.start()

@@ -11,7 +11,7 @@ from ..utils.logs import logger, warn
 # and the minor version is given by version % 100.
 _VERSION_MIN: int = 115
 # liblsl objects created with the same protocol version are inter-compatible.
-_VERSION_PROTOCOL: int = 110  # noqa: W0612
+_VERSION_PROTOCOL: int = 110
 
 
 def load_liblsl() -> CDLL:
