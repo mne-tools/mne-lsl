@@ -1129,7 +1129,7 @@ def test_epochs_with_more_events_than_buffer_size(
     outlet_marker.push_sample(np.array([1], dtype=sinfo.dtype))
     time.sleep(0.1)
     start = time.monotonic()
-    with pytest.warns(RuntimeWarning, match="number of new epochs to add.*is greater"):
+    with pytest.warns(RuntimeWarning, match="number of new epochs to add.*is greater"):  # noqa: E501, PT031
         while epochs.n_new_epochs != 5 and time.monotonic() - start < 3:
             epochs.acquire()
             time.sleep(0.5)
