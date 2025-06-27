@@ -543,6 +543,13 @@ class EpochsStream:
                 ),
                 dtype=data.dtype,
             )
+            if self._bufsize < events.shape[0]:
+                warn(
+                    "The number of new epochs to add to the buffer is greater "
+                    "than the buffer size. The oldest epochs will be overwritten/"
+                    "not acquired."
+                )
+                events = events[-self._bufsize :, :]
             for k, start in enumerate(events[:, 0][::-1]):
                 start += self._tmin_shift
                 data_selection[-(k + 1)] = data[

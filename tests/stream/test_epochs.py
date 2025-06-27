@@ -1088,3 +1088,48 @@ def test_epochs_single_event(
         time.sleep(0.2)
     assert epochs.n_new_epochs == 1
     assert event_stream.n_new_samples == 1
+
+
+def test_epochs_with_more_events_than_buffer_size(
+    mock_lsl_stream: DummyPlayer, outlet_marker: StreamOutlet
+) -> None:
+    """Test an epochs stream with more events than buffer size."""
+    stream = StreamLSL(
+        3, name=mock_lsl_stream.name, source_id=mock_lsl_stream.source_id
+    ).connect(acquisition_delay=0.1)
+    sinfo = outlet_marker.get_sinfo()
+    event_stream = StreamLSL(2, name=sinfo.name, source_id=sinfo.source_id).connect(
+        acquisition_delay=0.1
+    )
+    epochs = EpochsStream(
+        stream,
+        bufsize=1,
+        event_id=None,
+        event_channels="marker",
+        event_stream=event_stream,
+        tmin=-0.5,
+        tmax=0,
+        baseline=None,
+        picks="eeg",
+    ).connect(acquisition_delay=None)
+    assert epochs.n_new_epochs == 0
+    epochs.acquire()
+    time.sleep(0.5)
+    epochs.acquire()
+    assert epochs.n_new_epochs == 0
+    # push 5 events
+    outlet_marker.push_sample(np.array([1], dtype=sinfo.dtype))
+    time.sleep(0.1)
+    outlet_marker.push_sample(np.array([1], dtype=sinfo.dtype))
+    time.sleep(0.1)
+    outlet_marker.push_sample(np.array([1], dtype=sinfo.dtype))
+    time.sleep(0.1)
+    outlet_marker.push_sample(np.array([1], dtype=sinfo.dtype))
+    time.sleep(0.1)
+    outlet_marker.push_sample(np.array([1], dtype=sinfo.dtype))
+    time.sleep(0.1)
+    start = time.monotonic()
+    with pytest.warns(RuntimeWarning, match="number of new epochs to add.*is greater"):  # noqa: E501, PT031
+        while epochs.n_new_epochs != 5 and time.monotonic() - start < 3:
+            epochs.acquire()
+            time.sleep(0.5)
