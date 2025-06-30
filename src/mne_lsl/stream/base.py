@@ -1162,7 +1162,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         # to _ref_channels and _ref_from and edit those 2 variables accordingly.
         if self._info["custom_ref_applied"] == FIFF.FIFFV_MNE_CUSTOM_REF_ON:
             raise RuntimeError(
-                "The channel selection must be done before adding a re-refenrecing "
+                "The channel selection must be done before adding a re-referencing "
                 "schema with Stream.set_eeg_reference()."
             )
         picks_inlet = picks[np.where(picks < self._picks_inlet.size)[0]]
