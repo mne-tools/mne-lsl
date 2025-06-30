@@ -88,6 +88,7 @@ jobs:
         env:
           MNE_LSL_LOG_LEVEL: DEBUG
       - uses: codecov/codecov-action@v5
+        if: ${{ github.repository == 'mne-tools/mne-lsl' }}
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
 
@@ -127,6 +128,7 @@ jobs:
         env:
           MNE_LSL_LOG_LEVEL: DEBUG
       - uses: codecov/codecov-action@v5
+        if: ${{ github.repository == 'mne-tools/mne-lsl' }}
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
 
@@ -166,6 +168,7 @@ jobs:
         env:
           MNE_LSL_LOG_LEVEL: DEBUG
       - uses: codecov/codecov-action@v5
+        if: ${{ github.repository == 'mne-tools/mne-lsl' }}
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
 
@@ -190,6 +193,7 @@ jobs:
         env:
           MNE_LSL_LOG_LEVEL: DEBUG
       - uses: codecov/codecov-action@v5
+        if: ${{ github.repository == 'mne-tools/mne-lsl' }}
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
 
@@ -267,7 +271,7 @@ jobs:
           path: ./doc/_build/html
 
   doc-deploy-dev:
-    if: github.event_name == 'push'
+    if: ${{ github.event_name == 'push' && github.repository == 'mne-tools/mne-lsl' }}
     needs: doc-build
     name: deploy development documentation
     runs-on: ubuntu-latest
@@ -290,7 +294,7 @@ jobs:
           force: true
 
   doc-deploy-release:
-    if: github.event_name == 'release'
+    if: ${{ github.event_name == 'release' && github.repository == 'mne-tools/mne-lsl' }}
     needs: doc-build
     name: deploy stable documentation
     runs-on: ubuntu-latest
@@ -340,7 +344,7 @@ jobs:
           git push origin gh-pages
 
   publish:
-    if: github.event_name == 'release'
+    if: ${{ github.event_name == 'release' && github.repository == 'mne-tools/mne-lsl' }}
     needs: [check, test, test-mne-compat, test-pip-pre, test-editable, doc-deploy-release]
     name: publish to PyPI
     runs-on: ubuntu-latest
