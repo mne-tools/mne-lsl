@@ -82,14 +82,19 @@ complexities of real-time data streams, which often involve multiple devices and
 modalities.
 
 Existing platforms offer different approaches to neurophysiological data acquisition and
-processing. OpenBCI [@openbci] represents a specific hardware ecosystem with its own
-software tools, limiting researchers to devices within that ecosystem. BrainFlow
-[@brainflow], while providing a unified API to interact with biosensor data from various
-manufacturers, still has limitations in supporting the full range of devices used in
-neurophysiological research. Similarly, GUI-based platforms like Neuromore [@neuromore]
-prioritize user-friendliness, often at the expense of customization and advanced
-functionality, which can be a limitation for experienced users requiring more control
-over data processing pipelines.
+processing. BCI2000 [@bci2000] represents one of the most established solutions,
+providing a comprehensive framework for BCI research with its own modules for data
+acquisition, signal processing, and application development. However, its monolithic
+architecture and C++-based implementation can present challenges for researchers seeking
+to integrate custom Python-based analyses or leverage existing Python scientific
+libraries for neurophysiological data processing. OpenBCI [@openbci] represents a
+specific hardware ecosystem with its own software tools, limiting researchers to devices
+within that ecosystem. BrainFlow [@brainflow], while providing a unified API to interact
+with biosensor data from various manufacturers, still has limitations in supporting the
+full range of devices used in neurophysiological research. Similarly, GUI-based
+platforms like Neuromore [@neuromore] prioritize user-friendliness, often at the expense
+of customization and advanced functionality, which can be a limitation for experienced
+users requiring more control over data processing pipelines.
 
 In contrast, Lab Streaming Layer (LSL) has emerged as a widely adopted,
 device-agnostic protocol within the neurophysiological research community, especially
