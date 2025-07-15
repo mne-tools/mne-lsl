@@ -5,7 +5,7 @@
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="Command line" href="../../resources/command_line.html" /><link rel="prev" title="mne_lsl.stream_viewer.StreamViewer" href="mne_lsl.stream_viewer.StreamViewer.html" />
 
-    <link rel="shortcut icon" href="../../_static/logo-no-mne.svg"/><!-- Generated with Sphinx 8.2.1 and Furo 2024.08.06 -->
+    <link rel="shortcut icon" href="../../_static/logo-no-mne.svg"/><!-- Generated with Sphinx 8.2.3 and Furo 2024.08.06 -->
         <title>mne_lsl.stream.BaseStream - MNE-LSL</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=354aac6f" />
@@ -239,6 +239,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../development/contributing.html">Contribution guide</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../development/changes/index.html">Changelog</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of Changelog</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.10.html">Version 1.10</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.9.html">Version 1.9</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.8.html">Version 1.8</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.7.html">Version 1.7.1</a></li>
@@ -299,7 +300,7 @@
 <h1>mne_lsl.stream.BaseStream<a class="headerlink" href="#mne-lsl-stream-basestream" title="Link to this heading">🔗</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="mne_lsl.stream.BaseStream">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mne_lsl.stream.</span></span><span class="sig-name descname"><span class="pre">BaseStream</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bufsize</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.9/src/mne_lsl/stream/base.py#L47-L1243"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.stream.BaseStream" title="Link to this definition">🔗</a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mne_lsl.stream.</span></span><span class="sig-name descname"><span class="pre">BaseStream</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bufsize</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.10/src/mne_lsl/stream/base.py#L47-L1308"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.stream.BaseStream" title="Link to this definition">🔗</a></dt>
 <dd><p>Stream object representing a single real-time stream.</p>
 <dl class="field-list">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -317,28 +318,31 @@ expressed in samples. The buffer will hold the last <code class="docutils litera
 <div class="table-wrapper autosummary longtable docutils container">
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.ch_names" title="mne_lsl.stream.BaseStream.ch_names"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ch_names</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.callbacks" title="mne_lsl.stream.BaseStream.callbacks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">callbacks</span></code></a></p></td>
+<td><p>List of callbacks to be called when new data is available.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.ch_names" title="mne_lsl.stream.BaseStream.ch_names"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ch_names</span></code></a></p></td>
 <td><p>Name of the channels.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.compensation_grade" title="mne_lsl.stream.BaseStream.compensation_grade"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compensation_grade</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.compensation_grade" title="mne_lsl.stream.BaseStream.compensation_grade"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compensation_grade</span></code></a></p></td>
 <td><p>The current gradient compensation grade.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.connected" title="mne_lsl.stream.BaseStream.connected"><code class="xref py py-obj docutils literal notranslate"><span class="pre">connected</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.connected" title="mne_lsl.stream.BaseStream.connected"><code class="xref py py-obj docutils literal notranslate"><span class="pre">connected</span></code></a></p></td>
 <td><p>Connection status of the stream.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.dtype" title="mne_lsl.stream.BaseStream.dtype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dtype</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.dtype" title="mne_lsl.stream.BaseStream.dtype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dtype</span></code></a></p></td>
 <td><p>Channel format of the stream.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.filters" title="mne_lsl.stream.BaseStream.filters"><code class="xref py py-obj docutils literal notranslate"><span class="pre">filters</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.filters" title="mne_lsl.stream.BaseStream.filters"><code class="xref py py-obj docutils literal notranslate"><span class="pre">filters</span></code></a></p></td>
 <td><p>List of filters applied to the real-time Stream.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.info" title="mne_lsl.stream.BaseStream.info"><code class="xref py py-obj docutils literal notranslate"><span class="pre">info</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.info" title="mne_lsl.stream.BaseStream.info"><code class="xref py py-obj docutils literal notranslate"><span class="pre">info</span></code></a></p></td>
 <td><p>Info of the LSL stream.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.n_buffer" title="mne_lsl.stream.BaseStream.n_buffer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">n_buffer</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.n_buffer" title="mne_lsl.stream.BaseStream.n_buffer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">n_buffer</span></code></a></p></td>
 <td><p>Number of samples that can be stored in the buffer.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.n_new_samples" title="mne_lsl.stream.BaseStream.n_new_samples"><code class="xref py py-obj docutils literal notranslate"><span class="pre">n_new_samples</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.n_new_samples" title="mne_lsl.stream.BaseStream.n_new_samples"><code class="xref py py-obj docutils literal notranslate"><span class="pre">n_new_samples</span></code></a></p></td>
 <td><p>Number of new samples available in the buffer.</p></td>
 </tr>
 </tbody>
@@ -351,73 +355,76 @@ expressed in samples. The buffer will hold the last <code class="docutils litera
 <tr class="row-odd"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.acquire" title="mne_lsl.stream.BaseStream.acquire"><code class="xref py py-obj docutils literal notranslate"><span class="pre">acquire</span></code></a>()</p></td>
 <td><p>Pull new samples in the internal circular buffer.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.add_reference_channels" title="mne_lsl.stream.BaseStream.add_reference_channels"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_reference_channels</span></code></a>(ref_channels[, ref_units])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.add_callback" title="mne_lsl.stream.BaseStream.add_callback"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_callback</span></code></a>(callback)</p></td>
+<td><p>Add a callback to the stream.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.add_reference_channels" title="mne_lsl.stream.BaseStream.add_reference_channels"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_reference_channels</span></code></a>(ref_channels[, ref_units])</p></td>
 <td><p>Add EEG reference channels to data that consists of all zeros.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.anonymize" title="mne_lsl.stream.BaseStream.anonymize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">anonymize</span></code></a>([daysback, keep_his, verbose])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.anonymize" title="mne_lsl.stream.BaseStream.anonymize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">anonymize</span></code></a>([daysback, keep_his, verbose])</p></td>
 <td><p>Anonymize the measurement information in-place.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.connect" title="mne_lsl.stream.BaseStream.connect"><code class="xref py py-obj docutils literal notranslate"><span class="pre">connect</span></code></a>(acquisition_delay)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.connect" title="mne_lsl.stream.BaseStream.connect"><code class="xref py py-obj docutils literal notranslate"><span class="pre">connect</span></code></a>(acquisition_delay)</p></td>
 <td><p>Connect to the stream and initiate data collection in the buffer.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.del_filter" title="mne_lsl.stream.BaseStream.del_filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">del_filter</span></code></a>([idx])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.del_filter" title="mne_lsl.stream.BaseStream.del_filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">del_filter</span></code></a>([idx])</p></td>
 <td><p>Remove a filter from the list of applied filters.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.disconnect" title="mne_lsl.stream.BaseStream.disconnect"><code class="xref py py-obj docutils literal notranslate"><span class="pre">disconnect</span></code></a>()</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.disconnect" title="mne_lsl.stream.BaseStream.disconnect"><code class="xref py py-obj docutils literal notranslate"><span class="pre">disconnect</span></code></a>()</p></td>
 <td><p>Disconnect from the LSL stream and interrupt data collection.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.drop_channels" title="mne_lsl.stream.BaseStream.drop_channels"><code class="xref py py-obj docutils literal notranslate"><span class="pre">drop_channels</span></code></a>(ch_names)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.drop_channels" title="mne_lsl.stream.BaseStream.drop_channels"><code class="xref py py-obj docutils literal notranslate"><span class="pre">drop_channels</span></code></a>(ch_names)</p></td>
 <td><p>Drop channel(s).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.filter" title="mne_lsl.stream.BaseStream.filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">filter</span></code></a>(l_freq, h_freq[, picks, iir_params, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.filter" title="mne_lsl.stream.BaseStream.filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">filter</span></code></a>(l_freq, h_freq[, picks, iir_params, ...])</p></td>
 <td><p>Filter the stream with an IIR causal filter.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.get_channel_types" title="mne_lsl.stream.BaseStream.get_channel_types"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_channel_types</span></code></a>([picks, unique, only_data_chs])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.get_channel_types" title="mne_lsl.stream.BaseStream.get_channel_types"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_channel_types</span></code></a>([picks, unique, only_data_chs])</p></td>
 <td><p>Get a list of channel type for each channel.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.get_channel_units" title="mne_lsl.stream.BaseStream.get_channel_units"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_channel_units</span></code></a>([picks, only_data_chs])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.get_channel_units" title="mne_lsl.stream.BaseStream.get_channel_units"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_channel_units</span></code></a>([picks, only_data_chs])</p></td>
 <td><p>Get a list of channel unit for each channel.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.get_data" title="mne_lsl.stream.BaseStream.get_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_data</span></code></a>([winsize, picks, exclude])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.get_data" title="mne_lsl.stream.BaseStream.get_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_data</span></code></a>([winsize, picks, exclude])</p></td>
 <td><p>Retrieve the latest data from the buffer.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.get_montage" title="mne_lsl.stream.BaseStream.get_montage"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_montage</span></code></a>()</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.get_montage" title="mne_lsl.stream.BaseStream.get_montage"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_montage</span></code></a>()</p></td>
 <td><p>Get a DigMontage from instance.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.notch_filter" title="mne_lsl.stream.BaseStream.notch_filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">notch_filter</span></code></a>(freqs[, picks, notch_widths, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.notch_filter" title="mne_lsl.stream.BaseStream.notch_filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">notch_filter</span></code></a>(freqs[, picks, notch_widths, ...])</p></td>
 <td><p>Filter the stream with an IIR causal notch filter.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.pick" title="mne_lsl.stream.BaseStream.pick"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pick</span></code></a>([picks, exclude])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.pick" title="mne_lsl.stream.BaseStream.pick"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pick</span></code></a>([picks, exclude])</p></td>
 <td><p>Pick a subset of channels.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.plot" title="mne_lsl.stream.BaseStream.plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot</span></code></a>()</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.plot" title="mne_lsl.stream.BaseStream.plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot</span></code></a>()</p></td>
 <td><p>Open a real-time stream viewer.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.plot_sensors" title="mne_lsl.stream.BaseStream.plot_sensors"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_sensors</span></code></a>([kind, ch_type, title, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.plot_sensors" title="mne_lsl.stream.BaseStream.plot_sensors"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_sensors</span></code></a>([kind, ch_type, title, ...])</p></td>
 <td><p>Plot sensor positions.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.record" title="mne_lsl.stream.BaseStream.record"><code class="xref py py-obj docutils literal notranslate"><span class="pre">record</span></code></a>()</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.record" title="mne_lsl.stream.BaseStream.record"><code class="xref py py-obj docutils literal notranslate"><span class="pre">record</span></code></a>()</p></td>
 <td><p>Record the stream data to disk.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.rename_channels" title="mne_lsl.stream.BaseStream.rename_channels"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rename_channels</span></code></a>(mapping[, allow_duplicates, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.rename_channels" title="mne_lsl.stream.BaseStream.rename_channels"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rename_channels</span></code></a>(mapping[, allow_duplicates, ...])</p></td>
 <td><p>Rename channels.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.set_bipolar_reference" title="mne_lsl.stream.BaseStream.set_bipolar_reference"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_bipolar_reference</span></code></a>()</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.set_bipolar_reference" title="mne_lsl.stream.BaseStream.set_bipolar_reference"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_bipolar_reference</span></code></a>()</p></td>
 <td><p>Set a bipolar reference.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.set_channel_types" title="mne_lsl.stream.BaseStream.set_channel_types"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_channel_types</span></code></a>(mapping, *[, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.set_channel_types" title="mne_lsl.stream.BaseStream.set_channel_types"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_channel_types</span></code></a>(mapping, *[, ...])</p></td>
 <td><p>Define the sensor type of channels.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.set_channel_units" title="mne_lsl.stream.BaseStream.set_channel_units"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_channel_units</span></code></a>(mapping)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.set_channel_units" title="mne_lsl.stream.BaseStream.set_channel_units"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_channel_units</span></code></a>(mapping)</p></td>
 <td><p>Define the channel unit multiplication factor.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.set_eeg_reference" title="mne_lsl.stream.BaseStream.set_eeg_reference"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_eeg_reference</span></code></a>(ref_channels[, ch_type])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.set_eeg_reference" title="mne_lsl.stream.BaseStream.set_eeg_reference"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_eeg_reference</span></code></a>(ref_channels[, ch_type])</p></td>
 <td><p>Specify which reference to use for EEG-like data.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.set_meas_date" title="mne_lsl.stream.BaseStream.set_meas_date"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_meas_date</span></code></a>(meas_date)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.set_meas_date" title="mne_lsl.stream.BaseStream.set_meas_date"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_meas_date</span></code></a>(meas_date)</p></td>
 <td><p>Set the measurement start date.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.set_montage" title="mne_lsl.stream.BaseStream.set_montage"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_montage</span></code></a>(montage[, match_case, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#mne_lsl.stream.BaseStream.set_montage" title="mne_lsl.stream.BaseStream.set_montage"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_montage</span></code></a>(montage[, match_case, ...])</p></td>
 <td><p>Set EEG/sEEG/ECoG/DBS/fNIRS channel positions and digitization points.</p></td>
 </tr>
 </tbody>
@@ -425,7 +432,7 @@ expressed in samples. The buffer will hold the last <code class="docutils litera
 </div>
 <dl class="py method">
 <dt class="sig sig-object py" id="mne_lsl.stream.BaseStream.acquire">
-<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">acquire</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.9/src/mne_lsl/stream/base.py#L86-L108"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.stream.BaseStream.acquire" title="Link to this definition">🔗</a></dt>
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">acquire</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.10/src/mne_lsl/stream/base.py#L91-L113"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.stream.BaseStream.acquire" title="Link to this definition">🔗</a></dt>
 <dd><p>Pull new samples in the internal circular buffer.</p>
 <p class="rubric">Notes</p>
 <p>This method is not needed if the stream was connected with an acquisition delay
@@ -434,8 +441,75 @@ background thread.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="mne_lsl.stream.BaseStream.add_callback">
+<span class="sig-name descname"><span class="pre">add_callback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callback</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.10/src/mne_lsl/stream/base.py#L115-L163"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.stream.BaseStream.add_callback" title="Link to this definition">🔗</a></dt>
+<dd><p>Add a callback to the stream.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl>
+<dt><strong>callback</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Callable</span></code></a></span></dt><dd><p>A callable function called on each new acquire window. The callback operates
+on a data array of shape <code class="docutils literal notranslate"><span class="pre">(n_times,</span> <span class="pre">n_channels)</span></code> (and its timestamps) and
+is called after:</p>
+<ul class="simple">
+<li><p>applying channel selection defined through <code class="docutils literal notranslate"><span class="pre">pick</span></code> and <code class="docutils literal notranslate"><span class="pre">drop_channels</span></code>.</p></li>
+<li><p>adding channels defined through <code class="docutils literal notranslate"><span class="pre">add_reference_channels</span></code>.</p></li>
+<li><p>applying EEG reference defined through <code class="docutils literal notranslate"><span class="pre">set_eeg_reference</span></code>.</p></li>
+<li><p>applying filters defined through <code class="docutils literal notranslate"><span class="pre">filter</span></code> and <code class="docutils literal notranslate"><span class="pre">notch_filter</span></code>.</p></li>
+</ul>
+<p>Thus, the callback signature should be:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">callback</span><span class="p">(</span>
+    <span class="n">data</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="o">...</span><span class="p">],</span> <span class="n">timestamps</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="n">info</span><span class="p">:</span> <span class="n">mne</span><span class="o">.</span><span class="n">Info</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">[</span><span class="o">...</span><span class="p">],</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A callback function.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : NDArray[...]</span>
+<span class="sd">        Data array of shape (n_times, n_channels).</span>
+<span class="sd">    timestamps : NDArray[np.float64]</span>
+<span class="sd">        Timestamp array of shape (n_times,).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    data : NDArray[...]</span>
+<span class="sd">        The modified data array of shape (n_times, n_channels).</span>
+<span class="sd">    timestamps : NDArray[np.float64]</span>
+<span class="sd">        The modified timestamp array of shape (n_times,).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># implement your callback function here and return the modified data and timestamps</span>
+    <span class="k">return</span> <span class="n">data</span><span class="p">,</span> <span class="n">timestamps</span>
+</pre></div>
+</div>
+<p>With <code class="docutils literal notranslate"><span class="pre">data</span></code> is the data array of shape <code class="docutils literal notranslate"><span class="pre">(n_times,</span> <span class="pre">n_channels)</span></code> and of
+<code class="docutils literal notranslate"><span class="pre">dtype</span></code> defined in the stream; <code class="docutils literal notranslate"><span class="pre">timestamps</span></code> is the timestamp array of
+shape <code class="docutils literal notranslate"><span class="pre">(n_times,)</span></code> and <code class="docutils literal notranslate"><span class="pre">dtype</span></code> of <code class="docutils literal notranslate"><span class="pre">np.float64</span></code>, and <code class="docutils literal notranslate"><span class="pre">info</span></code> is the
+stream information.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Ideally, the callback should modify the data in place.</p>
+</div>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl>
+<dt><strong>stream</strong><span class="classifier">instance of <code class="docutils literal notranslate"><span class="pre">Stream</span></code></span></dt><dd><p>The stream instance modified in-place.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Callback(s) are called in the same thread as the acquisition. Thus, they should
+be fast and non-blocking. If the callback takes too long, the acquisition will
+be delayed.</p>
+<p>Callback(s) are called in the order they were added. The callback is called
+whenever new data is available in the buffer.</p>
+<p>Callback(s) are removed when the stream is disconnected.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="mne_lsl.stream.BaseStream.add_reference_channels">
-<span class="sig-name descname"><span class="pre">add_reference_channels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ref_channels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ref_units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.9/src/mne_lsl/stream/base.py#L110-L233"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.stream.BaseStream.add_reference_channels" title="Link to this definition">🔗</a></dt>
+<span class="sig-name descname"><span class="pre">add_reference_channels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ref_channels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ref_units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.10/src/mne_lsl/stream/base.py#L165-L288"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.stream.BaseStream.add_reference_channels" title="Link to this definition">🔗</a></dt>
 <dd><p>Add EEG reference channels to data that consists of all zeros.</p>
 <p>Adds EEG reference channels that are not part of the streamed data. This is
 useful when you need to re-reference your data to different channels. These
@@ -470,7 +544,7 @@ buffer</span></a>.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="mne_lsl.stream.BaseStream.anonymize">
-<span class="sig-name descname"><span class="pre">anonymize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">daysback</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_his</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.9/src/mne_lsl/stream/base.py#L235-L267"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.stream.BaseStream.anonymize" title="Link to this definition">🔗</a></dt>
+<span class="sig-name descname"><span class="pre">anonymize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">daysback</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_his</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.10/src/mne_lsl/stream/base.py#L290-L322"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.stream.BaseStream.anonymize" title="Link to this definition">🔗</a></dt>
 <dd><p>Anonymize the measurement information in-place.</p>
 <dl class="field-list">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -551,7 +625,7 @@ the above fields.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="mne_lsl.stream.BaseStream.connect">
-<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">connect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">acquisition_delay</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.9/src/mne_lsl/stream/base.py#L269-L320"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.stream.BaseStream.connect" title="Link to this definition">🔗</a></dt>
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">connect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">acquisition_delay</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.10/src/mne_lsl/stream/base.py#L324-L375"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.stream.BaseStream.connect" title="Link to this definition">🔗</a></dt>
 <dd><p>Connect to the stream and initiate data collection in the buffer.</p>
 <dl class="field-list">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -574,7 +648,7 @@ acquisition method <code class="docutils literal notranslate"><span class="pre">
 
 <dl class="py method">
 <dt class="sig sig-object py" id="mne_lsl.stream.BaseStream.del_filter">
-<span class="sig-name descname"><span class="pre">del_filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.9/src/mne_lsl/stream/base.py#L345-L422"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.stream.BaseStream.del_filter" title="Link to this definition">🔗</a></dt>
+<span class="sig-name descname"><span class="pre">del_filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.10/src/mne_lsl/stream/base.py#L400-L477"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.stream.BaseStream.del_filter" title="Link to this definition">🔗</a></dt>
 <dd><p>Remove a filter from the list of applied filters.</p>
 <dl class="field-list">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -594,7 +668,7 @@ a step response steady-state.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="mne_lsl.stream.BaseStream.disconnect">
-<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">disconnect</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.9/src/mne_lsl/stream/base.py#L322-L343"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.stream.BaseStream.disconnect" title="Link to this definition">🔗</a></dt>
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">disconnect</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.10/src/mne_lsl/stream/base.py#L377-L398"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.stream.BaseStream.disconnect" title="Link to this definition">🔗</a></dt>
 <dd><p>Disconnect from the LSL stream and interrupt data collection.</p>
 <dl class="field-list">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -608,7 +682,7 @@ a step response steady-state.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="mne_lsl.stream.BaseStream.drop_channels">
-<span class="sig-name descname"><span class="pre">drop_channels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ch_names</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.9/src/mne_lsl/stream/base.py#L424-L455"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.stream.BaseStream.drop_channels" title="Link to this definition">🔗</a></dt>
+<span class="sig-name descname"><span class="pre">drop_channels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ch_names</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.10/src/mne_lsl/stream/base.py#L479-L510"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.stream.BaseStream.drop_channels" title="Link to this definition">🔗</a></dt>
 <dd><p>Drop channel(s).</p>
 <dl class="field-list">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -634,7 +708,7 @@ a step response steady-state.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="mne_lsl.stream.BaseStream.filter">
-<span class="sig-name descname"><span class="pre">filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">l_freq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">h_freq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">picks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iir_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.9/src/mne_lsl/stream/base.py#L457-L517"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.stream.BaseStream.filter" title="Link to this definition">🔗</a></dt>
+<span class="sig-name descname"><span class="pre">filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">l_freq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">h_freq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">picks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iir_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.10/src/mne_lsl/stream/base.py#L512-L572"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.stream.BaseStream.filter" title="Link to this definition">🔗</a></dt>
 <dd><p>Filter the stream with an IIR causal filter.</p>
 <p>Once a filter is applied, the buffer is updated in real-time with the filtered
 data. It is possible to apply more than one filter.</p>
@@ -650,7 +724,7 @@ data. It is possible to apply more than one filter.</p>
 </dd>
 <dt><strong>h_freq</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">float</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">None</span></code></a></span></dt><dd><p>The higher cutoff frequency. If None, the buffer is only high-passed.</p>
 </dd>
-<dt><strong>picks</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://numpy.org/doc/stable/glossary.html#term-array_like" title="(in NumPy v2.2)"><span>array_like</span></a> | <a class="reference external" href="https://docs.python.org/3/library/functions.html#slice" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">slice</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">None</span></code></a></span></dt><dd><p>Channels to include. Slices and lists of integers will be interpreted as 
+<dt><strong>picks</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://numpy.org/doc/stable/glossary.html#term-array_like" title="(in NumPy v2.3)"><span>array_like</span></a> | <a class="reference external" href="https://docs.python.org/3/library/functions.html#slice" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">slice</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">None</span></code></a></span></dt><dd><p>Channels to include. Slices and lists of integers will be interpreted as 
 channel indices. In lists, channel <em>type</em> strings (e.g., <code class="docutils literal notranslate"><span class="pre">['meg',</span> 
 <span class="pre">'eeg']</span></code>) will pick channels of those types, channel <em>name</em> strings (e.g., 
 <code class="docutils literal notranslate"><span class="pre">['MEG0111',</span> <span class="pre">'MEG2623']</span></code> will pick the given channels. Can also be the 
@@ -689,12 +763,12 @@ buffer</span></a>.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="mne_lsl.stream.BaseStream.get_channel_types">
-<span class="sig-name descname"><span class="pre">get_channel_types</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">picks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unique</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">only_data_chs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.9/src/mne_lsl/stream/base.py#L519-L529"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.stream.BaseStream.get_channel_types" title="Link to this definition">🔗</a></dt>
+<span class="sig-name descname"><span class="pre">get_channel_types</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">picks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unique</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">only_data_chs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.10/src/mne_lsl/stream/base.py#L574-L584"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.stream.BaseStream.get_channel_types" title="Link to this definition">🔗</a></dt>
 <dd><p>Get a list of channel type for each channel.</p>
 <dl class="field-list">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl>
-<dt><strong>picks</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://numpy.org/doc/stable/glossary.html#term-array_like" title="(in NumPy v2.2)"><span>array_like</span></a> | <a class="reference external" href="https://docs.python.org/3/library/functions.html#slice" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">slice</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">None</span></code></a></span></dt><dd><p>Channels to include. Slices and lists of integers will be interpreted as 
+<dt><strong>picks</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://numpy.org/doc/stable/glossary.html#term-array_like" title="(in NumPy v2.3)"><span>array_like</span></a> | <a class="reference external" href="https://docs.python.org/3/library/functions.html#slice" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">slice</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">None</span></code></a></span></dt><dd><p>Channels to include. Slices and lists of integers will be interpreted as 
 channel indices. In lists, channel <em>type</em> strings (e.g., <code class="docutils literal notranslate"><span class="pre">['meg',</span> 
 <span class="pre">'eeg']</span></code>) will pick channels of those types, channel <em>name</em> strings (e.g., 
 <code class="docutils literal notranslate"><span class="pre">['MEG0111',</span> <span class="pre">'MEG2623']</span></code> will pick the given channels. Can also be the 
@@ -720,12 +794,12 @@ are explicitly provided.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="mne_lsl.stream.BaseStream.get_channel_units">
-<span class="sig-name descname"><span class="pre">get_channel_units</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">picks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">only_data_chs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.9/src/mne_lsl/stream/base.py#L531-L562"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.stream.BaseStream.get_channel_units" title="Link to this definition">🔗</a></dt>
+<span class="sig-name descname"><span class="pre">get_channel_units</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">picks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">only_data_chs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.10/src/mne_lsl/stream/base.py#L586-L617"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.stream.BaseStream.get_channel_units" title="Link to this definition">🔗</a></dt>
 <dd><p>Get a list of channel unit for each channel.</p>
 <dl class="field-list">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl>
-<dt><strong>picks</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://numpy.org/doc/stable/glossary.html#term-array_like" title="(in NumPy v2.2)"><span>array_like</span></a> | <a class="reference external" href="https://docs.python.org/3/library/functions.html#slice" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">slice</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">None</span></code></a></span></dt><dd><p>Channels to include. Slices and lists of integers will be interpreted as 
+<dt><strong>picks</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://numpy.org/doc/stable/glossary.html#term-array_like" title="(in NumPy v2.3)"><span>array_like</span></a> | <a class="reference external" href="https://docs.python.org/3/library/functions.html#slice" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">slice</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">None</span></code></a></span></dt><dd><p>Channels to include. Slices and lists of integers will be interpreted as 
 channel indices. In lists, channel <em>type</em> strings (e.g., <code class="docutils literal notranslate"><span class="pre">['meg',</span> 
 <span class="pre">'eeg']</span></code>) will pick channels of those types, channel <em>name</em> strings (e.g., 
 <code class="docutils literal notranslate"><span class="pre">['MEG0111',</span> <span class="pre">'MEG2623']</span></code> will pick the given channels. Can also be the 
@@ -752,7 +826,7 @@ for micro (corresponds to <code class="docutils literal notranslate"><span class
 
 <dl class="py method">
 <dt class="sig sig-object py" id="mne_lsl.stream.BaseStream.get_data">
-<span class="sig-name descname"><span class="pre">get_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">winsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">picks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exclude</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'bads'</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.9/src/mne_lsl/stream/base.py#L564-L632"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.stream.BaseStream.get_data" title="Link to this definition">🔗</a></dt>
+<span class="sig-name descname"><span class="pre">get_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">winsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">picks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exclude</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'bads'</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.10/src/mne_lsl/stream/base.py#L619-L687"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.stream.BaseStream.get_data" title="Link to this definition">🔗</a></dt>
 <dd><p>Retrieve the latest data from the buffer.</p>
 <dl class="field-list">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -764,7 +838,7 @@ sampling rate <code class="docutils literal notranslate"><span class="pre">sfreq
 The window will view the last <code class="docutils literal notranslate"><span class="pre">winsize</span></code> samples. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, the entire
 buffer is returned.</p>
 </dd>
-<dt><strong>picks</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://numpy.org/doc/stable/glossary.html#term-array_like" title="(in NumPy v2.2)"><span>array_like</span></a> | <a class="reference external" href="https://docs.python.org/3/library/functions.html#slice" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">slice</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">None</span></code></a></span></dt><dd><p>Channels to include. Slices and lists of integers will be interpreted as 
+<dt><strong>picks</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://numpy.org/doc/stable/glossary.html#term-array_like" title="(in NumPy v2.3)"><span>array_like</span></a> | <a class="reference external" href="https://docs.python.org/3/library/functions.html#slice" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">slice</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">None</span></code></a></span></dt><dd><p>Channels to include. Slices and lists of integers will be interpreted as 
 channel indices. In lists, channel <em>type</em> strings (e.g., <code class="docutils literal notranslate"><span class="pre">['meg',</span> 
 <span class="pre">'eeg']</span></code>) will pick channels of those types, channel <em>name</em> strings (e.g., 
 <code class="docutils literal notranslate"><span class="pre">['MEG0111',</span> <span class="pre">'MEG2623']</span></code> will pick the given channels. Can also be the 
@@ -780,9 +854,9 @@ are explicitly provided.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><dl>
-<dt><strong>data</strong><span class="classifier"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.2)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">array</span></code></a> of shape (n_channels, n_samples)</span></dt><dd><p>Data in the given window.</p>
+<dt><strong>data</strong><span class="classifier"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.3)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">array</span></code></a> of shape (n_channels, n_samples)</span></dt><dd><p>Data in the given window.</p>
 </dd>
-<dt><strong>timestamps</strong><span class="classifier"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.2)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">array</span></code></a> of shape (n_samples,)</span></dt><dd><p>Timestamps in the given window.</p>
+<dt><strong>timestamps</strong><span class="classifier"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.3)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">array</span></code></a> of shape (n_samples,)</span></dt><dd><p>Timestamps in the given window.</p>
 </dd>
 </dl>
 </dd>
@@ -795,7 +869,7 @@ argument <code class="docutils literal notranslate"><span class="pre">picks</spa
 
 <dl class="py method">
 <dt class="sig sig-object py" id="mne_lsl.stream.BaseStream.get_montage">
-<span class="sig-name descname"><span class="pre">get_montage</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.9/src/mne_lsl/stream/base.py#L634-L637"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.stream.BaseStream.get_montage" title="Link to this definition">🔗</a></dt>
+<span class="sig-name descname"><span class="pre">get_montage</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.10/src/mne_lsl/stream/base.py#L689-L692"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.stream.BaseStream.get_montage" title="Link to this definition">🔗</a></dt>
 <dd><p>Get a DigMontage from instance.</p>
 <dl class="field-list">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -809,7 +883,7 @@ argument <code class="docutils literal notranslate"><span class="pre">picks</spa
 
 <dl class="py method">
 <dt class="sig sig-object py" id="mne_lsl.stream.BaseStream.notch_filter">
-<span class="sig-name descname"><span class="pre">notch_filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">freqs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">picks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">notch_widths</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trans_bandwidth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iir_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.9/src/mne_lsl/stream/base.py#L639-L729"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.stream.BaseStream.notch_filter" title="Link to this definition">🔗</a></dt>
+<span class="sig-name descname"><span class="pre">notch_filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">freqs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">picks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">notch_widths</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trans_bandwidth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iir_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.10/src/mne_lsl/stream/base.py#L694-L784"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.stream.BaseStream.notch_filter" title="Link to this definition">🔗</a></dt>
 <dd><p>Filter the stream with an IIR causal notch filter.</p>
 <p>Once a filter is applied, the buffer is updated in real-time with the filtered
 data. It is possible to apply more than one filter.</p>
@@ -824,7 +898,7 @@ data. It is possible to apply more than one filter.</p>
 <dt><strong>freqs</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">float</span></code></a></span></dt><dd><p>Specific frequencies to filter out from data, e.g. <code class="docutils literal notranslate"><span class="pre">60</span></code> Hz in the US or
 <code class="docutils literal notranslate"><span class="pre">50</span></code> Hz in Europe for line noise.</p>
 </dd>
-<dt><strong>picks</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://numpy.org/doc/stable/glossary.html#term-array_like" title="(in NumPy v2.2)"><span>array_like</span></a> | <a class="reference external" href="https://docs.python.org/3/library/functions.html#slice" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">slice</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">None</span></code></a></span></dt><dd><p>Channels to include. Slices and lists of integers will be interpreted as 
+<dt><strong>picks</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://numpy.org/doc/stable/glossary.html#term-array_like" title="(in NumPy v2.3)"><span>array_like</span></a> | <a class="reference external" href="https://docs.python.org/3/library/functions.html#slice" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">slice</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">None</span></code></a></span></dt><dd><p>Channels to include. Slices and lists of integers will be interpreted as 
 channel indices. In lists, channel <em>type</em> strings (e.g., <code class="docutils literal notranslate"><span class="pre">['meg',</span> 
 <span class="pre">'eeg']</span></code>) will pick channels of those types, channel <em>name</em> strings (e.g., 
 <code class="docutils literal notranslate"><span class="pre">['MEG0111',</span> <span class="pre">'MEG2623']</span></code> will pick the given channels. Can also be the 
@@ -867,12 +941,12 @@ buffer</span></a>.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="mne_lsl.stream.BaseStream.pick">
-<span class="sig-name descname"><span class="pre">pick</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">picks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exclude</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.9/src/mne_lsl/stream/base.py#L736-L771"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.stream.BaseStream.pick" title="Link to this definition">🔗</a></dt>
+<span class="sig-name descname"><span class="pre">pick</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">picks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exclude</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.10/src/mne_lsl/stream/base.py#L791-L826"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.stream.BaseStream.pick" title="Link to this definition">🔗</a></dt>
 <dd><p>Pick a subset of channels.</p>
 <dl class="field-list">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl>
-<dt><strong>picks</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://numpy.org/doc/stable/glossary.html#term-array_like" title="(in NumPy v2.2)"><span>array_like</span></a> | <a class="reference external" href="https://docs.python.org/3/library/functions.html#slice" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">slice</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">None</span></code></a></span></dt><dd><p>Channels to include. Slices and lists of integers will be interpreted as 
+<dt><strong>picks</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://numpy.org/doc/stable/glossary.html#term-array_like" title="(in NumPy v2.3)"><span>array_like</span></a> | <a class="reference external" href="https://docs.python.org/3/library/functions.html#slice" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">slice</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">None</span></code></a></span></dt><dd><p>Channels to include. Slices and lists of integers will be interpreted as 
 channel indices. In lists, channel <em>type</em> strings (e.g., <code class="docutils literal notranslate"><span class="pre">['meg',</span> 
 <span class="pre">'eeg']</span></code>) will pick channels of those types, channel <em>name</em> strings (e.g., 
 <code class="docutils literal notranslate"><span class="pre">['MEG0111',</span> <span class="pre">'MEG2623']</span></code> will pick the given channels. Can also be the 
@@ -905,13 +979,13 @@ match the order of existing channel names.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="mne_lsl.stream.BaseStream.plot">
-<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.9/src/mne_lsl/stream/base.py#L731-L734"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.stream.BaseStream.plot" title="Link to this definition">🔗</a></dt>
+<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.10/src/mne_lsl/stream/base.py#L786-L789"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.stream.BaseStream.plot" title="Link to this definition">🔗</a></dt>
 <dd><p>Open a real-time stream viewer. Not implemented.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="mne_lsl.stream.BaseStream.plot_sensors">
-<span class="sig-name descname"><span class="pre">plot_sensors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">kind</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'topomap'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ch_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ch_groups</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to_sphere</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sphere</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-python/blob/maint/1.9/mne/_fiff/meas_info.py#L670-L770"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.stream.BaseStream.plot_sensors" title="Link to this definition">🔗</a></dt>
+<span class="sig-name descname"><span class="pre">plot_sensors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">kind</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'topomap'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ch_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ch_groups</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to_sphere</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sphere</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-python/blob/maint/1.10/mne/_fiff/meas_info.py#L670-L770"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.stream.BaseStream.plot_sensors" title="Link to this definition">🔗</a></dt>
 <dd><p>Plot sensor positions.</p>
 <dl class="field-list">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -931,10 +1005,10 @@ None (default), then channels are chosen in the order given above.</p>
 <dt><strong>title</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">None</span></code></a></span></dt><dd><p>Title for the figure. If None (default), equals to <code class="docutils literal notranslate"><span class="pre">'Sensor</span>
 <span class="pre">positions</span> <span class="pre">(%s)'</span> <span class="pre">%</span> <span class="pre">ch_type</span></code>.</p>
 </dd>
-<dt><strong>show_names</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">bool</span></code></a> | <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.2)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">array</span></code></a> of <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">str</span></code></a></span></dt><dd><p>Whether to display all channel names. If an array, only the channel
+<dt><strong>show_names</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">bool</span></code></a> | <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.3)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">array</span></code></a> of <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">str</span></code></a></span></dt><dd><p>Whether to display all channel names. If an array, only the channel
 names in the array are shown. Defaults to False.</p>
 </dd>
-<dt><strong>ch_groups</strong><span class="classifier">‘position’ | <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.2)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">array</span></code></a> of shape (n_ch_groups, n_picks) | <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">None</span></code></a></span></dt><dd><p>Channel groups for coloring the sensors. If None (default), default
+<dt><strong>ch_groups</strong><span class="classifier">‘position’ | <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.3)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">array</span></code></a> of shape (n_ch_groups, n_picks) | <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">None</span></code></a></span></dt><dd><p>Channel groups for coloring the sensors. If None (default), default
 coloring scheme is used. If ‘position’, the sensors are divided
 into 8 regions. See <code class="docutils literal notranslate"><span class="pre">order</span></code> kwarg of <a class="reference external" href="https://mne.tools/stable/generated/mne.viz.plot_raw.html#mne.viz.plot_raw" title="(in MNE v1.9)"><code class="xref py py-func docutils literal notranslate"><span class="pre">mne.viz.plot_raw()</span></code></a>. If
 array, the channels are divided by picks given in the array.</p>
@@ -949,7 +1023,7 @@ the subject’s head. Has no effect when kind=’3d’. Defaults to True.</p>
 <p><span class="versionmodified added">Added in version 0.14.0.</span></p>
 </div>
 </dd>
-<dt><strong>axes</strong><span class="classifier">instance of <a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.html#matplotlib.axes.Axes" title="(in Matplotlib v3.10.1)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Axes</span></code></a> | instance of <a class="reference external" href="https://matplotlib.org/stable/api/toolkits/mplot3d/axes3d.html#mpl_toolkits.mplot3d.axes3d.Axes3D" title="(in Matplotlib v3.10.1)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Axes3D</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">None</span></code></a></span></dt><dd><p>Axes to draw the sensors to. If <code class="docutils literal notranslate"><span class="pre">kind='3d'</span></code>, axes must be an
+<dt><strong>axes</strong><span class="classifier">instance of <a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.html#matplotlib.axes.Axes" title="(in Matplotlib v3.10.3)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Axes</span></code></a> | instance of <a class="reference external" href="https://matplotlib.org/stable/api/toolkits/mplot3d/axes3d.html#mpl_toolkits.mplot3d.axes3d.Axes3D" title="(in Matplotlib v3.10.3)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Axes3D</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">None</span></code></a></span></dt><dd><p>Axes to draw the sensors to. If <code class="docutils literal notranslate"><span class="pre">kind='3d'</span></code>, axes must be an
 instance of Axes3D. If None (default), a new axes will be created.</p>
 <div class="versionadded">
 <p><span class="versionmodified added">Added in version 0.13.0.</span></p>
@@ -963,7 +1037,7 @@ Defaults to False.</p>
 </dd>
 <dt><strong>show</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">bool</span></code></a></span></dt><dd><p>Show figure if True. Defaults to True.</p>
 </dd>
-<dt><strong>sphere</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">float</span></code></a> | <a class="reference external" href="https://numpy.org/doc/stable/glossary.html#term-array_like" title="(in NumPy v2.2)"><span>array_like</span></a> | instance of <a class="reference external" href="https://mne.tools/stable/generated/mne.bem.ConductorModel.html#mne.bem.ConductorModel" title="(in MNE v1.9)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConductorModel</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">None</span></code></a>  | ‘auto’ | ‘eeglab’</span></dt><dd><p>The sphere parameters to use for the head outline. Can be array-like of
+<dt><strong>sphere</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">float</span></code></a> | <a class="reference external" href="https://numpy.org/doc/stable/glossary.html#term-array_like" title="(in NumPy v2.3)"><span>array_like</span></a> | instance of <a class="reference external" href="https://mne.tools/stable/generated/mne.bem.ConductorModel.html#mne.bem.ConductorModel" title="(in MNE v1.9)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConductorModel</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">None</span></code></a>  | ‘auto’ | ‘eeglab’</span></dt><dd><p>The sphere parameters to use for the head outline. Can be array-like of
 shape (4,) to give the X/Y/Z origin and radius in meters, or a single float
 to give just the radius (origin assumed 0, 0, 0). Can also be an instance
 of a spherical <a class="reference external" href="https://mne.tools/stable/generated/mne.bem.ConductorModel.html#mne.bem.ConductorModel" title="(in MNE v1.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConductorModel</span></code></a> to use the origin and
@@ -989,7 +1063,7 @@ argument.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><dl>
-<dt><strong>fig</strong><span class="classifier">instance of <a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.html#matplotlib.figure.Figure" title="(in Matplotlib v3.10.1)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Figure</span></code></a></span></dt><dd><p>Figure containing the sensor topography.</p>
+<dt><strong>fig</strong><span class="classifier">instance of <a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.html#matplotlib.figure.Figure" title="(in Matplotlib v3.10.3)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Figure</span></code></a></span></dt><dd><p>Figure containing the sensor topography.</p>
 </dd>
 <dt><strong>selection</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">list</span></code></a></span></dt><dd><p>A list of selected channels. Only returned if <code class="docutils literal notranslate"><span class="pre">kind=='select'</span></code>.</p>
 </dd>
@@ -1013,13 +1087,13 @@ matplotlib. For drawing the sensors using PyVista see
 
 <dl class="py method">
 <dt class="sig sig-object py" id="mne_lsl.stream.BaseStream.record">
-<span class="sig-name descname"><span class="pre">record</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.9/src/mne_lsl/stream/base.py#L773-L776"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.stream.BaseStream.record" title="Link to this definition">🔗</a></dt>
+<span class="sig-name descname"><span class="pre">record</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.10/src/mne_lsl/stream/base.py#L828-L831"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.stream.BaseStream.record" title="Link to this definition">🔗</a></dt>
 <dd><p>Record the stream data to disk. Not implemented.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="mne_lsl.stream.BaseStream.rename_channels">
-<span class="sig-name descname"><span class="pre">rename_channels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mapping</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_duplicates</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.9/src/mne_lsl/stream/base.py#L778-L813"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.stream.BaseStream.rename_channels" title="Link to this definition">🔗</a></dt>
+<span class="sig-name descname"><span class="pre">rename_channels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mapping</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_duplicates</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.10/src/mne_lsl/stream/base.py#L833-L868"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.stream.BaseStream.rename_channels" title="Link to this definition">🔗</a></dt>
 <dd><p>Rename channels.</p>
 <dl class="field-list">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1050,7 +1124,7 @@ to <code class="docutils literal notranslate"><span class="pre">&quot;INFO&quot;
 
 <dl class="py method">
 <dt class="sig sig-object py" id="mne_lsl.stream.BaseStream.set_bipolar_reference">
-<span class="sig-name descname"><span class="pre">set_bipolar_reference</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.9/src/mne_lsl/stream/base.py#L815-L825"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.stream.BaseStream.set_bipolar_reference" title="Link to this definition">🔗</a></dt>
+<span class="sig-name descname"><span class="pre">set_bipolar_reference</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.10/src/mne_lsl/stream/base.py#L870-L880"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.stream.BaseStream.set_bipolar_reference" title="Link to this definition">🔗</a></dt>
 <dd><p>Set a bipolar reference. Not implemented.</p>
 <dl class="field-list">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1064,7 +1138,7 @@ to <code class="docutils literal notranslate"><span class="pre">&quot;INFO&quot;
 
 <dl class="py method">
 <dt class="sig sig-object py" id="mne_lsl.stream.BaseStream.set_channel_types">
-<span class="sig-name descname"><span class="pre">set_channel_types</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mapping</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">on_unit_change</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'warn'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.9/src/mne_lsl/stream/base.py#L827-L867"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.stream.BaseStream.set_channel_types" title="Link to this definition">🔗</a></dt>
+<span class="sig-name descname"><span class="pre">set_channel_types</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mapping</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">on_unit_change</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'warn'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.10/src/mne_lsl/stream/base.py#L882-L922"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.stream.BaseStream.set_channel_types" title="Link to this definition">🔗</a></dt>
 <dd><p>Define the sensor type of channels.</p>
 <p>If the new channel type changes the unit type, e.g. from <code class="docutils literal notranslate"><span class="pre">T/m</span></code> to <code class="docutils literal notranslate"><span class="pre">V</span></code>, the
 unit multiplication factor is reset to <code class="docutils literal notranslate"><span class="pre">0</span></code>. Use
@@ -1101,7 +1175,7 @@ to <code class="docutils literal notranslate"><span class="pre">&quot;INFO&quot;
 
 <dl class="py method">
 <dt class="sig sig-object py" id="mne_lsl.stream.BaseStream.set_channel_units">
-<span class="sig-name descname"><span class="pre">set_channel_units</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mapping</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.9/src/mne_lsl/stream/base.py#L869-L896"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.stream.BaseStream.set_channel_units" title="Link to this definition">🔗</a></dt>
+<span class="sig-name descname"><span class="pre">set_channel_units</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mapping</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.10/src/mne_lsl/stream/base.py#L924-L951"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.stream.BaseStream.set_channel_units" title="Link to this definition">🔗</a></dt>
 <dd><p>Define the channel unit multiplication factor.</p>
 <p>The unit itself is defined by the sensor type. Use
 <code class="docutils literal notranslate"><span class="pre">Stream.set_channel_types</span></code> to change the channel type, e.g. from planar
@@ -1129,7 +1203,7 @@ please contact the developers on GitHub to add your units to the known set.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="mne_lsl.stream.BaseStream.set_eeg_reference">
-<span class="sig-name descname"><span class="pre">set_eeg_reference</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ref_channels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ch_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'eeg'</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.9/src/mne_lsl/stream/base.py#L898-L971"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.stream.BaseStream.set_eeg_reference" title="Link to this definition">🔗</a></dt>
+<span class="sig-name descname"><span class="pre">set_eeg_reference</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ref_channels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ch_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'eeg'</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.10/src/mne_lsl/stream/base.py#L953-L1026"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.stream.BaseStream.set_eeg_reference" title="Link to this definition">🔗</a></dt>
 <dd><p>Specify which reference to use for EEG-like data.</p>
 <p>Use this function to explicitly specify the desired reference for EEG-like
 channels. This can be either an existing electrode or a new virtual channel
@@ -1160,7 +1234,7 @@ buffer</span></a>.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="mne_lsl.stream.BaseStream.set_meas_date">
-<span class="sig-name descname"><span class="pre">set_meas_date</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">meas_date</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.9/src/mne_lsl/stream/base.py#L973-L1000"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.stream.BaseStream.set_meas_date" title="Link to this definition">🔗</a></dt>
+<span class="sig-name descname"><span class="pre">set_meas_date</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">meas_date</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.10/src/mne_lsl/stream/base.py#L1028-L1055"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.stream.BaseStream.set_meas_date" title="Link to this definition">🔗</a></dt>
 <dd><p>Set the measurement start date.</p>
 <dl class="field-list">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1191,7 +1265,7 @@ the time reference.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="mne_lsl.stream.BaseStream.set_montage">
-<span class="sig-name descname"><span class="pre">set_montage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">montage</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">match_case</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">match_alias</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">on_missing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'raise'</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.9/src/mne_lsl/stream/base.py#L1002-L1051"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.stream.BaseStream.set_montage" title="Link to this definition">🔗</a></dt>
+<span class="sig-name descname"><span class="pre">set_montage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">montage</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">match_case</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">match_alias</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">on_missing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'raise'</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.10/src/mne_lsl/stream/base.py#L1057-L1106"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.stream.BaseStream.set_montage" title="Link to this definition">🔗</a></dt>
 <dd><p>Set EEG/sEEG/ECoG/DBS/fNIRS channel positions and digitization points.</p>
 <dl class="field-list">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1255,6 +1329,17 @@ to <code class="docutils literal notranslate"><span class="pre">&quot;INFO&quot;
 montage. Other channel types (e.g., MEG channels) should have their
 positions defined properly using their data reading functions.</p>
 </div>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="mne_lsl.stream.BaseStream.callbacks">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">callbacks</span></span><a class="headerlink" href="#mne_lsl.stream.BaseStream.callbacks" title="Link to this definition">🔗</a></dt>
+<dd><p>List of callbacks to be called when new data is available.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a> of <a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callable</span></code></a></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py property">
@@ -1436,6 +1521,7 @@ positions defined properly using their data reading functions.</p>
 <li><a class="reference internal" href="#">mne_lsl.stream.BaseStream</a><ul>
 <li><a class="reference internal" href="#mne_lsl.stream.BaseStream"><code class="docutils literal notranslate"><span class="pre">BaseStream</span></code></a><ul>
 <li><a class="reference internal" href="#mne_lsl.stream.BaseStream.acquire"><code class="docutils literal notranslate"><span class="pre">BaseStream.acquire()</span></code></a></li>
+<li><a class="reference internal" href="#mne_lsl.stream.BaseStream.add_callback"><code class="docutils literal notranslate"><span class="pre">BaseStream.add_callback()</span></code></a></li>
 <li><a class="reference internal" href="#mne_lsl.stream.BaseStream.add_reference_channels"><code class="docutils literal notranslate"><span class="pre">BaseStream.add_reference_channels()</span></code></a></li>
 <li><a class="reference internal" href="#mne_lsl.stream.BaseStream.anonymize"><code class="docutils literal notranslate"><span class="pre">BaseStream.anonymize()</span></code></a></li>
 <li><a class="reference internal" href="#mne_lsl.stream.BaseStream.connect"><code class="docutils literal notranslate"><span class="pre">BaseStream.connect()</span></code></a></li>
@@ -1459,6 +1545,7 @@ positions defined properly using their data reading functions.</p>
 <li><a class="reference internal" href="#mne_lsl.stream.BaseStream.set_eeg_reference"><code class="docutils literal notranslate"><span class="pre">BaseStream.set_eeg_reference()</span></code></a></li>
 <li><a class="reference internal" href="#mne_lsl.stream.BaseStream.set_meas_date"><code class="docutils literal notranslate"><span class="pre">BaseStream.set_meas_date()</span></code></a></li>
 <li><a class="reference internal" href="#mne_lsl.stream.BaseStream.set_montage"><code class="docutils literal notranslate"><span class="pre">BaseStream.set_montage()</span></code></a></li>
+<li><a class="reference internal" href="#mne_lsl.stream.BaseStream.callbacks"><code class="docutils literal notranslate"><span class="pre">BaseStream.callbacks</span></code></a></li>
 <li><a class="reference internal" href="#mne_lsl.stream.BaseStream.ch_names"><code class="docutils literal notranslate"><span class="pre">BaseStream.ch_names</span></code></a></li>
 <li><a class="reference internal" href="#mne_lsl.stream.BaseStream.compensation_grade"><code class="docutils literal notranslate"><span class="pre">BaseStream.compensation_grade</span></code></a></li>
 <li><a class="reference internal" href="#mne_lsl.stream.BaseStream.connected"><code class="docutils literal notranslate"><span class="pre">BaseStream.connected</span></code></a></li>
@@ -1481,7 +1568,7 @@ positions defined properly using their data reading functions.</p>
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=c4cb232b"></script>
+</div><script src="../../_static/documentation_options.js?v=1d24b1d9"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/scripts/furo.js?v=5fa4622c"></script>

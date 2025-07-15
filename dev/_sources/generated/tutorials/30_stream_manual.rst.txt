@@ -224,9 +224,9 @@ network.
 
 
 
-    <tr class="mne-repr-section-header general-b5247660-2f61-4b9b-8e26-0006243f1bec"
+    <tr class="mne-repr-section-header general-4c64a0c8-3da4-4e29-a6a7-d0d76332d630"
          title="Hide section" 
-        onclick="toggleVisibility('general-b5247660-2f61-4b9b-8e26-0006243f1bec')">
+        onclick="toggleVisibility('general-4c64a0c8-3da4-4e29-a6a7-d0d76332d630')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -238,26 +238,26 @@ network.
     </tr>
 
 
-    <tr class="repr-element general-b5247660-2f61-4b9b-8e26-0006243f1bec ">
+    <tr class="repr-element general-4c64a0c8-3da4-4e29-a6a7-d0d76332d630 ">
         <td class="mne-repr-section-toggle"></td>
         <td>MNE object type</td>
         <td>Info</td>
     </tr>
-    <tr class="repr-element general-b5247660-2f61-4b9b-8e26-0006243f1bec ">
+    <tr class="repr-element general-4c64a0c8-3da4-4e29-a6a7-d0d76332d630 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Measurement date</td>
     
         <td>Unknown</td>
     
     </tr>
-    <tr class="repr-element general-b5247660-2f61-4b9b-8e26-0006243f1bec ">
+    <tr class="repr-element general-4c64a0c8-3da4-4e29-a6a7-d0d76332d630 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Participant</td>
     
         <td>Unknown</td>
     
     </tr>
-    <tr class="repr-element general-b5247660-2f61-4b9b-8e26-0006243f1bec ">
+    <tr class="repr-element general-4c64a0c8-3da4-4e29-a6a7-d0d76332d630 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Experimenter</td>
     
@@ -272,9 +272,9 @@ network.
 
 
 
-    <tr class="mne-repr-section-header acquisition-57390a6b-7866-48ec-bac2-88b00e0cb3a5"
+    <tr class="mne-repr-section-header acquisition-1f90c739-b423-450d-a6e9-9c9bd341c7f0"
          title="Hide section" 
-        onclick="toggleVisibility('acquisition-57390a6b-7866-48ec-bac2-88b00e0cb3a5')">
+        onclick="toggleVisibility('acquisition-1f90c739-b423-450d-a6e9-9c9bd341c7f0')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -293,7 +293,7 @@ network.
 
 
 
-    <tr class="repr-element acquisition-57390a6b-7866-48ec-bac2-88b00e0cb3a5 ">
+    <tr class="repr-element acquisition-1f90c739-b423-450d-a6e9-9c9bd341c7f0 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Sampling frequency</td>
         <td>1024.00 Hz</td>
@@ -309,9 +309,9 @@ network.
 
 
 
-    <tr class="mne-repr-section-header channels-ec7fe0fa-25e9-4b45-8a83-242ece2d2a01"
+    <tr class="mne-repr-section-header channels-c4997022-beb6-42bb-85b1-cbc24bde0a75"
          title="Hide section" 
-        onclick="toggleVisibility('channels-ec7fe0fa-25e9-4b45-8a83-242ece2d2a01')">
+        onclick="toggleVisibility('channels-c4997022-beb6-42bb-85b1-cbc24bde0a75')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -324,7 +324,7 @@ network.
 
 
     
-    <tr class="repr-element channels-ec7fe0fa-25e9-4b45-8a83-242ece2d2a01 ">
+    <tr class="repr-element channels-c4997022-beb6-42bb-85b1-cbc24bde0a75 ">
         <td class="mne-repr-section-toggle"></td>
         <td>EEG</td>
         <td>
@@ -337,7 +337,7 @@ network.
     </tr>
 
     
-    <tr class="repr-element channels-ec7fe0fa-25e9-4b45-8a83-242ece2d2a01 ">
+    <tr class="repr-element channels-c4997022-beb6-42bb-85b1-cbc24bde0a75 ">
         <td class="mne-repr-section-toggle"></td>
         <td>EOG</td>
         <td>
@@ -350,7 +350,7 @@ network.
     </tr>
 
     
-    <tr class="repr-element channels-ec7fe0fa-25e9-4b45-8a83-242ece2d2a01 ">
+    <tr class="repr-element channels-c4997022-beb6-42bb-85b1-cbc24bde0a75 ">
         <td class="mne-repr-section-toggle"></td>
         <td>ECG</td>
         <td>
@@ -363,7 +363,7 @@ network.
     </tr>
 
     
-    <tr class="repr-element channels-ec7fe0fa-25e9-4b45-8a83-242ece2d2a01 ">
+    <tr class="repr-element channels-c4997022-beb6-42bb-85b1-cbc24bde0a75 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Stimulus</td>
         <td>
@@ -376,7 +376,7 @@ network.
     </tr>
 
     
-    <tr class="repr-element channels-ec7fe0fa-25e9-4b45-8a83-242ece2d2a01 ">
+    <tr class="repr-element channels-c4997022-beb6-42bb-85b1-cbc24bde0a75 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Galvanic skin response</td>
         <td>
@@ -389,7 +389,7 @@ network.
     </tr>
 
 
-    <tr class="repr-element channels-ec7fe0fa-25e9-4b45-8a83-242ece2d2a01 ">
+    <tr class="repr-element channels-c4997022-beb6-42bb-85b1-cbc24bde0a75 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Head & sensor digitization</td>
     
@@ -404,9 +404,9 @@ network.
 
 
 
-    <tr class="mne-repr-section-header filters-0afe2652-7086-46c5-a2fd-8183157645d9"
+    <tr class="mne-repr-section-header filters-88ebe36c-5212-4225-98bc-6b632a21d9af"
          title="Hide section" 
-        onclick="toggleVisibility('filters-0afe2652-7086-46c5-a2fd-8183157645d9')">
+        onclick="toggleVisibility('filters-88ebe36c-5212-4225-98bc-6b632a21d9af')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -418,14 +418,14 @@ network.
     </tr>
 
 
-    <tr class="repr-element filters-0afe2652-7086-46c5-a2fd-8183157645d9 ">
+    <tr class="repr-element filters-88ebe36c-5212-4225-98bc-6b632a21d9af ">
         <td class="mne-repr-section-toggle"></td>
         <td>Highpass</td>
         <td>0.00 Hz</td>
     </tr>
 
 
-    <tr class="repr-element filters-0afe2652-7086-46c5-a2fd-8183157645d9 ">
+    <tr class="repr-element filters-88ebe36c-5212-4225-98bc-6b632a21d9af ">
         <td class="mne-repr-section-toggle"></td>
         <td>Lowpass</td>
         <td>512.00 Hz</td>
@@ -465,7 +465,7 @@ network.
 
     New samples acquired: 3200
 
-    <Stream: OFF | MNE-LSL-Player (source: 5dff3b15396f4377bdb736b7257dc0d6)>
+    <Stream: OFF | MNE-LSL-Player (source: a18a7206257641319992f22f7481e8b4)>
 
 
 
@@ -566,7 +566,7 @@ to continuously mock an LSL stream or receive new data from an LSL stream.
  .. code-block:: none
 
 
-    <Stream: OFF | MNE-LSL-Player (source: 5dff3b15396f4377bdb736b7257dc0d6)>
+    <Stream: OFF | MNE-LSL-Player (source: a18a7206257641319992f22f7481e8b4)>
 
 
 
@@ -592,9 +592,9 @@ to continuously mock an LSL stream or receive new data from an LSL stream.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 12.816 seconds)
+   **Total running time of the script:** (0 minutes 12.610 seconds)
 
-**Estimated memory usage:**  275 MB
+**Estimated memory usage:**  274 MB
 
 
 .. _sphx_glr_download_generated_tutorials_30_stream_manual.py:

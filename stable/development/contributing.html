@@ -5,7 +5,7 @@
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Changelog" href="changes/index.html" /><link rel="prev" title="Decoding real-time data" href="../generated/examples/40_decode.html" />
 
-    <link rel="shortcut icon" href="../_static/logo-no-mne.svg"/><!-- Generated with Sphinx 8.2.1 and Furo 2024.08.06 -->
+    <link rel="shortcut icon" href="../_static/logo-no-mne.svg"/><!-- Generated with Sphinx 8.2.3 and Furo 2024.08.06 -->
         <title>Contribution guide - MNE-LSL</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=354aac6f" />
@@ -239,6 +239,7 @@
 <ul class="current">
 <li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Contribution guide</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="changes/index.html">Changelog</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of Changelog</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="changes/1.10.html">Version 1.10</a></li>
 <li class="toctree-l2"><a class="reference internal" href="changes/1.9.html">Version 1.9</a></li>
 <li class="toctree-l2"><a class="reference internal" href="changes/1.8.html">Version 1.8</a></li>
 <li class="toctree-l2"><a class="reference internal" href="changes/1.7.html">Version 1.7.1</a></li>
@@ -302,9 +303,17 @@ mostly by volunteer effort. We welcome contributions from anyone as long as they
 by our <a class="reference external" href="https://github.com/mne-tools/.github/blob/main/CODE_OF_CONDUCT.md">Code of Conduct</a>.</p>
 <p>You can propose a change; a bugfix, a docstring improvement or a new feature; by
 following those steps:</p>
-<ul class="simple">
+<ul>
 <li><p><a class="reference external" href="https://github.com/mne-tools/mne-lsl/fork">Fork the MNE-LSL repository</a> on GitHub</p></li>
-<li><p>Clone your fork locally</p></li>
+<li><p>Clone your fork locally with submodules:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>git<span class="w"> </span>clone<span class="w"> </span>--recurse-submodules<span class="w"> </span>https://github.com/yourusername/mne-lsl.git
+</pre></div>
+</div>
+<p>Or if you already cloned without submodules, initialize them:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>git<span class="w"> </span>submodule<span class="w"> </span>update<span class="w"> </span>--init<span class="w"> </span>--recursive
+</pre></div>
+</div>
+</li>
 <li><p>(optional, recommended) Create a new branch for your changes</p></li>
 <li><p>Make your changes locally and push them to your fork</p></li>
 <li><p><a class="reference external" href="https://github.com/mne-tools/mne-lsl/compare">Open a pull request</a> with a clear title and description</p></li>
@@ -313,28 +322,31 @@ following those steps:</p>
 <h2>Install in editable mode<a class="headerlink" href="#install-in-editable-mode" title="Link to this heading">🔗</a></h2>
 <p>To modify MNE-LSL, it is recommended to install it in a separate environment in editable
 mode. This way, you can test your changes without having to reinstall the package each
-time. To install MNE-LSL in editable mode, run:</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.<span class="o">[</span>all<span class="o">]</span>
+time.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Installing MNE-LSL in editable mode will build <code class="docutils literal notranslate"><span class="pre">liblsl</span></code> using CMake, which
+requires:</p>
+<ul class="simple">
+<li><p>A clone of the <code class="docutils literal notranslate"><span class="pre">mne-lsl</span></code> repository including the submodules</p></li>
+<li><p>CMake (version 3.16 or later)</p></li>
+<li><p>A C++ compiler and build tools:</p>
+<ul>
+<li><p><strong>Linux</strong>: <code class="docutils literal notranslate"><span class="pre">build-essential</span></code> package (<code class="docutils literal notranslate"><span class="pre">gcc</span></code>, <code class="docutils literal notranslate"><span class="pre">g++</span></code>, <code class="docutils literal notranslate"><span class="pre">make</span></code>)</p></li>
+<li><p><strong>macOS</strong>: Xcode Command Line Tools (<code class="docutils literal notranslate"><span class="pre">xcode-select</span> <span class="pre">--install</span></code>)</p></li>
+<li><p><strong>Windows</strong>: Visual Studio with C++ support or Build Tools for Visual Studio</p></li>
+</ul>
+</li>
+</ul>
+</div>
+<p>To install MNE-LSL in editable mode, run:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[all]&quot;</span>
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">[all]</span></code> extra installs all optional dependencies, including those required for
 testing and documentation.</p>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This command will build <code class="docutils literal notranslate"><span class="pre">liblsl</span></code> and will thus require:</p>
-<ul class="simple">
-<li><ol class="arabic simple">
-<li><p>A clone of the <code class="docutils literal notranslate"><span class="pre">mne-lsl</span></code> repository including the submodules</p></li>
-</ol>
-</li>
-<li><ol class="arabic simple" start="2">
-<li><p>Compilers and build tools installed on your system</p></li>
-</ol>
-</li>
-</ul>
 </div>
 </section>
 <section id="code-style">
@@ -497,7 +509,7 @@ forget to include sleep periods to ensure that the threads have time to work.</p
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=c4cb232b"></script>
+</div><script src="../_static/documentation_options.js?v=1d24b1d9"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/furo.js?v=5fa4622c"></script>

@@ -211,9 +211,9 @@ reliably with :func:`scipy.signal.find_peaks`.
 
 
 
-    <tr class="mne-repr-section-header general-c08fa9f3-245f-4638-aa29-9be28c5b49d2"
+    <tr class="mne-repr-section-header general-c4642f0f-8e33-4418-8f0f-4118fa967c87"
          title="Hide section" 
-        onclick="toggleVisibility('general-c08fa9f3-245f-4638-aa29-9be28c5b49d2')">
+        onclick="toggleVisibility('general-c4642f0f-8e33-4418-8f0f-4118fa967c87')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -225,7 +225,7 @@ reliably with :func:`scipy.signal.find_peaks`.
     </tr>
 
 
-    <tr class="repr-element general-c08fa9f3-245f-4638-aa29-9be28c5b49d2 ">
+    <tr class="repr-element general-c4642f0f-8e33-4418-8f0f-4118fa967c87 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Filename(s)</td>
         <td>
@@ -236,26 +236,26 @@ reliably with :func:`scipy.signal.find_peaks`.
         </td>
     </tr>
 
-    <tr class="repr-element general-c08fa9f3-245f-4638-aa29-9be28c5b49d2 ">
+    <tr class="repr-element general-c4642f0f-8e33-4418-8f0f-4118fa967c87 ">
         <td class="mne-repr-section-toggle"></td>
         <td>MNE object type</td>
         <td>Raw</td>
     </tr>
-    <tr class="repr-element general-c08fa9f3-245f-4638-aa29-9be28c5b49d2 ">
+    <tr class="repr-element general-c4642f0f-8e33-4418-8f0f-4118fa967c87 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Measurement date</td>
     
         <td>Unknown</td>
     
     </tr>
-    <tr class="repr-element general-c08fa9f3-245f-4638-aa29-9be28c5b49d2 ">
+    <tr class="repr-element general-c4642f0f-8e33-4418-8f0f-4118fa967c87 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Participant</td>
     
         <td>Unknown</td>
     
     </tr>
-    <tr class="repr-element general-c08fa9f3-245f-4638-aa29-9be28c5b49d2 ">
+    <tr class="repr-element general-c4642f0f-8e33-4418-8f0f-4118fa967c87 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Experimenter</td>
     
@@ -270,9 +270,9 @@ reliably with :func:`scipy.signal.find_peaks`.
 
 
 
-    <tr class="mne-repr-section-header acquisition-46280c3a-0b93-44fa-a68f-f8a73c8c0ac7"
+    <tr class="mne-repr-section-header acquisition-ba7e5183-03a3-4f63-841b-12486e0e0276"
          title="Hide section" 
-        onclick="toggleVisibility('acquisition-46280c3a-0b93-44fa-a68f-f8a73c8c0ac7')">
+        onclick="toggleVisibility('acquisition-ba7e5183-03a3-4f63-841b-12486e0e0276')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -284,7 +284,7 @@ reliably with :func:`scipy.signal.find_peaks`.
     </tr>
 
 
-    <tr class="repr-element acquisition-46280c3a-0b93-44fa-a68f-f8a73c8c0ac7 ">
+    <tr class="repr-element acquisition-ba7e5183-03a3-4f63-841b-12486e0e0276 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Duration</td>
         <td>00:02:25 (HH:MM:SS)</td>
@@ -297,14 +297,14 @@ reliably with :func:`scipy.signal.find_peaks`.
 
 
 
-    <tr class="repr-element acquisition-46280c3a-0b93-44fa-a68f-f8a73c8c0ac7 ">
+    <tr class="repr-element acquisition-ba7e5183-03a3-4f63-841b-12486e0e0276 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Sampling frequency</td>
         <td>1024.00 Hz</td>
     </tr>
 
 
-    <tr class="repr-element acquisition-46280c3a-0b93-44fa-a68f-f8a73c8c0ac7 ">
+    <tr class="repr-element acquisition-ba7e5183-03a3-4f63-841b-12486e0e0276 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Time points</td>
         <td>148,477</td>
@@ -319,9 +319,9 @@ reliably with :func:`scipy.signal.find_peaks`.
 
 
 
-    <tr class="mne-repr-section-header channels-11d7c05c-296b-4d12-8b82-41f2bd31df3f"
+    <tr class="mne-repr-section-header channels-66173e28-8cad-48df-9078-670f90024da1"
          title="Hide section" 
-        onclick="toggleVisibility('channels-11d7c05c-296b-4d12-8b82-41f2bd31df3f')">
+        onclick="toggleVisibility('channels-66173e28-8cad-48df-9078-670f90024da1')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -334,7 +334,7 @@ reliably with :func:`scipy.signal.find_peaks`.
 
 
     
-    <tr class="repr-element channels-11d7c05c-296b-4d12-8b82-41f2bd31df3f ">
+    <tr class="repr-element channels-66173e28-8cad-48df-9078-670f90024da1 ">
         <td class="mne-repr-section-toggle"></td>
         <td>misc</td>
         <td>
@@ -347,7 +347,7 @@ reliably with :func:`scipy.signal.find_peaks`.
     </tr>
 
 
-    <tr class="repr-element channels-11d7c05c-296b-4d12-8b82-41f2bd31df3f ">
+    <tr class="repr-element channels-66173e28-8cad-48df-9078-670f90024da1 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Head & sensor digitization</td>
     
@@ -362,9 +362,9 @@ reliably with :func:`scipy.signal.find_peaks`.
 
 
 
-    <tr class="mne-repr-section-header filters-1fe99cfa-24c4-48e4-9ece-374c0ad61c7b"
+    <tr class="mne-repr-section-header filters-08274ed6-0dc9-4319-a382-0da4d71c26c6"
          title="Hide section" 
-        onclick="toggleVisibility('filters-1fe99cfa-24c4-48e4-9ece-374c0ad61c7b')">
+        onclick="toggleVisibility('filters-08274ed6-0dc9-4319-a382-0da4d71c26c6')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -376,14 +376,14 @@ reliably with :func:`scipy.signal.find_peaks`.
     </tr>
 
 
-    <tr class="repr-element filters-1fe99cfa-24c4-48e4-9ece-374c0ad61c7b ">
+    <tr class="repr-element filters-08274ed6-0dc9-4319-a382-0da4d71c26c6 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Highpass</td>
         <td>0.00 Hz</td>
     </tr>
 
 
-    <tr class="repr-element filters-1fe99cfa-24c4-48e4-9ece-374c0ad61c7b ">
+    <tr class="repr-element filters-08274ed6-0dc9-4319-a382-0da4d71c26c6 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Lowpass</td>
         <td>512.00 Hz</td>
@@ -968,7 +968,7 @@ real-time application.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 38.219 seconds)
+   **Total running time of the script:** (0 minutes 38.176 seconds)
 
 **Estimated memory usage:**  190 MB
 

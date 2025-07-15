@@ -11,7 +11,18 @@ You can propose a change; a bugfix, a docstring improvement or a new feature; by
 following those steps:
 
 - `Fork the MNE-LSL repository`_ on GitHub
-- Clone your fork locally
+- Clone your fork locally with submodules:
+
+  .. code-block:: console
+
+      $ git clone --recurse-submodules https://github.com/yourusername/mne-lsl.git
+
+  Or if you already cloned without submodules, initialize them:
+
+  .. code-block:: console
+
+      $ git submodule update --init --recursive
+
 - (optional, recommended) Create a new branch for your changes
 - Make your changes locally and push them to your fork
 - `Open a pull request`_ with a clear title and description
@@ -21,23 +32,31 @@ Install in editable mode
 
 To modify MNE-LSL, it is recommended to install it in a separate environment in editable
 mode. This way, you can test your changes without having to reinstall the package each
-time. To install MNE-LSL in editable mode, run:
+time.
+
+.. note::
+
+    Installing MNE-LSL in editable mode will build ``liblsl`` using CMake, which
+    requires:
+
+    - A clone of the ``mne-lsl`` repository including the submodules
+    - CMake (version 3.16 or later)
+    - A C++ compiler and build tools:
+
+      - **Linux**: ``build-essential`` package (``gcc``, ``g++``, ``make``)
+      - **macOS**: Xcode Command Line Tools (``xcode-select --install``)
+      - **Windows**: Visual Studio with C++ support or Build Tools for Visual Studio
+
+To install MNE-LSL in editable mode, run:
 
 .. code-block:: console
 
-    $ pip install -e .[all]
+    $ pip install -e ".[all]"
 
 .. note::
 
     The ``[all]`` extra installs all optional dependencies, including those required for
     testing and documentation.
-
-.. note::
-
-    This command will build ``liblsl`` and will thus require:
-
-    - (1) A clone of the ``mne-lsl`` repository including the submodules
-    - (2) Compilers and build tools installed on your system
 
 Code style
 ----------

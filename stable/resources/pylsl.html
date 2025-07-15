@@ -5,7 +5,7 @@
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" />
 
-    <link rel="shortcut icon" href="../_static/logo-no-mne.svg"/><!-- Generated with Sphinx 8.2.1 and Furo 2024.08.06 -->
+    <link rel="shortcut icon" href="../_static/logo-no-mne.svg"/><!-- Generated with Sphinx 8.2.3 and Furo 2024.08.06 -->
         <title>Differences with pylsl - MNE-LSL</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=354aac6f" />
@@ -239,6 +239,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../development/contributing.html">Contribution guide</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../development/changes/index.html">Changelog</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of Changelog</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../development/changes/1.10.html">Version 1.10</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../development/changes/1.9.html">Version 1.9</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../development/changes/1.8.html">Version 1.8</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../development/changes/1.7.html">Version 1.7.1</a></li>
@@ -297,12 +298,13 @@
         <article role="main" id="furo-main-content">
           <section id="differences-with-pylsl">
 <h1>Differences with pylsl<a class="headerlink" href="#differences-with-pylsl" title="Link to this heading">🔗</a></h1>
-<section id="faster-chunk-pull">
-<h2>Faster chunk pull<a class="headerlink" href="#faster-chunk-pull" title="Link to this heading">🔗</a></h2>
+<section id="safer-chunk-pull-default">
+<h2>Safer chunk pull default<a class="headerlink" href="#safer-chunk-pull-default" title="Link to this heading">🔗</a></h2>
 <p>Arguably the most important difference, pulling a chunk of numerical data with
-<a class="reference internal" href="../generated/api/mne_lsl.lsl.StreamInlet.html#mne_lsl.lsl.StreamInlet.pull_chunk" title="mne_lsl.lsl.StreamInlet.pull_chunk"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pull_chunk()</span></code></a> is much faster than with its
-<a class="reference external" href="https://github.com/labstreaminglayer/pylsl">pylsl</a> counterpart. By default, <a class="reference external" href="https://github.com/labstreaminglayer/pylsl">pylsl</a> loads the
-retrieved samples one by one in a list of list, <a class="reference external" href="https://github.com/labstreaminglayer/pylsl/blob/16a4198087936386e866d7239bfde32d1fef6d6b/pylsl/pylsl.py#L862-L870">here</a>.</p>
+<a class="reference internal" href="../generated/api/mne_lsl.lsl.StreamInlet.html#mne_lsl.lsl.StreamInlet.pull_chunk" title="mne_lsl.lsl.StreamInlet.pull_chunk"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pull_chunk()</span></code></a> is faster than with its
+<a class="reference external" href="https://github.com/labstreaminglayer/pylsl">pylsl</a> counterpart, except if using the argument <code class="docutils literal notranslate"><span class="pre">dest_obj</span></code>.
+By default, <a class="reference external" href="https://github.com/labstreaminglayer/pylsl">pylsl</a> loads the retrieved samples one by one in a list of
+list, <a class="reference external" href="https://github.com/labstreaminglayer/pylsl/blob/5e88eac4a4f82a809e0560fd4623e1735b3f57bf/src/pylsl/inlet.py#L265-L275">here</a>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># return results (note: could offer a more efficient format in the</span>
 <span class="c1"># future, e.g., a numpy array)</span>
 <span class="n">num_samples</span> <span class="o">=</span> <span class="n">num_elements</span> <span class="o">/</span> <span class="n">num_channels</span>
@@ -318,7 +320,7 @@ retrieved samples one by one in a list of list, <a class="reference external" hr
 </div>
 <p>The creation of the variable <code class="docutils literal notranslate"><span class="pre">samples</span></code> is expensive and is performed in linear time
 <code class="docutils literal notranslate"><span class="pre">O(n)</span></code>, scaling with the number of values. Instead, <code class="docutils literal notranslate"><span class="pre">numpy</span></code> can be used to pull
-the entire buffer at once with <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.frombuffer.html#numpy.frombuffer" title="(in NumPy v2.2)"><code class="xref py py-func docutils literal notranslate"><span class="pre">numpy.frombuffer()</span></code></a>.</p>
+the entire buffer at once with <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.frombuffer.html#numpy.frombuffer" title="(in NumPy v2.3)"><code class="xref py py-func docutils literal notranslate"><span class="pre">numpy.frombuffer()</span></code></a>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">samples</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">frombuffer</span><span class="p">(</span>
     <span class="n">data_buffer</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="p">)[:</span><span class="n">n_samples_data</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_channels</span>
 <span class="p">)</span>
@@ -328,25 +330,90 @@ the entire buffer at once with <a class="reference external" href="https://numpy
 depending on the number of values pulled, for instance retrieving 1024 samples with
 65 channels in double precision (<code class="docutils literal notranslate"><span class="pre">float64</span></code>) takes:</p>
 <ul class="simple">
-<li><p>4.33 ms ± 37.5 µs with <code class="docutils literal notranslate"><span class="pre">pylsl</span></code> (default behavior)</p></li>
-<li><p>268 ns ± 0.357 ns with <code class="docutils literal notranslate"><span class="pre">mne_lsl.lsl</span></code></p></li>
+<li><p>3.91 ± 0.12 ms with <code class="docutils literal notranslate"><span class="pre">pylsl</span></code> (default behavior: list comprehension)</p></li>
+<li><p>419.08 ± 38.10 ns with <code class="docutils literal notranslate"><span class="pre">mne_lsl.lsl</span></code> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.frombuffer.html#numpy.frombuffer" title="(in NumPy v2.3)"><code class="xref py py-func docutils literal notranslate"><span class="pre">numpy.frombuffer()</span></code></a>)</p></li>
 </ul>
-<p>Note that <code class="docutils literal notranslate"><span class="pre">pylsl</span></code> pulling function support a <code class="docutils literal notranslate"><span class="pre">dest_obj</span></code> argument described as:</p>
+<p>Increasing the number of channels to 650, simulating an higher sample count yields:</p>
+<ul class="simple">
+<li><p>46.56 ± 1.06 ms per loop with <code class="docutils literal notranslate"><span class="pre">pylsl</span></code> (default behavior: list comprehension)</p></li>
+<li><p>424.29 ± 36.41 ns with <code class="docutils literal notranslate"><span class="pre">mne_lsl.lsl</span></code> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.frombuffer.html#numpy.frombuffer" title="(in NumPy v2.3)"><code class="xref py py-func docutils literal notranslate"><span class="pre">numpy.frombuffer()</span></code></a>)</p></li>
+</ul>
+<details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3 sd-fade-in-slide-down">
+<summary class="sd-summary-title sd-card-header">
+<span class="sd-summary-text">Timeit python code</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">ctypes</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">timeit</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="n">n_samples</span> <span class="o">=</span> <span class="mi">1024</span>
+<span class="n">n_channels</span> <span class="o">=</span> <span class="mi">650</span>
+<span class="n">max_values</span> <span class="o">=</span> <span class="n">n_samples</span> <span class="o">*</span> <span class="n">n_channels</span>
+
+<span class="c1"># create a data buffer, &#39;retrieved from liblsl&#39;</span>
+<span class="n">data_buffer</span> <span class="o">=</span> <span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_double</span> <span class="o">*</span> <span class="n">max_values</span><span class="p">)()</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_values</span><span class="p">):</span>
+    <span class="n">data_buffer</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">method_list_comprehension</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;List comprehension, default method for pylsl.&quot;&quot;&quot;</span>
+    <span class="n">samples</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">[</span><span class="n">data_buffer</span><span class="p">[</span><span class="n">s</span> <span class="o">*</span> <span class="n">n_channels</span> <span class="o">+</span> <span class="n">c</span><span class="p">]</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_channels</span><span class="p">)]</span>
+        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_samples</span><span class="p">)</span>
+    <span class="p">]</span>
+    <span class="k">return</span> <span class="n">samples</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">method_frombuffer</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Numpy frombuffer, default method for mne-lsl.&quot;&quot;&quot;</span>
+    <span class="n">samples</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">frombuffer</span><span class="p">(</span><span class="n">data_buffer</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)[:</span><span class="n">max_values</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+        <span class="n">n_samples</span><span class="p">,</span> <span class="n">n_channels</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">samples</span>
+
+
+<span class="n">repeat</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="n">number</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="k">for</span> <span class="n">func</span> <span class="ow">in</span> <span class="p">(</span><span class="n">method_list_comprehension</span><span class="p">,</span> <span class="n">method_frombuffer</span><span class="p">):</span>
+    <span class="n">timer</span> <span class="o">=</span> <span class="n">timeit</span><span class="o">.</span><span class="n">Timer</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">timer</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">repeat</span><span class="p">,</span> <span class="n">number</span><span class="o">=</span><span class="n">number</span><span class="p">)</span>
+    <span class="n">times</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span> <span class="o">/</span> <span class="n">number</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">results</span><span class="p">]</span>
+    <span class="n">best</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">times</span><span class="p">)</span>
+    <span class="n">worst</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">times</span><span class="p">)</span>
+    <span class="n">avg</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">times</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">times</span><span class="p">)</span>
+
+    <span class="c1"># format with the correct unit</span>
+    <span class="k">if</span> <span class="n">best</span> <span class="o">&lt;</span> <span class="mf">1e-6</span><span class="p">:</span>
+        <span class="n">unit</span><span class="p">,</span> <span class="n">factor</span> <span class="o">=</span> <span class="s2">&quot;ns&quot;</span><span class="p">,</span> <span class="mf">1e9</span>
+    <span class="k">elif</span> <span class="n">best</span> <span class="o">&lt;</span> <span class="mf">1e-3</span><span class="p">:</span>
+        <span class="n">unit</span><span class="p">,</span> <span class="n">factor</span> <span class="o">=</span> <span class="s2">&quot;µs&quot;</span><span class="p">,</span> <span class="mf">1e6</span>
+    <span class="k">elif</span> <span class="n">best</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">unit</span><span class="p">,</span> <span class="n">factor</span> <span class="o">=</span> <span class="s2">&quot;ms&quot;</span><span class="p">,</span> <span class="mf">1e3</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">unit</span><span class="p">,</span> <span class="n">factor</span> <span class="o">=</span> <span class="s2">&quot;s&quot;</span><span class="p">,</span> <span class="mi">1</span>
+
+    <span class="n">formatted_time</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">best</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">factor</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> ± </span><span class="si">{</span><span class="p">(</span><span class="n">avg</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">best</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">factor</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">unit</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">plural</span> <span class="o">=</span> <span class="s2">&quot;s&quot;</span> <span class="k">if</span> <span class="n">number</span> <span class="o">!=</span> <span class="mi">1</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">number</span><span class="si">}</span><span class="s2"> loop</span><span class="si">{</span><span class="n">plural</span><span class="si">}</span><span class="s2">, best of </span><span class="si">{</span><span class="n">repeat</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">formatted_time</span><span class="si">}</span><span class="s2"> per loop&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</details><p>Note that <code class="docutils literal notranslate"><span class="pre">pylsl</span></code> pulling function support a <code class="docutils literal notranslate"><span class="pre">dest_obj</span></code> argument described as:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">A</span> <span class="n">Python</span> <span class="nb">object</span> <span class="n">that</span> <span class="n">supports</span> <span class="n">the</span> <span class="n">buffer</span> <span class="n">interface</span><span class="o">.</span>
 <span class="n">If</span> <span class="n">this</span> <span class="ow">is</span> <span class="n">provided</span> <span class="n">then</span> <span class="n">the</span> <span class="n">dest_obj</span> <span class="n">will</span> <span class="n">be</span> <span class="n">updated</span> <span class="ow">in</span> <span class="n">place</span> <span class="ow">and</span> <span class="n">the</span> <span class="n">samples</span> <span class="nb">list</span>
 <span class="n">returned</span> <span class="n">by</span> <span class="n">this</span> <span class="n">method</span> <span class="n">will</span> <span class="n">be</span> <span class="n">empty</span><span class="o">.</span> <span class="n">It</span> <span class="ow">is</span> <span class="n">up</span> <span class="n">to</span> <span class="n">the</span> <span class="n">caller</span> <span class="n">to</span> <span class="n">trim</span> <span class="n">the</span> <span class="n">buffer</span> <span class="n">to</span>
 <span class="n">the</span> <span class="n">appropriate</span> <span class="n">number</span> <span class="n">of</span> <span class="n">samples</span><span class="o">.</span> <span class="n">A</span> <span class="n">numpy</span> <span class="n">buffer</span> <span class="n">must</span> <span class="n">be</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="o">.</span>
 </pre></div>
 </div>
-<p>If a <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a> is used as <code class="docutils literal notranslate"><span class="pre">dest_obj</span></code>, the memory re-allocation step
-described abvove is skipped, yielding similar performance to <code class="docutils literal notranslate"><span class="pre">mne_lsl.lsl</span></code>. For the
-same 1024 samples with 65 channels in double precision (<code class="docutils literal notranslate"><span class="pre">float64</span></code>), the pull operation
-takes:</p>
-<ul class="simple">
-<li><p>471 ns ± 1.7 ns with <code class="docutils literal notranslate"><span class="pre">pylsl</span></code> (with <code class="docutils literal notranslate"><span class="pre">dest_obj</span></code> argument as <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>)</p></li>
-</ul>
-<p>Note that this performance improvement is absent for <code class="docutils literal notranslate"><span class="pre">string</span></code> based streams. Follow
+<p>If a <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.3)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a> is used as <code class="docutils literal notranslate"><span class="pre">dest_obj</span></code>, the memory re-allocation step
+described above is skipped, yielding better performance than <code class="docutils literal notranslate"><span class="pre">mne_lsl.lsl</span></code> at the cost
+of code complexity as the user is now responsible for the memory management.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This performance improvement is absent for <code class="docutils literal notranslate"><span class="pre">string</span></code> based streams. Follow
 <a class="reference external" href="https://github.com/mne-tools/mne-lsl/issues/225">#225</a> for more information.</p>
+</div>
 </section>
 <section id="convenience-methods">
 <h2>Convenience methods<a class="headerlink" href="#convenience-methods" title="Link to this heading">🔗</a></h2>
@@ -375,7 +442,7 @@ be set or retrieved directly from a <a class="reference external" href="https://
 <a class="reference internal" href="../generated/api/mne_lsl.lsl.StreamOutlet.html#mne_lsl.lsl.StreamOutlet" title="mne_lsl.lsl.StreamOutlet"><code class="xref py py-class docutils literal notranslate"><span class="pre">StreamOutlet</span></code></a> support a wider variety of types. For instance:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">dtype</span></code>, which correspond to the <code class="docutils literal notranslate"><span class="pre">channel_format</span></code> in <a class="reference external" href="https://github.com/labstreaminglayer/pylsl">pylsl</a>, can
-be provided as a string or as a supported <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.dtype.html#numpy.dtype" title="(in NumPy v2.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.dtype</span></code></a>, e.g. <code class="docutils literal notranslate"><span class="pre">np.int8</span></code>.</p></li>
+be provided as a string or as a supported <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.dtype.html#numpy.dtype" title="(in NumPy v2.3)"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.dtype</span></code></a>, e.g. <code class="docutils literal notranslate"><span class="pre">np.int8</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">processing_flags</span></code> can be provided as strings instead of the underlying integer
 mapping.</p></li>
 </ul>
@@ -440,7 +507,7 @@ with similar functionalities.</p>
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">Differences with pylsl</a><ul>
-<li><a class="reference internal" href="#faster-chunk-pull">Faster chunk pull</a></li>
+<li><a class="reference internal" href="#safer-chunk-pull-default">Safer chunk pull default</a></li>
 <li><a class="reference internal" href="#convenience-methods">Convenience methods</a></li>
 <li><a class="reference internal" href="#improve-arguments">Improve arguments</a></li>
 <li><a class="reference internal" href="#unique-resolve-function">Unique resolve function</a></li>
@@ -455,7 +522,7 @@ with similar functionalities.</p>
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=c4cb232b"></script>
+</div><script src="../_static/documentation_options.js?v=1d24b1d9"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/furo.js?v=5fa4622c"></script>

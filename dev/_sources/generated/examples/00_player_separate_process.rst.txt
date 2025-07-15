@@ -117,7 +117,7 @@ while loop without any idle time).
  .. code-block:: none
 
     Elapsed time (free time): 3.00 s
-    Elapsed time (hogging): 2.98 s
+    Elapsed time (hogging): 2.97 s
 
 
 
@@ -249,7 +249,7 @@ be used to interrupt the player process from the main process.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 9.851 seconds)
+   **Total running time of the script:** (0 minutes 9.754 seconds)
 
 **Estimated memory usage:**  183 MB
 

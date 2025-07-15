@@ -5,7 +5,7 @@
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="API References" href="../api/index.html" /><link rel="prev" title="MNE-LSL" href="../index.html" />
 
-    <link rel="shortcut icon" href="../_static/logo-no-mne.svg"/><!-- Generated with Sphinx 8.2.1 and Furo 2024.08.06 -->
+    <link rel="shortcut icon" href="../_static/logo-no-mne.svg"/><!-- Generated with Sphinx 8.2.3 and Furo 2024.08.06 -->
         <title>Install - MNE-LSL</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=354aac6f" />
@@ -239,6 +239,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../development/contributing.html">Contribution guide</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../development/changes/index.html">Changelog</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of Changelog</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../development/changes/1.10.html">Version 1.10</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../development/changes/1.9.html">Version 1.9</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../development/changes/1.8.html">Version 1.8</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../development/changes/1.7.html">Version 1.7.1</a></li>
@@ -302,7 +303,9 @@
 <p><code class="docutils literal notranslate"><span class="pre">MNE-LSL</span></code> requires Python version <code class="docutils literal notranslate"><span class="pre">3.10</span></code> or higher and is available on
 <a class="reference external" href="https://pypi.org/project/mne-lsl/">PyPI</a> and <a class="reference external" href="https://anaconda.org/conda-forge/mne-lsl">conda-forge</a>. It requires
 <a class="reference external" href="https://github.com/sccn/liblsl">liblsl</a> which will be either fetched from the <code class="docutils literal notranslate"><span class="pre">mne-lsl</span></code> install or from
-the path in the environment variable <code class="docutils literal notranslate"><span class="pre">MNE_LSL_LIB</span></code> (or <code class="docutils literal notranslate"><span class="pre">PYLSL_LIB</span></code>).</p>
+the path in the environment variable <code class="docutils literal notranslate"><span class="pre">MNE_LSL_LIB</span></code> (or <code class="docutils literal notranslate"><span class="pre">PYLSL_LIB</span></code>).
+<a class="reference external" href="https://github.com/sccn/liblsl">liblsl</a> requires system dependencies which are platform dependent, see
+the section below for more details.</p>
 <div class="sd-tab-set docutils">
 <input checked="checked" id="sd-tab-item-0" name="sd-tab-set-0" type="radio">
 <label class="sd-tab-label" for="sd-tab-item-0">
@@ -357,10 +360,29 @@ provide the path to the library in an environment variable <code class="docutils
 </section>
 <section id="liblsl-and-labrecorder-dependencies">
 <h2>liblsl and LabRecorder dependencies<a class="headerlink" href="#liblsl-and-labrecorder-dependencies" title="Link to this heading">🔗</a></h2>
-<p>On Linux, <code class="docutils literal notranslate"><span class="pre">liblsl</span></code> might requires <code class="docutils literal notranslate"><span class="pre">libpugixml-dev</span></code> and <code class="docutils literal notranslate"><span class="pre">LabRecorder</span></code> requires
-<code class="docutils literal notranslate"><span class="pre">qt6-base-dev</span></code> and <code class="docutils literal notranslate"><span class="pre">freeglut3-dev</span></code>.</p>
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-4" name="sd-tab-set-1" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-4">
+Linux</label><div class="sd-tab-content docutils">
+<p>On Linux, <a class="reference external" href="https://github.com/sccn/liblsl">liblsl</a> might requires <code class="docutils literal notranslate"><span class="pre">libpugixml-dev</span></code> and
+<a class="reference external" href="https://github.com/labstreaminglayer/App-LabRecorder">LabRecorder</a> requires <code class="docutils literal notranslate"><span class="pre">qt6-base-dev</span></code> and <code class="docutils literal notranslate"><span class="pre">freeglut3-dev</span></code>.</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>libpugixml-dev<span class="w"> </span>qt6-base-dev<span class="w"> </span>freeglut3-dev
 </pre></div>
+</div>
+</div>
+<input id="sd-tab-item-5" name="sd-tab-set-1" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-5">
+Windows</label><div class="sd-tab-content docutils">
+<p>On Windows, <a class="reference external" href="https://github.com/sccn/liblsl">liblsl</a> requires the
+<a class="reference external" href="https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist">Microsoft Visual C++ Redistributable</a>,
+<code class="docutils literal notranslate"><span class="pre">v142</span></code> which corresponds to Visual Studio 2019.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The <a class="reference external" href="https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist">MSVC++ Redistributable</a> are backward compatible, we would
+always recommend to install the latest version available (currently
+2015-2022).</p>
+</div>
+</div>
 </div>
 </section>
 <section id="qt">
@@ -455,7 +477,7 @@ with <code class="docutils literal notranslate"><span class="pre">PyQt5</span></
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=c4cb232b"></script>
+</div><script src="../_static/documentation_options.js?v=1d24b1d9"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/furo.js?v=5fa4622c"></script>

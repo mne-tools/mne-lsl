@@ -239,7 +239,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../development/contributing.html">Contribution guide</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../development/changes/index.html">Changelog</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of Changelog</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../development/changes/latest.html">Version 1.10</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.10.html">Version 1.10</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.9.html">Version 1.9</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.8.html">Version 1.8</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.7.html">Version 1.7.1</a></li>
@@ -300,7 +300,7 @@
 <h1>mne_lsl.lsl.StreamInfo<a class="headerlink" href="#mne-lsl-lsl-streaminfo" title="Link to this heading">🔗</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="mne_lsl.lsl.StreamInfo">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mne_lsl.lsl.</span></span><span class="sig-name descname"><span class="pre">StreamInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stype</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_channels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sfreq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source_id</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/main/src/mne_lsl/lsl/stream_info.py#L854-L948"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.StreamInfo" title="Link to this definition">🔗</a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mne_lsl.lsl.</span></span><span class="sig-name descname"><span class="pre">StreamInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stype</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_channels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sfreq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source_id</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.10/src/mne_lsl/lsl/stream_info.py#L854-L948"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.StreamInfo" title="Link to this definition">🔗</a></dt>
 <dd><p>Base Stream information object, storing the declaration of a stream.</p>
 <p>A StreamInfo contains the following information:</p>
 <ul class="simple">
@@ -419,7 +419,7 @@ from failure by finding a stream with the same <code class="docutils literal not
 </div>
 <dl class="py method">
 <dt class="sig sig-object py" id="mne_lsl.lsl.StreamInfo.get_channel_info">
-<span class="sig-name descname"><span class="pre">get_channel_info</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/main/src/mne_lsl/lsl/stream_info.py#L319-L408"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.StreamInfo.get_channel_info" title="Link to this definition">🔗</a></dt>
+<span class="sig-name descname"><span class="pre">get_channel_info</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.10/src/mne_lsl/lsl/stream_info.py#L319-L408"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.StreamInfo.get_channel_info" title="Link to this definition">🔗</a></dt>
 <dd><p>Get the FIFF measurement <a class="reference external" href="https://mne.tools/stable/generated/mne.Info.html#mne.Info" title="(in MNE v1.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Info</span></code></a> in the description.</p>
 <dl class="field-list">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -433,7 +433,7 @@ from failure by finding a stream with the same <code class="docutils literal not
 
 <dl class="py method">
 <dt class="sig sig-object py" id="mne_lsl.lsl.StreamInfo.get_channel_names">
-<span class="sig-name descname"><span class="pre">get_channel_names</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/main/src/mne_lsl/lsl/stream_info.py#L410-L426"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.StreamInfo.get_channel_names" title="Link to this definition">🔗</a></dt>
+<span class="sig-name descname"><span class="pre">get_channel_names</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.10/src/mne_lsl/lsl/stream_info.py#L410-L426"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.StreamInfo.get_channel_names" title="Link to this definition">🔗</a></dt>
 <dd><p>Get the channel names in the description.</p>
 <dl class="field-list">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -455,7 +455,7 @@ setter.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="mne_lsl.lsl.StreamInfo.get_channel_types">
-<span class="sig-name descname"><span class="pre">get_channel_types</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/main/src/mne_lsl/lsl/stream_info.py#L428-L444"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.StreamInfo.get_channel_types" title="Link to this definition">🔗</a></dt>
+<span class="sig-name descname"><span class="pre">get_channel_types</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.10/src/mne_lsl/lsl/stream_info.py#L428-L444"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.StreamInfo.get_channel_types" title="Link to this definition">🔗</a></dt>
 <dd><p>Get the channel types in the description.</p>
 <dl class="field-list">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -477,7 +477,7 @@ setter.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="mne_lsl.lsl.StreamInfo.get_channel_units">
-<span class="sig-name descname"><span class="pre">get_channel_units</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/main/src/mne_lsl/lsl/stream_info.py#L446-L462"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.StreamInfo.get_channel_units" title="Link to this definition">🔗</a></dt>
+<span class="sig-name descname"><span class="pre">get_channel_units</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.10/src/mne_lsl/lsl/stream_info.py#L446-L462"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.StreamInfo.get_channel_units" title="Link to this definition">🔗</a></dt>
 <dd><p>Get the channel units in the description.</p>
 <dl class="field-list">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -499,7 +499,7 @@ setter.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="mne_lsl.lsl.StreamInfo.set_channel_info">
-<span class="sig-name descname"><span class="pre">set_channel_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">info</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/main/src/mne_lsl/lsl/stream_info.py#L592-L643"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.StreamInfo.set_channel_info" title="Link to this definition">🔗</a></dt>
+<span class="sig-name descname"><span class="pre">set_channel_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">info</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.10/src/mne_lsl/lsl/stream_info.py#L592-L643"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.StreamInfo.set_channel_info" title="Link to this definition">🔗</a></dt>
 <dd><p>Set the channel info from a FIFF measurement <a class="reference external" href="https://mne.tools/stable/generated/mne.Info.html#mne.Info" title="(in MNE v1.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Info</span></code></a>.</p>
 <dl class="field-list">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -513,7 +513,7 @@ setter.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="mne_lsl.lsl.StreamInfo.set_channel_names">
-<span class="sig-name descname"><span class="pre">set_channel_names</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ch_names</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/main/src/mne_lsl/lsl/stream_info.py#L645-L653"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.StreamInfo.set_channel_names" title="Link to this definition">🔗</a></dt>
+<span class="sig-name descname"><span class="pre">set_channel_names</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ch_names</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.10/src/mne_lsl/lsl/stream_info.py#L645-L653"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.StreamInfo.set_channel_names" title="Link to this definition">🔗</a></dt>
 <dd><p>Set the channel names in the description. Existing labels are overwritten.</p>
 <dl class="field-list">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -527,7 +527,7 @@ setter.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="mne_lsl.lsl.StreamInfo.set_channel_types">
-<span class="sig-name descname"><span class="pre">set_channel_types</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ch_types</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/main/src/mne_lsl/lsl/stream_info.py#L655-L669"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.StreamInfo.set_channel_types" title="Link to this definition">🔗</a></dt>
+<span class="sig-name descname"><span class="pre">set_channel_types</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ch_types</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.10/src/mne_lsl/lsl/stream_info.py#L655-L669"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.StreamInfo.set_channel_types" title="Link to this definition">🔗</a></dt>
 <dd><p>Set the channel types in the description. Existing types are overwritten.</p>
 <p>The types are given as human readable strings, e.g. <code class="docutils literal notranslate"><span class="pre">'eeg'</span></code>.</p>
 <dl class="field-list">
@@ -543,7 +543,7 @@ If a single <a class="reference external" href="https://docs.python.org/3/librar
 
 <dl class="py method">
 <dt class="sig sig-object py" id="mne_lsl.lsl.StreamInfo.set_channel_units">
-<span class="sig-name descname"><span class="pre">set_channel_units</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ch_units</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/main/src/mne_lsl/lsl/stream_info.py#L671-L718"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.StreamInfo.set_channel_units" title="Link to this definition">🔗</a></dt>
+<span class="sig-name descname"><span class="pre">set_channel_units</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ch_units</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.10/src/mne_lsl/lsl/stream_info.py#L671-L718"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.StreamInfo.set_channel_units" title="Link to this definition">🔗</a></dt>
 <dd><p>Set the channel units in the description. Existing units are overwritten.</p>
 <p>The units are given as human readable strings, e.g. <code class="docutils literal notranslate"><span class="pre">'microvolts'</span></code>, or as
 multiplication factor, e.g. <code class="docutils literal notranslate"><span class="pre">-6</span></code> for <code class="docutils literal notranslate"><span class="pre">1e-6</span></code> thus converting e.g. Volts to
@@ -855,7 +855,7 @@ the description of individual channels.</p>
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=9b3985ad"></script>
+</div><script src="../../_static/documentation_options.js?v=1d24b1d9"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/scripts/furo.js?v=5fa4622c"></script>
