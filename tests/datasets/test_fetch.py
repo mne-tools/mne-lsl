@@ -11,7 +11,7 @@ from mne_lsl.datasets._fetch import fetch_dataset
 @pytest.fixture
 def license_file() -> Path:
     """Find the license file if present."""
-    fname = Path(__file__).parent.parent.parent.parent / "LICENSE"
+    fname = Path(__file__).parents[2] / "LICENSE"
     if fname.exists():
         return fname
     else:
