@@ -788,8 +788,7 @@ def test_ensure_event_id_with_event_stream(
         10, stype="annotations", source_id=mock_lsl_stream_with_annotations.source_id
     ).connect(acquisition_delay=0.1)
     assert _ensure_event_id(None, event_stream) is None
-    with pytest.warns(RuntimeWarning, match="should be set to None"):
-        _ensure_event_id(dict(event=1), event_stream)
+    assert _ensure_event_id(dict(event=1), event_stream) == dict(event=1)
     event_stream.disconnect()
 
 
