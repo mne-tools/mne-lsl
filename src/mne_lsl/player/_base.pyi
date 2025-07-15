@@ -118,7 +118,7 @@ class BasePlayer(ABC, ContainsMixin, SetChannelsMixin):
 
     @fill_doc
     def get_channel_units(
-        self, picks: Incomplete | None = None, only_data_chs: bool = False
+        self, picks=None, only_data_chs: bool = False
     ) -> list[tuple[int, int]]:
         """Get a list of channel unit for each channel.
 
