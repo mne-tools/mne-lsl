@@ -137,11 +137,19 @@ player.stop()
 # Irregularly sampled stream
 # --------------------------
 #
-# The event source can also be an irregularly sampled stream. In this case, each channel
-# represents a separate event. A new value entering the buffer of a channel is
-# interpreted as an event, regardless of the value itself. For instance, we can fake
-# an irregularly sampled numerical stream using a :class:`~mne_lsl.player.PlayerLSL`
-# with a :class:`~mne.io.Raw` object which has :class:`~mne.Annotations` attached to it.
+# The event source can also be an irregularly sampled stream. In this case, we have
+# 2 modes of operation:
+#
+# - ``event_id`` is ``None``: in this case, each channel represents a separate event. A
+#   new value entering the buffer of a channel is interpreted as an event, regardless of
+#   the value itself. For instance, this is useful for irregularly sampled numerical
+#   stream using a :class:`~mne_lsl.player.PlayerLSL` with a :class:`~mne.io.Raw` object
+#   which has :class:`~mne.Annotations` attached to it.
+# - ``event_id`` is not ``None``: in this case, the event stream is expected to have
+#   only one channel with a numerical value at a time. The value is interpreted as the
+#   event code.
+#
+# The example below shows how to use the first mode of operation.
 
 events = find_events(raw, stim_channel="STI 014")
 events = events[np.isin(events[:, 2], (1, 2))]  # keep only events with ID 1 and 2
