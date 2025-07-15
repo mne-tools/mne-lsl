@@ -114,8 +114,7 @@ class EpochsStream:
       - If ``event_id`` is provided, the events are selected based on the selected
         channels in ``event_channels`` and the provided ``event_id``.
 
-    Event streams irregularly sampled and using a ``str`` datatype are not yet
-    supported.
+    Event streams irregularly sampled and using a ``str`` datatype are not supported.
 
     .. note::
 
@@ -494,7 +493,6 @@ class EpochsStream:
             elif (
                 self._event_stream is not None
                 and self._event_stream._info["sfreq"] == 0
-                and self._event_id is None
             ):
                 # don't select only the new events as they might all fall outside of
                 # the attached stream ts buffer, instead always look through all
@@ -519,19 +517,13 @@ class EpochsStream:
                 ).T
                 events = _prune_events(
                     events,
-                    None,
+                    self._event_id,
                     self._buffer.shape[1],
                     ts,
                     self._last_ts,
                     ts_events,
                     self._tmin_shift,
                 )
-            elif (
-                self._event_stream is not None
-                and self._event_stream._info["sfreq"] == 0
-                and self._event_id is not None
-            ):
-                pass  # TODO
             else:  # pragma: no cover
                 raise RuntimeError(
                     "This acquisition scenario should not happen. Please contact the "
@@ -739,6 +731,9 @@ def _ensure_event_id(
                 "The 'event_id' must be provided if no irregularly sampled "
                 "'event_stream' is provided."
             )
+        # None is supported only for irregularly sampled event streams where event
+        # values are discarded/not-used, e.g. for irregularly sampled event streams
+        # replaying annotations from a file as one-hot encoded events.
         return None
     raise_ = False
     if isinstance(event_id, int):
