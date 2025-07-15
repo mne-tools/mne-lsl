@@ -114,6 +114,13 @@ class EpochsStream:
       - If ``event_id`` is provided, the events are selected based on the selected
         channels in ``event_channels`` and the provided ``event_id``.
 
+        .. note::
+
+            In this case, the :class:`~mne_lsl.stream.EpochsStream` expects a numerical
+            event on only one channel at a time. In other words, the sample pushed to
+            the event stream should have only one non-zero value at a time. If this is
+            not the case, only the maximum sample value is considered as the event code.
+
     Event streams irregularly sampled and using a ``str`` datatype are not supported.
 
     .. note::
