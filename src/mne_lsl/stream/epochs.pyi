@@ -42,9 +42,7 @@ class EpochsStream:
         a channel from the connected Stream or a separate event stream. In both case the
         event should be defined either as :class:`int` or :class:`dict`. If a
         :class:`dict` is provided, it should map event names to event IDs. For example
-        ``dict(auditory=1, visual=2)``. If the event source is an irregularly sampled
-        stream, the numerical values within the channels are ignored and this argument
-        is ignored in which case it should be set to ``None``.
+        ``dict(auditory=1, visual=2)``.
     event_channels : str | list of str
         Channel(s) to monitor for incoming events. The event channel(s) must be part of
         the connected Stream or of the ``event_stream`` if provided. See notes for
@@ -155,18 +153,27 @@ class EpochsStream:
       ``'stim'`` channels, i.e. channels on which :func:`mne.find_events` can be
       applied.
     - if ``event_stream`` is provided and is irregularly sampled, the events are
-      extracted from channels in the ``event_stream``. The numerical value within the
-      channels are ignored and the appearance of a new value in the stream is considered
-      as a new event named after the channel name. Thus, the argument ``event_id`` is
-      ignored. This last case can be useful when working with a ``Player`` replaying
-      annotations from a file as one-hot encoded events.
+      extracted from channels in the ``event_stream``.
 
-    Event streams irregularly sampled and using a ``str`` datatype are not yet
-    supported.
+      - If ``event_id`` is ``None``, the numerical value within the channels are ignored
+        and the appearance of a new value in the stream is considered as a new event
+        named after the channel name. This case can be useful when working with a
+        ``Player`` replaying annotations from a file as one-hot encoded events.
+      - If ``event_id`` is provided, the events are selected based on the selected
+        channels in ``event_channels`` and the provided ``event_id``.
+
+        .. note::
+
+            In this case, the :class:`~mne_lsl.stream.EpochsStream` expects a numerical
+            event on only one channel at a time. In other words, the sample pushed to
+            the event stream should have only one non-zero value at a time. If this is
+            not the case, only the maximum sample value is considered as the event code.
+
+    Event streams irregularly sampled and using a ``str`` datatype are not supported.
 
     .. note::
 
-        In the 2 last cases where ``event_stream`` is provided, all ``'stim'`` channels
+        In the last cases where ``event_stream`` is provided, all ``'stim'`` channels
         in the connected ``stream`` are ignored.
 
     Read about the :ref:`processing applied to the underlying
