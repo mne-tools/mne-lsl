@@ -66,6 +66,8 @@ def pytest_configure(config: pytest.Config) -> None:
     ignore:Python 3.14 will, by default.*:DeprecationWarning
     # Matplotlib deprecation issued in VSCode test debugger
     ignore:.*interactive_bk.*:matplotlib._api.deprecation.MatplotlibDeprecationWarning
+    # Pillow deprecation issued from matplotlib
+    ignore:'mode' parameter is deprecated.*:DeprecationWarning
     # tkinter
     ignore:Exception ignored in.*__del__.*:pytest.PytestUnraisableExceptionWarning
     """
