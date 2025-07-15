@@ -494,6 +494,7 @@ class EpochsStream:
             elif (
                 self._event_stream is not None
                 and self._event_stream._info["sfreq"] == 0
+                and self._event_id is None
             ):
                 # don't select only the new events as they might all fall outside of
                 # the attached stream ts buffer, instead always look through all
@@ -525,6 +526,12 @@ class EpochsStream:
                     ts_events,
                     self._tmin_shift,
                 )
+            elif (
+                self._event_stream is not None
+                and self._event_stream._info["sfreq"] == 0
+                and self._event_id is not None
+            ):
+                pass  # TODO
             else:  # pragma: no cover
                 raise RuntimeError(
                     "This acquisition scenario should not happen. Please contact the "
@@ -732,16 +739,6 @@ def _ensure_event_id(
                 "The 'event_id' must be provided if no irregularly sampled "
                 "'event_stream' is provided."
             )
-        return None
-    if (
-        event_id is not None
-        and event_stream is not None
-        and event_stream.info["sfreq"] == 0
-    ):
-        warn(
-            "The argument 'event_id' should be set to None when events are selected "
-            "from an irregularly sampled event stream."
-        )
         return None
     raise_ = False
     if isinstance(event_id, int):
