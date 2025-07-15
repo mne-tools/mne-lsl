@@ -507,14 +507,27 @@ class EpochsStream:
                     self._event_stream._buffer[:, picks].T,
                     self._event_stream._timestamps,
                 )
-                events = np.vstack(
-                    [
-                        np.arange(ts_events.size, dtype=np.int64),
-                        np.zeros(ts_events.size, dtype=np.int64),
-                        np.argmax(data_events, axis=0),
-                    ],
-                    dtype=np.int64,
-                ).T
+                if self._event_id is None:
+                    events = np.vstack(
+                        [
+                            np.arange(ts_events.size, dtype=np.int64),
+                            np.zeros(ts_events.size, dtype=np.int64),
+                            np.argmax(data_events, axis=0),
+                        ],
+                        dtype=np.int64,
+                    ).T
+                else:
+                    events = np.vstack(
+                        [
+                            np.arange(ts_events.size, dtype=np.int64),
+                            np.zeros(ts_events.size, dtype=np.int64),
+                            data_events[
+                                np.argmax(data_events, axis=0),
+                                np.arange(data_events.shape[1]),
+                            ],
+                        ],
+                        dtype=np.int64,
+                    ).T
                 events = _prune_events(
                     events,
                     self._event_id,

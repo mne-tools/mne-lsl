@@ -1142,7 +1142,7 @@ def test_epochs_with_irregular_numerical_event_stream_and_event_id(
         10, name=mock_lsl_stream.name, source_id=mock_lsl_stream.source_id
     ).connect(acquisition_delay=0.1)
     sinfo = outlet_marker.get_sinfo()
-    event_stream = StreamLSL(2, name=sinfo.name, source_id=sinfo.source_id).connect(
+    event_stream = StreamLSL(5, name=sinfo.name, source_id=sinfo.source_id).connect(
         acquisition_delay=0.1
     )
     epochs = EpochsStream(
@@ -1159,6 +1159,7 @@ def test_epochs_with_irregular_numerical_event_stream_and_event_id(
     assert epochs.n_new_epochs == 0
     epochs.acquire()
     assert epochs.n_new_epochs == 0
+    time.sleep(0.5)
     # push 5 events, only 3 with ID 1
     outlet_marker.push_sample(np.array([1], dtype=sinfo.dtype))
     time.sleep(0.1)
