@@ -1178,3 +1178,76 @@ def test_epochs_with_irregular_numerical_event_stream_and_event_id(
     # check that we got 3 epochs on the code '1'
     events = epochs.events
     assert_array_equal(events[events != 0], [1, 1, 1])
+
+
+@pytest.fixture
+def outlet_marker_3_channel() -> Generator[StreamOutlet, None, None]:
+    """Stream outlet for a marker stream with 2 channels."""
+    sinfo = StreamInfo(
+        name="events",
+        stype="marker",
+        n_channels=3,
+        sfreq=0,
+        dtype=np.int8,
+        source_id=uuid.uuid4().hex,
+    )
+    sinfo.set_channel_names(["marker1", "marker2", "marker3"])
+    outlet = StreamOutlet(sinfo)
+    yield outlet
+    outlet._del()
+    del outlet
+
+
+def test_epochs_with_irregular_numerical_event_stream_with_2_ch_and_event_id(
+    mock_lsl_stream: DummyPlayer, outlet_marker_3_channel: StreamOutlet
+) -> None:
+    """Test the selection of epochs based on event_id."""
+    stream = StreamLSL(
+        10, name=mock_lsl_stream.name, source_id=mock_lsl_stream.source_id
+    ).connect(acquisition_delay=0.1)
+    sinfo = outlet_marker_3_channel.get_sinfo()
+    event_stream = StreamLSL(5, name=sinfo.name, source_id=sinfo.source_id).connect(
+        acquisition_delay=0.1
+    )
+    epochs = EpochsStream(
+        stream,
+        bufsize=10,
+        event_id=1,
+        event_channels=["marker1", "marker2"],
+        event_stream=event_stream,
+        tmin=-0.5,
+        tmax=0,
+        baseline=None,
+        picks="eeg",
+    ).connect(acquisition_delay=None)
+    assert epochs.n_new_epochs == 0
+    epochs.acquire()
+    assert epochs.n_new_epochs == 0
+    time.sleep(0.5)
+    # push 2 events on channel 3 with ID 1
+    outlet_marker_3_channel.push_sample(np.array([0, 0, 1], dtype=sinfo.dtype))
+    time.sleep(0.1)
+    outlet_marker_3_channel.push_sample(np.array([0, 0, 1], dtype=sinfo.dtype))
+    time.sleep(0.1)
+    start = time.monotonic()
+    while time.monotonic() - start < 2:
+        epochs.acquire()
+        time.sleep(0.5)
+    assert epochs.n_new_epochs == 0
+    # push 3 events, only 2 with ID 1 selected
+    outlet_marker_3_channel.push_sample(np.array([1, 0, 0], dtype=sinfo.dtype))
+    time.sleep(0.1)
+    outlet_marker_3_channel.push_sample(np.array([2, 0, 0], dtype=sinfo.dtype))
+    time.sleep(0.1)
+    outlet_marker_3_channel.push_sample(np.array([1, 0, 5], dtype=sinfo.dtype))
+    time.sleep(0.1)
+    outlet_marker_3_channel.push_sample(np.array([1, 2, 0], dtype=sinfo.dtype))
+    time.sleep(0.1)
+    start = time.monotonic()
+    while epochs.n_new_epochs != 2 and time.monotonic() - start < 3:
+        epochs.acquire()
+        time.sleep(0.5)
+    # check that we got 2 epochs on the code '1'
+    assert epochs.n_new_epochs == 2
+    events = epochs.events
+    assert_array_equal(events[events != 0], [1, 1])
