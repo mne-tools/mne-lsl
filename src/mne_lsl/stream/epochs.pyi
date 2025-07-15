@@ -162,8 +162,7 @@ class EpochsStream:
       - If ``event_id`` is provided, the events are selected based on the selected
         channels in ``event_channels`` and the provided ``event_id``.
 
-    Event streams irregularly sampled and using a ``str`` datatype are not yet
-    supported.
+    Event streams irregularly sampled and using a ``str`` datatype are not supported.
 
     .. note::
 
