@@ -1,0 +1,44 @@
+cff-version: "1.2.0"
+authors:
+- family-names: Scheltienne
+  given-names: Mathieu
+  orcid: "https://orcid.org/0000-0001-8316-7436"
+- family-names: Larson
+  given-names: Eric
+  orcid: "https://orcid.org/0000-0003-4782-5360"
+- family-names: Desvachez
+  given-names: Arnaud
+- family-names: Lee
+  given-names: Kyuhwa
+  orcid: "https://orcid.org/0000-0002-3854-4690"
+doi: 10.5281/zenodo.16314799
+message: If you use this software, please cite our article in the
+  Journal of Open Source Software.
+preferred-citation:
+  authors:
+  - family-names: Scheltienne
+    given-names: Mathieu
+    orcid: "https://orcid.org/0000-0001-8316-7436"
+  - family-names: Larson
+    given-names: Eric
+    orcid: "https://orcid.org/0000-0003-4782-5360"
+  - family-names: Desvachez
+    given-names: Arnaud
+  - family-names: Lee
+    given-names: Kyuhwa
+    orcid: "https://orcid.org/0000-0002-3854-4690"
+  date-published: 2025-07-24
+  doi: 10.21105/joss.08088
+  issn: 2475-9066
+  issue: 111
+  journal: Journal of Open Source Software
+  publisher:
+    name: Open Journals
+  start: 8088
+  title: "MNE-LSL: Real-time framework integrated with MNE-Python for
+    online neuroscience research through LSL-compatible devices."
+  type: article
+  url: "https://joss.theoj.org/papers/10.21105/joss.08088"
+  volume: 10
+title: "MNE-LSL: Real-time framework integrated with MNE-Python for
+  online neuroscience research through LSL-compatible devices."
