@@ -8,7 +8,6 @@
 [![Conda Version](https://img.shields.io/conda/vn/conda-forge/mne-lsl.svg)](https://anaconda.org/conda-forge/mne-lsl)
 [![Conda Downloads](https://img.shields.io/conda/dn/conda-forge/mne-lsl.svg)](https://anaconda.org/conda-forge/mne-lsl)
 [![Conda Platforms](https://img.shields.io/conda/pn/conda-forge/mne-lsl.svg)](https://anaconda.org/conda-forge/mne-lsl)
-[![status](https://joss.theoj.org/papers/ff89793e3cc280dfcf5b3c9005ca984f/status.svg)](https://joss.theoj.org/papers/ff89793e3cc280dfcf5b3c9005ca984f)
 [![DOI](https://joss.theoj.org/papers/10.21105/joss.08088/status.svg)](https://doi.org/10.21105/joss.08088)
 
 <img align="right" src="https://raw.githubusercontent.com/mne-tools/mne-lsl/main/doc/_static/logos/logo-mne-hex.svg" alt="logo" width="200"/>
