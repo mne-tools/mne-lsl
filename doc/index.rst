@@ -57,6 +57,38 @@ Install
 
             $ MNE_LSL_SKIP_LIBLSL_BUILD=1 pip install git+https://github.com/mne-tools/mne-lsl
 
+Cite
+----
+
+If you use ``MNE-LSL``, please consider citing our paper\ :footcite:p:`mne-lsl_2025`.
+
+.. footbibliography::
+
+.. tab-set::
+
+    .. tab-item:: APA
+
+        .. code-block::
+
+            Scheltienne, M., Larson, E., Desvachez, A., & Lee, K. (2025). MNE-LSL: Real-time framework integrated with MNE-Python for online neuroscience research through LSL-compatible devices.. Journal of Open Source Software, 10(111), 8088. https://doi.org/10.21105/joss.08088
+
+    .. tab-item:: BibTeX
+
+        .. code-block::
+
+            @article{Scheltienne_MNE-LSL_Real-time_framework_2025,
+              author = {Scheltienne, Mathieu and Larson, Eric and Desvachez, Arnaud and Lee, Kyuhwa},
+              doi = {10.21105/joss.08088},
+              journal = {Journal of Open Source Software},
+              month = jul,
+              number = {111},
+              pages = {8088},
+              title = {{MNE-LSL: Real-time framework integrated with MNE-Python for online neuroscience research through LSL-compatible devices.}},
+              url = {https://joss.theoj.org/papers/10.21105/joss.08088},
+              volume = {10},
+              year = {2025}
+            }
+
 Supporting institutions
 -----------------------
 
@@ -65,7 +97,7 @@ Supporting institutions
     :alt: FCBG - HNP - MEEG/BCI Platform
     :width: 100
 
-The development of ``MNE-LSL`` is supported by the
+The development of ``MNE-LSL`` was supported by the
 `Fondation Campus Biotech Geneva <fcbg_>`_.
 
 .. toctree::
