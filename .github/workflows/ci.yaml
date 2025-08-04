@@ -42,7 +42,7 @@ jobs:
         with:
           submodules: true
       - uses: astral-sh/setup-uv@v6
-      - uses: pypa/cibuildwheel@v3.0.1
+      - uses: pypa/cibuildwheel@v3.1.3
         env:
           MNE_LSL_LIBLSL_BUILD_UNITTESTS: ${{ (github.event_name != 'pull_request' || contains(needs.get_commit_message.outputs.commit_message, '[liblsl]')) && '1' || '0' }}
       - uses: actions/upload-artifact@v4
