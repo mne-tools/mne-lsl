@@ -228,12 +228,8 @@ jobs:
           merge-multiple: true
           path: dist
       - run: ls -alt . && ls -alt dist/
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.13'
       - uses: astral-sh/setup-uv@v6
-      - run: uv pip install twine -q --upgrade
-      - run: twine check --strict dist/*
+      - run: uvx twine check --strict dist/*
 
   doc-build:
     needs: cibuildwheel
