@@ -19,4 +19,4 @@
 Version 1.11
 ============
 
-- xxx
+- Update packaging using `uv`_ and dependency groups (:pr:`470` by `Mathieu Scheltienne`_)
