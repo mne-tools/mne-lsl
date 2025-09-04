@@ -17,7 +17,7 @@ from .logs import _use_log_level
 # TODO: remove when python 3.10 is dropped
 try:
     import tomllib
-except ImportError:
+except Exception:  # pragma: no cover
     import tomli as tomllib
 
 
