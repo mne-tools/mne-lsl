@@ -209,7 +209,6 @@ jobs:
         with:
           submodules: true
       - uses: astral-sh/setup-uv@v6
-      - run: uv pip install build -q --upgrade
       - run: uv build --sdist
       - uses: actions/upload-artifact@v4
         with:
