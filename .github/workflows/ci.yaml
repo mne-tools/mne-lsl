@@ -40,6 +40,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
+          fetch-depth: 0
           submodules: true
       - uses: astral-sh/setup-uv@v6
       - uses: pypa/cibuildwheel@v3.1.4
@@ -67,18 +68,19 @@ jobs:
         shell: bash
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python }}
       - uses: astral-sh/setup-uv@v6
+        with:
+          activate-environment: true
+          python-version: ${{ matrix.python }}
       - uses: actions/download-artifact@v5
         with:
           pattern: cibw-wheels-${{ matrix.os }}-*
           merge-multiple: true
           path: dist
       - run: ls -alt . && ls -alt dist/
-      - run: uv pip install mne-lsl[test] --only-binary mne-lsl --find-links dist --pre --quiet --system
-      - run: mne-lsl sys-info --developer
+      - run: uv sync -q --locked --no-default-groups --group test --no-install-project
+      - run: uv pip install mne-lsl -q --only-binary mne-lsl --find-links dist --pre
+      - run: mne-lsl sys-info
       - uses: ./.github/actions/get-testing-dataset
       - name: Run pytest
         uses: ./.github/actions/retry-step
@@ -103,22 +105,23 @@ jobs:
         python: ["3.10"]
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python }}
       - uses: astral-sh/setup-uv@v6
+        with:
+          activate-environment: true
+          python-version: ${{ matrix.python }}
       - uses: actions/download-artifact@v5
         with:
           pattern: cibw-wheels-ubuntu-latest-*
           merge-multiple: true
           path: dist
       - run: ls -alt . && ls -alt dist/
+      - run: uv sync -q --locked --no-default-groups --group test --no-install-project
       - run: |
-          uv pip install mne-lsl[test] --only-binary mne-lsl --find-links dist --pre --quiet --system
-          uv pip uninstall numpy mne --quiet --system
-          uv pip install "numpy<2" --quiet --system
-          uv pip install mne==${{ matrix.mne-version }} --quiet --system
-      - run: mne-lsl sys-info --developer
+          uv pip install mne-lsl -q --only-binary mne-lsl --find-links dist --pre
+          uv pip uninstall numpy mne -q
+          uv pip install "numpy<2" -q
+          uv pip install mne==${{ matrix.mne-version }} -q
+      - run: mne-lsl sys-info
       - uses: ./.github/actions/get-testing-dataset
       - name: Run pytest
         uses: ./.github/actions/retry-step
@@ -142,23 +145,24 @@ jobs:
         python: ["3.13"]
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python }}
       - uses: astral-sh/setup-uv@v6
+        with:
+          activate-environment: true
+          python-version: ${{ matrix.python }}
       - uses: actions/download-artifact@v5
         with:
           pattern: cibw-wheels-ubuntu-latest-*
           merge-multiple: true
           path: dist
       - run: ls -alt . && ls -alt dist/
+      - run: uv sync -q --locked --no-default-groups --group test --no-install-project
       - run: |
-          uv pip install mne-lsl[test] --only-binary mne-lsl --find-links dist --pre --quiet --system
-          uv pip install git+https://github.com/mne-tools/mne-python --upgrade --quiet --system
-          uv pip install matplotlib --quiet --system
-          uv pip install matplotlib --upgrade --quiet --system --prerelease allow --only-binary :all: -i https://pypi.anaconda.org/scientific-python-nightly-wheels/simple --no-deps
-          uv pip install numpy scipy --upgrade --quiet --system --prerelease allow --only-binary :all: -i https://pypi.anaconda.org/scientific-python-nightly-wheels/simple
-      - run: mne-lsl sys-info --developer
+          uv pip install mne-lsl -q --only-binary mne-lsl --find-links dist --pre
+          uv pip install git+https://github.com/mne-tools/mne-python -q --upgrade
+          uv pip install matplotlib -q
+          uv pip install matplotlib -q --upgrade --prerelease allow --only-binary :all: -i https://pypi.anaconda.org/scientific-python-nightly-wheels/simple --no-deps
+          uv pip install numpy scipy -q --upgrade --prerelease allow --only-binary :all: -i https://pypi.anaconda.org/scientific-python-nightly-wheels/simple
+      - run: mne-lsl sys-info
       - uses: ./.github/actions/get-testing-dataset
       - name: Run pytest
         uses: ./.github/actions/retry-step
@@ -178,12 +182,13 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
+          fetch-depth: 0
           submodules: true
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.13'
       - uses: astral-sh/setup-uv@v6
-      - run: uv pip install -e .[test] --verbose --system
+        with:
+          activate-environment: true
+          python-version: '3.13'
+      - run: uv sync -q --locked --no-default-groups --group test
       - run: mne-lsl sys-info --developer
       - name: Run pytest
         uses: ./.github/actions/retry-step
@@ -204,13 +209,10 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
+          fetch-depth: 0
           submodules: true
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.13'
       - uses: astral-sh/setup-uv@v6
-      - run: uv pip install build --upgrade --quiet --system
-      - run: python -m build --sdist
+      - run: uv build --sdist
       - uses: actions/upload-artifact@v4
         with:
           name: cibw-wheels-sdist
@@ -222,19 +224,14 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v5
       - uses: actions/download-artifact@v5
         with:
           pattern: cibw-wheels-*
           merge-multiple: true
           path: dist
       - run: ls -alt . && ls -alt dist/
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.13'
       - uses: astral-sh/setup-uv@v6
-      - run: uv pip install twine --upgrade --quiet --system
-      - run: twine check --strict dist/*
+      - run: uvx twine check --strict dist/*
 
   doc-build:
     needs: cibuildwheel
@@ -243,18 +240,19 @@ jobs:
     steps:
       - run: sudo apt update && sudo apt install -y optipng
       - uses: actions/checkout@v5
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.13'
       - uses: astral-sh/setup-uv@v6
+        with:
+          activate-environment: true
+          python-version: '3.13'
       - uses: actions/download-artifact@v5
         with:
           pattern: cibw-wheels-ubuntu-latest-*
           merge-multiple: true
           path: dist
       - run: ls -alt . && ls -alt dist/
-      - run: uv pip install mne-lsl[doc] --only-binary mne-lsl --find-links dist --pre --quiet --system
-      - run: mne-lsl sys-info --developer
+      - run: uv sync -q --locked --no-default-groups --group doc --no-install-project
+      - run: uv pip install mne-lsl -q --only-binary mne-lsl --find-links dist --pre
+      - run: mne-lsl sys-info
       - uses: ./.github/actions/get-testing-dataset
         with:
           sample: "true"

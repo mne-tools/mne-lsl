@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from click.testing import CliRunner
 
-from mne_lsl.commands.main import run
+from mne_lsl._commands.main import run
 
 
 def test_main() -> None:

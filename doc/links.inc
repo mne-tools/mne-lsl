@@ -35,6 +35,7 @@
 
 .. _msvc: https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist
 .. _sklearn stable: https://scikit-learn.org/stable/
+.. _uv: https://docs.astral.sh/uv/
 
 
 .. project

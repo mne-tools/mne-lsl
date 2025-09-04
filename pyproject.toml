@@ -1,69 +1,8 @@
 [build-system]
 build-backend = 'setuptools.build_meta'
-requires = ['setuptools >= 64.0.0']
+requires = ['setuptools >= 64.0.0', 'setuptools_scm>=8']
 
-[project]
-authors = [
-  {email = 'mathieu.scheltienne@fcbg.ch', name = 'Mathieu Scheltienne'},
-]
-classifiers = [
-  'Intended Audience :: Developers',
-  'Intended Audience :: Science/Research',
-  'Natural Language :: English',
-  'Operating System :: MacOS',
-  'Operating System :: Microsoft :: Windows',
-  'Operating System :: Unix',
-  'Programming Language :: Python :: 3 :: Only',
-  'Programming Language :: Python :: 3.10',
-  'Programming Language :: Python :: 3.11',
-  'Programming Language :: Python :: 3.12',
-  'Programming Language :: Python :: 3.13',
-  'Topic :: Scientific/Engineering',
-  'Topic :: Software Development',
-]
-dependencies = [
-  'click>=8.1',
-  'mne>=1.4.2',
-  'numpy>=1.21,<3',
-  'packaging',
-  'pooch',
-  'psutil',
-  'pyqtgraph',
-  'qtpy',
-  'scipy',
-]
-description = 'Real-time framework integrated with MNE-Python for online neuroscience research through LSL-compatible devices.'
-keywords = [
-  'brain',
-  'EEG',
-  'eeg',
-  'electroencephalography',
-  'labstreaminglayer',
-  'LSL',
-  'neuroimaging',
-  'neurophysiology',
-  'neuroscience',
-  'python',
-  'real-time',
-]
-license = {file = 'LICENSE'}
-maintainers = [
-  {email = 'mathieu.scheltienne@fcbg.ch', name = 'Mathieu Scheltienne'},
-]
-name = 'mne_lsl'
-readme = 'README.md'
-requires-python = '>=3.10'
-version = '1.11.0.dev0'
-
-[project.optional-dependencies]
-all = [
-  'mne_lsl[build]',
-  'mne_lsl[doc]',
-  'mne_lsl[stubs]',
-  'mne_lsl[style]',
-  'mne_lsl[test]',
-]
-build = ['build', 'setuptools', 'twine']
+[dependency-groups]
 doc = [
   'furo',
   'intersphinx_registry',
@@ -79,7 +18,10 @@ doc = [
   'sphinx-issues',
   'sphinxcontrib-bibtex',
 ]
-full = ['mne_lsl[all]']
+ide = [
+  'ipykernel',
+  'ipython',
+]
 stubs = ['mypy', 'ruff>=0.6.0']
 style = [
   'bibclean',
@@ -89,10 +31,70 @@ style = [
   'toml-sort',
   'yamllint',
 ]
-test = ['pytest-cov', 'pytest-randomly', 'pytest-timeout', 'pytest>=8.0']
+test = [
+  'pytest-cov',
+  'pytest-randomly',
+  'pytest-timeout',
+  'pytest>=8.0',
+]
+
+[project]
+authors = [
+  {email = 'mathieu.scheltienne@gmail.com', name = 'Mathieu Scheltienne'},
+]
+classifiers = [
+  'Intended Audience :: Developers',
+  'Intended Audience :: Science/Research',
+  'Natural Language :: English',
+  'Operating System :: MacOS',
+  'Operating System :: Microsoft :: Windows',
+  'Operating System :: Unix',
+  'Programming Language :: Python :: 3 :: Only',
+  'Programming Language :: Python :: 3.10',
+  'Programming Language :: Python :: 3.11',
+  'Programming Language :: Python :: 3.12',
+  'Programming Language :: Python :: 3.13',
+  'Programming Language :: Python :: 3.14',
+  'Topic :: Scientific/Engineering',
+  'Topic :: Software Development',
+]
+dependencies = [
+  'click>=8.1',
+  'mne>=1.4.2',
+  'numpy>=1.21,<3',
+  'packaging',
+  'pooch',
+  'psutil',
+  'pyqtgraph',
+  'qtpy',
+  'scipy',
+  'tomli; python_version < "3.11"',
+]
+description = 'Real-time framework integrated with MNE-Python for online neuroscience research through LSL-compatible devices.'
+dynamic = ["version"]
+keywords = [
+  'brain',
+  'EEG',
+  'eeg',
+  'electroencephalography',
+  'labstreaminglayer',
+  'LSL',
+  'neuroimaging',
+  'neurophysiology',
+  'neuroscience',
+  'python',
+  'real-time',
+]
+license = {file = 'LICENSE'}
+maintainers = [
+  {email = 'mathieu.scheltienne@gmail.com', name = 'Mathieu Scheltienne'},
+]
+name = 'mne_lsl'
+readme = 'README.md'
+requires-python = '>=3.10'
 
 [project.scripts]
-mne-lsl = 'mne_lsl.commands.main:run'
+mne-lsl = 'mne_lsl._commands.main:run'
 
 [project.urls]
 documentation = 'https://mne.tools/mne-lsl'
@@ -204,11 +206,18 @@ include-package-data = true
 include = ["mne_lsl*"]
 where = ["src"]
 
+[tool.setuptools_scm]
+version_file = "src/mne_lsl/_version.py"
+version_scheme = "release-branch-semver"
+
 [tool.tomlsort]
 all = true
 ignore_case = true
 spaces_before_inline_comment = 2
 trailing_comma_inline_array = true
+
+[tool.uv]
+default-groups = "all"
 
 [tool.uv.pip]
 only-binary = ['matplotlib', 'numpy', 'scipy']
