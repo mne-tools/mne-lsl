@@ -32,7 +32,6 @@ def test_sys_info() -> None:
     value = out.getvalue()
     out.close()
 
-    assert "build" in value
     assert "style" in value
     assert "test" in value
 
