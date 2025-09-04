@@ -93,7 +93,7 @@ requires-python = '>=3.10'
 dynamic = ["version"]
 
 [project.scripts]
-mne-lsl = 'mne_lsl.commands.main:run'
+mne-lsl = 'mne_lsl._commands.main:run'
 
 [project.urls]
 documentation = 'https://mne.tools/mne-lsl'
