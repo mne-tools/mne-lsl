@@ -80,7 +80,7 @@ jobs:
       - run: ls -alt . && ls -alt dist/
       - run: uv sync -q --locked --no-default-groups --group test --no-install-project
       - run: uv pip install mne-lsl -q --only-binary mne-lsl --find-links dist --pre
-      - run: mne-lsl sys-info --developer
+      - run: mne-lsl sys-info
       - uses: ./.github/actions/get-testing-dataset
       - name: Run pytest
         uses: ./.github/actions/retry-step
@@ -121,7 +121,7 @@ jobs:
           uv pip uninstall numpy mne -q
           uv pip install "numpy<2" -q
           uv pip install mne==${{ matrix.mne-version }} -q
-      - run: mne-lsl sys-info --developer
+      - run: mne-lsl sys-info
       - uses: ./.github/actions/get-testing-dataset
       - name: Run pytest
         uses: ./.github/actions/retry-step
@@ -162,7 +162,7 @@ jobs:
           uv pip install matplotlib -q
           uv pip install matplotlib -q --upgrade --prerelease allow --only-binary :all: -i https://pypi.anaconda.org/scientific-python-nightly-wheels/simple --no-deps
           uv pip install numpy scipy -q --upgrade --prerelease allow --only-binary :all: -i https://pypi.anaconda.org/scientific-python-nightly-wheels/simple
-      - run: mne-lsl sys-info --developer
+      - run: mne-lsl sys-info
       - uses: ./.github/actions/get-testing-dataset
       - name: Run pytest
         uses: ./.github/actions/retry-step
@@ -252,7 +252,7 @@ jobs:
       - run: ls -alt . && ls -alt dist/
       - run: uv sync -q --locked --no-default-groups --group doc --no-install-project
       - run: uv pip install mne-lsl -q --only-binary mne-lsl --find-links dist --pre
-      - run: mne-lsl sys-info --developer
+      - run: mne-lsl sys-info
       - uses: ./.github/actions/get-testing-dataset
         with:
           sample: "true"
