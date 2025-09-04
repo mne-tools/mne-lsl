@@ -117,9 +117,9 @@ jobs:
       - run: uv sync -q --locked --no-default-groups --group test --no-install-project
       - run: |
           uv pip install mne-lsl -q --only-binary mne-lsl --find-links dist --pre
-          uv pip uninstall numpy mne --quiet
-          uv pip install "numpy<2" --quiet
-          uv pip install mne==${{ matrix.mne-version }} --quiet
+          uv pip uninstall numpy mne -q
+          uv pip install "numpy<2" -q
+          uv pip install mne==${{ matrix.mne-version }} -q
       - run: mne-lsl sys-info --developer
       - uses: ./.github/actions/get-testing-dataset
       - name: Run pytest
@@ -157,10 +157,10 @@ jobs:
       - run: uv sync -q --locked --no-default-groups --group test --no-install-project
       - run: |
           uv pip install mne-lsl -q --only-binary mne-lsl --find-links dist --pre
-          uv pip install git+https://github.com/mne-tools/mne-python --upgrade --quiet
-          uv pip install matplotlib --quiet
-          uv pip install matplotlib --upgrade -q --prerelease allow --only-binary :all: -i https://pypi.anaconda.org/scientific-python-nightly-wheels/simple --no-deps
-          uv pip install numpy scipy --upgrade -q --prerelease allow --only-binary :all: -i https://pypi.anaconda.org/scientific-python-nightly-wheels/simple
+          uv pip install git+https://github.com/mne-tools/mne-python -q --upgrade
+          uv pip install matplotlib -q
+          uv pip install matplotlib -q --upgrade --prerelease allow --only-binary :all: -i https://pypi.anaconda.org/scientific-python-nightly-wheels/simple --no-deps
+          uv pip install numpy scipy -q --upgrade --prerelease allow --only-binary :all: -i https://pypi.anaconda.org/scientific-python-nightly-wheels/simple
       - run: mne-lsl sys-info --developer
       - uses: ./.github/actions/get-testing-dataset
       - name: Run pytest
@@ -209,7 +209,7 @@ jobs:
         with:
           submodules: true
       - uses: astral-sh/setup-uv@v6
-      - run: uv pip install build --upgrade -q
+      - run: uv pip install build -q --upgrade
       - run: uv build --sdist
       - uses: actions/upload-artifact@v4
         with:
@@ -233,7 +233,7 @@ jobs:
         with:
           python-version: '3.13'
       - uses: astral-sh/setup-uv@v6
-      - run: uv pip install twine --upgrade -q
+      - run: uv pip install twine -q --upgrade
       - run: twine check --strict dist/*
 
   doc-build:
