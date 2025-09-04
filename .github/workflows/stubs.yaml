@@ -10,17 +10,18 @@ on:  # yamllint disable-line rule:truthy
 
 jobs:
   stubs:
+    if: ${{ github.repository == 'mne-tools/mne-lsl' }}
     timeout-minutes: 10
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
         with:
           submodules: true
-      - uses: actions/setup-python@v5
-        with:
-          python-version: 3.13
       - uses: astral-sh/setup-uv@v6
-      - run: uv pip install -e .[stubs] --quiet --system
+        with:
+          activate-environment: true
+          python-version: 3.13
+      - run: uv sync -q --locked --no-default-groups --group stubs
       - run: mne-lsl sys-info --developer
       - run: python tools/stubgen.py
       - uses: autofix-ci/action@v1.3.2
