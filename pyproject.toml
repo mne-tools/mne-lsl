@@ -1,10 +1,46 @@
 [build-system]
 build-backend = 'setuptools.build_meta'
-requires = ['setuptools >= 64.0.0']
+requires = ['setuptools >= 64.0.0', 'setuptools_scm>=8']
+
+[dependency-groups]
+doc = [
+  'furo',
+  'intersphinx_registry',
+  'matplotlib',
+  'memory-profiler',
+  'numpydoc',
+  'scikit-learn',
+  'setuptools',
+  'sphinx!=7.2.*',
+  'sphinx-copybutton',
+  'sphinx-design',
+  'sphinx-gallery',
+  'sphinx-issues',
+  'sphinxcontrib-bibtex',
+]
+ide = [
+  'ipykernel',
+  'ipython',
+]
+style = [
+  'bibclean',
+  'codespell[toml]>=2.2.4',
+  'pre-commit',
+  'ruff>=0.6.0',
+  'toml-sort',
+  'yamllint',
+]
+stubs = ['mypy', 'ruff>=0.6.0']
+test = [
+  'pytest-timeout',
+  'pytest-cov',
+  'pytest-randomly',
+  'pytest>=8.0',
+]
 
 [project]
 authors = [
-  {email = 'mathieu.scheltienne@fcbg.ch', name = 'Mathieu Scheltienne'},
+  {email = 'mathieu.scheltienne@gmail.com', name = 'Mathieu Scheltienne'},
 ]
 classifiers = [
   'Intended Audience :: Developers',
@@ -18,6 +54,7 @@ classifiers = [
   'Programming Language :: Python :: 3.11',
   'Programming Language :: Python :: 3.12',
   'Programming Language :: Python :: 3.13',
+  'Programming Language :: Python :: 3.14',
   'Topic :: Scientific/Engineering',
   'Topic :: Software Development',
 ]
@@ -48,48 +85,12 @@ keywords = [
 ]
 license = {file = 'LICENSE'}
 maintainers = [
-  {email = 'mathieu.scheltienne@fcbg.ch', name = 'Mathieu Scheltienne'},
+  {email = 'mathieu.scheltienne@gmail.com', name = 'Mathieu Scheltienne'},
 ]
 name = 'mne_lsl'
 readme = 'README.md'
 requires-python = '>=3.10'
-version = '1.11.0.dev0'
-
-[project.optional-dependencies]
-all = [
-  'mne_lsl[build]',
-  'mne_lsl[doc]',
-  'mne_lsl[stubs]',
-  'mne_lsl[style]',
-  'mne_lsl[test]',
-]
-build = ['build', 'setuptools', 'twine']
-doc = [
-  'furo',
-  'intersphinx_registry',
-  'matplotlib',
-  'memory-profiler',
-  'numpydoc',
-  'scikit-learn',
-  'setuptools',
-  'sphinx!=7.2.*',
-  'sphinx-copybutton',
-  'sphinx-design',
-  'sphinx-gallery',
-  'sphinx-issues',
-  'sphinxcontrib-bibtex',
-]
-full = ['mne_lsl[all]']
-stubs = ['mypy', 'ruff>=0.6.0']
-style = [
-  'bibclean',
-  'codespell[toml]>=2.2.4',
-  'pre-commit',
-  'ruff>=0.6.0',
-  'toml-sort',
-  'yamllint',
-]
-test = ['pytest-cov', 'pytest-randomly', 'pytest-timeout', 'pytest>=8.0']
+dynamic = ["version"]
 
 [project.scripts]
 mne-lsl = 'mne_lsl.commands.main:run'
@@ -204,11 +205,18 @@ include-package-data = true
 include = ["mne_lsl*"]
 where = ["src"]
 
+[tool.setuptools_scm]
+version_file = "src/mne_lsl/_version.py"
+version_scheme = "release-branch-semver"
+
 [tool.tomlsort]
 all = true
 ignore_case = true
 spaces_before_inline_comment = 2
 trailing_comma_inline_array = true
+
+[tool.uv]
+default-groups = "all"
 
 [tool.uv.pip]
 only-binary = ['matplotlib', 'numpy', 'scipy']
