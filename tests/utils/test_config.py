@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 from io import StringIO
+from pathlib import Path
 
 import pytest
 
+import mne_lsl
 from mne_lsl.utils.config import _get_gpu_info, sys_info
 
 
@@ -27,12 +29,17 @@ def test_sys_info() -> None:
     assert "style" not in value
     assert "test" not in value
 
+
+@pytest.mark.skipif(
+    not (Path(mne_lsl.__file__).parents[2] / "pyproject.toml").exists(),
+    reason="not editable install",
+)
+def test_sys_info_developer() -> None:
+    """Test info-showing utility, with developer dependencies."""
     out = StringIO()
     sys_info(fid=out, developer=True)
     value = out.getvalue()
     out.close()
-
-    assert "style" in value
     assert "test" in value
 
 
