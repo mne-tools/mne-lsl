@@ -22,6 +22,7 @@ ide = [
   'ipykernel',
   'ipython',
 ]
+stubs = ['mypy', 'ruff>=0.6.0']
 style = [
   'bibclean',
   'codespell[toml]>=2.2.4',
@@ -30,11 +31,10 @@ style = [
   'toml-sort',
   'yamllint',
 ]
-stubs = ['mypy', 'ruff>=0.6.0']
 test = [
-  'pytest-timeout',
   'pytest-cov',
   'pytest-randomly',
+  'pytest-timeout',
   'pytest>=8.0',
 ]
 
@@ -70,6 +70,7 @@ dependencies = [
   'scipy',
 ]
 description = 'Real-time framework integrated with MNE-Python for online neuroscience research through LSL-compatible devices.'
+dynamic = ["version"]
 keywords = [
   'brain',
   'EEG',
@@ -90,7 +91,6 @@ maintainers = [
 name = 'mne_lsl'
 readme = 'README.md'
 requires-python = '>=3.10'
-dynamic = ["version"]
 
 [project.scripts]
 mne-lsl = 'mne_lsl._commands.main:run'
