@@ -40,6 +40,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
+          fetch-depth: 0
           submodules: true
       - uses: astral-sh/setup-uv@v6
       - uses: pypa/cibuildwheel@v3.1.4
@@ -181,6 +182,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
+          fetch-depth: 0
           submodules: true
       - uses: astral-sh/setup-uv@v6
         with:
@@ -207,6 +209,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
+          fetch-depth: 0
           submodules: true
       - uses: astral-sh/setup-uv@v6
       - run: uv build --sdist
@@ -221,7 +224,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v5
       - uses: actions/download-artifact@v5
         with:
           pattern: cibw-wheels-*
