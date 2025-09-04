@@ -1204,6 +1204,7 @@ dependencies = [
     { name = "qtpy" },
     { name = "scipy", version = "1.15.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "scipy", version = "1.16.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "tomli", marker = "python_full_version < '3.11'" },
 ]
 
 [package.dev-dependencies]
@@ -1258,6 +1259,7 @@ requires-dist = [
     { name = "pyqtgraph" },
     { name = "qtpy" },
     { name = "scipy" },
+    { name = "tomli", marker = "python_full_version < '3.11'" },
 ]
 
 [package.metadata.requires-dev]

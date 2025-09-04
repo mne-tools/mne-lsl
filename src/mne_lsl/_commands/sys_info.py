@@ -7,10 +7,15 @@ from .. import sys_info
 
 @click.command(name="sys-info")
 @click.option(
-    "--developer",
+    "--extra",
     help="Display information for optional dependencies.",
     is_flag=True,
 )
-def run(developer: bool) -> None:
+@click.option(
+    "--developer",
+    help="Display information for developer dependencies.",
+    is_flag=True,
+)
+def run(extra: bool, developer: bool) -> None:
     """Get the system information."""
-    sys_info(developer=developer)
+    sys_info(extra=extra, developer=developer)
