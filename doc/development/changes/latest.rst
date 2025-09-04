@@ -14,6 +14,8 @@
 
 .. include:: ./authors.inc
 
+.. include:: ../../links.inc
+
 .. _latest:
 
 Version 1.11
