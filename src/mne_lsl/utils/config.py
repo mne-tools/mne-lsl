@@ -8,7 +8,6 @@ from pathlib import Path
 from typing import IO
 
 import psutil
-import tomllib
 from packaging.requirements import Requirement
 
 from ._checks import check_type
