@@ -4,14 +4,8 @@ from decimal import Decimal, InvalidOperation
 from typing import TYPE_CHECKING
 
 from mne import create_info as mne_create_info
-from mne.utils import check_version
-
-if check_version("mne", "1.6"):
-    from mne._fiff.constants import FIFF, _ch_unit_mul_named
-    from mne._fiff.pick import get_channel_type_constants
-else:
-    from mne.io.constants import FIFF, _ch_unit_mul_named
-    from mne.io.pick import get_channel_type_constants
+from mne._fiff.constants import FIFF, _ch_unit_mul_named
+from mne._fiff.pick import get_channel_type_constants
 
 from ._checks import check_type, check_value, ensure_int
 from .logs import logger, warn

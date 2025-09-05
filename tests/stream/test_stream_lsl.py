@@ -13,20 +13,14 @@ import numpy as np
 import pytest
 from matplotlib import pyplot as plt
 from mne import Info, create_info, pick_info, pick_types
+from mne._fiff.constants import FIFF
+from mne._fiff.pick import _picks_to_idx
 from mne.channels import DigMontage
 from mne.io import RawArray
 from mne.io.base import BaseRaw
-from mne.utils import check_version
 from numpy.testing import assert_allclose
 from scipy.fft import fft, fftfreq
 from scipy.signal import find_peaks
-
-if check_version("mne", "1.6"):
-    from mne._fiff.constants import FIFF
-    from mne._fiff.pick import _picks_to_idx
-else:
-    from mne.io.constants import FIFF
-    from mne.io.pick import _picks_to_idx
 
 from mne_lsl.lsl import StreamInfo, StreamOutlet
 from mne_lsl.stream import StreamLSL as Stream

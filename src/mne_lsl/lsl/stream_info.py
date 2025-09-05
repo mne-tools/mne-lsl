@@ -5,7 +5,15 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 from mne import Info, Projection
-from mne.utils import check_version
+from mne._fiff._digitization import DigPoint
+from mne._fiff.constants import (
+    FIFF,
+    _ch_coil_type_named,
+    _ch_kind_named,
+    _coord_frame_named,
+    _dig_cardinal_named,
+    _dig_kind_named,
+)
 
 from ..utils._checks import check_type, check_value, ensure_int
 from ..utils.logs import warn
@@ -13,28 +21,6 @@ from ..utils.meas_info import create_info
 from ._utils import XMLElement
 from .constants import fmt2idx, fmt2numpy, idx2fmt, numpy2fmt, string2fmt
 from .load_liblsl import lib
-
-if check_version("mne", "1.6"):
-    from mne._fiff._digitization import DigPoint
-    from mne._fiff.constants import (
-        FIFF,
-        _ch_coil_type_named,
-        _ch_kind_named,
-        _coord_frame_named,
-        _dig_cardinal_named,
-        _dig_kind_named,
-    )
-else:
-    from mne.io._digitization import DigPoint
-    from mne.io.constants import (
-        FIFF,
-        _ch_coil_type_named,
-        _ch_kind_named,
-        _coord_frame_named,
-        _dig_cardinal_named,
-        _dig_kind_named,
-    )
-
 
 if TYPE_CHECKING:
     from typing import Any

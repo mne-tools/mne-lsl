@@ -6,9 +6,8 @@ from typing import Any
 
 from _typeshed import Incomplete
 from mne import Info
-from mne.channels.channels import SetChannelsMixin
+from mne._fiff.meas_info import ContainsMixin, SetChannelsMixin
 from mne.io import BaseRaw
-from mne.io.meas_info import ContainsMixin
 
 from ..utils._checks import check_type as check_type
 from ..utils._checks import ensure_int as ensure_int

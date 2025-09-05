@@ -7,18 +7,9 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 from mne import pick_info
+from mne._fiff.pick import _picks_to_idx, channel_indices_by_type
 from mne.event import _find_unique_events
-from mne.utils import check_version
 from scipy.signal import detrend
-
-if check_version("mne", "1.6"):
-    from mne._fiff.pick import _picks_to_idx, channel_indices_by_type
-
-elif check_version("mne", "1.5"):
-    from mne.io.pick import _picks_to_idx, channel_indices_by_type
-
-else:
-    from mne.io.pick import _picks_to_idx, channel_indices_by_type
 
 from ..utils._checks import check_type, check_value, ensure_int
 from ..utils._docs import fill_doc

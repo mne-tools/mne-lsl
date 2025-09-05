@@ -7,9 +7,8 @@ from typing import Any
 import numpy as np
 from _typeshed import Incomplete
 from mne import Info
+from mne._fiff.meas_info import ContainsMixin, SetChannelsMixin
 from mne.channels import DigMontage
-from mne.channels.channels import SetChannelsMixin
-from mne.io.meas_info import ContainsMixin
 from numpy.typing import DTypeLike
 from numpy.typing import NDArray as NDArray
 
