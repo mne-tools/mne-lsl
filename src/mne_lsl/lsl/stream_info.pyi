@@ -2,7 +2,7 @@ from typing import Any
 
 from _typeshed import Incomplete
 from mne import Info, Projection
-from mne.io._digitization import DigPoint
+from mne._fiff._digitization import DigPoint
 from numpy.typing import DTypeLike
 
 from .._typing import ScalarIntArray as ScalarIntArray
