@@ -362,6 +362,38 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         # plus any additional variables needed by the source and the stream-specific
         # methods.
 
+    def connect_hpi_stream(stream: BaseStream, format: str = "megin") -> BaseStream:  # noqa: A002
+        """Connect to a stream that provides HPI data.
+
+        The HPI data will automatically update in the background the ``dev_head_t``.
+
+        Parameters
+        ----------
+        stream : instance of ``Stream``
+            The stream to connect to containing the HPI data in the right format.
+        format : str
+            The format of the HPI data. Currently, only ``"megin"`` is supported.
+
+        Returns
+        -------
+        stream : instance of ``Stream``
+            The stream instance modified in-place.
+
+        Notes
+        -----
+        * ``megin`` format: the application ``neuromag2lsl`` provides a second HPI
+          stream irregularly sampled where each sample contains the HPI data in the
+          format of a vector of shape (12,) containing the 4x4 transformation matrix::
+
+              R11 R12 R13 T1
+              R21 R22 R23 T2
+              R31 R32 R33 T3
+              0   0   0   1
+        """
+        check_type(stream, (BaseStream,), "stream")
+        check_type(format, (str,), "format")
+        check_value(format, ("megin",), "format")
+
     @abstractmethod
     def disconnect(self) -> BaseStream:
         """Disconnect from the LSL stream and interrupt data collection.
