@@ -19,7 +19,7 @@ from ..utils._time import high_precision_sleep
 from ..utils.logs import logger, verbose, warn
 from ..utils.meas_info import _HUMAN_UNITS, _set_channel_units
 from ._filters import StreamFilter, create_filter, ensure_sos_iir_params
-from ._hpi import check_hpi_ch_names_megin, create_hpi_callback_megin
+from ._hpi import check_hpi_ch_names, create_hpi_callback_megin
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -406,9 +406,9 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
                 "Please connect the HPI stream first with hpi_stream.connect()."
             )
 
+        check_hpi_ch_names(hpi_stream.info["ch_names"], format)
         # Create and add callback to HPI stream that updates this stream's dev_head_t
         if format == "megin":
-            check_hpi_ch_names_megin(hpi_stream.info["ch_names"])
             hpi_callback = create_hpi_callback_megin(self)
             hpi_stream.add_callback(hpi_callback)
 

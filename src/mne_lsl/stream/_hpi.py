@@ -16,15 +16,8 @@ if TYPE_CHECKING:
     from .base import BaseStream
 
 
-def check_hpi_ch_names_megin(ch_names: list[str]) -> None:
-    """Check if the channel names match the MEGIN HPI format.
-
-    Parameters
-    ----------
-    ch_names : list of str
-        The list of channel names to check.
-    """
-    expected_names = [
+CH_NAMES: dict[str, list[str]] = {
+    "megin": [
         "R11",
         "R12",
         "R13",
@@ -38,7 +31,20 @@ def check_hpi_ch_names_megin(ch_names: list[str]) -> None:
         "T2",
         "T3",
     ]
-    if ch_names != expected_names:
+}
+
+
+def check_hpi_ch_names(ch_names: list[str], format: str) -> None:  # noqa: A002
+    """Check if the channel names match the MEGIN HPI format.
+
+    Parameters
+    ----------
+    ch_names : list of str
+        The list of channel names to check.
+    format : str
+        The format of the HPI data, e.g., "megin".
+    """
+    if format == "megin" and ch_names != CH_NAMES["megin"]:
         raise RuntimeError(
             f"Expected HPI channel names for MEGIN format, got {ch_names}."
         )
