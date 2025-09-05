@@ -183,7 +183,7 @@ select = ['A', 'B', 'D', 'E', 'F', 'G', 'I', 'LOG', 'NPY', 'PIE', 'PT', 'T20', '
   'D104',  # 'Missing docstring in public package'
   'D107',  # 'Missing docstring in __init__'
 ]
-'*.pyi' = ['D', 'E501', 'F811']
+'*.pyi' = ['A002', 'D', 'E501', 'F811']
 '*/stream_viewer/backends/*' = ['D401']
 '__init__.py' = ['F401']
 'examples/*' = ['B018', 'D205', 'D400', 'E402', 'F811', 'T201']
