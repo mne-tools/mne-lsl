@@ -167,8 +167,8 @@ def test_stream_with_hpi(
     assert stream.info["dev_head_t"] == Transform("meg", "head", trans)
 
     # clean-up
-    hpi_stream.disconnect()
     stream.disconnect()
+    hpi_stream.disconnect()
     close_io()
 
 
