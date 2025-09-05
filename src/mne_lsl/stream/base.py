@@ -19,6 +19,7 @@ from ..utils._time import high_precision_sleep
 from ..utils.logs import logger, verbose, warn
 from ..utils.meas_info import _HUMAN_UNITS, _set_channel_units
 from ._filters import StreamFilter, create_filter, ensure_sos_iir_params
+from ._hpi import check_hpi_ch_names, create_hpi_callback_megin
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -362,6 +363,61 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         # plus any additional variables needed by the source and the stream-specific
         # methods.
 
+    def connect_hpi_stream(
+        self,
+        hpi_stream: BaseStream,
+        format: str = "megin",  # noqa: A002
+    ) -> BaseStream:
+        """Connect to a stream that provides HPI data.
+
+        The HPI data will automatically update in the background the ``dev_head_t``.
+
+        Parameters
+        ----------
+        hpi_stream : instance of ``Stream``
+            The stream to connect to containing the HPI data in the right format.
+        format : str
+            The format of the HPI data. Currently, only ``"megin"`` is supported.
+
+        Returns
+        -------
+        stream : instance of ``Stream``
+            The stream instance modified in-place.
+
+        Notes
+        -----
+        * ``megin`` format: the application ``neuromag2lsl`` provides a second HPI
+          stream irregularly sampled where each sample contains the HPI data in the
+          format of a vector of shape (12,) containing the 4x4 transformation matrix::
+
+              R11 R12 R13 T1
+              R21 R22 R23 T2
+              R31 R32 R33 T3
+              0   0   0   1
+        """
+        self._check_connected("connect_hpi_stream()")
+        check_type(hpi_stream, (BaseStream,), "hpi_stream")
+        check_type(format, (str,), "format")
+        check_value(format, ("megin",), "format")
+
+        if not hpi_stream.connected:
+            raise RuntimeError(
+                "The HPI stream must be connected before calling connect_hpi_stream(). "
+                "Please connect the HPI stream first with hpi_stream.connect()."
+            )
+
+        check_hpi_ch_names(hpi_stream.info["ch_names"], format)
+        # Create and add callback to HPI stream that updates this stream's dev_head_t
+        if format == "megin":
+            hpi_callback = create_hpi_callback_megin(self)
+            hpi_stream.add_callback(hpi_callback)
+
+        # Store references for cleanup
+        self._hpi_stream = hpi_stream
+        self._hpi_callback = hpi_callback
+
+        return self
+
     @abstractmethod
     def disconnect(self) -> BaseStream:
         """Disconnect from the LSL stream and interrupt data collection.
@@ -382,6 +438,19 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
                 elt.disconnect()
         if hasattr(self, "_executor") and self._executor is not None:
             self._executor.shutdown(wait=True, cancel_futures=True)
+        # Clean up HPI stream callback if attached
+        if (
+            hasattr(self, "_hpi_stream")
+            and self._hpi_stream is not None
+            and hasattr(self, "_hpi_callback")
+            and self._hpi_callback is not None
+        ):
+            try:
+                with self._hpi_stream._interrupt_acquisition():
+                    if self._hpi_callback in self._hpi_stream._callbacks:
+                        self._hpi_stream._callbacks.remove(self._hpi_callback)
+            except Exception as exc:
+                warn(f"Failed to clean up HPI callback: {exc}")
         # This method needs to close any inlet/network object and need to end with
         # self._reset_variables().
 
@@ -1183,6 +1252,8 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         self._epochs = []
         self._executor = None
         self._filters = []
+        self._hpi_stream = None
+        self._hpi_callback = None
         self._info = None
         self._n_new_samples = None
         self._picks_inlet = None
