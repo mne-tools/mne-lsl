@@ -60,7 +60,7 @@ classifiers = [
 ]
 dependencies = [
   'click>=8.1',
-  'mne>=1.4.2',
+  'mne>=1.6',
   'numpy>=1.21,<3',
   'packaging',
   'pooch',

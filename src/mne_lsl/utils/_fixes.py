@@ -6,7 +6,6 @@ import sys
 from typing import TYPE_CHECKING
 
 from mne.event import _find_events
-from mne.utils import check_version
 
 if TYPE_CHECKING:
     from .._typing import ScalarArray
@@ -57,7 +56,6 @@ def find_events(
         uint_cast=uint_cast,
         mask_type=mask_type,
         initial_event=initial_event,
+        ch_name=ch_name,
     )
-    if check_version("mne", "1.6"):
-        kwargs["ch_name"] = ch_name
     return _find_events(**kwargs)

@@ -10,14 +10,9 @@ from typing import TYPE_CHECKING
 import numpy as np
 import pytest
 from mne import annotations_from_events, create_info, find_events
+from mne._fiff.constants import FIFF
 from mne.io import RawArray, read_raw_fif
-from mne.utils import check_version
 from numpy.testing import assert_allclose
-
-if check_version("mne", "1.6"):
-    from mne._fiff.constants import FIFF
-else:
-    from mne.io.constants import FIFF
 
 from mne_lsl.lsl import StreamInlet, local_clock, resolve_streams
 from mne_lsl.player import PlayerLSL as Player

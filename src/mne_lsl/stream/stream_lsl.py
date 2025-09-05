@@ -5,15 +5,8 @@ from math import ceil
 from typing import TYPE_CHECKING
 
 import numpy as np
-from mne.utils import check_version
+from mne._fiff.constants import FIFF
 from scipy.signal import sosfilt
-
-if check_version("mne", "1.5"):
-    from mne.io.constants import FIFF
-elif check_version("mne", "1.6"):
-    from mne._fiff.constants import FIFF
-else:
-    from mne.io.constants import FIFF
 
 from ..lsl import StreamInlet, resolve_streams
 from ..lsl.constants import fmt2numpy
