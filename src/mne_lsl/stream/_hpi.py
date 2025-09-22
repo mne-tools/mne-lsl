@@ -27,9 +27,9 @@ CH_NAMES: dict[str, list[str]] = {
         "R31",
         "R32",
         "R33",
-        "T1",
-        "T2",
-        "T3",
+        "Tx",
+        "Ty",
+        "Tz",
     ]
 }
 
