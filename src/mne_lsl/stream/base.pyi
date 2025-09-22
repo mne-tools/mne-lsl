@@ -28,6 +28,8 @@ from ..utils.meas_info import _set_channel_units as _set_channel_units
 from ._filters import StreamFilter as StreamFilter
 from ._filters import create_filter as create_filter
 from ._filters import ensure_sos_iir_params as ensure_sos_iir_params
+from ._hpi import check_hpi_ch_names as check_hpi_ch_names
+from ._hpi import create_hpi_callback_megin as create_hpi_callback_megin
 
 class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
     """Stream object representing a single real-time stream.
@@ -260,6 +262,39 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         -------
         stream : instance of ``Stream``
             The stream instance modified in-place.
+        """
+    _hpi_stream: Incomplete
+    _hpi_callback: Incomplete
+
+    def connect_hpi_stream(
+        self, hpi_stream: BaseStream, format: str = "megin"
+    ) -> BaseStream:
+        """Connect to a stream that provides HPI data.
+
+        The HPI data will automatically update in the background the ``dev_head_t``.
+
+        Parameters
+        ----------
+        hpi_stream : instance of ``Stream``
+            The stream to connect to containing the HPI data in the right format.
+        format : str
+            The format of the HPI data. Currently, only ``"megin"`` is supported.
+
+        Returns
+        -------
+        stream : instance of ``Stream``
+            The stream instance modified in-place.
+
+        Notes
+        -----
+        * ``megin`` format: the application ``neuromag2lsl`` provides a second HPI
+          stream irregularly sampled where each sample contains the HPI data in the
+          format of a vector of shape (12,) containing the 4x4 transformation matrix::
+
+              R11 R12 R13 T1
+              R21 R22 R23 T2
+              R31 R32 R33 T3
+              0   0   0   1
         """
 
     @abstractmethod

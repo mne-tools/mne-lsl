@@ -9,6 +9,8 @@ def callback(
         Data array of shape (n_times, n_channels).
     timestamps : NDArray[np.float64]
         Timestamp array of shape (n_times,).
+    info : Info
+        MNE Info object containing the metadata about the stream.
 
     Returns
     -------
