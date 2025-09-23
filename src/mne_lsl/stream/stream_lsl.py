@@ -192,6 +192,13 @@ class StreamLSL(BaseStream):
         logger.info("The estimated timestamp offset is %.2f ms.", tc * 1000)
         # create buffer of shape (n_samples, n_channels) and (n_samples,)
         if self._inlet.sfreq == 0:
+            # in this case, 'self._bufsize' should be an integer
+            if not self._bufsize == int(self._bufsize):
+                raise ValueError(
+                    "The 'bufsize' argument must be an integer when the LSL stream "
+                    "sampling frequency is 0. Please provide an integer value."
+                )
+            self._bufsize = int(self._bufsize)
             self._buffer = np.zeros(
                 (self._bufsize, self._inlet.n_channels),
                 dtype=fmt2numpy[self._inlet._dtype],
