@@ -14,10 +14,7 @@
 
 .. include:: ./authors.inc
 
-.. include:: ../../links.inc
+.. _latest:
 
-Version 1.11
+Version 1.12
 ============
-
-- Update packaging using `uv`_ and dependency groups (:pr:`470` by `Mathieu Scheltienne`_)
-- Add support for ``neuromag2lsl`` (MEGIN) data and HPI streams (:pr:`472` by `Mathieu Scheltienne`_)
