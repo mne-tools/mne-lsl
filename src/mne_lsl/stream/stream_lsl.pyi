@@ -69,6 +69,7 @@ class StreamLSL(BaseStream):
     _inlet: Incomplete
     _sinfo: Incomplete
     _info: Incomplete
+    _bufsize: Incomplete
     _buffer: Incomplete
     _timestamps: Incomplete
     _picks_inlet: Incomplete
