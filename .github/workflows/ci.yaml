@@ -42,7 +42,7 @@ jobs:
         with:
           fetch-depth: 0
           submodules: true
-      - uses: astral-sh/setup-uv@v6
+      - uses: astral-sh/setup-uv@v7
       - uses: pypa/cibuildwheel@v3.2.0
         env:
           MNE_LSL_LIBLSL_BUILD_UNITTESTS: ${{ (github.event_name != 'pull_request' || contains(needs.get_commit_message.outputs.commit_message, '[liblsl]')) && '1' || '0' }}
@@ -68,7 +68,7 @@ jobs:
         shell: bash
     steps:
       - uses: actions/checkout@v5
-      - uses: astral-sh/setup-uv@v6
+      - uses: astral-sh/setup-uv@v7
         with:
           activate-environment: true
           python-version: ${{ matrix.python }}
@@ -104,7 +104,7 @@ jobs:
         python: ["3.13"]
     steps:
       - uses: actions/checkout@v5
-      - uses: astral-sh/setup-uv@v6
+      - uses: astral-sh/setup-uv@v7
         with:
           activate-environment: true
           python-version: ${{ matrix.python }}
@@ -143,7 +143,7 @@ jobs:
         with:
           fetch-depth: 0
           submodules: true
-      - uses: astral-sh/setup-uv@v6
+      - uses: astral-sh/setup-uv@v7
         with:
           activate-environment: true
           python-version: '3.13'
@@ -170,7 +170,7 @@ jobs:
         with:
           fetch-depth: 0
           submodules: true
-      - uses: astral-sh/setup-uv@v6
+      - uses: astral-sh/setup-uv@v7
       - run: uv build --sdist
       - uses: actions/upload-artifact@v4
         with:
@@ -189,7 +189,7 @@ jobs:
           merge-multiple: true
           path: dist
       - run: ls -alt . && ls -alt dist/
-      - uses: astral-sh/setup-uv@v6
+      - uses: astral-sh/setup-uv@v7
       - run: uvx twine check --strict dist/*
 
   doc-build:
@@ -199,7 +199,7 @@ jobs:
     steps:
       - run: sudo apt update && sudo apt install -y optipng
       - uses: actions/checkout@v5
-      - uses: astral-sh/setup-uv@v6
+      - uses: astral-sh/setup-uv@v7
         with:
           activate-environment: true
           python-version: '3.13'
