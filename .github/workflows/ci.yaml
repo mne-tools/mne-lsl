@@ -72,7 +72,7 @@ jobs:
         with:
           activate-environment: true
           python-version: ${{ matrix.python }}
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v6
         with:
           pattern: cibw-wheels-${{ matrix.os }}-*
           merge-multiple: true
@@ -108,7 +108,7 @@ jobs:
         with:
           activate-environment: true
           python-version: ${{ matrix.python }}
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v6
         with:
           pattern: cibw-wheels-ubuntu-latest-*
           merge-multiple: true
@@ -183,7 +183,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v6
         with:
           pattern: cibw-wheels-*
           merge-multiple: true
@@ -203,7 +203,7 @@ jobs:
         with:
           activate-environment: true
           python-version: '3.13'
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v6
         with:
           pattern: cibw-wheels-ubuntu-latest-*
           merge-multiple: true
@@ -237,7 +237,7 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v6
         with:
           name: doc-dev
           path: ./doc-dev
@@ -262,7 +262,7 @@ jobs:
         with:
           ref: gh-pages
           fetch-depth: 0
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v6
         with:
           name: doc-dev
           path: ./doc-dev
@@ -313,7 +313,7 @@ jobs:
       name: pypi
       url: https://pypi.org/p/mne-lsl
     steps:
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v6
         with:
           pattern: cibw-wheels-*
           merge-multiple: true
