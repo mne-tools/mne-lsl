@@ -46,7 +46,7 @@ jobs:
       - uses: pypa/cibuildwheel@v3.3.0
         env:
           MNE_LSL_LIBLSL_BUILD_UNITTESTS: ${{ (github.event_name != 'pull_request' || contains(needs.get_commit_message.outputs.commit_message, '[liblsl]')) && '1' || '0' }}
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
           path: ./wheelhouse/*.whl
@@ -169,7 +169,7 @@ jobs:
           submodules: true
       - uses: astral-sh/setup-uv@v7
       - run: uv build --sdist
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: cibw-wheels-sdist
           path: ./dist/*.tar.gz
@@ -219,7 +219,7 @@ jobs:
           retry_error_codes: "2"
           command_between_retries: "make -C doc clean"
       - run: rm -R ./doc/_build/html/.doctrees
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: doc-dev
           path: ./doc/_build/html
