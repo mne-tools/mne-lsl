@@ -800,6 +800,21 @@ def test_stream_irregularly_sampled(close_io: Callable[[], None]) -> None:
     close_io()
 
 
+def test_stream_irregularly_sampled_invalid(close_io: Callable[[], None]) -> None:
+    """Test an invalid stream with an irregular sampling rate."""
+    name = "test_stream_irregularly_sampled"
+    source_id = f"pytest-{uuid.uuid4().hex}"
+    sinfo = StreamInfo(name, "gaze", 1, 0, "int8", source_id)
+    outlet = StreamOutlet(sinfo)  # noqa: F841
+    stream = Stream(bufsize=10.1, name=name, source_id=source_id)
+    with (
+        pytest.warns(RuntimeWarning, match="while reading the channel description"),
+        pytest.raises(ValueError, match="must be an integer"),
+    ):
+        stream.connect()
+    close_io()
+
+
 def _player_mock_lsl_stream_annotations(
     raw: BaseRaw,
     chunk_size: int,
