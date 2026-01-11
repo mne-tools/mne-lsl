@@ -1,3 +1,4 @@
 [submodule "liblsl"]
 	path = src/liblsl
 	url = https://github.com/sccn/liblsl
+	branch = dev
