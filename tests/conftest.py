@@ -70,6 +70,8 @@ def pytest_configure(config: pytest.Config) -> None:
     ignore:'mode' parameter is deprecated.*:DeprecationWarning
     # tkinter
     ignore:Exception ignored in.*__del__.*:pytest.PytestUnraisableExceptionWarning
+    # NumPy deprecation hitting MNE-Python: github.com/mne-tools/mne-python/pull/13585
+    ignore:Setting the shape on a NumPy array has been deprecated.*:DeprecationWarning
     """
     for warning_line in warning_lines.split("\n"):
         warning_line = warning_line.strip()

@@ -85,7 +85,8 @@ keywords = [
   'python',
   'real-time',
 ]
-license = {file = 'LICENSE'}
+license = "BSD-3-Clause"
+license-files = ["LICENSE"]
 maintainers = [
   {email = 'mathieu.scheltienne@gmail.com', name = 'Mathieu Scheltienne'},
 ]
