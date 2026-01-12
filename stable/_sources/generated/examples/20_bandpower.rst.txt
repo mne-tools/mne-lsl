@@ -207,9 +207,9 @@ rolling window. For this example, we will look at the alpha band power, between 
 
 
 
-    <tr class="mne-repr-section-header general-0c726ab2-d278-4f19-9abf-065abd856613"
+    <tr class="mne-repr-section-header general-a1fcfee3-245f-44d7-a899-218b9bf0ac3f"
          title="Hide section" 
-        onclick="toggleVisibility('general-0c726ab2-d278-4f19-9abf-065abd856613')">
+        onclick="toggleVisibility('general-a1fcfee3-245f-44d7-a899-218b9bf0ac3f')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -221,7 +221,7 @@ rolling window. For this example, we will look at the alpha band power, between 
     </tr>
 
 
-    <tr class="repr-element general-0c726ab2-d278-4f19-9abf-065abd856613 ">
+    <tr class="repr-element general-a1fcfee3-245f-44d7-a899-218b9bf0ac3f ">
         <td class="mne-repr-section-toggle"></td>
         <td>Filename(s)</td>
         <td>
@@ -232,26 +232,26 @@ rolling window. For this example, we will look at the alpha band power, between 
         </td>
     </tr>
 
-    <tr class="repr-element general-0c726ab2-d278-4f19-9abf-065abd856613 ">
+    <tr class="repr-element general-a1fcfee3-245f-44d7-a899-218b9bf0ac3f ">
         <td class="mne-repr-section-toggle"></td>
         <td>MNE object type</td>
         <td>Raw</td>
     </tr>
-    <tr class="repr-element general-0c726ab2-d278-4f19-9abf-065abd856613 ">
+    <tr class="repr-element general-a1fcfee3-245f-44d7-a899-218b9bf0ac3f ">
         <td class="mne-repr-section-toggle"></td>
         <td>Measurement date</td>
     
         <td>Unknown</td>
     
     </tr>
-    <tr class="repr-element general-0c726ab2-d278-4f19-9abf-065abd856613 ">
+    <tr class="repr-element general-a1fcfee3-245f-44d7-a899-218b9bf0ac3f ">
         <td class="mne-repr-section-toggle"></td>
         <td>Participant</td>
     
         <td>Unknown</td>
     
     </tr>
-    <tr class="repr-element general-0c726ab2-d278-4f19-9abf-065abd856613 ">
+    <tr class="repr-element general-a1fcfee3-245f-44d7-a899-218b9bf0ac3f ">
         <td class="mne-repr-section-toggle"></td>
         <td>Experimenter</td>
     
@@ -266,9 +266,9 @@ rolling window. For this example, we will look at the alpha band power, between 
 
 
 
-    <tr class="mne-repr-section-header acquisition-1421d083-ed20-4338-8fa8-9face14045e7"
+    <tr class="mne-repr-section-header acquisition-ee693d12-3d5f-4072-923f-c127b95d2f83"
          title="Hide section" 
-        onclick="toggleVisibility('acquisition-1421d083-ed20-4338-8fa8-9face14045e7')">
+        onclick="toggleVisibility('acquisition-ee693d12-3d5f-4072-923f-c127b95d2f83')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -280,7 +280,7 @@ rolling window. For this example, we will look at the alpha band power, between 
     </tr>
 
 
-    <tr class="repr-element acquisition-1421d083-ed20-4338-8fa8-9face14045e7 ">
+    <tr class="repr-element acquisition-ee693d12-3d5f-4072-923f-c127b95d2f83 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Duration</td>
         <td>00:00:21 (HH:MM:SS)</td>
@@ -293,14 +293,14 @@ rolling window. For this example, we will look at the alpha band power, between 
 
 
 
-    <tr class="repr-element acquisition-1421d083-ed20-4338-8fa8-9face14045e7 ">
+    <tr class="repr-element acquisition-ee693d12-3d5f-4072-923f-c127b95d2f83 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Sampling frequency</td>
         <td>1024.00 Hz</td>
     </tr>
 
 
-    <tr class="repr-element acquisition-1421d083-ed20-4338-8fa8-9face14045e7 ">
+    <tr class="repr-element acquisition-ee693d12-3d5f-4072-923f-c127b95d2f83 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Time points</td>
         <td>20,481</td>
@@ -315,9 +315,9 @@ rolling window. For this example, we will look at the alpha band power, between 
 
 
 
-    <tr class="mne-repr-section-header channels-93ca5c16-7a36-43db-ac3d-0af4d34de363"
+    <tr class="mne-repr-section-header channels-61e226c1-7014-47f4-a617-80b8ee4de931"
          title="Hide section" 
-        onclick="toggleVisibility('channels-93ca5c16-7a36-43db-ac3d-0af4d34de363')">
+        onclick="toggleVisibility('channels-61e226c1-7014-47f4-a617-80b8ee4de931')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -330,7 +330,7 @@ rolling window. For this example, we will look at the alpha band power, between 
 
 
     
-    <tr class="repr-element channels-93ca5c16-7a36-43db-ac3d-0af4d34de363 ">
+    <tr class="repr-element channels-61e226c1-7014-47f4-a617-80b8ee4de931 ">
         <td class="mne-repr-section-toggle"></td>
         <td>EEG</td>
         <td>
@@ -343,7 +343,7 @@ rolling window. For this example, we will look at the alpha band power, between 
     </tr>
 
     
-    <tr class="repr-element channels-93ca5c16-7a36-43db-ac3d-0af4d34de363 ">
+    <tr class="repr-element channels-61e226c1-7014-47f4-a617-80b8ee4de931 ">
         <td class="mne-repr-section-toggle"></td>
         <td>EOG</td>
         <td>
@@ -356,7 +356,7 @@ rolling window. For this example, we will look at the alpha band power, between 
     </tr>
 
     
-    <tr class="repr-element channels-93ca5c16-7a36-43db-ac3d-0af4d34de363 ">
+    <tr class="repr-element channels-61e226c1-7014-47f4-a617-80b8ee4de931 ">
         <td class="mne-repr-section-toggle"></td>
         <td>ECG</td>
         <td>
@@ -369,7 +369,7 @@ rolling window. For this example, we will look at the alpha band power, between 
     </tr>
 
     
-    <tr class="repr-element channels-93ca5c16-7a36-43db-ac3d-0af4d34de363 ">
+    <tr class="repr-element channels-61e226c1-7014-47f4-a617-80b8ee4de931 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Stimulus</td>
         <td>
@@ -382,7 +382,7 @@ rolling window. For this example, we will look at the alpha band power, between 
     </tr>
 
     
-    <tr class="repr-element channels-93ca5c16-7a36-43db-ac3d-0af4d34de363 ">
+    <tr class="repr-element channels-61e226c1-7014-47f4-a617-80b8ee4de931 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Galvanic skin response</td>
         <td>
@@ -395,7 +395,7 @@ rolling window. For this example, we will look at the alpha band power, between 
     </tr>
 
 
-    <tr class="repr-element channels-93ca5c16-7a36-43db-ac3d-0af4d34de363 ">
+    <tr class="repr-element channels-61e226c1-7014-47f4-a617-80b8ee4de931 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Head & sensor digitization</td>
     
@@ -410,9 +410,9 @@ rolling window. For this example, we will look at the alpha band power, between 
 
 
 
-    <tr class="mne-repr-section-header filters-91a7ee68-f0e3-4d5f-9e55-fb554eea4f0c"
+    <tr class="mne-repr-section-header filters-2c3703bf-a83d-418a-9634-ea194d18160a"
          title="Hide section" 
-        onclick="toggleVisibility('filters-91a7ee68-f0e3-4d5f-9e55-fb554eea4f0c')">
+        onclick="toggleVisibility('filters-2c3703bf-a83d-418a-9634-ea194d18160a')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -424,14 +424,14 @@ rolling window. For this example, we will look at the alpha band power, between 
     </tr>
 
 
-    <tr class="repr-element filters-91a7ee68-f0e3-4d5f-9e55-fb554eea4f0c ">
+    <tr class="repr-element filters-2c3703bf-a83d-418a-9634-ea194d18160a ">
         <td class="mne-repr-section-toggle"></td>
         <td>Highpass</td>
         <td>0.00 Hz</td>
     </tr>
 
 
-    <tr class="repr-element filters-91a7ee68-f0e3-4d5f-9e55-fb554eea4f0c ">
+    <tr class="repr-element filters-2c3703bf-a83d-418a-9634-ea194d18160a ">
         <td class="mne-repr-section-toggle"></td>
         <td>Lowpass</td>
         <td>512.00 Hz</td>
@@ -798,9 +798,9 @@ method on a separate loop.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 48.873 seconds)
+   **Total running time of the script:** (0 minutes 48.781 seconds)
 
-**Estimated memory usage:**  247 MB
+**Estimated memory usage:**  243 MB
 
 
 .. _sphx_glr_download_generated_examples_20_bandpower.py:

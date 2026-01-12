@@ -239,6 +239,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../development/contributing.html">Contribution guide</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../development/changes/index.html">Changelog</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of Changelog</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../development/changes/latest.html">Version 1.12</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.11.html">Version 1.11</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.10.html">Version 1.10.1</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.10.html#version-1-10">Version 1.10</a></li>
@@ -316,7 +317,7 @@ object able to detect new R-peak entering the buffer as fast as possible, with s
 robustness to external noise sources (e.g. movements) and a simple design.</p>
 <img alt="../../_images/qrs.png" class="qrs-img align-center" src="../../_images/qrs.png" />
 <p>First let’s have a look to a sample ECG signal and to how we could detect the R-peak
-reliably with <a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.find_peaks.html#scipy.signal.find_peaks" title="(in SciPy v1.16.2)"><code class="xref py py-func docutils literal notranslate"><span class="pre">scipy.signal.find_peaks()</span></code></a>.</p>
+reliably with <a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.find_peaks.html#scipy.signal.find_peaks" title="(in SciPy v1.17.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">scipy.signal.find_peaks()</span></code></a>.</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">mne.io</span><span class="w"> </span><span class="kn">import</span> <a href="https://mne.tools/stable/generated/mne.io.read_raw_fif.html#mne.io.read_raw_fif" title="mne.io.read_raw_fif" class="sphx-glr-backref-module-mne-io sphx-glr-backref-type-py-function"><span class="n">read_raw_fif</span></a>
@@ -477,9 +478,9 @@ this file apply (plus whatever default styling the IDE applies).
 
 
 
-<tr class="mne-repr-section-header general-8182ed84-d852-49fd-ae45-3f3c16abd8b6"
+<tr class="mne-repr-section-header general-25dd3eb7-c216-4295-8492-e56dd9104a3d"
      title="Hide section"
-    onclick="toggleVisibility('general-8182ed84-d852-49fd-ae45-3f3c16abd8b6')">
+    onclick="toggleVisibility('general-25dd3eb7-c216-4295-8492-e56dd9104a3d')">
     <th class="mne-repr-section-toggle">
         <button >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -491,7 +492,7 @@ this file apply (plus whatever default styling the IDE applies).
 </tr>
 
 
-<tr class="repr-element general-8182ed84-d852-49fd-ae45-3f3c16abd8b6 ">
+<tr class="repr-element general-25dd3eb7-c216-4295-8492-e56dd9104a3d ">
     <td class="mne-repr-section-toggle"></td>
     <td>Filename(s)</td>
     <td>
@@ -502,26 +503,26 @@ this file apply (plus whatever default styling the IDE applies).
     </td>
 </tr>
 
-<tr class="repr-element general-8182ed84-d852-49fd-ae45-3f3c16abd8b6 ">
+<tr class="repr-element general-25dd3eb7-c216-4295-8492-e56dd9104a3d ">
     <td class="mne-repr-section-toggle"></td>
     <td>MNE object type</td>
     <td>Raw</td>
 </tr>
-<tr class="repr-element general-8182ed84-d852-49fd-ae45-3f3c16abd8b6 ">
+<tr class="repr-element general-25dd3eb7-c216-4295-8492-e56dd9104a3d ">
     <td class="mne-repr-section-toggle"></td>
     <td>Measurement date</td>
 
     <td>Unknown</td>
 
 </tr>
-<tr class="repr-element general-8182ed84-d852-49fd-ae45-3f3c16abd8b6 ">
+<tr class="repr-element general-25dd3eb7-c216-4295-8492-e56dd9104a3d ">
     <td class="mne-repr-section-toggle"></td>
     <td>Participant</td>
 
     <td>Unknown</td>
 
 </tr>
-<tr class="repr-element general-8182ed84-d852-49fd-ae45-3f3c16abd8b6 ">
+<tr class="repr-element general-25dd3eb7-c216-4295-8492-e56dd9104a3d ">
     <td class="mne-repr-section-toggle"></td>
     <td>Experimenter</td>
 
@@ -536,9 +537,9 @@ this file apply (plus whatever default styling the IDE applies).
 
 
 
-<tr class="mne-repr-section-header acquisition-a90287c1-ad88-4a99-ab87-522e29f51b36"
+<tr class="mne-repr-section-header acquisition-46492c5b-94fd-422a-9423-c776011004f5"
      title="Hide section"
-    onclick="toggleVisibility('acquisition-a90287c1-ad88-4a99-ab87-522e29f51b36')">
+    onclick="toggleVisibility('acquisition-46492c5b-94fd-422a-9423-c776011004f5')">
     <th class="mne-repr-section-toggle">
         <button >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -550,7 +551,7 @@ this file apply (plus whatever default styling the IDE applies).
 </tr>
 
 
-<tr class="repr-element acquisition-a90287c1-ad88-4a99-ab87-522e29f51b36 ">
+<tr class="repr-element acquisition-46492c5b-94fd-422a-9423-c776011004f5 ">
     <td class="mne-repr-section-toggle"></td>
     <td>Duration</td>
     <td>00:02:25 (HH:MM:SS)</td>
@@ -563,14 +564,14 @@ this file apply (plus whatever default styling the IDE applies).
 
 
 
-<tr class="repr-element acquisition-a90287c1-ad88-4a99-ab87-522e29f51b36 ">
+<tr class="repr-element acquisition-46492c5b-94fd-422a-9423-c776011004f5 ">
     <td class="mne-repr-section-toggle"></td>
     <td>Sampling frequency</td>
     <td>1024.00 Hz</td>
 </tr>
 
 
-<tr class="repr-element acquisition-a90287c1-ad88-4a99-ab87-522e29f51b36 ">
+<tr class="repr-element acquisition-46492c5b-94fd-422a-9423-c776011004f5 ">
     <td class="mne-repr-section-toggle"></td>
     <td>Time points</td>
     <td>148,477</td>
@@ -585,9 +586,9 @@ this file apply (plus whatever default styling the IDE applies).
 
 
 
-<tr class="mne-repr-section-header channels-57679c8e-35e2-47fa-a661-fae116473396"
+<tr class="mne-repr-section-header channels-1481cabc-f74b-4135-a219-e81a97799756"
      title="Hide section"
-    onclick="toggleVisibility('channels-57679c8e-35e2-47fa-a661-fae116473396')">
+    onclick="toggleVisibility('channels-1481cabc-f74b-4135-a219-e81a97799756')">
     <th class="mne-repr-section-toggle">
         <button >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -600,7 +601,7 @@ this file apply (plus whatever default styling the IDE applies).
 
 
 
-<tr class="repr-element channels-57679c8e-35e2-47fa-a661-fae116473396 ">
+<tr class="repr-element channels-1481cabc-f74b-4135-a219-e81a97799756 ">
     <td class="mne-repr-section-toggle"></td>
     <td>misc</td>
     <td>
@@ -613,7 +614,7 @@ this file apply (plus whatever default styling the IDE applies).
 </tr>
 
 
-<tr class="repr-element channels-57679c8e-35e2-47fa-a661-fae116473396 ">
+<tr class="repr-element channels-1481cabc-f74b-4135-a219-e81a97799756 ">
     <td class="mne-repr-section-toggle"></td>
     <td>Head & sensor digitization</td>
 
@@ -628,9 +629,9 @@ this file apply (plus whatever default styling the IDE applies).
 
 
 
-<tr class="mne-repr-section-header filters-7147d941-a542-4dc9-b04e-f567b774d5c5"
+<tr class="mne-repr-section-header filters-61885473-1ca1-411f-b793-a094aff0e6a0"
      title="Hide section"
-    onclick="toggleVisibility('filters-7147d941-a542-4dc9-b04e-f567b774d5c5')">
+    onclick="toggleVisibility('filters-61885473-1ca1-411f-b793-a094aff0e6a0')">
     <th class="mne-repr-section-toggle">
         <button >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -642,14 +643,14 @@ this file apply (plus whatever default styling the IDE applies).
 </tr>
 
 
-<tr class="repr-element filters-7147d941-a542-4dc9-b04e-f567b774d5c5 ">
+<tr class="repr-element filters-61885473-1ca1-411f-b793-a094aff0e6a0 ">
     <td class="mne-repr-section-toggle"></td>
     <td>Highpass</td>
     <td>0.00 Hz</td>
 </tr>
 
 
-<tr class="repr-element filters-7147d941-a542-4dc9-b04e-f567b774d5c5 ">
+<tr class="repr-element filters-61885473-1ca1-411f-b793-a094aff0e6a0 ">
     <td class="mne-repr-section-toggle"></td>
     <td>Lowpass</td>
     <td>512.00 Hz</td>
@@ -736,7 +737,7 @@ noise.</p>
 <section id="peak-detection">
 <h2>Peak detection<a class="headerlink" href="#peak-detection" title="Link to this heading">🔗</a></h2>
 <p>Next, let’s detect the R-peaks on the same 5 seconds window of the notched signal with
-<a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.find_peaks.html#scipy.signal.find_peaks" title="(in SciPy v1.16.2)"><code class="xref py py-func docutils literal notranslate"><span class="pre">scipy.signal.find_peaks()</span></code></a>.</p>
+<a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.find_peaks.html#scipy.signal.find_peaks" title="(in SciPy v1.17.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">scipy.signal.find_peaks()</span></code></a>.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>We do not need to detrend to find peaks. Detrending was only useful to overlay the
@@ -1052,8 +1053,8 @@ start the detector and measure the time it takes to detect a new peak.</p>
 the process configuration and on the performance of the streaming source. A
 <a class="reference internal" href="../api/mne_lsl.player.PlayerLSL.html#mne_lsl.player.PlayerLSL" title="mne_lsl.player.PlayerLSL"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlayerLSL</span></code></a> is not reproducing exactly the performance of a
 real-time application.</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 37.606 seconds)</p>
-<p><strong>Estimated memory usage:</strong>  192 MB</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 37.429 seconds)</p>
+<p><strong>Estimated memory usage:</strong>  190 MB</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-generated-examples-10-peak-detection-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/0e1f06ac031754b1722bc7b181b7568d/10_peak_detection.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">10_peak_detection.ipynb</span></code></a></p>
@@ -1098,7 +1099,7 @@ real-time application.</p>
         <div class="bottom-of-page">
           <div class="left-details">
             <div class="copyright">
-                Copyright &#169; 2025, M. Scheltienne, A. Desvachez, K. Lee
+                Copyright &#169; 2026, M. Scheltienne, A. Desvachez, K. Lee
             </div>
             Made with 
             <a href="https://github.com/pradyunsg/furo">Furo</a>
@@ -1146,7 +1147,7 @@ real-time application.</p>
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=6cf1fb80"></script>
+</div><script src="../../_static/documentation_options.js?v=fe8e256b"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

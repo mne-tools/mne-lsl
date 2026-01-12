@@ -239,6 +239,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../development/contributing.html">Contribution guide</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../development/changes/index.html">Changelog</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of Changelog</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../development/changes/latest.html">Version 1.12</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../development/changes/1.11.html">Version 1.11</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../development/changes/1.10.html">Version 1.10.1</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../development/changes/1.10.html#version-1-10">Version 1.10</a></li>
@@ -358,9 +359,9 @@ faster thanks to <code class="docutils literal notranslate"><span class="pre">nu
 double precision (<code class="docutils literal notranslate"><span class="pre">float64</span></code>) to python takes:</p>
 <ul class="simple">
 <li><p>4.33 ms ± 37.5 µs with <code class="docutils literal notranslate"><span class="pre">pylsl</span></code> default behavior</p></li>
-<li><p>471 ns ± 1.7 ns with <code class="docutils literal notranslate"><span class="pre">pylsl</span></code> using a <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.3)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a> as <code class="docutils literal notranslate"><span class="pre">dest_obj</span></code> to
+<li><p>471 ns ± 1.7 ns with <code class="docutils literal notranslate"><span class="pre">pylsl</span></code> using a <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a> as <code class="docutils literal notranslate"><span class="pre">dest_obj</span></code> to
 prevent memory re-allocation</p></li>
-<li><p>268 ns ± 0.357 ns with <code class="docutils literal notranslate"><span class="pre">mne_lsl.lsl</span></code> which uses <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.frombuffer.html#numpy.frombuffer" title="(in NumPy v2.3)"><code class="xref py py-func docutils literal notranslate"><span class="pre">numpy.frombuffer()</span></code></a> under the
+<li><p>268 ns ± 0.357 ns with <code class="docutils literal notranslate"><span class="pre">mne_lsl.lsl</span></code> which uses <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.frombuffer.html#numpy.frombuffer" title="(in NumPy v2.4)"><code class="xref py py-func docutils literal notranslate"><span class="pre">numpy.frombuffer()</span></code></a> under the
 hood</p></li>
 </ul>
 <p>More importantly, <code class="docutils literal notranslate"><span class="pre">pylsl</span></code> default behavior pulls a chunk in linear time <code class="docutils literal notranslate"><span class="pre">O(n)</span></code>,
@@ -483,7 +484,7 @@ future versions.</p>
         <div class="bottom-of-page">
           <div class="left-details">
             <div class="copyright">
-                Copyright &#169; 2025, M. Scheltienne, A. Desvachez, K. Lee
+                Copyright &#169; 2026, M. Scheltienne, A. Desvachez, K. Lee
             </div>
             Made with 
             <a href="https://github.com/pradyunsg/furo">Furo</a>
@@ -551,7 +552,7 @@ future versions.</p>
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=6cf1fb80"></script>
+</div><script src="../_static/documentation_options.js?v=fe8e256b"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>

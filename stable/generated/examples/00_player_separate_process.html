@@ -239,6 +239,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../development/contributing.html">Contribution guide</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../development/changes/index.html">Changelog</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of Changelog</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../development/changes/latest.html">Version 1.12</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.11.html">Version 1.11</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.10.html">Version 1.10.1</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.10.html#version-1-10">Version 1.10</a></li>
@@ -344,7 +345,7 @@ stability to the documentation build on our CIs.</p>
 <p>The smaller the chunk size, the more resources are needed by the
 <a class="reference internal" href="../api/mne_lsl.player.PlayerLSL.html#mne_lsl.player.PlayerLSL" title="mne_lsl.player.PlayerLSL"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlayerLSL</span></code></a> object to keep up with the LSL stream. This is why
 with a chunk size of 200 samples, we don’t observe a difference between a main thread
-giving time to the player to run (scenario 1, while loop with <a class="reference external" href="https://docs.python.org/3/library/time.html#time.sleep" title="(in Python v3.13)"><code class="xref py py-func docutils literal notranslate"><span class="pre">time.sleep()</span></code></a> calls
+giving time to the player to run (scenario 1, while loop with <a class="reference external" href="https://docs.python.org/3/library/time.html#time.sleep" title="(in Python v3.14)"><code class="xref py py-func docutils literal notranslate"><span class="pre">time.sleep()</span></code></a> calls
 to create idle time) and a main thread hogging all of the CPU resources (scenario 2,
 while loop without any idle time).</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="c1"># scenario 1: give time to the player to run</span>
@@ -461,7 +462,7 @@ be used to interrupt the player process from the main process.</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Player started in a separate process!
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 9.691 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 9.656 seconds)</p>
 <p><strong>Estimated memory usage:</strong>  183 MB</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-generated-examples-00-player-separate-process-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
@@ -507,7 +508,7 @@ be used to interrupt the player process from the main process.</p>
         <div class="bottom-of-page">
           <div class="left-details">
             <div class="copyright">
-                Copyright &#169; 2025, M. Scheltienne, A. Desvachez, K. Lee
+                Copyright &#169; 2026, M. Scheltienne, A. Desvachez, K. Lee
             </div>
             Made with 
             <a href="https://github.com/pradyunsg/furo">Furo</a>
@@ -553,7 +554,7 @@ be used to interrupt the player process from the main process.</p>
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=6cf1fb80"></script>
+</div><script src="../../_static/documentation_options.js?v=fe8e256b"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

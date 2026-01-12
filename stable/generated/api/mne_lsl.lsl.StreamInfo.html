@@ -239,6 +239,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../development/contributing.html">Contribution guide</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../development/changes/index.html">Changelog</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of Changelog</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../development/changes/latest.html">Version 1.12</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.11.html">Version 1.11</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.10.html">Version 1.10.1</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.10.html#version-1-10">Version 1.10</a></li>
@@ -302,7 +303,7 @@
 <h1>mne_lsl.lsl.StreamInfo<a class="headerlink" href="#mne-lsl-lsl-streaminfo" title="Link to this heading">🔗</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="mne_lsl.lsl.StreamInfo">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mne_lsl.lsl.</span></span><span class="sig-name descname"><span class="pre">StreamInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stype</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_channels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sfreq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source_id</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.11/src/mne_lsl/lsl/stream_info.py#L840-L934"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.StreamInfo" title="Link to this definition">🔗</a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mne_lsl.lsl.</span></span><span class="sig-name descname"><span class="pre">StreamInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stype</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_channels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sfreq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source_id</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.12/src/mne_lsl/lsl/stream_info.py#L840-L934"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.StreamInfo" title="Link to this definition">🔗</a></dt>
 <dd><p>Base Stream information object, storing the declaration of a stream.</p>
 <p>A StreamInfo contains the following information:</p>
 <ul class="simple">
@@ -316,26 +317,26 @@
 <dl class="field-list">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl>
-<dt><strong>name</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">str</span></code></a></span></dt><dd><p>Name of the stream. This field can not be empty.</p>
+<dt><strong>name</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">str</span></code></a></span></dt><dd><p>Name of the stream. This field can not be empty.</p>
 </dd>
-<dt><strong>stype</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">str</span></code></a></span></dt><dd><p>Content type of the stream, e.g. <code class="docutils literal notranslate"><span class="pre">&quot;EEG&quot;</span></code> or <code class="docutils literal notranslate"><span class="pre">&quot;Gaze&quot;</span></code>. If a stream contains
+<dt><strong>stype</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">str</span></code></a></span></dt><dd><p>Content type of the stream, e.g. <code class="docutils literal notranslate"><span class="pre">&quot;EEG&quot;</span></code> or <code class="docutils literal notranslate"><span class="pre">&quot;Gaze&quot;</span></code>. If a stream contains
 mixed content, this value should be empty and the description of each channel
 should include its type.</p>
 </dd>
-<dt><strong>n_channels</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">int</span></code></a> <code class="docutils literal notranslate"><span class="pre">≥</span> <span class="pre">1</span></code></span></dt><dd><p>Also called <code class="docutils literal notranslate"><span class="pre">channel_count</span></code>, represents the number of channels per sample.
+<dt><strong>n_channels</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">int</span></code></a> <code class="docutils literal notranslate"><span class="pre">≥</span> <span class="pre">1</span></code></span></dt><dd><p>Also called <code class="docutils literal notranslate"><span class="pre">channel_count</span></code>, represents the number of channels per sample.
 This number stays constant for the lifetime of the stream.</p>
 </dd>
-<dt><strong>sfreq</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">float</span></code></a> <code class="docutils literal notranslate"><span class="pre">≥</span> <span class="pre">0</span></code></span></dt><dd><p>Also called <code class="docutils literal notranslate"><span class="pre">nominal_srate</span></code>, represents the sampling rate (in Hz) as
+<dt><strong>sfreq</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">float</span></code></a> <code class="docutils literal notranslate"><span class="pre">≥</span> <span class="pre">0</span></code></span></dt><dd><p>Also called <code class="docutils literal notranslate"><span class="pre">nominal_srate</span></code>, represents the sampling rate (in Hz) as
 advertised by the data source. If the sampling rate is irregular (e.g. for a
 trigger stream), the sampling rate is set to <code class="docutils literal notranslate"><span class="pre">0</span></code>.</p>
 </dd>
-<dt><strong>dtype</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">int</span></code></a> | <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.dtype.html#numpy.dtype" title="(in NumPy v2.3)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dtype</span></code></a></span></dt><dd><p>Format of each channel. If your channels have different formats, consider
+<dt><strong>dtype</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">int</span></code></a> | <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.dtype.html#numpy.dtype" title="(in NumPy v2.4)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dtype</span></code></a></span></dt><dd><p>Format of each channel. If your channels have different formats, consider
 supplying multiple streams or use the largest type that can hold them all.
 One of <code class="docutils literal notranslate"><span class="pre">('string',</span> <span class="pre">'float32',</span> <span class="pre">'float64',</span> <span class="pre">'int8',</span> <span class="pre">'int16',</span> <span class="pre">'int32')</span></code>.
 <code class="docutils literal notranslate"><span class="pre">'int64'</span></code> is partially supported. Can also be the equivalent numpy type, e.g.
 <code class="docutils literal notranslate"><span class="pre">np.int8</span></code>.</p>
 </dd>
-<dt><strong>source_id</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">str</span></code></a></span></dt><dd><p>A unique identifier of the device or source of the data. If not empty, this
+<dt><strong>source_id</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">str</span></code></a></span></dt><dd><p>A unique identifier of the device or source of the data. If not empty, this
 information improves the system robustness since it allows recipients to recover
 from failure by finding a stream with the same <code class="docutils literal notranslate"><span class="pre">source_id</span></code> on the network.</p>
 </dd>
@@ -393,7 +394,7 @@ from failure by finding a stream with the same <code class="docutils literal not
 <table class="autosummary longtable docutils align-default">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#mne_lsl.lsl.StreamInfo.get_channel_info" title="mne_lsl.lsl.StreamInfo.get_channel_info"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_channel_info</span></code></a>()</p></td>
-<td><p>Get the FIFF measurement <a class="reference external" href="https://mne.tools/stable/generated/mne.Info.html#mne.Info" title="(in MNE v1.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Info</span></code></a> in the description.</p></td>
+<td><p>Get the FIFF measurement <a class="reference external" href="https://mne.tools/stable/generated/mne.Info.html#mne.Info" title="(in MNE v1.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Info</span></code></a> in the description.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#mne_lsl.lsl.StreamInfo.get_channel_names" title="mne_lsl.lsl.StreamInfo.get_channel_names"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_channel_names</span></code></a>()</p></td>
 <td><p>Get the channel names in the description.</p></td>
@@ -405,7 +406,7 @@ from failure by finding a stream with the same <code class="docutils literal not
 <td><p>Get the channel units in the description.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#mne_lsl.lsl.StreamInfo.set_channel_info" title="mne_lsl.lsl.StreamInfo.set_channel_info"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_channel_info</span></code></a>(info)</p></td>
-<td><p>Set the channel info from a FIFF measurement <a class="reference external" href="https://mne.tools/stable/generated/mne.Info.html#mne.Info" title="(in MNE v1.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Info</span></code></a>.</p></td>
+<td><p>Set the channel info from a FIFF measurement <a class="reference external" href="https://mne.tools/stable/generated/mne.Info.html#mne.Info" title="(in MNE v1.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Info</span></code></a>.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#mne_lsl.lsl.StreamInfo.set_channel_names" title="mne_lsl.lsl.StreamInfo.set_channel_names"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_channel_names</span></code></a>(ch_names)</p></td>
 <td><p>Set the channel names in the description.</p></td>
@@ -421,12 +422,12 @@ from failure by finding a stream with the same <code class="docutils literal not
 </div>
 <dl class="py method">
 <dt class="sig sig-object py" id="mne_lsl.lsl.StreamInfo.get_channel_info">
-<span class="sig-name descname"><span class="pre">get_channel_info</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.11/src/mne_lsl/lsl/stream_info.py#L305-L394"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.StreamInfo.get_channel_info" title="Link to this definition">🔗</a></dt>
-<dd><p>Get the FIFF measurement <a class="reference external" href="https://mne.tools/stable/generated/mne.Info.html#mne.Info" title="(in MNE v1.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Info</span></code></a> in the description.</p>
+<span class="sig-name descname"><span class="pre">get_channel_info</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.12/src/mne_lsl/lsl/stream_info.py#L305-L394"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.StreamInfo.get_channel_info" title="Link to this definition">🔗</a></dt>
+<dd><p>Get the FIFF measurement <a class="reference external" href="https://mne.tools/stable/generated/mne.Info.html#mne.Info" title="(in MNE v1.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Info</span></code></a> in the description.</p>
 <dl class="field-list">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><dl>
-<dt><strong>info</strong><span class="classifier"><a class="reference external" href="https://mne.tools/stable/generated/mne.Info.html#mne.Info" title="(in MNE v1.10)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Info</span></code></a></span></dt><dd><p><a class="reference external" href="https://mne.tools/stable/generated/mne.Info.html#mne.Info" title="(in MNE v1.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Info</span></code></a> containing the measurement information.</p>
+<dt><strong>info</strong><span class="classifier"><a class="reference external" href="https://mne.tools/stable/generated/mne.Info.html#mne.Info" title="(in MNE v1.11)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Info</span></code></a></span></dt><dd><p><a class="reference external" href="https://mne.tools/stable/generated/mne.Info.html#mne.Info" title="(in MNE v1.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Info</span></code></a> containing the measurement information.</p>
 </dd>
 </dl>
 </dd>
@@ -435,12 +436,12 @@ from failure by finding a stream with the same <code class="docutils literal not
 
 <dl class="py method">
 <dt class="sig sig-object py" id="mne_lsl.lsl.StreamInfo.get_channel_names">
-<span class="sig-name descname"><span class="pre">get_channel_names</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.11/src/mne_lsl/lsl/stream_info.py#L396-L412"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.StreamInfo.get_channel_names" title="Link to this definition">🔗</a></dt>
+<span class="sig-name descname"><span class="pre">get_channel_names</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.12/src/mne_lsl/lsl/stream_info.py#L396-L412"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.StreamInfo.get_channel_names" title="Link to this definition">🔗</a></dt>
 <dd><p>Get the channel names in the description.</p>
 <dl class="field-list">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><dl>
-<dt><strong>ch_names</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">list</span></code></a> of <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">str</span></code></a> or <code class="docutils literal notranslate"><span class="pre">None</span></code> | <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">None</span></code></a></span></dt><dd><p>List of channel names, matching the number of total channels.
+<dt><strong>ch_names</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">list</span></code></a> of <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">str</span></code></a> or <code class="docutils literal notranslate"><span class="pre">None</span></code> | <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">None</span></code></a></span></dt><dd><p>List of channel names, matching the number of total channels.
 If <code class="docutils literal notranslate"><span class="pre">None</span></code>, the channel names are not set.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
@@ -457,12 +458,12 @@ setter.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="mne_lsl.lsl.StreamInfo.get_channel_types">
-<span class="sig-name descname"><span class="pre">get_channel_types</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.11/src/mne_lsl/lsl/stream_info.py#L414-L430"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.StreamInfo.get_channel_types" title="Link to this definition">🔗</a></dt>
+<span class="sig-name descname"><span class="pre">get_channel_types</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.12/src/mne_lsl/lsl/stream_info.py#L414-L430"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.StreamInfo.get_channel_types" title="Link to this definition">🔗</a></dt>
 <dd><p>Get the channel types in the description.</p>
 <dl class="field-list">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><dl>
-<dt><strong>ch_types</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">list</span></code></a> of <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">str</span></code></a> or <code class="docutils literal notranslate"><span class="pre">None</span></code> | <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">None</span></code></a></span></dt><dd><p>List of channel types, matching the number of total channels.
+<dt><strong>ch_types</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">list</span></code></a> of <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">str</span></code></a> or <code class="docutils literal notranslate"><span class="pre">None</span></code> | <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">None</span></code></a></span></dt><dd><p>List of channel types, matching the number of total channels.
 If <code class="docutils literal notranslate"><span class="pre">None</span></code>, the channel types are not set.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
@@ -479,12 +480,12 @@ setter.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="mne_lsl.lsl.StreamInfo.get_channel_units">
-<span class="sig-name descname"><span class="pre">get_channel_units</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.11/src/mne_lsl/lsl/stream_info.py#L432-L448"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.StreamInfo.get_channel_units" title="Link to this definition">🔗</a></dt>
+<span class="sig-name descname"><span class="pre">get_channel_units</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.12/src/mne_lsl/lsl/stream_info.py#L432-L448"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.StreamInfo.get_channel_units" title="Link to this definition">🔗</a></dt>
 <dd><p>Get the channel units in the description.</p>
 <dl class="field-list">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><dl>
-<dt><strong>ch_units</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">list</span></code></a> of <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">str</span></code></a> or <code class="docutils literal notranslate"><span class="pre">None</span></code> | <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">None</span></code></a></span></dt><dd><p>List of channel units, matching the number of total channels.
+<dt><strong>ch_units</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">list</span></code></a> of <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">str</span></code></a> or <code class="docutils literal notranslate"><span class="pre">None</span></code> | <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">None</span></code></a></span></dt><dd><p>List of channel units, matching the number of total channels.
 If <code class="docutils literal notranslate"><span class="pre">None</span></code>, the channel units are not set.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
@@ -501,12 +502,12 @@ setter.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="mne_lsl.lsl.StreamInfo.set_channel_info">
-<span class="sig-name descname"><span class="pre">set_channel_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">info</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.11/src/mne_lsl/lsl/stream_info.py#L578-L629"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.StreamInfo.set_channel_info" title="Link to this definition">🔗</a></dt>
-<dd><p>Set the channel info from a FIFF measurement <a class="reference external" href="https://mne.tools/stable/generated/mne.Info.html#mne.Info" title="(in MNE v1.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Info</span></code></a>.</p>
+<span class="sig-name descname"><span class="pre">set_channel_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">info</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.12/src/mne_lsl/lsl/stream_info.py#L578-L629"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.StreamInfo.set_channel_info" title="Link to this definition">🔗</a></dt>
+<dd><p>Set the channel info from a FIFF measurement <a class="reference external" href="https://mne.tools/stable/generated/mne.Info.html#mne.Info" title="(in MNE v1.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Info</span></code></a>.</p>
 <dl class="field-list">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl>
-<dt><strong>info</strong><span class="classifier"><a class="reference external" href="https://mne.tools/stable/generated/mne.Info.html#mne.Info" title="(in MNE v1.10)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Info</span></code></a></span></dt><dd><p><a class="reference external" href="https://mne.tools/stable/generated/mne.Info.html#mne.Info" title="(in MNE v1.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Info</span></code></a> containing the measurement information.</p>
+<dt><strong>info</strong><span class="classifier"><a class="reference external" href="https://mne.tools/stable/generated/mne.Info.html#mne.Info" title="(in MNE v1.11)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Info</span></code></a></span></dt><dd><p><a class="reference external" href="https://mne.tools/stable/generated/mne.Info.html#mne.Info" title="(in MNE v1.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Info</span></code></a> containing the measurement information.</p>
 </dd>
 </dl>
 </dd>
@@ -515,12 +516,12 @@ setter.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="mne_lsl.lsl.StreamInfo.set_channel_names">
-<span class="sig-name descname"><span class="pre">set_channel_names</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ch_names</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.11/src/mne_lsl/lsl/stream_info.py#L631-L639"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.StreamInfo.set_channel_names" title="Link to this definition">🔗</a></dt>
+<span class="sig-name descname"><span class="pre">set_channel_names</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ch_names</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.12/src/mne_lsl/lsl/stream_info.py#L631-L639"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.StreamInfo.set_channel_names" title="Link to this definition">🔗</a></dt>
 <dd><p>Set the channel names in the description. Existing labels are overwritten.</p>
 <dl class="field-list">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl>
-<dt><strong>ch_names</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">list</span></code></a> of <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">str</span></code></a></span></dt><dd><p>List of channel names, matching the number of total channels.</p>
+<dt><strong>ch_names</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">list</span></code></a> of <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">str</span></code></a></span></dt><dd><p>List of channel names, matching the number of total channels.</p>
 </dd>
 </dl>
 </dd>
@@ -529,14 +530,14 @@ setter.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="mne_lsl.lsl.StreamInfo.set_channel_types">
-<span class="sig-name descname"><span class="pre">set_channel_types</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ch_types</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.11/src/mne_lsl/lsl/stream_info.py#L641-L655"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.StreamInfo.set_channel_types" title="Link to this definition">🔗</a></dt>
+<span class="sig-name descname"><span class="pre">set_channel_types</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ch_types</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.12/src/mne_lsl/lsl/stream_info.py#L641-L655"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.StreamInfo.set_channel_types" title="Link to this definition">🔗</a></dt>
 <dd><p>Set the channel types in the description. Existing types are overwritten.</p>
 <p>The types are given as human readable strings, e.g. <code class="docutils literal notranslate"><span class="pre">'eeg'</span></code>.</p>
 <dl class="field-list">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl>
-<dt><strong>ch_types</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">list</span></code></a> of <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">str</span></code></a></span></dt><dd><p>List of channel types, matching the number of total channels.
-If a single <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> is provided, the type is applied to all channels.</p>
+<dt><strong>ch_types</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">list</span></code></a> of <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">str</span></code></a></span></dt><dd><p>List of channel types, matching the number of total channels.
+If a single <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> is provided, the type is applied to all channels.</p>
 </dd>
 </dl>
 </dd>
@@ -545,7 +546,7 @@ If a single <a class="reference external" href="https://docs.python.org/3/librar
 
 <dl class="py method">
 <dt class="sig sig-object py" id="mne_lsl.lsl.StreamInfo.set_channel_units">
-<span class="sig-name descname"><span class="pre">set_channel_units</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ch_units</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.11/src/mne_lsl/lsl/stream_info.py#L657-L704"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.StreamInfo.set_channel_units" title="Link to this definition">🔗</a></dt>
+<span class="sig-name descname"><span class="pre">set_channel_units</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ch_units</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.12/src/mne_lsl/lsl/stream_info.py#L657-L704"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.StreamInfo.set_channel_units" title="Link to this definition">🔗</a></dt>
 <dd><p>Set the channel units in the description. Existing units are overwritten.</p>
 <p>The units are given as human readable strings, e.g. <code class="docutils literal notranslate"><span class="pre">'microvolts'</span></code>, or as
 multiplication factor, e.g. <code class="docutils literal notranslate"><span class="pre">-6</span></code> for <code class="docutils literal notranslate"><span class="pre">1e-6</span></code> thus converting e.g. Volts to
@@ -553,16 +554,16 @@ microvolts.</p>
 <dl class="field-list">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl>
-<dt><strong>ch_units</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">list</span></code></a> of <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">list</span></code></a> of <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">int</span></code></a> | <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.3)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">array</span></code></a> of <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">int</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">int</span></code></a></span></dt><dd><p>List of channel units, matching the number of total channels.
-If a single <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a> is provided, the unit is applied to
+<dt><strong>ch_units</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">list</span></code></a> of <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">list</span></code></a> of <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">int</span></code></a> | <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">array</span></code></a> of <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">int</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">int</span></code></a></span></dt><dd><p>List of channel units, matching the number of total channels.
+If a single <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a> is provided, the unit is applied to
 all channels.</p>
 </dd>
 </dl>
 </dd>
 </dl>
 <p class="rubric">Notes</p>
-<p>Some channel types doch_units not have a unit. The <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> <code class="docutils literal notranslate"><span class="pre">none</span></code> or the
-<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a> 0 should be used to denote this channel unit, corresponding to
+<p>Some channel types doch_units not have a unit. The <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> <code class="docutils literal notranslate"><span class="pre">none</span></code> or the
+<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a> 0 should be used to denote this channel unit, corresponding to
 <code class="docutils literal notranslate"><span class="pre">FIFF_UNITM_NONE</span></code> in MNE-Python.</p>
 </dd></dl>
 
@@ -584,7 +585,7 @@ all channels.</p>
 </ul>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -597,7 +598,7 @@ all channels.</p>
 <a class="reference internal" href="mne_lsl.lsl.local_clock.html#mne_lsl.lsl.local_clock" title="mne_lsl.lsl.local_clock"><code class="xref py py-func docutils literal notranslate"><span class="pre">mne_lsl.lsl.local_clock()</span></code></a> on the providing machine.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -623,7 +624,7 @@ recommendations for compatibility with other applications.</p>
 <p>All channels in a stream have the same format.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.dtype.html#numpy.dtype" title="(in NumPy v2.3)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dtype</span></code></a> | <code class="docutils literal notranslate"><span class="pre">&quot;string&quot;</span></code></p>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.dtype.html#numpy.dtype" title="(in NumPy v2.4)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dtype</span></code></a> | <code class="docutils literal notranslate"><span class="pre">&quot;string&quot;</span></code></p>
 </dd>
 </dl>
 </dd></dl>
@@ -634,7 +635,7 @@ recommendations for compatibility with other applications.</p>
 <dd><p>Hostname of the providing machine.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -647,7 +648,7 @@ recommendations for compatibility with other applications.</p>
 for all samples.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -661,7 +662,7 @@ Streams with identical names can coexist, at the cost of ambiguity for the
 recording application and/or the experimenter.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -674,7 +675,7 @@ recording application and/or the experimenter.</p>
 The minor version is <code class="docutils literal notranslate"><span class="pre">version</span> <span class="pre">%</span> <span class="pre">100</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -690,7 +691,7 @@ seeing each other’s streams (can be assigned in a configuration file read by
 liblsl, see also Network Connectivity in the LSL wiki).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -702,7 +703,7 @@ liblsl, see also Network Connectivity in the LSL wiki).</p>
 <p>If a stream is irregularly sampled, the sampling rate is set to <code class="docutils literal notranslate"><span class="pre">0</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -716,7 +717,7 @@ that, if available, allows endpoints (such as the recording program) to
 re-acquire a stream automatically once if it came back online.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -731,7 +732,7 @@ content, this value should be an empty string and the type should be stored in
 the description of individual channels.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -744,7 +745,7 @@ the description of individual channels.</p>
 <a class="reference internal" href="mne_lsl.lsl.StreamOutlet.html#mne_lsl.lsl.StreamOutlet" title="mne_lsl.lsl.StreamOutlet"><code class="xref py py-class docutils literal notranslate"><span class="pre">StreamOutlet</span></code></a>, e.g. after a re-start.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -788,7 +789,7 @@ the description of individual channels.</p>
         <div class="bottom-of-page">
           <div class="left-details">
             <div class="copyright">
-                Copyright &#169; 2025, M. Scheltienne, A. Desvachez, K. Lee
+                Copyright &#169; 2026, M. Scheltienne, A. Desvachez, K. Lee
             </div>
             Made with 
             <a href="https://github.com/pradyunsg/furo">Furo</a>
@@ -857,7 +858,7 @@ the description of individual channels.</p>
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=6cf1fb80"></script>
+</div><script src="../../_static/documentation_options.js?v=fe8e256b"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

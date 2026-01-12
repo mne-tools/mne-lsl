@@ -239,6 +239,7 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contribution guide</a></li>
 <li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">Changelog</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of Changelog</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="latest.html">Version 1.12</a></li>
 <li class="toctree-l2"><a class="reference internal" href="1.11.html">Version 1.11</a></li>
 <li class="toctree-l2"><a class="reference internal" href="1.10.html">Version 1.10.1</a></li>
 <li class="toctree-l2"><a class="reference internal" href="1.10.html#version-1-10">Version 1.10</a></li>
@@ -315,7 +316,7 @@
 <h2>API changes<a class="headerlink" href="#api-changes" title="Link to this heading">🔗</a></h2>
 <ul class="simple">
 <li><p>The <a class="reference internal" href="../../generated/api/mne_lsl.player.PlayerLSL.html#mne_lsl.player.PlayerLSL" title="mne_lsl.player.PlayerLSL"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlayerLSL</span></code></a> default <code class="docutils literal notranslate"><span class="pre">chunk_size</span></code> is now set to 10 instead of 64 samples (<a class="reference external" href="https://github.com/mne-tools/mne-lsl/pull/264">#264</a> by <a class="reference external" href="https://mathieu.scheltienne.net">Mathieu Scheltienne</a>)</p></li>
-<li><p>The <code class="docutils literal notranslate"><span class="pre">Player</span></code> and <code class="docutils literal notranslate"><span class="pre">Stream</span></code> objects now use a <a class="reference external" href="https://docs.python.org/3/library/concurrent.futures.html#concurrent.futures.ThreadPoolExecutor" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">concurrent.futures.ThreadPoolExecutor</span></code></a> instead of single-use threads (<a class="reference external" href="https://github.com/mne-tools/mne-lsl/pull/264">#264</a> by <a class="reference external" href="https://mathieu.scheltienne.net">Mathieu Scheltienne</a>)</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">Player</span></code> and <code class="docutils literal notranslate"><span class="pre">Stream</span></code> objects now use a <a class="reference external" href="https://docs.python.org/3/library/concurrent.futures.html#concurrent.futures.ThreadPoolExecutor" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">concurrent.futures.ThreadPoolExecutor</span></code></a> instead of single-use threads (<a class="reference external" href="https://github.com/mne-tools/mne-lsl/pull/264">#264</a> by <a class="reference external" href="https://mathieu.scheltienne.net">Mathieu Scheltienne</a>)</p></li>
 <li><p>Improve the y-scaling on the legacy <code class="docutils literal notranslate"><span class="pre">Viewer</span></code> by (1) adding new <code class="docutils literal notranslate"><span class="pre">y_scale</span></code> values in the dropdown list in power of 10s and (2) adding mouse wheel scrolling base zoom in/out on the main plot window (<a class="reference external" href="https://github.com/mne-tools/mne-lsl/pull/264275">#264275</a> by <a class="reference external" href="https://mathieu.scheltienne.net">Mathieu Scheltienne</a>)</p></li>
 <li><p>In <a class="reference internal" href="../../generated/api/mne_lsl.player.PlayerLSL.html#mne_lsl.player.PlayerLSL" title="mne_lsl.player.PlayerLSL"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlayerLSL</span></code></a> and <a class="reference internal" href="../../generated/api/mne_lsl.stream.StreamLSL.html#mne_lsl.stream.StreamLSL" title="mne_lsl.stream.StreamLSL"><code class="xref py py-class docutils literal notranslate"><span class="pre">StreamLSL</span></code></a>, instantiation now uses keyword-only arguments for arguments specific to LSL (<a class="reference external" href="https://github.com/mne-tools/mne-lsl/pull/282">#282</a> by <a class="reference external" href="https://mathieu.scheltienne.net">Mathieu Scheltienne</a>)</p></li>
 </ul>
@@ -357,7 +358,7 @@
         <div class="bottom-of-page">
           <div class="left-details">
             <div class="copyright">
-                Copyright &#169; 2025, M. Scheltienne, A. Desvachez, K. Lee
+                Copyright &#169; 2026, M. Scheltienne, A. Desvachez, K. Lee
             </div>
             Made with 
             <a href="https://github.com/pradyunsg/furo">Furo</a>
@@ -383,7 +384,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=6cf1fb80"></script>
+</div><script src="../../_static/documentation_options.js?v=fe8e256b"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>
