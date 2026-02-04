@@ -24,7 +24,7 @@ jobs:
       - run: uv sync -q --locked --no-default-groups --group stubs
       - run: mne-lsl sys-info --developer
       - run: python tools/stubgen.py
-      - uses: autofix-ci/action@v1.3.2
+      - uses: autofix-ci/action@v1.3.3
         if: ${{ github.event_name == 'pull_request' }}
       - name: Push stub files
         if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
