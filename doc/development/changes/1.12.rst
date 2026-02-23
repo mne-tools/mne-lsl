@@ -14,9 +14,9 @@
 
 .. include:: ./authors.inc
 
-.. _latest:
-
-Version 1.13
+Version 1.12
 ============
 
-- Increase minimum python version to ``3.11``, add tests on python ``3.14`` and build and test for free-threaded python ``3.14t`` (:pr:`512` by `Mathieu Scheltienne`_)
+- Improve handling of buffer size for irregularly sampled stream (:pr:`476` by `Mathieu Scheltienne`_)
+- Remove build on macOS intel
+- Update ``liblsl`` to version 1.17.4 (:pr:`497` by `Mathieu Scheltienne`_)
