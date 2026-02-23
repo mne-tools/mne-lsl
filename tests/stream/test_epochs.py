@@ -768,8 +768,9 @@ def test_epochs_with_irregular_numerical_event_stream(
         tmin=0,
         tmax=0.1,
         baseline=None,
-    ).connect(acquisition_delay=0.1)
+    ).connect(acquisition_delay=None)
     while epochs.n_new_epochs == 0:
+        epochs.acquire()
         time.sleep(0.5)
     n = epochs.n_new_epochs
     data = epochs.get_data()
