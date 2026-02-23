@@ -97,9 +97,7 @@ class build_ext(_build_ext):  # noqa: D101
                     if dst_file.exists() or dst_file.is_symlink():
                         dst_file.unlink()
                     print(f"Copying {lib_file} to {dst_file}")  # noqa: T201
-                    shutil.copyfile(
-                        lib_file, dst_file, follow_symlinks=False
-                    )
+                    shutil.copyfile(lib_file, dst_file, follow_symlinks=False)
         super().run()
 
 
