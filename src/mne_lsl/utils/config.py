@@ -1,5 +1,6 @@
 import platform
 import sys
+import tomllib
 from collections.abc import Callable
 from functools import lru_cache, partial
 from importlib.metadata import metadata, requires, version
@@ -12,12 +13,6 @@ from packaging.requirements import Requirement
 
 from ._checks import check_type
 from .logs import _use_log_level
-
-# TODO: remove when python 3.10 is dropped
-try:
-    import tomllib
-except Exception:  # pragma: no cover
-    import tomli as tomllib
 
 
 def sys_info(

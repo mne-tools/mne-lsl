@@ -25,7 +25,7 @@ transmitted wirelessly. For more information about LSL, please visit the
 
 # Install
 
-MNE-LSL supports `python ≥ 3.10` and is available on
+MNE-LSL supports `python ≥ 3.11` and is available on
 [PyPI](https://pypi.org/project/mne-lsl/) and on
 [conda-forge](https://anaconda.org/conda-forge/mne-lsl).
 Install instruction can be found on the

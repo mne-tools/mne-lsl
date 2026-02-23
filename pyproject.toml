@@ -50,7 +50,6 @@ classifiers = [
   'Operating System :: Microsoft :: Windows',
   'Operating System :: Unix',
   'Programming Language :: Python :: 3 :: Only',
-  'Programming Language :: Python :: 3.10',
   'Programming Language :: Python :: 3.11',
   'Programming Language :: Python :: 3.12',
   'Programming Language :: Python :: 3.13',
@@ -68,7 +67,6 @@ dependencies = [
   'pyqtgraph',
   'qtpy',
   'scipy',
-  'tomli; python_version < "3.11"',
 ]
 description = 'Real-time framework integrated with MNE-Python for online neuroscience research through LSL-compatible devices.'
 dynamic = ["version"]
@@ -92,7 +90,7 @@ maintainers = [
 ]
 name = 'mne_lsl'
 readme = 'README.md'
-requires-python = '>=3.10'
+requires-python = '>=3.11'
 
 [project.scripts]
 mne-lsl = 'mne_lsl._commands.main:run'
@@ -105,9 +103,9 @@ tracker = 'https://github.com/mne-tools/mne-lsl/issues'
 
 [tool.cibuildwheel]
 archs = "native"
-build = ["cp310-*"]  # abi3 wheel, can build for a single Python version
+build = ["cp311-*"]  # abi3 wheel, can build for a single Python version
 build-frontend = "build[uv]"
-skip = ["*-musllinux*", "pp*"]  # no PyPy support for pp310 for SciPy
+skip = ["*-musllinux*", "pp*"]  # no PyPy support for pp311 for SciPy
 test-command = "bash {project}/tools/test_liblsl.sh"
 
 [tool.cibuildwheel.linux]
