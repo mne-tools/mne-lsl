@@ -14,7 +14,9 @@
 
 .. include:: ./authors.inc
 
-Version 1.13
+.. _latest:
+
+Version 1.14
 ============
 
-- Increase minimum python version to ``3.11``, add tests on python ``3.14`` and build and test for free-threaded python ``3.14t`` (:pr:`512` by `Mathieu Scheltienne`_)
+- xxx
