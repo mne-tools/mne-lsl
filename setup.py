@@ -93,9 +93,12 @@ class build_ext(_build_ext):  # noqa: D101
                     shutil.move(test_file, dst / test_file.name)
                 # also copy the liblsl files in the test directory
                 for lib_file in build_dir.glob(_PATTERNS[platform.system()]):
-                    print(f"Copying {lib_file} to {dst / lib_file.name}")  # noqa: T201
+                    dst_file = dst / lib_file.name
+                    if dst_file.exists() or dst_file.is_symlink():
+                        dst_file.unlink()
+                    print(f"Copying {lib_file} to {dst_file}")  # noqa: T201
                     shutil.copyfile(
-                        lib_file, dst / lib_file.name, follow_symlinks=False
+                        lib_file, dst_file, follow_symlinks=False
                     )
         super().run()
 
