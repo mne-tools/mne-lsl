@@ -158,6 +158,42 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
 
+  test-free-threaded:
+    needs: cibuildwheel
+    name: test free-threaded - py${{ matrix.python }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.14t"]
+    steps:
+      - uses: actions/checkout@v6
+      - uses: astral-sh/setup-uv@v7
+        with:
+          activate-environment: true
+          python-version: ${{ matrix.python }}
+      - uses: actions/download-artifact@v7
+        with:
+          pattern: cibw-wheels-ubuntu-latest-*
+          merge-multiple: true
+          path: dist
+      - run: ls -alt . && ls -alt dist/
+      - run: uv sync -q --locked --no-default-groups --group test --no-install-project
+      - run: uv pip install mne-lsl -q --only-binary mne-lsl --find-links dist --pre
+      - run: mne-lsl sys-info
+      - uses: ./.github/actions/get-testing-dataset
+      - name: Run pytest
+        uses: ./.github/actions/retry-step
+        with:
+          command: pytest tests/ --cov=mne_lsl --cov-report=xml --cov-config=pyproject.toml -s
+          retry_error_codes: "3,127,134,139"
+        env:
+          MNE_LSL_LOG_LEVEL: DEBUG
+      - uses: codecov/codecov-action@v5
+        if: ${{ github.repository == 'mne-tools/mne-lsl' }}
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+
   sdist:
     name: create sdist
     runs-on: ubuntu-latest
