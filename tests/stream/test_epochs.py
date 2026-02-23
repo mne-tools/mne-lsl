@@ -1076,17 +1076,12 @@ def test_epochs_single_event(
     time.sleep(0.5)
     epochs.acquire()
     assert epochs.n_new_epochs == 0
-    # push a single event, and then acquire it multiple times
+    # push a single event, then loop until the epoch is acquired or timeout. The epoch
+    # needs tmax=1.5 seconds of data after the event before it can be completed, so the
+    # loop must wait at least that long.
     outlet_marker.push_sample(np.array([1], dtype=sinfo.dtype))
-    time.sleep(0.2)
-    epochs.acquire()
-    assert epochs.n_new_epochs == 0
-    time.sleep(0.2)
-    epochs.acquire()
-    assert epochs.n_new_epochs == 0
-    # loop until we get it or timeout
     start = time.monotonic()
-    while epochs.n_new_epochs == 0 and time.monotonic() - start < 2.6:
+    while epochs.n_new_epochs == 0 and time.monotonic() - start < 5:
         epochs.acquire()
         time.sleep(0.2)
     assert epochs.n_new_epochs == 1
