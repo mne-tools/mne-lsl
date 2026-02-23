@@ -297,9 +297,9 @@ of the file is reached.
 
 
 
-    <tr class="mne-repr-section-header general-f0ab0f3c-3432-4046-be6f-68dae43d8952"
+    <tr class="mne-repr-section-header general-39549c7f-b749-42e3-81f6-769a3b010182"
          title="Hide section" 
-        onclick="toggleVisibility('general-f0ab0f3c-3432-4046-be6f-68dae43d8952')">
+        onclick="toggleVisibility('general-39549c7f-b749-42e3-81f6-769a3b010182')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -311,26 +311,26 @@ of the file is reached.
     </tr>
 
 
-    <tr class="repr-element general-f0ab0f3c-3432-4046-be6f-68dae43d8952 ">
+    <tr class="repr-element general-39549c7f-b749-42e3-81f6-769a3b010182 ">
         <td class="mne-repr-section-toggle"></td>
         <td>MNE object type</td>
         <td>Info</td>
     </tr>
-    <tr class="repr-element general-f0ab0f3c-3432-4046-be6f-68dae43d8952 ">
+    <tr class="repr-element general-39549c7f-b749-42e3-81f6-769a3b010182 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Measurement date</td>
     
         <td>Unknown</td>
     
     </tr>
-    <tr class="repr-element general-f0ab0f3c-3432-4046-be6f-68dae43d8952 ">
+    <tr class="repr-element general-39549c7f-b749-42e3-81f6-769a3b010182 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Participant</td>
     
         <td>Unknown</td>
     
     </tr>
-    <tr class="repr-element general-f0ab0f3c-3432-4046-be6f-68dae43d8952 ">
+    <tr class="repr-element general-39549c7f-b749-42e3-81f6-769a3b010182 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Experimenter</td>
     
@@ -345,9 +345,9 @@ of the file is reached.
 
 
 
-    <tr class="mne-repr-section-header acquisition-bfe75752-94f3-4395-8962-83c5d4ec874a"
+    <tr class="mne-repr-section-header acquisition-86d42b8b-2a3b-4d38-9852-1766771ea8dd"
          title="Hide section" 
-        onclick="toggleVisibility('acquisition-bfe75752-94f3-4395-8962-83c5d4ec874a')">
+        onclick="toggleVisibility('acquisition-86d42b8b-2a3b-4d38-9852-1766771ea8dd')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -366,7 +366,7 @@ of the file is reached.
 
 
 
-    <tr class="repr-element acquisition-bfe75752-94f3-4395-8962-83c5d4ec874a ">
+    <tr class="repr-element acquisition-86d42b8b-2a3b-4d38-9852-1766771ea8dd ">
         <td class="mne-repr-section-toggle"></td>
         <td>Sampling frequency</td>
         <td>1024.00 Hz</td>
@@ -382,9 +382,9 @@ of the file is reached.
 
 
 
-    <tr class="mne-repr-section-header channels-399f9d92-7317-4378-a6b6-e1d6ca99e5e6"
+    <tr class="mne-repr-section-header channels-5237383c-3137-4dea-a4b8-422b8b3b77ca"
          title="Hide section" 
-        onclick="toggleVisibility('channels-399f9d92-7317-4378-a6b6-e1d6ca99e5e6')">
+        onclick="toggleVisibility('channels-5237383c-3137-4dea-a4b8-422b8b3b77ca')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -397,7 +397,7 @@ of the file is reached.
 
 
     
-    <tr class="repr-element channels-399f9d92-7317-4378-a6b6-e1d6ca99e5e6 ">
+    <tr class="repr-element channels-5237383c-3137-4dea-a4b8-422b8b3b77ca ">
         <td class="mne-repr-section-toggle"></td>
         <td>EEG</td>
         <td>
@@ -410,7 +410,7 @@ of the file is reached.
     </tr>
 
     
-    <tr class="repr-element channels-399f9d92-7317-4378-a6b6-e1d6ca99e5e6 ">
+    <tr class="repr-element channels-5237383c-3137-4dea-a4b8-422b8b3b77ca ">
         <td class="mne-repr-section-toggle"></td>
         <td>EOG</td>
         <td>
@@ -423,7 +423,7 @@ of the file is reached.
     </tr>
 
     
-    <tr class="repr-element channels-399f9d92-7317-4378-a6b6-e1d6ca99e5e6 ">
+    <tr class="repr-element channels-5237383c-3137-4dea-a4b8-422b8b3b77ca ">
         <td class="mne-repr-section-toggle"></td>
         <td>ECG</td>
         <td>
@@ -436,7 +436,7 @@ of the file is reached.
     </tr>
 
     
-    <tr class="repr-element channels-399f9d92-7317-4378-a6b6-e1d6ca99e5e6 ">
+    <tr class="repr-element channels-5237383c-3137-4dea-a4b8-422b8b3b77ca ">
         <td class="mne-repr-section-toggle"></td>
         <td>Stimulus</td>
         <td>
@@ -449,7 +449,7 @@ of the file is reached.
     </tr>
 
     
-    <tr class="repr-element channels-399f9d92-7317-4378-a6b6-e1d6ca99e5e6 ">
+    <tr class="repr-element channels-5237383c-3137-4dea-a4b8-422b8b3b77ca ">
         <td class="mne-repr-section-toggle"></td>
         <td>Galvanic skin response</td>
         <td>
@@ -462,7 +462,7 @@ of the file is reached.
     </tr>
 
 
-    <tr class="repr-element channels-399f9d92-7317-4378-a6b6-e1d6ca99e5e6 ">
+    <tr class="repr-element channels-5237383c-3137-4dea-a4b8-422b8b3b77ca ">
         <td class="mne-repr-section-toggle"></td>
         <td>Head & sensor digitization</td>
     
@@ -477,9 +477,9 @@ of the file is reached.
 
 
 
-    <tr class="mne-repr-section-header filters-0338ce45-e297-49b2-a202-a1c0fc28414a"
+    <tr class="mne-repr-section-header filters-93f27f60-a486-48cd-bf6d-07eb583b8d73"
          title="Hide section" 
-        onclick="toggleVisibility('filters-0338ce45-e297-49b2-a202-a1c0fc28414a')">
+        onclick="toggleVisibility('filters-93f27f60-a486-48cd-bf6d-07eb583b8d73')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -491,14 +491,14 @@ of the file is reached.
     </tr>
 
 
-    <tr class="repr-element filters-0338ce45-e297-49b2-a202-a1c0fc28414a ">
+    <tr class="repr-element filters-93f27f60-a486-48cd-bf6d-07eb583b8d73 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Highpass</td>
         <td>0.00 Hz</td>
     </tr>
 
 
-    <tr class="repr-element filters-0338ce45-e297-49b2-a202-a1c0fc28414a ">
+    <tr class="repr-element filters-93f27f60-a486-48cd-bf6d-07eb583b8d73 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Lowpass</td>
         <td>512.00 Hz</td>
@@ -736,9 +736,9 @@ connection with the method :meth:`mne_lsl.stream.StreamLSL.connect`.
 
 
 
-    <tr class="mne-repr-section-header general-cf55de8c-b889-4974-95f3-6d349a27cea4"
+    <tr class="mne-repr-section-header general-4ac1a8fa-fda9-49f5-a640-74c097f72188"
          title="Hide section" 
-        onclick="toggleVisibility('general-cf55de8c-b889-4974-95f3-6d349a27cea4')">
+        onclick="toggleVisibility('general-4ac1a8fa-fda9-49f5-a640-74c097f72188')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -750,26 +750,26 @@ connection with the method :meth:`mne_lsl.stream.StreamLSL.connect`.
     </tr>
 
 
-    <tr class="repr-element general-cf55de8c-b889-4974-95f3-6d349a27cea4 ">
+    <tr class="repr-element general-4ac1a8fa-fda9-49f5-a640-74c097f72188 ">
         <td class="mne-repr-section-toggle"></td>
         <td>MNE object type</td>
         <td>Info</td>
     </tr>
-    <tr class="repr-element general-cf55de8c-b889-4974-95f3-6d349a27cea4 ">
+    <tr class="repr-element general-4ac1a8fa-fda9-49f5-a640-74c097f72188 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Measurement date</td>
     
         <td>Unknown</td>
     
     </tr>
-    <tr class="repr-element general-cf55de8c-b889-4974-95f3-6d349a27cea4 ">
+    <tr class="repr-element general-4ac1a8fa-fda9-49f5-a640-74c097f72188 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Participant</td>
     
         <td>Unknown</td>
     
     </tr>
-    <tr class="repr-element general-cf55de8c-b889-4974-95f3-6d349a27cea4 ">
+    <tr class="repr-element general-4ac1a8fa-fda9-49f5-a640-74c097f72188 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Experimenter</td>
     
@@ -784,9 +784,9 @@ connection with the method :meth:`mne_lsl.stream.StreamLSL.connect`.
 
 
 
-    <tr class="mne-repr-section-header acquisition-4039548a-ce84-47a1-b493-2734c941c4f0"
+    <tr class="mne-repr-section-header acquisition-a1c9fe27-b7dd-4312-a52b-9cd689692abc"
          title="Hide section" 
-        onclick="toggleVisibility('acquisition-4039548a-ce84-47a1-b493-2734c941c4f0')">
+        onclick="toggleVisibility('acquisition-a1c9fe27-b7dd-4312-a52b-9cd689692abc')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -805,7 +805,7 @@ connection with the method :meth:`mne_lsl.stream.StreamLSL.connect`.
 
 
 
-    <tr class="repr-element acquisition-4039548a-ce84-47a1-b493-2734c941c4f0 ">
+    <tr class="repr-element acquisition-a1c9fe27-b7dd-4312-a52b-9cd689692abc ">
         <td class="mne-repr-section-toggle"></td>
         <td>Sampling frequency</td>
         <td>1024.00 Hz</td>
@@ -821,9 +821,9 @@ connection with the method :meth:`mne_lsl.stream.StreamLSL.connect`.
 
 
 
-    <tr class="mne-repr-section-header channels-9e011a80-479b-4b85-a7fd-fd4f3965d421"
+    <tr class="mne-repr-section-header channels-b01a286c-4355-4505-9a0b-4872e50189cc"
          title="Hide section" 
-        onclick="toggleVisibility('channels-9e011a80-479b-4b85-a7fd-fd4f3965d421')">
+        onclick="toggleVisibility('channels-b01a286c-4355-4505-9a0b-4872e50189cc')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -836,7 +836,7 @@ connection with the method :meth:`mne_lsl.stream.StreamLSL.connect`.
 
 
     
-    <tr class="repr-element channels-9e011a80-479b-4b85-a7fd-fd4f3965d421 ">
+    <tr class="repr-element channels-b01a286c-4355-4505-9a0b-4872e50189cc ">
         <td class="mne-repr-section-toggle"></td>
         <td>EEG</td>
         <td>
@@ -849,7 +849,7 @@ connection with the method :meth:`mne_lsl.stream.StreamLSL.connect`.
     </tr>
 
     
-    <tr class="repr-element channels-9e011a80-479b-4b85-a7fd-fd4f3965d421 ">
+    <tr class="repr-element channels-b01a286c-4355-4505-9a0b-4872e50189cc ">
         <td class="mne-repr-section-toggle"></td>
         <td>EOG</td>
         <td>
@@ -862,7 +862,7 @@ connection with the method :meth:`mne_lsl.stream.StreamLSL.connect`.
     </tr>
 
     
-    <tr class="repr-element channels-9e011a80-479b-4b85-a7fd-fd4f3965d421 ">
+    <tr class="repr-element channels-b01a286c-4355-4505-9a0b-4872e50189cc ">
         <td class="mne-repr-section-toggle"></td>
         <td>ECG</td>
         <td>
@@ -875,7 +875,7 @@ connection with the method :meth:`mne_lsl.stream.StreamLSL.connect`.
     </tr>
 
     
-    <tr class="repr-element channels-9e011a80-479b-4b85-a7fd-fd4f3965d421 ">
+    <tr class="repr-element channels-b01a286c-4355-4505-9a0b-4872e50189cc ">
         <td class="mne-repr-section-toggle"></td>
         <td>Stimulus</td>
         <td>
@@ -888,7 +888,7 @@ connection with the method :meth:`mne_lsl.stream.StreamLSL.connect`.
     </tr>
 
     
-    <tr class="repr-element channels-9e011a80-479b-4b85-a7fd-fd4f3965d421 ">
+    <tr class="repr-element channels-b01a286c-4355-4505-9a0b-4872e50189cc ">
         <td class="mne-repr-section-toggle"></td>
         <td>Galvanic skin response</td>
         <td>
@@ -901,7 +901,7 @@ connection with the method :meth:`mne_lsl.stream.StreamLSL.connect`.
     </tr>
 
 
-    <tr class="repr-element channels-9e011a80-479b-4b85-a7fd-fd4f3965d421 ">
+    <tr class="repr-element channels-b01a286c-4355-4505-9a0b-4872e50189cc ">
         <td class="mne-repr-section-toggle"></td>
         <td>Head & sensor digitization</td>
     
@@ -916,9 +916,9 @@ connection with the method :meth:`mne_lsl.stream.StreamLSL.connect`.
 
 
 
-    <tr class="mne-repr-section-header filters-8b0e5c9f-60f6-4ef4-82c7-0037f0fee9bc"
+    <tr class="mne-repr-section-header filters-49905cfb-8f3e-4f82-8c67-656f4e934748"
          title="Hide section" 
-        onclick="toggleVisibility('filters-8b0e5c9f-60f6-4ef4-82c7-0037f0fee9bc')">
+        onclick="toggleVisibility('filters-49905cfb-8f3e-4f82-8c67-656f4e934748')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -930,14 +930,14 @@ connection with the method :meth:`mne_lsl.stream.StreamLSL.connect`.
     </tr>
 
 
-    <tr class="repr-element filters-8b0e5c9f-60f6-4ef4-82c7-0037f0fee9bc ">
+    <tr class="repr-element filters-49905cfb-8f3e-4f82-8c67-656f4e934748 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Highpass</td>
         <td>0.00 Hz</td>
     </tr>
 
 
-    <tr class="repr-element filters-8b0e5c9f-60f6-4ef4-82c7-0037f0fee9bc ">
+    <tr class="repr-element filters-49905cfb-8f3e-4f82-8c67-656f4e934748 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Lowpass</td>
         <td>512.00 Hz</td>
@@ -1159,9 +1159,9 @@ which will reduce the ring buffer to 64 channels.
 
 
 
-    <tr class="mne-repr-section-header general-a1c8a60a-3b59-48a1-bded-4f1b74dbdc2c"
+    <tr class="mne-repr-section-header general-4ed6171a-e88e-4109-a53e-a82f0b2e3fa2"
          title="Hide section" 
-        onclick="toggleVisibility('general-a1c8a60a-3b59-48a1-bded-4f1b74dbdc2c')">
+        onclick="toggleVisibility('general-4ed6171a-e88e-4109-a53e-a82f0b2e3fa2')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -1173,26 +1173,26 @@ which will reduce the ring buffer to 64 channels.
     </tr>
 
 
-    <tr class="repr-element general-a1c8a60a-3b59-48a1-bded-4f1b74dbdc2c ">
+    <tr class="repr-element general-4ed6171a-e88e-4109-a53e-a82f0b2e3fa2 ">
         <td class="mne-repr-section-toggle"></td>
         <td>MNE object type</td>
         <td>Info</td>
     </tr>
-    <tr class="repr-element general-a1c8a60a-3b59-48a1-bded-4f1b74dbdc2c ">
+    <tr class="repr-element general-4ed6171a-e88e-4109-a53e-a82f0b2e3fa2 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Measurement date</td>
     
         <td>Unknown</td>
     
     </tr>
-    <tr class="repr-element general-a1c8a60a-3b59-48a1-bded-4f1b74dbdc2c ">
+    <tr class="repr-element general-4ed6171a-e88e-4109-a53e-a82f0b2e3fa2 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Participant</td>
     
         <td>Unknown</td>
     
     </tr>
-    <tr class="repr-element general-a1c8a60a-3b59-48a1-bded-4f1b74dbdc2c ">
+    <tr class="repr-element general-4ed6171a-e88e-4109-a53e-a82f0b2e3fa2 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Experimenter</td>
     
@@ -1207,9 +1207,9 @@ which will reduce the ring buffer to 64 channels.
 
 
 
-    <tr class="mne-repr-section-header acquisition-4a34cb46-34bd-48ef-9f22-e50929157522"
+    <tr class="mne-repr-section-header acquisition-9cc1f7e3-417d-4682-a3f1-1f3c309b230d"
          title="Hide section" 
-        onclick="toggleVisibility('acquisition-4a34cb46-34bd-48ef-9f22-e50929157522')">
+        onclick="toggleVisibility('acquisition-9cc1f7e3-417d-4682-a3f1-1f3c309b230d')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -1228,7 +1228,7 @@ which will reduce the ring buffer to 64 channels.
 
 
 
-    <tr class="repr-element acquisition-4a34cb46-34bd-48ef-9f22-e50929157522 ">
+    <tr class="repr-element acquisition-9cc1f7e3-417d-4682-a3f1-1f3c309b230d ">
         <td class="mne-repr-section-toggle"></td>
         <td>Sampling frequency</td>
         <td>1024.00 Hz</td>
@@ -1244,9 +1244,9 @@ which will reduce the ring buffer to 64 channels.
 
 
 
-    <tr class="mne-repr-section-header channels-8d83f21c-74be-4fed-a206-b3eda58f2435"
+    <tr class="mne-repr-section-header channels-3663ce77-0f0f-45fd-b30c-9b82ddb97bf4"
          title="Hide section" 
-        onclick="toggleVisibility('channels-8d83f21c-74be-4fed-a206-b3eda58f2435')">
+        onclick="toggleVisibility('channels-3663ce77-0f0f-45fd-b30c-9b82ddb97bf4')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -1259,7 +1259,7 @@ which will reduce the ring buffer to 64 channels.
 
 
     
-    <tr class="repr-element channels-8d83f21c-74be-4fed-a206-b3eda58f2435 ">
+    <tr class="repr-element channels-3663ce77-0f0f-45fd-b30c-9b82ddb97bf4 ">
         <td class="mne-repr-section-toggle"></td>
         <td>EEG</td>
         <td>
@@ -1272,7 +1272,7 @@ which will reduce the ring buffer to 64 channels.
     </tr>
 
 
-    <tr class="repr-element channels-8d83f21c-74be-4fed-a206-b3eda58f2435 ">
+    <tr class="repr-element channels-3663ce77-0f0f-45fd-b30c-9b82ddb97bf4 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Head & sensor digitization</td>
     
@@ -1287,9 +1287,9 @@ which will reduce the ring buffer to 64 channels.
 
 
 
-    <tr class="mne-repr-section-header filters-49afe310-86c4-425b-9815-56ba5ece7f46"
+    <tr class="mne-repr-section-header filters-d77bbc15-a734-4246-a432-4d8967609050"
          title="Hide section" 
-        onclick="toggleVisibility('filters-49afe310-86c4-425b-9815-56ba5ece7f46')">
+        onclick="toggleVisibility('filters-d77bbc15-a734-4246-a432-4d8967609050')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -1301,14 +1301,14 @@ which will reduce the ring buffer to 64 channels.
     </tr>
 
 
-    <tr class="repr-element filters-49afe310-86c4-425b-9815-56ba5ece7f46 ">
+    <tr class="repr-element filters-d77bbc15-a734-4246-a432-4d8967609050 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Highpass</td>
         <td>0.00 Hz</td>
     </tr>
 
 
-    <tr class="repr-element filters-49afe310-86c4-425b-9815-56ba5ece7f46 ">
+    <tr class="repr-element filters-d77bbc15-a734-4246-a432-4d8967609050 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Lowpass</td>
         <td>512.00 Hz</td>
@@ -1403,7 +1403,7 @@ to continuously mock an LSL stream or receive new data from an LSL stream.
  .. code-block:: none
 
 
-    <Stream: OFF | MNE-LSL-Player (source: e5c7e98dad494ec9b44e18b62cf5b499)>
+    <Stream: OFF | MNE-LSL-Player (source: e13f05f177f743daa4bb984cd749dc52)>
 
 
 
@@ -1429,9 +1429,9 @@ to continuously mock an LSL stream or receive new data from an LSL stream.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 5.513 seconds)
+   **Total running time of the script:** (0 minutes 5.548 seconds)
 
-**Estimated memory usage:**  287 MB
+**Estimated memory usage:**  293 MB
 
 
 .. _sphx_glr_download_generated_tutorials_00_introduction.py:

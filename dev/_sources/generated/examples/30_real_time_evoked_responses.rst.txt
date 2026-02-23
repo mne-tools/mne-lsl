@@ -138,9 +138,9 @@ The epochs will be created around the event ID ``1`` from the ``'STI 014'`` chan
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 56.922 seconds)
+   **Total running time of the script:** (0 minutes 57.268 seconds)
 
-**Estimated memory usage:**  668 MB
+**Estimated memory usage:**  675 MB
 
 
 .. _sphx_glr_download_generated_examples_30_real_time_evoked_responses.py:

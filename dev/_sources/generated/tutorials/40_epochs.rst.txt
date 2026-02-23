@@ -250,9 +250,9 @@ channel of MNE's sample dataset.
 
 
 
-    <tr class="mne-repr-section-header general-17a68815-a860-4171-addd-441f23ff15f5"
+    <tr class="mne-repr-section-header general-4196a994-8394-4019-a1ea-bf10f129db40"
          title="Hide section" 
-        onclick="toggleVisibility('general-17a68815-a860-4171-addd-441f23ff15f5')">
+        onclick="toggleVisibility('general-4196a994-8394-4019-a1ea-bf10f129db40')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -264,26 +264,26 @@ channel of MNE's sample dataset.
     </tr>
 
 
-    <tr class="repr-element general-17a68815-a860-4171-addd-441f23ff15f5 ">
+    <tr class="repr-element general-4196a994-8394-4019-a1ea-bf10f129db40 ">
         <td class="mne-repr-section-toggle"></td>
         <td>MNE object type</td>
         <td>Info</td>
     </tr>
-    <tr class="repr-element general-17a68815-a860-4171-addd-441f23ff15f5 ">
+    <tr class="repr-element general-4196a994-8394-4019-a1ea-bf10f129db40 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Measurement date</td>
     
         <td>2002-12-03 at 19:01:10 UTC</td>
     
     </tr>
-    <tr class="repr-element general-17a68815-a860-4171-addd-441f23ff15f5 ">
+    <tr class="repr-element general-4196a994-8394-4019-a1ea-bf10f129db40 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Participant</td>
     
         <td>Unknown</td>
     
     </tr>
-    <tr class="repr-element general-17a68815-a860-4171-addd-441f23ff15f5 ">
+    <tr class="repr-element general-4196a994-8394-4019-a1ea-bf10f129db40 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Experimenter</td>
     
@@ -298,9 +298,9 @@ channel of MNE's sample dataset.
 
 
 
-    <tr class="mne-repr-section-header acquisition-7af544ee-12e4-4126-8152-f2817567d8ca"
+    <tr class="mne-repr-section-header acquisition-871e6a67-48b0-4f1e-99f0-018348abb490"
          title="Hide section" 
-        onclick="toggleVisibility('acquisition-7af544ee-12e4-4126-8152-f2817567d8ca')">
+        onclick="toggleVisibility('acquisition-871e6a67-48b0-4f1e-99f0-018348abb490')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -319,7 +319,7 @@ channel of MNE's sample dataset.
 
 
 
-    <tr class="repr-element acquisition-7af544ee-12e4-4126-8152-f2817567d8ca ">
+    <tr class="repr-element acquisition-871e6a67-48b0-4f1e-99f0-018348abb490 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Sampling frequency</td>
         <td>600.61 Hz</td>
@@ -335,9 +335,9 @@ channel of MNE's sample dataset.
 
 
 
-    <tr class="mne-repr-section-header channels-2c37adf3-0969-49cc-b93a-02cabfd52560"
+    <tr class="mne-repr-section-header channels-9b2914c1-c1dc-416c-89bd-a884795423bb"
          title="Hide section" 
-        onclick="toggleVisibility('channels-2c37adf3-0969-49cc-b93a-02cabfd52560')">
+        onclick="toggleVisibility('channels-9b2914c1-c1dc-416c-89bd-a884795423bb')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -350,7 +350,7 @@ channel of MNE's sample dataset.
 
 
     
-    <tr class="repr-element channels-2c37adf3-0969-49cc-b93a-02cabfd52560 ">
+    <tr class="repr-element channels-9b2914c1-c1dc-416c-89bd-a884795423bb ">
         <td class="mne-repr-section-toggle"></td>
         <td>Magnetometers</td>
         <td>
@@ -363,7 +363,7 @@ channel of MNE's sample dataset.
     </tr>
 
     
-    <tr class="repr-element channels-2c37adf3-0969-49cc-b93a-02cabfd52560 ">
+    <tr class="repr-element channels-9b2914c1-c1dc-416c-89bd-a884795423bb ">
         <td class="mne-repr-section-toggle"></td>
         <td>Gradiometers</td>
         <td>
@@ -381,7 +381,7 @@ channel of MNE's sample dataset.
     </tr>
 
     
-    <tr class="repr-element channels-2c37adf3-0969-49cc-b93a-02cabfd52560 ">
+    <tr class="repr-element channels-9b2914c1-c1dc-416c-89bd-a884795423bb ">
         <td class="mne-repr-section-toggle"></td>
         <td>Stimulus</td>
         <td>
@@ -394,7 +394,7 @@ channel of MNE's sample dataset.
     </tr>
 
 
-    <tr class="repr-element channels-2c37adf3-0969-49cc-b93a-02cabfd52560 ">
+    <tr class="repr-element channels-9b2914c1-c1dc-416c-89bd-a884795423bb ">
         <td class="mne-repr-section-toggle"></td>
         <td>Head & sensor digitization</td>
     
@@ -409,9 +409,9 @@ channel of MNE's sample dataset.
 
 
 
-    <tr class="mne-repr-section-header filters-fef91c67-5d6b-43d1-857a-b495d22a250c"
+    <tr class="mne-repr-section-header filters-6a2d1adf-3896-495d-ae28-8a2cad3a13ad"
          title="Hide section" 
-        onclick="toggleVisibility('filters-fef91c67-5d6b-43d1-857a-b495d22a250c')">
+        onclick="toggleVisibility('filters-6a2d1adf-3896-495d-ae28-8a2cad3a13ad')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -423,21 +423,21 @@ channel of MNE's sample dataset.
     </tr>
 
 
-    <tr class="repr-element filters-fef91c67-5d6b-43d1-857a-b495d22a250c ">
+    <tr class="repr-element filters-6a2d1adf-3896-495d-ae28-8a2cad3a13ad ">
         <td class="mne-repr-section-toggle"></td>
         <td>Highpass</td>
         <td>0.10 Hz</td>
     </tr>
 
 
-    <tr class="repr-element filters-fef91c67-5d6b-43d1-857a-b495d22a250c ">
+    <tr class="repr-element filters-6a2d1adf-3896-495d-ae28-8a2cad3a13ad ">
         <td class="mne-repr-section-toggle"></td>
         <td>Lowpass</td>
         <td>172.18 Hz</td>
     </tr>
 
 
-    <tr class="repr-element filters-fef91c67-5d6b-43d1-857a-b495d22a250c ">
+    <tr class="repr-element filters-6a2d1adf-3896-495d-ae28-8a2cad3a13ad ">
         <td class="mne-repr-section-toggle"></td>
         <td>Projections</td>
         <td>
@@ -639,9 +639,9 @@ filter.
 
 
 
-    <tr class="mne-repr-section-header general-571bdceb-d952-415e-b622-0b8bb1ff16b8"
+    <tr class="mne-repr-section-header general-c4820834-de8c-405d-b207-f0853f1e7f6f"
          title="Hide section" 
-        onclick="toggleVisibility('general-571bdceb-d952-415e-b622-0b8bb1ff16b8')">
+        onclick="toggleVisibility('general-c4820834-de8c-405d-b207-f0853f1e7f6f')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -653,26 +653,26 @@ filter.
     </tr>
 
 
-    <tr class="repr-element general-571bdceb-d952-415e-b622-0b8bb1ff16b8 ">
+    <tr class="repr-element general-c4820834-de8c-405d-b207-f0853f1e7f6f ">
         <td class="mne-repr-section-toggle"></td>
         <td>MNE object type</td>
         <td>Info</td>
     </tr>
-    <tr class="repr-element general-571bdceb-d952-415e-b622-0b8bb1ff16b8 ">
+    <tr class="repr-element general-c4820834-de8c-405d-b207-f0853f1e7f6f ">
         <td class="mne-repr-section-toggle"></td>
         <td>Measurement date</td>
     
         <td>Unknown</td>
     
     </tr>
-    <tr class="repr-element general-571bdceb-d952-415e-b622-0b8bb1ff16b8 ">
+    <tr class="repr-element general-c4820834-de8c-405d-b207-f0853f1e7f6f ">
         <td class="mne-repr-section-toggle"></td>
         <td>Participant</td>
     
         <td>Unknown</td>
     
     </tr>
-    <tr class="repr-element general-571bdceb-d952-415e-b622-0b8bb1ff16b8 ">
+    <tr class="repr-element general-c4820834-de8c-405d-b207-f0853f1e7f6f ">
         <td class="mne-repr-section-toggle"></td>
         <td>Experimenter</td>
     
@@ -687,9 +687,9 @@ filter.
 
 
 
-    <tr class="mne-repr-section-header acquisition-10ba3674-84c0-4ef2-90fa-8e7965a16aef"
+    <tr class="mne-repr-section-header acquisition-0d667b66-baea-4e98-9659-0a7637d33dfa"
          title="Hide section" 
-        onclick="toggleVisibility('acquisition-10ba3674-84c0-4ef2-90fa-8e7965a16aef')">
+        onclick="toggleVisibility('acquisition-0d667b66-baea-4e98-9659-0a7637d33dfa')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -708,7 +708,7 @@ filter.
 
 
 
-    <tr class="repr-element acquisition-10ba3674-84c0-4ef2-90fa-8e7965a16aef ">
+    <tr class="repr-element acquisition-0d667b66-baea-4e98-9659-0a7637d33dfa ">
         <td class="mne-repr-section-toggle"></td>
         <td>Sampling frequency</td>
         <td>600.61 Hz</td>
@@ -724,9 +724,9 @@ filter.
 
 
 
-    <tr class="mne-repr-section-header channels-22ade364-70c9-440a-a24c-5c6659efb125"
+    <tr class="mne-repr-section-header channels-2c8fce88-80af-4c10-9e24-8c24f237bb9f"
          title="Hide section" 
-        onclick="toggleVisibility('channels-22ade364-70c9-440a-a24c-5c6659efb125')">
+        onclick="toggleVisibility('channels-2c8fce88-80af-4c10-9e24-8c24f237bb9f')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -739,7 +739,7 @@ filter.
 
 
     
-    <tr class="repr-element channels-22ade364-70c9-440a-a24c-5c6659efb125 ">
+    <tr class="repr-element channels-2c8fce88-80af-4c10-9e24-8c24f237bb9f ">
         <td class="mne-repr-section-toggle"></td>
         <td>Magnetometers</td>
         <td>
@@ -752,7 +752,7 @@ filter.
     </tr>
 
     
-    <tr class="repr-element channels-22ade364-70c9-440a-a24c-5c6659efb125 ">
+    <tr class="repr-element channels-2c8fce88-80af-4c10-9e24-8c24f237bb9f ">
         <td class="mne-repr-section-toggle"></td>
         <td>Gradiometers</td>
         <td>
@@ -770,7 +770,7 @@ filter.
     </tr>
 
     
-    <tr class="repr-element channels-22ade364-70c9-440a-a24c-5c6659efb125 ">
+    <tr class="repr-element channels-2c8fce88-80af-4c10-9e24-8c24f237bb9f ">
         <td class="mne-repr-section-toggle"></td>
         <td>Stimulus</td>
         <td>
@@ -783,7 +783,7 @@ filter.
     </tr>
 
 
-    <tr class="repr-element channels-22ade364-70c9-440a-a24c-5c6659efb125 ">
+    <tr class="repr-element channels-2c8fce88-80af-4c10-9e24-8c24f237bb9f ">
         <td class="mne-repr-section-toggle"></td>
         <td>Head & sensor digitization</td>
     
@@ -798,9 +798,9 @@ filter.
 
 
 
-    <tr class="mne-repr-section-header filters-a46b7e5b-d4fd-4f45-9659-9634010fa1ed"
+    <tr class="mne-repr-section-header filters-6b900dfd-4b43-4c4f-96ad-abfa43a5339a"
          title="Hide section" 
-        onclick="toggleVisibility('filters-a46b7e5b-d4fd-4f45-9659-9634010fa1ed')">
+        onclick="toggleVisibility('filters-6b900dfd-4b43-4c4f-96ad-abfa43a5339a')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -812,21 +812,21 @@ filter.
     </tr>
 
 
-    <tr class="repr-element filters-a46b7e5b-d4fd-4f45-9659-9634010fa1ed ">
+    <tr class="repr-element filters-6b900dfd-4b43-4c4f-96ad-abfa43a5339a ">
         <td class="mne-repr-section-toggle"></td>
         <td>Highpass</td>
         <td>0.10 Hz</td>
     </tr>
 
 
-    <tr class="repr-element filters-a46b7e5b-d4fd-4f45-9659-9634010fa1ed ">
+    <tr class="repr-element filters-6b900dfd-4b43-4c4f-96ad-abfa43a5339a ">
         <td class="mne-repr-section-toggle"></td>
         <td>Lowpass</td>
         <td>172.18 Hz</td>
     </tr>
 
 
-    <tr class="repr-element filters-a46b7e5b-d4fd-4f45-9659-9634010fa1ed ">
+    <tr class="repr-element filters-6b900dfd-4b43-4c4f-96ad-abfa43a5339a ">
         <td class="mne-repr-section-toggle"></td>
         <td>Projections</td>
         <td>
@@ -1028,9 +1028,9 @@ baseline correction is applied using the 200 first ms of the epoch as baseline.
 
 
 
-    <tr class="mne-repr-section-header general-4e7b9185-dde7-4296-91ec-20521746a92f"
+    <tr class="mne-repr-section-header general-6815f099-5e16-4caa-b215-b9e9712cd951"
          title="Hide section" 
-        onclick="toggleVisibility('general-4e7b9185-dde7-4296-91ec-20521746a92f')">
+        onclick="toggleVisibility('general-6815f099-5e16-4caa-b215-b9e9712cd951')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -1042,26 +1042,26 @@ baseline correction is applied using the 200 first ms of the epoch as baseline.
     </tr>
 
 
-    <tr class="repr-element general-4e7b9185-dde7-4296-91ec-20521746a92f ">
+    <tr class="repr-element general-6815f099-5e16-4caa-b215-b9e9712cd951 ">
         <td class="mne-repr-section-toggle"></td>
         <td>MNE object type</td>
         <td>Info</td>
     </tr>
-    <tr class="repr-element general-4e7b9185-dde7-4296-91ec-20521746a92f ">
+    <tr class="repr-element general-6815f099-5e16-4caa-b215-b9e9712cd951 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Measurement date</td>
     
         <td>Unknown</td>
     
     </tr>
-    <tr class="repr-element general-4e7b9185-dde7-4296-91ec-20521746a92f ">
+    <tr class="repr-element general-6815f099-5e16-4caa-b215-b9e9712cd951 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Participant</td>
     
         <td>Unknown</td>
     
     </tr>
-    <tr class="repr-element general-4e7b9185-dde7-4296-91ec-20521746a92f ">
+    <tr class="repr-element general-6815f099-5e16-4caa-b215-b9e9712cd951 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Experimenter</td>
     
@@ -1076,9 +1076,9 @@ baseline correction is applied using the 200 first ms of the epoch as baseline.
 
 
 
-    <tr class="mne-repr-section-header acquisition-23520c4d-cb4e-4869-84d3-ef9aa89a9605"
+    <tr class="mne-repr-section-header acquisition-e188c7ac-dda1-4119-a31f-5989e0466443"
          title="Hide section" 
-        onclick="toggleVisibility('acquisition-23520c4d-cb4e-4869-84d3-ef9aa89a9605')">
+        onclick="toggleVisibility('acquisition-e188c7ac-dda1-4119-a31f-5989e0466443')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -1097,7 +1097,7 @@ baseline correction is applied using the 200 first ms of the epoch as baseline.
 
 
 
-    <tr class="repr-element acquisition-23520c4d-cb4e-4869-84d3-ef9aa89a9605 ">
+    <tr class="repr-element acquisition-e188c7ac-dda1-4119-a31f-5989e0466443 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Sampling frequency</td>
         <td>600.61 Hz</td>
@@ -1113,9 +1113,9 @@ baseline correction is applied using the 200 first ms of the epoch as baseline.
 
 
 
-    <tr class="mne-repr-section-header channels-5985e25f-abb7-4a1a-96e1-50dd7415ff98"
+    <tr class="mne-repr-section-header channels-5341cca2-0b70-44a6-8e46-1c7defff831f"
          title="Hide section" 
-        onclick="toggleVisibility('channels-5985e25f-abb7-4a1a-96e1-50dd7415ff98')">
+        onclick="toggleVisibility('channels-5341cca2-0b70-44a6-8e46-1c7defff831f')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -1128,7 +1128,7 @@ baseline correction is applied using the 200 first ms of the epoch as baseline.
 
 
     
-    <tr class="repr-element channels-5985e25f-abb7-4a1a-96e1-50dd7415ff98 ">
+    <tr class="repr-element channels-5341cca2-0b70-44a6-8e46-1c7defff831f ">
         <td class="mne-repr-section-toggle"></td>
         <td>Gradiometers</td>
         <td>
@@ -1141,7 +1141,7 @@ baseline correction is applied using the 200 first ms of the epoch as baseline.
     </tr>
 
 
-    <tr class="repr-element channels-5985e25f-abb7-4a1a-96e1-50dd7415ff98 ">
+    <tr class="repr-element channels-5341cca2-0b70-44a6-8e46-1c7defff831f ">
         <td class="mne-repr-section-toggle"></td>
         <td>Head & sensor digitization</td>
     
@@ -1156,9 +1156,9 @@ baseline correction is applied using the 200 first ms of the epoch as baseline.
 
 
 
-    <tr class="mne-repr-section-header filters-ad2f69d6-ef1f-4707-9e3e-a059413e9c75"
+    <tr class="mne-repr-section-header filters-48796499-4da4-4a56-af81-6b17844173f8"
          title="Hide section" 
-        onclick="toggleVisibility('filters-ad2f69d6-ef1f-4707-9e3e-a059413e9c75')">
+        onclick="toggleVisibility('filters-48796499-4da4-4a56-af81-6b17844173f8')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -1170,14 +1170,14 @@ baseline correction is applied using the 200 first ms of the epoch as baseline.
     </tr>
 
 
-    <tr class="repr-element filters-ad2f69d6-ef1f-4707-9e3e-a059413e9c75 ">
+    <tr class="repr-element filters-48796499-4da4-4a56-af81-6b17844173f8 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Highpass</td>
         <td>0.10 Hz</td>
     </tr>
 
 
-    <tr class="repr-element filters-ad2f69d6-ef1f-4707-9e3e-a059413e9c75 ">
+    <tr class="repr-element filters-48796499-4da4-4a56-af81-6b17844173f8 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Lowpass</td>
         <td>172.18 Hz</td>
@@ -1460,9 +1460,9 @@ The example below shows how to use the first mode of operation.
 
 
 
-    <tr class="mne-repr-section-header general-eee865f2-1b86-4e67-b97f-21bdf521e5ca"
+    <tr class="mne-repr-section-header general-ae531174-b017-4fe5-9cfb-ac46f4147da8"
          title="Hide section" 
-        onclick="toggleVisibility('general-eee865f2-1b86-4e67-b97f-21bdf521e5ca')">
+        onclick="toggleVisibility('general-ae531174-b017-4fe5-9cfb-ac46f4147da8')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -1474,26 +1474,26 @@ The example below shows how to use the first mode of operation.
     </tr>
 
 
-    <tr class="repr-element general-eee865f2-1b86-4e67-b97f-21bdf521e5ca ">
+    <tr class="repr-element general-ae531174-b017-4fe5-9cfb-ac46f4147da8 ">
         <td class="mne-repr-section-toggle"></td>
         <td>MNE object type</td>
         <td>Info</td>
     </tr>
-    <tr class="repr-element general-eee865f2-1b86-4e67-b97f-21bdf521e5ca ">
+    <tr class="repr-element general-ae531174-b017-4fe5-9cfb-ac46f4147da8 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Measurement date</td>
     
         <td>2002-12-03 at 19:01:10 UTC</td>
     
     </tr>
-    <tr class="repr-element general-eee865f2-1b86-4e67-b97f-21bdf521e5ca ">
+    <tr class="repr-element general-ae531174-b017-4fe5-9cfb-ac46f4147da8 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Participant</td>
     
         <td>Unknown</td>
     
     </tr>
-    <tr class="repr-element general-eee865f2-1b86-4e67-b97f-21bdf521e5ca ">
+    <tr class="repr-element general-ae531174-b017-4fe5-9cfb-ac46f4147da8 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Experimenter</td>
     
@@ -1508,9 +1508,9 @@ The example below shows how to use the first mode of operation.
 
 
 
-    <tr class="mne-repr-section-header acquisition-251a69bb-c004-47ed-862b-e3b5a6959fae"
+    <tr class="mne-repr-section-header acquisition-b256d2b1-f658-4ead-8517-d03756f4fc68"
          title="Hide section" 
-        onclick="toggleVisibility('acquisition-251a69bb-c004-47ed-862b-e3b5a6959fae')">
+        onclick="toggleVisibility('acquisition-b256d2b1-f658-4ead-8517-d03756f4fc68')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -1529,7 +1529,7 @@ The example below shows how to use the first mode of operation.
 
 
 
-    <tr class="repr-element acquisition-251a69bb-c004-47ed-862b-e3b5a6959fae ">
+    <tr class="repr-element acquisition-b256d2b1-f658-4ead-8517-d03756f4fc68 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Sampling frequency</td>
         <td>600.61 Hz</td>
@@ -1545,9 +1545,9 @@ The example below shows how to use the first mode of operation.
 
 
 
-    <tr class="mne-repr-section-header channels-0242cda8-ddb2-4a77-8959-de329090686a"
+    <tr class="mne-repr-section-header channels-39dfe009-c3c1-4215-9678-cab3ee08c3c4"
          title="Hide section" 
-        onclick="toggleVisibility('channels-0242cda8-ddb2-4a77-8959-de329090686a')">
+        onclick="toggleVisibility('channels-39dfe009-c3c1-4215-9678-cab3ee08c3c4')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -1560,7 +1560,7 @@ The example below shows how to use the first mode of operation.
 
 
     
-    <tr class="repr-element channels-0242cda8-ddb2-4a77-8959-de329090686a ">
+    <tr class="repr-element channels-39dfe009-c3c1-4215-9678-cab3ee08c3c4 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Magnetometers</td>
         <td>
@@ -1573,7 +1573,7 @@ The example below shows how to use the first mode of operation.
     </tr>
 
     
-    <tr class="repr-element channels-0242cda8-ddb2-4a77-8959-de329090686a ">
+    <tr class="repr-element channels-39dfe009-c3c1-4215-9678-cab3ee08c3c4 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Gradiometers</td>
         <td>
@@ -1591,7 +1591,7 @@ The example below shows how to use the first mode of operation.
     </tr>
 
     
-    <tr class="repr-element channels-0242cda8-ddb2-4a77-8959-de329090686a ">
+    <tr class="repr-element channels-39dfe009-c3c1-4215-9678-cab3ee08c3c4 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Stimulus</td>
         <td>
@@ -1604,7 +1604,7 @@ The example below shows how to use the first mode of operation.
     </tr>
 
 
-    <tr class="repr-element channels-0242cda8-ddb2-4a77-8959-de329090686a ">
+    <tr class="repr-element channels-39dfe009-c3c1-4215-9678-cab3ee08c3c4 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Head & sensor digitization</td>
     
@@ -1619,9 +1619,9 @@ The example below shows how to use the first mode of operation.
 
 
 
-    <tr class="mne-repr-section-header filters-36c94c2f-f443-418e-99bc-a865fb44a29e"
+    <tr class="mne-repr-section-header filters-fab2ac25-d801-4ad3-b832-7425df1d2354"
          title="Hide section" 
-        onclick="toggleVisibility('filters-36c94c2f-f443-418e-99bc-a865fb44a29e')">
+        onclick="toggleVisibility('filters-fab2ac25-d801-4ad3-b832-7425df1d2354')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -1633,21 +1633,21 @@ The example below shows how to use the first mode of operation.
     </tr>
 
 
-    <tr class="repr-element filters-36c94c2f-f443-418e-99bc-a865fb44a29e ">
+    <tr class="repr-element filters-fab2ac25-d801-4ad3-b832-7425df1d2354 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Highpass</td>
         <td>0.10 Hz</td>
     </tr>
 
 
-    <tr class="repr-element filters-36c94c2f-f443-418e-99bc-a865fb44a29e ">
+    <tr class="repr-element filters-fab2ac25-d801-4ad3-b832-7425df1d2354 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Lowpass</td>
         <td>172.18 Hz</td>
     </tr>
 
 
-    <tr class="repr-element filters-36c94c2f-f443-418e-99bc-a865fb44a29e ">
+    <tr class="repr-element filters-fab2ac25-d801-4ad3-b832-7425df1d2354 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Projections</td>
         <td>
@@ -1690,17 +1690,17 @@ sampled numerical streams of events.
  .. code-block:: none
 
 
-    [< sInfo 'tutorial-epochs-2-annotations' >
+    [< sInfo 'tutorial-epochs-2' >
+      | Sampling: 600.614990234375 Hz
+      | Number of channels: 315
+      | Data type: <class 'numpy.float64'>
+      | Source: 8cc6ae27628f4b7eb42c44f32c7fe226
+    , < sInfo 'tutorial-epochs-2-annotations' >
       | Type: annotations
       | Sampling: Irregular
       | Number of channels: 2
       | Data type: <class 'numpy.float64'>
-      | Source: b7ee5071754940b797e1ce957ce30763
-    , < sInfo 'tutorial-epochs-2' >
-      | Sampling: 600.614990234375 Hz
-      | Number of channels: 315
-      | Data type: <class 'numpy.float64'>
-      | Source: b7ee5071754940b797e1ce957ce30763
+      | Source: 8cc6ae27628f4b7eb42c44f32c7fe226
     ]
 
 
@@ -1876,9 +1876,9 @@ stream on the network.
 
 
 
-    <tr class="mne-repr-section-header general-b3ada93c-b499-4d40-bb5f-6ec02c585624"
+    <tr class="mne-repr-section-header general-6f7cd3c7-17cd-45c1-8e5b-1df1305bdf23"
          title="Hide section" 
-        onclick="toggleVisibility('general-b3ada93c-b499-4d40-bb5f-6ec02c585624')">
+        onclick="toggleVisibility('general-6f7cd3c7-17cd-45c1-8e5b-1df1305bdf23')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -1890,26 +1890,26 @@ stream on the network.
     </tr>
 
 
-    <tr class="repr-element general-b3ada93c-b499-4d40-bb5f-6ec02c585624 ">
+    <tr class="repr-element general-6f7cd3c7-17cd-45c1-8e5b-1df1305bdf23 ">
         <td class="mne-repr-section-toggle"></td>
         <td>MNE object type</td>
         <td>Info</td>
     </tr>
-    <tr class="repr-element general-b3ada93c-b499-4d40-bb5f-6ec02c585624 ">
+    <tr class="repr-element general-6f7cd3c7-17cd-45c1-8e5b-1df1305bdf23 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Measurement date</td>
     
         <td>Unknown</td>
     
     </tr>
-    <tr class="repr-element general-b3ada93c-b499-4d40-bb5f-6ec02c585624 ">
+    <tr class="repr-element general-6f7cd3c7-17cd-45c1-8e5b-1df1305bdf23 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Participant</td>
     
         <td>Unknown</td>
     
     </tr>
-    <tr class="repr-element general-b3ada93c-b499-4d40-bb5f-6ec02c585624 ">
+    <tr class="repr-element general-6f7cd3c7-17cd-45c1-8e5b-1df1305bdf23 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Experimenter</td>
     
@@ -1924,9 +1924,9 @@ stream on the network.
 
 
 
-    <tr class="mne-repr-section-header acquisition-c3cd37e4-2868-40d1-b1bb-42fea5fd0c84"
+    <tr class="mne-repr-section-header acquisition-a1f8554c-8762-4bf6-bc18-2fd44db251ee"
          title="Hide section" 
-        onclick="toggleVisibility('acquisition-c3cd37e4-2868-40d1-b1bb-42fea5fd0c84')">
+        onclick="toggleVisibility('acquisition-a1f8554c-8762-4bf6-bc18-2fd44db251ee')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -1945,7 +1945,7 @@ stream on the network.
 
 
 
-    <tr class="repr-element acquisition-c3cd37e4-2868-40d1-b1bb-42fea5fd0c84 ">
+    <tr class="repr-element acquisition-a1f8554c-8762-4bf6-bc18-2fd44db251ee ">
         <td class="mne-repr-section-toggle"></td>
         <td>Sampling frequency</td>
         <td>600.61 Hz</td>
@@ -1961,9 +1961,9 @@ stream on the network.
 
 
 
-    <tr class="mne-repr-section-header channels-e9321757-429b-4552-8c12-fd5e522c32f1"
+    <tr class="mne-repr-section-header channels-3672c1f3-9ca5-4f80-b434-67b2bfdb96a6"
          title="Hide section" 
-        onclick="toggleVisibility('channels-e9321757-429b-4552-8c12-fd5e522c32f1')">
+        onclick="toggleVisibility('channels-3672c1f3-9ca5-4f80-b434-67b2bfdb96a6')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -1976,7 +1976,7 @@ stream on the network.
 
 
     
-    <tr class="repr-element channels-e9321757-429b-4552-8c12-fd5e522c32f1 ">
+    <tr class="repr-element channels-3672c1f3-9ca5-4f80-b434-67b2bfdb96a6 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Magnetometers</td>
         <td>
@@ -1989,7 +1989,7 @@ stream on the network.
     </tr>
 
     
-    <tr class="repr-element channels-e9321757-429b-4552-8c12-fd5e522c32f1 ">
+    <tr class="repr-element channels-3672c1f3-9ca5-4f80-b434-67b2bfdb96a6 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Gradiometers</td>
         <td>
@@ -2007,7 +2007,7 @@ stream on the network.
     </tr>
 
     
-    <tr class="repr-element channels-e9321757-429b-4552-8c12-fd5e522c32f1 ">
+    <tr class="repr-element channels-3672c1f3-9ca5-4f80-b434-67b2bfdb96a6 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Stimulus</td>
         <td>
@@ -2020,7 +2020,7 @@ stream on the network.
     </tr>
 
 
-    <tr class="repr-element channels-e9321757-429b-4552-8c12-fd5e522c32f1 ">
+    <tr class="repr-element channels-3672c1f3-9ca5-4f80-b434-67b2bfdb96a6 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Head & sensor digitization</td>
     
@@ -2035,9 +2035,9 @@ stream on the network.
 
 
 
-    <tr class="mne-repr-section-header filters-cec579ba-9e9b-43f8-882d-26c8847b1501"
+    <tr class="mne-repr-section-header filters-af6002a0-060f-4fd8-9abc-f11c223f2c80"
          title="Hide section" 
-        onclick="toggleVisibility('filters-cec579ba-9e9b-43f8-882d-26c8847b1501')">
+        onclick="toggleVisibility('filters-af6002a0-060f-4fd8-9abc-f11c223f2c80')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -2049,21 +2049,21 @@ stream on the network.
     </tr>
 
 
-    <tr class="repr-element filters-cec579ba-9e9b-43f8-882d-26c8847b1501 ">
+    <tr class="repr-element filters-af6002a0-060f-4fd8-9abc-f11c223f2c80 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Highpass</td>
         <td>0.10 Hz</td>
     </tr>
 
 
-    <tr class="repr-element filters-cec579ba-9e9b-43f8-882d-26c8847b1501 ">
+    <tr class="repr-element filters-af6002a0-060f-4fd8-9abc-f11c223f2c80 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Lowpass</td>
         <td>172.18 Hz</td>
     </tr>
 
 
-    <tr class="repr-element filters-cec579ba-9e9b-43f8-882d-26c8847b1501 ">
+    <tr class="repr-element filters-af6002a0-060f-4fd8-9abc-f11c223f2c80 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Projections</td>
         <td>
@@ -2251,9 +2251,9 @@ stream on the network.
 
 
 
-    <tr class="mne-repr-section-header general-49b7f7bc-ac68-43f6-9c7a-e308c60502d3"
+    <tr class="mne-repr-section-header general-0ba2a3b5-bc83-47a3-be60-1471cba07e55"
          title="Hide section" 
-        onclick="toggleVisibility('general-49b7f7bc-ac68-43f6-9c7a-e308c60502d3')">
+        onclick="toggleVisibility('general-0ba2a3b5-bc83-47a3-be60-1471cba07e55')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -2265,26 +2265,26 @@ stream on the network.
     </tr>
 
 
-    <tr class="repr-element general-49b7f7bc-ac68-43f6-9c7a-e308c60502d3 ">
+    <tr class="repr-element general-0ba2a3b5-bc83-47a3-be60-1471cba07e55 ">
         <td class="mne-repr-section-toggle"></td>
         <td>MNE object type</td>
         <td>Info</td>
     </tr>
-    <tr class="repr-element general-49b7f7bc-ac68-43f6-9c7a-e308c60502d3 ">
+    <tr class="repr-element general-0ba2a3b5-bc83-47a3-be60-1471cba07e55 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Measurement date</td>
     
         <td>Unknown</td>
     
     </tr>
-    <tr class="repr-element general-49b7f7bc-ac68-43f6-9c7a-e308c60502d3 ">
+    <tr class="repr-element general-0ba2a3b5-bc83-47a3-be60-1471cba07e55 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Participant</td>
     
         <td>Unknown</td>
     
     </tr>
-    <tr class="repr-element general-49b7f7bc-ac68-43f6-9c7a-e308c60502d3 ">
+    <tr class="repr-element general-0ba2a3b5-bc83-47a3-be60-1471cba07e55 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Experimenter</td>
     
@@ -2299,9 +2299,9 @@ stream on the network.
 
 
 
-    <tr class="mne-repr-section-header acquisition-ec80339d-0d86-413b-bb35-a259977c34b5"
+    <tr class="mne-repr-section-header acquisition-c03e4c11-b3dc-486e-a07c-258a17951755"
          title="Hide section" 
-        onclick="toggleVisibility('acquisition-ec80339d-0d86-413b-bb35-a259977c34b5')">
+        onclick="toggleVisibility('acquisition-c03e4c11-b3dc-486e-a07c-258a17951755')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -2320,7 +2320,7 @@ stream on the network.
 
 
 
-    <tr class="repr-element acquisition-ec80339d-0d86-413b-bb35-a259977c34b5 ">
+    <tr class="repr-element acquisition-c03e4c11-b3dc-486e-a07c-258a17951755 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Sampling frequency</td>
         <td>0.00 Hz</td>
@@ -2336,9 +2336,9 @@ stream on the network.
 
 
 
-    <tr class="mne-repr-section-header channels-b7e550ee-af4a-4a6e-bad5-008a5aaa4812"
+    <tr class="mne-repr-section-header channels-554dce35-4b9c-4bad-8a41-60d151ccb4ae"
          title="Hide section" 
-        onclick="toggleVisibility('channels-b7e550ee-af4a-4a6e-bad5-008a5aaa4812')">
+        onclick="toggleVisibility('channels-554dce35-4b9c-4bad-8a41-60d151ccb4ae')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -2351,7 +2351,7 @@ stream on the network.
 
 
     
-    <tr class="repr-element channels-b7e550ee-af4a-4a6e-bad5-008a5aaa4812 ">
+    <tr class="repr-element channels-554dce35-4b9c-4bad-8a41-60d151ccb4ae ">
         <td class="mne-repr-section-toggle"></td>
         <td>misc</td>
         <td>
@@ -2364,7 +2364,7 @@ stream on the network.
     </tr>
 
 
-    <tr class="repr-element channels-b7e550ee-af4a-4a6e-bad5-008a5aaa4812 ">
+    <tr class="repr-element channels-554dce35-4b9c-4bad-8a41-60d151ccb4ae ">
         <td class="mne-repr-section-toggle"></td>
         <td>Head & sensor digitization</td>
     
@@ -2379,9 +2379,9 @@ stream on the network.
 
 
 
-    <tr class="mne-repr-section-header filters-41262fff-5e95-48b2-ae99-fcffcc71ecd2"
+    <tr class="mne-repr-section-header filters-0c1762af-108b-4c29-ba82-dacd395fa57c"
          title="Hide section" 
-        onclick="toggleVisibility('filters-41262fff-5e95-48b2-ae99-fcffcc71ecd2')">
+        onclick="toggleVisibility('filters-0c1762af-108b-4c29-ba82-dacd395fa57c')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -2393,14 +2393,14 @@ stream on the network.
     </tr>
 
 
-    <tr class="repr-element filters-41262fff-5e95-48b2-ae99-fcffcc71ecd2 ">
+    <tr class="repr-element filters-0c1762af-108b-4c29-ba82-dacd395fa57c ">
         <td class="mne-repr-section-toggle"></td>
         <td>Highpass</td>
         <td>0.00 Hz</td>
     </tr>
 
 
-    <tr class="repr-element filters-41262fff-5e95-48b2-ae99-fcffcc71ecd2 ">
+    <tr class="repr-element filters-0c1762af-108b-4c29-ba82-dacd395fa57c ">
         <td class="mne-repr-section-toggle"></td>
         <td>Lowpass</td>
         <td>0.00 Hz</td>
@@ -2634,9 +2634,9 @@ We can now use those 2 streams to create epochs around the events of interest.
 
 
 
-    <tr class="mne-repr-section-header general-617f2c7b-5ef6-4328-b3b5-0a1b7e54bea1"
+    <tr class="mne-repr-section-header general-1047c6ae-8ca2-4111-9d3e-8bc108575aa7"
          title="Hide section" 
-        onclick="toggleVisibility('general-617f2c7b-5ef6-4328-b3b5-0a1b7e54bea1')">
+        onclick="toggleVisibility('general-1047c6ae-8ca2-4111-9d3e-8bc108575aa7')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -2648,26 +2648,26 @@ We can now use those 2 streams to create epochs around the events of interest.
     </tr>
 
 
-    <tr class="repr-element general-617f2c7b-5ef6-4328-b3b5-0a1b7e54bea1 ">
+    <tr class="repr-element general-1047c6ae-8ca2-4111-9d3e-8bc108575aa7 ">
         <td class="mne-repr-section-toggle"></td>
         <td>MNE object type</td>
         <td>Info</td>
     </tr>
-    <tr class="repr-element general-617f2c7b-5ef6-4328-b3b5-0a1b7e54bea1 ">
+    <tr class="repr-element general-1047c6ae-8ca2-4111-9d3e-8bc108575aa7 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Measurement date</td>
     
         <td>Unknown</td>
     
     </tr>
-    <tr class="repr-element general-617f2c7b-5ef6-4328-b3b5-0a1b7e54bea1 ">
+    <tr class="repr-element general-1047c6ae-8ca2-4111-9d3e-8bc108575aa7 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Participant</td>
     
         <td>Unknown</td>
     
     </tr>
-    <tr class="repr-element general-617f2c7b-5ef6-4328-b3b5-0a1b7e54bea1 ">
+    <tr class="repr-element general-1047c6ae-8ca2-4111-9d3e-8bc108575aa7 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Experimenter</td>
     
@@ -2682,9 +2682,9 @@ We can now use those 2 streams to create epochs around the events of interest.
 
 
 
-    <tr class="mne-repr-section-header acquisition-40e2c83c-ac41-448f-a77f-829166c7a0b6"
+    <tr class="mne-repr-section-header acquisition-602215e1-bebd-40f2-8750-d6ffe2ed8a49"
          title="Hide section" 
-        onclick="toggleVisibility('acquisition-40e2c83c-ac41-448f-a77f-829166c7a0b6')">
+        onclick="toggleVisibility('acquisition-602215e1-bebd-40f2-8750-d6ffe2ed8a49')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -2703,7 +2703,7 @@ We can now use those 2 streams to create epochs around the events of interest.
 
 
 
-    <tr class="repr-element acquisition-40e2c83c-ac41-448f-a77f-829166c7a0b6 ">
+    <tr class="repr-element acquisition-602215e1-bebd-40f2-8750-d6ffe2ed8a49 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Sampling frequency</td>
         <td>600.61 Hz</td>
@@ -2719,9 +2719,9 @@ We can now use those 2 streams to create epochs around the events of interest.
 
 
 
-    <tr class="mne-repr-section-header channels-8c462c63-4a36-4b33-8a8c-d0f39db62256"
+    <tr class="mne-repr-section-header channels-86e856f4-4830-481a-98d1-d62924ed734d"
          title="Hide section" 
-        onclick="toggleVisibility('channels-8c462c63-4a36-4b33-8a8c-d0f39db62256')">
+        onclick="toggleVisibility('channels-86e856f4-4830-481a-98d1-d62924ed734d')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -2734,7 +2734,7 @@ We can now use those 2 streams to create epochs around the events of interest.
 
 
     
-    <tr class="repr-element channels-8c462c63-4a36-4b33-8a8c-d0f39db62256 ">
+    <tr class="repr-element channels-86e856f4-4830-481a-98d1-d62924ed734d ">
         <td class="mne-repr-section-toggle"></td>
         <td>Gradiometers</td>
         <td>
@@ -2747,7 +2747,7 @@ We can now use those 2 streams to create epochs around the events of interest.
     </tr>
 
 
-    <tr class="repr-element channels-8c462c63-4a36-4b33-8a8c-d0f39db62256 ">
+    <tr class="repr-element channels-86e856f4-4830-481a-98d1-d62924ed734d ">
         <td class="mne-repr-section-toggle"></td>
         <td>Head & sensor digitization</td>
     
@@ -2762,9 +2762,9 @@ We can now use those 2 streams to create epochs around the events of interest.
 
 
 
-    <tr class="mne-repr-section-header filters-282f1ace-c854-46fd-80bd-1d2872ea78d2"
+    <tr class="mne-repr-section-header filters-2b8ca41c-fa42-48c9-ae76-86e21a20f07e"
          title="Hide section" 
-        onclick="toggleVisibility('filters-282f1ace-c854-46fd-80bd-1d2872ea78d2')">
+        onclick="toggleVisibility('filters-2b8ca41c-fa42-48c9-ae76-86e21a20f07e')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -2776,14 +2776,14 @@ We can now use those 2 streams to create epochs around the events of interest.
     </tr>
 
 
-    <tr class="repr-element filters-282f1ace-c854-46fd-80bd-1d2872ea78d2 ">
+    <tr class="repr-element filters-2b8ca41c-fa42-48c9-ae76-86e21a20f07e ">
         <td class="mne-repr-section-toggle"></td>
         <td>Highpass</td>
         <td>0.10 Hz</td>
     </tr>
 
 
-    <tr class="repr-element filters-282f1ace-c854-46fd-80bd-1d2872ea78d2 ">
+    <tr class="repr-element filters-2b8ca41c-fa42-48c9-ae76-86e21a20f07e ">
         <td class="mne-repr-section-toggle"></td>
         <td>Lowpass</td>
         <td>172.18 Hz</td>
@@ -2927,7 +2927,7 @@ receive new data from an LSL stream.
 
 
     <EpochsStream OFF (n: 20 between (-0.2, 0.5 seconds)> connected to:
-    	<Stream: ON | tutorial-epochs-2 (source: b7ee5071754940b797e1ce957ce30763)>
+    	<Stream: ON | tutorial-epochs-2 (source: 8cc6ae27628f4b7eb42c44f32c7fe226)>
 
 
 
@@ -2947,7 +2947,7 @@ receive new data from an LSL stream.
  .. code-block:: none
 
 
-    <Stream: OFF | tutorial-epochs-2 (source: b7ee5071754940b797e1ce957ce30763)>
+    <Stream: OFF | tutorial-epochs-2 (source: 8cc6ae27628f4b7eb42c44f32c7fe226)>
 
 
 
@@ -2967,7 +2967,7 @@ receive new data from an LSL stream.
  .. code-block:: none
 
 
-    <Stream: OFF | tutorial-epochs-2-annotations (source: b7ee5071754940b797e1ce957ce30763)>
+    <Stream: OFF | tutorial-epochs-2-annotations (source: 8cc6ae27628f4b7eb42c44f32c7fe226)>
 
 
 
@@ -2993,9 +2993,9 @@ receive new data from an LSL stream.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 51.651 seconds)
+   **Total running time of the script:** (0 minutes 51.978 seconds)
 
-**Estimated memory usage:**  725 MB
+**Estimated memory usage:**  726 MB
 
 
 .. _sphx_glr_download_generated_tutorials_40_epochs.py:

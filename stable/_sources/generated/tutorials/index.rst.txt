@@ -25,7 +25,7 @@ objects and their features.
   .. image:: /generated/tutorials/images/thumb/sphx_glr_00_introduction_thumb.png
     :alt:
 
-  :ref:`sphx_glr_generated_tutorials_00_introduction.py`
+  :doc:`/generated/tutorials/00_introduction`
 
 .. raw:: html
 
@@ -42,7 +42,7 @@ objects and their features.
   .. image:: /generated/tutorials/images/thumb/sphx_glr_10_low_level_API_thumb.png
     :alt:
 
-  :ref:`sphx_glr_generated_tutorials_10_low_level_API.py`
+  :doc:`/generated/tutorials/10_low_level_API`
 
 .. raw:: html
 
@@ -59,7 +59,7 @@ objects and their features.
   .. image:: /generated/tutorials/images/thumb/sphx_glr_20_player_annotations_thumb.png
     :alt:
 
-  :ref:`sphx_glr_generated_tutorials_20_player_annotations.py`
+  :doc:`/generated/tutorials/20_player_annotations`
 
 .. raw:: html
 
@@ -76,7 +76,7 @@ objects and their features.
   .. image:: /generated/tutorials/images/thumb/sphx_glr_30_stream_manual_thumb.png
     :alt:
 
-  :ref:`sphx_glr_generated_tutorials_30_stream_manual.py`
+  :doc:`/generated/tutorials/30_stream_manual`
 
 .. raw:: html
 
@@ -93,7 +93,7 @@ objects and their features.
   .. image:: /generated/tutorials/images/thumb/sphx_glr_40_epochs_thumb.png
     :alt:
 
-  :ref:`sphx_glr_generated_tutorials_40_epochs.py`
+  :doc:`/generated/tutorials/40_epochs`
 
 .. raw:: html
 

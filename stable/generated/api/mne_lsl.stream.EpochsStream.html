@@ -1,15 +1,15 @@
 <!doctype html>
 <html class="no-js" lang="en" data-content_root="../../">
-  <head><meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="mne_lsl.player.PlayerLSL" href="mne_lsl.player.PlayerLSL.html" /><link rel="prev" title="mne_lsl.stream.StreamLSL" href="mne_lsl.stream.StreamLSL.html" />
-        <link rel="prefetch" href="../../_static/logo-mne-hex.svg" as="image" />
+<link rel="index" title="Index" href="../../genindex.html"><link rel="search" title="Search" href="../../search.html"><link rel="next" title="mne_lsl.player.PlayerLSL" href="mne_lsl.player.PlayerLSL.html"><link rel="prev" title="mne_lsl.stream.StreamLSL" href="mne_lsl.stream.StreamLSL.html">
+        <link rel="prefetch" href="../../_static/logo-mne-hex.svg" as="image">
 
-    <link rel="shortcut icon" href="../../_static/logo-no-mne.svg"/><!-- Generated with Sphinx 8.2.3 and Furo 2025.07.19 -->
+    <link rel="shortcut icon" href="../../_static/logo-no-mne.svg"><!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>mne_lsl.stream.EpochsStream - MNE-LSL</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d111a655" />
-    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=25af2a20" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery.css?v=d2d258e8" />
     <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-binder.css?v=f4aeca0c" />
@@ -30,14 +30,14 @@
   }
   @media not print {
     body[data-theme="dark"] {
-      --color-code-background: #2b2b2b;
-  --color-code-foreground: #f8f8f2;
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
   
     }
     @media (prefers-color-scheme: dark) {
       body:not([data-theme="light"]) {
-        --color-code-background: #2b2b2b;
-  --color-code-foreground: #f8f8f2;
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
   
       }
     }
@@ -152,14 +152,10 @@
   </symbol>
 </svg>
 
-<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
-<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
-<label class="overlay sidebar-overlay" for="__navigation">
-  <div class="visually-hidden">Hide navigation sidebar</div>
-</label>
-<label class="overlay toc-overlay" for="__toc">
-  <div class="visually-hidden">Hide table of contents sidebar</div>
-</label>
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
 
 <a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
 
@@ -169,8 +165,7 @@
   <header class="mobile-header">
     <div class="header-left">
       <label class="nav-overlay-icon" for="__navigation">
-        <div class="visually-hidden">Toggle site navigation sidebar</div>
-        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
       </label>
     </div>
     <div class="header-center">
@@ -178,8 +173,7 @@
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
-        <button class="theme-toggle">
-          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
           <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
           <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
           <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
@@ -187,8 +181,7 @@
         </button>
       </div>
       <label class="toc-overlay-icon toc-header-icon" for="__toc">
-        <div class="visually-hidden">Toggle table of contents sidebar</div>
-        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
       </label>
     </div>
   </header>
@@ -209,7 +202,7 @@
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
   <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../resources/install.html">Install</a></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../../api/index.html">API References</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of API References</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../api/index.html">API References</a><input aria-label="Toggle navigation of API References" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../api/most-used%20classes.html">Most-used classes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/lsl%20%28low-level%29.html">LSL (low-level)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/utilities.html">Utilities</a></li>
@@ -218,7 +211,7 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../resources/command_line.html">Command line</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../resources/implementations.html">Implementation details</a></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../tutorials/index.html">Tutorials</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Tutorials</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../tutorials/index.html">Tutorials</a><input aria-label="Toggle navigation of Tutorials" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/00_introduction.html">Introduction to real-time LSL streams</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/10_low_level_API.html">Low-level LSL API</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/20_player_annotations.html">Player with annotations</a></li>
@@ -226,7 +219,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/40_epochs.html">Epoching a Stream in real-time</a></li>
 </ul>
 </li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../examples/index.html">Examples</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of Examples</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../examples/index.html">Examples</a><input aria-label="Toggle navigation of Examples" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../examples/00_player_separate_process.html">Replaying a file in a separate process</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../examples/10_peak_detection.html">Real-time peak detection</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../examples/20_bandpower.html">Bandpower rolling window</a></li>
@@ -238,8 +231,9 @@
 <p class="caption" role="heading"><span class="caption-text">Development</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../development/contributing.html">Contribution guide</a></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../../development/changes/index.html">Changelog</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of Changelog</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../development/changes/latest.html">Version 1.12</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../development/changes/index.html">Changelog</a><input aria-label="Toggle navigation of Changelog" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.13.html">Version 1.13</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.12.html">Version 1.12</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.11.html">Version 1.11</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.10.html">Version 1.10.1</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../development/changes/1.10.html#version-1-10">Version 1.10</a></li>
@@ -285,8 +279,7 @@
   </a>
 </div>
 <div class="theme-toggle-container theme-toggle-content">
-            <button class="theme-toggle">
-              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
               <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
               <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
               <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
@@ -294,8 +287,7 @@
             </button>
           </div>
           <label class="toc-overlay-icon toc-content-icon" for="__toc">
-            <div class="visually-hidden">Toggle table of contents sidebar</div>
-            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
           </label>
         </div>
         <article role="main" id="furo-main-content">
@@ -303,7 +295,7 @@
 <h1>mne_lsl.stream.EpochsStream<a class="headerlink" href="#mne-lsl-stream-epochsstream" title="Link to this heading">🔗</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="mne_lsl.stream.EpochsStream">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mne_lsl.stream.</span></span><span class="sig-name descname"><span class="pre">EpochsStream</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stream</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bufsize</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event_channels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event_stream</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">baseline</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(None,</span> <span class="pre">0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">picks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reject</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reject_tmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reject_tmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detrend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.12/src/mne_lsl/stream/epochs.py#L28-L689"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.stream.EpochsStream" title="Link to this definition">🔗</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">mne_lsl.stream.</span></span><span class="sig-name descname"><span class="pre">EpochsStream</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stream</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bufsize</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event_channels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event_stream</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">baseline</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(None,</span> <span class="pre">0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">picks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reject</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reject_tmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reject_tmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detrend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.13/src/mne_lsl/stream/epochs.py#L28-L689"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.stream.EpochsStream" title="Link to this definition">🔗</a></dt>
 <dd><p>Stream object representing a single real-time stream of epochs.</p>
 <p>Note that a stream of epochs is necessarily connected to a regularly sampled stream
 of continuous data, from which epochs are extracted depending on an internal event
@@ -517,7 +509,7 @@ in the connected <code class="docutils literal notranslate"><span class="pre">st
 buffer</span></a>.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="mne_lsl.stream.EpochsStream.acquire">
-<span class="sig-name descname"><span class="pre">acquire</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.12/src/mne_lsl/stream/epochs.py#L245-L271"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.stream.EpochsStream.acquire" title="Link to this definition">🔗</a></dt>
+<span class="sig-name descname"><span class="pre">acquire</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.13/src/mne_lsl/stream/epochs.py#L245-L271"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.stream.EpochsStream.acquire" title="Link to this definition">🔗</a></dt>
 <dd><p>Pull new epochs in the buffer.</p>
 <p>This method is used to manually acquire new epochs in the buffer. If used, it is
 up to the user to call this method at the desired frequency, else it might miss
@@ -530,7 +522,7 @@ acquisition is done automatically in a background thread.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="mne_lsl.stream.EpochsStream.connect">
-<span class="sig-name descname"><span class="pre">connect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">acquisition_delay</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.12/src/mne_lsl/stream/epochs.py#L273-L346"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.stream.EpochsStream.connect" title="Link to this definition">🔗</a></dt>
+<span class="sig-name descname"><span class="pre">connect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">acquisition_delay</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.13/src/mne_lsl/stream/epochs.py#L273-L346"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.stream.EpochsStream.connect" title="Link to this definition">🔗</a></dt>
 <dd><p>Start acquisition of epochs from the connected Stream.</p>
 <dl class="field-list">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -560,7 +552,7 @@ epoch is acquired <code class="docutils literal notranslate"><span class="pre">t
 
 <dl class="py method">
 <dt class="sig sig-object py" id="mne_lsl.stream.EpochsStream.disconnect">
-<span class="sig-name descname"><span class="pre">disconnect</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.12/src/mne_lsl/stream/epochs.py#L348-L375"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.stream.EpochsStream.disconnect" title="Link to this definition">🔗</a></dt>
+<span class="sig-name descname"><span class="pre">disconnect</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.13/src/mne_lsl/stream/epochs.py#L348-L375"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.stream.EpochsStream.disconnect" title="Link to this definition">🔗</a></dt>
 <dd><p>Stop acquisition of epochs from the connected Stream.</p>
 <dl class="field-list">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -574,7 +566,7 @@ epoch is acquired <code class="docutils literal notranslate"><span class="pre">t
 
 <dl class="py method">
 <dt class="sig sig-object py" id="mne_lsl.stream.EpochsStream.get_data">
-<span class="sig-name descname"><span class="pre">get_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_epochs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">picks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exclude</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'bads'</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.12/src/mne_lsl/stream/epochs.py#L377-L433"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.stream.EpochsStream.get_data" title="Link to this definition">🔗</a></dt>
+<span class="sig-name descname"><span class="pre">get_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_epochs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">picks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exclude</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'bads'</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.13/src/mne_lsl/stream/epochs.py#L377-L433"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.stream.EpochsStream.get_data" title="Link to this definition">🔗</a></dt>
 <dd><p>Retrieve the latest epochs from the buffer.</p>
 <dl class="field-list">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -611,7 +603,7 @@ argument <code class="docutils literal notranslate"><span class="pre">picks</spa
 
 <dl class="py property">
 <dt class="sig sig-object py" id="mne_lsl.stream.EpochsStream.connected">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">connected</span></span><a class="headerlink" href="#mne_lsl.stream.EpochsStream.connected" title="Link to this definition">🔗</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">connected</span></span><a class="headerlink" href="#mne_lsl.stream.EpochsStream.connected" title="Link to this definition">🔗</a></dt>
 <dd><p>Connection status of the <a class="reference internal" href="#mne_lsl.stream.EpochsStream" title="mne_lsl.stream.EpochsStream"><code class="xref py py-class docutils literal notranslate"><span class="pre">EpochsStream</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
@@ -622,7 +614,7 @@ argument <code class="docutils literal notranslate"><span class="pre">picks</spa
 
 <dl class="py property">
 <dt class="sig sig-object py" id="mne_lsl.stream.EpochsStream.events">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">events</span></span><a class="headerlink" href="#mne_lsl.stream.EpochsStream.events" title="Link to this definition">🔗</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">events</span></span><a class="headerlink" href="#mne_lsl.stream.EpochsStream.events" title="Link to this definition">🔗</a></dt>
 <dd><p>Events of the epoched LSL stream.</p>
 <p>Contrary to the events stored in <code class="docutils literal notranslate"><span class="pre">mne.Epochs.events</span></code>, only the integer code
 of the event is stored in a <a class="reference internal" href="#mne_lsl.stream.EpochsStream" title="mne_lsl.stream.EpochsStream"><code class="xref py py-class docutils literal notranslate"><span class="pre">EpochsStream</span></code></a> object.</p>
@@ -635,7 +627,7 @@ of the event is stored in a <a class="reference internal" href="#mne_lsl.stream.
 
 <dl class="py property">
 <dt class="sig sig-object py" id="mne_lsl.stream.EpochsStream.info">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">info</span></span><a class="headerlink" href="#mne_lsl.stream.EpochsStream.info" title="Link to this definition">🔗</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">info</span></span><a class="headerlink" href="#mne_lsl.stream.EpochsStream.info" title="Link to this definition">🔗</a></dt>
 <dd><p>Info of the epoched LSL stream.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
@@ -646,7 +638,7 @@ of the event is stored in a <a class="reference internal" href="#mne_lsl.stream.
 
 <dl class="py property">
 <dt class="sig sig-object py" id="mne_lsl.stream.EpochsStream.n_new_epochs">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">n_new_epochs</span></span><a class="headerlink" href="#mne_lsl.stream.EpochsStream.n_new_epochs" title="Link to this definition">🔗</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">n_new_epochs</span></span><a class="headerlink" href="#mne_lsl.stream.EpochsStream.n_new_epochs" title="Link to this definition">🔗</a></dt>
 <dd><p>Number of new epochs available in the buffer.</p>
 <p>The number of new epochs is reset at every <code class="docutils literal notranslate"><span class="pre">Stream.get_data</span></code> call.</p>
 <dl class="field-list simple">
@@ -658,7 +650,7 @@ of the event is stored in a <a class="reference internal" href="#mne_lsl.stream.
 
 <dl class="py property">
 <dt class="sig sig-object py" id="mne_lsl.stream.EpochsStream.times">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">times</span></span><a class="headerlink" href="#mne_lsl.stream.EpochsStream.times" title="Link to this definition">🔗</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">times</span></span><a class="headerlink" href="#mne_lsl.stream.EpochsStream.times" title="Link to this definition">🔗</a></dt>
 <dd><p>The time of each sample in the epochs.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
@@ -672,13 +664,13 @@ of the event is stored in a <a class="reference internal" href="#mne_lsl.stream.
 <section id="examples-using-mne-lsl-stream-epochsstream">
 <h2>Examples using <code class="docutils literal notranslate"><span class="pre">mne_lsl.stream.EpochsStream</span></code><a class="headerlink" href="#examples-using-mne-lsl-stream-epochsstream" title="Link to this heading">🔗</a></h2>
 <div class="sphx-glr-thumbnails"><div class="sphx-glr-thumbcontainer" tooltip="With a EpochsStream, we can build a real-time evoked response visualization. This is useful to monitor the brain activity in real-time."><img alt="" src="../../_images/sphx_glr_30_real_time_evoked_responses_thumb.png" />
-<p><a class="reference internal" href="../examples/30_real_time_evoked_responses.html#sphx-glr-generated-examples-30-real-time-evoked-responses-py"><span class="std std-ref">Real-time evoked responses</span></a></p>
+<p><a class="reference internal" href="../examples/30_real_time_evoked_responses.html"><span class="doc">Real-time evoked responses</span></a></p>
   <div class="sphx-glr-thumbnail-title">Real-time evoked responses</div>
 </div><div class="sphx-glr-thumbcontainer" tooltip="This example demonstrates how to decode real-time data using MNE-Python and Scikit-learn. We will stream the sample_audvis_raw.fif file from MNE&#x27;s sample dataset with a PlayerLSL, process the signal through a StreamLSL, and decode the epochs created with EpochsStream."><img alt="" src="../../_images/sphx_glr_40_decode_thumb.png" />
-<p><a class="reference internal" href="../examples/40_decode.html#sphx-glr-generated-examples-40-decode-py"><span class="std std-ref">Decoding real-time data</span></a></p>
+<p><a class="reference internal" href="../examples/40_decode.html"><span class="doc">Decoding real-time data</span></a></p>
   <div class="sphx-glr-thumbnail-title">Decoding real-time data</div>
 </div><div class="sphx-glr-thumbcontainer" tooltip="The EpochsStream object can be used similarly to mne.Epochs to create epochs from a continuous stream of samples around events of interest."><img alt="" src="../../_images/sphx_glr_40_epochs_thumb.png" />
-<p><a class="reference internal" href="../tutorials/40_epochs.html#sphx-glr-generated-tutorials-40-epochs-py"><span class="std std-ref">Epoching a Stream in real-time</span></a></p>
+<p><a class="reference internal" href="../tutorials/40_epochs.html"><span class="doc">Epoching a Stream in real-time</span></a></p>
   <div class="sphx-glr-thumbnail-title">Epoching a Stream in real-time</div>
 </div></div></section>
 </section>
@@ -769,9 +761,9 @@ of the event is stored in a <a class="reference internal" href="#mne_lsl.stream.
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=fe8e256b"></script>
-    <script src="../../_static/doctools.js?v=9bcbadda"></script>
-    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+</div><script src="../../_static/documentation_options.js?v=8f5b6f32"></script>
+    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=30646c52"></script>

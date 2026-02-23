@@ -295,7 +295,7 @@
 <h1>mne_lsl.lsl.StreamInlet<a class="headerlink" href="#mne-lsl-lsl-streaminlet" title="Link to this heading">🔗</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="mne_lsl.lsl.StreamInlet">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">mne_lsl.lsl.</span></span><span class="sig-name descname"><span class="pre">StreamInlet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sinfo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunk_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_buffered</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">360</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recover</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">processing_flags</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/main/src/mne_lsl/lsl/stream_inlet.py#L27-L501"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.StreamInlet" title="Link to this definition">🔗</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">mne_lsl.lsl.</span></span><span class="sig-name descname"><span class="pre">StreamInlet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sinfo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunk_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_buffered</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">360</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recover</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">processing_flags</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.13/src/mne_lsl/lsl/stream_inlet.py#L27-L501"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.StreamInlet" title="Link to this definition">🔗</a></dt>
 <dd><p>An inlet to retrieve data and metadata on the network.</p>
 <dl class="field-list">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -387,7 +387,7 @@ inlet can be read from multiple threads.</p></li>
 </div>
 <dl class="py method">
 <dt class="sig sig-object py" id="mne_lsl.lsl.StreamInlet.close_stream">
-<span class="sig-name descname"><span class="pre">close_stream</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/main/src/mne_lsl/lsl/stream_inlet.py#L200-L222"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.StreamInlet.close_stream" title="Link to this definition">🔗</a></dt>
+<span class="sig-name descname"><span class="pre">close_stream</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.13/src/mne_lsl/lsl/stream_inlet.py#L200-L222"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.StreamInlet.close_stream" title="Link to this definition">🔗</a></dt>
 <dd><p>Drop the current data stream.</p>
 <p>All samples that are still buffered or in flight will be dropped and
 transmission and buffering of data for this inlet will be stopped. This method
@@ -405,7 +405,7 @@ not arrive at the inlet. c.f. this
 
 <dl class="py method">
 <dt class="sig sig-object py" id="mne_lsl.lsl.StreamInlet.flush">
-<span class="sig-name descname"><span class="pre">flush</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/main/src/mne_lsl/lsl/stream_inlet.py#L410-L419"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.StreamInlet.flush" title="Link to this definition">🔗</a></dt>
+<span class="sig-name descname"><span class="pre">flush</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.13/src/mne_lsl/lsl/stream_inlet.py#L410-L419"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.StreamInlet.flush" title="Link to this definition">🔗</a></dt>
 <dd><p>Drop all queued and not-yet pulled samples.</p>
 <dl class="field-list">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -419,7 +419,7 @@ not arrive at the inlet. c.f. this
 
 <dl class="py method">
 <dt class="sig sig-object py" id="mne_lsl.lsl.StreamInlet.get_sinfo">
-<span class="sig-name descname"><span class="pre">get_sinfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/main/src/mne_lsl/lsl/stream_inlet.py#L477-L501"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.StreamInlet.get_sinfo" title="Link to this definition">🔗</a></dt>
+<span class="sig-name descname"><span class="pre">get_sinfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.13/src/mne_lsl/lsl/stream_inlet.py#L477-L501"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.StreamInlet.get_sinfo" title="Link to this definition">🔗</a></dt>
 <dd><p><a class="reference internal" href="mne_lsl.lsl.StreamInfo.html#mne_lsl.lsl.StreamInfo" title="mne_lsl.lsl.StreamInfo"><code class="xref py py-class docutils literal notranslate"><span class="pre">StreamInfo</span></code></a> corresponding to this Inlet.</p>
 <dl class="field-list">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -440,7 +440,7 @@ disabled.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="mne_lsl.lsl.StreamInlet.open_stream">
-<span class="sig-name descname"><span class="pre">open_stream</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/main/src/mne_lsl/lsl/stream_inlet.py#L168-L198"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.StreamInlet.open_stream" title="Link to this definition">🔗</a></dt>
+<span class="sig-name descname"><span class="pre">open_stream</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.13/src/mne_lsl/lsl/stream_inlet.py#L168-L198"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.StreamInlet.open_stream" title="Link to this definition">🔗</a></dt>
 <dd><p>Subscribe to a data stream.</p>
 <p>All samples pushed in at the other end from this moment onwards will be queued
 and eventually be delivered in response to
@@ -464,7 +464,7 @@ while the stream is not yet open will be missed.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="mne_lsl.lsl.StreamInlet.pull_chunk">
-<span class="sig-name descname"><span class="pre">pull_chunk</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1024</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/main/src/mne_lsl/lsl/stream_inlet.py#L309-L408"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.StreamInlet.pull_chunk" title="Link to this definition">🔗</a></dt>
+<span class="sig-name descname"><span class="pre">pull_chunk</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1024</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.13/src/mne_lsl/lsl/stream_inlet.py#L309-L408"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.StreamInlet.pull_chunk" title="Link to this definition">🔗</a></dt>
 <dd><p>Pull a chunk of samples from the inlet.</p>
 <dl class="field-list">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -505,7 +505,7 @@ number of samples requested, <code class="docutils literal notranslate"><span cl
 
 <dl class="py method">
 <dt class="sig sig-object py" id="mne_lsl.lsl.StreamInlet.pull_sample">
-<span class="sig-name descname"><span class="pre">pull_sample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/main/src/mne_lsl/lsl/stream_inlet.py#L254-L307"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.StreamInlet.pull_sample" title="Link to this definition">🔗</a></dt>
+<span class="sig-name descname"><span class="pre">pull_sample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.13/src/mne_lsl/lsl/stream_inlet.py#L254-L307"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.StreamInlet.pull_sample" title="Link to this definition">🔗</a></dt>
 <dd><p>Pull a single sample from the inlet.</p>
 <dl class="field-list">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -537,7 +537,7 @@ retrieved.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="mne_lsl.lsl.StreamInlet.time_correction">
-<span class="sig-name descname"><span class="pre">time_correction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/main/src/mne_lsl/lsl/stream_inlet.py#L224-L252"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.StreamInlet.time_correction" title="Link to this definition">🔗</a></dt>
+<span class="sig-name descname"><span class="pre">time_correction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/mne-tools/mne-lsl/blob/maint/1.13/src/mne_lsl/lsl/stream_inlet.py#L224-L252"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mne_lsl.lsl.StreamInlet.time_correction" title="Link to this definition">🔗</a></dt>
 <dd><p>Retrieve an estimated time correction offset for the given stream.</p>
 <p>The first call to this function takes several milliseconds until a reliable
 first estimate is obtained. Subsequent calls are instantaneous (and rely on
@@ -754,7 +754,7 @@ the description of individual channels.</p>
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=5e1541b9"></script>
+</div><script src="../../_static/documentation_options.js?v=8f5b6f32"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>
