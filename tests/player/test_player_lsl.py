@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 import time
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -401,14 +401,14 @@ def test_player_set_meas_date(
     assert player.source_id == source_id
     assert player.fname == fname
     assert player.info["meas_date"] is None
-    meas_date = datetime(2023, 1, 25, tzinfo=timezone.utc)
+    meas_date = datetime(2023, 1, 25, tzinfo=UTC)
     with pytest.warns(RuntimeWarning, match="partially implemented"):
         player.set_meas_date(meas_date)
     assert player.info["meas_date"] == meas_date
     player.start()
     assert "ON" in player.__repr__()
     with pytest.raises(RuntimeError, match="player is already started"):
-        player.set_meas_date(datetime(2020, 1, 25, tzinfo=timezone.utc))
+        player.set_meas_date(datetime(2020, 1, 25, tzinfo=UTC))
     assert player.info["meas_date"] == meas_date
     player.stop()
 

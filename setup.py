@@ -109,8 +109,8 @@ class develop(_develop):  # noqa: D101
 class bdist_wheel_abi3(bdist_wheel):  # noqa: D101
     def get_tag(self):  # noqa: D102
         python, abi, plat = super().get_tag()
-        if python.startswith("cp"):
-            return "cp310", "abi3", plat
+        if python.startswith("cp") and not abi.endswith("t"):
+            return "cp311", "abi3", plat
         return python, abi, plat
 
 
