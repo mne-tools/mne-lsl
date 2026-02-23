@@ -329,8 +329,10 @@ def test_epochs_without_event_stream(mock_lsl_stream: DummyPlayer) -> None:
         tmin=0,
         tmax=0.1,
         baseline=None,
-    ).connect(acquisition_delay=0.1)
+    ).connect(acquisition_delay=None)
+    assert epochs.n_new_epochs == 0
     while epochs.n_new_epochs == 0:
+        epochs.acquire()
         time.sleep(0.1)
     n = epochs.n_new_epochs
     data = epochs.get_data()
@@ -339,6 +341,7 @@ def test_epochs_without_event_stream(mock_lsl_stream: DummyPlayer) -> None:
     assert_allclose(data_channels, np.ones(data_channels.shape) * 101)
     # acquire more epochs
     while epochs.n_new_epochs < 3:
+        epochs.acquire()
         time.sleep(0.1)
     n += epochs.n_new_epochs
     data = epochs.get_data()
@@ -1087,6 +1090,9 @@ def test_epochs_single_event(
         time.sleep(0.2)
     assert epochs.n_new_epochs == 1
     assert event_stream.n_new_samples == 1
+    epochs.disconnect()
+    event_stream.disconnect()
+    stream.disconnect()
 
 
 def test_epochs_with_more_events_than_buffer_size(
@@ -1116,22 +1122,18 @@ def test_epochs_with_more_events_than_buffer_size(
     time.sleep(0.5)
     epochs.acquire()
     assert epochs.n_new_epochs == 0
-    # push 5 events
-    outlet_marker.push_sample(np.array([1], dtype=sinfo.dtype))
-    time.sleep(0.1)
-    outlet_marker.push_sample(np.array([1], dtype=sinfo.dtype))
-    time.sleep(0.1)
-    outlet_marker.push_sample(np.array([1], dtype=sinfo.dtype))
-    time.sleep(0.1)
-    outlet_marker.push_sample(np.array([1], dtype=sinfo.dtype))
-    time.sleep(0.1)
-    outlet_marker.push_sample(np.array([1], dtype=sinfo.dtype))
-    time.sleep(0.1)
-    start = time.monotonic()
-    with pytest.warns(RuntimeWarning, match="number of new epochs to add.*is greater"):  # noqa: E501, PT031
-        while epochs.n_new_epochs != 5 and time.monotonic() - start < 3:
-            epochs.acquire()
-            time.sleep(0.5)
+    # push 5 events rapidly
+    for _ in range(5):
+        outlet_marker.push_sample(np.array([1], dtype=sinfo.dtype))
+        time.sleep(0.1)
+    # wait for the event stream and data stream to buffer all events, so that a
+    # single acquire() call sees all 5 events at once and triggers the warning.
+    time.sleep(1.0)
+    with pytest.warns(RuntimeWarning, match="number of new epochs to add.*is greater"):
+        epochs.acquire()
+    epochs.disconnect()
+    event_stream.disconnect()
+    stream.disconnect()
 
 
 def test_epochs_with_irregular_numerical_event_stream_and_event_id(
@@ -1178,6 +1180,9 @@ def test_epochs_with_irregular_numerical_event_stream_and_event_id(
     # check that we got 3 epochs on the code '1'
     events = epochs.events
     assert_array_equal(events[events != 0], [1, 1, 1])
+    epochs.disconnect()
+    event_stream.disconnect()
+    stream.disconnect()
 
 
 @pytest.fixture
@@ -1251,3 +1256,6 @@ def test_epochs_with_irregular_numerical_event_stream_with_2_ch_and_event_id(
     assert epochs.n_new_epochs == 2
     events = epochs.events
     assert_array_equal(events[events != 0], [1, 1])
+    epochs.disconnect()
+    event_stream.disconnect()
+    stream.disconnect()
