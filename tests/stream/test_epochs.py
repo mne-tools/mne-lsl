@@ -1099,7 +1099,7 @@ def test_epochs_with_more_events_than_buffer_size(
         3, name=mock_lsl_stream.name, source_id=mock_lsl_stream.source_id
     ).connect(acquisition_delay=0.1)
     sinfo = outlet_marker.get_sinfo()
-    event_stream = StreamLSL(2, name=sinfo.name, source_id=sinfo.source_id).connect(
+    event_stream = StreamLSL(10, name=sinfo.name, source_id=sinfo.source_id).connect(
         acquisition_delay=0.1
     )
     epochs = EpochsStream(
@@ -1124,6 +1124,7 @@ def test_epochs_with_more_events_than_buffer_size(
         time.sleep(0.1)
     # wait for the event stream and data stream to buffer all events, so that a
     # single acquire() call sees all 5 events at once and triggers the warning.
+    # The event_stream bufsize=10 ensures all 5 events are retained in its ringbuffer.
     time.sleep(1.0)
     with pytest.warns(RuntimeWarning, match="number of new epochs to add.*is greater"):
         epochs.acquire()
