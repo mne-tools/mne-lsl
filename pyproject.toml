@@ -103,7 +103,7 @@ tracker = 'https://github.com/mne-tools/mne-lsl/issues'
 
 [tool.cibuildwheel]
 archs = "native"
-build = ["cp311-*"]  # abi3 wheel, can build for a single Python version
+build = ["cp311-*", "cp314t-*"]  # abi3 wheel + free-threaded
 build-frontend = "build[uv]"
 skip = ["*-musllinux*", "pp*"]  # no PyPy support for pp311 for SciPy
 test-command = "bash {project}/tools/test_liblsl.sh"
@@ -123,7 +123,7 @@ MACOSX_DEPLOYMENT_TARGET = "11"
 
 [[tool.cibuildwheel.overrides]]
 repair-wheel-command = "pipx run abi3audit --strict --report {wheel}"
-select = "cp*"  # abi3 not used for PyPi / pp*
+select = "cp311-*"  # abi3 audit only for abi3 wheels, not free-threaded
 inherit.repair-wheel-command = "append"
 
 [tool.cibuildwheel.windows]
