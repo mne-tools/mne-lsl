@@ -6,7 +6,7 @@ import os
 import re
 import time
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -328,12 +328,12 @@ def test_stream_meas_date_and_anonymize(mock_lsl_stream: DummyPlayer) -> None:
     )
     stream.connect()
     assert stream.info["meas_date"] is None
-    meas_date = datetime(2023, 1, 25, tzinfo=timezone.utc)
+    meas_date = datetime(2023, 1, 25, tzinfo=UTC)
     stream.set_meas_date(meas_date)
     assert stream.info["meas_date"] == meas_date
     stream.info["experimenter"] = "Mathieu Scheltienne"
     stream.anonymize(daysback=10)
-    assert stream.info["meas_date"] == datetime(2023, 1, 15, tzinfo=timezone.utc)
+    assert stream.info["meas_date"] == datetime(2023, 1, 15, tzinfo=UTC)
     assert stream.info["experimenter"] != "Mathieu Scheltienne"
     stream.disconnect()
 
