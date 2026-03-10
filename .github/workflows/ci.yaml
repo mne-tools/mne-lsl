@@ -13,7 +13,7 @@ on:  # yamllint disable-line rule:truthy
 jobs:
   get_commit_message:
     name: get commit message
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     outputs:
       commit_message: ${{ steps.get_message.outputs.commit_message }}
     steps:
@@ -43,10 +43,10 @@ jobs:
           fetch-depth: 0
           submodules: true
       - uses: astral-sh/setup-uv@v7
-      - uses: pypa/cibuildwheel@v3.3.1
+      - uses: pypa/cibuildwheel@v3.4.0
         env:
           MNE_LSL_LIBLSL_BUILD_UNITTESTS: ${{ (github.event_name != 'pull_request' || contains(needs.get_commit_message.outputs.commit_message, '[liblsl]')) && '1' || '0' }}
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
           path: ./wheelhouse/*.whl
@@ -72,7 +72,7 @@ jobs:
         with:
           activate-environment: true
           python-version: ${{ matrix.python }}
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           pattern: cibw-wheels-${{ matrix.os }}-*
           merge-multiple: true
@@ -108,7 +108,7 @@ jobs:
         with:
           activate-environment: true
           python-version: ${{ matrix.python }}
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           pattern: cibw-wheels-ubuntu-latest-*
           merge-multiple: true
@@ -172,7 +172,7 @@ jobs:
           submodules: true
       - uses: astral-sh/setup-uv@v7
       - run: uv build --sdist
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: cibw-wheels-sdist
           path: ./dist/*.tar.gz
@@ -183,7 +183,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           pattern: cibw-wheels-*
           merge-multiple: true
@@ -203,7 +203,7 @@ jobs:
         with:
           activate-environment: true
           python-version: '3.13'
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           pattern: cibw-wheels-ubuntu-latest-*
           merge-multiple: true
@@ -222,7 +222,7 @@ jobs:
           retry_error_codes: "2"
           command_between_retries: "make -C doc clean"
       - run: rm -R ./doc/_build/html/.doctrees
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: doc-dev
           path: ./doc/_build/html
@@ -237,7 +237,7 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           name: doc-dev
           path: ./doc-dev
@@ -262,7 +262,7 @@ jobs:
         with:
           ref: gh-pages
           fetch-depth: 0
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           name: doc-dev
           path: ./doc-dev
@@ -313,7 +313,7 @@ jobs:
       name: pypi
       url: https://pypi.org/p/mne-lsl
     steps:
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           pattern: cibw-wheels-*
           merge-multiple: true
