@@ -292,9 +292,7 @@ class StreamLSL(BaseStream):
             # roll and update buffers
             with self._lock:
                 self._buffer = np.roll(self._buffer, -timestamps.size, axis=0)
-                self._timestamps = np.roll(
-                    self._timestamps, -timestamps.size, axis=0
-                )
+                self._timestamps = np.roll(self._timestamps, -timestamps.size, axis=0)
                 self._buffer[-timestamps.size :, :] = data
                 self._timestamps[-timestamps.size :] = timestamps
                 # update the number of new samples available

@@ -481,7 +481,8 @@ class EpochsStream:
                     evt_buffer = self._event_stream._buffer
                     evt_ts = self._event_stream._timestamps
                 data_events, ts_events = _remove_empty_elements(
-                    evt_buffer[:, picks].T, evt_ts,
+                    evt_buffer[:, picks].T,
+                    evt_ts,
                 )
                 events = _find_events_in_stim_channels(
                     data_events, self._event_channels, self._info["sfreq"]
@@ -512,7 +513,8 @@ class EpochsStream:
                     evt_buffer = self._event_stream._buffer
                     evt_ts = self._event_stream._timestamps
                 data_events, ts_events = _remove_empty_elements(
-                    evt_buffer[:, picks].T, evt_ts,
+                    evt_buffer[:, picks].T,
+                    evt_ts,
                 )
                 if self._event_id is None:
                     events = np.vstack(
@@ -594,9 +596,7 @@ class EpochsStream:
             with self._lock:
                 self._buffer = np.roll(self._buffer, -events.shape[0], axis=0)
                 self._buffer[-events.shape[0] :, :, :] = data_selection
-                self._buffer_events = np.roll(
-                    self._buffer_events, -events.shape[0]
-                )
+                self._buffer_events = np.roll(self._buffer_events, -events.shape[0])
                 self._buffer_events[-events.shape[0] :] = events[:, 2]
                 # update the last ts and the number of new epochs
                 self._n_new_epochs += events.shape[0]
