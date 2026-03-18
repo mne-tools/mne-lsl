@@ -290,12 +290,15 @@ class StreamLSL(BaseStream):
                 data, timestamps = callback(data, timestamps, self._info)
 
             # roll and update buffers
-            self._buffer = np.roll(self._buffer, -timestamps.size, axis=0)
-            self._timestamps = np.roll(self._timestamps, -timestamps.size, axis=0)
-            self._buffer[-timestamps.size :, :] = data
-            self._timestamps[-timestamps.size :] = timestamps
-            # update the number of new samples available
-            self._n_new_samples += timestamps.size
+            with self._lock:
+                self._buffer = np.roll(self._buffer, -timestamps.size, axis=0)
+                self._timestamps = np.roll(
+                    self._timestamps, -timestamps.size, axis=0
+                )
+                self._buffer[-timestamps.size :, :] = data
+                self._timestamps[-timestamps.size :] = timestamps
+                # update the number of new samples available
+                self._n_new_samples += timestamps.size
             if self._timestamps.size < self._n_new_samples:
                 logger.info(
                     "The number of new samples exceeds the buffer size. Consider using "

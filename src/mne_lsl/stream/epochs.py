@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import threading
 from concurrent.futures import ThreadPoolExecutor
 from math import ceil
 from typing import TYPE_CHECKING
@@ -212,6 +213,7 @@ class EpochsStream:
             self._tmin, self._tmax, n_samples, endpoint=False, dtype=np.float64
         )
         # define acquisition variables which need to be reset on disconnect
+        self._lock = threading.Lock()
         self._reset_variables()
 
     def __del__(self) -> None:
@@ -416,8 +418,10 @@ class EpochsStream:
                     f"buffer size {self._buffer.shape[0]}. Selecting the entire buffer."
                 )
                 n_epochs = self._buffer.shape[0]
-            self._n_new_epochs = 0  # reset the number of new epochs
-            return np.transpose(self._buffer[-n_epochs:, :, picks], axes=(0, 2, 1))
+            with self._lock:
+                self._n_new_epochs = 0  # reset the number of new epochs
+                buffer_ref = self._buffer
+            return np.transpose(buffer_ref[-n_epochs:, :, picks], axes=(0, 2, 1))
         except Exception:
             if not self.connected:
                 raise RuntimeError(
@@ -443,9 +447,10 @@ class EpochsStream:
                 return
             # split the different acquisition scenarios to retrieve new events to add to
             # the buffer.
-            data, ts = _remove_empty_elements(
-                self._stream._buffer.T, self._stream._timestamps
-            )
+            with self._stream._lock:
+                stream_buffer = self._stream._buffer
+                stream_ts = self._stream._timestamps
+            data, ts = _remove_empty_elements(stream_buffer.T, stream_ts)
             if self._event_stream is None:
                 picks_events = _picks_to_idx(
                     self._stream._info, self._event_channels, exclude="bads"
@@ -472,9 +477,11 @@ class EpochsStream:
                     none="all",
                     exclude=(),
                 )
+                with self._event_stream._lock:
+                    evt_buffer = self._event_stream._buffer
+                    evt_ts = self._event_stream._timestamps
                 data_events, ts_events = _remove_empty_elements(
-                    self._event_stream._buffer[:, picks].T,
-                    self._event_stream._timestamps,
+                    evt_buffer[:, picks].T, evt_ts,
                 )
                 events = _find_events_in_stim_channels(
                     data_events, self._event_channels, self._info["sfreq"]
@@ -501,9 +508,11 @@ class EpochsStream:
                     none="all",
                     exclude=(),
                 )
+                with self._event_stream._lock:
+                    evt_buffer = self._event_stream._buffer
+                    evt_ts = self._event_stream._timestamps
                 data_events, ts_events = _remove_empty_elements(
-                    self._event_stream._buffer[:, picks].T,
-                    self._event_stream._timestamps,
+                    evt_buffer[:, picks].T, evt_ts,
                 )
                 if self._event_id is None:
                     events = np.vstack(
@@ -582,12 +591,15 @@ class EpochsStream:
                 self._submit_acquisition_job()
                 return
             # roll buffer and add new epochs
-            self._buffer = np.roll(self._buffer, -events.shape[0], axis=0)
-            self._buffer[-events.shape[0] :, :, :] = data_selection
-            self._buffer_events = np.roll(self._buffer_events, -events.shape[0])
-            self._buffer_events[-events.shape[0] :] = events[:, 2]
-            # update the last ts and the number of new epochs
-            self._n_new_epochs += events.shape[0]
+            with self._lock:
+                self._buffer = np.roll(self._buffer, -events.shape[0], axis=0)
+                self._buffer[-events.shape[0] :, :, :] = data_selection
+                self._buffer_events = np.roll(
+                    self._buffer_events, -events.shape[0]
+                )
+                self._buffer_events[-events.shape[0] :] = events[:, 2]
+                # update the last ts and the number of new epochs
+                self._n_new_epochs += events.shape[0]
         except Exception as error:  # pragma: no cover
             logger.exception(error)
             self._reset_variables()
@@ -658,7 +670,8 @@ class EpochsStream:
         :type: :class:`numpy.ndarray`
         """
         self._check_connected("events")
-        return self._buffer_events
+        with self._lock:
+            return self._buffer_events.copy()
 
     @property
     def info(self) -> Info:
