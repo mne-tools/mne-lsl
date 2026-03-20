@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import threading
 from abc import ABC, abstractmethod
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
@@ -54,6 +55,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
                 f"{bufsize} is invalid."
             )
         self._bufsize = bufsize
+        self._lock = threading.Lock()
         self._callbacks = []
 
     @copy_doc(ContainsMixin.__contains__)
@@ -727,8 +729,11 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
             # >>> %timeit _picks_to_idx(raw.info, None)
             # 253 µs ± 1.22 µs per loop
             picks = _picks_to_idx(self._info, picks, none="all", exclude=exclude)
-            self._n_new_samples = 0  # reset the number of new samples
-            return self._buffer[-n_samples:, picks].T, self._timestamps[-n_samples:]
+            with self._lock:
+                self._n_new_samples = 0  # reset the number of new samples
+                buffer_ref = self._buffer
+                ts_ref = self._timestamps
+            return buffer_ref[-n_samples:, picks].T, ts_ref[-n_samples:]
         except Exception:
             if not self.connected:
                 raise RuntimeError(
@@ -1203,13 +1208,15 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
         # it's simpler to shutdown the executor entirely and create a new one
         if self._executor is not None:
             self._executor.shutdown(wait=True, cancel_futures=True)
-            try:  # ensure "finally" is reached even when failures occur
-                yield
-            finally:
-                self._executor = ThreadPoolExecutor(max_workers=1)
-                self._executor.submit(self._acquire)
+            with self._lock:
+                try:  # ensure "finally" is reached even when failures occur
+                    yield
+                finally:
+                    self._executor = ThreadPoolExecutor(max_workers=1)
+                    self._executor.submit(self._acquire)
         else:
-            yield
+            with self._lock:
+                yield
 
     def _pick(self, picks: ScalarIntArray) -> None:
         """Interrupt acquisition and apply the channel selection."""
