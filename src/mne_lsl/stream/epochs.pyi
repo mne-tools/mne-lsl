@@ -191,6 +191,7 @@ class EpochsStream:
     _detrend_type: Incomplete
     _picks_init: Incomplete
     _times: Incomplete
+    _lock: Incomplete
 
     def __init__(
         self,

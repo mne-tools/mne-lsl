@@ -45,6 +45,7 @@ class BaseStream(ABC, ContainsMixin, SetChannelsMixin):
     """
 
     _bufsize: Incomplete
+    _lock: Incomplete
     _callbacks: Incomplete
 
     @abstractmethod
