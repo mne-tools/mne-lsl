@@ -14,8 +14,8 @@
 
 .. include:: ./authors.inc
 
-Version 1.12
-============
+Version 1.12.0
+==============
 
 - Improve handling of buffer size for irregularly sampled stream (:pr:`476` by `Mathieu Scheltienne`_)
 - Remove build on macOS intel

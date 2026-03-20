@@ -14,8 +14,8 @@
 
 .. include:: ./authors.inc
 
-Version 1.9
-===========
+Version 1.9.0
+=============
 
 - Fix sphinx formatting in tutorials (:pr:`388` and :pr:`389` by `Thomas Binns`_)
 - Fix source links in the documentation (:pr:`398` by `Tom Ma`_)
