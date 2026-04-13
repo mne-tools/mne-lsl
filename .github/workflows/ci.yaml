@@ -318,7 +318,7 @@ jobs:
           pattern: cibw-wheels-*
           merge-multiple: true
           path: dist
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v3
         with:
           files: dist/*
           tag_name: ${{ github.event.release.tag_name }}
